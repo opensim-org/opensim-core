@@ -3,10 +3,6 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${XERCES_INCLUDE_DIR})
 
 
-IF (BUILD_STATIC_OSIM_LIBS)
-	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
-ENDIF(BUILD_STATIC_OSIM_LIBS)
-
 LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 		debug osimSimulation_d optimized osimSimulation
 		debug osimAnalyses_d optimized osimAnalyses)
@@ -46,4 +42,4 @@ ENDIF (EXECUTABLE_OUTPUT_PATH)
 
 ADD_TEST(testForward ${TEST_PATH}/testForward)
 
-SET_TARGET_PROPERTIES(testForward PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testForward")
+SET_TARGET_PROPERTIES(testForward PROPERTIES PROJECT_LABEL "Tests - testForward")

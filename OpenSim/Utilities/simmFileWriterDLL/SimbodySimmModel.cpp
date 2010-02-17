@@ -35,13 +35,28 @@
 #include <float.h>
 #include <time.h>
 
-#include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/DynamicsEngines/SimbodyEngine/CoordinateCouplerConstraint.h>
-#include <OpenSim/DynamicsEngines/SimbodyEngine/CustomJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/EllipsoidJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Common/NatCubicSpline.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
+#include <OpenSim/Simulation/Model/MovingPathPoint.h>
+#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
+#include <OpenSim/Actuators/Schutte1993Muscle.h>
+#include <OpenSim/Actuators/Delp1990Muscle.h>
+#include <OpenSim/Common/Array.h>
+#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/XYFunctionInterface.h>
 
 #define ROUNDOFF_ERROR 0.000000001
 #define DABS(a) ((a)>(double)0.0?(a):(-(a)))
@@ -81,12 +96,12 @@ SimbodySimmModel::SimbodySimmModel()
 
 //_____________________________________________________________________________
 /**
- * Constructor from a Simbody engine.
+ * Constructor from an OpenSim model.
  */
-SimbodySimmModel::SimbodySimmModel(const SimbodyEngine& aEngine)
+SimbodySimmModel::SimbodySimmModel(const Model* aModel)
 {
 	setNull();
-   setup(aEngine);
+   setup(aModel);
 }
 
 //_____________________________________________________________________________
@@ -121,6 +136,7 @@ Object* SimbodySimmModel::copy() const
 void SimbodySimmModel::copyData(const SimbodySimmModel &aModel)
 {
    // TODO
+	_model = aModel._model;
 }
 
 //_____________________________________________________________________________
@@ -130,8 +146,7 @@ void SimbodySimmModel::copyData(const SimbodySimmModel &aModel)
 void SimbodySimmModel::setNull()
 {
 	setType("SimbodySimmModel");
-   _engine = NULL;
-   _maxFunctionUserNumber = -1;
+   _model = NULL;
 }
 
 //_____________________________________________________________________________
@@ -140,24 +155,34 @@ void SimbodySimmModel::setNull()
  *
  * @param aEngine The engine to make this SimbodySimmModel from.
  */
-void SimbodySimmModel::setup(const SimbodyEngine& aEngine)
+void SimbodySimmModel::setup(const Model* aModel)
 {
-   _engine = &aEngine;
+   _model = aModel;
 
    // Make a simple linear function for unconstrained coordinates
-   NatCubicSpline* f = new NatCubicSpline();
+   NaturalCubicSpline* f = new NaturalCubicSpline();
    f->addPoint(-2.0*SimTK::Pi, -2.0*SimTK::Pi);
    f->addPoint(2.0*SimTK::Pi, 2.0*SimTK::Pi);
    f->setName("f0");
-   addFunction(f, AbstractTransformAxis::Rotational, AbstractTransformAxis::Rotational);
+   addJointFunction(f, Coordinate::Rotational, Coordinate::Rotational);
 
-   const BodySet* bodySet = _engine->getBodySet();
-   for (int i = 0; i < bodySet->getSize(); i++) {
-      if (bodySet->get(i)->isA("Body")) {
-         const Body* sb = (Body*)bodySet->get(i);
-         convertBody(*sb, _engine->getMarkerSet());
+   const BodySet& bodySet = _model->getBodySet();
+   for (int i = 0; i < bodySet.getSize(); i++) {
+      if (bodySet.get(i).isA("Body")) {
+         const Body& sb = bodySet.get(i);
+         convertBody(sb, &_model->getMarkerSet());
       }
    }
+
+	// Create gencoords from the coordinates
+	const CoordinateSet& coordinates = _model->getCoordinateSet();
+	for (int i=0; i<coordinates.getSize(); i++) {
+		Coordinate& coord = coordinates.get(i);
+		const Coordinate* independentCoord = NULL;
+		if (isDependent(&coord, &independentCoord) == NULL) {
+			addGencoord(&coord);
+		}
+	}
 }
 
 //_____________________________________________________________________________
@@ -185,10 +210,10 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
 
    out << "/**********************************************************/\n";
    out << "/*            Joint file created by OpenSim               */\n";
-   if (_engine->getModel()->getInputFileName() != "")
-      out << "/* name of original model file: " << _engine->getModel()->getInputFileName() << " */\n";
+   if (_model->getInputFileName() != "")
+      out << "/* name of original model file: " << _model->getInputFileName() << " */\n";
    out << "/**********************************************************/\n";
-   out << "\nname " << _engine->getModel()->getName() << endl;
+   out << "\nname " << _model->getName() << endl;
    out << "\n";
 #if 0
    if (!mBonePath.empty())
@@ -199,10 +224,10 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
       out << "motion_file " << mMotionFilename << endl;
 #endif
 
-	if (_engine->getModel()->getLengthUnits().getType() != Units::simmUnknownUnits)
-		out << "length_units " << _engine->getModel()->getLengthUnits().getLabel() << endl;
-	if (_engine->getModel()->getForceUnits().getType() != Units::simmUnknownUnits)
-		out << "force_units " << _engine->getModel()->getForceUnits().getLabel() << endl;
+	if (_model->getLengthUnits().getType() != Units::UnknownUnits)
+		out << "length_units " << _model->getLengthUnits().getLabel() << endl;
+	if (_model->getForceUnits().getType() != Units::UnknownUnits)
+		out << "force_units " << _model->getForceUnits().getLabel() << endl;
 
 #if 0
    if (mMarkerRadius != 0.01)
@@ -229,7 +254,7 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
 #endif
 
 	SimTK::Vec3 gravity;
-	_engine->getModel()->getGravity(gravity);
+	_model->getGravity(gravity);
 	const string& gravityLabel = getGravityLabel(gravity);
 
 	out << "gravity " << gravityLabel << endl;
@@ -255,16 +280,16 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
    out << "\n/****************************************************/\n";
    out << "/*                    WRAP OBJECTS                  */\n";
    out << "/****************************************************/\n";
-   const BodySet* bodySet = _engine->getBodySet();
-   for (i = 0; i < bodySet->getSize(); i++)
-      writeWrapObjects(*bodySet->get(i), out);
+   const BodySet& bodySet = _model->getBodySet();
+   for (i = 0; i < bodySet.getSize(); i++)
+      writeWrapObjects(bodySet.get(i), out);
 
    out << "\n/****************************************************/\n";
    out << "/*                     FUNCTIONS                    */\n";
    out << "/****************************************************/\n";
-   for (i = 0; i < _simmFunction.getSize(); i++)
-      _simmFunction[i]->write(out);
-   
+   for (i = 0; i < _simmJointFunction.getSize(); i++)
+      _simmJointFunction[i]->write(out);
+
    out << "\n/****************************************************/\n";
    out << "/*                     MATERIALS                    */\n";
    out << "/****************************************************/\n";
@@ -300,7 +325,7 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
    out << "origin 0.0 0.0 0.0" << endl;
    out << "\nmaterial mat2\n";
 	/* The floor bone file is in meters, so scale it to fit this model. */
-	double floorScale = 1.0 / _engine->getModel()->getLengthUnits().convertTo(Units::simmMeters);
+	double floorScale = 1.0 / _model->getLengthUnits().convertTo(Units::Meters);
 	out << "scale " << floorScale << " " << floorScale * 2.0 << " " << floorScale * 4.0 << endl;
    out << " endworldobject\n\n";
 
@@ -310,13 +335,13 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
 
 	/* The default ball object in SIMM is in meters, so scale it to fit this model. */
 	out << "beginmotionobject ball\n";
-	double scale = 0.25 / _engine->getModel()->getLengthUnits().convertTo(Units::simmMeters);
+	double scale = 0.25 / _model->getLengthUnits().convertTo(Units::Meters);
 	out << "material blue" << endl;
 	out << "scale " << scale << " " << scale << " " << scale << endl;
    out << "endmotionobject\n\n";
 
    out.close();
-	//cout << "Wrote SIMM joint file " << aFileName << " from model " << _engine->getModel()->getName() << endl;
+	//cout << "Wrote SIMM joint file " << aFileName << " from model " << _model->getName() << endl;
 
 	return true;
 }
@@ -356,16 +381,16 @@ const string& SimbodySimmModel::getGravityLabel(const SimTK::Vec3& aGravity) con
  * @param rIndependentCoordinate The independent coordinate, if any, that the coordinate depends on.
  * @return The function controlling the dependency.
  */
-OpenSim::Function* SimbodySimmModel::isDependent(const AbstractCoordinate* aCoordinate,
-                                                 const AbstractCoordinate** rIndependentCoordinate) const
+OpenSim::Function* SimbodySimmModel::isDependent(const Coordinate* aCoordinate,
+                                                 const Coordinate** rIndependentCoordinate) const
 {
-   for (int i=0; i<_engine->getConstraintSet()->getSize(); i++) {
-      if (_engine->getConstraintSet()->get(i)->isA("CoordinateCouplerConstraint")) {
-         const CoordinateCouplerConstraint* ccc = (CoordinateCouplerConstraint*)_engine->getConstraintSet()->get(i);
-         if (ccc->getDependentCoordinateName() == aCoordinate->getName()) {
-            string foo = ccc->getIndependentCoordinateNames().get(0);
-            *rIndependentCoordinate = _engine->getCoordinateSet()->get(ccc->getIndependentCoordinateNames().get(0));
-            return ccc->getFunction();
+   for (int i=0; i<_model->getConstraintSet().getSize(); i++) {
+      if (_model->getConstraintSet().get(i).isA("CoordinateCouplerConstraint")) {
+         const CoordinateCouplerConstraint& ccc = (CoordinateCouplerConstraint&)_model->getConstraintSet().get(i);
+         if (ccc.getDependentCoordinateName() == aCoordinate->getName()) {
+            string foo = ccc.getIndependentCoordinateNames().get(0);
+            *rIndependentCoordinate = &_model->getCoordinateSet().get(ccc.getIndependentCoordinateNames().get(0));
+            return &ccc.getFunction();
          }
       }
    }
@@ -397,16 +422,15 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 {
    addBody(aBody);
 
-   const Joint* joint = aBody.getJoint();
-   if (joint == NULL)
-      return;
+   if (!aBody.hasJoint())
+		return;
+   const Joint& joint = aBody.getJoint();
 
    string parentName;
    string childName;
-	bool parentJointAdded = false;
-   addExtraJoints(*joint, parentName, childName, parentJointAdded);
+	bool parentJointAdded = addExtraJoints(joint, parentName, childName);
 
-   SimbodySimmJoint* ssj = new SimbodySimmJoint(joint->getName(), parentName, childName);
+   SimbodySimmJoint* ssj = new SimbodySimmJoint(joint.getName(), parentName, childName);
 
 	// If parentJointAdded is false, that means the position and orientation in the
 	// parent can be merged with the primary joint. So begin making the joint by
@@ -414,8 +438,8 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 	if (parentJointAdded == false) {
 		SimTK::Vec3 location;
 		SimTK::Vec3 orientation;
-		joint->getLocationInParent(location);
-		joint->getOrientationInParent(orientation);
+		joint.getLocationInParent(location);
+		joint.getOrientationInParent(orientation);
 		if (NOT_EQUAL_WITHIN_ERROR(location[0], 0.0))
 			ssj->addConstantDof("tx", NULL, location[0]);
 		if (NOT_EQUAL_WITHIN_ERROR(location[1], 0.0))
@@ -430,42 +454,67 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 			ssj->addConstantDof("r3", defaultAxes[2], orientation[2] * 180.0 / SimTK::Pi);
 	}
 
-	if (joint->isA("WeldJoint")) {
-      ssj->finalize();
-      _simmJoint.append(ssj);
-	} else if (joint->isA("CustomJoint")) {
-      const CustomJoint* cj = (CustomJoint*)(joint);
+	if (joint.isA("WeldJoint")) {
+		// Nothing to do.
+	} else if (joint.isA("PinJoint")) {
+		int index = 0;
+		string coordName = joint.getCoordinateSet().get(index).getName();
+		SimTK::Vec3 axis(0.0, 0.0, 1.0); // Pin joints always rotate about the Z axis.
+		ssj->addFunctionDof(axis, coordName, 0, Coordinate::Rotational);
+	} else if (joint.isA("SliderJoint")) {
+		int index = 0;
+		string coordName = joint.getCoordinateSet().get(index).getName();
+		SimTK::Vec3 axis(1.0, 0.0, 0.0); // Slider joints always translate along the X axis.
+		ssj->addFunctionDof(axis, coordName, 0, Coordinate::Translational);
+	} else if (joint.isA("EllipsoidJoint")) {
+		// NOTE: Ellipsoid joints cannot be converted into SIMM joints.
+	} else if (joint.isA("FreeJoint")) {
+		SimTK::Vec3 xaxis(1.0, 0.0, 0.0);
+		SimTK::Vec3 yaxis(0.0, 1.0, 0.0);
+		SimTK::Vec3 zaxis(0.0, 0.0, 1.0);
+		int index = 0;
+		ssj->addFunctionDof(xaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
+		ssj->addFunctionDof(yaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
+		ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Translational);
+		ssj->addFunctionDof(xaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
+		ssj->addFunctionDof(yaxis, joint.getCoordinateSet().get(index++).getName(), 0, Coordinate::Rotational);
+		ssj->addFunctionDof(zaxis, joint.getCoordinateSet().get(index).getName(), 0, Coordinate::Rotational);
+	} else if (joint.isA("CustomJoint")) {
+		const CustomJoint* cj = (CustomJoint*)(&joint);
+		const CoordinateSet& coordinates = aBody.getModel().getCoordinateSet();
 
 		// Add the joint's transform axes to the SimbodySimmJoint.
-      TransformAxisSet* dofs = cj->getTransformAxisSet();
-      for (int i=0; i<dofs->getSize(); i++) {
-         AbstractTransformAxis* ta = dofs->get(i);
-         const Function* constraintFunc = ta->getFunction();
-         const AbstractCoordinate* coord = ta->getCoordinate();
-         const AbstractCoordinate* independentCoord = NULL;
-         if (constraintFunc) { // dof is constrained to a coordinate in this joint
-            ssj->addFunctionDof(*ta, coord->getName(), addFunction(constraintFunc, coord->getMotionType(), ta->getMotionType()));
-         } else if ((constraintFunc = isDependent(coord, &independentCoord)) != NULL) { // dof is constrained to a coordinate in another joint
-            ssj->addFunctionDof(*ta, independentCoord->getName(), addFunction(constraintFunc, independentCoord->getMotionType(), ta->getMotionType()));
-         } else { // dof is unconstrained
-            ssj->addFunctionDof(*ta, coord->getName(), 0);
-         }
-         SimTK::Vec3 axis;
-         ta->getAxis(axis);
-      }
+		SpatialTransform& dofs = cj->getSpatialTransform();
+		// Custom joints have the rotational DOFs specified first, but the translations are applied first
+		// so you want to process them first here.
+		static int order[] = {3, 4, 5, 0, 1, 2};
+		for (int i=0; i<6; i++) {
+			TransformAxis* ta = &dofs[order[i]];
+			if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if it has no coordinate names
+				const Coordinate* coord = NULL;
+				const Coordinate* independentCoord = NULL;
+				const Function* constraintFunc = NULL;
+				Coordinate::MotionType motionType = (order[i]<3) ? Coordinate::Rotational : Coordinate::Translational;
+				if (ta->getCoordinateNames().getSize() > 0)
+					coord = &coordinates.get(ta->getCoordinateNames().get(0));
+				if (coord)
+					constraintFunc = isDependent(coord, &independentCoord);
+				if (constraintFunc != NULL) {  // dof is constrained to a coordinate in another joint
+					ssj->addFunctionDof(ta->getAxis(), independentCoord->getName(), addJointFunction(constraintFunc, independentCoord->getMotionType(), motionType), motionType);
+				} else {
+					if (ta->hasFunction())
+						constraintFunc = &ta->getFunction();
+					if (constraintFunc) // dof is constrained to a coordinate in this joint
+						ssj->addFunctionDof(ta->getAxis(), coord->getName(), addJointFunction(constraintFunc, coord->getMotionType(), motionType), motionType);
+					else // dof is unconstrained
+						ssj->addFunctionDof(ta->getAxis(), coord->getName(), 0, motionType);
+				}
+			}
+		}
+	}
 
-      // Create gencoords from the coordinates.
-      CoordinateSet* coordinates = cj->getCoordinateSet();
-      for (int i=0; i<coordinates->getSize(); i++) {
-         AbstractCoordinate* coord = coordinates->get(i);
-         const AbstractCoordinate* independentCoord = NULL;
-         if (isDependent(coord, &independentCoord) == NULL) {
-            addGencoord(coord);
-         }
-      }
-      ssj->finalize();
-      _simmJoint.append(ssj);
-   }
+	ssj->finalize();
+	_simmJoint.append(ssj);
 }
 
 //_____________________________________________________________________________
@@ -509,9 +558,8 @@ bool SimbodySimmModel::isChildJointNeeded(const OpenSim::Joint& aJoint)
 bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 {
 	// If the joint has no "real" DOFs (e.g., WeldJoints), then the parent joint is not needed.
-	TransformAxisSet* dofs = aJoint.getTransformAxisSet();
-	if (dofs == NULL)
-		return false;
+	if (aJoint.isA("WeldJoint"))
+		return true;
 
 	SimTK::Vec3 location;
 	SimTK::Vec3 orientation;
@@ -537,27 +585,50 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 		}
 	}
 
-	// Now see if the joint's "real" DOFs can be added.
-	for (int i=0; i<dofs->getSize(); i++) {
-		AbstractTransformAxis* ta = dofs->get(i);
-		if (ta->getMotionType() == AbstractTransformAxis::Translational) {
-			const double* axis = ta->getAxisPtr();
-			for (int j=0; j<3; j++) {
-				if (EQUAL_WITHIN_ERROR(axis[j], 1.0)) {
-					if (translationsUsed[i]) // this translation component already defined
+	if (aJoint.isA("WeldJoint")) {
+		return false;
+	} else if (aJoint.isA("PinJoint")) {
+		if (numRotations >= 3) // have already defined three rotations (can't add more)
+			return true;
+	} else if (aJoint.isA("SliderJoint")) {
+		if (translationsUsed[0]) // slider joint translations are always along the X axis
+			return true;
+	} else if (aJoint.isA("EllipsoidJoint")) {
+		return true; // NOTE: ellipsoid joints cannot be converted to SIMM joints
+	} else if (aJoint.isA("FreeJoint")) {
+		return true;
+	} else if (aJoint.isA("CustomJoint")) {
+		const CustomJoint* cj = (CustomJoint*)(&aJoint);
+		SpatialTransform& dofs = cj->getSpatialTransform();
+
+		// Now see if the joint's "real" DOFs can be added.
+		for (int i=0; i<6; i++) {
+			TransformAxis* ta = &dofs[i];
+			if (i >= 3) {
+				double axis[3];
+				ta->getAxis(axis);
+				for (int j=0; j<3; j++) {
+					if (EQUAL_WITHIN_ERROR(axis[j], 1.0)) {
+						if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if if has no coordinate names
+							if (translationsUsed[i]) // this translation component already defined
+								return true;
+							if (translationsDone) // have already defined translations then rotation (can't add more translations)
+								return true;
+							translationsUsed[i] = true;
+							numTranslations++;
+						}
+						break;
+					}
+				}
+			} else {
+				if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if if has no coordinate names
+					if (numRotations >= 3) // have already defined three rotations (can't add more)
 						return true;
-					if (translationsDone) // have already defined translations then rotation (can't add more translations)
-						return true;
-					translationsUsed[i] = true;
-					numTranslations++;
+					numRotations++;
+					if (numTranslations > 0)
+						translationsDone = true;
 				}
 			}
-		} else {
-			if (numRotations >= 3) // have already defined three rotations (can't add more)
-				return true;
-			numRotations++;
-			if (numTranslations > 0)
-				translationsDone = true;
 		}
 	}
 
@@ -596,39 +667,42 @@ void SimbodySimmModel::makeSimmJoint(const string& aName, const string& aParentN
  * @param aJoint The Simbody joint.
  * @param rParentName The name of the parent body for the "real" joint.
  * @param rChildName The name of the child body for the "real" joint.
+ * @return Whether or not a 'parent' joint was added.
  */
-void SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rParentName,
-												  string& rChildName, bool rParentJointAdded)
+bool SimbodySimmModel::addExtraJoints(const OpenSim::Joint& aJoint, string& rParentName, string& rChildName)
 {
    SimTK::Vec3 location;
    SimTK::Vec3 orientation;
+	bool parentJointAdded = false;
 
    if (isParentJointNeeded(aJoint)) {
 		aJoint.getLocationInParent(location);
 		aJoint.getOrientationInParent(orientation);
-      string bodyName = aJoint.getBody()->getName() + "_pjc";
+      string bodyName = aJoint.getBody().getName() + "_pjc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
       makeSimmJoint(aJoint.getName() + "_pjc", aJoint.getParentName(), bodyName, location, orientation);
       rParentName = bodyName;
-		rParentJointAdded = true;
+		parentJointAdded = true;
    } else {
       rParentName = aJoint.getParentName();
-		rParentJointAdded = false;
+		parentJointAdded = false;
    }
 
    if (isChildJointNeeded(aJoint)) {
 		aJoint.getLocation(location);
 		aJoint.getOrientation(orientation);
-		string bodyName = aJoint.getBody()->getName() + "_jcc";
+		string bodyName = aJoint.getBody().getName() + "_jcc";
       SimbodySimmBody* b = new SimbodySimmBody(NULL, bodyName);
       _simmBody.append(b);
       // This joint is specified in the reverse direction.
-      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getBody()->getName(), bodyName, location, orientation);
+      makeSimmJoint(aJoint.getName() + "_jcc", aJoint.getBody().getName(), bodyName, location, orientation);
       rChildName = bodyName;
    } else {
-      rChildName = aJoint.getBody()->getName();
+      rChildName = aJoint.getBody().getName();
    }
+
+	return parentJointAdded;
 }
 
 //_____________________________________________________________________________
@@ -649,80 +723,98 @@ void SimbodySimmModel::addBody(const OpenSim::Body& aBody)
  *
  * @param aCoordinate The Simbody coordinate that the SimbodySimmGencoord is based on.
  */
-void SimbodySimmModel::addGencoord(const AbstractCoordinate* aCoordinate)
+void SimbodySimmModel::addGencoord(const Coordinate* aCoordinate)
 {
-	int restraintFuncNum = addFunction(aCoordinate->getRestraintFunction(),
-		aCoordinate->getMotionType(), AbstractTransformAxis::Translational);
-	int minRestraintFuncNum = addFunction(aCoordinate->getMinRestraintFunction(),
-		aCoordinate->getMotionType(),	AbstractTransformAxis::Translational);
-	int maxRestraintFuncNum = addFunction(aCoordinate->getMaxRestraintFunction(),
-		aCoordinate->getMotionType(),	AbstractTransformAxis::Translational);
-   SimbodySimmGencoord* g = new SimbodySimmGencoord(aCoordinate, restraintFuncNum,
-		minRestraintFuncNum, maxRestraintFuncNum);
+   SimbodySimmGencoord* g = new SimbodySimmGencoord(aCoordinate);
    _simmGencoord.append(g);
 }
 
 //_____________________________________________________________________________
 /**
- * Add a function to the SimmModel and assign it a unique user number.
- *
- * TODO: check to make sure the function is a NaturalCubicSpline, currently the only
- * kind supported by SIMM (or 2-point linear or 3-point quadratic, which are implemented
- * in SIMM as special cases of natural cubics).
+ * Add a function to the SimmModel (_simmJointFunction) and assign it a unique user number.
  *
  * @param aFunction The function to add.
  * @param aXType The type (translational, rotational) of the X coordinate of the function.
  * @param aYType The type (translational, rotational) of the Y coordinate of the function.
  * @return A unique user number for use in writing a SIMM joint file.
  */
-int SimbodySimmModel::addFunction(const OpenSim::Function* aFunction, AbstractTransformAxis::MotionType aXType,
-                                  AbstractTransformAxis::MotionType aYType)
+int SimbodySimmModel::addJointFunction(const OpenSim::Function* aFunction, Coordinate::MotionType aXType, Coordinate::MotionType aYType)
 {
 	if (aFunction == NULL)
 		return -1;
 
-   // First see if there is already a function in _simmFunction that has the same
+	XYFunctionInterface xyFuncNew((OpenSim::Function*)aFunction); // removing const!
+
+   // First see if there is already a function in _simmJointFunction that has the same
    // name and the same XY points.
-   for (int i=0; i<_simmFunction.getSize(); i++) {
-      const Function* f = _simmFunction.get(i)->getFunction();
+   for (int i=0; i<_simmJointFunction.getSize(); i++) {
+      const Function* f = _simmJointFunction.get(i)->getFunction();
+		XYFunctionInterface xyFunc((OpenSim::Function*)f); // removing const!
       if (f->getName() == aFunction->getName() &&
-         f->getNumberOfPoints() == aFunction->getNumberOfPoints() &&
-         _simmFunction.get(i)->getXType() == aXType &&
-         _simmFunction.get(i)->getYType() == aYType)
+         xyFunc.getNumberOfPoints() == xyFuncNew.getNumberOfPoints() &&
+         _simmJointFunction.get(i)->getXType() == aXType &&
+         _simmJointFunction.get(i)->getYType() == aYType)
       {
          int j;
-         for (j=0; j<f->getNumberOfPoints(); j++) {
-            if (NOT_EQUAL_WITHIN_ERROR(f->getX(j), aFunction->getX(j)) ||
-               NOT_EQUAL_WITHIN_ERROR(f->getY(j), aFunction->getY(j)))
+         for (j=0; j<xyFunc.getNumberOfPoints(); j++) {
+            if (NOT_EQUAL_WITHIN_ERROR(xyFunc.getX(j), xyFuncNew.getX(j)) ||
+               NOT_EQUAL_WITHIN_ERROR(xyFunc.getY(j), xyFuncNew.getY(j)))
                break;
          }
-         if (j == f->getNumberOfPoints())
-            return _simmFunction.get(i)->getUserNumber();
+         if (j == xyFunc.getNumberOfPoints())
+            return _simmJointFunction.get(i)->getUserNumber();
       }
    }
 
-   // read user number from name
-   int userNumber;
-   string name = aFunction->getName();
-   if (name.size() > 1 && name[0] == 'f') {
-      userNumber = atoi(&name[1]);
-   } else {
-      userNumber = _simmFunction.getSize();
-   }
-
-   // Now make sure the user number is unique
-   for (int i=0; i<_simmFunction.getSize(); i++) {
-      if (userNumber == _simmFunction.get(i)->getUserNumber()) {
-         userNumber = ++_maxFunctionUserNumber;
-         break;
-      }
-   }
-
-   if (userNumber > _maxFunctionUserNumber)
-      _maxFunctionUserNumber = userNumber;
+	int userNumber = getUniqueFunctionUserNumber(aFunction);
 
    SimbodySimmFunction* simmFunction = new SimbodySimmFunction(aFunction, userNumber, aXType, aYType);
-   _simmFunction.append(simmFunction);
+   _simmJointFunction.append(simmFunction);
+
+   return userNumber;
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a function to the SimmModel (_simmMuscleFunction) and assign it a unique user number.
+ *
+ * @param aFunction The function to add.
+ * @param aXType The type (translational, rotational) of the X coordinate of the function.
+ * @param aYType The type (translational, rotational) of the Y coordinate of the function.
+ * @return A unique user number for use in writing a SIMM joint file.
+ */
+int SimbodySimmModel::addMuscleFunction(const OpenSim::Function* aFunction, Coordinate::MotionType aXType, Coordinate::MotionType aYType)
+{
+	if (aFunction == NULL)
+		return -1;
+
+	XYFunctionInterface xyFuncNew((OpenSim::Function*)aFunction); // removing const!
+
+   // First see if there is already a function in _simmMuscleFunction that has the same
+   // name and the same XY points.
+   for (int i=0; i<_simmMuscleFunction.getSize(); i++) {
+      const Function* f = _simmMuscleFunction.get(i)->getFunction();
+		XYFunctionInterface xyFunc((OpenSim::Function*)f); // removing const!
+      if (f->getName() == aFunction->getName() &&
+         xyFunc.getNumberOfPoints() == xyFuncNew.getNumberOfPoints() &&
+         _simmMuscleFunction.get(i)->getXType() == aXType &&
+         _simmMuscleFunction.get(i)->getYType() == aYType)
+      {
+         int j;
+         for (j=0; j<xyFunc.getNumberOfPoints(); j++) {
+            if (NOT_EQUAL_WITHIN_ERROR(xyFunc.getX(j), xyFuncNew.getX(j)) ||
+               NOT_EQUAL_WITHIN_ERROR(xyFunc.getY(j), xyFuncNew.getY(j)))
+               break;
+         }
+         if (j == xyFunc.getNumberOfPoints())
+            return _simmMuscleFunction.get(i)->getUserNumber();
+      }
+   }
+
+	int userNumber = getUniqueFunctionUserNumber(aFunction);
+
+   SimbodySimmFunction* simmFunction = new SimbodySimmFunction(aFunction, userNumber, aXType, aYType);
+   _simmMuscleFunction.append(simmFunction);
 
    return userNumber;
 }
@@ -734,26 +826,264 @@ int SimbodySimmModel::addFunction(const OpenSim::Function* aFunction, AbstractTr
  * @param aBody reference to the body to write.
  * @param aStream the stream (file) to write to.
  */
-void SimbodySimmModel::writeWrapObjects(AbstractBody& aBody, ofstream& aStream) const
+void SimbodySimmModel::writeWrapObjects(OpenSim::Body& aBody, ofstream& aStream) const
 {
 	int i;
 	WrapObjectSet& wrapObjects = aBody.getWrapObjectSet();
 
 	for (i = 0; i < wrapObjects.getSize(); i++) {
-		AbstractWrapObject* wo = wrapObjects.get(i);
-		aStream << "beginwrapobject " << wo->getName() << endl;
-		aStream << "wraptype " << wo->getWrapTypeName() << endl;
+		WrapObject& wo = wrapObjects.get(i);
+		aStream << "beginwrapobject " << wo.getName() << endl;
+		aStream << "wraptype " << wo.getWrapTypeName() << endl;
 		aStream << "segment " << aBody.getName() << endl;
-		aStream << wo->getDimensionsString() << endl;
-		if (!wo->getQuadrantNameUseDefault())
-			aStream << "quadrant " << wo->getQuadrantName() << endl;
-		if (!wo->getActiveUseDefault())
-			aStream << "active " << (wo->getActive() ? "yes" : "no") << endl;
-		aStream << "translation " << wo->getTranslation()[0] << " " <<
-			wo->getTranslation()[1] << " " << wo->getTranslation()[2] << endl;
-		aStream << "xyz_body_rotation " << wo->getXYZBodyRotation()[0] * SimTK_RADIAN_TO_DEGREE <<
-			" " << wo->getXYZBodyRotation()[1] * SimTK_RADIAN_TO_DEGREE <<
-			" " << wo->getXYZBodyRotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
+		aStream << wo.getDimensionsString() << endl;
+		if (!wo.getQuadrantNameUseDefault())
+			aStream << "quadrant " << wo.getQuadrantName() << endl;
+		if (!wo.getActiveUseDefault())
+			aStream << "active " << (wo.getActive() ? "yes" : "no") << endl;
+		aStream << "translation " << wo.getTranslation()[0] << " " <<
+			wo.getTranslation()[1] << " " << wo.getTranslation()[2] << endl;
+		aStream << "xyz_body_rotation " << wo.getXYZBodyRotation()[0] * SimTK_RADIAN_TO_DEGREE <<
+			" " << wo.getXYZBodyRotation()[1] * SimTK_RADIAN_TO_DEGREE <<
+			" " << wo.getXYZBodyRotation()[2] * SimTK_RADIAN_TO_DEGREE << endl;
 		aStream << "endwrapobject" << endl << endl;
 	}
+}
+
+int SimbodySimmModel::getUniqueFunctionUserNumber(const OpenSim::Function* aFunction)
+{
+	int userNumber = -1;
+
+	if (aFunction) {
+		// Try to read the user number from the function name.
+		string name = aFunction->getName();
+		if (name.size() > 1 && name[0] == 'f') {
+			userNumber = atoi(&name[1]);
+
+			// Make sure the user number is not already used by a joint function.
+			for (int i=0; i<_simmJointFunction.getSize(); i++) {
+				if (userNumber == _simmJointFunction.get(i)->getUserNumber()) {
+					userNumber = -1;
+					break;
+				}
+			}
+
+			if (userNumber != -1) {
+				// Make sure the user number is not already used by a muscle function.
+				for (int i=0; i<_simmMuscleFunction.getSize(); i++) {
+					if (userNumber == _simmMuscleFunction.get(i)->getUserNumber()) {
+						userNumber = -1;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (userNumber == -1)
+		userNumber = _maxFunctionUserNumber + 1;
+
+	if (userNumber > _maxFunctionUserNumber)
+		_maxFunctionUserNumber = userNumber;
+
+	return userNumber;
+}
+
+bool SimbodySimmModel::writeMuscleFile(const string& aFileName)
+{
+   ofstream out;
+
+   out.open(aFileName.c_str());
+   out.setf(ios::fixed);
+   out.precision(12);
+
+   if (!out.good())
+   {
+      cout << "Unable to open output muscle file " << aFileName << endl;
+      return false;
+   }
+
+   out << "/**********************************************************/\n";
+   out << "/*            Muscle file created by OpenSim              */\n";
+   if (_model->getInputFileName() != "")
+      out << "/* name of original model file: " << _model->getInputFileName() << " */\n";
+   out << "/**********************************************************/\n";
+   out << "\n";
+
+	/* TODO: hack to support dynamic parameters in all currently defined muscle models. */
+	out << "begindynamicparameters" << endl;
+	out << "timescale" << endl;
+	out << "mass" << endl;
+	out << "damping" << endl;
+	out << "activation1" << endl;
+	out << "activation2" << endl;
+	out << "activation_time_constant" << endl;
+	out << "deactivation_time_constant" << endl;
+	out << "Vmax" << endl;
+	out << "Vmax0" << endl;
+	out << "Af" << endl;
+	out << "Flen" << endl;
+	out << "FmaxTendonStrain" << endl;
+	out << "FmaxMuscleStrain" << endl;
+	out << "KshapeActive" << endl;
+	out << "KshapePassive" << endl;
+	out << "muscle_density" << endl;
+	out << "max_isometric_stress" << endl;
+	out << "enddynamicparameters" << endl << endl;
+
+	/* The default muscle must be defined or the Pipeline code crashes. */
+	out << "beginmuscle defaultmuscle" << endl;
+	out << "endmuscle" << endl << endl;
+
+	Array<SimbodySimmFunction*> simmMuscleFunction;
+	const ForceSet& actuatorSet = _model->getForceSet();
+
+	for (int i=0; i<actuatorSet.getSize(); i++) {
+		Muscle* muscle = dynamic_cast<Muscle*>(&actuatorSet.get(i));
+		if (muscle)
+			writeMuscle(*muscle, actuatorSet, out);
+	}
+
+   out << "\n/****************************************************/\n";
+   out << "/*                     FUNCTIONS                    */\n";
+   out << "/****************************************************/\n";
+   for (int i=0; i<_simmMuscleFunction.getSize(); i++)
+      _simmMuscleFunction[i]->write(out);
+
+   out.close();
+	cout << "Wrote SIMM muscle file " << aFileName << " from model " << _model->getName() << endl;
+
+	return true;
+}
+
+bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet, ofstream& aStream)
+{
+	aStream << "beginmuscle " << aMuscle.getName() << endl;
+
+	const PathPointSet& pts = aMuscle.getGeometryPath().getPathPointSet();
+
+	aStream << "beginpoints" << endl;
+	for (int i = 0; i < pts.getSize(); i++)
+	{
+		PathPoint& pt = pts.get(i);
+		if (pt.isA("ConditionalPathPoint")) {
+			ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
+			Vec3& attachment = mvp->getLocation();
+			Array<double>& range = mvp->getRange();
+			const Coordinate* coord = mvp->getCoordinate();
+			aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getBody().getName();
+			if (coord->getMotionType() == Coordinate::Rotational)
+				aStream << " ranges 1 " << coord->getName() << " (" << range[0] * SimTK_RADIAN_TO_DEGREE << ", " << range[1] * SimTK_RADIAN_TO_DEGREE << ")" << endl;
+			else
+				aStream << " ranges 1 " << coord->getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
+		} else if (pt.isA("MovingPathPoint")) {
+			MovingPathPoint* mpp = (MovingPathPoint*)(&pt);
+			Vec3& attachment = mpp->getLocation();
+			if (mpp->getXCoordinate()) {
+				aStream << "f" << addMuscleFunction(mpp->getXFunction(), mpp->getXCoordinate()->getMotionType(), Coordinate::Translational) << "(" << mpp->getXCoordinateName() << ") ";
+			} else {
+				aStream << attachment[0] << " ";
+			}
+			if (mpp->getYCoordinate()) {
+				aStream << "f" << addMuscleFunction(mpp->getYFunction(), mpp->getYCoordinate()->getMotionType(), Coordinate::Translational) << "(" << mpp->getYCoordinateName() << ") ";
+			} else {
+				aStream << attachment[1] << " ";
+			}
+			if (mpp->getZCoordinate()) {
+				aStream << "f" << addMuscleFunction(mpp->getZFunction(), mpp->getZCoordinate()->getMotionType(), Coordinate::Translational) << "(" << mpp->getZCoordinateName() << ")";
+			} else {
+				aStream << attachment[2];
+			}
+			aStream << " segment " << mpp->getBody().getName() << endl;
+		} else {
+			Vec3& attachment = pt.getLocation();
+			aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << pt.getBody().getName() << endl;
+		}
+	}
+	aStream << "endpoints" << endl;
+
+	Array<std::string> groupNames;
+	aActuatorSet.getGroupNamesContaining(aMuscle.getName(),groupNames);
+	if(groupNames.getSize()) {
+		aStream << "begingroups" << endl;
+		for(int i=0; i<groupNames.getSize(); i++)
+			aStream << " " << groupNames[i];
+		aStream << endl << "endgroups" << endl;
+	}
+
+	const PathWrapSet& wrapObjects = aMuscle.getGeometryPath().getWrapSet();
+	for (int i=0; i<wrapObjects.getSize(); i++)
+		aStream << "wrapobject " << wrapObjects.get(i).getWrapObjectName() << " " <<
+		(dynamic_cast<WrapEllipsoid*>(&wrapObjects.get(i)) ? (wrapObjects.get(i).getMethodName()+" ") : "") <<
+		"range " << wrapObjects.get(i).getStartPoint() << " " << wrapObjects.get(i).getEndPoint() << endl;
+
+	if (dynamic_cast<Schutte1993Muscle*>(&aMuscle))
+	{
+		Schutte1993Muscle *szh = dynamic_cast<Schutte1993Muscle*>(&aMuscle);
+
+		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
+		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;
+		aStream << "tendon_slack_length " << szh->getTendonSlackLength() << endl;
+		aStream << "pennation_angle " << szh->getPennationAngleAtOptimalFiberLength() * SimTK_RADIAN_TO_DEGREE << endl;
+		aStream << "max_contraction_velocity " << szh->getMaxContractionVelocity() << endl;
+		aStream << "timescale " << szh->getTimeScale() << endl;
+		aStream << "muscle_model 4" << endl;
+
+		if (szh->getActiveForceLengthCurve())
+			aStream << "active_force_length_curve f" << addMuscleFunction(szh->getActiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+
+		if (szh->getPassiveForceLengthCurve())
+			aStream << "passive_force_length_curve f" << addMuscleFunction(szh->getPassiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+
+		if (szh->getTendonForceLengthCurve())
+			aStream << "tendon_force_length_curve f" << addMuscleFunction(szh->getTendonForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+	}
+	else if (dynamic_cast<Thelen2003Muscle*>(&aMuscle))
+	{
+		Thelen2003Muscle *sdm = dynamic_cast<Thelen2003Muscle*>(&aMuscle);
+
+		aStream << "max_force " << sdm->getMaxIsometricForce() << endl;
+		aStream << "optimal_fiber_length " << sdm->getOptimalFiberLength() << endl;
+		aStream << "tendon_slack_length " << sdm->getTendonSlackLength() << endl;
+		aStream << "pennation_angle " << sdm->getPennationAngleAtOptimalFiberLength() * SimTK_RADIAN_TO_DEGREE << endl;
+		aStream << "activation_time_constant " << sdm->getActivationTimeConstant() << endl;
+		aStream << "deactivation_time_constant " << sdm->getDeactivationTimeConstant() << endl;
+		aStream << "Vmax " << sdm->getVmax() << endl;
+		aStream << "Vmax0 " << sdm->getVmax0() << endl;
+		aStream << "FmaxTendonStrain " << sdm->getFmaxTendonStrain() << endl;
+		aStream << "FmaxMuscleStrain " << sdm->getFmaxMuscleStrain() << endl;
+		aStream << "KshapeActive " << sdm->getKshapeActive() << endl;
+		aStream << "KshapePassive " << sdm->getKshapePassive() << endl;
+		aStream << "damping " << sdm->getDamping() << endl;
+		aStream << "Af " << sdm->getAf() << endl;
+		aStream << "Flen " << sdm->getFlen() << endl;
+		aStream << "muscle_model 9" << endl;
+	}
+	else if (dynamic_cast<Delp1990Muscle*>(&aMuscle))
+	{
+		Delp1990Muscle *szh = dynamic_cast<Delp1990Muscle*>(&aMuscle);
+
+		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
+		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;
+		aStream << "tendon_slack_length " << szh->getTendonSlackLength() << endl;
+		aStream << "pennation_angle " << szh->getPennationAngleAtOptimalFiberLength() * SimTK_RADIAN_TO_DEGREE << endl;
+		aStream << "max_contraction_velocity " << szh->getMaxContractionVelocity() << endl;
+		aStream << "timescale " << szh->getTimeScale() << endl;
+		aStream << "muscle_model 2" << endl;
+
+		if (szh->getActiveForceLengthCurve())
+			aStream << "active_force_length_curve f" << addMuscleFunction(szh->getActiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+
+		if (szh->getPassiveForceLengthCurve())
+			aStream << "passive_force_length_curve f" << addMuscleFunction(szh->getPassiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+
+		if (szh->getTendonForceLengthCurve())
+			aStream << "tendon_force_length_curve f" << addMuscleFunction(szh->getTendonForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+
+		if (szh->getForceVelocityCurve())
+			aStream << "force_velocity_curve f" << addMuscleFunction(szh->getForceVelocityCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+	}
+
+	aStream << "endmuscle" << endl << endl;
+	return true;
 }

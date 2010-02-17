@@ -10,7 +10,6 @@
 	<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
 	<maximum_integrator_step_size> 1.0e-4 </maximum_integrator_step_size>
 	<integrator_error_tolerance> 1.0e-7 </integrator_error_tolerance>
-	<integrator_fine_tolerance>  1.0e-10 </integrator_fine_tolerance>
 	
 	<!-- Corrective springs paramters -->
 	<scaling_rise_time> 0.001 </scaling_rise_time>

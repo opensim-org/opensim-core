@@ -2,11 +2,11 @@
 
   SM.H
 
-  (c) Copyright 2001-8, MusculoGraphics, Inc.
+  (c) Copyright 2001-9, MusculoGraphics, Inc.
       a division of Motion Analysis Corp.
 
-  This version of the Solver header file is for use with Solver 1.3.2,
-  released June 25, 2008.
+  This version of the Solver header file is for use with Solver 1.4.0,
+  released April 8, 2009.
 
   Authors: Peter Loan, Krystyne Blaikie
 
@@ -75,6 +75,12 @@ typedef enum { smFPForcePosition = 1, smFPSixChannel, smFPEightChannel, smFPCalS
 
 typedef enum { smUnsignedShort, smSignedShort } smIntegerFormat;
 
+typedef enum { smOwnedBySIMM, smOwnedByEVaRT, smOwnedBySolver, smOwnedByOther } smOwner;
+
+typedef enum { smSIMMFile, smMODFile, smOtherFile} smSource;
+
+typedef enum { smStepFunction, smLinearFunction, smNaturalCubicSpline, smGCVSpline} smFunctionType;
+
 typedef enum {
    VSacral = 0,
    RASIS, LASIS, RPSIS, LPSIS,
@@ -113,6 +119,7 @@ typedef enum {
    FORCE_PLATE_MOMENT,
    FORCE_LOCATION,
    EMG,
+   FORCE_PLATE_FREE_TORQUE,
    OTHER_DATA
 } smAnalogChannelType;
 
@@ -121,6 +128,7 @@ typedef enum {
    smAnalogGroup,
    smForcePlateGroup,
    smSubjectGroup,
+   smEventGroup,
    smOtherGroup
 } smC3DGroup;
 
@@ -184,6 +192,7 @@ typedef enum
    smSlaveSlider,       /* slave, one translational DOF */
    smPoint,             /* two rotational, one translational DOF */
    smTranslational,     /* three translational DOFs */
+   smMixed,             /* joint with three rotations that can be slaves or unique DOFs */
    smOtherJoint         /* unknown type */
 } smJointType;
 
@@ -302,12 +311,11 @@ typedef struct
    smBasePosition basePosition;         /* which base position to use in HTR file */
    smAxes autoAlign;                    /* auto-align option when processing init pose */
    smAxisFrame axisFrame;               /* in which frame are rotation axes specified */
-   smBoolean footConstraintActive;      /* is the foot-floor constraint active? */
-   double footConstraintThreshold;      /* what is the threshold for the foot-floor constraint */
    smBoolean orientBodyToFrame;         /* do you want to orient the body before solving? */
    smBoolean jointLimitsOn;             /* do you want to enforce joint limits? */
    double globalScale;                  /* global scale factor that was used to make this model */
    smBoolean loopsOn;                   /* do you want to enforce closed loops */
+   smBoolean fgContactOn;              /* do you want to turn on foot_ground contact? */
 } smOptions;
 
 typedef struct
@@ -397,7 +405,7 @@ typedef struct
 {
    int type;            /* type not currently used */
    int master;          /* index of the joint which controls this one */
-   double ratio;        /* percentage that this slave gets, % = ratio / total */
+   double ratio[3];     /* ratio slave gets from master DOFs (if 0, master DOF not part of slave) percentage that this slave gets, % = ratio / total */
    double axis[3];      /* the axis of the hinge */
 } smSlaveHingeJoint;
 
@@ -405,7 +413,7 @@ typedef struct
 {
    int type;            /* type not currently used */
    int master;          /* index of the joint which controls this one */
-   double ratio[2];     /* percentages that this slave gets, % = ratio / total */
+   double ratio[3];     /* ratio slave gets from master DOFs (if 0, master DOF not part of slave) percentages that this slave gets, % = ratio / total */
    double axis[2][3];   /* the two rotation axes */
 } smSlaveUniversalJoint;
 
@@ -413,7 +421,7 @@ typedef struct
 {
    int type;            /* type not currently used */
    int master;          /* index of the joint which controls this one */
-   double ratio;        /* percentage that this slave gets, % = ratio / total */
+   double ratio[3];     /* ratio slave gets from master DOFs (if 0, master DOF not part of slave) percentage that this slave gets, % = ratio / total */
    double axis[3];      /* the translation axis */
 } smSlaveSliderJoint;
 
@@ -421,8 +429,18 @@ typedef struct
 {
    int type;            /* type not currently used */
    int master;          /* index of the joint which controls this one */
-   double ratio[3];     /* percentages that this slave gets, % = ratio / total */
+   double ratio[3];     /* ratio slave gets from master DOFs (if 0, master DOF not part of slave) percentages that this slave gets, % = ratio / total */
 } smSlaveSphericalJoint;
+
+typedef struct
+{
+   int type;            /* type not currently used */
+   int master;          /* index of the joint which controls this one */
+   double ratio[3];     /* ratio slave gets from master DOFs (if 0, master DOF not part of slave) percentages that this slave gets, % = ratio / total */
+   double range[3][2];          /* range limits for the three dofs */
+   double stiffness[3][2];      /* stiffness to use at the range limits */
+//   double axis[3][3];           /* the three rotation axes */
+} smMixedJoint;
 
 typedef struct
 {
@@ -451,6 +469,7 @@ typedef union
    smSlaveSphericalJoint slaveSpherical;
    smPointJoint point;
    smTranslationalJoint translational;
+   smMixedJoint mixed;
 } smJointUnion;
 
 typedef struct
@@ -469,7 +488,7 @@ typedef struct
 
 typedef struct
 {
-   int type;               /* type not currently used */
+   smFunctionType type;    /* step, linear, natural cubic, GCV */
    int userNum;            /* client-defined number of this function */
    int numPoints;          /* number of control points */
    double *x;              /* array of X coordinates of control points */
@@ -561,22 +580,22 @@ typedef struct
    smPoint3 htr_y;               /* direction of Y axis of HTR segment */
 } smSegment;
 
-#if FG_CONTACT
 typedef struct
 {
-   char *name;
-   int segmentIndex;
-   int markerIndex;
-   int associatedMarkerIndex;
-   int associatedMarkerTRCIndex;
-   double threshold;
-   smPoint3 staticPos;
+   char *name;                   /* the name of the FG marker */
+   int segmentIndex;             /* the index of the SolverModel segment it is attached to */
+   int markerIndex;              /* the index of the SolverModel marker */
+   int associatedMarkerIndex;    /* the index of its associated marker (that has the same name without the fg. */
+   int associatedMarkerTRCIndex; /* the TRC index of the associated marker */
+   double threshold;             /* the threshold for turning on the contact */
+   smPoint3 staticPos;           /* the original position of the marker */
 } fgMarkerStruct;
-#endif
 
 typedef struct
 {
-   int type;                                     /* type not currently used */
+   int type;                                     /* type not currently used */ 
+   smOwner owner;                                /* which program created the model: SIMM, EVaRT, Solver or Other? */
+   smSource source;                              /* what format is the model derived from SIMM joint file or MOD file? */
    char *name;                                   /* name of this model */
    int numSegments;                              /* number of segments in this model */
    smSegment *segmentList;                       /* list of segments in this model */
@@ -607,11 +626,8 @@ typedef struct
    double loopTolerance;                         /* used to check status of loops */
    double loopWeight;                            /* used to calculate loop residuals when solving */
    smBoolean solveLoops;                         /* to turn loop solving on and off */
-#if FG_CONTACT
-   int numFGMarkers;
-   fgMarkerStruct *FGMarkerList;
-   smBoolean fg_contact;
-#endif
+   int numFGMarkers;                             /* number of foot ground contact markers in the model */
+   fgMarkerStruct *FGMarkerList;                 /* list of foot ground contact markers */
 } smModel;
 
 typedef struct
@@ -687,22 +703,18 @@ typedef struct
    int iterations;            /* number of iterations needed to solve frame */
    int totalCalls;            /* total number of calls to calculateResiduals */
    int inputFrameNum;         /* actual frame number */
-   int numQs;
+   int numQs;                 /* number of Qs to solve */
    double *qerr;              /* Q error propagation for frame */
 } smSolveInfoStruct;
 
 typedef struct
 {
-   int framesToSolve;
    int firstFrameToSolve;     /* index of the first frame to solve */
    int lastFrameToSolve;      /* index of the last frame to solve */
    int frameIncrement;        /* amount to increment when solving */
    smBoolean cropEnds;        /* crop ends of TRC file when not all markers present? */
    smBoolean markerNamesFromDescriptions; /* used only for C3D files */
-#if FG_CONTACT
-   smAxes gravity; //added March 26, 2002
-#endif
-   smBoolean fg_contact;
+   smBoolean fgContactOn;      /* is foot ground contact on or off */ 
 } smTRCOptions;
 
 
@@ -713,9 +725,32 @@ typedef struct
    smPoint3 axis;
 } smTransform;
 
+typedef enum {
+   smUnknownEventType = 0,
+   smHeelStrikeEvent,
+   smToeOffEvent
+} smEventType;
+
+typedef enum {
+   smUnknownSegmentEvent = 0,
+   smRightFootEvent,
+   smLeftFootEvent,
+   smOtherSegmentEvent
+} smEventSegment;
+
+typedef enum {
+   smUnknownEvent = 0,
+   smUserEvent,
+   smForceEvent,
+   smMarkerEvent
+} smEventSource;
+
 typedef struct {
    char* name;
-   double time;
+   double xCoord;
+   smEventType type;
+   smEventSegment segment;
+   smEventSource source;
    smBoolean displayFlag;
 } smMotionEvent;
 
@@ -728,7 +763,7 @@ typedef struct {
    int baselineRange[2];
    double calibrationMatrix[64];
    double transformMatrix[4][4];  // force plate reference frame w.r.t. lab frame
-   int channels[8];
+   int channels[9];
 } smForcePlateSpec;
 
 typedef struct {
@@ -771,6 +806,8 @@ typedef struct {
    int numRows;
    smAnalogChannel *channelList;
    double* data;
+   int numForceEvents;
+   smMotionEvent* forceEvents;
 } smAnalogStruct;
 
 typedef struct {
@@ -804,7 +841,8 @@ typedef struct {
    smMotionStruct* motionData;
    smAnalogStruct* analogData;
    smSubjectStruct* subjectData;
-   int numEvents;
+   int numHeaderEvents;           // number of events specified in the header
+   int numEvents;                 // total number of events specified
    smMotionEvent* eventList;
    int numForcePlates;
    smForcePlateSpec* forcePlateList;

@@ -5,11 +5,10 @@
 // INCLUDES
 //=============================================================================
 #include "WrapCylinderObst.h"
-#include <OpenSim/Simulation/Model/MusclePoint.h>
-#include <OpenSim/Simulation/Wrap/MuscleWrap.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
@@ -39,7 +38,7 @@ static bool circle_wrap_pts_inited = false;
 * Default constructor.
 */
 WrapCylinderObst::WrapCylinderObst() :
-AbstractWrapObject(),
+WrapObject(),
 _radius(_radiusProp.getValueDbl()),
 _wrapDirectionName(_wrapDirectionNameProp.getValueStr()),
 _length(_lengthProp.getValueDbl())
@@ -63,7 +62,7 @@ WrapCylinderObst::~WrapCylinderObst()
 * @param aWrapCylinderObst WrapCylinderObst to be copied.
 */
 WrapCylinderObst::WrapCylinderObst(const WrapCylinderObst& aWrapCylinderObst) :
-AbstractWrapObject(aWrapCylinderObst),
+WrapObject(aWrapCylinderObst),
 _radius(_radiusProp.getValueDbl()),
 _wrapDirectionName(_wrapDirectionNameProp.getValueStr()),
 _length(_lengthProp.getValueDbl())
@@ -117,7 +116,7 @@ void WrapCylinderObst::initCircleWrapPts()
 void WrapCylinderObst::setupProperties()
 {
 	// BASE CLASS
-	AbstractWrapObject::setupProperties();
+	WrapObject::setupProperties();
 
 	_radiusProp.setName("radius");
 	_radiusProp.setValue(-1.0);
@@ -137,12 +136,12 @@ void WrapCylinderObst::setupProperties()
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
 *
-* @param aEngine dynamics engine containing this SimmBody.
+* @param aModel pointer to OpenSim model.
 */
-void WrapCylinderObst::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
+void WrapCylinderObst::setup(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	AbstractWrapObject::setup(aEngine, aBody);
+	WrapObject::setup(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 	if (_radius < 0.0)
@@ -179,7 +178,7 @@ void WrapCylinderObst::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBod
 void WrapCylinderObst::copyData(const WrapCylinderObst& aWrapCylinderObst)
 {
 	// BASE CLASS
-	AbstractWrapObject::copyData(aWrapCylinderObst);
+	WrapObject::copyData(aWrapCylinderObst);
 
 	_radius = aWrapCylinderObst._radius;
 	_length = aWrapCylinderObst._length;
@@ -226,7 +225,7 @@ string WrapCylinderObst::getDimensionsString() const
 WrapCylinderObst& WrapCylinderObst::operator=(const WrapCylinderObst& aWrapCylinderObst)
 {
 	// BASE CLASS
-	AbstractWrapObject::operator=(aWrapCylinderObst);
+	WrapObject::operator=(aWrapCylinderObst);
 
 	return(*this);
 }
@@ -240,13 +239,13 @@ WrapCylinderObst& WrapCylinderObst::operator=(const WrapCylinderObst& aWrapCylin
  *
  * @param aPointP One end of the line segment, already expressed in cylinder frame
  * @param aPointS The other end of the line segment, already expressed in cylinder frame
- * @param aMuscleWrap An object holding the parameters for this line/cylinder pairing
+ * @param aPathWrap An object holding the parameters for this line/cylinder pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapCylinderObst::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-						const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+						const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	SimTK::Vec3& aPointP = aPoint1;		double R=0.8*( _wrapDirection==righthand ? _radius : -_radius );
 	SimTK::Vec3& aPointS = aPoint2;		double Qx,Qy,Qz, Tx,Ty,Tz;

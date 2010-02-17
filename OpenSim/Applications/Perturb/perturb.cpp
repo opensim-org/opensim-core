@@ -52,10 +52,8 @@ int main(int argc,char **argv)
 	try {
 	//----------------------
 
-#ifndef STATIC_OSIM_LIBS
 	//LoadOpenSimLibrary("osimSdfastEngine");
-	LoadOpenSimLibrary("osimSimbodyEngine");
-#endif
+	//LoadOpenSimLibrary("osimSimbodyEngine");
 
 	// PARSE COMMAND LINE
 	string option = "";
@@ -120,15 +118,10 @@ int main(int argc,char **argv)
 	PerturbationTool perturb(setupFileName);
 
 	// PRINT MODEL INFORMATION
-	Model *model = perturb.getModel();
-	if(model==NULL) {
-		cout<<"\nperturb:  ERROR- failed to load model.\n";
-		exit(-1);
-	}
+	Model& model = perturb.getModel();
 	cout<<"-----------------------------------------------------------------------\n";
 	cout<<"Loaded library\n";
 	cout<<"-----------------------------------------------------------------------\n";
-	model->printDetailedInfo(cout);
 	cout<<"-----------------------------------------------------------------------\n\n";
 
 	// RUN

@@ -1,8 +1,8 @@
 SUBDIRS(doc)
 #-----------------------------------------------------------------------------
-IF(WIN32)
+IF(INSTALL_DOC)
 INSTALL(DIRECTORY examples DESTINATION  sdk  PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY templates DESTINATION sdk PATTERN ".svn" EXCLUDE)
-ENDIF(WIN32)
+ENDIF(INSTALL_DOC)
 # Create a plugins directory so that users know where to place theirs.
-INSTALL_FILES(/plugins/ FILES "readme.txt")
+INSTALL_FILES(/sdk/ FILES "readme.txt")

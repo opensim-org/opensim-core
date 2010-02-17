@@ -32,16 +32,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include "PassiveJointTorque.h"
-#include "Muscle.h"
+#include <OpenSim/Simulation/Model/Muscle.h> 
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
-#include <OpenSim/Simulation/Model/SpeedSet.h>
-
-
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -63,7 +58,7 @@ PassiveJointTorque::~PassiveJointTorque()
  */
 PassiveJointTorque::
 PassiveJointTorque(string aQName) :
-	GeneralizedForce(aQName),
+	CoordinateActuator(aQName),
 	_slope1(_propSlope1.getValueDbl()),
 	_limit1(_propLimit1.getValueDbl()),
 	_slope2(_propSlope2.getValueDbl()),
@@ -81,7 +76,7 @@ PassiveJointTorque(string aQName) :
  */
 PassiveJointTorque::
 PassiveJointTorque(const PassiveJointTorque &aActuator) :
-	GeneralizedForce(aActuator),
+	CoordinateActuator(aActuator),
 	_slope1(_propSlope1.getValueDbl()),
 	_limit1(_propLimit1.getValueDbl()),
 	_slope2(_propSlope2.getValueDbl()),
@@ -102,7 +97,7 @@ PassiveJointTorque(const PassiveJointTorque &aActuator) :
 Object* PassiveJointTorque::
 copy() const
 {
-	AbstractActuator *act = new PassiveJointTorque(*this);
+	Actuator *act = new PassiveJointTorque(*this);
 	return(act);
 }
 
@@ -193,7 +188,7 @@ PassiveJointTorque& PassiveJointTorque::
 operator=(const PassiveJointTorque &aActuator)
 {
 	// BASE CLASS
-	GeneralizedForce::operator =(aActuator);
+	CoordinateActuator::operator =(aActuator);
 
 	// DATA
 	copyData(aActuator);
@@ -295,26 +290,22 @@ getDamping() const
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-void PassiveJointTorque::
-computeActuation()
+double PassiveJointTorque::
+computeActuation( const SimTK::State& s)
 {
-	if(_model==NULL) return;
+	if(_model==NULL) return 0;
 
 	// SPEED
-	if(_q) {
-		AbstractSpeed *speed =  _model->getDynamicsEngine().getSpeedSet()->get(_q->getName());
-		if (speed) {
-			_speed = speed->getValue();
-		}
-	}
-
-	// FORCE
-	double newq1 = _q->getValue() - _limit1 * SimTK_DEGREE_TO_RADIAN;
-	double newq2 = _q->getValue() - _limit2 * SimTK_DEGREE_TO_RADIAN;
-	double dampingForce = -_damping * _speed;
-	double elasticForce = _offset - exp(_slope1 * newq1) + exp(-_slope2 * newq2);
-	double totalForce = dampingForce + elasticForce;
-	setForce(totalForce);
+	if(_coord) {
+		// FORCE
+		double newq1 = _coord->getValue(s) - _limit1 * SimTK_DEGREE_TO_RADIAN;
+		double newq2 = _coord->getValue(s) - _limit2 * SimTK_DEGREE_TO_RADIAN;
+		double dampingForce = -_damping * _coord->getSpeedValue(s);
+		double elasticForce = _offset - exp(_slope1 * newq1) + exp(-_slope2 * newq2);
+		double totalForce = dampingForce + elasticForce;
+		return( totalForce);
+	} else 
+        return 0;
 }
 
 

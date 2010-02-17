@@ -27,12 +27,12 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "osimToolsDLL.h"
-#include <OpenSim/Common/rdOptimizationTarget.h>
+#include <OpenSim/Common/OptimizationTarget.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractBody.h>
-#include <OpenSim/Simulation/Model/AbstractMarker.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/Model/Marker.h>
 
 namespace OpenSim {
 
@@ -56,19 +56,24 @@ class IKTaskSet;
  * @version 1.0
  */
 
-class OSIMTOOLS_API IKTarget : public rdOptimizationTarget
+class OSIMTOOLS_API IKTarget : public OptimizationTarget
 {
 //==============================================================================
 // DATA
 //==============================================================================
+public:
+    	// Amount of perturbation used for derivative computation this should be an array
+	static const double _perturbation;
+
 private:
 	Model& _model;
+
+	SimTK::State* _currentState;
 
 	// Task set contains weights and other properties affecting performance criterion
 	IKTaskSet& _ikTaskSet;
 
-	// Amount of perturbation used for derivative computation this should be an array
-	static const double _perturbation;
+
 
 	// internal datastructure used to map data columns to states
 	Storage&	_experimentalDataStorage;
@@ -79,8 +84,8 @@ private:
 	// Marker Map information
 	typedef struct
 	{
-		const AbstractMarker* marker;
-		const AbstractBody* body;
+		const Marker* marker;
+		const Body* body;
 		int experimentalColumn; // always >= 0
 		double weight; // always nonzero
 		// set each frame before optimization
@@ -93,7 +98,7 @@ private:
 	// Coordinate Map information
 	typedef struct
 	{
-		AbstractCoordinate* coord;
+		Coordinate* coord;
 		bool prescribed; // if prescribed, we don't solve for it
 		int experimentalColumn; // if task was from _file then this will be >=0
 		double constantExperimentalValue; // if task was not from_file then this fixed value will be set
@@ -123,23 +128,23 @@ private:
 //==============================================================================
 private:
 	void buildMarkerMap(const Array<std::string>& aNameArray);
-	void buildCoordinateMap(const Array<std::string>& aNameArray);
+	void buildCoordinateMap(const SimTK::State& s, const Array<std::string>& aNameArray);
 	void setErrorReportingQuantities(const double& aMarkerError, const std::string& aMarkerName,
 									const double& aCoordinateError, const std::string& aCoordinateName) const;
-	void IKTarget::createJacobian(const SimTK::Vector &jointQs, SimTK::Matrix &J);
-	void IKTarget::createPseudoInverseJacobian(const SimTK::Matrix &J, SimTK::Matrix &Jinv);
+	void createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, SimTK::Matrix &J);
+	void createPseudoInverseJacobian(const SimTK::Matrix &J, SimTK::Matrix &Jinv);
 public:
 	//---------------------------------------------------------------------------
 	// CONSTRUCTION
 	//---------------------------------------------------------------------------
-	IKTarget(Model &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage);
+	IKTarget(const SimTK::State& s, Model &aModel, IKTaskSet &aIKTaskSet, Storage& aExperimentalDataStorage);
 
 	virtual ~IKTarget(void);
 
 	//---------------------------------------------------------------------------
 	// UTILITIES
 	//---------------------------------------------------------------------------
-	void prepareToSolve(int aIndex, double* qGuess);
+	void prepareToSolve(SimTK::State& s, int aIndex, double* qGuess);
 	void printTasks() const;
 	void printPerformance(double *x);
 	void interrupt() { _interrupted = true; }
@@ -148,20 +153,22 @@ public:
 	//---------------------------------------------------------------------------
 	void getComputedMarkerLocations(Array<double> &aMarkerLocations) const;
 	void getExperimentalMarkerLocations(Array<double> &aMarkerLocations) const;
-	void getPrescribedCoordinateValues(Array<double>& aQValues) const;
+	void getPrescribedCoordinateValues(const SimTK::State& s, Array<double>& aQValues) const;
 	void getUnprescribedCoordinateNames(Array<std::string>& aNameArray);
 	void getPrescribedCoordinateNames(Array<std::string>& aNameArray);
 	void getOutputMarkerNames(Array<std::string>& aNameArray);
 	Model& getModel() { return _model; };
 	int getNumUnprescribedCoordinates() { return _unprescribedQs.getSize(); }
 	int getNumOutputMarkers() { return _markers.getSize(); }
-	const AbstractCoordinate *getUnprescribedCoordinate(int i) const { return _unprescribedQs.get(i)->coord; }
+	const Coordinate *getUnprescribedCoordinate(int i) const { return _unprescribedQs.get(i)->coord; }
+	void setCurrentState( SimTK::State* state) { _currentState = state; }
+	const SimTK::State* getCurrentState() const { return _currentState; }
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------
-	int objectiveFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Real &f) const;
+	int objectiveFunc( const SimTK::Vector &parameters, const bool new_parameters, SimTK::Real &f) const;
 	int gradientFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK::Vector &gradient) const;
-	int iterativeOptimization(SimTK::Vector &results);
+	int iterativeOptimization(SimTK::State& s, SimTK::Vector &results);
 	//--------------------------------------------------------------------------
 	// DEBUG & REPORTING SUPPORT FOR GUI
 	//--------------------------------------------------------------------------

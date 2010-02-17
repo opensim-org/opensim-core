@@ -45,6 +45,8 @@ XERCES_CPP_NAMESPACE_USE
 //using namespace std;	// Ayman:per .NET 2003
 
 
+
+namespace OpenSim { 
 //=============================================================================
 //=============================================================================
 /**
@@ -58,8 +60,6 @@ XERCES_CPP_NAMESPACE_USE
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API XMLDocument {
 
 //=============================================================================
@@ -130,6 +130,8 @@ private:
 //  Local classes
 // ---------------------------------------------------------------------------
 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
 class DOMPrintFormatTarget : public XMLFormatTarget
 {
 	std::ostream *_out;
@@ -162,6 +164,7 @@ private:
     DOMPrintFormatTarget(const DOMPrintFormatTarget& other);
     void operator=(const DOMPrintFormatTarget& rhs);
 };
+/// @endcond
 
 
 #endif // __XMLDocument_h__

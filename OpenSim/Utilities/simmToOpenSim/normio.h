@@ -16,7 +16,9 @@ ReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_n
 ReturnCode read_binary_file(PolyhedronStruct* ph, char filename[]);
 ReturnCode read_ascii_file(PolyhedronStruct* ph, char filename[]);
 ReturnCode read_old_ascii_file(PolyhedronStruct* ph, char filename[]);
-ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[]);
+ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm);
+ReturnCode read_stl_ascii_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm);
+ReturnCode read_stl_binary_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm);
 ReturnCode write_binary_file(char filename[], BoundingCube* bc,
 		       PolyhedronStruct polyhedron[], int num_polyhedra,
 		       int vertex_offset);

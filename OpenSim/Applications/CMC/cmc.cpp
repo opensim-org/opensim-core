@@ -51,11 +51,9 @@ int main(int argc,char **argv)
 	//----------------------
 	try {
 	//----------------------
-
-#ifndef STATIC_OSIM_LIBS
+	
 	//LoadOpenSimLibrary("osimSdfastEngine");
-	LoadOpenSimLibrary("osimSimbodyEngine");
-#endif
+	//LoadOpenSimLibrary("osimSimbodyEngine");
 
 	// PARSE COMMAND LINE
 	int i;
@@ -121,15 +119,11 @@ int main(int argc,char **argv)
 	CMCTool cmcgait(setupFileName);
 
 	// PRINT MODEL INFORMATION
-	Model *model = cmcgait.getModel();
-	if(model==NULL) {
-		cout<<"\n"<<argv[0]<<":  ERROR- failed to load model.\n";
-		exit(-1);
-	}
+	Model& model = cmcgait.getModel();
 	cout<<"-----------------------------------------------------------------------\n";
 	cout<<"Loaded library\n";
 	cout<<"-----------------------------------------------------------------------\n";
-	model->printBasicInfo(cout);
+	model.printBasicInfo(cout);
 	cout<<"-----------------------------------------------------------------------\n\n";
 
 

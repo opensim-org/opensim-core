@@ -9,10 +9,10 @@
 			<point_B>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </point_B>
 			<optimal_force>    1000.00000000000000000000 </optimal_force>
 		</Force>
-		<GeneralizedForce name="default">
+		<CoordinateAcuator name="default">
 			<coordinate> Unassigned </coordinate>
 			<optimal_force>    1000.00000000000000000000 </optimal_force>
-		</GeneralizedForce>
+		</CoordinateAcuator>
 		<ControlLinear name="default">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
@@ -191,7 +191,7 @@
 		</rdCMC_Joint>
 	</defaults>
 	<objects>
-		<ControlLinear name="glut_med1_r.excitation">
+		<ControlLinear name="glut_med1_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -353,7 +353,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_med2_r.excitation">
+		<ControlLinear name="glut_med2_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -515,7 +515,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_med3_r.excitation">
+		<ControlLinear name="glut_med3_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -677,7 +677,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="bifemlh_r.excitation">
+		<ControlLinear name="bifemlh_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -839,7 +839,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="bifemsh_r.excitation">
+		<ControlLinear name="bifemsh_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -1001,7 +1001,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="sar_r.excitation">
+		<ControlLinear name="sar_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -1163,7 +1163,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="add_mag2_r.excitation">
+		<ControlLinear name="add_mag2_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -1325,7 +1325,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="tfl_r.excitation">
+		<ControlLinear name="tfl_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -1487,7 +1487,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="pect_r.excitation">
+		<ControlLinear name="pect_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -1649,7 +1649,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="grac_r.excitation">
+		<ControlLinear name="grac_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -1811,7 +1811,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_max1_r.excitation">
+		<ControlLinear name="glut_max1_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -1973,7 +1973,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_max2_r.excitation">
+		<ControlLinear name="glut_max2_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -2135,7 +2135,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_max3_r.excitation">
+		<ControlLinear name="glut_max3_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -2297,7 +2297,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="iliacus_r.excitation">
+		<ControlLinear name="iliacus_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -2459,7 +2459,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="psoas_r.excitation">
+		<ControlLinear name="psoas_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -2621,7 +2621,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="quad_fem_r.excitation">
+		<ControlLinear name="quad_fem_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -2783,7 +2783,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="gem_r.excitation">
+		<ControlLinear name="gem_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -2945,7 +2945,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="peri_r.excitation">
+		<ControlLinear name="peri_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -3107,7 +3107,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="rect_fem_r.excitation">
+		<ControlLinear name="rect_fem_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -3269,7 +3269,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="vas_int_r.excitation">
+		<ControlLinear name="vas_int_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -3431,7 +3431,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="med_gas_r.excitation">
+		<ControlLinear name="med_gas_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -3593,7 +3593,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="soleus_r.excitation">
+		<ControlLinear name="soleus_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -3755,7 +3755,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="tib_post_r.excitation">
+		<ControlLinear name="tib_post_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -3917,7 +3917,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="tib_ant_r.excitation">
+		<ControlLinear name="tib_ant_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -4079,7 +4079,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_med1_l.excitation">
+		<ControlLinear name="glut_med1_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -4241,7 +4241,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_med2_l.excitation">
+		<ControlLinear name="glut_med2_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -4403,7 +4403,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_med3_l.excitation">
+		<ControlLinear name="glut_med3_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -4565,7 +4565,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="bifemlh_l.excitation">
+		<ControlLinear name="bifemlh_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -4727,7 +4727,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="bifemsh_l.excitation">
+		<ControlLinear name="bifemsh_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -4889,7 +4889,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="sar_l.excitation">
+		<ControlLinear name="sar_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -5051,7 +5051,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="add_mag2_l.excitation">
+		<ControlLinear name="add_mag2_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -5213,7 +5213,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="tfl_l.excitation">
+		<ControlLinear name="tfl_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -5375,7 +5375,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="pect_l.excitation">
+		<ControlLinear name="pect_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -5537,7 +5537,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="grac_l.excitation">
+		<ControlLinear name="grac_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -5699,7 +5699,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_max1_l.excitation">
+		<ControlLinear name="glut_max1_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -5861,7 +5861,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_max2_l.excitation">
+		<ControlLinear name="glut_max2_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -6023,7 +6023,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="glut_max3_l.excitation">
+		<ControlLinear name="glut_max3_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -6185,7 +6185,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="iliacus_l.excitation">
+		<ControlLinear name="iliacus_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -6347,7 +6347,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="psoas_l.excitation">
+		<ControlLinear name="psoas_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -6509,7 +6509,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="quad_fem_l.excitation">
+		<ControlLinear name="quad_fem_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -6671,7 +6671,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="gem_l.excitation">
+		<ControlLinear name="gem_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -6833,7 +6833,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="peri_l.excitation">
+		<ControlLinear name="peri_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -6995,7 +6995,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="rect_fem_l.excitation">
+		<ControlLinear name="rect_fem_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -7157,7 +7157,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="vas_int_l.excitation">
+		<ControlLinear name="vas_int_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -7319,7 +7319,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="med_gas_l.excitation">
+		<ControlLinear name="med_gas_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -7481,7 +7481,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="soleus_l.excitation">
+		<ControlLinear name="soleus_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -7643,7 +7643,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="tib_post_l.excitation">
+		<ControlLinear name="tib_post_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -7805,7 +7805,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="tib_ant_l.excitation">
+		<ControlLinear name="tib_ant_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -7967,7 +7967,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="ercspn_r.excitation">
+		<ControlLinear name="ercspn_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -8129,7 +8129,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="ercspn_l.excitation">
+		<ControlLinear name="ercspn_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -8291,7 +8291,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="intobl_r.excitation">
+		<ControlLinear name="intobl_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -8453,7 +8453,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="intobl_l.excitation">
+		<ControlLinear name="intobl_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -8615,7 +8615,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="extobl_r.excitation">
+		<ControlLinear name="extobl_r">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -8777,7 +8777,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="extobl_l.excitation">
+		<ControlLinear name="extobl_l">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>       0.02000000000000000000 </default_min>
@@ -8939,13 +8939,13 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="FX.excitation">
+		<ControlLinear name="FX">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>
 			<default_max>       1.00000000000000000000 </default_max>
 			<filter_on> false </filter_on>
-			<use_steps> false </use_steps>
+			<use_steps> true </use_steps>
 			<x_nodes>
 				<ControlLinearNode name="">
 					<t>       0.83000000000000007000 </t>
@@ -9101,13 +9101,13 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="FY.excitation">
+		<ControlLinear name="FY">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>
 			<default_max>       1.00000000000000000000 </default_max>
 			<filter_on> false </filter_on>
-			<use_steps> false </use_steps>
+			<use_steps> true </use_steps>
 			<x_nodes>
 				<ControlLinearNode name="">
 					<t>       0.83000000000000007000 </t>
@@ -9263,13 +9263,13 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="FZ.excitation">
+		<ControlLinear name="FZ">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>
 			<default_max>       1.00000000000000000000 </default_max>
 			<filter_on> false </filter_on>
-			<use_steps> false </use_steps>
+			<use_steps> true </use_steps>
 			<x_nodes>
 				<ControlLinearNode name="">
 					<t>       0.83000000000000007000 </t>
@@ -9425,13 +9425,13 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="MX.excitation">
+		<ControlLinear name="MX">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>
 			<default_max>       1.00000000000000000000 </default_max>
 			<filter_on> false </filter_on>
-			<use_steps> false </use_steps>
+			<use_steps> true </use_steps>
 			<x_nodes>
 				<ControlLinearNode name="">
 					<t>       0.83000000000000007000 </t>
@@ -9587,13 +9587,13 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="MY.excitation">
+		<ControlLinear name="MY">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>
 			<default_max>       1.00000000000000000000 </default_max>
 			<filter_on> false </filter_on>
-			<use_steps> false </use_steps>
+			<use_steps> true </use_steps>
 			<x_nodes>
 				<ControlLinearNode name="">
 					<t>       0.83000000000000007000 </t>
@@ -9749,13 +9749,13 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="MZ.excitation">
+		<ControlLinear name="MZ">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>
 			<default_max>       1.00000000000000000000 </default_max>
 			<filter_on> false </filter_on>
-			<use_steps> false </use_steps>
+			<use_steps> true </use_steps>
 			<x_nodes>
 				<ControlLinearNode name="">
 					<t>       0.83000000000000007000 </t>
@@ -9911,7 +9911,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="ankle_angle_r_reserve.excitation">
+		<ControlLinear name="ankle_angle_r_reserve">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>   -1000.00000000000000000000 </default_min>
@@ -10073,7 +10073,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="subtalar_angle_r_reserve.excitation">
+		<ControlLinear name="subtalar_angle_r_reserve">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>   -1000.00000000000000000000 </default_min>
@@ -10235,7 +10235,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="mtp_angle_r_reserve.excitation">
+		<ControlLinear name="mtp_angle_r_reserve">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>
@@ -10397,7 +10397,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="ankle_angle_l_reserve.excitation">
+		<ControlLinear name="ankle_angle_l_reserve">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>   -1000.00000000000000000000 </default_min>
@@ -10559,7 +10559,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="subtalar_angle_l_reserve.excitation">
+		<ControlLinear name="subtalar_angle_l_reserve">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>   -1000.00000000000000000000 </default_min>
@@ -10721,7 +10721,7 @@
 			<kp>     100.00000000000000000000 </kp>
 			<kv>      20.00000000000000000000 </kv>
 		</ControlLinear>
-		<ControlLinear name="mtp_angle_l_reserve.excitation">
+		<ControlLinear name="mtp_angle_l_reserve">
 			<is_model_control> true </is_model_control>
 			<extrapolate> true </extrapolate>
 			<default_min>      -1.00000000000000000000 </default_min>

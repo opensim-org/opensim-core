@@ -34,11 +34,11 @@
 // INCLUDES
 #include "Function.h"
 #include "PropertyDbl.h"
-#include "rdMath.h"
 
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vector;
 
 
 //=============================================================================
@@ -55,18 +55,15 @@ using namespace std;
  */
 Function::~Function()
 {
+    if (_function != NULL)
+        delete _function;
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
 Function::Function() :
-	_minX(_propMinX.getValueDbl()),
-	_maxX(_propMaxX.getValueDbl()),
-	_minY(_propMinY.getValueDbl()),
-	_maxY(_propMaxY.getValueDbl()),
-	_minZ(_propMinZ.getValueDbl()),
-	_maxZ(_propMaxZ.getValueDbl())
+	_function(NULL)
 {
 	setNull();
 }
@@ -78,17 +75,8 @@ Function::Function() :
  */
 Function::Function(const Function &aFunction) :
 	Object(aFunction),
-	_minX(_propMinX.getValueDbl()),
-	_maxX(_propMaxX.getValueDbl()),
-	_minY(_propMinY.getValueDbl()),
-	_maxY(_propMaxY.getValueDbl()),
-	_minZ(_propMinZ.getValueDbl()),
-	_maxZ(_propMaxZ.getValueDbl())
+	_function(NULL)
 {
-	setupProperties();
-
-	// ASSIGN
-	setEqual(aFunction);
 }
 
 
@@ -103,63 +91,6 @@ void Function::
 setNull()
 {
 	setType("Function");
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Set up the serialized member variables.  This involves both generating
- * the properties and connecting them to the local pointers used to access
- * the serialized member variables.
- */
-void Function::
-setupProperties()
-{
-	// X
-	_propMinX.setName("min_x");
-	_propMinX.setValue(rdMath::MINUS_INFINITY);
-	_propertySet.append( &_propMinX );
-
-	_propMaxX.setName("max_x");
-	_propMaxX.setValue(rdMath::PLUS_INFINITY);
-	_propertySet.append( &_propMaxX );
-
-	// Y
-	_propMinY.setName("min_y");
-	_propMinY.setValue(rdMath::MINUS_INFINITY);
-	_propertySet.append( &_propMinY );
-
-	_propMaxY.setName("max_y");
-	_propMaxY.setValue(rdMath::PLUS_INFINITY);
-	_propertySet.append( &_propMaxY );
-
-
-	// Z
-	_propMinZ.setName("min_z");
-	_propMinZ.setValue(rdMath::MINUS_INFINITY);
-	_propertySet.append( &_propMinZ );
-
-	_propMaxZ.setName("max_z");
-	_propMaxZ.setValue(rdMath::PLUS_INFINITY);
-	_propertySet.append( &_propMaxZ );
-
-}
-
-//_____________________________________________________________________________
-/**
- * Set all member variables equal to the members of another object.
- * Note that this method is private.  It is only meant for copying the data
- * members defined in this class.  It does not, for example, make any changes
- * to data members of base classes.
- */
-void Function::
-setEqual(const Function &aFunction)
-{
-	setMinX(aFunction.getMinX());
-	setMinY(aFunction.getMinY());
-	setMinZ(aFunction.getMinZ());
-	setMaxX(aFunction.getMaxX());
-	setMaxY(aFunction.getMaxY());
-	setMaxZ(aFunction.getMaxZ());
 }
 
 //=============================================================================
@@ -177,232 +108,13 @@ operator=(const Function &aFunction)
 	// BASE CLASS
 	Object::operator=(aFunction);
 
-	// DATA
-	setEqual(aFunction);
-
 	return(*this);
-}
-
-
-//=============================================================================
-// SET AND GET
-//=============================================================================
-//-----------------------------------------------------------------------------
-// MIN AND MAX X
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the minimum x independent variable.
- *
- * @param aMinX Minimum x.
- */
-void Function::
-setMinX(double aMinX)
-{
-	_minX = aMinX;
-}
-//_____________________________________________________________________________
-/**
- * Get the minimum x independent variable.
- *
- * @return Minimum x.
- */
-double Function::
-getMinX() const
-{
-	return(_minX);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the maximum x independent variable.
- *
- * @param aMaxX Maximum x.
- */
-void Function::
-setMaxX(double aMaxX)
-{
-	_maxX = aMaxX;
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum x independent variable.
- *
- * @return Maximum x.
- */
-double Function::
-getMaxX() const
-{
-	return(_maxX);
-}
-
-//-----------------------------------------------------------------------------
-// MIN AND MAX Y
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the minimum y independent variable.
- *
- * @param aMinY Minimum y.
- */
-void Function::
-setMinY(double aMinY)
-{
-	_minY = aMinY;
-}
-//_____________________________________________________________________________
-/**
- * Get the minimum y independent variable.
- *
- * @return Minimum y.
- */
-double Function::
-getMinY() const
-{
-	return(_minY);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the maximum y independent variable.
- *
- * @param aMaxY Maximum y.
- */
-void Function::
-setMaxY(double aMaxY)
-{
-	_maxY = aMaxY;
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum y independent variable.
- *
- * @return Maximum y.
- */
-double Function::
-getMaxY() const
-{
-	return(_maxY);
-}
-
-//-----------------------------------------------------------------------------
-// MIN AND MAX Z
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the minimum z independent variable.
- *
- * @param aMinZ Minimum z.
- */
-void Function::
-setMinZ(double aMinZ)
-{
-	_minZ = aMinZ;
-}
-//_____________________________________________________________________________
-/**
- * Get the minimum z independent variable.
- *
- * @return Minimum z.
- */
-double Function::
-getMinZ() const
-{
-	return(_minZ);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the maximum z independent variable.
- *
- * @param aMaxZ Maximum z.
- */
-void Function::
-setMaxZ(double aMaxZ)
-{
-	_maxZ = aMaxZ;
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum z independent variable.
- *
- * @return Maximum z.
- */
-double Function::
-getMaxZ() const
-{
-	return(_maxZ);
 }
 
 
 //=============================================================================
 // UTILITIES
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Determine if a function is approixmately linear over a region of interest.
- * The implementation in the base class is crude and does not guarrantee that
- * the function is linear thoughout the specified range. It uses a number of
- * numerical evaluations to determine whether or not the slopes with respect
- * to the independent variables are constant throughout the specified range
- * of the function.
- *
- * Derived classes should implement a more conclusive method if possible.
- *
- * @param aTol Tolerance for being a line.  If the slope of the function
- * is the same to within this tolerance throughout the specified range,
- * the function is considered a line.
- * @param aMinX Minimum of X.
- * @param aMaxX Maximum of X.
- * @param rMX Slope of the function wrt to X.
- * @param aMinY Minimum of Y.
- * @param aMaxY Maximum of Y.
- * @param rMY Slope of the function wrt to Y.
- * @param aMinZ Minimum of Z.
- * @param aMaxZ Maximum of Z.
- * @param rMZ Slope of the function wrt to Z.
- * If the function is not a linear wrt an indpendent variable, NAN is
- * returned for the corresponding slope.
- */
-void Function::isLinear(double aTol,
-								double aMinX,double aMaxX,double &rMX,
-								double aMinY,double aMaxY,double &rMY,
-								double aMinZ,double aMaxZ,double &rMZ)
-{
-	double xmid = 0.5*(aMinX - aMaxX);
-	double ymid = 0.5*(aMinY - aMaxY);
-	double zmid = 0.5*(aMinZ - aMaxZ);
-	double m1,m2,m3;
-
-	// X
-	m1 = evaluate(1,aMinX,ymid,zmid);
-	m2 = evaluate(1,xmid,ymid,zmid);
-	m3 = evaluate(1,aMaxX,ymid,zmid);
-	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
-		rMX = m2;
-	} else {
-		rMX = rdMath::getNAN();
-	}
-	// Y
-	m1 = evaluate(1,xmid,aMinY,zmid);
-	m2 = evaluate(1,xmid,ymid,zmid);
-	m3 = evaluate(1,xmid,aMaxY,zmid);
-	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
-		rMY = m2;
-	} else {
-		rMY = rdMath::getNAN();
-	}
-	// Z
-	m1 = evaluate(1,xmid,ymid,aMinZ);
-	m2 = evaluate(1,xmid,ymid,zmid);
-	m3 = evaluate(1,xmid,ymid,aMaxZ);
-	if(rdMath::IsEqual(m1,m2,aTol) && rdMath::IsEqual(m2,m3,aTol) && rdMath::IsEqual(m3,m1,aTol)) {
-		rMZ = m2;
-	} else {
-		rMZ = rdMath::getNAN();
-	}
-}
-
 Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTypeName)
 {
 	Function* newFunction = NULL;
@@ -426,9 +138,22 @@ Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTy
 //=============================================================================
 // EVALUATE
 //=============================================================================
+/*
+double Function::evaluate(int aDerivOrder,double aX,double aY,double aZ) const
+{
+	SimTK::Vector workX(getArgumentSize(), aX);
+	if (aDerivOrder == 0)
+	    return calcValue(workX);
+	std::vector<int> workDeriv(aDerivOrder);
+	for (int i = 0; i < aDerivOrder; ++i)
+	    workDeriv[i] = 0;
+    return calcDerivative(workDeriv, workX);
+}
+
+
 /**
  * Evaluates total first derivative using the chain rule.
- */
+ *
 double Function::
 evaluateTotalFirstDerivative(double aX,double aDxdt)
 {
@@ -437,9 +162,44 @@ evaluateTotalFirstDerivative(double aX,double aDxdt)
 
 /**
  * Evaluates total second derivative using the chain rule.
- */
+ *
 double Function::
 evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2)
 {
 	return evaluate(1,aX) * aD2xdt2 + evaluate(2,aX) * aDxdt * aDxdt;
+}
+*/
+double Function::calcValue(const Vector& x) const
+{
+    if (_function == NULL)
+        _function = createSimTKFunction();
+    return _function->calcValue(x);
+}
+
+double Function::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
+{
+    if (_function == NULL)
+        _function = createSimTKFunction();
+    return _function->calcDerivative(derivComponents, x);
+}
+
+int Function::getArgumentSize() const
+{
+    if (_function == NULL)
+        _function = createSimTKFunction();
+    return _function->getArgumentSize();
+}
+
+int Function::getMaxDerivativeOrder() const
+{
+    if (_function == NULL)
+        _function = createSimTKFunction();
+    return _function->getMaxDerivativeOrder();
+}
+
+void Function::resetFunction()
+{
+    if (_function != NULL)
+        delete _function;
+    _function = NULL;
 }

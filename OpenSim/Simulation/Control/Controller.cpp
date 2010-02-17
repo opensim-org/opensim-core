@@ -34,8 +34,14 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <cstdio>
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Set.h>
 #include "Controller.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include "SimTKsimbody.h"
 
 
 //=============================================================================
@@ -46,6 +52,7 @@
 // defined within the OpenSim namespace can be used in this file without the
 // "OpenSim::" prefix.
 using namespace OpenSim;
+using namespace std;
 
 
 
@@ -57,7 +64,9 @@ using namespace OpenSim;
  * Default constructor.
  */
 Controller::Controller() :
-	Object()
+	ModelComponent(),
+    _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
+    _isControllerEnabled(_isControllerEnabledProp.getValueBool())
 {
 	setNull();
 }
@@ -65,28 +74,35 @@ Controller::Controller() :
 /**
  * Constructor.
  */
-Controller::Controller(Model *aModel) :
-	Object()
+Controller::Controller(Model& aModel) :
+	ModelComponent(),
+   _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
+    _isControllerEnabled(_isControllerEnabledProp.getValueBool())
 {
 	setNull();
-	_model = aModel;
+	_model = &aModel;
 }
 //_____________________________________________________________________________
 /**
  * Constructor from an XML Document
- */
-Controller::Controller(const std::string &aFileName, bool aUpdateFromXMLNode) :
-	Object(aFileName, false)
+  */
+  Controller::Controller(const std::string &aFileName, bool aUpdateFromXMLNode) :
+      ModelComponent(aFileName, false),
+      _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
+      _isControllerEnabled(_isControllerEnabledProp.getValueBool())
 {
-	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+      setNull();
+      if(aUpdateFromXMLNode) updateFromXMLNode();
 }
+
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  */
 Controller::Controller(const Controller &aController) :
-	Object(aController)
+	ModelComponent(aController),
+    _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
+    _isControllerEnabled(aController._isControllerEnabled)
 {
 	setNull();
 	copyData(aController);
@@ -113,12 +129,13 @@ setNull()
 {
 	setupProperties();
 	setType("Controller");
+    _actuatorSet.setMemoryOwner(false);
+
 
 	// MODEL
 	_model = NULL;
 
-	// STATES
-	_on = true;
+	_isControllerEnabled = true;
 
 }
 //_____________________________________________________________________________
@@ -128,6 +145,21 @@ setNull()
 void Controller::
 setupProperties()
 {
+     string comment;
+
+    comment = "A list of actuators that this controller will control."
+              "The keyword ALL indicates the controller will controll all the acuators in the model";
+    _actuatorNameListProp.setComment(comment);
+    _actuatorNameListProp.setName("actuator_list");
+    _propertySet.append(&_actuatorNameListProp);
+
+    comment = "Flag (true or false) indicating whether or not the controller is enabled (ON) should ";
+    _isControllerEnabledProp.setComment(comment);
+    _isControllerEnabledProp.setName("enable_controller");
+    _propertySet.append( &_isControllerEnabledProp );
+
+
+
 
 }
 //_____________________________________________________________________________
@@ -138,7 +170,9 @@ void Controller::
 copyData(const Controller &aController)
 {
 	_model = aController._model;
-	_on = aController._on;
+	_isControllerEnabled = aController._isControllerEnabled;
+    _actuatorSet = aController._actuatorSet;
+    _actuatorNameList = aController._actuatorNameList;
 }
 
 
@@ -156,7 +190,7 @@ Controller& Controller::
 operator=(const Controller &aController)
 {
 	// BASE CLASS
-	Object::operator=(aController);
+	ModelComponent::operator=(aController);
 
 	// DATA
 	copyData(aController);
@@ -168,47 +202,7 @@ operator=(const Controller &aController)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// MODEL
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get a pointer to the model that is being controlled.
- */
-Model* Controller::
-getModel()
-{
-	return(_model);
-}
-/**
- * Set this class's pointer to the model that is being controlled
- * to point to the model passed into this method.
- */
-void Controller::
-setModel(Model *aModel)
-{
-	_model = aModel;
-}
-/**
- * Set this class's pointer to the object containing
- * input controls to point to the object passed into
- * this method.
- */
-void Controller::
-setControlSet(const ControlSet &aControlSet)
-{
-	
-}
-/**
- * Set this class's pointer to the storage object containing
- * desired model states to point to the storage object passed into
- * this method.
- */
-void Controller::
-setDesiredStatesStorage(Storage *aYDesStore)
-{
-	
-}
+
 //-----------------------------------------------------------------------------
 // ON/OFF
 //-----------------------------------------------------------------------------
@@ -217,23 +211,57 @@ setDesiredStatesStorage(Storage *aYDesStore)
  * Get whether or not this controller is on.
  */
 bool Controller::
-getOn()
+getIsEnabled() const
 {
-	return(_on);
+    if( _model->getAllControllersEnabled() ) {
+	   return(_isControllerEnabled);
+    } else {
+       return( false );
+    }
 }
 //_____________________________________________________________________________
 /**
  * Turn this controller on or off.
  */
 void Controller::
-setOn(bool aTrueFalse)
+setIsEnabled(bool aTrueFalse)
 {
-	_on = aTrueFalse;
+	_isControllerEnabled = aTrueFalse;
 }
 
+double Controller::
+getFirstTime() const {
+  return( -SimTK::Infinity); 
+}
+double Controller::
+getLastTime() const {
+  return( SimTK::Infinity); 
+}
 
-//=============================================================================
-// CONTROL
-//=============================================================================
+// for any post XML deseraialization intialization
+void Controller:: setup(Model& model) {
+    _model = &model;
+}
+// controller setup once the system is complete 
+void Controller::setupSystem( SimTK::MultibodySystem& system) {} 
 
+   // for adding any components to the model
+void Controller::createSystem( SimTK::MultibodySystem& system) {} 
 
+// for any intialization requiring a state or the complete system 
+void Controller::initState( SimTK::State& s) {}
+
+// makes a request for which actuators a controller suports
+void Controller::setActuators( Set<Actuator>& actuators ) {
+	_actuatorSet.setSize(0);
+	for(int i=0; i< actuators.getSize(); i++){
+		actuators[i].setController(this);
+		actuators[i].setIsControlled(true);
+		actuators[i].setControlIndex(i);
+		_actuatorSet.append(&actuators[i]);
+	}
+}
+
+Set<Actuator>& Controller::updActuators() { return _actuatorSet; }
+
+const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }

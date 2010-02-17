@@ -15,21 +15,7 @@
 #define _POSIX_ 1
 
 #include <fcntl.h>
-
-#ifdef WIN32
-   #ifdef __MWERKS__
-      #include <unistd.h>
-      #include <stat.h>
-   #else
-      #include <sys/stat.h>
-      #include <io.h>
-   #endif
-   #include <time.h>
-#else
-   #include <values.h>
-   #include <sys/stat.h>
-   #include <sys/time.h>
-#endif
+#include <io.h>
 
 #include "globals.h"
 #include "functions.h"
@@ -48,6 +34,7 @@
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 static int filekey = 133;
 char new_ascii_label[] = "NORM_ASCII";
+char stl_ascii_label[] = "solid";
 static SBoolean verbose = no;
 
 
@@ -58,6 +45,7 @@ static SBoolean verbose = no;
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
+static void name_polyhedron(PolyhedronStruct* ph, char filename[]);
 
 
 /* ---------------------------------------------------------------------------
@@ -229,33 +217,68 @@ FileType check_file_type(char filename[])
    FILE* fpa;
    FileType ft=unknown;
 
-   /* First try to open the file. */
-#ifdef WIN32
+   // First try to open the file.
    if ((fpb = simm_open(filename, O_RDONLY | O_BINARY | O_RAW)) == -1)
-#else
-   if ((fpb = simm_open(filename, O_RDONLY)) == -1)
-#endif
-   {
       return file_not_found;
-   }
+   else
+      close(fpb);
 
-	/* Check suffix to see if it's a Wavefront .obj file. */
 	len = strlen(filename);
+
+   // Check suffix to see if it's a Wavefront .obj file.
 	if (len > 4)
 	{
 		if (STRINGS_ARE_EQUAL(&filename[len-4], ".obj"))
 			return wavefront;
 	}
 
-   /* The file exists and it's not a Wavefront .obj, so
-    * read from it to see if it's a binary SIMM bone file.
-    */
-   read_binary(fpb, (char*)&fkb, sizeof(int));
+   // Binary STL files should not start with "solid" in the header,
+   // but some do anyway. To load these, their suffixes must be
+   // changed to .stlb.
+	if (len > 5)
+	{
+		if (STRINGS_ARE_EQUAL(&filename[len-5], ".stlb"))
+         return stl_binary;
+   }
+
+	// Check suffix to see if it's an STL file.
+   if (len > 4)
+	{
+		if (STRINGS_ARE_EQUAL(&filename[len-4], ".stl"))
+      {
+         if ((fpa = simm_fopen(filename, "r")) == NULL)
+         {
+            return file_not_found;
+         }
+         else
+         {
+            fscanf(fpa, "%s", fkey);
+            if (STRINGS_ARE_EQUAL(fkey, stl_ascii_label))
+               ft = stl_ascii;
+            else
+               ft = stl_binary;
+            fclose(fpa);
+            return ft;
+         }
+      }
+	}
+
+   // The file exists and it's not a Wavefront or STL, so
+   // read from it to see if it's a binary SIMM bone file.
+   if ((fpb = simm_open(filename, O_RDONLY | O_BINARY | O_RAW)) == -1)
+   {
+      return file_not_found;
+   }
+   else
+   {
+      read_binary(fpb, (char*)&fkb, sizeof(int));
+      close(fpb);
+   }
+
    if (fkb == filekey)
 	   ft = binary;
    else
 	   ft = unknown;
-   close(fpb);
 
    if (ft == unknown)
    {
@@ -280,31 +303,13 @@ FileType check_file_type(char filename[])
 
 FileReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean run_norm)
 {
-   int start, end, len, num_out;
    FileType input_file_type;
-   NormOptions opt;
-   PolyhedronStruct* ph_out;
-   ReturnCode code;
+   ReturnCode rc;
 
    preread_init_polyhedron(ph);
 
-   /* Form the bone name from the base of the filename */
-   end = strlen(filename);
-   start = end - 1;
-   while (start >= 0 && filename[start--] != DIR_SEP_CHAR)
-      ;
-
-   if (start == -1)
-      start = 0;
-   else
-      start += 2;
-   len = end - start;
-   ph->name = (char *)simm_malloc((len+1)*sizeof(char));
-   if (ph->name == NULL)
-      return file_missing;
-
-   (void)strncpy(ph->name,&filename[start],len);
-   ph->name[len] = STRING_TERMINATOR;
+	// Always name the polyhedron so it can be written back to JNT file.
+   name_polyhedron(ph, filename);
 
    input_file_type = check_file_type(filename);
 
@@ -314,10 +319,10 @@ FileReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean r
    }
    if (input_file_type == binary)
    {
-      code = read_binary_file(ph,filename);
-      if (code == code_bad || check_polyhedron(ph) == code_bad)
+      rc = read_binary_file(ph,filename);
+      if (rc == code_bad || check_polyhedron(ph) == code_bad)
       {
-	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
+	      sprintf(errorbuffer, "Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
 	      return file_bad;
       }
@@ -325,10 +330,10 @@ FileReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean r
    }
    else if (input_file_type == new_ascii)
    {
-      code = read_ascii_file(ph,filename);
-      if (code == code_bad || check_polyhedron(ph) == code_bad)
+      rc = read_ascii_file(ph,filename);
+      if (rc == code_bad || check_polyhedron(ph) == code_bad)
       {
-	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
+	      sprintf(errorbuffer, "Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
 	      return file_bad;
       }
@@ -336,27 +341,50 @@ FileReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean r
    }
 	else if (input_file_type == wavefront)
 	{
-      code = read_wavefront_file(ph,filename);
-      if (code == code_bad || check_polyhedron(ph) == code_bad)
+      rc = read_wavefront_file(ph, filename, run_norm);
+      if (rc == code_bad || check_polyhedron(ph) == code_bad)
       {
-	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
+	      sprintf(errorbuffer, "Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
 	      return file_bad;
       }
-      postread_init_polyhedron(ph,yes);
+	}
+	else if (input_file_type == stl_ascii)
+	{
+      rc = read_stl_ascii_file(ph, filename, run_norm);
+      if (rc == code_bad || check_polyhedron(ph) == code_bad)
+      {
+	      sprintf(errorbuffer, "Validity check of bone %s failed.", ph->name);
+	      error(none,errorbuffer);
+	      return file_bad;
+      }
+	}
+	else if (input_file_type == stl_binary)
+	{
+      rc = read_stl_binary_file(ph, filename, run_norm);
+      if (rc == code_bad || check_polyhedron(ph) == code_bad)
+      {
+	      sprintf(errorbuffer, "Validity check of bone %s failed.", ph->name);
+	      error(none,errorbuffer);
+	      return file_bad;
+      }
 	}
    else /* input_file_type == old_ascii or unknown */
    {
-      code = read_old_ascii_file(ph,filename);
-      if (code == code_bad || check_polyhedron(ph) == code_bad)
+      rc = read_old_ascii_file(ph,filename);
+      if (rc == code_bad || check_polyhedron(ph) == code_bad)
       {
-	      sprintf(errorbuffer,"Validity check of bone %s failed.", ph->name);
+	      sprintf(errorbuffer, "Validity check of bone %s failed.", ph->name);
 	      error(none,errorbuffer);
 	      return file_bad;
       }
       postread_init_polyhedron(ph,no);
       if (run_norm == yes)
       {
+         int num_out;
+         NormOptions opt;
+         PolyhedronStruct* ph_out;
+
          opt.verbose_output = no;
          opt.clip_vertices = no;
          opt.output_format = new_ascii;
@@ -373,30 +401,47 @@ FileReturnCode read_polyhedron(PolyhedronStruct* ph, char filename[], SBoolean r
          opt.reference_normal[0] = 0.0;
          opt.reference_normal[1] = 1.0;
          opt.reference_normal[2] = 0.0;
-         norm(ph,&opt,&num_out,&ph_out);
+         norm(ph, &opt, &num_out, &ph_out);
          if (num_out == 0)
             return file_bad;
          free_polyhedron(ph, no, NULL);
-         copy_polyhedron(&ph_out[0],ph);
+         copy_polyhedron(&ph_out[0], ph);
+         free_polyhedron(&ph_out[0], no, NULL);
       }
    }
 
    return file_good;
 }
 
+/* Make a suitable name for a polyhedron, based on the name of
+ * the file it was loaded from.
+ */
+static void name_polyhedron(PolyhedronStruct* ph, char filename[])
+{
+   // Form the bone name from the base of the filename.
+   int len, end = strlen(filename);
+   int start = end - 1;
+   while (start >= 0 && filename[start--] != DIR_SEP_CHAR)
+      ;
+
+   if (start == -1)
+      start = 0;
+   else
+      start += 2;
+   len = end - start;
+   ph->name = (char *)simm_malloc((len+1)*sizeof(char));
+
+   (void)strncpy(ph->name,&filename[start],len);
+   ph->name[len] = STRING_TERMINATOR;
+}
 
 ReturnCode read_binary_file(PolyhedronStruct* ph, char filename[])
 {
-
    int i, fd, fk, not_needed, num_edges;
    long correct_num_bytes, bytes_read = 0;
    float fnormal[3];
 
-#ifdef WIN32
    if ((fd = simm_open(filename,O_RDONLY | O_BINARY | O_RAW)) == -1)
-#else
-   if ((fd = simm_open(filename,O_RDONLY)) == -1)
-#endif
    {
       (void)sprintf(errorbuffer,"Unable to open file %s", filename);
       error(none,errorbuffer);
@@ -477,7 +522,6 @@ ReturnCode read_binary_file(PolyhedronStruct* ph, char filename[])
 
 ReturnCode read_ascii_file(PolyhedronStruct* ph, char filename[])
 {
-
    int i, j, rc;
    FILE* fp;
 
@@ -570,7 +614,6 @@ ReturnCode read_ascii_file(PolyhedronStruct* ph, char filename[])
 
 ReturnCode read_old_ascii_file(PolyhedronStruct* ph, char filename[])
 {
-
    int i, j, rc;
    FILE* fp;
 
@@ -595,6 +638,7 @@ ReturnCode read_old_ascii_file(PolyhedronStruct* ph, char filename[])
 
    ph->vertex = (VertexStruct*)simm_malloc(ph->num_vertices*sizeof(VertexStruct));
    ph->polygon = (PolygonStruct*)simm_malloc(ph->num_polygons*sizeof(PolygonStruct));
+   //dkb polygon malloc boolcode.seg_list here???
 
    if (ph->vertex == NULL || ph->polygon == NULL)
    {
@@ -625,9 +669,6 @@ ReturnCode read_old_ascii_file(PolyhedronStruct* ph, char filename[])
 	      /* Old ASCII vertex numbers start at 1 */
 	      ph->polygon[i].vertex_index[j]--;
       }
-      if (ph->polygon[i].boolcode.num_inters != 0)
-	      printf("Hey, polygon[%d] has %d num_inters\n", i,
-		ph->polygon[i].boolcode.num_inters);
    }
 
    fclose(fp);
@@ -635,12 +676,13 @@ ReturnCode read_old_ascii_file(PolyhedronStruct* ph, char filename[])
    return code_fine;
 }
 
-ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
+ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm)
 {
    int i, num_normals = 0, v_count = 0, n_count = 0, p_count = 0;
+   double* vertex_normals;
    FILE* fp;
 
-   fp = simm_fopen(filename,"r");
+   fp = simm_fopen(filename, "r");
    if (fp == NULL)
    {
 #if 0 /* this should never get called */
@@ -660,23 +702,35 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 		else if (STRINGS_ARE_EQUAL(buffer, "f"))
 			ph->num_polygons++;
 		else if (STRINGS_ARE_EQUAL(buffer, "#"))
-			read_line(&fp, buffer);
+			read_line(fp, buffer);
 	}
 
+   // Make a temporary array for the vertex normals, which will
+   // be copied to the vertex structures as the polygons
+   // are read. In a Wavefront file it is possible to use a vertex
+   // in one polygon with one normal, and the same vertex in a
+   // different polygon with a different normal. This is not allowed
+   // in SIMM; each time a vertex is used in a polygon, the normal
+   // specified for that usage will be copied into the vertex's
+   // normal vector, overwriting any previous specifications.
+   vertex_normals = (double*)simm_malloc(num_normals * 3 * sizeof(double));
+
+#if 0
 	if (num_normals != ph->num_vertices)
 	{
       fclose(fp);
-		(void)sprintf(errorbuffer,"Error: number of vertices (%d) not equal to number of vertex normals (%d) in file %s.",
+		(void)sprintf(errorbuffer, "Error: number of vertices (%d) not equal to number of vertex normals (%d) in file %s.",
 			ph->num_vertices, num_normals, filename);
       error(none,errorbuffer);
       ph->num_vertices = ph->num_polygons = 0;
       return code_bad;
 	}
+#endif
 
-   ph->vertex = (VertexStruct*)simm_malloc(ph->num_vertices*sizeof(VertexStruct));
-   ph->polygon = (PolygonStruct*)simm_malloc(ph->num_polygons*sizeof(PolygonStruct));
+   ph->vertex = (VertexStruct*)simm_malloc(ph->num_vertices * sizeof(VertexStruct));
+   ph->polygon = (PolygonStruct*)simm_malloc(ph->num_polygons * sizeof(PolygonStruct));
 
-   if (ph->vertex == NULL || ph->polygon == NULL)
+   if (ph->vertex == NULL || ph->polygon == NULL || vertex_normals == NULL)
    {
       fclose(fp);
       ph->num_vertices = ph->num_polygons = 0;
@@ -694,7 +748,11 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 
 	while (fscanf(fp, "%s", buffer) > 0)
 	{
-		if (STRINGS_ARE_EQUAL(buffer, "v"))
+		if (STRINGS_ARE_EQUAL(buffer, "#"))
+      {
+			read_line(fp, buffer);
+      }
+		else if (STRINGS_ARE_EQUAL(buffer, "v"))
 		{
 			fscanf(fp, "%lg %lg %lg", &ph->vertex[v_count].coord[0],
 				&ph->vertex[v_count].coord[1], &ph->vertex[v_count].coord[2]);
@@ -702,45 +760,52 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 		}
 		else if (STRINGS_ARE_EQUAL(buffer, "vn"))
 		{
-			fscanf(fp, "%lg %lg %lg", &ph->vertex[n_count].normal[0],
-				&ph->vertex[n_count].normal[1], &ph->vertex[n_count].normal[2]);
+			fscanf(fp, "%lg %lg %lg", &vertex_normals[n_count * 3], &vertex_normals[n_count * 3 + 1], &vertex_normals[n_count * 3 + 2]);
 			n_count++;
 		}
 		else if (STRINGS_ARE_EQUAL(buffer, "f"))
 		{
-			int max_vertices, junk, pv_count = 0;
+			int max_vertices, index, pv_count = 0;
 			ReturnCode rc;
 			char* line;
 
-			read_line(&fp, buffer);
+			read_line(fp, buffer);
 			max_vertices = strlen(buffer);
 			ph->polygon[p_count].vertex_index = (int*)simm_malloc(max_vertices * sizeof(int));
 			line = buffer;
-			// indices are stored in this format: -106//-106
-			// for this example the index that Norm should store is 105
+			// indices are stored in this format: 102/95/101
+			// vertex coordinates: 102nd element in 'v' array
+         // texture coordinates: 95th element in 'vt' array
+         // normal coordinates: 101st element in 'vn' array
+         // negative numbers mean to start at the end of the array and count backwards
 			while (line && strlen(line) > 0)
 			{
-				// Read the vertex index. Negative values mean to reference from the end of the vertex list.
-				line = parse_string(line, type_int, &ph->polygon[p_count].vertex_index[pv_count]);
-				if (ph->polygon[p_count].vertex_index[pv_count] < 0)
-					ph->polygon[p_count].vertex_index[pv_count] = ph->num_vertices + ph->polygon[p_count].vertex_index[pv_count];
+				// Read the vertex index.
+            int v_index;
+				line = parse_string(line, type_int, &v_index);
+				if (v_index < 0)
+					v_index += ph->num_vertices; // count backwards from end
 				else
-					ph->polygon[p_count].vertex_index[pv_count]--;
-				pv_count++;
-				// After each vertex index there can be normal and texture indices (each preceded by "//").
-				// If they are present, skip over them.
+					v_index--; // make index zero-based
+            ph->polygon[p_count].vertex_index[pv_count++] = v_index;
+
+				// After each vertex index there can be normal and texture indices (each preceded by "/").
+				// If they are present, skip over the texture index but use the normal index. TODO5.0: use the texure index
 				if (line[0] == '/')
 				{
 					// skip over the "/"
 					line++;
-					// read and ignore the index
-					line = parse_string(line, type_int, &junk);
+					// read and ignore the texture index
+					line = parse_string(line, type_int, &index);
 					if (line[0] == '/')
 					{
 						// skip over the "/"
 						line++;
-						// read and ignore the index
-						line = parse_string(line, type_int, &junk);
+						// read the normal index
+						line = parse_string(line, type_int, &index);
+                  index--; // make index zero-based
+                  // Now get that normal vector and copy it to the vertex.
+                  memcpy(ph->vertex[v_index].normal, &vertex_normals[index * 3], 3 * sizeof(double));
 					}
 				}
 			}
@@ -752,7 +817,278 @@ ReturnCode read_wavefront_file(PolyhedronStruct* ph, char filename[])
 	}
 
    fclose(fp);
-   
+
+   postread_init_polyhedron(ph, no);
+
+   if (run_norm == yes)
+   {
+      int num_out;
+      NormOptions opt;
+      PolyhedronStruct* ph_out;
+
+      opt.verbose_output = no;
+      opt.clip_vertices = no;
+      opt.output_format = new_ascii;
+      opt.write_separate_polyhedra = no;
+      opt.convexify_polygons = no;
+      opt.remove_collinear = no;
+      opt.vertex_offset = 0;
+      opt.tol_box_set = no;
+      opt.fill_holes = no;
+      opt.triangulate = no_tri;
+      opt.vertex_order = unspecified_order;
+      opt.vertex_tolerance = 0.0000002;
+      opt.max_edge_length = -50.0;
+      opt.reference_normal[0] = 0.0;
+      opt.reference_normal[1] = 1.0;
+      opt.reference_normal[2] = 0.0;
+
+      //write_ascii_file("C:\\Products\\5.0Testing\\bones\\debug1.asc", &ph->bc, ph, 1, &opt);
+
+      norm(ph, &opt, &num_out, &ph_out);
+      if (num_out == 0)
+         return file_bad;
+      free_polyhedron(ph, no, NULL);
+      copy_polyhedron(&ph_out[0], ph);
+      free_polyhedron(&ph_out[0], no, NULL);
+
+      //write_ascii_file("C:\\Products\\5.0Testing\\bones\\debug2.asc", &ph->bc, ph, 1, &opt);
+   }
+
+   return code_fine;
+}
+
+
+ReturnCode read_stl_binary_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm)
+{
+   int i, j, fd, bytes_read = 0, index;
+   float number;
+   unsigned int count;
+   char header[80];
+
+   if ((fd = simm_open(filename, O_RDONLY | O_BINARY | O_RAW)) == -1)
+   {
+#if 0 // This should never get called.
+      (void)sprintf(errorbuffer, "Unable to open file %s", filename);
+      error(none, errorbuffer);
+#endif
+      return code_bad;
+   }
+
+   bytes_read += read(fd, (void*)header, 80);
+
+   bytes_read += read(fd, (void*)&count, sizeof(int));
+   ph->num_polygons = count;
+   ph->num_vertices = 3 * ph->num_polygons;
+
+   ph->vertex = (VertexStruct*)simm_malloc(ph->num_vertices * sizeof(VertexStruct));
+   ph->polygon = (PolygonStruct*)simm_malloc(ph->num_polygons * sizeof(PolygonStruct));
+
+   if (ph->vertex == NULL || ph->polygon == NULL)
+   {
+      close(fd);
+      ph->num_vertices = ph->num_polygons = 0;
+      return code_bad;
+   }
+
+   for (i=0; i<ph->num_vertices; i++)
+      preread_init_vertex(&ph->vertex[i], i);
+
+   for (i=0; i<ph->num_polygons; i++)
+      preread_init_polygon(&ph->polygon[i]);
+
+   for (i=0, index=0; i<ph->num_polygons; i++)
+   {
+      // read the polygon normal
+      bytes_read += read(fd, (void*)&number, sizeof(float));
+      ph->polygon[i].normal[0] = number;
+      bytes_read += read(fd, (void*)&number, sizeof(float));
+      ph->polygon[i].normal[1] = number;
+      bytes_read += read(fd, (void*)&number, sizeof(float));
+      ph->polygon[i].normal[2] = number;
+      // read the 3 vertices
+      for (j=0; j<3; j++)
+      {
+         bytes_read += read(fd, (void*)&number, sizeof(float));
+         ph->vertex[index].coord[0] = number;
+         bytes_read += read(fd, (void*)&number, sizeof(float));
+         ph->vertex[index].coord[1] = number;
+         bytes_read += read(fd, (void*)&number, sizeof(float));
+         ph->vertex[index].coord[2] = number;
+         index++;
+      }
+      bytes_read += read(fd, (void*)header, 2); // attribute byte count, not used
+   }
+
+   close(fd);
+
+   for (i=0, index=0; i<ph->num_polygons; i++)
+   {
+      ph->polygon[i].num_vertices = 3;
+      ph->polygon[i].vertex_index = (int*)simm_malloc(ph->polygon[i].num_vertices * sizeof(int));
+      ph->polygon[i].vertex_index[0] = index++;
+      ph->polygon[i].vertex_index[1] = index++;
+      ph->polygon[i].vertex_index[2] = index++;
+   }
+
+   postread_init_polyhedron(ph, no);
+
+   if (run_norm == yes)
+   {
+      int num_out;
+      NormOptions opt;
+      PolyhedronStruct* ph_out;
+
+      opt.verbose_output = no;
+      opt.clip_vertices = no;
+      opt.output_format = new_ascii;
+      opt.write_separate_polyhedra = no;
+      opt.convexify_polygons = no;
+      opt.remove_collinear = no;
+      opt.vertex_offset = 0;
+      opt.tol_box_set = no;
+      opt.fill_holes = no;
+      opt.triangulate = no_tri;
+      opt.vertex_order = unspecified_order;
+      opt.vertex_tolerance = 0.0000002;
+      opt.max_edge_length = -50.0;
+      opt.reference_normal[0] = 0.0;
+      opt.reference_normal[1] = 1.0;
+      opt.reference_normal[2] = 0.0;
+
+      //write_ascii_file("C:\\Products\\5.0Testing\\bones\\debug1.asc", &ph->bc, ph, 1, &opt);
+
+      norm(ph, &opt, &num_out, &ph_out);
+      if (num_out == 0)
+         return file_bad;
+      free_polyhedron(ph, no, NULL);
+      copy_polyhedron(&ph_out[0], ph);
+      free_polyhedron(&ph_out[0], no, NULL);
+
+      //write_ascii_file("C:\\Products\\5.0Testing\\bones\\debug2.asc", &ph->bc, ph, 1, &opt);
+   }
+
+   return code_fine;
+}
+
+
+ReturnCode read_stl_ascii_file(PolyhedronStruct* ph, char filename[], SBoolean run_norm)
+{
+   int i, j, index, count = 0;
+   FILE* fp;
+   float number;
+   char header[80];
+
+   fp = simm_fopen(filename, "r");
+   if (fp == NULL)
+   {
+#if 0 /* this should never get called */
+      (void)sprintf(errorbuffer, "Unable to open file %s", filename);
+      error(none, errorbuffer);
+#endif
+      return code_bad;
+   }
+
+   fscanf(fp, "%s", header);
+   if (STRINGS_ARE_NOT_EQUAL_CI(header, "solid"))
+   {
+      (void)sprintf(errorbuffer, "Error reading ascii STL file %s. File must start with header \"solid\".", filename);
+      error(none, errorbuffer);
+      return code_bad;
+   }
+
+   while (1)
+   {
+      if (fscanf(fp, "%s", header) != 1)
+         break;
+      if (STRINGS_ARE_EQUAL_CI(header, "facet"))
+         count++;
+   }
+   rewind(fp);
+
+   ph->num_polygons = count;
+   ph->num_vertices = 3 * ph->num_polygons;
+
+   ph->vertex = (VertexStruct*)simm_malloc(ph->num_vertices * sizeof(VertexStruct));
+   ph->polygon = (PolygonStruct*)simm_malloc(ph->num_polygons * sizeof(PolygonStruct));
+
+   if (ph->vertex == NULL || ph->polygon == NULL)
+   {
+      fclose(fp);
+      ph->num_vertices = ph->num_polygons = 0;
+      return code_bad;
+   }
+
+   for (i=0; i<ph->num_vertices; i++)
+      preread_init_vertex(&ph->vertex[i], i);
+
+   for (i=0; i<ph->num_polygons; i++)
+      preread_init_polygon(&ph->polygon[i]);
+
+   fscanf(fp, "%s", header);
+
+   for (i=0, index=0; i<ph->num_polygons; i++)
+   {
+      // read the polygon normal
+      fscanf(fp, "%*s %*s %lg %lg %lg", &ph->polygon[i].normal[0], &ph->polygon[i].normal[1], &ph->polygon[i].normal[2]);
+      fscanf(fp, "%*s %*s"); // "outer loop"
+      // read the 3 vertices
+      for (j=0; j<3; j++)
+      {
+         fscanf(fp, "%*s %lg %lg %lg", &ph->vertex[index].coord[0], &ph->vertex[index].coord[1], &ph->vertex[index].coord[2]);
+         index++;
+      }
+      fscanf(fp, "%*s %*s"); // "endloop endfacet"
+   }
+
+   for (i=0, index=0; i<ph->num_polygons; i++)
+   {
+      ph->polygon[i].num_vertices = 3;
+      ph->polygon[i].vertex_index = (int*)simm_malloc(ph->polygon[i].num_vertices * sizeof(int));
+      ph->polygon[i].vertex_index[0] = index++;
+      ph->polygon[i].vertex_index[1] = index++;
+      ph->polygon[i].vertex_index[2] = index++;
+   }
+
+   fclose(fp);
+
+   postread_init_polyhedron(ph, no);
+
+   if (run_norm == yes)
+   {
+      int num_out;
+      NormOptions opt;
+      PolyhedronStruct* ph_out;
+
+      opt.verbose_output = no;
+      opt.clip_vertices = no;
+      opt.output_format = new_ascii;
+      opt.write_separate_polyhedra = no;
+      opt.convexify_polygons = no;
+      opt.remove_collinear = no;
+      opt.vertex_offset = 0;
+      opt.tol_box_set = no;
+      opt.fill_holes = no;
+      opt.triangulate = no_tri;
+      opt.vertex_order = unspecified_order;
+      opt.vertex_tolerance = 0.0000002;
+      opt.max_edge_length = -50.0;
+      opt.reference_normal[0] = 0.0;
+      opt.reference_normal[1] = 1.0;
+      opt.reference_normal[2] = 0.0;
+
+      //write_ascii_file("C:\\Products\\5.0Testing\\bones\\debug1.asc", &ph->bc, ph, 1, &opt);
+
+      norm(ph, &opt, &num_out, &ph_out);
+      if (num_out == 0)
+         return file_bad;
+      free_polyhedron(ph, no, NULL);
+      copy_polyhedron(&ph_out[0], ph);
+      free_polyhedron(&ph_out[0], no, NULL);
+
+      //write_ascii_file("C:\\Products\\5.0Testing\\bones\\debug2.asc", &ph->bc, ph, 1, &opt);
+   }
+
    return code_fine;
 }
 
@@ -1271,7 +1607,7 @@ ReturnCode write_ascii_separates(char filename[], PolyhedronStruct polyhedron[],
 
 }
 
-#ifndef ENGINE
+#if ! ENGINE
 /* -------------------------------------------------------------------------
    build_file_list_from_pattern - given a file pathname with optional wildcard
       characters, this routine returns an argv-style list of file pathnames
@@ -1325,13 +1661,12 @@ void build_file_list_from_pattern (const char* pattern, char*** list, int* numFi
 }
 #endif /* ENGINE */
 
-/* FILE_EXISTS: There's probably a better way to check to see if a
- * file exists, but this way works well enough.
- */
-
 SBoolean file_exists(const char filename[])
 {
    FILE* fp;
+
+   if (filename == NULL || strlen(filename) == 0)
+      return no;
 
    if ((fp = simm_fopen(filename, "r")) == NULL)
       return no;
@@ -1339,4 +1674,32 @@ SBoolean file_exists(const char filename[])
    fclose(fp);
 
    return yes;
+}
+
+SBoolean can_create_file(const char filename[])
+{
+   FILE* fp;
+
+   if (filename == NULL || strlen(filename) == 0)
+      return no;
+
+   // If the file exists, see if it can be appended (overwritten).
+   if (file_exists(filename) == yes)
+   {
+      if ((fp = fopen(filename, "a")) == NULL)
+         return 0;
+
+      fclose(fp);
+      return 1;
+   }
+   else
+   {
+      // The file doesn't exist. See if it can be created.
+      if ((fp = fopen(filename, "w")) == NULL)
+         return no;
+
+      fclose(fp);
+      remove(filename);
+      return yes;
+   }
 }

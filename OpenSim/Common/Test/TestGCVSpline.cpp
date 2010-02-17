@@ -28,6 +28,7 @@
 
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vector;
 
 #define ASSERT(cond) {if (!(cond)) throw exception();}
 
@@ -41,7 +42,7 @@ int main() {
         }
         GCVSpline spline(5, size, x, y);
         for (int i = 0; i < 10*(size-1); ++i) {
-            ASSERT(abs(sin(0.01*i)-spline.evaluate(0, 0.01*i)) < 1e-4);
+            ASSERT(abs(sin(0.01*i)-spline.calcValue(Vector(1, 0.01*i))) < 1e-4);
         }
     }
     catch (...) {

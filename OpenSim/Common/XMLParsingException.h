@@ -72,6 +72,7 @@ protected:
 public:
 	// CONSTRUCTORS
 	XMLParsingException(const std::string &aMsg="",const DOMNode *aNode=0,const std::string &aFile="",int aLine=-1);
+    virtual ~XMLParsingException() throw() {}
 
 public:
 	// PRINT

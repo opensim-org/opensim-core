@@ -15,8 +15,9 @@
 #ifndef GLOBALS_H
 #define GLOBALS_H
 
-extern ModelStruct* model[];
-extern PlotStruct* plot[];
+extern Scene* gScene[];
+extern ModelStruct* gModel[];
+extern PlotStruct* gPlot[];
 extern ToolStruct tool[];
 #if ! OPENSIM_BUILD
 extern RootStruct root;

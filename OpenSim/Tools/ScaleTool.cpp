@@ -32,6 +32,7 @@
 #include <OpenSim/Common/SimmIO.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "SimTKsimbody.h"
 
 //=============================================================================
 // STATICS
@@ -197,6 +198,19 @@ void ScaleTool::setupProperties()
 	_markerPlacerProp.setComment("Specifies parameters for placing markers on the model once a model is scaled. ");
 	_markerPlacerProp.setName("MarkerPlacer");
 	_propertySet.append(&_markerPlacerProp);
+}
+
+//_____________________________________________________________________________
+/**
+ * Register the types used by this class.
+ */
+void ScaleTool::registerTypes()
+{
+	Object::RegisterType(GenericModelMaker());
+	Object::RegisterType(ModelScaler());
+	Object::RegisterType(MarkerPlacer());
+	GenericModelMaker::registerTypes();
+	ModelScaler::registerTypes();
 }
 
 //=============================================================================

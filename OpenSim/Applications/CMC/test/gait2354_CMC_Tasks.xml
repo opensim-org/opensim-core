@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rdCMC_TaskSet name="gait2354_CMC">
+<CMC_TaskSet name="gait2354_CMC">
 
 	<defaults>
-		<rdCMC_Joint name="default">
+		<CMC_Joint name="default">
 			<!--Flag (true or false) indicating whether or not a task is on.-->
 			<on> false </on>
 			<!--Body frame with respect to which a tracking objective is specified.
@@ -40,14 +40,14 @@
 			<r2> 0 0 0 </r2>
 			<!--Name of the coordinate to be tracked.-->
 			<coordinate>  </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 	</defaults>
 
 	<objects>
 
 		<!-- Pelvis -->
 
-		<rdCMC_Joint name="pelvis_tz">
+		<CMC_Joint name="pelvis_tz">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -56,9 +56,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_tz </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="pelvis_tx">
+		<CMC_Joint name="pelvis_tx">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -67,9 +67,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_tx </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="pelvis_ty">
+		<CMC_Joint name="pelvis_ty">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -78,9 +78,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_ty </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="pelvis_tilt">
+		<CMC_Joint name="pelvis_tilt">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -89,9 +89,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_tilt </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="pelvis_list">
+		<CMC_Joint name="pelvis_list">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -100,9 +100,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_list </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="pelvis_rotation">
+		<CMC_Joint name="pelvis_rotation">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -111,12 +111,12 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> pelvis_rotation </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
 
 		<!-- Right Leg -->
 
-		<rdCMC_Joint name="hip_flexion_r">
+		<CMC_Joint name="hip_flexion_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -125,9 +125,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_flexion_r </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="hip_adduction_r">
+		<CMC_Joint name="hip_adduction_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -136,9 +136,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_adduction_r </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="hip_rotation_r">
+		<CMC_Joint name="hip_rotation_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -147,9 +147,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_rotation_r </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="knee_angle_r">
+		<CMC_Joint name="knee_angle_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -158,9 +158,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> knee_angle_r </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="ankle_angle_r">
+		<CMC_Joint name="ankle_angle_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -169,9 +169,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> ankle_angle_r </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="subtalar_angle_r">
+		<CMC_Joint name="subtalar_angle_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -180,9 +180,9 @@
 			<kp> 1600.0 </kp>
 			<kv>  80.0 </kv>
 			<coordinate> subtalar_angle_r </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="mtp_angle_r">
+		<CMC_Joint name="mtp_angle_r">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -191,12 +191,12 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> mtp_angle_r </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
 
 		<!-- Left Leg -->
 
-		<rdCMC_Joint name="hip_flexion_l">
+		<CMC_Joint name="hip_flexion_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -205,9 +205,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_flexion_l </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="hip_adduction_l">
+		<CMC_Joint name="hip_adduction_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -216,9 +216,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_adduction_l </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="hip_rotation_l">
+		<CMC_Joint name="hip_rotation_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -227,9 +227,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> hip_rotation_l </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="knee_angle_l">
+		<CMC_Joint name="knee_angle_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -238,9 +238,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> knee_angle_l </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="ankle_angle_l">
+		<CMC_Joint name="ankle_angle_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -249,9 +249,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> ankle_angle_l </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 	
-		<rdCMC_Joint name="subtalar_angle_l">
+		<CMC_Joint name="subtalar_angle_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -260,9 +260,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> subtalar_angle_l </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="mtp_angle_l">
+		<CMC_Joint name="mtp_angle_l">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -271,12 +271,12 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> mtp_angle_l </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
 
 		<!-- Back Joint -->
 
-		<rdCMC_Joint name="lumbar_extension">
+		<CMC_Joint name="lumbar_extension">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -285,9 +285,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> lumbar_extension </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="lumbar_bending">
+		<CMC_Joint name="lumbar_bending">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -296,9 +296,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> lumbar_bending </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
-		<rdCMC_Joint name="lumbar_rotation">
+		<CMC_Joint name="lumbar_rotation">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -307,9 +307,9 @@
 			<kp> 100.0 </kp>
 			<kv>  20.0 </kv>
 			<coordinate> lumbar_rotation </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
 
 	</objects>
 
-</rdCMC_TaskSet>
+</CMC_TaskSet>
 

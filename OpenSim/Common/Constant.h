@@ -2,7 +2,7 @@
 #define __Constant_h__
 
 // Constant.h
-// Author: Peter Loan
+// Author: Peter Loan, Ajay Seth
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -34,7 +34,6 @@
 #include <string>
 #include "Function.h"
 #include "PropertyDbl.h"
-#include "FunctionAdapter.h"
 
 namespace OpenSim {
 
@@ -44,9 +43,9 @@ namespace OpenSim {
  * A class for representing a constant value.
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring an rdFuction as input.
+ * any class requiring a Fuction as input.
  *
- * @author Peter Loan
+ * @author Peter Loan, Ajay Seth
  * @version 1.0
  */
 class OSIMCOMMON_API Constant : public Function
@@ -66,12 +65,10 @@ public:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 	Constant();
-	Constant(int aN,const double *aTimes,const double *aValues,
-		const std::string &aName="");
+	Constant(double value);
 	Constant(const Constant &aSpline);
 	virtual ~Constant();
 	virtual Object* copy() const;
-	virtual void init(Function* aFunction);
 
 private:
 	void setNull();
@@ -90,22 +87,17 @@ public:
 	// SET AND GET
 	//--------------------------------------------------------------------------
 public:
-	virtual int getNumberOfPoints() const { return 0; }
-	virtual double getX(int aIndex) const { return 0.0; }
-	virtual double getY(int aIndex) const { return 0.0; }
-	virtual double getZ(int aIndex) const { return 0.0; }
-	virtual bool deletePoint(int aIndex) { return false; }
-	virtual int addPoint(double aX, double aY) { return 0; }
-	void setValue(double aValue) { _value = aValue; }
+	void setValue(double aValue);
 
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
-	virtual void updateBoundingBox();
-	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0) const { return _value; }
-	double evaluate() { return _value; }
-	virtual void scaleY(double aScaleFactor) { _value *= aScaleFactor; }
-    const SimTK::Function<1>* createSimTKFunction() const;
+    virtual double calcValue(const SimTK::Vector& xUnused) const
+	{
+		return _value;
+	}
+	const double getValue() const { return _value; }
+    SimTK::Function* createSimTKFunction() const;
 
 	OPENSIM_DECLARE_DERIVED(Constant, Function);
 

@@ -34,12 +34,14 @@
 
 //============================================================================
 
-#include "IntegCallback.h"
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/PropertyBool.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/ArrayPtrs.h>
+#include <OpenSim/Common/Array.h>
 
 namespace OpenSim { 
 
@@ -55,15 +57,19 @@ class Model;
  * @author Frank C. Anderson, Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API Analysis: public IntegCallback
+class OSIMSIMULATION_API Analysis: public Object
 {
-	OPENSIM_DECLARE_DERIVED(Analysis, IntegCallback);
+	OPENSIM_DECLARE_DERIVED(Analysis, Object);
 public:
 
 
 //=============================================================================
 // DATA
 //=============================================================================
+public:
+    Model* _model;
+	const Storage* _statesStore;
+
 private:
 	/** Whether or not to write output of angles in degrees. */
 	PropertyBool _inDegreesProp;
@@ -73,7 +79,24 @@ private:
 	/** Column labels. */
 	Array<std::string> _labels;
 
+
 protected:
+
+    /** Step interval. */
+    PropertyInt _stepIntervalProp;
+    int &_stepInterval;
+
+	/** On, off flag. */
+	PropertyBool _onProp;
+	bool &_on;
+
+	/** Start time for the callback in normalized time. */
+	PropertyDbl _startTimeProp;
+	double &_startTime;
+
+	/** End time for the callback in normalized time. */
+	PropertyDbl _endTimeProp;
+	double &_endTime;
 	ArrayPtrs<Storage> _storageList;
 	bool _printResultFiles;
 
@@ -126,6 +149,14 @@ public:
 	Analysis& operator=(const Analysis &aAnalysis);
 #endif
 
+   virtual int
+        begin( const SimTK::State& s);
+    virtual int
+        step( const SimTK::State& s, int stepNumber);
+    virtual int
+        end( const SimTK::State& s);
+
+
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
@@ -134,7 +165,24 @@ public:
 	 * set pointer to model to be analyzed.
 	 * @param aModel
 	 */
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
+	// STATES STORAGE
+	/**
+	 * set states storage for analysis.
+	 * @param aStatesStore
+	 */
+	virtual void setStatesStore(const Storage& aStatesStore);
+
+	// ON,OFF
+	void setOn(bool aTrueFalse);
+	bool getOn() const;
+
+	// START,END
+	void setStartTime(double aStartTime);
+	double getStartTime() const;
+
+	void setEndTime(double aEndTime);
+	double getEndTime() const;
 
 	// DEGREES/RADIANS
 	/**
@@ -146,6 +194,14 @@ public:
 	 */
 	void setInDegrees(bool aTrueFalse);
 	bool getInDegrees() const;
+
+    virtual bool proceed(int aStep=0);
+
+    //--------------------------------------------------------------------------
+    // GET AND SET
+    //--------------------------------------------------------------------------
+    void setStepInterval(int aStepInterval);
+    int getStepInterval() const;
 
 	// COLUMN LABLES
 	/**

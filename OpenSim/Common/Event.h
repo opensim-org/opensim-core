@@ -52,6 +52,8 @@ class Object;
  * @author Ayman Habib
  */
 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
 class OSIMCOMMON_API Event  
 {
 
@@ -75,6 +77,8 @@ public:
 	Event(const Object& aSource):_source(aSource) {}
 //=============================================================================
 };	// END of class Event
+
+/// @endcond
 
 }; //namespace
 //=============================================================================

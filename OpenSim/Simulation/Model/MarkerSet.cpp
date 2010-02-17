@@ -29,6 +29,7 @@
 #include "MarkerSet.h"
 #include "Marker.h"
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -50,7 +51,7 @@ MarkerSet::~MarkerSet(void)
  * Constructor of a markerSet from a file.
  */
 MarkerSet::MarkerSet(const string& aMarkersFileName) :
-	Set<AbstractMarker>(aMarkersFileName, false)
+	Set<Marker>(aMarkersFileName, false)
 {
 	setNull();
 	updateFromXMLNode();
@@ -61,7 +62,7 @@ MarkerSet::MarkerSet(const string& aMarkersFileName) :
  * Default constructor of a markerSet.
  */
 MarkerSet::MarkerSet() :
-	Set<AbstractMarker>()
+	Set<Marker>()
 {
 	setNull();
 }
@@ -71,7 +72,7 @@ MarkerSet::MarkerSet() :
  * Copy constructor of a markerSet.
  */
 MarkerSet::MarkerSet(const MarkerSet& aMarkerSet):
-Set<AbstractMarker>(aMarkerSet)
+Set<Marker>(aMarkerSet)
 {
 	setNull();
 	*this = aMarkerSet;
@@ -103,14 +104,14 @@ Object* MarkerSet::copy() const
 /**
  * Post construction initialization.
  */
-void MarkerSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+void MarkerSet::setup(Model& aModel)
 {
 	// Base class
-	Set<AbstractMarker>::setup();
+	Set<Marker>::setup();
 
 	// Do members
 	for (int i = 0; i < getSize(); i++)
-		get(i)->setup(aAbstractDynamicsEngine);
+		get(i).setup(aModel);
 
 }
 
@@ -126,7 +127,7 @@ void MarkerSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
 #ifndef SWIG
 MarkerSet& MarkerSet::operator=(const MarkerSet &aMarkerSet)
 {
-	Set<AbstractMarker>::operator=(aMarkerSet);
+	Set<Marker>::operator=(aMarkerSet);
 	return (*this);
 }
 #endif
@@ -142,8 +143,8 @@ void MarkerSet::getMarkerNames(Array<string>& aMarkerNamesArray)
 {
 	for (int i = 0; i < getSize(); i++)
 	{
-		AbstractMarker* nextMarker = get(i);
-		aMarkerNamesArray.append(nextMarker->getName());
+		Marker& nextMarker = get(i);
+		aMarkerNamesArray.append(nextMarker.getName());
 	}
 }
 
@@ -157,18 +158,18 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
 
 	for (int i = 0; i < getSize(); i++)
 	{
-		AbstractMarker* nextMarker = get(i);
-		const string* refBodyName = nextMarker->getBodyName();
+		Marker& nextMarker = get(i);
+		const string* refBodyName = nextMarker.getBodyName();
 		assert(refBodyName);
 		bool found = false;
 		for (int j = 0; j < scaleSet.getSize() && !found; j++)
 		{
-			Scale* nextScale = scaleSet.get(j);
-			if (nextScale->getSegmentName() == *refBodyName)
+			Scale& nextScale = scaleSet.get(j);
+			if (nextScale.getSegmentName() == *refBodyName)
 			{
 				found = true;
-				nextScale->getScaleFactors(scaleFactors);
-				nextMarker->scale(scaleFactors);
+				nextScale.getScaleFactors(scaleFactors);
+				nextMarker.scale(scaleFactors);
 			}
 		}
 	}
@@ -184,24 +185,25 @@ void MarkerSet::addNamePrefix(const string& prefix)
 
 	// Cycle thru set and add prefix
 	for (i = 0; i < getSize(); i++)
-		get(i)->setName(prefix + get(i)->getName());
+		get(i).setName(prefix + get(i).getName());
 }
 
 //_____________________________________________________________________________
 /**
  * Create a new marker and add it to the set.
  */
-AbstractMarker* MarkerSet::addMarker(const string& aName, const double aOffset[3], AbstractBody& aBody)
+Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenSim::Body& aBody)
 {
 	// If a marker by this name already exists, do nothing.
-	if (get(aName) != NULL)
+	if (contains(aName))
 		return NULL;
 
 	// Create a marker and add it to the set.
 	Marker* m = new Marker();
 	m->setName(aName);
 	m->setOffset(aOffset);
-	m->setBody(aBody, false);
+	m->setBodyName(aBody.getName()); // setup will set the body based on this name
+	m->setup(aBody.getModel());
 	append(m);
 
 	return m;

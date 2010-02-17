@@ -50,10 +50,12 @@
 
 namespace OpenSim {
 
-class SimbodyEngine;
-class AbstractCoordinate;
-class AbstractJoint;
-class AbstractBody;
+class SimmFileWriter;
+class Model;
+class Muscle;
+class ForceSet;
+class Joint;
+class Body;
 class Coordinate;
 class Joint;
 class MarkerSet;
@@ -74,8 +76,8 @@ class OSIMSIMMFILEWRITER_API SimbodySimmModel : public Object
 // DATA
 //=============================================================================
 protected:
-	/** Pointer to the SimbodyEngine that this object was created from. */
-	const SimbodyEngine* _engine;
+	/** Pointer to the OpenSim model that this object was created from. */
+	const Model* _model;
 
 	/** bodies */
 	Array<SimbodySimmBody*> _simmBody;
@@ -86,9 +88,13 @@ protected:
 	/** gencoords */
 	Array<SimbodySimmGencoord*> _simmGencoord;
 
-	/** functions */
-	Array<SimbodySimmFunction*> _simmFunction;
-   int _maxFunctionUserNumber;
+	/** functions for joint file */
+	Array<SimbodySimmFunction*> _simmJointFunction;
+
+	/** functions for muscle file */
+	Array<SimbodySimmFunction*> _simmMuscleFunction;
+
+	int _maxFunctionUserNumber;
 
 //=============================================================================
 // METHODS
@@ -99,7 +105,7 @@ protected:
 public:
 	virtual ~SimbodySimmModel();
 	SimbodySimmModel();
-	SimbodySimmModel(const SimbodyEngine& aEngine);
+	SimbodySimmModel(const Model* aModel);
 	SimbodySimmModel(const SimbodySimmModel& aModel);
 	virtual Object* copy() const;
 #ifndef SWIG
@@ -109,23 +115,26 @@ public:
 private:
 	void setNull();
 	void copyData(const SimbodySimmModel &aEngine);
-	void setup(const SimbodyEngine& aEngine);
+	void setup(const Model* aModel);
 
 public:
    bool writeJointFile(const std::string& aFileName) const;
    const std::string& getGravityLabel(const SimTK::Vec3& aGravity) const;
-   Function* isDependent(const AbstractCoordinate* aCoordinate, const AbstractCoordinate** rIndependentCoordinate) const;
+   Function* isDependent(const Coordinate* aCoordinate, const Coordinate** rIndependentCoordinate) const;
    void convertBody(const OpenSim::Body& aBody, const MarkerSet* aMarkerSet);
-	bool isChildJointNeeded(const OpenSim::Joint& aJoint);
+   bool isChildJointNeeded(const OpenSim::Joint& aJoint);
 	bool isParentJointNeeded(const OpenSim::Joint& aJoint);
    void makeSimmJoint(const std::string& aName, const std::string& aParentName, const std::string& aChildName,
                       SimTK::Vec3& aLocation, SimTK::Vec3& aOrientation);
-   void addExtraJoints(const OpenSim::Joint& aJoint, std::string& rParentName, std::string& rChildName, bool rParentJointAdded);
+   bool addExtraJoints(const OpenSim::Joint& aJoint, std::string& rParentName, std::string& rChildName);
    void addBody(const OpenSim::Body& aBody);
-   void addGencoord(const AbstractCoordinate* aCoordinate);
-   int addFunction(const Function* aFunction, AbstractTransformAxis::MotionType aXType,
-                   AbstractTransformAxis::MotionType aYType);
-   void writeWrapObjects(AbstractBody& aBody, std::ofstream& aStream) const;
+   void addGencoord(const Coordinate* aCoordinate);
+   int addJointFunction(const Function* aFunction, Coordinate::MotionType aXType, Coordinate::MotionType aYType);
+   int addMuscleFunction(const Function* aFunction, Coordinate::MotionType aXType, Coordinate::MotionType aYType);
+   void writeWrapObjects(OpenSim::Body& aBody, std::ofstream& aStream) const;
+	int getUniqueFunctionUserNumber(const OpenSim::Function* aFunction);
+	bool writeMuscleFile(const std::string& aFileName);
+	bool writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet, std::ofstream& aStream);
 
 //=============================================================================
 };	// END of class SimbodySimmModel

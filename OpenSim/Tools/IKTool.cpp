@@ -37,6 +37,8 @@
 #include "IKTaskSet.h"
 #include "IKTrialSet.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include "SimTKsimbody.h"
 #include "IKSolverImpl.h"
 #include "IKTarget.h"
 
@@ -92,10 +94,6 @@ IKTool::IKTool(const string &aFileName, bool aLoadModel) :
 
 	if(aLoadModel) {
 		loadModel(aFileName);
-		if (_model && !_model->hasDynamicsEngine()) 
-			throw( Exception("No dynamics engine found for model.  Make sure the OpenSim model specified in the "+
-								  _modelFileProp.getName()+" property (currently '"+_modelFile+"') is the model containing the "+
-								  "SimmKinematicsEngine (and not the SD/Fast-based model generated using makeSDFastModel)",__FILE__,__LINE__) );
 	}
 }
 //_____________________________________________________________________________
@@ -182,7 +180,7 @@ void IKTool::setupProperties()
 	_propertySet.append(&_ikTaskSetProp);
 
 	_IKTrialSetProp.setComment("Parameters for solving the IK problem for each trial. "
-		"Each trial should get a seperate SimmIKTril block.");
+		"Each trial should get a seperate SimmIKTrial block.");
 	_IKTrialSetProp.setName("IKTrialSet");
 	_propertySet.append(&_IKTrialSetProp);
 
@@ -190,6 +188,15 @@ void IKTool::setupProperties()
 		"the latter requiring the osimFSQP library.");
 	_optimizerAlgorithmProp.setName("optimizer_algorithm");
 	_propertySet.append( &_optimizerAlgorithmProp );
+}
+//_____________________________________________________________________________
+/**
+ * Register IKTrial type.
+ */
+void IKTool::registerTypes()
+{
+	Object::RegisterType(IKTool());
+	Object::RegisterType(IKTrial());
 }
 //=============================================================================
 // OPERATORS
@@ -223,7 +230,7 @@ operator=(const IKTool &aTool)
 //=============================================================================
 // RUN
 //=============================================================================
-bool IKTool::initializeTrial(int i) 
+bool IKTool::initializeTrial(const SimTK::State& s, int i) 
 {
 	bool success = true;
 
@@ -233,18 +240,18 @@ bool IKTool::initializeTrial(int i)
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
-	_IKTrialSet.get(i)->setOptimizerAlgorithm(_optimizerAlgorithm);
-	_IKTrialSet.get(i)->setPrintResultFiles(_printResultFiles);
-	if(!_IKTrialSet.get(i)->initializeTrial(*_model, _ikTaskSet)) {
+	_IKTrialSet.get(i).setOptimizerAlgorithm(_optimizerAlgorithm);
+	_IKTrialSet.get(i).setPrintResultFiles(_printResultFiles);
+	if(!_IKTrialSet.get(i).initializeTrial(s, *_model, _ikTaskSet)) {
 		success = false;
-		cout << "Trial " << _IKTrialSet.get(i)->getName() << " initialization failed." << endl;
+		cout << "Trial " << _IKTrialSet.get(i).getName() << " initialization failed." << endl;
 	}
 
 	IO::chDir(saveWorkingDirectory);
 
 	return success;
 }
-bool IKTool::solveTrial(int i) 
+bool IKTool::solveTrial( SimTK::State& s, int i) 
 {
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory
@@ -252,11 +259,11 @@ bool IKTool::solveTrial(int i)
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
-	bool result = _IKTrialSet.get(i)->solveTrial(*_model, _ikTaskSet);
+	bool result = _IKTrialSet.get(i).solveTrial( s, *_model, _ikTaskSet);
 	if(result)
-		cout << "Trial " << _IKTrialSet.get(i)->getName() << " processed successfully." << endl;
+		cout << "Trial " << _IKTrialSet.get(i).getName() << " processed successfully." << endl;
 	else
-		cout << "Trial " << _IKTrialSet.get(i)->getName() << " processing failed." << endl;
+		cout << "Trial " << _IKTrialSet.get(i).getName() << " processing failed." << endl;
 
 	IO::chDir(saveWorkingDirectory);
 
@@ -272,11 +279,23 @@ bool IKTool::run()
 
 	bool success = true;
 
+    // Realize the topology
+	_model->initSystem();
+	_model->getSystem().realizeTopology();
+    SimTK::State& s = _model->getSystem().updDefaultState();
+
+	return run(s);
+}
+
+bool IKTool::run(SimTK::State& state)
+{
+	_model->getSystem().realize(state, SimTK::Stage::Position );
+
 	/* Now perform the IK trials on the updated model. */
 	for (int i = 0; i < _IKTrialSet.getSize(); i++)
 	{
-		if(!initializeTrial(i) || !solveTrial(i)) success = false;
+		if(!initializeTrial(state,i) || !solveTrial(state, i)) return false;
 	}
 
-	return success;
+	return true;
 }

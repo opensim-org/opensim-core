@@ -30,6 +30,7 @@
 // INCLUDES
 //=============================================================================
 #include "Constant.h"
+#include "XYFunctionInterface.h"
 
 //=============================================================================
 // STATICS
@@ -62,13 +63,12 @@ Constant::Constant() :
 //_____________________________________________________________________________
 /**
  */
-Constant::Constant(int aN,const double *aX,const double *aY,	const string &aName) :
+Constant::Constant(double value) :
 	_value(_valueProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
-	// OBJECT TYPE AND NAME
-	setName(aName);
+	setValue(value);
 }
 
 //_____________________________________________________________________________
@@ -136,34 +136,16 @@ void Constant::setupProperties()
 void Constant::copyData(const Constant &aConstant)
 {
 	_value = aConstant._value;
+    resetFunction();
 }
-//_____________________________________________________________________________
-/**
- * Initialize the constant with a value. This method is a virtual one in
- * Function, so it has arguments for arrays of X and Y values. The constant's
- * new value is stored in the first element of the Y array.
- *
- * @param aN the number of X and Y values
- * @param aXValues the X values
- * @param aYValues the Y values
- */
-void Constant::init(Function* aFunction)
-{
-	if (aFunction == NULL)
-		return;
 
-	Constant* cons = dynamic_cast<Constant*>(aFunction);
-	if (cons != NULL) {
-		copyData(*cons);
-	} else if (aFunction->getNumberOfPoints() > 0) {
-		double ySum = 0.0;
-		for (int i=0; i<aFunction->getNumberOfPoints(); i++)
-			ySum += aFunction->getYValues()[i];
-		setValue(ySum / aFunction->getNumberOfPoints());
-	} else {
-		setValue(0.0);
-	}
+
+void Constant::setValue(double aValue)
+{
+    _value = aValue;
+    resetFunction();
 }
+
 
 //=============================================================================
 // OPERATORS
@@ -190,21 +172,6 @@ Constant& Constant::operator=(const Constant &aConstant)
 //=============================================================================
 // UTILITY
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Update the bounding box for this function.
- *
- * @see Function
- */
-void Constant::updateBoundingBox()
-{
-	setMinX(0.0);
-	setMinY(0.0);
-	setMinZ(0.0);
-	setMaxX(0.0);
-	setMaxY(0.0);
-	setMaxZ(0.0);
-}
-const SimTK::Function<1>* Constant::createSimTKFunction() const {
-    return new FunctionAdapter(*this, 1);
+SimTK::Function* Constant::createSimTKFunction() const {
+    return new SimTK::Function::Constant(_value, 0);
 }

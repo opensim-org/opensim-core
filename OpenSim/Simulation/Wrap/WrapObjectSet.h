@@ -31,7 +31,7 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
-#include "AbstractWrapObject.h"
+#include "WrapObject.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -51,7 +51,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API WrapObjectSet :	public Set<AbstractWrapObject>
+class OSIMSIMULATION_API WrapObjectSet :	public Set<WrapObject>
 {
 private:
 	void setNull();

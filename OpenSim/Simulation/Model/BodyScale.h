@@ -77,9 +77,7 @@ public:
 #endif
 	void copyData(const BodyScale &aBodyScale);
 
-#ifndef SWIG
 	const Array<std::string>& getAxisNames() const { return _axisNames; }
-#endif
 	Array<std::string>& getAxisNames() { return _axisNames; }
 
 	void setAxisNames(const Array<std::string> &aAxisNames) { 

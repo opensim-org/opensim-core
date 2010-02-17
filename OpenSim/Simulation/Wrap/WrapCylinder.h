@@ -37,15 +37,15 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include "AbstractWrapObject.h"
+#include "WrapObject.h"
 
 namespace OpenSim {
 
 class VisibleObject;
-class AbstractBody;
-class AbstractDynamicsEngine;
-class MusclePoint;
-class MuscleWrap;
+class Body;
+class Model;
+class PathPoint;
+class PathWrap;
 class WrapResult;
 
 //=============================================================================
@@ -56,7 +56,7 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapCylinder : public AbstractWrapObject
+class OSIMSIMULATION_API WrapCylinder : public WrapObject
 {
 
 //=============================================================================
@@ -93,11 +93,11 @@ public:
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
-
-	virtual int wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
-
+	virtual void setup(Model& aModel, OpenSim::Body& aBody);
+#ifndef SWIG
+	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+#endif
 protected:
 	void setupProperties();
 
@@ -113,6 +113,8 @@ private:
 														 double t,
 														 double theta,
 														 SimTK::Vec3& wrap_pt) const;
+
+
 	bool _adjust_tangent_point(SimTK::Vec3& pt1,
 													  SimTK::Vec3& dn,
 													  SimTK::Vec3& r1,

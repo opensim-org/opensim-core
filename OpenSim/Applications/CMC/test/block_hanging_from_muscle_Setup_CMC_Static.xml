@@ -3,11 +3,11 @@
 	<CMCTool name="block_hanging_from_muscle">
 		<!--Name of the .osim file used to construct a model.-->
 		<model_file> block_hanging_from_muscle.osim </model_file>
-		<!--Replace the model's actuator set with sets specified in
-			<actuator_set_files>? If false, the actuator set is appended to.-->
-		<replace_actuator_set> false </replace_actuator_set>
-		<!--List of xml files used to construct an actuator set for the model.-->
-		<actuator_set_files> </actuator_set_files>
+		<!--Replace the model's force set with sets specified in
+			<force_set_files>? If false, the force set is appended to.-->
+		<replace_force_set> false </replace_force_set>
+		<!--List of xml files used to construct an force set for the model.-->
+		<force_set_files> </force_set_files>
 		<!--Directory used for writing results.-->
 		<results_directory> CMCResultsSTATIC </results_directory>
 		<!--Output precision.  It is 20 by default.-->
@@ -25,9 +25,6 @@
 		<!--Integrator error tolerance. When the error is greater, the integrator
 			step size is decreased.-->
 		<integrator_error_tolerance>       1e-006 </integrator_error_tolerance>
-		<!--Integrator fine tolerance. When the error is less, the integrator step
-			size is increased.-->
-		<integrator_fine_tolerance>       1e-008 </integrator_fine_tolerance>
 		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
 		 <objects>

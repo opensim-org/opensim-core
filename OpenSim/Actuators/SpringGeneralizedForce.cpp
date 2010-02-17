@@ -32,15 +32,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include "SpringGeneralizedForce.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
-#include <OpenSim/Simulation/Model/SpeedSet.h>
-
-
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -61,39 +57,50 @@ SpringGeneralizedForce::~SpringGeneralizedForce()
  * Default constructor.
  */
 SpringGeneralizedForce::
-SpringGeneralizedForce(string aQName) :
-	GeneralizedForce(aQName),
+SpringGeneralizedForce(string aCoordinateName) :
+	CustomForce(),
+	_coordName(aCoordinateName),
+	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestLength.getValueDbl()),
-	_viscosity(_propViscosity.getValueDbl())
+	_viscosity(_propViscosity.getValueDbl()),
+	_coord(NULL)
 {
 	// NULL
 	setNull();
+
+	if (_model) {
+		_coord = &_model->updCoordinateSet().get(_coordName);
+	} 
 }
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  *
- * @param aActuator Actuator to be copied.
+ * @param aforce force to be copied.
  */
 SpringGeneralizedForce::
-SpringGeneralizedForce(const SpringGeneralizedForce &aActuator) :
-	GeneralizedForce(aActuator),
+SpringGeneralizedForce(const SpringGeneralizedForce &aForce) :
+	CustomForce(aForce),
+	_coordName(_propCoordinateName.getValueStr()),
+	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestLength.getValueDbl()),
-	_viscosity(_propViscosity.getValueDbl())
+	_viscosity(_propViscosity.getValueDbl()),
+	_coord(NULL)
 {
 	setNull();
 
 	// MEMBER VARIABLES
-	setRestLength(aActuator.getRestLength());
-	setViscosity(aActuator.getViscosity());
+	setStiffness(aForce.getStiffness());
+	setRestLength(aForce.getRestLength());
+	setViscosity(aForce.getViscosity());
 }
 
 //_____________________________________________________________________________
 /**
- * Copy this actuator and return a pointer to the copy.
+ * Copy this force and return a pointer to the copy.
  * The copy constructor for this class is used.
  *
- * @return Pointer to a copy of this actuator.
+ * @return Pointer to a copy of this force.
  */
 Object* SpringGeneralizedForce::
 copy() const
@@ -108,7 +115,7 @@ copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the data members of this actuator to their null values.
+ * Set the data members of this force to their null values.
  */
 void SpringGeneralizedForce::
 setNull()
@@ -116,25 +123,28 @@ setNull()
 	setType("SpringGeneralizedForce");
 	setupProperties();
 
-	// APPLIES FORCE
-	setAppliesForce(true);
-
-	setNumControls(1); setNumStates(0); setNumPseudoStates(0);
-	bindControl(0, _stiffness, "stiffness");
-
-	// CONTROL VALUES
+	// Defualt VALUES
+	_stiffness = 0.0;
 	_restLength = 0.0;
 	_viscosity = 0.0;
-	_stiffness = 0.0;
 }
 
+	
 //_____________________________________________________________________________
+//
 /**
- * Set the data members of this actuator to their null values.
+ * Set the data members of this force to their null values.
  */
 void SpringGeneralizedForce::
 setupProperties()
 {
+	_propCoordinateName.setName("coordinate"); 
+	_propertySet.append( &_propCoordinateName );
+
+	_propStiffness.setName("stiffness");
+	_propStiffness.setValue(0.0);
+	_propertySet.append( &_propStiffness );
+
 	_propRestLength.setName("rest_length");
 	_propRestLength.setValue(0.0);
 	_propertySet.append( &_propRestLength );
@@ -158,18 +168,32 @@ setupProperties()
  * @return  Reference to the altered object.
  */
 SpringGeneralizedForce& SpringGeneralizedForce::
-operator=(const SpringGeneralizedForce &aActuator)
+operator=(const SpringGeneralizedForce &aForce)
 {
 	// BASE CLASS
-	GeneralizedForce::operator =(aActuator);
+	CustomForce::operator =(aForce);
 
 	// MEMBER VARIABLES
-	setRestLength(aActuator.getRestLength());
-	setViscosity(aActuator.getViscosity());
+	setStiffness(aForce.getStiffness());
+	setRestLength(aForce.getRestLength());
+	setViscosity(aForce.getViscosity());
 
 	return(*this);
 }
 
+//_____________________________________________________________________________
+/**
+ * setup sets the actual Coordinate reference _coord
+ */
+void SpringGeneralizedForce::
+setup(Model& aModel)
+{
+	Force::setup( aModel);
+
+	if (_model) {
+		_coord = &_model->updCoordinateSet().get(_coordName);
+	}
+}
 
 //=============================================================================
 // GET AND SET
@@ -179,9 +203,9 @@ operator=(const SpringGeneralizedForce &aActuator)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the rest length of the actuator.
+ * Set the rest length of the spring.
  *
- * @param aRestLength Rest length of the actuator.
+ * @param aRestLength Rest length of the spring.
  */
 void SpringGeneralizedForce::
 setRestLength(double aRestLength)
@@ -190,9 +214,9 @@ setRestLength(double aRestLength)
 }
 //_____________________________________________________________________________
 /**
- * Get the rest length of the actuator.
+ * Get the rest length of the spring.
  *
- * @return Rest length of the actuator.
+ * @return Rest length of the spring.
  */
 double SpringGeneralizedForce::
 getRestLength() const
@@ -205,11 +229,11 @@ getRestLength() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the viscosity of the actuator.  Normally the viscosity should be a
+ * Set the viscosity of the spring.  Normally the viscosity should be a
  * positive number.  Negative viscosities will put energy into the system
  * rather than apply a damping force.
  *
- * @param aViscosity Viscosity of the actuator.
+ * @param aViscosity Viscosity of the spring.
  */
 void SpringGeneralizedForce::
 setViscosity(double aViscosity)
@@ -218,9 +242,9 @@ setViscosity(double aViscosity)
 }
 //_____________________________________________________________________________
 /**
- * Get the viscosity of the actuator.
+ * Get the viscosity of the spring.
  *
- * @return Stiffness of the actuator.
+ * @return Stiffness of the spring.
  */
 double SpringGeneralizedForce::
 getViscosity() const
@@ -233,11 +257,11 @@ getViscosity() const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Set the stiffness of the actuator.  Normally the stiffness is a positive
+ * Set the stiffness of the spring.  Normally the stiffness is a positive
  * quantity.  Negative stiffnessess will result in an unstable system- the
  * force will push away from the rest length instead of pulling toward it.
  *
- * @param aStiffness Stiffness of the actuator.
+ * @param aStiffness Stiffness of the spring force.
  */
 void SpringGeneralizedForce::
 setStiffness(double aStiffness)
@@ -246,13 +270,14 @@ setStiffness(double aStiffness)
 }
 //_____________________________________________________________________________
 /**
- * Get the stiffness of the actuator.
+ * Get the stiffness of the force.
  *
- * @return Stiffness of the actuator.
+ * @return Stiffness of the force.
  */
 double SpringGeneralizedForce::
 getStiffness() const
 {
+
 	return _stiffness;
 }
 
@@ -262,22 +287,17 @@ getStiffness() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute all quantities necessary for applying the actuator force to the
+ * Compute all quantities necessary for applying the spring force to the
  * model.
  */
-void SpringGeneralizedForce::
-computeActuation()
+void SpringGeneralizedForce::computeForce( const SimTK::State& s) const
 {
-	if(_model==NULL || _q == NULL) return;
+	if(_model==NULL || _coord == NULL) return;
 
 	// FORCE
-	double q = _q->getValue();
+	double q = _coord->getValue(s);
+	double speed =  _coord->getSpeedValue(s);
+	double force = -getStiffness()*(q - _restLength) - _viscosity*speed;
 
-	AbstractSpeed *speed =  _model->getDynamicsEngine().getSpeedSet()->get(_q->getName());
-	if (speed)
-	{
-		_speed = speed->getValue();
-		double force = -_stiffness*(q - _restLength) - _viscosity*_speed;
-		setForce(force);
-	}
+	applyGeneralizedForce(*_coord, force);
 }

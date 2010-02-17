@@ -16,7 +16,6 @@ void norm(PolyhedronStruct* ph_in, NormOptions* opt, int* num_output,
 PolyhedronStruct* combine_polyhedra(PolyhedronStruct** phs, int num_phs);
 ReturnCode check_polyhedron(PolyhedronStruct* ph);
 void preread_init_polygon(PolygonStruct* p);
-void reset_polygon_boolean_info(PolygonStruct* p);
 void preread_init_vertex(VertexStruct* v, int index);
 void preread_init_polyhedron(PolyhedronStruct* ph);
 void postread_init_polyhedron(PolyhedronStruct* ph, SBoolean full_init);
@@ -113,3 +112,8 @@ void print_polygon(PolygonStruct* p);
 void print_polyhedron_simple(PolyhedronStruct* ph, char pname[]);
 void free_polyhedron(PolyhedronStruct* ph, SBoolean free_ph, ModelStruct* ms);
 void find_bounding_cube(PolyhedronStruct* polyhedron, BoundingCube* bc);
+void unscale_bones(ModelStruct* model);
+
+#if ! NORM && ! ENGINE && ! OPENSMAC
+void delete_polyhedron_display_list(PolyhedronStruct* ph, ModelStruct* ms);
+#endif

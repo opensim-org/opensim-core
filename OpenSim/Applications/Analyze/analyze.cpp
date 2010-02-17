@@ -1,7 +1,7 @@
 // analyze.cpp
-// Author: Frank C. Anderson
+// Author: Frank C. Anderson, Ayman Habib
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -35,8 +35,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
-#include <OpenSim/Actuators/GeneralizedForceAtv.h>
-
 
 using namespace OpenSim;
 using namespace std;
@@ -45,8 +43,8 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
 
 //_____________________________________________________________________________
 /**
- * Main routine for executing a forward integration and running a set of
- * analyses during the forward integration.
+ * Main routine for stepping thru a trajectory and running a set of
+ * analyses.
  */
 int main(int argc,char **argv)
 {
@@ -54,13 +52,6 @@ int main(int argc,char **argv)
 	// Surrounding try block
 	//----------------------
 	try {
-	//----------------------
-
-#ifndef STATIC_OSIM_LIBS
-	//TODO: put these options on the command line
-	//LoadOpenSimLibrary("osimSdfastEngine");
-	LoadOpenSimLibrary("osimSimbodyEngine");
-#endif
 
 	// PARSE COMMAND LINE
 	int i;
@@ -125,26 +116,18 @@ int main(int argc,char **argv)
 	}
 
 	//ISSUES:
-	//1. need to make an actuator in order to pull in DLL and register actuator objects.
-	//2. ActuatorSet, SdfastBodySet, AnalysisSet must have specific names in hopper.xml.
-	GeneralizedForceAtv *atv = new GeneralizedForceAtv();
-	delete atv;
+	//Load dlls that register Built in Actuator classes.
+	LoadOpenSimLibrary("osimActuators");
 
 	// CONSTRUCT
 	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
 	AnalyzeTool analyze(setupFileName);
-	analyze.print("check.xml");
 
 	// PRINT MODEL INFORMATION
-	Model *model = analyze.getModel();
-	if(model==NULL) {
-		cout<<"\nanalyze:  ERROR- failed to load model.\n";
-		exit(-1);
-	}
+	Model& model = analyze.getModel();
 	cout<<"-----------------------------------------------------------------------\n";
 	cout<<"Loaded library\n";
 	cout<<"-----------------------------------------------------------------------\n";
-	model->printDetailedInfo(cout);
 	cout<<"-----------------------------------------------------------------------\n\n";
 
 	// RUN
@@ -158,7 +141,6 @@ int main(int argc,char **argv)
 		return(-1);
 	}
 	//----------------------------
-
 	return(0);
 }
 

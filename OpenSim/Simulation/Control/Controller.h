@@ -45,7 +45,12 @@
 // These files contain declarations and definitions of variables and methods
 // that will be used by the Controller class.
 #include <OpenSim/Common/Object.h>
-#include "ControlSet.h"
+#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include "OpenSim/Simulation/Model/ModelComponent.h"
+#include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyStrArray.h>
+#include "SimTKsimbody.h"
 
 //=============================================================================
 //=============================================================================
@@ -57,11 +62,11 @@
  * which means that you cannot create an instance of it (i.e. you cannot write
  * code that contains a statement like "Controller controller;" or
  * "Controller controller(&model,&yDesStore);".  However, you can create a
- * subclass of Controller (such as SimpleFeedbackController) that is not
+ * subclass of Controller (such as ControlSetController) that is not
  * abstract, which means you can create an instance of it.  Controller is
- * abstract because it has a method, computeControls, that is "pure virtual."
- * This means that computeControls must be implemented by any subclass of
- * Controller, because Controller itself does not implement computeControls.
+ * abstract because it has a method, computeControl, that is "pure virtual."
+ * This means that computeControl must be implemented by any subclass of
+ * Controller, because Controller itself does not implement computeControl.
  *
  * @author Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
  * @version 1.0
@@ -80,13 +85,15 @@
 // separately even though both Controller classes have the same name.
 namespace OpenSim { 
 
-// This empty declaration of the Model class is necessary because we
+// These empty declarations of the Model and Manager classes are necessary because we
 // haven't included a definition of the Model class (e.g., Model.h)
 // in this file, but we do use the Model class in the code below.
 // This way, C++ knows that Model is a class defined elsewhere and
 // won't throw compiler errors when it sees the identifier "Model"
 // used in the code below.
 class Model;
+class Manager;
+class Storage;
 
 // The entire definition of the Controller class is contained inside
 // this code block.  The identifier OSIMSIMULATION_API tells C++ that
@@ -94,7 +101,7 @@ class Model;
 // the osimSimulation project.  The terms "public Object" tell C++
 // that the Controller class is a subclass (child) of the Object class
 // in OpenSim.
-class OSIMSIMULATION_API Controller : public Object
+class OSIMSIMULATION_API Controller : public ModelComponent
 {
 
 //=============================================================================
@@ -105,18 +112,26 @@ class OSIMSIMULATION_API Controller : public Object
 // methods of the Controller class, but also by any subclass of the Controller
 // class.
 protected:
-	/** 
-	 * This variable represents the model to be controlled.
-	 */
-	Model *_model;
-	/**
-	 * This variable is a flag indicating whether or not the controller is
-	 * "on", i.e., an integrator will use this flag to determine whether or
-	 * not to use this Controller's computeControls method when running a
-	 * simulation.  If _on == true, the controller is "on", whereas if
-	 * _on == false, the controller is "off".
-	 */
-	bool _on;
+     OpenSim::PropertyBool _isControllerEnabledProp;
+	 bool _isControllerEnabled;
+
+    /**  
+      * number of controls this controller has
+      */
+    int _numControls;
+
+    /**  
+      * list of actuator names  
+      */
+    PropertyStrArray _actuatorNameListProp;
+    Array<std::string>& _actuatorNameList;
+
+
+    /**
+      * set of actuators that the controller controls
+      */ 
+   Set<Actuator>  _actuatorSet;
+
 
 //=============================================================================
 // METHODS
@@ -142,7 +157,7 @@ public:
 	 *
 	 * @param aModel The model that is to be controlled by this Controller.
 	 */
-	Controller(Model *aModel);
+	Controller(Model& aModel);
 
 	/**
 	 * Constructor from an XML Document.
@@ -172,7 +187,7 @@ public:
 	 * instance of the subclass is deleted from memory.
 	 */
 	virtual ~Controller();
-	
+
 private:
 	// A "private" method is one that can be called only by this class,
 	// and not even by subclasses of this class.
@@ -187,7 +202,7 @@ protected:
 	/**
 	 * Connect properties to local pointers.  Currently, the Controller class
 	 * has no properties, so this method does nothing.  However, a subclass
-	 * of Controller (e.g., SimpleFeedbackController) can contain member
+	 * of Controller (e.g., ControlSetController) can contain member
 	 * variables that are properties, which should be defined in the
 	 * setupProperties() method of the subclass.
 	 */
@@ -200,6 +215,7 @@ protected:
 	 * @param aController The controller whose data is to be copied.
 	 */
 	void copyData(const Controller &aController);
+
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -230,91 +246,62 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-
-	// MODEL
-
-	/**
-	 * Get a pointer to the model that is being controlled.
-	 *
-	 * @return Pointer to the model.
-	 */
-	Model* getModel();
-
-	/**
-	 * Set this class's pointer to the model that is being controlled
-	 * to point to the model passed into this method.
-	 *
-	 * @param aModel Pointer to be set to point to the model that
-	 * is being controlled.
-	 */
-	void setModel(Model *aModel);
-
-	// INPUT CONTROL SET OBJECT
-	
-	/**
-	 * Set this class's pointer to the object containing
-	 * input controls to point to the ControlSet object passed into
-	 * this method.  This method is currently implemented only by the
-	 * SimpleFeedbackController class, which is a subclass of Controller.
-	 *
-	 * @param aControlSet A ControlSet object containing the
-	 * input controls of the model for the applied during the input
-	 * simulation.
-	 */
-	virtual void setControlSet(const ControlSet &aControlSet);
-
-	// DESIRED STATES STORAGE OBJECT
-	
-	/**
-	 * Set this class's pointer to the storage object containing
-	 * desired model states to point to the storage object passed into
-	 * this method.  This method is currently implemented only by the
-	 * SimpleFeedbackController class, which is a subclass of Controller.
-	 *
-	 * @param aYDesStore Pointer to a Storage object containing the
-	 * desired states of the model for the controller to achieve during
-	 * simulation.
-	 */
-	virtual void setDesiredStatesStorage(Storage *aYDesStore);
-
-	// ON/OFF
-
 	/**
 	 * Get whether or not this controller is on.
 	 *
 	 * @return true if on, false if off.
 	 */
-	bool getOn();
+	bool getIsEnabled() const;
 
 	/**
 	 * Turn this controller on or off.
 	 *
 	 * @param aTrueFalse Turns controller on if "true" and off if "false".
 	 */
-	void setOn(bool aTrueFalse);
+	void setIsEnabled(bool aTrueFalse);
 
 	//--------------------------------------------------------------------------
 	// CONTROL
 	//--------------------------------------------------------------------------
 
 	/**
-	 * Compute the controls for a simulation.
-	 *
-	 * The caller should send in an initial guess.
 	 *
 	 * Note that this method is "pure virtual", which means that the Controller
 	 * class does not implement it, and that subclasses must implement it.
 	 *
-	 * @param rDT Integration time step in normalized time that is to be taken
-	 * next.  Note that the controller can change the value of rDT.
-	 * @param aT Current time in normalized time.
-	 * @param aY Current states of the model.
+	 * @param s system state 
 	 * @param rControlSet Control set used for the simulation.  This method
 	 * alters the control set in order to control the simulation.
 	 */
-	virtual void
-		computeControls(double &rDT,double aT,const double *aY,
-		ControlSet &rX) = 0;
+	virtual double computeControl(const SimTK::State& s, int index) const = 0;
+
+    virtual void setActuators( Set<Actuator>& actuators );
+
+   // controller setup once the system is complete 
+   virtual void setupSystem( SimTK::MultibodySystem& system); 
+
+   // for any post XML deseraialization intialization
+   virtual void setup(Model& model);
+
+   // for adding any components to the model
+   virtual void createSystem( SimTK::MultibodySystem& system); 
+
+   // for any intialization requiring a state or the complete system 
+   virtual void initState( SimTK::State& s);
+
+   /** 
+    * return the min an max times that a controller knows how to supply controlls for 
+    */ 
+   virtual double getFirstTime() const;
+   virtual double getLastTime() const;
+
+   virtual Set<Actuator>& updActuators();
+   virtual const Set<Actuator>& getActuatorSet() const;
+
+    virtual const Array<std::string>& getActuatorList() const { return _actuatorNameList; }
+    
+   friend class ControlSet;
+   friend class ControllerSet;
 
 //=============================================================================
 };	// END of class Controller

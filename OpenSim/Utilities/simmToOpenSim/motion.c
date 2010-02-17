@@ -13,18 +13,13 @@
    Description:
 
    Routines:
-      load_motion           : reads a motion file to fill a motion structure
       apply_motion_to_model : moves a model according to a motion
-      column_names_match_model : checks motion column names
+      link_model_to_motion : checks motion column names
       check_motion_wrapping : checks boundaries of motion variable
       find_nth_motion       : returns the appropriate motion
 
 *******************************************************************************/
 #include <assert.h>
-
-#ifdef __MWERKS__
-   #include <unistd.h>
-#endif
 
 #include "universal.h"
 #include "globals.h"
@@ -42,15 +37,14 @@ typedef struct {
    ContactObject* forceMatte;
    double pointOfApplication[3];
    double force[3];
+   double freeTorque[3];
    double magnitude;
-   int column[6];
+   int column[9];
 } ForceMatteForce;
 
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
-
-/* ==== DEFAULT MOTION OBJECTS:
- */
+// default motion objects
 static MotionObject sDefaultMotionObjects[] = {
    {
       "force" ,              /* name */
@@ -123,20 +117,52 @@ static MotionObject sDefaultMotionObjects[] = {
       "arrow.asc",           /* filename */
       no,                    /* defined_in_file */
       { 0,0,0 },             /* startingPosition */
-      { 1.0, 1.0, 1.0 },     /* startingScale */
-      { 0,0,0 },             /* starting XYZRotation */
-      flat_shading,          /* drawmode */
+      { 0.0, 0.0, 0.0 },     /* startingScale---------> free torques in OpenSim MOT files map to this object, */
+      { 0,0,0 },             /* starting XYZRotation    but you normally don't want to see them. So make the */
+      flat_shading,          /* drawmode                starting scale 0, 0, 0. */
       YY,                    /* vector_axis */
       "def_joint_vector"     /* materialname */
+   },
+   {
+      "rightFootPrint",      /* name */
+      "rightFootPrint.asc",  /* filename */
+      no,                    /* defined_in_file */
+      { 0,0,0 },             /* startingPosition */
+      { 1.0, 1.0, 1.0 },     /* startingScale */
+      { 0,0,0 },             /* starting XYZRotation */
+      solid_fill,            /* drawmode */
+      YY,                    /* vector_axis */
+      "foot_print_mat"       /* materialname */
+   },
+   {
+      "leftFootPrint",       /* name */
+      "leftFootPrint.asc",   /* filename */
+      no,                    /* defined_in_file */
+      { 0,0,0 },             /* startingPosition */
+      { 1.0, 1.0, 1.0 },     /* startingScale */
+      { 0,0,0 },             /* starting XYZRotation */
+      solid_fill,            /* drawmode */
+      YY,                    /* vector_axis */
+      "foot_print_mat"       /* materialname */
+   },
+   {
+      "forceplate",          /* name */
+      "forceplate.asc",      /* filename */
+      no,                    /* defined_in_file */
+      { 0,0,0 },             /* startingPosition */
+      { 1.0, 1.0, 1.0 },     /* startingScale */
+      { 0,0,0 },             /* starting XYZRotation */
+      outlined_polygons,     /* drawmode */
+      YY,                    /* vector_axis */
+      "def_world_object"     /* materialname */
    }
 };
-
 /* NOTE: the starting scale factors (0.75, 0.002, 0.75) for the default "force"
  *  arrow motion object were chosen to match SIMM's previous behavior.  -- KMS 12/20/99
  * NOTE: arrow.asc was changed to include the X and Z 0.75 factors. Thus the
  *  "force" scale factor was changed to 1.0, 0.002, 1.0 -- JPL 9/6/00
  */
- 
+
 
 /*************** GLOBAL VARIABLES (used in only a few files) ******************/
 
@@ -147,989 +173,97 @@ extern char gcv_text[];
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static SBoolean column_names_match_model(ModelStruct* ms, MotionSequence* motion,
-                                         int* num_other_data, char* otherNames);
-static void set_plot_cursors(ModelStruct *ms, MotionSequence* motion);
-static void make_motion_curve_menu(int mod, MotionSequence* motion, int mnum);
-static void store_motion_object_instance(int mod, MotionModelOptions* mopt, int seg, int motion_object, int compenant, int column);
-static void calc_transform_mat(double vx, double vy, double vz, double mat[][4]);
-static void add_vector(double pt[], double vec[], ForceMatteForce* fmf);
+static void update_current_motion_frame(MotionSequence* motion);
+static SBoolean link_model_to_motion(ModelStruct* model, MotionSequence* motion,
+                                     int* num_other_data, char* otherNames);
+static MotionObjectInstance* store_motion_object_instance(ModelStruct *model, MotionModelOptions* mopt,
+                                                          int seg, int motion_object, int compenant, int column);
+static void add_vector(double pt[], double vec[], double freeTorque[], ForceMatteForce* fmf);
 static void transformMotion(MotionSequence* newMotion, MotionSequence* oldMotion,
-                            ModelStruct* ms, ForceMatteForce forces[], int numForceMattes);
-static SBoolean columnIsGroundForce(MotionSequence* motion, ModelStruct* ms, int index);
+                            ModelStruct* model, ForceMatteForce forces[], int numForceMattes);
+static SBoolean columnIsGroundForce(MotionSequence* motion, ModelStruct* model, int index);
+static int column_is_marker_data(MotionSequence* motion, int column);
 
-#ifndef ENGINE
-#if !OPENSIM_CONVERTER
 
-MotionSequence* load_motion(char filename[], int mod, SBoolean showTopLevelMessages)
+/* -------------------------------------------------------------------------
+   add_default_motion_objects - 
+---------------------------------------------------------------------------- */
+void add_default_motion_objects(ModelStruct* model)
 {
+   int i, n = sizeof(sDefaultMotionObjects) / sizeof(MotionObject);
 
-   int i, j, nk, len, rd, sd, numread, old_size, num_cols = 0;
-   char key1[64], key2[64];
-   int numstddevs, num_errors=0;
-   SBoolean* col_is_std_dev;
-   double** std_dev = NULL;
-   char** col_name = NULL;
-   FILE *fp;
-   char fullpath[CHARBUFFER];
-   MotionSequence* motion = NULL;
-   ReturnCode rc;
-   ModelStruct* ms = model[mod];
-
-#ifdef WIN32
-   strcpy(fullpath, filename);
-#else
-   if (filename[0] == DIR_SEP_CHAR)
-       strcpy(fullpath, filename);
-   else
-       build_full_path(root.pref.jointfilepath, filename, fullpath);
-#endif
-
-   if ((fp = preprocess_file(fullpath,glutGetTempFileName(".motion"))) == NULL)
+   for (i = 0; i < n; i++)
    {
-      if (showTopLevelMessages == yes)
-      {
-         (void)sprintf(errorbuffer,"Unable to open motion file \"%s\"", fullpath);
-         error(abort_action,errorbuffer);
-      }
-      goto cleanup;
-   }
+      MotionObject* mo;
+      ReturnCode rc;
 
-   motion = createMotionStruct(ms);
+      int j = model->num_motion_objects++;
 
-   /* createMotionStruct() uses simm_calloc() to init the struct,
-    * so you only need to init fields that are not 0.
-    */
-   motion->calc_derivatives = no;
-   motion->wrap = no;
-   motion->enforce_loops = yes;
-   motion->enforce_constraints = yes;
-   motion->is_realtime = no;
-   motion->min_value = 0.0;
-   motion->max_value = 1.0;
-   motion->show_cursor = no;
-   motion->event_color[0] = root.color.cmap[MISC_MOTION_EVENTS].rgb[0];
-   motion->event_color[1] = root.color.cmap[MISC_MOTION_EVENTS].rgb[1];
-   motion->event_color[2] = root.color.cmap[MISC_MOTION_EVENTS].rgb[2];
-   motion->keys[0] = motion->keys[1] = null_key;
-   mstrcpy(&motion->name, filename);
-
-   while (1)
-   {
-      if (read_string(&fp,buffer) == EOF)
-         break;
-
-      if (buffer[0] == '#')
-      {
-         read_nonempty_line(&fp,buffer);
-         continue;
-      }
-
-      if (STRINGS_ARE_EQUAL(buffer,"endheader"))
-         break;
-
-      else if (STRINGS_ARE_EQUAL(buffer,"name"))
-      {
-         if (read_line(&fp, buffer) != EOF)
-         {
-            strip_trailing_white_space(buffer);
-            FREE_IFNOTNULL(motion->name);
-            mstrcpy(&motion->name, buffer);
-         }
-         else
-         {
-            error(abort_action,"Error reading name of motion.");
-            goto error_cleanup;
-         }
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"wrap"))
-      {
-         motion->wrap = yes;
-      }
-      else if (STRINGS_ARE_EQUAL(buffer, "enforce_loops"))
-      {
-         if (read_string(&fp, buffer) == EOF)
-            break;
-
-         if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
-            || STRINGS_ARE_EQUAL(buffer, "false"))
-            motion->enforce_loops = no;
-         else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "on")
-            ||STRINGS_ARE_EQUAL(buffer, "true"))
-            motion->enforce_loops = yes;
-      }
-      else if (STRINGS_ARE_EQUAL(buffer, "enforce_constraints"))
-      {
-         if (read_string(&fp, buffer) == EOF)
-            break;
-
-         if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
-            || STRINGS_ARE_EQUAL(buffer, "false"))
-            motion->enforce_constraints = no;
-         else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "on")
-            ||STRINGS_ARE_EQUAL(buffer, "true"))
-            motion->enforce_constraints = yes;
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"datacolumns"))
-      {
-         if (fscanf(fp,"%d", &motion->number_of_datacolumns) != 1)
-         {
-            (void)sprintf(errorbuffer,"Error reading datacolumns in motion %s", motion->name);
-            error(abort_action,errorbuffer);
-            goto error_cleanup;
-         }
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"keys"))
-      {
-         read_line(&fp,buffer);
-         nk = sscanf(buffer,"%s %s", key1, key2);
-         if (nk == 1)
-            motion->keys[0] = motion->keys[1] = lookup_simm_key(key1);
-         else if (nk == 2)
-         {
-            motion->keys[0] = lookup_simm_key(key1);
-            motion->keys[1] = lookup_simm_key(key2);
-         }
-         else
-         {
-            (void)sprintf(errorbuffer,"Error reading keys for motion %s", motion->name);
-            error(recover,errorbuffer);
-            motion->keys[0] = motion->keys[1] = 0;
-         }
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"datarows"))
-      {
-         if (fscanf(fp,"%d", &motion->number_of_datarows) != 1)
-         {
-            (void)sprintf(errorbuffer,"Error reading datarows for motion %s", motion->name);
-            error(abort_action,errorbuffer);
-            goto error_cleanup;
-         }
-         if (motion->number_of_datarows < 1)
-         {
-            (void)sprintf(errorbuffer,"\"datarows\" in motion %s must be greater than 0", motion->name);
-            error(abort_action,errorbuffer);
-            goto error_cleanup;
-         }
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"otherdata"))
-      {
-         fscanf(fp,"%*d");
-         error(none, "Keyword \'otherdata\' is no longer required in a motion header.");
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"range"))
-      {
-         if (fscanf(fp,"%lg %lg", &motion->min_value, &motion->max_value) != 2)
-         {
-            (void)sprintf(errorbuffer,"Error reading range for motion %s", motion->name);
-            error(none,errorbuffer);
-            error(none,"Using default values 0.0 to 100.0");
-            motion->min_value = 0.0;
-            motion->max_value = 100.0;
-         }
-      }
-      else if (STRINGS_ARE_EQUAL(buffer, "units"))
-      {
-         read_line(&fp, buffer);
-         _strip_outer_whitespace(buffer);
-         mstrcpy(&motion->units, buffer);
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"cursor"))
-      {
-         if (fscanf(fp,"%f %f %f", &motion->cursor_color[0],
-            &motion->cursor_color[1], &motion->cursor_color[2]) != 3)
-         {
-            (void)sprintf(errorbuffer,"Error reading cursor color for motion %s",
-               motion->name);
-            error(none,errorbuffer);
-            error(none,"Using default values of 1.0 1.0 0.0");
-            motion->cursor_color[0] = 1.0;
-            motion->cursor_color[1] = 1.0;
-            motion->cursor_color[2] = 0.0;
-         }
-         else
-         {
-         /* Support for 'old style' colors (range: 0 to 255). If any of the
-         * color components is greater than 1.0, assume that it's an old
-         * style color definition.
-            */
-            if (motion->cursor_color[0] > 1.0 ||
-               motion->cursor_color[1] > 1.0 ||
-               motion->cursor_color[2] > 1.0)
-            {
-               motion->cursor_color[0] /= 255.0;
-               motion->cursor_color[1] /= 255.0;
-               motion->cursor_color[2] /= 255.0;
-            }
-            for (i=0; i<3; i++)
-            {
-               if (motion->cursor_color[i] < 0.0)
-                  motion->cursor_color[i] = 0.0;
-            }
-         }
-         motion->show_cursor = yes;
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"event"))
-      {
-         if (motion->event)
-         {
-            motion->event = (MotionEvent*)simm_realloc(motion->event,
-               (motion->num_events+1) * sizeof(MotionEvent), &rc);
-         }
-         else
-         {
-            motion->event = (MotionEvent*)simm_malloc((motion->num_events+1) * sizeof(MotionEvent));
-         }
-
-         if (!motion->event)
-         {
-            error(recover, "Unable to malloc space to hold motion event.");
-         }
-         else if (fscanf(fp,"%lg", &motion->event[motion->num_events].x_coord) != 1)
-         {
-            (void)sprintf(errorbuffer,"Error reading event time in motion %s", motion->name);
-            error(recover,errorbuffer);
-         }
-         else if (read_nonempty_line(&fp,buffer) == EOF)
-         {
-            (void)sprintf(errorbuffer,"Error reading event name in motion %s", motion->name);
-            error(recover,errorbuffer);
-         }
-         else
-         {
-            mstrcpy(&motion->event[motion->num_events].name,buffer);
-            motion->num_events++;
-         }
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"event_color"))
-      {
-         if (fscanf(fp,"%f %f %f", &motion->event_color[0],
-            &motion->event_color[1], &motion->event_color[2]) != 3)
-         {
-            (void)sprintf(errorbuffer,"Error reading event_color for motion %s",
-               motion->name);
-            error(none,errorbuffer);
-            error(none,"Using default values from color file");
-            motion->event_color[0] = root.color.cmap[MISC_MOTION_EVENTS].rgb[0];
-            motion->event_color[1] = root.color.cmap[MISC_MOTION_EVENTS].rgb[1];
-            motion->event_color[2] = root.color.cmap[MISC_MOTION_EVENTS].rgb[2];
-         }
-         else
-         {
-         /* Support for 'old style' colors (range: 0 to 255). If any of the
-         * color components is greater than 1.0, assume that it's an old
-         * style color definition.
-            */
-            if (motion->event_color[0] > 1.0 ||
-               motion->event_color[1] > 1.0 ||
-               motion->event_color[2] > 1.0)
-            {
-               motion->event_color[0] /= 255.0;
-               motion->event_color[1] /= 255.0;
-               motion->event_color[2] /= 255.0;
-            }
-            for (i=0; i<3; i++)
-            {
-               if (motion->event_color[i] < 0.0)
-                  motion->event_color[i] = 0.0;
-            }
-         }
-      }
-      else if (STRINGS_ARE_EQUAL(buffer,"calc_derivatives"))
-      {
-         if (fscanf(fp,"%lf", &motion->time_step) != 1)
-         {
-            (void)sprintf(errorbuffer,"Error reading time_step for motion %s", motion->name);
-            error(recover,errorbuffer);
-         }
-         else if (motion->time_step < 0.0)
-            error(recover,"Time step must be greater than zero.");
-         else
-            motion->calc_derivatives = yes;
-      }
-#if INCLUDE_MOCAP_MODULE
-      else if (STRINGS_ARE_EQUAL(buffer,"accept_realtime_motion"))
-         motion->is_realtime = no; // this is no longer supported
-      else if (STRINGS_ARE_EQUAL(buffer,"sliding_time_scale"))
-         motion->sliding_time_scale = yes;
-#endif
+      if (model->motion_objects == NULL)
+         model->motion_objects = (MotionObject*) simm_malloc(model->num_motion_objects * sizeof(MotionObject));
       else
+         model->motion_objects = (MotionObject*) simm_realloc(model->motion_objects,
+                                                           model->num_motion_objects * sizeof(MotionObject), &rc);
+      if (model->motion_objects == NULL)
       {
-         (void)sprintf(errorbuffer,"Unrecognized string \"%s\" found in motion file.",
-            buffer);
-         error(recover,errorbuffer);
-         num_errors++;
+         model->num_motion_objects = 0;
+         return;
       }
-      if (num_errors > 10)
-      {
-         error(none,"Too many errors to continue.");
-         error(none,"Unable to load motion file.");
-         goto error_cleanup;
-      }
-   }
+      mo = &model->motion_objects[j];
 
-   col_name = (char**)simm_calloc(motion->number_of_datacolumns, sizeof(char*));
-   num_cols = motion->number_of_datacolumns;
-   if (col_name == NULL)
-   {
-      error(none,"Unable to load motion.");
-      goto error_cleanup;
-   }
+      memset(mo, 0, sizeof(MotionObject));
 
-   numread = 0;
-   for (i=0; i<motion->number_of_datacolumns; i++)
-   {
-      numread += fscanf(fp,"%s",buffer);
-      mstrcpy(&col_name[i],buffer);
-   }
-   if (numread < motion->number_of_datacolumns)
-   {
-      (void)sprintf(buffer,"Error reading names of data columns. Only %d of %d read.",
-	      numread, motion->number_of_datacolumns);
-      error(abort_action,buffer);
-      goto error_cleanup;
-   }
+      mstrcpy(&mo->name, sDefaultMotionObjects[i].name);
+      mstrcpy(&mo->filename, sDefaultMotionObjects[i].filename);
+      rc = lookup_polyhedron(&mo->shape, mo->filename, model);
+      mstrcpy(&mo->materialname, sDefaultMotionObjects[i].materialname);
+      mo->material = enter_material(model, mo->materialname, declaring_element);
+      mo->drawmode = sDefaultMotionObjects[i].drawmode;
+      mo->vector_axis = sDefaultMotionObjects[i].vector_axis;
 
-   /* Peek ahead to see if there are more column names specified. */
-   while (1)
-   {
-      int c = fgetc(fp);
-      
-      if (isdigit(c) || c == '.' || c == '-' || c == '+')
+      for (j = 0; j < 3; j++)
       {
-         ungetc(c, fp);
-         break;
-      }
-      else if (c == '\n' || c == '\r' || c == '\t')
-      {
-      }
-      else if ( ! isspace(c))
-      {
-         ungetc(c, fp);
-         (void)sprintf(buffer,"Extra column names are specified in motion file. Check names and value of \'datacolumns\'.");
-         error(abort_action,buffer);
-         goto error_cleanup;
+         mo->startingPosition[j]    = sDefaultMotionObjects[i].startingPosition[j];
+         mo->startingScale[j]       = sDefaultMotionObjects[i].startingScale[j];
+         mo->startingXYZRotation[j] = sDefaultMotionObjects[i].startingXYZRotation[j];
       }
    }
-
-   /* Figure out how many datacolumns are standard deviations. If there are 17
-    * columns, and 5 are standard deviations, then you want to malloc an array
-    * of size 12 for motiondata (and fill it with the 12 non-stddev data), and
-    * an array of size 12 for the standard deviations (5 to be filled with data,
-    * and 7 of them to be NULL).
-    */
-
-   col_is_std_dev = (SBoolean*)simm_malloc(motion->number_of_datacolumns*sizeof(SBoolean));
-
-   for (i=0, numstddevs=0; i<motion->number_of_datacolumns; i++)
-   {
-      col_is_std_dev[i] = no;
-      len = strlen(col_name[i]);
-      if (len < 5)
-         continue;
-      if (STRINGS_ARE_EQUAL(&col_name[i][len-4],"_std"))
-      {
-         col_is_std_dev[i] = yes;
-         numstddevs++;
-      }
-   }
-
-   /* Now make sure that there is a "data" column for every "data_std" column. */
-
-   for (i=0; i<motion->number_of_datacolumns; i++)
-   {
-      if (col_is_std_dev[i] == no)
-         continue;
-      len = strlen(col_name[i]);
-      strcpy(buffer,col_name[i]);
-      buffer[len-4] = STRING_TERMINATOR;
-      for (j=0; j<motion->number_of_datacolumns; j++)
-      {
-         if (j == i)
-            continue;
-         if (STRINGS_ARE_EQUAL(buffer,col_name[j]))
-            break;
-      }
-      if (j == motion->number_of_datacolumns)
-      {
-         (void)sprintf(errorbuffer,"Error reading motion file %s:", fullpath);
-         error(none,errorbuffer);
-         (void)sprintf(errorbuffer,"   You must specify %s when specifying %s",
-            buffer, col_name[i]);
-         error(abort_action,errorbuffer);
-         goto error_cleanup;
-      }
-   }
-   
-   motion->number_of_datacolumns -= numstddevs;
-
-   motion->motiondata = (double**)simm_malloc(motion->number_of_datacolumns*sizeof(double*));
-   motion->data_std_dev = (double**)simm_malloc(motion->number_of_datacolumns*sizeof(double*));
-   std_dev = (double**)simm_malloc(numstddevs*sizeof(double*));
-   if (motion->motiondata == NULL || motion->data_std_dev == NULL || std_dev == NULL)
-   {
-      error(none,"Unable to load motion.");
-      goto error_cleanup;
-   }
-
-   for (i=0; i<motion->number_of_datacolumns; i++)
-   {
-      motion->data_std_dev[i] = NULL;
-      motion->motiondata[i] = (double*)simm_malloc(motion->number_of_datarows*sizeof(double));
-      if (motion->motiondata[i] == NULL)
-      {
-         error(none,"Unable to load motion.");
-         for (j=0; j<i; j++)
-            FREE_IFNOTNULL(motion->motiondata[j]);
-         goto error_cleanup;
-      }
-   }
-   
-   for (i=0; i<numstddevs; i++)
-   {
-      std_dev[i] = (double*)simm_malloc(motion->number_of_datarows*sizeof(double));
-      if (std_dev[i] == NULL)
-      {
-         error(none,"Unable to load motion.");
-         for (j=0; j<motion->number_of_datacolumns; j++)
-            FREE_IFNOTNULL(motion->motiondata[j]);
-         for (j=0; j<i; j++)
-            FREE_IFNOTNULL(std_dev[i]);
-         goto error_cleanup;
-      }
-   }
-   
-   for (i=0; i<motion->number_of_datarows; i++)
-   {
-      numread = 0;
-      for (j=0, rd=0, sd=0; j<motion->number_of_datacolumns + numstddevs; j++)
-      {
-         if (col_is_std_dev[j] == no)
-         {
-            if (read_double(fp, &motion->motiondata[rd++][i]) == code_fine)
-               numread++;
-         }
-         else
-         {
-            if (read_double(fp, &std_dev[sd++][i]) == code_fine)
-               numread++;
-         }
-      }
-      if (numread < motion->number_of_datacolumns + numstddevs)
-      {
-         (void)sprintf(buffer,"Error reading motion file %s:", fullpath);
-         error(none,buffer);
-         (void)sprintf(buffer,"   Only %d of %d datarows found.",
-            i, motion->number_of_datarows);
-         error(recover,buffer);
-         motion->number_of_datarows = i;
-         break;
-      }
-   }
-   
-   /* init the motion's model options array */
-   motion->mopt.num_motion_object_instances = 0;
-   motion->mopt.motion_object_instances = NULL;
-   motion->mopt.gencoords = NULL;
-   motion->mopt.genc_velocities = NULL;
-   motion->mopt.muscles = NULL;
-   motion->mopt.ligaments = NULL;
-   motion->mopt.other_data = NULL;
-
-   if (motion->number_of_datarows == 0 || motion->number_of_datacolumns == 0)
-   {
-      error(none,"Motion contains no recognizable data.");
-      goto error_cleanup;
-   }
-
-   /* Now copy the column names that are not standard deviations to the columnname
-    * variable.
-    */
-   motion->columnname = (char**)simm_malloc(motion->number_of_datacolumns*sizeof(char*));
-   for (i=0, rd=0; i<motion->number_of_datacolumns + numstddevs; i++)
-      if (col_is_std_dev[i] == no)
-         mstrcpy(&motion->columnname[rd++],col_name[i]);
-
-   /* Now that you have read in all the data, fill-in the std_dev array in the
-    * motion structure with the right data.
-    */
-   for (i=0, sd=0; i<motion->number_of_datacolumns + numstddevs; i++)
-   {
-      if (col_is_std_dev[i] == no)
-         continue;
-      len = strlen(col_name[i]);
-      strcpy(buffer,col_name[i]);
-      buffer[len-4] = STRING_TERMINATOR;
-      for (j=0; j<motion->number_of_datacolumns; j++)
-      {
-         if (STRINGS_ARE_EQUAL(buffer,motion->columnname[j]))
-            break;
-      }
-      if (j == motion->number_of_datacolumns)
-         continue;
-      motion->data_std_dev[j] = std_dev[sd++];
-   }
-
-   if ( ! is_in_demo_mode())
-   {
-      if (showTopLevelMessages == yes)
-      {
-         (void)sprintf(buffer,"Read motion file %s", filename);
-         message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
-      }
-   }
-   
-   if (tie_motion_to_model(motion, model[mod], showTopLevelMessages) == no)
-   {
-      if (showTopLevelMessages == yes)
-      {
-         (void)sprintf(buffer,"Did not tie motion %s to model %s.", motion->name, model[mod]->name);
-         error(none,buffer);
-      }
-      delete_motion(ms, motion);
-      goto error_cleanup;
-   }
-
-   /* If user wants SIMM to calculate derivatives, calculate them now. */
-
-   if (motion->calc_derivatives == yes)
-   {
-      if (setup_motion_derivatives(motion) == code_bad)
-      {
-         delete_motion(ms, motion);
-         goto error_cleanup;
-      }
-
-      link_derivs_to_model(ms, motion);
-   }
-
-   goto close_and_cleanup;
-
-error_cleanup:
-   delete_motion(ms, motion);
-   motion = NULL;
-
-close_and_cleanup:
-   (void)fclose(fp);
-   (void)unlink(glutGetTempFileName(".motion"));
-
-cleanup:
-   if (col_name)
-   {
-      for (i = 0; i < num_cols; i++)
-         FREE_IFNOTNULL(col_name[i]);
-      FREE_IFNOTNULL(col_name);
-   }
-
-   return motion;
 }
 
 
-static void make_motion_curve_menu(int mod, MotionSequence* motion, int mnum)
-{
-
-   int i, gc, m, ref, motion_object;
-   SplineType sType;
-   double cutoffFreq;
-   char* ptr = NULL;
-
-   motion->mopt.gencoordmenu = glueCreateMenu("Generalized Coordinates");
-   motion->mopt.musclemenu = glueCreateMenu("Muscle Activations");
-   motion->mopt.forceplatemenu = glueCreateMenu("Force Plates");
-   motion->mopt.segmentforcemenu = glueCreateMenu("Body Segment Forces");
-   motion->mopt.markermenu = glueCreateMenu("Markers");
-   motion->mopt.motionobjectmenu = glueCreateMenu("Motion Objects");
-   motion->mopt.othermenu = glueCreateMenu("Other Variables");
-
-   for (i=0; i<motion->number_of_datacolumns; i++)
-   {
-      if ((gc = name_is_gencoord(motion->columnname[i], model[mod], NULL, &sType, &cutoffFreq, no)) >= 0)
-      {
-         glueAddMenuEntryWithValue(motion->mopt.gencoordmenu, model[mod]->gencoord[gc].name, (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-      else if ((gc = name_is_gencoord(motion->columnname[i], model[mod], "_vel", &sType, &cutoffFreq, no)) >= 0)
-      {
-         sprintf(buffer, "%s_vel", model[mod]->gencoord[gc].name);
-         glueAddMenuEntryWithValue(motion->mopt.gencoordmenu, buffer, (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-      else if ((m = name_is_muscle(model[mod], motion->columnname[i], NULL, &sType, &cutoffFreq, no)) >= 0)
-      {
-         glueAddMenuEntryWithValue(motion->mopt.musclemenu, model[mod]->muscle[m].name, (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-      else if (get_ligament_index(mod,motion->columnname[i]) >= 0)
-      {
-         glueAddMenuEntryWithValue(motion->mopt.musclemenu, motion->columnname[i], (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-      else if (name_is_marker(model[mod], motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, no) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-      {
-         glueAddMenuEntryWithValue(motion->mopt.markermenu, motion->columnname[i], (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-      else if (name_is_forceplate(model[mod], motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, no) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-      {
-         glueAddMenuEntryWithValue(motion->mopt.forceplatemenu, motion->columnname[i], (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-      else if (name_is_body_segment(model[mod], motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, no) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-      {
-         /* If the column is a body segment force, add it to the segment force submenu.
-          * Otherwise add it to the motion object submenu.
-          */
-         if ((STRINGS_ARE_EQUAL(model[mod]->motion_objects[motion_object].name, "force")) ||
-             (STRINGS_ARE_EQUAL(model[mod]->motion_objects[motion_object].name, "torque")))
-             glueAddMenuEntryWithValue(motion->mopt.segmentforcemenu,
-                                       motion->columnname[i], (mnum + 1) * MAXMOTIONCURVES+i);
-         else
-            glueAddMenuEntryWithValue(motion->mopt.motionobjectmenu,
-                                      motion->columnname[i], (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-      else
-      {
-         glueAddMenuEntryWithValue(motion->mopt.othermenu, motion->columnname[i], (mnum + 1) * MAXMOTIONCURVES+i);
-      }
-   }
-
-   motion->mopt.curvemenu = glueCreateMenu("Motion Curves");
-   glueAddSubmenuEntry(motion->mopt.curvemenu,"Generalized Coordinates", motion->mopt.gencoordmenu);
-   glueAddSubmenuEntry(motion->mopt.curvemenu,"Muscle Activations", motion->mopt.musclemenu);
-   glueAddSubmenuEntry(motion->mopt.curvemenu,"Force Plates", motion->mopt.forceplatemenu);
-   glueAddSubmenuEntry(motion->mopt.curvemenu,"Body Segment Forces", motion->mopt.segmentforcemenu);
-   glueAddSubmenuEntry(motion->mopt.curvemenu,"Markers", motion->mopt.markermenu);
-   glueAddSubmenuEntry(motion->mopt.curvemenu,"Motion Objects", motion->mopt.motionobjectmenu);
-   glueAddSubmenuEntry(motion->mopt.curvemenu,"Other Variables", motion->mopt.othermenu);
-
-}
-
-
-ReturnCode setup_motion_derivatives(MotionSequence* motion)
+int get_motion_number(ModelStruct* model, MotionSequence* motion)
 {
    int i;
 
-   motion->deriv_names = (char**)simm_malloc(motion->number_of_datacolumns * sizeof(char*));
-   if (motion->deriv_names == NULL)
+   if (model && motion)
    {
-      error(none, "Cannot calculate derivatives of motion curves.");
-      return code_bad;
-   }
-
-   motion->deriv_data = (double**)simm_malloc(motion->number_of_datacolumns * sizeof(double*));
-   if (motion->deriv_data == NULL)
-   {
-      error(none, "Cannot calculate derivatives of motion curves.");
-      return code_bad;
-   }
-
-   for (i = 0; i < motion->number_of_datacolumns; i++)
-   {
-      sprintf(buffer,"%s_deriv", motion->columnname[i]);
-      mstrcpy(&motion->deriv_names[i],buffer);
-   }
-
-   for (i = 0; i < motion->number_of_datacolumns; i++)
-   {
-      motion->deriv_data[i] = (double*)simm_calloc(motion->number_of_datarows, sizeof(double));
-      if (motion->deriv_data[i] == NULL)
+      for (i = 0; i < model->motion_array_size; i++)
       {
-         error(none, "Cannot calculate derivatives of motion curves.");
-         return code_bad;
-      }
-   }
-
-   calc_motion_derivatives(motion);
-
-   return code_fine;
-}
-
-void calc_motion_derivatives(MotionSequence *motion)
-{
-   int i, j;
-   SplineFunction func;
-
-   malloc_function(&func, motion->number_of_datarows);
-   func.defined = func.used = yes;
-   func.type = natural_cubic;
-   func.numpoints = motion->number_of_datarows;
-
-   for (i = 0; i < motion->number_of_datacolumns; i++)
-   {
-      for (j = 0; j < func.numpoints; j++)
-      {
-         func.x[j] = j * motion->time_step; //TODO: make this work for variably spaced rows
-         func.y[j] = motion->motiondata[i][j];
-      }
-
-      calc_spline_coefficients(&func);
-
-      for (j = 0; j < func.numpoints; j++)
-         motion->deriv_data[i][j] = interpolate_spline(func.x[j], &func, first, 1.0, 1.0);
-   }
-
-   free_function(&func);
-}
-
-void link_derivs_to_model(ModelStruct* ms, MotionSequence* motion)
-{
-
-   int i, j, ref, motion_object, motion_num;
-   SplineType sType;
-   double cutoffFreq;
-   char* ptr = NULL;
-
-   motion_num = get_motion_number(ms, motion);
-
-   if (motion_num < 0)
-      return;
-
-   /* Go thru the array of genc_velocities to see which ones are still NULL,
-    * meaning that they were not supplied in the motion file. If one is
-    * NULL, find the location in the columnname array of the name of the
-    * gencoord, because that same location in the deriv_data array is the
-    * SIMM-calculated gencoord derivative.
-    */
-   for (i=0; i<ms->numgencoords; i++)
-   {
-      if (motion->mopt.genc_velocities[i] == NULL)
-      {
-         for (j=0; j<motion->number_of_datacolumns; j++)
-         {
-            if (STRINGS_ARE_EQUAL(motion->columnname[j], ms->gencoord[i].name))
-               break;
-         }
-         if (j == motion->number_of_datacolumns)
-            continue;
-         motion->mopt.genc_velocities[i] = motion->deriv_data[j];
-      }
-   }
-
-   for (i=0; i<motion->number_of_datacolumns; i++)
-   {
-      if (name_is_gencoord(motion->columnname[i], ms, NULL, &sType, &cutoffFreq, no) >= 0)
-          glueAddMenuEntryWithValue(motion->mopt.gencoordmenu, motion->deriv_names[i],
-                                    (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-
-      else if (name_is_gencoord(motion->columnname[i], ms, "_vel", &sType, &cutoffFreq, no) >= 0)
-          glueAddMenuEntryWithValue(motion->mopt.gencoordmenu, motion->deriv_names[i],
-                                    (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-
-      else if (name_is_muscle(ms, motion->columnname[i], NULL, &sType, &cutoffFreq, no) >= 0)
-          glueAddMenuEntryWithValue(motion->mopt.musclemenu, motion->deriv_names[i],
-                                    (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-
-      else if (get_ligament_index(ms->modelnum, motion->columnname[i]) >= 0)
-          glueAddMenuEntryWithValue(motion->mopt.musclemenu, motion->deriv_names[i],
-                                    (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-
-      else if (name_is_marker(ms, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, no) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-          glueAddMenuEntryWithValue(motion->mopt.markermenu, motion->deriv_names[i],
-                                    (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-      else if (name_is_forceplate(ms, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, no) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-          glueAddMenuEntryWithValue(motion->mopt.forceplatemenu, motion->deriv_names[i],
-                                    (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-      else if (name_is_body_segment(ms, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, no) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-      {
-         /* If the column is a body segment force, add it to the segment force submenu.
-          * Otherwise add it to the motion object submenu.
-          */
-         if ((STRINGS_ARE_EQUAL(ms->motion_objects[motion_object].name, "force")) ||
-             (STRINGS_ARE_EQUAL(ms->motion_objects[motion_object].name, "torque")))
-            glueAddMenuEntryWithValue(motion->mopt.segmentforcemenu, motion->deriv_names[i],
-                                      (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-         else
-            glueAddMenuEntryWithValue(motion->mopt.motionobjectmenu, motion->deriv_names[i],
-                                      (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-      }
-      else
-      {
-#if 0
-         /* TODO: adding the derivs of 'otherdata' to the pop-up menu often creates a menu
-          * that is too large to fit on the screen. For now, don't add the derivs. The ideal
-          * solution would be to split the menu into more pieces so the derivs can be stored
-          * in their own submenu.
-          */
-         glueAddMenuEntryWithValue(motion->mopt.othermenu, motion->deriv_names[i],
-                                   (motion_num + 1) * MAXMOTIONCURVES + motion->number_of_datacolumns + i);
-#endif
-      }
-   }
-
-}
-
-void delete_motion(ModelStruct* ms, MotionSequence* motion)
-{
-   int i, j, motion_num, num, item, name_len;
-   ReturnCode rc, rc2;
-
-   /* When a motion is deleted, it may not have been fully integrated into
-    * the model yet (e.g., if an error occurs while filling in the frames
-    * of data). So this function cannot assume that the motion already has
-    * a slider bar or an entry in a pop-up menu.
-    */
-   if (ms && motion)
-   {
-      post_motion_event(ms, motion, get_motion_number(ms, motion), MOTION_DELETED);
-
-      sprintf(buffer, "Deleted motion %s from model %s.", motion->name, ms->name);
-
-      /* reset the current and applied motions */
-      if (ms->dis.current_motion == motion)
-         ms->dis.current_motion = NULL;
-      if (ms->dis.applied_motion == motion)
-         ms->dis.applied_motion = NULL;
-
-      /* remove motion from plotmaker x variable menu */
-      item = glueFindMenuItemWithLabel(ms->xvarmenu, motion->name);
-      if (item >= 0)
-         glueRemoveMenuItem(ms->xvarmenu, item);
-
-      /* Remove the motion from the model's motion menu. */
-      item = glueFindMenuItemWithLabel(ms->motionmenu, motion->name);
-      if (item >= 0)
-         glueRemoveMenuItem(ms->motionmenu, item);
-
-      /* Remove the motion from the plot maker's motion curve menu,
-       * and destroy all the submenus.
-       */
-      item = glueFindMenuItemWithLabel(ms->motionplotmenu, motion->name);
-      if (item >= 0)
-         glueRemoveMenuItem(ms->motionplotmenu, item);
-      if (ms->num_motions == 1)
-      {
-         glueAddMenuEntry(ms->motionplotmenu, "none loaded");
-         glueEnableMenuItem(ms->motionplotmenu, 1, GLUE_DISABLE);
-      }
-
-      if (motion->mopt.gencoordmenu > 0)
-         glutDestroyMenu(motion->mopt.gencoordmenu);
-      if (motion->mopt.musclemenu > 0)
-         glutDestroyMenu(motion->mopt.musclemenu);
-      if (motion->mopt.forceplatemenu > 0)
-         glutDestroyMenu(motion->mopt.forceplatemenu);
-      if (motion->mopt.segmentforcemenu > 0)
-         glutDestroyMenu(motion->mopt.segmentforcemenu);
-      if (motion->mopt.markermenu > 0)
-         glutDestroyMenu(motion->mopt.markermenu);
-      if (motion->mopt.motionobjectmenu > 0)
-         glutDestroyMenu(motion->mopt.motionobjectmenu);
-      if (motion->mopt.othermenu > 0)
-         glutDestroyMenu(motion->mopt.othermenu);
-      if (motion->mopt.curvemenu > 0)
-         glutDestroyMenu(motion->mopt.curvemenu);
-
-      /* find the position of the motion in the slider bars and gencoord form */
-      for (i = ms->numgencoords, num = -1; i < ms->gencform.numoptions; i++)
-      {
-         if (STRINGS_ARE_EQUAL(ms->gencform.option[i].name, motion->name))
-         {
-            num = i;
-            break;
-         }
-      }
-
-      if (num >= 0 && num < ms->gencform.numoptions)
-      {
-         /* remove the motion from the gencoord form, move each item forward */
-         FREE_IFNOTNULL(ms->gencform.option[num].name);
-         for (i = num; i < ms->gencform.numoptions - 1; i++)
-            memcpy(&ms->gencform.option[i], &ms->gencform.option[i + 1], sizeof(FormItem));
-         ms->gencform.option = (FormItem*)simm_realloc(ms->gencform.option, 
-                               (ms->gencform.numoptions - 1) * sizeof(FormItem), &rc);
-         ms->gencform.numoptions--;
-
-         /* reset the longest name */
-         ms->longest_genc_name = 0;
-         for (i = 0; i < ms->gencform.numoptions; i++)
-         {
-            name_len = glueGetStringWidth(root.gfont.defaultfont, ms->gencform.option[i].name);
-            if (name_len > ms->longest_genc_name)
-               ms->longest_genc_name = name_len;
-         }
-
-         /* Remove a slider from the gencoord slider array and fill in the hole. */
-         for (i = num; i < ms->gencslider.numsliders - 1; i++)
-            memcpy(&ms->gencslider.sl[i], &ms->gencslider.sl[i+1], sizeof(Slider));
-         ms->gencslider.sl = (Slider*)simm_realloc(ms->gencslider.sl,
-                             (ms->gencslider.numsliders - 1) * sizeof(Slider), &rc);
-         ms->gencslider.numsliders--;
-      
-         reposition_gencoord_sliders(ms);
-
-         if (num * 2 < ms->dis.numdevs)
-         {
-            for (i = num * 2; i < ms->dis.numdevs - 2; i++)
-            {
-               ms->dis.devs[i] = ms->dis.devs[i + 2];
-               ms->dis.dev_values[i] = ms->dis.dev_values[i + 2];
-            }
-            ms->dis.devs = (int*)simm_realloc(ms->dis.devs, (ms->dis.numdevs - 2) * sizeof(int), &rc);
-            ms->dis.dev_values = (int*)simm_realloc(ms->dis.dev_values,	(ms->dis.numdevs - 2) * sizeof(int), &rc2);
-            ms->dis.numdevs -= 2;
-         }
-      }
-
-      for (i = 0; i < ms->motion_array_size; i++)
-      {
-         if (ms->motion[i] == motion)
-         {
-            ms->motion[i] = NULL;
-            ms->num_motions--;
-            break;
-         }
-      }
-   }
-
-   if (motion)
-   {
-      /* Remove the motion pointer from all plots. */
-      for (i = 0; i < root.numplots; i++)
-      {
-         PlotStruct* ps = find_nth_plot(i + 1);
-         if (ps)
-         {
-            if (ps->cursor_motion == motion)
-               ps->cursor_motion = NULL;
-
-            for (j = 0; j < ps->numcurves; j++)
-            {
-               if (ps->curve[j]->xvar.motion == motion)
-                  ps->curve[j]->xvar.motion = NULL;
-            }
-         }
-      }
-
-      free_motion(motion);
-
-#if 0
-      fprintf(stderr, "delete_motion: there are %d mo instances, p = %p\n",
-         motion->mopt.num_motion_object_instances,
-         motion->mopt.motion_object_instances);
-#endif
-
-      FREE_IFNOTNULL(motion);
-      message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
-   }
-}
-
-#endif /* !OPENSIM_CONVERTER */
-
-int get_motion_number(ModelStruct* ms, MotionSequence* motion)
-{
-   int i;
-
-   if (ms && motion)
-   {
-      for (i = 0; i < ms->motion_array_size; i++)
-      {
-         if (ms->motion[i] == motion)
+         if (model->motion[i] == motion)
             return i;
       }
    }
 
    return -1;
 }
+
+
+MotionSequence* get_motion_by_name(ModelStruct* model, const char name[])
+{
+   if (model)
+   {
+		int i;
+
+      for (i=0; i<model->motion_array_size; i++)
+      {
+         if (model->motion[i] && STRINGS_ARE_EQUAL(model->motion[i]->name, name))
+            return model->motion[i];
+      }
+   }
+
+   return NULL;
+}
+
 
 int get_motion_frame_number(MotionSequence* motion, double value)
 {
@@ -1144,51 +278,25 @@ int get_motion_frame_number(MotionSequence* motion, double value)
    return frame;
 }
 
-/* -------------------------------------------------------------------------
-   circularize_motion_index - this interesting routine was added to allow
-      realtime motion to continuously stream into a fixed-duration
-      MotionSequence, by wrapping the samples around the end of the buffer.
-      
-      -- KMS 2/23/00
----------------------------------------------------------------------------- */
-static int circularize_motion_index (MotionSequence* motion, int i)
+SBoolean add_motion_to_model(MotionSequence* motion, ModelStruct* model, SBoolean showTopLevelMessages)
 {
-   if (motion->is_realtime && motion->realtime_circular_index > 0)
-   {
-      i += motion->realtime_circular_index;
-      
-      if (i >= motion->number_of_datarows)
-         i -= motion->number_of_datarows;
-   }
-
-#if 0
-   if (i < 0 || i >= motion->number_of_datarows)
-      assert(0);
-#endif
-
-   return i;
-}
-
-SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms, SBoolean showTopLevelMessages)
-{
-
    int i, j, name_len, num_others, motion_num;
    char otherNames[OTHER_NAMES_SIZE];
    IntBox bbox;
    Form* form;
-   ReturnCode rc, rc2;
+   ReturnCode rc = code_fine, rc2 = code_fine;
    SliderArray* sa;
 
    motion->mopt.current_value = motion->min_value;
    motion->mopt.current_frame = 0;
 
-   motion->mopt.gencoords = (double**)simm_malloc(ms->numgencoords * sizeof(double*));
-   motion->mopt.genc_velocities = (double**)simm_malloc(ms->numgencoords * sizeof(double*));
-   motion->mopt.muscles = (double**)simm_malloc(ms->nummuscles * sizeof(double*));
-   motion->mopt.ligaments = (double**)simm_malloc(ms->numligaments * sizeof(double*));
-   if ((motion->mopt.gencoords == NULL && ms->numgencoords > 0) ||
-      (motion->mopt.muscles == NULL && ms->nummuscles > 0) ||
-      (motion->mopt.ligaments == NULL && ms->numligaments > 0))
+   motion->mopt.gencoords = (double**)simm_malloc(model->numgencoords * sizeof(double*));
+   motion->mopt.genc_velocities = (double**)simm_malloc(model->numgencoords * sizeof(double*));
+   motion->mopt.muscles = (double**)simm_malloc(model->nummuscles * sizeof(double*));
+   motion->mopt.ligaments = (double**)simm_malloc(model->numligaments * sizeof(double*));
+   if ((motion->mopt.gencoords == NULL && model->numgencoords > 0) ||
+      (motion->mopt.muscles == NULL && model->nummuscles > 0) ||
+      (motion->mopt.ligaments == NULL && model->numligaments > 0))
    {
       error(none,"Cannot link motion to model.");
       return no;
@@ -1196,7 +304,7 @@ SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms, SBoolean s
 
    NULLIFY_STRING(otherNames);
 
-   if (column_names_match_model(ms, motion, &num_others, otherNames) == no)
+   if (link_model_to_motion(model, motion, &num_others, otherNames) == no)
    {
       FREE_IFNOTNULL(motion->mopt.gencoords);
       FREE_IFNOTNULL(motion->mopt.genc_velocities);
@@ -1204,45 +312,53 @@ SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms, SBoolean s
       FREE_IFNOTNULL(motion->mopt.ligaments);
       FREE_IFNOTNULL(motion->mopt.other_data);
 
-      if (motion->mopt.motion_object_instances)
+      if (motion->mopt.motion_object_instance)
       {
          for (j = 0; j < motion->mopt.num_motion_object_instances; j++)
-            free_motion_object_instance(&motion->mopt.motion_object_instances[j]);
+            free_motion_object_instance(motion->mopt.motion_object_instance[j], model);
       }
-	 
-      FREE_IFNOTNULL(motion->mopt.motion_object_instances);
-
+      FREE_IFNOTNULL(motion->mopt.motion_object_instance);
       motion->mopt.num_motion_object_instances = 0;
+
       return no;
    }
 
    /* Make sure the motion has a unique name */
-   for (i = 0; i < ms->motion_array_size; i++)
+   for (i = 0; i < model->motion_array_size; i++)
    {
-      if (ms->motion[i] && ms->motion[i] != motion &&
-          STRINGS_ARE_EQUAL(ms->motion[i]->name, motion->name))
+      if (model->motion[i] && model->motion[i] != motion &&
+          STRINGS_ARE_EQUAL(model->motion[i]->name, motion->name))
          break;
-   }     
-   if (i < ms->motion_array_size)
+   }
+   if (i < model->motion_array_size)
    {
-      (void)sprintf(buffer,"%s (%d)", motion->name, get_motion_number(ms, motion) + 1);
+      (void)sprintf(buffer,"%s (%d)", motion->name, get_motion_number(model, motion) + 1);
       FREE_IFNOTNULL(motion->name);
       mstrcpy(&motion->name, buffer);
    }
 
-   motion_num = get_motion_number(ms, motion);
-#if !OPENSIM_CONVERTER
-   make_motion_curve_menu(ms->modelnum, motion, motion_num);
+   // Sort the events by x_coord.
+   sort_events(motion, NULL);
 
-   if (ms->num_motions == 1)
-      glueRemoveMenuItem(ms->motionplotmenu, 1);
-   glueAddSubmenuEntry(ms->motionplotmenu, motion->name, motion->mopt.curvemenu);
-   //glueCheckMenuItem(ms->motionplotmenu, 1, GLUE_UNCHECK);
-   glueAddMenuEntryWithValue(ms->motionmenu, motion->name, motion_num);
-   //glueCheckMenuItem(ms->motionmenu, 1, GLUE_UNCHECK);
+   motion_num = get_motion_number(model, motion);
+#if ! OPENSMAC && ! ENGINE
+   make_marker_trails(model, motion);
+	make_force_trails(model, motion);
+
+   make_motion_curve_menu(model, motion, motion_num);
+
+   // Before adding the first motion, remove the "none loaded" entry.
+   if (model->num_motions == 1)
+   {
+      glueRemoveMenuItem(model->motionplotmenu, 1);
+      glueRemoveMenuItem(model->motionmenu, 1);
+   }
+   glueAddSubmenuEntry(model->motionplotmenu, motion->name, motion->mopt.curvemenu);
+   glueAddMenuEntryWithValue(model->motionmenu, motion->name, motion_num);
+   glueAddMenuEntryWithValue(model->motionwithrealtimemenu, motion->name, motion_num);
 
    /* Add a field to the gencoord form */
-   form = &ms->gencform;
+   form = &model->gencform;
    form->option = (FormItem*)simm_realloc(form->option, (form->numoptions+1)*sizeof(FormItem), &rc);
    if (rc == code_bad)
    {
@@ -1264,12 +380,11 @@ SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms, SBoolean s
    form->option[form->numoptions].data = motion;
    form->numoptions++;
    name_len = glueGetStringWidth(root.gfont.defaultfont, motion->name);
-   if (name_len > ms->longest_genc_name)
-      ms->longest_genc_name = name_len;
+   if (name_len > model->longest_genc_name)
+      model->longest_genc_name = name_len;
 
    /* Add a slider to the gencoord slider array */
-
-   sa = &ms->gencslider;
+   sa = &model->gencslider;
    sa->sl = (Slider*)simm_realloc(sa->sl,(sa->numsliders+1)*sizeof(Slider),&rc);
    if (rc == code_bad)
    {
@@ -1285,28 +400,25 @@ SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms, SBoolean s
                (motion->number_of_datarows - 1), NULL, motion);
    sa->numsliders++;
 
-   reposition_gencoord_sliders(ms);
+   reposition_gencoord_sliders(model);
 
-   glueAddMenuEntryWithValue(ms->xvarmenu, motion->name, ms->numgencoords + motion_num);
-#if 0
-   glueCheckMenuItem(model[i]->xvarmenu,1,GLUE_UNCHECK); /* because of dopup bug */
-#endif      
-   ms->dis.devs = (int*)simm_realloc(ms->dis.devs, (ms->dis.numdevs + 2) * sizeof(int), &rc);
-   ms->dis.dev_values = (int*)simm_realloc(ms->dis.dev_values,	(ms->dis.numdevs + 2) * sizeof(int), &rc2);
+   glueAddMenuEntryWithValue(model->xvarmenu, motion->name, model->numgencoords + motion_num);
+   model->dis.devs = (int*)simm_realloc(model->dis.devs, (model->dis.numdevs + 2) * sizeof(int), &rc);
+   model->dis.dev_values = (int*)simm_realloc(model->dis.dev_values,	(model->dis.numdevs + 2) * sizeof(int), &rc2);
    if (rc == code_bad || rc2 == code_bad)
    {
       error(none,"Cannot link motion to the model.");
       return no;
    }
 
-   ms->dis.devs[ms->dis.numdevs++] = motion->keys[0];
-   ms->dis.devs[ms->dis.numdevs++] = motion->keys[1];
+   model->dis.devs[model->dis.numdevs++] = motion->keys[0];
+   model->dis.devs[model->dis.numdevs++] = motion->keys[1];
 
    if (showTopLevelMessages == yes)
    {
       (void)sprintf(buffer,"Linked motion %s to model %s (%d \'other\' data columns).",
-         motion->name, ms->name, num_others);
-      message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
+         motion->name, model->name, num_others);
+      message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
       if (num_others > 0)
       {
          simm_printf(no, "The following have been loaded as \'otherdata\' in motion %s:\n", motion->name);
@@ -1314,257 +426,66 @@ SBoolean tie_motion_to_model(MotionSequence* motion, ModelStruct* ms, SBoolean s
       }
    }
 
-   make_and_queue_simm_event(MOTION_ADDED, ms->motion[motion_num], ms->modelnum, ZERO);
+   make_and_queue_simm_event(MOTION_ADDED, model->modelnum, model->motion[motion_num], NULL, ZERO, ZERO);
 
-#endif /* !OPENSIM_CONVERTER */
+#endif /* !OPENSMAC && ! ENGINE */
 
    return yes;
 }
 
-int apply_motion_to_model(ModelStruct* ms, MotionSequence* motion, double value, SBoolean update_modelview, SBoolean draw_plot)
+static SBoolean link_model_to_motion(ModelStruct* model, MotionSequence* motion, int* num_other_data, char* otherNames)
 {
-   int i, item, motion_num;
-   double percent;
-
-   if (!motion)
-      return 0;
-
-   motion->mopt.current_value = value;
-
-   if (motion->mopt.current_value < motion->min_value)
-      motion->mopt.current_value  = motion->min_value;
-   else if (motion->mopt.current_value > motion->max_value)
-      motion->mopt.current_value  = motion->max_value;
-
-   if (EQUAL_WITHIN_ERROR(motion->max_value, motion->min_value) || motion->number_of_datarows == 1)
-   {
-      motion->mopt.current_value = motion->min_value;
-      motion->mopt.current_frame = 0;
-   }
-   else
-   {
-      percent = (motion->mopt.current_value - motion->min_value) /
-	        (motion->max_value - motion->min_value);
-
-      motion->mopt.current_frame = percent * (motion->number_of_datarows - 1) + MOTION_OFFSET;
-#if 0
-      printf("percent = %lf, frame = %d, value = %lf\n", percent, motion->mopt.current_frame,
-         motion->mopt.current_value);
-#endif
-      motion->mopt.current_value = motion->min_value + motion->mopt.current_frame *
-         (motion->max_value - motion->min_value) / (motion->number_of_datarows - 1);
-   }
-
-   motion->mopt.current_frame = circularize_motion_index(motion, motion->mopt.current_frame);
-
-   if ((ms->numclosedloops > 0) && (ms->useIK == yes) && motion->enforce_loops == yes)
-   {
-      LoopStatus loopStatus;
-      ConstraintStatus consStatus;
-      /* if the gencoord is in the motion file, set it to the value in the 
-       * motion file.  If it's not in the motion file and is in a loop, set it
-       * to zero.  Then invalidate all the joint matrices, and solve all the
-       * loops.  Gencoords get set to whatever new values are calculated by
-       * the IK solver (may not be the same as those in the motion file.
-       */
-      for (i = 0; i < ms->numgencoords; i++)
-      {
-         int j;
-         if (motion->mopt.gencoords[i] != NULL)
-            ms->gencoord[i].value = motion->mopt.gencoords[i][motion->mopt.current_frame];
-         else if (ms->gencoord[i].used_in_loop == yes)
-            ms->gencoord[i].value = 0.0;
-         for (j = 0; j < ms->gencoord[i].numjoints; j++)
-            invalidate_joint_matrix(ms, ms->gencoord[i].jointnum[j]);
-      }
-      solveAllLoopsAndConstraints(ms, &loopStatus, &consStatus, yes);
-      if (loopStatus == loopChanged)
-      {
-#if 0
-         sprintf(buffer, "Loops solved using motion file values, values changed\n");
-         error(none, buffer);
-#endif
-      }
-   }
-   else if (ms->num_constraint_objects > 0)// && motion->enforce_constraints == yes)
-   {
-      ConstraintStatus constraintStatus;
-      LoopStatus loopStatus;
-      /* if the gencoord is in the motion file, copy its value into the gc struct.
-       * then invalidate all the joints that use it.
-       * Solve all the constraints with the new values.  Gencoords are set
-       * to whatever values are calculated by the constraint solver (may not
-       * be the values in the motion file. Don't change any values if the
-       * gencoord is locked.  If the constraints are unchanged, the gencoord
-       * values must be set (set_gencoord_value was not called in solveall. 
-       */
-      for (i = 0; i < ms->numgencoords; i++)
-      {
-         int j;
-         if ((motion->mopt.gencoords[i] != NULL) &&
-            (ms->gencoord[i].locked == no))
-         {
-            ms->gencoord[i].value = motion->mopt.gencoords[i][motion->mopt.current_frame];
-            for (j = 0; j < ms->gencoord[i].numjoints; j++)
-               invalidate_joint_matrix(ms, ms->gencoord[i].jointnum[j]);
-         }
-      }
-
-      solveAllLoopsAndConstraints(ms, &loopStatus, &constraintStatus, motion->enforce_constraints);//yes);
-      if (constraintStatus == constraintUnchanged)
-      {
-         for (i = 0; i < ms->numgencoords; i++)
-         {
-            set_gencoord_value(ms->modelnum, i, ms->gencoord[i].value, no);
-         }
-      }
-      else if (constraintStatus == constraintChanged)
-      {
-#if 0
-         sprintf(buffer, "Constraints solved using motion file values, values changed\n");
-         error(none, buffer);
-#endif
-      }
-      //dkb aug 19, 2002
-      for (i = 0; i < ms->numgencoords; i++)
-      {
-         set_gencoord_value(ms->modelnum, i, ms->gencoord[i].value, no);
-      }
-   }
-   else
-   {
-      /* if solver is off or there are no loops, and there are no constraints,
-       * set the gencoords to the values in the motion file */
-      for (i = 0; i < ms->numgencoords; i++)
-      {
-         if (motion->mopt.gencoords[i] != NULL)
-         {
-            if (ms->gencoord[i].locked == no)
-            {
-               set_gencoord_value(ms->modelnum, i, 
-                  motion->mopt.gencoords[i][motion->mopt.current_frame], no);
-            }
-            else if (update_modelview == yes)
-            {
-               /* If the gencoord is locked, but still appears in the motion file,
-                * print a warning message if the motion file value is not within
-                * a tolerance equal to the default precision of motion file data.
-                */
-
-               if (NOT_EQUAL_WITHIN_TOLERANCE(
-                  motion->mopt.gencoords[i][motion->mopt.current_frame],
-                  ms->gencoord[i].value, 0.000001))
-               {
-                  sprintf(errorbuffer, "Gencoord %s is locked at %f\n",
-                  ms->gencoord[i].name, ms->gencoord[i].value);
-                  error(none, errorbuffer);
-               }
-            }
-         }
-      }
-   }
-
-#if !OPENSIM_CONVERTER
-   if (update_modelview == yes)
-   {
-      /* Find out which form item is linked to this motion and update it. */
-      for (item = 0; item < ms->gencform.numoptions; item++)
-      {
-         if (ms->gencform.option[item].data == motion)
-         {
-            storeDoubleInForm(&ms->gencform.option[item], motion->mopt.current_value, 3);
-            break;
-         }
-      }
-
-      /* Find out which slider is linked to this motion and update it. */
-      for (item = 0; item < ms->gencform.numoptions; item++)
-      {
-         if (ms->gencform.option[item].data == motion)
-         {
-            ms->gencslider.sl[item].value = motion->mopt.current_value;
-            break;
-         }
-      }
-
-      for (i=0; i<ms->nummuscles; i++)
-      {
-         if (motion->mopt.muscles[i] != NULL)
-            ms->muscle[i].activation = motion->mopt.muscles[i][motion->mopt.current_frame];
-      }  
-
-      for (i=0; i<ms->numligaments; i++)
-      {
-         if (motion->mopt.ligaments[i] != NULL)
-            ms->ligament[i].activation = motion->mopt.ligaments[i][motion->mopt.current_frame];
-      }
-
-      for (i=0; i<ms->numgencoords; i++)
-      {
-         if (motion->mopt.genc_velocities[i] != NULL)
-            set_gencoord_velocity(ms->modelnum,i,motion->mopt.genc_velocities[i][motion->mopt.current_frame]);
-         else
-            set_gencoord_velocity(ms->modelnum,i,0.0);
-      }
-
-      ms->dis.applied_motion = motion;
-   }
-
-   if (draw_plot == yes && motion->show_cursor == yes)
-      set_plot_cursors(ms, motion);
-#endif
-
-   /* If there is no gencoord data in this motion (all columns of
-    * data in motion file are "othercurves," then return 0, meaning you didn't
-    * change the model configuration by trying to apply the motion to it. Otherwise
-    * return 1, so the calling routine knows that it should redraw the model.
-    * JPL/TODO 7/24/96: This doesn't work since standard deviations have been
-    * added to motion files, because num_datacolumns  gets decremented by num_std_dev,
-    * but num_other does not (so they may happen to be equal)
-
-   if (motion->number_of_datacolumns == motion->number_of_othercurves)
-      return 0;
-   else
-    */
-
-   return 1;
-}
-
-static SBoolean column_names_match_model(ModelStruct* ms, MotionSequence* motion,
-                                         int* num_other_data, char* otherNames)
-{
-
-   int i, ref, seg, genc, musc_index, lig_index, cur_len = 1;
-   SplineType sType;
+   int i, j, ref, seg, musc_index, lig_index, cur_len = 1;
+   dpFunctionType sType;
    double cutoffFreq;
    SBoolean full = no;
    char* ptr = NULL;
+   GeneralizedCoord* gencoord = NULL;
 
-   *num_other_data = 0;
+	// In case this function is being called on a motion already added to a model
+	// (e.g., after normalizing or smoothing), free the pointers that are about to
+	// be re-allocated.
+   for (i=0; i<motion->mopt.num_motion_object_instances; )
+   {
+      if (motion->mopt.motion_object_instance[i]->num_channels > 0)
+      {
+         free_motion_object_instance(motion->mopt.motion_object_instance[i], model);
+         for (j=i; j<motion->mopt.num_motion_object_instances - 1; j++)
+            motion->mopt.motion_object_instance[j] = motion->mopt.motion_object_instance[j+1];
+         motion->mopt.num_motion_object_instances--;
+      }
+      else
+      {
+         i++;
+      }
+   }
+   if (motion->mopt.num_motion_object_instances == 0)
+      FREE_IFNOTNULL(motion->mopt.motion_object_instance);
 
-   for (i = 0; i < ms->numgencoords; i++)
+	FREE_IFNOTNULL(motion->mopt.other_data);
+	*num_other_data = 0;
+
+   for (i = 0; i < model->numgencoords; i++)
    {
       motion->mopt.gencoords[i] = NULL;
       motion->mopt.genc_velocities[i] = NULL;
    }
 
-   for (i = 0; i < ms->nummuscles; i++)
+   for (i = 0; i < model->nummuscles; i++)
       motion->mopt.muscles[i] = NULL;
 
-   for (i = 0; i < ms->numligaments; i++)
+   for (i = 0; i < model->numligaments; i++)
       motion->mopt.ligaments[i] = NULL;
 
-   /* Since you don't yet know how many columns are other data, make room
-    * for the maximum number, and realloc later.
-    */
-   motion->mopt.other_data =
-      (double**)simm_malloc(motion->number_of_datacolumns*sizeof(double*));
+   // Since you don't yet know how many columns are other data, make room
+   // for the maximum number, and realloc later.
+   motion->mopt.other_data = (double**)simm_malloc(motion->number_of_datacolumns*sizeof(double*));
    if (motion->mopt.other_data == NULL)
    {
       error(none,"Cannot link motion to the model.");
       return no;
    }
-   
+
    for (i = 0; i < motion->number_of_datacolumns; i++)
       motion->mopt.other_data[i] = NULL;
 
@@ -1572,31 +493,63 @@ static SBoolean column_names_match_model(ModelStruct* ms, MotionSequence* motion
    {
       int motion_object;
       double cutoffFreq;
-      SplineType sType;
-      
-      if ((genc = name_is_gencoord(motion->columnname[i], ms, NULL, &sType, &cutoffFreq, yes)) >= 0)
-         motion->mopt.gencoords[genc] = motion->motiondata[i];
-      else if ((genc = name_is_gencoord(motion->columnname[i], ms, "_vel", &sType, &cutoffFreq, yes)) >= 0)
-         motion->mopt.genc_velocities[genc] = motion->motiondata[i];
-      else if ((musc_index = name_is_muscle(ms, motion->columnname[i], NULL, &sType, &cutoffFreq, yes)) >= 0)
+      dpFunctionType sType;
+
+      if ((gencoord = name_is_gencoord(motion->columnname[i], model, NULL, &sType, &cutoffFreq, yes)))
+         motion->mopt.gencoords[getGencoordIndex(model, gencoord)] = motion->motiondata[i];
+      else if ((gencoord = name_is_gencoord(motion->columnname[i], model, "_vel", &sType, &cutoffFreq, yes)))
+         motion->mopt.genc_velocities[getGencoordIndex(model, gencoord)] = motion->motiondata[i];
+      else if ((musc_index = name_is_muscle(model, motion->columnname[i], NULL, &sType, &cutoffFreq, yes)) >= 0)
          motion->mopt.muscles[musc_index] = motion->motiondata[i];
-      else if ((lig_index = get_ligament_index(ms->modelnum, motion->columnname[i])) >= 0)
+      else if ((lig_index = getLigamentIndex(model, motion->columnname[i])) >= 0)
          motion->mopt.ligaments[lig_index] = motion->motiondata[i];
-      else if ((seg = name_is_marker(ms, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, yes)) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-         store_motion_object_instance(ms->modelnum, &motion->mopt, seg, motion_object, ref, i);
-      else if ((seg = name_is_forceplate(ms, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, yes)) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-         store_motion_object_instance(ms->modelnum, &motion->mopt, seg, motion_object, ref, i);
-      else if ((seg = name_is_body_segment(ms, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, yes)) >= 0 &&
-               motion_object >= 0 && ref >= 0)
-         store_motion_object_instance(ms->modelnum, &motion->mopt, seg, motion_object, ref, i);
+      else if ((seg = name_is_marker(model, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, yes)) >= 0 && motion_object >= 0 && ref >= 0)
+      {
+         MotionObjectInstance* mi = store_motion_object_instance(model, &motion->mopt, seg, motion_object, ref, i);
+         mi->type = MarkerMotionObject;
+         if (mi->name == NULL)
+         {
+            char* p = NULL;
+            strcpy(buffer, motion->columnname[i]);
+            p = strrchr(buffer, '_');
+            if (p)
+               *p = STRING_TERMINATOR;
+            mstrcpy(&mi->name, buffer);
+         }
+      }
+      else if ((seg = name_is_forceplate(model, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, yes)) >= 0 && motion_object >= 0 && ref >= 0)
+      {
+         MotionObjectInstance* mi = store_motion_object_instance(model, &motion->mopt, seg, motion_object, ref, i);
+         mi->type = ForceMotionObject;
+         if (mi->name == NULL)
+         {
+            char* p = NULL;
+            strcpy(buffer, motion->columnname[i]);
+            p = strrchr(buffer, '_');
+            if (p)
+               *p = STRING_TERMINATOR;
+            mstrcpy(&mi->name, buffer);
+         }
+      }
+      else if ((seg = name_is_body_segment(model, motion->columnname[i], &motion_object, &ref, &sType, &cutoffFreq, yes)) >= 0 && motion_object >= 0 && ref >= 0)
+      {
+         MotionObjectInstance* mi = store_motion_object_instance(model, &motion->mopt, seg, motion_object, ref, i);
+         mi->type = ForceMotionObject;
+         if (mi->name == NULL)
+         {
+            char* p = NULL;
+            strcpy(buffer, motion->columnname[i]);
+            p = strrchr(buffer, '_');
+            if (p)
+               *p = STRING_TERMINATOR;
+            mstrcpy(&mi->name, buffer);
+         }
+      }
       else
       {
          motion->mopt.other_data[(*num_other_data)++] = motion->motiondata[i];
-         /* Build up a character string list of 'otherdata' names so you can
-          * inform the user which ones you found.
-          */
+         // Build up a character string list of 'otherdata' names so you can
+         // inform the user which ones you found.
          if (otherNames)
             addNameToString(motion->columnname[i], otherNames, OTHER_NAMES_SIZE);
       }
@@ -1612,8 +565,8 @@ static SBoolean column_names_match_model(ModelStruct* ms, MotionSequence* motion
       a match, use the "ball" motion object and return "ground" as the segment
       because marker data in a motion is always w.r.t. ground.
 ---------------------------------------------------------------------------- */
-int name_is_marker(ModelStruct* ms, char name[], int* motion_object, int* component,
-                   SplineType* splineType, double* cutoffFrequency, SBoolean stripEnd)
+int name_is_marker(ModelStruct* model, char name[], int* motion_object, int* component,
+                   dpFunctionType* functionType, double* cutoffFrequency, SBoolean stripEnd)
 {
    int i, j, seg, maxLen, Mlen = 0, len = strlen(name);
    SBoolean foundOne;
@@ -1624,14 +577,14 @@ int name_is_marker(ModelStruct* ms, char name[], int* motion_object, int* compon
     * "L.Knee" and "L.Knee.Med", check for a match with all markers, and take
     * the longest match.
     */
-   for (i = 0, foundOne = no, maxLen = -1; i < ms->numsegments; i++)
+   for (i = 0, foundOne = no, maxLen = -1; i < model->numsegments; i++)
    {
-      for (j = 0; j < ms->segment[i].numMarkers; j++)
+      for (j = 0; j < model->segment[i].numMarkers; j++)
       {
-         Mlen = strlen(ms->segment[i].marker[j].name);
+         Mlen = strlen(model->segment[i].marker[j]->name);
          if (len >= Mlen)
          {
-            if (strings_equal_n_case_insensitive(name, ms->segment[i].marker[j].name, Mlen))
+            if (strings_equal_n_case_insensitive(name, model->segment[i].marker[j]->name, Mlen))
             {
                if (Mlen > maxLen)
                {
@@ -1653,22 +606,22 @@ int name_is_marker(ModelStruct* ms, char name[], int* motion_object, int* compon
    /* The name is of a marker, so assume a segment of "ground" and then
     * look for the component name.
     */
-   seg = ms->ground_segment;
+   seg = model->ground_segment;
 
    /* The motion object is the pre-defined "ball" object. */
    if (motion_object)
    {
       *motion_object = -1;
 
-      for (i = 0; i < ms->num_motion_objects; i++)
+      for (i = 0; i < model->num_motion_objects; i++)
       {
-         if (STRINGS_ARE_EQUAL(ms->motion_objects[i].name, "ball"))
+         if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, "ball"))
          {
             *motion_object = i;
             break;
          }
       }
-      if (i == ms->num_motion_objects)
+      if (i == model->num_motion_objects)
          return -1;
    }
 
@@ -1719,25 +672,25 @@ int name_is_marker(ModelStruct* ms, char name[], int* motion_object, int* compon
     */
    newEnd = ptr;
 
-   /* If splineType and cutoffFrequency are not NULL, check to see if the name ends in
+   /* If functionType and cutoffFrequency are not NULL, check to see if the name ends in
     * natural_cubic_text or gcv_text (followed by an optional cutoff frequency). If it
-    * does, set *splineType to the appropriate type. If no spline label is found, set
+    * does, set *functionType to the appropriate type. If no function label is found, set
     * the type to step_func.
     */
-   if (splineType && cutoffFrequency)
+   if (functionType && cutoffFrequency)
    {
       int matched_spl = 0;
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
-      *splineType = step_function;
+      *functionType = dpStepFunction;
       *cutoffFrequency = -1.0; // by default there is no smoothing
 
       if (len >= spl_len)
       {
          if (!strncmp(ptr, natural_cubic_text, spl_len))
          {
-            *splineType = natural_cubic;
+            *functionType = dpNaturalCubicSpline;
             ptr += spl_len;
             len -= spl_len;
             matched_spl = 1;
@@ -1750,7 +703,7 @@ int name_is_marker(ModelStruct* ms, char name[], int* motion_object, int* compon
          {
             ptr += gcv_len;
             len -= gcv_len;
-            *splineType = gcv_spline;
+            *functionType = dpGCVSpline;
             if (len > 0)
             {
                char* intPtr = buffer;
@@ -1780,7 +733,7 @@ int name_is_marker(ModelStruct* ms, char name[], int* motion_object, int* compon
    if (len > 0)
       return -1;
 
-   /* Strip off the text for the spline type and cutoff frequency. */
+   /* Strip off the text for the function type and cutoff frequency. */
    if (stripEnd == yes)
       *newEnd = STRING_TERMINATOR;
 
@@ -1795,8 +748,8 @@ int name_is_marker(ModelStruct* ms, char name[], int* motion_object, int* compon
       a match, use the "force" motion object and return "ground" as the segment
       because forceplate data in a motion is always w.r.t. ground.
 ---------------------------------------------------------------------------- */
-int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* component,
-                       SplineType* splineType, double* cutoffFrequency, SBoolean stripEnd)
+int name_is_forceplate(ModelStruct* model, char name[], int* motion_object, int* component,
+                       dpFunctionType* functionType, double* cutoffFrequency, SBoolean stripEnd)
 {
    int i, j, seg, plateNum, Flen = 0, len = strlen(name);
    char *ptr, *newEnd;
@@ -1810,7 +763,7 @@ int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* co
    /* The name is of a forceplate, so assume a segment of "ground" and then
     * look for the component name.
     */
-   seg = ms->ground_segment;
+   seg = model->ground_segment;
 
    sprintf(buffer, "forceplate%d", plateNum);
    Flen = strlen(buffer);
@@ -1824,15 +777,15 @@ int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* co
    {
       *motion_object = -1;
 
-      for (i = 0; i < ms->num_motion_objects; i++)
+      for (i = 0; i < model->num_motion_objects; i++)
       {
-         if (STRINGS_ARE_EQUAL(ms->motion_objects[i].name, "force"))
+         if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, "force"))
          {
             *motion_object = i;
             break;
          }
       }
-      if (i == ms->num_motion_objects)
+      if (i == model->num_motion_objects)
          return -1;
    }
 
@@ -1866,6 +819,12 @@ int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* co
          *component = MO_CG;
       else if (!strncmp(ptr, "_cb", 3))
          *component = MO_CB;
+      else if (!strncmp(ptr, "_torque_x", 9)) // free torque
+         *component = MO_X;
+      else if (!strncmp(ptr, "_torque_y", 9)) // free torque
+         *component = MO_Y;
+      else if (!strncmp(ptr, "_torque_z", 9)) // free torque
+         *component = MO_Z;
       else
          return -1;
    }
@@ -1874,34 +833,42 @@ int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* co
       return -1;
    }
 
-   /* Move ptr past the component name. */
-   ptr += 3;
-   len -= 3;
+   // Move ptr past the component name.
+   if (*component == MO_X || *component == MO_Y || *component == MO_Z)
+   {
+      ptr += 9;
+      len -= 9;
+   }
+   else
+   {
+      ptr += 3;
+      len -= 3;
+   }
 
    /* Store a pointer to the character right after the component.
     * This will be the new end of the string if stripEnd == yes.
     */
    newEnd = ptr;
 
-   /* If splineType and cutoffFrequency are not NULL, check to see if the name ends in
+   /* If functionType and cutoffFrequency are not NULL, check to see if the name ends in
     * natural_cubic_text or gcv_text (followed by an optional cutoff frequency). If it
-    * does, set *splineType to the appropriate type. If no spline label is found, set
+    * does, set *functionType to the appropriate type. If no function label is found, set
     * the type to step_func.
     */
-   if (splineType && cutoffFrequency)
+   if (functionType && cutoffFrequency)
    {
       int matched_spl = 0;
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
-      *splineType = step_function;
+      *functionType = dpStepFunction;
       *cutoffFrequency = -1.0; // by default there is no smoothing
 
       if (len >= spl_len)
       {
          if (!strncmp(ptr, natural_cubic_text, spl_len))
          {
-            *splineType = natural_cubic;
+            *functionType = dpNaturalCubicSpline;
             ptr += spl_len;
             len -= spl_len;
             matched_spl = 1;
@@ -1914,7 +881,7 @@ int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* co
          {
             ptr += gcv_len;
             len -= gcv_len;
-            *splineType = gcv_spline;
+            *functionType = dpGCVSpline;
             if (len > 0)
             {
                char* intPtr = buffer;
@@ -1944,7 +911,7 @@ int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* co
    if (len > 0)
       return -1;
 
-   /* Strip off the text for the spline type and cutoff frequency. */
+   /* Strip off the text for the function type and cutoff frequency. */
    if (stripEnd == yes)
       *newEnd = STRING_TERMINATOR;
 
@@ -1956,7 +923,7 @@ int name_is_forceplate(ModelStruct* ms, char name[], int* motion_object, int* co
 /* -------------------------------------------------------------------------
    motion_object_instance_contains_component - 
 ---------------------------------------------------------------------------- */
-static SBoolean motion_object_instance_contains_component (MotionObjectInstance* mi, int component)
+static SBoolean motion_object_instance_contains_component(MotionObjectInstance* mi, int component)
 {
    if (mi->channels)
    {
@@ -1972,78 +939,74 @@ static SBoolean motion_object_instance_contains_component (MotionObjectInstance*
 /* -------------------------------------------------------------------------
    store_motion_object_instance - 
 ---------------------------------------------------------------------------- */
-static void store_motion_object_instance (
-   int mod,
-   MotionModelOptions* mopt,
-   int seg,
-   int motion_object,
-   int motion_component,
-   int column)
+static MotionObjectInstance* store_motion_object_instance(ModelStruct* model,
+   MotionModelOptions* mopt, int seg, int motion_object, int motion_component, int column)
 {
    ReturnCode rc;
    int i;
    MotionObjectInstance* mi = NULL;
-   
-   /* scan the motion's object instance array to see if we need to create
-    * a new motion object instance, or use an existing one:
-    */
-   for (i = mopt->num_motion_object_instances - 1; i >= 0; i--)
-      if (mopt->motion_object_instances[i].segment == seg &&
-          mopt->motion_object_instances[i].object == motion_object)
-         break;
-   
-   if (i < 0 ||
-       motion_object_instance_contains_component(&mopt->motion_object_instances[i],
-                                                 motion_component))
+
+   // Scan the motion's object instance array to see if we need to create
+   // a new motion object instance, or use an existing one. There could be
+   // multiple incomplete instances, in which case you want to add the new
+   // column to the first one that is missing this component.
+   for (i=0; i<mopt->num_motion_object_instances; i++)
    {
-      /* add a new element to the array of motion object instances:
-       */
-      i = mopt->num_motion_object_instances++;
-      
-      if (mopt->motion_object_instances == NULL)
+      if (mopt->motion_object_instance[i]->segment == seg &&
+         mopt->motion_object_instance[i]->object == motion_object &&
+         motion_object_instance_contains_component(mopt->motion_object_instance[i], motion_component) == no)
       {
-         mopt->motion_object_instances = (MotionObjectInstance*)
-            simm_malloc(mopt->num_motion_object_instances * sizeof(MotionObjectInstance));
+         // You found an existing motion object instance that does not yet have
+         // this component defined. 'i' is now the index of this instance.
+         break;
+      }
+   }
+
+   if (i == mopt->num_motion_object_instances)
+   {
+      // Add a new element to the array of motion object instances.
+      i = mopt->num_motion_object_instances++;
+
+      if (mopt->motion_object_instance == NULL)
+      {
+         mopt->motion_object_instance = (MotionObjectInstance**)
+            simm_malloc(mopt->num_motion_object_instances * sizeof(MotionObjectInstance*));
       }
       else
       {
-         mopt->motion_object_instances = (MotionObjectInstance*)
-            simm_realloc(mopt->motion_object_instances,
-                         mopt->num_motion_object_instances * sizeof(MotionObjectInstance),
-                         &rc);
+         mopt->motion_object_instance = (MotionObjectInstance**)
+            simm_realloc(mopt->motion_object_instance,
+            mopt->num_motion_object_instances * sizeof(MotionObjectInstance*), &rc);
       }
-   
-      /* initialize a new motion object instance:
-       */
-      if (mopt->motion_object_instances)
+
+      // Initialize a new motion object instance.
+      if (mopt->motion_object_instance)
       {
-         MotionObject* mo = &model[mod]->motion_objects[motion_object];
+         MotionObject* mo = &model->motion_objects[motion_object];
+
+         mi = mopt->motion_object_instance[i] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
          
-         mi = &mopt->motion_object_instances[i];
-         
+         mi->type          = UnknownMotionObject;
          mi->object        = motion_object;
          mi->segment       = seg;
-         mi->num_channels  = 0;
-         mi->channels      = NULL;
          mi->drawmode      = mo->drawmode;
          mi->current_value = -1.0;
          mi->visible       = yes;
 
          mi->currentMaterial.name = NULL;
-         copy_material(&model[mod]->dis.mat.materials[mo->material], &mi->currentMaterial);
+         copy_material(&model->dis.mat.materials[mo->material], &mi->currentMaterial);
       }
       else
          mopt->num_motion_object_instances--;
    }
    else
-      mi = &mopt->motion_object_instances[i];
-   
-   /* add a new animation channel to the motion object instance:
-    */
+      mi = mopt->motion_object_instance[i];
+
+   // Add a new animation channel to the motion object instance.
    if (mi)
    {
       i = mi->num_channels++;
-      
+
       if (mi->channels == NULL)
       {
          mi->channels = (MotionObjectChannel*)
@@ -2052,24 +1015,25 @@ static void store_motion_object_instance (
       else
       {
          mi->channels = (MotionObjectChannel*)
-            simm_realloc(mi->channels,
-                         mi->num_channels * sizeof(MotionObjectChannel), &rc);
+            simm_realloc(mi->channels, mi->num_channels * sizeof(MotionObjectChannel), &rc);
       }
-      
+
       if (mi->channels)
       {
          mi->channels[i].component = motion_component;
          mi->channels[i].column = column;
       }
    }
-} /* store_motion_object_instance */
+
+   return mi;
+}
 
 
-double check_motion_wrapping(ModelStruct* ms, MotionSequence* motion, double change)
+double check_motion_wrapping(ModelStruct* model, MotionSequence* motion, double change)
 {
    double new_value, range;
 
-   if (ms == NULL || motion == NULL)
+   if (model == NULL || motion == NULL)
       return 0.0;
 
    new_value = motion->mopt.current_value + change;
@@ -2089,118 +1053,27 @@ double check_motion_wrapping(ModelStruct* ms, MotionSequence* motion, double cha
 }
 
 
-static void set_plot_cursors(ModelStruct* ms, MotionSequence* motion)
-{
-
-   int i, j, plot_windex;
-   PlotStruct* ps;
-
-   if (ms && motion)
-   {
-      for (i = 0; i < root.numplots; i++)
-      {
-         ps = find_nth_plot(i+1);
-         if (ps == NULL)
-            return;
-         for (j = 0; j < ps->numcurves; j++)
-         {
-            if (ps->curve[j]->modelPtr == ms && ps->curve[j]->xvar.motion == motion)
-            {
-               ps->cursor_x = motion->mopt.current_value;
-               ps->cursor_color[0] = motion->cursor_color[0];
-               ps->cursor_color[1] = motion->cursor_color[1];
-               ps->cursor_color[2] = motion->cursor_color[2];
-               ps->cursor_modelPtr = ms;
-               ps->cursor_motion = motion;
-               plot_windex = get_window_index(PLOT,i);
-               if (plot_windex != -1)
-                  draw_plot(root.window[plot_windex].win_parameters, root.window[plot_windex].win_struct);
-               break;
-            }
-         }
-      }
-   }
-}
-
-
-static void calc_transform_mat(double vx, double vy, double vz, double mat[][4])
-{
-
-   double angle, vec1[3], vec2[3], vec3[3], norm_vec2[3], norm_vec3[3];
-
-   vec1[XX] = 0.0;
-   vec1[YY] = 1.0;
-   vec1[ZZ] = 0.0;
-
-   vec2[XX] = vx;
-   vec2[YY] = vy;
-   vec2[ZZ] = vz;
-
-   normalize_vector(vec2,norm_vec2);
-
-   cross_vectors(vec1,norm_vec2,vec3);
-   normalize_vector(vec3,norm_vec3);
-
-   angle = acos(DOT_VECTORS(vec1,norm_vec2)) * RTOD;
-/*
-   printf("angle= %lf  vec2= %lf %lf %lf  vec3= %lf %lf %lf\n", angle,
-	  norm_vec2[0], norm_vec2[1], norm_vec2[2], norm_vec3[0], norm_vec3[1], norm_vec3[2]);
-*/
-   make_4x4dircos_matrix(angle,norm_vec3,mat);
-
-}
-
-/* =========================================================================
- * ==== MOTION OBJECT SUPPORT:
- */
-
 /* -------------------------------------------------------------------------
-   add_default_motion_objects - 
+   circularize_motion_index - this interesting routine was added to allow
+      realtime motion to continuously stream into a fixed-duration
+      MotionSequence, by wrapping the samples around the end of the buffer.
+      
+      -- KMS 2/23/00
 ---------------------------------------------------------------------------- */
-void add_default_motion_objects (ModelStruct* ms)
+static int circularize_motion_index(MotionSequence* motion, int i)
 {
-   int i, n = sizeof(sDefaultMotionObjects) / sizeof(MotionObject);
-   
-   for (i = 0; i < n; i++)
+   if (motion->is_realtime && motion->realtime_circular_index > 0)
    {
-      MotionObject* mo;
-      ReturnCode rc;
+      i += motion->realtime_circular_index;
       
-      int j = ms->num_motion_objects++;
-      
-      if (ms->motion_objects == NULL)
-         ms->motion_objects = (MotionObject*) simm_malloc(ms->num_motion_objects * sizeof(MotionObject));
-      else
-         ms->motion_objects = (MotionObject*) simm_realloc(ms->motion_objects,
-                                                           ms->num_motion_objects * sizeof(MotionObject),
-                                                           &rc);
-      if (ms->motion_objects == NULL)
-      {
-         ms->num_motion_objects = 0;
-         return;
-      }
-      mo = &ms->motion_objects[j];
-      
-      memset(mo, 0, sizeof(MotionObject));
-      
-      mstrcpy(&mo->name, sDefaultMotionObjects[i].name);
-      mstrcpy(&mo->filename, sDefaultMotionObjects[i].filename);
-      rc = lookup_polyhedron(&mo->shape, mo->filename, ms);
-      mstrcpy(&mo->materialname, sDefaultMotionObjects[i].materialname);
-      mo->material = enter_material(ms, mo->materialname, declaring_element);
-      mo->drawmode = sDefaultMotionObjects[i].drawmode;
-      mo->vector_axis = sDefaultMotionObjects[i].vector_axis;
-      
-      for (j = 0; j < 3; j++)
-      {
-         mo->startingPosition[j]    = sDefaultMotionObjects[i].startingPosition[j];
-         mo->startingScale[j]       = sDefaultMotionObjects[i].startingScale[j];
-         mo->startingXYZRotation[j] = sDefaultMotionObjects[i].startingXYZRotation[j];
-      }
+      if (i >= motion->number_of_datarows)
+         i -= motion->number_of_datarows;
    }
+
+   return i;
 }
 
-void free_motion(MotionSequence* motion)
+void free_motion(MotionSequence* motion, ModelStruct* model)
 {
    if (motion)
    {
@@ -2251,182 +1124,327 @@ void free_motion(MotionSequence* motion)
          FREE_IFNOTNULL(motion->event);
       }
 
-      if (motion->mopt.motion_object_instances)
+		FREE_IFNOTNULL(motion->mopt.gencoords);
+		FREE_IFNOTNULL(motion->mopt.genc_velocities);
+		FREE_IFNOTNULL(motion->mopt.muscles);
+		FREE_IFNOTNULL(motion->mopt.ligaments);
+		FREE_IFNOTNULL(motion->mopt.other_data);
+
+      if (motion->mopt.motion_object_instance)
       {
          for (i = 0; i < motion->mopt.num_motion_object_instances; i++)
-            free_motion_object_instance(&motion->mopt.motion_object_instances[i]);
-         FREE_IFNOTNULL(motion->mopt.motion_object_instances);
+            free_motion_object_instance(motion->mopt.motion_object_instance[i], model);
+         FREE_IFNOTNULL(motion->mopt.motion_object_instance);
       }
    }
 }
 
-#endif /* ENGINE */
-
-/* -------------------------------------------------------------------------
-   read_motion_object - 
----------------------------------------------------------------------------- */
-public ReturnCode read_motion_object (int mod, FILE** fp)
+int apply_motion_to_model(ModelStruct* model, MotionSequence* motion, double value, SBoolean update_modelview, SBoolean draw_plot)
 {
-   ModelStruct* ms = model[mod];
-   MotionObject* mo;
-   ReturnCode rc = code_fine;
-   
-   int i;
-   
-   /* read the motion object's name:
-    */
-   if (fscanf(*fp,"%s", buffer) != 1)
-   {
-      error(abort_action, "Error reading name in motion object definition");
-      return code_bad;
-   }
-   
-   /* scan the list of existing motion objects to see if one already exists
-    * with the name we just read:
-    */
-   for (i = 0; i < ms->num_motion_objects; i++)
-      if (STRINGS_ARE_EQUAL(buffer, ms->motion_objects[i].name))
-         break;
-   
-   /* create a new motion object if necessary:
-    */
-   if (i == ms->num_motion_objects)
-   {
-      i = ms->num_motion_objects++;
-   
-      if (ms->motion_objects == NULL)
-         ms->motion_objects = (MotionObject*) simm_malloc(ms->num_motion_objects * sizeof(MotionObject));
-      else
-         ms->motion_objects = (MotionObject*) simm_realloc(ms->motion_objects,
-                                                           ms->num_motion_objects * sizeof(MotionObject),
-                                                           &rc);
-      if (ms->motion_objects == NULL)
-      {
-         ms->num_motion_objects = 0;
-         return code_bad;
-      }
-      mo = &ms->motion_objects[i];
-      
-      memset(mo, 0, sizeof(MotionObject));
-   
-      mstrcpy(&mo->name, buffer);
-      
-      mstrcpy(&mo->materialname, "def_motion");
-      mo->material = enter_material(ms, mo->materialname, declaring_element);
+   int i, item, motion_num;
+   double percent;
 
-      for (i = XX; i <= ZZ; i++)
-      {
-         mo->startingPosition[i] = 0.0;
-         mo->startingScale[i] = 1.0;
-         mo->startingXYZRotation[i] = 0.0;
-      }
-      mo->drawmode = gouraud_shading;
-      mo->vector_axis = YY;
+   if (!motion)
+      return 0;
+
+   motion->mopt.current_value = value;
+
+   if (motion->mopt.current_value < motion->min_value)
+      motion->mopt.current_value  = motion->min_value;
+   else if (motion->mopt.current_value > motion->max_value)
+      motion->mopt.current_value  = motion->max_value;
+
+   if (EQUAL_WITHIN_ERROR(motion->max_value, motion->min_value) || motion->number_of_datarows == 1)
+   {
+      motion->mopt.current_value = motion->min_value;
+      motion->mopt.current_frame = 0;
    }
    else
-      mo = &ms->motion_objects[i];
-      
-   mo->defined_in_file = yes;
-   
-   /* read the motion object's parameters:
-    */
-   while (1)
    {
-      if (read_string(fp, buffer) == EOF || STRINGS_ARE_EQUAL(buffer, "endmotionobject"))
-         break;
+#if 0 // can't use this method with variable spacing in the X column
+      percent = (motion->mopt.current_value - motion->min_value) / (motion->max_value - motion->min_value);
 
-      if (buffer[0] == '#')
+      motion->mopt.current_frame = percent * (motion->number_of_datarows - 1) + MOTION_OFFSET;
+
+      motion->mopt.current_value = motion->min_value + motion->mopt.current_frame *
+         (motion->max_value - motion->min_value) / (motion->number_of_datarows - 1);
+
+      //printf("percent = %lf, frame = %d, value = %lf\n", percent, motion->mopt.current_frame, motion->mopt.current_value);
+#else
+      update_current_motion_frame(motion);
+      //printf("frame = %d, value = %lf, frameValue = %lf\n", motion->mopt.current_frame, motion->mopt.current_value, motion->motiondata[motion->x_column][motion->mopt.current_frame]);
+#endif
+   }
+
+   motion->mopt.current_frame = circularize_motion_index(motion, motion->mopt.current_frame);
+
+   if ((model->numclosedloops > 0) && (model->useIK == yes) && motion->enforce_loops == yes)
+   {
+      LoopStatus loopStatus;
+      ConstraintStatus consStatus;
+      /* if the gencoord is in the motion file, set it to the value in the 
+       * motion file.  If it's not in the motion file and is in a loop, set it
+       * to zero.  Then invalidate all the joint matrices, and solve all the
+       * loops.  Gencoords get set to whatever new values are calculated by
+       * the IK solver (may not be the same as those in the motion file.
+       */
+      for (i = 0; i < model->numgencoords; i++)
       {
-         read_nonempty_line(fp,buffer);
-         continue;
+         int j;
+         if (motion->mopt.gencoords[i] != NULL)
+            model->gencoord[i]->value = motion->mopt.gencoords[i][motion->mopt.current_frame];
+         else if (model->gencoord[i]->used_in_loop == yes)
+            model->gencoord[i]->value = 0.0;
+         for (j = 0; j < model->gencoord[i]->numjoints; j++)
+            invalidate_joint_matrix(model, &model->joint[model->gencoord[i]->jointnum[j]]);
+      }
+      solveAllLoopsAndConstraints(model, &loopStatus, &consStatus, yes);
+      if (loopStatus == loopChanged)
+      {
+#if 0
+         sprintf(buffer, "Loops solved using motion file values, values changed\n");
+         error(none, buffer);
+#endif
+      }
+   }
+   else if (model->num_constraint_objects > 0)// && motion->enforce_constraints == yes)
+   {
+      ConstraintStatus constraintStatus;
+      LoopStatus loopStatus;
+      /* if the gencoord is in the motion file, copy its value into the gc struct.
+       * then invalidate all the joints that use it.
+       * Solve all the constraints with the new values.  Gencoords are set
+       * to whatever values are calculated by the constraint solver (may not
+       * be the values in the motion file. Don't change any values if the
+       * gencoord is locked.  If the constraints are unchanged, the gencoord
+       * values must be set (set_gencoord_value was not called in solveall. 
+       */
+      for (i = 0; i < model->numgencoords; i++)
+      {
+         int j;
+         if ((motion->mopt.gencoords[i] != NULL) &&
+            (model->gencoord[i]->locked == no))
+         {
+            model->gencoord[i]->value = motion->mopt.gencoords[i][motion->mopt.current_frame];
+            for (j = 0; j < model->gencoord[i]->numjoints; j++)
+               invalidate_joint_matrix(model, &model->joint[model->gencoord[i]->jointnum[j]]);
+         }
       }
 
-      if (STRINGS_ARE_EQUAL(buffer, "filename"))
+      solveAllLoopsAndConstraints(model, &loopStatus, &constraintStatus, motion->enforce_constraints);//yes);
+      if (constraintStatus == constraintUnchanged)
       {
-         if (fscanf(*fp, "%s", buffer) != 1)
+         for (i = 0; i < model->numgencoords; i++)
          {
-            simm_printf(yes, "Error reading filename for motion object: %s.\n", mo->name);
-            return code_bad;
+            set_gencoord_value(model, model->gencoord[i], model->gencoord[i]->value, no);
          }
-         mstrcpy(&mo->filename, buffer);
-#ifndef ENGINE
-#if !OPENSIM_CONVERTER
-         if (lookup_polyhedron(&mo->shape, mo->filename, ms) != code_fine)
-         {
-            simm_printf(yes, "Error reading motion object: %s\n", mo->filename);
-            return code_bad;
-         }
-#endif
+      }
+      else if (constraintStatus == constraintChanged)
+      {
+#if 0
+         sprintf(buffer, "Constraints solved using motion file values, values changed\n");
+         error(none, buffer);
 #endif
       }
-      if (STRINGS_ARE_EQUAL(buffer, "position") || STRINGS_ARE_EQUAL(buffer,"origin"))
+      //dkb aug 19, 2002
+      for (i = 0; i < model->numgencoords; i++)
       {
-         if (fscanf(*fp, "%lg %lg %lg", &mo->startingPosition[0],
-                                        &mo->startingPosition[1],
-                                        &mo->startingPosition[2]) != 3)
-         {
-            simm_printf(yes, "Error reading position for motion object: %s.\n", mo->name);
-            return code_bad;
-         }
+         set_gencoord_value(model, model->gencoord[i], model->gencoord[i]->value, no);
       }
-      if (STRINGS_ARE_EQUAL(buffer, "scale"))
+   }
+   else
+   {
+      /* if solver is off or there are no loops, and there are no constraints,
+       * set the gencoords to the values in the motion file */
+      for (i = 0; i < model->numgencoords; i++)
       {
-         if (fscanf(*fp, "%lg %lg %lg", &mo->startingScale[0],
-                                        &mo->startingScale[1],
-                                        &mo->startingScale[2]) != 3)
+         if (motion->mopt.gencoords[i] != NULL)
          {
-            simm_printf(yes, "Error reading scale for motion object: %s.\n", mo->name);
-            return code_bad;
-         }
-      }
-      if (STRINGS_ARE_EQUAL(buffer, "xyzrotation"))
-      {
-         if (fscanf(*fp, "%lg %lg %lg", &mo->startingXYZRotation[0],
-                                        &mo->startingXYZRotation[1],
-                                        &mo->startingXYZRotation[2]) != 3)
-         {
-            simm_printf(yes, "Error reading xyzrotation for motion object: %s.\n", mo->name);
-            return code_bad;
-         }
-      }
-      if (STRINGS_ARE_EQUAL(buffer, "material"))
-      {
-         if (fscanf(*fp, "%s", buffer) != 1)
-         {
-            simm_printf(yes, "Error reading material for motion object: %s.\n", mo->name);
-            return code_bad;
-         }
-         if (mo->materialname)
-            free(mo->materialname);
-            
-         mstrcpy(&mo->materialname, buffer);
-         
-         mo->material = enter_material(ms, mo->materialname, declaring_element);
-      }
-      if (STRINGS_ARE_EQUAL(buffer, "drawmode"))
-      {
-         if (read_drawmode(*fp, &mo->drawmode) != code_fine)
-         {
-            simm_printf(yes,"Error reading drawmode for motion object: %s.\n", mo->name);
-            return code_bad;
-         }
-      }
-      if (STRINGS_ARE_EQUAL(buffer, "vectoraxis"))
-      {
-         if (fscanf(*fp, "%s", buffer) != 1)
-         {
-            simm_printf(yes, "Error reading vectoraxis for motion object: %s.\n", mo->name);
-            return code_bad;
-         }
-         switch (buffer[0])
-         {
-            case 'x': case 'X': mo->vector_axis = XX; break;
-            case 'y': case 'Y': mo->vector_axis = YY; break;
-            case 'z': case 'Z': mo->vector_axis = ZZ; break;
+            if (model->gencoord[i]->locked == no)
+            {
+               set_gencoord_value(model, model->gencoord[i], motion->mopt.gencoords[i][motion->mopt.current_frame], no);
+            }
+            else if (update_modelview == yes)
+            {
+               /* If the gencoord is locked, but still appears in the motion file,
+                * print a warning message if the motion file value is not within
+                * a tolerance equal to the default precision of motion file data.
+                */
+               if (NOT_EQUAL_WITHIN_TOLERANCE(motion->mopt.gencoords[i][motion->mopt.current_frame], model->gencoord[i]->value, 0.000001))
+               {
+                  sprintf(errorbuffer, "Gencoord %s is locked at %f\n",
+                  model->gencoord[i]->name, model->gencoord[i]->value);
+                  error(none, errorbuffer);
+               }
+            }
          }
       }
    }
-   return rc;
+
+#if ! OPENSMAC && ! ENGINE
+   for (i=0; i<model->nummuscles; i++)
+   {
+      if (motion->mopt.muscles[i] != NULL)
+         model->muscle[i]->dynamic_activation = motion->mopt.muscles[i][motion->mopt.current_frame];
+   }  
+
+   for (i=0; i<model->numligaments; i++)
+   {
+      if (motion->mopt.ligaments[i] != NULL)
+         model->ligament[i].activation = motion->mopt.ligaments[i][motion->mopt.current_frame];
+   }
+
+   for (i=0; i<model->numgencoords; i++)
+   {
+      if (motion->mopt.genc_velocities[i] != NULL)
+         set_gencoord_velocity(model, model->gencoord[i], motion->mopt.genc_velocities[i][motion->mopt.current_frame]);
+      else
+         set_gencoord_velocity(model, model->gencoord[i], 0.0);
+   }
+
+   if (update_modelview == yes)
+   {
+      /* Find out which form item is linked to this motion and update it. */
+      for (item = 0; item < model->gencform.numoptions; item++)
+      {
+         if (model->gencform.option[item].data == motion)
+         {
+            storeDoubleInForm(&model->gencform.option[item], motion->mopt.current_value, 3);
+            break;
+         }
+      }
+
+      /* Find out which slider is linked to this motion and update it. */
+      for (item = 0; item < model->gencform.numoptions; item++)
+      {
+         if (model->gencform.option[item].data == motion)
+         {
+            model->gencslider.sl[item].value = motion->mopt.current_value;
+            break;
+         }
+      }
+
+      model->dis.applied_motion = motion;
+   }
+
+   if (draw_plot == yes && motion->show_cursor == yes)
+      set_plot_cursors(model, motion);
+#endif
+
+   /* If there is no gencoord data in this motion (all columns of
+    * data in motion file are "othercurves," then return 0, meaning you didn't
+    * change the model configuration by trying to apply the motion to it. Otherwise
+    * return 1, so the calling routine knows that it should redraw the model.
+    * JPL/TODO 7/24/96: This doesn't work since standard deviations have been
+    * added to motion files, because num_datacolumns  gets decremented by num_std_dev,
+    * but num_other does not (so they may happen to be equal)
+
+   if (motion->number_of_datacolumns == motion->number_of_othercurves)
+      return 0;
+   else
+    */
+
+   return 1;
+}
+
+static void update_current_motion_frame(MotionSequence* motion)
+{
+   int i;
+
+   // Current_value has changed. For efficiency, first check to see if it is still
+   // near current_frame.
+   if (motion->mopt.current_frame == 0)
+   {
+      // See if current value is between frames 0 and 1.
+      // If it is, figure out which one it is closer to.
+      double leftDiff = motion->mopt.current_value - motion->motiondata[motion->x_column][0] - TINY_NUMBER;
+      double rightDiff = motion->motiondata[motion->x_column][1] + TINY_NUMBER - motion->mopt.current_value;
+
+      if (leftDiff >= 0.0 && rightDiff >= 0.0)
+      {
+         if (leftDiff < rightDiff)
+            motion->mopt.current_frame = 0;
+         else
+            motion->mopt.current_frame = 1;
+         return;
+      }
+   }
+   else if (motion->mopt.current_frame == motion->number_of_datarows - 1)
+   {
+      // See if current value is between last and second-to-last frames.
+      // If it is, figure out which one it is closer to.
+      double leftDiff = motion->mopt.current_value - motion->motiondata[motion->x_column][motion->number_of_datarows - 2] - TINY_NUMBER;
+      double rightDiff = motion->motiondata[motion->x_column][motion->number_of_datarows - 1] + TINY_NUMBER - motion->mopt.current_value;
+
+      if (leftDiff >= 0.0 && rightDiff >= 0.0)
+      {
+         if (leftDiff < rightDiff)
+            motion->mopt.current_frame = motion->number_of_datarows - 2;
+         else
+            motion->mopt.current_frame = motion->number_of_datarows - 1;
+         return;
+      }
+   }
+   else
+   {
+      // See if current value is between current frame and previous frame.
+      // If it is, figure out which one it is closer to.
+      int frame = motion->mopt.current_frame;
+      double leftDiff = motion->mopt.current_value - motion->motiondata[motion->x_column][frame - 1] - TINY_NUMBER;
+      double rightDiff = motion->motiondata[motion->x_column][frame] + TINY_NUMBER - motion->mopt.current_value;
+
+      if (leftDiff >= 0.0 && rightDiff >= 0.0)
+      {
+         if (leftDiff < rightDiff)
+            motion->mopt.current_frame = frame - 1;
+         else
+            motion->mopt.current_frame = frame;
+         return;
+      }
+
+      // See if current value is between current frame and next frame.
+      // If it is, figure out which one it is closer to.
+      leftDiff = motion->mopt.current_value - motion->motiondata[motion->x_column][frame] - TINY_NUMBER;
+      rightDiff = motion->motiondata[motion->x_column][frame + 1] + TINY_NUMBER - motion->mopt.current_value;
+
+      if (leftDiff >= 0.0 && rightDiff >= 0.0)
+      {
+         if (leftDiff < rightDiff)
+            motion->mopt.current_frame = frame;
+         else
+            motion->mopt.current_frame = frame + 1;
+         return;
+      }
+   }
+
+   // Find the first frame that is greater than current value, then
+   // figure out whether current value is closer to that frame or the
+   // previous frame.
+   for (i=0; i<motion->number_of_datarows; i++)
+   {
+      if (motion->motiondata[motion->x_column][i] + TINY_NUMBER >= motion->mopt.current_value)
+      {
+         if (i == 0)
+         {
+            motion->mopt.current_frame = 0;
+            return;
+         }
+         else
+         {
+            double leftDiff = motion->mopt.current_value - motion->motiondata[motion->x_column][i - 1] - TINY_NUMBER;
+            double rightDiff = motion->motiondata[motion->x_column][i] + TINY_NUMBER - motion->mopt.current_value;
+
+            if (leftDiff >= 0.0 && rightDiff >= 0.0)
+            {
+               if (leftDiff < rightDiff)
+                  motion->mopt.current_frame = i - 1;
+               else
+                  motion->mopt.current_frame = i;
+               return;
+            }
+         }
+      }
+   }
 }
 
 ReturnCode write_motion(MotionSequence *motion, const char filename[])
@@ -2441,7 +1459,8 @@ ReturnCode write_motion(MotionSequence *motion, const char filename[])
    fprintf(file, "name %s\n", motion->name);
    fprintf(file, "datacolumns %d\n", motion->number_of_datacolumns);
    fprintf(file, "datarows %d\n", motion->number_of_datarows);
-   fprintf(file, "range %lf %f\n", motion->min_value, motion->max_value);
+   fprintf(file, "x_column %d\n", motion->x_column + 1);
+   //fprintf(file, "range %lf %f\n", motion->min_value, motion->max_value);
    if (motion->units)
       fprintf(file, "units %s\n", motion->units);
    if (motion->wrap)
@@ -2460,12 +1479,42 @@ ReturnCode write_motion(MotionSequence *motion, const char filename[])
       fprintf(file, "cursor %.2f %.2f %.2f\n", motion->cursor_color[0], motion->cursor_color[1], motion->cursor_color[2]);
 
    for (i = 0; i < motion->num_events; i++)
-      fprintf(file, "event %lf %s\n", motion->event[i].x_coord, motion->event[i].name);
+      fprintf(file, "event %lf %s\n", motion->event[i].xCoord, motion->event[i].name);
 
    fprintf(file, "event_color %f %f %f\n", motion->event_color[0], motion->event_color[1], motion->event_color[2]);
 
    if (motion->calc_derivatives)
-      fprintf(file, "calc_derivatives %f\n", motion->time_step);
+      fprintf(file, "calc_derivatives yes\n");
+
+   for (i=0; i<motion->mopt.num_motion_object_instances; i++)
+   {
+      MotionObjectInstance* mi = motion->mopt.motion_object_instance[i];
+
+      if (mi->type == FootPrintObject)
+      {
+         // The scale factor is the magnitude of any row or column in the rotation matrix.
+         double eulerRot[3], nvec[3];
+			memset(nvec, 0, 3 * sizeof(double));
+         extract_xyz_rot_bodyfixed(mi->currentXform, eulerRot);
+         fprintf(file, "%s %lf %lf %lf %lf %lf %lf %lf\n", mi->name,
+            normalize_vector(mi->currentXform[0], nvec),                            // scale factor
+            mi->currentXform[3][0], mi->currentXform[3][1], mi->currentXform[3][2], // translations
+				eulerRot[0] * RTOD, eulerRot[1] * RTOD, eulerRot[2] * RTOD);            // XYZ Euler rotations
+      }
+      else if (mi->type == ForcePlateObject)
+      {
+         double eulerRot[3], nvec[3];
+			memset(nvec, 0, 3 * sizeof(double));
+         extract_xyz_rot_bodyfixed(mi->currentXform, eulerRot);
+         fprintf(file, "%s", mi->name);
+         // Scale factors are the magnitudes of the rows.
+			fprintf(file, " %lf %lf %lf", VECTOR_MAGNITUDE(mi->currentXform[0]), VECTOR_MAGNITUDE(mi->currentXform[1]),
+				VECTOR_MAGNITUDE(mi->currentXform[2]));
+         fprintf(file, " %lf %lf %lf", mi->currentXform[3][0], mi->currentXform[3][1], mi->currentXform[3][2]);
+         fprintf(file, " %lf %lf %lf\n", eulerRot[0] * RTOD, eulerRot[1] * RTOD, eulerRot[2] * RTOD);
+      }
+   }
+
    fprintf(file, "endheader\n\n");
    
    for (j = 0; j < motion->number_of_datacolumns; j++)
@@ -2484,361 +1533,60 @@ ReturnCode write_motion(MotionSequence *motion, const char filename[])
    return code_fine;
 }
 
-#ifndef ENGINE
-#if !OPENSIM_CONVERTER
 
-/* -------------------------------------------------------------------------
-   update_motion_object_instance_state - 
----------------------------------------------------------------------------- */
-static void update_motion_object_instance_state (ModelStruct* ms, MotionSequence* motion, MotionObjectInstance* mi)
-{
-   MotionModelOptions* mmo = &motion->mopt;
-
-   if (NOT_EQUAL_WITHIN_ERROR(mi->current_value, mmo->current_value))
-   {
-      int i;
-      int mod = ms->modelnum;
-      MotionObject* mo = &ms->motion_objects[mi->object];
-
-#if 0
-      double percent = (motion->mopt[mod].current_value - motion->min_value) /
-	               (motion->max_value - motion->min_value);
-/* used to be + 0.5, but model was occasionally being drawn with old force data.
-the -0.5 guarantees that the data is coherent (although 1 frame behind, perhaps
-the number should be  + 0.49 so whole numbers do not get rounded up).
-JPL 1/24/01: the frame number is now set and stored in the mmo struct before
-this function is called. So don't recompute it, just use the old value.
-*/
-      int frame = percent * (motion->number_of_datarows - 1) + MOTION_OFFSET;
-#endif
-
-      double position[3] = {0,0,0}, scale[3] = {1,1,1}, vector[3] = {0,0,0};
-      double axis[3], angle = 0, color[3] = {-1,-1,-1};
-      DMatrix m;
-      SBoolean hasVectorComponent = no, hasColorComponent = no;
-
-#if 0
-      printf("frame = %d, percent = %lf\n", frame, percent);
-      frame = circularize_motion_index(motion, frame);
-#endif
-
-      /* retrieve values for the motion object instance's animation channels */
-      for (i = 0; i < mi->num_channels; i++)
-      {
-         double* value = NULL;
-         
-         switch (mi->channels[i].component)
-         {
-            case MO_TX: value = &position[XX]; break;
-            case MO_TY: value = &position[YY]; break;
-            case MO_TZ: value = &position[ZZ]; break;
-            
-            case MO_VX: value = &vector[XX]; hasVectorComponent = yes; break;
-            case MO_VY: value = &vector[YY]; hasVectorComponent = yes; break;
-            case MO_VZ: value = &vector[ZZ]; hasVectorComponent = yes; break;
-            
-            case MO_SX: value = &scale[XX]; break;
-            case MO_SY: value = &scale[YY]; break;
-            case MO_SZ: value = &scale[ZZ]; break;
-            
-            case MO_CR: value = &color[0]; hasColorComponent = yes; break;
-            case MO_CG: value = &color[1]; hasColorComponent = yes; break;
-            case MO_CB: value = &color[2]; hasColorComponent = yes; break;
-         }
-         
-         if (value)
-         {
-            *value = motion->motiondata[mi->channels[i].column][mmo->current_frame];
-         }
-      }
-      for (i = 0; i < 3; i++)
-      {
-         position[i] += mo->startingPosition[i];
-         scale[i] *= mo->startingScale[i];
-      }
-      
-      /* update the motion object instance's current transform:
-       */
-      if (hasVectorComponent)
-      {
-         double u[3], magnetude = normalize_vector(vector, vector);
-         
-         scale[mo->vector_axis] *= magnetude;
-         
-         /* avoid drawing zero-length vectors:
-          */
-         if (EQUAL_WITHIN_ERROR(scale[mo->vector_axis], 0.0))
-            mi->visible = no;
-         else
-            mi->visible = yes;
-         
-         switch (mo->vector_axis)
-         {
-            case XX: u[XX] = 1.0; u[YY] = 0.0; u[ZZ] = 0.0; break;
-            case YY: u[XX] = 0.0; u[YY] = 1.0; u[ZZ] = 0.0; break;
-            case ZZ: u[XX] = 0.0; u[YY] = 0.0; u[ZZ] = 1.0; break;
-         }
-         angle = acos(DOT_VECTORS(u, vector));
-         
-         if (EQUAL_WITHIN_ERROR(angle, 0.0) || EQUAL_WITHIN_ERROR(angle, M_PI))
-         {
-             axis[XX] = u[ZZ]; /* pick an arbitrary vector perpendicular to */
-             axis[YY] = u[XX]; /* 'u' in cases where the cross-product will fail */
-             axis[ZZ] = u[YY];
-         }
-         else
-             cross_vectors(u, vector, axis);
-      }
-      
-      identity_matrix(m);
-      scale_matrix(m, scale);
-      
-      if (NOT_EQUAL_WITHIN_ERROR(mo->startingXYZRotation[XX], 0.0))
-         x_rotate_matrix_bodyfixed(m, mo->startingXYZRotation[XX] * DTOR);
-      
-      if (NOT_EQUAL_WITHIN_ERROR(mo->startingXYZRotation[YY], 0.0))
-         y_rotate_matrix_bodyfixed(m, mo->startingXYZRotation[YY] * DTOR);
-      
-      if (NOT_EQUAL_WITHIN_ERROR(mo->startingXYZRotation[ZZ], 0.0))
-         z_rotate_matrix_bodyfixed(m, mo->startingXYZRotation[ZZ] * DTOR);
-      
-      if (hasVectorComponent && NOT_EQUAL_WITHIN_ERROR(angle, 0.0))
-         rotate_matrix_axis_angle(m, axis, angle);
-      
-      translate_matrix(m, position);
-      
-      copy_4x4matrix(m, mi->currentXform);
-
-      /* update the motion object instance's current material if necessary:
-       */
-      if (hasColorComponent)
-      {
-         if (color[0] >= 0.0)
-            mi->currentMaterial.ambient[0] = color[0];
-         
-         if (color[1] >= 0.0)
-            mi->currentMaterial.ambient[1] = color[1];
-         
-         if (color[2] >= 0.0)
-            mi->currentMaterial.ambient[2] = color[2];
-         
-         if ( ! mi->currentMaterial.ambient_defined)
-         {
-            mi->currentMaterial.ambient[3] = 1.0;
-            mi->currentMaterial.ambient_defined = yes;
-         }
-         make_mat_display_list(&mi->currentMaterial);
-         make_highlight_mat_display_list(&mi->currentMaterial);
-      }
-      
-      mi->current_value = mmo->current_value;
-   }
-} /* update_motion_object_instance_state */
-
-/* -------------------------------------------------------------------------
-   draw_motion_objects - 
----------------------------------------------------------------------------- */
-public void draw_motion_objects (ModelStruct* ms, ModelDrawOptions* mdo)
-{
-   if (ms->dis.applied_motion)
-   {
-      int i;
-      MotionSequence* motion = ms->dis.applied_motion;
-      MotionModelOptions* mmo = &motion->mopt;
-
-      if (mmo->num_motion_object_instances <= 0)
-         return;
-
-      glPushMatrix();
-
-      for (i = 0; i < mmo->num_motion_object_instances; i++)
-      {
-         MotionObjectInstance* mi = &mmo->motion_object_instances[i];
-         MotionObject* mo = &ms->motion_objects[mi->object];
-         PolyhedronStruct* ph = &mo->shape;
-
-         update_motion_object_instance_state(ms, motion, mi);
-
-         if ( ! mi->visible || mi->drawmode == none)
-            continue;
-
-         /* transform to the motion object's local frame:
-          */
-         pushframe(ms->modelnum);
-         movetoframe(ms->modelnum, ms->currentframe, mi->segment);
-         load_double_matrix(mi->currentXform);
-
-         /* apply the motion object's surface material:
-          */
-         if (mdo->mode == GL_RENDER)
-         {
-            if (mi->currentMaterial.normal_list == -1)
-               make_mat_display_list(&mi->currentMaterial);
-
-            if (mi->currentMaterial.highlighted_list == -1)
-               make_highlight_mat_display_list(&mi->currentMaterial);
-
-            if (mo->shape.selected)
-               glCallList(mi->currentMaterial.highlighted_list);
-            else
-               glCallList(mi->currentMaterial.normal_list);
-         }
-         else
-         {
-            int color_value = 0;
-            GLubyte color[3];
-
-            /* NEED SOME CODE HERE TO INITIALIZE 'color_value', if the
-             * motion object is to be pickable.
-             */
-            pack_int_into_color(color_value, color);
-            glColor3ubv(color);
-         }
-
-         /* draw the motion object:
-          */
-         glEnable(GL_NORMALIZE);
-
-         glShadeModel(GL_FLAT);
-
-         if (mi->drawmode == gouraud_shading)
-         {
-            glShadeModel(GL_SMOOTH);
-            draw_gouraud_bone(ms, ph, &ms->dis);
-         }
-         else if (mi->drawmode == flat_shading)
-         {
-            draw_flat_bone(ms, ph, &ms->dis);
-         }
-         else if (mi->drawmode == solid_fill)
-         {
-            if (mdo->mode == GL_RENDER)
-            {
-               glPushAttrib(GL_ENABLE_BIT);
-               glDisable(GL_LIGHTING);
-               glColor3fv(mi->currentMaterial.ambient);
-            }
-            draw_solid_fill_bone(ms, ph, 0, 0, mdo);
-            
-            if (mdo->mode == GL_RENDER)
-               glPopAttrib();
-         }
-         else if (mi->drawmode == outlined_polygons)
-         {
-            calc_camera_vector(ms, ms->dis.z_vector);
-            draw_outlined_bone(ms, ph, NULL, &ms->dis);
-         }
-         else if (mi->drawmode == wireframe)
-         {
-            draw_wireframe_bone(ms, ph, 0, 0, mdo);
-         }
-         else if (mi->drawmode == bounding_box)
-         {
-            calc_camera_vector(ms, ms->dis.z_vector);
-            draw_bounding_box_bone(ph, 0, 0, mdo, &ms->dis);
-         }
-         popframe(ms->modelnum);
-      }
-      glPopMatrix();
-
-      glDisable(GL_NORMALIZE);
-   }
-}
-
-
-void post_motion_event(ModelStruct* ms, MotionSequence* motion, int motion_index, int eventCode)
-{
-   SimmEvent se;
-
-   memset(&se, 0, sizeof(se));
-   
-   se.event_code = eventCode;
-   se.struct_ptr = motion;
-   se.field1 = ms->modelnum;
-   se.field2 = motion_index;
-   
-   queue_simm_event(se);
-}
-
-
-MotionSequence* find_nth_motion(ModelStruct* ms, int motcount)
-{
-   int i, count = 0;
-
-   if (ms && motcount >= 1)
-   {
-      for (i = 0; i < ms->motion_array_size; i++)
-         if (ms->motion[i])
-            if (++count == motcount)
-               break;
-
-      if (i == ms->motion_array_size)
-         return NULL;
-
-      return ms->motion[i];
-   }
-   else
-   {
-      return NULL;
-   }
-}
-
-#endif /* !OPENSIM_CONVERTER */
-#endif /* ENGINE */
-
-MotionSequence* createMotionStruct(ModelStruct* ms)
+MotionSequence* createMotionStruct(ModelStruct* model)
 {
    int i;
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
    MotionSequence* motion;
 
    /* Find, or make, an empty slot for this new motion. */
-   for (i = 0; i < ms->motion_array_size; i++)
+   for (i = 0; i < model->motion_array_size; i++)
    {
-      if (ms->motion[i] == NULL)
+      if (model->motion[i] == NULL)
          break;
    }
 
-   if (i == ms->motion_array_size)
+   if (i == model->motion_array_size)
    {
-      int j, old_size = ms->motion_array_size;
-      ms->motion_array_size += MOTION_ARRAY_INCREMENT;
-      ms->motion = (MotionSequence**)simm_realloc(ms->motion,
-         (unsigned)((ms->motion_array_size)*sizeof(MotionSequence*)), &rc);
+      int j, old_size = model->motion_array_size;
+      model->motion_array_size += MOTION_ARRAY_INCREMENT;
+      model->motion = (MotionSequence**)simm_realloc(model->motion,
+         (unsigned)((model->motion_array_size)*sizeof(MotionSequence*)), &rc);
       if (rc == code_bad)
          return NULL;
 
-      for (j = old_size; j < ms->motion_array_size; j++)
-         ms->motion[j] = NULL;
+      for (j = old_size; j < model->motion_array_size; j++)
+         model->motion[j] = NULL;
    }
 
-   ms->motion[i] = (MotionSequence*)simm_calloc(1, sizeof(MotionSequence));
-   if (ms->motion[i] == NULL)
+   model->motion[i] = (MotionSequence*)simm_calloc(1, sizeof(MotionSequence));
+   if (model->motion[i] == NULL)
       return NULL;
 
-   motion = ms->motion[i];
-   ms->num_motions++;
+   motion = model->motion[i];
+   model->num_motions++;
 
    return motion;
 }
 
-#if OPENSIM_CONVERTER
-MotionSequence* applyForceMattesToMotion(ModelStruct* ms, MotionSequence* motion, SBoolean addToModel)
+#if OPENSMAC
+MotionSequence* applyForceMattesToMotion(ModelStruct* model, MotionSequence* motionKin, MotionSequence* motionAnalog, SBoolean addToModel)
 {
    int i, j, k, numForceMatteForces = 0;
    double value, increment;
    ForceMatteForce forces[10];
    MotionSequence* newMotion = NULL;
 
-   if (motion->number_of_datarows < 2)
+   if (motionAnalog->number_of_datarows < 2)
       return newMotion;
 
-   for (i=0; i<ms->numsegments; i++)
+   for (i=0; i<model->numsegments; i++)
    {
-      if (ms->segment[i].forceMatte)
+      if (model->segment[i].forceMatte)
       {
          forces[numForceMatteForces].segment = i;
-         forces[numForceMatteForces].forceMatte = ms->segment[i].forceMatte;
+         forces[numForceMatteForces].forceMatte = model->segment[i].forceMatte;
          numForceMatteForces++;
       }
    }
@@ -2847,43 +1595,51 @@ MotionSequence* applyForceMattesToMotion(ModelStruct* ms, MotionSequence* motion
       return newMotion;
 
    if (addToModel == yes)
-      newMotion = createMotionStruct(ms);
+      newMotion = createMotionStruct(model);
    else
       newMotion = (MotionSequence*)simm_calloc(1, sizeof(MotionSequence));
-   transformMotion(newMotion, motion, ms, forces, numForceMatteForces);
-   tie_motion_to_model(newMotion, ms, no);
+   transformMotion(newMotion, motionAnalog, model, forces, numForceMatteForces);
+   add_motion_to_model(newMotion, model, no);
 
-   increment = (motion->max_value - motion->min_value) / (motion->number_of_datarows - 1);
-   for (i=0; i<motion->number_of_datarows; i++)
+   increment = (motionAnalog->max_value - motionAnalog->min_value) / (motionAnalog->number_of_datarows - 1);
+   for (i=0; i<motionAnalog->number_of_datarows; i++)
    {
-      value = motion->min_value + i * increment;
-      apply_motion_to_model(ms, motion, value, no, no);
+      value = motionAnalog->min_value + i * increment;
+      apply_motion_to_model(model, motionKin, value, no, no);
+      motionAnalog->mopt.current_frame = i;
       for (k=0; k<numForceMatteForces; k++)
       {
          memset(forces[k].pointOfApplication, 0, 3*sizeof(double));
          memset(forces[k].force, 0, 3*sizeof(double));
+         memset(forces[k].freeTorque, 0, 3*sizeof(double));
          forces[k].magnitude = 0.0;
       }
-      for (j=0; j<motion->mopt.num_motion_object_instances; j++)
+      for (j=0; j<motionAnalog->mopt.num_motion_object_instances; j++)
       {
-         MotionObjectInstance* moi = &motion->mopt.motion_object_instances[j];
-         if (moi->segment == ms->ground_segment && STRINGS_ARE_EQUAL(ms->motion_objects[moi->object].name, "force"))
+         MotionObjectInstance* moi = motionAnalog->mopt.motion_object_instance[j];
+         if (moi->segment == model->ground_segment && STRINGS_ARE_EQUAL(model->motion_objects[moi->object].name, "force"))
          {
-            double pt[3], pt2[3], vec[3], vec2[3], inter[3];
+            double pt[3], pt2[3], vec[3], vec2[3], inter[3], freeTorque[3];
             for (k=0; k<moi->num_channels; k++)
             {
                if (moi->channels[k].component == MO_TX)
-                  pt[0] = motion->motiondata[moi->channels[k].column][motion->mopt.current_frame];
+                  pt[0] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
                else if (moi->channels[k].component == MO_TY)
-                  pt[1] = motion->motiondata[moi->channels[k].column][motion->mopt.current_frame];
+                  pt[1] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
                else if (moi->channels[k].component == MO_TZ)
-                  pt[2] = motion->motiondata[moi->channels[k].column][motion->mopt.current_frame];
+                  pt[2] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
                else if (moi->channels[k].component == MO_VX)
-                  vec[0] = motion->motiondata[moi->channels[k].column][motion->mopt.current_frame];
+                  vec[0] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
                else if (moi->channels[k].component == MO_VY)
-                  vec[1] = motion->motiondata[moi->channels[k].column][motion->mopt.current_frame];
+                  vec[1] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
                else if (moi->channels[k].component == MO_VZ)
-                  vec[2] = motion->motiondata[moi->channels[k].column][motion->mopt.current_frame];
+                  vec[2] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
+               else if (moi->channels[k].component == MO_X)
+                  freeTorque[0] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
+               else if (moi->channels[k].component == MO_Y)
+                  freeTorque[1] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
+               else if (moi->channels[k].component == MO_Z)
+                  freeTorque[2] = motionAnalog->motiondata[moi->channels[k].column][motionAnalog->mopt.current_frame];
             }
             if (VECTOR_MAGNITUDE(vec) > 5.0)
             {
@@ -2891,11 +1647,11 @@ MotionSequence* applyForceMattesToMotion(ModelStruct* ms, MotionSequence* motion
                {
                   memcpy(pt2, pt, 3*sizeof(double));
                   memcpy(vec2, vec, 3*sizeof(double));
-                  convert(ms->modelnum, pt2, ms->ground_segment, forces[k].segment);
-                  convert_vector(ms->modelnum, vec2, ms->ground_segment, forces[k].segment);
+                  convert(model, pt2, model->ground_segment, forces[k].segment);
+                  convert_vector(model, vec2, model->ground_segment, forces[k].segment);
                   if (vector_intersects_polyhedron(pt2, vec2, forces[k].forceMatte->poly, inter))
                   {
-                     add_vector(pt, vec, &forces[k]);
+                     add_vector(pt, vec, freeTorque, &forces[k]);
                      break;
                   }
                }
@@ -2904,21 +1660,24 @@ MotionSequence* applyForceMattesToMotion(ModelStruct* ms, MotionSequence* motion
       }
       for (k=0; k<numForceMatteForces; k++)
       {
-         newMotion->motiondata[forces[k].column[0]][motion->mopt.current_frame] = forces[k].force[0];
-         newMotion->motiondata[forces[k].column[1]][motion->mopt.current_frame] = forces[k].force[1];
-         newMotion->motiondata[forces[k].column[2]][motion->mopt.current_frame] = forces[k].force[2];
-         newMotion->motiondata[forces[k].column[3]][motion->mopt.current_frame] = forces[k].pointOfApplication[0];
-         newMotion->motiondata[forces[k].column[4]][motion->mopt.current_frame] = forces[k].pointOfApplication[1];
-         newMotion->motiondata[forces[k].column[5]][motion->mopt.current_frame] = forces[k].pointOfApplication[2];
+         newMotion->motiondata[forces[k].column[0]][motionAnalog->mopt.current_frame] = forces[k].force[0];
+         newMotion->motiondata[forces[k].column[1]][motionAnalog->mopt.current_frame] = forces[k].force[1];
+         newMotion->motiondata[forces[k].column[2]][motionAnalog->mopt.current_frame] = forces[k].force[2];
+         newMotion->motiondata[forces[k].column[3]][motionAnalog->mopt.current_frame] = forces[k].pointOfApplication[0];
+         newMotion->motiondata[forces[k].column[4]][motionAnalog->mopt.current_frame] = forces[k].pointOfApplication[1];
+         newMotion->motiondata[forces[k].column[5]][motionAnalog->mopt.current_frame] = forces[k].pointOfApplication[2];
+         newMotion->motiondata[forces[k].column[6]][motionAnalog->mopt.current_frame] = forces[k].freeTorque[0];
+         newMotion->motiondata[forces[k].column[7]][motionAnalog->mopt.current_frame] = forces[k].freeTorque[1];
+         newMotion->motiondata[forces[k].column[8]][motionAnalog->mopt.current_frame] = forces[k].freeTorque[2];
       }
    }
 
    return newMotion;
 }
-#endif
+
 
 /* Add a force vector to one already stored in a ForceMatteForce. */
-static void add_vector(double pt[], double vec[], ForceMatteForce* fmf)
+static void add_vector(double pt[], double vec[], double freeTorque[], ForceMatteForce* fmf)
 {
    int i;
    double oldMagnitude = fmf->magnitude;
@@ -2931,40 +1690,52 @@ static void add_vector(double pt[], double vec[], ForceMatteForce* fmf)
       fmf->force[i] += vec[i];
       // The new point of application is the weighted sum of the two vectors.
       fmf->pointOfApplication[i] = (fmf->pointOfApplication[i]*oldMagnitude + pt[i]*vecMagnitude) / newMagnitude;
+      // Add in the free torque. TODO: 2 free torques may complicate the calculations for force and COP addition.
+      fmf->freeTorque[i] += freeTorque[i];
    }
    fmf->magnitude = newMagnitude;
 }
 
-static void transformMotion(MotionSequence* newMotion, MotionSequence* oldMotion, ModelStruct* ms, ForceMatteForce* forces, int numForceMattes)
+static void transformMotion(MotionSequence* newMotion, MotionSequence* oldMotion, ModelStruct* model, ForceMatteForce* forces, int numForceMattes)
 {
-   int i, j, count, numGroundForces;
+   int i, j, count, numGroundForceColumns;
 
-   // Copy over all of the components that do not change
+   // Copy over all of the components that do not change.
+   // Change the name of the old motion so that the new one
+   // (which initially has the same name) will not get a "(2)"
+   // appended to it when it is added to the model.
    memcpy(newMotion, oldMotion, sizeof(MotionSequence));
    mstrcpy(&newMotion->name, oldMotion->name);
+   if (oldMotion->name[0] == '_')
+      oldMotion->name[0] = '*';
+   else
+      oldMotion->name[0] = '_';
    mstrcpy(&newMotion->units, oldMotion->units);
    newMotion->deriv_names = NULL;
    newMotion->deriv_data = NULL;
+   memset(&newMotion->mopt, 0, sizeof(MotionModelOptions));
    newMotion->mopt.num_motion_object_instances = 0;
-   newMotion->mopt.motion_object_instances = NULL;
+   newMotion->mopt.motion_object_instance = NULL;
+   newMotion->event_color[0] = 1.0f;
+   newMotion->event_color[1] = 0.0f;
+   newMotion->event_color[2] = 1.0f;
 
    if (oldMotion->num_events > 0)
    {
-      newMotion->event = (MotionEvent*)simm_malloc(sizeof(MotionEvent)*oldMotion->num_events);
-      memcpy(newMotion->event, oldMotion->event, sizeof(MotionEvent)*oldMotion->num_events);
+      newMotion->event = (smMotionEvent*)simm_malloc(sizeof(smMotionEvent)*oldMotion->num_events);
+      memcpy(newMotion->event, oldMotion->event, sizeof(smMotionEvent)*oldMotion->num_events);
       for (j=0; j<oldMotion->num_events; j++)
          mstrcpy(&newMotion->event[j].name, oldMotion->event[j].name);
    }
 
-   // Count how many ground-based forces are in the old motion
-   for (i=0, numGroundForces=0; i<oldMotion->mopt.num_motion_object_instances; i++)
+   // Count how many columns in the old motion correspond to ground-based forces.
+   for (i=0, numGroundForceColumns=0; i<oldMotion->number_of_datacolumns; i++)
    {
-      if (oldMotion->mopt.motion_object_instances[i].segment == ms->ground_segment &&
-         STRINGS_ARE_EQUAL(ms->motion_objects[oldMotion->mopt.motion_object_instances[i].object].name, "force"))
-         numGroundForces++;
+      if (columnIsGroundForce(oldMotion, model, i))
+         numGroundForceColumns++;
    }
 
-   newMotion->number_of_datacolumns = oldMotion->number_of_datacolumns + (numForceMattes - numGroundForces) * 6;
+   newMotion->number_of_datacolumns = oldMotion->number_of_datacolumns - numGroundForceColumns + numForceMattes * 9;
    newMotion->columnname = (char**)simm_malloc(newMotion->number_of_datacolumns * sizeof(char*));
    newMotion->motiondata = (double**)simm_malloc(newMotion->number_of_datacolumns*sizeof(double*));
    for (i=0; i<newMotion->number_of_datacolumns; i++)
@@ -2974,7 +1745,7 @@ static void transformMotion(MotionSequence* newMotion, MotionSequence* oldMotion
    // Copy over column names and data, except for the ground-based forces
    for (i=0, count=0; i<oldMotion->number_of_datacolumns; i++)
    {
-      if (!columnIsGroundForce(oldMotion, ms, i))
+      if (!columnIsGroundForce(oldMotion, model, i))
       {
          mstrcpy(&newMotion->columnname[count], oldMotion->columnname[i]);
          memcpy(newMotion->motiondata[count], oldMotion->motiondata[i], oldMotion->number_of_datarows*sizeof(double));
@@ -2984,7 +1755,30 @@ static void transformMotion(MotionSequence* newMotion, MotionSequence* oldMotion
 
    // Fill in the names for the force matte-based forces. The data will be filled in later.
    // There will be one force for each force matte, but they are kept in the ground frame
-   // because that's how OpenSim expects them. Also, the order must be vx, vy, vz, px, py, pz.
+   // because that's how OpenSim expects them. Also, the order must be vx, vy, vz, px, py, pz, torquex, torquey, torquez.
+#if 0
+   for (i=0; i<numForceMattes; i++)
+   {
+      mstrcpy(&newMotion->columnname[count], "ground_force_vx");
+      forces[i].column[0] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_force_vy");
+      forces[i].column[1] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_force_vz");
+      forces[i].column[2] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_force_px");
+      forces[i].column[3] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_force_py");
+      forces[i].column[4] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_force_pz");
+      forces[i].column[5] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_torque_x");
+      forces[i].column[6] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_torque_y");
+      forces[i].column[7] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_torque_z");
+      forces[i].column[8] = count++;
+   }
+#else
    for (i=0; i<numForceMattes; i++)
    {
       mstrcpy(&newMotion->columnname[count], "ground_force_vx");
@@ -3000,26 +1794,619 @@ static void transformMotion(MotionSequence* newMotion, MotionSequence* oldMotion
       mstrcpy(&newMotion->columnname[count], "ground_force_pz");
       forces[i].column[5] = count++;
    }
+   for (i=0; i<numForceMattes; i++)
+   {
+      mstrcpy(&newMotion->columnname[count], "ground_torque_x");
+      forces[i].column[6] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_torque_y");
+      forces[i].column[7] = count++;
+      mstrcpy(&newMotion->columnname[count], "ground_torque_z");
+      forces[i].column[8] = count++;
+   }
+#endif
 
    // Fill in the mopt structure.
-   //column_names_match_model(ms, newMotion, &numOtherData, NULL);
+   //link_model_to_motion(model, newMotion, &numOtherData, NULL);
 }
 
-static SBoolean columnIsGroundForce(MotionSequence* motion, ModelStruct* ms, int index)
+static SBoolean columnIsGroundForce(MotionSequence* motion, ModelStruct* model, int index)
 {
    int i, j;
 
    for (i=0; i<motion->mopt.num_motion_object_instances; i++)
    {
-      if (STRINGS_ARE_EQUAL(ms->motion_objects[motion->mopt.motion_object_instances[i].object].name, "force"))
+      if ((STRINGS_ARE_EQUAL(model->motion_objects[motion->mopt.motion_object_instance[i]->object].name, "force") ||
+         STRINGS_ARE_EQUAL(model->motion_objects[motion->mopt.motion_object_instance[i]->object].name, "torque")) &&
+         motion->mopt.motion_object_instance[i]->segment == model->ground_segment)
       {
-         for (j=0; j<motion->mopt.motion_object_instances[i].num_channels; j++)
+         for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
          {
-            if (motion->mopt.motion_object_instances[i].channels[j].column == index)
+            if (motion->mopt.motion_object_instance[i]->channels[j].column == index)
                return yes;
          }
       }
    }
 
    return no;
+}
+
+#endif
+
+void sort_events(MotionSequence* motion, int* index)
+{
+   int i, j, index_of_min;
+   double min;
+   smMotionEvent save;
+
+   // Sort the events to have increasing xCoords. This uses
+   // a simple N*2 bubble sort, but is OK since there are
+   // not usually more than 10-12 events in a motion.
+   for (i=0; i<motion->num_events; i++)
+   {
+      for (j=i, min = MAXMDOUBLE; j<motion->num_events; j++)
+      {
+         if (motion->event[j].xCoord < min)
+         {
+            min = motion->event[j].xCoord;
+            index_of_min = j;
+         }
+      }
+      if (index_of_min != i)
+      {
+         memcpy(&save, &motion->event[i], sizeof(smMotionEvent));
+         memcpy(&motion->event[i], &motion->event[index_of_min], sizeof(smMotionEvent));
+         memcpy(&motion->event[index_of_min], &save, sizeof(smMotionEvent));
+         // Keep track of the event pointed to by index.
+         if (index && *index == index_of_min)
+            *index = i;
+      }
+   }
+}
+
+
+void normalize_motion(MotionSequence* motion, ModelStruct* model)
+{
+   int i, j, num_other, new_num_rows = 101;
+   int new_num_columns = motion->number_of_datacolumns + 1;
+   double **deriv_data = NULL, **motiondata = NULL, **data_std_dev = NULL;
+   double abscissa, start, step_size, percent;
+   char** columnname;
+   dpFunction function;
+   static const char percent_label[] = "percent";
+
+   // Don't normalize if the motion already has new_num_rows rows and
+   // min and max values of 0.0 and 100.0.
+   if (EQUAL_WITHIN_ERROR(motion->min_value, 0.0) && EQUAL_WITHIN_ERROR(motion->max_value, 100.0) &&
+      motion->number_of_datarows == new_num_rows)
+   {
+      (void)sprintf(errorbuffer, "Motion %s is already normalized.", motion->name);
+      error(abort_action, errorbuffer);
+      return;
+   }
+
+   start = motion->min_value;
+   step_size = (motion->max_value - motion->min_value) / (double)(new_num_rows - 1);
+
+   // In case the motion is currently being displayed, calculate and store the percent
+   // so you can later set the motion to [about] the same time frame.
+   percent = (motion->mopt.current_value - motion->min_value) / (motion->max_value - motion->min_value);
+
+   // Make space for the new data (new_num_rows * new_num_columns).
+   // new_num_columns should be 1 more than the motion currently has.
+   // This extra column will be put in the first slot, and will contain
+   // 'percent' data.
+   columnname = (char**)simm_calloc(new_num_columns, sizeof(char*));
+   mstrcpy(&columnname[0], percent_label);
+   motiondata = (double**)simm_calloc(new_num_columns, sizeof(double*));
+   if (motion->deriv_data)
+      deriv_data = (double**)simm_calloc(new_num_columns, sizeof(double*));
+   if (motion->data_std_dev)
+      data_std_dev = (double**)simm_calloc(new_num_columns, sizeof(double*));
+   for (i=0; i<new_num_columns; i++)
+   {
+      motiondata[i] = (double*)simm_calloc(new_num_rows, sizeof(double));
+      // i = 0 is the [new] 'percent' column. The motion's original N columns
+      // go into slots 1 through N.
+      if (i > 0)
+      {
+         columnname[i] = motion->columnname[i-1];
+         if (motion->deriv_data && motion->deriv_data[i-1])
+            deriv_data[i] = (double*)simm_calloc(new_num_rows, sizeof(double));
+         if (motion->data_std_dev && motion->data_std_dev[i-1])
+            data_std_dev[i] = (double*)simm_calloc(new_num_rows, sizeof(double));
+      }
+   }
+
+   malloc_function(&function, motion->number_of_datarows);
+   function.numpoints = motion->number_of_datarows;
+   function.source = dpJointFile;
+   function.status = dpFunctionSimmDefined;
+   function.type = dpNaturalCubicSpline;
+   function.used = dpYes;
+
+   // Fill in the [new] first column with 'percent'.
+   for (j=0; j<new_num_rows; j++)
+      motiondata[0][j] = j;
+
+   // Fit splines to the data.
+   for (i=0; i<motion->number_of_datacolumns; i++)
+   {
+      int markerMotionObject = column_is_marker_data(motion, i);
+      function.numpoints = 0;
+      for (j=0; j<motion->number_of_datarows; j++)
+      {
+         if (markerMotionObject < 0 || is_marker_data_visible(motion, markerMotionObject, j) == yes)
+         {
+            function.x[function.numpoints] = motion->motiondata[motion->x_column][j];
+            function.y[function.numpoints] = motion->motiondata[i][j];
+            function.numpoints++;
+         }
+      }
+      calc_function_coefficients(&function);
+      for (j=0, abscissa = start; j<new_num_rows; j++, abscissa += step_size)
+         motiondata[i+1][j] = interpolate_function(abscissa, &function, zeroth, 0.0, 0.0);
+
+      // Recalculate derivatives.
+      // TODO5.0: is it better to use existing data?
+      if (deriv_data && deriv_data[i])
+      {
+         for (j=0, abscissa = start; j<new_num_rows; j++, abscissa += step_size)
+            deriv_data[i+1][j] = interpolate_function(abscissa, &function, first, 1.0, 1.0);
+      }
+
+      // Standard deviations cannot be recalculated. Assume all data points
+      // are good and fit a spline.
+      if (data_std_dev && data_std_dev[i])
+      {
+         function.numpoints = motion->number_of_datarows;
+         for (j=0; j<motion->number_of_datarows; j++)
+         {
+            function.x[j] = motion->data_std_dev[0][j];
+            function.y[j] = motion->data_std_dev[i][j];
+         }
+         calc_function_coefficients(&function);
+         for (j=0, abscissa = start; j<new_num_rows; j++, abscissa += step_size)
+            data_std_dev[i+1][j] = interpolate_function(abscissa, &function, zeroth, 0.0, 0.0);
+      }
+   }
+
+   // Free the space used by the old data.
+   FREE_IFNOTNULL(motion->columnname);
+   for (i=0; i<motion->number_of_datacolumns; i++)
+      FREE_IFNOTNULL(motion->motiondata[i]);
+   FREE_IFNOTNULL(motion->motiondata);
+   if (motion->deriv_data)
+   {
+      for (i=0; i<motion->number_of_datacolumns; i++)
+         FREE_IFNOTNULL(motion->deriv_data[i]);
+      free(motion->deriv_data);
+   }
+   if (motion->data_std_dev)
+   {
+      for (i=0; i<motion->number_of_datacolumns; i++)
+         FREE_IFNOTNULL(motion->data_std_dev[i]);
+      free(motion->data_std_dev);
+   }
+
+   motion->columnname = columnname;
+   motion->motiondata = motiondata;
+   motion->deriv_data = deriv_data;
+   motion->data_std_dev = data_std_dev;
+
+   motion->number_of_datacolumns = new_num_columns;
+   motion->number_of_datarows = new_num_rows;
+
+   motion->x_column = 0;
+   motion->min_value = motion->motiondata[motion->x_column][0];
+   motion->max_value = motion->motiondata[motion->x_column][motion->number_of_datarows-1];
+   // If time_column is defined, increment it (because the percent column was inserted
+   // at the beginning) and recalculate the event xCoords. If time_column is not defined,
+   // there is no way to recalculate the xCoords and the events will not work properly.
+   if (motion->time_column >= 0)
+   {
+      double oldRange, newRange;
+      motion->time_column++;
+      oldRange = motion->motiondata[motion->time_column][motion->number_of_datarows-1] -
+         motion->motiondata[motion->time_column][0];
+      newRange = motion->motiondata[motion->x_column][motion->number_of_datarows-1] -
+         motion->motiondata[motion->x_column][0];
+      for (i=0; i<motion->num_events; i++)
+      {
+         double per = (motion->event[i].xCoord - motion->motiondata[motion->time_column][0]) / oldRange;
+         motion->event[i].xCoord = motion->motiondata[motion->x_column][0] + per * newRange;
+      }
+   }
+
+	link_model_to_motion(model, motion, &num_other, NULL);
+
+   // Recalculate the current frame, using the previously calculated percent.
+   motion->mopt.current_value = percent * 100.0;
+   motion->mopt.current_frame = percent * (motion->number_of_datarows - 1) + MOTION_OFFSET;
+
+#if ! OPENSMAC && ! ENGINE
+	make_marker_trails(model, motion);
+	make_force_trails(model, motion);
+
+   queue_model_redraw(model);
+#endif
+
+	// After interpolating, force plate forces can sometimes go negative.
+	//TODO5.0: there's got to be a better way than this...
+#if 1
+	for (i=0; i<motion->mopt.num_motion_object_instances; i++)
+	{
+		for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
+		{
+			int comp = motion->mopt.motion_object_instance[i]->channels[j].component;
+			if (comp == MO_VX || comp == MO_VY || comp == MO_VZ)
+			{
+				int k, col = motion->mopt.motion_object_instance[i]->channels[j].column;
+				for (k=0; k<motion->number_of_datarows; k++)
+				{
+					double value = ABS(motion->motiondata[col][k]);
+					if (value < 1.0)
+						motion->motiondata[col][k] = 0.0;
+				}
+			}
+		}
+	}
+#endif
+
+#if ! OPENSMAC && ! ENGINE
+   // Generate an event so the tools can update themselves.
+   make_and_queue_simm_event(MOTION_CHANGED, model->modelnum, motion, NULL, ZERO, ZERO);
+
+   (void)sprintf(buffer, "Normalized motion %s to have %d time steps.", motion->name, new_num_rows);
+   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
+#endif
+}
+
+
+void smooth_motion(MotionSequence* motion, ModelStruct* model, double cutoff_frequency)
+{
+   int i, j, num_other;
+   double **deriv_data = NULL, **motiondata = NULL;
+   dpFunction function;
+
+   if (motion->number_of_datarows < 6 || cutoff_frequency <= 0.0) //TODO5.0
+      return;
+
+   // Make space for the new data (new_num_rows * motion->number_of_datacolumns).
+   motiondata = (double**)simm_calloc(motion->number_of_datacolumns, sizeof(double*));
+   if (motion->deriv_data)
+      deriv_data = (double**)simm_calloc(motion->number_of_datacolumns, sizeof(double*));
+   for (i=0; i<motion->number_of_datacolumns; i++)
+   {
+      motiondata[i] = (double*)simm_calloc(motion->number_of_datarows, sizeof(double));
+      if (motion->deriv_data && motion->deriv_data[i])
+         deriv_data[i] = (double*)simm_calloc(motion->number_of_datarows, sizeof(double));
+   }
+
+   malloc_function(&function, motion->number_of_datarows);
+   function.numpoints = 0; //motion->number_of_datarows;
+   function.source = dpJointFile;
+   function.status = dpFunctionSimmDefined;
+   function.type = dpGCVSpline;
+   function.cutoff_frequency = cutoff_frequency;
+   function.used = dpYes;
+
+   for (i=0; i<motion->number_of_datarows; i++)
+      motiondata[motion->x_column][i] = motion->motiondata[motion->x_column][i];
+
+   // Fit splines to the data.
+   // TODO5.0: maybe it would be better to access the data through the mopt pointers
+   // so you can more easily deal with it as gencoords, markers, etc.
+   for (i=0; i<motion->number_of_datacolumns; i++)
+   {
+      if (i != motion->x_column)
+      {
+         int markerMotionObject = column_is_marker_data(motion, i);
+         function.numpoints = 0;
+         for (j=0; j<motion->number_of_datarows; j++)
+         {
+            if (markerMotionObject < 0 || is_marker_data_visible(motion, markerMotionObject, j) == yes)
+            {
+               function.x[function.numpoints] = motion->motiondata[motion->x_column][j];
+               function.y[function.numpoints] = motion->motiondata[i][j];
+               function.numpoints++;
+            }
+         }
+         calc_function_coefficients(&function);
+         for (j=0; j<motion->number_of_datarows; j++)
+            motiondata[i][j] = interpolate_function(motiondata[motion->x_column][j], &function, zeroth, 0.0, 0.0);
+
+         if (deriv_data && deriv_data[i])
+         {
+            for (j=0; j<motion->number_of_datarows; j++)
+               deriv_data[i][j] = interpolate_function(motiondata[motion->x_column][j], &function, first, 1.0, 1.0);
+         }
+      }
+   }
+
+   // Free the space used by the old data.
+   for (i=0; i<motion->number_of_datacolumns; i++)
+      FREE_IFNOTNULL(motion->motiondata[i]);
+   FREE_IFNOTNULL(motion->motiondata);
+   if (motion->deriv_data)
+   {
+      for (i=0; i<motion->number_of_datacolumns; i++)
+         FREE_IFNOTNULL(motion->deriv_data[i]);
+      free(motion->deriv_data);
+   }
+
+   motion->motiondata = motiondata;
+   motion->deriv_data = deriv_data;
+
+   link_model_to_motion(model, motion, &num_other, NULL);
+
+#if ! OPENSMAC && ! ENGINE
+	make_marker_trails(model, motion);
+	make_force_trails(model, motion);
+
+   queue_model_redraw(model);
+#endif
+
+	// After interpolating, force plate forces can sometimes go negative.
+	//TODO5.0: there's got to be a better way than this...
+#if 1
+	for (i=0; i<motion->mopt.num_motion_object_instances; i++)
+	{
+		for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
+		{
+			int comp = motion->mopt.motion_object_instance[i]->channels[j].component;
+			if (comp == MO_VX || comp == MO_VY || comp == MO_VZ)
+			{
+				int k, col = motion->mopt.motion_object_instance[i]->channels[j].column;
+				for (k=0; k<motion->number_of_datarows; k++)
+				{
+					double value = ABS(motion->motiondata[col][k]);
+					if (value < 1.0)
+						motion->motiondata[col][k] = 0.0;
+				}
+			}
+		}
+	}
+#endif
+
+   //TODO5.0: send MOTION_CHANGED event so model viewer can update?
+   // Also: how to figure out if motion is current, so it needs to be re-applied?
+   (void)sprintf(buffer, "Smoothed motion %s with a cutoff frequency of %lf.", motion->name, cutoff_frequency);
+   message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
+}
+
+static int column_is_marker_data(MotionSequence* motion, int column)
+{
+   int i, j;
+
+   for (i=0; i<motion->mopt.num_motion_object_instances; i++)
+   {
+      if (motion->mopt.motion_object_instance[i]->type == MarkerMotionObject)
+      {
+         for (j=0; j<motion->mopt.motion_object_instance[i]->num_channels; j++)
+         {
+            if (motion->mopt.motion_object_instance[i]->channels[j].column == column)
+               return i;
+         }
+      }
+   }
+
+   return -1;
+}
+
+/* If any coordinate of a point is UNDEFINED, the point is not visible.
+ * JPL 9/12/03: C3D files seem to use 0.0 as undefined, so if all three
+ * coordinates are 0.0, return false as well.
+ */
+SBoolean is_marker_visible(double pt[])
+{
+   if (EQUAL_WITHIN_ERROR(pt[0], UNDEFINED_DOUBLE))
+      return no;
+   if (EQUAL_WITHIN_ERROR(pt[1], UNDEFINED_DOUBLE))
+      return no;
+   if (EQUAL_WITHIN_ERROR(pt[2], UNDEFINED_DOUBLE))
+      return no;
+
+   if (EQUAL_WITHIN_ERROR(pt[0], 0.0) && EQUAL_WITHIN_ERROR(pt[1], 0.0) && EQUAL_WITHIN_ERROR(pt[2], 0.0))
+      return no;
+
+   return yes;
+}
+
+SBoolean is_marker_visible_meters(double pt[])
+{
+   double bad_data = UNDEFINED_DOUBLE * 0.001;
+
+   if (EQUAL_WITHIN_ERROR(pt[0], bad_data))
+      return no;
+   if (EQUAL_WITHIN_ERROR(pt[1], bad_data))
+      return no;
+   if (EQUAL_WITHIN_ERROR(pt[2], bad_data))
+      return no;
+
+   if (EQUAL_WITHIN_ERROR(pt[0], 0.0) && EQUAL_WITHIN_ERROR(pt[1], 0.0) && EQUAL_WITHIN_ERROR(pt[2], 0.0))
+      return no;
+
+   return yes;
+}
+
+SBoolean is_marker_data_visible(MotionSequence* motion, int motionObject, int row)
+{
+   double pt[3];
+   MotionObjectInstance* moi = motion->mopt.motion_object_instance[motionObject];
+
+   pt[0] = motion->motiondata[moi->channels[0].column][row];
+   pt[1] = motion->motiondata[moi->channels[1].column][row];
+   pt[2] = motion->motiondata[moi->channels[2].column][row];
+
+   return is_marker_visible_meters(pt);
+}
+
+
+int get_frame_number(smC3DStruct* c3d, double time)
+{
+	int i;
+
+	for (i=0; i<c3d->motionData->header.numFrames; i++)
+	{
+		if (c3d->motionData->frameList[i].time >= time)
+			return i;
+	}
+
+	return c3d->motionData->header.numFrames - 1;
+}
+
+MotionObjectInstance* add_foot_print(ModelStruct* model, MotionSequence* motion, const char name[], double scale,
+                                     double translation[], double eulerRotation[])
+{
+	int i, j, index, motion_object = -1;
+	MotionObjectInstance* mi = NULL;
+	ReturnCode rc;
+
+	index = motion->mopt.num_motion_object_instances++;
+
+	if (motion->mopt.motion_object_instance == NULL)
+	{
+		motion->mopt.motion_object_instance = (MotionObjectInstance**)
+			simm_malloc(motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*));
+	}
+	else
+	{
+		motion->mopt.motion_object_instance = (MotionObjectInstance**)
+			simm_realloc(motion->mopt.motion_object_instance, motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*), &rc);
+	}
+
+	if (motion->mopt.motion_object_instance == NULL)
+	{
+		motion->mopt.num_motion_object_instances--;
+		return NULL;
+	}
+
+	for (i=0; i<model->num_motion_objects; i++)
+	{
+		if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, name))
+		{
+			motion_object = i;
+			break;
+		}
+	}
+	if (motion_object == -1)
+		return NULL;
+
+	// Initialize a new motion object instance.
+	mi = motion->mopt.motion_object_instance[index] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
+
+   mstrcpy(&mi->name, model->motion_objects[motion_object].name);
+	mi->type = FootPrintObject;
+	mi->object = motion_object;
+	mi->segment = model->ground_segment;
+	mi->drawmode = model->motion_objects[motion_object].drawmode;
+	mi->current_value = -1.0;
+	mi->visible = yes;
+	identity_matrix(mi->currentXform);
+	copy_material(&model->dis.mat.materials[model->motion_objects[motion_object].material], &mi->currentMaterial);
+
+	if (eulerRotation)
+	{
+		x_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[0]);
+		y_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[1]);
+		z_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[2]);
+	}
+
+	for (i=0; i<3; i++)
+		for (j=0; j<3; j++)
+			mi->currentXform[i][j] *= scale;
+
+	if (translation)
+	{
+		mi->currentXform[3][0] = translation[0];
+		mi->currentXform[3][1] = translation[1];
+		mi->currentXform[3][2] = translation[2];
+	}
+
+	return mi;
+}
+
+MotionObjectInstance* add_force_plate(ModelStruct* model, MotionSequence* motion, const char name[], double scale[],
+                                      double translation[], double eulerRotation[])
+{
+	int i, j, index, motion_object = -1;
+	MotionObjectInstance* mi = NULL;
+	ReturnCode rc;
+
+	index = motion->mopt.num_motion_object_instances++;
+
+	if (motion->mopt.motion_object_instance == NULL)
+	{
+		motion->mopt.motion_object_instance = (MotionObjectInstance**)
+			simm_malloc(motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*));
+	}
+	else
+	{
+		motion->mopt.motion_object_instance = (MotionObjectInstance**)
+			simm_realloc(motion->mopt.motion_object_instance, motion->mopt.num_motion_object_instances * sizeof(MotionObjectInstance*), &rc);
+	}
+
+	if (motion->mopt.motion_object_instance == NULL)
+	{
+		motion->mopt.num_motion_object_instances--;
+		return NULL;
+	}
+
+	for (i=0; i<model->num_motion_objects; i++)
+	{
+		if (STRINGS_ARE_EQUAL(model->motion_objects[i].name, name))
+		{
+			motion_object = i;
+			break;
+		}
+	}
+	if (motion_object == -1)
+		return NULL;
+
+	// Initialize a new motion object instance.
+	mi = motion->mopt.motion_object_instance[index] = (MotionObjectInstance*)simm_calloc(1, sizeof(MotionObjectInstance));
+
+   mstrcpy(&mi->name, model->motion_objects[motion_object].name);
+	mi->type = ForcePlateObject;
+	mi->object = motion_object;
+	mi->segment = model->ground_segment;
+	mi->drawmode = model->motion_objects[motion_object].drawmode;
+	mi->current_value = -1.0;
+	mi->visible = yes;
+	identity_matrix(mi->currentXform);
+	copy_material(&model->dis.mat.materials[model->motion_objects[motion_object].material], &mi->currentMaterial);
+
+	if (eulerRotation)
+	{
+		x_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[0]);
+		y_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[1]);
+		z_rotate_matrix_bodyfixed(mi->currentXform, eulerRotation[2]);
+	}
+
+	if (scale)
+	{
+		for (i=0; i<3; i++)
+			for (j=0; j<3; j++)
+				mi->currentXform[i][j] *= scale[i];
+	}
+
+	if (translation)
+	{
+		mi->currentXform[3][0] = translation[0];
+		mi->currentXform[3][1] = translation[1];
+		mi->currentXform[3][2] = translation[2];
+	}
+
+	if (0)
+	{
+		double mat[4][4];
+		printf("add_force_plate, rot = %lf %lf %lf\n", eulerRotation[0], eulerRotation[1], eulerRotation[2]);
+		print_4x4matrix(mi->currentXform);
+		for (i=0; i<3; i++)
+			printf("row %d mag = %lf\n", i, VECTOR_MAGNITUDE(mi->currentXform[i]));
+		transpose_4x4matrix(mi->currentXform, mat);
+		for (i=0; i<3; i++)
+			printf("col %d mag = %lf\n", i, VECTOR_MAGNITUDE(mat[i]));
+	}
+	return mi;
 }

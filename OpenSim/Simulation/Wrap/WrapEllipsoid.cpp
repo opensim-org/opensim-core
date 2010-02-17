@@ -30,11 +30,10 @@
 // INCLUDES
 //=============================================================================
 #include "WrapEllipsoid.h"
-#include <OpenSim/Simulation/Model/MusclePoint.h>
-#include "MuscleWrap.h"
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include "PathWrap.h"
 #include "WrapResult.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
@@ -63,7 +62,7 @@ static char* wrapTypeName = "ellipsoid";
 * Default constructor.
 */
 WrapEllipsoid::WrapEllipsoid() :
-   AbstractWrapObject(),
+   WrapObject(),
    _dimensions(_dimensionsProp.getValueDblArray())
 {
 	setNull();
@@ -85,7 +84,7 @@ WrapEllipsoid::~WrapEllipsoid()
 * @param aWrapEllipsoid WrapEllipsoid to be copied.
 */
 WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid) :
-   AbstractWrapObject(aWrapEllipsoid),
+   WrapObject(aWrapEllipsoid),
    _dimensions(_dimensionsProp.getValueDblArray())
 {
 	setNull();
@@ -125,7 +124,7 @@ void WrapEllipsoid::setNull()
 void WrapEllipsoid::setupProperties()
 {
 	// BASE CLASS
-	AbstractWrapObject::setupProperties();
+	WrapObject::setupProperties();
 
 	const double defaultDimensions[] = {-1.0, -1.0, -1.0};
 	_dimensionsProp.setName("dimensions");
@@ -138,12 +137,12 @@ void WrapEllipsoid::setupProperties()
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
 *
-* @param aEngine dynamics engine containing this SimmBody.
+* @param aModel 
 */
-void WrapEllipsoid::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
+void WrapEllipsoid::setup(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	AbstractWrapObject::setup(aEngine, aBody);
+	WrapObject::setup(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 
@@ -168,7 +167,7 @@ void WrapEllipsoid::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
 {
    // Base class, to scale origin in body frame
-   AbstractWrapObject::scale(aScaleFactors);
+   WrapObject::scale(aScaleFactors);
 
    double orientation[3][3];
    _pose.getOrientation(orientation);
@@ -196,7 +195,7 @@ void WrapEllipsoid::scale(const SimTK::Vec3& aScaleFactors)
 void WrapEllipsoid::copyData(const WrapEllipsoid& aWrapEllipsoid)
 {
 	// BASE CLASS
-	AbstractWrapObject::copyData(aWrapEllipsoid);
+	WrapObject::copyData(aWrapEllipsoid);
 
 	_dimensions = aWrapEllipsoid._dimensions;
 }
@@ -240,7 +239,7 @@ string WrapEllipsoid::getDimensionsString() const
 WrapEllipsoid& WrapEllipsoid::operator=(const WrapEllipsoid& aWrapEllipsoid)
 {
 	// BASE CLASS
-	AbstractWrapObject::operator=(aWrapEllipsoid);
+	WrapObject::operator=(aWrapEllipsoid);
 
 	return(*this);
 }
@@ -254,26 +253,26 @@ WrapEllipsoid& WrapEllipsoid::operator=(const WrapEllipsoid& aWrapEllipsoid)
  *
  * @param aPoint1 One end of the line segment
  * @param aPoint2 The other end of the line segment
- * @param aMuscleWrap An object holding the parameters for this line/ellipsoid pairing
+ * @param aPathWrap An object holding the parameters for this line/ellipsoid pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapEllipsoid::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-									 const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+int WrapEllipsoid::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+									 const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	int i, j, bestMu;
 	SimTK::Vec3 p1, p2, m, a, p1p2, p1m, p2m, f1, f2, p1c1, r1r2, vs, t, mu;
 	double ppm, aa, bb, cc, disc, l1, l2,
-		p1e, p2e, vs4, dist, fanWeight = rdMath::MINUS_INFINITY;
+		p1e, p2e, vs4, dist, fanWeight = -SimTK::Infinity;
 	double t_sv[3][3], t_c1[3][3];
 	bool far_side_wrap = false;
    static SimTK::Vec3 origin(0,0,0);
 
 	// In case you need any variables from the previous wrap, copy them from
-	// the MuscleWrap into the WrapResult, re-normalizing the ones that were
+	// the PathWrap into the WrapResult, re-normalizing the ones that were
 	// un-normalized at the end of the previous wrap calculation.
-	const WrapResult& previousWrap = aMuscleWrap.getPreviousWrap();
+	const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
 	aWrapResult.factor = previousWrap.factor;
 	for (i = 0; i < 3; i++)
 	{
@@ -435,10 +434,10 @@ int WrapEllipsoid::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		if (mu[i] > mu[bestMu])
 			bestMu = i;
 
-	if (aMuscleWrap.getMethod() == MuscleWrap::hybrid ||
-		 aMuscleWrap.getMethod() == MuscleWrap::axial)
+	if (aPathWrap.getMethod() == PathWrap::hybrid ||
+		 aPathWrap.getMethod() == PathWrap::axial)
 	{
-		if (aMuscleWrap.getMethod() == MuscleWrap::hybrid && mu[bestMu] > MU_BLEND_MIN)
+		if (aPathWrap.getMethod() == PathWrap::hybrid && mu[bestMu] > MU_BLEND_MIN)
 		{
 			// If Frans' technique produces an sv that is not within the r1->r2
 			// line segment, then that means that sv will be outside the ellipsoid.
@@ -464,7 +463,7 @@ int WrapEllipsoid::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 				mu[bestMu] = MU_BLEND_MIN + s * (mu[bestMu] - MU_BLEND_MIN);
 		}
 
-		if (aMuscleWrap.getMethod() == MuscleWrap::axial || mu[bestMu] > MU_BLEND_MIN)
+		if (aPathWrap.getMethod() == PathWrap::axial || mu[bestMu] > MU_BLEND_MIN)
 		{
 			// if the Frans solution produced a strong result, copy it into
 			// sv and c1.
@@ -475,7 +474,7 @@ int WrapEllipsoid::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 			}
 		}
 
-		if (aMuscleWrap.getMethod() == MuscleWrap::hybrid && mu[bestMu] < MU_BLEND_MAX)
+		if (aPathWrap.getMethod() == PathWrap::hybrid && mu[bestMu] < MU_BLEND_MAX)
 		{
 			// (2) Fan technique: sample the fan at fixed intervals and average the
 			// fan "blade" vectors together to determine c1.  This only works when
@@ -560,7 +559,7 @@ int WrapEllipsoid::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	{
 		bool use_c1_to_find_tangent_pts = true;
 
-		if (aMuscleWrap.getMethod() == MuscleWrap::axial)
+		if (aPathWrap.getMethod() == PathWrap::axial)
 			use_c1_to_find_tangent_pts = (bool) (t[bestMu] > 0.0 && t[bestMu] < 1.0);
 
 		if (use_c1_to_find_tangent_pts)
@@ -584,7 +583,7 @@ int WrapEllipsoid::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 
 			aWrapResult.r1 = aWrapResult.r2 = aWrapResult.c1;
 
-			if (EQUAL_WITHIN_ERROR(fanWeight, rdMath::MINUS_INFINITY))
+			if (EQUAL_WITHIN_ERROR(fanWeight, -SimTK::Infinity))
 				fanWeight = 1.0 - (mu[bestMu] - MU_BLEND_MIN) / (MU_BLEND_MAX - MU_BLEND_MIN);
 
 			if (fanWeight > 1.0)
@@ -1081,7 +1080,7 @@ double WrapEllipsoid::findClosestPoint(double a, double b, double c,
     // elliptical cross-section with the narrowest radius.
     if (specialCaseAxis < 0)
     {
-		 double uvw[3], minEllipseRadiiSum = rdMath::PLUS_INFINITY;
+		 double uvw[3], minEllipseRadiiSum = SimTK::Infinity;
        
        uvw[0] = u; uvw[1] = v; uvw[2] = w;
 

@@ -35,13 +35,22 @@
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ArrayPtrs.h>
+#include "ControllerSet.h"
 #include "AnalysisSet.h"
+#include "SimTKsimbody.h"
+#include "ForceSet.h"
+
+class SimTK::State;
+class SimTK::System;
 
 namespace OpenSim { 
 
+class PrescribedForce;
+class GCVSpline;
+class VectorGCVSplineR1R3;
 class Model;
-class ActuatorSet;
-class ContactForceSet;
+class ForceSet;
+class Body;
 
 
 //=============================================================================
@@ -66,26 +75,16 @@ protected:
 	PropertyStr _modelFileProp;
 	std::string &_modelFile;
 	
-	/** Whether the actuator set included in the model file is replaced 
-	(if true) or appended to (if false) with actuator sets read in from file */
-	PropertyBool _replaceActuatorSetProp;
-	bool &_replaceActuatorSet;
+	/** Whether the force set included in the model file is replaced 
+	(if true) or appended to (if false) with force sets read in from file */
+	PropertyBool _replaceForceSetProp;
+	bool &_replaceForceSet;
 	
-	/** Names of the xml files used to construct an actuator set for the
+	/** Names of the xml files used to construct an force set for the
 	model. */
-	PropertyStrArray _actuatorSetFilesProp;
-	Array<std::string> &_actuatorSetFiles;
+	PropertyStrArray _forceSetFilesProp;
+	Array<std::string> &_forceSetFiles;
     
-	/** Whether the contact set included in the model file is replaced
-	(if true) or appended to (if false) with actuator sets read in from file */
-	PropertyBool _replaceContactForceSetProp;
-	bool &_replaceContactForceSet;
-	
-	/** Name of the xml file used to construct a contact force set for the
-	model. */
-	PropertyStrArray _contactForceSetFilesProp;
-	Array<std::string> &_contactForceSetFiles;
-	
 	/** Directory used for writing results. */
 	PropertyStr _resultsDirProp;
 	std::string &_resultsDir;
@@ -111,7 +110,7 @@ protected:
 	/** Maximum number of steps for the integrator. */
 	PropertyInt _maxStepsProp;
 	int &_maxSteps;
-	
+		
 	/** Maximum integration step size. */
 	PropertyDbl _maxDTProp;
 	double &_maxDT;
@@ -125,17 +124,19 @@ protected:
 	PropertyDbl _errorToleranceProp;
 	double &_errorTolerance;
 	
-	/** Integrator fine tolerance. When the error is less, the
-	integrator step size is increased. */
-	PropertyDbl _fineToleranceProp;
-	double &_fineTolerance;
-	
-	/** Set of analyses to be run during the investigation. */
+	/** Set of analyses to be run during the study. */
 	PropertyObj _analysisSetProp;
 	AnalysisSet &_analysisSet;
 	
+    // CONTROLLERS
+    PropertyObj _controllerSetProp;
+    ControllerSet& _controllerSet;
+    
 	/** Whether the tool owns the model it operates on. Important for cleanup when done */
 	bool _toolOwnsModel;
+
+	/** External forces being applied. e.g. GRF */
+	ForceSet	_externalForces;
 
 //=============================================================================
 // METHODS
@@ -206,6 +207,7 @@ public:
 private:
 	// Keep pointers to analyses being added to model so that they can be removed later
 	AnalysisSet _analysisCopies;	 
+	ControllerSet _controllerCopies;	 
 
 	/**
 	* Set all member variables to their null or default values.
@@ -216,6 +218,15 @@ private:
 	* Connect properties to local pointers.
 	*/
 	void setupProperties();
+	
+	/**
+	* Verify that column labels are unique.
+	*/
+	bool verifyUniqueComulnLabels(const Storage& aStorage) const;
+	std::string parseStringProperty(std::string& propertyName);
+	std::string createExternalLoadsFile(const std::string& oldFile, 
+										  const std::string& body1, 
+										  const std::string& body2);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -240,23 +251,23 @@ public:
 	* Set the model to be investigated.
 	* NOTE: setup() should have been called on the model prior to calling this method
 	*/
-	virtual void setModel(Model *aModel) SWIG_DECLARE_EXCEPTION;
+	virtual void setModel(Model& aModel) SWIG_DECLARE_EXCEPTION;
 	
 	/**
 	* Get the model to be investigated.
 	*/
-	virtual Model* getModel() const;
+	virtual Model& getModel() const;
 
-	/**
-	* Get the analysis set.
-	*/
-	bool getReplaceActuatorSet() const { return _replaceActuatorSet; }
-	
-	
-	void setReplaceActuatorSet(bool aReplace) { _replaceActuatorSet = aReplace; }
+	bool getReplaceForceSet() const { return _replaceForceSet; }
+	void setReplaceForceSet(bool aReplace) { _replaceForceSet = aReplace; }
 
-	Array<std::string> &getActuatorSetFiles() { return _actuatorSetFiles; }
-	void setActuatorSetFiles(const Array<std::string> &aActuatorSetFiles) { _actuatorSetFiles = aActuatorSetFiles; }
+	std::string getNextAvailableForceName(const std::string prefix="Force") const;
+
+	const ForceSet& getExternalForceSet() const { return _externalForces; }
+	ForceSet& updExternalForceSet() { return _externalForces; }
+
+	Array<std::string> &getForceSetFiles() { return _forceSetFiles; }
+	void setForceSetFiles(const Array<std::string> &aForceSetFiles) { _forceSetFiles = aForceSetFiles; }
 
 	int getOutputPrecision() const { return _outputPrecision; }
 	void setOutputPrecision(int aPrecision) { _outputPrecision = aPrecision; }
@@ -292,9 +303,6 @@ public:
 	double getErrorTolerance() const { return _errorTolerance; }
 	void setErrorTolerance(double aErrorTolerance) { _errorTolerance = aErrorTolerance; }
 
-	double getFineTolerance() const { return _fineTolerance; }
-	void setFineTolerance(double aFineTolerance) { _fineTolerance = aFineTolerance; }
-
 	// Model xml file
 	const std::string& getModelFilename() const { return _modelFile; }
 	void setModelFilename(const std::string& aModelFile) { _modelFile = aModelFile; }
@@ -310,12 +318,12 @@ public:
 	* Load and construct a model based on the property settings of
 	* this investigation.
 	*/
-	void loadModel(const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0);
+	void loadModel(const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 );
 	
 	/**
-	* Update the actuator and contact forces applied to a model.
+	* Update the forces applied to a model.
 	*/
-	void updateModelActuatorsAndContactForces(Model *model, const std::string &aToolSetupFileName, ActuatorSet *rOriginalActuatorSet = 0, ContactForceSet *rOriginalContactForceSet = 0)  SWIG_DECLARE_EXCEPTION;
+	void updateModelForces(Model& model, const std::string &aToolSetupFileName, ForceSet *rOriginalForceSet = 0 )  SWIG_DECLARE_EXCEPTION;
 	
 	/**
 	* Adds Analysis objects from analysis set to model.
@@ -328,13 +336,19 @@ public:
 	*  _analysisCopies is used to do this book keeping.
 	*/
 	void addAnalysisSetToModel();
+	void addControllerSetToModel();
 	
 	/**
 	* Remove Analysis objects that were added earlier from analysis set to model.
 	*/
+	void removeControllerSetFromModel();
 	void removeAnalysisSetFromModel();
 	void setToolOwnsModel(const bool trueFalse) { _toolOwnsModel=trueFalse; };
 	const bool getToolOwnsModel() const { return _toolOwnsModel; };
+
+	// Interface to build controller from a ControlSet file
+	std::string getControlsFileName() const;
+	void setControlsFileName(const std::string& controlsFilename);
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
@@ -352,6 +366,38 @@ public:
 	virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
+    bool createExternalLoads( const std::string &aExternalLoadsFileName,
+                                     const std::string& aExternalLoadsModelKinematicsFileName,
+                                     Model& aModel);
+
+#ifndef SWIG
+        void initializeExternalLoads( SimTK::State& s, 
+                                      const double& analysisStartTime,
+                                      const double& analysisFinalTime, 
+                                      Model &aModel,
+                                      const std::string &aExternalLoadsFileName,	//.xml file for external loads
+                                      const std::string &aExternalLoadsModelKinematicsFileName,
+                                      double aLowpassCutoffFrequencyForLoadKinematics);
+
+     void computePointFunctions(SimTK::State& s, 
+                                double startTime,
+                                double endTime,
+                                const Body& body,
+                                const Storage& aQStore,
+                                const Storage& aUStore,
+                                VectorGCVSplineR1R3& aPGlobal,
+                                GCVSpline*& xfunc, 
+                                GCVSpline*& yfunc, 
+                                GCVSpline*& zfunc);
+	 void computeFunctions(SimTK::State& s, 
+                                double startTime,
+                                double endTime, 
+								const Storage& kineticsStore, 
+								Storage* qStore=NULL, 
+								Storage* uStore=NULL);
+#endif
+virtual void updateFromXMLNode();
+virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;
 //=============================================================================
 };	// END of class AbstractTool
 

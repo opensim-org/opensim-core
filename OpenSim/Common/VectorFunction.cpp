@@ -32,9 +32,9 @@
 
 
 // INCLUDES
-#include "rdMath.h"
 #include "VectorFunction.h"
 #include "PropertyDbl.h"
+#include "SimTKsimbody.h"
 
 
 
@@ -67,8 +67,8 @@ VectorFunction::VectorFunction() :
  * Default constructor.
  */
 VectorFunction::VectorFunction(int aNX, int aNY) :
-	_minX(rdMath::MINUS_INFINITY),
-	_maxX(rdMath::PLUS_INFINITY)
+	_minX(-SimTK::Infinity ),
+	_maxX( SimTK::Infinity )
 {
 	setNull();
 	setNX(aNX);
@@ -82,8 +82,8 @@ VectorFunction::VectorFunction(int aNX, int aNY) :
  */
 VectorFunction::VectorFunction(const VectorFunction &aVectorFunction) :
 	Object(aVectorFunction),
-	_minX(rdMath::MINUS_INFINITY),
-	_maxX(rdMath::PLUS_INFINITY)
+    _minX(-std::numeric_limits<SimTK::Real>::infinity() ),
+    _maxX( std::numeric_limits<SimTK::Real>::infinity() )
 {
 	setNull();
 

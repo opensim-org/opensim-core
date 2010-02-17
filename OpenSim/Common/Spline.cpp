@@ -278,7 +278,7 @@ checkFileStatus(int aStatus)
  * If x does not fall within a valid interval, -1 is returned.
  */
 int Spline::
-getKnotIndex(double x)
+getKnotIndex(double x) const
 {
 	int index=-1;
 	int i;
@@ -300,26 +300,26 @@ getKnotIndex(double x)
  * This routine assumes that the end knots have the proper multiplicity.
  *
  */
-double Spline::
-evaluate(double x)
+double Spline::calcValue(const SimTK::Vector& x) const
 {
 	// INITIALIZATIONS
+	assert(x.size()==1);
 	int i,j;
 	int k = _order;
 	double *t = _knots;
 	double *a = _coefs;
 
 	// GET THE KNOT INEX
-	int index = getKnotIndex(x);
+	int index = getKnotIndex(x[0]);
 	if(index<0) {
-		printf("Spline.evaluate: WARNING- x (%lf) is not",x);
+		printf("Spline.evaluate: WARNING- x (%lf) is not",x[0]);
 		printf(" on the spline interval (%lf to %lf).\n",_ti,_tf);
 		return(0.0);
 	}
 
 	// INITIALIZE THE PERTINENT KNOT VALUES
 	for(i=0;i<2*(k-1);i++) {
-		_tx[i] = t[index-k+2+i] - x;
+		_tx[i] = t[index-k+2+i] - x[0];
 	}
 
 	// INITIALIZE THE SEED VALUES OF b

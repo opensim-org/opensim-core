@@ -1,5 +1,5 @@
-#ifndef __AbsBodySet_h__
-#define __AbsBodySet_h__
+#ifndef __BodySet_h__
+#define __BodySet_h__
 
 // BodySet.h
 // Author: Peter Loan
@@ -30,8 +30,8 @@
  */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
-#include "AbstractBody.h"
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -53,15 +53,21 @@ class ScaleSet;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API BodySet :	public Set<AbstractBody>
+class OSIMSIMULATION_API BodySet :	public ModelComponentSet<Body>
 {
 private:
 	void setNull();
 public:
 	BodySet();
+	BodySet(Model& model);
 	BodySet(const BodySet& aAbsBodySet);
 	~BodySet(void);
-	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
+	void setup(Model& aModel);
+	// Somehow the following function is not exported from base template
+    BodySet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true) :
+        ModelComponentSet<Body>(model, aFileName, aUpdateFromXMLNode)
+    {
+    }
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -72,7 +78,7 @@ public:
 	// UTILITIES
 	//--------------------------------------------------------------------------
 	void scale(const ScaleSet& aScaleSet, bool aScaleMass = false);
-	BodySet& copyFrom(const BodySet& aBodySet, AbstractDynamicsEngine* aAbstractDynamicsEngine);
+	BodySet& copyFrom(const BodySet& aBodySet, Model& aModel);
 //=============================================================================
 };	// END of class BodySet
 //=============================================================================
@@ -80,4 +86,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __AbsBodySet_h__
+#endif // __BodySet_h__

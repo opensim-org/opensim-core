@@ -33,7 +33,7 @@ static float* sBoneScale = NULL;
 
 
 /*************** EXTERNED VARIABLES (declared in another .c file) *************/
-#if ! SIMM_VIEWER && ! OPENSIM_CONVERTER
+#if ! SIMM_VIEWER && ! OPENSMAC
 extern DeformEditorStruct* de;
 extern WindowParams*     de_win_params;
 extern WinUnion*         de_win_union;
@@ -79,7 +79,7 @@ void init_deform (DeformObject* dfm)
    dfm->innerBox = dfm->innerBoxUndeformed = NULL;
    dfm->outerBox = dfm->outerBoxUndeformed = NULL;
 
-#ifndef ENGINE
+#if ! ENGINE
    init_deform_box_verts(dfm);
 #endif
 }
@@ -104,7 +104,7 @@ void init_deformity (Deformity* dty)
    pt_in_box - return true if the specified 3d point is inside the specified
       3d axis-aligned box.
 ---------------------------------------------------------------------------- */
-static SBoolean pt_in_box (const double pt[3], const Coord3D* min, const Coord3D* max)
+static SBoolean pt_in_box (const double pt[3], const dpCoord3D* min, const dpCoord3D* max)
 {
    return (SBoolean) (pt[0] > min->xyz[0] && pt[0] < max->xyz[0] &&
                       pt[1] > min->xyz[1] && pt[1] < max->xyz[1] &&
@@ -143,8 +143,8 @@ static double calc_transition_factor (DeformObject* dfm, const double pt[3])
    return 1.0 - factor;
 }
 
-#ifndef ENGINE
-#if ! OPENSIM_CONVERTER
+#if ! ENGINE
+#if ! OPENSMAC
 
 /* -------------------------------------------------------------------------
    deform_mesh - apply the specified deformation to the specified polygon mesh.
@@ -225,21 +225,15 @@ static void deform_deform_boxes (ModelStruct* ms, DeformObject* dfm, DeformObjec
 ---------------------------------------------------------------------------- */
 void de_track_cb (void* data, SimmEvent se)
 {
-   int i, count, de_vals[DE_MAX_DEVS];
-   int model_windex;
-   
+   int i, count, de_vals[DE_MAX_DEVS];   
    DeformEditorTracker* tracker = (DeformEditorTracker*) data;
-
-   DisplayStruct*  dis  = &de->model->dis;
-   ModelStruct*    ms   = tracker->model;
-   int             mod  = ms->modelnum;
-   DEModelOptions* deop = &de->deop[mod];
+   DEModelOptions* deop = NULL;
+   Scene* scene = NULL;
+   ModelStruct* ms = NULL;
    SegmentStruct*  seg;
    DeformObject*   dfm;
    XForm*          xform;
-
    SBoolean redraw = no;
-   IntBox*  vp;
    double   z_dist, tmp_matrix[4][4], inv_view_matrix[4][4];
    double   wpt[4], wpt2[4], owpt[4], owpt2[4];
    int      bpan_mx_new, bpan_my_new;
@@ -260,11 +254,9 @@ void de_track_cb (void* data, SimmEvent se)
       return;
    }
 
-   if ((model_windex = get_window_index(MODEL,ms->modelnum))== -1)
-      return;
-
-   vp = &root.window[model_windex].win_parameters->vp;
-
+   scene = tracker->scene;
+   ms = tracker->model;
+   deop = &de->deop[ms->modelnum];
    seg = &ms->segment[deop->segment];
    dfm = &seg->deform[deop->deform];
    
@@ -283,10 +275,10 @@ void de_track_cb (void* data, SimmEvent se)
        {
            if (de_vals[DE_TRACKBALL_KEY])
            {
-               z_dist = dis->tz;
+               z_dist = scene->tz;
 
-               find_world_coords(dis,vp,mx_new,my_new,
-                                 z_dist,&wx_new,&wy_new,&wz_new);
+               find_world_coords(scene, mx_new, my_new,
+                                 z_dist, &wx_new, &wy_new, &wz_new);
 	 
                if (tracker->mx_old == -1 || tracker->my_old == -1)
                {
@@ -308,7 +300,7 @@ void de_track_cb (void* data, SimmEvent se)
                    normalize_vector(axis, naxis);
                    naxis[3] = 1.0;
 
-                   invert_4x4transform(dis->transform_matrix,tmp_matrix);
+                   invert_4x4transform(scene->transform_matrix,tmp_matrix);
                    mult_4x4matrix_by_vector(tmp_matrix,naxis,axis);
                    mult_4x4matrix_by_vector(tmp_matrix,origin,new_origin);
 
@@ -323,14 +315,14 @@ void de_track_cb (void* data, SimmEvent se)
                    naxis[2] -= origin[2];
 
                    normalize_vector(naxis, naxis);
-                   convert_vector(mod, naxis, ms->ground_segment, dfm->segment);
+                   convert_vector(ms, naxis, ms->ground_segment, dfm->segment);
                    normalize_vector(naxis, naxis);
 
                    /* if cursor moves a full screen width, rotate by 90 degrees */
                    cursor_movement = sqrt((mx_new-tracker->mx_old)*(mx_new-tracker->mx_old) +
                                           (my_new-tracker->my_old)*(my_new-tracker->my_old));
 
-                   x_percent = cursor_movement / (double)(vp->x2-vp->x1);
+                   x_percent = cursor_movement / (double)(scene->viewport[2]);
 
                    angle = x_percent * 90.0;
 
@@ -367,14 +359,14 @@ void de_track_cb (void* data, SimmEvent se)
                transform_pt(xform->from_local_xform, wpt);
                wpt[3] = 1.0;
        
-               convert(mod, wpt, dfm->segment, ms->ground_segment);
-               mult_4x4matrix_by_vector(dis->transform_matrix, wpt, wpt2);
+               convert(ms, wpt, dfm->segment, ms->ground_segment);
+               mult_4x4matrix_by_vector(scene->transform_matrix, wpt, wpt2);
        
                z_dist = wpt2[2];
                bpan_mx_new = se.mouse_x;
                bpan_my_new = se.mouse_y;
        
-               find_world_coords(&model[mod]->dis, vp, bpan_mx_new, bpan_my_new,
+               find_world_coords(scene, bpan_mx_new, bpan_my_new,
                                  z_dist, &bpan_wx_new, &bpan_wy_new, &bpan_wz_new);
        
                if (tracker->bpan_mx_old == -1 || tracker->bpan_my_old == -1)
@@ -393,18 +385,18 @@ void de_track_cb (void* data, SimmEvent se)
                    wpt[2] = bpan_wz_new;
                    wpt[3] = 1.0;
 
-                   invert_4x4transform(dis->transform_matrix,inv_view_matrix);
+                   invert_4x4transform(scene->transform_matrix,inv_view_matrix);
 
 #if !STEADYCAM
-                   if (dis->camera_segment >= 0)
+                   if (scene->camera_segment >= 0)
                       copy_4x4matrix(*get_ground_conversion(ms->modelnum,
-                                     dis->camera_segment, to_ground), tmp_matrix);
+                                     scene->camera_segment, to_ground), tmp_matrix);
                    else
                       reset_4x4matrix(tmp_matrix);
                    append_4x4matrix(inv_view_matrix,tmp_matrix);
 #endif
                    mult_4x4matrix_by_vector(inv_view_matrix,wpt,wpt2);
-                   convert(mod, wpt2, ms->ground_segment, dfm->segment);
+                   convert(ms, wpt2, ms->ground_segment, dfm->segment);
 
                    owpt[0] = tracker->bpan_wx_old;
                    owpt[1] = tracker->bpan_wy_old;
@@ -412,7 +404,7 @@ void de_track_cb (void* data, SimmEvent se)
                    owpt[3] = 1.0;
 
                    mult_4x4matrix_by_vector(inv_view_matrix,owpt,owpt2);
-                   convert(mod, owpt2, ms->ground_segment, dfm->segment);
+                   convert(ms, owpt2, ms->ground_segment, dfm->segment);
 
                    xform->translation.xyz[0] += (wpt2[XX] - owpt2[XX]);
                    xform->translation.xyz[1] += (wpt2[YY] - owpt2[YY]);
@@ -442,10 +434,10 @@ void de_track_cb (void* data, SimmEvent se)
                  wpt[0] = wpt[1] = 0.0;
                  wpt[2] = wpt[3] = 1.0;
 
-                 invert_4x4transform(dis->transform_matrix,tmp_matrix);
+                 invert_4x4transform(scene->transform_matrix,tmp_matrix);
 
                  mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
-                 convert(mod, wpt2, ms->ground_segment, dfm->segment);
+                 convert(ms, wpt2, ms->ground_segment, dfm->segment);
                  
                  tracker->zoom_vec.xyz[0] = wpt2[0];
                  tracker->zoom_vec.xyz[1] = wpt2[1];
@@ -455,7 +447,7 @@ void de_track_cb (void* data, SimmEvent se)
                  wpt[3] = 1.0;
 
                  mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
-                 convert(mod, wpt2, ms->ground_segment, dfm->segment);
+                 convert(ms, wpt2, ms->ground_segment, dfm->segment);
                  
                  tracker->zoom_vec.xyz[0] -= wpt2[0];
                  tracker->zoom_vec.xyz[1] -= wpt2[1];
@@ -488,9 +480,9 @@ void de_track_cb (void* data, SimmEvent se)
 
            if (de_vals[DE_ROTATE_X_KEY])
            {
-               if (CURSOR_IN_REGION_PTR(mx_new,my_new,vp))
+               if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
                {
-                   new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, vp) * 0.1;
+                   new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
                    
                    if (deop->xform_frame == DE_LOCAL_FRAME)
                        x_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
@@ -502,9 +494,9 @@ void de_track_cb (void* data, SimmEvent se)
            }
            if (de_vals[DE_ROTATE_Y_KEY])
            {
-               if (CURSOR_IN_REGION_PTR(mx_new,my_new,vp))
+               if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
                {
-                   new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, vp) * 0.1;
+                   new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
                    
                    if (deop->xform_frame == DE_LOCAL_FRAME)
                        y_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
@@ -516,9 +508,9 @@ void de_track_cb (void* data, SimmEvent se)
            }
            if (de_vals[DE_ROTATE_Z_KEY])
            {
-               if (CURSOR_IN_REGION_PTR(mx_new,my_new,vp))
+               if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
                {
-                   new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, vp) * 0.1;
+                   new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
                    
                    if (deop->xform_frame == DE_LOCAL_FRAME)
                        z_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
@@ -544,8 +536,9 @@ void de_track_cb (void* data, SimmEvent se)
       xform->xforms_valid = no;
       recalc_deform_xforms(seg, dfm);
       deform_segment(NULL, -1);
-      queue_redraw(MODEL, mod);
-      display_deformeditor(de_win_params, de_win_union);
+      queue_model_redraw(ms);
+      if (ms == de->model)
+         display_deformeditor(de_win_params, de_win_union);
    }
 } /* de_track_cb */
 
@@ -556,7 +549,7 @@ void de_track_cb (void* data, SimmEvent se)
 /* -------------------------------------------------------------------------
    set_fog_near_and_far - 
 ---------------------------------------------------------------------------- */
-static void set_fog_near_and_far (DisplayStruct* dis, const float* box)
+static void set_fog_near_and_far(const float* box)
 {
    double fogNear = FLT_MAX, fogFar = 0.0;
    int j,k,l;
@@ -599,11 +592,11 @@ static void set_fog_near_and_far (DisplayStruct* dis, const float* box)
 /* -------------------------------------------------------------------------
    draw_deform_objects - 
 ---------------------------------------------------------------------------- */
-void draw_deform_objects (ModelStruct* ms, SegmentStruct* seg)
+void draw_deform_objects(ModelStruct* model, SegmentStruct* seg, int segment_index, ModelDrawOptions* mdo)
 {
 #if ! SIMM_VIEWER
 
-   #define IS_CUR_DEFORM(DFM) (ms == de->model && DFM == deop->deform)
+#define IS_CUR_DEFORM(DFM) (model == de->model && DFM == deop->deform)
 
    int i, j, k, l;
    static const float active_dfm_color[3]   = { 1.0, 0.5, 1.0 };
@@ -613,25 +606,23 @@ void draw_deform_objects (ModelStruct* ms, SegmentStruct* seg)
    if (de == NULL)
       return;
 
-   deop = &de->deop[ms->modelnum];
+   deop = &de->deop[model->modelnum];
 
-#if 0   
-   if (de->model != ms)   /* only draw deform boxes for the current model? */
+   if (seg != &model->segment[deop->segment])
       return;
-#endif
 
-   if (seg != &ms->segment[deop->segment])
-      return;
-   
-   glPushAttrib(GL_ENABLE_BIT);
-   glDisable(GL_LIGHTING);
+   if (mdo->mode == GL_RENDER)
+   {
+      glPushAttrib(GL_ENABLE_BIT);
+      glDisable(GL_LIGHTING);
 
 #if FOG_DEFORM_BOXES
-   glEnable(GL_FOG);
-   glFogi(GL_FOG_MODE, GL_LINEAR);
-   glFogfv(GL_FOG_COLOR, root.color.cmap[MISC_MODEL_WINDOW_BACKGROUND].rgb);
-   glHint(GL_FOG_HINT, GL_FASTEST);  /* or try GL_NICEST */
+      glEnable(GL_FOG);
+      glFogi(GL_FOG_MODE, GL_LINEAR);
+      glFogfv(GL_FOG_COLOR, root.color.cmap[MISC_MODEL_WINDOW_BACKGROUND].rgb);
+      glHint(GL_FOG_HINT, GL_FASTEST);  /* or try GL_NICEST */
 #endif
+   }
 
    for (i = 0; i < seg->num_deforms; i++)
    {
@@ -639,92 +630,169 @@ void draw_deform_objects (ModelStruct* ms, SegmentStruct* seg)
 
       if ( ! dfm->visible)
          continue;
-      
-      glColor3fv(IS_CUR_DEFORM(i) ? active_dfm_color : inactive_dfm_color);
-      
+
       recalc_deform_xforms(seg, dfm);
-      
+
+      // Draw the deform's outer box.
       glPushMatrix();
+      glMultMatrixd((double*) dfm->position.from_local_xform);
 
-      /* draw the deform's outer box:
-       */
-      if (1 || deop->deformMode == DE_POSITION_MODE /* && IS_CUR_DEFORM(i) */)
+      if (mdo->mode == GL_RENDER)
       {
-         glMultMatrixd((double*) dfm->position.from_local_xform);
-
+         glColor3fv(IS_CUR_DEFORM(i) ? active_dfm_color : inactive_dfm_color);
 #if FOG_DEFORM_BOXES
-         set_fog_near_and_far(&ms->dis, dfm->outerBox);
+         set_fog_near_and_far(dfm->outerBox);
 #endif
-         for (j = 0, l = 0; j < 12; j++)
-         {
-            glBegin(GL_LINE_STRIP);
-            
-            for (k = 0; k < VERTS_PER_BOX_EDGE; k++)
-            {
-               glVertex3fv(&dfm->outerBox[l]);
-               
-               l += 3;
-            }
-            glEnd();
-         }
-         glPopMatrix();
-         glPushMatrix();
       }
-      
+      else
+      {
+         PickIndex color_value;
+         GLubyte color[3];
+
+         glShadeModel(GL_FLAT);
+         color_value = (DEFORM_OBJECT << OBJECT_BITS) + ((PickIndex)segment_index << SUBELEMENT_BITS) + ((PickIndex)i << 3) + (PickIndex)0; // 0 is for outer box
+         pack_int_into_color(color_value, color);
+         glColor3ubv(color);
+         {
+            PickIndex obj_num, object_type;
+            int seg_num, deform_index, component;
+            get_object_type_and_number(color_value, &object_type, &obj_num);
+            seg_num = obj_num >> SUBELEMENT_BITS;
+            deform_index = obj_num & SUBELEMENT_MASK;
+            component = obj_num & 0x7;
+            printf("outer box: %d %d, %d %d %d %d\n", (int)obj_num, (int)object_type, seg_num, deform_index, component);
+         }
+      }
+
+      for (j = 0, l = 0; j < 12; j++)
+      {
+         glBegin(GL_LINE_STRIP);
+
+         for (k = 0; k < VERTS_PER_BOX_EDGE; k++)
+         {
+            glVertex3fv(&dfm->outerBox[l]);
+
+            l += 3;
+         }
+         glEnd();
+      }
+      glPopMatrix();
+
+      // Draw the deform's inner box.
+      glPushMatrix();
       glMultMatrixd((double*) get_deform_xform3(dfm, deop->deformMode, dfm->deform_factor)->from_local_xform);
-      /* draw the deform's inner box:
-       */
+
       if (IS_CUR_DEFORM(i))
       {
-         if (deop->deformMode == DE_POSITION_MODE ||
-             dfm->deform_factor == 0.0 ||
-             dfm->deform_factor == 1.0)
+         if (deop->deformMode == DE_POSITION_MODE || dfm->deform_factor == 0.0 || dfm->deform_factor == 1.0)
          {
             glLineWidth(2.0);
          }
       }
 
+      if (mdo->mode == GL_RENDER)
+      {
+         glColor3fv(IS_CUR_DEFORM(i) ? active_dfm_color : inactive_dfm_color);
 #if FOG_DEFORM_BOXES
-      set_fog_near_and_far(&ms->dis, dfm->innerBox);
+         set_fog_near_and_far(dfm->innerBox);
 #endif
-      
+      }
+      else
+      {
+         PickIndex color_value;
+         GLubyte color[3];
+
+         glShadeModel(GL_FLAT);
+         color_value = (DEFORM_OBJECT << OBJECT_BITS) + ((PickIndex)segment_index << SUBELEMENT_BITS) + ((PickIndex)i << 3) + (PickIndex)1; // 1 is for inner box
+         pack_int_into_color(color_value, color);
+         glColor3ubv(color);
+         {
+            PickIndex obj_num, object_type;
+            int seg_num, deform_index, component;
+            get_object_type_and_number(color_value, &object_type, &obj_num);
+            seg_num = obj_num >> SUBELEMENT_BITS;
+            deform_index = obj_num & SUBELEMENT_MASK;
+            component = obj_num & 0x7;
+            printf("inner box: %d %d, %d %d %d %d\n", (int)obj_num, (int)object_type, seg_num, deform_index, component);
+         }
+      }
+
       for (j = 0, l = 0; j < 12; j++)
       {
          glBegin(GL_LINE_STRIP);
-         
+
          for (k = 0; k < VERTS_PER_BOX_EDGE; k++)
          {
             glVertex3fv(&dfm->innerBox[l]);
-            
+
             l += 3;
          }
          glEnd();
       }
-      
-      /* draw the deform's axes:
-       */
-      //dkb - only draw axes for current
+
+      // Draw the deform's axes (current one only).
       if (IS_CUR_DEFORM(i))
       {
-      glBegin(GL_LINES);
-         simm_color(RED);
+         glBegin(GL_LINES);
+         if (mdo->mode == GL_RENDER)
+         {
+            simm_color(RED);
+         }
+         else
+         {
+            PickIndex color_value;
+            GLubyte color[3];
+
+            glShadeModel(GL_FLAT);
+            color_value = (DEFORM_OBJECT << OBJECT_BITS) + ((PickIndex)segment_index << SUBELEMENT_BITS) + ((PickIndex)i << 3) + (PickIndex)2; // 2 is for X axis
+            pack_int_into_color(color_value, color);
+            glColor3ubv(color);
+         }
          glVertex3d(0, 0, 0);
          glVertex3d(1.5 * fabs(dfm->innerMax.xyz[0]), 0, 0);
-         simm_color(GREEN);
+         if (mdo->mode == GL_RENDER)
+         {
+            simm_color(GREEN);
+         }
+         else
+         {
+            PickIndex color_value;
+            GLubyte color[3];
+
+            glShadeModel(GL_FLAT);
+            color_value = (DEFORM_OBJECT << OBJECT_BITS) + ((PickIndex)segment_index << SUBELEMENT_BITS) + ((PickIndex)i << 3) + (PickIndex)3; // 3 is for Y axis
+            pack_int_into_color(color_value, color);
+            glColor3ubv(color);
+         }
          glVertex3d(0, 0, 0);
          glVertex3d(0, 1.5 * fabs(dfm->innerMax.xyz[1]), 0);
-         simm_color(BLUE);
+         if (mdo->mode == GL_RENDER)
+         {
+            simm_color(BLUE);
+         }
+         else
+         {
+            PickIndex color_value;
+            GLubyte color[3];
+
+            glShadeModel(GL_FLAT);
+            color_value = (DEFORM_OBJECT << OBJECT_BITS) + ((PickIndex)segment_index << SUBELEMENT_BITS) + ((PickIndex)i << 3) + (PickIndex)4; // 4 is for Z axis
+            pack_int_into_color(color_value, color);
+            glColor3ubv(color);
+         }
          glVertex3d(0, 0, 0);
          glVertex3d(0, 0, 1.5 * fabs(dfm->innerMax.xyz[2]));
-      glEnd();
+         glEnd();
       }
-      
+
       glLineWidth(1.0);
       glPopMatrix();
    }
-   glPopAttrib();
+
+   if (mdo->mode == GL_RENDER)
+      glPopAttrib();
 #endif /* ! SIMM_VIEWER */
-} /* draw_deform_objects */
+}
 
 
 /* -------------------------------------------------------------------------
@@ -879,11 +947,11 @@ void deform_segment (ModelStruct* ms, int segment)
    /* deform the muscle points attached to the segment */
    for (i = 0; i < ms->nummuscles; i++)
    {
-      MuscleStruct* msc = &ms->muscle[i];
+      dpMuscleStruct* msc = ms->muscle[i];
       
-      for (j = 0; j < msc->musclepoints->num_orig_points; j++)
+      for (j = 0; j < msc->path->num_orig_points; j++)
       {
-         MusclePoint* mp = &msc->musclepoints->mp_orig[j];
+         dpMusclePoint* mp = &msc->path->mp_orig[j];
          
          if (mp->segment == segment)
          {
@@ -902,9 +970,9 @@ void deform_segment (ModelStruct* ms, int segment)
    /* deform any muscle wrapping objects attached to the segment */
    for (i = 0; i < ms->num_wrap_objects; i++)
    {
-      if (ms->wrapobj[i].segment == segment)
+      if (ms->wrapobj[i]->segment == segment)
       {
-         WrapObject* wo = &ms->wrapobj[i];
+         dpWrapObject* wo = ms->wrapobj[i];
          
          _COPY_VERT(wo->translation.xyz, wo->undeformed_translation.xyz);
          
@@ -917,7 +985,7 @@ void deform_segment (ModelStruct* ms, int segment)
          
          wo->xforms_valid = no;
          recalc_xforms(wo);
-         inval_model_wrapping(ms, i);
+         inval_model_wrapping(ms, ms->wrapobj[i]);
       }
    }
    
@@ -954,12 +1022,12 @@ void deform_segment (ModelStruct* ms, int segment)
          /* determine the joint's undeformed origin in the segment's frame */
          ms->joint[i].pretransform_active = no;
          ms->joint[i].pretransform_condition = invalid;
-         invalidate_joint_matrix(ms, i);
+         invalidate_joint_matrix(ms, &ms->joint[i]);
 #if 0
          if (deop->deformMode == DE_POSITION_MODE)
             continue;
 #endif
-         convert(ms->modelnum, jointOrigin, ms->joint[i].to, ms->joint[i].from);
+         convert(ms, jointOrigin, ms->joint[i].to, ms->joint[i].from);
          _COPY_VERT(pt, jointOrigin);
          
          /* determine the joint's deformed origin */
@@ -972,7 +1040,7 @@ void deform_segment (ModelStruct* ms, int segment)
          {
             ms->joint[i].pretransform_active = yes;
             ms->joint[i].pretransform_condition = invalid;
-            invalidate_joint_matrix(ms, i);
+            invalidate_joint_matrix(ms, &ms->joint[i]);
          }
       }
    }
@@ -996,11 +1064,10 @@ void deform_segment (ModelStruct* ms, int segment)
    }
 #endif
 
-   invalidate_segment_display_lists(seg, ms);
-   queue_redraw(MODEL, ms->modelnum);
-
+   delete_segment_display_lists(seg, ms);
+   queue_model_redraw(ms);
 }
-#endif /* ! OPENSIM_CONVERTER */
+#endif /* ! OPENSMAC */
 #endif /* ! ENGINE */
 
 
@@ -1230,7 +1297,7 @@ static SBoolean deform_joint_pt (ModelStruct* ms, JointStruct* jnt, double* pt)
    int i;
    SBoolean didDeform = no;
 
-   convert(ms->modelnum, pt, jnt->to, jnt->from);
+   convert(ms, pt, jnt->to, jnt->from);
    
    _COPY_VERT(undeformedPt, pt);
    
@@ -1238,7 +1305,7 @@ static SBoolean deform_joint_pt (ModelStruct* ms, JointStruct* jnt, double* pt)
       if (seg->deform[i].active)
          deform_vert(&seg->deform[i], undeformedPt, pt, &didDeform);
    
-   convert(ms->modelnum, pt, jnt->from, jnt->to);
+   convert(ms, pt, jnt->from, jnt->to);
    
    return didDeform;
 }
@@ -1451,7 +1518,7 @@ void recalc_deform_xforms (SegmentStruct* seg, DeformObject* dfm)
 
    /* calculate the current deforming transform */
    {
-      Coord3D axis, translation;
+      dpCoord3D axis, translation;
       double  angle;
       DMatrix ref_frame_xform, ref_frame_xform_inv;
       

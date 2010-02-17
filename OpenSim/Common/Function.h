@@ -40,7 +40,6 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
-#include "SimmPoint.h"
 #include "SimTKmath.h"
 
 
@@ -54,7 +53,7 @@
  * only one unique dependent value.  Values of the function and its derivatives
  * are obtained by calling the evaluate() method.  The curve may or may not
  * be finite or diferentiable; the evaluate method returns values between
- * rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY, or it returns rdMath::getNAN()
+ * -SimTK::Infinity and SimTK::Infinity, or it returns SimTK::NaN
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *
@@ -62,48 +61,14 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API XYPoint
-{
-public:
-	double _x;
-	double _y;
-	XYPoint() { _x = _y = 0.0; }
-	XYPoint(double aX, double aY) { _x = aX; _y = aY; }
-
-#ifndef SWIG
-	bool operator==(const XYPoint &aXYPoint) const { return false; }
-	bool operator<(const XYPoint &aXYPoint) const { return false; }
-#endif
-
-};
-
 class OSIMCOMMON_API Function : public Object
 {
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Minimum value of the x independent variable. */
-	PropertyDbl _propMinX;
-	/** Maximum value of the x independent variable. */
-	PropertyDbl _propMaxX;
-	/** Minimum value of the y independent variable. */
-	PropertyDbl _propMinY;
-	/** Maximum value of the y independent variable. */
-	PropertyDbl _propMaxY;
-	/** Minimum value of the z independent variable. */
-	PropertyDbl _propMinZ;
-	/** Maximum value of the z independent variable. */
-	PropertyDbl _propMaxZ;
-
-	// REFERENCES
-	double &_minX;
-	double &_maxX;
-	double &_minY;
-	double &_maxY;
-	double &_minZ;
-	double &_maxZ;
+    // The SimTK::Function object implementing this function.
+    mutable SimTK::Function* _function;
 
 //=============================================================================
 // METHODS
@@ -120,8 +85,6 @@ public:
 
 private:
 	void setNull();
-	void setupProperties();
-	void setEqual(const Function &aFunction);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -134,58 +97,49 @@ public:
 	// SET AND GET
 	//--------------------------------------------------------------------------
 public:
-	void setMinX(double aMinX);
-	double getMinX() const;
-	void setMaxX(double aMaxX);
-	double getMaxX() const;
-	void setMinY(double aMinY);
-	double getMinY() const;
-	void setMaxY(double aMaxY);
-	double getMaxY() const;
-	void setMinZ(double aMinZ);
-	double getMinZ() const;
-	void setMaxZ(double aMaxZ);
-	double getMaxZ() const;
-	virtual int getNumberOfPoints() const = 0;
-	virtual const double* getXValues() const { return NULL; }
-	virtual const double* getYValues() const { return NULL; }
-	virtual double getX(int aIndex) const = 0;
-	virtual double getY(int aIndex) const = 0;
-	virtual double getZ(int aIndex) const = 0;
-	virtual void setX(int aIndex, double aValue) { }
-	virtual void setY(int aIndex, double aValue) { }
-	virtual void setZ(int aIndex, double aValue) { }
-	virtual bool deletePoint(int aIndex) = 0;
-	virtual bool deletePoints(const Array<int>& indices) { return false; }
-	virtual int addPoint(double aX, double aY) = 0;
-	virtual Array<XYPoint>* renderAsLineSegments(double aStart, double aEnd) { return NULL; }
-	virtual Array<XYPoint>* renderAsLineSegments(int aIndex) { return NULL; }
-	static void deleteXYPointArray(Array<XYPoint>* aArray) { if (aArray) delete aArray; }
-
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	virtual void
-	isLinear(double aTol,
-				double aMinX,double aMaxX,double &rMX,
-				double aMinY,double aMaxY,double &rMY,
-				double aMinZ,double aMaxZ,double &rMZ);
 	static Function* makeFunctionOfType(Function* aFunction, const std::string& aNewTypeName);
 
 	//--------------------------------------------------------------------------
 	// EVALUATE
 	//--------------------------------------------------------------------------
-	virtual void updateBoundingBox() = 0;
-	virtual double
-		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) const = 0;
-	virtual double
-		evaluateTotalFirstDerivative(double aX,double aDxdt);
-	virtual double
-		evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2);
-	virtual void scaleY(double aScaleFactor) = 0;
-    virtual const SimTK::Function<1>* createSimTKFunction() const = 0;
+    /**
+     * Calculate the value of this function at a particular point.
+     * 
+     * @param x     the Vector of input arguments.  Its size must equal the value returned by getArgumentSize().
+     */
+    virtual double calcValue(const SimTK::Vector& x) const;
+    /**
+     * Calculate a partial derivative of this function at a particular point.  Which derivative to take is specified
+     * by listing the input components with which to take it.  For example, if derivComponents=={0}, that indicates
+     * a first derivative with respective to component 0.  If derivComponents=={0, 0, 0}, that indicates a third
+     * derivative with respective to component 0.  If derivComponents=={4, 7}, that indicates a partial second derivative with
+     * respect to components 4 and 7.
+     * 
+     * @param derivComponents  the input components with respect to which the derivative should be taken.  Its size must be
+     *                         less than or equal to the value returned by getMaxDerivativeOrder().
+     * @param x                the Vector of input arguments.  Its size must equal the value returned by getArgumentSize().
+     */
+    virtual double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
+    /**
+     * Get the number of components expected in the input vector.
+     */
+    virtual int getArgumentSize() const;
+    /**
+     * Get the maximum derivative order this Function object can calculate.
+     */
+    virtual int getMaxDerivativeOrder() const;
+    virtual SimTK::Function* createSimTKFunction() const = 0;
 
 	OPENSIM_DECLARE_DERIVED(Function, Object);
+protected:
+    /**
+     * This should be called whenever this object has been modified.  It clears the internal SimTK::Function object
+     * used to evaluate it.
+     */
+    void resetFunction();
 
 //=============================================================================
 };	// END class Function

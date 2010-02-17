@@ -43,7 +43,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
-#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 
 #ifdef SWIG
@@ -55,7 +55,6 @@
 
 namespace OpenSim {
 
-class ModelIntegrand;
 
 //=============================================================================
 //=============================================================================
@@ -75,10 +74,11 @@ private:
 	trajectories. */
 	PropertyStr _desiredPointsFileNameProp;
 	std::string &_desiredPointsFileName;
-	/** Name of the file containing the desired kinematic
-	trajectories. */
-	PropertyStr _desiredKinematicsFileNameProp;
-	std::string &_desiredKinematicsFileName;
+
+    /** Name of the file containing the desired kinematic trajectories. */ 		 
+    PropertyStr _desiredKinematicsFileNameProp; 		 
+    std::string &_desiredKinematicsFileName;
+
 	/** Name of the file containing the external loads applied to the model. */
 	PropertyStr _externalLoadsFileNameProp;
 	std::string &_externalLoadsFileName;
@@ -86,21 +86,14 @@ private:
 	external loads. */
 	PropertyStr _externalLoadsModelKinematicsFileNameProp;
 	std::string &_externalLoadsModelKinematicsFileName;
-	/** Name of the body to which the first set of external loads should be
-	applied (e.g., the body name for the right foot). */
-	PropertyStr _externalLoadsBody1Prop;
-	std::string &_externalLoadsBody1;
-	/** Name of the body to which the second set of external loads should be
-	applied (e.g., the body name for the left foot). */
-	PropertyStr _externalLoadsBody2Prop;
-	std::string &_externalLoadsBody2;
-	/** Name of the file containing the tracking tasks. */
-	PropertyStr _taskSetFileNameProp;
-	std::string &_taskSetFileName;
-	/** Name of the file containing the constraints on the
-	controls. */
+    /** Name of the file containing the tracking tasks. */  	 	 
+    PropertyStr _taskSetFileNameProp; 		 
+    std::string &_taskSetFileName; 		 
+
+      /** Name of the file containing the constraints on the controls. */
 	PropertyStr _constraintsFileNameProp;
 	std::string &_constraintsFileName;
+
 	/** Name of the file containing the actuator controls output by rra. */
 	PropertyStr _rraControlsFileNameProp;
 	std::string &_rraControlsFileName;
@@ -113,25 +106,30 @@ private:
 	The default value is -1.0, so no filtering. */
 	PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
 	double &_lowpassCutoffFrequencyForLoadKinematics;
-	/** Time window over which the desired actuator forces are
-	achieved. */
-	PropertyDbl _targetDTProp;
-	double &_targetDT;
-	/** Flag indicating whether or not to use the curvature filter. */
-	PropertyBool _useCurvatureFilterProp;
-	bool &_useCurvatureFilter;
+
+    /** Time window over which the desired actuator forces are achieved */
+    PropertyDbl _targetDTProp;  	 	   
+    double &_targetDT;
+
+    /** Flag indicating whether or not to use the curvature filter. */
+    PropertyBool _useCurvatureFilterProp;  	 	 
+    bool &_useCurvatureFilter;
+
+
 	/** Set whether or not to use reflexes. */
 	PropertyBool _useReflexesProp;
 	bool &_useReflexes;
-	/** Flag indicating whether to use the fast CMC optimization
-	target.  The fast target requires the desired accelerations to
-	be met within the tolerance set by the convergence criterion.
-	The optimizer fails if the acclerations constraints cannot be
-	met, so the fast target is less robust.  The regular target
-	does not require the acceleration constraints to be met; it
-	meets them as well as it can. */
-	PropertyBool _useFastTargetProp;
-	bool &_useFastTarget;
+
+    /** Flag indicating whether to use the fast CMC optimization
+    target.  The fast target requires the desired accelerations to  	 	 
+    be met within the tolerance set by the convergence criterion. 		 
+    The optimizer fails if the acclerations constraints cannot be 		 
+    met, so the fast target is less robust.  The regular target 		 
+    does not require the acceleration constraints to be met; it 		 
+    meets them as well as it can. */ 		 
+    PropertyBool _useFastTargetProp; 		 
+    bool &_useFastTarget;
+
 	/** Preferred optimizer algorithm. */
 	PropertyStr _optimizerAlgorithmProp;
 	std::string &_optimizerAlgorithm;
@@ -176,9 +174,7 @@ private:
 	PropertyBool _verboseProp;
 	bool &_verbose;
 
-	ActuatorSet _originalActuatorSet;
-	/** Model integrand.  Make it a pointer so we can print results from a separate function. */
-	ModelIntegrand *_integrand;
+	ForceSet _originalForceSet;
 
 //=============================================================================
 // METHODS
@@ -216,11 +212,11 @@ public:
 	const std::string &getDesiredKinematicsFileName() { return _desiredKinematicsFileName; }
 	void setDesiredKinematicsFileName(const std::string &aFileName) { _desiredKinematicsFileName = aFileName; }
 
-	const std::string &getConstraintsFileName() { return _constraintsFileName; }
-	void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; }
-
-	const std::string &getTaskSetFileName() { return _taskSetFileName; }
-	void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
+    const std::string &getConstraintsFileName() { return _constraintsFileName; }  	 	 
+    void setConstraintsFileName(const std::string &aFileName) { _constraintsFileName = aFileName; } 		 
+  		 
+    const std::string &getTaskSetFileName() { return _taskSetFileName; } 		 
+    void setTaskSetFileName(const std::string &aFileName) { _taskSetFileName = aFileName; }
 
 	const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
 	void setRRAControlsFileName(const std::string &aFileName) { _rraControlsFileName = aFileName; }
@@ -240,24 +236,22 @@ public:
 	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
 	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
-	double getTimeWindow() const { return _targetDT; }
-	void setTimeWindow(double aTargetDT) { _targetDT = aTargetDT; }
+    double getTimeWindow() const { return _targetDT; }  	 	 
+    void setTimeWindow(double aTargetDT) { _targetDT = aTargetDT; } 		 
 
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
 	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
 	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-	const std::string &getExternalLoadsBody1() const { return _externalLoadsBody1; }
-	void setExternalLoadsBody1(const std::string &aName) { _externalLoadsBody1 = aName; }
-	const std::string &getExternalLoadsBody2() const { return _externalLoadsBody2; }
-	void setExternalLoadsBody2(const std::string &aName) { _externalLoadsBody2 = aName; }
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
-	// Target selection
-	bool getUseFastTarget() const { return _useFastTarget;};
-	void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
+    // Target selection
+    bool getUseFastTarget() const { return _useFastTarget;};  	 	 
+    void setUseFastTarget(bool useFastTarget) const {  _useFastTarget=useFastTarget; };
+
+
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
@@ -266,21 +260,20 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	Storage *getForceStorage();
-	Storage *getStateStorage();
+	Storage &getForceStorage();
 
-	void setOriginalActuatorSet(const ActuatorSet &aActuatorSet);
+	void setOriginalForceSet(const ForceSet &aForceSet);
 
 #ifndef SWIG
 	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
-	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *ControlSet);
-	void adjustCOMToReduceResiduals(const Storage &qStore, const Storage &uStore);
+	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
+	void adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore);
 	void adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);
 	void addNecessaryAnalyses();
 	void writeAdjustedModel();
 
 	static void computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve,OpenSim::Array<double> &rMAve);
-	static void computeAverageResiduals(Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve);
+	static void computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve);
 #endif
 //=============================================================================
 };	// END of class CMCTool

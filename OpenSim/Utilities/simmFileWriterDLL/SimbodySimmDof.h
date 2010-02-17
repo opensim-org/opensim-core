@@ -35,7 +35,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Function.h>
 
-#include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 namespace OpenSim {
 
@@ -56,7 +56,7 @@ class SimbodySimmDof
 protected:
    std::string _name; // name of the DOF (e.g., "tx", "r1")
 
-   AbstractTransformAxis::MotionType _type;
+   Coordinate::MotionType _type;
 
    int _userFunctionNumber; // -1 means the DOF is a constant
 
@@ -75,9 +75,9 @@ public:
 	virtual ~SimbodySimmDof();
 	SimbodySimmDof();
    const std::string& getName() const { return _name; }
-   void setConstant(const std::string& aName, AbstractTransformAxis::MotionType aType,
+   void setConstant(const std::string& aName, Coordinate::MotionType aType,
                     const double* aAxis, double aValue);
-   void setFunction(const std::string& aName, AbstractTransformAxis::MotionType aType, int aFunctionNumber,
+   void setFunction(const std::string& aName, Coordinate::MotionType aType, int aFunctionNumber,
                     const std::string& aCoordinateName, const double* aAxis);
    void setNull();
    void write(std::ofstream& aStream);

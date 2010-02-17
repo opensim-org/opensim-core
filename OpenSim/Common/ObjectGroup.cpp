@@ -238,9 +238,9 @@ void ObjectGroup::setup(ArrayPtrs<Object>& aObjects)
 {
 	_memberObjects.setSize(0); // clear existing contents
 	for (int i=0; i<_memberNames.getSize();) {
-		Object* obj = aObjects.get(_memberNames.get(i));
-		if (obj != NULL) {
-			_memberObjects.insert(i, obj);
+        int index = aObjects.getIndex(_memberNames.get(i));
+		if (index > -1) {
+			_memberObjects.insert(i, aObjects.get(index));
 			i++;
 		} else {
 			_memberNames.remove(i);

@@ -46,11 +46,18 @@ using namespace std;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
+
+AnalysisSet::AnalysisSet() :
+ _enable(_enableProp.getValueBool())
+{
+	setType("AnalysisSet");
+	setNull();
+}
 /**
  * Destructor.
- * Note that the individual callbacks are not deleted by
- * this destructor.  To delete the callbacks, the caller must do so
- * individually, or the method Callback::deleteCallbacks() may be called.
+ * Note that the individual analyses are not deleted by
+ * this destructor.  To delete the analyses, the caller must do so
+ * individually.
  */
 AnalysisSet::~AnalysisSet()
 {
@@ -61,7 +68,8 @@ AnalysisSet::~AnalysisSet()
  *
  * @param aModel Model for the analysis set.
  */
-AnalysisSet::AnalysisSet(Model *aModel)
+AnalysisSet::AnalysisSet(Model *aModel) :
+ _enable(_enableProp.getValueBool())
 {
 	setType("AnalysisSet");
 	setNull();
@@ -74,7 +82,8 @@ AnalysisSet::AnalysisSet(Model *aModel)
  * @param aFileName Name of the file.
  */
 AnalysisSet::AnalysisSet(const string &aFileName) :
-	Set<Analysis>(aFileName, false)
+	Set<Analysis>(aFileName, false),
+ _enable(_enableProp.getValueBool())
 {
 	setType("AnalysisSet");
 	setNull();
@@ -87,7 +96,8 @@ AnalysisSet::AnalysisSet(const string &aFileName) :
  * @param aSet Analysis set to be copied.
  */
 AnalysisSet::AnalysisSet(const AnalysisSet &aSet) :
-	Set<Analysis>(aSet)
+	Set<Analysis>(aSet),
+    _enable(_enableProp.getValueBool())
 {
 	setNull();
 }
@@ -115,9 +125,24 @@ copy() const
 void AnalysisSet::
 setNull()
 {
+    _enable = true;
+}
+void AnalysisSet::
+setupProperties() {
+    
+    _enableProp.setComment("enable/disable for AnalysisSet");
+    _enableProp.setName("enable");
+//    _propertySet.append( &_enableProp );
 }
 
-
+AnalysisSet& AnalysisSet::
+operator=(const  AnalysisSet &aSet)
+{
+     Set<Analysis>::operator=(aSet);
+ 
+     _enable = aSet._enable;
+     return(*this);
+}
 //=============================================================================
 // GET AND SET
 //=============================================================================
@@ -128,15 +153,13 @@ setNull()
  * @param aModel Pointer to the model.
  */
 void AnalysisSet::
-setModel(Model *aModel)
+setModel(Model& aModel)
 {
 	int i;
 	int size = getSize();
-	Analysis *analysis;
 	for(i=0;i<size;i++) {
-		analysis = get(i);
-		if(analysis==NULL) continue;
-		analysis->setModel(aModel);
+		Analysis& analysis = get(i);
+		analysis.setModel(aModel);
 	}
 }
 //_____________________________________________________________________________
@@ -145,10 +168,10 @@ setModel(Model *aModel)
  *
  * @return Pointer to the model.
  */
-Model* AnalysisSet::
+Model& AnalysisSet::
 getModel()
 {
-	return(_model);
+	return(*_model);
 }
 
 //-----------------------------------------------------------------------------
@@ -164,21 +187,21 @@ getModel()
 void AnalysisSet::
 setOn(bool aTrueFalse)
 {
-	for(int i=0;i<getSize();i++) if(get(i)) get(i)->setOn(aTrueFalse);
+	for(int i=0;i<getSize();i++) get(i).setOn(aTrueFalse);
 }
 
 void AnalysisSet::
-setOn(const Array<bool> &aOn) 
+setOn(const OpenSim::Array<bool> &aOn) 
 {
 	if(aOn.getSize()!=getSize()) throw Exception("AnalysisSet.setOn: ERROR- incompatible array sizes",__FILE__,__LINE__);
-	for(int i=0; i<getSize(); i++) if(get(i)) get(i)->setOn(aOn[i]);
+	for(int i=0; i<getSize(); i++) get(i).setOn(aOn[i]);
 }
 
-Array<bool> AnalysisSet::
+OpenSim::Array<bool> AnalysisSet::
 getOn() const
 {
 	Array<bool> on(false,getSize());
-	for(int i=0; i<getSize(); i++) if(get(i)) on[i] = get(i)->getOn();
+	for(int i=0; i<getSize(); i++) on[i] = get(i).getOn();
 	return on;
 }
 
@@ -192,24 +215,15 @@ getOn() const
  * called at the beginning of an integration and is intended to be used for
  * any initializations that are necessary.
  *
- * @param aStep Number of integrations steps that have been completed.
- * @param aDT Size of the integration time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives
- * @param aClientData General use pointer for sending in client data.
+ * @param s Current state 
  */
 void AnalysisSet::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+begin(const SimTK::State& s )
 {
 	int i;
-	IntegCallback *callback;
 	for(i=0;i<getSize();i++) {
-		callback = get(i);
-		if(callback == NULL) continue;
-		callback->begin(aStep,aDT,aT,aX,aY,aYP,aDYDT,aClientData);
+		Analysis& analysis = get(i);
+		analysis.begin(s);
 	}
 }
 //_____________________________________________________________________________
@@ -218,28 +232,15 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * after each successful integration time step and is intended to be used for
  * conducting analyses, driving animations, etc.
  *
- * @param aXPrev Control values at the previous time step.
- * @param aYPrev State values at the previous time step.
- * @param aYPPrev Pseudo state values at the previous time step.
- * @param aStep Number of integrations steps that have been completed.
- * @param aDT Size of the time step that WAS just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives
- * @param aClientData General use pointer for sending in client data.
+ * @param s Current state 
  */
 void AnalysisSet::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-	double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+step( const SimTK::State& s, int stepNumber )
 {
 	int i;
-	IntegCallback *callback;
 	for(i=0;i<getSize();i++) {
-		callback = get(i);
-		if(callback == NULL) continue;
-		callback->step(aXPrev,aYPrev,aYPPrev,aStep,aDT,aT,aX,aY,aYP,aDYDT,aClientData);
+		Analysis& analysis = get(i);
+		analysis.step(s, stepNumber);
 	}
 }
 //_____________________________________________________________________________
@@ -248,24 +249,15 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double a
  * after an integration has been completed and is intended to be used for
  * performing any finalizations necessary.
  *
- * @param aStep Number of integrations steps that have been completed.
- * @param aDT Size of the time step that WAS just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives
- * @param aClientData General use pointer for sending in client data.
+ * @param s Current state 
  */
 void AnalysisSet::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,void *aClientData)
+end(const SimTK::State& s)
 {
 	int i;
-	IntegCallback *callback;
 	for(i=0;i<getSize();i++) {
-		callback = get(i);
-		if(callback == NULL) continue;
-		callback->end(aStep,aDT,aT,aX,aY,aYP,aDYDT,aClientData);
+		Analysis& analysis = get(i);
+		analysis.end(s);
 	}
 }
 
@@ -287,11 +279,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 {
 	int i;
 	int size = getSize();
-	Analysis *analysis;
 	for(i=0;i<size;i++) {
-		analysis = get(i);
-		if(analysis==NULL) continue;
-		if(analysis->getPrintResultFiles()) analysis->printResults(aBaseName,aDir,aDT,aExtension);
+		Analysis& analysis = get(i);
+		if(analysis.getPrintResultFiles()) analysis.printResults(aBaseName,aDir,aDT,aExtension);
 	}
 }
 //=============================================================================

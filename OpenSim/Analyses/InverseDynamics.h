@@ -38,6 +38,7 @@
 #include "osimAnalysesDLL.h"
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <SimTKcommon.h>
 
 
@@ -48,8 +49,14 @@
 namespace OpenSim { 
 
 class Model;
-class ActuatorSet;
+class ForceSet;
 
+/**
+ * A class for performing and recording Inverse Dynamics forces/moments
+ * on a motion trajectory.
+ *
+ * @author Eran
+ */
 class OSIMANALYSES_API InverseDynamics : public Analysis 
 {
 	OPENSIM_DECLARE_DERIVED(InverseDynamics, Analysis);
@@ -57,25 +64,28 @@ class OSIMANALYSES_API InverseDynamics : public Analysis
 // DATA
 //=============================================================================
 private:
-
+	int _numCoordinateActuators;
 protected:
-	/** Use actuator set from model. */
-	PropertyBool _useModelActuatorSetProp;
-	bool &_useModelActuatorSet;
+	/** Use force set from model. */
+	PropertyBool _useModelForceSetProp;
+	bool &_useModelForceSet;
 
 	Storage *_storage;
+	GCVSplineSet _statesSplineSet;
 
 	Array<double> _dydt;
 	Array<int> _accelerationIndices;
 
-	bool _ownsActuatorSet;
-	ActuatorSet *_actuatorSet;
+	bool _ownsForceSet;
+	ForceSet *_forceSet;
 
 	SimTK::Matrix _performanceMatrix;
 	SimTK::Vector _performanceVector;
 	SimTK::Matrix _constraintMatrix;
 	SimTK::Vector _constraintVector;
 	SimTK::Vector _lapackWork;
+
+	Model *_modelWorkingCopy;
 
 //=============================================================================
 // METHODS
@@ -99,7 +109,7 @@ private:
 	void constructColumnLabels();
 	void allocateStorage();
 	void deleteStorage();
-	void computeAcceleration(double aT,double *aX,double *aY,double *aF,double *rAccel) const;
+	void computeAcceleration(const SimTK::State& s, double *aF,double *rAccel) const;
 
 public:
 	//--------------------------------------------------------------------------
@@ -108,26 +118,24 @@ public:
 	void setStorageCapacityIncrements(int aIncrement);
 	Storage* getStorage();
 
-	bool getUseModelActuatorSet() { return _useModelActuatorSet; }
-	void setUseModelActuatorSet(bool aUseModelActuatorSet) { _useModelActuatorSet = aUseModelActuatorSet; }
+	bool getUseModelForceSet() { return _useModelForceSet; }
+	void setUseModelForceSet(bool aUseModelForceSet) { _useModelForceSet = aUseModelForceSet; }
 
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
+#ifndef SWIG
 	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+        begin(const SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(const SimTK::State& s );
 protected:
-	virtual int
-		record(double aT,double *aX,double *aY,double *aDYDT);
-
+    virtual int
+        record(const SimTK::State& s );
+#endif	
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

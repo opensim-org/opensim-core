@@ -81,8 +81,8 @@ STRUCT {
    int         segment;                /* current segment */
    int         deform;                 /* index of current wrapping object */
    int         deformMode;             /* mode = position or deform */
-   Coord3D     translate;
-   Coord3D     rotate;
+   dpCoord3D     translate;
+   dpCoord3D     rotate;
    int         xform_frame;
    SBoolean    trackball_rotation;
    Form        deformity_form;
@@ -116,6 +116,7 @@ STRUCT {
 } DeformEditorStruct;                  /*  */
 
 STRUCT {
+   Scene* scene;
    ModelStruct* model;
    double       wx_old, wy_old, wz_old;
    int          mx_old, my_old;
@@ -124,7 +125,7 @@ STRUCT {
    double       span_wx_old, span_wy_old, span_wz_old;
    int          span_mx_old, span_my_old;
    int          zoom_mx_old, zoom_my_old;
-   Coord3D      zoom_vec;
+   dpCoord3D      zoom_vec;
 } DeformEditorTracker;
 
 #endif /* DEFORMEDITOR_H */

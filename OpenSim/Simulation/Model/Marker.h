@@ -41,12 +41,16 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/Geometry.h>
-#include "AbstractMarker.h"
+#include <OpenSim/Common/Object.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include "SimTKcommon.h"
 
 namespace OpenSim {
 
-class AbstractBody;
-class AbstractDynamicsEngine;
+class Body;
+class Model;
+class VisibleObject;
+
 
 //=============================================================================
 //=============================================================================
@@ -56,8 +60,9 @@ class AbstractDynamicsEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API Marker : public AbstractMarker
+class OSIMSIMULATION_API Marker : public Object
 {
+class Body;
 
 //=============================================================================
 // DATA
@@ -65,6 +70,8 @@ class OSIMSIMULATION_API Marker : public AbstractMarker
 private:
 
 protected:
+    const Model* _model;
+
 	PropertyDblVec3 _offsetProp;
 	SimTK::Vec3 &_offset;
 
@@ -77,7 +84,7 @@ protected:
 	std::string &_bodyName;
 
 	// Body that the marker is attached to
-	AbstractBody* _body;
+	OpenSim::Body* _body;
 
 	// Support for Display
 	PropertyObj _displayerProp;
@@ -98,13 +105,14 @@ public:
 	Marker(const Marker &aMarker);
 	virtual ~Marker();
 	virtual Object* copy() const;
+    static void deleteMarker(Marker* aMarker) { if (aMarker) delete aMarker; }
 
 #ifndef SWIG
 	Marker& operator=(const Marker &aMarker);
 #endif
 	void copyData(const Marker &aMarker);
 
-	virtual void updateFromMarker(const AbstractMarker &aMarker);
+	virtual void updateFromMarker(const Marker &aMarker);
 	virtual void getOffset(SimTK::Vec3& rOffset) const;
 	virtual const SimTK::Vec3& getOffset() const { return _offset; }
 	virtual void getOffset(double rOffset[]) const;
@@ -118,13 +126,18 @@ public:
 	virtual bool setBodyName(const std::string& aName);
 	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getUseDefault(); }
 	virtual bool setBodyNameUseDefault(bool aValue);
-	virtual AbstractBody* getBody() const { return _body; }
-	virtual void setBody(AbstractBody& aBody, bool preserveLocation);
+	virtual OpenSim::Body& getBody() const { return *_body; }
+	virtual void changeBody( OpenSim::Body& aBody );
+#ifndef SWIG
+	virtual void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
+#endif
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void setup(AbstractDynamicsEngine* aEngine);
+	virtual void setup(const Model& aModel);
 	virtual void updateGeometry();
 
-	virtual VisibleObject* getDisplayer() const { return &_displayer; }
+	virtual const VisibleObject* getDisplayer() const { return &_displayer; }
+	virtual VisibleObject*	updDisplayer() { return &_displayer; };
+
 	virtual void removeSelfFromDisplay();
 	const bool isVirtual()
 	{
@@ -135,7 +148,7 @@ public:
 		_virtual=aTrueFalse;
 	}
 
-	OPENSIM_DECLARE_DERIVED(Marker, AbstractMarker);
+	OPENSIM_DECLARE_DERIVED(Marker, Object);
 private:
 	void setNull();
 	void setupProperties();

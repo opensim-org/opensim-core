@@ -75,6 +75,7 @@ public:
 	// A Factory method to create the callback, so that it's created on the C++ side
 	// and memory menagement on the Java side is side-stepped
 	static SimtkAnimationCallback* CreateAnimationCallback(Model *aModel);
+	virtual void migrateFromPreviousVersion(const Object* aObject) { return; };
 protected:
 	SimtkAnimationCallback(Model *aModel, Model *aModelForDisplay=0);
 	virtual ~SimtkAnimationCallback();

@@ -38,7 +38,7 @@
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include "AbstractWrapObject.h"
+#include "WrapObject.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -50,9 +50,9 @@
 namespace OpenSim {
 
 class VisibleObject;
-class AbstractBody;
-class AbstractDynamicsEngine;
-class MuscleWrap;
+class Body;
+class Model;
+class PathWrap;
 class WrapResult;
 
 //=============================================================================
@@ -63,7 +63,7 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapEllipsoid : public AbstractWrapObject
+class OSIMSIMULATION_API WrapEllipsoid : public WrapObject
 {
 
 //=============================================================================
@@ -93,12 +93,12 @@ public:
 	virtual std::string getDimensionsString() const;
 
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
-
-	virtual int wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
-
-	OPENSIM_DECLARE_DERIVED(WrapEllipsoid, AbstractWrapObject);
+	virtual void setup(Model& aModel, OpenSim::Body& aBody);
+#ifndef SWIG
+	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+#endif
+	OPENSIM_DECLARE_DERIVED(WrapEllipsoid, WrapObject);
 protected:
 	void setupProperties();
 

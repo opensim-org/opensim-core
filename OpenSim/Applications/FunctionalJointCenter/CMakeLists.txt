@@ -7,11 +7,15 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
-LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
-		debug osimCommon_d optimized osimCommon
+LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 		debug osimSimulation_d optimized osimSimulation
 		debug osimTools_d optimized osimTools
 		${SIMTK_COMMON_LIB})
+IF(WIN32)
+    LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2)
+ELSE(WIN32)
+    LINK_LIBRARIES( debug xerces-c optimized  xerces-c)
+ENDIF(WIN32)
 
 ADD_EXECUTABLE(fjc ${SOURCE_FILES} ${INCLUDE_FILES})
 

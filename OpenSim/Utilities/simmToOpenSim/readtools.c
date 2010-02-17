@@ -31,17 +31,10 @@
 *******************************************************************************/
 
 #include <ctype.h>
-
-#include "universal.h"
-
 #include <assert.h>
 #include <stdarg.h>
 
-#ifdef __MWERKS__
-  #include <stat.h>
-#else
-  #include <sys/stat.h>
-#endif
+#include "universal.h"
 
 #include "globals.h"
 #include "functions.h"
@@ -68,7 +61,6 @@ static char* get_xypair_from_string(char str_buffer[], double* x, double* y);
 static char* parse_string(char str_buffer[], VariableType var_type,
 			  void* dest_var);
 static void acpp(char in_file[], const char out_file[]);
-static void strip_brackets_from_string(char name[]);
 
 
 
@@ -111,17 +103,14 @@ FILE* preprocess_file(char infile[], const char outfile[])
  * any white space at the beginning, and returns EOF if it hits the end of
  * the file before completing the string.
  */
-
-int read_string(FILE** fp, char str_buffer[])
+int read_string(FILE* fp, char str_buffer[])
 {
-
    int c;
 
-   /* Scan thru white space until you find the first character in the string */
-
+   // Scan thru white space until you find the first character in the string.
    while (1)
    {
-      c = getc(*fp);
+      c = getc(fp);
       if (c == EOF)
          return EOF;
       *str_buffer = c;
@@ -130,11 +119,10 @@ int read_string(FILE** fp, char str_buffer[])
    }
    str_buffer++;
 
-   /* Now read characters until you find white space or EOF */
-
+   // Now read characters until you find white space or EOF.
    while (1)
    {
-      c = getc(*fp);
+      c = getc(fp);
       if (c == EOF)
          return EOF;
       *str_buffer = c;
@@ -143,30 +131,26 @@ int read_string(FILE** fp, char str_buffer[])
       str_buffer++;
    }
 
-   /* Null-terminate the string */
-
+   // Null-terminate the string.
    *str_buffer = STRING_TERMINATOR;
 
-   /* You found a valid string without hitting EOF, so return a value that you
-    * know will never equal EOF, no matter how EOF is defined.
-    */
-
+   // You found a valid string without hitting EOF, so return a value that you
+   // know will never equal EOF, no matter how EOF is defined.
    return EOF + 1;
-
 }
 
 
 
 /* READ_LINE: reads a line (possibly empty) from a file */
 
-int read_line(FILE** fp, char str_buffer[])
+int read_line(FILE* fp, char str_buffer[])
 {
    int c;
 
    /* Read characters until you hit a carriage return or EOF */
    while (1)
    {
-      c = getc(*fp);
+      c = getc(fp);
       if (c == EOF)
          return EOF;
       *str_buffer = c;
@@ -213,18 +197,18 @@ int countTokens(char str[])
 
 /* READ_NONEMPTY_LINE: Reads the first non-empty line from a file. */
 
-int read_nonempty_line(FILE** fp, char str_buffer[])
+int read_nonempty_line(FILE* fp, char str_buffer[])
 {
-
    int c;
 
-   /* Scan thru the white space until you find the first character */
+   *str_buffer = STRING_TERMINATOR;
 
+   // Scan thru the white space until you find the first character.
    while (1)
    {
-      c = getc(*fp);
+      c = getc(fp);
       if (c == EOF)
-         return (EOF);
+         return EOF;
       *str_buffer = c;
       if (*str_buffer != SPACE && *str_buffer != TAB &&
          *str_buffer != CARRIAGE_RETURN && *str_buffer != '\r' && c != LINE_FEED)
@@ -232,13 +216,15 @@ int read_nonempty_line(FILE** fp, char str_buffer[])
    }
    str_buffer++;
 
-   /* Now read characters until you find a carriage return or EOF */
-
+   // Now read characters until you find a carriage return or EOF.
    while (1)
    {
-      c = getc(*fp);
+      c = getc(fp);
       if (c == EOF)
-         break;
+      {
+         *str_buffer = STRING_TERMINATOR;
+         return EOF;
+      }
       *str_buffer = c;
       if (*str_buffer == CARRIAGE_RETURN || c == LINE_FEED)
          break;
@@ -247,14 +233,10 @@ int read_nonempty_line(FILE** fp, char str_buffer[])
 
    *str_buffer = STRING_TERMINATOR;
 
-   /* You found a valid line without hitting EOF, so return a value that you
-    * know will never equal EOF, no matter how EOF is defined.
-    */
-
-   return (EOF+1);
-
+   // You found a valid line without hitting EOF, so return a value that you
+   // know will never equal EOF, no matter how EOF is defined.
+   return EOF + 1;
 }
-
 
 
 /* READ_MUSCLE_GROUPS: This routine reads names of muscle groups from a file
@@ -263,108 +245,119 @@ int read_nonempty_line(FILE** fp, char str_buffer[])
  * database-index of this name in an array of muscle-group indices for this
  * muscle. When done, this routine returns the array of group indices.
  */
-
-int* read_muscle_groups(int mod, FILE** fp, int* num_groups, int muscle_number)
+int* read_muscle_groups(ModelStruct* ms, FILE* fp, int* num_groups, int muscle_number)
 {
-
    int num_malloced_so_far = 50;
    int* group_indices;
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
 
    *num_groups = 0;
 
    group_indices = (int*)simm_malloc(num_malloced_so_far*sizeof(int));
    if (group_indices == NULL)
-      return (NULL);
+      return NULL;
 
    while (1)
    {
-      if (fscanf(*fp,"%s",buffer) != 1)
-         return (NULL);
+      if (fscanf(fp, "%s", buffer) != 1)
+         return NULL;
 
-      if (STRINGS_ARE_EQUAL(buffer,"endgroups"))
+      if (STRINGS_ARE_EQUAL(buffer, "endgroups"))
       {
-	 /* rc should be code_fine since you're reallocing a smaller size */
-	 group_indices = (int*)simm_realloc(group_indices,(*num_groups)*sizeof(int),&rc);
-         return (group_indices);
+         // rc should be code_fine since you're reallocing a smaller size.
+         group_indices = (int*)simm_realloc(group_indices, (*num_groups)*sizeof(int), &rc);
+         return group_indices;
       }
 
-      if (STRINGS_ARE_EQUAL(buffer,"all"))
+      if (STRINGS_ARE_EQUAL(buffer, "all"))
       {
-	 error(none,"You cannot use a muscle group name of \"all.\"");
-	 error(none,"SIMM automatically creates a muscle group containing all muscles.");
+         error(none,"You cannot define a muscle group named \"all.\"");
+         error(none,"SIMM automatically creates a muscle group containing all muscles.");
       }
-
-      if (*num_groups > num_malloced_so_far)
+      else
       {
-	 num_malloced_so_far += 50;
-	 group_indices =
-	    (int*)simm_realloc(group_indices,num_malloced_so_far*sizeof(int),&rc);
-	 if (rc == code_bad)
-	    return (NULL);
-      }
+         int i, groupIndex = enter_muscle_group(ms, buffer, muscle_number);
 
-      group_indices[*num_groups] = enter_group(mod,buffer,muscle_number);
-      if (group_indices[*num_groups] == -1)
-	 return (NULL);
-      (*num_groups)++;
+         if (groupIndex == -1)
+            return NULL;
+
+         // Make sure this group has not already been specified for this muscle.
+         for (i=0; i<*num_groups; i++)
+         {
+            if (groupIndex == group_indices[i])
+               break;
+         }
+         if (i == *num_groups)
+         {
+            if (*num_groups > num_malloced_so_far)
+            {
+               num_malloced_so_far += 50;
+               group_indices = (int*)simm_realloc(group_indices, num_malloced_so_far*sizeof(int), &rc);
+               if (rc == code_bad)
+                  return NULL;
+            }
+
+            group_indices[*num_groups] = groupIndex;
+            (*num_groups)++;
+         }
+      }
    }
 
+   return NULL;
 }
 
 
-
-/* READ_MUSCLE_ATTACHMENT_POINTS: this routine reads muscle attachment points
+/* READ_MUSCLE_PATH: this routine reads muscle attachment points
  * from a file. It keeps reading from the file until the string "endpoints"
  * is encountered. It initially mallocs space for some points, and if it
  * fills up that space and finds more points, it reallocs the muscle point
  * array so that it can add the additional points.
  */
-
-ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscle)
+ReturnCode read_muscle_path(ModelStruct* ms, FILE* fp, dpMusclePathStruct* path)
 {
    int numpoints, function_num;
-   MusclePoint* mp;
+   dpMusclePoint* mp;
    char *line;
    char gencoord_name[CHARBUFFER], line2[CHARBUFFER], segment_name[CHARBUFFER], com[CHARBUFFER];
    double range1, range2;
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
 
    // initialize the muscle path
-   muscle->musclepoints = (MusclePathStruct *)simm_malloc(sizeof(MusclePathStruct));
-   if (initMusclePath(muscle->musclepoints) == code_bad)
+   if (initMusclePath(path) == code_bad)
       return code_bad;
 
    numpoints = 0;
    while (1)
    {
-      if (fscanf(*fp,"%s",buffer) != 1)
+      if (fscanf(fp, "%s", buffer) != 1)
       {
-         error(none,"EOF while reading muscle attachment points");
+         error(none, "End of file reached while reading muscle attachment points");
          return code_bad;
       }
 
-      if (STRINGS_ARE_EQUAL(buffer,"endpoints"))
+      if (STRINGS_ARE_EQUAL(buffer, "endpoints"))
       {
-         muscle->musclepoints->num_orig_points = numpoints;
+         path->num_orig_points = numpoints;
          return code_fine;
       }
 
       /* Check to see if you need to increase the size of the muscle-point
        * array before reading any more points.
        */
-      if (numpoints >= muscle->musclepoints->mp_orig_array_size)
+      if (numpoints >= path->mp_orig_array_size)
       {
-         muscle->musclepoints->mp_orig_array_size += MUSCLEPOINT_ARRAY_INCREMENT;
-         mp = (MusclePoint*)simm_realloc(mp,muscle->musclepoints->mp_orig_array_size*sizeof(MusclePoint),&rc);
+         path->mp_orig_array_size += MUSCLEPOINT_ARRAY_INCREMENT;
+
+         path->mp_orig = (dpMusclePoint*)simm_realloc(path->mp_orig,
+            path->mp_orig_array_size*sizeof(dpMusclePoint),&rc);
          if (rc == code_bad)
          {
-            muscle->musclepoints->mp_orig_array_size -= MUSCLEPOINT_ARRAY_INCREMENT;
+            path->mp_orig_array_size -= MUSCLEPOINT_ARRAY_INCREMENT;
             return rc;
          }
       }
 
-      mp = &muscle->musclepoints->mp_orig[numpoints];
+      mp = &path->mp_orig[numpoints];
       // initialize the point
       init_musclepoint(mp);
 
@@ -374,22 +367,21 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
        */
       if (sscanf(buffer,"%lg", &mp->point[XX]) != 1)
       {
-         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
+         if (sscanf(buffer, "f%d%s", &function_num, gencoord_name) != 2)
             return code_bad;
          strip_brackets_from_string(gencoord_name);
-         function_num *= -1;
-         mp->fcn_index[XX] = enter_function(mod, function_num, yes);//no);
-         mp->gencoord[XX] = enter_gencoord(mod, gencoord_name, no);
+         mp->function[XX] = ms->function[enter_function(ms, function_num, yes)];
+         mp->gencoord[XX] = enter_gencoord(ms, gencoord_name, no);
          mp->isMovingPoint = yes;
-         if (mp->gencoord[XX] == INVALID_GENCOORD)
+         if (mp->gencoord[XX] == NULL)
          {
-            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            (void)sprintf(errorbuffer, "Gencoord %s referenced in muscle file but not defined in joint file.", gencoord_name);
             error(none,errorbuffer);
             return code_bad;
          }
-         if (mp->fcn_index[XX] == INVALID_FUNCTION)
+         if (mp->function[XX] == NULL)
          {
-            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            (void)sprintf(errorbuffer, "Function %d referenced in muscle file but not defined in joint or muscle file.", function_num);
             error(none,errorbuffer);
             return code_bad;
          }
@@ -403,20 +395,19 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
       {
          if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
             return code_bad;
-         function_num *= -1;
          strip_brackets_from_string(gencoord_name);
-         mp->fcn_index[YY] = enter_function(mod, function_num, yes);//no);
-         mp->gencoord[YY] = enter_gencoord(mod, gencoord_name, no);
+         mp->function[YY] = ms->function[enter_function(ms, function_num, yes)];
+         mp->gencoord[YY] = enter_gencoord(ms, gencoord_name, no);
          mp->isMovingPoint = yes;
-         if (mp->gencoord[YY] == INVALID_GENCOORD)
+         if (mp->gencoord[YY] == NULL)
          {
-            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            (void)sprintf(errorbuffer, "Gencoord %s referenced in muscle file but not defined in joint file.", gencoord_name);
             error(none,errorbuffer);
             return code_bad;
          }
-         if (mp->fcn_index[YY] == INVALID_FUNCTION)
+         if (mp->function[YY] == NULL)
          {
-            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            (void)sprintf(errorbuffer, "Function %d referenced in muscle file but not defined in joint or muscle file.", function_num);
             error(none,errorbuffer);
             return code_bad;
          }
@@ -433,20 +424,19 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
       {
          if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
             return code_bad;
-         function_num *= -1;
          strip_brackets_from_string(gencoord_name);
-         mp->fcn_index[ZZ] = enter_function(mod, function_num, yes);//no);
-         mp->gencoord[ZZ] = enter_gencoord(mod, gencoord_name, no);
+         mp->function[ZZ] = ms->function[enter_function(ms, function_num, yes)];
+         mp->gencoord[ZZ] = enter_gencoord(ms, gencoord_name, no);
          mp->isMovingPoint = yes;
-         if (mp->fcn_index[ZZ] == INVALID_FUNCTION)
+         if (mp->function[ZZ] == NULL)
          {
-            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
+            (void)sprintf(errorbuffer, "Function %d referenced in muscle file but not defined in joint file.", function_num);
             error(none,errorbuffer);
             return code_bad;
          }
-         if (mp->gencoord[ZZ] == INVALID_GENCOORD)
+         if (mp->gencoord[ZZ] == NULL)
          {
-            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+            (void)sprintf(errorbuffer, "Gencoord %s referenced in muscle file but not defined in joint or muscle file.", gencoord_name);
             error(none,errorbuffer);
             return code_bad;
          }
@@ -458,11 +448,9 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
       }
 
       /* read the keyword "segment" */
-
       line = parse_string(line,type_string,(void*)buffer);
 
       /* read the segment name */
-
       line = parse_string(line,type_string,(void*)segment_name);
       if (segment_name == NULL)
          return code_bad;
@@ -471,30 +459,28 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
        * the leftover will be NULL. For wrapping points, the first string
        * in the leftover should be "range".
        */
-
       line = parse_string(line,type_string,(void*)com);
 
       if (STRINGS_ARE_EQUAL(com,"range"))  // new keyword
       {
          line = parse_string(line,type_string,(void*)gencoord_name);
-         if (gencoord_name == NULL ||
-            name_is_gencoord(gencoord_name, model[mod], NULL, NULL, NULL, no) < 0)
+         if (gencoord_name == NULL || name_is_gencoord(gencoord_name, ms, NULL, NULL, NULL, no) == NULL)
          {
             return code_bad;
          }
 
-         line = get_xypair_from_string(line,&range1,&range2);
+         line = get_xypair_from_string(line, &range1, &range2);
          if (line == NULL)
          {
             return code_bad;
          }
          else
          {
-            mp->viaRange.start = MIN(range1,range2);
-            mp->viaRange.end = MAX(range1,range2);
+            mp->viaRange.start = _MIN(range1, range2);
+            mp->viaRange.end = _MAX(range1, range2);
          }
-         mp->viaRange.genc = enter_gencoord(mod,gencoord_name,no);
-         if (mp->viaRange.genc == -1)
+         mp->viaRange.gencoord = enter_gencoord(ms, gencoord_name, no);
+         if (mp->viaRange.gencoord == NULL)
          {
             (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
             error(none,errorbuffer);
@@ -506,7 +492,7 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
       if (STRINGS_ARE_EQUAL(com,"ranges"))
       {
          int i, temp = 0;
-         line = parse_string(line,type_int,(void*)&temp);
+         line = parse_string(line, type_int, (void*)&temp);
          if (temp <= 0)
          {
             error(none,"The number of ranges must be greater than 0.");
@@ -521,13 +507,14 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
          for (i=0; i<temp; i++)
          {
             line = parse_string(line,type_string,(void*)gencoord_name);
-            if (gencoord_name == NULL ||
-               name_is_gencoord(gencoord_name, model[mod], NULL, NULL, NULL, no) < 0)
+            if (gencoord_name == NULL || name_is_gencoord(gencoord_name, ms, NULL, NULL, NULL, no) == NULL)
             {
+               (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+               error(none,errorbuffer);
                return code_bad;
             }
 
-            line = get_xypair_from_string(line,&range1,&range2);
+            line = get_xypair_from_string(line, &range1, &range2);
             if (line == NULL)
             {
                return code_bad;
@@ -535,23 +522,21 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
             
             if (i == 0) // only store first range
             {
-               if (enter_gencoord(mod,gencoord_name,no) == -1)
+               if (enter_gencoord(ms, gencoord_name, no) == NULL)
                {
-                  (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
+                  (void)sprintf(errorbuffer, "Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
                   error(none,errorbuffer);
                   return code_bad;
                }
-               mp->viaRange.start = MIN(range1,range2);
-               mp->viaRange.end = MAX(range1,range2);
-               mp->viaRange.genc = enter_gencoord(mod,gencoord_name,no);
+               mp->viaRange.start = _MIN(range1, range2);
+               mp->viaRange.end = _MAX(range1, range2);
+               mp->viaRange.gencoord = enter_gencoord(ms, gencoord_name, no);
                mp->isVia = yes;
-
             }
          }
       }
 
-
-      mp->segment = enter_segment(mod,segment_name,no);
+      mp->segment = enter_segment(ms, segment_name, no);
       if (mp->segment == -1)
       {
          (void)sprintf(errorbuffer,"Segment %s referenced in muscle file but not defined in joints file.", segment_name);
@@ -559,250 +544,14 @@ ReturnCode read_muscle_attachment_points(int mod, FILE** fp, MuscleStruct *muscl
          return code_bad;
       }
 
-      /* Each muscle point starts out unselected. */
       mp->undeformed_point[0] = mp->point[0];
       mp->undeformed_point[1] = mp->point[1];
       mp->undeformed_point[2] = mp->point[2];
-      //mp->old_point[0] = mp->point[0];
-      //mp->old_point[1] = mp->point[1];
-      //mp->old_point[2] = mp->point[2];
-      //mp->old_seg = mp->segment;
 
       numpoints++;
    }
 
    return code_fine;
-}
-
-/* READ_LIGAMENT_ATTACHMENT_POINTS: this routine reads ligament attachment points
- * from a file. It keeps reading from the file until the string "endpoints"
- * is encountered. It initially mallocs space for some points, and if it
- * fills up that space and finds more points, it reallocs the muscle point
- * array so that it can add the additional points.
- */
-
-LigamentPoint* read_ligament_attachment_points(int mod, FILE** fp, int* numpoints,
-					   int* lp_orig_array_size,
-					   SBoolean* has_wrapping_points,
-					   SBoolean* has_force_points)
-{
-
-   int i, function_num;
-   LigamentPoint* lp;
-   double range_num_1, range_num_2;
-   char com[CHARBUFFER], segment_name[CHARBUFFER], gencoord_name[CHARBUFFER], line2[CHARBUFFER];
-   char* line;
-   ReturnCode rc;
-
-   *numpoints = 0;
-   *lp_orig_array_size = MUSCLEPOINT_ARRAY_INCREMENT;
-
-   lp = (LigamentPoint*)simm_malloc((*lp_orig_array_size)*sizeof(LigamentPoint));
-   if (lp == NULL)
-      return (NULL);
-
-   while (1)
-   {
-      if (fscanf(*fp,"%s",buffer) != 1)
-      {
-         error(none,"EOF while reading ligament attachment points");
-         return (NULL);
-      }
-
-      if (STRINGS_ARE_EQUAL(buffer,"endpoints"))
-         return (lp);
-
-      /* Check to see if you need to increase the size of the muscle-point
-       * array before reading any more points.
-       */
-
-      if ((*numpoints) >= (*lp_orig_array_size))
-      {
-         (*lp_orig_array_size) += MUSCLEPOINT_ARRAY_INCREMENT;
-         lp = (LigamentPoint*)simm_realloc(lp,(*lp_orig_array_size)*sizeof(MusclePoint),&rc);
-         if (rc == code_bad)
-         {
-            (*lp_orig_array_size) -= MUSCLEPOINT_ARRAY_INCREMENT;
-            return (NULL);
-         }
-      }
-
-      // initialize
-      lp[*numpoints].ground_pt[XX] = ERROR_DOUBLE;
-      lp[*numpoints].ground_pt[YY] = ERROR_DOUBLE;
-      lp[*numpoints].ground_pt[ZZ] = ERROR_DOUBLE;
-      lp[*numpoints].undeformed_point[XX] = ERROR_DOUBLE;
-      lp[*numpoints].undeformed_point[YY] = ERROR_DOUBLE;
-      lp[*numpoints].undeformed_point[ZZ] = ERROR_DOUBLE;
-      lp[*numpoints].fcn_index[XX] = INVALID_FUNCTION;//-1;
-      lp[*numpoints].fcn_index[YY] = INVALID_FUNCTION;//-1;
-      lp[*numpoints].fcn_index[ZZ] = INVALID_FUNCTION;//-1;
-      lp[*numpoints].gencoord[XX] = INVALID_GENCOORD;//-1;
-      lp[*numpoints].gencoord[YY] = INVALID_GENCOORD;//-1;
-      lp[*numpoints].gencoord[ZZ] = INVALID_GENCOORD;//-1;
-
-      /* If the string you just read was not "endpoints" then it must
-       * be the start of a new point (so it's the x-coordinate).
-       * DKB Oct. 2007 - could be either a coordinate or a function of a gencoord
-       */      
-      if (sscanf(buffer,"%lg", &lp[*numpoints].point[XX]) != 1)
-      {
-         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
-            return (NULL);
-         function_num *= -1;
-         strip_brackets_from_string(gencoord_name);
-         lp[*numpoints].fcn_index[XX] = enter_function(mod, function_num, no);
-         lp[*numpoints].gencoord[XX] = enter_gencoord(mod, gencoord_name, no);
-         if (lp[*numpoints].fcn_index[XX] == INVALID_FUNCTION)//-1)
-         {
-            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
-            error(none,errorbuffer);
-            return (NULL);
-         }
-         if (lp[*numpoints].gencoord[XX] == INVALID_GENCOORD)//-1)
-         {
-            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
-            error(none,errorbuffer);
-            return (NULL);
-         }
-      }
-
-      (void)read_nonempty_line(fp,line2);
-
-      /* Read the y coordinate or function */
-      line = parse_string(line2,type_string,(void*)buffer);
-      if (sscanf(buffer,"%lg", &lp[*numpoints].point[YY]) != 1)
-      {
-         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
-            return (NULL);
-         function_num *= -1;
-         strip_brackets_from_string(gencoord_name);
-         lp[*numpoints].fcn_index[YY] = enter_function(mod, function_num, no);
-         lp[*numpoints].gencoord[YY] = enter_gencoord(mod, gencoord_name, no);
-         if (lp[*numpoints].fcn_index[YY] == INVALID_FUNCTION)//-1)
-         {
-            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
-            error(none,errorbuffer);
-            return (NULL);
-         }
-         if (lp[*numpoints].gencoord[YY] == INVALID_GENCOORD)//-1)
-         {
-            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
-            error(none,errorbuffer);
-            return (NULL);
-         }
-      }
-      else
-      {
-         if (lp[*numpoints].point[YY] == ERROR_DOUBLE)
-            return (NULL);
-      }
-      /* Read the z coordinate or function */
-      line = parse_string(line,type_string,(void*)buffer);
-      if (sscanf(buffer,"%lg", &lp[*numpoints].point[ZZ]) != 1)
-      {
-         if (sscanf(buffer,"f%d%s", &function_num, gencoord_name) != 2)
-            return (NULL);
-         function_num *= -1;
-         strip_brackets_from_string(gencoord_name);
-         lp[*numpoints].fcn_index[ZZ] = enter_function(mod, function_num, no);
-         lp[*numpoints].gencoord[ZZ] = enter_gencoord(mod, gencoord_name, no);
-         if (lp[*numpoints].fcn_index[ZZ] == INVALID_FUNCTION)//-1)
-         {
-            (void)sprintf(errorbuffer,"Function %d referenced in muscle file but not defined in joints file.", function_num);
-            error(none,errorbuffer);
-            return (NULL);
-         }
-         if (lp[*numpoints].gencoord[ZZ] == INVALID_GENCOORD)//-1)
-         {
-            (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
-            error(none,errorbuffer);
-            return (NULL);
-         }
-      }
-      else
-      {
-         if (lp[*numpoints].point[ZZ] == ERROR_DOUBLE)
-            return (NULL);
-      }
-
-      /* read the keyword "segment" */
-
-      line = parse_string(line,type_string,(void*)buffer);
-
-      /* read the segment name */
-
-      line = parse_string(line,type_string,(void*)segment_name);
-      if (segment_name == NULL)
-         return (NULL);
-
-      lp[*numpoints].state = on;
-
-      /* read a string from the leftover part of the line. For most points,
-       * the leftover will be NULL. For wrapping points, the first string
-       * in the leftover should be "ranges".
-       */
-
-      line = parse_string(line,type_string,(void*)com);
-
-      lp[*numpoints].numranges = 0;
-      lp[*numpoints].ranges = NULL;
-      if (STRINGS_ARE_EQUAL(com,"ranges"))
-      {
-         *has_wrapping_points = yes;
-         line = parse_string(line,type_int,(void*)&lp[*numpoints].numranges);
-         if (lp[*numpoints].numranges <= 0)
-         {
-            error(none,"The number of ranges must be greater than 0.");
-            return (NULL);
-         }
-         lp[*numpoints].ranges = (PointRange*)simm_malloc(lp[*numpoints].numranges*
-            sizeof(PointRange));
-         if (lp[*numpoints].ranges == NULL)
-            return (NULL);
-
-         for (i=0; i<lp[*numpoints].numranges; i++)
-         {
-            line = parse_string(line,type_string,(void*)gencoord_name);
-            if (gencoord_name == NULL ||
-               name_is_gencoord(gencoord_name, model[mod], NULL, NULL, NULL, no) < 0)
-            {
-               free_and_nullify((void**)&lp[*numpoints].ranges);
-               return (NULL);
-            }
-
-            line = get_xypair_from_string(line,&range_num_1,&range_num_2);
-            if (line == NULL)
-            {
-               free_and_nullify((void**)&lp[*numpoints].ranges);
-               return (NULL);
-            }
-            else
-            {
-               lp[*numpoints].ranges[i].start = MIN(range_num_1,range_num_2);
-               lp[*numpoints].ranges[i].end = MAX(range_num_1,range_num_2);
-            }
-            lp[*numpoints].ranges[i].genc = enter_gencoord(mod,gencoord_name,no);
-            if (lp[*numpoints].ranges[i].genc == -1)
-            {
-               (void)sprintf(errorbuffer,"Gencoord %s referenced in muscle file but not defined in joints file.", gencoord_name);
-               error(none,errorbuffer);
-               free_and_nullify((void**)&lp[*numpoints].ranges);
-               return (NULL);
-            }
-         }
-      }
-      lp[*numpoints].segment = enter_segment(mod,segment_name,no);
-      if (lp[*numpoints].segment == -1)
-      {
-         (void)sprintf(errorbuffer,"Segment %s referenced in muscle file but not defined in joints file.", segment_name);
-         error(none,errorbuffer);
-         free_and_nullify((void**)&lp[*numpoints].ranges);
-         return (NULL);
-      }
-
-      (*numpoints)++;
-   }
 }
 
 /* ---------------------------------------------------------------------------
@@ -839,7 +588,6 @@ public int count_remaining_lines (FILE* file, SBoolean countEmptyLines)
 }
 
 
-
 /* READ_DOUBLE_ARRAY: this routine reads an array of pairs-of-doubles
  * (e.g. "(2.30, -0.05)"), as in the definition of a function. It keeps
  * reading until it encounters the ending string (e.g. "endfunction")
@@ -847,9 +595,7 @@ public int count_remaining_lines (FILE* file, SBoolean countEmptyLines)
  * spaces to be placed liberally in the string that it extracts the
  * doubles from (e.g. "( 2.30 , -0.05 )").
  */
-
-ReturnCode read_double_array(FILE **fp, char ending[], char name[],
-			     SplineFunction* func)
+ReturnCode read_double_array(FILE* fp, const char ending[], const char name[], dpFunction* func)
 {
 
    int new_size;
@@ -862,7 +608,7 @@ ReturnCode read_double_array(FILE **fp, char ending[], char name[],
       {
          (void)sprintf(errorbuffer,"Unexpected EOF reading function %s.", name);
          error(abort_action,errorbuffer);
-         return (code_bad);
+         return code_bad;
       }
 
       if (STRINGS_ARE_EQUAL(buffer,ending))
@@ -881,9 +627,9 @@ ReturnCode read_double_array(FILE **fp, char ending[], char name[],
 
       if (func->numpoints == func->coefficient_array_size)
       {
-         new_size = func->coefficient_array_size + SPLINE_ARRAY_INCREMENT;
+         new_size = func->coefficient_array_size + FUNCTION_ARRAY_INCREMENT;
          if (realloc_function(func,new_size) == code_bad)
-            return (code_bad);
+            return code_bad;
       }
 
       while (1)
@@ -895,7 +641,7 @@ ReturnCode read_double_array(FILE **fp, char ending[], char name[],
          {
             (void)sprintf(errorbuffer,"Unexpected EOF reading function %s.", name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
 
@@ -904,7 +650,7 @@ ReturnCode read_double_array(FILE **fp, char ending[], char name[],
       {
          (void)sprintf(errorbuffer,"Error reading x-y pair in function %s.", name);
          error(abort_action,errorbuffer);
-         return (code_bad);
+         return code_bad;
       }
       
       (func->numpoints)++;
@@ -914,10 +660,10 @@ ReturnCode read_double_array(FILE **fp, char ending[], char name[],
    {
       (void)sprintf(errorbuffer,"Function %s contains fewer than 2 points.", name);
       error(abort_action,errorbuffer);
-      return (code_bad);
+      return code_bad;
    }
 
-   return (code_fine);
+   return code_fine;
 
 }
 
@@ -1060,7 +806,7 @@ ReturnCode get_string_pair(char str_buffer[], char str1[], char str2[])
    str_buffer++;
 
    if (STRING_IS_NULL(str_buffer))
-      return (code_bad);
+      return code_bad;
 
    /* scan upto the start of str1 */
 
@@ -1068,7 +814,7 @@ ReturnCode get_string_pair(char str_buffer[], char str1[], char str2[])
       str_buffer++;
 
    if (STRING_IS_NULL(str_buffer))
-      return (code_bad);
+      return code_bad;
 
    /* copy the first string to the str1 array */
 
@@ -1082,7 +828,7 @@ ReturnCode get_string_pair(char str_buffer[], char str1[], char str2[])
       str_buffer++;
 
    if (STRING_IS_NULL(str_buffer))
-      return (code_bad);
+      return code_bad;
 
    /* copy the second string to the str2 array */
 
@@ -1090,7 +836,7 @@ ReturnCode get_string_pair(char str_buffer[], char str1[], char str2[])
       *str2++ = *str_buffer++;
    *str2 = STRING_TERMINATOR;
 
-   return (code_fine);
+   return code_fine;
 
 }
 
@@ -1099,11 +845,11 @@ ReturnCode get_string_pair(char str_buffer[], char str1[], char str2[])
  * of one of the model's gencoords, with an optional suffix and also
  * possibly the extra suffix "_spl" or "_gcv" (possibly followed by a cutoff
  * frequency). It returns the index of the gencoord if there is a match.
- * If stripEnd is yes, the optional splineType and cutoff frequency are
+ * If stripEnd is yes, the optional functionType and cutoff frequency are
  * removed from the name if a match is made.
  */
-int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
-                     SplineType* splineType, double* cutoffFrequency, SBoolean stripEnd)
+GeneralizedCoord* name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
+                                   dpFunctionType* functionType, double* cutoffFrequency, SBoolean stripEnd)
 {
    int i, len, lenQ, Qnum, index, maxLen;
    char *ptr, *newEnd;
@@ -1117,10 +863,10 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
     */
    for (i = 0, index = -1, maxLen = -1; i < ms->numgencoords; i++)
    {
-      lenQ = strlen(ms->gencoord[i].name);
+      lenQ = strlen(ms->gencoord[i]->name);
       if (len >= lenQ)
       {
-         if (!strncmp(name, ms->gencoord[i].name, lenQ))
+         if (!strncmp(name, ms->gencoord[i]->name, lenQ))
          {
             if (lenQ > maxLen)
             {
@@ -1132,7 +878,7 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
    }
 
    if (index == -1)
-      return -1;
+      return NULL;
 
    /* You've found a matching gencoord name, so move ptr past the name and
     * get ready to check the suffixes.
@@ -1142,7 +888,7 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
    len -= maxLen;
 
    /* If a suffix was passed in, check to see if the name ends in that suffix.
-    * If it does, remove the suffix and continue on. If it does not, return -1
+    * If it does, remove the suffix and continue on. If it does not, return NULL
     * because the passed-in suffix must be in the name.
     */
    if (suffix)
@@ -1158,12 +904,12 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
          }
          else
          {
-            return -1;
+            return NULL;
          }
       }
       else
       {
-         return -1;
+         return NULL;
       }
    }
 
@@ -1172,26 +918,26 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
     */
    newEnd = ptr;
 
-   /* If splineType and cutoffFrequency are not NULL, check to see if the name ends in
+   /* If functionType and cutoffFrequency are not NULL, check to see if the name ends in
     * natural_cubic_text or gcv_text (followed by an optional cutoff frequency). If it
-    * does, set *splineType to the appropriate type. If no spline label is found, set
+    * does, set *functionType to the appropriate type. If no function label is found, set
     * the type to step_func.
     */
-   if (splineType && cutoffFrequency)
+   if (functionType && cutoffFrequency)
    {
       int matched_spl = 0, matched_lin = 0;
 		int lin_len = strlen(linear_text);
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
-      *splineType = step_function;
+      *functionType = dpStepFunction;
       *cutoffFrequency = -1.0; // by default there is no smoothing
 
 		if (len >= lin_len)
 		{
          if (!strncmp(ptr, linear_text, lin_len))
          {
-            *splineType = linear;
+            *functionType = dpLinearFunction;
             ptr += lin_len;
             len -= lin_len;
             matched_lin = 1;
@@ -1202,7 +948,7 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
       {
          if (!strncmp(ptr, natural_cubic_text, spl_len))
          {
-            *splineType = natural_cubic;
+            *functionType = dpNaturalCubicSpline;
             ptr += spl_len;
             len -= spl_len;
             matched_spl = 1;
@@ -1215,7 +961,7 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
          {
             ptr += gcv_len;
             len -= gcv_len;
-            *splineType = gcv_spline;
+            *functionType = dpGCVSpline;
             if (len > 0)
             {
                char* intPtr = buffer;
@@ -1223,7 +969,7 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
                /* Move over the underscore and look for an integer. */
                if (*(ptr++) != '_')
                {
-                  return -1;
+                  return NULL;
                }
                else
                {
@@ -1243,13 +989,13 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
 
    /* If there are extra characters after the suffixes, return an error. */
    if (len > 0)
-      return -1;
+      return NULL;
 
-   /* Strip off the text for the spline type and cutoff frequency. */
+   /* Strip off the text for the function type and cutoff frequency. */
    if (stripEnd == yes)
       *newEnd = STRING_TERMINATOR;
 
-   return Qnum;
+   return ms->gencoord[Qnum];
 }
 
 
@@ -1258,11 +1004,11 @@ int name_is_gencoord(char name[], ModelStruct* ms, char suffix[],
  * any of the model's motion objects, plus an animation component (e.g., "_px" or "_vy").
  * Also, the string can contain a suffix of "_gcv" or "_spl", possibly followed
  * by a cutoff frequency. It returns the index of the body segment if there is
- * a match. If stripEnd is yes, the optional splineType and cutoff frequency are
+ * a match. If stripEnd is yes, the optional functionType and cutoff frequency are
  * removed from the name if a match is made.
  */
 int name_is_body_segment(ModelStruct* ms, char name[], int* motion_object, int* component,
-                         SplineType* splineType, double* cutoffFrequency, SBoolean stripEnd)
+                         dpFunctionType* functionType, double* cutoffFrequency, SBoolean stripEnd)
 {
    int i, index, len, lenS, maxLen, Snum;
    char *ptr, *newEnd;
@@ -1394,26 +1140,26 @@ int name_is_body_segment(ModelStruct* ms, char name[], int* motion_object, int* 
     */
    newEnd = ptr;
 
-   /* If splineType and cutoffFrequency are not NULL, check to see if the name ends in
+   /* If functionType and cutoffFrequency are not NULL, check to see if the name ends in
     * natural_cubic_text or gcv_text (followed by an optional cutoff frequency). If it
-    * does, set *splineType to the appropriate type. If no spline label is found, set
+    * does, set *functionType to the appropriate type. If no function label is found, set
     * the type to step_func.
     */
-   if (splineType && cutoffFrequency)
+   if (functionType && cutoffFrequency)
    {
       int matched_spl = 0, matched_lin = 0;
 		int lin_len = strlen(linear_text);
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
-      *splineType = step_function;
+      *functionType = dpStepFunction;
       *cutoffFrequency = -1.0; // by default there is no smoothing
 
       if (len >= lin_len)
       {
          if (!strncmp(ptr, linear_text, lin_len))
          {
-            *splineType = linear;
+            *functionType = dpLinearFunction;
             ptr += lin_len;
             len -= lin_len;
             matched_lin = 1;
@@ -1424,7 +1170,7 @@ int name_is_body_segment(ModelStruct* ms, char name[], int* motion_object, int* 
       {
          if (!strncmp(ptr, natural_cubic_text, spl_len))
          {
-            *splineType = natural_cubic;
+            *functionType = dpNaturalCubicSpline;
             ptr += spl_len;
             len -= spl_len;
             matched_spl = 1;
@@ -1437,7 +1183,7 @@ int name_is_body_segment(ModelStruct* ms, char name[], int* motion_object, int* 
          {
             ptr += gcv_len;
             len -= gcv_len;
-            *splineType = gcv_spline;
+            *functionType = dpGCVSpline;
             if (len > 0)
             {
                char* intPtr = buffer;
@@ -1467,7 +1213,7 @@ int name_is_body_segment(ModelStruct* ms, char name[], int* motion_object, int* 
    if (len > 0)
       return -1;
 
-   /* Strip off the text for the spline type and cutoff frequency. */
+   /* Strip off the text for the function type and cutoff frequency. */
    if (stripEnd == yes)
       *newEnd = STRING_TERMINATOR;
 
@@ -1479,11 +1225,11 @@ int name_is_body_segment(ModelStruct* ms, char name[], int* motion_object, int* 
  * of one of the model's muscles, with an optional suffix and also
  * possibly the extra suffix "_spl" or "_gcv" (possibly followed by a cutoff
  * frequency). It returns the index of the muscle if there is a match.
- * If stripEnd is yes, the optional splineType and cutoff frequency are
+ * If stripEnd is yes, the optional functionType and cutoff frequency are
  * removed from the name if a match is made.
  */
 int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
-                   SplineType* splineType, double* cutoffFrequency, SBoolean stripEnd)
+                   dpFunctionType* functionType, double* cutoffFrequency, SBoolean stripEnd)
 {
    int i, len, lenM, Mnum, index, maxLen;
    char *ptr, *newEnd;
@@ -1497,10 +1243,10 @@ int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
     */
    for (i = 0, index = -1, maxLen = -1; i < ms->nummuscles; i++)
    {
-      lenM = strlen(ms->muscle[i].name);
+      lenM = strlen(ms->muscle[i]->name);
       if (len >= lenM)
       {
-         if (!strncmp(name, ms->muscle[i].name, lenM))
+         if (!strncmp(name, ms->muscle[i]->name, lenM))
          {
             if (lenM > maxLen)
             {
@@ -1552,26 +1298,26 @@ int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
     */
    newEnd = ptr;
 
-   /* If splineType and cutoffFrequency are not NULL, check to see if the name ends in
+   /* If functionType and cutoffFrequency are not NULL, check to see if the name ends in
     * natural_cubic_text or gcv_text (followed by an optional cutoff frequency). If it
-    * does, set *splineType to the appropriate type. If no spline label is found, set
+    * does, set *functionType to the appropriate type. If no function label is found, set
     * the type to step_func.
     */
-   if (splineType && cutoffFrequency)
+   if (functionType && cutoffFrequency)
    {
       int matched_spl = 0, matched_lin = 0;
 		int lin_len = strlen(linear_text);
       int spl_len = strlen(natural_cubic_text);
       int gcv_len = strlen(gcv_text);
 
-      *splineType = step_function;
+      *functionType = dpStepFunction;
       *cutoffFrequency = -1.0; // by default there is no smoothing
 
       if (len >= lin_len)
       {
          if (!strncmp(ptr, linear_text, lin_len))
          {
-            *splineType = linear;
+            *functionType = dpLinearFunction;
             ptr += lin_len;
             len -= lin_len;
             matched_lin = 1;
@@ -1582,7 +1328,7 @@ int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
       {
          if (!strncmp(ptr, natural_cubic_text, spl_len))
          {
-            *splineType = natural_cubic;
+            *functionType = dpNaturalCubicSpline;
             ptr += spl_len;
             len -= spl_len;
             matched_spl = 1;
@@ -1595,7 +1341,7 @@ int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
          {
             ptr += gcv_len;
             len -= gcv_len;
-            *splineType = gcv_spline;
+            *functionType = dpGCVSpline;
             if (len > 0)
             {
                char* intPtr = buffer;
@@ -1625,7 +1371,7 @@ int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
    if (len > 0)
       return -1;
 
-   /* Strip off the text for the spline type and cutoff frequency. */
+   /* Strip off the text for the function type and cutoff frequency. */
    if (stripEnd == yes)
       *newEnd = STRING_TERMINATOR;
 
@@ -1633,61 +1379,90 @@ int name_is_muscle(ModelStruct* ms, char name[], char suffix[],
 }
 
 
-SBoolean muscle_has_force_params(MuscleStruct* ms)
+SBoolean muscle_has_force_params(dpMuscleStruct* ms)
 {
-
    if (ms->optimal_fiber_length == NULL || ms->resting_tendon_length == NULL ||
        ms->pennation_angle == NULL || ms->max_isometric_force == NULL ||
-       ms->tendon_force_len_curve == NULL || ms->active_force_len_curve == NULL ||
-       ms->passive_force_len_curve == NULL)
-      return (no);
+       ms->tendon_force_len_func == NULL || ms->active_force_len_func == NULL ||
+       ms->passive_force_len_func == NULL || *ms->tendon_force_len_func == NULL ||
+       *ms->active_force_len_func == NULL || *ms->passive_force_len_func == NULL)
+      return no;
 
-   return (yes);
-
+   return yes;
 }
 
+ENUM {
+	NoStringMarker=0,
+	WhiteSpace,
+	SingleQuote,
+	DoubleQuote
+} StringMarker;
+
+StringMarker is_string_marker(char ch)
+{
+	if (ch == '\'')
+		return SingleQuote;
+	if (ch == '\"')
+		return DoubleQuote;
+	if (CHAR_IS_WHITE_SPACE(ch) || (ch == STRING_TERMINATOR))
+		return WhiteSpace;
+	return NoStringMarker;
+}
 
 int divide_string(char string[], char* word_array[], int max_words)
 {
-
    int i, len, num_chars, word_start=0, count=0, last_one_white=1;
+	StringMarker marker = WhiteSpace;
 
    if (max_words <= 0)
-      return (0);
+      return 0;
 
    len = strlen(string) + 1;
 
-   /* When you hit " x", set word_start to point to the 'x'
-    * When you hit "x ", copy the word ending in 'x' to the next
-    * slot in word_array.
-    */
-
+   // When you hit " x", set word_start to point to the 'x'
+   // When you hit "x ", copy the word ending in 'x' to the next
+   // slot in word_array.
    for (i=0; i<len; i++)
    {
-      if (CHAR_IS_WHITE_SPACE(string[i]) || (string[i] == STRING_TERMINATOR))
+		StringMarker m = is_string_marker(string[i]);
+		if (m == marker || (marker == WhiteSpace && m != NoStringMarker))
       {
-	 /* Copy the last word to word_array[] */
-	 if (last_one_white == 0)
-	 {
-	    num_chars = i - word_start;
-	    word_array[count] = (char*)simm_malloc((num_chars+1)*sizeof(char));
-	    strncpy(word_array[count],&string[word_start],num_chars);
-	    word_array[count][num_chars] = STRING_TERMINATOR;
-	    if (++count == max_words)
-	       return (count);
-	 }
-	 last_one_white = 1;
+         /* Copy the last word to word_array[] */
+         if (last_one_white == 0)
+         {
+            num_chars = i - word_start;
+            word_array[count] = (char*)simm_malloc((num_chars+1)*sizeof(char));
+            strncpy(word_array[count], &string[word_start], num_chars);
+            word_array[count][num_chars] = STRING_TERMINATOR;
+            if (++count == max_words)
+               return count;
+         }
+         last_one_white = 1;
+			if (m == marker)
+				marker = WhiteSpace;
+			else
+				marker = m;
       }
       else
       {
-	 if (last_one_white == 1)
-	    word_start = i;
-	 last_one_white = 0;
+         if (last_one_white == 1)
+            word_start = i;
+         last_one_white = 0;
       }
    }
 
-   return (count);
+   // Remove surrounding double-quotes from each word, if any.
+	for (i=0; i<count; i++)
+   {
+      int len = strlen(word_array[i]);
+      if (len > 1 && word_array[i][0] == '\"' && word_array[i][len-1] == '\"')
+      {
+         memmove(word_array[i], &word_array[i][1], len-1);
+         word_array[i][len-2] = STRING_TERMINATOR;
+      }
+   }
 
+   return count;
 }
 
 /* Returns the index of the last occurrence of a character in a string
@@ -1805,8 +1580,16 @@ public void add_preprocessor_option (SBoolean isDefaultOption, const char* forma
    va_start(ap, format);
      vsprintf(buffer, format, ap);
    va_end(ap);
-   
+
+#if MEMORY_LEAK
+   {
+      int len=strlen(buffer)+1;
+      sAcppOptions[sNumTotalAcppOptions] = (char*)malloc(len);
+      strcpy(sAcppOptions[sNumTotalAcppOptions++], buffer);
+   }
+#else
    mstrcpy(&sAcppOptions[sNumTotalAcppOptions++], buffer);
+#endif
    
    if (isDefaultOption)
       sNumDefaultAcppOptions++;
@@ -1900,7 +1683,7 @@ static void acpp (char in_file[], const char out_file[])
 /* -------------------------------------------------------------------------
    read_deform - 
 ---------------------------------------------------------------------------- */
-ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
+ReturnCode read_deform (FILE* fp, SegmentStruct* seg, int segmentnum)
 {
    DeformObject* dfm = NULL;
    double xyz[3];
@@ -1941,7 +1724,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
    
    dfm->segment = segmentnum;
 
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp,"%s", buffer) != 1)
    {
       error(abort_action,"Error reading name in deform object definition");
       return code_bad;
@@ -1994,7 +1777,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"innermin"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &dfm->innerMin.xyz[0],
+         if (fscanf(fp, "%lg %lg %lg", &dfm->innerMin.xyz[0],
                     &dfm->innerMin.xyz[1], &dfm->innerMin.xyz[2]) != 3)
          {
             sprintf(errorbuffer, "Error reading \'innermin\' for deform object %s", dfm->name);
@@ -2004,7 +1787,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"innermax"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &dfm->innerMax.xyz[0],
+         if (fscanf(fp, "%lg %lg %lg", &dfm->innerMax.xyz[0],
                     &dfm->innerMax.xyz[1], &dfm->innerMax.xyz[2]) != 3)
          {
             sprintf(errorbuffer, "Error reading \'innermax\' for deform object %s", dfm->name);
@@ -2014,7 +1797,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"outermin"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &dfm->outerMin.xyz[0],
+         if (fscanf(fp, "%lg %lg %lg", &dfm->outerMin.xyz[0],
                     &dfm->outerMin.xyz[1], &dfm->outerMin.xyz[2]) != 3)
          {
             sprintf(errorbuffer, "Error reading \'outermin\' for deform object %s", dfm->name);
@@ -2024,7 +1807,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"outermax"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &dfm->outerMax.xyz[0],
+         if (fscanf(fp, "%lg %lg %lg", &dfm->outerMax.xyz[0],
                     &dfm->outerMax.xyz[1], &dfm->outerMax.xyz[2]) != 3)
          {
             sprintf(errorbuffer, "Error reading \'outermax\' for deform object %s", dfm->name);
@@ -2034,7 +1817,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"xyz_body_rotation_POSITION"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
          {
             sprintf(errorbuffer, "Error reading rotation for deform object %s", dfm->name);
             error(abort_action,errorbuffer);
@@ -2048,7 +1831,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"translation_POSITION"))
       {
-         if (fscanf(*fp,"%lg %lg %lg",
+         if (fscanf(fp,"%lg %lg %lg",
                     &dfm->position.translation.xyz[0],
                     &dfm->position.translation.xyz[1],
                     &dfm->position.translation.xyz[2]) != 3)
@@ -2060,7 +1843,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"xyz_body_rotation_DEFORM_START"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
          {
             sprintf(errorbuffer, "Error reading rotation for deform object %s", dfm->name);
             error(abort_action,errorbuffer);
@@ -2074,7 +1857,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"translation_DEFORM_START"))
       {
-         if (fscanf(*fp,"%lg %lg %lg",
+         if (fscanf(fp,"%lg %lg %lg",
                     &dfm->deform_start.translation.xyz[0],
                     &dfm->deform_start.translation.xyz[1],
                     &dfm->deform_start.translation.xyz[2]) != 3)
@@ -2086,7 +1869,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"xyz_body_rotation_DEFORM_END"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
          {
             sprintf(errorbuffer, "Error reading rotation for deform object %s", dfm->name);
             error(abort_action,errorbuffer);
@@ -2100,7 +1883,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"translation_DEFORM_END"))
       {
-         if (fscanf(*fp,"%lg %lg %lg",
+         if (fscanf(fp,"%lg %lg %lg",
                     &dfm->deform_end.translation.xyz[0],
                     &dfm->deform_end.translation.xyz[1],
                     &dfm->deform_end.translation.xyz[2]) != 3)
@@ -2197,7 +1980,7 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
    
    recalc_deform_xforms(seg, dfm);
 
-#ifndef ENGINE
+#if ! ENGINE
    init_deform_box_verts(dfm);
 #endif
    
@@ -2209,9 +1992,9 @@ ReturnCode read_deform (FILE** fp, SegmentStruct* seg, int segmentnum)
 /* -------------------------------------------------------------------------
    read_deformity - 
 ---------------------------------------------------------------------------- */
-ReturnCode read_deformity (ModelStruct* ms, FILE** fp)
+ReturnCode read_deformity (ModelStruct* ms, FILE* fp)
 {
-   ReturnCode  rc;
+   ReturnCode rc = code_fine;
    Deformity* dty;
 
    if (ms->num_deformities == ms->deformity_array_size)
@@ -2231,7 +2014,7 @@ ReturnCode read_deformity (ModelStruct* ms, FILE** fp)
 
    init_deformity(dty);
 
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp,"%s", buffer) != 1)
    {
       error(abort_action,"Error reading name in deformity definition");
       return code_bad;
@@ -2252,7 +2035,7 @@ ReturnCode read_deformity (ModelStruct* ms, FILE** fp)
 
       if (STRINGS_ARE_EQUAL(buffer,"default_value") || STRINGS_ARE_EQUAL(buffer,"value"))
       {
-         if (fscanf(*fp, "%lg", &dty->default_value) != 1)
+         if (fscanf(fp, "%lg", &dty->default_value) != 1)
          {
             sprintf(errorbuffer, "Error reading value for deformity: %s.", dty->name);
 	         error(none, errorbuffer);
@@ -2265,7 +2048,7 @@ ReturnCode read_deformity (ModelStruct* ms, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"range"))
       {
-         if (fscanf(*fp, "%lg %lg", &dty->range.start, &dty->range.end) != 2)
+         if (fscanf(fp, "%lg %lg", &dty->range.start, &dty->range.end) != 2)
          {
             sprintf(errorbuffer, "Error reading range for deformity: %s.", dty->name);
 	         error(none, errorbuffer);
@@ -2445,23 +2228,23 @@ void _strip_outer_whitespace (char* str)
 {
    /* remove exterior (but not interior) whitespace from a string.
     */
-   
+
    /* remove trailing whitespace */
    char* p = str + strlen(str) - 1;
-   
+
    for ( ; p >= str && isspace(*p); p--)
       *p = '\0';
-   
+
    /* remove leading whitespace */
    for (p = str; *p; p++)
       if ( ! isspace(*p))
          break;
-   
+
    if (*p && p != str)
       memmove(str, p, strlen(p) + 1);
 }
 
-static void strip_brackets_from_string(char name[])
+void strip_brackets_from_string(char name[])
 {
    int i, j;
    char buffer[CHARBUFFER];

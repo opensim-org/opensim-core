@@ -48,6 +48,8 @@ public:
 	void log(const std::string &aStr);
 };
 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
 class OSIMCOMMON_API LogBuffer : public std::stringbuf
 {
 public:
@@ -60,7 +62,10 @@ private:
 
 	int sync();
 };
+/// @ endcond
 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
 class OSIMCOMMON_API LogManager
 {
 public:
@@ -80,7 +85,7 @@ public:
 	LogBuffer *getOutBuffer();
 	LogBuffer *getErrBuffer();
 };
-
+/// @endcond
 }
 
 #endif

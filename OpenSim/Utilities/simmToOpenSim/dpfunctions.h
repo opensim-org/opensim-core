@@ -25,6 +25,7 @@ void   update_dp_radiopanel(void);
 void   update_dp_analogradiopanel(void);
 void   update_dp_globalcheckboxpanel(void);
 void   update_dp_sliderpanel(void);
+void   update_dp_win_status(void);
 void   do_dp_chpanel(WindowParams* win_parameters, int num);
 void   do_dp_radiopanel(WindowParams* win_parameters, int num);
 void   do_dp_analogradiopanel(WindowParams* win_parameters, int num);
@@ -43,11 +44,12 @@ void   dp_init_motion_sequence(MotionSequence *motion);
 /* defined in dpsimulation.c */
 void sendSimMessage(SimStruct* ss, int mess, void* data);
 SimMessageType getSimMessage(SimStruct* ss, void** data);
-SBoolean setupSimulation(ModelStruct* ms);
-void runSimulation(ModelStruct* ms);
-void pauseSimulation(ModelStruct* ms);
-void resumeSimulation(ModelStruct* ms);
-void resetSimulation(ModelStruct* ms);
+SBoolean loadSimulationDll(ModelStruct* model);
+SBoolean setupSimulation(ModelStruct* model);
+void runSimulation(ModelStruct* model);
+void pauseSimulation(ModelStruct* model);
+void resumeSimulation(ModelStruct* model);
+void resetSimulation(ModelStruct* model);
 DWORD WINAPI simThreadMain(LPVOID lpParam);
 
 #endif /* DPFUNCTIONS_H */

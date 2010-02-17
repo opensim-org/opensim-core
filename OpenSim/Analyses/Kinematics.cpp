@@ -33,11 +33,8 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
-#include <OpenSim/Simulation/Model/SpeedSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "Kinematics.h"
 
 
@@ -61,8 +58,9 @@ using namespace std;
  */
 Kinematics::~Kinematics()
 {
-	if(_y!=NULL) { delete[] _y;  _y=NULL; }
-	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
+	if(_q!=NULL) { delete[] _q;  _q=NULL; }
+	if(_u!=NULL) { delete[] _u;  _u=NULL; }
+	if(_udot!=NULL) { delete[] _udot;  _udot=NULL; }
 	deleteStorage();
 }
 //_____________________________________________________________________________
@@ -82,19 +80,9 @@ Kinematics::Kinematics(Model *aModel) :
 	// DESCRIPTION
 	constructDescription();
 
-	// STORAGE
-	allocateStorage();
-
 	// CHECK MODEL
 	if(_model==NULL) return;
 
-	// ALLOCATE ARRAYS
-	_y = new double[_model->getNumStates()];
-	_dy = new double[_model->getNumStates()];
-
-	// LABELS
-	updateCoordinatesToRecord();
-	constructColumnLabels();
 }
 //=============================================================================
 // Object Overrides
@@ -120,8 +108,6 @@ Kinematics::Kinematics(const std::string &aFileName):
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
 
-	// STORAGE
-	allocateStorage();
 }
 
 // Copy constrctor and virtual copy 
@@ -160,8 +146,9 @@ setNull()
 
 	setType("Kinematics");
 	setName("Kinematics");
-	_y=0;
-	_dy=0;
+	_q=0;
+	_u=0;
+	_udot=0;
 	_pStore=_vStore=_aStore=0;
 	_coordinates.setSize(1);
 	_coordinates[0] = "all";
@@ -191,9 +178,10 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 	_recordAccelerations = aKinematics._recordAccelerations;
 	_coordinates = aKinematics._coordinates;
 
-	// Deallocate _y & _dy if already allocated
-	if(_y!=NULL) { delete[] _y;  _y=NULL; }
-	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
+	// Deallocate if already allocated
+	if(_q!=NULL) {    delete[] _q;     _q=NULL; }
+	if(_u!=NULL) {    delete[] _u;     _u=NULL; }
+	if(_udot!=NULL) { delete[] _udot;  _udot=NULL; }
 
 	// STORAGE
 	deleteStorage();
@@ -201,8 +189,9 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 
 	// CHECK MODEL
 	if(_model!=NULL) {
-		_y = new double[_model->getNumStates()];
-		_dy = new double[_model->getNumStates()];
+		_q = new double[_model->getNumCoordinates()];
+		_u = new double[_model->getNumSpeeds()];
+		_udot = new double[_model->getNumSpeeds()];
 		updateCoordinatesToRecord();
 		constructColumnLabels();
 	}
@@ -268,23 +257,25 @@ updateCoordinatesToRecord()
 		return;
 	}
 
-	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
+	const CoordinateSet& coordSet = _model->getCoordinateSet();
 	_coordinateIndices.setSize(_coordinates.getSize());
 	for(int i=0; i<_coordinates.getSize(); i++) {
 		if(_coordinates[i] == "all") {
-			_coordinateIndices.setSize(ss->getSize());
-			for(int j=0;j<ss->getSize();j++) _coordinateIndices[j]=j;
+			_coordinateIndices.setSize(coordSet.getSize());
+			for(int j=0;j<coordSet.getSize();j++) _coordinateIndices[j]=j;
 			break;
 		}
-		string speedName = AbstractSpeed::getSpeedName(_coordinates[i]);
-		int index = ss->getIndex(speedName);
+		
+		int index = coordSet.getIndex(_coordinates[i]);
 		if(index<0) 
 			throw Exception("Kinematics: ERR- Cound not find coordinate named '"+_coordinates[i]+"'",__FILE__,__LINE__);
 		_coordinateIndices[i] = index;
 	}
 	_values.setSize(_coordinateIndices.getSize());
 
-	if(_values.getSize()==0) cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+	if(_values.getSize()==0) {
+         cout << "WARNING: Kinematics analysis has no coordinates to record values for" << endl;
+    }
 }
 
 //=============================================================================
@@ -324,7 +315,7 @@ void Kinematics::
 constructColumnLabels()
 {
 	// CHECK FOR NULL
-	if (!_model || _model->getDynamicsEngine().getNumSpeeds() == 0)
+	if (!_model || _model->getNumSpeeds() == 0)
 	{
 		setColumnLabels(Array<string>());
 		return;
@@ -332,10 +323,9 @@ constructColumnLabels()
 
 	Array<string> labels;
 	labels.append("time");
-	SpeedSet *ss = _model->getDynamicsEngine().getSpeedSet();
+	const CoordinateSet& cs = _model->getCoordinateSet();
 	for(int i=0; i<_coordinateIndices.getSize(); i++) {
-		AbstractSpeed *speed= ss->get(_coordinateIndices[i]);
-		labels.append(AbstractSpeed::getCoordinateName(speed->getName()));
+		labels.append(cs.get(_coordinateIndices[i]).getName());
 	}
 
 	setColumnLabels(labels);
@@ -388,19 +378,23 @@ getPositionStorage()
 /**
  * Set the model pointer for analyzing kinematics.
  */
-void Kinematics::setModel(Model *aModel)
+void Kinematics::setModel(Model& aModel)
 {
 	// BASE CLASS
 	Analysis::setModel(aModel);
 
+	allocateStorage();
+
 	// DATA MEMBERS
-	if(_y!=NULL) { delete[] _y;  _y=NULL; }
-	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
+	if(_q!=NULL) {    delete[] _q;     _q=NULL; }
+	if(_u!=NULL) {    delete[] _u;     _u=NULL; }
+	if(_udot!=NULL) { delete[] _udot;  _udot=NULL; }
 
 	if (_model){
 		// ALLOCATE STATE VECTOR
-		_y = new double[_model->getNumStates()];
-		_dy = new double[_model->getNumStates()];
+		_q    = new double[_model->getNumCoordinates()];
+		_u    = new double[_model->getNumSpeeds()];
+		_udot = new double[_model->getNumSpeeds()];
 	}
 
 	// UPDATE LABELS
@@ -438,58 +432,48 @@ setStorageCapacityIncrements(int aIncrement)
  * @return 0 of success, -1 on error.
  */
 int Kinematics::
-record(double aT,double *aX,double *aY)
+record(const SimTK::State& s)
 {
+    int i;
 	// NUMBERS
+	//
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int ny = _model->getNumStates();
 
-	if(_recordAccelerations) {
-		// COMPUTE DERIVATIVES
-		// ----------------------------------
-		// SET
-		_model->set(aT,aX,aY);
-		_model->getDerivCallbackSet()->set(aT,aX,aY);
+/*
+printf("Kinematics::record t=%14.10f y=",s.getTime());
+for(i=0;i<nq;i++) printf(" %f",s.getQ()[i]);
+for(i=0;i<nu;i++) printf(" %f",s.getU()[i]);
+printf("\n");
+*/
 
-		// ACTUATION
-		_model->getActuatorSet()->computeActuation();
-		_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-		_model->getActuatorSet()->apply();
-		_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
-
-		// CONTACT
-		_model->getContactSet()->computeContact();
-		_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-		_model->getContactSet()->apply();
-		_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
-
-		// ACCELERATIONS
-		_model->getDynamicsEngine().computeDerivatives(_dy,&_dy[nq]);
-		// ----------------------------------
-	}
-
-	// CONVERT RESULTS TO ANGLES
-	memcpy(_y,aY,ny*sizeof(double));
-	_model->getDynamicsEngine().convertQuaternionsToAngles(_y,_y);
+    for(i=0;i<nq;i++) _q[i] = s.getQ()[i]; 
+	_model->getSystem().realize(s, SimTK::Stage::Acceleration);
+    for(i=0;i<nu;i++)  {
+           _u[i] = s.getU()[i]; 
+           _udot[i] = s.getUDot()[i]; 
+    }
 
 	// CONVERT TO DEGREES
 	if(getInDegrees()) {
-		_model->getDynamicsEngine().convertRadiansToDegrees(_y,_y);
-		_model->getDynamicsEngine().convertRadiansToDegrees(&_y[nq],&_y[nq]);
-		if(_recordAccelerations) _model->getDynamicsEngine().convertRadiansToDegrees(&_dy[nq],&_dy[nq]);
+		_model->getSimbodyEngine().convertRadiansToDegrees(_q,_q);
+		_model->getSimbodyEngine().convertRadiansToDegrees(_u,_u);
+		if(_recordAccelerations) _model->getSimbodyEngine().convertRadiansToDegrees(_udot, _udot);
 	}
 
 	// RECORD RESULTS
 	int nvalues = _coordinateIndices.getSize();
-	for(int i=0;i<nvalues;i++) _values[i] = _y[_coordinateIndices[i]];
-	_pStore->append(aT,nvalues,&_values[0]);
-	for(int i=0;i<nvalues;i++) _values[i] = _y[nq+_coordinateIndices[i]];
-	_vStore->append(aT,nvalues,&_values[0]);
+	for(int i=0;i<nvalues;i++)  _values[i] = _q[_coordinateIndices[i]];
+	_pStore->append(s.getTime(),nvalues,&_values[0]);
+
+	for(int i=0;i<nvalues;i++) _values[i] = _u[_coordinateIndices[i]];
+	_vStore->append(s.getTime(),nvalues,&_values[0]);
+
 	if(_recordAccelerations) {
-		for(int i=0;i<nvalues;i++) _values[i] = _dy[nq+_coordinateIndices[i]];
-		_aStore->append(aT,nvalues,&_values[0]);
+		for(int i=0;i<nvalues;i++) _values[i] = _udot[_coordinateIndices[i]];
+		_aStore->append(s.getTime(),nvalues,&_values[0]);
 	}
+
 
 	return(0);
 }
@@ -498,39 +482,28 @@ record(double aT,double *aX,double *aY)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * This method is meant to be called at the begining of an integration 
  *
- * This method should be overriden in the child class.  It is
- * included here so that the child class will not have to implement it if it
- * is not necessary.
- *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s current state of System
  *
  * @return -1 on error, 0 otherwise.
  */
 int Kinematics::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
 	// RESET STORAGE
-	_pStore->reset(aT);
-	_vStore->reset(aT);
-	_aStore->reset(aT);
+	_pStore->reset(s.getTime());
+	_vStore->reset(s.getTime());
+	_aStore->reset(s.getTime());
 
 	// RECORD
 	int status = 0;
 	if(_pStore->getSize()<=0) {
-		status = record(aT,aX,aY);
+        if( s.getSystemStage() < SimTK::Stage::Acceleration ) 
+            _model->getSystem().realize(s, SimTK::Stage::Acceleration);
+		status = record(s);
 	}
 
 	return(status);
@@ -541,35 +514,20 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * When called during an integration, this method is meant to be called 
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
- * @param aXPrev Controls at the beginining of the current time step.
- * @param aYPrev States at the beginning of the current time step.
- * @param aYPPrev Pseudo states at the beginning of the current time step.
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just taken.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s current state of system
  *
  * @return -1 on error, 0 otherwise.
  */
 int Kinematics::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed(aStep)) return(0);
-
-	record(aT,aX,aY);
+	if(proceed(stepNumber) && getOn()) record(s);
 
 	return(0);
 }
@@ -578,31 +536,22 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * This method is meant to be called at the end of an integration 
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s current state of System
  *
  * @return -1 on error, 0 otherwise.
  */
 int Kinematics::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end(const SimTK::State& s )
 {
 	if (!proceed()) return 0;
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }

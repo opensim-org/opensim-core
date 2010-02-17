@@ -30,11 +30,12 @@
 #include "functions.h"
 #include "wefunctions.h"
 
-#if OPENSIM_CONVERTER || SIMM_VIEWER
-#define ENGINE
+#if OPENSMAC || SIMM_VIEWER
+#undef ENGINE
+#define ENGINE 1
 #endif
 
-#ifndef ENGINE
+#if ! ENGINE
 
 /*************** DEFINES (for this file only) *********************************/
 #define CHECK_MIN_VALUE 0
@@ -77,20 +78,19 @@ extern WinUnion*         we_win_union;
 static void setwemenus(void);
 
 
-int is_current_wrap_object(ModelStruct* ms, WrapObject* wo)
+int is_current_wrap_object(ModelStruct* ms, dpWrapObject* wo)
 {
    if (we)
    {
       WEModelOptions* weop = &we->weop[ms->modelnum];
-   
-      if (weop->wrap_object >= 0 && weop->wrap_object < ms->num_wrap_objects)
-         if (wo == &ms->wrapobj[weop->wrap_object])
-         {
-            if (ms == we->model)
-               return 2;
-            else
-               return 1;
-         }
+
+      if (wo == weop->wrap_object)
+      {
+         if (ms == we->model)
+            return 2;
+         else
+            return 1;
+      }
    }
    return 0;
 }
@@ -98,7 +98,6 @@ int is_current_wrap_object(ModelStruct* ms, WrapObject* wo)
 
 void makewrapeditormenus(void)
 {
-
    int i, thumb_thickness;
    IntBox bbox;
    Menu* ms;
@@ -106,6 +105,7 @@ void makewrapeditormenus(void)
    CheckBoxPanel* check;
 
    /* make the plot popup menu */
+	//TODO5.0: why is this here????????
    root.plotmenu = glueCreateMenu("Plots");
 
    glutAddMenuEntry("new", 1);
@@ -113,8 +113,6 @@ void makewrapeditormenus(void)
    /* make the main wrapeditor menu */
    ms = &we->optionsmenu;
    ms->title = NULL;
-   ms->x_edge = 2;
-   ms->y_edge = 2;
    ms->type = normal_menu;
    ms->numoptions = sizeof(weoptions)/sizeof(char*);
    ms->option = (MenuItem*)simm_malloc(ms->numoptions*sizeof(MenuItem));
@@ -158,8 +156,6 @@ void makewrapeditormenus(void)
    /* make the wrap type radio-button panel */
    check = &we->wrap_type_radiopanel;
    check->title = "";
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = radio_checkbox;
    check->numoptions = sizeof(wrap_type_panelstr)/sizeof(char*);
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
@@ -178,8 +174,6 @@ void makewrapeditormenus(void)
    /* make the wrap plane radio-button panel */
    check = &we->wrap_method_radiopanel;
    check->title = "";
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = radio_checkbox;
    check->numoptions = sizeof(wrap_method_panelstr) / sizeof(char*);
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
@@ -198,8 +192,6 @@ void makewrapeditormenus(void)
    /* make the wrap quadrant radio-button panel */
    check = &we->quadrant_radiopanel;
    check->title = "constrain to quadrant:";
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = radio_checkbox;
    check->numoptions = sizeof(quadrant_panelstr)/sizeof(char*);
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
@@ -217,8 +209,6 @@ void makewrapeditormenus(void)
    /* make the wrap quadrant check-button panel */
    check = &we->quadrant_checkpanel;
    check->title = "";
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = normal_checkbox;
    check->numoptions = sizeof(quadrant_checkstr)/sizeof(char*);
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
@@ -236,8 +226,6 @@ void makewrapeditormenus(void)
    /* make the active/visible checkbox panel */
    check = &we->active_visible_checkpanel;
    check->title = "";
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = normal_checkbox;
    check->numoptions = sizeof(active_visible_panelstr)/sizeof(char*);
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
@@ -255,8 +243,6 @@ void makewrapeditormenus(void)
    /* make the transform radio-button panel */
    check = &we->transform_radiopanel;
    check->title = "transform in:";
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = radio_checkbox;
    check->numoptions = sizeof(transform_panelstr)/sizeof(char*);
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
@@ -516,23 +502,22 @@ static void setwemenus(void)
 
 void update_we_forms(void)
 {
-
    Form*           form = &we->optionsform;
    WEModelOptions* weop = &we->weop[we->model->modelnum];
    
-   if (weop->wrap_object >= 0 && weop->wrap_object < we->model->num_wrap_objects)
+   if (weop->wrap_object)
    {
-      WrapObject* wo = &we->model->wrapobj[weop->wrap_object];
+      dpWrapObject* wo = weop->wrap_object;
       
       storeStringInForm(&form->option[WE_OBJECT_NAME], wo->name);
-      storeDoubleInForm(&form->option[WE_RADIUS_X], wo->radius.xyz[0], 4);
+      storeDoubleInForm(&form->option[WE_RADIUS_X], wo->radius[0], 4);
       
-      if (wo->wrap_type == wrap_cylinder)
+      if (wo->wrap_type == dpWrapCylinder)
          storeDoubleInForm(&form->option[WE_RADIUS_Y], wo->height, 4);
       else
-         storeDoubleInForm(&form->option[WE_RADIUS_Y], wo->radius.xyz[1], 4);
+         storeDoubleInForm(&form->option[WE_RADIUS_Y], wo->radius[1], 4);
       
-      storeDoubleInForm(&form->option[WE_RADIUS_Z], wo->radius.xyz[2], 4);
+      storeDoubleInForm(&form->option[WE_RADIUS_Z], wo->radius[2], 4);
    }
    else {
       storeStringInForm(&form->option[WE_OBJECT_NAME], NULL);
@@ -579,28 +564,37 @@ void we_entervalue(SimmEvent se)
 {
    int i, j, rc;
    double rd;
-   Form*           form = &we->optionsform;
+   Form* form = &we->optionsform;
    WEModelOptions* weop = &we->weop[we->model->modelnum];
-   WrapObject*     wo = NULL;
+   dpWrapObject* wo = weop->wrap_object;
    TextFieldAction tfa;
    
-   if (weop->wrap_object >= 0 && weop->wrap_object < we->model->num_wrap_objects)
-      wo = &we->model->wrapobj[weop->wrap_object];
-
    switch (we->selected_item)
    {
       case WE_OBJECT_NAME:
          rc = get_string(form, se, &tfa, no);
          if (rc == STRING_NOT_DONE)
             return;
-	     
-         if (wo)
+         if (rc != KEEP_OLD_STRING)
          {
+            // Make sure the wrap object has a unique name.
+            for (i=0; i<we->model->num_wrap_objects; i++)
+            {
+               if (we->model->wrapobj[i] != wo && STRINGS_ARE_EQUAL(we->model->wrapobj[i]->name, form->option[form->selected_item].valuestr))
+               {
+                  (void)sprintf(errorbuffer, "The name %s is already being used by another wrap object.", form->option[form->selected_item].valuestr);
+                  error(none, errorbuffer);
+                  break;
+               }
+            }
+            if (i < we->model->num_wrap_objects)
+               break;
+
             free(wo->name);
             mstrcpy(&wo->name, form->option[form->selected_item].valuestr);
 
             /* Send simm event to tell Muscle Editor about the name change. */
-        //    make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
+            //make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
          }
          break;
 
@@ -616,8 +610,8 @@ void we_entervalue(SimmEvent se)
 	           case WE_RADIUS_X:
                  if (rd > 0.0)
                  {
-                    wo->radius.xyz[0] = rd;
-                    wo->display_list_is_stale = yes;
+                    wo->radius[0] = rd;
+                    wo->display_list_is_stale = dpYes;
                     inval_model_wrapping(we->model, weop->wrap_object);
                  }
                  else
@@ -629,10 +623,10 @@ void we_entervalue(SimmEvent se)
 	           case WE_RADIUS_Y:
                  if (rd > 0.0)
                  {
-                    wo->radius.xyz[1] = rd;
-                    if (wo->wrap_type == wrap_cylinder)
+                    wo->radius[1] = rd;
+                    if (wo->wrap_type == dpWrapCylinder)
                        wo->height = rd;
-                    wo->display_list_is_stale = yes;
+                    wo->display_list_is_stale = dpYes;
                     inval_model_wrapping(we->model, weop->wrap_object);
                  }
                  else
@@ -644,8 +638,8 @@ void we_entervalue(SimmEvent se)
 	           case WE_RADIUS_Z:
                  if (rd > 0.0)
                  {
-                    wo->radius.xyz[2] = rd;
-                    wo->display_list_is_stale = yes;
+                    wo->radius[2] = rd;
+                    wo->display_list_is_stale = dpYes;
                     inval_model_wrapping(we->model, weop->wrap_object);
                  }
                  else
@@ -684,9 +678,9 @@ void we_entervalue(SimmEvent se)
    }
    
    /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
-   make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
+   make_and_queue_simm_event(WRAP_OBJECT_CHANGED, we->model->modelnum, wo, NULL, ZERO, ZERO);
    update_we_forms();
-   display_wrapeditor(we_win_params,we_win_union);
+   display_wrapeditor(we_win_params, we_win_union);
 }
 
 
@@ -732,13 +726,13 @@ void apply_xform_to_wrapobj (double factor)
    {
       WEModelOptions* weop = &we->weop[we->model->modelnum];
       
-      if (weop->wrap_object >= 0 && weop->wrap_object < we->model->num_wrap_objects)
+      if (weop->wrap_object)
       {
-         Coord3D translate = { 0.0, 0.0, 0.0 };
-         Coord3D rotate    = { 0.0, 0.0, 0.0 };
+         dpCoord3D translate = { 0.0, 0.0, 0.0 };
+         dpCoord3D rotate    = { 0.0, 0.0, 0.0 };
          DMatrix m;
          
-         WrapObject* wo = &we->model->wrapobj[weop->wrap_object];
+         dpWrapObject* wo = weop->wrap_object;
          
          /* collect transform input from form fields:
           */
@@ -779,7 +773,7 @@ void apply_xform_to_wrapobj (double factor)
          
          if (weop->xform_frame == WE_LOCAL_FRAME)
          {
-             Coord3D v;
+             dpCoord3D v;
 
              v.xyz[0] = factor * translate.xyz[0];
              v.xyz[1] = factor * translate.xyz[1];
@@ -810,8 +804,8 @@ void apply_xform_to_wrapobj (double factor)
          recalc_xforms(wo);
          inval_model_wrapping(we->model, weop->wrap_object);
          /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
-         make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
-         queue_redraw(MODEL, we->model->modelnum);
+         make_and_queue_simm_event(WRAP_OBJECT_CHANGED, we->model->modelnum, wo, NULL, ZERO, ZERO);
+         queue_model_redraw(we->model);
       }
    }
 }
@@ -849,9 +843,9 @@ void reset_wrapobj_xform ()
    {
       WEModelOptions* weop = &we->weop[we->model->modelnum];
       
-      if (weop->wrap_object >= 0 && weop->wrap_object < we->model->num_wrap_objects)
+      if (weop->wrap_object)
       {
-         WrapObject* wo = &we->model->wrapobj[weop->wrap_object];
+         dpWrapObject* wo = weop->wrap_object;
          
          wo->undeformed_translation.xyz[0] = wo->translation.xyz[0] = 0.0;
          wo->undeformed_translation.xyz[1] = wo->translation.xyz[1] = 0.0;
@@ -868,50 +862,41 @@ void reset_wrapobj_xform ()
          recalc_xforms(wo);
          inval_model_wrapping(we->model, weop->wrap_object);
          /* send WRAP_OBJECT_CHANGED event to tell the Muscle Editor about the change. */
-         make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)we->model, weop->wrap_object, ZERO);
-         queue_redraw(MODEL, we->model->modelnum);
+         make_and_queue_simm_event(WRAP_OBJECT_CHANGED, we->model->modelnum, wo, NULL, ZERO, ZERO);
+         queue_model_redraw(we->model);
          display_wrapeditor(we_win_params, we_win_union);
       }
    }
 }
 
 /* save all the wrap objects */
-void save_all_wrap_objects (int mod)
+void save_all_wrap_objects (ModelStruct* ms)
 {
-   if (model[mod] && model[mod]->num_wrap_objects > 0)
+   if (ms && ms->num_wrap_objects > 0)
    {
       int i, j, k;
-      ModelStruct* ms = model[mod];
-      size_t nBytes = ms->num_wrap_objects * sizeof(WrapObject);
+      size_t nBytes = ms->num_wrap_objects * sizeof(dpWrapObject);
 
       /* dealloc previous saved wrap object arrays */
-      if (ms->save.wrapobj)
-      {
-         free(ms->save.wrapobj);
-         ms->save.wrapobj = NULL;
-      }
-      if (ms->save.wrapobjnames)
+      if (ms->save.wrap_object)
       {
          for (i = 0; i < ms->save.num_wrap_objects; i++)
-            free(ms->save.wrapobjnames[i]);
-
-         free(ms->save.wrapobjnames);
-         ms->save.wrapobjnames = NULL;
+            FREE_IFNOTNULL(ms->save.wrap_object[i].name);
+         FREE_IFNOTNULL(ms->save.wrap_object);
       }
 
       /* alloc new saved wrap object arrays */
-      ms->save.wrapobj      = (WrapObject*) simm_malloc(nBytes);
-      ms->save.wrapobjnames = (char**) simm_malloc(ms->num_wrap_objects * sizeof(char*));
+      ms->save.wrap_object = (dpWrapObject*) simm_malloc(nBytes);
 
-      if (ms->save.wrapobj && ms->save.wrapobjnames)
+      if (ms->save.wrap_object)
       {
          ms->save.num_wrap_objects = ms->num_wrap_objects;
 
          /* copy wrap objects and their names */
-         memcpy(ms->save.wrapobj, ms->wrapobj, nBytes);
+         memcpy(ms->save.wrap_object, ms->wrapobj, nBytes);
 
          for (i = 0; i < ms->num_wrap_objects; i++)
-            mstrcpy(&ms->save.wrapobjnames[i], ms->wrapobj[i].name);
+            mstrcpy(&ms->save.wrap_object[i].name, ms->wrapobj[i]->name);
 
          /* save muscle -> wrap object associations */
          if (ms->save.muscwrap_associations)
@@ -923,7 +908,7 @@ void save_all_wrap_objects (int mod)
          ms->save.num_muscwrap_associations = 0;
 
          for (i = 0; i < ms->nummuscles; i++)
-            ms->save.num_muscwrap_associations += ms->muscle[i].numWrapStructs;
+            ms->save.num_muscwrap_associations += ms->muscle[i]->numWrapStructs;
 
          if (ms->save.num_muscwrap_associations > 0)
          {
@@ -934,14 +919,14 @@ void save_all_wrap_objects (int mod)
             {
                for (i = 0, k = 0; i < ms->nummuscles; i++)
                {
-                  for (j = 0; j < ms->muscle[i].numWrapStructs; j++)
+                  for (j = 0; j < ms->muscle[i]->numWrapStructs; j++)
                   {
                      ms->save.muscwrap_associations[k].muscle  = i;
                      ms->save.muscwrap_associations[k].musc_wrap_index = j;
-                     ms->save.muscwrap_associations[k].start_pt = ms->muscle[i].wrapStruct[j]->startPoint;
-                     ms->save.muscwrap_associations[k].end_pt = ms->muscle[i].wrapStruct[j]->endPoint;
-                     ms->save.muscwrap_associations[k].wrap_algorithm = ms->muscle[i].wrapStruct[j]->wrap_algorithm;
-                     ms->save.muscwrap_associations[k].wrapobj = ms->muscle[i].wrapStruct[j]->wrap_object;
+                     ms->save.muscwrap_associations[k].start_pt = ms->muscle[i]->wrapStruct[j]->startPoint;
+                     ms->save.muscwrap_associations[k].end_pt = ms->muscle[i]->wrapStruct[j]->endPoint;
+                     ms->save.muscwrap_associations[k].wrap_algorithm = ms->muscle[i]->wrapStruct[j]->wrap_algorithm;
+                     ms->save.muscwrap_associations[k].wrap_object = ms->muscle[i]->wrapStruct[j]->wrap_object;
                      k++;
                   }
                }
@@ -952,117 +937,19 @@ void save_all_wrap_objects (int mod)
 }
 
 
-/* restore ALL wrap objects that have been saved */
-void restore_all_wrap_objects(int mod)
-{
-   if (model[mod])
-   {
-      ModelStruct*    ms = model[mod];
-      WEModelOptions* weop = &we->weop[ms->modelnum];
-      char*           curWrapName = NULL;
-
-      if (ms == we->model && weop->wrap_object >= 0 && weop->wrap_object < ms->num_wrap_objects)
-      {
-         /* save name of current wrap object */
-         mstrcpy(&curWrapName, ms->wrapobj[weop->wrap_object].name);
-      }
-      
-      /* delete all current wrap objects (this also clears all muscle/wrap associations) */
-      while (ms->num_wrap_objects > 0)
-         delete_wrap_object(ms, ms->num_wrap_objects - 1, no);
-      
-      /* expand the model's wrap object array size if necessary */
-      if (ms->wrap_object_array_size < ms->save.num_wrap_objects)
-      {
-         free(ms->wrapobj);
-         
-         while (ms->wrap_object_array_size < ms->save.num_wrap_objects)
-            ms->wrap_object_array_size += WRAP_OBJECT_ARRAY_INCREMENT;
-      
-         ms->wrapobj = (WrapObject*) simm_malloc(ms->wrap_object_array_size *
-                                                 sizeof(WrapObject));
-      }
-      
-      if (ms->wrapobj)
-      {
-         int i, j;
-         
-         ms->num_wrap_objects = ms->save.num_wrap_objects;
-         
-         if (ms->num_wrap_objects > 0)
-         {
-            memcpy(ms->wrapobj, ms->save.wrapobj, ms->num_wrap_objects * sizeof(WrapObject));
-
-            for (i = 0; i < ms->num_wrap_objects; i++)
-               mstrcpy(&ms->wrapobj[i].name, ms->save.wrapobjnames[i]);
-
-            /* remove all the existing wrap object associations from the muscle
-             * structures and invalidate their wrapping states.
-             * JPL 2/27/02: I don't think there are any left by this point because
-             * they have already been removed by delete_wrap_object().
-             */
-            for (i = 0; i < ms->nummuscles; i++)
-            {
-               for (j = 0; j < ms->muscle[i].numWrapStructs; j++)
-                  FREE_IFNOTNULL(ms->muscle[i].wrapStruct[j]);
-               FREE_IFNOTNULL(ms->muscle[i].wrapStruct);
-               ms->muscle[i].wrap_calced = no;
-               ms->muscle[i].numWrapStructs = 0;
-            }
-
-            /* restore muscle -> wrap object associations */
-            for (i = 0; i < ms->save.num_muscwrap_associations; i++)
-            {
-               add_muscle_wrap_association(&ms->muscle[ms->save.muscwrap_associations[i].muscle],
-                                           &ms->save.muscwrap_associations[i], -1);
-            }
-
-            /* check to make sure the current wrap object still exists */
-            if (ms == we->model)
-            {
-               i = 0;
-            
-               if (curWrapName)
-               {
-                  for (i = 0; i < ms->num_wrap_objects; i++)
-                  {
-                     if (STRINGS_ARE_EQUAL(curWrapName, ms->wrapobj[i].name))
-                        break;
-                  }
-               }
-               select_wrapping_object((i < ms->num_wrap_objects ? i : 0), no);
-            }
-         }
-
-         /* send WRAP_OBJECT_CHANGED event, with a field of -1, to tell the
-          * Muscle Editor that all the wrap objects have changed.
-          */
-         make_and_queue_simm_event(WRAP_OBJECT_CHANGED, (void*)ms, -1, ZERO);
-
-         display_wrapeditor(we_win_params,we_win_union);
-         queue_redraw(MODEL,ms->modelnum);
-      }
-
-      FREE_IFNOTNULL(curWrapName);
-   }
-}
-
-
-
-void we_track_cb (void* data, SimmEvent se)
+void we_track_cb(void* data, SimmEvent se)
 {
    int i, count, we_vals[WE_MAX_DEVS];
    int model_windex;
 
    WrapEditorTracker* tracker = (WrapEditorTracker*) data;
-   ModelStruct*       ms      = tracker->model;
-   DisplayStruct*     dis     = &ms->dis;
-   int                mod     = ms->modelnum;
-   WEModelOptions*    weop    = &we->weop[mod];
-   WrapObject*        wo;
+   Scene* scene = tracker->scene;
+   ModelStruct* ms = tracker->model;
+   ModelDisplayStruct* dis = &ms->dis;
+   WEModelOptions* weop = &we->weop[ms->modelnum];
+   dpWrapObject* wo;
 
    SBoolean redraw = no;
-   IntBox*  vp;
    double   z_dist, tmp_matrix[4][4], inv_view_matrix[4][4];
    double   wpt[4], wpt2[4], owpt[4], owpt2[4];
    int      bpan_mx_new, bpan_my_new;
@@ -1084,21 +971,16 @@ void we_track_cb (void* data, SimmEvent se)
       return;
    }
    
-   if ((model_windex = get_window_index(MODEL,ms->modelnum))== -1)
-      return;
-   
-   vp = &root.window[model_windex].win_parameters->vp;
-   
-   wo = &ms->wrapobj[weop->wrap_object];
+   wo = weop->wrap_object;
    
    if (wo->visible == no)
       return;
 #if 1
-   if (wo->wrap_type == wrap_cylinder && se.field1 == space_key && se.field2 == key_released)
+   if (wo->wrap_type == dpWrapCylinder && se.field1 == space_key && se.field2 == key_released)
    {
       wo->wrap_algorithm = ! wo->wrap_algorithm;
       inval_model_wrapping(we->model, weop->wrap_object);
-      queue_redraw(MODEL, mod);
+      queue_model_redraw(ms);
       return;
    }
 #endif
@@ -1112,10 +994,10 @@ void we_track_cb (void* data, SimmEvent se)
       {
          if (we_vals[WE_TRACKBALL_KEY])
          {
-            z_dist = dis->tz;
+            z_dist = scene->tz;
             
-            find_world_coords(dis,vp,mx_new,my_new,
-               z_dist,&wx_new,&wy_new,&wz_new);
+            find_world_coords(scene, mx_new, my_new,
+               z_dist, &wx_new, &wy_new, &wz_new);
             
             if (tracker->mx_old == -1 || tracker->my_old == -1)
             {
@@ -1137,29 +1019,29 @@ void we_track_cb (void* data, SimmEvent se)
                normalize_vector(axis, naxis);
                naxis[3] = 1.0;
                
-               invert_4x4transform(dis->transform_matrix,tmp_matrix);
-               mult_4x4matrix_by_vector(tmp_matrix,naxis,axis);
-               mult_4x4matrix_by_vector(tmp_matrix,origin,new_origin);
+               invert_4x4transform(scene->transform_matrix, tmp_matrix);
+               mult_4x4matrix_by_vector(tmp_matrix, naxis, axis);
+               mult_4x4matrix_by_vector(tmp_matrix, origin, new_origin);
                
                axis[0] -= new_origin[0];
                axis[1] -= new_origin[1];
                axis[2] -= new_origin[2];
                
-               normalize_vector(axis,naxis);
+               normalize_vector(axis, naxis);
                
                naxis[0] -= origin[0];
                naxis[1] -= origin[1];
                naxis[2] -= origin[2];
                
                normalize_vector(naxis, naxis);
-               convert_vector(mod, naxis, ms->ground_segment, wo->segment);
+               convert_vector(ms, naxis, ms->ground_segment, wo->segment);
                normalize_vector(naxis, naxis);
                
                /* if cursor moves a full screen width, rotate by 90 degrees */
                cursor_movement = sqrt((mx_new-tracker->mx_old)*(mx_new-tracker->mx_old) +
                   (my_new-tracker->my_old)*(my_new-tracker->my_old));
                
-               x_percent = cursor_movement / (double)(vp->x2-vp->x1);
+               x_percent = cursor_movement / (double)(scene->viewport[2]);
                
                angle = x_percent * 90.0;
                
@@ -1196,14 +1078,14 @@ void we_track_cb (void* data, SimmEvent se)
             convert_from_wrap_object_frame(wo, wpt);
             wpt[3] = 1.0;
             
-            convert(mod, wpt, wo->segment, ms->ground_segment);
-            mult_4x4matrix_by_vector(dis->transform_matrix, wpt, wpt2);
+            convert(ms, wpt, wo->segment, ms->ground_segment);
+            mult_4x4matrix_by_vector(scene->transform_matrix, wpt, wpt2);
             
             z_dist = wpt2[2];
             bpan_mx_new = se.mouse_x;
             bpan_my_new = se.mouse_y;
             
-            find_world_coords(&model[mod]->dis, vp, bpan_mx_new, bpan_my_new,
+            find_world_coords(scene, bpan_mx_new, bpan_my_new,
                z_dist, &bpan_wx_new, &bpan_wy_new, &bpan_wz_new);
             
             if (tracker->bpan_mx_old == -1 || tracker->bpan_my_old == -1)
@@ -1222,7 +1104,7 @@ void we_track_cb (void* data, SimmEvent se)
                wpt[2] = bpan_wz_new;
                wpt[3] = 1.0;
                
-               invert_4x4transform(dis->transform_matrix,inv_view_matrix);
+               invert_4x4transform(scene->transform_matrix, inv_view_matrix);
                
 #if !STEADYCAM
                if (dis->camera_segment >= 0)
@@ -1233,7 +1115,7 @@ void we_track_cb (void* data, SimmEvent se)
                append_4x4matrix(inv_view_matrix,tmp_matrix);
 #endif
                mult_4x4matrix_by_vector(inv_view_matrix,wpt,wpt2);
-               convert(mod, wpt2, ms->ground_segment, wo->segment);
+               convert(ms, wpt2, ms->ground_segment, wo->segment);
                
                owpt[0] = tracker->bpan_wx_old;
                owpt[1] = tracker->bpan_wy_old;
@@ -1241,7 +1123,7 @@ void we_track_cb (void* data, SimmEvent se)
                owpt[3] = 1.0;
                
                mult_4x4matrix_by_vector(inv_view_matrix,owpt,owpt2);
-               convert(mod, owpt2, ms->ground_segment, wo->segment);
+               convert(ms, owpt2, ms->ground_segment, wo->segment);
                
                wo->translation.xyz[0] += (wpt2[XX] - owpt2[XX]);
                wo->translation.xyz[1] += (wpt2[YY] - owpt2[YY]);
@@ -1275,10 +1157,10 @@ void we_track_cb (void* data, SimmEvent se)
                wpt[0] = wpt[1] = 0.0;
                wpt[2] = wpt[3] = 1.0;
                
-               invert_4x4transform(dis->transform_matrix,tmp_matrix);
+               invert_4x4transform(scene->transform_matrix, tmp_matrix);
                
                mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
-               convert(mod, wpt2, ms->ground_segment, wo->segment);
+               convert(ms, wpt2, ms->ground_segment, wo->segment);
                
                tracker->zoom_vec.xyz[0] = wpt2[0];
                tracker->zoom_vec.xyz[1] = wpt2[1];
@@ -1288,7 +1170,7 @@ void we_track_cb (void* data, SimmEvent se)
                wpt[3] = 1.0;
                
                mult_4x4matrix_by_vector(tmp_matrix, wpt, wpt2);
-               convert(mod, wpt2, ms->ground_segment, wo->segment);
+               convert(ms, wpt2, ms->ground_segment, wo->segment);
                
                tracker->zoom_vec.xyz[0] -= wpt2[0];
                tracker->zoom_vec.xyz[1] -= wpt2[1];
@@ -1325,9 +1207,9 @@ void we_track_cb (void* data, SimmEvent se)
           
           if (we_vals[WE_ROTATE_X_KEY])
           {
-             if (CURSOR_IN_REGION_PTR(mx_new,my_new,vp))
+             if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
              {
-                new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, vp) * 0.1;
+                new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
                 
                 if (weop->xform_frame == WE_LOCAL_FRAME)
                    x_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
@@ -1339,9 +1221,9 @@ void we_track_cb (void* data, SimmEvent se)
           }
           if (we_vals[WE_ROTATE_Y_KEY])
           {
-             if (CURSOR_IN_REGION_PTR(mx_new,my_new,vp))
+             if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
              {
-                new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, vp) * 0.1;
+                new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
                 
                 if (weop->xform_frame == WE_LOCAL_FRAME)
                    y_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
@@ -1353,9 +1235,9 @@ void we_track_cb (void* data, SimmEvent se)
           }
           if (we_vals[WE_ROTATE_Z_KEY])
           {
-             if (CURSOR_IN_REGION_PTR(mx_new,my_new,vp))
+             if (CURSOR_IN_VIEWPORT(mx_new, my_new, scene->viewport))
              {
-                new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, vp) * 0.1;
+                new_rot_angle = DISTANCE_FROM_MIDPOINT(mx_new, scene->viewport) * 0.1;
                 
                 if (weop->xform_frame == WE_LOCAL_FRAME)
                    z_rotate_matrix_bodyfixed(m, new_rot_angle * DTOR);
@@ -1375,8 +1257,9 @@ void we_track_cb (void* data, SimmEvent se)
       wo->xforms_valid = no;
       recalc_xforms(wo);
       inval_model_wrapping(ms, weop->wrap_object);
-      queue_redraw(MODEL, mod);
-      display_wrapeditor(we_win_params, we_win_union);
+      queue_model_redraw(ms);
+      if (ms == we->model)
+         display_wrapeditor(we_win_params, we_win_union);
    }
 }
 
@@ -1397,7 +1280,7 @@ void enable_debug_shapes (SBoolean state)
    add_debug_point - add a point for debugging display.
 ---------------------------------------------------------------------------- */
 void add_debug_point (
-	WrapObject* wo,
+	dpWrapObject* wo,
 	double factor,
 	double pt[],
 	float radius,
@@ -1428,7 +1311,7 @@ void add_debug_point (
    add_debug_line - add a line segment for debugging display.
 ---------------------------------------------------------------------------- */
 void add_debug_line (
-	WrapObject* wo,
+	dpWrapObject* wo,
 	double factor,
 	double pt1[],
 	double pt2[],
@@ -1490,7 +1373,7 @@ float* lerp_clr (const float start[3], const float end[3], double t, float color
 
 #endif /* ! ENGINE */
 
-void recalc_xforms(WrapObject* wo)
+void recalc_xforms(dpWrapObject* wo)
 {
    if ( ! wo->xforms_valid)
    {
@@ -1507,6 +1390,22 @@ void recalc_xforms(WrapObject* wo)
    }
 }
 
+const char* get_wrap_type_name (int i)
+{
+   switch (i) {
+      case dpWrapSphere:
+         return "sphere";
+      case dpWrapCylinder:
+         return "cylinder";
+      case dpWrapEllipsoid:
+         return "ellipsoid";
+      case dpWrapTorus:
+         return "torus";
+   }
+
+   return "none";
+}
+
 const char* get_wrap_algorithm_name (int i)
 {
    static char* names[WE_NUM_WRAP_ALGORITHMS] = { "hybrid", "midpoint", "axial" };
@@ -1517,13 +1416,12 @@ const char* get_wrap_algorithm_name (int i)
    return NULL;
 }
 
-SBoolean query_muscle_wrap_association (MuscleStruct* muscle, int wrap_object)
+SBoolean query_muscle_wrap_association (dpMuscleStruct* muscle, dpWrapObject* wrap_object)
 {
-
    /* See if the given wrap object is used in the given muscle.
     * You don't care which slot it's in, just that it's there.
     */
-   if (muscle && wrap_object >= 0)
+   if (muscle && wrap_object)
    {
       int i;
 

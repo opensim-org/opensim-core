@@ -32,20 +32,33 @@
 #include <iostream>
 #include <string>
 #include <math.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/IO.h>
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Common/XMLNode.h>
 #include "Model.h"
-#include "AbstractMuscle.h"
+#include "Muscle.h"
 #include "CoordinateSet.h"
-#include "SpeedSet.h"
 #include "BodySet.h"
-#include "IntegCallback.h"
-#include "IntegCallbackSet.h"
-#include "DerivCallback.h"
-#include "DerivCallbackSet.h"
+#include "AnalysisSet.h"
+#include "ForceSet.h"
+#include <OpenSim/Common/ScaleSet.h>
+#include "Analysis.h"
+#include "OpenSimForceSubsystem.h"
+#include "ForceAdapter.h"
+#include "Actuator.h"
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Control/Controller.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+#include <OpenSim/Simulation/Control/ControlLinear.h>
+#include <OpenSim/Simulation/Control/ControlLinearNode.h>
+#include "SimTKcommon/internal/SystemGuts.h"
 
 using namespace std;
 using namespace OpenSim;
+using namespace SimTK;
 using SimTK::Mat33;
 
 //=============================================================================
@@ -66,45 +79,74 @@ Model::Model() :
 	_publicationsStr(_publicationsStrProp.getValueStr()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
-	_actuatorSetProp(PropertyObj("", ActuatorSet())),
-	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
-	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
+	_forceSetProp(PropertyObj("", ForceSet())),
+	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
+    _gravity(_gravityProp.getValueDblVec3()),
+    _bodySetProp(PropertyObj("", BodySet())),
+    _bodySet((BodySet&)_bodySetProp.getValueObj()),
+    _constraintSetProp(PropertyObj("", ConstraintSet())),
+    _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
+    _markerSetProp(PropertyObj("", MarkerSet())),
+    _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+    _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
+    _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
+    _jointSet(JointSet()),
+    _analysisSet(AnalysisSet()),
+    _coordinateSet(CoordinateSet()),
+    _controllerSet(ControllerSet()),
+    _allControllersEnabled(true),
+    _perturbActuatorForces(false),
+    _system(NULL)
 {
+	
 	setNull();
 	setupProperties();
+    createGroundBodyIfNecessary();
+    _analysisSet.setMemoryOwner(false);
+    _controllerSet.setModel(this);
+
 }
 //_____________________________________________________________________________
 /**
  * Constructor from an XML file
  */
 Model::Model(const string &aFileName) :
-	Object(aFileName, false),
+	ModelComponent(aFileName, false),
 	_fileName("Unassigned"),
 	_creditsStr(_creditsStrProp.getValueStr()),
 	_publicationsStr(_publicationsStrProp.getValueStr()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
-	_actuatorSetProp(PropertyObj("", ActuatorSet())),
-	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
-	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
+	_forceSetProp(PropertyObj("", ForceSet())),
+	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
+    _gravity(_gravityProp.getValueDblVec3()),
+    _bodySetProp(PropertyObj("", BodySet())),
+    _bodySet((BodySet&)_bodySetProp.getValueObj()),
+    _constraintSetProp(PropertyObj("", ConstraintSet())),
+    _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
+    _markerSetProp(PropertyObj("", MarkerSet())),
+    _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+    _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
+    _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
+    _jointSet(JointSet()),
+    _analysisSet(AnalysisSet()),
+    _coordinateSet(CoordinateSet()),
+    _controllerSet(ControllerSet()),
+    _allControllersEnabled(true),
+    _perturbActuatorForces(false),
+    _system(NULL)
 {
 	setNull();
 	setupProperties();
 	updateFromXMLNode();
-
 	_fileName = aFileName;
+    _analysisSet.setMemoryOwner(false);
+    _controllerSet.setModel(this);
+
+    // Create the SimTK::MultibodySystem
+    //createSystem();
 
 	cout << "Created model " << getName() << " from file " << getInputFileName() << endl;
-
-	// Throw exception if something wrong happened and we don't have a dynamics engine.
-	// likely due to pickng wrong file that has no valid OpenSim model
-	if (!hasDynamicsEngine()){
-		throw Exception("No dynamics engine in model's XML file "+aFileName+". Model will not be created");
-	}
 }
 //_____________________________________________________________________________
 /**
@@ -114,23 +156,35 @@ Model::Model(const string &aFileName) :
  */
 
 Model::Model(const Model &aModel) :
-   Object(aModel),
+   ModelComponent(aModel),
 	_creditsStr(_creditsStrProp.getValueStr()),
 	_publicationsStr(_publicationsStrProp.getValueStr()),
 	_lengthUnitsStr(_lengthUnitsStrProp.getValueStr()),
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
-	_dynamicsEngine(_dynamicsEngineProp.getValueObjPtrRef()),
-	_actuatorSetProp(PropertyObj("", ActuatorSet())),
-	_actuatorSet((ActuatorSet&)_actuatorSetProp.getValueObj()),
-	_contactSetProp(PropertyObj("", ContactForceSet())),
-	_contactSet((ContactForceSet&)_contactSetProp.getValueObj())
+	_forceSetProp(PropertyObj("", ForceSet())),
+	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
+    _gravity(_gravityProp.getValueDblVec3()),
+    _bodySetProp(PropertyObj("", BodySet())),
+    _bodySet((BodySet&)_bodySetProp.getValueObj()),
+    _constraintSetProp(PropertyObj("", ConstraintSet())),
+    _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
+    _markerSetProp(PropertyObj("", MarkerSet())),
+    _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
+    _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
+    _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
+    _allControllersEnabled(true),
+    _perturbActuatorForces(false),
+    _system(NULL)
 {
 	//cout << "Construct copied model " <<  endl;
-
 	// Throw exception if something wrong happened and we don't have a dynamics engine.
 	setNull();
 	setupProperties();
 	copyData(aModel);
+	_groundBody = &_bodySet.get("ground");
+	_forceSet.setup(*this);
+	_contactGeometrySet.setup(*this);
+    _controllerSet.setModel(this);
 }
 //_____________________________________________________________________________
 /**
@@ -138,22 +192,60 @@ Model::Model(const Model &aModel) :
  */
 Model::~Model()
 {
-	//cout << "Deleted model " <<  getName() << endl;
-	if (_analysisSet) {
-		delete _analysisSet;
-		_analysisSet = NULL;
-	}
+    //cout << "Deleted model " <<  getName() << endl;
 
-	if (_integCallbackSet) {
-		delete _integCallbackSet;
-		_integCallbackSet = NULL;
-	}
-
-	if (_derivCallbackSet) {
-		delete _derivCallbackSet;
-		_derivCallbackSet = NULL;
-	}
 	//std::cout << "Model destructor has been called" << endl;
+}
+//_____________________________________________________________________________
+/**
+ * Override default implementation by object to intercept and fix the XML node
+ * underneath the model to match current version
+ */
+/*virtual*/ void Model::updateFromXMLNode()
+{
+	int documentVersion = getDocument()->getDocumentVersion();
+	if ( documentVersion < XMLDocument::getLatestVersion()){
+		cout << "Updating Model file to latest format..." << endl;
+		// Version has to be 1.6 or later, otherwise assert
+		if (_node!=NULL && documentVersion==10600){
+			// Get node for DynamicsEngine
+			DOMElement* enginesNode = XMLNode::GetFirstChildElementByTagName(_node,"DynamicsEngine");
+			//Get node for SimbodyEngine
+			if (enginesNode != 0){
+				DOMElement* simbodyEngineNode = XMLNode::GetFirstChildElementByTagName(enginesNode,"SimbodyEngine");
+				// Move all Children of simbodyEngineNode to be children of _node 
+				// we'll keep inserting before enginesNode then remove it;
+				if (simbodyEngineNode!= 0){
+					for(DOMNode *child=simbodyEngineNode->getFirstChild(); child!=NULL;
+												child=child->getNextSibling()) {
+						DOMElement* childElement = (DOMElement*)child;
+						//const XMLCh *   nodeName = childElement->getTagName();
+						//char *str1 = XMLString::transcode(nodeName);
+						//cout << "Moving child " << std::string(str1) << endl;
+						_node->insertBefore(childElement->cloneNode(true), enginesNode);
+					}
+				}
+				XMLNode::RemoveChildren(enginesNode);
+				_node->removeChild(enginesNode);
+			}
+			// Now handling the rename of ActuatorSet to ForceSet
+			DOMElement* actuatorsNode = XMLNode::GetFirstChildElementByTagName(_node,"ActuatorSet");
+			if (actuatorsNode != 0) {
+				DOMElement* forcesNode = XMLNode::CreateDOMElement(getDocument()->getDOMDocument(), "ForceSet");
+				DOMNodeList * children = actuatorsNode->getChildNodes();
+				for (unsigned int i=0; i<children->getLength(); i++){
+					DOMNode* nextChild = children->item(i);
+					//actuatorsNode->removeChild(nextChild);
+					forcesNode->appendChild(nextChild->cloneNode(true));
+				}
+				_node->insertBefore(forcesNode, actuatorsNode);
+				_node->removeChild(actuatorsNode);
+			}
+		}
+	}
+	// Call base class now assuming _node has been corrected for current version
+	Object::updateFromXMLNode();
+    setupFromXML();
 }
 //_____________________________________________________________________________
 /**
@@ -187,18 +279,16 @@ void Model::copyData(const Model &aModel)
 	_forceUnits = aModel._forceUnits;
 	_lengthUnitsStr = aModel._lengthUnitsStr;
 	_forceUnitsStr = aModel._forceUnitsStr;
-	_dynamicsEngine = (AbstractDynamicsEngine*)Object::SafeCopy(aModel._dynamicsEngine); //DEEP
-	if (_dynamicsEngine) _dynamicsEngine->setModel(this);
-	_actuatorSet = aModel._actuatorSet;
-	_contactSet = aModel._contactSet;
-	_integCallbackSet = aModel._integCallbackSet;
-	_derivCallbackSet = aModel._derivCallbackSet;
+	_forceSet = aModel._forceSet;
 	_analysisSet = aModel._analysisSet;
-	_time = aModel._time;
 	_tNormConst = aModel._tNormConst;
-	_yi = aModel._yi;
-	_ypi = aModel._ypi;
+    _gravity = aModel._gravity;
+    _bodySet=aModel._bodySet;
+    _constraintSet=aModel._constraintSet;
+    _markerSet = aModel._markerSet;
+    _contactGeometrySet = aModel._contactGeometrySet;
 	_builtOK = aModel._builtOK; //??
+
 }
 //_____________________________________________________________________________
 /**
@@ -208,12 +298,11 @@ void Model::setNull()
 {
 	setType("Model");
 
-	_analysisSet = NULL;
-	_integCallbackSet = NULL;
-	_derivCallbackSet = NULL;
-	_time = 0.0;
 	_tNormConst = 1.0;
 	_builtOK = false;
+    _allControllersEnabled = true;
+	_perturbActuatorForces = false,
+    _groundBody = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -228,39 +317,263 @@ void Model::setupProperties()
 	_publicationsStrProp.setName("publications");
 	_propertySet.append(&_publicationsStrProp);
 
-	_contactSetProp.setName("ContactForceSet");
-	_propertySet.append(&_contactSetProp);
-
-	_dynamicsEngineProp.setName("DynamicsEngine");
-	_propertySet.append(&_dynamicsEngineProp);
-
-	_actuatorSetProp.setName("ActuatorSet");
-	_propertySet.append(&_actuatorSetProp);
+	_forceSetProp.setName("ForceSet");
+	_propertySet.append(&_forceSetProp);
 
 	_lengthUnitsStrProp.setName("length_units");
 	_propertySet.append(&_lengthUnitsStrProp);
 
 	_forceUnitsStrProp.setName("force_units");
 	_propertySet.append(&_forceUnitsStrProp);
+
+   const SimTK::Vec3 defaultGravity(0.0, -9.80665, 0.0);
+    _gravityProp.setComment("Acceleration due to gravity.");
+    _gravityProp.setName("gravity");
+    _gravityProp.setValue(defaultGravity);
+    _propertySet.append(&_gravityProp);
+
+    // Note: PropertyObj tag names come from the object's type (e.g. _bodySetProp below will automatically be associated with <BodySet> tag)
+    // don't need to call _bodySetProp.setName()...
+    _bodySetProp.setComment("Bodies in the model.");
+    _propertySet.append(&_bodySetProp);
+
+    _constraintSetProp.setComment("Constraints in the model.");
+    _propertySet.append(&_constraintSetProp);
+
+    _markerSetProp.setComment("Markers in the model.");
+    _propertySet.append(&_markerSetProp);
+
+    _contactGeometrySetProp.setComment("ContactGeometry objects in the model.");
+    _propertySet.append(&_contactGeometrySetProp);
+
+    _bodySet.setModel(*this);
+    _constraintSet.setModel(*this);
+    _contactGeometrySet.setModel(*this);
+    _forceSet.setModel(*this);
+    _jointSet.setModel(*this);
+
+}
+SimTK::State& Model::initSystem() {
+
+    setup();
+	createSystem();
+    getSystem().realizeTopology();
+    SimTK::State& s = getSystem().updDefaultState();
+	// The folllowing line is commented out as it removes all forces that were
+	// added to the system during realizeTopology() 
+    //_matter->setUseEulerAngles(s, true);
+
+    getSystem().realizeModel(s);
+	//std::cout << s.toString() << endl;
+
+    initState(s);
+    getSystem().realize(s, Stage::Position );
+    _analysisSet.setModel(*this);
+
+	 // TODO_PETE: moving muscle points get their coordinates from Model::_coordinateSet
+	 // during setup(), but _coordinateSet is not filled in until createSystem(), which
+	 // is called after setup(). So call a post-init function so the muscles can finish
+	 // setting up.
+	 _forceSet.postInit(*this);
+
+    updJointSet().setup(*this);
+
+    updControllerSet().setup(*this);
+    updControllerSet().setActuators(updActuators());
+    updControllerSet().constructStorage();
+
+	// Satisfy the constraints.
+	getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-8);
+
+	 return(s);
+}
+
+void Model::invalidateSystem()
+{
+    if (_system != NULL)
+        _system->getSystemGuts().invalidateSystemTopologyCache();
+}
+//_____________________________________________________________________________
+/**
+ * Create the multibody system.
+ * 
+ */
+void Model::createSystem()
+{
+    if (_system != NULL)
+    {
+        // Delete the old system.
+
+        delete _matter;
+        delete _forceSubsystem;
+        delete _userForceElements;
+        delete _contactSubsystem;
+        delete _gravitySubsystem;
+        delete _system;
+    }
+
+    // create system 
+    _system = new SimTK::MultibodySystem;
+    _matter = new SimTK::SimbodyMatterSubsystem(*_system);
+    _forceSubsystem = new OpenSimForceSubsystem( *_system, this );
+    _userForceElements = new SimTK::GeneralForceSubsystem(*_system);
+    _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
+    _gravitySubsystem = new SimTK::Force::UniformGravity(*_userForceElements,*_matter,_gravity);
+
+    _coordinateSet.setMemoryOwner(false);
+    _coordinateSet.setSize(0);
+
+    // Let all the ModelComponents add their parts to the System.
+    static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
+    static_cast<const ModelComponentSet<Joint>&>(getJointSet()).createSystem(*_system);
+	for(int i=0;i<getBodySet().getSize();i++) {
+		OpenSim::Body& body = getBodySet().get(i);
+		MobilizedBodyIndex idx(body.getIndex());
+        if (!idx.isValid())    throw Exception("Body: "+body.getName()+
+			" has no Joint... Model initialization aborted.");
+	}
+
+    static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).createSystem(*_system);
+    static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).createSystem(*_system);
+
+
+    // Add extra constraints for coordinates.
+    for (int i = 0; i < _coordinateSet.getSize(); i++)
+        _coordinateSet.get(i).createConstraintsForLockClampPrescribed();
+    
+    // controllers perform setup that requires a completed system (ie. all generalized coordinates )
+    updControllerSet().setupSystem( *_system );
+    // controllers add their parts to the System. 
+    static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
+
+    static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
+
 }
 
 //_____________________________________________________________________________
 /**
+ * Add a body to the Model.
+ */
+void Model::addBody(OpenSim::Body *aBody) 
+{
+	updBodySet().append(aBody);
+	updJointSet();
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a constraint to the Model.
+ */
+void Model::addConstraint(OpenSim::Constraint *aConstraint) 
+{
+	updConstraintSet().append(aConstraint);
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a force to the Model.
+ */
+void Model::addForce(OpenSim::Force *aForce) 
+{
+	updForceSet().append(aForce);
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a contact geometry to the Model.
+ */
+void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry) 
+{
+	updContactGeometrySet().append(aContactGeometry);
+}
+
+//_____________________________________________________________________________
+/**
+ * Add a controller to the Model.
+ */
+void Model::addController(Controller *aController) 
+{
+	if (aController ) {
+	   updControllerSet().append(aController);
+    }
+}
+//_____________________________________________________________________________
+/**
  * Perform some set up functions that happen after the
- * object has been deserialized. TODO: this method is
+ * object has been deserialized. This method is
  * not yet designed to be called after a model has been
  * copied.
  */
 void Model::setup()
 {
-	if (_dynamicsEngine->getNumBodies() == 0){	
-		// Something wrong with the file parsing don't do any more work
-		_builtOK = false;
-		throw Exception("DynamicsEngine for model has no Bodies, check file "+_fileName+" for errors.");
+
+	updBodySet().setup(*this);
+    updSimbodyEngine().setup(*this);
+    updCoordinateSet().setup(*this);
+    updConstraintSet().setup(*this);
+    updMarkerSet().setup(*this);
+    updContactGeometrySet().setup(*this);
+
+	updForceSet().setup(*this);
+
+	// The following code should be replaced by a more robust
+	// check for problems while creating the model.
+	if ( getNumBodies() > 0) {
+		_builtOK = true;
 	}
+
+	//cout << "Model " << getName() << " setup completed" << endl;
+}
+
+/**
+ * Create a ground body if necessary.
+ */
+void Model::createGroundBodyIfNecessary()
+{
+    const std::string SimbodyGroundName = "ground";
+
+	// See if the ground body already exists.
+	// The ground body is assumed to have the name simbodyGroundName.
+	int size = getBodySet().getSize();
+	Body *ground=NULL;
+	for(int i=0; i<size; i++) {
+		Body& body = getBodySet().get(i);
+		if(body.getName() == SimbodyGroundName) {
+			ground = &body;
+			break;
+		}
+	}
+
+	if(ground==NULL) {
+		ground = new Body();
+		_bodySet.append(ground);
+	}
+	// Set member variables
+	ground->setName(SimbodyGroundName);
+    ground->setMass(0.0);
+	ground->setMassCenter(Vec3(0.0));
+	ground->_index = SimTK::GroundIndex;
+	_groundBody = ground;
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Perform some clean up functions that are normally done from the destructor
+ * however this gives the GUI a way to proactively do the cleaning without waiting for garbage
+ * collection to do the actual cleanup.
+ */
+void Model::cleanup()
+{
+	_forceSet.setSize(0);	
+}
+
+void Model::setupFromXML()
+{
 	// Set the current directory to the directory containing the model
 	// file.  This is allow files (i.e. bone files) to be specified using
 	// relative paths in the model file.  KMS 4/26/06
+
 	string origDirPath;
 	string dirPath = IO::getParentDirectory(_fileName);
 	if(!dirPath.empty()) {
@@ -274,98 +587,90 @@ void Model::setup()
 	if (_publicationsStrProp.getUseDefault()){
 		_publicationsStr = "List of publications related to model...";
 	}
-	// CALLBACK SETS
-	_analysisSet = new AnalysisSet(this);
-	_integCallbackSet = new IntegCallbackSet(this);
-	_derivCallbackSet = new DerivCallbackSet(this);
 
-	/* Initialize the length and force units from the strings specified in the XML file.
-	 * If they were not specified, use meters and Newtons.
-	 *
-	 */
-	if (_lengthUnitsStrProp.getUseDefault()){
-		_lengthUnits = Units(Units::simmMeters);
+	//Initialize the length and force units from the strings specified in the XML file.
+	// If they were not specified, use meters and Newtons.
+
+    if (_lengthUnitsStrProp.getUseDefault()){
+		_lengthUnits = Units(Units::Meters);
 		_lengthUnitsStr = _lengthUnits.getLabel();
 	}
 	else
 		_lengthUnits = Units(_lengthUnitsStr);
 
 	if (_forceUnitsStrProp.getUseDefault()){
-		_forceUnits = Units(Units::simmNewtons);
+		_forceUnits = Units(Units::Newtons);
 		_forceUnitsStr = _forceUnits.getLabel();
 	}
 	else
 		_forceUnits = Units(_forceUnitsStr);
 
-	if(_dynamicsEngine) 
-		_dynamicsEngine->setup(this);
+    // Create the ground body if it wasn't specified in the file.
 
-	_actuatorSet.setup(this);
+    createGroundBodyIfNecessary();
 
-	_contactSet.setup(this);
+    // Link together the joints and bodies that were specified by name.
 
-	_yi.setSize(getNumStates());
-	_ypi.setSize(getNumPseudoStates());
+    int nb = getBodySet().getSize();
+	for(int i=0;i<nb;i++) {
 
-	// Get reasonable initial state values for actuators by querying them for their current
-	// states (it is assumed that by this point an actuator has initialized with reasonable
-	// default state values.
-	_actuatorSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()]);
-	_contactSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()+_actuatorSet.getNumStates()]);
+		// Body
+		OpenSim::Body& body = getBodySet().get(i);
+        if (!body.hasJoint())
+            continue;
+		Joint& joint = body.getJoint();
+		joint._body = &body;
 
-	// The following code should be replaced by a more robust
-	// check for problems while creating the model.
-	if (_dynamicsEngine && _dynamicsEngine->getNumBodies() > 0) {
-		_builtOK = true;
+		// Parent Body
+		string parentName = joint.getParentName();
+		joint._parentBody = (OpenSim::Body*)&getBodySet().get(parentName);
+		joint._model = this;
 	}
+    // Allow other parts of the model to do setup.
 
+    updBodySet().setupFromXML();
+//    updCoordinateSet().setupFromXML();
+    updConstraintSet().setupFromXML();
+//    updMarkerSet().setupFromXML();
+    updContactGeometrySet().setupFromXML();
+    updJointSet().setupFromXML();
+	updForceSet().setModel(*this);
+	updForceSet().setupFromXML();
+	updControllerSet().setupFromXML();
 
 	// Restore the current directory.
 	if(!origDirPath.empty())
 		IO::chDir(origDirPath);
-
-	//cout << "Model " << getName() << " setup completed" << endl;
 }
 
-void Model::replaceEngine(AbstractDynamicsEngine* aEngine)
+void Model::initState(SimTK::State& state) const
 {
-	if (aEngine != NULL) {
-		delete _dynamicsEngine;
-		_dynamicsEngine = aEngine;
-
-		// Stuff from setup()
-		_actuatorSet.setup(this);
-		_contactSet.setup(this);
-		_yi.setSize(getNumStates());
-		_ypi.setSize(getNumPseudoStates());
-		// Get reasonable initial state values for actuators by querying them for their current
-		// states (it is assumed that by this point an actuator has initialized with reasonable
-		// default state values.
-		_actuatorSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()]);
-		_contactSet.getStates(&_yi[getNumCoordinates()+getNumSpeeds()+_actuatorSet.getNumStates()]);
-		// The following code should be replaced by a more robust
-		// check for problems while creating the model.
-		if (_dynamicsEngine && _dynamicsEngine->getNumBodies() > 0) {
-			_builtOK = true;
-		}
-	}
+    _bodySet.initState(state);
+    _constraintSet.initState(state);
+    _contactGeometrySet.initState(state);
+    _jointSet.initState(state);
+    _forceSet.initState(state);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some clean up functions that are normally done from the destructor
- * however this gives the GUI a way to proactively do the cleaning without waiting for garbage
- * collection to do the actual cleanup.
- */
-void Model::cleanup()
+void Model::setDefaultsFromState(const SimTK::State& state)
 {
-	delete _dynamicsEngine;		_dynamicsEngine=NULL;
-	delete _analysisSet;		_analysisSet=NULL;
-	delete _integCallbackSet;	_integCallbackSet=NULL;
-	delete _derivCallbackSet;	_derivCallbackSet=NULL;
-	_actuatorSet.setSize(0);	
-	_contactSet.setSize(0);	
+    _bodySet.setDefaultsFromState(state);
+    _constraintSet.setDefaultsFromState(state);
+    _contactGeometrySet.setDefaultsFromState(state);
+    _jointSet.setDefaultsFromState(state);
+    _forceSet.setDefaultsFromState(state);
 }
+
+void Model::equilibrateMuscles(SimTK::State& state)
+{
+    for (int i = 0; i < _forceSet.getSize(); i++)
+    {
+        Muscle* muscle = dynamic_cast<Muscle*>(&_forceSet.get(i));
+        if (muscle != NULL)
+            muscle->equilibrate(state);
+    }
+}
+
 //_____________________________________________________________________________
 /**
  * Register the types used by this class.
@@ -391,6 +696,8 @@ Model& Model::operator=(const Model &aModel)
 	Object::operator=(aModel);
 
 	// Class Members
+
+
 	copyData(aModel);
 
 	setup();
@@ -410,7 +717,9 @@ Model& Model::operator=(const Model &aModel)
  */
 void Model::getGravity(SimTK::Vec3& rGrav) const
 {
-	getDynamicsEngine().getGravity(rGrav);
+	rGrav = _gravity;
+
+	return;
 }
 //_____________________________________________________________________________
 /**
@@ -419,9 +728,10 @@ void Model::getGravity(SimTK::Vec3& rGrav) const
  * @param aGrav the XYZ gravity vector
  * @return Whether or not the gravity vector was successfully set.
  */
-bool Model::setGravity(SimTK::Vec3& aGrav)
+bool Model::setGravity(const SimTK::Vec3& aGrav)
 {
-	return getDynamicsEngine().setGravity(aGrav);
+	_gravity = aGrav;
+	return true;
 }
 
 
@@ -430,42 +740,44 @@ bool Model::setGravity(SimTK::Vec3& aGrav)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Get the number of controls in the model.
+ * Get the number of markers in the model.
  *
- * @return Number of controls.
+ * @return Number of markers.
  */
-int Model::getNumControls() const
-{
-	return _actuatorSet.getNumControls();
+int Model::getNumMarkers() const 
+{ 
+    return _markerSet.getSize(); 
 }
-//_____________________________________________________________________________
 /**
- * Get the total number of states in the model.
+ * Get the number of ContactGeometry objects in the model.
  *
- * @return Number of states.
+ * @return Number of ContactGeometries.
  */
-int Model::getNumStates() const
+int Model::getNumContactGeometries() const
 {
-	int n;
-	n = getDynamicsEngine().getNumCoordinates();
-	n += getDynamicsEngine().getNumSpeeds();
-	n += _actuatorSet.getNumStates();
-	n += _contactSet.getNumStates();
-
-	return n;
+	return _contactGeometrySet.getSize();
 }
-//_____________________________________________________________________________
-/**
- * Get the total number of pseudostates in the model.
- *
- * @return Number of pseudostates.
- */
-int Model::getNumPseudoStates() const
+int Model::getNumStates() const 
 {
-	int n = _actuatorSet.getNumPseudoStates();
-	n += _contactSet.getNumPseudoStates();
+    return( _system->getDefaultState().getNY() );
+}
 
-	return n;
+/**
+ * Get the number of Muscle state variabls in the model.
+ *
+ * @return Number of MuscleStates.
+ */
+
+int Model::getNumMuscleStates() const {
+
+	int n = 0;
+	for(int i=0;i<_forceSet.getSize();i++){
+        Muscle *mus = dynamic_cast<Muscle*>( &_forceSet.get(i) );
+		if(mus!=NULL) {
+			n += mus->getNumStateVariables();
+		}
+	}
+	return(n);
 }
 //_____________________________________________________________________________
 /**
@@ -475,7 +787,7 @@ int Model::getNumPseudoStates() const
  */
 int Model::getNumBodies() const
 {
-	return getDynamicsEngine().getNumBodies();
+	return  _bodySet.getSize();
 }
 //_____________________________________________________________________________
 /**
@@ -485,7 +797,7 @@ int Model::getNumBodies() const
  */
 int Model::getNumJoints() const
 {
-	return getDynamicsEngine().getNumJoints();
+	return  _jointSet.getSize();
 }
 //_____________________________________________________________________________
 /**
@@ -495,38 +807,33 @@ int Model::getNumJoints() const
  */
 int Model::getNumCoordinates() const
 {
-	return getDynamicsEngine().getNumCoordinates();
+	return _coordinateSet.getSize();
 }
-//_____________________________________________________________________________
+
 /**
- * Get the total number of speeds in the model.
+ * Get the total number of coordinates = number of speeds in the model.
  *
- * @return Number of speeds.
+ * @return Number of coordinates.
  */
 int Model::getNumSpeeds() const
 {
-	return getDynamicsEngine().getNumSpeeds();
+	return _coordinateSet.getSize();
 }
 //_____________________________________________________________________________
 /**
- * Get the number of actuators in the model
+ * Get the subset of Forces in the model which are actuators
  *
- * @return The number of actuators
+ * @return The set of Actuators
  */
-int Model::getNumActuators() const
+const Set<Actuator>& Model::getActuators() const
 {
-	return _actuatorSet.getSize();
+	return _forceSet.getActuators();
 }
-//_____________________________________________________________________________
-/**
- * Get the number of contacts in the model.
- *
- * @return The number of contacts
- */
-int Model::getNumContacts() const
+Set<Actuator>& Model::updActuators() 
 {
-	return _contactSet.getSize();
+	return _forceSet.updActuators();
 }
+
 
 //_____________________________________________________________________________
 /**
@@ -536,97 +843,10 @@ int Model::getNumContacts() const
  */
 int Model::getNumAnalyses() const
 {
-	if (_analysisSet)
-		return _analysisSet->getSize();
-
-	return 0;
-}
-
-
-//=============================================================================
-// DYNAMICS ENGINE
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Returns true if model has a dynamics engine
- */
-bool Model::hasDynamicsEngine() const
-{
-	return _dynamicsEngine != 0;
-}
-//_____________________________________________________________________________
-/**
- * Get the model's dynamics engine
- *
- * @return Reference to the abstract dynamics engine
- */
-AbstractDynamicsEngine& Model::getDynamicsEngine() const
-{
-	assert(hasDynamicsEngine());
-
-	return *_dynamicsEngine;
-}
-//_____________________________________________________________________________
-/**
- * Set the model's dynamics engine
- *
- * @param the abstract dynamics engine to set to
- */
-void Model::setDynamicsEngine(AbstractDynamicsEngine& aEngine)
-{
-	// TODO: make a copy() ?
-	_dynamicsEngine = &aEngine;
-}
-
-
-//=============================================================================
-// SET CURRENT TIME, CONTROLS, AND STATES
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the model time, controls, and states
- *
- * @param aT Time.
- * @param aX Controls at time aT.
- * @param aY States at time aT.
- */
-void Model::set(double aT, const double aX[], const double aY[])
-{
-	// TIME
-	setTime(aT);
-
-	// CONTROLS
-	setControls(aX);
-
-	// STATES
-	setStates(aY);
-}
-
-
-//=============================================================================
-// TIME
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the current time.
- *
- * @param Current time.
- */
-void Model::setTime(double aTime)
-{
-	_time = aTime;
+    return _analysisSet.getSize();
 }
 
 //_____________________________________________________________________________
-/**
- * Get the current time.
- *
- * @return Current time.
- */
-double Model::getTime() const
-{
-	return _time;
-}
 
 //=============================================================================
 // TIME NORMALIZATION CONSTANT
@@ -636,7 +856,7 @@ double Model::getTime() const
  * Set the constant by which time is normalized.
  *
  * The normalization constant must be greater than or equal to the constant
- * rdMath::ZERO.
+ * Zero.
  *
  * @param Time normalization constant.
  */
@@ -644,7 +864,7 @@ void Model::setTimeNormConstant(double aNormConst)
 {
 	_tNormConst = aNormConst;
 
-	if(_tNormConst < rdMath::ZERO) _tNormConst = rdMath::ZERO; 
+	if(_tNormConst < Zero) _tNormConst = Zero; 
 }
 //_____________________________________________________________________________
 /**
@@ -660,460 +880,31 @@ double Model::getTimeNormConstant() const
 }
 
 
-//=============================================================================
-// CONTROLS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the controls in the model.
- *
- * @param aX Array of control values
- */
-void Model::setControls(const double aX[])
-{
-	_actuatorSet.setControls(aX);
-}
-//_____________________________________________________________________________
-/**
- * Set a control value, specified by index
- *
- * @param aIndex The index of the control to set
- * @param aValue The control value
- */
-void Model::setControl(int aIndex, double aValue)
-{
-	_actuatorSet.setControl(aIndex, aValue);
-}
-//_____________________________________________________________________________
-/**
- * Set a control value, specified by name
- *
- * @param aName The name of the control to set
- * @param aValue The control value
- */
-void Model::setControl(const string &aName, double aValue)
-{
-	_actuatorSet.setControl(aName, aValue);
-}
-//_____________________________________________________________________________
-/**
- * Get the control values in the model.
- *
- * @param rX The control values are returned here.
- */
-void Model::getControls(double rX[]) const
-{
-	_actuatorSet.getControls(rX);
-}
-//_____________________________________________________________________________
-/**
- * Get a control value, specified by index
- *
- * @param aIndex The index of the control to get
- * @return The control value
- */
-double Model::getControl(int aIndex) const
-{
-	return _actuatorSet.getControl(aIndex);
-}
-//_____________________________________________________________________________
-/**
- * Get a control value, specified by name
- *
- * @param aName The name of the control to get
- * @return The control value
- */
-double Model::getControl(const string &aName) const
-{
-	return _actuatorSet.getControl(aName);
-}
-//_____________________________________________________________________________
-/**
- * Get the name of a control.
- *
- * @param aIndex Index of the control whose name to get.
- * @return Name of the control.
- */
-string Model::getControlName(int aIndex) const
-{
-	return _actuatorSet.getControlName(aIndex);
-}
-//_____________________________________________________________________________
-/**
- * Get the index of a control.
- *
- * @param aName Name of the control whose index to get.
- * @return Index of the control.  -1 is returned if there is no control
- * with the specified name.
-int Model::getControlIndex(const string &aName) const
-{
-	return _actuatorSet.getControlIndex(aName);
-}
-*/
-
 
 //=============================================================================
 // STATES
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set the states for this model.
- *
- * @param aYI Array of states.  The size of rY must be at least the number
- * of states, which can be found by calling getNumStates().
- */
-void Model::setStates(const double aY[])
-{
-	// CONFIGURATION
-	getDynamicsEngine().setConfiguration(aY);
-
-	// ACTUATORS
-	int index = getNumCoordinates() + getNumSpeeds();
-	ActuatorSet *actuatorSet = getActuatorSet();
-	actuatorSet->setStates(&aY[index]);
-
-	// CONTACT FORCES
-	index += actuatorSet->getNumStates();
-	getContactSet()->setStates(&aY[index]);
-}
-//_____________________________________________________________________________
-/**
- * Get the states for this model.
- *
- * @param rYI Array of states.  The size of rY must be at least the number
- * of states, which can be found by calling getNumStates().
- */
-void Model::getStates(double rY[]) const
-{
-	// CONFIGURATION
-	getDynamicsEngine().getConfiguration(rY);
-
-	// ACTUATORS
-	int index = getNumCoordinates() + getNumSpeeds();
-	const ActuatorSet *actuatorSet = getActuatorSet();
-	actuatorSet->getStates(&rY[index]);
-
-	// CONTACT FORCES
-	index += actuatorSet->getNumStates();
-	getContactSet()->getStates(&rY[index]);
-}
-//_____________________________________________________________________________
-/**
  * Get the names of the states.
  *
  * @param rStateNames Array of state names..
  */
-void Model::getStateNames(Array<string> &rStateNames) const
+void Model::getStateNames(OpenSim::Array<string> &rStateNames) const
 {
-	getDynamicsEngine().getCoordinateSet()->getNames(rStateNames);
-	getDynamicsEngine().getSpeedSet()->getNames(rStateNames);
-	getActuatorSet()->getStateNames(rStateNames);
-	getContactSet()->getStateNames(rStateNames);
+	getCoordinateSet().getNames(rStateNames);
+	getCoordinateSet().getSpeedNames(rStateNames);
+	getForceSet().getStateVariableNames(rStateNames);
 }
 
 //=============================================================================
 // INITIAL STATES
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the initial states for this model.
- *
- * @param aYI Array of states.  The size of rY must be at least the number
- * of states, which can be found by calling getNumStates().
- */
-void Model::setInitialStates(const double aYI[])
-{
-	// Make a copy of what is being set which model owns
-	memcpy(&_yi[0],aYI,getNumStates()*sizeof(double));
 
-	// We cannot assume the initial states users assign are valid
-	getDynamicsEngine().setConfiguration(&_yi[0]);
-
-	// Project to satisfy constraints
-	getDynamicsEngine().projectConfigurationToSatisfyConstraints(&_yi[0], 1e-8);
-}
-//_____________________________________________________________________________
-/**
- * Get the initial states for this model.
- *
- * @param rYI Array of states.  The size of rY must be at least the number
- * of states, which can be found by calling getNumStates().
- */
-void Model::getInitialStates(double rYI[]) const
-{
-	memcpy(rYI,&_yi[0],getNumStates()*sizeof(double));
+void Model::setInitialTime( double ti ) {
+	    _system->updDefaultState().updTime() = ti;
 }
 
-
-//=============================================================================
-// PSEUDO-STATES
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get the names of the pseudo-states.
- *
- * @param rStateNames Array of pseudo-state names.
- * @return Number of pseudo-states.
- */
-int Model::getPseudoStateNames(Array<string> &rStateNames) const
-{
-	//TODO_CLAY
-	return 0;
-}
-
-//_____________________________________________________________________________
-/**
- * Set the pseudo-states for this model.  Pseudo-states are quantities that
- * depend on the time history of an integration but are not integrated.
- * Pseudo-states cannot be computed from the states.
- *
- * @param aYP Array of pseudo-states.  The size of rYP must be at least the
- * number of pseudo-states, which can be found by calling getNumPseudoStates().
- */
-void Model::setPseudoStates(const double aYP[])
-{
-	// ACTUATORS
-	ActuatorSet *actuatorSet = getActuatorSet();
-	actuatorSet->setPseudoStates(&aYP[0]);
-
-	// CONTACT FORCES
-	int index = actuatorSet->getNumPseudoStates();
-	getContactSet()->setPseudoStates(&aYP[index]);
-}
-//_____________________________________________________________________________
-/**
- * Get the pseudo-states for this model.  Pseudo-states are quantities that
- * depend on the time history of an integration but are not integrated.
- * Pseudo-states cannot be computed from the states.
- *
- * @param rYIP Array of pseudo-states.  The size of rYP must be at least the
- * number of pseudo-states, which can be found by calling getNumPseudoStates().
- */
-void Model::getPseudoStates(double rYP[]) const
-{
-	// ACTUATORS
-	const ActuatorSet *actuatorSet = getActuatorSet();
-	actuatorSet->getPseudoStates(&rYP[0]);
-
-	// CONTACT FORCES
-	int index = actuatorSet->getNumPseudoStates();
-	getContactSet()->getPseudoStates(&rYP[index]);
-}
-
-
-//=============================================================================
-// INITIAL PSEUDO STATES
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the initial pseudo-states for this model.
- *
- * @param aYPI Array of pseudo-states.  The size of rYP must be at least the
- * number of pseudo-states, which can be found by calling getNumPseudoStates().
- */
-void Model::setInitialPseudoStates(const double aYPI[])
-{
-	memcpy(&_ypi[0],aYPI,getNumPseudoStates()*sizeof(double));
-}
-//_____________________________________________________________________________
-/**
- * Get the initial pseudo-states for this model.
- *
- * @param rYPI Array of pseudo-states.  The size of rYP must be at least the
- * number of pseudo-states, which can be found by calling getNumPseudoStates().
- */
-void Model::getInitialPseudoStates(double rYPI[]) const
-{
-	memcpy(rYPI,&_ypi[0],getNumPseudoStates()*sizeof(double));
-}
-
-
-//=============================================================================
-// ACTUATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get the actuator set for the model.
- *
- * @return Pointer to the actuator set.
- */
-ActuatorSet* Model::getActuatorSet()
-{
-	return(&_actuatorSet);
-}
-//_____________________________________________________________________________
-/**
- * Get the actuator set for the model.
- *
- * @return Pointer to the actuator set.
- */
-const ActuatorSet* Model::getActuatorSet() const
-{
-	return(&_actuatorSet);
-}
-
-//=============================================================================
-// CONTACT
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get the contact set for the model.
- *
- * @return Pointer to the contact set.
- */
-ContactForceSet* Model::getContactSet()
-{
-	return(&_contactSet);
-}
-//_____________________________________________________________________________
-/**
- * Get the contact set for the model.
- *
- * @return Pointer to the contact set.
- */
-const ContactForceSet* Model::getContactSet() const
-{
-	return(&_contactSet);
-}
-
-
-//=============================================================================
-// INTEGRATION CALLBACKS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get the set of integration callbacks.
- *
- * @retun Integration callback set of this model.
- */
-IntegCallbackSet* Model::getIntegCallbackSet()
-{
-	return(_integCallbackSet);
-}
-//_____________________________________________________________________________
-/**
- * Get the set of integration callbacks.
- *
- * @retun Integration callback set of this model.
- */
-const IntegCallbackSet* Model::getIntegCallbackSet() const
-{
-	return(_integCallbackSet);
-}
-//_____________________________________________________________________________
-/**
- * Add an integration callback to the model
- *
- * @param aCallback Pointer to the integration callback to add.
- */
-void Model::addIntegCallback(IntegCallback *aCallback)
-{
-	// CHECK FOR NULL
-	if(aCallback==NULL) {
-		cout << "Model.addIntegCallback:  ERROR- NULL callback." << endl;
-	}
-
-	// ADD
-	aCallback->setModel(this);
-	_integCallbackSet->append(aCallback);
-}
-
-//_____________________________________________________________________________
-/**
- * Remove an integration callback from the model
- *
- * @param aCallback Pointer to the integration callback to remove.
- */
-void Model::removeIntegCallback(IntegCallback *aCallback)
-{
-	// CHECK FOR NULL
-	if(aCallback==NULL) {
-		printf("Model.removeIntegCallback:  ERROR- NULL callback.\n");
-	}
-
-	// ADD
-	aCallback->setModel(0);
-	_integCallbackSet->remove(aCallback);
-}
-//=============================================================================
-// DERIVATIVE CALLBACKS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Get the set of derivative callbacks.
- *
- * @return Derivative callback set of this model.
- */
-DerivCallbackSet* Model::getDerivCallbackSet()
-{
-	return(_derivCallbackSet);
-}
-//_____________________________________________________________________________
-/**
- * Get the set of derivative callbacks.
- *
- * @return Derivative callback set of this model.
- */
-const DerivCallbackSet* Model::getDerivCallbackSet() const
-{
-	return(_derivCallbackSet);
-}
-//_____________________________________________________________________________
-/**
- * Remove getDerivCallbackSet from the model and free resources
- *
- */
-void Model::removeAllDerivCallbacks()
-{
-	//cout << "Start removeAllDerivCallbacks" << endl;
-	// Delete callbacks
-	if (_derivCallbackSet==NULL) return;
-	delete _derivCallbackSet;
-	_derivCallbackSet = NULL;
-	//cout << "End removeAllDerivCallbacks" << endl;
-}
-//_____________________________________________________________________________
-/**
- * Add a derivative callback to the model
- *
- * @param aCallback Pointer to the derivative callback to add.
- */
-void Model::addDerivCallback(DerivCallback *aCallback)
-{
-	// CHECK FOR NULL
-	if(aCallback==NULL) {
-		printf("Model.addDerivCallback:  ERROR- NULL callback.\n");
-	}
-
-	// ADD
-	aCallback->setModel(this);
-	_derivCallbackSet->append(aCallback);
-}
-
-
-//--------------------------------------------------------------------------
-// ANALYSES
-//--------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the set of analyses.
- *
- * @return Analysis set of this model.
- */
-AnalysisSet* Model::getAnalysisSet()
-{
-	return _analysisSet;
-}
-//_____________________________________________________________________________
-/**
- * Get the set of analyses.
- *
- * @return Analysis set of this model.
- */
-const AnalysisSet* Model::getAnalysisSet() const
-{
-	return _analysisSet;
-}
 //_____________________________________________________________________________
 /**
  * Add an analysis to the model.
@@ -1122,10 +913,10 @@ const AnalysisSet* Model::getAnalysisSet() const
  */
 void Model::addAnalysis(Analysis *aAnalysis)
 {
-	if (aAnalysis && _analysisSet)
+	if (aAnalysis )
 	{
-		aAnalysis->setModel(this);
-		_analysisSet->append(aAnalysis);
+//		aAnalysis->setModel(this);
+		_analysisSet.append(aAnalysis);
 	}
 }
 //_____________________________________________________________________________
@@ -1133,73 +924,44 @@ void Model::addAnalysis(Analysis *aAnalysis)
  * Remove an analysis from the model
  *
  * @param aAnalysis Pointer to the analysis to remove.
+ * If deleteIt is true (default) the Analysis object itself is destroyed
+ * else only removed from te list which is the desired behavior when the Analysis 
+ * is created from the GUI.
  */
-void Model::removeAnalysis(Analysis *aAnalysis)
+void Model::removeAnalysis(Analysis *aAnalysis, bool deleteIt)
 {
 	// CHECK FOR NULL
 	if(aAnalysis==NULL) {
-		printf("Model.removeAnalysis:  ERROR- NULL analysis.\n");
+		cout << "Model.removeAnalysis:  ERROR- NULL analysis.\n" << endl;
+	}
+	if (!deleteIt){
+		bool saveStatus = _analysisSet.getMemoryOwner();
+		_analysisSet.setMemoryOwner(false);
+		_analysisSet.remove(aAnalysis);
+		_analysisSet.setMemoryOwner(saveStatus);
+	}
+	else 
+		_analysisSet.remove(aAnalysis);
+}
+
+//_____________________________________________________________________________
+/**
+ * Remove a controller from the model
+ *
+ * @param aController Pointer to the controller to remove.
+ */
+void Model::removeController(Controller *aController)
+{
+	// CHECK FOR NULL
+	if(aController==NULL) {
+		cout << "Model.removeController:  ERROR- NULL controller.\n" << endl;
 	}
 
-	// ADD
-	//aAnalysis->setModel(0);
-	_analysisSet->remove(aAnalysis);
+	_controllerSet.remove(aController);
 }
 
-//==========================================================================
-// DERIVATIVES
-//==========================================================================
 //_____________________________________________________________________________
 /**
- * Compute the derivatives of the states of the model.  For this method
- * to return valid derivatives, the following methods should have been
- * called:
- * 1. Model::set()
- * 2. ActuatorSet::computeActuation()
- * 3. ActuatorSet::apply()
- * 4. ContactSet::computeContact()
- * 5. ContactSet::appy()
- *
- * @param rDYDT Derivatives of the states.  These have not been time
- * normalized for integration, but are in un-normalized units.  The
- * length of rDYDT should be at least getNumStates().
- */
-void Model::computeDerivatives(double rDYDT[])
-{
-	// Q's and U's
-	int nq = getNumCoordinates();
-	int nu = getNumSpeeds();
-	getDynamicsEngine().computeDerivatives(&rDYDT[0],&rDYDT[nq]);
-
-	// Actuators
-	int iAct = nq + nu;
-	_actuatorSet.computeStateDerivatives(&rDYDT[iAct]);
-
-	// Contact Forces
-	int iCtx = iAct + _actuatorSet.getNumStates();
-	_contactSet.computeStateDerivatives(&rDYDT[iCtx]);
-}
-//_____________________________________________________________________________
-/**
- * Compute the derivatives of the auxiliary states (the actuator and contact
- * states).  The auxiliary states are any integrated variables that are
- * not the coordinates or speeds.
- *
- * @param rDYDT Derivatives of the auxiliary states.  Note that this is a shorter
- * array than the rDYDT used with computeDerivatives (above) as it omits the
- * q and u derivatives. In particular, the length of rDYDT should be at least 
- * _actuatorSet.getNumStates()+_contactSet.getNumStates()
- * These have not been time normalized for integration, but are in un-normalized units.
- */
-void Model::computeAuxiliaryDerivatives(double rDYDT[])
-{
-	// Actuators
-	_actuatorSet.computeStateDerivatives(&rDYDT[0]);
-
-	// Contact Forces
-	int iCtx = _actuatorSet.getNumStates();
-	_contactSet.computeStateDerivatives(&rDYDT[iCtx]);
-}
 //_____________________________________________________________________________
 /**
  * Compute values for the auxiliary states (i.e., states other than the
@@ -1216,21 +978,14 @@ void Model::computeAuxiliaryDerivatives(double rDYDT[])
  * equilibrium.
  */
 void Model::
-computeEquilibriumForAuxiliaryStates(double rY[])
+computeEquilibriumForAuxiliaryStates( SimTK::State& s)
 {
-	// SET STATES
-	setStates(rY);
 
-	// COMPUTE ACTUATION AND CONTACT
-	_actuatorSet.computeActuation();
-	_contactSet.computeContact();
+    _system->realize(s, SimTK::Stage::Velocity );
 
 	// COMPUTE EQUILIBRIUM STATES
-	_actuatorSet.computeEquilibrium();
-	//_contactSet.computeEquilibirum();
+	_forceSet.computeEquilibrium(s);
 
-	// GET STATES
-	getStates(rY);
 }
 
 
@@ -1250,52 +1005,60 @@ computeEquilibriumForAuxiliaryStates(double rY[])
  *        individual bodies should be scaled with the body scale factors.
  * @return Whether or not scaling was successful.
  */
-bool Model::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
+bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMassDist)
 {
 	int i;
 
 	// 1. Save the current pose of the model, then put it in a
 	//    default pose, so pre- and post-scale muscle lengths
 	//    can be found.
-	double *savedConfiguration = new double[getNumConfigurations()];
-	getDynamicsEngine().getConfiguration(savedConfiguration);
-	getDynamicsEngine().applyDefaultConfiguration();
-
+    SimTK::Vector savedConfiguration = s.getY();
+	applyDefaultConfiguration(s );
 	// 2. For each Actuator, call its preScale method so it
 	//    can calculate and store its pre-scale length in the
 	//    current position, and then call its scale method to
 	//    scale all of the muscle properties except tendon and
 	//    fiber length.
-	for (i = 0; i < _actuatorSet.getSize(); i++)
+	for (i = 0; i < _forceSet.getSize(); i++)
 	{
-		_actuatorSet.get(i)->preScale(aScaleSet);
-		_actuatorSet.get(i)->scale(aScaleSet);
+        Actuator* act = dynamic_cast<Actuator*>(&_forceSet.get(i));
+        if( act ) {
+ 		    act->preScale(s, aScaleSet);
+		    act->scale(s, aScaleSet);
+        }
 	}
-
 	// 3. Scale the rest of the model
-	bool returnVal = getDynamicsEngine().scale(aScaleSet, aFinalMass, aPreserveMassDist);
+	bool returnVal = updSimbodyEngine().scale(s, aScaleSet, aFinalMass, aPreserveMassDist);
 
 	// 4. If the dynamics engine was scaled successfully,
 	//    call each SimmMuscle's postScale method so it
 	//    can calculate its post-scale length in the current
 	//    position and then scale the tendon and fiber length
 	//    properties.
+	
+	
 	if (returnVal)
 	{
-		//If using the SimbodyEngine, force the model to be regenerated in Simbody with scaled segments
-		if (getDynamicsEngine().getType() == "SimbodyEngine"){
-			getDynamicsEngine().setup(this);
-		}
+		initSystem();	// This crashes now trying to delete the old matterSubsystem
+    	updSimbodyEngine().setup(*this);
+	    getSystem().realizeTopology();
+		SimTK::State& newState = getSystem().updDefaultState();
+	    getSystem().realize( newState, SimTK::Stage::Velocity);
 
-		for (i = 0; i < _actuatorSet.getSize(); i++)
-			_actuatorSet.get(i)->postScale(aScaleSet);
+		for (i = 0; i < _forceSet.getSize(); i++) {
+            Actuator* act = dynamic_cast<Actuator*>(&_forceSet.get(i));
+            if( act ) {
+	 		    act->postScale(newState, aScaleSet);
+            }
+        }
+
+		// 5. Put the model back in whatever pose it was in.
+		
+        newState.updY() = savedConfiguration;
+		getSystem().realize( newState, SimTK::Stage::Velocity );
 	}
 
-	// 5. Put the model back in whatever pose it was in.
-	getDynamicsEngine().setConfiguration(savedConfiguration);
-	delete savedConfiguration;
-
-	return returnVal;
+    return returnVal;
 }
 
 
@@ -1311,9 +1074,11 @@ bool Model::scale(const ScaleSet& aScaleSet, double aFinalMass, bool aPreserveMa
 void Model::printBasicInfo(std::ostream &aOStream) const
 {
 	aOStream<<"             MODEL: "<<getName()<<std::endl;
-	aOStream<<"         actuators: "<<getNumActuators()<<std::endl;
+	aOStream<<"            forces: "<<getForceSet().getSize()<<std::endl;
 	aOStream<<"          analyses: "<<getNumAnalyses()<<std::endl;
-	aOStream<<"          contacts: "<<getNumContacts()<<std::endl;
+	aOStream<<"            bodies: "<<getBodySet().getSize()<<std::endl;
+	aOStream<<"            joints: "<<((OpenSim::Model*)this)->getJointSet().getSize()<<std::endl;
+	aOStream<<"           markers: "<<getMarkerSet().getSize()<<std::endl;
 }
 //_____________________________________________________________________________
 /**
@@ -1321,57 +1086,46 @@ void Model::printBasicInfo(std::ostream &aOStream) const
  *
  * @param aOStream Output stream.
  */
-void Model::printDetailedInfo(std::ostream &aOStream) const
+void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const
 {
 	//int i;
 
 	aOStream << "MODEL: " << getName() << std::endl;
 
 	aOStream << "\nANALYSES (" << getNumAnalyses() << ")" << std::endl;
-	for (int i = 0; i < _analysisSet->getSize(); i++)
-		aOStream << "analysis[" << i << "] = " << _analysisSet->get(i)->getName() << std::endl;
+	for (int i = 0; i < _analysisSet.getSize(); i++)
+		aOStream << "analysis[" << i << "] = " << _analysisSet.get(i).getName() << std::endl;
 
 	aOStream << "\nBODIES (" << getNumBodies() << ")" << std::endl;
-	BodySet *bodySet = getDynamicsEngine().getBodySet();
-	for(int i=0; i < bodySet->getSize(); i++) {
-		AbstractBody *body = bodySet->get(i);
-		if(body==NULL) continue;
-		aOStream << "body[" << i << "] = " << body->getName();
-		aOStream << " (mass: "<<body->getMass()<<")";
+	const BodySet& bodySet = getBodySet();
+	for(int i=0; i < bodySet.getSize(); i++) {
+		const OpenSim::Body& body = bodySet.get(i);
+		aOStream << "body[" << i << "] = " << body.getName();
+		aOStream << " (mass: "<<body.getMass()<<")";
 		Mat33 inertia;
-		body->getInertia(inertia);
+		body.getInertia(inertia);
 		aOStream << " (inertia:";
 		for(int j=0; j<3; j++) for(int k=0; k<3; k++) aOStream<<" "<<inertia[j][k];
 		aOStream << ")"<<endl;
 	}
 
-	aOStream << "\nACTUATORS (" << getNumActuators() << ")" << std::endl;
-	for (int i = 0; i < _actuatorSet.getSize(); i++) {
-		aOStream << "actuator[" << i << "] = " << _actuatorSet.get(i)->getName();
-		if (_actuatorSet.get(i)->getNumControls()) {
-			aOStream << " (controls: ";
-			for(int j = 0; j < _actuatorSet.get(i)->getNumControls(); j++) {
-				aOStream << _actuatorSet.get(i)->getControlName(j);
-				if(j < _actuatorSet.get(i)->getNumControls()-1) aOStream << ", ";
-			}
-			aOStream << ")";
-		}
-		aOStream << std::endl;
+    int j = 0;
+	aOStream << "\nACTUATORS (" << getActuators().getSize() << ")" << std::endl;
+	for (int i = 0; i < getActuators().getSize(); i++) {
+		 aOStream << "actuator[" << j << "] = " << getActuators().get(i).getName() << std::endl;
+         j++;
 	}
 
-	aOStream << "\nCONTACTS (" << getNumContacts() << ")" << std::endl;
-
-	aOStream << "numControls = " << getNumControls() << std::endl;
-	aOStream << "numStates = " << getNumStates() << std::endl;
+	aOStream << "numStates = " << s.getNY() << std::endl;
 	aOStream << "numCoordinates = " << getNumCoordinates() << std::endl;
 	aOStream << "numSpeeds = " << getNumSpeeds() << std::endl;
-	aOStream << "numActuators = " << getNumActuators() << std::endl;
+	aOStream << "numActuators = " << getActuators().getSize() << std::endl;
 	aOStream << "numBodies = " << getNumBodies() << std::endl;
-	aOStream << "numConstraints = " << getDynamicsEngine().getConstraintSet()->getSize() << std::endl;
+	aOStream << "numConstraints = " << getConstraintSet().getSize() << std::endl;
 	;
-	int n;
 
 	/*
+	int n;
 	aOStream<<"MODEL: "<<getName()<<std::endl;
 
 	n = getNumBodies();
@@ -1393,64 +1147,296 @@ void Model::printDetailedInfo(std::ostream &aOStream) const
 	n = getNP();
 	aOStream<<"\nCONTACTS ("<<n<<")" << std::endl;
 
-	n = getNYP();
-	aOStream<<"\nPSEUDO-STATES ("<<n<<")" << std::endl;
-	for(i=0;i<n;i++) aOStream<<"yp["<<i<<"] = "<<getPseudoStateName(i)<<std::endl;
 */
-	n = getNumStates();
 	Array<string> stateNames("");
 	getStateNames(stateNames);
 	aOStream<<"\nSTATES ("<<stateNames.getSize()<<")"<<std::endl;
-	for(int i=0;i<n;i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
+	for(int i=0;i<s.getNY();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
 }
 
-//=============================================================================
-// TEST
-//=============================================================================
-void Model::kinTest()
+//____________________________________________________________________________
+/**
+ * get pointer to MultibodySystem 
+ *
+ * @param state SimTK::State 
+ */
+SimTK::MultibodySystem& Model::
+getSystem()  const {
+   return(*_system);
+}
+//____________________________________________________________________________
+/**
+ * set pointer to MultibodySystem
+ * @param mbs pointer to a SimTK::MultibodySystem 
+ */
+void Model::
+setSystem( SimTK::MultibodySystem* mbs ) {
+   _system = mbs;
+   return;
+
+}
+
+//--------------------------------------------------------------------------
+// CONFIGURATION
+//--------------------------------------------------------------------------
+
+//_____________________________________________________________________________
+/**
+ * Apply the default configuration to the model.  This means setting the
+ * generalized coordinates and spees to their default values.
+ */
+void Model::applyDefaultConfiguration(SimTK::State& s)
 {
-	AbstractMuscle* ms1;
-	AbstractMuscle* ms2;
-	AbstractCoordinate* hip_flex_r;
-	AbstractCoordinate* knee_flex_r;
-	AbstractBody* pelvis;
+	int i;
+	
+	// Coordinates
+	int ncoords = getCoordinateSet().getSize();
 
-	knee_flex_r = getDynamicsEngine().getCoordinateSet()->get("knee_flex_r");
-	hip_flex_r = getDynamicsEngine().getCoordinateSet()->get("hip_flex_r");
-	ms1 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get("glut_max1_r"));
-	ms2 = dynamic_cast<AbstractMuscle*>(_actuatorSet.get("rectus_fem_r"));
-	pelvis = getDynamicsEngine().getBodySet()->get("pelvis");
-
-	Array<double> config(0.0, getNumConfigurations());
-
-#if 0
-	if (ms1 && pelvis)
-	{
-		ms1->addAttachmentPoint(0, *pelvis);
-		print("kinTest.osim");
+	for(i=0; i<ncoords; i++) {
+		Coordinate& coord = getCoordinateSet().get(i);
+		coord.setValue(s, coord.getDefaultValue(), false);
+		coord.setSpeedValue(s, coord.getDefaultSpeedValue());
 	}
-#endif
 
-	if (hip_flex_r && knee_flex_r && ms2)
-	{
-		cout << "kinTest" << endl;
+	// Satisfy the constraints.
+	getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-8);
+}
 
-		hip_flex_r->setValue(0.0);
-	   getDynamicsEngine().getConfiguration(&config[0]);
-	   getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
-	   getDynamicsEngine().setConfiguration(&config[0]);
-
-		cout << ms2->getName() << endl;
-		for (double angle = 0.0 * SimTK_DEGREE_TO_RADIAN; angle < 121.0 * SimTK_DEGREE_TO_RADIAN; angle += 30.0 * SimTK_DEGREE_TO_RADIAN)
-		{
-			knee_flex_r->setValue(angle);
-	      getDynamicsEngine().getConfiguration(&config[0]);
-	      getDynamicsEngine().computeConstrainedCoordinates(&config[0]);
-	      getDynamicsEngine().setConfiguration(&config[0]);
-			cout << "knee_flex_r = " << angle * SimTK_RADIAN_TO_DEGREE << ", len = " << ms2->getLength() << ", ma = "
-				  << ms2->computeMomentArm(*knee_flex_r) << endl;
+/* Enforce the coordinate coupler constraints. This should be done before
+ * calling a Simbody function to project the constraints so that the values
+ * of the dependent coordinates are already at their proper values. This
+ * prevents the projection from changing the independent coordinate values
+ * to satisfy the constraints.
+ */
+void Model::enforceCoordinateCouplerConstraints(SimTK::State& s) const
+{
+	for (int i=0; i<getConstraintSet().getSize(); i++) {
+		Constraint& aConstraint = getConstraintSet().get(i);
+		if (aConstraint.getType() == "CoordinateCouplerConstraint") {
+			CoordinateCouplerConstraint& coupler = dynamic_cast<CoordinateCouplerConstraint&>(aConstraint);
+			if (coupler.getIsDisabled(s)) continue;
+			const Array<string> indNames = coupler.getIndependentCoordinateNames();
+			// Build a vector of the independent coordinate values and use it to calculate
+			// the desired value of the dependent coordinate.
+			SimTK::Vector indValues(indNames.getSize());
+			for (int k=0; k<indNames.getSize(); k++) {
+				const Coordinate& ind = getCoordinateSet().get(indNames.get(k));
+				indValues[k] = ind.getValue(s);
+			}
+			double desiredValue = coupler.getFunction().calcValue(indValues);
+			const string& depName = coupler.getDependentCoordinateName();
+			const Coordinate& dep = getCoordinateSet().get(depName);
+			dep.setValue(s, desiredValue, false);
 		}
 	}
+}
+
+
+//--------------------------------------------------------------------------
+// MARKERS
+//--------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Write an XML file of all the markers in the model.
+ *
+ * @param aFileName the name of the file to create
+ */
+void Model::writeMarkerFile(const string& aFileName) const
+{
+	_markerSet.print(aFileName);
+}
+
+//_____________________________________________________________________________
+/**
+ * Replace all markers in the model with the ones in the passed-in marker set.
+ *
+ * @param aMarkerSet The new marker set.
+ * @return Number of markers that were successfully added to the model.
+ */
+int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
+{
+	int i, numAdded = 0;
+
+	// First remove all existing markers from the model.
+	_markerSet.clearAndDestroy();
+	_markerSetProp.setUseDefault(false);
+
+	// Now add the markers from aMarkerSet whose body names match bodies in the engine.
+	for (i = 0; i < aMarkerSet.getSize(); i++)
+	{
+		// Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
+		Marker* marker = (Marker*)aMarkerSet.get(i).copy();
+		const string* bodyName = marker->getBodyName();
+		if (getBodySet().contains(*bodyName))
+		{
+    		OpenSim::Body& body = updBodySet().get(*bodyName);
+			marker->changeBody(body);
+			_markerSet.append(marker);
+			numAdded++;
+		}
+	}
+
+	cout << "Replaced marker set in model " << getName() << endl;
+	return numAdded;
+}
+
+//_____________________________________________________________________________
+/**
+ * Update all markers in the model with the ones in the
+ * passed-in marker set. If the marker does not yet exist
+ * in the model, it is added.
+ *
+ * @param aMarkerSet set of markers to be updated/added
+ */
+void Model::updateMarkerSet(MarkerSet& aMarkerSet)
+{
+	_markerSetProp.setUseDefault(false);
+	for (int i = 0; i < aMarkerSet.getSize(); i++)
+	{
+		Marker& updatingMarker = aMarkerSet.get(i);
+		const string* updatingBodyName = updatingMarker.getBodyName();
+
+		/* If there is already a marker in the model with that name,
+		 * update it with the parameters from the updating marker,
+		 * moving it to a new body if necessary.
+		 */
+		if (updMarkerSet().contains(updatingMarker.getName()))
+		{
+    		Marker& modelMarker = updMarkerSet().get(updatingMarker.getName());
+			/* If the updating marker is on a different body, delete the
+			 * marker from the model and add the updating one (as long as
+			 * the updating marker's body exists in the model).
+			 */
+			if (updatingBodyName &&
+				 modelMarker.getBody().getName() != *updatingBodyName)
+			{
+				_markerSet.remove(&modelMarker);
+				// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
+				_markerSet.append((Marker*)updatingMarker.copy());
+			}
+			else
+			{
+				modelMarker.updateFromMarker(updatingMarker);
+			}
+		}
+		else
+		{
+			/* The model does not contain a marker by that name. If it has
+			 * a body by that name, add the updating marker to the markerset.
+			 */
+			// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
+			if (updatingBodyName && getBodySet().contains(*updatingBodyName))
+				_markerSet.append((Marker*)updatingMarker.copy());
+		}
+	}
+
+	// Todo_AYMAN: We need to call setup again to make sure the _body pointers are up to date; but
+	// note that we've already called setup before so we need to make sure the setup() function
+	// supports getting called multiple times
+	for (int i = 0; i < _markerSet.getSize(); i++)
+		_markerSet.get(i).setup(*this);
+
+	cout << "Updated markers in model " << getName() << endl;
+}
+
+//_____________________________________________________________________________
+/**
+ * Remove all markers from the model that are not in the passed-in list.
+ *
+ * @param aMarkerNames array of marker names not to be deleted
+ * @return Number of markers deleted
+ *
+ * @Todo_AYMAN make sure visuals adjust as well
+ */
+int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
+{
+	int i, numDeleted = 0;
+
+	for (i = 0; i < _markerSet.getSize(); )
+	{
+		int index = aMarkerNames.findIndex(_markerSet.get(i).getName());
+		if (index < 0)
+		{
+			// Delete the marker, but don't increment i or else you'll
+			// skip over the marker right after the deleted one.
+			_markerSet.get(i).removeSelfFromDisplay();
+			_markerSet.remove(i);
+			numDeleted++;
+		}
+		else
+		{
+			i++;
+		}
+	}
+
+	cout << "Deleted " << numDeleted << " unused markers from model " << getName() << endl;
+
+	return numDeleted;
+}
+
+/**
+ ** Get a flat list of Joints contained in the model
+ ** 
+ **/
+JointSet& Model::updJointSet()
+{
+    _jointSet.setMemoryOwner(false);
+    _jointSet.setSize(0);
+    for(int i=0; i< getNumBodies(); i++){
+        if (getBodySet().get(i).hasJoint()) { // Ground body doesn't have a jnt
+            Joint& nextJoint = getBodySet().get(i).getJoint();
+			nextJoint.setModel(*this);
+            _jointSet.append(&nextJoint);
+        }
+    }
+    return _jointSet;
+}
+const JointSet& Model::getJointSet()
+{
+    _jointSet.setMemoryOwner(false);
+    _jointSet.setSize(0);
+    for(int i=0; i< getNumBodies(); i++){
+        if (getBodySet().get(i).hasJoint()) {  // Ground body doesn't have a jnt
+            Joint& nextJoint = getBodySet().get(i).getJoint();
+            _jointSet.append(&nextJoint);
+        }
+    }
+    return _jointSet;
+}
+
+/**
+ * Get the body that is being used as ground.
+ *
+ * @return Pointer to the ground body.
+ */
+OpenSim::Body& Model::getGroundBody() const
+{
+	assert(_groundBody);
+	return *_groundBody;
+}
+
+
+    //--------------------------------------------------------------------------
+    // CONTROLS
+    //--------------------------------------------------------------------------
+const ControllerSet& Model::getControllerSet() const{
+    return(_controllerSet);
+}
+ControllerSet& Model::updControllerSet() {
+    return(_controllerSet);
+}
+void Model::storeControls( const SimTK::State& s, int step ) {
+    _controllerSet.storeControls(s, step);
+    return;
+}
+void Model::printControlStorage(const string& fileName ) const {
+    _controllerSet.printControlStorage(fileName);
+}
+bool Model::getAllControllersEnabled() const{
+  return( _allControllersEnabled );
+}
+void Model::setAllControllersEnabled( bool enabled ) {
+    _allControllersEnabled = enabled;
 }
 /**
  * Model::formStateStorage is intended to take any storage and populate stateStorage.
@@ -1462,6 +1448,7 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 {
 	Array<string> rStateNames;
 	getStateNames(rStateNames);
+    int numStates = getNumStates();
 	// make sure same size, otherwise warn
 	if (originalStorage.getSmallestNumberOfStates() != rStateNames.getSize()){
 		cout << "Number of columns does not match in formStateStorage. Found "
@@ -1480,8 +1467,8 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 	for (int row =0; row< originalStorage.getSize(); row++){
 		StateVector* originalVec = originalStorage.getStateVector(row);
 		StateVector* stateVec = new StateVector(originalVec->getTime());
-		stateVec->getData().setSize(getNumStates());  // default value 0f 0.
-		for(int column=0; column< getNumStates(); column++){
+		stateVec->getData().setSize(numStates);  // default value 0f 0.
+		for(int column=0; column< numStates; column++){
 			double valueInOriginalStorage=0.0;
 			if (mapColumns[column]!=-1)
 				originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
@@ -1494,4 +1481,56 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 	rStateNames.insert(0, "time");
 	statesStorage.setColumnLabels(rStateNames);
 
+}
+
+/**
+ * Model::formStateStorage is intended to take any storage and populate qStorage.
+ * stateStorage is supposed to be a Storage with labels identical to those obtained by calling 
+ * Model::getStateNames(). Columns/entries found in the "originalStorage" are copied to the 
+ * output qStorage. Entries not found are populated with 0s.
+ */
+void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
+
+    int nq =  _system->getDefaultState().getNQ();
+	Array<string> qNames;
+	getCoordinateSet().getNames(qNames);
+
+
+	int* mapColumns = new int[qNames.getSize()];
+	for(int i=0; i< nq; i++){
+		// the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
+		mapColumns[i] = originalStorage.getColumnLabels().findIndex(qNames[i]); 
+		if (mapColumns[i]==-1)
+			cout << "\n Column "<< qNames[i] << " not found in formQStorage, assuming 0.\n" << endl;
+	}
+
+
+	// Now cycle thru and shuffle each 
+	for (int row =0; row< originalStorage.getSize(); row++){
+		StateVector* originalVec = originalStorage.getStateVector(row);
+		StateVector* stateVec = new StateVector(originalVec->getTime());
+		stateVec->getData().setSize(nq);  // default value 0f 0.
+		for(int column=0; column< nq; column++){
+			double valueInOriginalStorage=0.0;
+			if (mapColumns[column]!=-1)
+				originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
+
+			stateVec->setDataValue(column, valueInOriginalStorage);
+		}
+		qStorage.append(*stateVec);
+	}
+	qNames.insert(0, "time");
+
+	qStorage.setColumnLabels(qNames);
+
+}
+void Model::disownAllComponents()
+{
+	updBodySet().setMemoryOwner(false);
+	updConstraintSet().setMemoryOwner(false);
+	updForceSet().setMemoryOwner(false);
+	updContactGeometrySet().setMemoryOwner(false);
+	updControllerSet().setMemoryOwner(false);
+	updAnalysisSet().setMemoryOwner(false);
+	updMarkerSet().setMemoryOwner(false);
 }

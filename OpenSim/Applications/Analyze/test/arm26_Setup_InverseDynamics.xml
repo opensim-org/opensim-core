@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AnalyzeTool name="arm26">
+	<!--Name of the .osim file used to construct a model.-->
+	<model_file> arm26.osim </model_file>
+	<!--Directory used for writing results.-->
+	<results_directory> Results </results_directory>
+	<!--Output precision.  It is 20 by default.-->
+	<output_precision> 20 </output_precision>
+	<!--Initial time for the simulation.-->
+	<initial_time> 0.0 </initial_time>
+	<!--Final time for the simulation.-->
+	<final_time> 1.0 </final_time>
+	<!--Set of analyses to be run during the investigation.-->
+	<AnalysisSet name="Analyses">
+		<objects>
+			<InverseDynamics name="InverseDynamics">
+				<!--Flag (true or false) specifying whether whether on. True by default.-->
+				<on> true </on>
+				<!--Start time.-->
+				<start_time> 0.0 </start_time>
+				<!--End time.-->
+				<end_time> 1.0 </end_time>
+				<!--Specifies how often to store results during a simulation. More
+				    specifically, the interval (a positive integer) specifies how many
+				    successful integration steps should be taken before results are
+				    recorded again.-->
+				<step_interval> 1 </step_interval>
+				<!--Flag (true or false) indicating whether the results are in degrees or
+				    not.-->
+				<in_degrees> true </in_degrees>
+				<!--If true, the model's own actuator set will be used in the inverse
+				    dynamics computation.  Otherwise, inverse dynamics generalized forces
+				    will be computed for all unconstrained degrees of freedom.-->
+				<use_model_force_set> false </use_model_force_set>
+			</InverseDynamics>
+		</objects>
+		<groups/>
+	</AnalysisSet>
+	<!--Motion file (.mot) or storage file (.sto) containing the time history
+	    of the generalized coordinates for the model. These can be specified
+	    in place of the states file.-->
+	<coordinates_file> arm26_InverseKinematics.mot </coordinates_file>
+	<!--Low-pass cut-off frequency for filtering the coordinates_file data
+	    (currently does not apply to states_file or speeds_file). A negative
+	    value results in no filtering. The default value is -1.0, so no
+	    filtering.-->
+	<lowpass_cutoff_frequency_for_coordinates> 6.0 </lowpass_cutoff_frequency_for_coordinates>
+</AnalyzeTool>
+

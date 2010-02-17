@@ -5,11 +5,10 @@
 // INCLUDES
 //=============================================================================
 #include "WrapSphereObst.h"
-#include <OpenSim/Simulation/Model/MusclePoint.h>
-#include <OpenSim/Simulation/Wrap/MuscleWrap.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
@@ -31,7 +30,7 @@ static char* wrapTypeName = "sphereObst";
 * Default constructor.
 */
 WrapSphereObst::WrapSphereObst() :
-AbstractWrapObject(),
+WrapObject(),
 _radius(_radiusProp.getValueDbl()),
 _length(_lengthProp.getValueDbl())
 {
@@ -54,7 +53,7 @@ WrapSphereObst::~WrapSphereObst()
 * @param aWrapSphereObst WrapSphereObst to be copied.
 */
 WrapSphereObst::WrapSphereObst(const WrapSphereObst& aWrapSphereObst) :
-AbstractWrapObject(aWrapSphereObst),
+WrapObject(aWrapSphereObst),
 _radius(_radiusProp.getValueDbl()),
 _length(_lengthProp.getValueDbl())
 {
@@ -95,7 +94,7 @@ void WrapSphereObst::setNull()
 void WrapSphereObst::setupProperties()
 {
 	// BASE CLASS
-	AbstractWrapObject::setupProperties();
+	WrapObject::setupProperties();
 
 	_radiusProp.setName("radius");
 	_radiusProp.setValue(-1.0);
@@ -111,12 +110,12 @@ void WrapSphereObst::setupProperties()
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
 *
-* @param aEngine dynamics engine containing this SimmBody.
+* @param aModel point to OpenSim Model.
 */
-void WrapSphereObst::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
+void WrapSphereObst::setup(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	AbstractWrapObject::setup(aEngine, aBody);
+	WrapObject::setup(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 	if (_radius < 0.0)
@@ -140,7 +139,7 @@ void WrapSphereObst::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 void WrapSphereObst::copyData(const WrapSphereObst& aWrapSphereObst)
 {
 	// BASE CLASS
-	AbstractWrapObject::copyData(aWrapSphereObst);
+	WrapObject::copyData(aWrapSphereObst);
 
 	_radius = aWrapSphereObst._radius;
 	_length = aWrapSphereObst._length;
@@ -185,7 +184,7 @@ string WrapSphereObst::getDimensionsString() const
 WrapSphereObst& WrapSphereObst::operator=(const WrapSphereObst& aWrapSphereObst)
 {
 	// BASE CLASS
-	AbstractWrapObject::operator=(aWrapSphereObst);
+	WrapObject::operator=(aWrapSphereObst);
 
 	return(*this);
 }
@@ -205,8 +204,8 @@ WrapSphereObst& WrapSphereObst::operator=(const WrapSphereObst& aWrapSphereObst)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapSphereObst::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-						const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+						const PathWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	SimTK::Vec3& aPointP = aPoint1;		double R=0.8*_radius;
 	SimTK::Vec3& aPointS = aPoint2;		double Qx,Qy, Tx,Ty;

@@ -37,13 +37,13 @@
 #include "Array.h"
 
 
+
+namespace OpenSim { 
 //=============================================================================
 //=============================================================================
 /**
  * A class for signal processing.
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API Signal
 {
 //=============================================================================
@@ -63,6 +63,9 @@ public:
 	//--------------------------------------------------------------------------
 	// FILTERS
 	//--------------------------------------------------------------------------
+	static int
+		SmoothSpline(int aDegree,double aDeltaT,double aCutOffFrequency,
+		int aN,double *aTimes,double *aSignal,double *rFilteredSignal);
 	static int
 		LowpassIIR(double aDeltaT,double aCutOffFrequency,
 		int aN,double *aSignal,double *rFilteredSignal);

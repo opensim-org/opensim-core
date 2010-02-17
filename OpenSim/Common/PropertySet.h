@@ -31,7 +31,9 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
-
+#ifdef WIN32
+#pragma warning( disable : 4251 )
+#endif
 
 // INCLUDES
 #include "osimCommonDLL.h"
@@ -53,6 +55,8 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property>;
 #endif
 #endif
 
+
+namespace OpenSim { 
 //=============================================================================
 //=============================================================================
 /**
@@ -63,8 +67,6 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property>;
  * @author Frank C. Anderson
  * @see Property
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API PropertySet  
 {
 

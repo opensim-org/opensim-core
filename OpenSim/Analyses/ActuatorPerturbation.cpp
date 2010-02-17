@@ -1,8 +1,8 @@
-// ActuatorPerturbation.cpp
+/// ActuatorPerturbation.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //	AUTHOR: Frank C. Anderson, Saryn Goldberg, and May Liu
 // 
-// NOTE:  When you use this callBack to make a perturbation the actuator force,
+// NOTE:  When you use this class to make a perturbation the actuator force,
 //        this change in the force IS NOT recoreded in the state file.  If you
 //			 want to run an induced accleration analysis using results from a 
 //			 perturbation, you must first alter the states fiel to accurately
@@ -40,9 +40,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractActuator.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
 #include "ActuatorPerturbation.h"
 
 //=============================================================================
@@ -66,22 +65,68 @@ ActuatorPerturbation::~ActuatorPerturbation()
 }
 //_____________________________________________________________________________
 /**
- * Construct a derivative callback instance for perturbing actuator forces
+ * Construct an instance for perturbing actuator forces
  * during an integration.
  *
  * @param aModel Model for which actuator forces are to be perturbed.
  */
 ActuatorPerturbation::
 ActuatorPerturbation(Model *aModel) :
-	DerivCallback(aModel)
+    _on(_onProp.getValueBool()),
+    _startTime(_startTimeProp.getValueDbl()),
+    _endTime(_endTimeProp.getValueDbl())
+
 {
 	setNull();
+    _model = aModel;
 
 	// BASE-CLASS MEMBER VARIABLES
 	setType("ActuatorPerturbation");
 }
 
+/**
+ *  Copy constructor.
+ * 
+ *  @param aActuatorPerturbation ActuatorPerturbation to copy.
+ **/
+ActuatorPerturbation::ActuatorPerturbation(const ActuatorPerturbation &aActuatorPerturbation):
+    Object(aActuatorPerturbation),
+    _on(_onProp.getValueBool()),
+    _startTime(_startTimeProp.getValueDbl()),
+    _endTime(_endTimeProp.getValueDbl())
+{
+    setNull();
+    *this = aActuatorPerturbation;
+}
 
+
+//_____________________________________________________________________________
+/**
+* Construct an object from file.
+*
+* The object is constructed from the root element of the XML document.
+* The type of object is the tag name of the XML root element.
+*
+* @param aFileName File name of the document.
+*/
+ActuatorPerturbation::ActuatorPerturbation(const std::string &aFileName, bool aUpdateFromXMLNode):
+	Object(aFileName, false),
+	_on(_onProp.getValueBool()),
+	_startTime(_startTimeProp.getValueDbl()),
+	_endTime(_endTimeProp.getValueDbl())
+{
+	setNull();
+	if(aUpdateFromXMLNode) updateFromXMLNode();
+}
+//_____________________________________________________________________________
+/**
+ * Virtual copy constructor.
+ */
+Object* ActuatorPerturbation::
+copy() const
+{
+	return(new ActuatorPerturbation(*this));
+}
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -92,6 +137,10 @@ ActuatorPerturbation(Model *aModel) :
 void ActuatorPerturbation::
 setNull()
 {
+    _on = true;
+    _model = NULL;
+    _startTime = -SimTK::Infinity;
+    _endTime = SimTK::Infinity;
 	_actuator = NULL;
 	_allowNegForce = true;
 	_perturbation = 0.0;
@@ -104,6 +153,26 @@ setNull()
 	labels.append("nominal");
 	labels.append("perturbed");
 	_forceStore->setColumnLabels(labels);
+}
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void ActuatorPerturbation::
+setupProperties()
+{
+	_onProp.setComment("Flag (true or false) specifying whether whether on. "
+		"True by default.");
+	_onProp.setName("on");
+	_propertySet.append(&_onProp);
+
+	_startTimeProp.setComment("Start time.");
+	_startTimeProp.setName("start_time");
+	_propertySet.append(&_startTimeProp );
+
+	_endTimeProp.setComment("End time.");
+	_endTimeProp.setName("end_time");
+	_propertySet.append(&_endTimeProp );
 }
 
 //=============================================================================
@@ -119,7 +188,7 @@ setNull()
  * @param aAct Pointer to the actuator.
  */
 void ActuatorPerturbation::
-setActuator(AbstractActuator *aAct)
+setActuator(Actuator *aAct)
 {
 	_actuator = aAct;
 }
@@ -129,7 +198,7 @@ setActuator(AbstractActuator *aAct)
  *
  * @return Pointer to the actuator.
  */
-AbstractActuator* ActuatorPerturbation::
+Actuator* ActuatorPerturbation::
 getActuator() const
 {
 	return(_actuator);
@@ -194,10 +263,14 @@ getAllowNegForce() const
  * @param aPerturbation Perturbation value.
  */
 void ActuatorPerturbation::
-setPerturbation(PertType aPerturbationType, double aPerturbation)
+setPerturbation(const SimTK::State& s, PertType aPerturbationType, double aPerturbation)
 {
 	_perturbationType = aPerturbationType;
 	_perturbation = aPerturbation;
+    
+    _actuator->setIsControlled(false);
+
+
 }
 //_____________________________________________________________________________
 /**
@@ -240,15 +313,12 @@ getForceStorage()
 }
 
 
-//=============================================================================
-// CALLBACKS
-//=============================================================================
 //-----------------------------------------------------------------------------
 // RESET
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Reset the perturbation callback.
+ * Reset the perturbation.
  *
  * This method resets any internal objects so that a new perturbation series
  * can be run cleanly.
@@ -258,29 +328,28 @@ getForceStorage()
  * of the force storage object.
  */
 void ActuatorPerturbation::
-reset()
+reset(const SimTK::State& s)
 {
+	if( _actuator ) {
+       _actuator->setIsControlled(true);
+	}
 	_forceStore->reset();
 }
 
 
-//=============================================================================
-// CALLBACKS
-//=============================================================================
 //_____________________________________________________________________________
 /**
- * Callback called right after actuation has been computed by the model.
+ * ActuatorPerturbation called right after actuation has been computed by the model.
  *
  * The nominal atuator force is recorded so that it can be restored, and the
  * actuator force is replaced by its perturbed value.
  *
- * @param aT Real time.
- * @param aX Controls.
- * @param aY States.
+ *  @param s System state
  */
 void ActuatorPerturbation::
-computeActuation(double aT,double *aX,double *aY)
+setForces(const SimTK::State& s )
 {
+
 	if(_model==NULL) {
 		printf("ActuatorPerturbation.computeActuation: WARN- no model.\n");
 		return;
@@ -288,15 +357,15 @@ computeActuation(double aT,double *aX,double *aY)
 	if(!getOn()) return;
 
 	// RECORD NOMINAL FORCE
-	_force = _actuator->getForce();
+	_force = _actuator->getForce(s);
 
 	// COMPUTE PERTURBED FORCE
 	int index;
 	double forceArray[2];
 	double force;
 	force = _force;
-	//printf("aT=%lf  start=%lf   end=%lf\n",aT,getStartTime(),getEndTime());
-	if((aT>=getStartTime()) && (aT<getEndTime())){
+	//printf("time=%lf  start=%lf   end=%lf\n",s.getTime(),getStartTime(),getEndTime());
+	if((s.getTime()>=getStartTime()) && (s.getTime()<getEndTime())){
 
 	//	printf("perturbing\n");
 
@@ -330,32 +399,151 @@ computeActuation(double aT,double *aX,double *aY)
 	forceArray[0] = _force;
 	forceArray[1] = force;
 
-	//printf("time = %lf\toriginal force = %lf\n",aT*_model->getTimeNormConstant(),_force);
+	//printf("time = %lf\toriginal force = %lf\n",s.getTime()*_model->getTimeNormConstant(),_force);
 	//printf("perturbed force = %lf\n",force);
-	index = _forceStore->append(aT*_model->getTimeNormConstant(),2,forceArray);
-
+	index = _forceStore->append(s.getTime()*_model->getTimeNormConstant(),2,forceArray);
 	// SET PERTURBED FORCE
-	_actuator->setForce(force);
+	_actuator->setForce(s, force);
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//-----------------------------------------------------------------------------
+// ASSIGNMENT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+ActuatorPerturbation& ActuatorPerturbation::
+operator=(const ActuatorPerturbation &aActuatorPerturbation)
+{
+	// BASE CLASS
+	Object::operator=(aActuatorPerturbation);
+	// Model
+	_model = aActuatorPerturbation._model;
+	// Status
+	_on = aActuatorPerturbation._on;
+	// Start/end times
+	_startTime = aActuatorPerturbation._startTime;
+	_endTime = aActuatorPerturbation._endTime;
+
+	return(*this);
+}
+
+//=============================================================================
+// GET AND SET
+//=============================================================================
+//-----------------------------------------------------------------------------
+// MODEL
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get a pointer to the model for which this perturbation has been set.
+ *
+ * @return Pointer to the model.
+ */
+Model* ActuatorPerturbation::
+getModel() const
+{
+	return(_model);
 }
 //_____________________________________________________________________________
 /**
- * Callback called right after actuation has been applied by the model.
+ * Set a pointer to the model for which this perturbation has been set.
  *
- * The nominal atuator force is restored.
  */
 void ActuatorPerturbation::
-applyActuation(double aT,double *aX,double *aY)
+setModel(Model& aModel)
 {
-	if(_model==NULL) {
-		printf("ActuatorPerturbation.applyActuation: WARN- no model.\n");
-		return;
-	}
-	if(!getOn()) return;
-
-	// RESTORE NOMINAL FORCE
-	_actuator->setForce(_force);
+	_model=&aModel;
 }
 
+//-----------------------------------------------------------------------------
+// ON/OFF
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Turn this perturbation on or off.
+ *
+ * @param aTureFalse Turns analysis on if "true" and off if "false".
+ */
+void ActuatorPerturbation::
+setOn(bool aTrueFalse)
+{
+	_on = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not this analysis is on.
+ *
+ * @return True if on, false if off.
+ */
+bool ActuatorPerturbation::
+getOn() const
+{
+	return(_on);
+}
+
+//-----------------------------------------------------------------------------
+// START TIME
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the time at which to begin executing the perturbation.  Note that the start
+ * time should be specified in normalized time units, not in real time units.
+ *
+ * @param aStartTime Start time expressed in NORMALIZED time units.
+ */
+void ActuatorPerturbation::
+setStartTime(double aStartTime)
+{
+	_startTime = aStartTime;
+}
+//_____________________________________________________________________________
+/**
+ * Get the time at which to begin executing the perturbation, expressed in
+ * normalized time units, not real time units.
+ *
+ * @return Start time expressed in NORMALIZED time units.
+ */
+double ActuatorPerturbation::
+getStartTime() const
+{
+	return(_startTime);
+}
+
+//-----------------------------------------------------------------------------
+// END TIME
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the time at which to end executing the perturbation.  Note that the end time
+ * should be specified in normalized time units, not in real time units.
+ *
+ * @param aEndTime Time at which the perturbation should end execution in
+ * NORMALIZED time units.
+ */
+void ActuatorPerturbation::
+setEndTime(double aEndTime)
+{
+	_endTime = aEndTime;
+}
+//_____________________________________________________________________________
+/**
+ * Get the time at which to end executing the perturbation, expressed in
+ * normalized time units, not real time units.
+ *
+ * @return End time expressed in NORMALIZED time units.
+ */
+double ActuatorPerturbation::
+getEndTime() const
+{
+	return(_endTime);
+}
 
 
 

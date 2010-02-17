@@ -32,7 +32,6 @@
 #include <fstream>
 #include <math.h>
 #include <float.h>
-#include "rdMath.h"
 #include "MarkerData.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
@@ -502,7 +501,7 @@ void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartF
 
 	for (i = _numFrames - 1; i >= 0 ; i--)
 	{
-		if (_frames[i]->getFrameTime() <= aStartTime + rdMath::ZERO)
+		if (_frames[i]->getFrameTime() <= aStartTime + SimTK::Zero)
 		{
 			rStartFrame = i;
 			break;
@@ -511,7 +510,7 @@ void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartF
 
 	for (i = rStartFrame; i < _numFrames; i++)
 	{
-		if (_frames[i]->getFrameTime() >= aEndTime - rdMath::ZERO)
+		if (_frames[i]->getFrameTime() >= aEndTime - SimTK::Zero)
 		{
 			rEndFrame = i;
 			break;
@@ -586,8 +585,8 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 		maxZ = new double [_numMarkers];
 		for (int i = 0; i < _numMarkers; i++)
 		{
-			minX[i] = minY[i] = minZ[i] = rdMath::PLUS_INFINITY;
-			maxX[i] = maxY[i] = maxZ[i] = rdMath::MINUS_INFINITY;
+			minX[i] = minY[i] = minZ[i] =  SimTK::Infinity;
+			maxX[i] = maxY[i] = maxZ[i] = -SimTK::Infinity;
 		}
 	}
 
@@ -632,7 +631,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 		if (numFrames > 0)
 			avePt /= (double)numFrames;
 		else
-			avePt.set(rdMath::getNAN(), rdMath::getNAN(), rdMath::getNAN());
+			avePt.set(SimTK::NaN, SimTK::NaN, SimTK::NaN);
 	}
 
 	/* Store the indices from the file of the first frame and
@@ -738,7 +737,7 @@ void MarkerData::convertToUnits(const Units& aUnits)
 {
 	double scaleFactor = _units.convertTo(aUnits);
 
-	if (!rdMath::isNAN(scaleFactor))
+	if (!SimTK::isNaN(scaleFactor))
 	{
 		/* Scale all marker locations by the conversion factor. */
 		for (int i = 0; i < _frames.getSize(); i++)

@@ -31,9 +31,9 @@
 //=============================================================================
 #include "MarkerPlacer.h"
 #include "IKTrial.h"
-#include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
+#include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Common/Storage.h>
 
@@ -269,7 +269,7 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
  * @param aModel the model to use for the marker placing process.
  * @return Whether the marker placing process was successful or not.
  */
-bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
+bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aPathToSubject)
 {
 	if(!getApply()) return false;
 
@@ -285,7 +285,7 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 	/* Delete any markers from the model that are not in the static
 	 * pose marker file.
 	 */
-	aModel->getDynamicsEngine().deleteUnusedMarkers(staticPose.getMarkerNames());
+	aModel->deleteUnusedMarkers(staticPose.getMarkerNames());
 
 	delete _ikTrial;
 	_ikTrial = new IKTrial();
@@ -295,30 +295,32 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 	_ikTrial->setOptimizerAlgorithm(_optimizerAlgorithm);
 	_ikTrial->setPrintResultFiles(false); // We'll do our own printing
 //	_ikTrial->setIncludeMarkers(true);
-	if(!_ikTrial->initializeTrialCommon(*aModel,_ikTaskSet,staticPose)) return false;
-	if(!_ikTrial->solveTrial(*aModel,_ikTaskSet)) return false;
+	if(!_ikTrial->initializeTrialCommon(s, *aModel,_ikTaskSet,staticPose)) return false;
+	if(!_ikTrial->solveTrial(s, *aModel,_ikTaskSet)) return false;
 	_ikTrial->getOutputStorage()->setName(_markerFileName);
 
 	/* Now move the non-fixed markers on the model so that they are coincident
 	 * with the measured markers in the static pose. The model is already in
 	 * the proper configuration so the coordinates do not need to be changed.
 	 */
-	if(_moveModelMarkers) moveModelMarkersToPose(*aModel, staticPose);
+	if(_moveModelMarkers) moveModelMarkersToPose(s, *aModel, staticPose);
+
 
 	if(_printResultFiles) {
-		/* Write output files, if names specified by the user. */
-		SimmFileWriter *sfw = new SimmFileWriter(aModel);
-		if (sfw)
-		{
-			if (!_outputJointFileNameProp.getUseDefault())
-				sfw->writeJointFile(aPathToSubject + _outputJointFileName);
+       /* Write output files, if names specified by the user. 
+	    * users can export the osim models in the GUI or using OpenSimtoSimm
+		* May enable if/when SimmFileWriterDLL is building again. -Ayman 8/09
+       SimmFileWriter *sfw = new SimmFileWriter(aModel);
+       if (sfw)
+       {
+           if (!_outputJointFileNameProp.getUseDefault())
+               sfw->writeJointFile(aPathToSubject + _outputJointFileName);
 
-			if (!_outputMuscleFileNameProp.getUseDefault())
-				sfw->writeMuscleFile(aPathToSubject + _outputMuscleFileName);
+           if (!_outputMuscleFileNameProp.getUseDefault())
+               sfw->writeMuscleFile(aPathToSubject + _outputMuscleFileName);
 
-			delete sfw;
-		}
-
+           delete sfw;
+       } */
 		if (!_outputModelFileNameProp.getUseDefault())
 		{
 			aModel->copy()->print(aPathToSubject + _outputModelFileName);
@@ -327,20 +329,21 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
 
 		if (!_outputMarkerFileNameProp.getUseDefault())
 		{
-			aModel->getDynamicsEngine().writeMarkerFile(aPathToSubject + _outputMarkerFileName);
+			aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
 			cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
 		}
 
 		if (!_outputMotionFileNameProp.getUseDefault())
 		{
 			Storage motionData(*_ikTrial->getOutputStorage());
-			aModel->getDynamicsEngine().convertRadiansToDegrees(motionData);
+			aModel->getSimbodyEngine().convertRadiansToDegrees(motionData);
 			motionData.setWriteSIMMHeader(true);
 			motionData.setName("static pose");
 			motionData.print(aPathToSubject + _outputMotionFileName, 
 				"w", "File generated from solving marker data for model "+aModel->getName());
 		}
 	}
+
 
 	return true;
 }
@@ -354,23 +357,23 @@ bool MarkerPlacer::processModel(Model* aModel, const string& aPathToSubject)
  * @param aModel the model to use
  * @param aPose the static-pose marker cloud to get the marker locations from
  */
-void MarkerPlacer::moveModelMarkersToPose(Model& aModel, MarkerData& aPose)
+void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose)
 {
 	aPose.averageFrames(0.01);
 	MarkerFrame* frame = aPose.getFrame(0);
 
-	AbstractDynamicsEngine& engine = aModel.getDynamicsEngine();
+	const SimbodyEngine& engine = aModel.getSimbodyEngine();
 
-	MarkerSet* markerSet = aModel.getDynamicsEngine().getMarkerSet();
+	MarkerSet& markerSet = aModel.updMarkerSet();
 
 	int i;
-	for (i = 0; i < markerSet->getSize(); i++)
+	for (i = 0; i < markerSet.getSize(); i++)
 	{
-		AbstractMarker* modelMarker = markerSet->get(i);
+		Marker& modelMarker = markerSet.get(i);
 
-		if (!modelMarker->getFixed())
+		if (!modelMarker.getFixed())
 		{
-			int index = aPose.getMarkerIndex(modelMarker->getName());
+			int index = aPose.getMarkerIndex(modelMarker.getName());
 			if (index >= 0)
 			{
 				SimmPoint& globalMarker = frame->getMarker(index);
@@ -380,12 +383,12 @@ void MarkerPlacer::moveModelMarkersToPose(Model& aModel, MarkerData& aPose)
 					Vec3 globalPt = globalMarker.get();
 					double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
 					pt = conversionFactor*globalPt;
-					engine.transformPosition(engine.getGroundBody(), pt, *modelMarker->getBody(), pt2);
-					modelMarker->setOffset(pt2);
+					engine.transformPosition(s, engine.getGroundBody(), pt, modelMarker.getBody(), pt2);
+					modelMarker.setOffset(pt2);
 				}
 				else
 				{
-					cout << "___WARNING___: marker " << modelMarker->getName() << " does not have valid coordinates in " << aPose.getFileName() << endl;
+					cout << "___WARNING___: marker " << modelMarker.getName() << " does not have valid coordinates in " << aPose.getFileName() << endl;
 					cout << "               It will not be moved to match location in marker file." << endl;
 				}
 			}

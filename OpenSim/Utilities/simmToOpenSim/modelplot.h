@@ -15,7 +15,8 @@
 #ifndef MODELPLOT_H
 #define MODELPLOT_H
 
-#define MAX_GENCOORDS 500
+#define MAX_GENCOORDS 5000
+#define MAX_ELEMENTS 16384 // for pop-up menu tags
 
 #define R1 0
 #define R2 1
@@ -34,28 +35,36 @@
 #define DEFAULT_TITLE 0
 #define USER_DEFINED_TITLE 1
 
-#define NO_REGION 0x00000000
-#define ACL_ATTACHMENT 0x00000001
-#define ACL_ISOMETRY_CHECK 0x00000002
-#define PATELLAR_INTERSECT 0x00000004
-#define PATELLAR_KINEMATICS 0x00000008
-#define ANY_REGION 0xffffffff
-
 /* For object picking */
-#define OBJECT_BITS 28
-#define MAX_OBJECTS 268435446
-#define ELEMENT_BITS 14
-#define MAX_ELEMENTS 16384
-#define SUBELEMENT_BITS 14
-#define MAX_SUBELEMENTS 16384
-#define OBJECT_MASK 0x0fffffff
-#define ELEMENT_MASK 0x0fffc000
-#define SUBELEMENT_MASK 0x00003fff
-#define BONE_OBJECT 0x1
-#define MUSCLE_OBJECT 0x2
-#define WORLD_OBJECT 0x3
-#define POINT_OBJECT 0x4
-#define POLYGON_OBJECT 0x5
+#define OBJECT_BITS ((PickIndex)56)
+#define MAX_OBJECTS ((PickIndex)2<<OBJECT_BITS)
+#define ELEMENT_BITS ((PickIndex)28)
+#define MAX_PICK_ELEMENTS ((PickIndex)2<<ELEMENT_BITS)
+#define SUBELEMENT_BITS ((PickIndex)28)
+#define MAX_PICK_SUBELEMENTS ((PickIndex)2<<SUBELEMENT_BITS)
+#define OBJECT_MASK     ((PickIndex)0x00ffffffffffffff)
+#define ELEMENT_MASK    ((PickIndex)0x00fffffff0000000)
+#define SUBELEMENT_MASK ((PickIndex)0x000000000fffffff)
+#define BONE_OBJECT ((PickIndex)0x01)
+#define MUSCLE_OBJECT ((PickIndex)0x02)
+#define WORLD_OBJECT ((PickIndex)0x03)
+#define POINT_OBJECT ((PickIndex)0x04)
+#define POLYGON_OBJECT ((PickIndex)0x05)
+#define MARKER_OBJECT ((PickIndex)0x06)
+#define WRAP_OBJECT ((PickIndex)0x07)
+#define CONSTRAINT_OBJECT ((PickIndex)0x08)
+#define DEFORM_OBJECT ((PickIndex)0x09)
+#define JOINT_AXIS_OBJECT ((PickIndex)0x0a)
+#define BODY_FRAME_OBJECT ((PickIndex)0x0b)
+#define MOTION_OBJECT ((PickIndex)0x0c)
+#define FORCE_MATTE_OBJECT ((PickIndex)0x0d)
+#define CONTACT_OBJECT ((PickIndex)0x0e)
+#define SPRING_FLOOR_OBJECT ((PickIndex)0x0f)
+#define SPRING_OBJECT ((PickIndex)0x10)
+#define MASS_OBJECT ((PickIndex)0x11)
+#define INERTIA_OBJECT ((PickIndex)0x12)
+#define SHADOW_OBJECT ((PickIndex)0x13)
+#define CONSTRAINT_POINT_OBJECT ((PickIndex)0x14)
 #define DRAW_ALL -1
 
 #define BF 1
@@ -64,8 +73,6 @@
 #define TOP 25
 #define BOTTOM 44
 #define RIGHT 20
-#define XAXIS 0
-#define YAXIS 2
 
 #define LEFTMARGIN 8
 
@@ -77,9 +84,7 @@
 
 #define PLOTMARGIN 15
 
-#define TITLETOP 863
-#define TITLEBOT 835
-
+#define GENCOORD_ARRAY_INCREMENT 10
 #define MUSCLE_ARRAY_INCREMENT 15
 #define MUSCGROUP_ARRAY_INCREMENT 10
 #define MUSCINDEX_ARRAY_INCREMENT 20
@@ -93,13 +98,20 @@
 #define CONSTRAINT_OBJECT_ARRAY_INCREMENT 10
 #define CP_ARRAY_INCREMENT 10
 
+#define NEW_MUSCLE_INDEX -6
+#define DEFAULT_MUSCLE_INDEX -5
+
 #define START_MATERIALS 50
 
-#define MAXMOTIONCURVES 5000
+#define MAXMOTIONCURVES (MAX_GENCOORDS * 10)
 #define MAXSAVEDVIEWS 5
 #define MAX_POLY_INTERS 20
-#define REALTIME_MENU_ITEM 1000
-#define NO_MOTION_OPTION 1000
+
+// The following should really be equal to MAX_NUM_MOTIONS, but there is no such constant.
+#define REALTIME_MENU_ITEM (MAX_GENCOORDS * 2)
+#define NO_MOTION_OPTION (MAX_GENCOORDS * 2)
+
+#define DEFAULT_MOTION_SPEED 100.0
 
 #define MAX_WRAPS_PER_MUSCLE 5
 
@@ -110,9 +122,7 @@
 #define DEFAULT_LOOP_WEIGHT 10.0
 #define DEFAULT_SOLVER_ACCURACY 1e-4
 
-#define MAX_EVENTS 12
-
-#define TIME -1
+#define TIME ((void*)0xcafebeef)
 
 #define BOOL_EPSILON        0.00001
 #define BOOL_EPSILON_SQR    0.0000000001
@@ -139,6 +149,8 @@
 #define UNDEFINED_SEGMENT -2
 #define UNDEFINED_MARKER -2
 
+#define FUNCTION_MENU_START 1000
+
 ENUM {
    rtMocap,
    rtSimulation,
@@ -157,6 +169,15 @@ ENUM {
    rotation_gencoord,
    translation_gencoord
 } GencoordType;                      /* type of a gencoord */
+
+
+ENUM {
+   TFL_CURVE = 0,
+   AFL_CURVE,
+   PFL_CURVE,
+   FV_CURVE,
+   EXC_CURVE
+} MuscleFunctionType;
 
 
 ENUM {
@@ -214,6 +235,8 @@ ENUM {
    new_ascii,
    binary,
 	wavefront,
+   stl_ascii,
+   stl_binary,
    unknown,
    file_not_found
 } FileType;
@@ -247,20 +270,10 @@ enum {                               /* bit flags for display_animation_hz */
    DISPLAY_POLYS_PER_SEC = 0x04
 };
 
-
 STRUCT {
    double start;                     /* starting value of range */
    double end;                       /* ending value of range */
 } Range;                             /* a generalized coordinate range */
-
-
-ENUM {
-   wrap_sphere,
-   wrap_cylinder,
-   wrap_ellipsoid,
-   wrap_torus,
-   wrap_none
-} WrapObjectType;                    /* objects that muscles can wrap over */
 
 ENUM {
    constraint_sphere = 0,
@@ -271,107 +284,14 @@ ENUM {
 } ConstraintObjectType;
 
 STRUCT {
-   int     start;            /* input:  wrap starting muscle point index */
-   int     end;              /* input:  wrap ending muscle point index */
-   double* wrap_pts;         /* output: array of wrapping path points */
-   int     num_wrap_pts;     /* output: size of 'wrap_pts' array */
-   double  wrap_path_length; /* output: distance along curved r1->r2 path */
-   double  r1[3];            /* output: wrap tangent point nearest to p1 */
-   double  r2[3];            /* output: wrap tangent point nearest to p2 */
-} WrapParams;
-
-
-STRUCT {
-   SBoolean     isLine;
-   double       p1[3];
-   double       p2[3];
-   float        radius;
-   const char*  name1;
-   const char*  name2;
-   const float* color;
-} DebugGlyph;
-
-#define MAX_DEBUG_GLYPHS 300
-
-STRUCT {
-   char*    name;                    /* name of wrap object */
-   WrapObjectType wrap_type;         /* type of wrap object */
-   int      wrap_algorithm;          /* default wrap algorithm for wrap object */
-   int      segment;                 /* body segment object is fixed to */
-   long     display_list;            /* only used for cylinder */
-   SBoolean display_list_is_stale;
-   SBoolean active;                  /* is the wrap object active? */
-   SBoolean visible;                 /* is the wrap object visible? */
-   SBoolean show_wrap_pts;           /* draw wrap point xyz coordinates? */
-   Coord3D  radius;                  /* wrap object radius */
-   double   height;                  /* wrap object height (cylinder only) */
-   int      wrap_axis;               /* which axis to wrap over */
-   int      wrap_sign;               /* which side of wrap axis to use */
-   Coord3D  rotation_axis;           /* local-to-parent transform parameter */
-   double   rotation_angle;          /* local-to-parent transform parameter */
-   Coord3D  translation;             /* local-to-parent transform parameter */
-   SBoolean xforms_valid;            /* do xform matrices need recalculation? */
-   DMatrix  from_local_xform;        /* wrapobj-to-parent transform matrix */
-   DMatrix  to_local_xform;          /* parent-to-wrapobj transform matrix */
-   Coord3D  undeformed_translation;
-#if 1
-   int      num_debug_glyphs;
-   DebugGlyph glyph[MAX_DEBUG_GLYPHS];
-#endif
-} WrapObject;
-
-STRUCT {
    double a, b, c, d;
 } PlaneStruct;
 
 
 STRUCT {
-   char *name;
-   int segment;
-   double offset[3];
-   double weight;
-   double tolerance;
-   SBoolean visible;
-   SBoolean active;
-   SBoolean broken;
-} ConstraintPoint;
-
-
-STRUCT {
-   char *name;                            /* name of constraint object */
-   ConstraintObjectType constraintType;   /* type of constraint object */
-   int      segment;                      /* body segment object is fixed to */
-   SBoolean active;                       /* is the constraint object active? */
-   SBoolean visible;                      /* is the constraint object visible? */
-   Coord3D  radius;                       /* constraint object radius */
-   double   height;                       /* constraint object height (cylinder only) */
-   PlaneStruct plane;                     /* plane parameters (plane only) */
-   int      constraintAxis;               /* which axis to constrain over */
-   int      constraintSign;               /* which side of constraint axis to use */
-   Coord3D  rotationAxis;                 /* local-to-parent transform parameter */
-   double   rotationAngle;                /* local-to-parent transform parameter */
-   Coord3D  translation;                  /* local-to-parent transform parameter */
-   SBoolean xforms_valid;                 /* do xform matrices need recalculation? */
-   DMatrix  from_local_xform;             /* consobj-to-parent transform matrix */
-   DMatrix  to_local_xform;               /* parent-to-consobj transform matrix */
-   Coord3D  undeformed_translation;
-   int cp_array_size;                     /* size of array of constraint points */
-   int numPoints;                         /* number of constraint points */
-   ConstraintPoint *points;               /* constraint points */
-   int num_qs;
-   int num_jnts;
-   int *joints;
-   int *qs;
-   long     display_list;                 /* only used for cylinder */
-   SBoolean display_list_is_stale;
-//   SBoolean broken;
-} ConstraintObject;
-
-
-STRUCT {
-   Coord3D  rotation_axis;           /* local-to-parent transform parameter */
+   dpCoord3D  rotation_axis;           /* local-to-parent transform parameter */
    double   rotation_angle;          /* local-to-parent transform parameter */
-   Coord3D  translation;             /* local-to-parent transform parameter */
+   dpCoord3D  translation;             /* local-to-parent transform parameter */
    SBoolean xforms_valid;            /* do xform matrices need recalculation? */
    int      ref_count;               /* used to track a specific instance of an xform */
    DMatrix  from_local_xform;        /* wrapobj-to-parent transform matrix */
@@ -385,8 +305,8 @@ STRUCT {
    SBoolean visible;                 /* is the deform object visible? */
    SBoolean autoReset;               /* special case -- auto-reset deformation */
    SBoolean translationOnly;         /* auto-reset translations only? */
-   Coord3D  innerMin, innerMax;      /* inner deform box */
-   Coord3D  outerMin, outerMax;      /* outer deform box */
+   dpCoord3D  innerMin, innerMax;      /* inner deform box */
+   dpCoord3D  outerMin, outerMax;      /* outer deform box */
    XForm    position;                /* outer box placement (in segment frame) */
    XForm    deform_start;            /* inner box starting placement (in segment frame) */
    XForm    deform_end;              /* inner box ending placement (in segment frame) */
@@ -422,7 +342,7 @@ STRUCT {
    Condition condition;              /* condition (dirty,clean) of matrices */
    DMatrix forward;                  /* forward transform for ref frames */
    DMatrix inverse;                  /* backward transform for ref frames */
-#ifndef ENGINE
+#if ! ENGINE
    GLfloat gl_forward[16];           /* float matrix for use in GL calls */
    GLfloat gl_inverse[16];           /* float matrix for use in GL calls */
 #endif
@@ -437,41 +357,8 @@ STRUCT {
 
 
 STRUCT {
-   int segment;                      /* segment this muscle point is fixed to */
-   SBoolean selected;                /* whether or not point has been selected */
-   double point[3];                  /* xyz coordinates of the point */
-   double ground_pt[3];              /* coords of point in ground frame */
-   int fcn_index[3];                 /* index of function for moving point (3 coordinates - 3 possible functions) */
-   int gencoord[3];                  /* index of gencoord for moving point (3 coordinates - 3 possible gencoords) */
-   SBoolean isMovingPoint;           /* whether the point has non-constant coordinates */
-   SBoolean isVia;                   /* is the point a via point? */
-   PointRange viaRange;              /* the range of the via point */
-   SBoolean is_auto_wrap_point;      /* was this point calc-ed by auto wrapper? */
-   double wrap_distance;             /* stores distance of wrap over object surface */
-   double* wrap_pts;                 /* points wrapping over surface */
-   int num_wrap_pts;                 /* number of points wrapping over surface */
-   double undeformed_point[3];       /* 'point' prior to deformation */
-} MusclePoint;                       /* properties of a muscle point */
-
-
-STRUCT {
-   int segment;                      /* segment this muscle point is fixed to */
-   int state;                        /* is this point on or off */
-   double point[3];                  /* xyz coordinates of the point */
-   double ground_pt[3];              /* coords of point in ground frame */
-   int fcn_index[3];                 /* index of function for moving point */
-   int gencoord[3];                  /* index ofgencoord for moving point */
-   int normal_count;                 /* number of polygons used for this normal */
-   float normal[3];                  /* point normal used for ligaments */
-   int numranges;                    /* number of ranges where point is active */
-   PointRange* ranges;               /* array of ranges */
-   double undeformed_point[3];       /* 'point' prior to deformation */
-} LigamentPoint;                     /* properties of a muscle point */
-
-
-STRUCT {
    char* name;                       /* name of muscle group */
-   int number_of_muscles;            /* number of muscles in group */
+   int num_muscles;                  /* number of muscles in group */
    int muscindex_array_size;         /* current size of muscle_index array */
    int* muscle_index;                /* list of muscles in group */
    int number_of_columns;            /* width of menu, in columns */
@@ -485,15 +372,8 @@ STRUCT {
    int   num_segments;
    int   seg_array_size;
    int*  segment;
+   int   displaymodemenu;
 } SegmentGroup;
-
-
-STRUCT {
-   char* name;
-   int   num_gencoords;
-   int   genc_array_size;
-   int*  gencoord;
-} GencoordGroup;
 
 
 STRUCT {
@@ -569,6 +449,7 @@ STRUCT {
 STRUCT {
    double coord[3];
    double normal[3];
+   float texture[2];
    int polyhedron_number;
    int thrown_out;
    int old;
@@ -599,6 +480,7 @@ STRUCT {
    int material;
    SBoolean show_normals;
    VertexStruct* undeformed;
+   GLuint texture;
 } PolyhedronStruct;
 
 
@@ -625,14 +507,13 @@ STRUCT {
 STRUCT {
    char* name;
    char* filename;
+   char* texture_filename;
+   char* texture_coords_filename;
    PolyhedronStruct* wobj;
    DrawingMode drawmode;
    SBoolean selected;
    int material;
-   float origin_x;
-   float origin_y;
-   float origin_z;
-   float scale_factor[3];
+   DMatrix transform;
    long drawmodemenu;
 } WorldObject;
 
@@ -641,7 +522,6 @@ STRUCT {
    char *name;                /* name of point */
    int segment;               /* index of segment point is on */
    int floorSegment;          /* index of segment floor is attached to */ 
-   char* floorName;           /* name of corresponding floor object */
    double point[3];           /* xyz coordinates of the point */
    double friction;           /* coefficient of friction with floor */
    double param_a;            /* parameters */
@@ -703,6 +583,7 @@ STRUCT {
    int max_iterations;
    smBoolean joint_limits;
    smBoolean orient_body;
+   smBoolean fg_contact;
 } SolverOptions;
 
 STRUCT {
@@ -746,7 +627,7 @@ STRUCT {
    Condition ground_condition;       /* are matrices currently valid? */
    DMatrix from_ground;              /* transformation from ground to this seg */
    DMatrix to_ground;                /* transformation from this seg to ground */
-#ifndef ENGINE
+#if ! ENGINE
    GLfloat float_from_ground[16];    /* transformation from ground to this seg */
    GLfloat float_to_ground[16];      /* transformation from this seg to ground */
 #endif
@@ -762,10 +643,10 @@ STRUCT {
    ContactObject* forceMatte;        /* force matte (for applying ground forces in DP) */
    int numMarkers;
    int markerArraySize;
-   Marker* marker;                  /* markers for Solver model */
-   double htr_o[3];                 /* origin of htr segment in solver */
-   double htr_x[3];                 /* direction of htr seg Xaxis in solver */
-   double htr_y[3];                 /* direction of htr seg Yaxis in solver */
+   Marker** marker;                  /* markers for Solver model */
+   double htr_o[3];                  /* origin of htr segment in solver */
+   double htr_x[3];                  /* direction of htr seg Xaxis in solver */
+   double htr_y[3];                  /* direction of htr seg Yaxis in solver */
 #if INCLUDE_BONE_EDITOR_EXTRAS
    char* pts_file;
    int num_raw;
@@ -809,16 +690,6 @@ STRUCT {
 
 
 STRUCT {
-   DofType type;                     /* type (constant,function) of dof */
-   DofKey key;                       /* one of: tx, ty, tz, r1, r2, r3 */
-   double value;                     /* current value of this dof */
-   int funcnum;                      /* if type=function, function number */
-   int gencoord;                     /* if type=function, gencoord number */
-   SDDof sd;                         /* holds stuff for SD/FAST */
-} DofStruct;                         /* description of a dof */
-
-
-STRUCT {
    char* name;                       /* name of gencoord */
    double value;                     /* current value of this gencoord */
    double velocity;                  /* current velocity of this gencoord */
@@ -838,16 +709,13 @@ STRUCT {
    double default_value;             /* initial value from joints file */
    SBoolean default_value_specified; /* was default_value specified in joint file? */
    SBoolean used_in_model;           /* is this gencoord used in the model? */
-   int restraint_func_num;           /* torque func that restrains gc throughout ROM */
+   dpFunction* restraint_function;   /* torque func that restrains gc throughout ROM */
    int restraint_sdcode_num;         /* func number in SD/FAST code */
-   int restraint_user_num;           /* func number as user put in joint file */
    SBoolean restraintFuncActive;     /* is restraint function active? */
-   int min_restraint_func_num;       /* torque func that restrains gc at min ROM */
+   dpFunction* min_restraint_function; /* torque func that restrains gc at min ROM */
    int min_restraint_sdcode_num;     /* func number in SD/FAST code */
-   int min_restraint_user_num;       /* func number as user put in joint file */
-   int max_restraint_func_num;       /* torque func that restrains gc at max ROM */
+   dpFunction* max_restraint_function; /* torque func that restrains gc at max ROM */
    int max_restraint_sdcode_num;     /* func number in SD/FAST code */
-   int max_restraint_user_num;       /* func number as user put in joint file */
    int numgroups;                    /* number of groups to which gencoord belongs*/
    int* group;                       /* list of gencoord group numbers */
 #if INCLUDE_MOCAP_MODULE
@@ -861,6 +729,24 @@ STRUCT {
    SBoolean slider_visible;          /* is slider visible in the Model Viewer? */
 	double pd_stiffness;              /* stiffness of gc for inverse simulation */
 } GeneralizedCoord;                  /* properties of a generalized coordinate*/
+
+
+STRUCT {
+   char* name;
+   int num_gencoords;
+   int genc_array_size;
+   GeneralizedCoord** gencoord;
+} GencoordGroup;
+
+
+STRUCT {
+   DofType type;                     /* type (constant,function) of dof */
+   DofKey key;                       /* one of: tx, ty, tz, r1, r2, r3 */
+   double value;                     /* current value of this dof */
+   dpFunction* function;             /* if type=function, pointer to constraint function */
+   GeneralizedCoord* gencoord;       /* if type=function, pointer to gencoord */
+   SDDof sd;                         /* holds stuff for SD/FAST */
+} DofStruct;                         /* description of a dof */
 
 
 STRUCT {
@@ -902,138 +788,45 @@ STRUCT {
 
 
 STRUCT {
-   int wrap_object;                  /* muscle is auto-wrapped over this object */
-   int wrap_algorithm;               /* wrapping algorithm (see constants in wefunctions.h) */
-   int startPoint;                   /* wrap only those muscle segments between startPoint */
-   int endPoint;                     /* and endPoint */
-   double c[3];                      /* previous c point */
-   double r1[3];                     /* previous r1 (tangent) point */
-   double r2[3];                     /* previous r2 (tangent) point */
-   MusclePoint mp_wrap[2];           /* the two muscle points created when the muscle wraps */
-} MuscleWrapStruct;                  /* a wrap object instance for a specific muscle */
-
-STRUCT SaveMusclePath SaveMusclePath;
-
-STRUCT {
-   int num_orig_points;             /* number of user-defined muscle points */
-   int num_points;                   /* total number of muscle points */
-   MusclePoint* mp_orig;             /* list of user-defined muscle points */
-   MusclePoint** mp;                 /* list of muscle points after auto wrapping */
-   int mp_orig_array_size;           /* current size of mp_orig[] */
-   int mp_array_size;                /* current size of mp[] */
-   SaveMusclePath *saved_copy;
-} MusclePathStruct;
-
-STRUCT {
-   char* name;                       /* name of muscle */
-   SBoolean display;                 /* whether or not to display this muscle */
-   SBoolean output;                  /* used only in the Dynamics Pipeline */
-   SBoolean selected;                /* whether or not this muscle is selected */
-   MusclePathStruct *musclepoints; /* pointer to the musclepoints */
-   int numgroups;                    /* number of groups to which musc belongs*/
-   int* group;                       /* list of muscle group numbers */
-   double* max_isometric_force;      /* maximum isometric force */
-   double* pennation_angle;          /* pennation angle of muscle fibers */
-   double* optimal_fiber_length;     /* muscle fiber length */
-   double* resting_tendon_length;    /* resting length of tendon */
-   double* min_thickness;            /* minimum thickness of muscle line */
-   double* max_thickness;            /* maximum thickness of muscle line */
-   int* min_material;                /* material to draw with for activation = 0.0 */
-   int* max_material;                /* material to draw with for activation = 1.0 */
-   double activation;                /* activation level of muscle */
-   double initial_activation;        /* default/initial activation level of muscle */
-   double muscle_tendon_length;      /* musculotendon length */
-   double fiber_length;              /* muscle fiber length */
-   double tendon_length;             /* tendon length */
-   double muscle_tendon_vel;         /* musculotendon velocity */
-   double fiber_velocity;            /* muscle velocity */
-   double tendon_velocity;           /* tendon velocity */
-   double force;                     /* force in musculotendon unit */
-   double generated_power;           /* power generated by this muscle */
-   double applied_power;             /* power this muscle applies to body segments */
-   int nummomentarms;                /* number of moment arms (= # of gencoords) */
-   double* momentarms;               /* list of moment arm values */
-   SplineFunction* tendon_force_len_curve; /* tendon force-length curve */
-   SplineFunction* active_force_len_curve; /* muscle active force-length curve */
-   SplineFunction* passive_force_len_curve; /* muscle passive force-length curve */
-   double* max_contraction_vel;      /* maximum contraction velocity */
-   SplineFunction* force_vel_curve;  /* muscle force-velocity curve */
-   int num_dynamic_params;           /* size of dynamic_params array */
-   char** dynamic_param_names;       /* list of dynamic parameter names */
-   double** dynamic_params;          /* array of dynamic (muscle model) parameters */
-   double dynamic_activation;        /* dynamic value of muscle activation */
-   double energy;                    /* energy muscle has given to body segments */
-   SplineType* excitation_format;    /* format for excitation function */
-   int excitation_abscissa;          /* excit. is func of this gencoord (-1 = time) */
-   double excitation_level;          /* current level of excitation */
-   int excitation_index;             /* excitation data point used last time */
-   SplineFunction* excitation;       /* excitation (activation) sequence */
-   int* muscle_model_index;          /* index for deriv, init, & assign func arrays */
-   SBoolean wrap_calced;             /* has wrapping been calculated/updated? */
-   int numWrapStructs;               /* number of wrap objects used for this muscle */
-   MuscleWrapStruct** wrapStruct;    /* array of wrap objects to auto-wrap over */
-} SaveMuscle;                      /* properties of a musculotendon unit */
-
-STRUCT {
-   char* name;                       /* name of muscle */
-   SBoolean display;                 /* whether or not to display this muscle */
-   SBoolean output;                  /* used only in the Dynamics Pipeline */
-   SBoolean selected;                /* whether or not this muscle is selected */
-   MusclePathStruct *musclepoints;  /* information about muscle points */
-   int numgroups;                    /* number of groups to which musc belongs*/
-   int* group;                       /* list of muscle group numbers */
-   double* max_isometric_force;      /* maximum isometric force */
-   double* pennation_angle;          /* pennation angle of muscle fibers */
-   double* optimal_fiber_length;     /* muscle fiber length */
-   double* resting_tendon_length;    /* resting length of tendon */
-   double* min_thickness;            /* minimum thickness of muscle line */
-   double* max_thickness;            /* maximum thickness of muscle line */
-   int* min_material;                /* material to draw with for activation = 0.0 */
-   int* max_material;                /* material to draw with for activation = 1.0 */
-   double activation;                /* activation level of muscle */
-   double initial_activation;        /* default/initial activation level of muscle */
-   double muscle_tendon_length;      /* musculotendon length */
-   double fiber_length;              /* muscle fiber length */
-   double tendon_length;             /* tendon length */
-   double muscle_tendon_vel;         /* musculotendon velocity */
-   double fiber_velocity;            /* muscle velocity */
-   double tendon_velocity;           /* tendon velocity */
-   double force;                     /* force in musculotendon unit */
-   double generated_power;           /* power generated by this muscle */
-   double applied_power;             /* power this muscle applies to body segments */
-   int nummomentarms;                /* number of moment arms (= # of gencoords) */
-   double* momentarms;               /* list of moment arm values */
-   SplineFunction* tendon_force_len_curve; /* tendon force-length curve */
-   SplineFunction* active_force_len_curve; /* muscle active force-length curve */
-   SplineFunction* passive_force_len_curve; /* muscle passive force-length curve */
-   double* max_contraction_vel;      /* maximum contraction velocity */
-   SplineFunction* force_vel_curve;  /* muscle force-velocity curve */
-   int num_dynamic_params;           /* size of dynamic_params array */
-   char** dynamic_param_names;       /* list of dynamic parameter names */
-   double** dynamic_params;          /* array of dynamic (muscle model) parameters */
-   double dynamic_activation;        /* dynamic value of muscle activation */
-   double energy;                    /* energy muscle has given to body segments */
-   SplineType* excitation_format;    /* format for excitation function */
-   int excitation_abscissa;          /* excit. is func of this gencoord (-1 = time) */
-   double excitation_level;          /* current level of excitation */
-   int excitation_index;             /* excitation data point used last time */
-   SplineFunction* excitation;       /* excitation (activation) sequence */
-   int* muscle_model_index;          /* index for deriv, init, & assign func arrays */
-   SBoolean wrap_calced;             /* has wrapping been calculated/updated? */
-   int numWrapStructs;               /* number of wrap objects used for this muscle */
-   MuscleWrapStruct** wrapStruct;    /* array of wrap objects to auto-wrap over */
-   SaveMuscle *saved_copy;           /* pointer to the saved version of the muscle */
-} MuscleStruct;                      /* properties of a musculotendon unit */
+   char *name;                            /* name of constraint point */
+   int segment;                           /* segment the point is attached to */
+   double offset[3];                      /* point's offset in segment frame from segment origin */
+   double weight;                        /* weight of the point */
+   double tolerance;                     /* tolerance to error between point and surface of constraint */
+  // SBoolean visible;                      /* is the point visible */
+   //SBoolean active;                       /* is the point active */
+   SBoolean broken;                       /* is the point/surface constraint good or broken */
+} ConstraintPoint;
 
 
 STRUCT {
-   int numpoints;                    /* number of attachment points */
-   LigamentPoint* pt;                /* the list of attachment points */
-   int pt_array_size;                /* current size of attachment point array */
-   SBoolean has_wrapping_points;     /* does this line have wrapping pts? */
-   int first_on_point;               /* number of the first active attachment pt */
-   int num_on_points;                /* number of currently active attachment pts */
-} LigamentLine;
+   char *name;                            /* name of constraint object */
+   ConstraintObjectType constraintType;   /* type of constraint object */
+   int      segment;                      /* body segment object is fixed to */
+   SBoolean active;                       /* is the constraint object active? */
+   SBoolean visible;                      /* is the constraint object visible? */
+   dpCoord3D  radius;                       /* constraint object radius */
+   double   height;                       /* constraint object height (cylinder only) */
+   PlaneStruct plane;                     /* plane parameters (plane only) */
+   int      constraintAxis;               /* which axis to constrain over */
+   int      constraintSign;               /* which side of constraint axis to use */
+   dpCoord3D  rotationAxis;                 /* local-to-parent transform parameter */
+   double   rotationAngle;                /* local-to-parent transform parameter */
+   dpCoord3D  translation;                  /* local-to-parent transform parameter */
+   SBoolean xforms_valid;                 /* do xform matrices need recalculation? */
+   DMatrix  from_local_xform;             /* consobj-to-parent transform matrix */
+   DMatrix  to_local_xform;               /* parent-to-consobj transform matrix */
+   dpCoord3D  undeformed_translation;
+   int cp_array_size;                     /* size of array of constraint points */
+   int numPoints;                         /* number of constraint points */
+   ConstraintPoint *points;               /* constraint points */
+   int num_qs;                           /* number of qs affected by constraint */
+   int num_jnts;                         /* number of joints affected by constraint */
+   int *joints;                          /* list of joints affected by constraint */
+   GeneralizedCoord** qs;                /* list of gencoords affected by constraint */
+   long     display_list;                 /* only used for cylinder */
+   SBoolean display_list_is_stale;
+} ConstraintObject;
 
 
 STRUCT {
@@ -1043,9 +836,10 @@ STRUCT {
    double activation;                /* for color display */
    int numlines;                     /* number of ligament lines */
    int line_array_size;              /* current size of ligament line array */
-   LigamentLine* line;               /* array of lines which define ligament border */
+   dpMusclePathStruct* line;         /* array of lines which define ligament border */
    DrawingMode drawmode;             /* how to display this ligament */
    SBoolean show_normals;            /* display surface normal vectors? */
+   SBoolean wrap_calced;             /* has wrapping been calculated? */
 } LigamentStruct;                    /* properties of a musculotendon unit */
 
 
@@ -1059,7 +853,7 @@ STRUCT{
 } DglValueStruct;                  
 
 
-STRUCT {                        /* ---- motion object record: */
+STRUCT {                             /* ---- motion object record: */
    char* name;                       /* the motion object's name */
    char* filename;                   /* the motion object's file name */
    SBoolean defined_in_file;
@@ -1073,8 +867,7 @@ STRUCT {                        /* ---- motion object record: */
    PolyhedronStruct shape;           /* the motion object's polyhedron */
 } MotionObject;
 
-enum
- {                          /* ---- motion object channel componant ids: */
+enum {                               /* ---- motion object channel componant ids: */
    MO_TX, MO_TY, MO_TZ,              /* translation or position */
    MO_VX, MO_VY, MO_VZ,              /* vector */
    MO_SX, MO_SY, MO_SZ,              /* scale */
@@ -1082,14 +875,23 @@ enum
    MO_X, MO_Y, MO_Z                  /* axis */
 };
 
+ENUM {
+   UnknownMotionObject = 0,
+   MarkerMotionObject,
+   ForceMotionObject,
+	FootPrintObject,
+	ForcePlateObject
+} MotionObjectType;
 
-STRUCT {                        /* ---- motion object animation channel record: */
+STRUCT {                             /* ---- motion object animation channel record: */
    int component;                    /* animated componant (see componant ids above) */
    int column;                       /* motion column index */
 } MotionObjectChannel;
 
 
-STRUCT {                        /* ---- motion object instance record: */
+STRUCT {                             /* ---- motion object instance record: */
+   char* name;
+   MotionObjectType type;            /* marker, force, etc. */
    int object;                       /* the motion object's definition */
    int segment;                      /* the body segment to which the motion object is attached */
    int num_channels;                 /* the number of animated channels for this motion object */
@@ -1099,6 +901,7 @@ STRUCT {                        /* ---- motion object instance record: */
    double current_value;             /* */
    DrawingMode drawmode;             /* the motion object's current draw mode */
    SBoolean visible;
+   GLuint aux_display_obj;
 } MotionObjectInstance;
 
 
@@ -1108,7 +911,7 @@ STRUCT {
    double** gencoords;               /*  */
    double** genc_velocities;         /*  */
    int num_motion_object_instances;
-   MotionObjectInstance* motion_object_instances;
+   MotionObjectInstance** motion_object_instance;
    double** muscles;                 /* for activation levels of muscles */
    double** ligaments;               /* for activation levels of ligaments */
    double** other_data;              /*  */
@@ -1120,13 +923,13 @@ STRUCT {
    long markermenu;                  /* popup menu of markers */
    long motionobjectmenu;            /* popup menu of motion objects */
    long othermenu;                   /* popup menu of other data columns */
+   SBoolean show_markers;            /*  */
+   SBoolean show_marker_trails;      /*  */
+   SBoolean show_forces;             /*  */
+   SBoolean show_force_trails;       /*  */
+   SBoolean show_foot_prints;        /*  */
+	SBoolean show_force_plates;
 } MotionModelOptions;                /*  */
-
-
-STRUCT {
-   char* name;
-   double x_coord;
-} MotionEvent;
 
 
 STRUCT {
@@ -1154,10 +957,14 @@ STRUCT {
    double** motiondata;              /* the actual motion data */
    double** data_std_dev;            /* standard deviations */
    int num_events;                   /* number of motion events */
-   MotionEvent* event;               /* array of motion events */
+   smMotionEvent* event;             /* array of motion events */
    GLfloat event_color[3];           /* color for event lines and text in plots */
    int realtime_circular_index;      /* magical index used to continuously add realtime samples */
    int simulation_index;             /* index of latest results from a simulation DLL */
+   smAxes walk_direction;            /* for gait motions */
+   smAxes vertical_direction;        /* primarily for gait motions */
+   int time_column;                  /* index of column that contains time values */
+   int x_column;                     /* index of column that serves as X variable (time, percent, etc.) */
 } MotionSequence;                    /* holds a motion sequence, from a file */
 
 
@@ -1181,7 +988,7 @@ STRUCT {
    double end;                       /* ending value of x-variable for curve */
    MotionSequence* motion;           /* if xvar is a motion, pointer to the motion */
    struct ModelStruct* ms;           /*    and model structures are stored here. */
-   int genc;                         /* gencoord number, if xvar is a gencoord */
+   GeneralizedCoord* gencoord;       /* gencoord number, if xvar is a gencoord */
    int motion_column;                /* index of data column, if xvar is a motion curve */
    char name[150];                   /* name of x variable */
 } XvarStruct;                        /* contains plotmaker xvar information */
@@ -1190,7 +997,7 @@ STRUCT {
 STRUCT {
    YvarType type;                    /* type of yvar (MOMENT_TYPE, OTHER_TYPE) */
    int yvariable;                    /* the y variable chosen for plotting */
-   int genc;                         /* if MOMENT_TYPE, the gencoord to use */
+   GeneralizedCoord* gencoord;       /* if MOMENT_TYPE, the gencoord to use */
    MotionSequence* motion;           /* if yvar is a motion curve, pointer to the motion */
    int motion_column;                /* if a motion variable, the motion column */
    double min;                       /* minimum value for clipping */
@@ -1230,7 +1037,7 @@ STRUCT {
    int realtime_update_index;        /* index used to update curves in realtime */
    int simulation_index;             /* index of latest frame from simulation DLL */
    int num_events;                   /* number of events in array */
-   MotionEvent* event;               /* array of motion events, if curve is from a motion */
+   smMotionEvent* event;             /* array of motion events, if curve is from a motion */
    GLfloat event_color[3];           /* color for displaying event lines and text */
 } CurveStruct;                       /*  */
 
@@ -1280,8 +1087,8 @@ STRUCT {
    SBoolean show_cursor;             /*  */
    SBoolean show_events;             /*  */
    SBoolean needs_bounding;
-   int numFileEvents;                /* number of plot file events */
-   PlotFileEvent *fileEvent;         /* events (originally from motions) read in from a plot file */
+   int num_file_events;              /* number of plot file events */
+   PlotFileEvent* file_event;        /* events read in from a plot file */
 } PlotStruct;                        /*  */
 
 
@@ -1327,43 +1134,24 @@ STRUCT {
 
 
 STRUCT {
-   int windowX1, windowY1;           /* coordinates of lower left corner of model window */
-   int windowHeight, windowWidth;    /* height and width of model window */
-   float tx, ty, tz;                 /*  */
-   float start_tx;                   /*  */
-   float start_ty;                   /*  */
-   float start_tz;                   /*  */
-   short rx, ry, rz;                 /*  */
-   int camera_segment;               /* the segment the camera is attached to (or -1) */
-   double transform_matrix[4][4];    /*  */
    int default_view;                 /* which of the saved views is the default */
-   GLfloat z_vector[3];              /* world coords of vector out of screen */
-   GLint viewport[4];                /* viewport as returned by OpenGL */
-   GLdouble modelview_matrix[16];    /* model view matrix as returned by OpenGL */
-   GLdouble projection_matrix[16];   /* projection matrix as returned by OpenGL */
-   long view_menu;
    int num_file_views;               /* number of views defined in joints file */
    double saved_view[MAXSAVEDVIEWS][4][4]; /* array of saved view transformations */
    char* view_name[MAXSAVEDVIEWS];        /* names of saved views */
    SBoolean view_used[MAXSAVEDVIEWS];     /* has this view been saved by user? */
+   long view_menu;
    long maindrawmodemenu;            /*  */
    long allsegsdrawmodemenu;         /*  */
    long allligsdrawmodemenu;         /*  */
    long allworlddrawmodemenu;        /*  */
    long alldrawmodemenu;             /*  */
-   GLdouble fov_angle;               /*  */
-   GLdouble aspect_ratio;            /*  */
-   GLdouble near_clip_plane;         /*  */
-   GLdouble far_clip_plane;          /*  */
-   double x_zoom_constant;           /*  */
-   double y_zoom_constant;           /*  */
-   double model_move_increment;      /*  */
+   long eachsegdrawmodemenu;         /*  */
    SBoolean continuous_motion;       /* animate the model continuously? */
-   SBoolean display_motion_info;     /* display info about current motion? */
    unsigned display_animation_hz;    /* bit flags for displaying animation hz */
+   clock_t time_of_last_frame;       /* time that previous frame of motion was displayed */
+   SBoolean display_motion_info;     /* display info about current motion? */
    MotionSequence* applied_motion;   /* motion that is currently applied to model */
    MotionSequence* current_motion;   /* motion linked to hot keys, continuous motion */
-   double motion_value;              /* value of current motion */
    int muscle_array_size;            /*  */
    int nummuscleson;                 /*  */
    int* muscleson;                   /*  */
@@ -1373,55 +1161,47 @@ STRUCT {
 #if INCLUDE_MSL_LENGTH_COLOR
    double muscle_color_factor;       /* controls muscle length colorization */
 #endif
+   double motion_speed;              /*  */
    SBoolean show_selected_coords;    /*  */
-   SBoolean show_crosshairs;         /*  */
    SBoolean show_all_muscpts;        /*  */
    SBoolean fast_muscle_drawing;
    SBoolean show_highlighted_polygon;/*  */
    SBoolean show_shadow;             /*  */
-   SBoolean trackball;               /*  */
    GLfloat background_color[3];      /*  */
-   GLfloat segment_axes_color[3];    /*  */
+   GLfloat crosshairs_color[3];      /*  */
    GLfloat vertex_label_color[3];    /*  */
    GLfloat rotation_axes_color[3];   /*  */
-   GLfloat crosshairs_color[3];      /*  */
    SBoolean background_color_spec;   /*  */
-   SBoolean segment_axes_color_spec; /*  */
+   SBoolean crosshairs_color_spec;   /*  */
    SBoolean vertex_label_color_spec; /*  */
    SBoolean rotation_axes_color_spec;/*  */
-   SBoolean crosshairs_color_spec;   /*  */
-   double current_gear;              /*  */
    SelectedPolygon hpoly;            /*  */
    float muscle_point_radius;        /*  */
    long muscle_point_id;             /*  */
    int numdevs;                      /*  */
    int* devs;                        /* button nums to control joint movement */
    int* dev_values;                  /*  */
-#if INCLUDE_SNAPSHOT
-   int      snapshot_mode;
-   int      snapshot_counter;
-   char*    snapshot_file_base_name;
-   char*    snapshot_file_suffix;
-   SBoolean snapshot_include_depth;
-#endif
    ModelMaterials mat;
-} DisplayStruct;                     /*  */
+} ModelDisplayStruct;
 
-#if INCLUDE_SNAPSHOT
 enum {
    SNAPSHOT_INACTIVE,
    SNAPSHOT_INSTANT,
    SNAPSHOT_CONTINUOUS,
    SNAPSHOT_MOTION
 };
-#endif
+
+enum {
+   MAKEMOVIE_INACTIVE,
+   MAKEMOVIE_CONTINUOUS,
+   MAKEMOVIE_MOTION
+};
 
 STRUCT {
    int shadem;                       /*  */
    float tx, ty, tz;                 /*  */
    short rx, ry, rz;                 /*  */
    int nummuscleson;                 /*  */
-   int* muscleson;                   /*  */
    int musclepts;                    /*  */
    int showpoly;                     /*  */
    SelectedPolygon hpoly;            /*  */
@@ -1430,9 +1210,10 @@ STRUCT {
 
 
 STRUCT {
-   char *name;                       /* joint name, not used yet */
-   int order[4];                     /* transformation order, not used yet */
-   DofStruct dofs[6];                /* the six dofs (rx,ry,rz,tx,ty,tz) */
+   char* name;                       /* joint name, not used yet */
+   int order[4];                     /* transformation order */
+   DofStruct dofs[6];                /* the six dofs (rx, ry, rz, tx, ty, tz) */
+   double parentrotaxes[3][4];       /* rotation axes in parent frame */
 } SaveJoints;                        /* holds a copy of a joint */
 
 STRUCT {
@@ -1464,8 +1245,7 @@ STRUCT {
    SBoolean clamped;
    SBoolean locked;
    Range range;
-   int restraint_func_num;
-   int restraint_user_num;
+   dpFunction* restraint_function;
    SBoolean used_in_model;
 } SaveGencoords;
 
@@ -1482,7 +1262,7 @@ STRUCT {
 STRUCT {
    int muscle;
    int musc_wrap_index;
-   int wrapobj;
+   dpWrapObject* wrap_object;
    int start_pt;
    int end_pt;
    int wrap_algorithm;
@@ -1494,38 +1274,23 @@ STRUCT {
    ConstraintPoint *savedPoints;
 } SaveConstraintPointAssoc;
 
-struct SaveMusclePath {
-   int num_orig_points;             /* number of user-defined muscle points auto-wrap pts */
-   MusclePoint* mp_orig;             /* list of user-defined muscle points */
-   int mp_orig_array_size;           /* current size of mp_orig[] */
-   MuscleStruct *owner;
-   int temp_index;
-};                       /* saved muscle point array */
-
-
 STRUCT {
-   int numsavedmuscs;                /*  */
-   int numsavedpaths;                /*  */
    int numsavedjnts;                 /*  */
    int numsavedgencs;                /*  */
    int numsavedbones;                /*  */
    int numsavedsegments;
    int numsavedmuscgroups;
-   MuscleStruct default_muscle;      /*  */
-   SaveMuscle* muscle;             /*  */
-   SaveMusclePath* musclepath;
    SaveSegments *segment;
    SaveJoints* joint;                /*  */
    SaveGencoords *gencoord;
-   SplineFunction* function;         /*  */
+   dpFunction** function;            /*  */
    SaveDisplay disp;                 /*  */
    MuscleGroup *muscgroup;
-   int            num_wrap_objects;
-   WrapObject*    wrapobj;
-   char**         wrapobjnames;
-   int            num_muscwrap_associations;
+   int num_wrap_objects;
+   dpWrapObject* wrap_object;
+   int num_muscwrap_associations;
    MuscWrapAssoc* muscwrap_associations;
-   int           num_deforms;
+   int num_deforms;
    DeformObject* deform;
    int num_markers;                  /*  */
    SaveMarker* marker;               /*  */
@@ -1533,7 +1298,6 @@ STRUCT {
    SaveConstraintPointAssoc *conspt_associations;
    int num_constraint_objects;
    ConstraintObject *constraintobj;
-   char**         constraintobjnames;
 } ModelSave;                         /*  */
 
 
@@ -1562,7 +1326,7 @@ STRUCT {
    int numworldobjects;              /*  */
    int numclosedloops;               /*  */
 //   int dis_muscle_array_size;
-   int muscle_array_size;            /* current size of MuscleStruct array */
+   int muscle_array_size;            /* current size of dpMuscleStruct array */
    int ligament_array_size;          /* current size of LigamentStruct array */
    int muscgroup_array_size;         /* current size of MuscleGroup array */
    int seggroup_array_size;          /* current size of SegmentGroup array */
@@ -1570,7 +1334,7 @@ STRUCT {
    int genc_array_size;              /* current size of GeneralizedCoord array */
    int segment_array_size;           /* current size of SegmentStruct array */
    int joint_array_size;             /* current size of JointStruct array */
-   int func_array_size;              /* current size of SplineFunction array */
+   int func_array_size;              /* current size of dpFunction array */
    int currentframe;                 /*  */
    int pushedframe;                  /*  */
    int longest_genc_name;            /* length, in pixels, of longest gencoord name */
@@ -1582,27 +1346,22 @@ STRUCT {
    SBoolean specified_min_thickness; /* did user specify min_thickness of def musc? */
    SBoolean specified_max_thickness; /* did user specify max_thickness of def musc? */
    long musclegroupmenu;             /* pop-up muscle group menu */
-   long musclegroupcascademenu;      /* pop-up muscle group cascade menu */
-   long *musclegroupsubmenu;        /* */
    long jointmenu;                   /* pop-up joint menu */
-   long jointmenu2;                  /* pop-up joint menu for jrf x */
-   long jointmenu3;                  /* pop-up joint menu for jrf y */
-   long jointmenu4;                  /* pop-up joint menu for jrf z */
-   long jointmenu5;                  /* pop-up joint menu for jrf magnitude */
    long xvarmenu;                    /* pop-up x-var menu (gencoords and motions) */
    long gencoordmenu;                /* pop-up gencoord menu */
-   long gencoordmenu2;                /* pop-up gencoord menu */
+   long gencoordmenu2;               /* pop-up gencoord menu */
    long gencoord_group_menu;         /* pop-up gencoord group menu */
    long momentgencmenu;              /* gencoord menu used for moment y-var */
    long momentarmgencmenu;           /* gencoord menu used for moment arm y-var */
    long momentarmnumgencmenu;        /* gencoord menu used for moment arm y-var */
    long maxmomentgencmenu;           /* gencoord menu used for maxmoment y-var */
-   long doftypemenu;                 /* jointeditor menu for selecting dof types */
    long segmentmenu;                 /* pop-up menu of segment names */
    long motionplotmenu;              /* pop-up menu of motions linked to this model */
+   long motionwithrealtimemenu;      /* pop-up menu of motions, with RT option, no column data */
    long motionmenu;                  /* pop-up menu of motions, no column data */
    long material_menu;               /* pop-up menu of materials */
    long markerMenu;                  /* pop-up menu of segment-based marker links */
+   long functionMenu;                /* pop-up menu of functions */
    double max_dimension;             /* size of largest dimension of model (segments only) */
    double max_dimension2;            /* size of largest dimension of model (segments + world objects) */
    double max_diagonal;              /* diagonal dimension of scene bounding box (segments + world objects) */
@@ -1626,16 +1385,14 @@ STRUCT {
    MuscleGroup* muscgroup;           /* array of muscle group menus */
    SegmentGroup* seggroup;           /* array of segment groups */
    GencoordGroup* gencgroup;         /* array of gencoord groups */
-   GeneralizedCoord* gencoord;       /*  */
-   SplineFunction* function;         /* functions used for dofs and gencoords and muscle points */
-   MuscleStruct* muscle;             /*  */
-   MuscleStruct default_muscle;      /*  */
+   GeneralizedCoord** gencoord;      /*  */
+   dpFunction** function;            /* functions used for dofs and gencoords and muscle points */
+   dpMuscleStruct** muscle;          /* array of pointers to muscles */
+   dpMuscleStruct* default_muscle;   /*  */
    LigamentStruct* ligament;         /* array of ligament structures */
-   DisplayStruct dis;                /*  */
+   ModelDisplayStruct dis;           /*  */
    ModelSave save;                   /*  */
    TextLine genc_help[2*GENBUFFER];  /* help text for controlling gencs with keys*/
-   int num_dynamic_params;           /* size of dynamic_param_names array */
-   char** dynamic_param_names;       /* names of dynamic muscle parameters */
    SBoolean dynamics_ready;          /* were all required dynamics params specified? */
    int numContactPairs;              /*  */
    int contactPairArraySize;         /*  */
@@ -1647,7 +1404,7 @@ STRUCT {
    MotionObject* motion_objects;
    int num_wrap_objects;
    int wrap_object_array_size;
-   WrapObject* wrapobj;
+   dpWrapObject** wrapobj;
    int num_deformities;
    int deformity_array_size;
    Deformity* deformity;
@@ -1668,20 +1425,60 @@ STRUCT {
    int num_motions;
    int motion_array_size;
    MotionSequence** motion;
-#ifndef ENGINE
+#if ! ENGINE
    glut_mutex_t modelLock;
 #endif
    SBoolean realtimeState;
 } ModelStruct;
 
+STRUCT {
+   int window_index;                 /* index into array of all SIMM windows */
+   int window_glut_id;               /* identifier returned by glueOpenWindow() */
+   int scene_num;
+   int num_models;
+   ModelStruct** model;              /* models in this scene */
+   int windowX1, windowY1;           /* coordinates of lower left corner of model window */
+   int windowHeight, windowWidth;    /* height and width of model window */
+   float tx, ty, tz;                 /*  */
+   float start_tx;                   /*  */
+   float start_ty;                   /*  */
+   float start_tz;                   /*  */
+   short rx, ry, rz;                 /*  */
+   ModelStruct* camera_segment_model;
+   int camera_segment;               /* the segment the camera is attached to (or -1) */
+   double max_diagonal;
+   double transform_matrix[4][4];    /*  */
+   GLfloat z_vector[3];              /* world coords of vector out of screen */
+   GLint viewport[4];                /* viewport as returned by OpenGL */
+   GLdouble modelview_matrix[16];    /* model view matrix as returned by OpenGL */
+   GLdouble projection_matrix[16];   /* projection matrix as returned by OpenGL */
+   GLdouble fov_angle;               /*  */
+   GLdouble aspect_ratio;            /*  */
+   GLdouble near_clip_plane;         /*  */
+   GLdouble far_clip_plane;          /*  */
+   double x_zoom_constant;           /*  */
+   double y_zoom_constant;           /*  */
+   double model_move_increment;      /*  */
+   SBoolean show_crosshairs;         /*  */
+   SBoolean trackball;               /*  */
+   GLfloat background_color[3];      /*  */
+   GLfloat crosshairs_color[3];      /*  */
+   int      snapshot_mode;
+   int      snapshot_counter;
+   char*    snapshot_file_suffix;
+   SBoolean snapshot_include_depth;
+   int movie_mode;
+   char* movie_file;
+} Scene;
+
 typedef struct loopstruct {
    ModelStruct *ms;
    int model_num;
-   int locked_q;
+   GeneralizedCoord* locked_q;
    double q_value;
    int num_qs;
    int num_resids;
-   int *qs;
+   GeneralizedCoord** qs;
    int *segs;
    int *joints;
    int num_segs;
@@ -1692,16 +1489,16 @@ typedef struct loopstruct {
 STRUCT {
    ModelStruct *ms;
    SBoolean *loopUsed;
-   int *gencoord_list;
-   int controlled_gc;
+   GeneralizedCoord** gencoord_list;
+   GeneralizedCoord* controlled_gc;
    double controlled_value;
    SBoolean first_iter;
 } IKStruct;
 
 STRUCT {
    ModelStruct *model;
-   int *gencoord_list;
-   int controlled_gc;
+   GeneralizedCoord** gencoord_list;
+   GeneralizedCoord* controlled_gc;
    double controlled_value;
    SBoolean first_iter;
    SBoolean test;
@@ -1712,10 +1509,10 @@ STRUCT {
 STRUCT {
    ModelStruct *model;
    SBoolean first_iter;
-   int controlled_gc;
+   GeneralizedCoord* controlled_gc;
    double controlled_value;
    int numQs;
-   int *gencoord_list;
+   GeneralizedCoord** gencoord_list;
    IKStruct *loopInfo;
    ConstraintSolverStruct *constraintInfo;
    int numConstraintQs;
@@ -1775,15 +1572,6 @@ STRUCT {
 } NormOptions;
 
 STRUCT {
-   SBoolean loop;
-   int joint;
-   int body1;
-   int body2;
-   double coords1[3];
-   double coords2[3];
-} MarkerStruct;
-
-STRUCT {
    char* name;
    double mass;
    double mass_center[3];
@@ -1810,6 +1598,22 @@ STRUCT {
 STRUCT {
    SBoolean preserveMassDist;
 } ScaleModelOptions;
+
+STRUCT {
+   Scene* scene;
+   ModelStruct* model;
+   int pan_mx_old;
+	int pan_my_old;
+   double pan_wx_old;
+	double pan_wy_old;
+	double pan_wz_old;
+} MoveObjectTracker;
+
+STRUCT {
+   Scene* scene;
+   ModelStruct* model;
+   PickIndex object;
+} SelectedObject;
 
 #endif /*MODELPLOT_H*/
 

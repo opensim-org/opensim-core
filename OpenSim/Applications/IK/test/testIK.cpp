@@ -30,87 +30,47 @@
 #include <string>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Tools/IKTool.h>
+#include <OpenSim/Tools/IKTrialSet.h>
 
 using namespace std;
 using namespace OpenSim;
 
-string filesToCompare[] = {
-	"subject_trial_ik.mot"
-};
+bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
+{
+	actualStorage.subtract(&stdStorage);
+	bool equal = true;
+	Array<double> dData(-SimTK::Infinity);
+	for (int i=0; i <actualStorage.getSize() && equal; i++){
+		dData = actualStorage.getStateVector(i)->getData();
+		double dMax = -SimTK::Infinity;
+		for (int j=0; j<dData.getSize(); j++)
+			dMax = std::max(dMax, fabs(dData[j]));
+		equal = (dMax <= tol);
+	}
+	return equal;
+}
+
 //______________________________________________________________________________
 /**
-* Test program to read SIMM model elements from an XML file.
+* Test program to read test IK.
 *
-* @param argc Number of command line arguments (should be 1).
-* @param argv Command line arguments:  simmReadXML inFile
 */
-int main(int argc,char **argv)
+int main()
 {
-// Eran: comment out everything for now because we now use InvestigationIK
-#if 0
 	// Construct model and read parameters file
-	Object::RegisterType(ScaleTool());
-	ScaleTool::registerTypes();
-	ScaleTool* subject = new ScaleTool("subject_ik_setup.xml");
-	Model* model = subject->createModel();
+	IKTool* tool = new IKTool("subject01_Setup_IK.xml");
+	Model& model = tool->getModel();
 
-	//----------------------- Model scaling section
-	if (!subject->isDefaultModelScaler())
-	{
-		ModelScaler& scaler = subject->getModelScaler();
-		scaler.processModel(model, subject->getPathToSubject(), subject->getMass());
-	}
-	else
-	{
-		cout << "ModelScaler parameters have not been defined. The generic model will not be scaled." << endl;
-	}
-
-	//----------------------- Marker placement section
-	if (!subject->isDefaultMarkerPlacer())
-	{
-		MarkerPlacer& placer = subject->getMarkerPlacer();
-		placer.processModel(model, subject->getPathToSubject());
-	}
-	else
-	{
-		cout << "MarkerPlacer parameters have not been defined. No markers have been moved." << endl;
-	}
-
-	//--------------------- IK proper section
-	{
-		try 
-		{
-			if (!subject->isDefaultIKSolver())
-			{
-				SimmIKSolver& solver = subject->getIKSolver();
-				solver.processModel(model, subject->getPathToSubject());
-			}
-			else
-			{
-				cout << "IK Solver parameters not set. No IK has been performed." << endl;
-			}
-		}
-		catch (Exception &x)
-		{
-			x.print(cout);
-			cout << "Press Return to continue." << endl;
-			cout.flush();
-			int c = getc( stdin );
-			return 1;
-		}
-	}
-	delete subject;
-
-	/* Compare results with standard*/
-	bool success = true;
-	for (int i=0; i < 1 && success; i++){
-		string command = "cmp "+filesToCompare[i]+" "+"std_"+filesToCompare[i];
-		success = success && (system(command.c_str())==0);
-	}
-
-	return (success?0:1);
-#endif
+    SimTK::State& s = model.initSystem();
+    model.getSystem().realize(s, SimTK::Stage::Position );
+	tool->run();
+	Storage *actualOutput = tool->getIKTrialSet()[0].getOutputStorage();
+	Storage stdStorage("std_subject_trial_ik.mot");
+	bool equal = equalStorage(stdStorage, *actualOutput, 5e-2);
+	std::cout << (equal?"Success":"Failure") << endl;
+	delete tool;
+	return (equal?0:1);
 }
 

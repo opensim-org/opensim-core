@@ -53,8 +53,8 @@ XForm* get_deform_xform(DeformObject*, int deformMode);
 XForm* get_deform_xform2(DeformObject*, int deformMode, double factor);
 XForm* get_deform_xform3(DeformObject*, int deformMode, double factor);
 
-void save_all_deform_objects(int mod);
-void restore_all_deform_objects(int mod);
+void save_all_deform_objects(ModelStruct* ms);
+void restore_all_deform_objects(ModelStruct* ms);
 void delete_deform_object(int deformobj);
 
 void do_de_help();
@@ -62,7 +62,7 @@ void draw_de_help_window(WindowParams*, WinUnion*);
 void de_help_input(WindowParams*, WinUnion*, SimmEvent);
 void move_de_help_text(int dummy_int, double slider_value, double delta);
 
-void draw_deform_objects(ModelStruct*, SegmentStruct*);
+void draw_deform_objects(ModelStruct* model, SegmentStruct* seg, int segment_index, ModelDrawOptions* mdo);
 
 DeformObject* lookup_deform(ModelStruct*, const char* deformName);
 

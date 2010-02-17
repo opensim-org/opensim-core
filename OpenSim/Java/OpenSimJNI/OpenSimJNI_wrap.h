@@ -11,16 +11,16 @@
 #ifndef SWIG_opensimModel_WRAP_H_
 #define SWIG_opensimModel_WRAP_H_
 
-class SwigDirector_SimtkAnimationCallback : public OpenSim::SimtkAnimationCallback, public Swig::Director {
+class SwigDirector_AnalysisWrapper : public OpenSim::AnalysisWrapper, public Swig::Director {
 
 public:
     void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
-    SwigDirector_SimtkAnimationCallback(JNIEnv *jenv, OpenSim::Model *aModel, OpenSim::Model *aModelForDisplay = 0);
-    virtual ~SwigDirector_SimtkAnimationCallback();
+    SwigDirector_AnalysisWrapper(JNIEnv *jenv, OpenSim::Model *aModel = 0);
+    virtual ~SwigDirector_AnalysisWrapper();
     virtual OpenSim::Object *copy() const;
     virtual OpenSim::Object *copy(DOMElement *aNode) const;
-    virtual void migrateFromPreviousVersion(OpenSim::Object const *aObject);
-    virtual OpenSim::VisibleObject *getDisplayer() const;
+    virtual OpenSim::VisibleObject const *getDisplayer() const;
+    virtual OpenSim::VisibleObject *updDisplayer();
     virtual std::string const &getNewType() const;
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
     virtual void updateFromXMLNode();
@@ -28,19 +28,23 @@ public:
     virtual void updateXMLNode(DOMElement *aParent, int aNodeIndex = 0);
     virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
     virtual void generateXMLNode(DOMElement *aParent, int aNodeIndex = 0);
-    virtual void update(OpenSim::Object const &aObject, Event &aEvent);
+    virtual void update(OpenSim::Object const &aObject, OpenSim::Event &aEvent);
     virtual bool isA(char const *type) const;
-    virtual void setModel(OpenSim::Model *arg0);
+    virtual void copy(OpenSim::Object const &aObject);
+    virtual int begin(SimTK::State const &s);
+    virtual int step(SimTK::State const &s, int stepNumber);
+    virtual int end(SimTK::State const &s);
+    virtual void setModel(OpenSim::Model &aModel);
+    virtual void setStatesStore(OpenSim::Storage const &aStatesStore);
     virtual bool proceed(int aStep = 0);
-    virtual int begin(int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
-    virtual int step(double *aXPrev, double *aYPrev, double *aYPPrev, int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
-    virtual int end(int aStep, double aDT, double aT, double *aX, double *aY, double *aYP = NULL, double *aDYDT = NULL, void *aClientData = NULL);
+    virtual OpenSim::ArrayPtrs<OpenSim::Storage > &getStorageList();
+    virtual int printResults(std::string const &aBaseName, std::string const &aDir = "", double aDT = -1.0, std::string const &aExtension = ".sto");
 public:
     bool swig_overrides(int n) {
-      return (n < 30 ? swig_override[n] : false);
+      return (n < 28 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[30];
+    bool swig_override[28];
 };
 
 class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {

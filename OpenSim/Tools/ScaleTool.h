@@ -129,6 +129,9 @@ public:
 	bool isDefaultModelScaler() { return _modelScalerProp.getUseDefault(); }
 	bool isDefaultMarkerPlacer() { return _markerPlacerProp.getUseDefault(); }
 
+	/* Register types to be used when reading a ScaleTool object from xml file. */
+	static void registerTypes();
+
 	/** Accessor methods to obtain model attributes */
 	double getSubjectMass() { return _mass; }
 	double getSubjectAge() { return _age; }

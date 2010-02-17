@@ -30,7 +30,8 @@
 
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
-static void destroy_model_menus(ModelStruct* ms);
+static void delete_display_lists(ModelStruct* model);
+static void destroy_model_menus(ModelStruct* model);
 
 
 /*************** EXTERNED VARIABLES (declared in another file) ****************/
@@ -39,27 +40,48 @@ static void destroy_model_menus(ModelStruct* ms);
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
 
-#if OPENSIM_CONVERTER
-#define ENGINE
+#if OPENSMAC
+#undef ENGINE
+#define ENGINE 1
 #endif
 
-#ifndef ENGINE
+#if ! ENGINE
+
+void delete_scene(Scene* scene)
+{
+   int i;
+
+   // TODO_SCENE
+   delete_model(scene->model[0]);
+
+   FREE_IFNOTNULL(scene->model);
+   FREE_IFNOTNULL(scene->snapshot_file_suffix);
+   FREE_IFNOTNULL(scene->movie_file);
+   free(scene);
+
+   for (i=0; i<SCENEBUFFER; i++)
+   {
+      if (gScene[i] == scene)
+      {
+         gScene[i] = NULL;
+         break;
+      }
+   }
+
+   adjust_main_menu();
+}
 
 /* DELETE_MODEL: this routine deletes a model from the system. It closes the
  * model window, frees the model structures, deletes the model window from
  * the window list, updates the pop-up model menu, and checks to make sure
  * no tools are currently set to the model.
  */
-
 void delete_model(ModelStruct* ms)
 {
-
-   int i,j, windex;
+   int i, j;
    char buf[1024];
    MotionModelOptions* mmo;
-
-   if ((windex = get_window_index(MODEL,ms->modelnum)) == -1)
-      return;
+   Scene* scene = get_first_scene_containing_model(ms);
 
    if (is_model_realtime(ms) == rtMocap)
    {
@@ -76,7 +98,7 @@ void delete_model(ModelStruct* ms)
 
    glutDeleteMutex(ms->modelLock);
 
-   glutSetWindow(root.window[windex].win_parameters->id);
+   glutSetWindow(scene->window_glut_id);
 
    /* Post the MODEL_DELETED event before deleting the motions
     * (which will post MOTION_DELETED events for each one). This
@@ -85,59 +107,145 @@ void delete_model(ModelStruct* ms)
     * not), but is more efficient because the tool will not
     * update itself for each motion deleted and then update itself
     * again when the whole model is deleted.
+    * The model pointer is included in the MODEL_DELETED event so
+    * that the tools can check to see if they are currently set to
+    * the deleted model. But the modelnum is also needed to index
+    * into the array of tool/model options (e.g., meop, pmop).
     */
-   make_and_queue_simm_event(MODEL_DELETED,(void*)ms,ZERO,ZERO);
+   make_and_queue_simm_event(MODEL_DELETED, ms->modelnum, ms, NULL, ZERO, ZERO);
 
    for (i = 0; i < ms->motion_array_size; i++)
+   {
       if (ms->motion[i])
-         delete_motion(ms, ms->motion[i]);
+      {
+         delete_motion(ms, ms->motion[i], no);
+         FREE_IFNOTNULL(ms->motion[i]);
+      }
+   }
 
    destroy_model_menus(ms);
 
+   // In order to delete the window from the GUI as quickly as possible,
+   // only the tasks that must be done before the window is
+   // removed are done before calling delete_window(). This
+   // means that deleting the bone display lists, which used
+   // to be done inside free_model(), is done separately, here.
+   // These display lists can only be deleted when the window
+   // in which they were created is current.
+   delete_display_lists(ms);
+
+   delete_window(scene->window_glut_id);
+
    sprintf(buf, "Deleted model %s.", ms->name);
+
+   purge_simm_events_for_struct(scene, SCENE_INPUT_EVENT);
+   purge_simm_events_for_model(ms->modelnum, MODEL_ADDED);
 
    free_model(ms->modelnum);
 
    root.nummodels--;
 
-   delete_window(root.window[windex].win_parameters->id);
-
    updatemodelmenu();
-   
-   purge_simm_events_for_struct(ms, MODEL_INPUT_EVENT);
-   purge_simm_events_for_struct(ms, MODEL_ADDED);
 
    message(buf, 0, DEFAULT_MESSAGE_X_OFFSET);
 }
 
-static void destroy_model_menus(ModelStruct* ms)
+static void delete_display_lists(ModelStruct* model)
+{
+   int i, j;
+   Scene* scene = get_first_scene_containing_model(model);
+   if (scene && scene->window_glut_id != -1)
+   {
+      int savedID = glutGetWindow();
+      glutSetWindow(scene->window_glut_id);
+
+      // Delete the muscle display lists.
+      glDeleteLists(model->dis.muscle_cylinder_id, 1);
+      glDeleteLists(model->dis.muscle_point_id, 1);
+
+      // Delete the bone, springfloor, contact object, and force matte display lists.
+      for (i=0; i<model->numsegments; i++)
+      {
+         if (model->segment[i].defined == yes)
+         {
+            for (j=0; j<model->segment[i].numBones; j++)
+               delete_polyhedron_display_list(&model->segment[i].bone[j], NULL);
+            for (j=0; j<model->segment[i].numContactObjects; j++)
+               delete_polyhedron_display_list(model->segment[i].contactObject[j].poly, NULL);
+            if (model->segment[i].springFloor)
+               delete_polyhedron_display_list(model->segment[i].springFloor->poly, NULL);
+            if (model->segment[i].forceMatte)
+               delete_polyhedron_display_list(model->segment[i].forceMatte->poly, NULL);
+         }
+      }
+
+      // Delete the wrap object display lists.
+      for (i=0; i<model->num_wrap_objects; i++)
+         glDeleteLists(model->wrapobj[i]->display_list, 1);
+
+      // Delete the world object display lists.
+      for (i=0; i<model->numworldobjects; i++)
+         delete_polyhedron_display_list(model->worldobj[i].wobj, NULL);
+
+      // Delete the constraint object display lists.
+      for (i=0; i<model->num_constraint_objects; i++)
+         glDeleteLists(model->constraintobj[i].display_list, 1);
+
+      // Delete the materials.
+      for (i=0; i<model->dis.mat.num_materials; i++)
+      {
+         if (model->dis.mat.materials[i].normal_list)
+            glDeleteLists(model->dis.mat.materials[i].normal_list,1);
+         if (model->dis.mat.materials[i].highlighted_list)
+            glDeleteLists(model->dis.mat.materials[i].highlighted_list,1);
+         FREE_IFNOTNULL(model->dis.mat.materials[i].name);
+      }
+      FREE_IFNOTNULL(model->dis.mat.materials);
+
+      glutSetWindow(savedID);
+   }
+}
+
+static void destroy_model_menus(ModelStruct* model)
 {
    int i;
 
-   glutDestroyMenu(ms->musclegroupmenu);
-   glutDestroyMenu(ms->jointmenu);
-   glutDestroyMenu(ms->jointmenu2);
-   glutDestroyMenu(ms->jointmenu3);
-   glutDestroyMenu(ms->jointmenu4);
-   glutDestroyMenu(ms->jointmenu5);
-   glutDestroyMenu(ms->xvarmenu);
-   glutDestroyMenu(ms->gencoordmenu);
-   glutDestroyMenu(ms->gencoordmenu2);
-   if (ms->gencoord_group_menu)
-      glutDestroyMenu(ms->gencoord_group_menu);
-   glutDestroyMenu(ms->momentgencmenu);
-   glutDestroyMenu(ms->momentarmgencmenu);
-   glutDestroyMenu(ms->momentarmnumgencmenu);
-   glutDestroyMenu(ms->maxmomentgencmenu);
-   glutDestroyMenu(ms->doftypemenu);
-   glutDestroyMenu(ms->segmentmenu);
-   glutDestroyMenu(ms->motionplotmenu);
-   glutDestroyMenu(ms->motionmenu);
-   glutDestroyMenu(ms->material_menu);
-   glutDestroyMenu(ms->markerMenu);
+   glutDestroyMenu(model->musclegroupmenu);
+   glutDestroyMenu(model->jointmenu);
+   glutDestroyMenu(model->xvarmenu);
+   glutDestroyMenu(model->gencoordmenu);
+   glutDestroyMenu(model->gencoordmenu2);
+   if (model->gencoord_group_menu)
+      glutDestroyMenu(model->gencoord_group_menu);
+   glutDestroyMenu(model->momentgencmenu);
+   glutDestroyMenu(model->momentarmgencmenu);
+   glutDestroyMenu(model->momentarmnumgencmenu);
+   glutDestroyMenu(model->maxmomentgencmenu);
+   glutDestroyMenu(model->segmentmenu);
+   glutDestroyMenu(model->motionplotmenu);
+   glutDestroyMenu(model->motionmenu);
+   glutDestroyMenu(model->motionwithrealtimemenu);
+   glutDestroyMenu(model->material_menu);
+   if (model->markerMenu)
+      glutDestroyMenu(model->markerMenu);
 
-   for (i = 0; i < ms->numsegments; i++)
-      glutDestroyMenu(ms->segment[i].drawmodemenu);
+   for (i = 0; i < model->numsegments; i++)
+      glutDestroyMenu(model->segment[i].drawmodemenu);
+
+   for (i = 0; i < model->numseggroups; i++)
+      glutDestroyMenu(model->seggroup[i].displaymodemenu);
+
+   for (i = 0; i < model->numworldobjects; i++)
+      glutDestroyMenu(model->worldobj[i].drawmodemenu);
+
+   glutDestroyMenu(model->dis.view_menu);
+   glutDestroyMenu(model->dis.allsegsdrawmodemenu);
+   glutDestroyMenu(model->dis.allligsdrawmodemenu);
+   glutDestroyMenu(model->dis.allworlddrawmodemenu);
+   glutDestroyMenu(model->dis.alldrawmodemenu);
+   if (model->dis.eachsegdrawmodemenu > 0)
+      glutDestroyMenu(model->dis.eachsegdrawmodemenu);
+   glutDestroyMenu(model->dis.maindrawmodemenu);
 }
 
 #endif /* ENGINE */
@@ -145,7 +253,6 @@ static void destroy_model_menus(ModelStruct* ms)
 
 double check_gencoord_wrapping(GeneralizedCoord* gc, double change)
 {
-
    double new_value, range;
 
    new_value = gc->value + change;
@@ -177,36 +284,35 @@ double check_gencoord_wrapping(GeneralizedCoord* gc, double change)
       new_value += range;
 
    return (new_value);
-
 }
 
 
-#ifndef ENGINE
+#if ! ENGINE
 
 /* MAKEGENCFORM: this routine makes the form for changing gencoord values.
  * It also makes the checkbox panel for setting clamp/unclamp 
  * for the gencoords and lock/unlock for the gencoords.
  */
 
-ReturnCode makegencform(int mod)
+ReturnCode makegencform(ModelStruct* ms)
 {
 
    int i, name_len;
    Form* form;
    CheckBoxPanel* check;
 
-   form = &model[mod]->gencform;
-   form->numoptions = model[mod]->numgencoords;
+   form = &ms->gencform;
+   form->numoptions = ms->numgencoords;
    form->selected_item = -1;
    form->cursor_position = 0;
    form->highlight_start = 0;
    form->title = NULL;
 
-   model[mod]->longest_genc_name = 0;
+   ms->longest_genc_name = 0;
 
    form->option = (FormItem*)simm_malloc(form->numoptions*sizeof(FormItem));
    if (form->option == NULL)
-      return (code_bad);
+      return code_bad;
 
    for (i=0; i<form->numoptions; i++)
    {
@@ -217,21 +323,19 @@ ReturnCode makegencform(int mod)
       form->option[i].use_alternate_colors = no;
       form->option[i].decimal_places = 3;
       form->option[i].data = NULL;
-      mstrcpy(&form->option[i].name,model[mod]->gencoord[i].name);
-      name_len = glueGetStringWidth(root.gfont.defaultfont,model[mod]->gencoord[i].name);
-      if (name_len > model[mod]->longest_genc_name)
-         model[mod]->longest_genc_name = name_len;
+      mstrcpy(&form->option[i].name, ms->gencoord[i]->name);
+      name_len = glueGetStringWidth(root.gfont.defaultfont, ms->gencoord[i]->name);
+      if (name_len > ms->longest_genc_name)
+         ms->longest_genc_name = name_len;
       SET_BOX1221(form->option[i].box,0,75,-FORM_FIELD_YSPACING*i,
          form->option[i].box.y2-FORM_FIELD_HEIGHT);
    }
 
    /* make the gencoord checkbox panel */
-   check = &model[mod]->gc_chpanel;
+   check = &ms->gc_chpanel;
    check->title = "C";
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = normal_checkbox;
-   check->numoptions = model[mod]->numgencoords;
+   check->numoptions = ms->numgencoords;
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
    if (check->checkbox == NULL)
       error(exit_program,tool_message);
@@ -241,7 +345,7 @@ ReturnCode makegencform(int mod)
       check->checkbox[i].just = right;
       check->checkbox[i].active = yes;
       check->checkbox[i].visible = yes;
-      if (model[mod]->gencoord[i].clamped == no)
+      if (ms->gencoord[i]->clamped == no)
 	 check->checkbox[i].state = off;
       else
 	 check->checkbox[i].state = on;
@@ -254,12 +358,10 @@ ReturnCode makegencform(int mod)
    }
 
    /* make the gencoord lock checkbox panel */
-   check = &model[mod]->gc_lockPanel;
+   check = &ms->gc_lockPanel;
    check->title = "L"; //NULL;
-   check->x_edge = 2;
-   check->y_edge = 2;
    check->type = normal_checkbox;
-   check->numoptions = model[mod]->numgencoords;
+   check->numoptions = ms->numgencoords;
    check->checkbox = (CheckBox*)simm_malloc(check->numoptions*sizeof(CheckBox));
    if (check->checkbox == NULL)
       error(exit_program,tool_message);
@@ -269,7 +371,7 @@ ReturnCode makegencform(int mod)
       check->checkbox[i].just = right;
       check->checkbox[i].active = yes;
       check->checkbox[i].visible = yes;
-      if (model[mod]->gencoord[i].locked == no)
+      if (ms->gencoord[i]->locked == no)
 	      check->checkbox[i].state = off;
       else
 	      check->checkbox[i].state = on;
@@ -280,30 +382,35 @@ ReturnCode makegencform(int mod)
       check->checkbox[i].box.y2 = check->checkbox[i].box.y1 + CHECKBOX_YSIZE*2/3;
    }
 
-   return (code_fine);
+   return code_fine;
 
 }
 
 
-ReturnCode make_dynparams_form(int mod)
+ReturnCode make_dynparams_form(ModelStruct* ms)
 {
-   int i, name_len;
+   int i, name_len, num_options;
    Form* form;
 
-   form = &model[mod]->dynparamsform;
-   form->numoptions = model[mod]->num_dynamic_params + 1; // one extra for muscle model
+   if (ms->default_muscle)
+      num_options = ms->default_muscle->num_dynamic_params + 1; // one extra for muscle model
+   else
+      num_options = 1; // one extra for muscle model
+
+   form = &ms->dynparamsform;
+   form->numoptions = num_options;
    form->selected_item = -1;
    form->cursor_position = 0;
    form->highlight_start = 0;
    form->title = NULL;
 
-   model[mod]->longest_dynparam_name = 0;
+   ms->longest_dynparam_name = 0;
 
    form->option = (FormItem*)simm_malloc(form->numoptions*sizeof(FormItem));
    if (form->option == NULL)
       return code_bad;
 
-   model[mod]->dynparamsSize = 0;
+   ms->dynparamsSize = 0;
    for (i=0; i<form->numoptions; i++)
    {
       form->option[i].justify = yes;
@@ -312,7 +419,7 @@ ReturnCode make_dynparams_form(int mod)
       form->option[i].editable = yes;
       form->option[i].use_alternate_colors = no;
       form->option[i].data = NULL;
-      if (i >= model[mod]->num_dynamic_params)
+      if (i == num_options - 1)
       {
          form->option[i].decimal_places = 0;
          mstrcpy(&form->option[i].name, "muscle_model");
@@ -320,17 +427,17 @@ ReturnCode make_dynparams_form(int mod)
       else
       {
          form->option[i].decimal_places = 3;
-         mstrcpy(&form->option[i].name, model[mod]->dynamic_param_names[i]);
+         mstrcpy(&form->option[i].name, ms->default_muscle->dynamic_param_names[i]);
       }
       name_len = glueGetStringWidth(root.gfont.defaultfont, form->option[i].name);
-      if (name_len > model[mod]->longest_dynparam_name)
-	      model[mod]->longest_dynparam_name = name_len;
+      if (name_len > ms->longest_dynparam_name)
+	      ms->longest_dynparam_name = name_len;
       SET_BOX1221(form->option[i].box, 0, 90,-FORM_FIELD_YSPACING*i,
 		  form->option[i].box.y2-FORM_FIELD_HEIGHT);
-      model[mod]->dynparamsSize = form->option[i].box.y2 - FORM_FIELD_HEIGHT;
+      ms->dynparamsSize = form->option[i].box.y2 - FORM_FIELD_HEIGHT;
    }
 
-model[mod]->longest_dynparam_name -= 30;
+   ms->longest_dynparam_name -= 30;
 
    return code_fine;
 }
@@ -408,7 +515,7 @@ char* getjointvarname(int num)
 }
 
 
-#ifndef ENGINE
+#if ! ENGINE
 
 SBoolean isVisible(double pt[])
 {
@@ -421,7 +528,7 @@ SBoolean isVisible(double pt[])
    return yes;
 }
 
-void hack_tool_updates(ModelStruct* ms)
+void hack_tool_updates(ModelStruct* model, int model_index)
 {
    int i;
    SimmEvent se;
@@ -431,13 +538,16 @@ void hack_tool_updates(ModelStruct* ms)
     * rather than just pushing a SIMM event on the queue.
     */
    se.event_code = MODEL_DELETED;
-   se.struct_ptr = (void*)ms;
+   se.model_index = model_index;
+   se.struct_ptr1 = (void*)model;
+   se.struct_ptr2 = NULL;
    se.field1 = ZERO;
    se.field2 = ZERO;
    se.mouse_x = 0;
    se.mouse_y = 0;
    se.key_modifiers = 0;
    se.window_id = -1;
+   se.object = 0;
 
    for (i = 0; i < TOOLBUFFER; i++)
    {

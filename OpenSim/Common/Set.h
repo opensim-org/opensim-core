@@ -129,7 +129,7 @@ Set(const Set<T> &aSet) :
 /**
  * Copy.
  */
-Object*
+virtual Object*
 copy() const
 {
 	Set<T> *retObj = new Set<T>();
@@ -228,9 +228,9 @@ Set<T>& operator=(const Set<T> &aSet)
  * @throws Exception if a NULL pointer is encountered.
  * @see get().
  */
-T* operator[](int aIndex) const
+T& operator[](int aIndex) const
 {
-	return( _objects[aIndex] );
+	return( *_objects[aIndex] );
 }
 
 //-----------------------------------------------------------------------------
@@ -251,16 +251,8 @@ friend std::ostream& operator<<(std::ostream &aOut,const Set<T> &aSet)
 {
 	aOut << "Set[" << aSet.getSize() <<"] =";
 
-	int i;
-	T* obj;
-	for(i=0;i<aSet.getSize();i++)  {
-		aOut << " ";
-		obj = aSet[i];
-		if(obj==NULL) {
-			aOut << "NULL";
-		} else {
-			aOut << *obj;
-		}
+	for(int i=0;i<aSet.getSize();i++)  {
+		aOut << " " << aSet[i];
 	}
 
 	return(aOut);
@@ -423,7 +415,7 @@ virtual bool setSize(int aSize)
  *
  * @return Size of the array.
  */
-virtual int getSize() const
+int getSize() const
 {
 	return( _objects.getSize() );
 }
@@ -477,7 +469,9 @@ void getGroupNamesContaining(const std::string &aObjectName, Array<std::string> 
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Append to the array.  A copy is NOT made of the specified object.
+ * Append to the array.  A copy is NOT made of the specified object.  If
+ * getMemoryOwner() is true, this Set takes over ownership of the object and
+ * deletes it when the Set itself is deleted.
  *
  * @param aObject Object to be appended.
  * @return True if the append was successful, false otherwise.
@@ -488,14 +482,15 @@ virtual bool append(T *aObject)
 }
 //_____________________________________________________________________________
 /**
- * Append an array of objects.  Copies of the objects are NOT made
+ * Append to the array.  A copy is made of the object and added to the Set.
+ * The original object is unaffected.
  *
- * @param aArray Array of objects to be appended.
+ * @param aObject Object to be appended.
  * @return True if the append was successful, false otherwise.
  */
-virtual bool append(ArrayPtrs<T> &aArray)
+virtual bool append(const T& aObject)
 {
-	return( _objects.append(aArray) );
+	return append((T*) aObject.copy());
 }
 
 //-----------------------------------------------------------------------------
@@ -504,7 +499,8 @@ virtual bool append(ArrayPtrs<T> &aArray)
 //_____________________________________________________________________________
 /**
  * Insert an object into the array at a specified index.  A copy of the
- * specified object is NOT made.
+ * specified object is NOT made.  If getMemoryOwner() is true, this Set takes
+ * over ownership of the object and deletes it when the Set itself is deleted.
  *
  * This method is relatively computationally costly since many of the array
  * elements may need to be shifted.
@@ -521,7 +517,26 @@ virtual bool insert(int aIndex,T *aObject)
 {
 	return( _objects.insert(aIndex,aObject) );
 }
-
+//_____________________________________________________________________________
+/**
+ * Insert an object into the array at a specified index.  A copy is made of the
+ * object and added to the Set.  The original object is unaffected.
+ *
+ * This method is relatively computationally costly since many of the array
+ * elements may need to be shifted.
+ *
+ * @param aObject Object to be inserted.
+ * @param aIndex Index at which to insert the new object.  All current elements
+ * from aIndex to the end of the array are shifted one place in the direction
+ * of the end of the array.  The specified index must be less than or
+ * equal to the size of the array.  Note that if aIndex is equal to the
+ * size of the array, the insertion is equivalent to an append.
+ * @return True if the insertion was successful, false otherwise.
+ */
+virtual bool insert(int aIndex, const T& aObject)
+{
+	return insert(aIndex, (T*) aObject.copy());
+}
 //-----------------------------------------------------------------------------
 // REMOVE
 //-----------------------------------------------------------------------------
@@ -571,29 +586,6 @@ virtual bool remove(const T* aObject)
 	return( _objects.remove(aObject) );
 }
 
-//_____________________________________________________________________________
-/**
- * Replace an object in the array with another object.
- * The object is deleted when it is removed.
- * The new object is added to all of the groups that the old object was in.
- *
- * @param aIndex Index of the object to replace.
- * @param aObject The new object to replace the one one.
- * @return True if the replacement was successful, false otherwise.
- */
-virtual bool replace(int aIndex, T* aObject)
-{
-	if (aObject != NULL && aIndex >= 0 && aIndex < _objects.getSize())
-	{
-		for (int i = 0; i < _objectGroups.getSize(); i++)
-			_objectGroups.get(i)->replace(_objects.get(aIndex), aObject);
-		_objects.remove(aIndex);
-		return _objects.insert(aIndex, aObject);
-	}
-
-	return false;
-}
-
 virtual void clearAndDestroy()
 {
 	_objects.clearAndDestroy();
@@ -606,17 +598,48 @@ virtual void clearAndDestroy()
 //_____________________________________________________________________________
 /**
  * Set the object at a specified index.  A copy of the object is NOT made.
+ * If getMemoryOwner() is true, this Set takes over ownership of the object and
+ * deletes it when the Set itself is deleted.
  *
  * @param aIndex Index of the array element to be set.  aIndex must be
  * greater than zero and less than or equal to the size of the array.  Note
  * that if aIndex is equal to the size of the array, the set is equivalent
  * to an append.
  * @param aObject Object to be set.
+ * @param preserveGroups If true, the new object will be added to the groups
+ * that the object it replaces belonged to
  * @return True if the set was successful, false otherwise.
  */
-virtual bool set(int aIndex,T *aObject)
+virtual bool set(int aIndex, T *aObject, bool preserveGroups = false)
 {
-	return( _objects.set(aIndex,aObject) );
+    if (!preserveGroups)
+    	return( _objects.set(aIndex,aObject) );
+	if (aObject != NULL && aIndex >= 0 && aIndex < _objects.getSize())
+	{
+		for (int i = 0; i < _objectGroups.getSize(); i++)
+			_objectGroups.get(i)->replace(_objects.get(aIndex), aObject);
+		_objects.remove(aIndex);
+		return _objects.insert(aIndex, aObject);
+	}
+	return false;
+}
+//_____________________________________________________________________________
+/**
+ * Set the object at a specified index.  A copy is made of the
+ * object and added to the Set.  The original object is unaffected.
+ *
+ * @param aIndex Index of the array element to be set.  aIndex must be
+ * greater than zero and less than or equal to the size of the array.  Note
+ * that if aIndex is equal to the size of the array, the set is equivalent
+ * to an append.
+ * @param aObject Object to be set.
+ * @param preserveGroups If true, the new object will be added to the groups
+ * that the object it replaces belonged to
+ * @return True if the set was successful, false otherwise.
+ */
+virtual bool set(int aIndex, const T& aObject, bool preserveGroups = false)
+{
+    return set(aIndex, (T*) aObject.copy(), preserveGroups);
 }
 //_____________________________________________________________________________
 /**
@@ -634,9 +657,9 @@ virtual bool set(int aIndex,T *aObject)
  * at aIndex is NULL.
  * @see operator[].
  */
-virtual T* get(int aIndex) const
+virtual T& get(int aIndex) const
 {
-	return( _objects.get(aIndex) );
+	return( *_objects.get(aIndex) );
 }
 //_____________________________________________________________________________
 /**
@@ -650,17 +673,27 @@ virtual T* get(int aIndex) const
  * @throws Exception if no such object exists.
  * @see getIndex()
  */
-T* get(const std::string &aName)
+T& get(const std::string &aName)
 {
-	return( _objects.get(aName) );
+	return( *_objects.get(aName) );
 }
 #ifndef SWIG
-const T* get(const std::string &aName) const
+const T& get(const std::string &aName) const
 {
-	return( _objects.get(aName) );
+	return( *_objects.get(aName) );
 }
 #endif
 //_____________________________________________________________________________
+/**
+ * Get whether this Set contains any object with the specified name.
+ *
+ * @param aName Name of the desired object.
+ * @return true if the object exists
+ */
+bool contains(const std::string &aName) const
+{
+	return( _objects.getIndex(aName) != -1 );
+}//_____________________________________________________________________________
 /**
  * Get names of objects in the set.
  *

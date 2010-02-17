@@ -133,7 +133,10 @@ public:
 #endif
    void copyData(const ModelScaler &aModelScaler);
 
-	bool processModel(Model* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
+	bool processModel(SimTK::State& s, Model* aModel, const std::string& aPathToSubject="", double aFinalMass = -1.0);
+	/* Register types to be used when reading a ModelScaler object from xml file. */
+	static void registerTypes();
+
 	/**
 	 * add a measurement
 	 */
@@ -218,13 +221,13 @@ public:
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
-	double computeMeasurementScaleFactor(const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
-
+	double computeMeasurementScaleFactor(const SimTK::State& s, const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const;
 private:
 	void setNull();
 	void setupProperties();
-	double takeModelMeasurement(const Model& aModel, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
+	double takeModelMeasurement(const SimTK::State& s, const Model& aModel, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
 	double takeExperimentalMarkerMeasurement(const MarkerData& aMarkerData, const std::string& aName1, const std::string& aName2, const std::string& aMeasurementName) const;
+
 //=============================================================================
 };	// END of class ModelScaler
 //=============================================================================

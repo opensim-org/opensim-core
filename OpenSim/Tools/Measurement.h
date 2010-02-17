@@ -99,7 +99,7 @@ public:
 
 	MarkerPairSet& getMarkerPairSet() { return _markerPairSet; }
 	int getNumMarkerPairs() const { return _markerPairSet.getSize(); }
-	const MarkerPair& getMarkerPair(int aIndex) const { return *_markerPairSet[aIndex]; }
+	const MarkerPair& getMarkerPair(int aIndex) const { return _markerPairSet[aIndex]; }
 
 	bool getApply() const { return _apply; }
 	void setApply(bool aApply) { 
@@ -108,6 +108,9 @@ public:
 	}
 
 	void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);
+
+	/* Register types to be used when reading a Measurement object from xml file. */
+	static void registerTypes();
 
 private:
 	void setNull();

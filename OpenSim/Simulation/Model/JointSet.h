@@ -31,9 +31,14 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
-#include "AbstractJoint.h"
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
+#include <map>
+#include <vector>
 
 namespace OpenSim {
+
+class Model;
 
 //=============================================================================
 //=============================================================================
@@ -44,15 +49,24 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API JointSet :	public Set<AbstractJoint>
+class OSIMSIMULATION_API JointSet :	public ModelComponentSet<Joint>
 {
 private:
 	void setNull();
+    void createSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const std::map<Body*, int>& bodyMap, std::vector<bool>& hasProcessed) const;
+protected:
+    void createSystem(SimTK::MultibodySystem& system) const;
 public:
 	JointSet();
+	JointSet(Model& model);
 	JointSet(const JointSet& aJointSet);
 	~JointSet(void);
-	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
+	void setup(Model& aModel);
+	// Somehow the following function is not exported from base template
+    JointSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true) :
+        ModelComponentSet<Joint>(model, aFileName, aUpdateFromXMLNode)
+    {
+    }
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

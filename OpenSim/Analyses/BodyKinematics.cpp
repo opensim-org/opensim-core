@@ -33,10 +33,8 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "BodyKinematics.h"
 
@@ -61,7 +59,6 @@ using namespace std;
  */
 BodyKinematics::~BodyKinematics()
 {
-	if(_dy!=NULL) { delete[] _dy;  _dy=NULL; }
 	deleteStorage();
 }
 //_____________________________________________________________________________
@@ -83,15 +80,6 @@ BodyKinematics::BodyKinematics(Model *aModel, bool aInDegrees) :
 
 	if (_model ==0)
 		return;
-
-	// ALLOCATE STATE VECTOR
-	_dy = new double[_model->getNumStates()];
-
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	updateBodiesToRecord();
-	constructColumnLabels();
-
 }
 //_____________________________________________________________________________
 /**
@@ -112,15 +100,6 @@ BodyKinematics::BodyKinematics(const std::string &aFileName):
 	// Serialize from XML
 	updateFromXMLNode();
 
-	/* The rest will be done by setModel().
-	// CONSTRUCT DESCRIPTION AND LABELS
-	constructDescription();
-	updateBodiesToRecord();
-	constructColumnLabels();
-
-	// STORAGE
-	allocateStorage();
-	*/
 }
 
 // Copy constrctor and virtual copy 
@@ -181,7 +160,6 @@ setNull()
 	setupProperties();
 
 	// POINTERS
-	_dy = 0;
 	_pStore = NULL;
 	_vStore = NULL;
 	_aStore = NULL;
@@ -262,15 +240,15 @@ constructColumnLabels()
 	Array<string> labels;
 	labels.append("time");
 
-	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	BodySet& bs = _model->updBodySet();
 	for(int i=0; i<_bodyIndices.getSize(); i++) {
-		AbstractBody *body = bs->get(_bodyIndices[i]);
-		labels.append(body->getName() + "_X");
-		labels.append(body->getName() + "_Y");
-		labels.append(body->getName() + "_Z");
-		labels.append(body->getName() + "_Ox");
-		labels.append(body->getName() + "_Oy");
-		labels.append(body->getName() + "_Oz");
+		Body& body = bs.get(_bodyIndices[i]);
+		labels.append(body.getName() + "_X");
+		labels.append(body.getName() + "_Y");
+		labels.append(body.getName() + "_Z");
+		labels.append(body.getName() + "_Ox");
+		labels.append(body.getName() + "_Oy");
+		labels.append(body.getName() + "_Oz");
 	}
 
 	if(_recordCenterOfMass) {
@@ -335,13 +313,13 @@ updateBodiesToRecord()
 		return;
 	}
 
-	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	BodySet& bs = _model->updBodySet();
 	_recordCenterOfMass = false;
 	_bodyIndices.setSize(0);
 	for(int i=0; i<_bodies.getSize(); i++) {
 		if(_bodies[i] == "all") {
-			_bodyIndices.setSize(bs->getSize());
-			for(int j=0;j<bs->getSize();j++) _bodyIndices[j]=j;
+			_bodyIndices.setSize(bs.getSize());
+			for(int j=0;j<bs.getSize();j++) _bodyIndices[j]=j;
 			_recordCenterOfMass = true;
 			break;
 		}
@@ -349,7 +327,7 @@ updateBodiesToRecord()
 			_recordCenterOfMass = true;
 			continue;
 		}
-		int index = bs->getIndex(_bodies[i]);
+		int index = bs.getIndex(_bodies[i]);
 		if(index<0) 
 			throw Exception("BodyKinematics: ERR- Cound not find body named '"+_bodies[i]+"'",__FILE__,__LINE__);
 		_bodyIndices.append(index);
@@ -371,15 +349,10 @@ updateBodiesToRecord()
  * @param aModel Model pointer
  */
 void BodyKinematics::
-setModel(Model *aModel)
+setModel(Model& aModel)
 {
 	Analysis::setModel(aModel);
 
-	// ALLOCATIONS
-	if (_dy != 0)
-		delete[] _dy;
-
-	_dy = new double[_model->getNumStates()];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();
@@ -484,51 +457,30 @@ getExpressResultsInLocalFrame()
  * Record the kinematics.
  */
 int BodyKinematics::
-record(double aT,double *aX,double *aY)
+record(const SimTK::State& s)
 {
 
-	// ----------------------------------
-	// SET
-	_model->set(aT,aX,aY);
-	_model->getDerivCallbackSet()->set(aT,aX,aY);
-
-	// ACTUATION
-	_model->getActuatorSet()->computeActuation();
-	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->getActuatorSet()->apply();
-	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
-
-	// CONTACT
-	_model->getContactSet()->computeContact();
-	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->getContactSet()->apply();
-	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
-
-	// ACCELERATIONS
-	int nq = _model->getNumCoordinates();
-	_model->getDynamicsEngine().computeDerivatives(&_dy[0],&_dy[nq]);
-	// ----------------------------------
-
-
+	// Realize to Acceleration first since we'll ask for Accelerations 
+	_model->getSystem().realize(s, SimTK::Stage::Acceleration);
 	// VARIABLES
 	double dirCos[3][3];
 	SimTK::Vec3 vec,angVec;
 	double Mass = 0.0;
 
 	// GROUND BODY
-	AbstractBody &ground = _model->getDynamicsEngine().getGroundBody();
+	Body &ground = _model->getSimbodyEngine().getGroundBody();
 
 	// POSITION
-	BodySet *bs = _model->getDynamicsEngine().getBodySet();
+	BodySet& bs = _model->updBodySet();
 
 	for(int i=0;i<_bodyIndices.getSize();i++) {
-		AbstractBody *body = bs->get(_bodyIndices[i]);
+		Body& body = bs.get(_bodyIndices[i]);
 		SimTK::Vec3 com;
-		body->getMassCenter(com);
+		body.getMassCenter(com);
 		// GET POSITIONS AND EULER ANGLES
-		_model->getDynamicsEngine().getPosition(*body,com,vec);
-		_model->getDynamicsEngine().getDirectionCosines(*body,dirCos);
-		_model->getDynamicsEngine().convertDirectionCosinesToAngles(dirCos,
+		_model->getSimbodyEngine().getPosition(s, body,com,vec);
+		_model->getSimbodyEngine().getDirectionCosines(s, body,dirCos);
+		_model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
 			&angVec[0],&angVec[1],&angVec[2]);
 
 		// CONVERT TO DEGREES?
@@ -546,16 +498,16 @@ record(double aT,double *aX,double *aY)
 
 	if(_recordCenterOfMass) {
 		double rP[3] = { 0.0, 0.0, 0.0 };
-		for(int i=0;i<bs->getSize();i++) {
-			AbstractBody *body = bs->get(i);
+		for(int i=0;i<bs.getSize();i++) {
+			Body& body = bs.get(i);
 			SimTK::Vec3 com;
-			body->getMassCenter(com);
-			_model->getDynamicsEngine().getPosition(*body,com,vec);
+			body.getMassCenter(com);
+			_model->getSimbodyEngine().getPosition(s, body,com,vec);
 			// ADD TO WHOLE BODY MASS
-			Mass += body->getMass();
-			rP[0] += body->getMass() * vec[0];
-			rP[1] += body->getMass() * vec[1];
-			rP[2] += body->getMass() * vec[2];
+			Mass += body.getMass();
+			rP[0] += body.getMass() * vec[0];
+			rP[1] += body.getMass() * vec[1];
+			rP[2] += body.getMass() * vec[2];
 		}
 
 		//COMPUTE COM OF WHOLE BODY AND ADD TO ARRAY
@@ -566,20 +518,20 @@ record(double aT,double *aX,double *aY)
 		memcpy(&_kin[I],rP,3*sizeof(double));
 	}
 	
-	_pStore->append(aT,_kin.getSize(),&_kin[0]);
+	_pStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
 
 	// VELOCITY
 	for(int i=0;i<_bodyIndices.getSize();i++) {
-		AbstractBody *body = bs->get(_bodyIndices[i]);
+		Body& body = bs.get(_bodyIndices[i]);
 		SimTK::Vec3 com;
-		body->getMassCenter(com);
+		body.getMassCenter(com);
 		// GET VELOCITIES AND ANGULAR VELOCITIES
-		_model->getDynamicsEngine().getVelocity(*body,com,vec);
+		_model->getSimbodyEngine().getVelocity(s, body,com,vec);
 		if(_expressInLocalFrame) {
-			_model->getDynamicsEngine().transform(ground,vec,*body,vec);
-			_model->getDynamicsEngine().getAngularVelocityBodyLocal(*body,angVec);
+			_model->getSimbodyEngine().transform(s, ground,vec,body,vec);
+			_model->getSimbodyEngine().getAngularVelocityBodyLocal(s, body,angVec);
 		} else {
-			_model->getDynamicsEngine().getAngularVelocity(*body,angVec);
+			_model->getSimbodyEngine().getAngularVelocity(s, body,angVec);
 		}
 
 		// CONVERT TO DEGREES?
@@ -597,14 +549,14 @@ record(double aT,double *aX,double *aY)
 
 	if(_recordCenterOfMass) {
 		double rV[3] = { 0.0, 0.0, 0.0 };
-		for(int i=0;i<bs->getSize();i++) {
-			AbstractBody *body = bs->get(i);
+		for(int i=0;i<bs.getSize();i++) {
+			Body& body = bs.get(i);
 			SimTK::Vec3 com;
-			body->getMassCenter(com);
-			_model->getDynamicsEngine().getVelocity(*body,com,vec);
-			rV[0] += body->getMass() * vec[0];
-			rV[1] += body->getMass() * vec[1];
-			rV[2] += body->getMass() * vec[2];
+			body.getMassCenter(com);
+			_model->getSimbodyEngine().getVelocity(s, body,com,vec);
+			rV[0] += body.getMass() * vec[0];
+			rV[1] += body.getMass() * vec[1];
+			rV[2] += body.getMass() * vec[2];
 		}
 
 		//COMPUTE VELOCITY OF COM OF WHOLE BODY AND ADD TO ARRAY
@@ -615,21 +567,21 @@ record(double aT,double *aX,double *aY)
 		memcpy(&_kin[I],rV,3*sizeof(double));
 	}
 
-	_vStore->append(aT,_kin.getSize(),&_kin[0]);
+	_vStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
 
 	// ACCELERATIONS
 	for(int i=0;i<_bodyIndices.getSize();i++) {
-		AbstractBody *body = bs->get(_bodyIndices[i]);
+		Body& body = bs.get(_bodyIndices[i]);
 		SimTK::Vec3 com;
-		body->getMassCenter(com);
+		body.getMassCenter(com);
 
 		// GET ACCELERATIONS AND ANGULAR ACCELERATIONS
-		_model->getDynamicsEngine().getAcceleration(*body,com,vec);
+		_model->getSimbodyEngine().getAcceleration(s, body,com,vec);
 		if(_expressInLocalFrame) {
-			_model->getDynamicsEngine().transform(ground,vec,*body,vec);
-			_model->getDynamicsEngine().getAngularAccelerationBodyLocal(*body,angVec);
+			_model->getSimbodyEngine().transform(s, ground,vec,body,vec);
+			_model->getSimbodyEngine().getAngularAccelerationBodyLocal(s, body,angVec);
 		} else {
-			_model->getDynamicsEngine().getAngularAcceleration(*body,angVec);
+			_model->getSimbodyEngine().getAngularAcceleration(s, body,angVec);
 		}
 
 		// CONVERT TO DEGREES?
@@ -647,14 +599,14 @@ record(double aT,double *aX,double *aY)
 
 	if(_recordCenterOfMass) {
 		double rA[3] = { 0.0, 0.0, 0.0 };
-		for(int i=0;i<bs->getSize();i++) {
-			AbstractBody *body = bs->get(i);
+		for(int i=0;i<bs.getSize();i++) {
+			Body& body = bs.get(i);
 			SimTK::Vec3 com;
-			body->getMassCenter(com);
-			_model->getDynamicsEngine().getAcceleration(*body,com,vec);
-			rA[0] += body->getMass() * vec[0];
-			rA[1] += body->getMass() * vec[1];
-			rA[2] += body->getMass() * vec[2];
+			body.getMassCenter(com);
+			_model->getSimbodyEngine().getAcceleration(s, body,com,vec);
+			rA[0] += body.getMass() * vec[0];
+			rA[1] += body.getMass() * vec[1];
+			rA[2] += body.getMass() * vec[2];
 		}
 
 		//COMPUTE ACCELERATION OF COM OF WHOLE BODY AND ADD TO ARRAY
@@ -665,10 +617,9 @@ record(double aT,double *aX,double *aY)
 		memcpy(&_kin[I],rA,3*sizeof(double));
 	}
 
-	_aStore->append(aT,_kin.getSize(),&_kin[0]);
+	_aStore->append(s.getTime(),_kin.getSize(),&_kin[0]);
 
-	//printf("BodyKinematics:\taT:\t%.16f\trA[1]:\t%.16f\n",aT,rA[1]);
-
+	//printf("BodyKinematics:\taT:\t%.16f\trA[1]:\t%.16f\n",s.getTime(),rA[1]);
 	return(0);
 }
 //_____________________________________________________________________________
@@ -676,39 +627,30 @@ record(double aT,double *aX,double *aY)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * This method is meant to be called at the begining of an integration 
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s System state
  *
  * @return -1 on error, 0 otherwise.
  */
 int BodyKinematics::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
 	// RESET STORAGE
-	_pStore->reset(aT);
-	_vStore->reset(aT);
-	_aStore->reset(aT);
+	_pStore->reset(s.getTime());
+	_vStore->reset(s.getTime());
+	_aStore->reset(s.getTime());
 
 	// RECORD
 	int status = 0;
 	if(_pStore->getSize()<=0) {
-		status = record(aT,aX,aY);
+		status = record(s);
 	}
 
 	return(status);
@@ -719,35 +661,22 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * When called during an integration, this method is meant to be called 
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
- * @param aXPrev Controls at the beginining of the current time step.
- * @param aYPrev States at the beginning of the current time step.
- * @param aYPPrev Pseudo states at the beginning of the current time step.
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just taken.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s System state
  *
  * @return -1 on error, 0 otherwise.
  */
 int BodyKinematics::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(aStep)) return(0);
+	if(!proceed(stepNumber )) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }
@@ -756,31 +685,22 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * This method is meant to be called at the end of an integration 
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s System state
  *
  * @return -1 on error, 0 otherwise.
  */
 int BodyKinematics::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end(const SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }

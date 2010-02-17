@@ -30,11 +30,11 @@
 // INCLUDES
 //=============================================================================
 #include "WrapCylinder.h"
-#include <OpenSim/Simulation/Model/MusclePoint.h>
-#include "MuscleWrap.h"
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include "PathWrap.h"
 #include "WrapResult.h"
+#include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
@@ -59,7 +59,7 @@ static Vec3 dn(0.0, 0.0, 1.0);
 * Default constructor.
 */
 WrapCylinder::WrapCylinder() :
-AbstractWrapObject(),
+WrapObject(),
 _radius(_radiusProp.getValueDbl()),
 _length(_lengthProp.getValueDbl())
 {
@@ -82,7 +82,7 @@ WrapCylinder::~WrapCylinder()
 * @param aWrapCylinder WrapCylinder to be copied.
 */
 WrapCylinder::WrapCylinder(const WrapCylinder& aWrapCylinder) :
-AbstractWrapObject(aWrapCylinder),
+WrapObject(aWrapCylinder),
 _radius(_radiusProp.getValueDbl()),
 _length(_lengthProp.getValueDbl())
 {
@@ -123,7 +123,7 @@ void WrapCylinder::setNull()
 void WrapCylinder::setupProperties()
 {
 	// BASE CLASS
-	AbstractWrapObject::setupProperties();
+	WrapObject::setupProperties();
 
 	_radiusProp.setName("radius");
 	_radiusProp.setValue(-1.0);
@@ -144,7 +144,7 @@ void WrapCylinder::setupProperties()
 void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
 {
    // Base class, to scale origin in body frame
-   AbstractWrapObject::scale(aScaleFactors);
+   WrapObject::scale(aScaleFactors);
 
    double orientation[3][3];
    _pose.getOrientation(orientation);
@@ -173,12 +173,12 @@ void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
 *
-* @param aEngine dynamics engine containing this SimmBody.
+* @param aModel pointer to OpenSim model.
 */
-void WrapCylinder::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
+void WrapCylinder::setup(Model& aModel, Body& aBody)
 {
 	// Base class
-	AbstractWrapObject::setup(aEngine, aBody);
+	WrapObject::setup(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 	if (_radius < 0.0)
@@ -202,7 +202,7 @@ void WrapCylinder::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 void WrapCylinder::copyData(const WrapCylinder& aWrapCylinder)
 {
 	// BASE CLASS
-	AbstractWrapObject::copyData(aWrapCylinder);
+	WrapObject::copyData(aWrapCylinder);
 
 	_radius = aWrapCylinder._radius;
 	_length = aWrapCylinder._length;
@@ -247,7 +247,7 @@ string WrapCylinder::getDimensionsString() const
 WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
 {
 	// BASE CLASS
-	AbstractWrapObject::operator=(aWrapCylinder);
+	WrapObject::operator=(aWrapCylinder);
 
 	return(*this);
 }
@@ -261,13 +261,13 @@ WrapCylinder& WrapCylinder::operator=(const WrapCylinder& aWrapCylinder)
  *
  * @param aPoint1 One end of the line segment
  * @param aPoint2 The other end of the line segment
- * @param aMuscleWrap An object holding the parameters for this line/cylinder pairing
+ * @param aPathWrap An object holding the parameters for this line/cylinder pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-									const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+int WrapCylinder::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+									const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	double dist, p11_dist, p22_dist, t, dot1, dot2, dot3, dot4, d, sin_theta,
 		*r11, *r22, alpha, beta, r_squared = _radius * _radius;
@@ -284,9 +284,9 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	bool far_side_wrap = false, long_wrap = false;
 
 	// In case you need any variables from the previous wrap, copy them from
-	// the MuscleWrap into the WrapResult, re-normalizing the ones that were
+	// the PathWrap into the WrapResult, re-normalizing the ones that were
 	// un-normalized at the end of the previous wrap calculation.
-	const WrapResult& previousWrap = aMuscleWrap.getPreviousWrap();
+	const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
 	aWrapResult.factor = previousWrap.factor;
 	for (i = 0; i < 3; i++)
 	{
@@ -301,8 +301,8 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	aWrapResult.wrap_pts.setSize(0);
 
 	// abort if aPoint1 or aPoint2 is inside the cylinder.
-	if (rdMath::CalcDistanceSquaredPointToLine(aPoint1, p0, dn) < r_squared ||
-		rdMath::CalcDistanceSquaredPointToLine(aPoint2, p0, dn) < r_squared)
+	if (WrapMath::CalcDistanceSquaredPointToLine(aPoint1, p0, dn) < r_squared ||
+		WrapMath::CalcDistanceSquaredPointToLine(aPoint2, p0, dn) < r_squared)
 	{
 		return insideRadius;
 	}
@@ -317,14 +317,14 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	cylStart[2] = -0.5 * _length;
 	cylEnd[2] = 0.5 * _length;
 
-	rdMath::IntersectLines(aPoint1, aPoint2, cylStart, cylEnd, near12, t12, near00, t00);
+	WrapMath::IntersectLines(aPoint1, aPoint2, cylStart, cylEnd, near12, t12, near00, t00);
 
 	// abort if the cylinder is unconstrained and p1p2 misses the cylinder.
 	// Use the return values from the above call to IntersectLines()
 	// to perform the check.
 	if ( ! constrained)
 	{
-		if (rdMath::CalcDistanceSquaredBetweenPoints(near12, near00) < r_squared && t12 > 0.0 && t12 < 1.0)
+		if (WrapMath::CalcDistanceSquaredBetweenPoints(near12, near00) < r_squared && t12 > 0.0 && t12 < 1.0)
 		{
 			return_code = mandatoryWrap;
 		}
@@ -335,8 +335,8 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	}
 
 	// find points p11 & p22 on the cylinder axis closest aPoint1 & aPoint2
-	rdMath::GetClosestPointOnLineToPoint(aPoint1, p0, dn, p11, t);
-	rdMath::GetClosestPointOnLineToPoint(aPoint2, p0, dn, p22, t);
+	WrapMath::GetClosestPointOnLineToPoint(aPoint1, p0, dn, p11, t);
+	WrapMath::GetClosestPointOnLineToPoint(aPoint2, p0, dn, p22, t);
 
 	// find preliminary tangent point candidates r1a & r1b
 	MAKE_3DVECTOR(p11, aPoint1, vv);
@@ -396,7 +396,7 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 			// found a potential wrap. Otherwise, there is no wrap.
 			// Use the return values from the previous call to IntersectLines()
 			// to perform these checks.
-			if (rdMath::CalcDistanceSquaredBetweenPoints(near12, near00) < r_squared && t12 > 0.0 && t12 < 1.0)
+			if (WrapMath::CalcDistanceSquaredBetweenPoints(near12, near00) < r_squared && t12 > 0.0 && t12 < 1.0)
 			{
 				return_code = mandatoryWrap;
 			}
@@ -576,7 +576,7 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		mpt[i] = aPoint1[i] + t * (aPoint2[i] - aPoint1[i]);
 
 	// find closest point on cylinder axis to mpt
-	rdMath::GetClosestPointOnLineToPoint(mpt, p0, dn, axispt, t);
+	WrapMath::GetClosestPointOnLineToPoint(mpt, p0, dn, axispt, t);
 
 	// find normal of plane through aPoint1, aPoint2, axispt
 	MAKE_3DVECTOR(axispt, aPoint1, l1);
@@ -605,8 +605,8 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 
 	// Now use the distance from these points to mpt to
 	// pick the right one.
-	dist1 = rdMath::CalcDistanceSquaredBetweenPoints(mpt, apex1);
-	dist2 = rdMath::CalcDistanceSquaredBetweenPoints(mpt, apex2);
+	dist1 = WrapMath::CalcDistanceSquaredBetweenPoints(mpt, apex1);
+	dist2 = WrapMath::CalcDistanceSquaredBetweenPoints(mpt, apex2);
 	if (far_side_wrap)
 	{
 		if (dist1 < dist2)
@@ -657,23 +657,23 @@ int WrapCylinder::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		r2b[i] = aWrapResult.r2[i] + 10.0 * dn[i];
 	}
 
-	r1_inter = rdMath::IntersectLineSegPlane(r1a, r1b, plane_normal, d, r1p);
-	r2_inter = rdMath::IntersectLineSegPlane(r2a, r2b, plane_normal, d, r2p);
+	r1_inter = WrapMath::IntersectLineSegPlane(r1a, r1b, plane_normal, d, r1p);
+	r2_inter = WrapMath::IntersectLineSegPlane(r2a, r2b, plane_normal, d, r2p);
 
 	if (r1_inter)
 	{
-		rdMath::GetClosestPointOnLineToPoint(r1p, p11, p22, r1a, t);
+		WrapMath::GetClosestPointOnLineToPoint(r1p, p11, p22, r1a, t);
 
-		if (rdMath::CalcDistanceSquaredBetweenPoints(r1a, p22) < rdMath::CalcDistanceSquaredBetweenPoints(p11, p22))
+		if (WrapMath::CalcDistanceSquaredBetweenPoints(r1a, p22) < WrapMath::CalcDistanceSquaredBetweenPoints(p11, p22))
 			for (i = 0; i < 3; i++)
 				aWrapResult.r1[i] = r1p[i];
 	}
 
 	if (r2_inter)
 	{
-		rdMath::GetClosestPointOnLineToPoint(r2p, p11, p22, r2a, t);
+		WrapMath::GetClosestPointOnLineToPoint(r2p, p11, p22, r2a, t);
 
-		if (rdMath::CalcDistanceSquaredBetweenPoints(r2a, p11) < rdMath::CalcDistanceSquaredBetweenPoints(p22, p11))
+		if (WrapMath::CalcDistanceSquaredBetweenPoints(r2a, p11) < WrapMath::CalcDistanceSquaredBetweenPoints(p22, p11))
 			for (i = 0; i < 3; i++)
 				aWrapResult.r2[i] = r2p[i];
 	}
@@ -723,8 +723,8 @@ restart_spiral_wrap:
 
 	// determine the axial vector
 
-	rdMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
-	rdMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
+	WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r1, p0, dn, r1a, t);
+	WrapMath::GetClosestPointOnLineToPoint(aWrapResult.r2, p0, dn, r2a, t);
 
 	MAKE_3DVECTOR(r1a, r2a, axial_vec);
 
@@ -828,7 +828,7 @@ void WrapCylinder::_calc_spiral_wrap_point(const SimTK::Vec3& r1a,
 		for (j = 0; j < 4; j++)
 			n[i][j] = m[i][j];
 
-	rdMath::RotateMatrixAxisAngle(n, axis, sense * t * theta);
+	WrapMath::RotateMatrixAxisAngle(n, axis, sense * t * theta);
 
 	for (i = 0; i < 3; i++)
 	{
@@ -877,10 +877,10 @@ bool WrapCylinder::_adjust_tangent_point(SimTK::Vec3& pt1,
 		double p1w1_t, p1aw1a_t;
 		SimTK::Vec3 save, p1a, w1a, p1w1_int, p1aw1a_int;
 
-		rdMath::GetClosestPointOnLineToPoint(pt1, r1, dn, p1a, t);
-		rdMath::GetClosestPointOnLineToPoint(w1, r1, dn, w1a, t);
+		WrapMath::GetClosestPointOnLineToPoint(pt1, r1, dn, p1a, t);
+		WrapMath::GetClosestPointOnLineToPoint(w1, r1, dn, w1a, t);
 
-		rdMath::IntersectLines(pt1, w1, p1a, w1a, p1w1_int, p1w1_t, p1aw1a_int, p1aw1a_t);
+		WrapMath::IntersectLines(pt1, w1, p1a, w1a, p1w1_int, p1w1_t, p1aw1a_int, p1aw1a_t);
 
 		for (i = 0; i < 3; i++)
 		{

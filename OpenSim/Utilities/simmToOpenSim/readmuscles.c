@@ -21,13 +21,9 @@
       read_passiveflcurve : reads a passive force-length curve from muscle file
       read_forcecvelocitycurve : reads force-velocity curve from a muscle file
       read_muscle_parameter : reads a muscle parameter (e.g. pennation) from file
-      read_dynamic_parameters : reads dynamic (muscle model) parameters 
+      read_dynamic_parameter_names : reads dynamic (muscle model) parameter names
 
 *******************************************************************************/
-
-#ifdef __MWERKS__
-   #include <unistd.h>
-#endif
 
 #include "universal.h"
 #include "globals.h"
@@ -41,7 +37,7 @@
 
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
-
+dpFunctionType excitationType = dpFunctionTypeUndefined;
 
 
 /*************** EXTERNED VARIABLES (declared in another file) ****************/
@@ -49,21 +45,19 @@
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscl,
-			      int muscle_number);
-static ReturnCode read_muscle_function(FILE** fp, MuscleStruct* musc,
-				       MuscleStruct* default_musc,
-				       SplineFunction** mfunc,
-				       SplineFunction* default_mfunc,
-				       char ending[], char description[]);
-static ReturnCode read_muscle_parameter(FILE** fp, MuscleStruct* ms,
-					MuscleStruct* default_musc, double** param,
+static ReturnCode read_muscle(ModelStruct* ms, FILE* fp, dpMuscleStruct* muscle, int muscle_number);
+static ReturnCode read_muscle_function(FILE* fp, ModelStruct* model, dpMuscleStruct* muscle,
+                                       dpFunction*** mfunc, dpFunction** default_mfunc,
+                                       char ending[], char description[]);
+static void finish_muscle_definition(FILE* fp);
+static ReturnCode read_muscle_parameter(FILE* fp, dpMuscleStruct* ms,
+					dpMuscleStruct* default_musc, double** param,
 					double* def_param, char param_name[],
 					double min_value, double max_value);
-static ReturnCode read_excitation(FILE** fp, int mod, MuscleStruct* ms, MuscleStruct* default_musc);
-static ReturnCode read_dynamic_parameters(FILE** fp, ModelStruct* ms);
-static SBoolean check_dynamic_param_array(FILE** fp, MuscleStruct* muscl, char text_string[]);
-static ReturnCode read_ligament(FILE **fp, ModelStruct* ms);
+static ReturnCode read_excitation(FILE* fp, ModelStruct* ms, dpMuscleStruct* muscle);
+static ReturnCode read_dynamic_parameter_names(FILE* fp, dpMuscleStruct* muscle);
+static SBoolean check_dynamic_param_array(FILE* fp, dpMuscleStruct* muscle, char text_string[]);
+static ReturnCode read_ligament(FILE* fp, ModelStruct* ms);
 static void sort_muscle_groups(ModelStruct*);
 
 
@@ -74,177 +68,206 @@ static void sort_muscle_groups(ModelStruct*);
  * the string "beginmuscle" it calls read_muscle() read in a muscle
  * definition.
  */
-
 ReturnCode read_muscle_file(ModelStruct* ms, char filename[], SBoolean* file_exists, SBoolean showTopLevelMessages)
 {
-
-   char tempFile[512];
+   char tempFileName[CHARBUFFER];
    int i, count, muscle_errors = 0;
    SBoolean default_muscle_defined = no, any_errors = no;
-   FILE *fp;
+   FILE* fp;
    ReturnCode rc;
 
-#ifdef ENGINE
-strcpy(tempFile,".muscles");
+#if ENGINE
+   strcpy(tempFileName, ".muscles");
 #else
-#ifdef WIN32
-   strcpy(tempFile, glutGetTempFileName("simm-muscles"));
-#else
-   strcpy(tempFile, glutGetTempFileName(".muscles"));
-#endif
+   strcpy(tempFileName, glutGetTempFileName("simm-muscles"));
 #endif
 
 	if (file_exists)
       *file_exists = no;
 
-   if ((fp = preprocess_file(filename,tempFile)) == NULL)
+   if ((fp = preprocess_file(filename, tempFileName)) == NULL)
    {
       if (showTopLevelMessages == yes)
       {
-         (void)sprintf(buffer,"Unable to open muscle input file %s:", filename);
-         message(buffer,HIGHLIGHT_TEXT,DEFAULT_MESSAGE_X_OFFSET);
-         message("Loading model without muscles.",HIGHLIGHT_TEXT,
-            DEFAULT_MESSAGE_X_OFFSET+20);
+         (void)sprintf(buffer, "Unable to open muscle input file %s:", filename);
+         message(buffer, HIGHLIGHT_TEXT,DEFAULT_MESSAGE_X_OFFSET);
+         message("Loading model without muscles.", HIGHLIGHT_TEXT, DEFAULT_MESSAGE_X_OFFSET+20);
       }
       return code_fine;
    }
 
    ms->nummuscles = 0;
+	ms->default_muscle = (dpMuscleStruct*)simm_calloc(1, sizeof(dpMuscleStruct));
+
+   // To support deprecated parameter, reset this for each model loaded.
+   excitationType = dpStepFunction;
 
    while (1)
    {
-      if (read_string(&fp,buffer) == EOF)
+      if (read_string(fp, buffer) == EOF)
          break;
 
       if (buffer[0] == '#')
       {
-         read_nonempty_line(&fp,buffer);
+         read_nonempty_line(fp, buffer);
          continue;
       }
 
-      if (STRINGS_ARE_EQUAL(buffer,"beginmuscle"))
+      if (STRINGS_ARE_EQUAL(buffer, "beginmuscle"))
       {
-         read_string(&fp,buffer);
-         if (STRINGS_ARE_EQUAL(buffer,"defaultmuscle"))
+         read_string(fp, buffer);
+         if (STRINGS_ARE_EQUAL(buffer, "defaultmuscle"))
          {
             if (default_muscle_defined == yes)
             {
-               error(recover,"Default muscle already defined. Ignoring redefinition.");
+               error(recover, "Default muscle already defined. Ignoring redefinition.");
                while (1)
                {
-                  read_string(&fp,buffer);
+                  read_string(fp, buffer);
                   if (STRINGS_ARE_EQUAL(buffer, "endmuscle"))
                      break;
                }
             }
             else if (ms->nummuscles > 0)
             {
-               error(none,"Error reading default muscle:");
-               error(abort_action,"    You must define the default muscle before any other muscles.");
+               error(none, "Error reading default muscle:");
+               error(abort_action, "    You must define the default muscle before any other muscles.");
                return code_bad;
             }
             else
             {
                default_muscle_defined = yes;
-               nullify_muscle(&ms->default_muscle);
-               ms->default_muscle.numWrapStructs = 0;
-               mstrcpy(&ms->default_muscle.name, "defaultmuscle");
-               init_dynamic_param_array(ms,&ms->default_muscle);
-               (void)read_muscle(ms->modelnum,&fp,&ms->default_muscle,-1);
+               ms->default_muscle->display = yes;
+               ms->default_muscle->output = yes;
+               ms->default_muscle->excitation_abscissa = (void**)simm_malloc(sizeof(void*));
+               *(ms->default_muscle->excitation_abscissa) = TIME;
+               ms->default_muscle->index = DEFAULT_MUSCLE_INDEX;
+               if (ms->default_muscle->num_dynamic_params > 0)
+                  ms->default_muscle->dynamic_params = (double**)simm_calloc(ms->default_muscle->num_dynamic_params, sizeof(double*));
+               mstrcpy(&ms->default_muscle->name, "defaultmuscle");
+               (void)read_muscle(ms, fp, ms->default_muscle, -1);
             }
          }
          else
          {
-	       /* Whether or not the user defined a default muscle, you want to
-	        * initialize certain elements of the default muscle structure
-	        * before reading in any muscles. So do it here if you're about to
-	        * read in the first muscle.
-	        */
+            // Whether or not the user defined a default muscle, you want to
+            // initialize certain elements of the default muscle structure
+            // before reading in any muscles. So do it here if you're about to
+            // read in the first muscle.
             if (ms->nummuscles == 0)
             {
-               if (init_default_muscle(ms->modelnum) == code_bad)
-                  return (code_bad);
+               if (init_default_muscle(ms) == code_bad)
+                  return code_bad;
             }
 
             /* Check for duplicate muscle names */
             for (i=0, count=0; i<ms->nummuscles; i++)
             {
-               if (STRINGS_ARE_EQUAL(buffer,ms->muscle[i].name))
+               if (STRINGS_ARE_EQUAL(buffer, ms->muscle[i]->name))
                   count++;
             }
             if (count > 0)
             {
-               (void)sprintf(errorbuffer,"Warning: %d muscles with name %s",
-                  count+1, buffer);
+               (void)sprintf(errorbuffer, "Warning: %d muscles with name %s", count+1, buffer);
                error(none,errorbuffer);
             }
             if (ms->nummuscles == ms->muscle_array_size)
             {
                ms->muscle_array_size += MUSCLE_ARRAY_INCREMENT;
-               ms->muscle = (MuscleStruct*)simm_realloc(ms->muscle,
-                  ms->muscle_array_size*sizeof(MuscleStruct),&rc);
+               ms->muscle = (dpMuscleStruct**)simm_realloc(ms->muscle,
+                  ms->muscle_array_size*sizeof(dpMuscleStruct*), &rc);
                if (rc == code_bad)
                {
                   ms->muscle_array_size -= MUSCLE_ARRAY_INCREMENT;
-                  return (code_bad);
+                  return code_bad;
                }
             }
-            if (init_muscle(ms->modelnum,ms->nummuscles) == code_bad)
-               return (code_bad);
-            mstrcpy(&ms->muscle[ms->nummuscles].name,buffer);
-            rc = read_muscle(ms->modelnum,&fp,&ms->muscle[ms->nummuscles], ms->nummuscles);
+            ms->muscle[ms->nummuscles] = (dpMuscleStruct*)simm_malloc(sizeof(dpMuscleStruct));
+            if (init_muscle(ms, ms->muscle[ms->nummuscles], ms->default_muscle) == code_bad)
+               return code_bad;
+            ms->muscle[ms->nummuscles]->index = ms->nummuscles;
+            mstrcpy(&ms->muscle[ms->nummuscles]->name, buffer);
+            rc = read_muscle(ms, fp, ms->muscle[ms->nummuscles], ms->nummuscles);
             if (rc == code_fine)
             {
-               init_mparray(&ms->muscle[ms->nummuscles]);
+               post_init_muscle_path(ms->muscle[ms->nummuscles]->path, ms->muscle[ms->nummuscles]->numWrapStructs);
                ms->nummuscles++;
             }
             else
             {
-               free(ms->muscle[ms->nummuscles].momentarms);
-               error(none,"Cancelling this muscle definition.");
+               free(ms->muscle[ms->nummuscles]->momentarms);
+               error(none, "Cancelling this muscle definition.");
+               finish_muscle_definition(fp);
             }
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"begindynamicparameters"))
+      else if (STRINGS_ARE_EQUAL(buffer, "begindynamicparameters"))
       {
-         if (read_dynamic_parameters(&fp,ms) == code_bad)
-            return (code_bad);
+         if (default_muscle_defined == yes || ms->nummuscles > 0)
+         {
+            error(none, "Error reading dynamic parameter names:");
+            error(abort_action, "    You must define the names before the default muscle or any other muscles.");
+            return code_bad;
+         }
+         else
+         {
+            if (read_dynamic_parameter_names(fp, ms->default_muscle) == code_bad)
+               return code_bad;
+         }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"beginmusclesurface") ||
-         STRINGS_ARE_EQUAL(buffer,"beginligament"))
+      else if (STRINGS_ARE_EQUAL(buffer, "beginmusclesurface") || STRINGS_ARE_EQUAL(buffer, "beginligament"))
       {
-         if (read_ligament(&fp,ms) == code_bad)
-            return (code_bad);
+         if (read_ligament(fp, ms) == code_bad)
+            return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer, "beginfunction"))
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpFunctionTypeUndefined, 0))) // old-style function definitions
       {
-         if (read_function(ms->modelnum, &fp, yes) == code_bad)
-            return (code_bad);
+         if (read_function(ms, fp, yes, dpNaturalCubicSpline, get_function_tag(dpFunctionTypeUndefined, 1)) == code_bad)
+            return code_bad;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpStepFunction, 0)))
+      {
+         if (read_function(ms, fp, yes, dpStepFunction, get_function_tag(dpStepFunction, 1)) == code_bad)
+            return code_bad;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpLinearFunction, 0)))
+      {
+         if (read_function(ms, fp, yes, dpLinearFunction, get_function_tag(dpLinearFunction, 1)) == code_bad)
+            return code_bad;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpNaturalCubicSpline, 0)))
+      {
+         if (read_function(ms, fp, yes, dpNaturalCubicSpline, get_function_tag(dpNaturalCubicSpline, 1)) == code_bad)
+            return code_bad;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpGCVSpline, 0)))
+      {
+         if (read_function(ms, fp, yes, dpGCVSpline, get_function_tag(dpGCVSpline, 1)) == code_bad)
+            return code_bad;
       }
       else
       {
-         (void)sprintf(errorbuffer,"Unrecognized string \"%s\" found in muscle file.",
+         (void)sprintf(errorbuffer, "Unrecognized string \"%s\" found in muscle file.",
             buffer);
          error(recover,errorbuffer);
          muscle_errors++;
       }
       if (muscle_errors > 10)
       {
-         error(none,"Too many errors to continue.");
-         return (code_bad);
+         error(none, "Too many errors to continue.");
+         return code_bad;
       }
    }
 
    (void)fclose(fp);
-   unlink((const char*) tempFile);
+   (void)unlink((const char*)tempFileName);
    
    /* check that all functions used in muscle points are defined */
    for (i=0; i<ms->func_array_size; i++)
    {
-      if (ms->function[i].used == yes && ms->function[i].defined == no)
+      if (ms->function[i] && ms->function[i]->used == dpYes && ms->function[i]->status == dpFunctionUndefined)
       {
-         (void)sprintf(errorbuffer,"Function f%d referenced in muscle file but not defined in muscle file.",
-            ms->function[i].usernum);
+         (void)sprintf(errorbuffer, "Function f%d referenced in muscle file but not defined in muscle file.", ms->function[i]->usernum);
          error(none,errorbuffer);
          any_errors = yes;
       }
@@ -261,25 +284,27 @@ strcpy(tempFile,".muscles");
     */
    if (ms->nummuscles == 0)
    {
-      if (init_default_muscle(ms->modelnum) == code_bad)
+      if (init_default_muscle(ms) == code_bad)
          return code_bad;
    }
 
    sort_muscle_groups(ms);
 
+#if ! ENGINE
    if ( ! is_in_demo_mode())
    {
       if (showTopLevelMessages == yes)
       {
-         (void)sprintf(buffer,"Read muscle file %s", filename);
-         message(buffer,0,DEFAULT_MESSAGE_X_OFFSET);
+         (void)sprintf(buffer, "Read muscle file %s", filename);
+         message(buffer, 0, DEFAULT_MESSAGE_X_OFFSET);
       }
    }
-   
+#endif
+
    if (file_exists)
       *file_exists = yes;
 
-   return (code_fine);
+   return code_fine;
 
 }
 
@@ -288,8 +313,8 @@ static ModelStruct* sSortingMuscGroupsForModel = NULL;
 
 static int _compare_muscle_names (const void* elem1, const void* elem2)
 {
-   return strcmp(sSortingMuscGroupsForModel->muscle[*(int*) elem1].name,
-                 sSortingMuscGroupsForModel->muscle[*(int*) elem2].name);
+   return strcmp(sSortingMuscGroupsForModel->muscle[*(int*) elem1]->name,
+                 sSortingMuscGroupsForModel->muscle[*(int*) elem2]->name);
 }
 
 static void sort_muscle_groups (ModelStruct* ms)
@@ -300,34 +325,27 @@ static void sort_muscle_groups (ModelStruct* ms)
    
    for (i = 0; i < ms->numgroups; i++)
       qsort(ms->muscgroup[i].muscle_index,
-            ms->muscgroup[i].number_of_muscles, sizeof(int), _compare_muscle_names);
+            ms->muscgroup[i].num_muscles, sizeof(int), _compare_muscle_names);
 }
-
 
 
 /* READ_MUSCLE: this routine reads a muscle definition from a file. It is
  * basically a big if-else block with one section for each muscle parameter.
  */
-
-static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
-                              int muscle_number)
+static ReturnCode read_muscle(ModelStruct* ms, FILE* fp, dpMuscleStruct* muscle, int muscle_number)
 {
-
    char name[CHARBUFFER];
-   int i, num_read;
-   SBoolean matched_string;
-   ModelStruct* ms;
-
-   ms = model[mod];
+   int i, num_read, function_num, funcIndex;
 
    while (1)
    {
-      if (read_string(fp,buffer) == EOF)
+      if (read_string(fp, buffer) == EOF)
          break;
 
-      if (STRINGS_ARE_EQUAL(buffer,"beginpoints"))
+      if (STRINGS_ARE_EQUAL(buffer, "beginpoints"))
       {
-         if (muscle == &ms->default_muscle || muscle_number < 0)
+         // don't read points for default muscle
+         if (muscle == ms->default_muscle || muscle_number < 0)
          {
             while (1)
             {
@@ -337,123 +355,211 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
             }
             continue;
          }
-         // don't read points for default muscle
-         if (read_muscle_attachment_points(mod, fp, muscle) == code_bad)
+
+         muscle->path = (dpMusclePathStruct*)simm_calloc(1, sizeof(dpMusclePathStruct));
+         if (read_muscle_path(ms, fp, muscle->path) == code_bad)
          {
-            (void)sprintf(errorbuffer,"Error reading coordinates for muscle %s.",
-               muscle->name);
+            (void)sprintf(errorbuffer, "Error reading coordinates for muscle %s.", muscle->name);
             error(abort_action,errorbuffer);
             return code_bad;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"begingroups"))
+      else if (STRINGS_ARE_EQUAL(buffer, "begingroups"))
       {
-         muscle->group = read_muscle_groups(mod,fp,&muscle->numgroups, muscle_number);
+         muscle->group = read_muscle_groups(ms, fp, &muscle->numgroups, muscle_number);
          if (muscle->group == NULL && muscle->numgroups != 0)
          {
             muscle->numgroups = 0;
-            (void)sprintf(errorbuffer,"Error reading groups for muscle %s.",
-                    muscle->name);
+            (void)sprintf(errorbuffer, "Error reading groups for muscle %s.", muscle->name);
             error(recover,errorbuffer);
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"begintendonforcelengthcurve"))
+      else if (STRINGS_ARE_EQUAL(buffer, "begintendonforcelengthcurve")) // deprecated
       {
-         if (read_muscle_function(fp,muscle,&ms->default_muscle,
-            &muscle->tendon_force_len_curve,
-            ms->default_muscle.tendon_force_len_curve,
-            "endtendonforcelengthcurve","tendon_force_length_curve") == code_bad)
+         if (read_muscle_function(fp, ms, muscle,
+            &muscle->tendon_force_len_func, ms->default_muscle->tendon_force_len_func,
+            "endtendonforcelengthcurve", "tendon_force_length_curve") == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"beginactiveforcelengthcurve"))
+      else if (STRINGS_ARE_EQUAL(buffer, "tendon_force_length_curve"))
       {
-         if (read_muscle_function(fp,muscle,&ms->default_muscle,
-            &muscle->active_force_len_curve,
-            ms->default_muscle.active_force_len_curve,
-            "endactiveforcelengthcurve","active_force_length_curve") == code_bad)
+         read_string(fp, buffer);
+         if (sscanf(buffer, "f%d", &function_num) != 1)
+         {
+            (void)sprintf(errorbuffer, "Error reading tendon_force_length_curve for muscle %s.", muscle->name);
+            if (muscle != ms->default_muscle && ms->default_muscle != NULL)
+            {
+               muscle->tendon_force_len_func = ms->default_muscle->tendon_force_len_func;
+               error(none, errorbuffer);
+               error(none, "Using function from default muscle.");
+               return code_fine;
+            }
+            else
+            {
+               error(abort_action, errorbuffer);
+               return code_bad;
+            }
+         }
+         muscle->tendon_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+         if (muscle->tendon_force_len_func == NULL)
+            return code_bad;
+         *muscle->tendon_force_len_func = ms->function[enter_function(ms, function_num, yes)];
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, "beginactiveforcelengthcurve")) // deprecated
+      {
+         if (read_muscle_function(fp, ms, muscle,
+            &muscle->active_force_len_func, ms->default_muscle->active_force_len_func,
+            "endactiveforcelengthcurve", "active_force_length_curve") == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"beginpassiveforcelengthcurve"))
+      else if (STRINGS_ARE_EQUAL(buffer, "active_force_length_curve"))
       {
-         if (read_muscle_function(fp,muscle,&ms->default_muscle,
-            &muscle->passive_force_len_curve,
-            ms->default_muscle.passive_force_len_curve,
-            "endpassiveforcelengthcurve",
-            "passive_force_length_curve") == code_bad)
+         read_string(fp, buffer);
+         if (sscanf(buffer, "f%d", &function_num) != 1)
+         {
+            (void)sprintf(errorbuffer, "Error reading active_force_length_curve for muscle %s.", muscle->name);
+            if (muscle != ms->default_muscle && ms->default_muscle != NULL)
+            {
+               muscle->active_force_len_func = ms->default_muscle->active_force_len_func;
+               error(none, errorbuffer);
+               error(none, "Using function from default muscle.");
+               return code_fine;
+            }
+            else
+            {
+               error(abort_action, errorbuffer);
+               return code_bad;
+            }
+         }
+         muscle->active_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+         if (muscle->active_force_len_func == NULL)
+            return code_bad;
+         *muscle->active_force_len_func = ms->function[enter_function(ms, function_num, yes)];
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, "beginpassiveforcelengthcurve")) // deprecated
+      {
+         if (read_muscle_function(fp, ms, muscle,
+            &muscle->passive_force_len_func, ms->default_muscle->passive_force_len_func,
+            "endpassiveforcelengthcurve", "passive_force_length_curve") == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"beginforcevelocitycurve"))
+      else if (STRINGS_ARE_EQUAL(buffer, "passive_force_length_curve"))
       {
-         if (read_muscle_function(fp,muscle,&ms->default_muscle,
-            &muscle->force_vel_curve,
-            ms->default_muscle.force_vel_curve,
-            "endforcevelocitycurve","force_velocity_curve") == code_bad)
+         read_string(fp, buffer);
+         if (sscanf(buffer, "f%d", &function_num) != 1)
+         {
+            (void)sprintf(errorbuffer, "Error reading passive_force_length_curve for muscle %s.", muscle->name);
+            if (muscle != ms->default_muscle && ms->default_muscle != NULL)
+            {
+               muscle->passive_force_len_func = ms->default_muscle->passive_force_len_func;
+               error(none, errorbuffer);
+               error(none, "Using function from default muscle.");
+               return code_fine;
+            }
+            else
+            {
+               error(abort_action, errorbuffer);
+               return code_bad;
+            }
+         }
+         muscle->passive_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+         if (muscle->passive_force_len_func == NULL)
+            return code_bad;
+         *muscle->passive_force_len_func = ms->function[enter_function(ms, function_num, yes)];
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, "beginforcevelocitycurve")) // deprecated
+      {
+         if (read_muscle_function(fp, ms, muscle,
+            &muscle->force_vel_func, ms->default_muscle->force_vel_func,
+            "endforcevelocitycurve", "force_velocity_curve") == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"max_contraction_velocity"))
+      else if (STRINGS_ARE_EQUAL(buffer, "force_velocity_curve"))
       {
-         if (read_muscle_parameter(fp,muscle,&ms->default_muscle,
-            &muscle->max_contraction_vel,
-            ms->default_muscle.max_contraction_vel,
-            "max_contraction_velocity",
-            0.0,DONT_CHECK_DOUBLE) == code_bad)
+         read_string(fp, buffer);
+         if (sscanf(buffer, "f%d", &function_num) != 1)
+         {
+            (void)sprintf(errorbuffer, "Error reading force_velocity_curve for muscle %s.", muscle->name);
+            if (muscle != ms->default_muscle && ms->default_muscle != NULL)
+            {
+               muscle->force_vel_func = ms->default_muscle->force_vel_func;
+               error(none, errorbuffer);
+               error(none, "Using function from default muscle.");
+               return code_fine;
+            }
+            else
+            {
+               error(abort_action, errorbuffer);
+               return code_bad;
+            }
+         }
+         muscle->force_vel_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+         if (muscle->force_vel_func == NULL)
+            return code_bad;
+         *muscle->force_vel_func = ms->function[enter_function(ms, function_num, yes)];
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, "max_contraction_velocity"))
+      {
+         if (read_muscle_parameter(fp, muscle, ms->default_muscle,
+            &muscle->max_contraction_vel, ms->default_muscle->max_contraction_vel,
+            "max_contraction_velocity", 0.0, DONT_CHECK_DOUBLE) == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"max_force"))
+      else if (STRINGS_ARE_EQUAL(buffer, "max_force"))
       {
-         if (read_muscle_parameter(fp,muscle,&ms->default_muscle,
+         if (read_muscle_parameter(fp, muscle, ms->default_muscle,
             &muscle->max_isometric_force,
-            ms->default_muscle.max_isometric_force,
+            ms->default_muscle->max_isometric_force,
             "max_force",0.0,DONT_CHECK_DOUBLE) == code_bad)
             return code_bad;
          muscle->force = *muscle->max_isometric_force;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"tendon_slack_length"))
+      else if (STRINGS_ARE_EQUAL(buffer, "tendon_slack_length"))
       {
-         if (read_muscle_parameter(fp,muscle,&ms->default_muscle,
+         if (read_muscle_parameter(fp, muscle, ms->default_muscle,
             &muscle->resting_tendon_length,
-            ms->default_muscle.resting_tendon_length,
+            ms->default_muscle->resting_tendon_length,
             "tendon_slack_length",0.0,DONT_CHECK_DOUBLE) == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"optimal_fiber_length"))
+      else if (STRINGS_ARE_EQUAL(buffer, "optimal_fiber_length"))
       {
-         if (read_muscle_parameter(fp,muscle,&ms->default_muscle,
+         if (read_muscle_parameter(fp, muscle, ms->default_muscle,
             &muscle->optimal_fiber_length,
-            ms->default_muscle.optimal_fiber_length,
+            ms->default_muscle->optimal_fiber_length,
             "optimal_fiber_length",0.0,DONT_CHECK_DOUBLE) == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"pennation_angle"))
+      else if (STRINGS_ARE_EQUAL(buffer, "pennation_angle"))
       {
-         if (read_muscle_parameter(fp,muscle,&ms->default_muscle,
+         if (read_muscle_parameter(fp, muscle, ms->default_muscle,
             &muscle->pennation_angle,
-            ms->default_muscle.pennation_angle,
+            ms->default_muscle->pennation_angle,
             "pennation_angle",0.0,90.0) == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"min_thickness"))
+      else if (STRINGS_ARE_EQUAL(buffer, "min_thickness"))
       {
-         if (read_muscle_parameter(fp,muscle,&ms->default_muscle,
+         if (read_muscle_parameter(fp, muscle, ms->default_muscle,
             &muscle->min_thickness,
-            ms->default_muscle.min_thickness,
+            ms->default_muscle->min_thickness,
             "min_thickness",0.0,DONT_CHECK_DOUBLE) == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"max_thickness"))
+      else if (STRINGS_ARE_EQUAL(buffer, "max_thickness"))
       {
-         if (read_muscle_parameter(fp,muscle,&ms->default_muscle,
+         if (read_muscle_parameter(fp, muscle, ms->default_muscle,
             &muscle->max_thickness,
-            ms->default_muscle.max_thickness,
+            ms->default_muscle->max_thickness,
             "max_thickness",0.0,DONT_CHECK_DOUBLE) == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"min_material"))
+      else if (STRINGS_ARE_EQUAL(buffer, "min_material"))
       {
-         if (fscanf(*fp,"%s", name) != 1)
+         if (fscanf(fp, "%s", name) != 1)
          {
-            (void)sprintf(errorbuffer,"Error reading min_material for %s muscle", muscle->name);
-            error(abort_action,errorbuffer);
+            (void)sprintf(errorbuffer, "Error reading min_material for %s muscle", muscle->name);
+            error(abort_action, errorbuffer);
             return code_bad;
          }
          else
@@ -461,22 +567,24 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
             muscle->min_material = (int*)simm_malloc(sizeof(int));
             *muscle->min_material = enter_material(ms,name,just_checking_element);
             if (*muscle->min_material == -1)
-
             {
                free(muscle->min_material);
-               muscle->min_material = ms->default_muscle.min_material;
-               (void)sprintf(errorbuffer,"Error reading min_material for muscle %s (%s is undefined)",
+               if (muscle == ms->default_muscle)
+                  muscle->min_material = NULL; // will get reset later, in init_default_muscle()
+               else
+                  muscle->min_material = ms->default_muscle->min_material;
+               (void)sprintf(errorbuffer, "Error reading min_material for muscle %s (%s is undefined)",
                   muscle->name, name);
                error(none,errorbuffer);
-               error(none,"Using default material for min_material.");
+               error(none, "Using default material for min_material.");
             }
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"max_material"))
+      else if (STRINGS_ARE_EQUAL(buffer, "max_material"))
       {
-         if (fscanf(*fp,"%s", name) != 1)
+         if (fscanf(fp, "%s", name) != 1)
          {
-            (void)sprintf(errorbuffer,"Error reading max_material for muscle %s", muscle->name);
+            (void)sprintf(errorbuffer, "Error reading max_material for muscle %s", muscle->name);
             error(abort_action,errorbuffer);
             return code_bad;
          }
@@ -487,123 +595,192 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
             if (*muscle->max_material == -1)
             {
                free(muscle->max_material);
-               muscle->max_material = ms->default_muscle.max_material;
-               (void)sprintf(errorbuffer,"Error reading max_material for muscle %s (%s is undefined)",
+               if (muscle == ms->default_muscle)
+                  muscle->max_material = NULL; // will get reset later, in init_default_muscle()
+               else
+                  muscle->max_material = ms->default_muscle->max_material;
+               (void)sprintf(errorbuffer, "Error reading max_material for muscle %s (%s is undefined)",
                   muscle->name, name);
                error(none,errorbuffer);
-               error(none,"Using default material for max_material.");
+               error(none, "Using default material for max_material.");
             }
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"activation"))
+      else if (STRINGS_ARE_EQUAL(buffer, "activation"))
       {
-         if (fscanf(*fp,"%lg", &muscle->activation) != 1)
+         if (fscanf(fp, "%lg", &muscle->dynamic_activation) != 1)
          {
-            (void)sprintf(errorbuffer,"Error reading activation for muscle %s.",
-               muscle->name);
+            (void)sprintf(errorbuffer, "Error reading activation for muscle %s.", muscle->name);
             error(none,errorbuffer);
-            error(none,"Using a value of 1.0");
-         }
-         else
-         {
-            muscle->initial_activation = muscle->activation;
+            error(none, "Using a value of 1.0");
+            muscle->dynamic_activation = 1.0;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"beginexcitation"))
+      else if (STRINGS_ARE_EQUAL(buffer, "beginexcitation")) // deprecated
       {
-         if (read_excitation(fp,mod,muscle,&ms->default_muscle) == code_bad)
+         if (read_excitation(fp, ms, muscle) == code_bad)
             return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"excitation_format"))
+      else if (STRINGS_ARE_EQUAL(buffer, "excitation"))
       {
-         fscanf(*fp, "%s", buffer);
-         if (STRINGS_ARE_EQUAL(buffer, "spline_fit") || STRINGS_ARE_EQUAL(buffer, "natural_cubic"))
+         read_line(fp, buffer);
+         if (sscanf(buffer, "f%d(%s)", &function_num, name) != 2) //TODO5.0: support spaces in here, like in read_refeq()?
          {
-            muscle->excitation_format = (SplineType*)simm_malloc(sizeof(SplineType));
-            *(muscle->excitation_format) = natural_cubic;
-            if (muscle->excitation)
-               muscle->excitation->type = natural_cubic;
-         }
-         else if (STRINGS_ARE_EQUAL(buffer,"gcv_spline"))
-         {
-            muscle->excitation_format = (SplineType*)simm_malloc(sizeof(SplineType));
-            *(muscle->excitation_format) = natural_cubic;
-            if (muscle->excitation)
-               muscle->excitation->type = natural_cubic;
-            // TODO: gcv is not yet supported, use natural_cubic
-         }
-         else if (STRINGS_ARE_EQUAL(buffer,"step_function"))
-         {
-            muscle->excitation_format = (SplineType*)simm_malloc(sizeof(SplineType));
-            *(muscle->excitation_format) = step_function;
-            if (muscle->excitation)
-               muscle->excitation->type = step_function;
-         }
-         else
-         {
-            if (muscle != &ms->default_muscle && ms->default_muscle.excitation_format != NULL)
+            (void)sprintf(errorbuffer, "Error reading excitation for muscle %s.", muscle->name);
+            if (muscle != ms->default_muscle && ms->default_muscle != NULL)
             {
-               muscle->excitation_format = ms->default_muscle.excitation_format;
-               sprintf(errorbuffer, "Error reading excitation_format for muscle %s.\n",
-                       muscle->name);
-               strcat(errorbuffer, "Using value from default muscle.");
-               error(recover, errorbuffer);
+               muscle->excitation_func = ms->default_muscle->excitation_func;
+               error(none, errorbuffer);
+               error(none, "Using function from default muscle.");
+               return code_fine;
             }
             else
             {
-               sprintf(errorbuffer, "Error reading excitation_format for muscle %s.",
-                       muscle->name);
                error(abort_action, errorbuffer);
                return code_bad;
             }
          }
+         muscle->excitation_abscissa = (void**)simm_malloc(sizeof(void*));
+         if (muscle->excitation_abscissa == NULL)
+            return code_bad;
+         strip_brackets_from_string(name);
+         if (STRINGS_ARE_EQUAL(name, "time"))
+            *muscle->excitation_abscissa = TIME;
+         else
+            *muscle->excitation_abscissa = enter_gencoord(ms, name, no);
+         if (*muscle->excitation_abscissa == NULL)
+         {
+            (void)sprintf(errorbuffer, "Error reading abscissa of excitation function for muscle %s", muscle->name);
+            error(none, errorbuffer);
+            (void)sprintf(errorbuffer, "%s is neither \"time\" nor the name of a generalized coordinate", buffer);
+            error(abort_action, errorbuffer);
+            finish_muscle_definition(fp);
+            return code_bad;
+         }
+         muscle->excitation_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+         if (muscle->excitation_func == NULL)
+            return code_bad;
+         *muscle->excitation_func = ms->function[enter_function(ms, function_num, yes)];
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"muscle_model"))
+      else if (STRINGS_ARE_EQUAL(buffer, "excitation_format")) // deprecated
+      {
+         fscanf(fp, "%s", buffer);
+         // If the excitation format is defined after the excitation, then you can store
+         // the format directly in the excitation function. If it is defined before, store
+         // it in a static global for use later.
+         if (STRINGS_ARE_EQUAL(buffer, "spline_fit") || STRINGS_ARE_EQUAL(buffer, get_function_type_name(dpNaturalCubicSpline)))
+         {
+            if (muscle->excitation_func)
+            {
+               if ((*muscle->excitation_func)->type != dpNaturalCubicSpline)
+               {
+                  (*muscle->excitation_func)->type = dpNaturalCubicSpline;
+                  calc_function_coefficients(*muscle->excitation_func);
+               }
+            }
+            else
+            {
+               excitationType = dpNaturalCubicSpline;
+            }
+         }
+         else if (STRINGS_ARE_EQUAL(buffer, get_function_type_name(dpGCVSpline)))
+         {
+            if (muscle->excitation_func)
+            {
+               if ((*muscle->excitation_func)->type != dpGCVSpline)
+               {
+                  (*muscle->excitation_func)->type = dpGCVSpline;
+                  calc_function_coefficients(*muscle->excitation_func);
+               }
+            }
+            else
+            {
+               excitationType = dpGCVSpline;
+            }
+         }
+         else if (STRINGS_ARE_EQUAL(buffer, get_function_type_name(dpStepFunction)))
+         {
+            if (muscle->excitation_func)
+            {
+               if ((*muscle->excitation_func)->type != dpStepFunction)
+               {
+                  (*muscle->excitation_func)->type = dpStepFunction;
+                  calc_function_coefficients(*muscle->excitation_func);
+               }
+            }
+            else
+            {
+               excitationType = dpStepFunction;
+            }
+         }
+         else if (STRINGS_ARE_EQUAL(buffer, get_function_type_name(dpLinearFunction)))
+         {
+            if (muscle->excitation_func)
+            {
+               if ((*muscle->excitation_func)->type != dpLinearFunction)
+               {
+                  (*muscle->excitation_func)->type = dpLinearFunction;
+                  calc_function_coefficients(*muscle->excitation_func);
+               }
+            }
+            else
+            {
+               excitationType = dpLinearFunction;
+            }
+         }
+         else
+         {
+            sprintf(errorbuffer, "Error reading excitation_format for muscle %s.", muscle->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
+         }
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, "muscle_model"))
       {
          muscle->muscle_model_index = (int*)simm_malloc(sizeof(int));
          if (muscle->muscle_model_index == NULL)
             return code_bad;
-         num_read = fscanf(*fp,"%d", muscle->muscle_model_index);
+         num_read = fscanf(fp, "%d", muscle->muscle_model_index);
          if (num_read != 1 || *(muscle->muscle_model_index) < 1)
          {
-            if (muscle != &ms->default_muscle &&	ms->default_muscle.muscle_model_index != NULL)
+            if (muscle != ms->default_muscle &&	ms->default_muscle->muscle_model_index != NULL)
             {
-               *(muscle->muscle_model_index) = *(ms->default_muscle.muscle_model_index);
-               (void)sprintf(errorbuffer,"Error reading muscle_model for muscle %s.",
+               *(muscle->muscle_model_index) = *(ms->default_muscle->muscle_model_index);
+               (void)sprintf(errorbuffer, "Error reading muscle_model for muscle %s.",
                   muscle->name);
                error(none,errorbuffer);
-               error(none,"Using value from default muscle.");
+               error(none, "Using value from default muscle.");
             }
             else
             {
-               (void)sprintf(errorbuffer,"Error reading muscle_model for muscle %s.",
+               (void)sprintf(errorbuffer, "Error reading muscle_model for muscle %s.",
                   muscle->name);
                error(abort_action,errorbuffer);
                return code_bad;
             }
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"visible"))
+      else if (STRINGS_ARE_EQUAL(buffer, "visible"))
       {
-         if (read_string(fp,buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
          
-         if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
+         if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "false"))
             muscle->display = no;
-         else if (STRINGS_ARE_EQUAL(buffer,"yes") || STRINGS_ARE_EQUAL(buffer,"true"))
+         else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "true"))
             muscle->display = yes;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"output"))
+      else if (STRINGS_ARE_EQUAL(buffer, "output"))
       {
-         if (read_string(fp,buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
          
-         if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
+         if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "false"))
             muscle->output = no;
-         else if (STRINGS_ARE_EQUAL(buffer,"yes") || STRINGS_ARE_EQUAL(buffer,"true"))
+         else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "true"))
             muscle->output = yes;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"wrapobjects"))
+      else if (STRINGS_ARE_EQUAL(buffer, "wrapobjects"))
       {
          sprintf(buffer, "Error reading wrap specification for muscle: %s", muscle->name);
 
@@ -616,21 +793,21 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
 
          read_line(fp, buffer);
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"wrapobject"))
+      else if (STRINGS_ARE_EQUAL(buffer, "wrapobject"))
       {
          char* p;
          int   i, j;
-         MuscleWrapStruct* wrap = NULL;
+         dpMuscleWrapStruct* wrap = NULL;
          ReturnCode rc;
          SBoolean algorithmSpecified = no;
 
          read_line(fp, buffer);
 
-         p = strtok(buffer," \t");
+         p = strtok(buffer, " \t");
 
          if (p)
          {
-            wrap = (MuscleWrapStruct*)simm_malloc(sizeof(MuscleWrapStruct));
+            wrap = (dpMuscleWrapStruct*)simm_malloc(sizeof(dpMuscleWrapStruct));
 
             if (wrap)
             {
@@ -639,33 +816,18 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
                wrap->startPoint = -1;
                wrap->endPoint = -1;
 
-               if (wrap->wrap_object == -1)
+               if (wrap->wrap_object == NULL)
                {
-                  sprintf(errorbuffer,"Unknown wrap object (%s) in muscle %s. Object will be ignored.", p, muscle->name);
+                  sprintf(errorbuffer, "Unknown wrap object (%s) in muscle %s. Object will be ignored.", p, muscle->name);
                   error(none,errorbuffer);
                   FREE_IFNOTNULL(wrap);
                }
                else
                {
-                  wrap->wrap_algorithm = ms->wrapobj[wrap->wrap_object].wrap_algorithm;
+                  wrap->wrap_algorithm = wrap->wrap_object->wrap_algorithm;
 
                   for (i = 0; i < 2; i++)
-                  {
-                     wrap->mp_wrap[i].is_auto_wrap_point = yes;
-                     wrap->mp_wrap[i].wrap_distance = 0.0;
-                     wrap->mp_wrap[i].num_wrap_pts = 0;
-                     wrap->mp_wrap[i].wrap_pts = NULL;
-                     wrap->mp_wrap[i].isVia = no;
-                     wrap->mp_wrap[i].viaRange.genc = -1;
-                     wrap->mp_wrap[i].viaRange.start = UNDEFINED_DOUBLE;
-                     wrap->mp_wrap[i].viaRange.end = UNDEFINED_DOUBLE;
-
-                     for (j = 0; j < 3; j++)
-                     {
-                        wrap->mp_wrap[i].fcn_index[j] = -1;
-                        wrap->mp_wrap[i].gencoord[j] = -1;
-                     }
-                  }
+                     init_musclepoint(&wrap->mp_wrap[i]);
 
                   for (i = 0; i < 3; i++)
                   {
@@ -678,7 +840,7 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
          }
 
          /* if a wrap algorithm was specified, override the default algorithm */
-         p = strtok(NULL," \t");
+         p = strtok(NULL, " \t");
 
          if (p && wrap)
          {
@@ -695,13 +857,13 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
 
          /* if a range of muscle points was specified, override the defaults */
          if (algorithmSpecified == yes)
-            p = strtok(NULL," \t");
+            p = strtok(NULL, " \t");
 
          if (p && wrap)
          {
             if (STRINGS_ARE_EQUAL(p, "range"))
             {
-               p = strtok(NULL," \t");
+               p = strtok(NULL, " \t");
                if (p)
                {
                   wrap->startPoint = atoi(p);
@@ -716,7 +878,7 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
                   (void)sprintf(errorbuffer, "Error reading wrap starting range in muscle %s.", muscle->name);
                   error(recover,errorbuffer);
                }
-               p = strtok(NULL," \t");
+               p = strtok(NULL, " \t");
                if (p)
                {
                   wrap->endPoint = atoi(p);
@@ -745,7 +907,7 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
             }
             else
             {
-               (void)sprintf(errorbuffer,"Unrecognized string \"%s\" found while reading muscle %s.",
+               (void)sprintf(errorbuffer, "Unrecognized string \"%s\" found while reading muscle %s.",
                              p, muscle->name);
                error(recover,errorbuffer);
             }
@@ -755,35 +917,47 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
          if (wrap)
          {
             if (muscle->numWrapStructs == 0)
-               muscle->wrapStruct = (MuscleWrapStruct**)simm_malloc(sizeof(MuscleWrapStruct*));
+               muscle->wrapStruct = (dpMuscleWrapStruct**)simm_malloc(sizeof(dpMuscleWrapStruct*));
             else
-               muscle->wrapStruct = (MuscleWrapStruct**)simm_realloc(muscle->wrapStruct,
-               (muscle->numWrapStructs+1) * sizeof(MuscleWrapStruct*), &rc);
+               muscle->wrapStruct = (dpMuscleWrapStruct**)simm_realloc(muscle->wrapStruct,
+               (muscle->numWrapStructs+1) * sizeof(dpMuscleWrapStruct*), &rc);
             muscle->wrapStruct[muscle->numWrapStructs++] = wrap;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"endmuscle"))
+      else if (STRINGS_ARE_EQUAL(buffer, "endmuscle"))
       {
          return code_fine;
       }
       else
       {
-         matched_string = check_dynamic_param_array(fp,muscle,buffer);
+         SBoolean matched_string = check_dynamic_param_array(fp, muscle, buffer);
 
          if (matched_string == no)
          {
-            (void)sprintf(errorbuffer,
-               "Unrecognized string \"%s\" found while reading muscle %s.",
+            (void)sprintf(errorbuffer, "Unrecognized string \"%s\" found while reading muscle %s.",
                buffer, muscle->name);
-            error(recover,errorbuffer);
+            error(recover, errorbuffer);
          }
       }
    }
 
    return code_fine;
-
 }
 
+
+/* This function scans forward to the end of a muscle definition.
+ * It should be called only after encountering an error in the definition,
+ * as it skips over everything until "endmuscle" is found.
+ */
+static void finish_muscle_definition(FILE* fp)
+{
+   while (1)
+   {
+      fscanf(fp, "%s", buffer);
+      if (STRINGS_ARE_EQUAL(buffer, "endmuscle"))
+         break;
+   }
+}
 
 
 /* READ_MUSCLE_PARAMETER: this routine reads a single muscle parameter from
@@ -791,238 +965,194 @@ static ReturnCode read_muscle(int mod, FILE **fp, MuscleStruct* muscle,
  * muscle structure. If there is an error when reading the parameter, the
  * pointer will be set to the corresponding parameter in the default muscle.
  */
-
-static ReturnCode read_muscle_parameter(FILE** fp, MuscleStruct* ms,
-					MuscleStruct* default_musc, double** param,
+static ReturnCode read_muscle_parameter(FILE* fp, dpMuscleStruct* ms,
+					dpMuscleStruct* default_musc, double** param,
 					double* def_param, char param_name[],
 					double min_value, double max_value)
 {
-
    *param = (double *)simm_malloc(sizeof(double));
    if (*param == NULL)
-      return (code_bad);
+      return code_bad;
 
-   if (fscanf(*fp,"%lg", *param) != 1)
+   if (fscanf(fp, "%lg", *param) != 1)
    {
       if (ms != default_musc && def_param != NULL)
       {
-	 free(*param);
-	 *param = def_param;
-	 (void)sprintf(errorbuffer,"Error reading %s for muscle %s.",
-		       param_name, ms->name);
-	 error(none,errorbuffer);
-	 error(none,"Using value from default muscle.");
-	 return (code_fine);
+         free(*param);
+         *param = def_param;
+         (void)sprintf(errorbuffer, "Error reading %s for muscle %s.",
+            param_name, ms->name);
+         error(none,errorbuffer);
+         error(none, "Using value from default muscle.");
+         return code_fine;
       }
       else
       {
-	 free(*param);
-	 (void)sprintf(errorbuffer,"Error reading %s for muscle %s.",
-		 param_name, ms->name);
-	 error(abort_action,errorbuffer);
-	 return (code_bad);
+         free(*param);
+         (void)sprintf(errorbuffer, "Error reading %s for muscle %s.",
+            param_name, ms->name);
+         error(abort_action,errorbuffer);
+         return code_bad;
       }
    }
    else
    {
       if (min_value != DONT_CHECK_DOUBLE)
       {
-	 if (**param < min_value)
-	 {
-	    sprintf(errorbuffer,"Error reading %s for muscle %s:",
-		    param_name, ms->name);
-	    error(none,errorbuffer);
-	    sprintf(errorbuffer,"   value of %lf is below min allowable value (%lf).",
-		    **param, min_value);
-	    error(none,errorbuffer);
-	    free(*param);
-	    return (code_bad);
-	 }
+         if (**param < min_value)
+         {
+            sprintf(errorbuffer, "Error reading %s for muscle %s:",
+               param_name, ms->name);
+            error(none,errorbuffer);
+            sprintf(errorbuffer, "   value of %lf is below min allowable value (%lf).",
+               **param, min_value);
+            error(none,errorbuffer);
+            free(*param);
+            return code_bad;
+         }
       }
 
       if (max_value != DONT_CHECK_DOUBLE)
       {
-	 if (**param > max_value)
-	 {
-	    sprintf(errorbuffer,"Error reading %s for muscle %s:\n",
-		    param_name, ms->name);
-	    error(none,errorbuffer);
-	    sprintf(errorbuffer,"   value of %lf is above max allowable value (%lf).",
-		    **param, max_value);
-	    error(none,errorbuffer);
-	    free(*param);
-	    return (code_bad);
-	 }
+         if (**param > max_value)
+         {
+            sprintf(errorbuffer, "Error reading %s for muscle %s:\n",
+               param_name, ms->name);
+            error(none,errorbuffer);
+            sprintf(errorbuffer, "   value of %lf is above max allowable value (%lf).",
+               **param, max_value);
+            error(none,errorbuffer);
+            free(*param);
+            return code_bad;
+         }
       }
    }
 
-   return (code_fine);
-
+   return code_fine;
 }
 
 
 
-/* READ_MUSCLE_FUNCTION: this routine reads a spline function for a muscle
+/* READ_MUSCLE_FUNCTION: this routine reads a function for a muscle
  * (e.g. active force-length curve). If there is an error when reading from
  * the file, it sets the function equal to the corresponding function in the
  * default muscle.
  */
-
-static ReturnCode read_muscle_function(FILE** fp, MuscleStruct* ms,
-				       MuscleStruct* default_musc,
-				       SplineFunction** mfunc,
-				       SplineFunction* default_mfunc,
-				       char ending[], char description[])
+static ReturnCode read_muscle_function(FILE* fp, ModelStruct* model, dpMuscleStruct* muscle,
+                                       dpFunction*** mfunc, dpFunction** default_mfunc,
+                                       char ending[], char description[])
 {
+   dpFunction newFunc;
 
-   *mfunc = (SplineFunction*)simm_malloc(sizeof(SplineFunction));
+   *mfunc = (dpFunction**)simm_malloc(sizeof(dpFunction*));
    if (*mfunc == NULL)
-      return (code_bad);
+      return code_bad;
 
-   malloc_function(*mfunc,SPLINE_ARRAY_INCREMENT);
+   malloc_function(&newFunc, FUNCTION_ARRAY_INCREMENT);
 
-   if (read_double_array(fp,ending,description,*mfunc) == code_bad)
+   if (read_double_array(fp, ending, description, &newFunc) == code_bad)
    {
-      free((*mfunc)->x);
-      free((*mfunc)->y);
-      free((*mfunc)->b);
-      free((*mfunc)->c);
-      free((*mfunc)->d);
+      free_function(&newFunc, no);
       free(*mfunc);
 
-      if (ms != default_musc && default_mfunc != NULL)
+      if (muscle != model->default_muscle && default_mfunc != NULL)
       {
-	 *mfunc = default_mfunc;
-	 (void)sprintf(errorbuffer,
-		       "Error reading %s for muscle %s.", description, ms->name);
-	 error(none,errorbuffer);
-	 error(none,"Using function from default muscle.");
-	 return (code_fine);
+         *mfunc = default_mfunc;
+         (void)sprintf(errorbuffer, "Error reading %s for muscle %s.", description, muscle->name);
+         error(none, errorbuffer);
+         error(none, "Using function from default muscle.");
+         return code_fine;
       }
       else
       {
-	 (void)sprintf(errorbuffer,
-		     "Error reading %s for muscle %s.", description, ms->name);
-	 error(abort_action,errorbuffer);
-	 return (code_bad);
+         (void)sprintf(errorbuffer, "Error reading %s for muscle %s.", description, muscle->name);
+         error(abort_action, errorbuffer);
+         return code_bad;
       }
    }
-   (*mfunc)->type = natural_cubic;
-   (*mfunc)->usernum = -1;
-   (*mfunc)->defined = yes;
-   (*mfunc)->used = yes;
-   calc_spline_coefficients(*mfunc);
 
-   return (code_fine);
+   newFunc.type = dpNaturalCubicSpline;
+   newFunc.cutoff_frequency = -1.0;
 
+   calc_function_coefficients(&newFunc);
+
+   *(*mfunc) = load_simm_function(model, &newFunc, yes);
+
+   return code_fine;
 }
 
 
-static ReturnCode read_excitation(FILE** fp, int mod, MuscleStruct* muscl,
-				  MuscleStruct* default_musc)
+static ReturnCode read_excitation(FILE* fp, ModelStruct* ms, dpMuscleStruct* muscle)
 {
+   int abscissa = -2;
+   dpFunction newFunc;
 
    /* First read the name of the abscissa of the function. It should be either
     * the word "time" or the name of a generalized coordinate, of which this
     * excitation pattern will be a function.
     */
-
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp, "%s", buffer) != 1)
    {
-      (void)sprintf(errorbuffer,"Error reading name of abscissa in excitation function for muscle %s", muscl->name);
-      error(abort_action,errorbuffer);
-      return (code_bad);
+      (void)sprintf(errorbuffer, "Error reading name of abscissa in excitation function for muscle %s", muscle->name);
+      error(abort_action, errorbuffer);
+      return code_bad;
    }
 
-   if (STRINGS_ARE_EQUAL(buffer,"time"))
+   muscle->excitation_abscissa = (void**)simm_malloc(sizeof(void*));
+   if (muscle->excitation_abscissa == NULL)
+      return code_bad;
+
+   if (STRINGS_ARE_EQUAL(buffer, "time"))
    {
-      muscl->excitation_abscissa = TIME;
+      *muscle->excitation_abscissa = TIME;
    }
    else
    {
-      muscl->excitation_abscissa = enter_gencoord(mod,buffer,no);
-      if (muscl->excitation_abscissa == -1)
+      *muscle->excitation_abscissa = enter_gencoord(ms, buffer, no);
+      if (*muscle->excitation_abscissa == NULL)
       {
-         (void)sprintf(errorbuffer,"Error reading abscissa of excitation function for muscle %s", muscl->name);
+         (void)sprintf(errorbuffer, "Error reading abscissa of excitation function for muscle %s", muscle->name);
          error(none,errorbuffer);
-         (void)sprintf(errorbuffer,"%s is neither \"time\" nor the name of a generalized coordinate", buffer);
-         error(abort_action,errorbuffer);
-         /* added dkb */
-         while (1)
-         {
-            fscanf(*fp, "%s", buffer);
-            if (STRINGS_ARE_EQUAL(buffer, "endmuscle")) //"endexcitation"))
-               break;
-         }
-         return (code_bad);
+         (void)sprintf(errorbuffer, "%s is neither \"time\" nor the name of a generalized coordinate", buffer);
+         error(abort_action, errorbuffer);
+         finish_muscle_definition(fp);
+         return code_bad;
       }
    }
 
-   muscl->excitation = (SplineFunction*)simm_malloc(sizeof(SplineFunction));
-   if (muscl->excitation == NULL)
-      return (code_bad);
+   muscle->excitation_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+   if (muscle->excitation_func == NULL)
+      return code_bad;
 
-   malloc_function(muscl->excitation,SPLINE_ARRAY_INCREMENT);
-   muscl->excitation->type = none_defined;
+   malloc_function(&newFunc, FUNCTION_ARRAY_INCREMENT);
+   newFunc.type = excitationType;
+   newFunc.cutoff_frequency = -1.0;
 
-   if (read_double_array(fp,"endexcitation","excitation-sequence",
-      muscl->excitation) == code_bad)
+   if (read_double_array(fp, "endexcitation", "excitation-sequence", &newFunc) == code_bad)
    {
-      free(muscl->excitation->x);
-      free(muscl->excitation->y);
+      free_function(&newFunc, no);
 
-      if (muscl != default_musc && default_musc->excitation != NULL)
+      if (muscle != ms->default_muscle && ms->default_muscle->excitation_func != NULL)
       {
-         muscl->excitation = default_musc->excitation;
-         (void)sprintf(errorbuffer,
-            "Error reading excitation sequence for muscle %s.", muscl->name);
-         error(none,errorbuffer);
-         error(none,"Using same sequence as for default muscle.");
-         return (code_fine);
+         muscle->excitation_func = ms->default_muscle->excitation_func;
+         (void)sprintf(errorbuffer, "Error reading excitation sequence for muscle %s.", muscle->name);
+         error(none, errorbuffer);
+         error(none, "Using same sequence as for default muscle.");
+         return code_fine;
       }
       else
       {
-         (void)sprintf(errorbuffer,
-            "Error reading excitation sequence for muscle %s.", muscl->name);
-         error(abort_action,errorbuffer);
-         return (code_bad);
+         (void)sprintf(errorbuffer, "Error reading excitation sequence for muscle %s.", muscle->name);
+         error(abort_action, errorbuffer);
+         return code_bad;
       }
    }
 
-   if (muscl->excitation_format)
-      muscl->excitation->type = *muscl->excitation_format;
-   calc_spline_coefficients(muscl->excitation);
-   return (code_fine);
+   calc_function_coefficients(&newFunc);
 
-}
+   *muscle->excitation_func = load_simm_function(ms, &newFunc, yes);
 
-
-int get_muscle_index(int mod, char muscle_name[])
-{
-
-   int i;
-
-   for (i=0; i<model[mod]->nummuscles; i++)
-      if (STRINGS_ARE_EQUAL(muscle_name,model[mod]->muscle[i].name))
-	  return (i);
-
-   return (-1);
-
-}
-
-
-
-int get_ligament_index(int mod, char lig_name[])
-{
-
-   int i;
-
-   for (i=0; i<model[mod]->numligaments; i++)
-      if (STRINGS_ARE_EQUAL(lig_name,model[mod]->ligament[i].name))
-	  return (i);
-
-   return (-1);
-
+	return code_fine;
 }
 
 
@@ -1030,170 +1160,148 @@ int get_ligament_index(int mod, char lig_name[])
  * has been read in. It makes sure that certain parameters are defined so that
  * there are always defaults for them (e.g. min_thickness).
  */
-
-ReturnCode init_default_muscle(int mod)
+ReturnCode init_default_muscle(ModelStruct* ms)
 {
-
    /* If the user did not specify min and max thickness for the default muscle,
     * define these two parameters. Then when you read in the other muscles, there
     * are defaults already set-up for the muscles to point to. After reading in
     * the complete model (bones and all), these default values may be changed
     * to better correspond to the particular model.
     */
+   ms->default_muscle->index = DEFAULT_MUSCLE_INDEX;
+   ms->default_muscle->display = yes;
 
-   model[mod]->default_muscle.display = yes;
-
-   if (model[mod]->default_muscle.min_thickness == NULL)
+   if (ms->default_muscle->min_thickness == NULL)
    {
-      model[mod]->default_muscle.min_thickness = (double*)simm_malloc(sizeof(double));
-      if (model[mod]->default_muscle.min_thickness == NULL)
+      ms->default_muscle->min_thickness = (double*)simm_malloc(sizeof(double));
+      if (ms->default_muscle->min_thickness == NULL)
 	      return code_bad;
-      *model[mod]->default_muscle.min_thickness = 0.002;
-      model[mod]->specified_min_thickness = no;
+      *ms->default_muscle->min_thickness = 0.002;
+      ms->specified_min_thickness = no;
    }
 
-   if (model[mod]->default_muscle.max_thickness == NULL)
+   if (ms->default_muscle->max_thickness == NULL)
    {
-      model[mod]->default_muscle.max_thickness = (double*)simm_malloc(sizeof(double));
-      if (model[mod]->default_muscle.max_thickness == NULL)
+      ms->default_muscle->max_thickness = (double*)simm_malloc(sizeof(double));
+      if (ms->default_muscle->max_thickness == NULL)
 	      return code_bad;
-      *model[mod]->default_muscle.max_thickness = 0.008;
-      model[mod]->specified_max_thickness = no;
+      *ms->default_muscle->max_thickness = 0.008;
+      ms->specified_max_thickness = no;
    }
 
-   if (model[mod]->default_muscle.min_material == NULL)
+   if (ms->default_muscle->min_material == NULL)
    {
-      model[mod]->default_muscle.min_material = (int*)simm_malloc(sizeof(int));
-      *model[mod]->default_muscle.min_material = model[mod]->dis.mat.default_muscle_min_material;
+      ms->default_muscle->min_material = (int*)simm_malloc(sizeof(int));
+      *ms->default_muscle->min_material = ms->dis.mat.default_muscle_min_material;
    }
 
-   if (model[mod]->default_muscle.max_material == NULL)
+   if (ms->default_muscle->max_material == NULL)
    {
-      model[mod]->default_muscle.max_material = (int*)simm_malloc(sizeof(int));
-      *model[mod]->default_muscle.max_material = model[mod]->dis.mat.default_muscle_max_material;
-   }
-
-   if (model[mod]->default_muscle.excitation_format == NULL)
-   {
-      model[mod]->default_muscle.excitation_format = (SplineType*)simm_malloc(sizeof(SplineType));
-      *model[mod]->default_muscle.excitation_format = step_function;
+      ms->default_muscle->max_material = (int*)simm_malloc(sizeof(int));
+      *ms->default_muscle->max_material = ms->dis.mat.default_muscle_max_material;
    }
 
    return code_fine;
-
 }
 
 
-
-static ReturnCode read_dynamic_parameters(FILE** fp, ModelStruct* ms)
+static ReturnCode read_dynamic_parameter_names(FILE* fp, dpMuscleStruct* muscle)
 {
-
    int array_size = 10;
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
 
-   ms->num_dynamic_params = 0;
-   ms->dynamic_param_names = (char**)simm_malloc(array_size*sizeof(char*));
+   muscle->num_dynamic_params = 0;
+   muscle->dynamic_param_names = (char**)simm_malloc(array_size * sizeof(char*));
 
-   if (ms->dynamic_param_names == NULL)
+   if (muscle->dynamic_param_names == NULL)
       return code_bad;
 
    while (1)
    {
-      if (fscanf(*fp,"%s",buffer) != 1)
+      if (fscanf(fp, "%s", buffer) != 1)
       {
-         error(none,"EOF while reading dynamic parameters");
+         error(none, "EOF while reading dynamic parameters");
          return code_bad;
       }
 
-      if (STRINGS_ARE_EQUAL(buffer,"enddynamicparameters"))
+      if (STRINGS_ARE_EQUAL(buffer, "enddynamicparameters"))
          break;
 
-      /* Check to see if you need to increase the size of the array before
-       * reading any more parameter names.
-       */
-
-      if (ms->num_dynamic_params >= array_size)
+      // Check to see if you need to increase the size of the array before
+      // reading any more parameter names.
+      if (muscle->num_dynamic_params >= array_size)
       {
          array_size += 10;
-         ms->dynamic_param_names = (char**)simm_realloc(ms->dynamic_param_names,
-            array_size*sizeof(char*),&rc);
+         muscle->dynamic_param_names = (char**)simm_realloc(muscle->dynamic_param_names,
+            array_size*sizeof(char*), &rc);
 
          if (rc == code_bad)
             return code_bad;
       }
 
-      mstrcpy(&ms->dynamic_param_names[ms->num_dynamic_params],buffer);
+      mstrcpy(&muscle->dynamic_param_names[muscle->num_dynamic_params], buffer);
 
-      ms->num_dynamic_params++;
+      muscle->num_dynamic_params++;
    }
 
-   ms->dynamic_param_names = (char**)simm_realloc(ms->dynamic_param_names,
-			      ms->num_dynamic_params*sizeof(char*),&rc);
+   muscle->dynamic_param_names = (char**)simm_realloc(muscle->dynamic_param_names,
+      muscle->num_dynamic_params*sizeof(char*), &rc);
 
    return rc;
-
 }
 
 
-
-ReturnCode init_dynamic_param_array(ModelStruct* ms, MuscleStruct* muscl)
+ReturnCode init_dynamic_param_array(dpMuscleStruct* muscle, dpMuscleStruct* default_muscle)
 {
-
    int i;
 
-   muscl->num_dynamic_params = ms->num_dynamic_params;
-   muscl->dynamic_param_names = ms->dynamic_param_names;
-   muscl->dynamic_params = (double**)simm_malloc(muscl->num_dynamic_params*sizeof(double*));
+   muscle->num_dynamic_params = default_muscle->num_dynamic_params;
+   muscle->dynamic_param_names = default_muscle->dynamic_param_names;
+   muscle->dynamic_params = (double**)simm_calloc(muscle->num_dynamic_params, sizeof(double*));
 
-   if (muscl->dynamic_params == NULL)
+   if (muscle->dynamic_params == NULL)
       return code_bad;
 
-   for (i=0; i<muscl->num_dynamic_params; i++)
-      muscl->dynamic_params[i] = NULL;
+   for (i=0; i<muscle->num_dynamic_params; i++)
+      muscle->dynamic_params[i] = default_muscle->dynamic_params[i];
 
    return code_fine;
-
 }
 
 
-
-static SBoolean check_dynamic_param_array(FILE** fp, MuscleStruct* muscl, char text_string[])
+static SBoolean check_dynamic_param_array(FILE* fp, dpMuscleStruct* muscle, char text_string[])
 {
-
    int i;
 
-   for (i=0; i<muscl->num_dynamic_params; i++)
+   for (i=0; i<muscle->num_dynamic_params; i++)
    {
-      if (STRINGS_ARE_EQUAL(text_string,muscl->dynamic_param_names[i]))
+      if (STRINGS_ARE_EQUAL(text_string, muscle->dynamic_param_names[i]))
       {
-         muscl->dynamic_params[i] = (double*)simm_malloc(sizeof(double));
-         fscanf(*fp,"%lg", muscl->dynamic_params[i]);
+         muscle->dynamic_params[i] = (double*)simm_malloc(sizeof(double));
+         fscanf(fp, "%lg", muscle->dynamic_params[i]);
          return yes;
       }
    }
 
    return no;
-
 }
 
 
-static ReturnCode read_ligament(FILE **fp, ModelStruct* ms)
+static ReturnCode read_ligament(FILE* fp, ModelStruct* ms)
 {
-
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
    LigamentStruct* lig;
-   LigamentLine* ligline;
-   SBoolean dummy;
+   dpMusclePathStruct* ligline;
 
    if (ms->numligaments == ms->ligament_array_size)
    {
       ms->ligament_array_size += MUSCLE_ARRAY_INCREMENT;
       ms->ligament = (LigamentStruct*)simm_realloc(ms->ligament,
-			ms->ligament_array_size*sizeof(LigamentStruct),&rc);
+         ms->ligament_array_size*sizeof(LigamentStruct),&rc);
       if (rc == code_bad)
       {
-	 ms->ligament_array_size -= MUSCLE_ARRAY_INCREMENT;
-	 return (code_bad);
+         ms->ligament_array_size -= MUSCLE_ARRAY_INCREMENT;
+         return code_bad;
       }
    }
 
@@ -1201,167 +1309,85 @@ static ReturnCode read_ligament(FILE **fp, ModelStruct* ms)
 
    lig->display = yes;
    lig->numlines = 0;
-   lig->line_array_size = MUSCLE_ARRAY_INCREMENT;
+   lig->line_array_size = 10;
    lig->activation = 1.0;
    lig->drawmode = gouraud_shading;
    lig->show_normals = no;
 
-   lig->line = (LigamentLine*)simm_malloc(lig->line_array_size*sizeof(LigamentLine));
+   lig->line = (dpMusclePathStruct*)simm_malloc(lig->line_array_size*sizeof(dpMusclePathStruct));
    if (lig->line == NULL)
-      return (code_bad);
+      return code_bad;
 
-   if (fscanf(*fp,"%s",buffer) != 1)
+   if (fscanf(fp, "%s", buffer) != 1)
    {
-      error(abort_action,"Error starting a ligament definition.");
-      return (code_bad);
+      error(abort_action, "Error starting a ligament definition.");
+      return code_bad;
    }
    else
    {
-      mstrcpy(&lig->name,buffer);      
+      mstrcpy(&lig->name, buffer);      
    }
 
    while (1)
    {
-      if (read_string(fp,buffer) == EOF)
+      if (read_string(fp, buffer) == EOF)
          break;
 
-      if (STRINGS_ARE_EQUAL(buffer,"beginpoints"))
+      if (STRINGS_ARE_EQUAL(buffer, "beginpoints"))
       {
          if (lig->numlines == lig->line_array_size)
          {
-            lig->line_array_size += MUSCLE_ARRAY_INCREMENT;
-            lig->line = (LigamentLine*)simm_realloc(lig->line,
-               lig->line_array_size*sizeof(LigamentLine),&rc);
+            lig->line_array_size += 10;
+            lig->line = (dpMusclePathStruct*)simm_realloc(lig->line, lig->line_array_size*sizeof(dpMusclePathStruct), &rc);
             if (rc == code_bad)
             {
-               lig->line_array_size -= MUSCLE_ARRAY_INCREMENT;
-               return (code_bad);
+               lig->line_array_size -= 10;
+               return code_bad;
             }
          }
          ligline = &lig->line[lig->numlines];
-         ligline->numpoints = 0;
-         ligline->pt_array_size = 0;
-         ligline->has_wrapping_points = no;
-         ligline->first_on_point = 0;
-         ligline->num_on_points = 0;
-         ligline->pt = read_ligament_attachment_points(ms->modelnum,fp,&ligline->numpoints,
-            &ligline->pt_array_size,&ligline->has_wrapping_points,&dummy);
-         if (ligline->pt == NULL)
+         if (read_muscle_path(ms, fp, ligline) == code_bad)
          {
-            (void)sprintf(errorbuffer,"Error reading coordinates for muscle surface %s.",
-               lig->name);
-            error(abort_action,errorbuffer);
-            return (code_bad);
+            (void)sprintf(errorbuffer, "Error reading coordinates for muscle surface %s.", lig->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
          }
-         if (ligline->has_wrapping_points == no)
-            ligline->num_on_points = ligline->numpoints;
+         else
+         {
+            post_init_muscle_path(ligline, 0); //TODO5.0 once ligaments support wrap objects, change '0' to lig->numWrapStructs
+         }
          lig->numlines++;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"endmusclesurface") ||
-         STRINGS_ARE_EQUAL(buffer,"endligament"))
+      else if (STRINGS_ARE_EQUAL(buffer, "endmusclesurface") || STRINGS_ARE_EQUAL(buffer, "endligament"))
       {
          break;
       }
       else
       {
-         (void)sprintf(errorbuffer,
-            "Unrecognized string \"%s\" found while reading muscle surface %s.",
-            buffer, lig->name);
-         error(recover,errorbuffer);
+         (void)sprintf(errorbuffer, "Unrecognized string \"%s\" found while reading muscle surface %s.", buffer, lig->name);
+         error(recover, errorbuffer);
       }
    }
 
    ms->numligaments++;
 
-   return (code_fine);
-
+   return code_fine;
 }
 
+
 /* set the array of mp points in the musclepoints array struct */
-ReturnCode init_mparray(MuscleStruct* muscle)
+ReturnCode post_init_muscle_path(dpMusclePathStruct* path, int numWrapStructs)
 {
-   if (muscle->musclepoints == NULL)
+   if (path == NULL)
       return code_fine;
 
-   muscle->musclepoints->num_points = 0;
-   muscle->musclepoints->mp_array_size = muscle->musclepoints->num_orig_points + 2 * muscle->numWrapStructs;
-   muscle->musclepoints->mp = (MusclePoint**)simm_malloc(muscle->musclepoints->mp_array_size * sizeof(MusclePoint*));
-   if (muscle->musclepoints->mp == NULL)
+   path->num_points = 0;
+   path->mp_array_size = path->num_orig_points + 2 * numWrapStructs;
+   path->mp = (dpMusclePoint**)simm_malloc(path->mp_array_size * sizeof(dpMusclePoint*));
+   if (path->mp == NULL)
    {
-      (void)sprintf(errorbuffer, "Could not allocate mp array for %s.\n", muscle->name);
-      error(none, errorbuffer);
+      error(none, "Ran out of memory.");
       return code_bad;
    }
    return code_fine;
 }
-
-/* NULLIFY_MUSCLE: */
-
-void nullify_muscle(MuscleStruct* muscle)
-{
-   muscle->name = NULL;
-   muscle->display = yes;
-   muscle->output = yes;
-   muscle->numgroups = 0;
-   muscle->group = NULL;
-   muscle->max_isometric_force = NULL;
-   muscle->pennation_angle = NULL;
-   muscle->optimal_fiber_length = NULL;
-   muscle->resting_tendon_length = NULL;
-   muscle->min_thickness = NULL;
-   muscle->max_thickness = NULL;
-   muscle->min_material = NULL;
-   muscle->max_material = NULL;
-   muscle->max_contraction_vel = NULL;
-   muscle->force_vel_curve = NULL;
-   muscle->num_dynamic_params = 0;
-   muscle->dynamic_param_names = NULL;
-   muscle->dynamic_params = NULL;
-   muscle->excitation = NULL;
-   muscle->excitation_format = NULL;
-   muscle->muscle_model_index = NULL;
-   muscle->nummomentarms = 0;
-   muscle->momentarms = NULL;
-   muscle->tendon_force_len_curve = NULL;
-   muscle->active_force_len_curve = NULL;
-   muscle->passive_force_len_curve = NULL;
-   muscle->wrapStruct = NULL;
-   muscle->excitation_abscissa = TIME;
-   muscle->saved_copy = NULL;
-   muscle->musclepoints = NULL;
-
-}
-
-void nullify_savemuscle(SaveMuscle* muscle)
-{
-
-   muscle->name = NULL;
-   muscle->display = yes;
-   muscle->output = yes;
-   muscle->musclepoints = NULL;
-   muscle->numgroups = 0;
-   muscle->group = NULL;
-   muscle->max_isometric_force = NULL;
-   muscle->pennation_angle = NULL;
-   muscle->optimal_fiber_length = NULL;
-   muscle->resting_tendon_length = NULL;
-   muscle->min_thickness = NULL;
-   muscle->max_thickness = NULL;
-   muscle->min_material = NULL;
-   muscle->max_material = NULL;
-   muscle->max_contraction_vel = NULL;
-   muscle->force_vel_curve = NULL;
-   muscle->dynamic_param_names = NULL;
-   muscle->dynamic_params = NULL;
-   muscle->excitation = NULL;
-   muscle->excitation_format = NULL;
-   muscle->muscle_model_index = NULL;
-   muscle->momentarms = NULL;
-   muscle->tendon_force_len_curve = NULL;
-   muscle->active_force_len_curve = NULL;
-   muscle->passive_force_len_curve = NULL;
-   muscle->wrapStruct = NULL;
-   muscle->excitation_abscissa = TIME;
-
-}
-

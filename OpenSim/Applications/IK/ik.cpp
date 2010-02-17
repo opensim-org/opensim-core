@@ -38,8 +38,9 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Simulation/Model/Marker.h>
-#include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmCoordinate.h>
 #include <OpenSim/Tools/IKTool.h>
+
+#include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace std;
 using namespace OpenSim;
@@ -60,11 +61,8 @@ int main(int argc,char **argv)
 	try {
 	//----------------------
 
-#ifndef STATIC_OSIM_LIBS
-	//TODO: put these options on the command line
-	LoadOpenSimLibrary("osimSimbodyEngine");
-	//LoadOpenSimLibrary("osimSimmKinematicsEngine");
-#endif
+	// REGISTER TYPES
+	IKTool::registerTypes();
 
 	// PARSE COMMAND LINE
 	string option = "";
@@ -136,14 +134,17 @@ int main(int argc,char **argv)
 	//ik.print("ik_setup_check.xml");
 
 	// PRINT MODEL INFORMATION
-	Model *model = ik.getModel();
-	if(model==NULL) {
-		cout<<"\nik:  ERROR- failed to load model.\n";
-		exit(-1);
-	}
-	model->printBasicInfo(cout);
+	Model& model = ik.getModel();
+	model.printBasicInfo(cout);
+
+	// start timing
+	std::clock_t startTime = std::clock();
+
 	// RUN
 	ik.run();
+
+	std::cout << "IK compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
+
 
 	//----------------------------
 	// Catch any thrown exceptions

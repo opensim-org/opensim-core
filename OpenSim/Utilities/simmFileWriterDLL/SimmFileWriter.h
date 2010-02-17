@@ -35,30 +35,27 @@
 #include <string>
 #include "osimSimmFileWriterDLL.h"
 #include "SimTKcommon.h"
+#include <OpenSim/Common/Array.h>
 
 #ifdef SWIG
 	#ifdef OSIMSIMMFILEWRITER_API
 		#undef OSIMSIMMFILEWRITER_API
-		#define OSIMSIMMFILEWRITER_API
 	#endif
+	#define OSIMSIMMFILEWRITER_API
 #endif
 
 namespace OpenSim {
 
 class Model;
-class SimmKinematicsEngine;
-class SimbodyEngine;
-class AbstractMuscle;
-class ActuatorSet;
-class AbstractBody;
-class AbstractJoint;
-class AbstractCoordinate;
-class MarkerSet;
+class SimbodySimmModel;
 
 //=============================================================================
 //=============================================================================
 /**
- * A class for writing SIMM joint and muscle files for any Model.
+ * A class for writing SIMM joint and muscle files for an OpenSim Model. Right
+ * now all of the work is done by the SimbodySimmModel object, but someday there
+ * could be additions to the SimmFileWriter interface, like setting directories
+ * and other preferences.
  *
  * @author Peter Loan
  * @version 1.0
@@ -70,7 +67,9 @@ class OSIMSIMMFILEWRITER_API SimmFileWriter
 // DATA
 //=============================================================================
 protected:
-	Model *_model;
+	const Model* _model;
+
+	SimbodySimmModel* _simbodySimmModel;
 
 //=============================================================================
 // METHODS
@@ -80,27 +79,16 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	SimmFileWriter();
-	SimmFileWriter(Model *aModel);
+	SimmFileWriter(const Model& aModel);
 	virtual ~SimmFileWriter();
 
-   bool writeMuscleFile(const std::string& aFileName) const;
-   bool writeJointFile(const std::string& aFileName) const;
-   bool writeJointFile(SimbodyEngine* aEngine, const std::string& aFileName) const;
-   bool writeJointFile(SimmKinematicsEngine* aEngine, const std::string& aFileName) const;
-
-private:
-	bool writeMuscle(AbstractMuscle& aMuscle, const ActuatorSet& aActuatorSet, std::ofstream& aStream) const;
-   const std::string& getGravityLabel(const SimTK::Vec3& aGravity) const;
-   bool writeBody(AbstractBody& aBody, const MarkerSet* aMarkerSet, std::ofstream& aStream) const;
-   void writeWrapObjects(AbstractBody& aBody, std::ofstream& aStream) const;
-   bool writeJoint(AbstractJoint& aJoint, int& aFunctionIndex, std::ofstream& aStream) const;
-   bool writeCoordinate(AbstractCoordinate& aCoordinate, int& aFunctionIndex, std::ofstream& aStream) const;
+   bool writeMuscleFile(const std::string& aFileName);
+   bool writeJointFile(const std::string& aFileName);
 
 //=============================================================================
 };	// END of class SimmFileWriter
 //=============================================================================
 //=============================================================================
-
 } // end of namespace OpenSim
 
 #endif // __SimmFileWriter_h__

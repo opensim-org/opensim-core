@@ -1,0 +1,16 @@
+-------------------------------------------------------
+This program includes software developed by the
+Apache Software Foundation (http://www.apache.org/).
+-------------------------------------------------------
+
+WARNING: Actuator piston does not have a controller and its control value will be set to 0.0 
+Initial q's
+Matrix 3 X 1 1-scalar entries:
+-0.76543551359744766
+1.5308683052060754
+0
+Initial u's
+Matrix 3 X 1 1-scalar entries:
+0
+0
+0

@@ -31,7 +31,8 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
-#include "AbstractConstraint.h"
+#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -41,6 +42,9 @@
 #endif
 
 namespace OpenSim {
+
+
+class Model;
 
 //class ScaleSet;
 
@@ -53,15 +57,16 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API ConstraintSet :	public Set<AbstractConstraint>
+class OSIMSIMULATION_API ConstraintSet : public ModelComponentSet<Constraint>
 {
 private:
 	void setNull();
 public:
 	ConstraintSet();
+	ConstraintSet(Model& model);
 	ConstraintSet(const ConstraintSet& aAbsConstraintSet);
 	~ConstraintSet(void);
-	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
+	void setup(Model& aModel);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -72,7 +77,7 @@ public:
 	// UTILITIES
 	//--------------------------------------------------------------------------
 	ConstraintSet& copyFrom(const ConstraintSet& aConstraintSet, 
-									   AbstractDynamicsEngine* aAbstractDynamicsEngine);
+									   Model& aModel);
 
 	// SCALE
 	void scale(const ScaleSet& aScaleSet);

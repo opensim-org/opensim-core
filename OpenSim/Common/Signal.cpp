@@ -1,4 +1,4 @@
-// Mtx.cpp
+// Signal.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -36,20 +36,110 @@
 #include <string>
 #include <math.h>
 #include "Signal.h"
-#include "rdMath.h"
-#include "Mtx.h"
 #include "Array.h"
-
-
-
+#include "SimTKsimbody.h"
 
 using namespace OpenSim;
 using namespace std;
 
-
 //=============================================================================
 // FILTERS
 //=============================================================================
+//-----------------------------------------------------------------------------
+// GCVSPL
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Generalized, cross-validatory spline smoothing (Adv. Engng. Softw. 8:104-113)
+ *
+ *	@param degree Degree of the spline.
+ *	@param T Sample interval in seconds.
+ *	@param fc Cutoff frequency in Hz.
+ *	@param N Number of data points in the signal.
+ *  @param times The times for a specified signal samples.
+ *	@param sig The sampled signal.
+ *	@param sigf The filtered signal.
+ *
+ * @return 0 on success, and -1 on failure.
+ */
+int Signal::
+SmoothSpline(int degree,double T,double fc,int N,double *times,double *sig,double *sigf)
+{
+	/* Background for choice of smoothing parameter (by Ton van den Bogert):
+
+	In the GCVSPL software, VAL is the "smoothing parameter" of the spline, 
+	which occurs as a weighting factor in a cost function which is 
+	minimized.  This produces a compromise between how well the spline 
+	fits the measurements and its smoothness (for a more detailed 
+	explanation, see Ton van den Bogert's notes in 
+	http://isbweb.org/software/sigproc/bogert/filter.pdf).
+
+	Woltring describes the relationship between VAL and frequency domain 
+	filter characteristics in his release notes: 
+	http://isbweb.org/software/sigproc/gcvspl/gcvspl.memo.  
+	This states that a smoothing spline is equivalent to a 
+
+          "double, phase-symmetric Butterworth filter, with transfer function 
+		  H(w) = [1 + (w/wo)^2M]^-1, where  w  is  the  frequency, 
+		  wo = (p*T)^(-0.5/M) the filter's cut-off frequency, p the smoothing 
+		  parameter, T the sampling interval, and  2M the  order  of the spline.  
+		  If T is expressed in seconds, the frequencies are expressed in 
+		  radians/second."
+
+	The VAL calculations can be derived from this.	The equation for the 
+	transfer function has the property H(w0)= 0.5.  This is because it is 
+	a double Butterworth filter (applied twice).  Cut-off frequency is 
+	usually defined as the frequency at which H=1/sqrt(2), and this is why 
+	Tony Reina and Ton van den Bogert have an extra factor in the equation.
+
+	You can easily verify the correctness of your spline smoothing by 
+	processing a sine wave signal at the cut-off frequency.  If it comes 
+	out as a sine wave with its amplitude reduced by a factor 1.41 (=sqrt(2)), 
+	you have used the correct VAL.
+
+	*/
+
+	SimTK::Vector x(N);
+    SimTK::Vector_<SimTK::Vec<1> > y(N);
+    for (int i = 0; i < N; ++i)
+        x[i] = times[i];
+    for (int i = 0; i < N; ++i)
+        y[i] = SimTK::Vec<1>(sig[i]);
+
+	int M = (degree+1)/2; // Half-order
+	SimTK::Real p; // Smoothing parameter
+	p = (1.0/T) / 
+		(pow( 
+			(2.0*SimTK_PI*fc) / 
+			(pow(
+				(sqrt(2.0)-1),
+				(0.5/M)
+				)),
+			(2*M)));
+
+	// SMOOTH SPLINE FIT TWICE TO SIMULATE DOUBLE, PHASE-SYMMETRIC BUTTERWORTH FILTER
+	SimTK::Spline_<SimTK::Vec<1> > smoothSpline1;
+	smoothSpline1 = SimTK::SplineFitter<SimTK::Vec<1> >::fitForSmoothingParameter(degree,x,y,p).getSpline();
+	SimTK::Spline_<SimTK::Vec<1> > smoothSpline2;
+	smoothSpline2 = SimTK::SplineFitter<SimTK::Vec<1> >::fitForSmoothingParameter(degree,x,smoothSpline1.getControlPointValues(),p).getSpline();
+
+	for (int i = 0; i < N; ++i)
+		sigf[i] = smoothSpline2.getControlPointValues()[i][0];
+
+	// CHECK THAT P IS NOT BEYOND BOUND
+	SimTK::Real pActual;
+	pActual = SimTK::SplineFitter<SimTK::Vec<1> >::fitForSmoothingParameter(degree,x,smoothSpline2.getControlPointValues(),p).getSmoothingParameter();
+	//cout << "Requested smoothing parameter = " << p << endl;
+	//cout << "Actual smoothing parameter    = " << pActual << endl;
+	if(p!=pActual) {
+		printf("Signal.SmoothSpline:  ERROR- The cutoff frequency (%lf)",fc);
+		printf(" produced a smoothing parameter (%le) beyond its bound (%le).\n",p,pActual);
+		return(-1);
+	}
+
+  return(0);
+}
+
 //-----------------------------------------------------------------------------
 // IIR
 //-----------------------------------------------------------------------------
@@ -192,13 +282,36 @@ LowpassFIR(int M,double T,double f,int N,double *sig,double *sigf)
 	w = 2.0*SimTK_PI*f;
 
 	// FILTER THE DATA
+	double sum_coef,coef;
 	for(n=0;n<N;n++) {
+		sum_coef = 0.0;
 		sigf[n] = 0.0;
 		for(k=-M;k<=M;k++) {   
-			x = (double)k*w*T;
-			sigf[n] = sigf[n] + (sinc(x)*T*w/SimTK_PI)*hamming(k,M)*s[M+n-k];
+			x = (double)k*w*T; // k*T = time (seconds) and w scales sinc input argument using filter cutoff
+			coef = (sinc(x)*T*w/SimTK_PI)*hamming(k,M); // scale lowpass sinc amplitude by 2*f*T = T*w/pi
+			sigf[n] = sigf[n] + coef*s[M+n-k]; 
+			sum_coef = sum_coef + coef;
 		}
+		sigf[n] = sigf[n] / sum_coef; // normalize for unity gain at DC
 	}
+
+	// Filter check derived from http://www.dspguide.com/CH16.PDF
+	//double sum_coef,coef;
+	//for(n=0;n<N;n++) {
+	//	sum_coef = 0.0;
+	//	sigf[n] = 0.0;
+	//	for(k=-M;k<=M;k++) {
+	//		if(k==0) {
+	//			coef = 2.0*SimTK_PI*f;
+	//		} else {
+	//			coef = sin((double)k*2.0*SimTK_PI*f) / (double)k;
+	//		}
+	//		coef = coef*hamming(k,M);
+	//		sigf[n] = sigf[n] + coef*s[M+n-k];
+	//		sum_coef = sum_coef + coef;
+	//	}
+	//	sigf[n] = sigf[n] / sum_coef;
+	//}
 
 	// CLEANUP
   delete[] s;
@@ -263,15 +376,18 @@ double *s;
   
 
 	// FILTER THE DATA
+	double sum_coef,coef;
 	for (n=0;n<N;n++) {
+		sum_coef = 0.0;
 		sigf[n] = 0.0;
 		for (k=-M;k<=M;k++) {   
-			x1 = (double)k*w1*T;
-			x2 = (double)k*w2*T;
-			sigf[n] = sigf[n] +
-			 (sinc(x2)*T*w2/SimTK_PI - sinc(x1)*T*w1/SimTK_PI)*
-			 hamming(k,M)*s[M+n-k];
+			x1 = (double)k*w1*T;  // k*T = time (seconds) and w scales sinc input argument using filter cutoff
+			x2 = (double)k*w2*T;  // k*T = time (seconds) and w scales sinc input argument using filter cutoff
+			coef = (sinc(x2)*T*w2/SimTK_PI - sinc(x1)*T*w1/SimTK_PI)*hamming(k,M); // scale lowpass sinc amplitude by 2*f*T = T*w/pi
+			sigf[n] = sigf[n] + coef*s[M+n-k];
+			sum_coef = sum_coef + coef;
 		}
+		sigf[n] = sigf[n] / sum_coef; // normalize for unity gain at DC
 	}
 
 	// CLEANUP
@@ -411,7 +527,7 @@ ReduceNumberOfPoints(double aDistance,
 	}
 
 	// CHECK ANGLE
-	if(aDistance<rdMath::ZERO) aDistance = rdMath::ZERO;
+	if(aDistance<SimTK::Zero) aDistance = SimTK::Zero;
 
 	// APPEND FIRST POINT
 	Array<double> t(0.0,0,size),s(0.0,0,size);
@@ -450,9 +566,9 @@ ReduceNumberOfPoints(double aDistance,
 		v1 = p2 - p1; //Mtx::Subtract(1,3,p2,p1,v1);
 		v2 = p3 - p1; //Mtx::Subtract(1,3,p3,p1,v2);
 
-		mv1 = Mtx::Magnitude(3,v1);
-		mv2 = Mtx::Magnitude(3,v2);
-		cos = Mtx::DotProduct(3,v1,v2) / (mv1*mv2); 
+		mv1 = v1.norm(); //Mtx::Magnitude(3,v1);
+		mv2 = v2.norm(); //Mtx::Magnitude(3,v2);
+		cos = (~v1*v2)/(mv1*mv2); //Mtx::DotProduct(3,v1,v2) / (mv1*mv2); 
 
 		dsq = mv1 * mv1 * (1.0 - cos*cos);
 

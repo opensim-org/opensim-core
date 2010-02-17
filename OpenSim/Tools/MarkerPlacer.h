@@ -41,6 +41,7 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include "IKTaskSet.h"
 #include "osimToolsDLL.h"
+#include "SimTKsimbody.h"
 
 namespace OpenSim {
 
@@ -133,13 +134,12 @@ public:
 	MarkerPlacer(const MarkerPlacer &aMarkerPlacementParams);
 	virtual ~MarkerPlacer();
 	virtual Object* copy() const;
+	void copyData(const MarkerPlacer &aMarkerPlacementParams);
 
 #ifndef SWIG
 	MarkerPlacer& operator=(const MarkerPlacer &aMarkerPlacementParams);
 #endif
-   void copyData(const MarkerPlacer &aMarkerPlacementParams);
-
-	bool processModel(Model* aModel, const std::string& aPathToSubject="");
+	bool processModel( SimTK::State& s, Model* aModel, const std::string& aPathToSubject="");
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
@@ -229,7 +229,7 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void moveModelMarkersToPose(Model& aModel, MarkerData& aPose);
+	void moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose);
 //=============================================================================
 };	// END of class MarkerPlacer
 //=============================================================================

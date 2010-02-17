@@ -36,15 +36,19 @@
 //=============================================================================
 #include "osimAnalysesDLL.h"
 #include "OpenSim/Common/Array.h"
+#include <OpenSim/Common/GCVSplineSet.h>
+#include "SimTKsimbody.h"
 #include <simmath/Optimizer.h>
 
 //=============================================================================
 //=============================================================================
-/**
- * This class provides an interface specification for static optimization.
- */
 namespace OpenSim { 
 
+/**
+ * This class provides an interface specification for static optimization Objective Function.
+ *
+ * @author Jeff Reinbolt
+ */
 class OSIMANALYSES_API StaticOptimizationTarget : public SimTK::OptimizerSystem
 {
 //=============================================================================
@@ -58,14 +62,8 @@ private:
 
 	/** Work model. */
 	Model *_model;
-	/** Work variable of the time. */
-	double _t;
-	/** Work array of the controls. */
-	double  *_x;
-	/** Work array of the states. */
-	double  *_y;
-	/** Work array of the state derivatives. */
-	double  *_dydt;
+	/** Current state */
+	const SimTK::State* _currentState;
 	/** Reciprocal of actuator area squared. */
 	Array<double> _recipAreaSquared;
 	/** Reciprocal of optimal force squared accounting for force-length curve if actuator is a muscle. */
@@ -75,6 +73,9 @@ private:
 	
 	SimTK::Matrix _constraintMatrix;
 	SimTK::Vector _constraintVector;
+
+	const Storage *_statesStore;
+	GCVSplineSet _statesSplineSet;
 
 protected:
 	double _activationExponent;
@@ -87,29 +88,30 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	StaticOptimizationTarget(Model *aModel,int aNX,int aNC,double aT,double *aX,double *aY,double *aDYDT, const bool useMusclePhysiology=true);
+	StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNX,int aNC, const bool useMusclePhysiology=true);
 
 	// SET AND GET
-	void setModel(Model *aModel);
+	void setModel(Model& aModel);
+	void setStatesStore(const Storage *aStatesStore);
+	void setStatesSplineSet(GCVSplineSet aStatesSplineSet);
 	void setNumParams(const int aNP);
 	void setNumConstraints(const int aNC);
-	void setTime(double aT);
-	void setControls(double *aX);
-	void setStates(double *aY);
-	void setStateDerivatives(double *aDYDT);
 	void setDX(double aVal);
 	void setDX(int aIndex,double aVal);
 	double getDX(int aIndex);
 	double* getDXArray();
-	void getActuation(const SimTK::Vector &parameters, SimTK::Vector &forces);
+	void getActuation(const SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &forces);
 	void setActivationExponent(double aActivationExponent) { _activationExponent=aActivationExponent; }
 	double getActivationExponent() const { return _activationExponent; }
+	void setCurrentState( const SimTK::State* state) { _currentState = state; }
+	const SimTK::State* getCurrentState() const { return _currentState; }
+
 	// UTILITY
 	void validatePerturbationSize(double &aSize);
 
-	virtual void printPerformance(double *x);
+	virtual void printPerformance(const SimTK::State& s, double *x);
 
-	void computeActuatorAreas();
+	void computeActuatorAreas(const SimTK::State& s);
 
 	static int
 		CentralDifferencesConstraint(const StaticOptimizationTarget *aTarget,
@@ -118,7 +120,7 @@ public:
 		CentralDifferences(const StaticOptimizationTarget *aTarget,
 		double *dx,const SimTK::Vector &x,SimTK::Vector &dpdx);
 
-	bool prepareToOptimize(double *x);
+	bool prepareToOptimize(const SimTK::State& s, double *x);
 
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
@@ -129,8 +131,8 @@ public:
 	int constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::Matrix &jac) const;
 
 private:
-	void computeConstraintVector(const SimTK::Vector &x, SimTK::Vector &c) const;
-	void computeAcceleration(double aT,double *aX,double *aY,const SimTK::Vector &aF,SimTK::Vector &rAccel) const;
+	void computeConstraintVector(const SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
+	void computeAcceleration(const SimTK::State& s, const SimTK::Vector &aF,SimTK::Vector &rAccel) const;
 	void cumulativeTime(double &aTime, double aIncrement);
 };
 

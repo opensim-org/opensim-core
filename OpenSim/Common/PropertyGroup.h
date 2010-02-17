@@ -29,6 +29,9 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef WIN32
+#pragma warning( disable : 4251 )
+#endif
 
 // INCLUDE
 #include "osimCommonDLL.h"

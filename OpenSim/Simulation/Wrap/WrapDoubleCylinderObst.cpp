@@ -6,13 +6,13 @@
 //=============================================================================
 #include "WrapDoubleCylinderObst.h"
 #include <SimTKcommon.h>
-#include <OpenSim/Simulation/Model/MusclePoint.h>
-#include <OpenSim/Simulation/Wrap/MuscleWrap.h>
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include <OpenSim/Simulation/Wrap/PathWrap.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
@@ -26,7 +26,7 @@ using SimTK::Vec3;
 static char* wrapTypeName = "doubleCylinderObst";
 
 static const double TwoPi = 2.0*SimTK::Pi;
-static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
+// static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
 
 
 //=============================================================================
@@ -37,7 +37,7 @@ static const double max_wrap_pts_circle_ang = (5.0/360.0)*TwoPi;
 * Default constructor.
 */
 WrapDoubleCylinderObst::WrapDoubleCylinderObst() :
-AbstractWrapObject(),
+WrapObject(),
 _radiusUcyl(_radiusUcylProp.getValueDbl()),
 _radiusVcyl(_radiusVcylProp.getValueDbl()),
 _wrapUcylDirectionName(_wrapUcylDirectionNameProp.getValueStr()),
@@ -67,7 +67,7 @@ WrapDoubleCylinderObst::~WrapDoubleCylinderObst()
 * @param aWrapDoubleCylinderObst WrapDoubleCylinderObst to be copied.
 */
 WrapDoubleCylinderObst::WrapDoubleCylinderObst(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst) :
-AbstractWrapObject(aWrapDoubleCylinderObst),
+WrapObject(aWrapDoubleCylinderObst),
 _radiusUcyl(_radiusUcylProp.getValueDbl()),
 _radiusVcyl(_radiusVcylProp.getValueDbl()),
 _wrapUcylDirectionName(_wrapUcylDirectionNameProp.getValueStr()),
@@ -117,7 +117,7 @@ void WrapDoubleCylinderObst::setNull()
 void WrapDoubleCylinderObst::setupProperties()
 {
 	// BASE CLASS
-	AbstractWrapObject::setupProperties();
+	WrapObject::setupProperties();
 
 	_radiusUcylProp.setName("radiusUcyl");	_radiusUcylProp.setValue(-1.0);		_propertySet.append(&_radiusUcylProp);
 	_radiusVcylProp.setName("radiusVcyl");	_radiusVcylProp.setValue(-1.0);		_propertySet.append(&_radiusVcylProp);
@@ -147,12 +147,12 @@ void WrapDoubleCylinderObst::setupProperties()
 * Perform some set up functions that happen after the
 * object has been deserialized or copied.
 *
-* @param aEngine dynamics engine containing this SimmBody.
+* @param aModel simbody model
 */
-void WrapDoubleCylinderObst::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
+void WrapDoubleCylinderObst::setup(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	AbstractWrapObject::setup(aEngine, aBody);
+	WrapObject::setup(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 	if ( (_radiusUcyl<0.0) || (_radiusVcyl < 0.0) )
@@ -195,15 +195,15 @@ void WrapDoubleCylinderObst::setup(AbstractDynamicsEngine* aEngine, AbstractBody
 	
 	// Initialize value of _activeState
 	_activeState = 3;	// By default assume both cylinders are active
-	_wrapUcylHomeBody = aBody;	// Save this for use in wrapLine
-	_theDynEngine = aEngine;	// Save this for use in wrapLine
+	_wrapUcylHomeBody = &aBody;	// Save this for use in wrapLine
+	_model = &aModel;	// Save this for use in wrapLine
 
 	// Obtain wrapVcylHomeBody based on wrapVcylHomeBodyName
-	_wrapVcylHomeBody = aEngine->getBodySet()->get(_wrapVcylHomeBodyName);
-	if(!_wrapVcylHomeBody) {
+	if(!aModel.updBodySet().contains(_wrapVcylHomeBodyName)) {
 		string errorMessage = "Error: wrapVcylHomeBody " + _wrapVcylHomeBodyName + " for wrap obstacle " + getName() + " was not found in model.";
 		throw Exception(errorMessage);
 	}
+	_wrapVcylHomeBody = &aModel.updBodySet().get(_wrapVcylHomeBodyName);
 	
 }
 
@@ -216,7 +216,7 @@ void WrapDoubleCylinderObst::setup(AbstractDynamicsEngine* aEngine, AbstractBody
 void WrapDoubleCylinderObst::copyData(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst)
 {
 	// BASE CLASS
-	AbstractWrapObject::copyData(aWrapDoubleCylinderObst);
+	WrapObject::copyData(aWrapDoubleCylinderObst);
 
 	_radiusUcyl = aWrapDoubleCylinderObst._radiusUcyl;
 	_radiusVcyl = aWrapDoubleCylinderObst._radiusVcyl;
@@ -271,7 +271,7 @@ string WrapDoubleCylinderObst::getDimensionsString() const
 WrapDoubleCylinderObst& WrapDoubleCylinderObst::operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst)
 {
 	// BASE CLASS
-	AbstractWrapObject::operator=(aWrapDoubleCylinderObst);
+	WrapObject::operator=(aWrapDoubleCylinderObst);
 
 	return(*this);
 }
@@ -480,13 +480,13 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
  *
  * @param aPointP One end of the line segment, already expressed in cylinder frame
  * @param aPointS The other end of the line segment, already expressed in cylinder frame
- * @param aMuscleWrap An object holding the parameters for this line/cylinder pairing
+ * @param aPathWrap An object holding the parameters for this line/cylinder pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapDoubleCylinderObst::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-						const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+						const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 
 	double U[3];	U[0]=_translation[0];		U[1]=_translation[1];		U[2]=_translation[2];
@@ -503,46 +503,46 @@ int WrapDoubleCylinderObst::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
 	double UcylObstToUcylBody[9];	load_Rxyz(xyzBodyRotation,UcylObstToUcylBody);
 	double VcylObstToVcylBody[9];	load_Rxyz(xyzBodyRotationVcyl,VcylObstToVcylBody);
-	double UcylBodyToGround[9];		_theDynEngine->getDirectionCosines(*_wrapUcylHomeBody,UcylBodyToGround);
-	double VcylBodyToGround[9];		_theDynEngine->getDirectionCosines(*_wrapVcylHomeBody,VcylBodyToGround);
+	double UcylBodyToGround[9];		_model->getSimbodyEngine().getDirectionCosines(s, *_wrapUcylHomeBody,UcylBodyToGround);
+	double VcylBodyToGround[9];		_model->getSimbodyEngine().getDirectionCosines(s, *_wrapVcylHomeBody,VcylBodyToGround);
 	double VcylBodyToUcylBody[9];	quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
 	double VcylObstToUcylBody[9];	quick_mul_mtx_by_mtx(VcylBodyToUcylBody,VcylObstToVcylBody,VcylObstToUcylBody);
 	quick_mul_mtxT_by_mtx(UcylObstToUcylBody,VcylObstToUcylBody,VcylObstToUcylObst);
 
 	double u[3];	// Position of Ucyl center in Vcyl frame;   NOTE:  U is Posn of Ucyl center in Ucyl body frame
-	_theDynEngine->transformPosition(*_wrapUcylHomeBody, U, *_wrapVcylHomeBody, u);
+	_model->getSimbodyEngine().transformPosition(s, *_wrapUcylHomeBody, U, *_wrapVcylHomeBody, u);
 	quick_sub_vec_fm_vec( u, V, u );					// Translate u from Vcyl body to Vcyl obstacle
 	quick_mul_vec_by_mtxT( u, VcylObstToVcylBody, u );	// Rotate u into Vcyl obstacle frame
 
 	double v[3];	// Position of Vcyl center in Ucyl frame;   NOTE:  V is Posn of Vcyl center in Vcyl body frame
-	_theDynEngine->transformPosition(*_wrapVcylHomeBody, V, *_wrapUcylHomeBody, v);
+	_model->getSimbodyEngine().transformPosition(s, *_wrapVcylHomeBody, V, *_wrapUcylHomeBody, v);
 	quick_sub_vec_fm_vec( v, U, v );					// Translate v from Ucyl body to Ucyl obstacle
 	quick_mul_vec_by_mtxT( v, UcylObstToUcylBody, v );	// Rotate v into Ucyl obstacle frame
 
-	double s[3],ss[3];	// Position of S in Vcyl obstacle frame;	NOTE:  S is Posn of S in Ucyl obstacle frame
-	quick_mul_vec_by_mtx( S, UcylObstToUcylBody, s );	// Rotate S into Ucyl body frame
-	quick_add_vec_to_vec( s, U, s );					// Translate s into Ucyl body frame
-	_theDynEngine->transformPosition(*_wrapUcylHomeBody, s, *_wrapVcylHomeBody, ss);
-	quick_sub_vec_fm_vec( ss, V, s );					// Translate s from Vcyl body to Vcyl obstacle
-	quick_mul_vec_by_mtxT( s, VcylObstToVcylBody, s );	// Rotate s into Vcyl obstacle frame
+	double vs[3],ss[3];	// Position of S in Vcyl obstacle frame;	NOTE:  S is Posn of S in Ucyl obstacle frame
+	quick_mul_vec_by_mtx( S, UcylObstToUcylBody, vs );	// Rotate S into Ucyl body frame
+	quick_add_vec_to_vec( vs, U, vs );					// Translate s into Ucyl body frame
+	_model->getSimbodyEngine().transformPosition(s, *_wrapUcylHomeBody, vs, *_wrapVcylHomeBody, ss);
+	quick_sub_vec_fm_vec( ss, V, vs );					// Translate s from Vcyl body to Vcyl obstacle
+	quick_mul_vec_by_mtxT( vs, VcylObstToVcylBody, vs );	// Rotate s into Vcyl obstacle frame
 
 	int activeState=(int)aWrapResult.c1[0];	// _activeState;	// TEMP set to zero
 	if( (int)aWrapResult.c1[1] != 12345 ) {	aWrapResult.c1[1]=12345.01; activeState=0; }	// Initialize activeState first iteration
-	double_cylinder(u,Ru,v,Rv,  VcylObstToUcylObst,  P,q,Q,T,t,s, &Pq,&qQ,&QT,&Tt,&tS,&L, &activeState, &ru,&rv);
+	double_cylinder(u,Ru,v,Rv,  VcylObstToUcylObst,  P,q,Q,T,t,vs, &Pq,&qQ,&QT,&Tt,&tS,&L, &activeState, &ru,&rv);
 //	_activeState=activeState;		???? I CAN'T SEEM TO SET THIS!!!  GARNER - Needs to be Set in a WrapResult variable.
 	aWrapResult.c1[0]=activeState+0.01;	// Save active state for reference in next iteration
 
 	// Transform T back into Ucylinder frame
 	quick_mul_vec_by_mtx( T, VcylObstToVcylBody, T );
 	quick_add_vec_to_vec( T, V, T );
-	_theDynEngine->transformPosition(*_wrapVcylHomeBody, T, *_wrapUcylHomeBody, T);
+	_model->getSimbodyEngine().transformPosition(s, *_wrapVcylHomeBody, T, *_wrapUcylHomeBody, T);
 	quick_sub_vec_fm_vec( T, U, T );					// Translate T from Ucyl body to Ucyl obstacle
 	quick_mul_vec_by_mtxT( T, UcylObstToUcylBody, T );	// Rotate T into Ucyl obstacle frame
 
 	// Transform t back into Ucylinder frame
 	quick_mul_vec_by_mtx( t, VcylObstToVcylBody, t );
 	quick_add_vec_to_vec( t, V, t );
-	_theDynEngine->transformPosition(*_wrapVcylHomeBody, t, *_wrapUcylHomeBody, t);
+	_model->getSimbodyEngine().transformPosition(s, *_wrapVcylHomeBody, t, *_wrapUcylHomeBody, t);
 	quick_sub_vec_fm_vec( t, U, t );					// Translate t from Ucyl body to Ucyl obstacle
 	quick_mul_vec_by_mtxT( t, UcylObstToUcylBody, t );	// Rotate t into Ucyl obstacle frame
 
@@ -574,13 +574,13 @@ int WrapDoubleCylinderObst::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 
 /*============================================================================*/
 void WrapDoubleCylinderObst::
-getVcylToUcylRotationMatrix(double VcylObstToUcylObst[9]) const {
+getVcylToUcylRotationMatrix(const SimTK::State& s, double VcylObstToUcylObst[9]) const {
 	double xyzBodyRotation[3] = { _xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2] };
 	double xyzBodyRotationVcyl[3] = { _xyzBodyRotationVcyl[0],_xyzBodyRotationVcyl[1],_xyzBodyRotationVcyl[2] };
 	double UcylBodyToUcylObst[9];	load_Rxyz(xyzBodyRotation,UcylBodyToUcylObst);
 	double VcylBodyToVcylObst[9];	load_Rxyz(xyzBodyRotationVcyl,VcylBodyToVcylObst);
-	double UcylBodyToGround[9];		_theDynEngine->getDirectionCosines(*_wrapUcylHomeBody,UcylBodyToGround);
-	double VcylBodyToGround[9];		_theDynEngine->getDirectionCosines(*_wrapVcylHomeBody,VcylBodyToGround);
+	double UcylBodyToGround[9];		_model->getSimbodyEngine().getDirectionCosines(s, *_wrapUcylHomeBody,UcylBodyToGround);
+	double VcylBodyToGround[9];		_model->getSimbodyEngine().getDirectionCosines(s, *_wrapVcylHomeBody,VcylBodyToGround);
 	double VcylBodyToUcylBody[9];	quick_mul_mtxT_by_mtx(UcylBodyToGround,VcylBodyToGround,VcylBodyToUcylBody);
 	double VcylObstToUcylBody[9];	quick_mul_mtx_by_mtxT(VcylBodyToUcylBody,VcylBodyToVcylObst,VcylObstToUcylBody);
 	quick_mul_mtx_by_mtx(UcylBodyToUcylObst,VcylObstToUcylBody,VcylObstToUcylObst);
@@ -669,7 +669,7 @@ static int double_cylinder(double U[3],double Ru,double V[3],double Rv,double M[
 	double Qd,Qrt,Qc,Td,Trt,Tc,TQ,LU,LV,TnU[3],QnV[3];
 	double x[3],C[3],Cx[9];
 	double dQdx[9],dTdQ[9];
-	double a,b,c,dp,ds,rtp,rts,z1,z2,buff,Rpos,sgn;
+	double dp,ds,rtp,rts,z1,z2,buff,Rpos,sgn;
 	int i,count=0,MAXCOUNT=50;
 
 	*ru=Ru;	*rv=Rv;

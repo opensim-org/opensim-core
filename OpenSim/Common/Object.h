@@ -86,19 +86,7 @@ const char ObjectDEFAULT_NAME[] = "default";
 	#define SWIG_DECLARE_EXCEPTION
 #endif
 
-//=============================================================================
-//=============================================================================
-/**
- * Class rdOject is intended to be used as the base class for all
- * Realistic Dynamics, Inc. objects.  It provides a common object from which
- * to derive and also some basic functionality, such as writing to files
- * in XML format and the equality, less than, and output operators.
- * Future enhancements to Object might include thread functionality.
- *
- * @version 1.0
- * @author Frank C. Anderson
- * @todo Use a hash table to store registered object types.
- */
+
 namespace OpenSim { 
 
 /** VisibleObject needs Object for persistence while Object
@@ -107,7 +95,19 @@ namespace OpenSim {
 	so that the behavior only (not the serialization) is used here.*/
 class VisibleObject;
 class XMLDocument;
-
+//=============================================================================
+//=============================================================================
+/**
+ * Class Oject is intended to be used as the base class for all
+ * OpenSim objects.  It provides a common object from which
+ * to derive and also some basic functionality, such as writing to files
+ * in XML format and the equality, less than, and output operators.
+ * Future enhancements to Object might include thread functionality.
+ *
+ * @version 1.0
+ * @author Frank C. Anderson
+ * @todo Use a hash table to store registered object types.
+ */
 class OSIMCOMMON_API Object  
 {
 
@@ -129,9 +129,24 @@ private:
 	 */
 	static defaultsReadFromFile	_defaultsReadFromFile;
 	/**
+	 * A list of types that has been depreacted so we can take them out when writing
+	 */
+	static Array<std::string> _deprecatedTypes;
+
+	/**
 	 * Global flag to indicate if all registered objects are written in the defaults section
 	 */
 	static bool _serializeAllDefaults;
+
+	/**
+	 * Debug level: 
+	 *	0: Hides non fatal warnings 
+	 *  1: Shows illegal tags 
+	 *  2: level 1 + registration troubleshooting
+	 *  3: 2 + more verbose troubleshooting of Object (de)serialization
+	 */
+	static int _debugLevel;
+
 	/**
 	* A pointer to the observable object implementation. Null if not needed to minimize
 	* memory overhead 
@@ -165,7 +180,6 @@ protected:
 	 * _refNode contains the type and reference to file name -> rdSerializable interface */
 	DOMElement *_refNode;
 
-	bool _converting;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -181,9 +195,18 @@ public:
 	Object(const Object &aObject);
 	virtual Object* copy() const;
 	virtual Object* copy(DOMElement *aNode) const;
-	virtual void migrateFromPreviousVersion(const Object* aObject) { };
 	static Object* SafeCopy(const Object *aObject) { return aObject ? aObject->copy() : 0; }
-	virtual VisibleObject *getDisplayer() const { return 0; };
+	virtual const VisibleObject *getDisplayer() const { return 0; };
+	virtual VisibleObject *updDisplayer() { return 0; };
+
+	//-------- Versioning
+	/** Now this works by having classes that change over time, implement their own updateFromXMLNode method.
+	 *  The method is responsible for massaging the DOM underneath the object to match latest XML layout.
+	 *  The implmentation of updateFromXMLNode (if any) should call the base class's method to do the actual parsing.
+	 *  The helper function renameChildNode helps with this since it's not provided by the DOM. 
+	 */
+	void renameChildNode(const std::string& aOldName, const std::string& aNewName, DOMElement* startNode=NULL);
+
 private:
 	void setNull();
 	void setupProperties();
@@ -224,16 +247,15 @@ public:
 	//--------------------------------------------------------------------------
 	// REGISTRATION OF TYPES AND DEFAULT OBJECTS
 	//--------------------------------------------------------------------------
-	static void RegisterType(const Object &aObject, bool allowOverwrite=false);
-	/*
-	 * An alternte to RegisterType that explicitly indicate we're replacing a class defn.
-	 * This is used when registering "default" objects with those read from a file
-	 * or by plugin writers to change the behavior of a built in class.  
-	 * Do not use this method from a plugin unless you know what you're doing!
-	 */
-	static void ReplaceType(const Object &aObject) {
-		RegisterType(aObject, true);
-	}
+	static void RegisterType(const Object &aObject);
+	static void RenameType(const std::string& oldTypeName, const Object& aObjectOfNewType);
+
+	static void setDebugLevel(int newLevel) {
+		_debugLevel=newLevel; 
+	};
+	static int getDebugLevel() {
+		return _debugLevel; 
+	};
 	/*=============================================================================
 	 * makeObjectFromFile creates an OpenSim object based on the tag at the root
 	 * node of the XML file passed in. This is useful since the constructor of Object 
@@ -315,9 +337,9 @@ public:
 	 * Eventually observers will have to specify what event to observe so that they're not
 	 * called unnecessarily. Will do this after the Event class hierarchy matures.
 	 */
-	void addObserverEvent(Object& aObserver, Event& aEvent)
+	void addObserverEvent(Object& aObserver, OpenSim::Event& aEvent)
 	{};
-	void notifyObservers(Event& aEvent)
+	void notifyObservers(OpenSim::Event& aEvent)
 	{
 		if (!_observable)	// No observer has been added
 			return;
@@ -363,7 +385,7 @@ protected:
 		return (_observable->hasChanged());
 	};
 public:
-	virtual void update(const Object& aObject, Event& aEvent) {};
+	virtual void update(const Object& aObject, OpenSim::Event& aEvent) {};
 	/* Static functions to specify and query if all registered objects are written 
 	 * to the defaults section of output files rather than only those 
 	 * explicitly specified by the user in input files */

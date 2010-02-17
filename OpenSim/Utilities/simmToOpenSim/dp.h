@@ -27,7 +27,6 @@
 
 typedef void* dpSimmModelID;
 
-
 typedef enum
 {
    dpNo,
@@ -50,7 +49,8 @@ typedef enum
    dpInitialized,
    dpFinished,
    dpOverwritable,
-   dpNormal
+   dpNormal,
+   dpDllLoaded
 } dpMessageID;
 
 typedef enum
@@ -60,13 +60,16 @@ typedef enum
    dpNormalizeToOneHundred
 } dpNormalizeOptions;
 
+typedef struct
+{
+   double xyz[3];                    /* coordinates of a point in 3space */
+} dpCoord3D;
 
 typedef struct
 {
    char* name;
    double xCoord;
 } dpMotionEvent;
-
 
 typedef struct
 {
@@ -81,13 +84,11 @@ typedef struct
    float eventColor[3];
 } dpDataSetup;
 
-
 typedef struct
 {
    int numElements;
    double* elements;
 } dpDataFrame;
-
 
 typedef struct
 {
@@ -95,7 +96,6 @@ typedef struct
    char text[500];
    void* data;
 } dpMessageStruct;
-
 
 typedef struct
 {
@@ -122,6 +122,15 @@ typedef struct
 	dpBoolean traditionalInverse;
 } dpOutputOptions;
 
+typedef struct
+{
+   double kinetic_cutoff;
+   dpBoolean kinetic_cutoff_defined;
+   double force_cutoff;
+   dpBoolean force_cutoff_defined;
+   double emg_cutoff;
+   dpBoolean emg_cutoff_defined;
+} dpInputOptions;
 
 typedef struct
 {
@@ -134,8 +143,8 @@ typedef struct
    char* boneDir;
    dpOutputOptions outputOptions;
    dpSimmModelID model;
+   dpInputOptions inputOptions;
 } dpSimulationParameters;
-
 
 typedef enum
 {
@@ -164,7 +173,6 @@ typedef enum
 	dpUnknownJoint
 } dpJointType;
 
-
 typedef enum
 {
    dpTranslational,
@@ -172,15 +180,31 @@ typedef enum
    dpNoDof
 } dpDOFType;
 
+/* dpStepFunction through dpLinearFunction must remain
+ * 0 through 3 so that they match the enums in dpSplineType
+ * from SIMM 4.2.
+ */
+typedef enum
+{
+   dpFunctionTypeUndefined = -1,
+   dpStepFunction = 0,
+   dpNaturalCubicSpline,
+   dpGCVSpline,
+	dpLinearFunction
+} dpFunctionType;
 
 typedef enum
 {
-   dpStepFunction,
-   dpNaturalCubic,
-   dpGCVSpline,
-	dpLinear
-} dpSplineType;
+   dpJointFile = 0,
+   dpMuscleFile
+} dpFunctionSource;
 
+typedef enum
+{
+   dpFunctionUndefined = 0,
+   dpFunctionUserDefined,
+   dpFunctionSimmDefined
+} dpFunctionStatus;
 
 typedef enum
 {
@@ -213,63 +237,62 @@ typedef struct
 	double dist;			/* for ideal contacts along outward normal */
 } dpContactInfo;		   /* contact node */
 
-
 typedef struct
 {
    double a, b, c, d;
 } dpPlaneStruct;
 
-
 typedef struct
 {
-   dpSplineType type;                /* step_function, natural_cubic, gcv_spline */
-   double cutoff_frequency;          /* used only for gcv_spline */
+   dpFunctionType type;              /* dpStepFunction, dpLinearFunction, dpNaturalCubicSpline, dpGCVSpline */
    int numpoints;                    /* number of points in the function */
    int coefficient_array_size;       /* current size of x,y,b,c,d arrays */
-   int usernum;                      /* user-supplied number for this function */
+   int usernum;                      /* user-supplied number for this function*/
    double* x;                        /* list of x coordinates */
    double* y;                        /* list of y coordinates */
-   double* b;                        /* list of b coefficients for spline fit */
-   double* c;                        /* list of c coefficients for spline fit */
-   double* d;                        /* list of d coefficients for spline fit */
-   dpBoolean defined;                /* is function defined in joint file? */
-} dpSplineFunction;                  /* description of a cubic-spline function*/
-
+   double* b;                        /* list of b coefficients for interpolation */
+   double* c;                        /* list of c coefficients for interpolation */
+   double* d;                        /* list of d coefficients for interpolation */
+   dpFunctionStatus status;          /* undefined, defined in file, created in SIMM GUI */
+   dpBoolean used;                   /* is this structure currently being used? */
+   double cutoff_frequency;          /* for smoothing of GCV splines */
+   dpFunctionSource source;          /* is function from joint file or muscle file? */
+} dpFunction;                        /* a function with XY control points */
 
 typedef struct
 {
-   int genc;                         /* gencoord number */
+   void* gencoord;                   /* gencoord number */
    double start;                     /* starting value of range-of-motion */
    double end;                       /* ending value of range-of-motion */
 } dpPointRange;                      /* muscle point range (wrapping pts) */
-
 
 typedef struct
 {
    int segment;                      /* body segment this point is fixed to */
    dpBoolean selected;               /* whether or not point has been selected */
    double point[3];                  /* xyz coordinates of the point */
-   int fcn_index[3];                   /* function for moving point (3 coordinates - 3 possible functions) */
-   int gencoord[3];                  /* gencoord for moving point (3 coordinates - 3 possible gencoords) */
-   dpBoolean isMovingPoint;           /* whether the point has non-constant coordinates */
-   dpBoolean isVia;                   /* is the point a via point */
-   dpPointRange viaRange;             /* array of ranges */
+   double ground_pt[3];              /* coords of point in ground frame */
+   dpFunction* function[3];          /* function for moving point (3 coordinates - 3 possible functions) */
+   void* gencoord[3];                /* gencoord for moving point (3 coordinates - 3 possible gencoords) */
+   dpBoolean isMovingPoint;          /* whether the point has non-constant coordinates */
+   dpBoolean isVia;                  /* is the point a via point */
+   dpPointRange viaRange;            /* array of ranges */
    dpBoolean is_auto_wrap_point;     /* was this point calc-ed by auto wrapper? */
    double wrap_distance;             /* stores distance of wrap over object surface */
    double* wrap_pts;                 /* points wrapping over surface */
    int num_wrap_pts;                 /* number of points wrapping over surface */
+   double undeformed_point[3];       /* 'point' prior to deformation */
+   float normal[3];                  /* point normal used for muscle surfaces */
 } dpMusclePoint;                     /* properties of a muscle point */
-
 
 typedef struct
 {
    int num_orig_points;             /* number of user-defined muscle points */
-   int num_points;                   /* total number of muscle points */
-   dpMusclePoint* mp_orig;             /* list of user-defined muscle points */
-   dpMusclePoint** mp;                 /* list of muscle points after auto wrapping */
-   int mp_orig_array_size;           /* current size of mp_orig[] */
-   int mp_array_size;                /* current size of mp[] */
-   //SaveMusclePath *saved_copy;
+   int num_points;                  /* total number of muscle points */
+   dpMusclePoint* mp_orig;          /* list of user-defined muscle points */
+   dpMusclePoint** mp;              /* list of muscle points after auto wrapping */
+   int mp_orig_array_size;          /* current size of mp_orig[] */
+   int mp_array_size;               /* current size of mp[] */
 } dpMusclePathStruct;
 
 typedef enum
@@ -281,7 +304,6 @@ typedef enum
    dpConstraintNone
 } dpConstraintObjectType;
 
-
 typedef struct
 {
    char *name;
@@ -290,7 +312,6 @@ typedef struct
    double weight;
    int constraint_num;
 } dpConstraintPoint;
-
 
 typedef struct
 {
@@ -311,7 +332,6 @@ typedef struct
    dpConstraintPoint *points;              /* constraint points */
 } dpConstraintObject;
 
-
 typedef struct
 {
    int start;                        /* input:  wrap starting muscle point index */
@@ -323,7 +343,6 @@ typedef struct
    double r2[4];                     /* output: wrap tangent point nearest to p2 */
 } dpWrapParams;
 
-
 typedef enum
 {
    dpWrapSphere,
@@ -332,7 +351,6 @@ typedef enum
    dpWrapTorus,
    dpWrapNone
 } dpWrapObjectType;
-
 
 typedef struct
 {
@@ -344,11 +362,19 @@ typedef struct
    double radius[3];                 /* wrap object radius */
    double height;                    /* wrap object height (cylinder only) */
    int wrap_axis;                    /* which axis to wrap over X=0, Y=1, Z=2 */
-   int  wrap_sign;                   /* which side of wrap axis to use (0 for both) */
+   int wrap_sign;                    /* which side of wrap axis to use (0 for both) */
    double from_local_xform[4][4];    /* parent-to-wrapobj transform matrix */
    double to_local_xform[4][4];      /* wrapobj-to-parent transform matrix */
+   long display_list;                /* only used for cylinder */
+   dpBoolean display_list_is_stale;  /* does display list need updating? */
+   dpBoolean visible;                /* is the wrap object visible? */
+   dpBoolean show_wrap_pts;          /* draw wrap point xyz coordinates? */
+   dpCoord3D rotation_axis;            /* local-to-parent transform parameter */
+   double rotation_angle;            /* local-to-parent transform parameter */
+   dpCoord3D translation;              /* local-to-parent transform parameter */
+   dpBoolean xforms_valid;           /* do xform matrices need recalculation? */
+   dpCoord3D undeformed_translation;   /* translation before applying deform objects */
 } dpWrapObject;
-
 
 typedef struct
 {
@@ -362,14 +388,14 @@ typedef struct
    dpMusclePoint mp_wrap[2];         /* the two muscle points created when the muscle wraps */
 } dpMuscleWrapStruct;
 
-
-typedef struct
+typedef struct mss
 {
    char* name;                       /* name of muscle */
+   int index;                        /* index of this muscle in model's array of muscles */
    dpBoolean display;                /* whether or not to display this muscle */
    dpBoolean output;                 /* write muscle values to output file? */
    dpBoolean selected;               /* whether or not this muscle is selected */
-   dpMusclePathStruct *musclepoints; /* all the muscle path information */
+   dpMusclePathStruct *path;         /* all the muscle path information */
    double* max_isometric_force;      /* maximum isometric force */
    double* pennation_angle;          /* pennation angle of muscle fibers */
    double* optimal_fiber_length;     /* muscle fiber length */
@@ -388,26 +414,31 @@ typedef struct
    double energy;                    /* energy this muscle gives to body segments */
    int nummomentarms;                /* number of moment arms (= # of gencoords) */
    double* momentarms;               /* list of moment arm values */
-   dpSplineFunction* tendon_force_len_curve; /* tendon force-length curve */
-   dpSplineFunction* active_force_len_curve; /* muscle active force-length curve */
-   dpSplineFunction* passive_force_len_curve; /* muscle passive force-length curve */
-   dpSplineFunction* force_vel_curve;/* muscle force-velocity curve */
+   dpFunction** tendon_force_len_func;  /* tendon force-length function */
+   dpFunction** active_force_len_func;  /* muscle active force-length function */
+   dpFunction** passive_force_len_func; /* muscle passive force-length function */
+   dpFunction** force_vel_func;         /* muscle force-velocity function */
    int num_dynamic_params;           /* size of dynamic_params array */
    char** dynamic_param_names;       /* list of dynamic parameter names */
    double** dynamic_params;          /* array of dynamic (muscle model) parameters */
    double dynamic_activation;        /* dynamic value of muscle activation */
-   dpSplineType* excitation_format;  /* format for interpolating excitation data. */
-   int excitation_abscissa;          /* excit. is func of this gencoord (-1 = time) */
+   dpFunction** excitation_func;     /* excitation function */
+   void** excitation_abscissa;       /* excitation is function of this gencoord (or 'time') */
    double excitation_level;          /* current level of excitation */
-   dpSplineFunction* excitation;     /* excitation (activation) sequence */
    int* muscle_model_index;          /* index for deriv, init, & assign func arrays */
    dpBoolean wrap_calced;            /* has wrapping been calculated/updated? */
    int numWrapStructs;               /* number of wrap objects used for this muscle */
    dpMuscleWrapStruct** wrapStruct;  /* holds information about the wrap objects */
    int numStateParams;               /* number of initial state values stored in dllparams.txt */
    double* stateParams;              /* array of initial state values in dllparams.txt */
+   int numgroups;                    /* number of groups to which musc belongs*/
+   int* group;                       /* list of muscle group numbers */
+   double* min_thickness;            /* minimum thickness of muscle line */
+   double* max_thickness;            /* maximum thickness of muscle line */
+   int* min_material;                /* material to draw with for activation = 0.0 */
+   int* max_material;                /* material to draw with for activation = 1.0 */
+   struct mss* saved;                /* pointer to the saved version of the muscle */
 } dpMuscleStruct;                    /* properties of a musculotendon unit */
-
 
 typedef struct
 {
@@ -419,7 +450,6 @@ typedef struct
    double z2;
 } dpBoundingCube;
 
-
 typedef struct
 {
    int num_vertices;
@@ -428,7 +458,6 @@ typedef struct
    double d;
 } dpPolygonStruct;
 
-
 typedef struct
 {
    double coord[3];
@@ -436,7 +465,6 @@ typedef struct
    int polygon_count;
    int* polygons;
 } dpVertexStruct;
-
 
 typedef struct
 {
@@ -449,7 +477,6 @@ typedef struct
    int num_polygons;
 } dpPolyhedronStruct;
 
-
 typedef enum
 {
    dpUnconstrainedQ,  /* free gencoord */
@@ -458,30 +485,28 @@ typedef enum
    dpFixedQ           /* fixed gencoord, vel and acc = 0.0 */
 } dpQType;
 
-
 typedef struct
 {
-   char* name;
-   dpQType type;
-   int joint;
+   char* name;                                  /* gencoord name */
+   dpQType type;                                /* gencoord type - free, fixed, prescribed, constrained */
+   int joint;                                   /* joint gencoord belongs to */
    int axis;
-   int q_ind;
+   int q_ind;                                   /* independent q a constrained/prescribed q is dependent upon */
    int constraint_num;
    double initial_value;
    double initial_velocity;
    double conversion;
    double range_start;
    double range_end;
-   dpSplineFunction* restraint_func;
-   dpSplineFunction* min_restraint_func;
-   dpSplineFunction* max_restraint_func;
-   dpSplineFunction* constraint_func;
+   dpFunction* restraint_function;
+   dpFunction* min_restraint_function;
+   dpFunction* max_restraint_function;
+   dpFunction* constraint_function;
    dpBoolean function_active;
    dpBoolean output;
    double torque;
 	double pd_stiffness;
 } dpQStruct;
-
 
 typedef struct
 {
@@ -491,14 +516,12 @@ typedef struct
    dpPolyhedronStruct* ph;       /* polyhedron from bone file */
 } dpSpringFloor;
 
-
 typedef struct
 {
    int segment;                  /* SD/FAST segment force matte associated with */
    char* name;                   /* name of force_matte */
    dpPolyhedronStruct* ph;       /* polyhedron from bone file */
 } dpForceMatte;                  /* used for applying ground-based forces to other segments */
-
 
 typedef struct
 {
@@ -516,13 +539,11 @@ typedef struct
    double param_f;
 } dpSpringStruct;
 
-
 typedef struct
 {
 	double point[3];
 	double vector[3];
 } dpForceStruct;
-
 
 typedef struct
 {
@@ -542,7 +563,6 @@ typedef struct
    dpBoolean* contact_joints;
 } dpBodyStruct;
 
-
 typedef struct
 {
 	int inboard_body;
@@ -558,7 +578,6 @@ typedef struct
    dpBoolean loop_joint;
 } dpJointStruct;
 
-
 typedef struct
 {
    char* name;
@@ -572,8 +591,6 @@ typedef struct
    int num_closed_loops;
    int num_constraints;
    int num_user_constraints;
-   int num_dynamic_params;           /* size of dynamic_param_names array */
-   char** dynamic_param_names;       /* names of dynamic muscle parameters */
    int num_contacts;
    int num_bilat_contacts;
    int contacts_size;
@@ -598,33 +615,30 @@ typedef struct
    dpWrapObject* wrap_object;
    int num_constraint_objects;
    dpConstraintObject* constraint_object;
-   int num_constraint_functions;
-   dpSplineFunction* constraint_function;
+   int function_array_size;
+   int num_functions;            /* number of functions (constraint and moving muscle point) in the model */
+   dpFunction** function;   /* array of functions used by the model (for constraints and moving muscle points) */
    double gravity[3];
    dpSimmModelID simmModel;
    int enforce_constraints;    /* enforce constraint objects while integrating? */
 	int newInverseSimulation;   /* new-style inverse with corrective torques? */
-   int num_musclepoint_functions;
-   int musclepoint_function_array_size;
-   dpSplineFunction *musclepoint_function;
 } dpModelStruct;
 
-
-DLL int dpInitSimulation(dpSimulationParameters* params);
-DLL int dpSetModel(dpModelStruct* model);
+DLL int dpInitSimulation(void* params);
+DLL int dpSetModel(void* model);
 DLL int dpRunSimulation(int);
 DLL int dpPauseSimulation(int);
 DLL int dpResetSimulation(int);
 DLL int dpRegisterCallback(int (*dataCallback)(dpSimmModelID, dpDataType, void*));
+DLL int dpGetVersion(void);
 
-
-typedef int (*dpInitSimulationFunc)(dpSimulationParameters* params);
-typedef int (*dpSetModelFunc)(dpModelStruct* model);
+typedef int (*dpInitSimulationFunc)(void* params); //dpSimulationParameters
+typedef int (*dpSetModelFunc)(void* model); // dpModelStruct
 typedef int (*dpRunSimulationFunc)(int);
 typedef int (*dpPauseSimulationFunc)(int);
 typedef int (*dpResetSimulationFunc)(int);
 typedef int (*dpRegisterCallbackFunc)(int (*dataCallback)(dpSimmModelID, dpDataType, void*));
-
+typedef int (*dpGetVersionFunc)(void);
 
 typedef struct
 {
@@ -634,7 +648,7 @@ typedef struct
    dpPauseSimulationFunc dpPauseSimulation;
    dpResetSimulationFunc dpResetSimulation;
    dpRegisterCallbackFunc dpRegisterCallback;
+   dpGetVersionFunc dpGetVersion;
 } dpSimFuncs;
-
 
 #endif /*DP_H*/

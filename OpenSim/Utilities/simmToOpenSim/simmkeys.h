@@ -20,6 +20,13 @@
 #define key_released 0
 #define key_pressed 1
 
+// For some reason, CTRL-C and CTRL-V come through as
+// ASCII codes 3 (end of text) and 22 (synchronous idle)
+// instead of c_key and v_key with the CTRL modifier turned on.
+// This is the case for both upper and lower case c and v.
+#define copy_key 3
+#define paste_key 22
+
 #define FIRST_ASCII_KEY 8
 #define backspace_key 8
 #define tab_key 9

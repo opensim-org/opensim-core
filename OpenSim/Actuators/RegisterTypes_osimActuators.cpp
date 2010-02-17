@@ -32,22 +32,20 @@
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimActuators.h"
 
-#include "GeneralizedForceAtv.h"
-#include "JointMoment.h"
-#include "LinearSetPoint.h"
-#include "PolynomialSetPoint.h"
+#include "CoordinateActuator.h"
+#include "PointActuator.h"
+#include "TorqueActuator.h"
+#include "LineActuator.h"
 #include "Thelen2003Muscle.h"
 #include "Schutte1993Muscle.h"
 #include "Delp1990Muscle.h"
-#include "Torque.h"
 #include "PassiveJointTorque.h"
 
 using namespace OpenSim;
 using namespace std;
 
-#ifndef STATIC_OSIM_LIBS
 static osimActuatorsInstantiator instantiator;
-#endif
+
 
 //_____________________________________________________________________________
 /**
@@ -58,16 +56,22 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
 	//cout<<"RegisterTypes_osimActuators\n";
 
-	Object::RegisterType( GeneralizedForceAtv() );
-	Object::RegisterType( JointMoment() );
-	Object::RegisterType( LinearSetPoint() );
-	Object::RegisterType( PolynomialSetPoint() );
+	Object::RegisterType( CoordinateActuator() );
+	Object::RegisterType( PointActuator() );
+	Object::RegisterType( TorqueActuator() );
+	Object::RegisterType( LineActuator() );
+
 	Object::RegisterType( Thelen2003Muscle() );
 	Object::RegisterType( Schutte1993Muscle() );
 	Object::RegisterType( Delp1990Muscle() );
-	Object::RegisterType( Torque() );
 	Object::RegisterType( PassiveJointTorque() );
 
+	// OLD Versions
+	//Associate an instance with old name to help deserialization
+	// This has to be done after the new Type is registered
+	Object::RenameType("GeneralizedForce", CoordinateActuator());
+	Object::RenameType("Force", PointActuator());
+	Object::RenameType("Torque", TorqueActuator());
 }
 
 osimActuatorsInstantiator::osimActuatorsInstantiator()

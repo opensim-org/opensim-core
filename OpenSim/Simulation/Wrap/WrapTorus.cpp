@@ -31,8 +31,8 @@
 //=============================================================================
 #include "WrapTorus.h"
 #include "WrapCylinder.h"
-#include <OpenSim/Simulation/Model/MusclePoint.h>
-#include "MuscleWrap.h"
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include "PathWrap.h"
 #include "WrapResult.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/Lmdif.h>
@@ -58,7 +58,7 @@ static char* wrapTypeName = "torus";
  * Default constructor.
  */
 WrapTorus::WrapTorus() :
-	AbstractWrapObject(),
+	WrapObject(),
    _innerRadius(_innerRadiusProp.getValueDbl()),
    _outerRadius(_outerRadiusProp.getValueDbl())
 {
@@ -81,7 +81,7 @@ WrapTorus::~WrapTorus()
  * @param aWrapTorus WrapTorus to be copied.
  */
 WrapTorus::WrapTorus(const WrapTorus& aWrapTorus) :
-	AbstractWrapObject(aWrapTorus),
+	WrapObject(aWrapTorus),
    _innerRadius(_innerRadiusProp.getValueDbl()),
    _outerRadius(_outerRadiusProp.getValueDbl())
 {
@@ -122,7 +122,7 @@ void WrapTorus::setNull()
 void WrapTorus::setupProperties()
 {
 	// BASE CLASS
-	AbstractWrapObject::setupProperties();
+	WrapObject::setupProperties();
 
 	_innerRadiusProp.setName("inner_radius");
 	_innerRadiusProp.setValue(-1.0);
@@ -143,7 +143,7 @@ void WrapTorus::setupProperties()
 void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
 {
    // Base class, to scale origin in body frame
-   AbstractWrapObject::scale(aScaleFactors);
+   WrapObject::scale(aScaleFactors);
 
    double orientation[3][3];
    _pose.getOrientation(orientation);
@@ -173,12 +173,12 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aEngine dynamics engine containing this SimmBody.
+ * @param aModel pointer to OpenSim Model 
  */
-void WrapTorus::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
+void WrapTorus::setup(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	AbstractWrapObject::setup(aEngine, aBody);
+	WrapObject::setup(aModel, aBody);
 
    // maybe set a parent pointer, _body = aBody;
 
@@ -207,7 +207,7 @@ void WrapTorus::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
 void WrapTorus::copyData(const WrapTorus& aWrapTorus)
 {
 	// BASE CLASS
-	AbstractWrapObject::copyData(aWrapTorus);
+	WrapObject::copyData(aWrapTorus);
 
 	_innerRadius = aWrapTorus._innerRadius;
 	_outerRadius = aWrapTorus._outerRadius;
@@ -252,7 +252,7 @@ string WrapTorus::getDimensionsString() const
 WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
 {
 	// BASE CLASS
-	AbstractWrapObject::operator=(aWrapTorus);
+	WrapObject::operator=(aWrapTorus);
 
 	return(*this);
 }
@@ -266,13 +266,13 @@ WrapTorus& WrapTorus::operator=(const WrapTorus& aWrapTorus)
  *
  * @param aPoint1 One end of the line segment
  * @param aPoint2 The other end of the line segment
- * @param aMuscleWrap An object holding the parameters for this line/torus pairing
+ * @param aPathWrap An object holding the parameters for this line/torus pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapTorus::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-								const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+								const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
 	int i;
 	SimTK::Vec3 closestPt;
@@ -303,7 +303,7 @@ int WrapTorus::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	// torusToCylinder is the transform to convert points in the
 	// torus frame into the cylinder frame.
 	// The origin of the cylinder frame in the torus frame is closestPt.
-	Transform torusToCylinder, cylinderToTorus;
+	SIMMTransform torusToCylinder, cylinderToTorus;
 	double* mat = torusToCylinder.getMatrix();
 	for (i = 0; i < 3; i++) {
 		mat[i*4 + 0] = cylXaxis[i];
@@ -320,7 +320,7 @@ int WrapTorus::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 	torusToCylinder.transformPoint(p1);
 	torusToCylinder.transformPoint(p2);
 
-	int return_code = cyl.wrapLine(p1, p2, aMuscleWrap, aWrapResult, aFlag);
+	int return_code = cyl.wrapLine(s, p1, p2, aPathWrap, aWrapResult, aFlag);
 
    if (aFlag == true && return_code > 0) {
 		cylinderToTorus.transformPoint(aWrapResult.r1);

@@ -28,27 +28,66 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Common/XMLNode.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include <OpenSim/Common/InterruptedException.h>
-#include <OpenSim/Simulation/Model/ModelIntegrand.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
+#include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Actuators/ForceApplier.h>
-#include <OpenSim/Actuators/TorqueApplier.h>
-#include <OpenSim/Actuators/LinearSpring.h>
-#include <OpenSim/Actuators/TorsionalSpring.h>
+#include <OpenSim/Simulation/Control/ControlSetController.h>
+#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include "CorrectionController.h"
 
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
+
+
+void extractConfiguration(int nq, int nu, const Storage &aYStore,Storage &rQStore,Storage &rUStore)
+{
+	int nqnu = nq+nu;
+
+	// CONFIGURE
+	// Names
+	rQStore.setName("Coordinates");
+	rUStore.setName("Speeds");
+	// Description
+	rQStore.setDescription(aYStore.getDescription());
+	rUStore.setDescription(aYStore.getDescription());
+	// Column labels
+	OpenSim::Array<string> qLabels("",nq),uLabels("",nu);
+	OpenSim::Array<string> labels = aYStore.getColumnLabels();
+	for(int i=0;i<nq;i++) qLabels[i] = labels[i];
+	for(int i=0;i<nu;i++) uLabels[i] = labels[nq+i];
+	rQStore.setColumnLabels(qLabels);
+	rUStore.setColumnLabels(uLabels);
+	// Purge
+	rQStore.purge();
+	rUStore.purge();
+
+	// LOOP THROUGH STATES
+	int size = aYStore.getSize();
+	StateVector *vector;
+	double time;
+	OpenSim::Array<double> data(0.0);
+	OpenSim::Array<double> q(0.0,nq);
+	for(int i=0;i<size;i++) {
+		vector = aYStore.getStateVector(i);
+		if(vector->getSize()<nqnu) continue;
+		time = vector->getTime();
+		data = vector->getData();
+		rQStore.append(time,nq,&data[0]);
+		rUStore.append(time,nu,&data[nq]);
+	}
+}
+
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -59,9 +98,9 @@ using namespace OpenSim;
  */
 ForwardTool::~ForwardTool()
 {
+
 	if(_yStore!=NULL) delete _yStore;
-	if(_ypStore!=NULL) delete _ypStore;
-	delete _integrand;
+
 }
 //_____________________________________________________________________________
 /**
@@ -69,15 +108,12 @@ ForwardTool::~ForwardTool()
  */
 ForwardTool::ForwardTool() :
 	AbstractTool(),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_pseudoFileName(_pseudoFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
+	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
 	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
 	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
 	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
@@ -98,9 +134,7 @@ ForwardTool::ForwardTool() :
 	_kLin(_kLinProp.getValueDblVec3()),
 	_bLin(_bLinProp.getValueDblVec3()),
 	_kTor(_kTorProp.getValueDblVec3()),
-	_bTor(_bTorProp.getValueDblVec3()),
-	_controller(_controllerProp.getValueObjPtrRef()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
+	_bTor(_bTorProp.getValueDblVec3())
 {
 	setType("ForwardTool");
 	setNull();
@@ -116,15 +150,12 @@ ForwardTool::ForwardTool() :
  */
 ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aLoadModel) :
 	AbstractTool(aFileName, false),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_pseudoFileName(_pseudoFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
+	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
 	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
 	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
 	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
@@ -145,12 +176,11 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
 	_kLin(_kLinProp.getValueDblVec3()),
 	_bLin(_bLinProp.getValueDblVec3()),
 	_kTor(_kTorProp.getValueDblVec3()),
-	_bTor(_bTorProp.getValueDblVec3()),
-	_controller(_controllerProp.getValueObjPtrRef()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
+	_bTor(_bTorProp.getValueDblVec3())
 {
 	setType("ForwardTool");
 	setNull();
+
 	if(aUpdateFromXMLNode) updateFromXMLNode();
 	if(aLoadModel) { loadModel(aFileName); setToolOwnsModel(true); }
 }
@@ -193,15 +223,12 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
 ForwardTool::
 ForwardTool(const ForwardTool &aTool) :
 	AbstractTool(aTool),
-	_controlsFileName(_controlsFileNameProp.getValueStr()),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_pseudoFileName(_pseudoFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
+	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
 	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
 	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
 	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
@@ -222,9 +249,7 @@ ForwardTool(const ForwardTool &aTool) :
 	_kLin(_kLinProp.getValueDblVec3()),
 	_bLin(_bLinProp.getValueDblVec3()),
 	_kTor(_kTorProp.getValueDblVec3()),
-	_bTor(_bTorProp.getValueDblVec3()),
-	_controller(_controllerProp.getValueObjPtrRef()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool())
+	_bTor(_bTorProp.getValueDblVec3())
 {
 	setType("ForwardTool");
 	setNull();
@@ -246,58 +271,31 @@ copy() const
 /**
  * Set all member variables to their null or default values.
  */
-void ForwardTool::
-setNull()
+void ForwardTool::setNull()
 {
 	setupProperties();
 
 	// BASIC
-	_controlsFileName = "";
 	_statesFileName = "";
-	_pseudoFileName = "";
 	_useSpecifiedDt = false;
 	_printResultFiles = true;
+
+	_replaceForceSet = false;	// default should be false for Forward.
 
 	// EXTERNAL LOADS
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
-	_externalLoadsBody1 = "";
-	_externalLoadsBody2 = "";
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 
-	// CORRECTIVE SPING ON FLAGS
-	_body1LinSpringActive = _body1TorSpringActive = false;
-	_body2LinSpringActive = _body2TorSpringActive = false;
-
-	// FOOT CONTACT EVENTS
-	_body1TorSpringTimeOn = _body1TorSpringTimeOff = 0.0;
-	_body2TorSpringTimeOn = _body2TorSpringTimeOff = 0.0;
-
-	// CORRECTIVE SPRING PARAMETERS
-	_tau = 0.001;
-	_tauBody1On = _tauBody1Off = _tauBody2On = _tauBody2Off = _tau;
-	_springTransitionStartForce = 1.0;
-	_springTransitionEndForce = 50.0;
-	_forceThreshold = 0.0;
-	_torqueThreshold = 0.0;
-	//_kLin.setSize(3);
-	_kLin[0] = _kLin[1] = _kLin[2] = 5000000.0;
-	//_bLin.setSize(3);
-	_bLin[0] = _bLin[1] = _bLin[2] = 1500.0;
-	//_kTor.setSize(3);
-	_kTor[0] = _kTor[1] = _kTor[2] = 100000.0;
-	//_bTor.setSize(3);
-	_bTor[0] = _bTor[1] = _bTor[2] = 1000.0;
-	_outputDetailedResults = false;
-
 	// INTERNAL WORK VARIABLES
-	_integrand = NULL;
 	_yStore = NULL;
-	_ypStore = NULL;
-	_body1Lin = NULL;
-	_body2Lin = NULL;
-	_body1Tor = NULL;
-	_body2Tor = NULL;
+
+	// Start parsing log as empty. 
+	_parsingLog="";
+    _body1Lin = 0;
+    _body2Lin = 0;
+    _body1Tor = 0;
+    _body2Tor = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -308,10 +306,6 @@ void ForwardTool::setupProperties()
 	string comment;
 
 	// BASIC
-	comment = "XML file containing the controls (e.g., muscle excitations) for the forward simulation.";
-	_controlsFileNameProp.setComment(comment);
-	_controlsFileNameProp.setName("controls_file");
-	_propertySet.append( &_controlsFileNameProp );
 
 	comment = "Storage file (.sto) containing the initial states for the forward simulation. "
 				 "This file often contains multiple rows of data, each row being a time-stamped array of states. "
@@ -326,22 +320,6 @@ void ForwardTool::setupProperties()
 	_statesFileNameProp.setName("states_file");
 	_propertySet.append( &_statesFileNameProp );
 
-	comment = "Storage file (.sto) containing the initial pseudo states for the forward simulation. "
-				 "Pseudostates are quantities that are not integrated, but never-the-less are dependent "
-				 "on the time history of simulation.  Examples, are the spring zeros for contact elements. "
-				 "This file often contains multiple rows of data, each row being a time-stamped array of pseudostates. "
-				 "The first column contains the time.  The rest of the columns contain the states in the order "
-				 "appropriate for the model. In a storage file, unlike a motion file (.mot), non-uniform time spacing "
-				 "is allowed.  If the user-specified initial time for a simulation does not correspond exactly to "
-				 "one of the time stamps in this file, inerpolation is NOT used because it is usually necessary to "
-				 "being a simulation from an exact set of states.  Instead, the closest earlier set of pseudostates is used. "
-				 "Having a pseudostates file that contains the entire trajectory of a simulations allows for corrective "
-				 "springs for perturbation analysis to be added. The time stamps in a pseudostates file should "
-				 "match the time stamps in its companion states file.";
-	_pseudoFileNameProp.setComment(comment);
-	_pseudoFileNameProp.setName("pseudo_states_file");
-	_propertySet.append( &_pseudoFileNameProp );
-
 	comment = "Flag (true or false) indicating whether or not the integrator should "
 				 "use a particular time stepping.  If true, the time stepping is extracted "
 				 "from the initial states file.  In this situation, therefore, the initial "
@@ -355,7 +333,7 @@ void ForwardTool::setupProperties()
 	_propertySet.append( &_useSpecifiedDtProp );
 
 	// EXTERNAL LOADS
-	comment = "Motion file (.mot) or storage file (.sto) containing the external loads applied to the model.";
+	comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
 	_externalLoadsFileNameProp.setComment(comment);
 	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
@@ -364,18 +342,6 @@ void ForwardTool::setupProperties()
 	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
-
-	comment = "Name of the body to which the first set of external loads "
-				 "should be applied (e.g., the name of the right foot).";
-	_externalLoadsBody1Prop.setComment(comment);
-	_externalLoadsBody1Prop.setName("external_loads_body1");
-	_propertySet.append( &_externalLoadsBody1Prop );
-
-	comment = "Name of the body to which the second set of external loads "
-				 "should be applied (e.g., the name of the left foot).";
-	_externalLoadsBody2Prop.setComment(comment);
-	_externalLoadsBody2Prop.setName("external_loads_body2");
-	_propertySet.append( &_externalLoadsBody2Prop );
 
 	comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding "
 				 "to the external loads. A negative value results in no filtering. "
@@ -422,8 +388,7 @@ void ForwardTool::setupProperties()
 	_body2TorSpringTimeOffProp.setName("body2_torsional_corrective_spring_time_off");
 	_propertySet.append( &_body2TorSpringTimeOffProp );
 
-
-	// CORRECTIVE SPRING PARAMETERS
+		// CORRECTIVE SPRING PARAMETERS
 	comment = "Force magnitude at which linear springs start to transition in.";
 	_springTransitionStartForceProp.setComment(comment);
 	_springTransitionStartForceProp.setName("linear_spring_transition_start_force");
@@ -490,249 +455,12 @@ void ForwardTool::setupProperties()
 	_bTorProp.setName("corrective_spring_torsional_damping");
 	_propertySet.append( &_bTorProp );
 
-	_controllerProp.setComment("Specifies the controller to be used in closed-loop simulation.");
-	_controllerProp.setName("Controller");
-	_propertySet.append( &_controllerProp );
-
 	comment = "Record and output corrective spring forces, amoung other quantities.";
 	_outputDetailedResultsProp.setComment(comment);
 	_outputDetailedResultsProp.setName("output_detailed_results");
 	_propertySet.append( &_outputDetailedResultsProp );
+
 }
-
-//_____________________________________________________________________________
-/**
- * Construct the corrective springs.
-void ForwardTool::
-constructCorrectiveSprings(ForceApplier *aRightGRFApp, ForceApplier *aLeftGRFApp)
-{
-
-	AbstractBody *rightFootBody = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
-	if(!rightFootBody) throw Exception("PerturbationTool: ERR- Could not find right foot body '"+_externalLoadsBody1+"'",__FILE__,__LINE__);
-	AbstractBody *leftFootBody = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
-	if(!leftFootBody) throw Exception("PerturbationTool: ERR- Could not find left foot body '"+_externalLoadsBody2+"'",__FILE__,__LINE__);
-
-	// Extract the Qs and Us from the states.
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-	Storage *qStore,*uStore;
-	//ExtractConfiguration(*_yStore,nq,nu,qStore,uStore);
-
-	// SCALING FUNCTIONS FOR SPRINGS
-	double dtScale=0.001;
-	double tiScale = qStore->getFirstTime();
-	double tfScale = qStore->getLastTime();
-	Array<double> timeScale(0.0);
-	Array<double> rLinearScale(0.0),rTorsionalScale(0.0);
-	Array<double> lLinearScale(0.0),lTorsionalScale(0.0);
-
-	double tauRStart = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
-	double tauREnd = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
-	double tauLStart = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
-	double tauLEnd = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
-
-	cout << "Spring parameters:" << endl;
-	cout << "\tSpring transition weights: " << _springTransitionStartForce << " " << _springTransitionEndForce << endl;
-	cout << "\tTau values: right_start = " << tauRStart << ", right_end = " << tauREnd << ", left_start = " << tauLStart << ", left_end = " << tauLEnd << endl;
-
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		// time
-		timeScale.append(tScale);
-		double value1,value2;
-
-		// Use vertical GRF to transition linear springs
-		double r_grf[3], l_grf[3];
-		aRightGRFApp->getForceFunction()->evaluate(&tScale,r_grf);
-		aLeftGRFApp->getForceFunction()->evaluate(&tScale,l_grf);
-		double r_grf_y_norm = rdMath::Clamp(r_grf[1]/(r_grf[1]+l_grf[1]),0.,1.);
-		double l_grf_y_norm = 1-r_grf_y_norm;
-		rLinearScale.append(rdMath::Step(r_grf_y_norm,_springTransitionStartForce,_springTransitionEndForce));
-		lLinearScale.append(rdMath::Step(l_grf_y_norm,_springTransitionStartForce,_springTransitionEndForce));
-
-		// Use different tau's to transition torsional springs
-		// rTorsional
-		value1 = rdMath::SigmaUp(tauRStart,_rFootFlat,tScale);
-		value2 = rdMath::SigmaDn(tauREnd,_body1TorSpringTimeOff,tScale);
-		rTorsionalScale.append(value1+value2-1.0);
-		// lTorsional
-		value1 = rdMath::SigmaUp(tauLStart,_body2TorSpringTimeOn,tScale);
-		value2 = rdMath::SigmaDn(tauLEnd,_body2TorSpringTimeOff,tScale);
-		lTorsionalScale.append(value1+value2-1.0);
-	}
-	// Create Splines
-	GCVSpline *rScaleTranslationalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&rLinearScale[0]);
-	rScaleTranslationalSpline->setName("Right_Translational");
-	GCVSpline *rScaleTorsionalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&rTorsionalScale[0]);
-	rScaleTorsionalSpline->setName("Right_Torsional");
-	GCVSpline *lScaleTranslationalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&lLinearScale[0]);
-	lScaleTranslationalSpline->setName("Left_Translational");
-	GCVSpline *lScaleTorsionalSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&lTorsionalScale[0]);
-	lScaleTorsionalSpline->setName("Left_Torsional");
-
-	// TODO: this assumes that external loads body 1 is right foot, and external loads body 2 is left foot
-	//if(_externalLoadsBody1.size() && _externalLoadsBody1[_externalLoadsBody1.size()-1]=='l' || 
-	//	_externalLoadsBody2.size() && _externalLoadsBody2[_externalLoadsBody2.size()-1]=='r')
-	//	throw Exception("PerturbationTool: ERR- External loads body 1 should be right foot and external loads body 2 should be left foot",__FILE__,__LINE__);
-
-	// LINEAR
-	// right
-	if(_body1LinSpringActive) {
-		_body1Lin = new LinearSpring(_model,rightFootBody);
-		// Use the same foot-frame COP positions as the GRF force applier
-		_body1Lin->setPointFunction((VectorFunction*)aRightGRFApp->getPointFunction()->copy());
-		_body1Lin->computeTargetFunctions(qStore,uStore);
-		_body1Lin->setKValue(&_kLin[0]);
-		_body1Lin->setBValue(&_bLin[0]);
-		_body1Lin->setScaleFunction(rScaleTranslationalSpline);
-		if(_outputDetailedResults) _body1Lin->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_body1Lin);
-	}
-	// left linear
-	if(_body2LinSpringActive) {
-		_body2Lin = new LinearSpring(_model,leftFootBody);
-		// Use the same foot-frame COP positions as the GRF force applier
-		_body2Lin->setPointFunction((VectorFunction*)aLeftGRFApp->getPointFunction()->copy());
-		_body2Lin->computeTargetFunctions(qStore,uStore);
-		_body2Lin->setKValue(&_kLin[0]);
-		_body2Lin->setBValue(&_bLin[0]);
-		_body2Lin->setScaleFunction(lScaleTranslationalSpline);
-		if(_outputDetailedResults) _body2Lin->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_body2Lin);
-	}
-
-	// TORSIONAL
-	// right
-	if(_body1TorSpringActive) {
-		_body1Tor = new TorsionalSpring(_model,rightFootBody);
-		_body1Tor->computeTargetFunctions(qStore,uStore);
-		_body1Tor->setKValue(&_kTor[0]);
-		_body1Tor->setBValue(&_bTor[0]);
-		_body1Tor->setScaleFunction(rScaleTorsionalSpline);
-		if(_outputDetailedResults) _body1Tor->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_body1Tor);
-	}
-	// left
-	if(_body2TorSpringActiveProp) {
-		_body2Tor = new TorsionalSpring(_model,leftFootBody);
-		_body2Tor->computeTargetFunctions(qStore,uStore);
-		_body2Tor->setKValue(&_kTor[0]);
-		_body2Tor->setBValue(&_bTor[0]);
-		_body2Tor->setScaleFunction(lScaleTorsionalSpline);
-		if(_outputDetailedResults) _body2Tor->setRecordAppliedLoads(true);
-		_model->addDerivCallback(_body2Tor);
-	}
-
-	Array<string> labels;
-	labels.append("time"); 
-	labels.append("r_scale_linear"); 
-	labels.append("l_scale_linear");
-	labels.append("r_scale_torsional"); 
-	labels.append("l_scale_torsional");
-	labels.append("r_stance");
-	labels.append("l_stance");
-	labels.append("r_footflat");
-	labels.append("l_footflat");
-	Storage debugStorage;
-	debugStorage.setColumnLabels(labels);
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		double values[8] = {rScaleTranslationalSpline->evaluate(0,tScale), 
-								  lScaleTranslationalSpline->evaluate(0,tScale),
-								  rScaleTorsionalSpline->evaluate(0,tScale),
-								  lScaleTorsionalSpline->evaluate(0,tScale),
-								  (_rHeelStrike<=tScale && tScale<=_rToeOff)?1:0,
-								  (_lHeelStrike<=tScale && tScale<=_lToeOff)?1:0,
-								  (_rFootFlat<=tScale && tScale<=_body1TorSpringTimeOff)?1:0,
-								  (_body2TorSpringTimeOn<=tScale && tScale<=_body2TorSpringTimeOff)?1:0};
-		debugStorage.append(tScale,8,values);
-	}
-	debugStorage.print("spring_scales.sto");
-	cout << "Wrote out spring_scales.sto for debugging spring scaling" << endl;
-}
-*/
-
-//_____________________________________________________________________________
-/**
- * Add a linear corrective spring.
- */
-LinearSpring* ForwardTool::
-addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const ForceApplier &aAppliedForce)
-{
-	double dtScale=0.001;
-	double tiScale = aQStore.getFirstTime();
-	double tfScale = aQStore.getLastTime();
-	Array<double> timeScale(0.0);
-	Array<double> linearScale(0.0);
-
-	cout<<"Linear corrective spring parameters:"<<endl;
-	cout<<"\tSpring transition forces: "<<_springTransitionStartForce<<" "<<_springTransitionEndForce<<endl;
-
-	// Create scale function
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		if (tScale > aAppliedForce.getEndTime())
-			break;
-		timeScale.append(tScale);
-		Vec3 force;
-		aAppliedForce.getForceFunction()->evaluate(&tScale,&force[0]);
-		linearScale.append(rdMath::Step(Mtx::Magnitude(3,force),_springTransitionStartForce,_springTransitionEndForce));
-	}
-	GCVSpline *scaleSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&linearScale[0]);
-	scaleSpline->setName("ScaleForLinearCorrectiveSpring");
-
-	// Create linear spring
-	LinearSpring *spring = new LinearSpring(_model,aAppliedForce.getBody());
-	spring->setStartTime(aAppliedForce.getStartTime());
-	spring->setEndTime(aAppliedForce.getEndTime());
-	spring->setPointFunction((VectorFunction*)aAppliedForce.getPointFunction()->copy());
-	spring->computeTargetFunctions(aQStore,aUStore);
-	spring->setKValue(_kLin);
-	spring->setBValue(_bLin);
-	spring->setThreshold(_forceThreshold);
-	spring->setScaleFunction(scaleSpline);
-	if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
-	_model->addDerivCallback(spring);
-
-	return(spring);
-}
-//_____________________________________________________________________________
-/**
- * Add a torsional corrective spring.
- */
-TorsionalSpring* ForwardTool::
-addTorsionalCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,AbstractBody *aBody,
-									  double aTauOn,double aTimeOn,double aTauOff,double aTimeOff)
-{
-	// SCALING FUNCTIONS FOR SPRINGS
-	double dtScale=0.001;
-	double tiScale = aQStore.getFirstTime();
-	double tfScale = aQStore.getLastTime();
-	Array<double> timeScale(0.0);
-	Array<double> torsionalScale(0.0);
-
-	cout<<"Torsional corrective spring parameters:" << endl;
-	cout<<"\tTau values: on="<<aTauOn<<", off="<<aTauOff<<endl;
-
-	// Create scaling functions
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		timeScale.append(tScale);
-		double value1 = rdMath::SigmaUp(aTauOn,aTimeOn,tScale);
-		double value2 = rdMath::SigmaDn(aTauOff,aTimeOff,tScale);
-		torsionalScale.append(value1+value2-1.0);
-	}
-	GCVSpline *scaleSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&torsionalScale[0]);
-	scaleSpline->setName("ScaleForTorsionalCorrectiveSpring");
-
-	TorsionalSpring *spring = new TorsionalSpring(_model,aBody);
-	spring->computeTargetFunctions(aQStore,aUStore);
-	spring->setKValue(_kTor);
-	spring->setBValue(_bTor);
-	spring->setThreshold(_torqueThreshold);
-	spring->setScaleFunction(scaleSpline);
-	if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
-	_model->addDerivCallback(spring);
-
-	return(spring);
-}
-
 
 //=============================================================================
 // OPERATORS
@@ -746,51 +474,21 @@ addTorsionalCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,Abstr
 ForwardTool& ForwardTool::
 operator=(const ForwardTool &aTool)
 {
+   
 	// BASE CLASS
 	AbstractTool::operator=(aTool);
 
 	// MEMEBER VARIABLES
 	// BASIC INPUT
-	_controlsFileName = aTool._controlsFileName;
 	_statesFileName = aTool._statesFileName;
-	_pseudoFileName = aTool._pseudoFileName;
 	_useSpecifiedDt = aTool._useSpecifiedDt;
 
 	// EXTERNAL LOADS
 	_externalLoadsFileName = aTool._externalLoadsFileName;
 	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
-	_externalLoadsBody1Prop = aTool._externalLoadsBody1Prop;
-	_externalLoadsBody2Prop = aTool._externalLoadsBody2Prop;
 	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
 	_outputDetailedResults = aTool._outputDetailedResults;
 
-	// FOOT CONTACT
-	_body1LinSpringActive = aTool._body1LinSpringActive;
-	_body1TorSpringActive = aTool._body1TorSpringActive;
-	_body1TorSpringTimeOn = aTool._body1TorSpringTimeOn;
-	_body1TorSpringTimeOff = aTool._body1TorSpringTimeOff;
-	_body2LinSpringActive = aTool._body2LinSpringActive;
-	_body2TorSpringActive = aTool._body2TorSpringActive;
-	_body2TorSpringTimeOn = aTool._body2TorSpringTimeOn;
-	_body2TorSpringTimeOff = aTool._body2TorSpringTimeOff;
-
-	// CORRECTIVE SPRING PARAMETERS
-	_tau = aTool._tau;
-	_tauBody1On = aTool._tauBody1On;
-	_tauBody1Off = aTool._tauBody1Off;
-	_tauBody2On = aTool._tauBody2On;
-	_tauBody2Off = aTool._tauBody2Off;
-	_springTransitionStartForce = aTool._springTransitionStartForce;
-	_springTransitionEndForce = aTool._springTransitionEndForce;
-	_forceThreshold = aTool._forceThreshold;
-	_torqueThreshold = aTool._torqueThreshold;
-	_kLin = aTool._kLin;
-	_bLin = aTool._bLin;
-	_kTor = aTool._kTor;
-	_bTor = aTool._bTor;
-
-	// CONTROLLER
-	_controller = aTool._controller;
 
 	return(*this);
 }
@@ -810,7 +508,6 @@ operator=(const ForwardTool &aTool)
 bool ForwardTool::run()
 {
 	cout<<"Running tool "<<getName()<<"."<<endl;
-
 	// CHECK FOR A MODEL
 	if(_model==NULL) {
 		string msg = "ERROR- A model has not been set.";
@@ -827,142 +524,95 @@ bool ForwardTool::run()
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
-	// INPUT
-	ControlSet *controlSet = NULL;
-	inputControlsStatesAndPseudoStates(controlSet,_yStore,_ypStore);
+    bool externalLoads = createExternalLoads(_externalLoadsFileName, 
+                                              _externalLoadsModelKinematicsFileName, 
+                                     *_model);
 
-	// CONTROLLER
 
-	// Activate controller if there is one.  If so, this tool will be run in closed loop
-	// (with a controller) instead of open loop (without a controller).
-	if(_controller!=NULL) {
-		_controller->setOn(true);
-		_controller->setModel(_model);
-		_controller->setControlSet(*controlSet);
-		_controller->setDesiredStatesStorage(_yStore);
-	}
+    // Re create the system with forces above and Realize the topology
+    SimTK::State& s = _model->initSystem();
+    _model->getSystem().realize(s, Stage::Position );
+
+	loadStatesStorage(_statesFileName, _yStore);
+
+    // set the desired states for controllers  
+    _model->updControllerSet().setDesiredStates( _yStore );
 
 	// INITIAL AND FINAL TIMES AND STATES INDEX
 	int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
 
-	// PSEUDO STATES INDEX
-	bool interpolatePseudoStates;
-	int startIndexForYPStore = determinePseudoStatesIndex(_ti,interpolatePseudoStates);
 
-	// CHECK CONTROLS
-	checkControls(controlSet);
+    if( externalLoads ) {
+	    initializeExternalLoads( s, _ti, _tf, *_model,
+                     _externalLoadsFileName, _externalLoadsModelKinematicsFileName, 
+                     _lowpassCutoffFrequencyForLoadKinematics);
+     }
 
-	// ASSIGN NUMBERS OF THINGS
-	int ny = _model->getNumStates();
-	int nyp = _model->getNumPseudoStates();
-
-	// GROUND REACTION FORCES
-	ForceApplier *body1Force,*body2Force;
-	ForwardTool::InitializeExternalLoads(_ti, _tf, _model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
-		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&body1Force,&body2Force);
-
-	// CORRECTIVE SPRINGS
-	addCorrectiveSprings(_yStore,body1Force,body2Force);
 
 	// SETUP SIMULATION
-	// Manager
-	delete _integrand;
-	_integrand = new ModelIntegrand(_model);
-	if(controlSet!=NULL) {_integrand->setControlSet(*controlSet); delete controlSet; }
-	if(_controller!=NULL) {_integrand->setController(_controller); }
-	Manager manager(_integrand);
+	// Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
+    RungeKuttaMersonIntegrator integrator(_model->getSystem());
+    Manager manager(*_model, integrator);
+    setManager( manager );
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
+    
+	// Initialize integrator
+	integrator.setInternalStepLimit(_maxSteps);
+	integrator.setMaximumStepSize(_maxDT);
+	integrator.setAccuracy(_errorTolerance);
 
-	// Integrator settings
-	IntegRKF *integ = manager.getIntegrator();
-	integ->setMaximumNumberOfSteps(_maxSteps);
-	integ->setMaxDT(_maxDT);
-	integ->setMinDT(_minDT);
-	integ->setTolerance(_errorTolerance);
-	integ->setFineTolerance(_fineTolerance);
-	if(_useSpecifiedDt) InitializeSpecifiedTimeStepping(_yStore,integ);
+
+	// integ->setFineTolerance(_fineTolerance); No equivalent in SimTK
+	if(_useSpecifiedDt) InitializeSpecifiedTimeStepping(_yStore, manager);
 
 	// SET INITIAL AND FINAL TIME
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
 
-	// SET THE INITIAL STATES and PSEUDO STATES
-	Array<double> yi(0.0,ny);
-	if(_yStore!=NULL) _yStore->getData(startIndexForYStore,ny,&yi[0]);
+	// SET THE INITIAL STATES
+	if(_yStore!=NULL) _yStore->getData(startIndexForYStore,s.getNY(),&s.updY()[0]);
 	if(startIndexForYStore >= 0) {
-		Array<double> yi(0.0,ny);
-		_yStore->getData(startIndexForYStore,ny,&yi[0]);
-		_model->setInitialStates(&yi[0]);
-	}
-	if(startIndexForYPStore >= 0) {
-		Array<double> ypi(0.0,nyp);
-		if(!interpolatePseudoStates) {
-			_ypStore->getData(startIndexForYPStore,nyp,&ypi[0]);
-		} else {
-			_ypStore->getDataAtTime(_ti,nyp,&ypi[0]);
-		}
-		_model->setInitialPseudoStates(&ypi[0]);
+		_yStore->getData(startIndexForYStore,s.getNY(),&s.updY()[0]);
 	}
 
 	// SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
 	if(_solveForEquilibriumForAuxiliaryStates) {
-		cout<<"\n\n------ Before Equilibrium -------------\n";
-		cout<<yi;
-		cout<<"\n\n-----------------------------------\n";
-		_model->computeEquilibriumForAuxiliaryStates(&yi[0]);
-		cout<<"\n\n------ After Equlilibrium  --------\n";
-		cout<<yi;
-		cout<<"\n\n-----------------------------------\n";
-		_model->setInitialStates(&yi[0]);
+		_model->computeEquilibriumForAuxiliaryStates(s);  
+		
 	}
+
 
 	bool completed = true;
 
 	try {
 		// INTEGRATE
+        _model->printDetailedInfo(s, std::cout );
+
 		cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
-		manager.integrate();
-	} catch (...) { // e.g. may get InterruptedException
+        manager.integrate(s);
+	} catch (char *str) { // e.g. may get InterruptedException
+        printf("ForwardTool::run() caught exception \n"  );
+        cout << "Caught some other exception: " << str << "\n";
 		completed = false;
 	}
 
 	// PRINT RESULTS
 	string fileName;
 	if(_printResultFiles) printResults();
-	if(_outputDetailedResults) {
-		if(_body1Lin) {
-			fileName=getResultsDir()+"/"+getName()+"_detailed_appliedForce_body1.sto";
-			_body1Lin->getAppliedForceStorage()->print(fileName);
-		}
-		if(_body2Lin) {
-			fileName=getResultsDir()+"/"+getName()+"_detailed_appliedForce_body2.sto";
-			_body2Lin->getAppliedForceStorage()->print(fileName);
-		}
-		if(_body1Tor) {
-			fileName=getResultsDir()+"/"+getName()+"_detailed_appliedTorque_body1.sto";
-			_body1Tor->getAppliedTorqueStorage()->print(fileName);
-		}
-		if(_body2Tor) {
-			fileName=getResultsDir()+"/"+getName()+"_detailed_appliedTorque_body2.sto";
-			_body2Tor->getAppliedTorqueStorage()->print(fileName);
-		}
-	}
-
 
 	IO::chDir(saveWorkingDirectory);
 
-	// Since the Tool added the DerivCallbacks to the model, it is responsible for removing them as well
-	_model->removeAllDerivCallbacks();
 	removeAnalysisSetFromModel();
 	return completed;
 }
 //=============================================================================
-// PRINT RESULTS
+// PRINT RESULTS. 
+// This method needs to be private since it shouldn't be called except from 
+// within tool::run() otherwise will crash because Manager is out of scope
 //=============================================================================
-void ForwardTool::
-printResults() 
+void ForwardTool::printResults() 
 {
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
@@ -971,177 +621,150 @@ printResults()
 	IO::chDir(directoryOfSetupFile);
 
 	AbstractTool::printResults(getName(),getResultsDir()); // this will create results directory if necessary
-	if(_integrand) {
-		_integrand->getControlStorage()->print(getResultsDir() + "/" + getName() + "_controls.sto");
-		_integrand->getStateStorage()->print(getResultsDir() + "/" + getName() + "_states.sto");
-		_integrand->getPseudoStateStorage()->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+    if(_model) {
+        _model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
+        getManager().getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
 
-		Storage statesDegrees(*_integrand->getStateStorage());
-		_model->getDynamicsEngine().convertRadiansToDegrees(statesDegrees);
-		statesDegrees.setWriteSIMMHeader(true);
-		statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
-	}
+        Storage statesDegrees(getManager().getStateStorage());
+        _model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
+        statesDegrees.setWriteSIMMHeader(true);
+        statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
+    }
 
+
+	
 	IO::chDir(saveWorkingDirectory);
 }
 
-Storage *ForwardTool::
-getStateStorage() 
-{
-	return _integrand ? _integrand->getStateStorage() : 0;
-}
 
 
 //=============================================================================
 // UTILITY
 //=============================================================================
-//_____________________________________________________________________________
 /**
  * Add corrective springs.
  */
-void ForwardTool::
-addCorrectiveSprings(const Storage* aUnused, const ForceApplier *aBody1Force,const ForceApplier *aBody2Force)
+// TODO: Remove unused input storage
+void ForwardTool::addCorrectiveSprings(SimTK::State &s, const Storage* aUnused, const PrescribedForce *aBody1Force,const PrescribedForce *aBody2Force)
 {
-       if(_yStore!=NULL && !( _externalLoadsBody1=="") && !( _externalLoadsBody2=="")) {
+       if(_yStore!=NULL) {
              Storage qStore,uStore;
-             _model->getDynamicsEngine().extractConfiguration(*_yStore,qStore,uStore);
-             AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
-             AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
+             extractConfiguration(_model->getNumCoordinates(), _model->getNumSpeeds(), *_yStore, qStore, uStore);
+             Body *body1 = &_model->updBodySet().get(aBody1Force->getBodyName());
+             Body *body2 = &_model->updBodySet().get(aBody2Force->getBodyName());
 
              // Body1 Linear
              if(_body1LinSpringActive) {
-                  _body1Lin = addLinearCorrectiveSpring(qStore,uStore,*aBody1Force);
+                  _body1Lin = addLinearCorrectiveSpring(s, qStore,uStore,*aBody1Force);
              }
              // Body1 Torsional
              if(_body1TorSpringActive) {
                   double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
                   double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
-                  _body1Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
+                  _body1Tor = addTorsionalCorrectiveSpring(s, qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
              }
 
              // Body2 Linear
              if(_body2LinSpringActive) {
-                  _body2Lin = addLinearCorrectiveSpring(qStore,uStore,*aBody2Force);
+                  _body2Lin = addLinearCorrectiveSpring(s, qStore,uStore,*aBody2Force);
              }
              // Body2 Torsional
              if(_body2TorSpringActive) {
                   double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
                   double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
-                  _body2Tor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
+                  _body2Tor = addTorsionalCorrectiveSpring(s, qStore,uStore,body2,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
              }
        }
 }
-/** New code to support new Perturbation: untested!
-void ForwardTool::
-addCorrectiveSprings(const Storage *aYStore,const ForceApplier *aBody1Force,const ForceApplier *aBody2Force)
-{
-	if(aYStore==NULL) return;
-
-	if(!( _externalLoadsBody1=="") && !( _externalLoadsBody2=="")) {
-
-		// RESAMPLE THE STATES FOR UNIFORM TIME STEPPING
-		cout<<"\n\nRESAMPLING!!!"<<endl;
-		double dtUniform = 1.0 / 60.0;  // Ten times low-pass cutoff frequency
-		Storage *yStoreUniform = (Storage*) aYStore->copy();
-		yStoreUniform->resampleLinear(dtUniform);
-
-		// EXTRACT Q AND U
-		Storage qStore,uStore;
-		_model->getDynamicsEngine().extractConfiguration(*yStoreUniform,qStore,uStore);
-
-		// GET THE BODIES
-		AbstractBody *body1 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody1);
-		AbstractBody *body2 = _model->getDynamicsEngine().getBodySet()->get(_externalLoadsBody2);
-		DerivCallbackSet *derivCallbackSet = _model->getDerivCallbackSet();
-
-		// Body1 Linear
-		if(_body1LinSpringActive) {
-			if(_body1Lin!=NULL) derivCallbackSet->remove(_body1Lin);
-			_body1Lin = addLinearCorrectiveSpring(qStore,uStore,*aBody1Force);
-		}
-		// Body1 Torsional
-		if(_body1TorSpringActive) {
-			double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
-			double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
-			if(_body1Tor!=NULL) derivCallbackSet->remove(_body1Tor);
-			_body1Tor = addTorsionalCorrectiveSpring(qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
-		}
-
-		// Body2 Linear
-		if(_body2LinSpringActive) {
-			if(_body2Lin!=NULL) derivCallbackSet->remove(_body2Lin);
-			_body2Lin = addLinearCorrectiveSpring(qStore,uStore,*aBody2Force);
-		}
-		// Body2 Torsional
-		if(_body2TorSpringActive) {
-			double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
-			double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
-			if(_body2Tor!=NULL) derivCallbackSet->remove(_body2Tor);
-			_body2Tor = addTorsionalCorrectiveSpring(qStore,uStore,body2,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
-		}
-
-		delete yStoreUniform;
-	}
-}
-*/
 //_____________________________________________________________________________
 /**
- * Check the controls.  This method just prints out warning messages.  It
- * doesn't change anything important.
+ * Add a linear corrective spring.
  */
-void ForwardTool::
-checkControls(const ControlSet *aControlSet)
+LinearSpring* ForwardTool::addLinearCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore,const PrescribedForce &aAppliedForce)
 {
-	if(aControlSet==NULL) {
-		cout<<"\n"<<getName()<<": WARN- No controls were specified.\n";	
-		return;
-	}
+	double dtScale=0.001;
+	double tiScale = aQStore.getFirstTime();
+	double tfScale = aQStore.getLastTime();
+	Array<double> timeScale(0.0);
+	Array<double> linearScale(0.0);
 
-	int first = 0;
-	Control *control = aControlSet->get(first);
-	double ti = control->getFirstTime();
-	double tf = control->getLastTime();
-	if(_ti<ti) {
-		cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
-		cout<<"overlap the requested initial time of the simulation.  Controls are being extrapolated.\n";
+	cout<<"Linear corrective spring parameters:"<<endl;
+	cout<<"\tSpring transition forces: "<<_springTransitionStartForce<<" "<<_springTransitionEndForce<<endl;
+
+	// Create scale function
+	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
+		if (tScale > _tf)
+			break;
+		timeScale.append(tScale);
+		Vec3 force = aAppliedForce.getForceAtTime(tScale);
+		linearScale.append(Step(force.norm(),_springTransitionStartForce,_springTransitionEndForce));
 	}
-	if(_tf>tf) {
-		cout<<"\n"<<getName()<<": WARN- The controls read in from file "<<_controlsFileName<<" did not\n";
-		cout<<"overlap the requested final time of the simulation.  Changing the final time of the\n";
-		cout<<"forward integration from "<<_tf<<" to "<<tf<<".\n";
-		_tf = tf;
-	}
+	GCVSpline *scaleSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&linearScale[0]);
+	scaleSpline->setName("ScaleForLinearCorrectiveSpring");
+
+	// Create linear spring
+	LinearSpring *spring = new LinearSpring(aAppliedForce.getBody(), tiScale, tfScale);
+	spring->setup(*_model);
+
+	//Gymnastics to get the PrescribedForce point functions (3) into a VectorFunction for the spring
+	Function *px=NULL, *py=NULL, *pz=NULL;
+	const FunctionSet& pointFunctions=aAppliedForce.getPointFunctions();
+	VectorGCVSplineR1R3 *pFunc = new VectorGCVSplineR1R3();
+	pFunc->setSplineY0((GCVSpline *)&pointFunctions[0]); 
+	pFunc->setSplineY1((GCVSpline *)&pointFunctions[1]);
+	pFunc->setSplineY2((GCVSpline *)&pointFunctions[2]);
+	
+	spring->setPointFunction((VectorFunction*)pFunc);
+	spring->computeTargetFunctions(s, aQStore,aUStore);
+	spring->setKValue(_kLin);
+	spring->setBValue(_bLin);
+	spring->setThreshold(_forceThreshold);
+	spring->setScaleFunction(scaleSpline);
+	//if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
+	_model->addForce(spring);
+
+	return(spring);
 }
 //_____________________________________________________________________________
 /**
- * Determine the index into the pseudo states storage for the initial
- * pseudo states.
- *
- * @return Index into the pseudo states storage for the initial pseudo
- * states for the simulation.  A return of -1 indicates no valid pseudo states.
+ * Add a torsional corrective spring.
  */
-int ForwardTool::
-determinePseudoStatesIndex(double aTI,bool &interpolatePseudoStates)
+TorsionalSpring* ForwardTool::addTorsionalCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore, 
+														   OpenSim::Body *aBody,double aTauOn,double aTimeOn,double aTauOff,double aTimeOff)
 {
-	int index = -1;
-	double ti;
-	if(_ypStore!=NULL) {
-		index = _ypStore->findIndex(aTI);
-		if(index<0) {
-			cout<<"\n\nWARN- The pseudo states file does not contain a time range that overlaps\n";
-			cout<<"the time range of the states file.  RUNNING without pseudo sates.\n\n";
-		} else {
-			_ypStore->getTime(index,ti);
-			if(ti!=aTI) {
-				cout<<"\n\nWARN- The time stamp in the pseudo states file does not match the time stamp\n";
-				cout<<"in the states file.  Interpolating to get the pseudo states.\n\n";
-				interpolatePseudoStates = true;
-			}
-		}
+	// SCALING FUNCTIONS FOR SPRINGS
+	double dtScale=0.001;
+	double tiScale = aQStore.getFirstTime();
+	double tfScale = aQStore.getLastTime();
+	Array<double> timeScale(0.0);
+	Array<double> torsionalScale(0.0);
+
+	cout<<"Torsional corrective spring parameters:" << endl;
+	cout<<"\tTau values: on="<<aTauOn<<", off="<<aTauOff<<endl;
+
+	// Create scaling functions
+	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
+		timeScale.append(tScale);
+		double value1 = SigmaUp(aTauOn,aTimeOn,tScale);
+		double value2 = SigmaDn(aTauOff,aTimeOff,tScale);
+		torsionalScale.append(value1+value2-1.0);
 	}
-	return index;
+	GCVSpline *scaleSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&torsionalScale[0]);
+	scaleSpline->setName("ScaleForTorsionalCorrectiveSpring");
+
+	TorsionalSpring *spring = new TorsionalSpring(*aBody, tiScale, tfScale);
+	spring->setup(*_model);
+	spring->computeTargetFunctions(s, aQStore, aUStore);
+	spring->setKValue(_kTor);
+	spring->setBValue(_bTor);
+	spring->setThreshold(_torqueThreshold);
+	spring->setScaleFunction(scaleSpline);
+	//if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
+	_model->addForce(spring);
+
+	return(spring);
 }
-//_____________________________________________________________________________
+
 /**
  * Determine initial time for a simulation and find the index into the
  * states storage for that time.
@@ -1152,8 +775,7 @@ determinePseudoStatesIndex(double aTI,bool &interpolatePseudoStates)
  * @return Index into the states storage corresponding to the initial states
  * for the simulation.  A return of -1 indicates no valid states.
  */
-int ForwardTool::
-determineInitialTimeFromStatesStorage(double &rTI)
+int ForwardTool::determineInitialTimeFromStatesStorage(double &rTI)
 {
 	int index = 1;
 	double ti;
@@ -1175,314 +797,29 @@ determineInitialTimeFromStatesStorage(double &rTI)
 			}
 		}
 	}
-
 	return(index);
 }
 
-//_____________________________________________________________________________
-/**
- * Read in the controls, states, and pseudo states.
- *
- * @param rContolSet Control set for the simulation.
- * @param rYStore Storage containing the initial states for the simulation.
- * @param rYPStore Storage containing the initial pseudo states for the simulation.
- */
-void ForwardTool::
-inputControlsStatesAndPseudoStates(ControlSet*& rControlSet,Storage*& rYStore,Storage*& rYPStore)
-{
-	// Controls
-	rControlSet = NULL;
-	if(_controlsFileName!="") {
-		cout<<"\n\nLoading controls from file "<<_controlsFileName<<"."<<endl;
-		rControlSet = new ControlSet(_controlsFileName);
-		cout<<"Found "<<rControlSet->getSize()<<" controls."<<endl<<endl;
-	}
-
+void ForwardTool::loadStatesStorage (std::string& statesFileName, Storage*& rYStore) const {
 	// Initial states
 	rYStore = NULL;
 	if(_statesFileName!="") {
 		cout<<"\nLoading states from file "<<_statesFileName<<"."<<endl;
-		Storage temp(_statesFileName);
+		Storage temp(statesFileName);
 		rYStore = new Storage();
 		_model->formStateStorage(temp, *rYStore);
+
 		cout<<"Found "<<rYStore->getSize()<<" state vectors with time stamps ranging"<<endl;
 		cout<<"from "<<rYStore->getFirstTime()<<" to "<<rYStore->getLastTime()<<"."<<endl;
 	}
-
-	// Initial pseudo states
-	rYPStore = NULL;
-	if(_pseudoFileName!="") {
-		cout<<"\nLoading pseudo states from file "<<_pseudoFileName<<"."<<endl;
-		rYPStore = new Storage(_pseudoFileName);
-		cout<<"Found "<<rYPStore->getSize()<<" rows with time stamps ranging"<<endl;
-		cout<<"from "<<rYPStore->getFirstTime()<<" to "<<rYPStore->getLastTime()<<"."<<endl;
-	}
 }
 
-//_____________________________________________________________________________
-/**
- * Initialize the external loads applied to the model.  Currently, the loads
- * are assumed to be applied to the right and left foot.
- */
-void ForwardTool::
-InitializeExternalLoads(const double& analysisStartTime, const double& analysisFinalTime,
-						Model *aModel, const string &aExternalLoadsFileName,
-								const string &aExternalLoadsModelKinematicsFileName,
-								const string &aExternalLoadsBody1,
-								const string &aExternalLoadsBody2,
-								double aLowpassCutoffFrequencyForLoadKinematics,
-								ForceApplier **rRightForceApp,
-								ForceApplier **rLeftForceApp,
-								TorqueApplier **rRightTorqueApp,
-								TorqueApplier **rLeftTorqueApp)
-{
-	if(aExternalLoadsFileName=="") {
-		cout<<"No external loads will be applied (external loads file not specified)."<<endl;
-		return;
-	}
-
-	// LOAD MODEL KINEMATICS FOR EXTERNAL LOADS
-	// To get the forces to be applied in the correct location, this file
-	// should be from the IK solution, not from pass 2 of rra which alters
-	// the kinematics.
-	if(aExternalLoadsModelKinematicsFileName=="") {
-		cout<<"\n\nERROR- a external loads kinematics file was not specified.\n\n";
-		return;
-	}
-	cout<<"\n\nLoading external loads kinematics from file "<<aExternalLoadsModelKinematicsFileName<<" ...\n";
-	Storage loadsKinStore(aExternalLoadsModelKinematicsFileName);
-
-	// Form complete storage objects for the q's and u's
-	// This means filling in unspecified generalized coordinates and
-	// setting constrained coordinates to their valid values.
-	Storage *qStore=NULL;
-	Storage *uStoreTmp=NULL;
-	aModel->getDynamicsEngine().formCompleteStorages(loadsKinStore,qStore,uStoreTmp);
-	aModel->getDynamicsEngine().convertDegreesToRadians(*qStore);
-	// Filter
-	qStore->pad(qStore->getSize()/2); 
-	if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
-		//int order = 50;
-		cout<<"Low-pass filtering external load kinematics with a cutoff frequency of "
-		    <<aLowpassCutoffFrequencyForLoadKinematics<<"..."<<endl;
-		qStore->lowpassIIR(aLowpassCutoffFrequencyForLoadKinematics);
-	} else {
-		cout<<"Note- not filtering the external loads model kinematics."<<endl;
-	}
-	// Spline
-	GCVSplineSet qSet(3,qStore);
-	Storage *uStore = qSet.constructStorage(1);
-
-	// LOAD COP, FORCE, AND TORQUE
-	Storage kineticsStore(aExternalLoadsFileName);
-	int copSize = kineticsStore.getSize();
-	if(copSize<=0) return;
-	// Make sure we have data for the requested range
-	if (kineticsStore.getFirstTime() > analysisStartTime || qStore->getFirstTime() > analysisStartTime ||
-		kineticsStore.getLastTime() < analysisFinalTime || qStore->getLastTime() < analysisFinalTime){
-		char durationString[100];
-		sprintf(durationString, "from t=%lf to t=%lf", analysisStartTime, analysisFinalTime);
-		string msg = "ERR- Requested simulation time  extends outside provided data." + string(durationString);
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	
-	// Read the indices of all the ground reaction data columns.
-	// We assume that the right foot's data appears before the left foot's data
-	// when reading the kinetics file's columns from left to right.
-	int rightForceX  = kineticsStore.getStateIndex("ground_force_vx");
-	if(rightForceX<0) {
-		string msg = "ForwardTool.run: ERR- Column index for right ground_force_vx not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightForceY  = kineticsStore.getStateIndex("ground_force_vy");
-	if(rightForceY<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_force_vy not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightForceZ  = kineticsStore.getStateIndex("ground_force_vz");
-	if(rightForceZ<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_force_vz not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftForceX   = kineticsStore.getStateIndex("ground_force_vx", rightForceX + 2);
-	if(leftForceX<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_force_vx not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftForceY   = kineticsStore.getStateIndex("ground_force_vy", rightForceY + 2);
-	if(leftForceY<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_force_vy not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftForceZ   = kineticsStore.getStateIndex("ground_force_vz", rightForceZ + 2);
-	if(leftForceZ<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_force_vz not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightCopX    = kineticsStore.getStateIndex("ground_force_px");
-	if(rightCopX<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_force_px not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightCopY    = kineticsStore.getStateIndex("ground_force_py");
-	if(rightCopY<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_force_py not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightCopZ    = kineticsStore.getStateIndex("ground_force_pz");
-	if(rightCopZ<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_force_pz not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftCopX     = kineticsStore.getStateIndex("ground_force_px", rightCopX + 2);
-	if(leftCopX<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_force_px not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftCopY     = kineticsStore.getStateIndex("ground_force_py", rightCopY + 2);
-	if(leftCopY<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_force_py not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftCopZ     = kineticsStore.getStateIndex("ground_force_pz", rightCopZ + 2);
-	if(leftCopZ<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_force_pz not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightTorqueX = kineticsStore.getStateIndex("ground_torque_x");
-	if(rightTorqueX<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_torque_x not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightTorqueY = kineticsStore.getStateIndex("ground_torque_y");
-	if(rightTorqueY<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_torque_y not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int rightTorqueZ = kineticsStore.getStateIndex("ground_torque_z");
-	if(rightTorqueZ<0) {
-		string msg = "FowardTool.run: ERR- Column index for right ground_torque_z not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftTorqueX  = kineticsStore.getStateIndex("ground_torque_x", rightTorqueX + 2);
-	if(leftTorqueX<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_torque_x not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftTorqueY  = kineticsStore.getStateIndex("ground_torque_y", rightTorqueY + 2);
-	if(leftTorqueY<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_torque_y not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	int leftTorqueZ  = kineticsStore.getStateIndex("ground_torque_z", rightTorqueZ + 2);
-	if(leftTorqueZ<0) {
-		string msg = "FowardTool.run: ERR- Column index for left ground_torque_z not found in ";
-		msg += aExternalLoadsFileName + ".";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-
-	// BODY INDICES
-	// Right
-	AbstractBody *body1 = aModel->getDynamicsEngine().getBodySet()->get(aExternalLoadsBody1);
-	if(body1<0) {
-		string msg = "FowardTool.run: ERR- The body to which the first set of external loads";
-		msg+="should be applied (" + aExternalLoadsBody1 + ") is not a segment in the model.";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	// Left
-	//int  leftFoot = aModel->getBodyIndex("calcn_l");
-	AbstractBody *body2 = aModel->getDynamicsEngine().getBodySet()->get(aExternalLoadsBody2);
-	if(body2<0) {
-		string msg = "FowardTool.run: ERR- The body to which the second set of external loads";
-		msg+="should be applied (" + aExternalLoadsBody2 + ") is not a segment in the model.";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	// Ground
-	AbstractBody &ground = aModel->getDynamicsEngine().getGroundBody();
-
-	/* Due to earlier resampling and in general analysisStartTime, analysisFinalTime may not coincide with actual
-	 * rows in qStore, in this case we need to evaluate the ForceApplier and TorqueApplier outside 
-	 * analysis[start, final]time up to the time of the row before analysisStartTime, and the row after analysisFinalTime.
-	 * Adjust analysisStartTime, analysisFinalTime to qStartTime, qFinalTime to account for that */
-	int startIndex = qStore->findIndex(analysisStartTime);
-	double qStartTime, qFinalTime;
-	qStore->getTime(startIndex, qStartTime);
-	int finalIndex = qStore->findIndex(analysisFinalTime);
-	qStore->getTime(finalIndex, qFinalTime);
-	Array<double> analysisBoundTimes;
-	if (qStartTime < analysisStartTime && startIndex >=1){
-		analysisBoundTimes.append(analysisStartTime);
-		//qStore->getTime(startIndex-1, qStartTime); 
-		qStartTime = analysisStartTime;
-	}
-	if (qFinalTime < analysisFinalTime && finalIndex < qStore->getSize()-1){
-		analysisBoundTimes.append(analysisFinalTime);
-		//qStore->getTime(finalIndex+1, qFinalTime); 
-		qFinalTime = analysisFinalTime;
-	}
-	qStore->interpolateAt(analysisBoundTimes);
-
-	// CREATE FORCE AND TORQUE APPLIERS
-	ForceApplier *rightForceApp, *leftForceApp;
-	TorqueApplier *rightTorqueApp, *leftTorqueApp;
-	rightForceApp = new ForceApplier(aModel, &ground, body1, &kineticsStore,
-												rightForceX, rightForceY, rightForceZ,
-												rightCopX, rightCopY, rightCopZ,
-												qStore, uStore, 
-												qStartTime, qFinalTime);
-	leftForceApp  = new ForceApplier(aModel, &ground, body2, &kineticsStore,
-												leftForceX, leftForceY, leftForceZ,
-												leftCopX, leftCopY, leftCopZ,
-												qStore, uStore, 
-												qStartTime, qFinalTime);
-	rightTorqueApp = new TorqueApplier(aModel, &ground, body1, &kineticsStore,
-												rightTorqueX, rightTorqueY, rightTorqueZ, 
-												qStartTime, qFinalTime);
-	leftTorqueApp  = new TorqueApplier(aModel, &ground, body2, &kineticsStore,
-												leftTorqueX, leftTorqueY, leftTorqueZ, 
-												qStartTime, qFinalTime);
-
-	// Add force and torque appliers as derivative callbacks for model.
-	// Set input in global frame is true by default--we're just being
-	// paranoid here by setting it to true for sure.
-	rightForceApp->setInputForcesInGlobalFrame(true);
-	leftForceApp->setInputForcesInGlobalFrame(true);
-	rightTorqueApp->setInputTorquesInGlobalFrame(true);
-	leftTorqueApp->setInputTorquesInGlobalFrame(true);
-	aModel->addDerivCallback(rightForceApp);
-	aModel->addDerivCallback(leftForceApp);
-	aModel->addDerivCallback(rightTorqueApp);
-	aModel->addDerivCallback(leftTorqueApp);
-
-	if(rRightForceApp) *rRightForceApp=rightForceApp;
-	if(rLeftForceApp) *rLeftForceApp=leftForceApp;
-	if(rRightTorqueApp) *rRightTorqueApp=rightTorqueApp;
-	if(rLeftTorqueApp) *rLeftTorqueApp=leftTorqueApp;
-}
 //_____________________________________________________________________________
 /**
  * Setup time stepping so that the integrator follows a pre-specified series
  * of time steps.
  */
-void ForwardTool::
-InitializeSpecifiedTimeStepping(Storage *aYStore,IntegRKF *aInteg)
+void ForwardTool::InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aManager)
 {
 	// USE INITIAL STATES FILE FOR TIME STEPS
 
@@ -1492,12 +829,119 @@ InitializeSpecifiedTimeStepping(Storage *aYStore,IntegRKF *aInteg)
 		Array<double> dtArray(0.0,aYStore->getSize());
 		aYStore->getTimeColumn(tArray);
 		for(int i=0;i<aYStore->getSize()-1;i++) dtArray[i]=tArray[i+1]-tArray[i];
-		aInteg->setUseSpecifiedDT(true);
-		aInteg->setDTArray(aYStore->getSize()-1,&dtArray[0],tArray[0]);
+		aManager.setUseSpecifiedDT(true);
+		aManager.setDTArray(aYStore->getSize()-1,&dtArray[0],tArray[0]);
 		//std::cout << "ForwardTool.InitializeSpecifiedTimeStepping: " << tArray << endl;
 
 	// NO AVAILABLE STATES FILE
 	} else {
 		std::cout << "WARNING: Ignoring 'use_specified_dt' property because no initial states file is specified" << std::endl;
 	}
+}
+
+
+//=============================================================================
+// CUBIC STEP FUNCTION
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * A smooth step-down function using cubic polynomial.
+ * x=0 for t<t0, x=1 for t>t1, and x=smooth step in between t0 and t1.
+ *
+ * @param t    Parameter at which to evaluate step function
+ * @param t0   Parameter value at which step starts (result=0 to the left)
+ * @param t1   Parameter value at which step ends (result=1 to the right)
+ */
+double ForwardTool::
+Step(double t, double t0, double t1)
+{
+	double tn=(t-t0)/(t1-t0);
+	if(tn<0) return 0;
+	else if(tn>1) return 1;
+	else return pow(tn,2)*(3-2*tn);
+}
+//=============================================================================
+// EXPONENTIALS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * A smooth step-up function using exponentials.
+ *
+ * @param tau  Rise and fall time constant.
+ * @param to   Location of the midpoint of the step.
+ * @param t    Independent variable
+ */
+double ForwardTool::
+SigmaUp(double tau,double to,double t)
+{
+	return(  1.0 / (1.0 + exp(-(t-to)/tau)) );
+}
+//_____________________________________________________________________________
+/**
+ * A smooth step-down function using exponentials.
+ *
+ * @param tau  Rise and fall time constant.
+ * @param to   Location of the midpoint of the step.
+ * @param t    Independent variable
+ */
+double ForwardTool::
+SigmaDn(double tau,double to,double t)
+{
+    return(1.0 -  1.0 / (1.0 + exp(-(t-to)/tau)) );
+}
+//_____________________________________________________________________________
+/**
+ *  Set the current integration manager
+ *
+ * @param m   pointer to itegration manager  
+ */
+
+void ForwardTool::setManager( Manager& m ) {
+   _manager = &m;
+}
+//_____________________________________________________________________________
+/**
+ *  Get the current integration manager
+ *
+ */
+const Manager& ForwardTool::getManager() const {
+   return( *_manager);
+}
+//_____________________________________________________________________________
+/**
+ * Override default implementation by object to intercept and fix the XML node
+ * underneath the tool to match current version
+ */
+/*virtual*/ void ForwardTool::updateFromXMLNode()
+{
+	int documentVersion = getDocument()->getDocumentVersion();
+	bool neededSprings=false;
+	if ( documentVersion < XMLDocument::getLatestVersion()){
+			// Now check if we need to create a correction controller to replace springs
+		if (_node!=NULL && documentVersion<10904){
+			std::string propNames[]={
+				"body1_linear_corrective_spring_active",
+				"body1_torsional_corrective_spring_active",
+				"body2_linear_corrective_spring_active",
+				"body2_torsional_corrective_spring_active"
+			};
+			int i=0;
+			while (!neededSprings && i<4){
+				neededSprings = (XMLNode::GetFirstChildElementByTagName(_node, propNames[i++])!=NULL);
+			}
+			AbstractTool::updateFromXMLNode();
+			if (neededSprings){
+				CorrectionController* cc = new CorrectionController();
+				cc->setKp(16.0);
+				cc->setKv(8.0);
+				_controllerSet.append(cc);
+				_parsingLog+= "This setup file contains corrective springs.\n";
+				_parsingLog+= "Corrective springs are deprecated in OpenSim 2.0\n";
+				_parsingLog+= "Instead, a Corrective Controller has been created.\n";
+
+			}
+		}
+	}
+	else
+		Object::updateFromXMLNode();
 }

@@ -35,10 +35,11 @@
 #include <float.h>
 #include <time.h>
 
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/DynamicsEngines/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include "SimbodySimmBody.h"
 
 
@@ -110,24 +111,24 @@ void SimbodySimmBody::write(ofstream& aStream)
          aStream << "bone " << fileName << endl;
       }
 
-      const MarkerSet* markerSet = _body->getDynamicsEngine()->getMarkerSet();
-      for (int i = 0; i < markerSet->getSize(); i++)
+      const MarkerSet& markerSet = _body->getModel().getMarkerSet();
+      for (int i = 0; i < markerSet.getSize(); i++)
       {
-         const AbstractMarker* marker = markerSet->get(i);
+         const Marker& marker = markerSet.get(i);
 
-         if (marker->getBody() == _body)
+         if (&marker.getBody() == _body)
          {
             // Write out log(_weight) + 1 as marker weight instead of _weight,
             // so that we won't have markers with radius 1000 if _weight=1000.
             // If _weight <= 1, outputWeight will be set to 1.
-            //double outputWeight = (marker->getWeight() > 1.0) ? log(marker->getWeight()) + 1.0 : 1.0;
+            //double outputWeight = (marker.getWeight() > 1.0) ? log(marker.getWeight()) + 1.0 : 1.0;
             // TODO: Got rid of weight property from markers for now...
             double outputWeight = 1;
 
-            aStream << "marker " << marker->getName() << "\t" << marker->getOffset()[0] << " " <<
-               marker->getOffset()[1] << " " << marker->getOffset()[2] << " " << outputWeight;
+            aStream << "marker " << marker.getName() << "\t" << marker.getOffset()[0] << " " <<
+               marker.getOffset()[1] << " " << marker.getOffset()[2] << " " << outputWeight;
 
-            if (marker->getFixed())
+            if (marker.getFixed())
                aStream << " fixed" << endl;
             else
                aStream << endl;

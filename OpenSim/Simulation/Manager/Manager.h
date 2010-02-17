@@ -36,19 +36,20 @@
 // INCLUDES
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Simulation/Model/ModelIntegrand.h>
-#include <OpenSim/Simulation/Integrator/IntegRKF.h>
+#include "SimTKsimbody.h"
 
+
+namespace OpenSim { 
+
+class Model;
+class Storage;
+class ControllerSet;
 
 //=============================================================================
 //=============================================================================
 /**
  * A class that manages the execution of a simulation.
  */
-namespace OpenSim { 
-
-class Model;
-
 class OSIMSIMULATION_API Manager
 {
 
@@ -60,24 +61,61 @@ private:
 	std::string _sessionName;
 	/** Model for which the simulation is performed. */
 	Model *_model;
-	/** Array of integrated states. */
-	Array<double> _y;
-	/** Number of model pseudostates. */
-	int _nyp;
-	/** Array of model pseudostates. */
-	Array<double> _yp;
-	/** Integrand for the model. */
-	ModelIntegrand *_integrand;
+
 	/** Integrator. */
-	IntegRKF *_integ;
+    SimTK::Integrator* _integ;
+
 	/** Initial time of the simulation. */
 	double _ti;
 	/** Final time of the simulation. */
 	double _tf;
 	/** First dt in an integration. */
 	double _firstDT;
+	
+	/** Storage for the states. */
+	Storage *_stateStore;
+
+   int _steps;
+   /** Number of integration step trys. */
+   int _trys;
+   /** Maximum number of steps in an integration. */
+   int _maxSteps;
+   /** Flag for signaling a desired halt. */
+   bool _halt;
+   /** Minimum step size. */
+   double _dtMin;
+   /** Maximum step size. */
+   double _dtMax;
+   /** Flag to indicate whether or not specified integration time steps
+   should be used.  The specified integration time steps are held in _tVec.
+   If _tVec does not contain time steps appropriate for the integration,
+   an exception is thrown. */
+   bool _specifiedDT;
+   /** Flag to indicate whether or not constant (fixed) integration time
+   steps should be used.  The constant integration time step is set using
+   setDT(). */
+   bool _constantDT;
+   /** Constant integration time step. */
+   double _dt;
+   /** Vector of integration time steps. */
+   Array<double> _tArray;
+   /** Vector of integration time step deltas. */
+   Array<double> _dtArray;
+
 	/** Name to be shown by the UI */
 	static std::string _displayName;
+
+	/** flag indicating if manager should call Analyses after each step */
+    bool _performAnalyses;
+
+	/** flag indicating if manager should write to storage  each step */
+    bool _writeToStorage;
+
+    /** controllerSet used for the integration */
+    ControllerSet* _controllerSet;
+
+    /** system of equations to be integrated */
+    const SimTK::System* _system;
 
 
 //=============================================================================
@@ -85,14 +123,13 @@ private:
 //=============================================================================
 public:
 	virtual ~Manager();
-	Manager(ModelIntegrand *aIntegrand);
-	/** A Constructor that does not take a model or controlset */
+	Manager(Model&,  SimTK::Integrator&);
+	/** A Constructor that does not take a model or controllerSet */
 	Manager();	
 
 private:
 	void setNull();
 	bool constructStates();
-	bool constructIntegrator();
 	bool constructStorage();
 
 	//--------------------------------------------------------------------------
@@ -100,13 +137,16 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	void setSessionName(const std::string &name);
+	void setModel(Model& aModel);
 	const std::string& getSessionName() const;
 	const std::string& toString() const;
-	// Integrand
-	void setIntegrand(ModelIntegrand *aIntegrand);
-	ModelIntegrand* getIntegrand() const;
+
+    void setPerformAnalyses( bool performAnalyses) { _performAnalyses =  performAnalyses; }
+    void setWriteToStorage( bool writeToStorage) { _writeToStorage =  writeToStorage; }
+
 	// Integrator
-	IntegRKF* getIntegrator() const;
+	SimTK::Integrator& getIntegrator() const;
+    void setIntegrator( SimTK::Integrator*);
 	// Initial and final times
 	void setInitialTime(double aTI);
 	double getInitialTime() const;
@@ -114,15 +154,53 @@ public:
 	double getFinalTime() const;
 	void setFirstDT(double aDT);
 	double getFirstDT() const;
+       // SEPECIFIED TIME STEP
+   void setUseSpecifiedDT(bool aTrueFalse);
+   bool getUseSpecifiedDT() const;
+   // CONSTANT TIME STEP
+   void setUseConstantDT(bool aTrueFalse);
+   bool getUseConstantDT() const;
+   // DT VECTOR
+   const Array<double>& getDTArray();
+   void setDTArray(int aN,const double aDT[],double aTI=0.0);
+   double getDTArrayDT(int aStep);
+   void printDTArray(const char *aFileName=NULL);
+   // TIME VECTOR
+   const Array<double>& getTimeArray();
+   double getTimeArrayTime(int aStep);
+   int getTimeArrayStep(double aTime);
+   void printTimeArray(const char *aFileName=NULL);
+   void resetTimeAndDTArrays(double aTime);
+
+   double getNextTimeArrayTime(double aTime);
+
+
+    // SYSTEM
+    // only called when need to integrate a different set of equations 
+    // then what is defined by the model 
+    void setSystem(SimTK::System* system) { _system = system; }
 
 	//--------------------------------------------------------------------------
 	// EXECUTION
 	//--------------------------------------------------------------------------
-	bool initializeStates();
-	bool initializeStates(double *aY,double *aYP=NULL);
-	bool integrate();
-	bool integrate(int startIndex);
-	bool integrate(double startTime);
+    bool integrate( SimTK::State& s, double dtFirst=1.0e-6 );
+    bool doIntegration( SimTK::State& s, int step, double dtFirst );
+    void initialize(SimTK::State& s, double dt);
+    void finalize(const SimTK::State& s);
+    double getFixedStepSize(int tArrayStep) const;
+
+	// STATE STORAGE
+    bool hasStateStorage() const;
+	void setStateStorage(Storage& aStorage);
+	Storage& getStateStorage() const;
+
+   //--------------------------------------------------------------------------
+   //  INTERRUPT
+   //--------------------------------------------------------------------------
+   void halt();
+   void clearHalt();
+   bool checkHalt();
+
 
 
 //=============================================================================

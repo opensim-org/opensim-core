@@ -28,6 +28,7 @@
 
 #include "BodySet.h"
 #include <OpenSim/Common/ScaleSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -49,7 +50,13 @@ BodySet::~BodySet(void)
  * Default constructor of a BodySet.
  */
 BodySet::BodySet() :
-	Set<AbstractBody>()
+	ModelComponentSet<Body>()
+{
+	setNull();
+}
+
+BodySet::BodySet(Model& model) :
+	ModelComponentSet<Body>(model)
 {
 	setNull();
 }
@@ -59,7 +66,7 @@ BodySet::BodySet() :
  * Copy constructor of a BodySet.
  */
 BodySet::BodySet(const BodySet& aAbsBodySet):
-	Set<AbstractBody>(aAbsBodySet)
+	ModelComponentSet<Body>(aAbsBodySet)
 {
 	setNull();
 	*this = aAbsBodySet;
@@ -79,21 +86,21 @@ void BodySet::setNull()
 /**
  * Post construction initialization.
  */
-void BodySet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+void BodySet::setup(Model& aModel)
 {
 	// Base class
-	Set<AbstractBody>::setup();
+	Set<Body>::setup();
 
 	// Do members
 	for (int i = 0; i < getSize(); i++)
-		get(i)->setup(aAbstractDynamicsEngine);
+		get(i).setup(aModel);
 
 }
-BodySet& BodySet::copyFrom(const BodySet& aBodySet, AbstractDynamicsEngine* aAbstractDynamicsEngine)
+BodySet& BodySet::copyFrom(const BodySet& aBodySet, Model& aModel)
 {
-	Set<AbstractBody>::operator=(aBodySet);
+	Set<Body>::operator=(aBodySet);
 	for(int i=0; i<getSize(); i++)
-		get(i)->setup(aAbstractDynamicsEngine);
+		get(i).setup(aModel);
 	return (*this);
 }
 
@@ -109,7 +116,7 @@ BodySet& BodySet::copyFrom(const BodySet& aBodySet, AbstractDynamicsEngine* aAbs
 #ifndef SWIG
 BodySet& BodySet::operator=(const BodySet &aAbsBodySet)
 {
-	Set<AbstractBody>::operator=(aAbsBodySet);
+	Set<Body>::operator=(aAbsBodySet);
 	return (*this);
 }
 #endif
@@ -124,11 +131,11 @@ void BodySet::scale(const ScaleSet& aScaleSet, bool aScaleMass)
 {
 	for(int i=0; i<getSize(); i++) {
 		for(int j=0; j<aScaleSet.getSize(); j++) {
-			Scale *scale = aScaleSet.get(j);
-			if (get(i)->getName() == scale->getSegmentName()) {
+			Scale& scale = aScaleSet.get(j);
+			if (get(i).getName() == scale.getSegmentName()) {
 				Vec3 scaleFactors(1.0);
-				scale->getScaleFactors(scaleFactors);
-				get(i)->scale(scaleFactors, aScaleMass);
+				scale.getScaleFactors(scaleFactors);
+				get(i).scale(scaleFactors, aScaleMass);
 			}
 		}
 	}

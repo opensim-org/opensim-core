@@ -57,7 +57,7 @@
 
 namespace OpenSim { 
 
-class OSIMCOMMON_API Exception {
+class OSIMCOMMON_API Exception  : public std::exception {
 
 //=============================================================================
 // DATA
@@ -76,17 +76,19 @@ protected:
 public:
 	// CONSTRUCTORS
 	Exception(const std::string &aMsg="",const std::string &aFile="",int aLine=-1);
-	virtual ~Exception() {}
+	virtual ~Exception() throw() {}
 private:
 	void setNull();
 
 public:
 	// SET AND GET
 	void setMessage(const std::string &aMsg);
-	const char* getMessage();
+	const char* getMessage() const;
 
 	// PRINT
 	virtual void print(std::ostream &aOut);
+    // override virtual function from std::exception
+    const char* what() const throw() {return getMessage();}
 
 //=============================================================================
 };	// END CLASS Exception

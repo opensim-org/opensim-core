@@ -38,7 +38,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimAnalysesDLL.h"
-#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 
 #ifdef SWIG
@@ -72,10 +72,16 @@ public:
 	// STRUCT FOR PAIRING MOMENT ARM STORAGE OBJECTS WITH THEIR
 	// ASSOCIATE GENERALIZED COORDINATE
 	typedef struct {
-		AbstractCoordinate *q;
+		Coordinate *q;
 		Storage *momentArmStore;
 		Storage *momentStore;
-	}  StorageCoordinatePair;
+	}  
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
+
+	StorageCoordinatePair;
+	/// @endcond
+
 #endif
 private:
 
@@ -124,7 +130,7 @@ private:
 	ArrayPtrs<StorageCoordinatePair> _momentArmStorageArray;
 #endif
 	/** Array of active muscles. */
-	ArrayPtrs<AbstractMuscle> _muscleArray;
+	ArrayPtrs<Muscle> _muscleArray;
 
 //=============================================================================
 // METHODS
@@ -154,7 +160,7 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
 	void setStorageCapacityIncrements(int aIncrement);
 	Storage* getPennationAngleStorage() const { return _pennationAngleStore; }
 	Storage* getMuscleTendonLengthStorage() const { return _lengthStore; }
@@ -181,19 +187,17 @@ public:
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
+#ifndef SWIG
 	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+        begin(const SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(const SimTK::State& s );
 protected:
-	virtual int
-		record(double aT,double *aX,double *aY);
-
+    virtual int
+        record(const SimTK::State& s );
+#endif	
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

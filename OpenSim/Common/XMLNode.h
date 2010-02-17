@@ -44,6 +44,8 @@ XERCES_CPP_NAMESPACE_USE
 //using namespace std;	// Ayman:per .NET 2003
 
 
+
+namespace OpenSim { 
 //=============================================================================
 //=============================================================================
 /**
@@ -58,8 +60,6 @@ XERCES_CPP_NAMESPACE_USE
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API XMLNode {
 //=============================================================================
 // DATA

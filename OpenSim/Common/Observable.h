@@ -60,6 +60,8 @@ template class OSIMCOMMON_API ArrayPtrs<Object>;
 //=============================================================================
 /**
  */
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
 class OSIMCOMMON_API Observable  
 {
 
@@ -118,7 +120,7 @@ protected:
 
 //=============================================================================
 };	// END of class Observable
-
+/// @endcond
 }; //namespace
 //=============================================================================
 //=============================================================================

@@ -43,7 +43,7 @@
 #define WE_TORUS 3
 #define WE_NUM_WRAP_TYPE_RADIO_BTNS 4
 
-/* NOTE: the radio-button enum above *must* match the WrapObjectType
+/* NOTE: the radio-button enum above *must* match the dpWrapObjectType
  *  enum in modelplot.h!!
  */
  
@@ -78,18 +78,17 @@
 enum { WE_LOCAL_FRAME, WE_PARENT_FRAME };
 
 STRUCT {
-   int      segment;                    /* parent segment of current wrapping object */
-   int      wrap_object;                /* index of current wrapping object */
-   Coord3D  translate;
-   Coord3D  rotate;
-   int      xform_frame;
+   int segment;                     /* parent segment of current wrapping object */
+   dpWrapObject* wrap_object;       /* index of current wrapping object */
+   dpCoord3D translate;
+   dpCoord3D rotate;
+   int xform_frame;
    SBoolean trackball_rotation;
-   
-   MuscleMenu mgroup[GROUPBUFFER];      /* list of muscle groups */
-   int        menucolumns[COLUMNBUFFER];/* used for placing menus in the window */
-   int*       musc;                     /* list of muscle numbers */
-   int        nummuscles;               /* number of muscles currently selected */
-} WEModelOptions;                       /* user-selectable plotting options */
+   MuscleMenu mgroup[GROUPBUFFER];  /* list of muscle groups */
+   int menucolumns[COLUMNBUFFER];   /* used for placing menus in the window */
+   int* musc;                       /* list of muscle numbers */
+   int nummuscles;                  /* number of muscles currently selected */
+} WEModelOptions;                   /* user-selectable plotting options */
 
 ENUM {
    WE_TOP_LEVEL,                       /*  */
@@ -120,6 +119,7 @@ STRUCT {
 } WrapEditorStruct;                    /*  */
 
 STRUCT {
+   Scene* scene;
    ModelStruct* model;
    double       wx_old, wy_old, wz_old;
    int          mx_old, my_old;
@@ -128,7 +128,7 @@ STRUCT {
    double       span_wx_old, span_wy_old, span_wz_old;
    int          span_mx_old, span_my_old;
    int          zoom_mx_old, zoom_my_old;
-   Coord3D      zoom_vec;
+   dpCoord3D      zoom_vec;
 } WrapEditorTracker;
 
 #endif /*WRAPEDITOR_H*/

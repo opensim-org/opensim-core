@@ -336,13 +336,13 @@ clear()
 PropertyGroup* PropertySet::
 addGroup(string aGroupName)
 {
-	PropertyGroup* group = _propertyGroups.get(aGroupName);
-	if (group == NULL) {
-		group = new PropertyGroup(aGroupName);
+    int index = _propertyGroups.getIndex(aGroupName);
+	if (index == -1) {
+		PropertyGroup* group = new PropertyGroup(aGroupName);
 	   _propertyGroups.append(group);
+       return group;
 	}
-
-	return group;
+	return _propertyGroups.get(index);
 }
 
 //_____________________________________________________________________________

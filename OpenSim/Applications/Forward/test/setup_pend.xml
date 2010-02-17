@@ -5,13 +5,13 @@
 	<model_file> pendulum.osim </model_file>
 	
 	<!--Replace the model's actuator set with sets specified in
-	    <actuator_set_files>? If false, the actuator set is appended to.-->
-	<replace_actuator_set> false </replace_actuator_set>
+	    <force_set_files>? If false, the actuator set is appended to.-->
+	<replace_force_set> false </replace_force_set>
 	<!--List of xml files used to construct an actuator set for the model.-->
-	<actuator_set_files>  </actuator_set_files>
+	<force_set_files>  </force_set_files>
 	
 	<!--Replace the model's contact set with sets specified in
-	    <actuator_set_files>? If false, the actuator set is appended to.-->
+	    <force_set_files>? If false, the actuator set is appended to.-->
 	<replace_contact_force_set> false </replace_contact_force_set>
 
 	<!--Directory used for writing results.-->
@@ -29,9 +29,6 @@
 	<!--Integrator error tolerance. When the error is greater, the integrator
 	    step size is decreased.-->
 	<integrator_error_tolerance> 0.001 </integrator_error_tolerance>
-	<!--Integrator fine tolerance. When the error is less, the integrator step
-	    size is increased.-->
-	<integrator_fine_tolerance> 0.0001 </integrator_fine_tolerance>
 	
 	<!-- ANALYSES -->
 	<!--Set of analyses to be run during the investigation.-->
@@ -66,7 +63,7 @@
 	    the time stamps in this file, inerpolation is NOT used because it is
 	    usually necessary to being a simulation from an exact set of states.
 	    Instead, the closest earlier set of states is used.-->
-    <states_file> SimbodyPendulum_Kinematics_q.sto </states_file>
+    <states_file> SimbodyPendulum_initial_states.sto </states_file>
 	<!--Flag (true or false) indicating whether or not the integrator should
 	    use a particular time stepping.  If true, the time stepping is
 	    extracted from the initial states file.  In this situation, therefore,

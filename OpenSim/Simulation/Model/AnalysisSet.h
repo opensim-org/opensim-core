@@ -57,10 +57,17 @@ class OSIMSIMULATION_API AnalysisSet : public Set<Analysis>
 //=============================================================================
 // DATA
 //=============================================================================
+public:
+   AnalysisSet&
+        operator=(const AnalysisSet &aAnalysisSet);
 protected:
 	/** Model on which the callbacks have been set. */
 	Model *_model;
 
+    // testing for memory free error
+    OpenSim::PropertyBool _enableProp;
+    bool &_enable;
+//
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -68,20 +75,22 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	AnalysisSet(Model *aModel=0);
+	AnalysisSet();
+	AnalysisSet(Model *aModel);
 	AnalysisSet(const std::string &aFileName);
 	AnalysisSet(const AnalysisSet &aSet);
 	virtual ~AnalysisSet();
 	virtual Object* copy() const;
 private:
 	void setNull();
+    void setupProperties();
 public:
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setModel(Model *aModel);
-	Model* getModel();
+	void setModel(Model& aModel);
+	Model& getModel();
 	void setOn(bool aTrueFalse);
 	void setOn(const Array<bool> &aOn);
 	Array<bool> getOn() const;
@@ -90,14 +99,11 @@ public:
 	// CALLBACKS
 	//--------------------------------------------------------------------------
 	virtual void
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+		begin(const SimTK::State& s );
 	virtual void
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+		step(const SimTK::State& s, int stepNumber );
 	virtual void
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+		end(const SimTK::State& s );
 
 	//--------------------------------------------------------------------------
 	// RESULTS

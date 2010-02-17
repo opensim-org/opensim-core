@@ -271,11 +271,11 @@ updateBoundingBox()
  * @param rY Vector of the resulting dependent variables.
  */
 void VectorGCVSplineR1R3::
-evaluate(const double *aX,double *rY)
+calcValue(const double *aX,double *rY, int aSize)
 {
-	rY[0] = _splineY0->evaluate(0,aX[0]);
-	rY[1] = _splineY1->evaluate(0,aX[0]);
-	rY[2] = _splineY2->evaluate(0,aX[0]);
+	rY[0] = _splineY0->calcValue(SimTK::Vector(1, aX));
+	rY[1] = _splineY1->calcValue(SimTK::Vector(1, aX));
+	rY[2] = _splineY2->calcValue(SimTK::Vector(1, aX));
 }
 //_____________________________________________________________________________
 /**
@@ -285,10 +285,11 @@ evaluate(const double *aX,double *rY)
  * @param rY Vector of the resulting dependent variables.
  */
 void VectorGCVSplineR1R3::
-evaluate(const Array<double> &aX,Array<double> &rY)
+calcValue(const Array<double> &aX,Array<double> &rY)
 {
 	assert(aX.getSize()==1);
-	evaluate(&aX[0],&rY[0]);
+	assert(rY.getSize()==3);
+	calcValue(&aX[0],&rY[0], 1);
 }
 //_____________________________________________________________________________
 /**
@@ -300,15 +301,19 @@ evaluate(const Array<double> &aX,Array<double> &rY)
  * @param aDerivWRT
  */
 void VectorGCVSplineR1R3::
-evaluate(const Array<double> &aX,Array<double> &rY,
+calcDerivative(const Array<double> &aX,Array<double> &rY,
 			const Array<int> &aDerivWRT)
 {
 	assert(aX.getSize()==1);
 
 	int derivOrder = aDerivWRT.getSize();
-	rY[0] = _splineY0->evaluate(derivOrder,aX[0]);
-	rY[1] = _splineY1->evaluate(derivOrder,aX[0]);
-	rY[2] = _splineY2->evaluate(derivOrder,aX[0]);
+	std::vector<int> derivComponents;
+	for (int i=0; i< derivOrder; i++) 
+		derivComponents.push_back(aDerivWRT.get(i));
+	SimTK::Vector arg(1, aX[0]);
+	rY[0] = _splineY0->calcDerivative(derivComponents,arg);
+	rY[1] = _splineY1->calcDerivative(derivComponents,arg);
+	rY[2] = _splineY2->calcDerivative(derivComponents,arg);
 }
 
 

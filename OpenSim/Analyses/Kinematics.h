@@ -35,7 +35,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
@@ -44,6 +43,8 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
 /**
  * A class for recording the kinematics of the generalized coordinates
  * of a model during a simulation.
@@ -51,8 +52,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMANALYSES_API Kinematics : public Analysis 
 {
 	OPENSIM_DECLARE_DERIVED(Kinematics, Analysis);
@@ -69,8 +68,9 @@ protected:
 	Array<int> _coordinateIndices;
 	Array<double> _values;
 
-	double *_y;
-	double *_dy;
+	double *_q;
+	double *_u;
+	double *_udot;
 	Storage *_pStore;
 	Storage *_vStore;
 	Storage *_aStore;
@@ -114,26 +114,24 @@ public:
 	Storage* getPositionStorage();
 
 	// MODEL
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
 
 	void setRecordAccelerations(bool aRecordAccelerations) { _recordAccelerations = aRecordAccelerations; } // TODO: re-allocate storage or delete storage
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
+#ifndef SWIG
 	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+        begin(const SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(const SimTK::State& s );
 protected:
-	virtual int
-		record(double aT,double *aX,double *aY);
-
+    virtual int
+        record(const SimTK::State& s );
+#endif
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

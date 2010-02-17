@@ -51,10 +51,15 @@ using namespace std;
  * param: aModel Model on which the analysis is to be performed.
  */
 Analysis::Analysis(Model *aModel):
-	IntegCallback(aModel),
-	_inDegrees(_inDegreesProp.getValueBool())
+    _on(_onProp.getValueBool()),
+    _startTime(_startTimeProp.getValueDbl()),
+    _endTime(_endTimeProp.getValueDbl()),
+    _stepInterval(_stepIntervalProp.getValueInt()),
+	_inDegrees(_inDegreesProp.getValueBool()),
+	_statesStore(NULL)
 {
 	
+    _model = aModel;
 	setNull();
 
 	// ON
@@ -88,8 +93,13 @@ Analysis::~Analysis()
  * @param aFileName File name of the document.
  */
 Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
-IntegCallback(aFileName, false),
-_inDegrees(_inDegreesProp.getValueBool())
+    Object(aFileName, false),
+    _stepInterval(_stepIntervalProp.getValueInt()),
+    _inDegrees(_inDegreesProp.getValueBool()),
+    _on(_onProp.getValueBool()),
+    _startTime(_startTimeProp.getValueDbl()),
+    _endTime(_endTimeProp.getValueDbl()),
+	_statesStore(NULL)
 {
 	setType("Analysis");
 	setNull();
@@ -132,8 +142,13 @@ _inDegrees(_inDegreesProp.getValueBool())
  * @see generateXMLDocument()
  */
 Analysis::Analysis(const Analysis &aAnalysis):
-IntegCallback(aAnalysis),
-_inDegrees(_inDegreesProp.getValueBool())
+   Object(aAnalysis),
+   _on(_onProp.getValueBool()),
+   _startTime(_startTimeProp.getValueDbl()),
+   _endTime(_endTimeProp.getValueDbl()),
+   _stepInterval(_stepIntervalProp.getValueInt()),
+   _inDegrees(_inDegreesProp.getValueBool()),
+   _statesStore(NULL)
 {
 	setType("Analysis");
 	setNull();
@@ -160,6 +175,11 @@ void Analysis::
 setNull()
 {
 	setupProperties();
+    _stepInterval = 1;
+    _on = true;
+    _model = NULL;
+    _startTime = -SimTK::Infinity;
+    _endTime = SimTK::Infinity;
 	_inDegrees=true;
 	_storageList.setMemoryOwner(false);
 	_printResultFiles=true;
@@ -170,6 +190,25 @@ setNull()
  */
 void Analysis::setupProperties()
 {
+    _onProp.setComment("Flag (true or false) specifying whether whether on. "
+        "True by default.");
+    _onProp.setName("on");
+    _propertySet.append(&_onProp);
+
+    _startTimeProp.setComment("Start time.");
+    _startTimeProp.setName("start_time");
+    _propertySet.append(&_startTimeProp );
+
+    _endTimeProp.setComment("End time.");
+    _endTimeProp.setName("end_time");
+    _propertySet.append(&_endTimeProp );
+
+    _stepIntervalProp.setComment("Specifies how often to store results during a simulation. "
+        "More specifically, the interval (a positive integer) specifies how many successful "
+        "integration steps should be taken before results are recorded again.");
+    _stepIntervalProp.setName("step_interval");
+    _propertySet.append( &_stepIntervalProp );
+
 	_inDegreesProp.setComment("Flag (true or false) indicating whether the "
 		"results are in degrees or not.");
 	_inDegreesProp.setName("in_degrees");
@@ -191,13 +230,35 @@ Analysis& Analysis::
 operator=(const Analysis &aAnalysis)
 {
 	// BASE CLASS
-	IntegCallback::operator=(aAnalysis);
+	Object::operator=(aAnalysis);
 
 	// Data members
+	_model = aAnalysis._model;
+    _on = aAnalysis._on;
+    _startTime = aAnalysis._startTime;
+    _endTime = aAnalysis._endTime;
+
 	_inDegrees = aAnalysis._inDegrees;
 	_printResultFiles = aAnalysis._printResultFiles;
 
+    // Class Memebers
+    setStepInterval(aAnalysis.getStepInterval());
+
 	return(*this);
+}
+//_____________________________________________________________________________
+/**
+ * Return whether or not to proceed with this callback.
+ * The callback will not proceed (i.e., returns false) if either the
+ * analysis is turned off or if aStep is not an even multiple of
+ * the step interval set @see rdStepAnalysis.
+ *
+ * @return True or False.
+ */
+bool Analysis::
+proceed(int aStep)
+{
+	return(getOn() && ((aStep%_stepInterval)==0));
 }
 
 //=============================================================================
@@ -237,13 +298,22 @@ getInDegrees() const
  */
 
 void Analysis::
-setModel(Model *aModel)
+setModel(Model& aModel)
 {
 	// BASE CLASS
-	IntegCallback::setModel(aModel);
+	_model = &aModel;
 
-	// SIDE EFFECTS
+}
+//_____________________________________________________________________________
+/**
+ * set pointer to states storage to be analyzed.
+ */
 
+void Analysis::
+setStatesStore(const Storage& aStatesStore)
+{
+	// BASE CLASS
+	_statesStore = &aStatesStore;
 
 }
 //-----------------------------------------------------------------------------
@@ -255,7 +325,7 @@ setModel(Model *aModel)
  * @param aLabels an Array of strings (labels).
  */
 void Analysis::
-setColumnLabels(const Array<string> &aLabels)
+setColumnLabels(const OpenSim::Array<string> &aLabels)
 {
 	_labels = aLabels;
 }
@@ -265,7 +335,7 @@ setColumnLabels(const Array<string> &aLabels)
  *
  * @return Labels for this analysis.
  */
-const Array<string> &Analysis::
+const OpenSim::Array<string> &Analysis::
 getColumnLabels() const
 {
 	return _labels;
@@ -298,4 +368,177 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 ArrayPtrs<Storage>& Analysis::getStorageList()
 {
 	return _storageList;
+}
+
+// GET AND SET
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set the step interval.
+ *
+ * The step interval is used to specify how many integration steps must
+ * go by before the Analysis::step() method is executed.
+ * Specifically, unless the step number divided by the step interval
+ * has no remainder (i.e., (step % stepInterval) == 0), the step
+ * method is not executed.
+ *
+ * @param aStepInterval Step interval. Should be 1 or greater.
+ */
+void Analysis::
+setStepInterval(int aStepInterval)
+{
+	_stepInterval = aStepInterval;
+	if(_stepInterval<1) _stepInterval= 1;
+}
+//_____________________________________________________________________________
+/**
+ * Get the step interval.
+ *
+ * The step interval is used to specify how many integration steps must
+ * go by before the Analysis::step() method is executed.
+ * Specifically, unless the step number divided by the step interval
+ * has no remainder (i.e., (step % stepInterval) == 0), the step
+ * method is not executed.
+ *
+ * @return Step interval.
+ */
+int Analysis::
+getStepInterval() const
+{
+	return(_stepInterval);
+}
+//-----------------------------------------------------------------------------
+// ON/OFF
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Turn this callback on or off.
+ *
+ * @param aTureFalse Turns analysis on if "true" and off if "false".
+ */
+void Analysis::
+setOn(bool aTrueFalse)
+{
+	_on = aTrueFalse;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not this analysis is on.
+ *
+ * @return True if on, false if off.
+ */
+bool Analysis::
+getOn() const
+{
+	return(_on);
+}
+
+//-----------------------------------------------------------------------------
+// START TIME
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the time at which to begin executing the callback.  Note that the start
+ * time should be specified in normalized time units, not in real time units.
+ *
+ * @param aStartTime Start time expressed in NORMALIZED time units.
+ */
+void Analysis::
+setStartTime(double aStartTime)
+{
+	_startTime = aStartTime;
+}
+//_____________________________________________________________________________
+/**
+ * Get the time at which to begin executing the callback, expressed in
+ * normalized time units, not real time units.
+ *
+ * @return Start time expressed in NORMALIZED time units.
+ */
+double Analysis::
+getStartTime() const
+{
+	return(_startTime);
+}
+
+//-----------------------------------------------------------------------------
+// END TIME
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set the time at which to end executing the callback.  Note that the end time
+ * should be specified in normalized time units, not in real time units.
+ *
+ * @param aEndTime Time at which the callback should end execution in
+ * NORMALIZED time units.
+ */
+void Analysis::
+setEndTime(double aEndTime)
+{
+	_endTime = aEndTime;
+}
+//_____________________________________________________________________________
+/**
+ * Get the time at which to end executing the callback, expressed in
+ * normalized time units, not real time units.
+ *
+ * @return End time expressed in NORMALIZED time units.
+ */
+double Analysis::
+getEndTime() const
+{
+	return(_endTime);
+}
+
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * This method is called at the beginning of an integration and is intended
+ * to be used for any initializations that are necessary.
+ *
+ * Override this method in derived classes.
+ *
+ * @param s SimTK state 
+ *
+ * @return -1 on error, 0 otherwise.
+ */
+int Analysis::
+begin( const SimTK::State& s )
+{
+	//printf("Analysis.begin: %s.\n",getName());
+	return (0);
+}
+//_____________________________________________________________________________
+/**
+ * This method is called after each successful integration time step and is
+ * intended to be used for conducting analyses, driving animations, etc.
+ *
+ * Override this method in derived classes.
+ *
+ * @param s SimTK State 
+ *
+ * @return -1 on error, 0 otherwise.
+ */
+int Analysis:: 
+step( const SimTK::State& s, int stepNumber )
+{
+	//printf("Analysis.step: %s.\n",getName());
+	return (0);
+}
+//_____________________________________________________________________________
+/**
+ * This method is called after an integration has been completed and is
+ * intended to be used for performing any finalizations necessary.
+ *
+ * Override this method in derived classes.
+ *
+ * @param s SimTK State 
+ *
+ * @return -1 on error, 0 otherwise.
+ */
+int Analysis::
+end( const SimTK::State& s )
+{
+	//printf("Analysis.end: %s.\n",getName());
+	return(0);
 }

@@ -1,5 +1,5 @@
-#ifndef __AbstractModel_h__
-#define __AbstractModel_h__
+#ifndef __Model_h__
+#define __Model_h__
 
 // Model.h
 // Authors: Frank C. Anderson, Peter Loan, Ayman Habib
@@ -32,27 +32,41 @@
 // INCLUDES
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include "Analysis.h"
-#include "AnalysisSet.h"
-#include "ContactForceSet.h"
-#include "AbstractDynamicsEngine.h"
-#include "ActuatorSet.h"
 #include <OpenSim/Common/Units.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include "SimTKsimbody.h"
+
 
 
 namespace OpenSim {
 
-class AbstractBody;
-class IntegCallback;
-class IntegCallbackSet;
-class DerivCallback;
-class DerivCallbackSet;
+class Actuator;
+class Analysis;
+class Body;
+class BodySet;
+class Constraint;
+class ConstraintSet;
+class Controller;
+class CoordinateSet;
+class Force;
+class ForceSet;
+class MarkerSet;
+class ContactGeometry;
+class ActuatorPerturbation;
+class ContactGeometrySet;
+class OpenSimForceSubsystem;
+class Storage;
+class ScaleSet;
+class SimbodyEngine;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -73,13 +87,21 @@ class DerivCallbackSet;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API Model  : public Object
+class OSIMSIMULATION_API Model  : public ModelComponent
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 private:
+
+   /* Simbody  multibody system */    
+   SimTK::MultibodySystem* _system;
+   SimTK::SimbodyMatterSubsystem* _matter;
+   SimTK::Force::UniformGravity* _gravitySubsystem;
+   SimTK::GeneralForceSubsystem* _userForceElements;
+   SimTK::GeneralContactSubsystem* _contactSubsystem;
+   OpenSimForceSubsystem* _forceSubsystem;
 
 	/** Name of file from which the model was constructed. */
 	std::string _fileName;
@@ -102,43 +124,78 @@ private:
 	std::string& _forceUnitsStr;
 	Units _forceUnits;
 
-	/** Dynamics Engine. */
-	PropertyObjPtr<AbstractDynamicsEngine> _dynamicsEngineProp;
-	AbstractDynamicsEngine *&_dynamicsEngine;
+    /** Array containg the acceleration due to gravity. */
+    PropertyDblVec3 _gravityProp;
+    SimTK::Vec3 &_gravity;
 
 	// SETS OF THINGS
 	/** Actuators. */
-	PropertyObj _actuatorSetProp;
-	ActuatorSet& _actuatorSet;
-
-	/** Contacts. */
-	PropertyObj _contactSetProp;
-	ContactForceSet& _contactSet;
+	PropertyObj _forceSetProp;
+	ForceSet& _forceSet;
 
 	/** Analyses. */
-	AnalysisSet *_analysisSet;
+	AnalysisSet _analysisSet;
 
-	/** Integration callbacks. */
-	IntegCallbackSet *_integCallbackSet;
+    /** Set containing the bodies in this model. */
+    PropertyObj _bodySetProp;
+    BodySet &_bodySet;
 
-	/** Derivative callbacks. */
-	DerivCallbackSet *_derivCallbackSet;
+    /** Set containing the constraints in this model. */
+    PropertyObj _constraintSetProp;
+    ConstraintSet &_constraintSet;
+
+    /** Set of markers for this model. */
+    PropertyObj _markerSetProp;
+    MarkerSet &_markerSet;
+
+    /** Set of ContactGeometry objects for this model. */
+    PropertyObj _contactGeometrySetProp;
+    ContactGeometrySet &_contactGeometrySet;
 
 	// WORK VARIABLES
-	/** Time */
-	double _time;
 
 	/** Time normalization. */
 	double _tNormConst;
 
-	/** Initial states. */
-	Array<double> _yi;
-
-	/** Initial pseudo-states. */
-	Array<double> _ypi;
-
 	/** Were all model components properly defined? */
 	bool _builtOK;
+
+    /** global flag  used to disable all Controllers */
+   bool _allControllersEnabled;
+
+    /** flag indicating the model has actuators that are being perturbed  */
+    bool _perturbActuatorForces; 
+
+    /** object which computes the actuator perturbation */
+    ActuatorPerturbation* _perturb;
+
+    /** dynamics engine */
+    SimbodyEngine _simbodyEngine;
+
+	/** Set containing the joints in this model. */
+	// 2008_06_06: No longer a property because the joints are kept
+	// local to the bodies in the Simbody Dynamics Engine.
+	// For the SIMM and SDFast engines to continue to work, the properties
+	// must be moved local to those classes.
+	// The strategy now is to get OpenSim working with the Simbody engine
+	// as quickly as possible.
+	JointSet _jointSet;
+
+	/** Set containing the generalized coordinates in this model. */
+	// 2008_06_06: No longer a property because the coordinates are kept
+	// local to the joints in the Simbody Dynamics Engine.
+	// For the SIMM and SDFast engines to continue to work, the properties
+	// must be moved local to those classes.
+	// The strategy now is to get OpenSim working with the Simbody engine
+	// as quickly as possible.
+	CoordinateSet _coordinateSet;
+
+   	/** Body used for ground, the inertial frame. */
+	Body *_groundBody;
+
+   /** default controller */
+   ControllerSet _controllerSet;
+
 
 //=============================================================================
 // METHODS
@@ -167,6 +224,9 @@ public:
 
 	/** Destructor. */
 	virtual ~Model();
+
+	/** Override of the default implementation to account for versioning. */
+	virtual void updateFromXMLNode();
 
 	/**
 	 * Copy this Model and return a pointer to the copy.
@@ -205,8 +265,6 @@ public:
 	 */
 	virtual void setup() SWIG_DECLARE_EXCEPTION;
 
-   void replaceEngine(AbstractDynamicsEngine* aEngine);
-
 	/**
 	 * Perform some clean up functions that are normally done 
 	 * from the destructor however this gives the GUI a way to 
@@ -215,14 +273,53 @@ public:
 	 */
 	void cleanup();
 
+    
 	/**
+	 * This must be called after the Model is fully created but before starting a simulation.
+     * It creates and initializes the computational system used to simulate the model.
+	 */
+    SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION;
+
+    /**
+     * Mark the computational system as invalid.  This should be called whenever a property
+     * of the model is modified.  Once this has been called, no calculations can be done until
+     * initSystem() is called again.
+     */
+    void invalidateSystem();
+
+    /**
+     * Given a State, set all default values for this Model to match those found in the State.
+     */
+    void setDefaultsFromState(const SimTK::State& state);
+
+ 	/**
+	 * create a storage (statesStorage) that has same label order as model's states
+	 * with values populated from originalStorage, 0.0 for those states unspecified
+	 * in the originalStorage.
+	 */
+	void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
+    void formQStorage(const Storage& originalStorage, Storage& qStorage);
+
+
+   /**
+     * Update the state of all Muscles so they are in equilibrium.
+     */
+    void equilibrateMuscles(SimTK::State& state);
+
+    /**
 	 * Indicates whether or not problems were encountered during
 	 * model setup().
 	 *
-	 * @return True if the model has a dynamics engine and the 
-	 * number of bodies is > 0.
+	 * @return True if the number of bodies is > 0.
 	 */
 	bool builtOK() { return _builtOK; }
+    const OpenSimForceSubsystem& getForceSubsystem() const {return *_forceSubsystem; }
+    const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const {return _system->getMatterSubsystem(); }
+    SimTK::SimbodyMatterSubsystem& updMatterSubsystem() {return _system->updMatterSubsystem(); }
+    const SimTK::Force::UniformGravity& getGravitySubsystem() const {return *_gravitySubsystem; }
+    const SimTK::GeneralForceSubsystem& getUserForceSubsystem() const {return *_userForceElements; }
+    SimTK::GeneralForceSubsystem& updUserForceSubsystem() {return *_userForceElements; }
+
 
 protected:
 #ifndef SWIG
@@ -234,12 +331,29 @@ protected:
 	Model& operator=(const Model &Model);
 #endif
 
+    void setupFromXML();
+    void initState(SimTK::State& state) const;
+	void createGroundBodyIfNecessary();
+
 private:
 
 	/** Set the values of all data members to an appropriate "null" value. */
 	void setNull();
+    friend class ForceSet;
 
 public:
+	//--------------------------------------------------------------------------
+	// CREATE THE MULTIBODY SYSTEM
+	//--------------------------------------------------------------------------
+	virtual void createSystem();
+	
+	/**
+	 * Add ModelComponents to the Model. Model takes ownership of the objects.
+	 */
+	virtual void addBody(Body *aBody);
+	virtual void addConstraint(Constraint *aConstraint);
+	virtual void addForce(Force *aForce);
+	virtual void addContactGeometry(ContactGeometry *aContactGeometry);
 
 	//--------------------------------------------------------------------------
 	// FILE NAME
@@ -310,6 +424,19 @@ public:
 	virtual const Units& getForceUnits() const { return _forceUnits; }
 
 	//--------------------------------------------------------------------------
+	// MultibodySystem
+	//--------------------------------------------------------------------------
+	virtual SimTK::MultibodySystem& getMultibodySystem() {return *_system; } 
+	virtual void  setMultibodySystem(SimTK::MultibodySystem& system) { _system = &system; } 
+	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------
+	// PERTURBATION
+	//--------------------------------------------------------------------------
+	virtual ActuatorPerturbation& getPerturbation() {return *_perturb; } 
+	virtual void setPerturbation(ActuatorPerturbation* perturbationMethod) {_perturb = perturbationMethod; } 
+    virtual bool getPerturbForcesEnabled() const { return ( _perturbActuatorForces ); }
+    virtual void setPerturbForcesEnabled( bool enabled ) {  _perturbActuatorForces = enabled; }
+	//--------------------------------------------------------------------------
 	// GRAVITY
 	//--------------------------------------------------------------------------
 	
@@ -326,32 +453,44 @@ public:
 	 * @param aGrav The XYZ gravity vector
 	 * @return Whether or not the gravity vector was successfully set.
 	 */
-	virtual bool setGravity(SimTK::Vec3& aGrav);
+	virtual bool setGravity(const SimTK::Vec3& aGrav);
+
+	//--------------------------------------------------------------------------
+	// ADD JOINT
+	//--------------------------------------------------------------------------
+	
+	/**
+	 * Add a joint and associated child body.
+	 *
+	 * @param aJoint The joint.
+	 */
+	//virtual void addJoint(OpenSim::Joint& aJoint);
 
 	//--------------------------------------------------------------------------
 	// NUMBERS
 	//--------------------------------------------------------------------------
 
 	/**
-	 * Get the number of controls in the model.
-	 *
-	 * @return Number of controls.
-	 */
-	virtual int getNumControls() const;
-
-	/**
-	 * Get the total number of states in the model.
+	 * Get the number of states in the model.
 	 *
 	 * @return Number of states.
 	 */
 	virtual int getNumStates() const;
 
 	/**
-	 * Get the total number of pseudostates in the model.
+	 * Get the number of controls in the model.
 	 *
-	 * @return Number of pseudostates.
+	 * @return Number of markers.
 	 */
-	virtual int getNumPseudoStates() const;
+    virtual int getNumMarkers() const;
+
+	/**
+	 * Get the number of ContactGeometries in the model.
+	 *
+	 * @return Number of ContactGeometries.
+	 */
+    virtual int getNumContactGeometries() const;
+
 
 	/**
 	 * Get the total number of bodies in the model.
@@ -381,20 +520,16 @@ public:
 	 */
 	virtual int getNumSpeeds() const;
 
-	/**
-	 * Get the number of actuators in the model.
-	 *
-	 * @return The number of actuators.
-	 */
-	virtual int getNumActuators() const;
+    /**
+     * Get the subset of Forces in the model which are actuators
+     *
+     * @return The set of Actuators
+     */
+    const Set<Actuator>& getActuators() const;
+    Set<Actuator>& updActuators();
 
-	/**
-	 * Get the number of contacts in the model.
-	 *
-	 * @return The number of contacts.
-	 */
-	virtual int getNumContacts() const;
-
+    const ForceSet& getForceSet() const { return _forceSet; };
+    ForceSet& updForceSet() { return _forceSet; };
 	/**
 	 * Get the number of analyses in the model.
 	 *
@@ -409,70 +544,54 @@ public:
 	 */
 	int getNumConfigurations() const { return getNumCoordinates() + getNumSpeeds(); }
 
+    //--------------------------------------------------------------------------
+    // CONTROLS
+    //--------------------------------------------------------------------------
+	/**
+	 * Get a flag indicating if the model needs controls to operate its actuators
+	 */
+	bool isControlled() const
+	{
+		bool isControlled = false;
+		for(int i=0; i< getActuators().getSize() && !isControlled; i++){
+			isControlled = getActuators().get(i).isControlled();
+		}
+		return isControlled;
+	}
+    virtual void storeControls( const SimTK::State& s, int step );
+    virtual void printControlStorage(const std::string& fileName ) const;
+    virtual const ControllerSet& getControllerSet() const;
+    virtual ControllerSet& updControllerSet();
+    virtual bool getAllControllersEnabled() const;
+    virtual void setAllControllersEnabled( bool enabled );
+
+    //--------------------------------------------------------------------------
+    // CONFIGURATION
+    //--------------------------------------------------------------------------
+    virtual void applyDefaultConfiguration(SimTK::State& s );
+	 virtual void enforceCoordinateCouplerConstraints(SimTK::State& s) const;
+
+
 	//--------------------------------------------------------------------------
 	// DYNAMICS ENGINE
 	//--------------------------------------------------------------------------
 		
-	/**
-	 * Determines whether or not the model has a dynamics engine.
-	 *
-	 * @return True if model has a dynamics engine.
-	 */	
-	bool hasDynamicsEngine() const;
 
 	/**
 	 * Get the model's dynamics engine
 	 *
 	 * @return Reference to the abstract dynamics engine
 	 */
-	virtual AbstractDynamicsEngine& getDynamicsEngine() const;
+	const SimbodyEngine& getSimbodyEngine() const { return _simbodyEngine; }
+	SimbodyEngine& updSimbodyEngine() { return _simbodyEngine; }
 
-	/**
-	 * Set the model's dynamics engine
-	 *
-	 * @param aEngine The abstract dynamics engine to set to
-	 */
-	virtual void setDynamicsEngine(AbstractDynamicsEngine &aEngine);
-
-	//--------------------------------------------------------------------------
-	// SET TIME, CONTROLS, AND STATES
-	//--------------------------------------------------------------------------
-
-	/**
-	 * Set the model time, controls, and states.
-	 *
-	 * @param aT Time.
-	 * @param aX Controls at time aT.
-	 * @param aY States at time aT.
-	 */
-	virtual void set(double aT,const double aX[],const double aY[]);
-
-	//--------------------------------------------------------------------------
-	// TIME
-	//--------------------------------------------------------------------------
-
-	/**
-	 * Set the current time.
-	 *
-	 * @param Current time.
-	 */
-	virtual void setTime(double aTime);
-
-	/**
-	 * Get the current time.
-	 *
-	 * @return Current time.
-	 */
-	virtual double getTime() const;
-
-	//--------------------------------------------------------------------------
+	//-------------------------------------------------------------------------
 	// TIME NORMALIZATION
 	//--------------------------------------------------------------------------
 	
 	/**
 	 * Set the constant by which time is normalized.
-	 * The normalization constant must be greater than or equal to the constant
-	 * rdMath::ZERO.
+	 * The normalization constant must be greater than or equal to the constant Zero
 	 *
 	 * @param Time normalization constant.
 	 */	
@@ -487,64 +606,6 @@ public:
 	virtual double getTimeNormConstant() const;
 
 	//--------------------------------------------------------------------------
-	// CONTROLS
-	//--------------------------------------------------------------------------
-	
-	/**
-	 * Set the controls in the model.
-	 *
-	 * @param aX Array of control values.
-	 */	
-	virtual void setControls(const double aX[]);
-
-	/**
-	 * Set a control value, specified by index.
-	 *
-	 * @param aIndex The index of the control to set.
-	 * @param aValue The control value.
-	 */
-	virtual void setControl(int aIndex, double aValue);
-
-	/**
-	 * Set a control value, specified by name.
-	 *
-	 * @param aName The name of the control to set.
-	 * @param aValue The control value.
-	 */
-	virtual void setControl(const std::string &aName, double aValue);
-
-	/**
-	 * Get the control values in the model.
-	 *
-	 * @param rX The control values are returned here.
-	 */
-	virtual void getControls(double rX[]) const;
-
-	/**
-	 * Get a control value, specified by index.
-	 *
-	 * @param aIndex The index of the control to get.
-	 * @return The control value.
-	 */
-	virtual double getControl(int aIndex) const;
-
-	/**
-	 * Get a control value, specified by name.
-	 *
-	 * @param aName The name of the control to get.
-	 * @return The control value.
-	 */
-	virtual double getControl(const std::string &aName) const;
-
-	/**
-	 * Get the name of a control.
-	 *
-	 * @param aIndex Index of the control whose name to get.
-	 * @return Name of the control.
-	 */
-	virtual std::string getControlName(int aIndex) const;
-
-	//--------------------------------------------------------------------------
 	// STATES
 	//--------------------------------------------------------------------------
 
@@ -555,289 +616,86 @@ public:
 	 */
 	virtual void getStateNames(Array<std::string> &rStateNames) const;
 
-	/**
-	 * Set the states for this model.
-	 *
-	 * @param aY Array of states.  The size of aY must be at least the number
-	 * of states, which can be found by calling getNumStates().
-	 */
-	virtual void setStates(const Array<double> &aY) { setStates(&aY[0]); }
-
-	/**
-	 * Set the states for this model.
-	 *
-	 * @param aY Array of states.  The size of aY must be at least the number
-	 * of states, which can be found by calling getNumStates().
-	 */
-	virtual void setStates(const double aY[]);
-
-	/**
-	 * Get the states for this model.
-	 *
-	 * @param rY Array of states.  The size of rY must be at least the number
-	 * of states, which can be found by calling getNumStates().
-	 */
-	virtual void getStates(double rY[]) const;
-
-	//virtual void setState(const std::string &aName,double aY);
-	//virtual double getState(const std::string &aName) const;
+    int getNumMuscleStates() const;
 
 	//--------------------------------------------------------------------------
-	// INITIAL STATES
+	// INITIAL TIME
 	//--------------------------------------------------------------------------
-
-	/**
-	 * Set the initial states for this model.
-	 *
-	 * @param aYI Array of states.  The size of aYI must be at least the number
-	 * of states, which can be found by calling getNumStates().
-	 */
-	virtual void setInitialStates(const double aYI[]);
-
-	/**
-	 * Get the initial states for this model.
-	 *
-	 * @param rYI Array of states.  The size of rYI must be at least the number
-	 * of states, which can be found by calling getNumStates().
-	 */
-	virtual void getInitialStates(double rYI[]) const;
-
-	//virtual void setInitialState(const std::string &aName,double aYI);
-	//virtual double getInitialState(const std::string &aName) const;
-
+	virtual void setInitialTime(  double ti);
+   
+	// SYSTEM
 	//--------------------------------------------------------------------------
-	// PSEUDOSTATES
+	void setSystem( SimTK::MultibodySystem* mbs ) ;
+	SimTK::MultibodySystem& getSystem() const;
 	//--------------------------------------------------------------------------
+   //--------------------------------------------------------------------------
+   // SETS
+   //--------------------------------------------------------------------------
+   //
+   //--------------------------------------------------------------------------
+   // COORDINATES
+   //--------------------------------------------------------------------------
+   virtual CoordinateSet& updCoordinateSet() { 
+	   return _coordinateSet; 
+   }
+   virtual const CoordinateSet& getCoordinateSet() const { 
+	   return _coordinateSet; 
+   }
 
-	/**
-	 * Get the names of the pseudo-states.
-	 *
-	 * @param rStateNames Array of pseudo-state names.
-	 * @return Number of pseudo-states.
-	 */
-	virtual int getPseudoStateNames(Array<std::string> &rStateNames) const;
+   virtual BodySet& updBodySet() { return _bodySet; }
+   virtual const BodySet& getBodySet() const { return _bodySet; }
 
-	/**
-	 * Set the pseudo-states for this model.  Pseudo-states are quantities that
-	 * depend on the time history of an integration but are not integrated.
-	 * Pseudo-states cannot be computed from the states.
-	 *
-	 * @param aYP Array of pseudo-states.  The size of aYP must be at least the
-	 * number of pseudo-states, which can be found by calling getNumPseudoStates().
-	 */
-	virtual void setPseudoStates(const double aYP[]);
+   virtual JointSet& updJointSet(); 
+   virtual const JointSet& getJointSet();
 
-	/**
-	 * Get the pseudo-states for this model.  Pseudo-states are quantities that
-	 * depend on the time history of an integration but are not integrated.
-	 * Pseudo-states cannot be computed from the states.
-	 *
-	 * @param rYP Array of pseudo-states.  The size of rYP must be at least the
-	 * number of pseudo-states, which can be found by calling getNumPseudoStates().
-	 */
-	virtual void getPseudoStates(double rYP[]) const;
+   virtual AnalysisSet& updAnalysisSet() {return _analysisSet; }
+   virtual const AnalysisSet& getAnalysisSet() const {return _analysisSet; }
 
-	//virtual void setPseudoState(const std::string &aName,double aYP);
-	//virtual double getPseudoState(const std::string &aName) const;
+   virtual ContactGeometrySet& updContactGeometrySet() { return _contactGeometrySet; }
+   virtual const ContactGeometrySet& getContactGeometrySet() const { return _contactGeometrySet; }
 
-	//--------------------------------------------------------------------------
-	// INITIAL PSEUDO STATES
-	//--------------------------------------------------------------------------
+   	virtual Body& getGroundBody() const;
 
-	/**
-	 * Set the initial pseudo-states for this model.
-	 *
-	 * @param aYPI Array of pseudo-states.  The size of aYPI must be at least the
-	 * number of pseudo-states, which can be found by calling getNumPseudoStates().
-	 */
-	virtual void setInitialPseudoStates(const double aYPI[]);
 
-	/**
-	 * Get the initial pseudo-states for this model.
-	 *
-	 * @param rYPI Array of pseudo-states.  The size of rYPI must be at least the
-	 * number of pseudo-states, which can be found by calling getNumPseudoStates().
-	 */
-	virtual void getInitialPseudoStates(double rYPI[]) const;
+    //--------------------------------------------------------------------------
+    // CONSTRAINTS
+    //--------------------------------------------------------------------------
+    virtual ConstraintSet& updConstraintSet() { return _constraintSet; }
+    virtual const ConstraintSet& getConstraintSet() const { return _constraintSet; }
 
-	//virtual void setInitialPseudoState(const std::string &aName,double aYPI);
-	//virtual double getInitialPseudoState(const std::string &aName) const;
+    //--------------------------------------------------------------------------
+    // MARKERS
+    //--------------------------------------------------------------------------
+    virtual MarkerSet& updMarkerSet() { return _markerSet; }
+    virtual const MarkerSet& getMarkerSet() const { return _markerSet; }
+    virtual int replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet);
+    virtual void writeMarkerFile(const std::string& aFileName) const;
+    virtual void updateMarkerSet(MarkerSet& aMarkerSet);
+    virtual int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
 
-	/**
-	 * create a storage (statesStorage) that has same label order as model's states
-	 * with values populated from originalStorage, 0.0 for those states unspecified
-	 * in the originalStorage.
-	 */
-	void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
 
-	//--------------------------------------------------------------------------
-	// ACTUATORS
-	//--------------------------------------------------------------------------
-
-	/**
-	 * Get the actuator set for the model.
-	 *
-	 * @return Pointer to the actuator set.
-	 */
-	ActuatorSet* getActuatorSet();
-#ifndef SWIG
-	/**
-	 * Get the actuator set for the model.
-	 *
-	 * @return Pointer to the actuator set.
-	 */
-	const ActuatorSet* getActuatorSet() const;
-#endif
-
-	//--------------------------------------------------------------------------
-	// CONTACT
-	//--------------------------------------------------------------------------
-
-	/**
-	 * Get the contact set for the model.
-	 *
-	 * @return Pointer to the contact set.
-	 */
-	ContactForceSet* getContactSet();
-#ifndef SWIG
-	/**
-	 * Get the contact set for the model.
-	 *
-	 * @return Pointer to the contact set.
-	 */
-	const ContactForceSet* getContactSet() const;
-#endif
-
-	//--------------------------------------------------------------------------
-	// INTEGRATION CALLBACKS
-	//--------------------------------------------------------------------------
-
-	/**
-	 * Get the set of integration callbacks.
-	 *
-	 * @retun Integration callback set of this model.
-	 */
-	virtual IntegCallbackSet* getIntegCallbackSet();
-#ifndef SWIG
-	/**
-	 * Get the set of integration callbacks.
-	 *
-	 * @retun Integration callback set of this model.
-	 */
-	virtual const IntegCallbackSet* getIntegCallbackSet() const;
-#endif
-
-	/**
-	 * Add an integration callback to the model
-	 *
-	 * @param aCallback Pointer to the integration callback to add.
-	 */
-	virtual void addIntegCallback(IntegCallback *aCallback);
-
-	/**
-	 * Remove an integration callback from the model
-	 *
-	 * @param aCallback Pointer to the integration callback to remove.
-	 */
-	virtual void removeIntegCallback(IntegCallback *aCallback);
-
-	//--------------------------------------------------------------------------
-	// DERIVATIVE CALLBACKS
-	//--------------------------------------------------------------------------
-
-	/**
-	 * Get the set of derivative callbacks.
-	 *
-	 * @return Derivative callback set of this model.
-	 */
-	virtual DerivCallbackSet *getDerivCallbackSet();
-#ifndef SWIG
-	/**
-	 * Get the set of derivative callbacks.
-	 *
-	 * @return Derivative callback set of this model.
-	 */
-	virtual const DerivCallbackSet *getDerivCallbackSet() const;
-#endif
-
-	/**
-	 * Add a derivative callback to the model
-	 *
-	 * @param aCallback Pointer to the derivative callback to add.
-	 */
-	virtual void addDerivCallback(DerivCallback *aCallback);
-
-	/**
-	 * Remove getDerivCallbackSet from the model and free resources
-	 */
-	virtual void removeAllDerivCallbacks();
-
-	//--------------------------------------------------------------------------
-	// ANALYSES
-	//--------------------------------------------------------------------------
-	
-	/**
-	 * Get the set of analyses.
-	 *
-	 * @return Analysis set of this model.
-	 */	
-	virtual AnalysisSet* getAnalysisSet();
-#ifndef SWIG
-	/**
-	 * Get the set of analyses.
-	 *
-	 * @return Analysis set of this model.
-	 */
-	virtual const AnalysisSet* getAnalysisSet() const;
-#endif
-
+ 
 	/**
 	 * Add an analysis to the model.
 	 *
 	 * @param aAnalysis pointer to the analysis to add
 	 */
 	virtual void addAnalysis(Analysis *aAnalysis);
+	virtual void addController(Controller *aController);
 
 	/**
 	 * Remove an analysis from the model
 	 *
 	 * @param aAnalysis Pointer to the analysis to remove.
 	 */
-	virtual void removeAnalysis(Analysis *aAnalysis);
+	virtual void removeAnalysis(Analysis *aAnalysis, bool deleteIt=true);
+	virtual void removeController(Controller *aController);
 
 	//--------------------------------------------------------------------------
 	// DERIVATIVES
 	//--------------------------------------------------------------------------
 
-	/**
-	 * Compute the derivatives of the states of the model.  For this method
-	 * to return valid derivatives, the following methods should have been
-	 * called:
-	 * 1. Model::set()
-	 * 2. ActuatorSet::computeActuation()
-	 * 3. ActuatorSet::apply()
-	 * 4. ContactSet::computeContact()
-	 * 5. ContactSet::apply()
-	 *
-	 * @param rDYDT Derivatives of the states.  These have not been time
-	 * normalized for integration, but are in un-normalized units.  The
-	 * length of rDYDT should be at least getNumStates().
-	 */
-	virtual void computeDerivatives(double rDYDT[]);
-
-	/**
-	 * Compute the derivatives of the auxiliary states (the actuator and contact
-	 * states).  The auxiliary states are any integrated variables that are
-	 * not the coordinates or speeds.
-	 *
-	 * @param rDYDT Derivatives of the auxiliary states.  Note that this is a shorter
-	 * array than the rDYDT used with computeDerivatives (above) as it omits the
-	 * q and u derivatives. In particular, the length of rDYDT should be at least 
-	 * _actuatorSet.getNumStates()+_contactSet.getNumStates()
-	 * These have not been time normalized for integration, but are in un-normalized units.
-	 */
-	virtual void computeAuxiliaryDerivatives(double rDYDT[]);
-
+	
 	/**
 	 * Compute values for the auxiliary states (i.e., states other than the
 	 * generalized coordinates and speeds) that are in quasi-static equilibrium.
@@ -852,7 +710,7 @@ public:
 	 * guess for equilibrium. The values returned are those that satisfy
 	 * equilibrium.
 	 */
-	virtual void computeEquilibriumForAuxiliaryStates(double rY[]);
+	virtual void computeEquilibriumForAuxiliaryStates(SimTK::State& s);
 
 	//--------------------------------------------------------------------------
 	// OPERATIONS
@@ -867,7 +725,7 @@ public:
 	 *        individual bodies should be scaled with the body scale factors.
 	 * @return Whether or not scaling was successful.
 	 */
-	virtual bool scale(const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
+	virtual bool scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass = -1.0, bool aPreserveMassDist = false);
 
 	//--------------------------------------------------------------------------
 	// PRINT
@@ -885,16 +743,15 @@ public:
 	 *
 	 * @param aOStream Output stream.
 	 */
-	void printDetailedInfo(std::ostream &aOStream) const;
+	void printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) const;
 
-	//--------------------------------------------------------------------------
-	// TEST
-	//--------------------------------------------------------------------------
-	
-	/** Test kinematics */
-	void kinTest();
+	/**
+	 * Model relinquishes ownership of all components such as: Bodies, Constraints, Forces, 
+	 * ConactGeometry and so on. That means the freeing of the memory of these objects is up
+	 * to the caller.
+	 */
+	void disownAllComponents();
 
-	OPENSIM_DECLARE_DERIVED(Model, Object);
 
 //=============================================================================
 };	// END of class Model
@@ -903,5 +760,5 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __AbstractModel_h__
+#endif // __Model_h__
 

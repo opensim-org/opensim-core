@@ -140,6 +140,16 @@ void Measurement::setupProperties()
 	_propertySet.append(&_bodyScaleSetProp);
 }
 
+//_____________________________________________________________________________
+/**
+ * Register the types used by Measurement.
+ */
+void Measurement::registerTypes()
+{
+	Object::RegisterType(MarkerPair());
+	Object::RegisterType(BodyScale());
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -174,14 +184,14 @@ void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 {
 	for (int i = 0; i < _bodyScaleSet.getSize(); i++)
 	{
-		const string& bodyName = _bodyScaleSet[i]->getName();
+		const string& bodyName = _bodyScaleSet[i].getName();
 		for (int j = 0; j < aScaleSet.getSize(); j++)
 		{
-			if (aScaleSet[j]->getSegmentName() == bodyName)
+			if (aScaleSet[j].getSegmentName() == bodyName)
 			{
-				const Array<std::string>& axisNames = _bodyScaleSet[i]->getAxisNames();
+				const Array<std::string>& axisNames = _bodyScaleSet[i].getAxisNames();
 				Vec3 factors(1.0);
-				aScaleSet[j]->getScaleFactors(factors);
+				aScaleSet[j].getScaleFactors(factors);
 
 				for (int k = 0; k < axisNames.getSize(); k++)
 				{
@@ -192,7 +202,7 @@ void Measurement::applyScaleFactor(double aFactor, ScaleSet& aScaleSet)
 					else if (axisNames[k] == "z" || axisNames[k] == "Z")
 						factors[2] = aFactor;
 				}
-				aScaleSet[j]->setScaleFactors(factors);
+				aScaleSet[j].setScaleFactors(factors);
 			}
 		}
 	}

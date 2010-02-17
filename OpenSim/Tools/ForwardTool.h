@@ -1,39 +1,10 @@
-// ForwardTool.h
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
-* Use of the OpenSim software in source form is permitted provided that the following
-* conditions are met:
-* 	1. The software is used only for non-commercial research and education. It may not
-*     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
-*     only through https://simtk.org/home/opensim.
-* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
-*      presentations, or documents describing work in which OpenSim or derivatives are used.
-* 	4. Credits to developers may not be removed from executables
-*     created from modifications of the source.
-* 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 #ifndef __ForwardTool_h__
 #define __ForwardTool_h__
+// ForwardTool.h
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-//============================================================================
-// INCLUDE
-//============================================================================
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyInt.h>
@@ -43,7 +14,9 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
-#include <OpenSim/Simulation/Control/ControlSet.h>
+#include <OpenSim/Simulation/Model/LinearSpring.h>
+#include <OpenSim/Simulation/Model/TorsionalSpring.h>
+
 #include "osimToolsDLL.h"
 
 #ifdef SWIG
@@ -55,20 +28,17 @@
 
 namespace OpenSim { 
 
-class AbstractBody;
-class ForceApplier;
-class TorqueApplier;
-class LinearSpring;
-class TorsionalSpring;
-class ModelIntegrand;
-class Controller;
+class Body;
+class PrescribedForce;
+class ControlSet;
+
 
 //=============================================================================
 //=============================================================================
 /**
- * An abstract class for specifying the interface for an investigation.
+ * A concrete tool for perfroming forward dynamics simulations
  *
- * @author Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
+ * @author Frank C. Anderson
  * @version 1.0
  */
 class OSIMTOOLS_API ForwardTool: public AbstractTool
@@ -78,23 +48,14 @@ class OSIMTOOLS_API ForwardTool: public AbstractTool
 //=============================================================================
 protected:
 	// BASIC INPUT
-	/** Name of the controls file. */
-	PropertyStr _controlsFileNameProp;
-	std::string &_controlsFileName;
+
 	/** Name of the states file.  The states file must at a minimum contain the
 	initial states for a simulation.  If a complete set of states is available,
 	the time stamps can be used to specify the integration steps and corrective
 	springs, which allow perturbations, can be added to the simulation. */
 	PropertyStr _statesFileNameProp;
 	std::string &_statesFileName;
-	/** Name of the pseudostates file. Pseudostates are variables that are not
-	integrated but that are dependent on the time history of a simulation.
-	Typically, these are things like the set points for contact elements
-	for example.  The pseudostates file must at a minimum contain the
-	initial pseudostates for a simulation.  The time stamp on these
-	states should match the time stamp in the states file exactly. */
-	PropertyStr _pseudoFileNameProp;
-	std::string &_pseudoFileName;
+
 	/** If true, the time steps from the states file are used during
 	current integration. */
 	OpenSim::PropertyBool _useSpecifiedDtProp;
@@ -108,14 +69,6 @@ protected:
 	external loads. */
 	OpenSim::PropertyStr _externalLoadsModelKinematicsFileNameProp;
 	std::string &_externalLoadsModelKinematicsFileName;
-	/** Name of the body to which the first set of external loads should be
-	applied (e.g., the body name for the right foot). */
-	OpenSim::PropertyStr _externalLoadsBody1Prop;
-	std::string &_externalLoadsBody1;
-	/** Name of the body to which the second set of external loads should be
-	applied (e.g., the body name for the left foot). */
-	OpenSim::PropertyStr _externalLoadsBody2Prop;
-	std::string &_externalLoadsBody2;
 	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
 	to the external loads. A negative value results in no filtering.
 	The default value is -1.0, so no filtering. */
@@ -126,7 +79,7 @@ protected:
 	OpenSim::PropertyBool _outputDetailedResultsProp;
 	bool &_outputDetailedResults;
 
-	// FOOT CONTACT EVENT TIMES
+		// FOOT CONTACT EVENT TIMES
 	/** Flag indicating whether or not to turn on a linear corrective spring for the right foot. */
 	OpenSim::PropertyBool _body1LinSpringActiveProp;
 	bool &_body1LinSpringActive;
@@ -194,23 +147,23 @@ protected:
 	/** Damping for torsional corrective springs. */
 	PropertyDblVec3 _bTorProp;
 	SimTK::Vec3 &_bTor;
-	/** Controller for running this ForwardTool with feedback. */
-	PropertyObjPtr<Controller> _controllerProp;
-	Controller *&_controller;
 
-	// INTERNAL WORK VARIABLES
-	/** Model integrand.  Make it a pointer so we can print results from a separate function. */
-	ModelIntegrand *_integrand;
-	/** Storage for the input states. */
-	Storage *_yStore;
-	/** Storage for the input pseudo states. */
-	Storage *_ypStore;
-	/** Flag indicating whether or not to write to the results (GUI will set this to false). */
-	bool _printResultFiles;
 	/** Pointer to the linear and torsional corrective springs. */
 	LinearSpring *_body1Lin, *_body2Lin;
 	TorsionalSpring *_body1Tor, *_body2Tor;
 
+	// INTERNAL WORK ARRAYS
+
+	/** Storage for the input states. */
+	Storage *_yStore;
+	/** Flag indicating whether or not to write to the results (GUI will set this to false). */
+	bool _printResultFiles;
+
+    /** pointer to the simulation Manager */
+    Manager* _manager;
+
+	/*** Private place to save some deserializtion info in case needed later */
+	std::string _parsingLog;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -226,13 +179,6 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-protected:
-	//void constructCorrectiveSprings(ForceApplier *aRightGRFApp,ForceApplier *aLeftGRFApp);
-	LinearSpring*
-		addLinearCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,const ForceApplier &aAppliedForce);
-	TorsionalSpring*
-		addTorsionalCorrectiveSpring(const Storage &aQStore,const Storage &aUStore,AbstractBody *aBody,
-		double aTauOn,double aTimeOn,double aTauOff,double aTimeOff);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -243,12 +189,13 @@ public:
 		operator=(const ForwardTool &aForwardTool);
 #endif
 
+	virtual void updateFromXMLNode();
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
 
-	const std::string &getControlsFileName() const { return _controlsFileName; }
-	void setControlsFileName(const std::string &aFileName) { _controlsFileName = aFileName; }
+    void setManager( Manager& m );
+    const Manager& getManager() const; 
 
 	const std::string &getStatesFileName() const { return _statesFileName; }
 	void setStatesFileName(const std::string &aFileName) { _statesFileName = aFileName; }
@@ -261,17 +208,9 @@ public:
 	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
 	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-	const std::string &getExternalLoadsBody1() const { return _externalLoadsBody1; }
-	void setExternalLoadsBody1(const std::string &aName) { _externalLoadsBody1 = aName; }
-	const std::string &getExternalLoadsBody2() const { return _externalLoadsBody2; }
-	void setExternalLoadsBody2(const std::string &aName) { _externalLoadsBody2 = aName; }
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
-
-	Controller& getController() { return *_controller; }
-
-	Storage *getStateStorage();
 
 	//--------------------------------------------------------------------------
 	// INTERFACE
@@ -282,24 +221,21 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	static void InitializeExternalLoads(const double& analysisStartTime, const double& analysisFinalTime,
-		Model *aModel, 
-		const std::string &aExternalLoadsFileName,
-		const std::string &aExternalLoadsModelKinematicsFileName,
-		const std::string &aExternalLoadsBody1,
-		const std::string &aExternalLoadsBody2,
-		double aLowpassCutoffFrequencyForLoadKinematics,
-		ForceApplier **rRightForceApp=0,
-		ForceApplier **rLeftForceApp=0,
-		TorqueApplier **rRightTorqueApp=0,
-		TorqueApplier **rLeftTorqueApp=0);
-	static void InitializeSpecifiedTimeStepping(Storage *aYStore,OpenSim::IntegRKF *aIntegrator);
+	static double Step(double t, double t0, double t1); 
+    static double SigmaUp(double tau,double to,double t);
+    static double SigmaDn(double tau,double to,double t);
+
+	void loadStatesStorage (std::string& statesFileName, Storage*& rYStore) const; 
+	const std::string& getParsingLog() { return _parsingLog; };
 protected:
-	void inputControlsStatesAndPseudoStates(ControlSet*& rControlSet,Storage*& rYStore,Storage*& rYPStore);
+	void setDesiredStatesForControllers(Storage& rYStore);
 	int determineInitialTimeFromStatesStorage(double &rTI);
-	int determinePseudoStatesIndex(double aTI,bool &interpolatePseudoStates);
-	void checkControls(const ControlSet *aControlSet);
-	void addCorrectiveSprings(const Storage *aYStore,const ForceApplier *aBody1Force,const ForceApplier *aBody2Force);
+	void InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aManager);
+	void addCorrectiveSprings(SimTK::State &s, const Storage *aYStore, const PrescribedForce *aBody1Force,const PrescribedForce *aBody2Force);
+	LinearSpring* addLinearCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore,const PrescribedForce &aAppliedForce);
+	TorsionalSpring* addTorsionalCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore, Body *aBody,
+		double aTauOn,double aTimeOn,double aTauOff,double aTimeOff);
+private:
 
 //=============================================================================
 };	// END of class ForwardTool

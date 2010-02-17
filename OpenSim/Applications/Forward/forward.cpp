@@ -34,8 +34,9 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Actuators/Schutte1993Muscle.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Actuators/GeneralizedForceAtv.h>
+#include "SimTKsimbody.h"
 
 
 using namespace OpenSim;
@@ -50,16 +51,15 @@ static void PrintUsage(const char *aProgName, ostream &aOStream);
  */
 int main(int argc,char **argv)
 {
+
 	//----------------------
 	// Surrounding try block
 	//----------------------
 	try {
 	//----------------------
 
-#ifndef STATIC_OSIM_LIBS
 	//LoadOpenSimLibrary("osimSdfastEngine");
-	LoadOpenSimLibrary("osimSimbodyEngine");
-#endif
+
 
 	// PARSE COMMAND LINE
 	int i;
@@ -69,8 +69,6 @@ int main(int argc,char **argv)
 		PrintUsage(argv[0], cout);
 		return(-1);
 	}
-	// Load libraries first
-	LoadOpenSimLibraries(argc,argv);
 	for(i=1;i<argc;i++) {
 		option = argv[i];
 
@@ -114,7 +112,6 @@ int main(int argc,char **argv)
 
 
 	}
-
 	// ERROR CHECK
 	if(setupFileName=="") {
 		cout<<"\n\nforward.exe: ERROR- A setup file must be specified.\n";
@@ -123,12 +120,9 @@ int main(int argc,char **argv)
 	}
 
 	/*
-	  ISSUES:
-	  1. need to make an actuator in order to pull in DLL and register actuator objects.
-     2. ActuatorSet, SdfastBodySet, AnalysisSet must have specific names in hopper.xml.
+	  ISSUE: need to explicitly laod the library osimActuators.
     */
-	GeneralizedForceAtv *atv = new GeneralizedForceAtv();
-	delete atv;
+	LoadOpenSimLibrary("osimActuators");
 
 	// CONSTRUCT
 	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
@@ -136,15 +130,11 @@ int main(int argc,char **argv)
 	//forward.print("check.xml");
 
 	// PRINT MODEL INFORMATION
-	Model *model = forward.getModel();
-	if(model==NULL) {
-		cout<<"\nforward:  ERROR- failed to load model.\n";
-		exit(-1);
-	}
+	Model& model = forward.getModel();
+
 	cout<<"-----------------------------------------------------------------------"<<endl;
 	cout<<"Loaded library\n";
 	cout<<"-----------------------------------------------------------------------"<<endl;
-	model->printDetailedInfo(cout);
 	cout<<"-----------------------------------------------------------------------"<<endl<<endl;
 
 	// RUN

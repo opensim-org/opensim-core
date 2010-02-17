@@ -1,5 +1,5 @@
 // fjc.cpp
-// Author: Eran Guendelman and Chand T. John
+// Author: Eran Guendelman
 /* Copyright (c)  2006, Stanford University and Ayman Habib.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
@@ -40,11 +40,9 @@
 #include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Common/SimmPoint.h>
 #include <OpenSim/DynamicsEngines/SimmKinematicsEngine/SimmKinematicsEngine.h>
-#include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Common/MarkerData.h>
-#include <SimTKCommon.h>
+#include <SimTKcommon.h>
 
 #define DEBUG
 
@@ -220,8 +218,7 @@ static Vec3 bestFitIntersectionPoint(const Array<Vec3> &linePoints, const Array<
 */
 int main(int argc,char **argv)
 {
-   LoadOpenSimLibrary("osimSimbodyEngine");
-   bool verbose = true;
+	bool verbose = true;
 
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);

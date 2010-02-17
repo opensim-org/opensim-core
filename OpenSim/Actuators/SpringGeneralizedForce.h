@@ -35,54 +35,57 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
+#include "osimActuatorsDLL.h"
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/GeneralizedForce.h>
-#include "osimActuatorsDLL.h"
-
+#include <OpenSim/Simulation/Model/CustomForce.h>
 
 //=============================================================================
 //=============================================================================
 /**
- * An actuator that exerts a generalized force based on spring-like
- * characteristics (stiffness and viscosity).  It has one control:
- * stiffness. 
+ * An force that exerts a generalized force based on spring-like
+ * characteristics (stiffness and viscosity).  
  *
- * @author Frank C. Anderson
- * @version 1.0
+ * @author Frank C. Anderson, Ajay Seth
+ * @version 2.0
  */
 namespace OpenSim {
 
-class AbstractCoordinate;
+class Coordinate;
 
-class OSIMACTUATORS_API SpringGeneralizedForce : public GeneralizedForce 
+class OSIMACTUATORS_API SpringGeneralizedForce : public CustomForce 
 {
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 	// PROPERTIES
+	/** Name of coordinate to which the spring gen force is applied. */
+	PropertyStr _propCoordinateName;
+	/** Stiffness. */
+	PropertyDbl _propStiffness;
 	/** Rest length. */
 	PropertyDbl _propRestLength;
 	/** Viscosity. */
 	PropertyDbl _propViscosity;
 
 	// REFERENCES
+	std::string& _coordName;
+	double &_stiffness;
 	double &_restLength;
 	double &_viscosity;
 
-	/** Stiffness (control 0). */
-	double _stiffness;
-
+	/** Corresponding generalized coordinate to which the coordinate actuator
+       is applied. */
+    Coordinate *_coord;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	SpringGeneralizedForce(std::string aQName="");
-	SpringGeneralizedForce(const SpringGeneralizedForce &aActuator);
-	virtual ~SpringGeneralizedForce();
+	SpringGeneralizedForce(std::string aCoordinateName="");
+	SpringGeneralizedForce(const SpringGeneralizedForce &aForce);
+	~SpringGeneralizedForce();
 	virtual Object* copy() const;
 private:
 	void setNull();
@@ -94,33 +97,35 @@ public:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 	SpringGeneralizedForce&
-		operator=(const SpringGeneralizedForce &aActuator);
+		operator=(const SpringGeneralizedForce &aForce);
+
+	// Setup method to initialize coordinate reference
+	void setup(Model& aModel);
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+	// GENERALIZED COORDINATE
+	void setCoordinate(Coordinate* aCoordinate);
+	Coordinate* getCoordinate() const;
+	// STIFFNESS
+	void setStiffness(double aStiffness);
+	double getStiffness() const;
 	// REST LENGTH
 	void setRestLength(double aRestLength);
 	double getRestLength() const;
 	// VISCOSITY
 	void setViscosity(double aViscosity);
 	double getViscosity() const;
-	// STIFFNESS
-	void setStiffness(double aStiffness);
-	double getStiffness() const;
-
-	//--------------------------------------------------------------------------
-	// APPLICATION
-	//--------------------------------------------------------------------------
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual void computeActuation();
+protected:
+	virtual void computeForce( const SimTK::State& s) const;
 
-	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, AbstractActuator);
+	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, CustomForce);
 
-//=============================================================================
+	//=============================================================================
 };	// END of class SpringGeneralizedForce
 
 }; //namespace

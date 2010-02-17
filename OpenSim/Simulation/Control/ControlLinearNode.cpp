@@ -30,7 +30,6 @@
  * Author: Frank C. Anderson 
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include "ControlLinearNode.h"
@@ -42,7 +41,6 @@
 
 
 using namespace OpenSim;
-//double ControlLinearNode::_EqualityTolerance = rdMath::ZERO;
 
 //=============================================================================
 // CONSTRUCTOR(S)

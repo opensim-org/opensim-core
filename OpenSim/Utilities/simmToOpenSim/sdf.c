@@ -31,11 +31,6 @@
 /*************** GLOBAL VARIABLES (used in only a few files) ******************/
 SDSegment* SDseg = NULL;
 int num_SD_segs;
-#if OPENSIM_BUILD
-char sdfast_ground[] = "ground";
-#else
-char sdfast_ground[] = "$ground";
-#endif
 int* joint_order = NULL;
 
 
@@ -44,7 +39,7 @@ int* joint_order = NULL;
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static void write_loop_joints(int mod, FILE** fp, char seg_name[], SegmentSDF* seg, int addQuestionMarks);
+static void write_loop_joints(FILE* fp, char seg_name[], SegmentSDF* seg, int addQuestionMarks);
 static int countConstraints(ModelStruct* ms, int* nq);
 
 
@@ -54,22 +49,20 @@ static int countConstraints(ModelStruct* ms, int* nq);
  * of freedom should be. Optionally, it writes out this information to
  * an SD/FAST input file.
  */
-
-ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int addQuestionMarks)
+ReturnCode make_sdfast_model(ModelStruct* ms, char filename[], SBoolean write_file, int addQuestionMarks)
 {
-
    int i, j, nq, dofcount, constrainedcount, numconstraints, jointnum, dofnum;
    char* time_string;
    char sdf_buffer[CHARBUFFER];
-   FILE *fp;
+   FILE* fp = NULL;
    JointSDF* jnts;
    DofStruct* dof;
    SegmentSDF* segs;
 
    /* Make the joint transformation matrices once you have changed the gencoords */
 
-   for (i=0; i<model[mod]->numjoints; i++)
-      make_conversion(mod,i);
+   for (i=0; i<ms->numjoints; i++)
+      make_conversion(ms, i);
 
    /* Re-initialize the SD/FAST variables. Mark all dofs as
     * constrained (not true degrees of freedom).
@@ -80,32 +73,32 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
     * gencoord) and the others should be non-trivial functions.
     */
 
-   for (i=0; i<model[mod]->numjoints; i++)
+   for (i=0; i<ms->numjoints; i++)
    {
       for (j=0; j<6; j++)
       {
-         model[mod]->joint[i].dofs[j].sd.name = NULL;
-         model[mod]->joint[i].dofs[j].sd.con_name = NULL;
-         model[mod]->joint[i].dofs[j].sd.initial_value = 0.0;
-         model[mod]->joint[i].dofs[j].sd.constrained = yes;
-         model[mod]->joint[i].dofs[j].sd.fixed = no;
-         model[mod]->joint[i].dofs[j].sd.state_number = -1;
-         model[mod]->joint[i].dofs[j].sd.error_number = -1;
-         model[mod]->joint[i].dofs[j].sd.joint = -1;
-         model[mod]->joint[i].dofs[j].sd.axis = -1;
-         model[mod]->joint[i].dofs[j].sd.conversion = 0.0;
-         model[mod]->joint[i].dofs[j].sd.conversion_sign = 1.0;
+         ms->joint[i].dofs[j].sd.name = NULL;
+         ms->joint[i].dofs[j].sd.con_name = NULL;
+         ms->joint[i].dofs[j].sd.initial_value = 0.0;
+         ms->joint[i].dofs[j].sd.constrained = yes;
+         ms->joint[i].dofs[j].sd.fixed = no;
+         ms->joint[i].dofs[j].sd.state_number = -1;
+         ms->joint[i].dofs[j].sd.error_number = -1;
+         ms->joint[i].dofs[j].sd.joint = -1;
+         ms->joint[i].dofs[j].sd.axis = -1;
+         ms->joint[i].dofs[j].sd.conversion = 0.0;
+         ms->joint[i].dofs[j].sd.conversion_sign = 1.0;
       }
    }
 
-   for (i=0; i<model[mod]->numgencoords; i++)
+   for (i=0; i<ms->numgencoords; i++)
    {
-      if (model[mod]->gencoord[i].used_in_model == yes)
+      if (ms->gencoord[i]->used_in_model == yes)
       {
-	      if (!mark_unconstrained_dof(model[mod], i, &jointnum, &dofnum, NULL))
+	      if (!mark_unconstrained_dof(ms, ms->gencoord[i], &jointnum, &dofnum, NULL))
          {
 	         sprintf(errorbuffer, "At least one DOF must be a \"simple\" function of gencoord %s (2 points, slope=1, passes thru zero).",
-               model[mod]->gencoord[i].name);
+               ms->gencoord[i]->name);
             return code_bad;
          }
       }
@@ -118,17 +111,17 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
     * and the dof keyword (e.g. "hip_tx" and "knee_r1").
     */
 
-   name_dofs(mod);
+   name_dofs(ms);
 
    FREE_IFNOTNULL(joint_order);
-   joint_order = (int*)malloc(model[mod]->numjoints*sizeof(int));
-   jnts = (JointSDF*)simm_calloc(model[mod]->numjoints, sizeof(JointSDF));
-   segs = (SegmentSDF*)simm_calloc(model[mod]->numsegments, sizeof(SegmentSDF));
+   joint_order = (int*)malloc(ms->numjoints*sizeof(int));
+   jnts = (JointSDF*)simm_calloc(ms->numjoints, sizeof(JointSDF));
+   segs = (SegmentSDF*)simm_calloc(ms->numsegments, sizeof(SegmentSDF));
 
-   for (i = 0; i < model[mod]->numjoints; i++)
+   for (i = 0; i < ms->numjoints; i++)
       joint_order[i] = -1;
 
-   find_sdfast_joint_order(model[mod],jnts,segs,joint_order);
+   find_sdfast_joint_order(ms, jnts, segs, joint_order, SDFAST_GROUND);
 
    /* Open the SD/FAST input file */
 
@@ -140,7 +133,7 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
       {
          sprintf(errorbuffer,"Error creating sdfast file %s", filename);
          error(abort_action,errorbuffer);
-         return (code_bad);
+         return code_bad;
       }
 
       make_time_string(&time_string);
@@ -148,23 +141,23 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
       fprintf(fp,"# SD/FAST input file generated by %s\n", program_with_version);
       fprintf(fp,"# Created %s\n", time_string);
       fprintf(fp,"# Name of original SIMM joints file: %s\n#\n\n",
-	      model[mod]->jointfilename);
+	      ms->jointfilename);
 
       fprintf(fp,"language = c\n\n");
 
-      if (model[mod]->gravity == smX)
+      if (ms->gravity == smX)
          fprintf(fp,"gravity = 9.80665? 0.0? 0.0?\n\n");
-      else if (model[mod]->gravity == smNegX)
+      else if (ms->gravity == smNegX)
          fprintf(fp,"gravity = -9.80665? 0.0? 0.0?\n\n");
-      else if (model[mod]->gravity == smY)
+      else if (ms->gravity == smY)
          fprintf(fp,"gravity = 0.0? 9.80665? 0.0?\n\n");
-      else if (model[mod]->gravity == smNegY)
+      else if (ms->gravity == smNegY)
          fprintf(fp,"gravity = 0.0? -9.80665? 0.0?\n\n");
-      else if (model[mod]->gravity == smZ)
+      else if (ms->gravity == smZ)
          fprintf(fp,"gravity = 0.0? 0.0? 9.80665?\n\n");
-      else if (model[mod]->gravity == smNegZ)
+      else if (ms->gravity == smNegZ)
          fprintf(fp,"gravity = 0.0? 0.0? -9.80665?\n\n");
-      else if (model[mod]->gravity == smNoAlign)
+      else if (ms->gravity == smNoAlign)
          fprintf(fp,"gravity = 0.0? 0.0? 0.0?\n\n");
       else // -Y is the default
          fprintf(fp,"gravity = 0.0? -9.80665? 0.0?\n\n");
@@ -183,14 +176,14 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
       FREE_IFNOTNULL(SDseg);
    }
 
-   SDseg = (SDSegment*)simm_calloc(model[mod]->numjoints + 1, sizeof(SDSegment));
-   SDseg[0].name = (char*)simm_malloc(strlen(model[mod]->segment[model[mod]->ground_segment].name) + 2);
-   strcpy(SDseg[0].name, model[mod]->segment[model[mod]->ground_segment].name);
+   SDseg = (SDSegment*)simm_calloc(ms->numjoints + 1, sizeof(SDSegment));
+   SDseg[0].name = (char*)simm_malloc(strlen(ms->segment[ms->ground_segment].name) + 2);
+   strcpy(SDseg[0].name, ms->segment[ms->ground_segment].name);
    convert_string(SDseg[0].name, yes);
-   SDseg[0].simm_segment = model[mod]->ground_segment;
-   SDseg[0].mass_center[0] = model[mod]->segment[model[mod]->ground_segment].masscenter[0];
-   SDseg[0].mass_center[1] = model[mod]->segment[model[mod]->ground_segment].masscenter[1];
-   SDseg[0].mass_center[2] = model[mod]->segment[model[mod]->ground_segment].masscenter[2];
+   SDseg[0].simm_segment = ms->ground_segment;
+   SDseg[0].mass_center[0] = ms->segment[ms->ground_segment].masscenter[0];
+   SDseg[0].mass_center[1] = ms->segment[ms->ground_segment].masscenter[1];
+   SDseg[0].mass_center[2] = ms->segment[ms->ground_segment].masscenter[2];
    SDseg[0].mass = 0.0;
    for (i = 0; i < 3; i++)
       for (j = 0; j < 3; j++)
@@ -198,18 +191,23 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
 
    num_SD_segs = 1;
 
-   for (i=0, dofcount=0, constrainedcount=0; i<model[mod]->numjoints; i++)
+   for (i=0, dofcount=0, constrainedcount=0; i<ms->numjoints; i++)
    {
       if (joint_order[i] < 0)
          continue;
-      if (model[mod]->joint[joint_order[i]].type != dpSkippable)
-         make_sdfast_joint(mod,&fp,&jnts[joint_order[i]],joint_order[i], model[mod]->joint[i].sd_num,segs, &dofcount,
+      if (ms->joint[joint_order[i]].type != dpSkippable)
+      {
+         JointSDF* foo1 = &jnts[joint_order[i]];
+         int foo2 = joint_order[i];
+         int foo3 = ms->joint[i].sd_num;
+         make_sdfast_joint(ms, fp, &jnts[joint_order[i]], joint_order[i], ms->joint[i].sd_num,segs, &dofcount,
                            &constrainedcount, write_file, addQuestionMarks);
+      }
    }
 
    if (write_file == yes)
    {
-      for (i=0; i<model[mod]->numsegments; i++)
+      for (i=0; i<ms->numsegments; i++)
       {
          if (segs[i].times_split > 0)
          {
@@ -218,14 +216,14 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
          }
       }
 
-      for (i=0; i<model[mod]->numsegments; i++)
+      for (i=0; i<ms->numsegments; i++)
       {
          if (segs[i].times_split > 0)
-            write_loop_joints(mod, &fp, model[mod]->segment[i].name, &segs[i], addQuestionMarks);
+            write_loop_joints(fp, ms->segment[i].name, &segs[i], addQuestionMarks);
       }
    }
 
-   for (i=0; i<model[mod]->numjoints; i++)
+   for (i=0; i<ms->numjoints; i++)
    {
       FREE_IFNOTNULL(jnts[i].inbname);
       FREE_IFNOTNULL(jnts[i].outbname);
@@ -239,23 +237,23 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
 
    if (write_file == yes)
    {
-      numconstraints = countConstraints(model[mod], &nq);
+      numconstraints = countConstraints(ms, &nq);
 
       if (numconstraints > 0)
          fprintf(fp,"\n#constraints = %d\n\n", numconstraints);
 
       for (i=0; i<nq; i++)
       {
-         dof = find_nth_q_dof(mod,i);
+         dof = find_nth_q_dof(ms, i);
          if (dof != NULL && dof->sd.constrained == yes)
             fprintf(fp,"constraint = %s \n", dof->sd.con_name);
       }
-      for (i = 0; i < model[mod]->num_constraint_objects; i++)
+      for (i = 0; i < ms->num_constraint_objects; i++)
       {
-         for (j = 0; j < model[mod]->constraintobj[i].numPoints; j++)
+         for (j = 0; j < ms->constraintobj[i].numPoints; j++)
          {
-            fprintf(fp, "constraint = %s_", model[mod]->constraintobj[i].name);
-            fprintf(fp, "%s\n", model[mod]->constraintobj[i].points[j].name);
+            fprintf(fp, "constraint = %s_", ms->constraintobj[i].name);
+            fprintf(fp, "%s\n", ms->constraintobj[i].points[j].name);
          }
       }
       fclose(fp);
@@ -264,7 +262,7 @@ ReturnCode make_sdfast_model(int mod, char filename[], SBoolean write_file, int 
       message(sdf_buffer,0,DEFAULT_MESSAGE_X_OFFSET);
    }
 
-   return (code_fine);
+   return code_fine;
 
 }
 
@@ -318,16 +316,14 @@ char* make_sdfast_seg_name(char seg_name[], int times_split)
    new_name[new_len - 1] = STRING_TERMINATOR;
 
    return new_name;
-
 }
 
 
-void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int sdnum,
+void make_sdfast_joint(ModelStruct* ms, FILE* fp, JointSDF* jntsdf, int jointnum, int sdnum,
 			              SegmentSDF segs[], int* dofcount,
 			              int* constrainedcount, SBoolean write_file, int addQuestionMarks)
 {
-
-   int i, ax, df, gc, axisnum, axisname[3];
+   int i, ax, df, axisnum, axisname[3];
    double axis[3], bodytojoint[3], inbtojoint[3];
    SegmentStruct* seg1;
    SegmentStruct* seg2;
@@ -344,28 +340,28 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
    else
 	   questionMark = noQuestionMark;
 
-   jnt = &model[mod]->joint[jointnum];
-   type = model[mod]->joint[jointnum].type;
+   jnt = &ms->joint[jointnum];
+   type = ms->joint[jointnum].type;
 
    if (jntsdf->dir == FORWARD)
    {
-      seg1 = &model[mod]->segment[jnt->from];
-      seg2 = &model[mod]->segment[jnt->to];
+      seg1 = &ms->segment[jnt->from];
+      seg2 = &ms->segment[jnt->to];
       segsdf = &segs[jnt->to];
    }
    else
    {
-      seg1 = &model[mod]->segment[jnt->to];
-      seg2 = &model[mod]->segment[jnt->from];
+      seg1 = &ms->segment[jnt->to];
+      seg2 = &ms->segment[jnt->from];
       segsdf = &segs[jnt->from];
    }
 
    if (write_file == yes)
    {
-      fprintf(*fp,"body = %s inb = %s joint = %s\n", jntsdf->outbname,
+      fprintf(fp, "body = %s inb = %s joint = %s\n", jntsdf->outbname,
          jntsdf->inbname, get_joint_type_name(type,jntsdf->dir));
       if (type == dpWeld)
-         fprintf(*fp,"# this is really a weld joint implemented as a prescribed pin\n");
+         fprintf(fp, "# this is really a weld joint implemented as a prescribed pin\n");
    }
 
    /* Add the body name to the list of segment names. This list contains 'real'
@@ -408,16 +404,16 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 
    if (write_file == yes)
    {
-      fprintf(*fp,"mass = %20.16lf%s      inertia = %.16lf%s %.16lf%s %.16lf%s\n",
+      fprintf(fp, "mass = %20.16lf%s      inertia = %.16lf%s %.16lf%s %.16lf%s\n",
 	      SDseg[num_SD_segs].mass, questionMark,
 	      SDseg[num_SD_segs].inertia[0][0], questionMark,
 	      SDseg[num_SD_segs].inertia[0][1], questionMark,
 	      SDseg[num_SD_segs].inertia[0][2], questionMark);
-      fprintf(*fp,"                                    %.16lf%s %.16lf%s %.16lf%s\n",
+      fprintf(fp, "                                    %.16lf%s %.16lf%s %.16lf%s\n",
 	      SDseg[num_SD_segs].inertia[1][0], questionMark,
 	      SDseg[num_SD_segs].inertia[1][1], questionMark,
 	      SDseg[num_SD_segs].inertia[1][2], questionMark);
-      fprintf(*fp,"                                    %.16lf%s %.16lf%s %.16lf%s\n",
+      fprintf(fp, "                                    %.16lf%s %.16lf%s %.16lf%s\n",
 	      SDseg[num_SD_segs].inertia[2][0], questionMark,
 	      SDseg[num_SD_segs].inertia[2][1], questionMark,
 	      SDseg[num_SD_segs].inertia[2][2], questionMark);
@@ -536,7 +532,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 
    if (write_file == yes)
    {
-      fprintf(*fp,"bodytojoint = %.16lf%s %.16lf%s %.16lf%s      inbtojoint = %.16lf%s %.16lf%s %.16lf%s\n",
+      fprintf(fp, "bodytojoint = %.16lf%s %.16lf%s %.16lf%s      inbtojoint = %.16lf%s %.16lf%s %.16lf%s\n",
          bodytojoint[0], questionMark, bodytojoint[1], questionMark, bodytojoint[2], questionMark,
          inbtojoint[0], questionMark, inbtojoint[1], questionMark, inbtojoint[2], questionMark);
    }
@@ -547,8 +543,8 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
    {
       if (write_file == yes)
       {
-         fprintf(*fp,"pin = 1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
-         fprintf(*fp,"prescribed = 1\n");
+         fprintf(fp, "pin = 1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+         fprintf(fp, "prescribed = 1\n");
       }
       sprintf(buffer,"fixed%d", *dofcount);
       mstrcpy(&jnt->dofs[R1].sd.name,buffer);
@@ -562,7 +558,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
    }
    else if (type == dpPin || type == dpReversePin)
    {
-      df = find_rotation_axis(jnt,axis);
+      df = find_rotation_axis(jnt, axis);
       if (jntsdf->dir == INVERSE)
       {
          axis[0] = -axis[0];
@@ -570,11 +566,11 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          axis[2] = -axis[2];
       }
       if (write_file == yes)
-         fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
+         fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
       if (jnt->dofs[df].type == constant_dof)
       {
          if (write_file == yes)
-            fprintf(*fp,"prescribed = 1\n");
+            fprintf(fp, "prescribed = 1\n");
          sprintf(buffer,"fixed%d", *dofcount);
          mstrcpy(&jnt->dofs[df].sd.name,buffer);
          jnt->dofs[df].sd.state_number = (*dofcount)++;
@@ -587,18 +583,17 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
       }
       else
       {
-         gc = jnt->dofs[df].gencoord;
          jnt->dofs[df].sd.state_number = (*dofcount)++;
          jnt->dofs[df].sd.fixed = no;
          if (jnt->dofs[df].sd.constrained == yes)
             jnt->dofs[df].sd.error_number = (*constrainedcount)++;
          else if (write_file == yes)
-            fprintf(*fp,"prescribed = 0?\n");
+            fprintf(fp, "prescribed = 0?\n");
          jnt->dofs[df].sd.conversion = RTOD*jnt->dofs[df].sd.conversion_sign;
          jnt->dofs[df].sd.joint = sdnum;//jointnum;
          jnt->dofs[df].sd.axis = 0;
          if (jnt->dofs[df].sd.constrained == no)
-            jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+            jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
          else
             jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
       }
@@ -606,7 +601,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
    else if (type == dpSlider)
    {
       df = find_translation_axis(jnt, axis, function_dof, 0);
-      gc = jnt->dofs[df].gencoord;
       if (jntsdf->dir == INVERSE)
       {
          axis[0] = -axis[0];
@@ -614,18 +608,18 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          axis[2] = -axis[2];
       }
       if (write_file == yes)
-         fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
+         fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
       jnt->dofs[df].sd.state_number = (*dofcount)++;
       jnt->dofs[df].sd.fixed = no;
       if (jnt->dofs[df].sd.constrained == yes)
          jnt->dofs[df].sd.error_number = (*constrainedcount)++;
       else if (write_file == yes)
-         fprintf(*fp,"prescribed = 0?\n");
+         fprintf(fp, "prescribed = 0?\n");
       jnt->dofs[df].sd.conversion = jnt->dofs[df].sd.conversion_sign;
       jnt->dofs[df].sd.joint = sdnum;//jointnum;
       jnt->dofs[df].sd.axis = 0;
       if (jnt->dofs[df].sd.constrained == no)
-         jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+         jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
       else
          jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
    }
@@ -638,7 +632,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TX].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TX].sd.state_number = (*dofcount)++;
             jnt->dofs[TX].sd.fixed = no;
             if (jnt->dofs[TX].sd.constrained == yes)
@@ -659,7 +653,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TY].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s 1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s 1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TY].sd.state_number = (*dofcount)++;
             jnt->dofs[TY].sd.fixed = no;
             if (jnt->dofs[TY].sd.constrained == yes)
@@ -680,7 +674,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TZ].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s 0.0%s 1.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s 0.0%s 1.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TZ].sd.state_number = (*dofcount)++;
             jnt->dofs[TZ].sd.fixed = no;
             if (jnt->dofs[TZ].sd.constrained == yes)
@@ -700,7 +694,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          df = find_rotation_axis(jnt,axis);
          if (write_file == yes)
-            fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
+            fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
          if (jnt->dofs[df].type == constant_dof)
          {
             strcat(prescribed_string," 1");
@@ -716,7 +710,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          else
          {
-            gc = jnt->dofs[df].gencoord;
             jnt->dofs[df].sd.state_number = (*dofcount)++;
             jnt->dofs[df].sd.fixed = no;
             if (jnt->dofs[df].sd.constrained == yes)
@@ -730,7 +723,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             jnt->dofs[df].sd.joint = sdnum;//jointnum;
             jnt->dofs[df].sd.axis = 2;
             if (jnt->dofs[df].sd.constrained == no)
-               jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+               jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
             else
                jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
          }
@@ -739,7 +732,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
       {
          df = find_rotation_axis(jnt,axis);
          if (write_file == yes)
-            fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
+            fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
          if (jnt->dofs[df].type == constant_dof)
          {
             strcat(prescribed_string," 1");
@@ -755,7 +748,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          else
          {
-            gc = jnt->dofs[df].gencoord;
             jnt->dofs[df].sd.state_number = (*dofcount)++;
             jnt->dofs[df].sd.fixed = no;
             if (jnt->dofs[df].sd.constrained == yes)
@@ -769,14 +761,14 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             jnt->dofs[df].sd.joint = sdnum;//jointnum;
             jnt->dofs[df].sd.axis = axisnum++;
             if (jnt->dofs[df].sd.constrained == no)
-               jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+               jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
             else
                jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
          }
          if (jnt->dofs[TZ].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s 0.0%s -1.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s 0.0%s -1.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TZ].sd.state_number = (*dofcount)++;
             jnt->dofs[TZ].sd.fixed = no;
             if (jnt->dofs[TZ].sd.constrained == yes)
@@ -797,7 +789,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TY].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s -1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s -1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TY].sd.state_number = (*dofcount)++;
             jnt->dofs[TY].sd.fixed = no;
             if (jnt->dofs[TY].sd.constrained == yes)
@@ -818,7 +810,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TX].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = -1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = -1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TX].sd.state_number = (*dofcount)++;
             jnt->dofs[TX].sd.fixed = no;
             if (jnt->dofs[TX].sd.constrained == yes)
@@ -838,7 +830,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
       }
       if (write_file == yes)
-         fprintf(*fp,"prescribed =%s\n", prescribed_string);
+         fprintf(fp, "prescribed =%s\n", prescribed_string);
    }
    else if (type == dpReversePlanar)
    {
@@ -848,7 +840,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
       {
          df = find_rotation_axis(jnt,axis);
          if (write_file == yes)
-            fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
+            fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
          if (jnt->dofs[df].type == constant_dof)
          {
             strcat(prescribed_string," 1");
@@ -864,7 +856,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          else
          {
-            gc = jnt->dofs[df].gencoord;
             jnt->dofs[df].sd.state_number = (*dofcount)++;
             jnt->dofs[df].sd.fixed = no;
             if (jnt->dofs[df].sd.constrained == yes)
@@ -878,14 +869,14 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             jnt->dofs[df].sd.joint = sdnum;//jointnum;
             jnt->dofs[df].sd.axis = axisnum++;
             if (jnt->dofs[df].sd.constrained == no)
-               jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+               jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
             else
                jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
          }
          if (jnt->dofs[TZ].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s 0.0%s 1.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s 0.0%s 1.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TZ].sd.state_number = (*dofcount)++;
             jnt->dofs[TZ].sd.fixed = no;
             if (jnt->dofs[TZ].sd.constrained == yes)
@@ -906,7 +897,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TY].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s 1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s 1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TY].sd.state_number = (*dofcount)++;
             jnt->dofs[TY].sd.fixed = no;
             if (jnt->dofs[TY].sd.constrained == yes)
@@ -927,7 +918,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TX].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TX].sd.state_number = (*dofcount)++;
             jnt->dofs[TX].sd.fixed = no;
             if (jnt->dofs[TX].sd.constrained == yes)
@@ -951,7 +942,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TX].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = -1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = -1.0%s 0.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TX].sd.state_number = (*dofcount)++;
             jnt->dofs[TX].sd.fixed = no;
             if (jnt->dofs[TX].sd.constrained == yes)
@@ -972,7 +963,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TY].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s -1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s -1.0%s 0.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TY].sd.state_number = (*dofcount)++;
             jnt->dofs[TY].sd.fixed = no;
             if (jnt->dofs[TY].sd.constrained == yes)
@@ -993,7 +984,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (jnt->dofs[TZ].type == function_dof)
          {
             if (write_file == yes)
-               fprintf(*fp,"pin = 0.0%s 0.0%s -1.0%s\n", questionMark, questionMark, questionMark);
+               fprintf(fp, "pin = 0.0%s 0.0%s -1.0%s\n", questionMark, questionMark, questionMark);
             jnt->dofs[TZ].sd.state_number = (*dofcount)++;
             jnt->dofs[TZ].sd.fixed = no;
             if (jnt->dofs[TZ].sd.constrained == yes)
@@ -1013,7 +1004,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          df = find_rotation_axis(jnt,axis);
          if (write_file == yes)
-            fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
+            fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
          if (jnt->dofs[df].type == constant_dof)
          {
             strcat(prescribed_string," 1");
@@ -1029,7 +1020,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          else
          {
-            gc = jnt->dofs[df].gencoord;
             jnt->dofs[df].sd.state_number = (*dofcount)++;
             jnt->dofs[df].sd.fixed = no;
             if (jnt->dofs[df].sd.constrained == yes)
@@ -1043,13 +1033,13 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             jnt->dofs[df].sd.joint = sdnum;//jointnum;
             jnt->dofs[df].sd.axis = axisnum++;
             if (jnt->dofs[df].sd.constrained == no)
-               jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+               jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
             else
                jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
          }
       }
       if (write_file == yes)
-         fprintf(*fp,"prescribed =%s\n", prescribed_string);
+         fprintf(fp, "prescribed =%s\n", prescribed_string);
    }
    else if (type == dpUniversal || type == dpReverseUniversal)
    {
@@ -1069,11 +1059,19 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (write_file == yes)
          {
             if (jntsdf->dir == FORWARD)
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", jnt->parentrotaxes[ax][0], questionMark,
-               jnt->parentrotaxes[ax][1], questionMark, jnt->parentrotaxes[ax][2], questionMark);
+            {
+               double axis[4];
+               COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+               normalize_vector(axis, axis);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
+            }
             else
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", -jnt->parentrotaxes[ax][0], questionMark,
-               -jnt->parentrotaxes[ax][1], questionMark, -jnt->parentrotaxes[ax][2], questionMark);
+            {
+               double axis[4];
+               COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+               normalize_vector(axis, axis);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
+            }
          }
          if (jnt->dofs[ax].type == constant_dof)
          {
@@ -1090,7 +1088,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          else
          {
-            gc = jnt->dofs[ax].gencoord;
             jnt->dofs[ax].sd.state_number = (*dofcount)++;
             jnt->dofs[ax].sd.fixed = no;
             if (jnt->dofs[ax].sd.constrained == yes)
@@ -1104,13 +1101,13 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             jnt->dofs[ax].sd.joint = sdnum;//jointnum;
             jnt->dofs[ax].sd.axis = axis_count++;
             if (jnt->dofs[ax].sd.constrained == no)
-               jnt->dofs[ax].sd.initial_value = model[mod]->gencoord[gc].value;
+               jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].gencoord->value;
             else
                jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].value;
          }
       }
       if (write_file == yes)
-         fprintf(*fp,"prescribed =%s\n", prescribed_string);
+         fprintf(fp, "prescribed =%s\n", prescribed_string);
    }
    else if (type == dpCylindrical || type == dpReverseCylindrical)
    {
@@ -1142,7 +1139,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 	 }
 	 df = find_rotation_axis(jnt,axis);
 	 if (write_file == yes)
-	    fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
+	    fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
 	 if (jnt->dofs[df].type == constant_dof)
 	 {
 	    strcat(prescribed_string," 1");
@@ -1158,7 +1155,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 	 }
 	 else
 	 {
-	    gc = jnt->dofs[df].gencoord;
 	    jnt->dofs[df].sd.state_number = (*dofcount)++;
 	    jnt->dofs[df].sd.fixed = no;
 	    if (jnt->dofs[df].sd.constrained == yes)
@@ -1172,7 +1168,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 	    jnt->dofs[df].sd.joint = sdnum;//jointnum;
 	    jnt->dofs[df].sd.axis = 1;
 	    if (jnt->dofs[df].sd.constrained == no)
-	       jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+	       jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
 	    else
 	       jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
 	 }
@@ -1204,7 +1200,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 	 }
 	 df = find_rotation_axis(jnt,axis);
 	 if (write_file == yes)
-	    fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
+	    fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
 	 if (jnt->dofs[df].type == constant_dof)
 	 {
 	    strcat(prescribed_string," 1");
@@ -1220,7 +1216,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 	 }
 	 else
 	 {
-	    gc = jnt->dofs[df].gencoord;
 	    jnt->dofs[df].sd.state_number = (*dofcount)++;
 	    jnt->dofs[df].sd.fixed = no;
 	    if (jnt->dofs[df].sd.constrained == yes)
@@ -1234,13 +1229,13 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 	    jnt->dofs[df].sd.joint = sdnum;//jointnum;
 	    jnt->dofs[df].sd.axis = 1;
 	    if (jnt->dofs[df].sd.constrained == no)
-	       jnt->dofs[df].sd.initial_value = model[mod]->gencoord[gc].value;
+	       jnt->dofs[df].sd.initial_value = jnt->dofs[df].gencoord->value;
 	    else
 	       jnt->dofs[df].sd.initial_value = jnt->dofs[df].value;
 	 }
       }
       if (write_file == yes)
-	 fprintf(*fp,"prescribed =%s\n", prescribed_string);
+	 fprintf(fp, "prescribed =%s\n", prescribed_string);
    }
    else if (type == dpGimbal || type == dpReverseGimbal)
    {
@@ -1254,11 +1249,19 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          if (write_file == yes)
          {
             if (jntsdf->dir == FORWARD)
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", jnt->parentrotaxes[ax][0], questionMark,
-               jnt->parentrotaxes[ax][1], questionMark, jnt->parentrotaxes[ax][2], questionMark);
+            {
+               double axis[4];
+               COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+               normalize_vector(axis, axis);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
+            }
             else
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", -jnt->parentrotaxes[ax][0], questionMark,
-               -jnt->parentrotaxes[ax][1], questionMark, -jnt->parentrotaxes[ax][2], questionMark);
+            {
+               double axis[4];
+               COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+               normalize_vector(axis, axis);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
+            }
          }
          if (jnt->dofs[ax].type == constant_dof)
          {
@@ -1275,7 +1278,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          else
          {
-            gc = jnt->dofs[ax].gencoord;
             jnt->dofs[ax].sd.state_number = (*dofcount)++;
             jnt->dofs[ax].sd.fixed = no;
             if (jnt->dofs[ax].sd.constrained == yes)
@@ -1291,11 +1293,11 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             if (jnt->dofs[ax].sd.constrained == yes)
                jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].value;
             else
-               jnt->dofs[ax].sd.initial_value = model[mod]->gencoord[gc].value;
+               jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].gencoord->value;
          }
       }
       if (write_file == yes)
-         fprintf(*fp,"prescribed =%s\n", prescribed_string);
+         fprintf(fp, "prescribed =%s\n", prescribed_string);
    }
    /* TODO: 4/1/97: bushing joints are defined by the 3 sliding axes (which
     * in SIMM are always the X, Y, and Z axes. If the SIMM rotation axes are
@@ -1316,10 +1318,13 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
       {
          for (i=0; i<3; i++)
          {
-            ax = find_nth_rotation(jnt,i+1) - 1;
-            if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][0],1.0))
+            double axis[4];
+            ax = find_nth_rotation(jnt, i+1) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
+            if (EQUAL_WITHIN_ERROR(axis[0],1.0))
                axisname[i] = TX;
-            else if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][1],1.0))
+            else if (EQUAL_WITHIN_ERROR(axis[1],1.0))
                axisname[i] = TY;
             else
                axisname[i] = TZ;
@@ -1345,10 +1350,12 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          for (i=0; i<3; i++) /* R1, R2, R3 */
          {
-            ax = find_nth_rotation(jnt,i+1) - 1;
+            double axis[4];
+            ax = find_nth_rotation(jnt, i+1) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
             if (write_file == yes)
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", jnt->parentrotaxes[ax][0], questionMark,
-               jnt->parentrotaxes[ax][1], questionMark, jnt->parentrotaxes[ax][2], questionMark);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
             if (jnt->dofs[ax].type == constant_dof)
             {
                strcat(prescribed_string," 1");
@@ -1364,7 +1371,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             }
             else
             {
-               gc = jnt->dofs[ax].gencoord;
                jnt->dofs[ax].sd.state_number = (*dofcount)++;
                jnt->dofs[ax].sd.fixed = no;
                if (jnt->dofs[ax].sd.constrained == yes)
@@ -1380,7 +1386,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
                if (jnt->dofs[ax].sd.constrained == yes)
                   jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].value;
                else
-                  jnt->dofs[ax].sd.initial_value = model[mod]->gencoord[gc].value;
+                  jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].gencoord->value;
             }
          }
       }
@@ -1388,20 +1394,25 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
       {
          for (i=0; i<3; i++)
          {
-            ax = find_nth_rotation(jnt,3-i) - 1;
-            if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][0],1.0))
+            double axis[4];
+            ax = find_nth_rotation(jnt, 3-i) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
+            if (EQUAL_WITHIN_ERROR(axis[0],1.0))
                axisname[i] = TX;
-            else if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][1],1.0))
+            else if (EQUAL_WITHIN_ERROR(axis[1],1.0))
                axisname[i] = TY;
             else
                axisname[i] = TZ;
          }
          for (i=0; i<3; i++)
          {
-            ax = find_nth_rotation(jnt,3-i) - 1;
+            double axis[4];
+            ax = find_nth_rotation(jnt, 3-i) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
             if (write_file == yes)
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", -jnt->parentrotaxes[ax][0], questionMark,
-               -jnt->parentrotaxes[ax][1], questionMark, -jnt->parentrotaxes[ax][2], questionMark);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
             if (jnt->dofs[ax].type == constant_dof)
             {
                strcat(prescribed_string," 1");
@@ -1417,7 +1428,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             }
             else
             {
-               gc = jnt->dofs[ax].gencoord;
                jnt->dofs[ax].sd.state_number = (*dofcount)++;
                jnt->dofs[ax].sd.fixed = no;
                if (jnt->dofs[ax].sd.constrained == yes)
@@ -1433,7 +1443,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
                if (jnt->dofs[ax].sd.constrained == yes)
                   jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].value;
                else
-                  jnt->dofs[ax].sd.initial_value = model[mod]->gencoord[gc].value;
+                  jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].gencoord->value;
             }
          }
          for (i=0; i<3; i++)   /* TX, TY, TZ */
@@ -1457,7 +1467,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
       }
       if (write_file == yes)
-         fprintf(*fp,"prescribed =%s\n", prescribed_string);
+         fprintf(fp, "prescribed =%s\n", prescribed_string);
    }
    else if (type == dpReverseBushing)
    {
@@ -1467,20 +1477,25 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
       {
          for (i=0; i<3; i++)
          {
-            ax = find_nth_rotation(jnt,i+1) - 1;
-            if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][0],1.0))
+            double axis[4];
+            ax = find_nth_rotation(jnt, i+1) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
+            if (EQUAL_WITHIN_ERROR(axis[0],1.0))
                axisname[i] = TX;
-            else if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][1],1.0))
+            else if (EQUAL_WITHIN_ERROR(axis[1],1.0))
                axisname[i] = TY;
             else
                axisname[i] = TZ;
          }
          for (i=0; i<3; i++)
          {
-            ax = find_nth_rotation(jnt,i+1) - 1;
+            double axis[4];
+            ax = find_nth_rotation(jnt, i+1) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
             if (write_file == yes)
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", jnt->parentrotaxes[ax][0], questionMark,
-               jnt->parentrotaxes[ax][1], questionMark, jnt->parentrotaxes[ax][2], questionMark);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", axis[0], questionMark, axis[1], questionMark, axis[2], questionMark);
             if (jnt->dofs[ax].type == constant_dof)
             {
                strcat(prescribed_string," 1");
@@ -1496,7 +1511,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             }
             else
             {
-               gc = jnt->dofs[ax].gencoord;
                jnt->dofs[ax].sd.state_number = (*dofcount)++;
                jnt->dofs[ax].sd.fixed = no;
                if (jnt->dofs[ax].sd.constrained == yes)
@@ -1512,7 +1526,7 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
                if (jnt->dofs[ax].sd.constrained == yes)
                   jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].value;
                else
-                  jnt->dofs[ax].sd.initial_value = model[mod]->gencoord[gc].value;
+                  jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].gencoord->value;
             }
          }
          for (i=0; i<3; i++) /* TX, TY, TZ */
@@ -1539,10 +1553,13 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
       {
          for (i=0; i<3; i++)
          {
-            ax = find_nth_rotation(jnt,3-i) - 1;
-            if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][0],1.0))
+            double axis[4];
+            ax = find_nth_rotation(jnt, 3-i) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
+            if (EQUAL_WITHIN_ERROR(axis[0],1.0))
                axisname[i] = TX;
-            else if (EQUAL_WITHIN_ERROR(jnt->parentrotaxes[ax][1],1.0))
+            else if (EQUAL_WITHIN_ERROR(axis[1],1.0))
                axisname[i] = TY;
             else
                axisname[i] = TZ;
@@ -1568,10 +1585,12 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
          }
          for (i=0; i<3; i++)
          {
-            ax = find_nth_rotation(jnt,3-i) - 1;
+            double axis[4];
+            ax = find_nth_rotation(jnt, 3-i) - 1;
+            COPY_1X4VECTOR(jnt->parentrotaxes[ax], axis);
+            normalize_vector(axis, axis);
             if (write_file == yes)
-               fprintf(*fp,"pin = %.16lf%s %.16lf%s %.16lf%s\n", -jnt->parentrotaxes[ax][0], questionMark,
-               -jnt->parentrotaxes[ax][1], questionMark, -jnt->parentrotaxes[ax][2], questionMark);
+               fprintf(fp, "pin = %.16lf%s %.16lf%s %.16lf%s\n", -axis[0], questionMark, -axis[1], questionMark, -axis[2], questionMark);
             if (jnt->dofs[ax].type == constant_dof)
             {
                strcat(prescribed_string," 1");
@@ -1587,7 +1606,6 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
             }
             else
             {
-               gc = jnt->dofs[ax].gencoord;
                jnt->dofs[ax].sd.state_number = (*dofcount)++;
                jnt->dofs[ax].sd.fixed = no;
                if (jnt->dofs[ax].sd.constrained == yes)
@@ -1603,16 +1621,16 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
                if (jnt->dofs[ax].sd.constrained == yes)
                   jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].value;
                else
-                  jnt->dofs[ax].sd.initial_value = model[mod]->gencoord[gc].value;
+                  jnt->dofs[ax].sd.initial_value = jnt->dofs[ax].gencoord->value;
             }
          }
       }
       if (write_file == yes)
-         fprintf(*fp,"prescribed =%s\n", prescribed_string);
+         fprintf(fp, "prescribed =%s\n", prescribed_string);
    }
 
    if (write_file == yes)
-      fprintf(*fp,"\n");
+      fprintf(fp, "\n");
 
    /* Now that you're done making the SD/FAST joint...
     * If the joint in the SD/FAST code is the reverse direction of the
@@ -1623,10 +1641,12 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
     */
    if (jntsdf->dir == FORWARD)
    {
+#if 0 // JPL 12/2/08: nothing should be done for FORWARD, right?
       if (jnt->type == dpReversePlanar)
          jnt->type = dpPlanar;
       else if (jnt->type == dpReverseBushing)
          jnt->type = dpBushing;
+#endif
    }
    else
    {
@@ -1638,21 +1658,18 @@ void make_sdfast_joint(int mod, FILE** fp, JointSDF* jntsdf, int jointnum, int s
 }
 
 
-
-void static write_loop_joints(int mod, FILE** fp, char seg_name[], SegmentSDF* seg, int addQuestionMarks)
+void static write_loop_joints(FILE* fp, char seg_name[], SegmentSDF* seg, int addQuestionMarks)
 {
-
    int i;
    char* new_name;
 
    for (i=0; i<seg->times_split; i++)
    {
-      new_name = make_sdfast_seg_name(seg_name,i+1);
-      fprintf(*fp,"body = %s inb = %s joint = weld\n", seg_name, new_name);
-      fprintf(*fp,"bodytojoint = 0.0 0.0 0.0   inbtojoint = 0.0 0.0 0.0\n\n");
+      new_name = make_sdfast_seg_name(seg_name, i+1);
+      fprintf(fp, "body = %s inb = %s joint = weld\n", seg_name, new_name);
+      fprintf(fp, "bodytojoint = 0.0 0.0 0.0   inbtojoint = 0.0 0.0 0.0\n\n");
       FREE_IFNOTNULL(new_name);
    }
-
 }
 
 
@@ -1690,12 +1707,12 @@ SBoolean valid_sdfast_model(ModelStruct* ms)
 
    for (i = 0; i < ms->numgencoords; i++)
    {
-      if (ms->gencoord[i].used_in_model == yes)
+      if (ms->gencoord[i]->used_in_model == yes)
       {
-	      if (!mark_unconstrained_dof(ms, i, &jointnum, &dofnum, NULL))
+	      if (!mark_unconstrained_dof(ms, ms->gencoord[i], &jointnum, &dofnum, NULL))
          {
 	         sprintf(errorbuffer, "At least one DOF must be a \"simple\" function of gencoord %s (2 points, slope=1, passes thru zero).",
-               ms->gencoord[i].name);
+               ms->gencoord[i]->name);
             return no;
          }
       }
@@ -1711,7 +1728,7 @@ void write_forparams(char filename[], ModelStruct* model)
    FILE* file;
    DofStruct* dof;
    char buf[CHARBUFFER];
-   char jointpath[CHARBUFFER], fullpath[CHARBUFFER];
+   char fullpath[CHARBUFFER];
    char* time_string;
 
    file = simm_fopen(filename, "w");
@@ -1762,16 +1779,10 @@ void write_forparams(char filename[], ModelStruct* model)
    {
       if (model->jointfilename)
       {
-         strcpy(jointpath, model->jointfilename);
-         for (i = strlen(jointpath); i >= 0; i--)
-         {
-            if (jointpath[i] == '\\' || jointpath[i] == '/')
-            {
-               jointpath[i] = STRING_TERMINATOR;
-               break;
-            }
-         }
-         build_full_path(jointpath, model->bonepathname, fullpath);
+         char* purePath = NULL;
+         get_pure_path_from_path(model->jointfilename, &purePath);
+         build_full_path(purePath, model->bonepathname, fullpath);
+         FREE_IFNOTNULL(purePath);
       }
       else
       {
@@ -1819,7 +1830,7 @@ void write_forparams(char filename[], ModelStruct* model)
 
    for (i=0; i<nq; i++)
    {
-      dof = find_nth_q_dof(model->modelnum,i);
+      dof = find_nth_q_dof(model, i);
       if (dof != NULL)
          fprintf(file, "#%s %lf 0.0\n", dof->sd.name, dof->sd.initial_value);
    }
@@ -1914,7 +1925,7 @@ void write_forparams(char filename[], ModelStruct* model)
             model->segment[i].springPoint[j].point[0],
             model->segment[i].springPoint[j].point[1],
             model->segment[i].springPoint[j].point[2],
-            model->segment[i].springPoint[j].floorName,
+				model->segment[model->segment[i].springPoint[j].floorSegment].springFloor->name,
             model->segment[i].springPoint[j].friction,
             model->segment[i].springPoint[j].param_a,
             model->segment[i].springPoint[j].param_b,
@@ -1939,8 +1950,86 @@ void write_forparams(char filename[], ModelStruct* model)
    fprintf(file, "# muscle_name state1_init_value state2_init_value ...\n");
    fprintf(file, "#\n");
    for (i = 0; i < model->nummuscles; i++)
-      fprintf(file, "#%s 0.0 0.0 0.0\n", model->muscle[i].name);
+      fprintf(file, "#%s 0.0 0.0 0.0\n", model->muscle[i]->name);
    fprintf(file, "\n");
+
+   fprintf(file, "##################### Wrap Object Initialization #####################\n");
+   fprintf(file, "# You can specify the parameters of any of the wrap objects, in case\n");
+   fprintf(file, "# you want to change them from their values when sdfor.c was created.\n");
+   fprintf(file, "# If you specify a wrap object's parameters here, you must specify\n");
+   fprintf(file, "# all of its parameters, and you must use the following format:\n");
+   fprintf(file, "#\n");
+   fprintf(file, "# name type active algorithm segment dim1 dim2 dim3 quadrant tx ty tz rx ry rz\n");
+   fprintf(file, "#\n");
+   fprintf(file, "# Explanation of parameters:\n");
+   fprintf(file, "# name: the name of the wrap object, as defined in the model when sdfor.c\n");
+   fprintf(file, "#       was created.\n");
+   fprintf(file, "# type: specify \"sphere\", \"ellipsoid\", \"cylinder\", or \"torus\".\n");
+   fprintf(file, "# active: is the wrap object active? specify \"1\" for yes, \"0\" for no.\n");
+   fprintf(file, "# algorithm: default algorithm to use for ellipsoid objects, in case\n");
+   fprintf(file, "#            algorithm is not specified in the muscle definition. Specify\n");
+   fprintf(file, "#            \"hybrid\", \"midpoint\", or \"axial\". For sphere, cylinder, and\n");
+   fprintf(file, "#            torus objects, specify \"0\".\n");
+   fprintf(file, "# segment: the name of the body segment that the object is attached to.\n");
+   fprintf(file, "# dim1, dim2, dim3: for spheres, specify \"<radius> 0.0 0.0\"\n");
+   fprintf(file, "#                   for ellipsoids, specify \"<x_radius> <y_radius> <z_radius>\"\n");
+   fprintf(file, "#                   for cylinders, specify \"<radius> <height> 0.0\"\n");
+   fprintf(file, "#                   for torii, specify \"<inner_radius> <outer_radius> 0.0\"\n");
+   fprintf(file, "# quadrant: to constrain wrapping over half of the wrap object, define the\n");
+   fprintf(file, "#           active region by specifying \"x\", \"-x\", \"y\", \"-y\", \"z\", or \"-z\".\n");
+   fprintf(file, "#           For unconstrained wrapping, specify \"all\".\n");
+   fprintf(file, "# tx, ty, tz: the location of the wrap object's origin in the body segment's\n");
+   fprintf(file, "#             reference frame.\n");
+   fprintf(file, "# rx, ry, rz: the XYZ Euler angles (body-fixed) expressing the orientation of\n");
+   fprintf(file, "#             the wrap object in the body segment's reference frame.\n");
+   fprintf(file, "#\n");
+   for (i = 0; i < model->num_wrap_objects; i++)
+   {
+      double xyz[3], radius[] = {0.0, 0.0, 0.0};
+      dpWrapObject* wo = model->wrapobj[i];
+      const char *wrap_quadrant = "all";
+
+      strcpy(buffer, wo->name);
+      convert_string(buffer, yes);
+
+      recalc_xforms(wo);
+      extract_xyz_rot_bodyfixed(wo->from_local_xform, xyz);
+
+      memcpy(radius, wo->radius, 3*sizeof(double));
+      if (wo->wrap_type == dpWrapSphere) {
+         radius[1] = radius[2] = 0.0;
+      } else if (wo->wrap_type == dpWrapCylinder) {
+         radius[1] = wo->height;
+         radius[2] = 0.0;
+      } else if (wo->wrap_type == dpWrapTorus) {
+         radius[2] = 0.0;
+      }
+
+      if (wo->wrap_sign != 0)
+      {
+         switch ((wo->wrap_axis + 1) * wo->wrap_sign)
+         {
+            default: break;
+            case  1: wrap_quadrant =  "x"; break;
+            case -1: wrap_quadrant = "-x"; break;
+            case  2: wrap_quadrant =  "y"; break;
+            case -2: wrap_quadrant = "-y"; break;
+            case  3: wrap_quadrant =  "z"; break;
+            case -3: wrap_quadrant = "-z"; break;
+         }
+      }
+
+      fprintf(file,"#%s %s %d %s %s %.10lf %.10lf %.10lf %s %.10lf %.10lf %.10lf %.4lf %.4lf %.4lf\n",
+         buffer,
+         get_wrap_type_name(wo->wrap_type),
+         (wo->active == yes) ? 1 : 0,
+         (wo->wrap_type == dpWrapEllipsoid) ? (char*)get_wrap_algorithm_name(wo->wrap_algorithm) : "0",
+         SDseg[get_sd_seg_num(model->segment[wo->segment].name)+1].name,
+         radius[0], radius[1], radius[2],
+         wrap_quadrant,
+         wo->translation.xyz[0], wo->translation.xyz[1], wo->translation.xyz[2],
+         xyz[0]*RTOD, xyz[1]*RTOD, xyz[2]*RTOD);
+   }
 
    fclose(file);
 
@@ -1987,7 +2076,7 @@ void write_dllparams(char filename[], ModelStruct* model)
 
    for (i=0; i<nq; i++)
    {
-      dof = find_nth_q_dof(model->modelnum,i);
+      dof = find_nth_q_dof(model, i);
       if (dof != NULL)
          fprintf(file, "#%s %lf 0.0\n", dof->sd.name, dof->sd.initial_value);
    }
@@ -2006,7 +2095,7 @@ void write_dllparams(char filename[], ModelStruct* model)
    fprintf(file, "# muscle_name state1_init_value state2_init_value ...\n");
    fprintf(file, "#\n");
    for (i = 0; i < model->nummuscles; i++)
-      fprintf(file, "#%s 0.0 0.0 0.0\n", model->muscle[i].name);
+      fprintf(file, "#%s 0.0 0.0 0.0\n", model->muscle[i]->name);
    fprintf(file, "\n");
 
    fclose(file);
@@ -2020,7 +2109,7 @@ void write_dllcontactparams(char filename[], ModelStruct* model)
 {
    int i, j, nq;
    FILE* file;
-   char jointpath[CHARBUFFER], bonepath[CHARBUFFER];
+   char bonepath[CHARBUFFER];
    char* time_string;
 
    file = simm_fopen(filename, "w");
@@ -2037,16 +2126,10 @@ void write_dllcontactparams(char filename[], ModelStruct* model)
    {
       if (model->jointfilename)
       {
-         strcpy(jointpath, model->jointfilename);
-         for (i = strlen(jointpath); i >= 0; i--)
-         {
-            if (jointpath[i] == '\\' || jointpath[i] == '/')
-            {
-               jointpath[i] = STRING_TERMINATOR;
-               break;
-            }
-         }
-         build_full_path(jointpath, model->bonepathname, bonepath);
+         char* purePath = NULL;
+         get_pure_path_from_path(model->jointfilename, &purePath);
+         build_full_path(purePath, model->bonepathname, bonepath);
+         FREE_IFNOTNULL(purePath);
       }
       else
       {

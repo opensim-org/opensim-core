@@ -60,8 +60,9 @@ int main(int argc,char **argv)
 	string option;
 	string storeName;
 	string outName="filtered.sto";
-	double lowpassFIR = -1.0;
+	double smoothSpline = -1.0;
 	double lowpassIIR = -1.0;
+	double lowpassFIR = -1.0;
 	for(i=1;i<argc;i++) {
 
 		option = argv[i];
@@ -85,17 +86,24 @@ int main(int argc,char **argv)
 				++i;
 			}
 
+		// SMOOTH SPLINE
+		} else if((option=="-SmoothSpline")||(option=="-SS")) {
+			if(argc>(i+1)) {
+				sscanf(argv[i+1],"%lf",&smoothSpline);
+				++i;
+			}
+
+		// LOWPASS FIR
+		} else if((option=="-LowpassIIR")||(option=="-LIIR")) {
+			if(argc>(i+1)) {
+				sscanf(argv[i+1],"%lf",&lowpassIIR);
+				++i;
+			}
+
 		// LOWPASS FIR
 		} else if((option=="-LowpassFIR")||(option=="-LFIR")) {
 			if(argc>(i+1)) {
 				sscanf(argv[i+1],"%lf",&lowpassFIR);
-				++i;
-			}
-
-		// LOWPASS IIR
-		} else if((option=="-LowpassIIR")||(option=="-LIIR")) {
-			if(argc>(i+1)) {
-				sscanf(argv[i+1],"%lf",&lowpassIIR);
 				++i;
 			}
 
@@ -111,6 +119,16 @@ int main(int argc,char **argv)
 		return(-1);
 	}
 
+
+	smoothSpline = -1.0;
+	lowpassIIR = -1.0;
+
+	storeName = "sqrt2_6Hz_sin_30000.sto";
+	//outName = "sqrt2_6Hz_sin_30000_filtered_6Hz_gcvspl.sto";
+	//smoothSpline = 6.0;
+	outName = "sqrt2_6Hz_sin_30000_filtered_6Hz_iir.sto";
+	lowpassIIR = 6.0;
+
 	// LOAD STORAGE FILE
 	cout<<"Loading storage file "<<storeName<<"...\n";
 	Storage *store = new Storage(storeName.c_str());
@@ -123,11 +141,21 @@ int main(int argc,char **argv)
 		store->lowpassFIR(50,lowpassFIR);
 	}
 
+	// Smooth Spline
+	if(smoothSpline>=0.0) {
+		cout<<"\nGCVSPL Smooth Spline filtering using a cutoff frequency of "<<smoothSpline<<".\n";
+		store->pad(60);
+		store->smoothSpline(5,smoothSpline);
+	}
+
+	// Lowpass IIR
 	if(lowpassIIR>=0.0) {
 		cout<<"\nLowpass IIR filtering using a cutoff frequency of "<<lowpassIIR<<".\n";
-		store->pad(store->getSize()/2);
+		store->pad(60);
 		store->lowpassIIR(lowpassIIR);
 	}
+
+
 
 	// OUTPUT
 	store->print(outName.c_str(),"w");

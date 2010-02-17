@@ -30,8 +30,8 @@
 //=============================================================================
 #include "ContDerivMuscle.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/DebugUtilities.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 //=============================================================================
 // STATICS
@@ -50,7 +50,7 @@ const int ContDerivMuscle::STATE_FIBER_LENGTH = 1;
  * Default constructor.
  */
 ContDerivMuscle::ContDerivMuscle() :
-   AbstractMuscle(),
+   Muscle(),
 	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
 	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
@@ -86,7 +86,7 @@ ContDerivMuscle::~ContDerivMuscle()
  * @param aMuscle ContDerivMuscle to be copied.
  */
 ContDerivMuscle::ContDerivMuscle(const ContDerivMuscle &aMuscle) :
-   AbstractMuscle(aMuscle),
+   Muscle(aMuscle),
 	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
 	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
 	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
@@ -158,14 +158,11 @@ void ContDerivMuscle::setNull()
 {
 	setType("ContDerivMuscle");
 
-	setNumControls(1); setNumStates(2); setNumPseudoStates(0);
-	bindControl(0, _excitation, "excitation");
-	bindState(STATE_ACTIVATION, _activation, "activation");
-	bindState(STATE_FIBER_LENGTH, _fiberLength, "fiber_length");
+    setNumStateVariables(2);
 
-	_excitation = 0.0;
-	_activation = 0.0;
-	_fiberLength = 0.0;
+	_stateVariableSuffixes[STATE_ACTIVATION]="activation";
+	_stateVariableSuffixes[STATE_FIBER_LENGTH]="fiber_length";
+
 }
 
 //_____________________________________________________________________________
@@ -257,22 +254,57 @@ void ContDerivMuscle::setupProperties()
  *
  * @param aModel model containing this ContDerivMuscle.
  */
-void ContDerivMuscle::setup(Model* aModel)
+void ContDerivMuscle::setup(Model& aModel)
 {
 	// Base class
-	AbstractMuscle::setup(aModel);
+	Muscle::setup(aModel);
+}
 
-	// aModel will be NULL when objects are being registered.
-	if (aModel == NULL)
-		return;
+void ContDerivMuscle::equilibrate(SimTK::State& state) const
+{
+	Muscle::equilibrate(state);
 
 	// Reasonable initial activation value
-	_activation = 0.01;
+	setActivation(state, 0.01);
+	setFiberLength(state, getOptimalFiberLength());
+	_model->getSystem().realize(state, SimTK::Stage::Velocity);
 
 	// Compute isometric force to get starting value
 	// of _fiberLength.
-   computeEquilibrium();
+	computeEquilibrium(state);
 }
+    
+void ContDerivMuscle::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model)
+{
+     Muscle::initStateCache(s, subsystemIndex, model);
+
+    _tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+    _activeForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+    _passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+
+}
+
+void ContDerivMuscle::setTendonForce( const SimTK::State& s, double force ) const {
+    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _tendonForceIndex)).upd() = force;
+}
+double ContDerivMuscle::getTendonForce( const SimTK::State& s) const {
+    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _tendonForceIndex)).get());
+}
+
+void ContDerivMuscle::setActiveForce( const SimTK::State& s, double force ) const {
+    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _activeForceIndex)).upd() = force;
+}
+double ContDerivMuscle::getActiveForce( const SimTK::State& s) const {
+    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _activeForceIndex)).get());
+}
+
+void ContDerivMuscle::setPassiveForce( const SimTK::State& s, double force ) const {
+    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _passiveForceIndex)).upd() = force;
+}
+double ContDerivMuscle::getPassiveForce( const SimTK::State& s) const {
+    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _passiveForceIndex)).get());
+}
+
 
 //_____________________________________________________________________________
 /**
@@ -281,9 +313,9 @@ void ContDerivMuscle::setup(Model* aModel)
  *
  * @param aActuator Actuator to copy property values from.
  */
-void ContDerivMuscle::copyPropertyValues(AbstractActuator& aActuator)
+void ContDerivMuscle::copyPropertyValues(Actuator& aActuator)
 {
-	AbstractMuscle::copyPropertyValues(aActuator);
+	Muscle::copyPropertyValues(aActuator);
 
 	const Property* prop = aActuator.getPropertySet().contains("max_isometric_force");
 	if (prop) _maxIsometricForceProp.setValue(prop->getValueDbl());
@@ -343,7 +375,7 @@ void ContDerivMuscle::copyPropertyValues(AbstractActuator& aActuator)
 ContDerivMuscle& ContDerivMuscle::operator=(const ContDerivMuscle &aMuscle)
 {
 	// BASE CLASS
-	AbstractMuscle::operator=(aMuscle);
+	Muscle::operator=(aMuscle);
 
 	copyData(aMuscle);
 
@@ -363,9 +395,9 @@ ContDerivMuscle& ContDerivMuscle::operator=(const ContDerivMuscle &aMuscle)
  * @param aScaleSet XYZ scale factors for the bodies
  * @return Whether or not the muscle was scaled successfully
  */
-void ContDerivMuscle::scale(const ScaleSet& aScaleSet)
+void ContDerivMuscle::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	AbstractMuscle::scale(aScaleSet);
+	Muscle::scale(s, aScaleSet);
 
 	// some force-generating parameters are scaled in postScale(),
 	// so as of now there is nothing else to do here...
@@ -380,20 +412,21 @@ void ContDerivMuscle::scale(const ScaleSet& aScaleSet)
  *
  * @param aScaleSet XYZ scale factors for the bodies.
  */
-void ContDerivMuscle::postScale(const ScaleSet& aScaleSet)
+void ContDerivMuscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
 	// Base class
-	AbstractMuscle::postScale(aScaleSet);
+	Muscle::postScale(s, aScaleSet);
 
-	if (_preScaleLength > 0.0)
+	if (_path.getPreScaleLength(s) > 0.0)
 	{
-		double scaleFactor = getLength() / _preScaleLength;
+		double scaleFactor = getLength(s) / _path.getPreScaleLength(s);
 
 		_optimalFiberLength *= scaleFactor;
 		_tendonSlackLength *= scaleFactor;
 		//_maxIsometricForce *= scaleFactor;
 
-		_preScaleLength = 0.0;
+       _path.setPreScaleLength(s, 0.0) ;
+
 	}
 }
 
@@ -410,9 +443,9 @@ void ContDerivMuscle::postScale(const ScaleSet& aScaleSet)
  *
  * @param Pennation angle.
  */
-double ContDerivMuscle::getPennationAngle()
+double ContDerivMuscle::getPennationAngle(const SimTK::State& s) const
 {
-	return calcPennation(_fiberLength,_optimalFiberLength,_pennationAngle);
+	return calcPennation(getFiberLength(s),_optimalFiberLength,_pennationAngle);
 }
 
 //-----------------------------------------------------------------------------
@@ -420,14 +453,6 @@ double ContDerivMuscle::getPennationAngle()
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get the length of the muscle fiber(s).
- *
- * @param Current length of the muscle fiber(s).
- */
-double ContDerivMuscle::getFiberLength()
-{
-	return _fiberLength;
-}
 //_____________________________________________________________________________
 /**
  * Get the normalized length of the muscle fiber(s).  This is the current
@@ -435,9 +460,9 @@ double ContDerivMuscle::getFiberLength()
  *
  * @param Current length of the muscle fiber(s).
  */
-double ContDerivMuscle::getNormalizedFiberLength()
+double ContDerivMuscle::getNormalizedFiberLength(const SimTK::State& s) const
 {
-	return _fiberLength / getOptimalFiberLength();
+	return getFiberLength(s) / getOptimalFiberLength();
 }
 
 //-----------------------------------------------------------------------------
@@ -449,9 +474,9 @@ double ContDerivMuscle::getNormalizedFiberLength()
  *
  * @param Current passive force of the muscle fiber(s).
  */
-double ContDerivMuscle::getPassiveFiberForce()
+double ContDerivMuscle::getPassiveFiberForce(const SimTK::State& s) const
 {
-	return _passiveForce;
+	return  (getPassiveForce(s));
 }
 
 
@@ -464,13 +489,10 @@ double ContDerivMuscle::getPassiveFiberForce()
  *
  * @param rDYDT the state derivatives are returned here.
  */
-void ContDerivMuscle::computeStateDerivatives(double rDYDT[])
+void ContDerivMuscle::computeStateDerivatives(const SimTK::State& s)
 {
-	if (!rDYDT)
-		return;
+    s.updZDot(_subsystemIndex)[_zIndex+STATE_ACTIVATION] = getActivationDeriv(s);
 
-	rDYDT[STATE_ACTIVATION] = _activationDeriv;
-	rDYDT[STATE_FIBER_LENGTH] = _fiberLengthDeriv;
 }
 
 //_____________________________________________________________________________
@@ -478,9 +500,9 @@ void ContDerivMuscle::computeStateDerivatives(double rDYDT[])
  * Compute the equilibrium states.  This method computes a fiber length
  * for the muscle that is consistent with the muscle's activation level.
  */
-void ContDerivMuscle::computeEquilibrium()
+void ContDerivMuscle::computeEquilibrium(SimTK::State& s) const
 {
-	double force = computeIsometricForce(_activation);
+	double force = computeIsometricForce(s, getActivation(s));
 
 	//cout<<getName()<<": isometric force = "<<force<<endl;
 	//cout<<getName()<<": fiber length = "<<_fiberLength<<endl;
@@ -493,17 +515,18 @@ void ContDerivMuscle::computeEquilibrium()
  *
  * This function is based on muscle_deriv_func9 from derivs.c (old pipeline code)
  */
-void ContDerivMuscle::computeActuation()
+double ContDerivMuscle::computeActuation(const SimTK::State& s)
 {
 	// Base Class (to calculate speed)
-   AbstractMuscle::computeActuation();
+   Muscle::computeActuation(s);
 
    double normState[2], normStateDeriv[2], norm_tendon_length, ca;
    double norm_muscle_tendon_length, pennation_angle;
+   double tendonForce, activeForce, passiveForce;
 
    /* Normalize the muscle states */
-   normState[STATE_ACTIVATION] = _activation;
-   normState[STATE_FIBER_LENGTH] = _fiberLength / _optimalFiberLength;
+   normState[STATE_ACTIVATION] = getActivation(s);
+   normState[STATE_FIBER_LENGTH] = getFiberLength(s) / _optimalFiberLength;
 
 	// Maximum contraction velocity is an activation scaled value
 	double Vmax = _vmax;
@@ -512,21 +535,22 @@ void ContDerivMuscle::computeActuation()
 	Vmax = Vmax*_optimalFiberLength;
 
    /* Compute normalized muscle state derivatives */
-   if (_excitation >= normState[STATE_ACTIVATION])
-      normStateDeriv[STATE_ACTIVATION] = (_excitation - normState[STATE_ACTIVATION]) / _activationTimeConstant;
+   if (getExcitation(s) >= normState[STATE_ACTIVATION])
+      normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _activationTimeConstant;
    else
-      normStateDeriv[STATE_ACTIVATION] = (_excitation - normState[STATE_ACTIVATION]) / _deactivationTimeConstant;
+      normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _deactivationTimeConstant;
 
-	pennation_angle = AbstractMuscle::calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngle);
+	pennation_angle = Muscle::calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngle);
    ca = cos(pennation_angle);
 
-   norm_muscle_tendon_length = getLength() / _optimalFiberLength; //REMEMBER - NORMALIZED IN OPTIMAL FIBER LENGTH UNITS
+   norm_muscle_tendon_length = getLength(s) / _optimalFiberLength; //REMEMBER - NORMALIZED IN OPTIMAL FIBER LENGTH UNITS
    norm_tendon_length = norm_muscle_tendon_length - normState[STATE_FIBER_LENGTH] * ca;
 
 
-   _tendonForce = calcTendonForce(norm_tendon_length);
-   _passiveForce = calcPassiveForce(normState[STATE_FIBER_LENGTH]);
-   _activeForce = calcActiveForce(normState[STATE_FIBER_LENGTH]);
+   tendonForce  = calcTendonForce(s,norm_tendon_length);
+   passiveForce = calcPassiveForce(s,normState[STATE_FIBER_LENGTH]);
+   activeForce  =  calcActiveForce(s,normState[STATE_FIBER_LENGTH]);
+
 	
 //cout << tendon_length << "," << _length << endl;
 	// NOTE: SimmZajacMuscle has this check, but Darryl's muscle didn't seem to
@@ -539,7 +563,7 @@ void ContDerivMuscle::computeActuation()
     */
    if (EQUAL_WITHIN_ERROR(ca, 0.0))
    {
-      if (EQUAL_WITHIN_ERROR(_tendonForce, 0.0))
+      if (EQUAL_WITHIN_ERROR(tendonForce, 0.0))
       {
          normStateDeriv[STATE_FIBER_LENGTH] = 0.0;
 			// ms->fiber_velocity = 0.0;
@@ -549,28 +573,31 @@ void ContDerivMuscle::computeActuation()
          double h = norm_muscle_tendon_length - _tendonSlackLength;
          double w = _optimalFiberLength * sin(_pennationAngle);
          double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-		 double new_pennation_angle = AbstractMuscle::calcPennation(new_fiber_length, 1.0, _pennationAngle);
+		 double new_pennation_angle = Muscle::calcPennation(new_fiber_length, 1.0, _pennationAngle);
          double new_ca = cos(new_pennation_angle);
-         normStateDeriv[STATE_FIBER_LENGTH] = getSpeed() / (Vmax * new_ca);
+         normStateDeriv[STATE_FIBER_LENGTH] = getSpeed(s) / (Vmax * new_ca);
 	  }
    }
    else
    {
-      double velocity_dependent_force = _tendonForce / ca - _passiveForce;
-      normStateDeriv[STATE_FIBER_LENGTH] = calcFiberVelocity(normState[STATE_ACTIVATION],_activeForce,velocity_dependent_force);
+      double velocity_dependent_force = tendonForce / ca - passiveForce;
+      normStateDeriv[STATE_FIBER_LENGTH] = calcFiberVelocity(s,normState[STATE_ACTIVATION],activeForce,velocity_dependent_force);
    }
    /* Un-normalize the muscle state derivatives and forces. */
    /* Note: Do not need to Un-Normalize activation dynamics equation since activation, deactivation parameters
      specified in muscle file are now independent of time scale */
-   _activationDeriv = normStateDeriv[STATE_ACTIVATION];
-   _fiberLengthDeriv = normStateDeriv[STATE_FIBER_LENGTH] * Vmax;
+     setActivationDeriv(s, normStateDeriv[STATE_ACTIVATION]) ;
+     setFiberLengthDeriv(s, normStateDeriv[STATE_FIBER_LENGTH] * Vmax );
 
-	_tendonForce *= _maxIsometricForce;
-	_passiveForce *= _maxIsometricForce;
-	_activeForce *= normState[STATE_ACTIVATION] * _maxIsometricForce;
+    tendonForce = tendonForce * _maxIsometricForce;
+    setTendonForce( s, tendonForce );
+    setPassiveForce( s, passiveForce * _maxIsometricForce);
+    setActiveForce( s, activeForce*getActivation(s) * _maxIsometricForce);
+
 	//ms->tendon_length = norm_tendon_length*(*(ms->optimal_fiber_length));
 
-	setForce(_tendonForce);
+    return( tendonForce );
+
 }
 
 //_____________________________________________________________________________
@@ -597,7 +624,7 @@ void ContDerivMuscle::computeActuation()
  * @param aNormTendonLength Normalized length of the tendon.
  * @return The force in the tendon.
  */
-double ContDerivMuscle::calcTendonForce(double aNormTendonLength) const
+double ContDerivMuscle::calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
 {
     double norm_resting_length = _tendonSlackLength / _optimalFiberLength;
     double tendon_strain =  (aNormTendonLength - norm_resting_length) / norm_resting_length;
@@ -635,7 +662,7 @@ double ContDerivMuscle::calcTendonForce(double aNormTendonLength) const
  * @param aNormFiberLength Normalized length of the muscle fiber.
  * @return The passive force in the muscle fibers.
  */
-double ContDerivMuscle::calcPassiveForce(double aNormFiberLength) const
+double ContDerivMuscle::calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
 	double passive_force;
 
@@ -662,7 +689,7 @@ double ContDerivMuscle::calcPassiveForce(double aNormFiberLength) const
  * @param aNormFiberLength Normalized length of the muscle fiber.
  * @return The active force in the muscle fibers.
  */
-double ContDerivMuscle::calcActiveForce(double aNormFiberLength) const
+double ContDerivMuscle::calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
 	double x=-(aNormFiberLength-1.)*(aNormFiberLength-1.)/_kShapeActive;
 	return exp(x);
@@ -690,7 +717,7 @@ double ContDerivMuscle::calcActiveForce(double aNormFiberLength) const
 
 
 
-double ContDerivMuscle::calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const
+double ContDerivMuscle::calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const
 {
    double b1, c1, fiber_velocity1;
    double b2, c2, fiber_velocity2;
@@ -727,9 +754,9 @@ double ContDerivMuscle::calcFiberVelocity(double aActivation, double aActiveForc
  * Get the stress in this actuator.  It is calculated as the force divided
  * by the maximum isometric force (which is proportional to its area).
  */
-double ContDerivMuscle::getStress() const
+double ContDerivMuscle::getStress(const SimTK::State& s ) const
 {
-	return _force / _maxIsometricForce;
+	return getForce(s) / _maxIsometricForce;
 }
 
 //_____________________________________________________________________________
@@ -746,13 +773,13 @@ double ContDerivMuscle::getStress() const
  * @return The isometric force in the muscle.
  */
 double ContDerivMuscle::
-computeIsometricForce(double aActivation)
+computeIsometricForce(SimTK::State& s, double aActivation) const
 {
 #define MAX_ITERATIONS 100
 #define ERROR_LIMIT 0.01
 
    int i;
-   double tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
+   double length, tendon_length, fiber_force, tmp_fiber_length, min_tendon_stiffness;
    double cos_factor, fiber_stiffness;
    double old_fiber_length, length_change, tendon_stiffness, percent;
    double error_force = 0.0, old_error_force, tendon_force, norm_tendon_length;
@@ -764,7 +791,10 @@ computeIsometricForce(double aActivation)
       return 0.0;
    }
 
-	calcLengthAfterPathComputation();
+	length = getLength(s);
+
+	// rough initial guess of fiber length
+	setStateVariable(s, STATE_FIBER_LENGTH,  length - _tendonSlackLength);
 
    // Make first guess of fiber and tendon lengths. Make fiber length equal to
    // optimal_fiber_length so that you start in the middle of the active+passive
@@ -779,37 +809,46 @@ computeIsometricForce(double aActivation)
    double muscle_width = _optimalFiberLength * sin(_pennationAngle);
 
    if (_tendonSlackLength < ROUNDOFF_ERROR) {
-      tendon_length = 0.0;
-      cos_factor = cos(atan(muscle_width / _length));
-      _fiberLength = _length / cos_factor;
+		tendon_length = 0.0;
+		cos_factor = cos(atan(muscle_width /length));
+		setStateVariable(s, STATE_FIBER_LENGTH,  length / cos_factor);
+		_model->getSystem().realize(s, SimTK::Stage::Velocity);
 
-		_activeForce = calcActiveForce(_fiberLength / _optimalFiberLength) * aActivation;
-		if (_activeForce < 0.0)
-			_activeForce = 0.0;
+		setActiveForce(s,  calcActiveForce(s, getFiberLength(s) / _optimalFiberLength) * aActivation * _maxIsometricForce);
+		if (getActiveForce(s) < 0.0)
+			setActiveForce(s, 0.0);
 
-		_passiveForce = calcPassiveForce(_fiberLength / _optimalFiberLength);
-		if (_passiveForce < 0.0)
-			_passiveForce = 0.0;
+		setPassiveForce(s, calcPassiveForce(s, getFiberLength(s) / _optimalFiberLength) * _maxIsometricForce);
+		if (getPassiveForce(s) < 0.0)
+			setPassiveForce(s, 0.0);
 
-      return (_activeForce + _passiveForce) * _maxIsometricForce * cos_factor;
-   } else if (_length < _tendonSlackLength) {
-      _fiberLength = muscle_width;
-      tendon_length = _length;
+		setTendonForce(s, (getActiveForce(s) + getPassiveForce(s)) * cos_factor);
+		setForce(s, getTendonForce(s));
+		return getTendonForce(s);
+   } else if (length < _tendonSlackLength) {
+      setStateVariable(s, STATE_FIBER_LENGTH, muscle_width);
+      _model->getSystem().realize(s, SimTK::Stage::Velocity);
+		setActiveForce(s, 0.0);
+		setPassiveForce(s, 0.0);
+		setTendonForce(s, 0.0);
+		setForce(s, 0.0);
       return 0.0;
    } else {
-      _fiberLength = _optimalFiberLength;
-      cos_factor = cos(calcPennation(_fiberLength, _optimalFiberLength, _pennationAngle));  
-      tendon_length = _length - _fiberLength * cos_factor;
+      setStateVariable(s, STATE_FIBER_LENGTH,  _optimalFiberLength);
+      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngle));  
+      tendon_length = length - getFiberLength(s) * cos_factor;
 
       /* Check to make sure tendon is not shorter than its slack length. If it
        * is, set the length to its slack length and re-compute fiber length.
        */
       if (tendon_length < _tendonSlackLength) {
          tendon_length = _tendonSlackLength;
-         cos_factor = cos(atan(muscle_width / (_length - tendon_length)));
-         _fiberLength = (_length - tendon_length) / cos_factor;
-         if (_fiberLength < muscle_width)
-            _fiberLength = muscle_width;
+         cos_factor = cos(atan(muscle_width / (length - tendon_length)));
+         setStateVariable(s, STATE_FIBER_LENGTH,  (length - tendon_length) / cos_factor);
+         if (getFiberLength(s) < muscle_width)
+           setStateVariable(s, STATE_FIBER_LENGTH,  muscle_width);
+           _model->getSystem().realize(s, SimTK::Stage::Velocity);
+
       }
    }
 
@@ -819,20 +858,24 @@ computeIsometricForce(double aActivation)
    // ERROR_LIMIT of each other), stop; else change the length guesses based
    // on the error and try again.
    for (i = 0; i < MAX_ITERATIONS; i++) {
-		_activeForce = calcActiveForce(_fiberLength / _optimalFiberLength) * aActivation;
-      if (_activeForce < 0.0)
-         _activeForce = 0.0;
+        setActiveForce(s, calcActiveForce(s, getFiberLength(s)/ _optimalFiberLength) * aActivation );
 
-		_passiveForce = calcPassiveForce(_fiberLength / _optimalFiberLength);
-      if (_passiveForce < 0.0)
-         _passiveForce = 0.0;
+      if (getActiveForce(s) < 0.0)
+         setActiveForce(s, 0.0);
 
-      fiber_force = (_activeForce + _passiveForce) * _maxIsometricForce * cos_factor;
+        setPassiveForce(s, calcPassiveForce(s, getFiberLength(s) / _optimalFiberLength));
+
+      if (getPassiveForce(s) < 0.0)
+         setPassiveForce(s, 0.0);
+
+      fiber_force = (getActiveForce(s) + getPassiveForce(s)) * _maxIsometricForce * cos_factor;
 
       norm_tendon_length = tendon_length / _optimalFiberLength;
-      tendon_force = calcTendonForce(norm_tendon_length) * _maxIsometricForce;
+      tendon_force = calcTendonForce(s, norm_tendon_length) * _maxIsometricForce;
+		setTendonForce(s, tendon_force);
+		setForce(s, tendon_force);
 
-      old_error_force = error_force;
+		old_error_force = error_force;
  
       error_force = tendon_force - fiber_force;
 
@@ -845,8 +888,8 @@ computeIsometricForce(double aActivation)
       if (DSIGN(error_force) != DSIGN(old_error_force)) {
          percent = DABS(error_force) / (DABS(error_force) + DABS(old_error_force));
          tmp_fiber_length = old_fiber_length;
-         old_fiber_length = _fiberLength;
-         _fiberLength += percent * (tmp_fiber_length - _fiberLength);
+         old_fiber_length = getFiberLength(s);
+         setStateVariable(s, STATE_FIBER_LENGTH, getFiberLength(s) + percent * (tmp_fiber_length - getFiberLength(s)) );
       } else {
          // Estimate the stiffnesses of the tendon and the fibers. If tendon
          // stiffness is too low, then the next length guess will overshoot
@@ -860,10 +903,10 @@ computeIsometricForce(double aActivation)
 			double tendon_elastic_modulus = 1200.0;
 			double tendon_max_stress = 32.0;
 
-         tendon_stiffness = calcTendonForce(norm_tendon_length) *
+         tendon_stiffness = calcTendonForce(s, norm_tendon_length) *
 				_maxIsometricForce / _tendonSlackLength;
 
-         min_tendon_stiffness = (_activeForce + _passiveForce) *
+         min_tendon_stiffness = (getActiveForce(s) + getPassiveForce(s)) *
 	         tendon_elastic_modulus * _maxIsometricForce /
 	         (tendon_max_stress * _tendonSlackLength);
 
@@ -871,8 +914,8 @@ computeIsometricForce(double aActivation)
             tendon_stiffness = min_tendon_stiffness;
 
          fiber_stiffness = _maxIsometricForce / _optimalFiberLength *
-            (calcActiveForce(_fiberLength / _optimalFiberLength)  +
-            calcPassiveForce(_fiberLength / _optimalFiberLength));
+            (calcActiveForce(s, getFiberLength(s) / _optimalFiberLength)  +
+            calcPassiveForce(s, getFiberLength(s) / _optimalFiberLength));
 
          // determine how much the fiber and tendon lengths have to
          // change to make the error_force zero. But don't let the
@@ -886,25 +929,30 @@ computeIsometricForce(double aActivation)
          // now change the fiber length depending on the sign of the error
          // and the sign of the fiber stiffness (which equals the sign of
          // the slope of the muscle's force-length curve).
-         old_fiber_length = _fiberLength;
+         old_fiber_length =  getFiberLength(s);
 
          if (error_force > 0.0)
-            _fiberLength += length_change;
+             setStateVariable(s, STATE_FIBER_LENGTH,  getFiberLength(s) + length_change);
          else
-            _fiberLength -= length_change;
+             setStateVariable(s, STATE_FIBER_LENGTH,  getFiberLength(s) - length_change);
       }
 
-      cos_factor = cos(calcPennation(_fiberLength, _optimalFiberLength, _pennationAngle));
-      tendon_length = _length - _fiberLength * cos_factor;
+      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngle));
+      tendon_length = length - getFiberLength(s) * cos_factor;
 
       // Check to make sure tendon is not shorter than its slack length. If it is,
       // set the length to its slack length and re-compute fiber length.
       if (tendon_length < _tendonSlackLength) {
          tendon_length = _tendonSlackLength;
-         cos_factor = cos(atan(muscle_width / (_length - tendon_length)));
-         _fiberLength = (_length - tendon_length) / cos_factor;
+         cos_factor = cos(atan(muscle_width / (length - tendon_length)));
+         setStateVariable(s, STATE_FIBER_LENGTH,  (length - tendon_length) / cos_factor );
       }
    }
+
+   _model->getSystem().realize(s, SimTK::Stage::Position);
+
+	setPassiveForce(s, getPassiveForce(s) * _maxIsometricForce);
+	setActiveForce(s, getActiveForce(s) * _maxIsometricForce);
 
    return tendon_force;
 }
@@ -930,11 +978,11 @@ computeIsometricForce(double aActivation)
  * force-velocity curve.
  */
 double ContDerivMuscle::
-computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation)
+computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation)
 {
-	double isometricForce = computeIsometricForce(aActivation);
-	double normalizedLength = _fiberLength / _optimalFiberLength;
-	double normalizedVelocity = - _speed / (_vmax * _optimalFiberLength);
+	double isometricForce = computeIsometricForce(s,aActivation);
+	double normalizedLength = getFiberLength(s) / _optimalFiberLength;
+	double normalizedVelocity = - getSpeed(s) / (_vmax * _optimalFiberLength);
 	normalizedVelocity *= cos(_pennationAngle);
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 	

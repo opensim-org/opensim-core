@@ -18,20 +18,28 @@
 #ifndef UNIVERSAL_H
 #define UNIVERSAL_H
 
-/* #define sgi           so math.h will include sgimath.h automatically */
-
-#include <stdlib.h>
+#if MEMORY_LEAK
+  #define _CRTDBG_MAP_ALLOC
+  #include <stdlib.h>
+  #include <crtdbg.h>
+  #define simm_malloc malloc
+  #define simm_calloc calloc
+  #define simm_realloc(ptr, size, rc) realloc(ptr, size)
+  #define mstrcpy(dest, src) {int len=strlen(src)+1; *(dest) = (char*)malloc(len); strcpy(*(dest), src);}
+#else
+  #include <stdlib.h>
+#endif
 
 #include <stdio.h>
 #include <math.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <malloc.h>
 #include <float.h>
+#include <time.h>
 
-#if defined(_MSC_VER) && ! defined(__MWERKS__)
-   /* Use the following macro to detect the Microsoft Visual C++ compiler:
-    */
+#if defined(_MSC_VER)
    #define MS_VISUAL_C 1
 #endif
 
@@ -62,6 +70,7 @@ typedef unsigned char GLubyte;
 
 #include "sm.h"
 #include "dp.h"
+#include "dp420.h"
 
 #include "macros.h"
 #include "basic.h"

@@ -125,13 +125,17 @@ public:
 	GCVSpline* getSplineY1() const;
 	GCVSpline* getSplineY2() const;
 
+	void setSplineY0(GCVSpline* y0) {_splineY0 = y0;}
+	void setSplineY1(GCVSpline* y1) {_splineY1 = y1;}
+	void setSplineY2(GCVSpline* y2) {_splineY2 = y2;}
+
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox();
-	virtual void evaluate(const double *aX,double *rY);
-	virtual void evaluate(const Array<double> &aX,Array<double> &rY);
-	virtual void evaluate(const Array<double> &aX,Array<double> &rY,
+	virtual void calcValue(const double *aX,double *rY, int aSize);
+	virtual void calcValue(const Array<double> &aX,Array<double> &rY);
+	virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
 		const Array<int> &aDerivWRT);
 
 //=============================================================================

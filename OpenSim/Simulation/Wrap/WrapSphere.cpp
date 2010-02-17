@@ -30,11 +30,11 @@
 // INCLUDES
 //=============================================================================
 #include "WrapSphere.h"
-#include <OpenSim/Simulation/Model/MusclePoint.h>
-#include "MuscleWrap.h"
+#include <OpenSim/Simulation/Model/PathPoint.h>
+#include "PathWrap.h"
 #include "WrapResult.h"
+#include "WrapMath.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Mtx.h>
 #include <sstream>
 
@@ -54,7 +54,7 @@ static char* wrapTypeName = "sphere";
  * Default constructor.
  */
 WrapSphere::WrapSphere() :
-	AbstractWrapObject(),
+	WrapObject(),
    _radius(_radiusProp.getValueDbl())
 {
 	setNull();
@@ -76,7 +76,7 @@ WrapSphere::~WrapSphere()
  * @param aWrapSphere WrapSphere to be copied.
  */
 WrapSphere::WrapSphere(const WrapSphere& aWrapSphere) :
-	AbstractWrapObject(aWrapSphere),
+	WrapObject(aWrapSphere),
    _radius(_radiusProp.getValueDbl())
 {
 	setNull();
@@ -116,7 +116,7 @@ void WrapSphere::setNull()
 void WrapSphere::setupProperties()
 {
 	// BASE CLASS
-	AbstractWrapObject::setupProperties();
+	WrapObject::setupProperties();
 
 	_radiusProp.setName("radius");
 	_radiusProp.setValue(-1.0);
@@ -128,12 +128,12 @@ void WrapSphere::setupProperties()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aEngine dynamics engine containing this SimmBody.
+ * @param aModel OpenSim model.
  */
-void WrapSphere::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
+void WrapSphere::setup(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	AbstractWrapObject::setup(aEngine, aBody);
+	WrapObject::setup(aModel, aBody);
 
    // maybe set a parent pointer, _body = aBody;
 
@@ -157,7 +157,7 @@ void WrapSphere::setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody)
  */
 void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
 {
-   AbstractWrapObject::scale(aScaleFactors);
+   WrapObject::scale(aScaleFactors);
 
    _radius *= (aScaleFactors.sum() / 3.0);
 }
@@ -171,7 +171,7 @@ void WrapSphere::scale(const SimTK::Vec3& aScaleFactors)
 void WrapSphere::copyData(const WrapSphere& aWrapSphere)
 {
 	// BASE CLASS
-	AbstractWrapObject::copyData(aWrapSphere);
+	WrapObject::copyData(aWrapSphere);
 
 	_radius = aWrapSphere._radius;
 }
@@ -215,7 +215,7 @@ string WrapSphere::getDimensionsString() const
 WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
 {
 	// BASE CLASS
-	AbstractWrapObject::operator=(aWrapSphere);
+	WrapObject::operator=(aWrapSphere);
 
 	return(*this);
 }
@@ -229,13 +229,13 @@ WrapSphere& WrapSphere::operator=(const WrapSphere& aWrapSphere)
  *
  * @param aPoint1 One end of the line segment
  * @param aPoint2 The other end of the line segment
- * @param aMuscleWrap An object holding the parameters for this line/sphere pairing
+ * @param aPathWrap An object holding the parameters for this line/sphere pairing
  * @param aWrapResult The result of the wrapping (tangent points, etc.)
  * @param aFlag A flag for indicating errors, etc.
  * @return The status, as a WrapAction enum
  */
-int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-								 const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const
+int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+								 const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const
 {
    double l1, l2, disc, a, b, c, a1, a2, j1, j2, j3, j4, r1r2, ra[3][3], rrx[3][3], aa[3][3], mat[4][4], 
 			axis[4], vec[4], rotvec[4], angle, *r11, *r22;
@@ -248,9 +248,9 @@ int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
    static SimTK::Vec3 origin(0,0,0);
 
 	// In case you need any variables from the previous wrap, copy them from
-	// the MuscleWrap into the WrapResult, re-normalizing the ones that were
+	// the PathWrap into the WrapResult, re-normalizing the ones that were
 	// un-normalized at the end of the previous wrap calculation.
-	const WrapResult& previousWrap = aMuscleWrap.getPreviousWrap();
+	const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
 	aWrapResult.factor = previousWrap.factor;
 	for (i = 0; i < 3; i++)
 	{
@@ -323,7 +323,7 @@ int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
       // no wait!  don't give up!  Instead use the previous r1 & r2:
       // -- added KMS 9/9/99
       //
-		const WrapResult& previousWrap = aMuscleWrap.getPreviousWrap();
+		const WrapResult& previousWrap = aPathWrap.getPreviousWrap();
       for (i = 0; i < 3; i++) {
          aWrapResult.r1[i] = previousWrap.r1[i];
          aWrapResult.r2[i] = previousWrap.r2[i];
@@ -348,14 +348,14 @@ int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 
 	a1 = asin(_radius / Mtx::Magnitude(3, p1m));
 
-	rdMath::Make3x3DirCosMatrix(a1, rrx);
+	WrapMath::Make3x3DirCosMatrix(a1, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 	// TODO: test that this gives same result as SIMM code
 
    for (i = 0; i < 3; i++)
       r1a[i] = aPoint1[i] + aa[i][1] * Mtx::Magnitude(3, p1m) * cos(a1);
 
-   rdMath::Make3x3DirCosMatrix(-a1, rrx);
+   WrapMath::Make3x3DirCosMatrix(-a1, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
@@ -376,13 +376,13 @@ int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 
    a2 = asin(_radius / Mtx::Magnitude(3, p2m));
    
-   rdMath::Make3x3DirCosMatrix(a2, rrx);
+   WrapMath::Make3x3DirCosMatrix(a2, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
       r2a[i] = aPoint2[i] + aa[i][1] * Mtx::Magnitude(3, p2m) * cos(a2);
 
-   rdMath::Make3x3DirCosMatrix(-a2, rrx);
+   WrapMath::Make3x3DirCosMatrix(-a2, rrx);
 	Mtx::Multiply(3, 3, 3, (double*)ra, (double*)rrx, (double*)aa);
 
    for (i = 0; i < 3; i++)
@@ -457,11 +457,11 @@ int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
          // you've found a mandatory wrap. If not, then if one point is not on the constrained
          // side and the closest point on the line is not on the constrained side, you've
          // found a potential wrap. Otherwise, there is no wrap.
-         rdMath::GetClosestPointOnLineToPoint(origin, aPoint1, p1p2, mm, tt);
+         WrapMath::GetClosestPointOnLineToPoint(origin, aPoint1, p1p2, mm, tt);
 
          tt = -tt; // because p1p2 is actually aPoint2->aPoint1
 
-         if (rdMath::CalcDistanceSquaredBetweenPoints(origin, mm) < r_squared && tt > 0.0 && tt < 1.0)
+         if (WrapMath::CalcDistanceSquaredBetweenPoints(origin, mm) < r_squared && tt > 0.0 && tt < 1.0)
          {
             return_code = mandatoryWrap;
          }
@@ -585,7 +585,7 @@ int WrapSphere::wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
    for (i = 0; i < numWrapSegments - 2; i++) {
 		double wangle = angle * (i+1) / (numWrapSegments - 1) * SimTK_DEGREE_TO_RADIAN;
 
-		rdMath::ConvertAxisAngleTo4x4DirCosMatrix(Vec3::getAs(axis), wangle, mat);
+		WrapMath::ConvertAxisAngleTo4x4DirCosMatrix(Vec3::getAs(axis), wangle, mat);
 		Mtx::Multiply(4, 4, 1, (double*)mat, (double*)vec, (double*)rotvec);
 
 		SimTK::Vec3 wp;

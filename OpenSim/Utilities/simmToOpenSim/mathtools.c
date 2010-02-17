@@ -16,14 +16,14 @@
       variables or other general model or plot structures.
 
    Routines:
-      find_end_of_array     : finds the end of an integer array
+      get_array_length      : gets the length of an integer array
       mult_4x4matrix_by_vector : multiplies a vector by a matrix
       mult_4x4matrices      : multiplies two 4x4 matrices
       transpose_4x4matrix   : transposes a 4x4 matrix
       cross_vectors         : finds cros product of two vectors
       normalize_vector      : normalizes a vector
-      calc_spline_coefficients : finds coefficients of natural cubic spline
-      interpolate_spline    : given an x, interpolates a cubic to get a y value
+      calc_function_coefficients : finds coefficients of a function
+      interpolate_function    : given an x, interpolates a cubic to get a y value
       format_double         : determines appropriate printf format for a number
       reset_4x4matrix       : sets a 4x4 matrix equal to the identity matrix
       make_4x4dircos_matrix : makes direction cosine matrix given angle & axis
@@ -47,31 +47,25 @@
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static void quat_to_axis_angle_rot(const Quat, Coord3D* axis, double* angle);
+static void quat_to_axis_angle_rot(const Quat, dpCoord3D* axis, double* angle);
 static void matrix_to_quat(double m[][4], Quat);
 static void make_quaternion(Quat, const double axis[3], double angle);
 static void quat_to_matrix(const Quat q, double m[][4]);
 static void rotate_matrix_by_quat(double m[][4], const Quat);
 
 
-
-/* FIND_END_OF_ARRAY: this routine finds the end of an array of integers,
- * returning the value of the element at the end, and recording the length.
- * The end of the array should be defined with the END_OF_ARRAY constant.
+/* GET_ARRAY_LENGTH: get the length of an array of ints. The end is
+ * marked by the END_OF_ARRAY constant.
  */
-
-int find_end_of_array(int list[], int* length)
+int get_array_length(int list[])
 {
+   int i = 0;
 
-   *length = 0;
+   while (list[i] != END_OF_ARRAY)
+     i++;
 
-   while (list[(*length)++] != END_OF_ARRAY)
-     ;
-
-   return (list[(*length)-2]);
-
+   return i;
 }
-
 
 
 /* MULT_4X4MATRIX_BY_VECTOR: this routine premultiplies a 4x4 matrix by
@@ -229,10 +223,8 @@ void cross_vectors(double vector1[], double vector2[], double result[])
 
 
 /* NORMALIZE_VECTOR: normalizes a 1x3 vector. */
-
 double normalize_vector(double vector[], double norm_vector[])
 {
-
    double magnitude;
 
    magnitude = VECTOR_MAGNITUDE(vector);
@@ -250,224 +242,31 @@ double normalize_vector(double vector[], double norm_vector[])
       norm_vector[2] = vector[2]/magnitude;
    }
 
-   return (magnitude);
-
+   return magnitude;
 }
 
 
-/* CALC_SPLINE_COEEFICIENTS: this routine takes an array of x and y values,
- * and computes the coefficients of natural splines which interpolate the data.
- * The code is translated from a Fortran version printed in "Computer
- * Methods for Mathematical Computations" by Forsythe, Malcolm, and
- * Moler, pp 77-8. To better handle splines which have two or more control points
- * with the same X values, checks were added to make sure that the code never
- * divides by zero.
- */
-
-void calc_spline_coefficients(SplineFunction* f)
+/* NORMALIZE_VECTOR: normalizes a 1x3 vector. */
+double normalize_vector_f(float vector[], float norm_vector[])
 {
+   float magnitude;
 
-   int nm1, nm2, i, j;
-   double t;
+   magnitude = VECTOR_MAGNITUDE(vector);
 
-   if (f->numpoints < 2 || f->used == no)
-      return;
-
-   if (f->numpoints == 2)
+   if (magnitude < TINY_NUMBER)
    {
-      t = MAX(TINY_NUMBER,f->x[1]-f->x[0]);
-      f->b[0] = f->b[1] = (f->y[1]-f->y[0])/t;
-      f->c[0] = f->c[1] = 0.0;
-      f->d[0] = f->d[1] = 0.0;
-      return;
-   }
-
-   nm1 = f->numpoints - 1;
-   nm2 = f->numpoints - 2;
-
-   /* Set up tridiagonal system:
-    * b = diagonal, d = offdiagonal, c = right-hand side
-    */
-
-   f->d[0] = MAX(TINY_NUMBER,f->x[1] - f->x[0]);
-   f->c[1] = (f->y[1]-f->y[0])/f->d[0];
-   for (i=1; i<nm1; i++)
-   {
-      f->d[i] = MAX(TINY_NUMBER,f->x[i+1] - f->x[i]);
-      f->b[i] = 2.0*(f->d[i-1]+f->d[i]);
-      f->c[i+1] = (f->y[i+1]-f->y[i])/f->d[i];
-      f->c[i] = f->c[i+1] - f->c[i];
-   }
-
-   /* End conditions. Third derivatives at x[0] and x[n-1]
-    * are obtained from divided differences.
-    */
-
-   f->b[0] = -f->d[0];
-   f->b[nm1] = -f->d[nm2];
-   f->c[0] = 0.0;
-   f->c[nm1] = 0.0;
-
-   if (f->numpoints > 3)
-   {
-      double d1, d2, d3, d20, d30, d31;
-
-      d31 = MAX(TINY_NUMBER,f->x[3] - f->x[1]);
-      d20 = MAX(TINY_NUMBER,f->x[2] - f->x[0]);
-      d1 = MAX(TINY_NUMBER,f->x[nm1]-f->x[f->numpoints-3]);
-      d2 = MAX(TINY_NUMBER,f->x[nm2]-f->x[f->numpoints-4]);
-      d30 = MAX(TINY_NUMBER,f->x[3] - f->x[0]);
-      d3 = MAX(TINY_NUMBER,f->x[nm1]-f->x[f->numpoints-4]);
-      f->c[0] = f->c[2]/d31 - f->c[1]/d20;
-      f->c[nm1] = f->c[nm2]/d1 - f->c[f->numpoints-3]/d2;
-      f->c[0] = f->c[0]*f->d[0]*f->d[0]/d30;
-      f->c[nm1] = -f->c[nm1]*f->d[nm2]*f->d[nm2]/d3;
-   }
-
-   /* Forward elimination */
-
-   for (i=1; i<f->numpoints; i++)
-   {
-      t = f->d[i-1]/f->b[i-1];
-      f->b[i] -= t*f->d[i-1];
-      f->c[i] -= t*f->c[i-1];
-   }
-
-   /* Back substitution */
-
-   f->c[nm1] /= f->b[nm1];
-   for (j=0; j<nm1; j++)
-   {
-      i = nm2 - j;
-      f->c[i] = (f->c[i]-f->d[i]*f->c[i+1])/f->b[i];
-   }
-
-   /* compute polynomial coefficients */
-
-   f->b[nm1] = (f->y[nm1]-f->y[nm2])/f->d[nm2] +
-               f->d[nm2]*(f->c[nm2]+2.0*f->c[nm1]);
-   for (i=0; i<nm1; i++)
-   {
-      f->b[i] = (f->y[i+1]-f->y[i])/f->d[i] - f->d[i]*(f->c[i+1]+2.0*f->c[i]);
-      f->d[i] = (f->c[i+1]-f->c[i])/f->d[i];
-      f->c[i] *= 3.0;
-   }
-   f->c[nm1] *= 3.0;
-   f->d[nm1] = f->d[nm2];
-
-}
-
-
-
-/* INTERPOLATE_SPLINE: given a spline function and an x-value, this routine
- * finds the corresponding y-value by interpolating the spline. It
- * can return the zeroth, first, or second derivative of the spline
- * at that x-value.
- */
-
-double interpolate_spline(double abscissa, SplineFunction* func, Derivative deriv,
-			  double velocity, double acceleration)
-{
-
-   int i, j, k, n;
-   double dx;
-
-   if (func->defined == no)
-      return ERROR_DOUBLE;
-
-   n = func->numpoints;
-
-   /* Check if the abscissa is out of range of the function. If it is,
-    * then use the slope of the function at the appropriate end point to
-    * extrapolate. You do this rather than printing an error because the
-    * assumption is that this will only occur in relatively harmless
-    * situations (like a motion file that contains an out-of-range gencoord
-    * value). The rest of the SIMM code has many checks to clamp a gencoord
-    * value within its range of motion, so if you make it to this function
-    * and the gencoord is still out of range, deal with it quietly.
-    */
-
-   if (abscissa < func->x[0])
-   {
-      if (deriv == zeroth)
-         return func->y[0] + (abscissa - func->x[0])*func->b[0];
-      if (deriv == first)
-         return func->b[0]*velocity;
-      if (deriv == second)
-         return func->b[0]*acceleration;
-   }
-   else if (abscissa > func->x[n-1])
-   {
-      if (deriv == zeroth)
-         return func->y[n-1] + (abscissa - func->x[n-1])*func->b[n-1];
-      if (deriv == first)
-         return func->b[n-1]*velocity;
-      if (deriv == second)
-         return func->b[n-1]*acceleration;
-   }
-
-   /* Check to see if the abscissa is close to one of the end points
-    * (the binary search method doesn't work well if you are at one of the
-    * end points.
-    */
-   if (EQUAL_WITHIN_ERROR(abscissa,func->x[0]))
-   {
-      if (deriv == zeroth)
-         return func->y[0];
-      if (deriv == first)
-         return func->b[0]*velocity;
-      if (deriv == second)
-         return func->b[0]*acceleration + 2.0*func->c[0]*velocity*velocity;
-   }
-   else if (EQUAL_WITHIN_ERROR(abscissa,func->x[n-1]))
-   {
-      if (deriv == zeroth)
-         return func->y[n-1];
-      if (deriv == first)
-         return func->b[n-1]*velocity;
-      if (deriv == second)
-         return func->b[n-1]*acceleration + 2.0*func->c[n-1]*velocity*velocity;
-   }
-
-   if (n < 3)
-   {
-      /* If there are only 2 function points, then set k to zero
-       * (you've already checked to see if the abscissa is out of
-       * range or equal to one of the endpoints).
-       */
-      k = 0;
+      norm_vector[0] = vector[0];
+      norm_vector[1] = vector[1];
+      norm_vector[2] = vector[2];
    }
    else
    {
-      /* Do a binary search to find which two points the abscissa is between. */
-      i = 0;
-      j = n;
-      while (1)
-      {
-	 k = (i+j)/2;
-	 if (abscissa < func->x[k])
-	    j = k;
-	 else if (abscissa > func->x[k+1])
-	    i = k;
-	 else
-	    break;
-      }
+      norm_vector[0] = vector[0]/magnitude;
+      norm_vector[1] = vector[1]/magnitude;
+      norm_vector[2] = vector[2]/magnitude;
    }
 
-   dx = abscissa - func->x[k];
-
-   if (deriv == zeroth)
-      return func->y[k] + dx*(func->b[k] + dx*(func->c[k] + dx*func->d[k]));
-
-   if (deriv == first)
-      return (func->b[k] + dx*(2.0*func->c[k] + 3.0*dx*func->d[k]))*velocity;
-
-   if (deriv == second)
-      return (func->b[k] + dx*(2.0*func->c[k] + 3.0*dx*func->d[k]))*acceleration +
-	      (2.0*func->c[k] + 6.0*dx*func->d[k])*velocity*velocity;
-
-   return ERROR_DOUBLE;
-
+   return magnitude;
 }
 
 
@@ -844,7 +643,7 @@ int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
       count =0;
       while (point_ray_relation(poly_pts[current],ptray,otheraxes) == ON_RAY)
       {
-	 intermin = MIN(intermin,poly_pts[current][axes]);
+	 intermin = _MIN(intermin,poly_pts[current][axes]);
 	 last = current;
 	 current += 1;
 	 if (current == numpts)
@@ -861,7 +660,7 @@ int polygon_ray_inter_jordanstheorem(double** poly_pts, int numpts,
 	 t = (ptray[otheraxes] - poly_pts[current][otheraxes])/
             (poly_pts[last][otheraxes] - poly_pts[current][otheraxes]);
 	 inter = poly_pts[last][axes] * t + poly_pts[current][axes] * (1.0-t);
-	 intermin = MIN(intermin,inter);
+	 intermin = _MIN(intermin,inter);
 	 if (intermin > ptray[axes] && NOT_EQUAL_WITHIN_TOLERANCE(intermin,ptray[axes],LINE_EPSILON))
 	    numinter++;
       }
@@ -1568,7 +1367,7 @@ void transform_vec(double m[][4], double* vec)
    vec[YY] = ty;
 }
 
-static void quat_to_axis_angle_rot (const Quat q, Coord3D* axis, double* angle)
+static void quat_to_axis_angle_rot (const Quat q, dpCoord3D* axis, double* angle)
 {
    double sin_a2;
       
@@ -1635,7 +1434,7 @@ static void matrix_to_quat (double m[][4], Quat q)
    }
 }
 
-void extract_rotation(double m[][4], Coord3D* axis, double* angle)
+void extract_rotation(double m[][4], dpCoord3D* axis, double* angle)
 {
    /* extract matrix rotation in axis-angle format */
    
@@ -1649,17 +1448,26 @@ void extract_rotation(double m[][4], Coord3D* axis, double* angle)
 void extract_xyz_rot_spacefixed(double m[][4], double xyz_rot[3])
 {
    /* NOTE: extracts SPACE-FIXED rotations in x,y,z order.
+    *  The matrix may have scale factors in it, so it needs to
+    *  be normalized first.
     */
-   xyz_rot[YY] = asin(-m[0][2]);
+   double mat[4][4];
+
+   copy_4x4matrix(m, mat);
+   normalize_vector(mat[0], mat[0]);
+   normalize_vector(mat[1], mat[1]);
+   normalize_vector(mat[2], mat[2]);
+
+   xyz_rot[YY] = asin(-mat[0][2]);
    
    if (NOT_EQUAL_WITHIN_ERROR(0.0,cos(xyz_rot[YY])))
    {
-      xyz_rot[XX] = atan2(m[1][2], m[2][2]);
-      xyz_rot[ZZ] = atan2(m[0][1], m[0][0]);
+      xyz_rot[XX] = atan2(mat[1][2], mat[2][2]);
+      xyz_rot[ZZ] = atan2(mat[0][1], mat[0][0]);
    }
    else
    {
-      xyz_rot[XX] = atan2(m[1][0], m[1][1]);
+      xyz_rot[XX] = atan2(mat[1][0], mat[1][1]);
       xyz_rot[ZZ] = 0.0;
    } 
 }
@@ -1668,17 +1476,36 @@ void extract_xyz_rot_bodyfixed(double m[][4], double xyz_rot[3])
 {
    /* NOTE: extracts BODY-FIXED rotations in x,y,z order, which
     *  is the same as space-fixed rotations in z,y,x order.
+    *  The matrix may have scale factors in it, so it needs to
+    *  be normalized first.
     */
-   xyz_rot[YY] = asin(m[2][0]);
+   double mat1[4][4], mat2[4][4];
+
+#if 0
+   // Normalize the columns by transposing so that the
+   // vectors are contiguous. Then transpose back.
+   transpose_4x4matrix(m, mat1);
+   normalize_vector(mat1[0], mat1[0]);
+   normalize_vector(mat1[1], mat1[1]);
+   normalize_vector(mat1[2], mat1[2]);
+   transpose_4x4matrix(mat1, mat2);
+#else
+   copy_4x4matrix(m, mat2);
+   normalize_vector(mat2[0], mat2[0]);
+   normalize_vector(mat2[1], mat2[1]);
+   normalize_vector(mat2[2], mat2[2]);
+#endif
+
+   xyz_rot[YY] = asin(mat2[2][0]);
    
    if (NOT_EQUAL_WITHIN_ERROR(0.0,cos(xyz_rot[YY])))
    {
-      xyz_rot[XX] = atan2(-m[2][1], m[2][2]);
-      xyz_rot[ZZ] = atan2(-m[1][0], m[0][0]);
+      xyz_rot[XX] = atan2(-mat2[2][1], mat2[2][2]);
+      xyz_rot[ZZ] = atan2(-mat2[1][0], mat2[0][0]);
    }
    else
    {
-      xyz_rot[XX] = atan2(m[0][1], m[1][1]);
+      xyz_rot[XX] = atan2(mat2[0][1], mat2[1][1]);
       xyz_rot[ZZ] = 0.0;
    } 
    /* NOTE: a body-fixed sequence of rotations is equivalent to
@@ -1759,10 +1586,10 @@ void lerp_pt(double start[3], double end[3], double t, double result[3])
    result[2] = start[2] + t * (end[2] - start[2]);
 }
 
-void slerp(const Coord3D* axisStart, double angleStart,
-           const Coord3D* axisEnd,   double angleEnd,
+void slerp(const dpCoord3D* axisStart, double angleStart,
+           const dpCoord3D* axisEnd,   double angleEnd,
            double t,
-           Coord3D* axisResult, double* angleResult)
+           dpCoord3D* axisResult, double* angleResult)
 {
    Quat from, to, res;
    double to1[4], omega, cosom, sinom, scale0, scale1;
@@ -1811,4 +1638,68 @@ void slerp(const Coord3D* axisStart, double angleStart,
    res[WW] = scale0 * from[WW] + scale1 * to1[WW];
    
    quat_to_axis_angle_rot(res, axisResult, angleResult);
+}
+
+smAxes find_primary_direction(double vec[])
+{
+   double x_abs = ABS(vec[0]);
+   double y_abs = ABS(vec[1]);
+   double z_abs = ABS(vec[2]);
+
+   if (x_abs >= y_abs)
+   {
+      if (x_abs >= z_abs)
+      {
+         if (vec[0] > 0.0)
+            return smX;
+         else
+            return smNegX;
+      }
+      else
+      {
+         if (vec[2] > 0.0)
+            return smZ;
+         else
+            return smNegZ;
+      }
+   }
+   else
+   {
+      if (y_abs >= z_abs)
+      {
+         if (vec[1] > 0.0)
+            return smY;
+         else
+            return smNegY;
+      }
+      else
+      {
+         if (vec[2] > 0.0)
+            return smZ;
+         else
+            return smNegZ;
+      }
+   }
+}
+
+
+/* COPY_4X4MATRIX: copies a 4x4 matrix */
+void copy_4x4matrix(double from[][4], double to[][4])
+{
+   to[0][0] = from[0][0];
+   to[0][1] = from[0][1];
+   to[0][2] = from[0][2];
+   to[0][3] = from[0][3];
+   to[1][0] = from[1][0];
+   to[1][1] = from[1][1];
+   to[1][2] = from[1][2];
+   to[1][3] = from[1][3];
+   to[2][0] = from[2][0];
+   to[2][1] = from[2][1];
+   to[2][2] = from[2][2];
+   to[2][3] = from[2][3];
+   to[3][0] = from[3][0];
+   to[3][1] = from[3][1];
+   to[3][2] = from[3][2];
+   to[3][3] = from[3][3];
 }

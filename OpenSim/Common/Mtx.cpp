@@ -31,7 +31,6 @@
  */
 
 #include "osimCommonDLL.h"
-#include "rdMath.h"
 #include "Mtx.h"
 #include <string.h> // for memcpy in linux
 
@@ -49,6 +48,7 @@ int Mtx::_WSpaceSize = 0;
 double** Mtx::_P1Space = NULL;
 double** Mtx::_P2Space = NULL;
 double*  Mtx::_WSpace = NULL;
+static const double eps = std::numeric_limits<double>::epsilon();
 
 
 //=============================================================================
@@ -521,8 +521,8 @@ Invert(int aN,const double *aM,double *rMInv)
 	for(r=0,n=aN-1;r<n;r++) {
 
 		// SWAP
-		if(rdMath::IsZero(*(Mrj=Mp[r]+r))) {
-			for(i=r+1;i<aN;i++) if(!rdMath::IsZero(*(Mp[i]+r))) break;
+		if(std::fabs(*(Mrj=Mp[r]+r)) < eps ) {
+			for(i=r+1;i<aN;i++) if(std::fabs(*(Mp[i]+r)) > eps ) break;
 
 			// NON-INVERTIBLE?
 			if(i==aN) return(-2);
@@ -535,7 +535,7 @@ Invert(int aN,const double *aM,double *rMInv)
 
 		// REDUCE
 		for(i=r+1;i<aN;i++) {
-			if(rdMath::IsZero(*(Mij=Mp[i]+r))) continue;
+			if(std::fabs(*(Mij=Mp[i]+r)) < eps ) continue;
 			Mrj=Mp[r]+r;
 			d = (*Mij)/(*Mrj);	*(Mij++)=0.0;	Mrj++;
 			for(j=r+1;j<aN;j++) *(Mij++) -= *(Mrj++)*d;
@@ -545,14 +545,14 @@ Invert(int aN,const double *aM,double *rMInv)
 	}
 
 	// NORMALIZE LAST ROW OF M AND rMInv
-	if(rdMath::IsZero(*(Mrj=Mp[r]+r))) return(-2);
+	if(std::fabs(*(Mrj=Mp[r]+r)) < eps) return(-2);
 	d = 1.0 / *Mrj;	*Mrj=1.0;
 	for(j=0,Irj=Ip[r];j<aN;j++) *(Irj++) *= d;
 
 	// DIAGONALIZE USING ROW OPERATIONS
 	for(r=aN-1;r>0;) {
 		for(i=r-1;i>=0;i--) {
-			if(rdMath::IsZero(*(Mij=Mp[i]+r))) continue;
+			if(std::fabs(*(Mij=Mp[i]+r)) < eps) continue;
 			d = *Mij;	*Mij=0.0;
 			for(j=0,Iij=Ip[i],Irj=Ip[r];j<aN;j++) *(Iij++) -= *(Irj++)*d;
 		}

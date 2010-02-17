@@ -30,14 +30,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
 #include "IKTrial.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/MarkerData.h>
-#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "IKTaskSet.h"
 #include "IKSolverImpl.h"
@@ -228,7 +227,7 @@ IKTrial& IKTrial::operator=(const IKTrial &aIKTrialParams)
 /**
  * initializeTrialCommon -- must call before solveTrial
  */
-bool IKTrial::initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData)
+bool IKTrial::initializeTrialCommon(const SimTK::State& s, Model& aModel, IKTaskSet& aIKTaskSet, MarkerData& aMarkerData)
 {
 	// Initialize input storage
 	delete _inputStorage;
@@ -261,7 +260,7 @@ bool IKTrial::initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, Marker
 		if (!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr())
 		{
 			Storage coordinateValues(_coordinateFileName);
-			aModel.getDynamicsEngine().convertDegreesToRadians(coordinateValues);
+			aModel.getSimbodyEngine().convertDegreesToRadians(coordinateValues);
 
 			// Adjust the user-defined start and end times to make sure they are in the
 			// range of the marker data. This must be done so that you only look in the
@@ -280,7 +279,7 @@ bool IKTrial::initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, Marker
 		_inputStorage->print("markers_coords_ik.sto");
 
 		// Create target
-		_target = new IKTarget(aModel, aIKTaskSet, *_inputStorage);
+		_target = new IKTarget(s, aModel, aIKTaskSet, *_inputStorage);
 		_target->printTasks();
 
 		// Create solver
@@ -306,7 +305,7 @@ bool IKTrial::initializeTrialCommon(Model& aModel, IKTaskSet& aIKTaskSet, Marker
 //_____________________________________________________________________________
 /**
  */
-bool IKTrial::initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet)
+bool IKTrial::initializeTrial(const SimTK::State& s, Model& aModel, IKTaskSet& aIKTaskSet)
 {
 	cout << endl << "Initializing IK trial: " << getName() << endl;
 
@@ -314,7 +313,7 @@ bool IKTrial::initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 	/* Convert the marker data into the model's units. */
 	markerData.convertToUnits(aModel.getLengthUnits());
 
-	if(!initializeTrialCommon(aModel, aIKTaskSet, markerData))
+	if(!initializeTrialCommon(s, aModel, aIKTaskSet, markerData))
 		return false;
 
 	return true;
@@ -322,23 +321,24 @@ bool IKTrial::initializeTrial(Model& aModel, IKTaskSet& aIKTaskSet)
 //_____________________________________________________________________________
 /**
  */
-bool IKTrial::solveTrial(Model& aModel, IKTaskSet& aIKTaskSet)
+
+//bool IKTrial::solveTrial( Model& aModel, IKTaskSet& aIKTaskSet)
+bool IKTrial::solveTrial( SimTK::State& state,  Model& aModel, IKTaskSet& aIKTaskSet)
 {
 	bool success = false;
-	try 
-	{
+	try {
+	
 		// Check if trial was initialized
 		if(!_ikSolver) throw Exception("IKTrial.solveTrial: ERR- IKTrial not initialized before solveTrial called (or initialization failed)",__FILE__,__LINE__);
 
 		cout << endl << "Solving IK trial: " << getName() << endl;
-
-		_ikSolver->solveFrames(*this, *_inputStorage, *_outputStorage);
+		_ikSolver->solveFrames( state, *this, *_inputStorage, *_outputStorage);
 		if (_printResultFiles && !_outputMotionFileNameProp.getUseDefault())
 		{
 			// TODO: avoid converting units in-place (as this means that suddenly as soon as IK is done the storage
 			// (available to others through getOutputStorage() changes units)
 			_outputStorage->setWriteSIMMHeader(true);
-			aModel.getDynamicsEngine().convertRadiansToDegrees(*_outputStorage);
+			aModel.getSimbodyEngine().convertRadiansToDegrees(*_outputStorage);
 			_outputStorage->print(_outputMotionFileName.c_str());
 		}
 

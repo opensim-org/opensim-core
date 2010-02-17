@@ -103,7 +103,7 @@ int main(int argc,char **argv)
 	ControlLinear *control;
 	controlSet.getControlList("ControlLinear",list);
 	if(list.getSize()>0) {
-		control = (ControlLinear*)controlSet.get(list[0]);
+		control = dynamic_cast<ControlLinear*>(&controlSet.get(list[0]));
 		if(control->getNumParameters()>0) {
 			ti = control->getFirstTime();
 			tf = control->getLastTime();
@@ -113,7 +113,7 @@ int main(int argc,char **argv)
 	// CONVERT ALL LINEAR CONTROL NODES NOT TO USE STEPS
 	int i,size=list.getSize();
 	for(i=0;i<size;i++) {
-		control = (ControlLinear*)controlSet.get(list[i]);
+		control = dynamic_cast<ControlLinear*>(&controlSet.get(list[i]));
 		control->setUseSteps(false);
 	}
 

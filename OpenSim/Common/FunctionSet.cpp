@@ -31,11 +31,11 @@
  */
 
 // INCLUDES
-#include "rdMath.h"
 #include "PropertyDbl.h"
 #include "PropertyObjArray.h"
 #include "FunctionSet.h"
 #include "GCVSplineSet.h"
+#include "SimTKcommon.h"
 
 
 
@@ -68,13 +68,7 @@ FunctionSet::~FunctionSet()
  * @param aName Name of the function set.
  */
 FunctionSet::FunctionSet() :
-	Set<Function>(),
-	_minX(_propMinX.getValueDbl()),
-	_maxX(_propMaxX.getValueDbl()),
-	_minY(_propMinX.getValueDbl()),
-	_maxY(_propMaxX.getValueDbl()),
-	_minZ(_propMinX.getValueDbl()),
-	_maxZ(_propMaxX.getValueDbl())
+	Set<Function>()
 {
 	setNull();
 }
@@ -86,13 +80,7 @@ FunctionSet::FunctionSet() :
  * @param aFileName Name of the file.
  */
 FunctionSet::FunctionSet(const string &aFileName) :
-	Set<Function>(aFileName, false),
-	_minX(_propMinX.getValueDbl()),
-	_maxX(_propMaxX.getValueDbl()),
-	_minY(_propMinX.getValueDbl()),
-	_maxY(_propMaxX.getValueDbl()),
-	_minZ(_propMinX.getValueDbl()),
-	_maxZ(_propMaxX.getValueDbl())
+	Set<Function>(aFileName, false)
 {
 	setNull();
 	updateFromXMLNode();
@@ -110,277 +98,11 @@ void FunctionSet::
 setNull()
 {
 	setType("FunctionSet");
-	setupProperties();
 }
-//_____________________________________________________________________________
-/**
- * Setup serialized member variables.
- */
-void FunctionSet::
-setupProperties()
-{
-	// X
-	_propMinX.setName("min_x");
-	_propMinX.setValue(0.0);
-	_propertySet.append( &_propMinX );
-
-	_propMaxX.setName("max_x");
-	_propMaxX.setValue(0.0);
-	_propertySet.append( &_propMaxX );
-
-	// Y
-	_propMinY.setName("min_y");
-	_propMinY.setValue(0.0);
-	_propertySet.append( &_propMinY );
-
-	_propMaxY.setName("max_y");
-	_propMaxY.setValue(0.0);
-	_propertySet.append( &_propMaxY );
-
-	// Z
-	_propMinZ.setName("min_z");
-	_propMinZ.setValue(0.0);
-	_propertySet.append( &_propMinZ );
-
-	_propMaxZ.setName("max_z");
-	_propMaxZ.setValue(0.0);
-	_propertySet.append( &_propMaxZ );
-
-
-	// ARRAY OF FUNCTIONS
-	//_propertySet.append(	new PropertyObjArray("functions") );
-	//_functions = (ArrayPtrs<Function>*)&
-	//	_propertySet.get("functions")->getValueObjArray();
-}
-
-
-//=============================================================================
-// SET AND GET
-//=============================================================================
-//-----------------------------------------------------------------------------
-// MIN AND MAX X
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the minimum x independent variable.
- *
- * @param aMinX Minimum x.
- */
-void FunctionSet::
-setMinX(double aMinX)
-{
-	_minX = aMinX;
-}
-//_____________________________________________________________________________
-/**
- * Get the minimum x independent variable.
- *
- * @return Minimum x.
- */
-double FunctionSet::
-getMinX()
-{
-	return(_minX);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the maximum x independent variable.
- *
- * @param aMaxX Maximum x.
- */
-void FunctionSet::
-setMaxX(double aMaxX)
-{
-	_maxX = aMaxX;
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum x independent variable.
- *
- * @return Maximum x.
- */
-double FunctionSet::
-getMaxX()
-{
-	return(_maxX);
-}
-
-//-----------------------------------------------------------------------------
-// MIN AND MAX Y
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the minimum y independent variable.
- *
- * @param aMinY Minimum y.
- */
-void FunctionSet::
-setMinY(double aMinY)
-{
-	_minY = aMinY;
-}
-//_____________________________________________________________________________
-/**
- * Get the minimum y independent variable.
- *
- * @return Minimum y.
- */
-double FunctionSet::
-getMinY()
-{
-	return(_minY);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the maximum y independent variable.
- *
- * @param aMaxY Maximum y.
- */
-void FunctionSet::
-setMaxY(double aMaxY)
-{
-	_maxY = aMaxY;
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum y independent variable.
- *
- * @return Maximum y.
- */
-double FunctionSet::
-getMaxY()
-{
-	return(_maxY);
-}
-
-//-----------------------------------------------------------------------------
-// MIN AND MAX Z
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the minimum z independent variable.
- *
- * @param aMinZ Minimum z.
- */
-void FunctionSet::
-setMinZ(double aMinZ)
-{
-	_minZ = aMinZ;
-}
-//_____________________________________________________________________________
-/**
- * Get the minimum z independent variable.
- *
- * @return Minimum z.
- */
-double FunctionSet::
-getMinZ()
-{
-	return(_minZ);
-}
-
-//_____________________________________________________________________________
-/**
- * Set the maximum z independent variable.
- *
- * @param aMaxZ Maximum z.
- */
-void FunctionSet::
-setMaxZ(double aMaxZ)
-{
-	_maxZ = aMaxZ;
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum z independent variable.
- *
- * @return Maximum z.
- */
-double FunctionSet::
-getMaxZ()
-{
-	return(_maxZ);
-}
-
 
 //=============================================================================
 // EVALUATION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Update the bounding boxes of all functions in the set.
- *
- * @see GCVSplineSet::UpdateBoundingBox()
- */
-void FunctionSet::
-updateBoundingBox()
-{
-	int i,n = _objects.getSize();
-	for(i=0;i<n;i++) updateBoundingBox(i);
-}
-//_____________________________________________________________________________
-/**
- * Update the bounding box of a specified function.
- *
- * @param aIndex Index of the function for which to update the bounding box.
- * @see GCVSplineSet::UpdateBoundingBox()
- */
-void FunctionSet::
-updateBoundingBox(int aIndex)
-{
-	Function *func = get(aIndex);
-	if(func==NULL) return;
-	func->updateBoundingBox();
-}
-//_____________________________________________________________________________
-/**
- * Update the bounding box for this function set.
- * The bounding box is bounding box for all functions.  The bounding box
- * is determined by looping through all the functions in this set and
- * querying each for its bounding box. Note that none of the bounding boxes
- * of the functions in this set are changed by this method.
- *
- * @see Function
- */
-void FunctionSet::
-updateSetBoundingBox()
-{
-	int i;
-	bool initialized=false;
-	Function *func;
-	for(i=0;i<getSize();i++) {
-
-		// GET FUNCTION
-		func = get(i);
-		if(func==NULL) continue;
-
-		// INITIALIZE
-		if(!initialized) {
-			setMinX(func->getMinX());
-			setMaxX(func->getMaxX());
-			setMinY(func->getMinY());
-			setMaxY(func->getMaxY());
-			setMinZ(func->getMinZ());
-			setMaxZ(func->getMaxZ());
-			initialized = true;
-
-		// CHECK BOUNDS
-		} else {
-
-			if(func->getMinX()<getMinX()) setMinX(func->getMinX());
-			if(func->getMinY()<getMinY()) setMinY(func->getMinY());
-			if(func->getMinZ()<getMinZ()) setMinZ(func->getMinZ());
-
-			if(func->getMaxX()>getMaxX()) setMaxX(func->getMaxX());
-			if(func->getMaxY()>getMaxY()) setMaxY(func->getMaxY());
-			if(func->getMaxZ()>getMaxZ()) setMaxZ(func->getMaxZ());
-
-		}
-	}
-}
-
 //_____________________________________________________________________________
 /**
  * Evaluate a function or one of its derivatives.
@@ -391,16 +113,23 @@ updateSetBoundingBox()
  * @param aY Value of the y independent variable.
  * @param aZ Value of the z independent variable.
  * @return Value of the function.  If the function is NULL or undefined,
- * rdMath::getNAN() is returned.
+ * SimTK::NaN is returned.
  * @see Function
  */
 double FunctionSet::
-evaluate(int aIndex,int aDerivOrder,double aX,double aY,double aZ) const
+evaluate(int aIndex,int aDerivOrder,double aX) const
 {
-	Function *func = get(aIndex);
-	if(func==NULL) return(rdMath::getNAN());
+	Function& func = get(aIndex);
 
-	return( func->evaluate(aDerivOrder,aX,aY,aZ) );
+	SimTK::Vector arg = SimTK::Vector(1, aX);
+	if (aDerivOrder==0)
+		return (func.calcValue(arg));
+
+	std::vector<int> derivComponents;
+	for(int i=0; i<aDerivOrder; i++)
+		derivComponents.push_back(0);
+
+	return( func.calcDerivative(derivComponents, arg) );
 }
 
 //_____________________________________________________________________________
@@ -413,23 +142,26 @@ evaluate(int aIndex,int aDerivOrder,double aX,double aY,double aZ) const
  * @param aY Value of the y independent variable.
  * @param aZ Value of the z independent variable.
  * @return Value of the function.  If the function is NULL or undefined,
- * rdMath::getNAN() is returned.
+ * SimTK::NaN is returned.
  * @see Function
  */
 void FunctionSet::
-evaluate(Array<double> &rValues,int aDerivOrder,double aX,double aY,double aZ) const
+evaluate(Array<double> &rValues,int aDerivOrder,double aX) const
 {
 	int size = getSize();
 	rValues.setSize(size);
 
 	int i;
-	Function *func;
 	for(i=0;i<size;i++) {
-		func = get(i);
-		if(func==NULL) {
-			rValues[i] = rdMath::getNAN();
-		} else {
-			rValues[i] = func->evaluate(aDerivOrder,aX,aY,aZ);
+		Function& func = get(i);
+		if (aDerivOrder==0)
+			rValues[i] = func.calcValue(SimTK::Vector(1,aX));
+		else {
+			std::vector<int> derivComponents;
+			for(int j=0; j<aDerivOrder; j++)
+				derivComponents.push_back(0);
+			rValues[i] = func.calcDerivative(derivComponents, SimTK::Vector(1,aX));
+
 		}
 	}
 }

@@ -36,6 +36,7 @@
 #include <time.h>
 
 #include "SimbodySimmFunction.h"
+#include <OpenSim/Common/XYFunctionInterface.h>
 
 
 //=============================================================================
@@ -64,8 +65,8 @@ SimbodySimmFunction::SimbodySimmFunction()
 {
    _function = NULL;
    _userNumber = -1;
-   _XType = AbstractTransformAxis::Translational;
-   _YType = AbstractTransformAxis::Translational;
+   _XType = Coordinate::Translational;
+   _YType = Coordinate::Translational;
 }
 
 //_____________________________________________________________________________
@@ -78,8 +79,8 @@ SimbodySimmFunction::SimbodySimmFunction()
  * @param aYType Type (translational, rotational) of the function's Y axis
  */
 SimbodySimmFunction::SimbodySimmFunction(const OpenSim::Function* aFunction, int aUserNumber,
-                                         AbstractTransformAxis::MotionType aXType,
-                                         AbstractTransformAxis::MotionType aYType)
+                                         Coordinate::MotionType aXType,
+                                         Coordinate::MotionType aYType)
 {
    _function = aFunction;
    _userNumber = aUserNumber;
@@ -95,15 +96,62 @@ SimbodySimmFunction::SimbodySimmFunction(const OpenSim::Function* aFunction, int
  */
 void SimbodySimmFunction::write(ofstream& aStream)
 {
-   aStream << "beginfunction f" << _userNumber << endl;
-   for (int i=0; i<_function->getNumberOfPoints(); i++) {
-      double x = _function->getX(i);
-      if (_XType == AbstractTransformAxis::Rotational)
-         x *= 180.0 / SimTK::Pi;
-      double y = _function->getY(i);
-      if (_YType == AbstractTransformAxis::Rotational)
-         y *= 180.0 / SimTK::Pi;
-      aStream << "(" << x << "," << y << ")" << endl;
-   }
-   aStream << "endfunction" << endl << endl;
+	XYFunctionInterface xyFunc((OpenSim::Function*)_function);
+
+	if (xyFunc.getFunctionType() == XYFunctionInterface::typeLinearFunction) {
+		const LinearFunction* linearFunc = dynamic_cast<const LinearFunction*>(_function);
+		const Array<double> coeff = linearFunc->getCoefficients();
+		aStream << "beginlinearfunction f" << _userNumber << endl;
+		aStream << "(-1.0," << coeff[1] - coeff[0] << ")" << endl;
+		aStream << "( 1.0," << coeff[1] + coeff[0] << ")" << endl;
+		aStream << "endlinearfunction" << endl << endl;
+	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typeGCVSpline) {
+		aStream << "begingcvspline f" << _userNumber << endl;
+		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+			double x = xyFunc.getX(i);
+			if (_XType == Coordinate::Rotational)
+				x *= 180.0 / SimTK::Pi;
+			double y = xyFunc.getY(i);
+			if (_YType == Coordinate::Rotational)
+				y *= 180.0 / SimTK::Pi;
+			aStream << "(" << x << "," << y << ")" << endl;
+		}
+		aStream << "endgcvspline" << endl << endl;
+	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typeNatCubicSpline) {
+		aStream << "beginnaturalcubicspline f" << _userNumber << endl;
+		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+			double x = xyFunc.getX(i);
+			if (_XType == Coordinate::Rotational)
+				x *= 180.0 / SimTK::Pi;
+			double y = xyFunc.getY(i);
+			if (_YType == Coordinate::Rotational)
+				y *= 180.0 / SimTK::Pi;
+			aStream << "(" << x << "," << y << ")" << endl;
+		}
+		aStream << "endnaturalcubicspline" << endl << endl;
+	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typePiecewiseLinearFunction) {
+		aStream << "beginlinearfunction f" << _userNumber << endl;
+		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+			double x = xyFunc.getX(i);
+			if (_XType == Coordinate::Rotational)
+				x *= 180.0 / SimTK::Pi;
+			double y = xyFunc.getY(i);
+			if (_YType == Coordinate::Rotational)
+				y *= 180.0 / SimTK::Pi;
+			aStream << "(" << x << "," << y << ")" << endl;
+		}
+		aStream << "endlinearfunction" << endl << endl;
+	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typeStepFunction) {
+		aStream << "beginstepfunction f" << _userNumber << endl;
+		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
+			double x = xyFunc.getX(i);
+			if (_XType == Coordinate::Rotational)
+				x *= 180.0 / SimTK::Pi;
+			double y = xyFunc.getY(i);
+			if (_YType == Coordinate::Rotational)
+				y *= 180.0 / SimTK::Pi;
+			aStream << "(" << x << "," << y << ")" << endl;
+		}
+		aStream << "endstepfunction" << endl << endl;
+	}
 }

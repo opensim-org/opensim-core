@@ -40,7 +40,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -62,7 +62,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Delp1990Muscle : public AbstractMuscle  
+class OSIMACTUATORS_API Delp1990Muscle : public Muscle  
 {
 
 //=============================================================================
@@ -80,10 +80,6 @@ protected:
 	/** Parameter used in time constant of ramping up and ramping down of muscle force */
 	PropertyDbl _activation2Prop;
 	double &_activation2;
-
-	/** Mass between the tendon and muscle fibers */
-	PropertyDbl _massProp;
-	double &_mass;
 
 	/** Maximum isometric force that the fibers can generate */
 	PropertyDbl _maxIsometricForceProp;
@@ -105,6 +101,10 @@ protected:
 	PropertyDbl _maxContractionVelocityProp;
 	double &_maxContractionVelocity;
 
+	/** Mass between the tendon and muscle fibers */
+	PropertyDbl _massProp;
+	double &_mass;
+
 	/* Function representing force-length behavior of tendon */
 	PropertyObjPtr<Function> _tendonForceLengthCurveProp;
 	Function *&_tendonForceLengthCurve;
@@ -121,21 +121,10 @@ protected:
 	PropertyObjPtr<Function> _forceVelocityCurveProp;
 	Function *&_forceVelocityCurve;
 
-	// Muscle controls
-	double _excitation;
-
-	// Muscle states and derivatives
-	double _activation;
-	double _activationDeriv;
-	double _fiberLength;
-	double _fiberLengthDeriv;
-	double _fiberVelocity;
-	double _fiberVelocityDeriv;
-
-	// Forces in various components
-	double _tendonForce;
-	double _activeForce;
-	double _passiveForce;
+	// index for Forces in various components
+	SimTK::CacheEntryIndex _tendonForceIndex;
+	SimTK::CacheEntryIndex _activeForceIndex;
+	SimTK::CacheEntryIndex _passiveForceIndex;
 
 private:
 	static const int STATE_ACTIVATION;
@@ -155,56 +144,88 @@ public:
 
 #ifndef SWIG
 	Delp1990Muscle& operator=(const Delp1990Muscle &aMuscle);
+    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
+    virtual void equilibrate(SimTK::State& state) const;
 #endif
    void copyData(const Delp1990Muscle &aMuscle);
-	virtual void copyPropertyValues(AbstractActuator& aActuator);
+	virtual void copyPropertyValues(Actuator& aActuator);
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getMaxIsometricForce() { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() { return _tendonSlackLength; }
-	virtual double getPennationAngleAtOptimalFiberLength() { return _pennationAngle; }
-	virtual double getMaxContractionVelocity() { return _maxContractionVelocity; }
-	virtual double getTimeScale() { return _timeScale; }
+	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
+	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
+	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
+	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngle; }
+	virtual double getMaxContractionVelocity() const { return _maxContractionVelocity; }
+	virtual double getTimeScale() const { return _timeScale; }
+	virtual double getMass() const { return _mass; }
+	virtual bool setTimeScale(double aTimeScale);
+	virtual bool setActivation1(double aActivation1);
+	virtual bool setActivation2(double aActivation2);
+	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
+	virtual bool setOptimalFiberLength(double aOptimalFiberLength);
+	virtual bool setTendonSlackLength(double aTendonSlackLength);
+	virtual bool setPennationAngle(double aPennationAngle);
+	virtual bool setMaxContractionVelocity(double aMaxContractionVelocity);
+	virtual bool setMass(double aMass);
 	// Computed quantities
-	virtual double getPennationAngle();
-	virtual double getFiberLength();
-	virtual double getNormalizedFiberLength();
-	virtual double getFiberVelocity();
-	virtual double getPassiveFiberForce();
-	double getStress() const;
+#ifndef SWIG
+	virtual double getPennationAngle(const SimTK::State &) const;
+	virtual double getNormalizedFiberLength(const SimTK::State &) const;
+	virtual double getPassiveFiberForce(const SimTK::State &) const;
+	double getStress(const SimTK::State& s) const;
+	virtual double getActivation(const SimTK::State& s) const { return getStateVariable(s, STATE_ACTIVATION); }
+	virtual void setActivation(SimTK::State& s, double activation) const { setStateVariable(s, STATE_ACTIVATION, activation); }
+	virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVATION); }
+	virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, STATE_ACTIVATION, activationDeriv); }
+	virtual double getFiberLength(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_LENGTH); }
+	virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariable(s, STATE_FIBER_LENGTH, fiberLength); }
+	virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_LENGTH); }
+	virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH, fiberLengthDeriv); }
+	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_VELOCITY); }
+	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, STATE_FIBER_VELOCITY, fiberVelocity); }
+	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_VELOCITY); }
+	virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, STATE_FIBER_VELOCITY, fiberVelocityDeriv); }
+	virtual void setTendonForce(const SimTK::State& s, double aForce) const;
+	virtual double getTendonForce(const SimTK::State& s) const;
+	virtual void setActiveForce(const SimTK::State& s, double aForce) const;
+	virtual double getActiveForce(const SimTK::State& s) const;
+	virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
+	virtual double getPassiveForce(const SimTK::State& s) const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
-	virtual void computeStateDerivatives(double rDYDT[]);
-	virtual void computeEquilibrium();
-	virtual void computeActuation();
-	virtual double computeIsometricForce(double activation);
-	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation);
+	virtual void computeStateDerivatives(const SimTK::State& s);
+	virtual void computeEquilibrium(SimTK::State& s) const;
+	virtual double computeActuation(const SimTK::State& s) const;
+	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation);
 
-	virtual void postScale(const ScaleSet& aScaleSet);
-	virtual void scale(const ScaleSet& aScaleSet);
-	virtual void setup(Model* aModel);
+	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
+#endif
+	virtual void setup(Model& aModel);
 
 	virtual Function* getActiveForceLengthCurve() const;
+	virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);
 	virtual Function* getPassiveForceLengthCurve() const;
+	virtual bool setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve);
 	virtual Function* getTendonForceLengthCurve() const;
+	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
 	virtual Function* getForceVelocityCurve() const;
+	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
-	double calcTendonForce(double aNormTendonLength) const;
-	double calcFiberForce(double aActivation, double aNormFiberLength, double aNormFiberVelocity) const;
-
-	virtual double getActivation() const { return getState(STATE_ACTIVATION); }
-
-	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, AbstractActuator);
+	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, Actuator);
 
 private:
 	void setNull();
 	void setupProperties();
+	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
+	double calcFiberForce(double aActivation, double aNormFiberLength, double aNormFiberVelocity) const;
+
 //=============================================================================
 };	// END of class Delp1990Muscle
 //=============================================================================

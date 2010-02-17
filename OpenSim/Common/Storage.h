@@ -166,7 +166,6 @@ public:
 	void setDataColumn(int aStateIndex,const Array<double> &aData);
 	int getDataColumn(const std::string& columnName,double *&rData) const;
 	void getDataColumn(const std::string& columnName, Array<double>& data, double startTime=0.0);
-	void interpolateAt(const Array<double> &targetTimes);
 	// STEP INTERVAL
 	void setStepInterval(int aStepInterval);
 	int getStepInterval() const;
@@ -187,8 +186,8 @@ public:
 	//--------------------------------------------------------------------------
 	int reset(int aIndex=0);
 	int reset(double aTime);
-	void crop(const double newStartTime, const double newFinalTime);
 	void purge() { _storage.setSize(0); };	// Similar to reset but doesn't try to keep history
+	void crop(const double newStartTime, const double newFinalTime);
 	//--------------------------------------------------------------------------
 	// STORAGE
 	//--------------------------------------------------------------------------
@@ -230,9 +229,9 @@ public:
 	int computeAverage(int aN,double *aAve) const;
 	int computeAverage(double aTI,double aTF,int aN,double *aAve) const;
 	void pad(int aPadSize);
+	void smoothSpline(int aOrder,double aCutoffFrequency);
+	void lowpassIIR(double aCutoffFequency);
 	void lowpassFIR(int aOrder,double aCutoffFequency);
-	void lowpassIIR(double aCutoffFrequency);	// Filter using 3rd order Butterworth
-
 	// Append rows of two storages at matched time
 	void addToRdStorage(Storage& rStorage, double aStartTime, double aEndTime);
 	//--------------------------------------------------------------------------
@@ -243,6 +242,10 @@ public:
 	void findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const;
 	double resample(double aDT, int aDegree);
 	double resampleLinear(double aDT);
+	double compareColumn(Storage& aOtherStorage, 
+						 std::string& aColumnName,
+						 double startTime, double endTime=-1.0);
+
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------
@@ -252,6 +255,7 @@ public:
 	// convenience function for Analyses and DerivCallbacks
 	static void printResult(const Storage *aStorage,const std::string &aName,
 		const std::string &aDir,double aDT,const std::string &aExtension);
+    void interpolateAt(const Array<double> &targetTimes);
 private:
 	int writeHeader(FILE *rFP,double aDT=-1) const;
 	int writeSIMMHeader(FILE *rFP,double aDT=-1, const char*aComment=0) const;

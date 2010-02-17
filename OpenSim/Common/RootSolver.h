@@ -38,10 +38,12 @@
 #include <string>
 #include "Array.h"
 #include "VectorFunctionUncoupledNxN.h"
+#include "SimTKsimbody.h"
 
 
 //template class OSIMCOMMON_API Array<double>;
 
+namespace OpenSim { 
 
 //=============================================================================
 //=============================================================================
@@ -64,15 +66,13 @@
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API RootSolver
 {
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 private:
-	/** NxN Decoupled Vector Function */
+	
 	VectorFunctionUncoupledNxN *_function;
 
 
@@ -92,7 +92,7 @@ private:
 	// SOLVE
 	//--------------------------------------------------------------------------
 public:
-	Array<double> solve(const Array<double> &ax,const Array<double> &bx,
+	Array<double> solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
 		const Array<double> &tol);
 
 //=============================================================================

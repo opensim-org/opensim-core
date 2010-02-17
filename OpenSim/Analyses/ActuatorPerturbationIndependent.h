@@ -9,19 +9,17 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "osimAnalysesDLL.h"
-#include "Contact.h"
 #include "ActuatorPerturbation.h"
+#include "SimTKsimbody.h"
 
 
 //=============================================================================
 //=============================================================================
 /**
- * A derivatives callback used for perturbing the actuator forces during a
+ * A used for perturbing the actuator forces during a
  * simulation.  The "Independent" in the name refers to the fact that all
  * of the unperturbed muscles are forced to exert the force that they did 
  * during the nominal simulation during which they were recorded (ie, the 
@@ -29,22 +27,22 @@
  * is also true for the perturbed muscle - the perturbation is made to the 
  * nominal force without taking into account the intrinsic properties of the
  * muscle. 
- * NOTES:  When you use this callBack to make a perturbation the actuator force,
+ * NOTES:  When you use this to make a perturbation the actuator force,
  *        this change in the force IS NOT recoreded in the state file.  If you
  *			 want to run an induced accleration analysis using results from a 
  * 		 perturbation, you must first alter the states field to accurately
  *			 reflect the changes made to the forces.
  * 
- *			 This callBack requires that two unperturbed integration be performed 
+ *			 This requires that two unperturbed integration be performed 
  * 		 prior to running a perturbation. The first is to establish the 
  *			 correct number of timesteps used in the simulation. The integrator
  *			 should be set to use the existing DTVector prior to running the 
  * 		 second unperturbed simulation, during which the unperturbed forces
  * 		 should be recorded. The user is responsible for running 
- *			 these unperturbed integrations.The callBack should be reset between
+ *			 these unperturbed integrations.This should be reset between
  *			 running simulations.
  *
- *			 This callBack will only work properly when the integration start
+ *			 This will only work properly when the integration start
  *			 time is t = 0.0.
  *
  * @author Frank C. Anderson, Saryn R. Goldberg, May Q. Liu
@@ -102,16 +100,9 @@ public:
 	void setUnperturbedForceSplineSet(Storage *aStore);
 	GCVSplineSet* getUnperturbedForceSplineSet();
 	Storage* getPerturbedForceStorage();
-	virtual void reset(); 
+	virtual void reset(const SimTK::State& s); 
 	int getStep();
-	
-	//--------------------------------------------------------------------------
-	// CALLBACKS
-	//--------------------------------------------------------------------------
-	virtual void
-		computeActuation(double aT,double *aX,double *aY);
-	virtual void
-		applyActuation(double aT,double *aX,double *aY);
+    void setForces( const SimTK::State& s );
 
 //=============================================================================
 };	// END of class ActuatorPerturbationIndependent

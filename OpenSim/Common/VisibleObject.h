@@ -36,17 +36,19 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "Transform.h"
 #include "VisibleProperties.h"
 #include "PropertyStrArray.h"
 #include "PropertyObj.h"
 #include "PropertyDblArray.h"
 #include "PropertyDblVec3.h"
 #include "Geometry.h"
+#include "SimTKcommon.h"
+
+#ifndef SWIG
+using SimTK::Transform;
+#endif
 
 namespace OpenSim { 
-
-class AbstractDynamicsEngine;
 
 class Geometry;
 // CONSTANTS
@@ -102,7 +104,6 @@ public:
 	VisibleObject(const VisibleObject &aVisibleObject);
 	virtual ~VisibleObject();
 	virtual Object* copy() const;
-	virtual void setup(AbstractDynamicsEngine *aEngine) { }
 
 private:
 	void setNull();
@@ -138,8 +139,25 @@ public:
 	void setVisibleProperties(const VisibleProperties &aVisibleProperties);
 	VisibleProperties& getVisibleProperties();
 	// TRANSFORM
-	void setTransform(const Transform &aTransform);
-	virtual Transform& getTransform();
+#ifndef SWIG
+	const SimTK::Transform& getTransform() {
+		return _transform;
+	}
+	SimTK::Transform& updTransform() {
+		return _transform;
+	}
+#endif
+	void getTransformAsDouble16(double flatList[]) {
+		double* matStart = &_transform.toMat44()[0][0];
+		for (int i=0; i<16; i++) flatList[i]=matStart[i];
+	}
+
+	void setTransform(const SimTK::Transform& aTransform) {
+		_transform = aTransform;
+	}
+	void translate(const SimTK::Vec3& t) {
+		_transform.updP() = _transform.p()+t;
+	}
 
 	void setScaleFactors(const SimTK::Vec3& aScaleFactors);
 	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
@@ -149,21 +167,7 @@ public:
 	}
 	void getScaleFactors(double aScaleFactors[]) const {
 		getScaleFactors(SimTK::Vec3::updAs(aScaleFactors));
-	}
-	// More interfaces for transform as other interfaces (Angles based) are needed
-	void rotateRadians(const double rR[3]);
-	void rotateRadians(const double rR[3], const Transform::RotationOrder order);
-	void rotateRadiansX(const double rR);
-	void rotateRadiansY(const double rR);
-	void rotateRadiansZ(const double rR);
-	void rotateRadiansAxis(const double rR, const SimTK::Vec3& axis);
-	void rotateDegrees(const double rR[3]);
-	void rotateDegrees(const double rR[3], const Transform::RotationOrder order);
-	void rotateDegreesX(const double rR);
-	void rotateDegreesY(const double rR);
-	void rotateDegreesZ(const double rR);
-	void rotateDegreesAxis(const double rR, const SimTK::Vec3& axis);
-	void translate(const SimTK::Vec3& t);
+	} 
 	// DEPENDENTS
 	void addDependent(VisibleObject *aChild){ _dependents.append(aChild); };
 	bool hasDependent(VisibleObject *aChild){ // Check if dependency already added

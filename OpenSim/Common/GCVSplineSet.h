@@ -78,7 +78,9 @@ private:
 	// SET AND GET
 	//--------------------------------------------------------------------------
 public:
-	GCVSpline* getGCVSpline(int aIndex);
+	GCVSpline* getGCVSpline(int aIndex) const;
+	double getMinX() const;
+	double getMaxX() const;
 
 	//--------------------------------------------------------------------------
 	// UTILITY

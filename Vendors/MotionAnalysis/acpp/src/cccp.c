@@ -3436,6 +3436,8 @@ get_filename:
 
     if (system_header_p)
       system_include_depth--;
+
+    close (f);
   }
 }
 

@@ -1,6 +1,6 @@
 // PointKinematics.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHOR: Frank C. Anderson
+//	AUTHOR: Frank C. Anderson, Ajay Seth
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /* Copyright (c)  2006 Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -32,14 +32,9 @@
 // INCLUDES
 //=============================================================================
 #include <string>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include "PointKinematics.h"
-
-
 
 
 using namespace OpenSim;
@@ -75,7 +70,9 @@ PointKinematics::~PointKinematics()
 PointKinematics::PointKinematics(Model *aModel) :
 Analysis(aModel),
 _body(NULL),
+_relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec3()),
 _pointName(_pointNameProp.getValueStr())
 {
@@ -87,20 +84,6 @@ _pointName(_pointNameProp.getValueStr())
 
 	if (aModel==0)
 		return;
-
-	// Map name to index
-	_body = aModel->getDynamicsEngine().getBodySet()->get(_bodyName);
-
-	// ALLOCATIONS
-	if (_dy != 0)
-		delete[] _dy;
-
-	_dy = new double[_model->getNumStates()];
-
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
-
 
 }
 
@@ -123,7 +106,9 @@ _pointName(_pointNameProp.getValueStr())
 PointKinematics::PointKinematics(const std::string &aFileName):
 Analysis(aFileName, false),
 _body(NULL),
+_relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec3()),
 _pointName(_pointNameProp.getValueStr())
 {
@@ -151,11 +136,14 @@ _pointName(_pointNameProp.getValueStr())
 PointKinematics::PointKinematics(const PointKinematics &aPointKinematics):
 Analysis(aPointKinematics),
 _body(aPointKinematics._body),
+_relativeToBody(aPointKinematics._relativeToBody),
 _bodyName(_bodyNameProp.getValueStr()),
+_relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
 _point(_pointProp.getValueDblVec3()),
 _pointName(_pointNameProp.getValueStr())
 {
 	setNull();
+
 	// COPY TYPE AND NAME
 	*this = aPointKinematics;
 }
@@ -177,7 +165,6 @@ Object* PointKinematics::copy() const
 void PointKinematics::
 setNull()
 {
-
 	// POINTERS
 	_dy = NULL;
 	_kin = NULL;
@@ -195,10 +182,13 @@ setNull()
 	// POINT INFORMATION
 	//_point.setSize(3);
 	Vec3 zero3(0.0);	
-
 	_bodyNameProp.setName("body_name");
 	_bodyNameProp.setValue("ground");
 	_propertySet.append( &_bodyNameProp );
+
+	_relativeToBodyNameProp.setName("relative_to_body_name");
+	_relativeToBodyNameProp.setValue("none");
+	_propertySet.append( &_relativeToBodyNameProp );
 
 	_pointNameProp.setName("point_name");
 	_pointNameProp.setValue("NONAME");
@@ -208,6 +198,8 @@ setNull()
 	_pointProp.setValue(zero3);
 	_propertySet.append( &_pointProp );
 }
+
+
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -226,9 +218,11 @@ operator=(const PointKinematics &aPointKinematics)
 	// BASE CLASS
 	Analysis::operator=(aPointKinematics);
 	_body = aPointKinematics._body;
+	_relativeToBody = aPointKinematics._relativeToBody;
 	_point = aPointKinematics._point;
 	_pointName = aPointKinematics._pointName;
 	_bodyName = aPointKinematics._bodyName;
+	_relativeToBodyName = aPointKinematics._relativeToBodyName;
 
 	// STORAGE
 	deleteStorage();
@@ -248,9 +242,17 @@ constructDescription()
 
 	strcpy(descrip,"\nThis file contains the kinematics ");
 	strcat(descrip,"(position, velocity, or acceleration) of\n");
-	sprintf(tmp,"point (%lf, %lf, %lf) on the %s of model %s.\n",
-		_point[0],_point[1],_point[2],_body->getName().c_str(),
-		_model->getName().c_str());
+	
+	if(_relativeToBody){
+		sprintf(tmp,"point (%lf, %lf, %lf) on body %s relative to body %s of model %s.\n",
+			_point[0],_point[1],_point[2],_body->getName().c_str(),
+			_relativeToBody->getName().c_str(), _model->getName().c_str());
+	}
+	else{
+		sprintf(tmp,"point (%lf, %lf, %lf) on the %s of model %s.\n",
+			_point[0],_point[1],_point[2],_body->getName().c_str(),
+			_model->getName().c_str());
+	}
 	strcat(descrip,tmp);
 	strcat(descrip,"\nUnits are S.I. units (seconds, meters, Newtons,...)\n\n");
 
@@ -322,12 +324,14 @@ deleteStorage()
  * @param aModel Model pointer
  */
 void PointKinematics::
-setModel(Model *aModel)
+setModel(Model& aModel)
 {
 	Analysis::setModel(aModel);
 
 	// Map name to index
-	_body = aModel->getDynamicsEngine().getBodySet()->get(_bodyName);
+	_body = &aModel.updBodySet().get(_bodyName);
+    if (aModel.updBodySet().contains(_relativeToBodyName))
+    	_relativeToBody = &aModel.updBodySet().get(_relativeToBodyName);
 
 	// ALLOCATIONS
 	if (_dy != 0)
@@ -357,7 +361,7 @@ setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
 {
 	if (_model == 0)
 		return;
-	setBody(_model->getDynamicsEngine().getBodySet()->get(aBody));
+	setBody(&_model->updBodySet().get(aBody));
 	setPoint(aPoint);
 
 }
@@ -368,7 +372,7 @@ setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint)
  * @param aBody Body ID
  */
 void PointKinematics::
-setBody(AbstractBody* aBody)
+setBody(Body* aBody)
 {
 	// CHECK
 	if (aBody==NULL) {
@@ -393,16 +397,47 @@ setBody(AbstractBody* aBody)
 		_pStore->setDescription(getDescription());
 	}
 }
+void PointKinematics::
+setRelativeToBody(Body* aBody)
+{
+	// CHECK
+	if (aBody==NULL) {
+		printf("PointKinematics.setRelativeToBody:  WARN- invalid body pointer %p.\n", aBody);
+		_body = NULL;
+		return;
+	}
+
+	// SET
+	_relativeToBody = aBody;
+	_relativeToBodyName = aBody->getName();
+	cout<<"PointKinematics.setRelativeToBody: set relative-to body to "<<_bodyName<<endl;
+
+		// RESET STORAGE
+	if(_aStore!=NULL) {
+		constructDescription();
+		_aStore->reset();
+		_vStore->reset();
+		_pStore->reset();
+		_aStore->setDescription(getDescription());
+		_vStore->setDescription(getDescription());
+		_pStore->setDescription(getDescription());
+	}
+}
+
 //_____________________________________________________________________________
 /**
  * Get the body for which the induced accelerations are to be computed.
  *
- * @return Body ID
+ * @return Body pointer
  */
-AbstractBody* PointKinematics::
-getBody()
+Body* PointKinematics::getBody()
 {
 	return(_body);
+}
+
+Body* PointKinematics::getRelativeToBody()
+{
+	return(_relativeToBody);
 }
 
 //-----------------------------------------------------------------------------
@@ -537,46 +572,37 @@ setStorageCapacityIncrements(int aIncrement)
  * Record the kinematics.
  */
 int PointKinematics::
-record(double aT,double *aX,double *aY)
+record(const SimTK::State& s)
 {
-	AbstractDynamicsEngine& de = _model->getDynamicsEngine();
-
-	// COMPUTE ACCELERATIONS
-	// ----------------------------------
-	// SET
-	_model->set(aT,aX,aY);
-	_model->getDerivCallbackSet()->set(aT,aX,aY);
-
-	// ACTUATION
-	_model->getActuatorSet()->computeActuation();
-	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->getActuatorSet()->apply();
-	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
-
-	// CONTACT
-	_model->getContactSet()->computeContact();
-	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->getContactSet()->apply();
-	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
-
-	// ACCELERATIONS
-	de.computeDerivatives(_dy,&_dy[_model->getNumCoordinates()]);
-	// ----------------------------------
+	const SimbodyEngine& de = _model->getSimbodyEngine();
 
 	// VARIABLES
 	SimTK::Vec3 vec;
 
 	// POSITION
-	de.getPosition(*_body,_point,vec);
-	_pStore->append(aT,vec);
+	de.getPosition(s, *_body,_point,vec);
+	if(_relativeToBody){
+
+		de.transformPosition(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+	}
+
+	_pStore->append(s.getTime(),vec);
 
 	// VELOCITY
-	de.getVelocity(*_body,_point,vec);
-	_vStore->append(aT,vec);
+	de.getVelocity(s, *_body,_point,vec);
+	if(_relativeToBody){
+		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+	}
+
+	_vStore->append(s.getTime(),vec);
 
 	// ACCELERATIONS
-	de.getAcceleration(*_body,_point,vec);
-	_aStore->append(aT,vec);
+	de.getAcceleration(s, *_body,_point,vec);
+	if(_relativeToBody){
+		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);
+	}
+
+	_aStore->append(s.getTime(),vec);
 
 	return(0);
 }
@@ -585,36 +611,28 @@ record(double aT,double *aX,double *aY)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * This method is meant to be called at the begining of an integration 
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
+ * @param s current system state
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
 	// RESET STORAGE
-	_pStore->reset(aT);
-	_vStore->reset(aT);
-	_aStore->reset(aT);
+	_pStore->reset(s.getTime());
+	_vStore->reset(s.getTime());
+	_aStore->reset(s.getTime());
 
-	int status = record(aT,aX,aY);
+	int status = record(s);
 
 	return(status);
 }
@@ -624,35 +642,23 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * When called during an integration, this method is meant to be called 
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
- * @param aXPrev Controls at the beginining of the current time step.
- * @param aYPrev States at the beginning of the current time step.
- * @param aYPPrev Pseudo states at the beginning of the current time step.
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just taken.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
+ * @param s current state of system
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(aStep)) return(0);
+	if(!proceed(stepNumber)) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }
@@ -661,30 +667,22 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * This method is meant to be called at the end of an integration 
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
+ * @param s current state of system
  * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int PointKinematics::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end(const SimTK::State& s)
 {
 	if(!proceed()) return(0);
-	record(aT,aX,aY);
+	record(s);
 	cout<<"PointKinematics.end: Finalizing analysis "<<getName()<<".\n";
 	return(0);
 }

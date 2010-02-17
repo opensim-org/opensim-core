@@ -43,4 +43,4 @@ void subPoints(smPoint3 a, smPoint3 b, smPoint3 c);
 ReturnCode checkMarkerMovement(double movement, smUnit units, double threshold);
 void initializeOrthoTrakStruct(smOrthoTrakModel *data);
 ReturnCode createsmModel(ModelStruct *simmModel, smModel *smMod);
-
+void deletesmModel(smModel *model);

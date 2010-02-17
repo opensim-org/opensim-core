@@ -34,13 +34,15 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Function.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 #include "SimbodySimmDof.h"
 
 namespace OpenSim {
 
 class Joint;
-class AbstractTransformAxis;
+class TransformAxis;
 
 static std::string _translationNames[3] = {"tx","ty","tz"};
 static std::string _rotationNames[3] = {"r1","r2","r3"};
@@ -68,9 +70,7 @@ protected:
 
    SimbodySimmDof _dof[6];
 
-   bool _txUsed;
-   bool _tyUsed;
-   bool _tzUsed;
+	bool _dofUsed[6];
    int _rotationsUsed;
 
 //=============================================================================
@@ -84,8 +84,8 @@ public:
    SimbodySimmJoint(const std::string& aName, const std::string& aParentBodyName,
                     const std::string& aChildBodyName);
    void setNull();
-   bool addFunctionDof(const AbstractTransformAxis& aDof, const std::string& aCoordinateName,
-                       int aFunctionNumber);
+   bool addFunctionDof(const SimTK::Vec3& aAxis, const std::string& aCoordinateName,
+		int aFunctionNumber, Coordinate::MotionType aMotionType);
    bool addConstantDof(const std::string& aName, const double* aAxis, double aValue);
    void updateOrder(const std::string& aDofName);
    void finalize();

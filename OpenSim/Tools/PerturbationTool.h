@@ -37,6 +37,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
+#include <OpenSim/Simulation/Control/Controller.h>
 #include "osimToolsDLL.h"
 #include "ForwardTool.h"
 #ifdef SWIG
@@ -47,10 +48,6 @@
 #endif
 
 namespace OpenSim { 
-
-class ForceApplier;
-class LinearSpring;
-class TorsionalSpring;
 
 //=============================================================================
 //=============================================================================
@@ -109,6 +106,11 @@ public:
 		operator=(const PerturbationTool &aPerturbationTool);
 #endif
 
+	//--------------------------------------------------------------------------
+	// XML NEW
+	//--------------------------------------------------------------------------
+	virtual void updateFromXMLNode() {AbstractTool::updateFromXMLNode();};
+	
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------

@@ -24,8 +24,8 @@
 #define NEAR_LT_OR_EQ(a, b) ((a) <= (b) + ROUNDOFF_ERROR)
 #define NEAR_GT_OR_EQ(a, b) ((a) >= (b) - ROUNDOFF_ERROR)
 #define SIGN(a) ((a)>=0?(1):(-1))
-#define MAX(a,b) ((a)>=(b)?(a):(b))
-#define MIN(a,b) ((a)<=(b)?(a):(b))
+#define _MAX(a,b) ((a)>=(b)?(a):(b))
+#define _MIN(a,b) ((a)<=(b)?(a):(b))
 #define SQR(x)	((x) * (x))
 #define CUBE(x)	((x) * (x) * (x))
 #define DSIGN(a) ((a)>=0.0?(1):(-1))
@@ -37,12 +37,12 @@ root.color.cmap[i].blue=b;}
 #define IS_EVEN(a) ( ! IS_ODD(a))
 #define FREE_IFNOTNULL(p) {if (p != NULL) {free(p); p = NULL;}}
 #define STRLEN(p) (strlen(p)+1)
-#define CURSOR_IN_REGION_PTR(mx,my,vp) ((SBoolean) ((mx) >= (vp)->x1 && (mx) <= (vp)->x2 && \
-(my) >= (vp)->y1 && (my) <= (vp)->y2))
-#define CURSOR_IN_REGION(mx,my,vp) ((SBoolean) ((mx) >= (vp).x1 && (mx) <= (vp).x2 && \
+#define CURSOR_IN_BOX(mx,my,vp) ((SBoolean) ((mx) >= (vp).x1 && (mx) <= (vp).x2 && \
 (my) >= (vp).y1 && (my) <= (vp).y2))
-#define PERCENT_FROM_MIDPOINT(mx,vp) (((double)(mx)-((vp)->x1+(vp)->x2)/2)/(((vp)->x2-(vp)->x1)/2))
-#define DISTANCE_FROM_MIDPOINT(mx,vp) (((mx)-((vp)->x1+(vp)->x2)/2))
+#define CURSOR_IN_VIEWPORT(mx,my,vp) ((SBoolean) ((mx) >= (vp)[0] && (mx) <= ((vp)[0] + (vp)[2]) && \
+(my) >= (vp)[1] && (my) <= ((vp)[1] + (vp)[3])))
+#define DISTANCE_FROM_MIDPOINT(mx,vp) ((mx) - (vp)[0] - ((vp)[2] * 0.5))
+#define PERCENT_FROM_MIDPOINT(mx,vp) ((double)(((mx) - (vp)[0] - ((vp)[2] * 0.5)) / ((vp)[2] * 0.5)))
 #define VECTOR_MAGNITUDE(vec) (sqrt((vec[0]*vec[0])+(vec[1]*vec[1])+(vec[2]*vec[2])))
 #define CHAR_IS_WHITE_SPACE(ch) ((ch) == ' ' || (ch) == '\t' || (ch) == '\n' || (ch) == '\r')
 #define CHAR_IS_NOT_WHITE_SPACE(ch) ((ch) != ' ' && (ch) != '\t' && (ch) != '\n' && (ch) != '\r')
@@ -60,7 +60,7 @@ while ((a)>(c)) (a)-=((c)-(b));
 #define CHECK_DIVIDE(t,b) ((ABS(b))<TINY_NUMBER)?(ERROR_DOUBLE):((t)/(b))
 #define SET_BOX1221(box,a,b,c,d) (box).x1=(a);(box).x2=(b);(box).y2=(c);(box).y1=(d)
 #define SET_BOX(box,a,b,c,d) (box).x1=(a); (box).x2=(b); (box).y1=(c); (box).y2=(d)
-#define GET_PATH(mod,f1,f2) (model[mod]->pathptrs[model[mod]->numsegments*f1+f2])
+#define GET_PATH(mod,f1,f2) (ms->pathptrs[ms->numsegments*f1+f2])
 #define MAKE_3DVECTOR(pt1,pt2,pt3) {pt3[XX]=pt2[XX]-pt1[XX];pt3[YY]=pt2[YY]-pt1[YY];pt3[ZZ]=pt2[ZZ]-pt1[ZZ];}
 #define MAKE_3DVECTOR21(pt1,pt2,pt3) {pt3[XX]=pt1[XX]-pt2[XX];pt3[YY]=pt1[YY]-pt2[YY];pt3[ZZ]=pt1[ZZ]-pt2[ZZ];}
 #define DOT_VECTORS(u,v)      ( (u[0])*(v[0]) + (u[1])*(v[1]) + (u[2])*(v[2]) )

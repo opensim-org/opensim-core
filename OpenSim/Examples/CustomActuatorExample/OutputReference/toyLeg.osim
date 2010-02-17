@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="10905">
+	<Model name="osimModel">
+		<credits> Unassigned </credits>
+		<publications> Unassigned </publications>
+		<ForceSet name="">
+			<objects>
+				<PistonActuator name="piston">
+					<bodyA> linkage1 </bodyA>
+					<bodyB> block </bodyB>
+					<points_are_global> false </points_are_global>
+					<pointA>       0.00000000       0.00000000       0.00000000 </pointA>
+					<pointB>       0.00000000       0.00000000       0.00000000 </pointB>
+					<optimal_force>     200.00000000 </optimal_force>
+				</PistonActuator>
+				<ControllableSpring name="spring">
+					<bodyA> block </bodyA>
+					<bodyB> linkage1 </bodyB>
+					<points_are_global> false </points_are_global>
+					<pointA>       0.00000000       0.00000000       0.00000000 </pointA>
+					<pointB>       0.00000000       0.00000000       0.00000000 </pointB>
+					<optimal_force>    2000.00000000 </optimal_force>
+					<!--The equilibrium length of the spring.-->
+					<rest_length>       0.80000000 </rest_length>
+				</ControllableSpring>
+			</objects>
+			<groups/>
+		</ForceSet>
+		<length_units> Unassigned </length_units>
+		<force_units> Unassigned </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       1.00000000 </inertia_xx>
+					<inertia_yy>       1.00000000 </inertia_yy>
+					<inertia_zz>       1.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<geometry_files> ground.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="linkage1">
+					<mass>       0.00100000 </mass>
+					<mass_center>       0.00000000      -0.25000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00008333 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00008333 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="ankle">
+							<parent_body> ground </parent_body>
+							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="q1">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>      -0.15864886 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -6.28318531       6.28318531 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> linkage1.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="linkage2">
+					<mass>       0.00100000 </mass>
+					<mass_center>       0.00000000      -0.25000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00008333 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00008333 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="knee">
+							<parent_body> linkage1 </parent_body>
+							<location_in_parent>       0.00000000       0.50000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="q2">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       1.53086831 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -6.28318531       6.28318531 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> linkage1.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="block">
+					<mass>      20.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.53333333 </inertia_xx>
+					<inertia_yy>       0.53333333 </inertia_yy>
+					<inertia_zz>       0.53333333 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="hip">
+							<parent_body> linkage2 </parent_body>
+							<location_in_parent>       0.00000000       0.50000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="q3">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -6.28318531       6.28318531 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> big_block_centered.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
+			<objects>
+				<PointOnLineConstraint name="">
+					<isDisabled> false </isDisabled>
+					<line_body> ground </line_body>
+					<line_direction_vec>       0.00000000       1.00000000       0.00000000 </line_direction_vec>
+					<point_on_line>       0.00000000       0.00000000       0.00000000 </point_on_line>
+					<follower_body> block </follower_body>
+					<point_on_follower>       0.00000000       0.00000000       0.00000000 </point_on_follower>
+				</PointOnLineConstraint>
+			</objects>
+			<groups/>
+		</ConstraintSet>
+		<!--Markers in the model.-->
+		<MarkerSet name="">
+			<objects/>
+			<groups/>
+		</MarkerSet>
+		<!--ContactGeometry objects in the model.-->
+		<ContactGeometrySet name="">
+			<objects/>
+			<groups/>
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>
+

@@ -2,7 +2,7 @@
 #define _PointKinematics_h_
 // PointKinematics.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHOR: Frank C. Anderson
+//	AUTHOR: Frank C. Anderson, Ajay Seth
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -42,7 +42,7 @@
 		#define OSIMANALYSES_API
 	#endif
 #endif
-#include <OpenSim/Common/rdMath.h>
+
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
@@ -54,6 +54,11 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
+class Model;
+class Body;
+
 /**
  * A class for recording the kinematics of a point on a body
  * of a model during a simulation.
@@ -61,11 +66,6 @@ const int PointKinematicsBUFFER_LENGTH = 2048;
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
-class Model;
-class AbstractBody;
-
 class OSIMANALYSES_API PointKinematics : public Analysis 
 {
 //=============================================================================
@@ -77,17 +77,20 @@ public:
 private:
 	//char _buffer[PointKinematicsBUFFER_LENGTH];
 	//char _tmp[PointKinematicsBUFFER_LENGTH];
-	AbstractBody *_body;
+	Body *_body;
+	Body *_relativeToBody;
 protected:
 	// Properties
 	PropertyStr _bodyNameProp;
 	PropertyDblVec3 _pointProp;
 	PropertyStr _pointNameProp;
+	PropertyStr _relativeToBodyNameProp;
 
 	// References
 	std::string &_bodyName;
 	SimTK::Vec3 &_point;
 	std::string &_pointName;
+	std::string &_relativeToBodyName;
 
 	double *_dy;
 	double *_kin;
@@ -129,8 +132,10 @@ public:
 	//--------------------------------------------------------------------------
 	// BODY
 	void setBodyPoint(const std::string& aBody, const SimTK::Vec3& aPoint);
-	void setBody(AbstractBody* aBody);
-	AbstractBody* getBody();
+	void setBody(Body* aBody);
+	void setRelativeToBody(Body* aBody);
+	Body* getBody();
+	Body* getRelativeToBody();
 	// POINT
 	void setPoint(const SimTK::Vec3& aPoint);
 	void getPoint(SimTK::Vec3& rPoint);
@@ -138,7 +143,7 @@ public:
 	void setPointName(const char *aName);
 	const std::string &getPointName();
 	// MODEL
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
 	
 	// STORAGE
 	void setStorageCapacityIncrements(int aIncrement);
@@ -149,18 +154,16 @@ public:
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
-	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+
+    virtual int
+        begin(const SimTK::State& s);
+    virtual int
+        step(const SimTK::State& s, int setNumber);
+    virtual int
+        end(const SimTK::State& s);
 protected:
-	virtual int
-		record(double aT,double *aX,double *aY);
+    virtual int
+        record(const SimTK::State& s );
 
 	//--------------------------------------------------------------------------
 	// IO

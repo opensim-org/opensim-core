@@ -35,32 +35,29 @@
 #include "AnalyzeTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
-#include <OpenSim/Simulation/Model/IntegCallbackSet.h>
-#include <OpenSim/Simulation/Model/ModelIntegrand.h>
-#include <OpenSim/Simulation/Model/ModelIntegrandForActuators.h>
-#include <OpenSim/Simulation/Model/VectorFunctionForActuators.h>
+#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
+#include "VectorFunctionForActuators.h"
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
-#include <OpenSim/Actuators/ForceApplier.h>
-#include <OpenSim/Actuators/TorqueApplier.h>
+#include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/InverseDynamics.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/DebugUtilities.h>
-#include "rdCMC.h"
-#include "rdCMC_TaskSet.h"
-#include "rdActuatorForceTarget.h"
-#include "rdActuatorForceTargetFast.h"
+#include "CMC.h" 
+#include "CMC_TaskSet.h"
+#include "ActuatorForceTarget.h"
+#include "ActuatorForceTargetFast.h"
 
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
+
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -71,7 +68,6 @@ using namespace OpenSim;
  */
 CMCTool::~CMCTool()
 {
-	delete _integrand;
 }
 //_____________________________________________________________________________
 /**
@@ -83,17 +79,15 @@ CMCTool::CMCTool() :
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_taskSetFileName(_taskSetFileNameProp.getValueStr()),
+    _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_targetDT(_targetDTProp.getValueDbl()),
-	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    _targetDT(_targetDTProp.getValueDbl()),  	 	 
+    _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
+    _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
@@ -123,17 +117,15 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_taskSetFileName(_taskSetFileNameProp.getValueStr()),
+    _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_targetDT(_targetDTProp.getValueDbl()),
-	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    _targetDT(_targetDTProp.getValueDbl()),  	 	 
+    _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
+    _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
@@ -151,8 +143,9 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	setType("CMCTool");
 	setNull();
 	updateFromXMLNode();
-	if(aLoadModel) loadModel(aFileName, &_originalActuatorSet);
+	if(aLoadModel) loadModel(aFileName, &_originalForceSet);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -196,17 +189,15 @@ CMCTool(const CMCTool &aTool) :
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_externalLoadsBody1(_externalLoadsBody1Prop.getValueStr()),
-	_externalLoadsBody2(_externalLoadsBody2Prop.getValueStr()),
-	_taskSetFileName(_taskSetFileNameProp.getValueStr()),
+    _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
-	_targetDT(_targetDTProp.getValueDbl()),
-	_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useReflexes(_useReflexesProp.getValueBool()),
-	_useFastTarget(_useFastTargetProp.getValueBool()),
+    _targetDT(_targetDTProp.getValueDbl()),  	 	 
+    _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    _useReflexes(_useReflexesProp.getValueBool()),
+    _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
@@ -252,16 +243,14 @@ setNull()
 	_desiredKinematicsFileName = "";
 	_externalLoadsFileName = "";
 	_externalLoadsModelKinematicsFileName = "";
-	_externalLoadsBody1 = "";
-	_externalLoadsBody2 = "";
-	_taskSetFileName = "";
+    _taskSetFileName = "";
 	_constraintsFileName = "";
 	_rraControlsFileName = "";
 	_lowpassCutoffFrequency = -1.0;
 	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
-	_targetDT = 0.010;
-	_useCurvatureFilter = true;
-	_useFastTarget = true;
+    _targetDT = 0.010;  	 	 
+    _useCurvatureFilter = true; 		 
+    _useFastTarget = true;
 	_optimizerAlgorithm = "ipopt";
 	_useReflexes = false;
 	_optimizerDX = 1.0e-4;
@@ -277,7 +266,9 @@ setNull()
 	_adjustKinematicsToReduceResiduals = true;
 	_verbose = false;
 
-	_integrand = NULL;
+    _replaceForceSet = false;   // default should be false for Forward.
+
+
 }
 //_____________________________________________________________________________
 /**
@@ -298,7 +289,7 @@ void CMCTool::setupProperties()
 	_desiredKinematicsFileNameProp.setName("desired_kinematics_file");
 	_propertySet.append( &_desiredKinematicsFileNameProp );
 
-	comment = "Motion file (.mot) or storage file (.sto) containing the external loads applied to the model.";
+	comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
 	_externalLoadsFileNameProp.setComment(comment);
 	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );
@@ -308,22 +299,10 @@ void CMCTool::setupProperties()
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
-	comment = "Name of the body to which the first set of external loads ";
-	comment += "should be applied (e.g., the name of the right foot).";
-	_externalLoadsBody1Prop.setComment(comment);
-	_externalLoadsBody1Prop.setName("external_loads_body1");
-	_propertySet.append( &_externalLoadsBody1Prop );
-
-	comment = "Name of the body to which the second set of external loads ";
-	comment += "should be applied (e.g., the name of the left foot).";
-	_externalLoadsBody2Prop.setComment(comment);
-	_externalLoadsBody2Prop.setName("external_loads_body2");
-	_propertySet.append( &_externalLoadsBody2Prop );
-
-	comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";
-	_taskSetFileNameProp.setComment(comment);
-	_taskSetFileNameProp.setName("task_set_file");
-	_propertySet.append( &_taskSetFileNameProp );
+	comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";  	 	 
+    _taskSetFileNameProp.setComment(comment); 		 
+    _taskSetFileNameProp.setName("task_set_file"); 		 
+    _propertySet.append( &_taskSetFileNameProp );
 
 	comment = "File containing the constraints on the controls.";
 	_constraintsFileNameProp.setComment(comment);
@@ -349,34 +328,34 @@ void CMCTool::setupProperties()
 	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
 	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 
-	comment = "Time window over which the desired actuator forces are achieved. "
-		       "Muscles forces cannot change instantaneously, so a finite time window must be allowed. "
-				 "The recommended time window for RRA is about 0.001 sec, and for CMC is about 0.010 sec.";
-	_targetDTProp.setComment(comment);
-	_targetDTProp.setName("cmc_time_window");
-	_propertySet.append( &_targetDTProp );
-
-	comment = "Flag (true or false) indicating whether or not to use the curvature filter. "
-				 "Setting this flag to true can reduce oscillations in the computed muscle excitations.";
-	_useCurvatureFilterProp.setComment(comment);
-	_useCurvatureFilterProp.setName("use_curvature_filter");
-	_propertySet.append( &_useCurvatureFilterProp );
-
+    comment = "Time window over which the desired actuator forces are achieved. "  	 	 
+                    "Muscles forces cannot change instantaneously, so a finite time window must be allowed. " 		 
+                       "The recommended time window for RRA is about 0.001 sec, and for CMC is about 0.010 sec."; 		 
+    _targetDTProp.setComment(comment); 		 
+    _targetDTProp.setName("cmc_time_window"); 		 
+    _propertySet.append( &_targetDTProp ); 		 
+  		 
+    comment = "Flag (true or false) indicating whether or not to use the curvature filter. " 		 
+                       "Setting this flag to true can reduce oscillations in the computed muscle excitations."; 		 
+    _useCurvatureFilterProp.setComment(comment); 		 
+    _useCurvatureFilterProp.setName("use_curvature_filter"); 		 
+    _propertySet.append( &_useCurvatureFilterProp );
 	comment = "Flag (true or false) indicating whether or not to use reflexes.  This is a hook ";
 	comment += "for users wanting to modify controls based on additonal information.";
+
 	_useReflexesProp.setComment(comment);
 	_useReflexesProp.setName("use_reflexes");
 	_propertySet.append( &_useReflexesProp );
 
-	comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";
-	comment += "The fast target requires the desired accelerations to be met. ";
-	comment += "The optimizer fails if the acclerations constraints cannot be ";
-	comment += "met, so the fast target can be less robust.  The regular target ";
-	comment += "does not require the acceleration constraints to be met; it ";
-	comment += "meets them as well as it can, but it is slower and less accurate.";
-	_useFastTargetProp.setComment(comment);
-	_useFastTargetProp.setName("use_fast_optimization_target");
-	_propertySet.append( &_useFastTargetProp );
+    comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";  	 	 
+    comment += "The fast target requires the desired accelerations to be met. "; 		 
+    comment += "The optimizer fails if the acclerations constraints cannot be "; 		 
+    comment += "met, so the fast target can be less robust.  The regular target "; 		 
+    comment += "does not require the acceleration constraints to be met; it "; 		 
+    comment += "meets them as well as it can, but it is slower and less accurate."; 		 
+    _useFastTargetProp.setComment(comment); 		 
+    _useFastTargetProp.setName("use_fast_optimization_target"); 		 
+    _propertySet.append( &_useFastTargetProp );
 
 	comment = "Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
 				 "the latter requiring the osimFSQP library.";
@@ -462,6 +441,7 @@ void CMCTool::setupProperties()
 	_verboseProp.setComment(comment);
 	_verboseProp.setName("use_verbose_printing");
 	_propertySet.append( &_verboseProp );
+
 }
 
 
@@ -485,18 +465,16 @@ operator=(const CMCTool &aTool)
 	_desiredKinematicsFileName = aTool._desiredKinematicsFileName;
 	_externalLoadsFileName = aTool._externalLoadsFileName;
 	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
-	_externalLoadsBody1 = aTool._externalLoadsBody1;
-	_externalLoadsBody2 = aTool._externalLoadsBody2;
-	_taskSetFileName = aTool._taskSetFileName;
+    _taskSetFileName = aTool._taskSetFileName;
 	_constraintsFileName = aTool._constraintsFileName;
 	_rraControlsFileName = aTool._rraControlsFileName;
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
 	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
-	_targetDT = aTool._targetDT;
-	_useCurvatureFilter = aTool._useCurvatureFilter;
+    _targetDT = aTool._targetDT;  	 	 
+    _useCurvatureFilter = aTool._useCurvatureFilter;
 	_optimizerDX = aTool._optimizerDX;
 	_convergenceCriterion = aTool._convergenceCriterion;
-	_useFastTarget = aTool._useFastTarget;
+    _useFastTarget = aTool._useFastTarget;
 	_optimizerAlgorithm = aTool._optimizerAlgorithm;
 	_useReflexes = aTool._useReflexes;
 	_maxIterations = aTool._maxIterations;
@@ -535,10 +513,9 @@ bool CMCTool::run()
 		cout<<endl<<msg<<endl;
 		throw(Exception(msg,__FILE__,__LINE__));
 	}
-
 	// OUTPUT DIRECTORY
 	// Do the maneuver to change then restore working directory 
-	// so that the parsing code behaves properly if called from a different directory
+	// so that the parsing code behaves prope()rly if called from a different directory
 	string saveWorkingDirectory = IO::getCwd();
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
@@ -548,31 +525,37 @@ bool CMCTool::run()
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
 
-	// USE PIPELINE ACTUATORS?
-	_model->printDetailedInfo(cout);
 
 	// CHECK PROPERTIES FOR ERRORS/INCONSISTENCIES
 	if(_adjustCOMToReduceResiduals) {
 		if(_adjustedCOMBody == "")
 			throw Exception("CMCTool: ERROR- "+_adjustCOMToReduceResidualsProp.getName()+" set to true but "+
 								 _adjustedCOMBodyProp.getName()+" not set",__FILE__,__LINE__);
-		else if(!_model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody))
-			throw Exception("CMCTool: ERROR- Body '"+_adjustedCOMBody+"' specified in "+
-								 _adjustedCOMBodyProp.getName()+" not found",__FILE__,__LINE__);
+        else if (_model->getBodySet().getIndex(_adjustedCOMBody) == -1)
+		    throw Exception("CMCTool: ERROR- Body '"+_adjustedCOMBody+"' specified in "+
+							     _adjustedCOMBodyProp.getName()+" not found",__FILE__,__LINE__);
 	}
 
-	// ASSIGN NUMBERS OF THINGS
-	int i;
-	int ny = _model->getNumStates();
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-	int na = _model->getNumActuators();
-	int nc = 0; // number of actuators with one or more controls
-	ActuatorSet *actuatorSet = _model->getActuatorSet();
-	for (i=0; i<actuatorSet->getSize(); i++)
-		if (actuatorSet->get(i)->getNumControls() >= 1)
-			nc++;
+    bool externalLoads = createExternalLoads(_externalLoadsFileName, _externalLoadsModelKinematicsFileName,
+                                     *_model);
 
+    CMC_TaskSet taskSet(_taskSetFileName);  	 	 
+    cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl; 		 
+
+    CMC* controller = new CMC(_model,&taskSet);	// Need to make it a pointer since Model takes ownership 
+    controller->setName( "CMC" );
+    _model->addController(controller );
+    controller->setIsEnabled(true);
+    controller->setUseCurvatureFilter(_useCurvatureFilter);
+    controller->setTargetDT(_targetDT);
+    controller->setCheckTargetTime(true);
+
+	//Make sure system is uptodate with model (i.e. added actuators, etc...)
+	SimTK::State s = _model->initSystem();
+    _model->getSystem().realize(s, Stage::Position );
+     taskSet.setModel(*_model);
+    _model->equilibrateMuscles(s);
+  
 	// ---- INPUT ----
 	// DESIRED POINTS AND KINEMATICS
 	if(_desiredPointsFileName=="" && _desiredKinematicsFileName=="") {
@@ -597,7 +580,8 @@ bool CMCTool::run()
 		cout<<"\n\nWARN- a desired kinematics file was not specified.\n\n";
 	} else {
 		cout<<"\n\nLoading desired kinematics from file "<<_desiredKinematicsFileName<<" ...\n";
-		desiredKinStore = new Storage(_desiredKinematicsFileName);
+        desiredKinStore = new Storage();
+        loadQStorage( _desiredKinematicsFileName, *desiredKinStore );
 		desiredKinFlag = true;
 	}
 
@@ -646,50 +630,68 @@ bool CMCTool::run()
 	// constrained coordinates (e.g. tibia-patella joint angle) to be consistent with the
 	// filtered trajectories
 	if(desiredPointsFlag) {
-		desiredPointsStore->pad(desiredPointsStore->getSize()/2);
+		desiredPointsStore->pad(60);
 		desiredPointsStore->print("desiredPoints_padded.sto");
 		if(_lowpassCutoffFrequency>=0) {
-			//int order = 50;
+			int order = 50;
 			cout<<"\n\nLow-pass filtering desired points with a cutoff frequency of ";
 			cout<<_lowpassCutoffFrequency<<"...";
-			desiredPointsStore->lowpassIIR(_lowpassCutoffFrequency);
+			desiredPointsStore->lowpassFIR(order,_lowpassCutoffFrequency);
 		} else {
 			cout<<"\n\nNote- not filtering the desired points.\n\n";
 		}
 	}
 
 	if(desiredKinFlag) {
-		desiredKinStore->pad(desiredKinStore->getSize()/2);
+		desiredKinStore->pad(60);
 		desiredKinStore->print("desiredKinematics_padded.sto");
 		if(_lowpassCutoffFrequency>=0) {
-			//int order = 50;
+			int order = 50;
 			cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
 			cout<<_lowpassCutoffFrequency<<"...\n\n";
-			desiredKinStore->lowpassIIR(_lowpassCutoffFrequency);
+			desiredKinStore->lowpassFIR(order,_lowpassCutoffFrequency);
 		} else {
 			cout<<"\n\nNote- not filtering the desired kinematics.\n\n";
 		}
 	}
+
+     // TASK SET
+    if(_taskSetFileName=="") {  	 	 
+        cout<<"ERROR- a task set was not specified\n\n"; 		 
+        IO::chDir(saveWorkingDirectory); 		 
+        return false; 		 
+    }
+
+	_model->printDetailedInfo(s, cout);
+
+	int nq = _model->getNumCoordinates();
+	int nu = _model->getNumSpeeds();
+	int na = _model->getActuators().getSize();
 
 	// Form complete storage objects for the q's and u's
 	// This means filling in unspecified generalized coordinates and
 	// setting constrained coordinates to their valid values.
 	Storage *qStore=NULL;
 	Storage *uStore=NULL;
+
 	if(desiredKinFlag) {
-		_model->getDynamicsEngine().formCompleteStorages(*desiredKinStore,qStore,uStore);
-		_model->getDynamicsEngine().convertDegreesToRadians(*qStore);
-		_model->getDynamicsEngine().convertDegreesToRadians(*uStore);
+        _model->getSystem().realize(s, Stage::Time );
+	    _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,qStore,uStore);
+		_model->getSimbodyEngine().convertDegreesToRadians(*qStore);
+		_model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 	}
 
 	// GROUND REACTION FORCES
-	ForwardTool::InitializeExternalLoads(_ti, _tf, _model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
-		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics);
+    if( externalLoads ) {
+	   initializeExternalLoads(s, _ti, _tf, *_model,
+       _externalLoadsFileName,_externalLoadsModelKinematicsFileName,_lowpassCutoffFrequencyForLoadKinematics);
+    }
 
 	// Adjust COM to reduce residuals (formerly RRA pass 1) if requested
 	if(desiredKinFlag) {
 		if(_adjustCOMToReduceResiduals) {
-			adjustCOMToReduceResiduals(*qStore,*uStore);
+		
+			adjustCOMToReduceResiduals(s, *qStore,*uStore);
 
 			// If not adjusting kinematics, we don't proceed with CMC, and just stop here.
 			if(!_adjustKinematicsToReduceResiduals) {
@@ -699,7 +701,7 @@ bool CMCTool::run()
 				writeAdjustedModel();
 				IO::chDir(saveWorkingDirectory);
 				return true;
-			}
+            }
 		}
 	}
 
@@ -740,30 +742,22 @@ bool CMCTool::run()
 	// ANALYSES
 	addNecessaryAnalyses();
 
-	// TASK SET
-	if(_taskSetFileName=="") {
-		cout<<"ERROR- a task set was not specified\n\n";
-		IO::chDir(saveWorkingDirectory);
-		return false;
-	}
-	rdCMC_TaskSet taskSet(_taskSetFileName);
-	cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl;
-	taskSet.setModel(_model);
 	GCVSplineSet *qAndPosSet=NULL;
 	qAndPosSet = new GCVSplineSet();
 	if(desiredPointsFlag) {
 		int nps=posSet->getSize();
-		for(i=0;i<nps;i++) {
-			qAndPosSet->append(posSet->get(i));
+		for(int i=0;i<nps;i++) {
+			qAndPosSet->append(&posSet->get(i));
 		}
 	}
 	if(desiredKinFlag) {
 		int nqs=qSet->getSize();
-		for(i=0;i<nqs;i++) {
-			qAndPosSet->append(qSet->get(i));
+		for(int i=0;i<nqs;i++) {
+			qAndPosSet->append(&qSet->get(i));
 		}
 	}
-	taskSet.setFunctions(*qAndPosSet);
+    taskSet.setFunctions(*qAndPosSet);  	 	 
+ 
 
 	// CONSTRAINTS ON THE CONTROLS
 	ControlSet *controlConstraints = NULL;
@@ -775,8 +769,6 @@ bool CMCTool::run()
 	ControlSet *rraControlSet = constructRRAControlSet(controlConstraints);
 
 	// ---- INITIAL STATES ----
-	Array<double> yi(0.0,ny);
-	_model->getInitialStates(&yi[0]);
 	Array<double> q(0.0,nq);
 	Array<double> u(0.0,nu);
 	if(desiredKinFlag) {
@@ -788,38 +780,34 @@ bool CMCTool::run()
 		cout<<"Using the generalized coordinates specified as zeros ";
 		cout<<" to set the initial configuration.\n";
 	}
-	for(i=0;i<nq;i++) yi[i] = q[i];
-	for(i=0;i<nu;i++) yi[i+nq] = u[i];
-	_model->setInitialStates(&yi[0]);
-
-
-	// ---- CMC CONTROLLER ----
-	// Controller
-	rdCMC controller(_model,&taskSet);
-	controller.setUseCurvatureFilter(_useCurvatureFilter);
-	controller.setTargetDT(_targetDT);
-	controller.setCheckTargetTime(true);
+	for(int i=0;i<nq;i++) s.updQ()[i] = q[i];
+	for(int i=0;i<nu;i++) s.updU()[i] = u[i];
 
 	// Actuator force predictor
 	// This requires the trajectories of the generalized coordinates
 	// to be specified.
-	string rraControlName;
-	ModelIntegrandForActuators cmcIntegrand(_model);
-	cmcIntegrand.setCoordinateTrajectories(qSet);
-
-	// Don't project constraints while inside the controller
-	cmcIntegrand.setConstraintTolerance(0);
 	
+	string rraControlName;
+    CMCActuatorSystem actuatorSystem;
+    CMCActuatorSubsystem cmcActSubsystem(actuatorSystem, _model);
+	cmcActSubsystem.setCoordinateTrajectories(qSet);
+    actuatorSystem.realizeTopology();
+	// initialize the actuator states 
+	SimTK::State& actuatorSystemState = actuatorSystem.updDefaultState(); 
+    actuatorSystemState.updZ() = _model->getForceSubsystem().getZ(s);
+
 	VectorFunctionForActuators *predictor =
-		new VectorFunctionForActuators(&cmcIntegrand);
-	controller.setActuatorForcePredictor(predictor);
+		new VectorFunctionForActuators(&actuatorSystem, _model, &cmcActSubsystem);
+
+	controller->setActuatorForcePredictor(predictor);
+	controller->updTaskSet().setFunctions(*qAndPosSet);
 
 	// Optimization target
-	rdOptimizationTarget *target = NULL;
+	OptimizationTarget *target = NULL;
 	if(_useFastTarget) {
-		target = new rdActuatorForceTargetFast(nc,&controller);
+		target = new ActuatorForceTargetFast(s, na,controller);
 	} else {
-		target = new rdActuatorForceTarget(nc,&controller);
+		target = new ActuatorForceTarget(na,controller);
 	}
 	target->setDX(_optimizerDX);
 
@@ -841,7 +829,7 @@ bool CMCTool::run()
 	}
 
 	SimTK::Optimizer *optimizer = new SimTK::Optimizer(*target, algorithm);
-	controller.setOptimizationTarget(target, optimizer);
+	controller->setOptimizationTarget(target, optimizer);
 
 	cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
 	optimizer->setDiagnosticsLevel(_printLevel);
@@ -861,42 +849,32 @@ bool CMCTool::run()
 
 	if(_verbose) cout<<"\nSetting cmc controller to use verbose printing."<<endl;
 	else cout<<"\nSetting cmc controller to not use verbose printing."<<endl;
-	controller.setUseVerbosePrinting(_verbose);
+	controller->setUseVerbosePrinting(_verbose);
 
-	controller.setCheckTargetTime(true);
-
-	// Reflexes
-	controller.setUseReflexes(_useReflexes);
+	controller->setCheckTargetTime(true);
 
 	// ---- SIMULATION ----
+	//
 	// Manager
-	delete _integrand;
-	_integrand = new ModelIntegrand(_model);
-	_integrand->setController(&controller);
-	Manager manager(_integrand);
+    RungeKuttaMersonIntegrator integrator(_model->getSystem());
+	integrator.setMaximumStepSize(_maxDT);
+	integrator.setMinimumStepSize(_minDT);
+    Manager manager(*_model, integrator);
+	
+	_model->setAllControllersEnabled( true );
+
 	manager.setSessionName(getName());
 	manager.setInitialTime(_ti);
-	manager.setFinalTime(_tf-_targetDT-rdMath::ZERO);
+	manager.setFinalTime(_tf-_targetDT-SimTK::Zero);
 
 	// Initialize integrand controls using controls read in from file (which specify min/max control values)
-	// and set the CMC integrand's control set to be a reference to the model integrand's control set.
-	ControlSet *controlSet = _integrand->getControlSet();
-	initializeControlSetUsingConstraints(rraControlSet,controlConstraints,controlSet);
-	cmcIntegrand.setControlSetReference(*controlSet);
-
-	// Integrator settings
-	IntegRKF *integ = manager.getIntegrator();
-	integ->setMaximumNumberOfSteps(_maxSteps);
-	integ->setMaxDT(_maxDT);
-	integ->setMinDT(_minDT);
-	integ->setTolerance(_errorTolerance);
-	integ->setFineTolerance(_fineTolerance);
+	initializeControlSetUsingConstraints(rraControlSet,controlConstraints, controller->updControlSet());
 
 	// Initial auxilliary states
 	time_t startTime,finishTime;
 	struct tm *localTime;
 	double elapsedTime;
-	if(_model->getActuatorSet()->getNumStates() > 0) {
+	if( s.getNZ() > 0) { // If there are actuator states (i.e. muscles dynamics)
 		cout<<"\n\n\n";
 		cout<<"================================================================\n";
 		cout<<"================================================================\n";
@@ -904,16 +882,15 @@ bool CMCTool::run()
 		time(&startTime);
 		localTime = localtime(&startTime);
 		cout<<"Start time = "<<asctime(localTime);
-		cout<<"================================================================";
-		controller.computeInitialStates(_ti,&yi[0]);
-		manager.setInitialTime(_ti);
-		_model->setInitialStates(&yi[0]);
+		cout<<"\n================================================================\n";
+		controller->computeInitialStates(s,_ti);
 		time(&finishTime);
 		cout<<endl;
+        // copy the final states from the last integration 
+        s.updY() = cmcActSubsystem.getCompleteState().getY();
 		cout<<"-----------------------------------------------------------------\n";
 		cout<<"Finished computing initial states:\n";
 		cout<<"-----------------------------------------------------------------\n";
-		cout<<yi<<endl;
 		cout<<"=================================================================\n";
 		localTime = localtime(&startTime);
 		cout<<"Start time   = "<<asctime(localTime);
@@ -922,7 +899,16 @@ bool CMCTool::run()
 		elapsedTime = difftime(finishTime,startTime);
 		cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
 		cout<<"=================================================================\n";
-	}
+	} else {
+        cmcActSubsystem.setCompleteState( s );
+	    actuatorSystemState.updTime() = _ti; 
+        s.updTime() = _ti;
+        actuatorSystem.realize(actuatorSystemState, Stage::Time );
+        controller->setTargetDT(1.0e-8);
+		controller->computeControls( s, controller->updControlSet() );
+        controller->setTargetDT(_targetDT);
+    }
+    manager.setInitialTime(_ti);
 
 	// ---- INTEGRATE ----
 	cout<<"\n\n\n";
@@ -930,14 +916,25 @@ bool CMCTool::run()
 	cout<<"================================================================\n";
 	cout<<"Using CMC to track the specified kinematics\n";
 	cout<<"Integrating from "<<_ti<<" to "<<_tf<<endl;
+    s.updTime() = _ti;
+	controller->setTargetTime( _ti );
 	time(&startTime);
 	localTime = localtime(&startTime);
 	cout<<"Start time = "<<asctime(localTime);
 	cout<<"================================================================\n";
-	manager.integrate();
+
+    _model->getSystem().realize(s, Stage::Acceleration );
+
+	controller->updTaskSet().computeAccelerations(s);
+
+    cmcActSubsystem.setCompleteState( s );
+	manager.integrate(s);
 	time(&finishTime);
 	cout<<"----------------------------------------------------------------\n";
 	cout<<"Finished tracking the specified kinematics\n";
+    if( _verbose ){
+      std::cout << "states= " << s.getY() << std::endl;
+    }
 	cout<<"=================================================================\n";
 	localTime = localtime(&startTime);
 	cout<<"Start time   = "<<asctime(localTime);
@@ -950,54 +947,53 @@ bool CMCTool::run()
 	// ---- RESULTS -----
 	double dt = 0.001;
 	printResults(getName(),getResultsDir(),dt); // this will create results directory if necessary
-	controlSet->print(getResultsDir() + "/" + getName() + "_controls.xml");
-	_integrand->getControlStorage()->print(getResultsDir() + "/" + getName() + "_controls.sto");
-	_integrand->getStateStorage()->print(getResultsDir() + "/" + getName() + "_states.sto");
-	_integrand->getPseudoStateStorage()->print(getResultsDir() + "/" + getName() + "_pseudo.sto");
+    controller->updControlSet().print(getResultsDir() + "/" + getName() + "_controls.xml");
+	_model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
+	manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
 
-	Storage statesDegrees(*_integrand->getStateStorage());
-	_model->getDynamicsEngine().convertRadiansToDegrees(statesDegrees);
+	Storage statesDegrees(manager.getStateStorage());
+	_model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 	statesDegrees.setWriteSIMMHeader(true);
 	statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
 
-	controller.getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
+	controller->getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
-	Actuation *actuation = (Actuation*)_model->getAnalysisSet()->get("Actuation");
-	if(_computeAverageResiduals && actuation) {
-		Array<double> FAve(0.0,3),MAve(0.0,3);
-		Storage *forceStore = actuation->getForceStorage();
-		computeAverageResiduals(*forceStore,FAve,MAve);
-		cout<<"\n\nAverage residuals:\n";
-		cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
-		cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl<<endl;
+    if(_computeAverageResiduals && _model->getAnalysisSet().getIndex("Actuation") != -1) {
+	    Actuation& actuation = (Actuation&)_model->getAnalysisSet().get("Actuation");
+	    Array<double> FAve(0.0,3),MAve(0.0,3);
+	    Storage *forceStore = actuation.getForceStorage();
+	    computeAverageResiduals(*forceStore,FAve,MAve);
+	    cout<<"\n\nAverage residuals:\n";
+	    cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
+	    cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl<<endl;
 
-		// Write the average residuals (DC offsets) out to a file
-		ofstream residualFile((getResultsDir() + "/" + getName() + "_avgResiduals.txt").c_str());
-		residualFile << "Average Residuals:\n\n";
-		residualFile << "FX average = " << FAve[0] << "\n";
-		residualFile << "FY average = " << FAve[1] << "\n";
-		residualFile << "FZ average = " << FAve[2] << "\n";
-		residualFile << "MX average = " << MAve[0] << "\n";
-		residualFile << "MY average = " << MAve[1] << "\n";
-		residualFile << "MZ average = " << MAve[2] << "\n";
-		residualFile.close();
-	}
+	    // Write the average residuals (DC offsets) out to a file
+	    ofstream residualFile((getResultsDir() + "/" + getName() + "_avgResiduals.txt").c_str());
+	    residualFile << "Average Residuals:\n\n";
+	    residualFile << "FX average = " << FAve[0] << "\n";
+	    residualFile << "FY average = " << FAve[1] << "\n";
+	    residualFile << "FZ average = " << FAve[2] << "\n";
+	    residualFile << "MX average = " << MAve[0] << "\n";
+	    residualFile << "MY average = " << MAve[1] << "\n";
+	    residualFile << "MZ average = " << MAve[2] << "\n";
+	    residualFile.close();
+    }
 
 	// Write new model file
 	if(_adjustCOMToReduceResiduals) writeAdjustedModel();
+
+	//_model->removeController(controller); // So that if this model is from GUI it doesn't double-delete it.
 
 	} catch(Exception &x) {
 		// TODO: eventually might want to allow writing of partial results
 		x.print(cout);
 		IO::chDir(saveWorkingDirectory);
-		_model->removeAllDerivCallbacks();
+	
 		return false;
 	}
 
 	IO::chDir(saveWorkingDirectory);
 
-	// Since the Tool added the DerivCallbacks to the model, it is responsible for removing them as well
-	_model->removeAllDerivCallbacks();
 	return true;
 }
 
@@ -1020,7 +1016,7 @@ writeAdjustedModel()
 	// we load the model but replace its (muscle) actuators with torque actuators.
 	// So we need to put back the muscles before writing out the adjusted model.
 	// NOTE: use operator= so actuator groups are properly copied over
-	*_model->getActuatorSet() = _originalActuatorSet;
+	_model->updForceSet() = _originalForceSet;
 
 	_model->print(_outputModelFile);
 }
@@ -1036,19 +1032,26 @@ writeAdjustedModel()
 void CMCTool::
 computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve,OpenSim::Array<double> &rMAve)
 {
+
+    int iFX, iFY, iFZ, iMX, iMY, iMZ;
 	// COMPUTE AVERAGE
 	int size = aForceStore.getSmallestNumberOfStates();
 	Array<double> ave(0.0);
 	ave.setSize(size);
 	aForceStore.computeAverage(size,&ave[0]);
+  
 
 	// GET INDICES
-	int iFX = aForceStore.getStateIndex("FX");
-	int iFY = aForceStore.getStateIndex("FY");
-	int iFZ = aForceStore.getStateIndex("FZ");
-	int iMX = aForceStore.getStateIndex("MX");
-	int iMY = aForceStore.getStateIndex("MY");
-	int iMZ = aForceStore.getStateIndex("MZ");
+	  iFX = aForceStore.getStateIndex("FX");
+      iFY = aForceStore.getStateIndex("FY");
+	  iFZ = aForceStore.getStateIndex("FZ");
+	  iMX = aForceStore.getStateIndex("MX");
+	  iMY = aForceStore.getStateIndex("MY");
+	  iMZ = aForceStore.getStateIndex("MZ");
+
+//cout << "storage = " << aForceStore.getName() << endl;
+//cout << "computeAverageResiduals size=" << size << "  ave=" << ave << endl;
+//cout << "indexs=" << iFX << "  " << iFY << "  " << iFZ << "  " <<  iMX << "  " << iMY << "  " << iMZ <<  endl;
 
 	// GET AVE FORCES
 	if(iFX>=0) rFAve[0] = ave[iFX];
@@ -1059,13 +1062,15 @@ computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve
 	if(iMX>=0) rMAve[0] = ave[iMX];
 	if(iMY>=0) rMAve[1] = ave[iMY];
 	if(iMZ>=0) rMAve[2] = ave[iMZ];
-}
+//cout << "forces= " << rFAve <<  endl;
+//cout << "moments=" << rMAve <<  endl;
 
+}
 void CMCTool::
-adjustCOMToReduceResiduals(const Storage &qStore, const Storage &uStore)
+adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore)
 {
 	// Create a states storage from q's and u's
-	Storage *statesStore = AnalyzeTool::createStatesStorageFromCoordinatesAndSpeeds(_model, &qStore, &uStore);
+	Storage *statesStore = AnalyzeTool::createStatesStorageFromCoordinatesAndSpeeds(*_model, qStore, uStore);
 
 	double ti = _ti;
 	double tf = _tf;
@@ -1081,52 +1086,65 @@ adjustCOMToReduceResiduals(const Storage &qStore, const Storage &uStore)
 	statesStore->getTime(statesStore->findIndex(tf),actualTf);
 	cout<<"\nNote: requested COM adjustment time range "<<ti<<" - "<<tf<<" clamped to nearest available data times "<<actualTi<<" - "<<actualTf<<endl;
 
-	computeAverageResiduals(*_model, ti, tf, *statesStore, FAve, MAve);
+	computeAverageResiduals(s, *_model, ti, tf, *statesStore, FAve, MAve);
 	cout<<"Average residuals before adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
 	cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
 	cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl;
 
-	adjustCOMToReduceResiduals(FAve,MAve);
+    SimTK::Vector  restoreStates(s.getNY());
+    restoreStates = s.getY();
 
-	computeAverageResiduals(*_model, ti, tf, *statesStore, FAve, MAve);
+	adjustCOMToReduceResiduals(FAve,MAve);
+    s = _model->initSystem();
+
+    s.updY() = restoreStates;
+    _model->getSystem().realize(s, Stage::Position );
+    
+	computeAverageResiduals(s, *_model, ti, tf, *statesStore, FAve, MAve);
 	cout<<"Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
 	cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
 	cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl;
+
 
 	delete statesStore;
 }
 
 // Uses an inverse dynamics analysis to compute average residuals
 void CMCTool::
-computeAverageResiduals(Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve)
+computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve)
 {
 	// Turn off whatever's currently there (but remember whether it was on/off)
-	AnalysisSet *analysisSet = aModel.getAnalysisSet();
-	Array<bool> analysisSetOn = analysisSet->getOn();
-	analysisSet->setOn(false);
-	IntegCallbackSet *callbackSet = aModel.getIntegCallbackSet();
-	Array<bool> callbackSetOn = callbackSet->getOn();
-	callbackSet->setOn(false);
+	AnalysisSet& analysisSet = aModel.updAnalysisSet();
+	Array<bool> analysisSetOn = analysisSet.getOn();
+	analysisSet.setOn(false);
 
 	// add inverse dynamics analysis
-	InverseDynamics *inverseDynamics = new InverseDynamics();
+	InverseDynamics* inverseDynamics = new InverseDynamics(&aModel);
 	aModel.addAnalysis(inverseDynamics);
+    inverseDynamics->setModel(aModel);
 
 	int iInitial = aStatesStore.findIndex(aTi);
 	int iFinal = aStatesStore.findIndex(aTf);
 	aStatesStore.getTime(iInitial,aTi);
 	aStatesStore.getTime(iFinal,aTf);
+    
+    aModel.getSystem().realize(s, Stage::Position );
 
 	cout << "\nComputing average residuals between " << aTi << " and " << aTf << endl;
-	AnalyzeTool::run(aModel, iInitial, iFinal, aStatesStore, 0, 0, false);
+	AnalyzeTool::run(s, aModel, iInitial, iFinal, aStatesStore, false);
+
 
 	computeAverageResiduals(*inverseDynamics->getStorage(),rFAve,rMAve);
 
-	aModel.removeAnalysis(inverseDynamics);
+//cout << "\nrFAve= " << rFAve << endl;
+//cout << "\nrMAve= " << rMAve << endl;
+
+
+	aModel.removeAnalysis(inverseDynamics);	// This deletes the analysis as well
 
 	// Turn off whatever's currently there
-	analysisSet->setOn(analysisSetOn);
-	callbackSet->setOn(callbackSetOn);
+	analysisSet.setOn(analysisSetOn);
+
 }
 //_____________________________________________________________________________
 /**
@@ -1148,10 +1166,10 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	_model->getGravity(g);
 
 	// COMPUTE SEGMENT WEIGHT
-	AbstractBody *body = _model->getDynamicsEngine().getBodySet()->get(_adjustedCOMBody);
+	Body *body = &_model->updBodySet().get(_adjustedCOMBody);
 	double bodyMass = body->getMass();
 	double bodyWeight = fabs(g[1])*bodyMass;
-	if(bodyWeight<rdMath::ZERO) {
+	if(bodyWeight<SimTK::Zero) {
 		cout<<"\nCMCTool.adjustCOMToReduceResiduals: ERR- ";
 		cout<<_adjustedCOMBody<<" has no weight.\n";
 		return;
@@ -1178,7 +1196,8 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	com[0] -= dx;
 	com[2] -= dz;
 
-	// ALTHER THE MODEL
+
+	// ALTER THE MODEL
 	body->setMassCenter(com);
 
 	//---- MASS CHANGE ----
@@ -1190,21 +1209,17 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	int nb = _model->getNumBodies();
 	double massTotal=0.0;
 	Array<double> mass(0.0,nb),massChange(0.0,nb),massNew(0.0,nb);
-	BodySet *bodySet = _model->getDynamicsEngine().getBodySet();
-	nb = bodySet->getSize();
+	const BodySet & bodySet = _model->getBodySet();
+	nb = bodySet.getSize();
 	for(i=0;i<nb;i++) {
-		body = (*bodySet)[i];
-		if(body==NULL) continue;
-		mass[i] = body->getMass();
+		mass[i] = bodySet[i].getMass();
 		massTotal += mass[i];
 	}
 	cout<<"\nRecommended mass adjustments:"<<endl;
 	for(i=0;i<nb;i++) {
-		body = (*bodySet)[i];
-		if(body==NULL) continue;
 		massChange[i] = dmass * mass[i]/massTotal;
 		massNew[i] = mass[i] + massChange[i];
-		cout<<body->getName()<<":  orig mass = "<<mass[i]<<", new mass = "<<massNew[i]<<endl;
+		cout<<bodySet[i].getName()<<":  orig mass = "<<mass[i]<<", new mass = "<<massNew[i]<<endl;
 	}
 }
 
@@ -1216,25 +1231,27 @@ void CMCTool::
 addNecessaryAnalyses()
 {
 	int stepInterval = 1;
-	AnalysisSet *as = _model->getAnalysisSet();
+	AnalysisSet& as = _model->updAnalysisSet();
 	// Add Actuation if necessary
 	Actuation *act = NULL;
-	for(int i=0; i<as->getSize(); i++) 
-		if(as->get(i)->getType() == "Actuation") { act = (Actuation*)as->get(i); break; }
+	for(int i=0; i<as.getSize(); i++) 
+		if(as.get(i).getType() == "Actuation") { act = (Actuation*)&as.get(i); break; }
 	if(!act) {
 		std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
 		act = new Actuation(_model);
+        act->setModel(*_model );
 		act->setStepInterval(stepInterval);
 		_model->addAnalysis(act);
 	}
 	// Add Kinematics if necessary
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
-	for(int i=0; i<as->getSize(); i++) 
-		if(as->get(i)->getType() == "Kinematics" && as->get(i)->getPrintResultFiles()) { kin = (Kinematics*)as->get(i); break; }
+	for(int i=0; i<as.getSize(); i++) 
+		if(as.get(i).getType() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
 	if(!kin) {
 		std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
 		kin = new Kinematics(_model);
+        kin->setModel(*_model );
 		kin->setStepInterval(stepInterval);
 		kin->getPositionStorage()->setWriteSIMMHeader(true);
 		_model->addAnalysis(kin);
@@ -1257,16 +1274,25 @@ addNecessaryAnalyses()
  */
 void CMCTool::
 initializeControlSetUsingConstraints(
-	const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints,ControlSet *rControlSet)
+	const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet)
 {
 	// Initialize control set with control constraints file
-	int size = rControlSet->getSize();
+	
+	int size = rControlSet.getSize();
 	if(aControlConstraints) {
 		for(int i=0;i<size;i++) {
-			const Control *control = aControlConstraints->get(rControlSet->get(i)->getName());
-			if(control)
-				rControlSet->set(i,(Control*)control->copy());
-		}
+            int index = aControlConstraints->getIndex(rControlSet.get(i).getName());
+            if(index == -1) {
+                // backwards compatibility with old version of OpenSim that appended the 
+                //                 //  control suffix to the name of the control
+                index = aControlConstraints->getIndex(rControlSet.get(i).getName()+".excitation");
+            }
+            if( index == -1 ) {
+                 cout << "Cannot find control constraint for: " << rControlSet.get(i).getName() << endl;
+            } else {
+                rControlSet.set(i, (Control*)aControlConstraints->get(index).copy() );
+            }
+        }
 	}
 
 	// FOR RESIDUAL CONTROLS, SET TO USE LINEAR INTERPOLATION
@@ -1276,10 +1302,10 @@ initializeControlSetUsingConstraints(
 #if 0
 		size = aRRAControlSet->getSize();
 		for(i=0;i<size;i++){
-			string rraControlName = aRRAControlSet->get(i)->getName();
+			string rraControlName = aRRAControlSet->get(i).getName();
 			ControlLinear *control;
 			try {
-				control = (ControlLinear*)rControlSet->get(rraControlName);
+				control = (ControlLinear*)&rControlSet->get(rraControlName);
 			} catch(Exception x) {
 				continue;
 			}
@@ -1322,7 +1348,7 @@ constructRRAControlSet(ControlSet *aControlConstraints)
 	// Loop through controls looking for corresponding actuators
 	int nrra = rraControlSet->getSize();
 	for(i=0;i<nrra;i++) {
-		rraControl = (ControlLinear*)rraControlSet->get(i);
+		rraControl = (ControlLinear*)&rraControlSet->get(i);
 		if(rraControl==NULL) continue;
 		rraControlName = rraControl->getName();
 
@@ -1342,7 +1368,7 @@ constructRRAControlSet(ControlSet *aControlConstraints)
 			}
 
 			// Get control constraint
-			controlConstraint = (ControlLinear*)aControlConstraints->get(rraControlName);
+			controlConstraint = (ControlLinear*)&&aControlConstraints->get(rraControlName);
 			// Control constraint already exists, so clear the existing nodes
 			if(controlConstraint!=NULL) {
 					controlConstraint->getNodeArray().setSize(0);
@@ -1387,20 +1413,11 @@ constructRRAControlSet(ControlSet *aControlConstraints)
  * analysis is done, so no assumptions about the lifetime of the returned storage object 
  * outside the owning analysis should be made.
  */
-Storage* CMCTool::getForceStorage(){
-		Actuation *actuation = (Actuation*)_model->getAnalysisSet()->get("Actuation");
-		if(actuation==NULL) return 0;
-		return actuation->getForceStorage();
-}
-//_____________________________________________________________________________
-/**
- */
-Storage *CMCTool::
-getStateStorage() 
-{
-	return _integrand ? _integrand->getStateStorage() : 0;
+Storage& CMCTool::getForceStorage(){
+		Actuation& actuation = (Actuation&)_model->getAnalysisSet().get("Actuation");
+		return *actuation.getForceStorage();
 }
 
-void CMCTool::setOriginalActuatorSet(const ActuatorSet &aActuatorSet) {
-	_originalActuatorSet = aActuatorSet;
+void CMCTool::setOriginalForceSet(const ForceSet &aForceSet) {
+	_originalForceSet = aForceSet;
 }

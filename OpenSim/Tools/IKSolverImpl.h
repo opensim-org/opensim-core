@@ -3,8 +3,8 @@
 
 #include "osimToolsDLL.h"
 #include "IKSolverInterface.h"
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Common/Storage.h>
+#include "SimTKsimbody.h"
 
 namespace SimTK {
 	class Optimizer;
@@ -59,7 +59,9 @@ public:
 	virtual ~IKSolverImpl() {}
 
 	virtual void initializeSolver(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
-	virtual void solveFrames(const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
+#ifndef SWIG
+	virtual void solveFrames(SimTK::State& s, const IKTrial& aIKOptions, Storage& inputData, Storage& outputData);
+#endif
 	virtual void interrupt();
 private:
 

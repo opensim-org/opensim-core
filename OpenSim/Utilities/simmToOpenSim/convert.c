@@ -94,124 +94,117 @@ static double world_z[] = {0.0, 0.0, 1.0, 0.0};
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static void make_joint_conversion(int mod, int joint);
+static void make_joint_conversion(ModelStruct* ms, int joint);
 
 /* CONVERT: */
 
-int convert(int mod, double p[], int n1, int n2)
+int convert(ModelStruct* ms, double p[], int n1, int n2)
 {
-
    int i;
    int* path;
    double result[3];
    DMatrix* mat;
 
-	if (n1 == n2)
+   if (n1 == n2)
       return (0);
 
-   if (n1 == model[mod]->ground_segment)
+   if (n1 == ms->ground_segment)
    {
-      mat = get_ground_conversion(mod,n2,from_ground);
-      result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
-	          p[2]*(*mat)[2][0] + (*mat)[3][0];
-      result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
-	          p[2]*(*mat)[2][1] + (*mat)[3][1];
-      result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
-	          p[2]*(*mat)[2][2] + (*mat)[3][2];
-      p[0] = result[0];
-      p[1] = result[1];
-      p[2] = result[2];
-      return (0);
-   }
-   else if (n2 == model[mod]->ground_segment)
-   {
-      mat = get_ground_conversion(mod,n1,to_ground);
-      result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
-	          p[2]*(*mat)[2][0] + (*mat)[3][0];
-      result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
-	          p[2]*(*mat)[2][1] + (*mat)[3][1];
-      result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
-	          p[2]*(*mat)[2][2] + (*mat)[3][2];
-      p[0] = result[0];
-      p[1] = result[1];
-      p[2] = result[2];
-      return (0);
-   }
-
-   /* Performance enhancements for See System 9/8/93:
-    * This routine used to copy p[] to a 1x4 vector, so that it can be multiplied
-    * by the 4x4 transformation matrices.  Since the last column of the matrices
-    * is always [0 0 0 1], the code was changed to use the original 1x3 vector
-    * and ignore the last row and column of the 4x4 transformation matrices.
-    */
-
-   path = GET_PATH(mod,n1,n2);
-
-   for (i=0; path[i] != model[mod]->numjoints+1; i++)
-   {
-      /* If you want to convert a point in A to B, and the joint is defined A -> B,
-       * then you need to use the inverse transformation matrix.
-       */
-      
-      if (path[i] > 0)
-         mat = get_conversion(mod,path[i]-1,INVERSE);
-      else
-         mat = get_conversion(mod,-path[i]-1,FORWARD);
-      
+      mat = get_ground_conversion(ms,n2,from_ground);
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
          p[2]*(*mat)[2][0] + (*mat)[3][0];
       result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
          p[2]*(*mat)[2][1] + (*mat)[3][1];
       result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
          p[2]*(*mat)[2][2] + (*mat)[3][2];
-      
+      p[0] = result[0];
+      p[1] = result[1];
+      p[2] = result[2];
+      return (0);
+   }
+   else if (n2 == ms->ground_segment)
+   {
+      mat = get_ground_conversion(ms,n1,to_ground);
+      result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
+         p[2]*(*mat)[2][0] + (*mat)[3][0];
+      result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
+         p[2]*(*mat)[2][1] + (*mat)[3][1];
+      result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
+         p[2]*(*mat)[2][2] + (*mat)[3][2];
+      p[0] = result[0];
+      p[1] = result[1];
+      p[2] = result[2];
+      return (0);
+   }
+
+   // Performance enhancements for See System 9/8/93:
+   // This routine used to copy p[] to a 1x4 vector, so that it can be multiplied
+   // by the 4x4 transformation matrices.  Since the last column of the matrices
+   // is always [0 0 0 1], the code was changed to use the original 1x3 vector
+   // and ignore the last row and column of the 4x4 transformation matrices.
+
+   path = GET_PATH(ms, n1, n2);
+
+   for (i=0; path[i] != ms->numjoints+1; i++)
+   {
+      /* If you want to convert a point in A to B, and the joint is defined A -> B,
+      * then you need to use the inverse transformation matrix.
+      */
+
+      if (path[i] > 0)
+         mat = get_conversion(ms,path[i]-1,INVERSE);
+      else
+         mat = get_conversion(ms,-path[i]-1,FORWARD);
+
+      result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
+         p[2]*(*mat)[2][0] + (*mat)[3][0];
+      result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
+         p[2]*(*mat)[2][1] + (*mat)[3][1];
+      result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
+         p[2]*(*mat)[2][2] + (*mat)[3][2];
+
       p[0] = result[0];
       p[1] = result[1];
       p[2] = result[2];
    }
 
    return (i);
-
 }
 
-int convertNEW(int mod, double p[], int path[], int len)
+int convertNEW(ModelStruct* ms, double p[], int path[], int len)
 {
-   
    int i;
    double result[3];
    DMatrix* mat;
-   
+
    for (i=0; i < len; i++)
    {
-      
       if (path[i] > 0)
-         mat = get_conversion(mod, path[i]-1, INVERSE);
+         mat = get_conversion(ms, path[i]-1, INVERSE);
       else
-         mat = get_conversion(mod, -path[i]-1, FORWARD);
-      
+         mat = get_conversion(ms, -path[i]-1, FORWARD);
+
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
          p[2]*(*mat)[2][0] + (*mat)[3][0];
       result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
          p[2]*(*mat)[2][1] + (*mat)[3][1];
       result[2] = p[0]*(*mat)[0][2] + p[1]*(*mat)[1][2] +
          p[2]*(*mat)[2][2] + (*mat)[3][2];
-      
+
       p[0] = result[0];
       p[1] = result[1];
       p[2] = result[2];
    }
-   
-   return (i);
 
+   return i;
 }
 
 
 
 /* Converts a vector from one reference frame to another */
 
-int convert_vector(int mod, double p[], int n1, int n2)
+int convert_vector(ModelStruct* ms, double p[], int n1, int n2)
 {
-
    int i;
    int* path;
    double origin[3], result[3], new_origin[3];
@@ -222,9 +215,9 @@ int convert_vector(int mod, double p[], int n1, int n2)
 
    origin[0] = origin[1] = origin[2] = 0.0;
 
-   if (n1 == model[mod]->ground_segment)
+   if (n1 == ms->ground_segment)
    {
-      mat = get_ground_conversion(mod,n2,from_ground);
+      mat = get_ground_conversion(ms,n2,from_ground);
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
 	          p[2]*(*mat)[2][0] + (*mat)[3][0];
       result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
@@ -242,9 +235,9 @@ int convert_vector(int mod, double p[], int n1, int n2)
       p[2] = result[2] - new_origin[2];
       return (0);
    }
-   else if (n2 == model[mod]->ground_segment)
+   else if (n2 == ms->ground_segment)
    {
-      mat = get_ground_conversion(mod,n1,to_ground);
+      mat = get_ground_conversion(ms,n1,to_ground);
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
 	          p[2]*(*mat)[2][0] + (*mat)[3][0];
       result[1] = p[0]*(*mat)[0][1] + p[1]*(*mat)[1][1] +
@@ -270,18 +263,18 @@ int convert_vector(int mod, double p[], int n1, int n2)
     * and ignore the last row and column of the 4x4 transformation matrices.
     */
 
-   path = GET_PATH(mod,n1,n2);
+   path = GET_PATH(ms,n1,n2);
 
-   for (i=0; path[i] != model[mod]->numjoints+1; i++)
+   for (i=0; path[i] != ms->numjoints+1; i++)
    {
       /* If you want to convert a point in A to B, and the joint is defined A -> B,
        * then you need to use the inverse transformation matrix.
        */
 
       if (path[i] > 0)
-	 mat = get_conversion(mod,path[i]-1,INVERSE);
+	 mat = get_conversion(ms,path[i]-1,INVERSE);
       else
-	 mat = get_conversion(mod,-path[i]-1,FORWARD);
+	 mat = get_conversion(ms,-path[i]-1,FORWARD);
 
       result[0] = p[0]*(*mat)[0][0] + p[1]*(*mat)[1][0] +
 	          p[2]*(*mat)[2][0] + (*mat)[3][0];
@@ -309,157 +302,110 @@ int convert_vector(int mod, double p[], int n1, int n2)
  * matrix between segment n1 and n2.
  */
 
-void get_transform_between_segs(int mod, double tmat[][4], int n1, int n2)
+void get_transform_between_segs(ModelStruct* ms, double tmat[][4], int n1, int n2)
 {
 
    if (n1 == n2)
    {
        reset_4x4matrix(tmat);
    }
-   else if (n1 == model[mod]->ground_segment)
+   else if (n1 == ms->ground_segment)
    {
-       memcpy(tmat, *get_ground_conversion(mod, n2, from_ground), 16 * sizeof(double));
+       memcpy(tmat, *get_ground_conversion(ms, n2, from_ground), 16 * sizeof(double));
    }
-   else if (n2 == model[mod]->ground_segment)
+   else if (n2 == ms->ground_segment)
    {
-       memcpy(tmat, *get_ground_conversion(mod, n1, to_ground), 16 * sizeof(double));
+       memcpy(tmat, *get_ground_conversion(ms, n1, to_ground), 16 * sizeof(double));
    }
    else
    {
-       memcpy(tmat, *get_ground_conversion(mod, n1, to_ground), 16 * sizeof(double));
+       memcpy(tmat, *get_ground_conversion(ms, n1, to_ground), 16 * sizeof(double));
 
-       append_matrix(tmat, *get_ground_conversion(mod, n2, from_ground));
+       append_matrix(tmat, *get_ground_conversion(ms, n2, from_ground));
    }
 
 }
 
 
-void invalidate_joint_matrix(ModelStruct* ms, int joint)
+void invalidate_joint_matrix(ModelStruct* model, JointStruct* joint)
 {
-
    int i;
 
-   /* Make the joint matrix invalid */
+   // Make the joint matrix invalid.
+   joint->conversion.condition = invalid;
 
-   ms->joint[joint].conversion.condition = invalid;
-
-   /* Now invalidate the ground-to-segment transforms of every segment that
-    * uses this joint to get to ground.
-    */
-
-   for (i=0; i<ms->numsegments; i++)
+   // Now invalidate the ground-to-segment transforms of every segment that
+   // uses this joint to get to ground.
+   for (i=0; i<model->numsegments; i++)
    {
 #if INCLUDE_SKIN_EDITOR
-      sk_invalidate_bone_xform(ms, i);
+      sk_invalidate_bone_xform(model, i);
 #endif
-
-      if (ms->joint[joint].in_seg_ground_path[i] == yes)
-	 ms->segment[i].ground_condition = invalid;
-
-#if OLD_CODE
-      if (i == ms->ground_segment)
-	 continue;
-      
-      path = GET_PATH(ms->modelnum,ms->ground_segment,i);
-
-      for (j=0; path[j] != ms->numjoints+1; j++)
-      {
-	 if (ms->joint[ABS(path[j])-1].conversion.condition == invalid)
-	 {
-	    ms->segment[i].ground_condition = invalid;
-	    break;
-	 }
-      }
-#endif
-
+      if (joint->in_seg_ground_path[i] == yes)
+         model->segment[i].ground_condition = invalid;
    }
 
-   /* Now set all of the muscle wrap flags to invalid (wrap_calced = no)
-    * so that the wrapping points (implicit and explicit) will be
-    * updated.
-    */
-#ifndef ENGINE
-   for (i=0; i<ms->nummuscles; i++)
-      ms->muscle[i].wrap_calced = no;
+   // Now set all of the muscle wrap flags to invalid (wrap_calced = no)
+   // so that the wrapping points (implicit and explicit) will be updated.
+#if ! ENGINE
+   for (i=0; i<model->nummuscles; i++)
+      model->muscle[i]->wrap_calced = no;
 #endif
-
 }
 
 
-void invalidate_joints_using_func(ModelStruct* ms, int funcnum)
+void invalidate_joints_using_func(ModelStruct* ms, dpFunction* function)
 {
-
    int i, j;
 
    for (i=0; i<ms->numjoints; i++)
    {
       for (j=0; j<6; j++)
       {
-	 if (ms->joint[i].dofs[j].type == function_dof &&
-	     ms->joint[i].dofs[j].funcnum == funcnum)
-	 {
-	    invalidate_joint_matrix(ms,i);
-	    break;
-	 }
+         if (ms->joint[i].dofs[j].type == function_dof && ms->joint[i].dofs[j].function == function)
+         {
+            invalidate_joint_matrix(ms, &ms->joint[i]);
+            break;
+         }
       }
    }
-
 }
 
 
 /* GET_CONVERSION: this routine returns the 4x4 transformation matrix needed
  * to travel down the specified joint in the specified direction.
  */
-
-DMatrix* get_conversion(int mod, int joint, Direction dir)
+DMatrix* get_conversion(ModelStruct* ms, int joint, Direction dir)
 {
-
-   if (joint > model[mod]->numjoints)
+   if (joint > ms->numjoints)
    {
-      (void)sprintf(errorbuffer,"Fatal error: joint %d not valid for model %s",
-	      joint, model[mod]->name);
-      error(exit_program,errorbuffer);
-
-#ifndef ENGINE
-      simm_exit();
-#else
-      exit(1);
-#endif
+      (void)sprintf(errorbuffer, "Fatal error: joint %d not valid for model %s", joint, ms->name);
+      error(exit_program, errorbuffer);
    }
 
-   make_conversion(mod,joint);
+   make_conversion(ms,joint);
    
    if (dir == FORWARD)
-      return (&model[mod]->joint[joint].conversion.forward);
+      return (&ms->joint[joint].conversion.forward);
    else /* if (dir == INVERSE) */
-      return (&model[mod]->joint[joint].conversion.inverse);
-
+      return (&ms->joint[joint].conversion.inverse);
 }
 
-#ifndef ENGINE
-GLfloat* get_float_conversion(int mod, int joint, Direction dir)
+#if ! ENGINE
+GLfloat* get_float_conversion(ModelStruct* ms, int joint, Direction dir)
 {
-
-   if (joint > model[mod]->numjoints)
+   if (joint > ms->numjoints)
    {
-      (void)sprintf(errorbuffer,"Fatal error: joint %d not valid for model %s",
-	      joint, model[mod]->name);
-      error(exit_program,errorbuffer);
-
-#ifndef NO_GUI
-      simm_exit();
-#else
-      exit(1);
-#endif
+      (void)sprintf(errorbuffer, "Fatal error: joint %d not valid for model %s", joint, ms->name);
+      error(exit_program, errorbuffer);
    }
 
-   make_conversion(mod,joint);
+   make_conversion(ms,joint);
 
    if (dir == FORWARD)
-      return (model[mod]->joint[joint].conversion.gl_forward);
+      return (ms->joint[joint].conversion.gl_forward);
    else /* if (dir == INVERSE) */
-      return (model[mod]->joint[joint].conversion.gl_inverse);
-
+      return (ms->joint[joint].conversion.gl_inverse);
 }
 #endif
 
@@ -468,15 +414,15 @@ GLfloat* get_float_conversion(int mod, int joint, Direction dir)
  * to travel between the specified segment and the ground segment.
  */
 
-DMatrix* get_ground_conversion(int mod, int seg, GroundDirection gd)
+DMatrix* get_ground_conversion(ModelStruct* ms, int seg, GroundDirection gd)
 {
-   if (model[mod]->segment[seg].ground_condition == invalid)
-      make_ground_conversion(model[mod],seg);
+   if (ms->segment[seg].ground_condition == invalid)
+      make_ground_conversion(ms,seg);
 
    if (gd == from_ground)
-      return (&model[mod]->segment[seg].from_ground); 
+      return (&ms->segment[seg].from_ground); 
    else /* if (gd == to_ground) */
-      return (&model[mod]->segment[seg].to_ground);
+      return (&ms->segment[seg].to_ground);
 
 }
 
@@ -485,16 +431,16 @@ DMatrix* get_ground_conversion(int mod, int seg, GroundDirection gd)
 /* GET_FLOAT_GROUND_CONVERSION: this routine returns the 4x4 transformation
  * matrix needed to travel between the specified segment and the ground segment.
  */
-#ifndef ENGINE
-GLfloat* get_float_ground_conversion(int mod, int seg, GroundDirection gd)
+#if ! ENGINE
+GLfloat* get_float_ground_conversion(ModelStruct* ms, int seg, GroundDirection gd)
 {
-   if (model[mod]->segment[seg].ground_condition == invalid)
-      make_ground_conversion(model[mod],seg);
+   if (ms->segment[seg].ground_condition == invalid)
+      make_ground_conversion(ms,seg);
 
    if (gd == from_ground)
-      return (model[mod]->segment[seg].float_from_ground); 
+      return (ms->segment[seg].float_from_ground); 
    else /* if (gd == to_ground) */
-      return (model[mod]->segment[seg].float_to_ground);
+      return (ms->segment[seg].float_to_ground);
 
 }
 #endif
@@ -508,7 +454,7 @@ void make_ground_conversion(ModelStruct* ms, int seg)
    calc_transformation(ms,ms->ground_segment, seg, ms->segment[seg].from_ground);
    invert_4x4transform(ms->segment[seg].from_ground, ms->segment[seg].to_ground);
 
-#ifndef ENGINE
+#if ! ENGINE
    for (i=0,index=0; i<4; i++)
    {
       for (j=0; j<4; j++)
@@ -531,9 +477,9 @@ void make_ground_conversion(ModelStruct* ms, int seg)
  * across a joint.
  */
 
-void make_conversion(int mod, int joint)
+void make_conversion(ModelStruct* ms, int joint)
 {
-   JointStruct* jnt = &model[mod]->joint[joint];
+   JointStruct* jnt = &ms->joint[joint];
    int i, j, index;
 
    if (jnt->conversion.condition == valid &&
@@ -552,7 +498,7 @@ void make_conversion(int mod, int joint)
 
    if (jnt->conversion.condition == invalid)
    {
-      make_joint_conversion(mod, joint);
+      make_joint_conversion(ms, joint);
 
       if (jnt->pretransform_active)
       {
@@ -563,7 +509,7 @@ void make_conversion(int mod, int joint)
       
          if (jnt->pretransform_condition == invalid)
          {
-            calc_joint_pretransform(model[mod], jnt);
+            calc_joint_pretransform(ms, jnt);
             
             jnt->pretransform_condition = valid;
          }
@@ -580,20 +526,20 @@ void make_conversion(int mod, int joint)
     * check this code. OpenGL wants column-major matrices and IRIS GL wanted
     * row-major.
     */
-#ifndef ENGINE
+#if ! ENGINE
    for (i=0, index=0; i<4; i++)
       for (j=0; j<4; j++)
       {
-         model[mod]->joint[joint].conversion.gl_forward[index] = 
-            model[mod]->joint[joint].conversion.forward[i][j];
-         model[mod]->joint[joint].conversion.gl_inverse[index++] = 
-            model[mod]->joint[joint].conversion.inverse[i][j];
+         ms->joint[joint].conversion.gl_forward[index] = 
+            ms->joint[joint].conversion.forward[i][j];
+         ms->joint[joint].conversion.gl_inverse[index++] = 
+            ms->joint[joint].conversion.inverse[i][j];
       }
 #endif
 }
 
 
-static void make_joint_conversion(int mod, int joint)
+static void make_joint_conversion(ModelStruct* ms, int joint)
 {
    int i;
    int order[4];
@@ -602,41 +548,44 @@ static void make_joint_conversion(int mod, int joint)
    
    /* calculate the values of the 6 dof variables for this joint */
    for (i=0; i<6; i++)
-      dofvalue[i] = evaluate_dof(mod,&model[mod]->joint[joint].dofs[i]);
+      dofvalue[i] = evaluate_dof(ms,&ms->joint[joint].dofs[i]);
 
    /* initialize the [parent] x, y, and z axes */
-   COPY_1X4VECTOR(world_x,model[mod]->joint[joint].parentframe[XX]);
-   COPY_1X4VECTOR(world_y,model[mod]->joint[joint].parentframe[YY]);
-   COPY_1X4VECTOR(world_z,model[mod]->joint[joint].parentframe[ZZ]);
+   COPY_1X4VECTOR(world_x,ms->joint[joint].parentframe[XX]);
+   COPY_1X4VECTOR(world_y,ms->joint[joint].parentframe[YY]);
+   COPY_1X4VECTOR(world_z,ms->joint[joint].parentframe[ZZ]);
 
    /* call calc_joint_transform() to make the matrices */
 
    /***************** FORWARD **********************/
 
    /* set the order, copy the parent frame and parent axes to other vectors */
-   order[TRANS] = model[mod]->joint[joint].order[TRANS]+1;
-   order[ROT1] = model[mod]->joint[joint].order[ROT1]+1;
-   order[ROT2] = model[mod]->joint[joint].order[ROT2]+1;
-   order[ROT3] = model[mod]->joint[joint].order[ROT3]+1;
-   COPY_1X4VECTOR(model[mod]->joint[joint].parentframe[XX],x);
-   COPY_1X4VECTOR(model[mod]->joint[joint].parentframe[YY],y);
-   COPY_1X4VECTOR(model[mod]->joint[joint].parentframe[ZZ],z);
-   COPY_1X4VECTOR(model[mod]->joint[joint].parentrotaxes[R1],ra1);
-   COPY_1X4VECTOR(model[mod]->joint[joint].parentrotaxes[R2],ra2);
-   COPY_1X4VECTOR(model[mod]->joint[joint].parentrotaxes[R3],ra3);
+   order[TRANS] = ms->joint[joint].order[TRANS]+1;
+   order[ROT1] = ms->joint[joint].order[ROT1]+1;
+   order[ROT2] = ms->joint[joint].order[ROT2]+1;
+   order[ROT3] = ms->joint[joint].order[ROT3]+1;
+   COPY_1X4VECTOR(ms->joint[joint].parentframe[XX],x);
+   COPY_1X4VECTOR(ms->joint[joint].parentframe[YY],y);
+   COPY_1X4VECTOR(ms->joint[joint].parentframe[ZZ],z);
+   COPY_1X4VECTOR(ms->joint[joint].parentrotaxes[R1],ra1);
+   normalize_vector(ra1, ra1);
+   COPY_1X4VECTOR(ms->joint[joint].parentrotaxes[R2],ra2);
+   normalize_vector(ra2, ra2);
+   COPY_1X4VECTOR(ms->joint[joint].parentrotaxes[R3],ra3);
+   normalize_vector(ra3, ra3);
 
-   calc_joint_transform(order,dofvalue,model[mod]->joint[joint].conversion.forward,
-                        x,y,z,ra1,ra2,ra3,BF,FORWARD,&model[mod]->joint[joint]);
+   calc_joint_transform(order,dofvalue,ms->joint[joint].conversion.forward,
+                        x,y,z,ra1,ra2,ra3,BF,FORWARD,&ms->joint[joint]);
 
    /* When the axes come back, they are transformed into the child axes,
     * so store them in the child elements in the joint structure.
     */
-   COPY_1X4VECTOR(x,model[mod]->joint[joint].childframe[XX]);
-   COPY_1X4VECTOR(y,model[mod]->joint[joint].childframe[YY]);
-   COPY_1X4VECTOR(z,model[mod]->joint[joint].childframe[ZZ]);
-   COPY_1X4VECTOR(ra1,model[mod]->joint[joint].childrotaxes[R1]);
-   COPY_1X4VECTOR(ra2,model[mod]->joint[joint].childrotaxes[R2]);
-   COPY_1X4VECTOR(ra3,model[mod]->joint[joint].childrotaxes[R3]);
+   COPY_1X4VECTOR(x,ms->joint[joint].childframe[XX]);
+   COPY_1X4VECTOR(y,ms->joint[joint].childframe[YY]);
+   COPY_1X4VECTOR(z,ms->joint[joint].childframe[ZZ]);
+   COPY_1X4VECTOR(ra1,ms->joint[joint].childrotaxes[R1]);
+   COPY_1X4VECTOR(ra2,ms->joint[joint].childrotaxes[R2]);
+   COPY_1X4VECTOR(ra3,ms->joint[joint].childrotaxes[R3]);
 
 
    /***************** INVERSE **********************/
@@ -646,16 +595,16 @@ static void make_joint_conversion(int mod, int joint)
     * the child portion of the joint structure (so the partial velocity
     * routines can get them).
     */
-   order[TRANS] = model[mod]->joint[joint].order[TRANS]-4;
-   order[ROT1] = model[mod]->joint[joint].order[ROT1]-4;
-   order[ROT2] = model[mod]->joint[joint].order[ROT2]-4;
-   order[ROT3] = model[mod]->joint[joint].order[ROT3]-4;
+   order[TRANS] = ms->joint[joint].order[TRANS]-4;
+   order[ROT1] = ms->joint[joint].order[ROT1]-4;
+   order[ROT2] = ms->joint[joint].order[ROT2]-4;
+   order[ROT3] = ms->joint[joint].order[ROT3]-4;
 
-   calc_joint_transform(order,dofvalue,model[mod]->joint[joint].conversion.inverse,
-                        x,y,z,ra1,ra2,ra3,BF,INVERSE,&model[mod]->joint[joint]);
+   calc_joint_transform(order,dofvalue,ms->joint[joint].conversion.inverse,
+                        x,y,z,ra1,ra2,ra3,BF,INVERSE,&ms->joint[joint]);
 
    /* and now the condition of the conversion matrices is valid */
-   model[mod]->joint[joint].conversion.condition = valid;
+   ms->joint[joint].conversion.condition = valid;
 }
 
 
@@ -859,9 +808,9 @@ void calc_transformation(ModelStruct* ms, int from, int to, DMatrix mat)
    for (i=0; path[i] != ms->numjoints+1; i++)
    {
       if (path[i] > 0)
-         jmat = get_conversion(ms->modelnum,path[i]-1,INVERSE);
+         jmat = get_conversion(ms,path[i]-1,INVERSE);
       else
-         jmat = get_conversion(ms->modelnum,-path[i]-1,FORWARD);
+         jmat = get_conversion(ms,-path[i]-1,FORWARD);
       mult_4x4matrices(workmat1,*jmat,workmat2);
       copy_4x4matrix(workmat2,workmat1);
    }

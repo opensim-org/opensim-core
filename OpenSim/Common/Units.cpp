@@ -30,17 +30,13 @@
 // INCLUDES
 //=============================================================================
 #include "Units.h"
-#include "rdMath.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-// DTOR and RTOD are defined in rdMath.cpp, but they use PI, which is defined
-// in that file as acos(-1.0). But maybe because of a prior definition it ends
-// up truncated as 3.1415926538, which is not accurate enough for very small
-// angles. So in this file DTOR and RTOD are replaced with these:
+
 #define DEG_TO_RAD  0.017453292519943295769
 #define RAD_TO_DEG 57.295779513082320876846
 
@@ -52,7 +48,7 @@ using namespace OpenSim;
  * Default constructor.
  */
 Units::Units() :
-	_type(simmUnknownUnits)
+	_type(UnknownUnits)
 {
 }
 
@@ -74,24 +70,24 @@ Units::Units(const Units& aUnits)
  * @param aString string containing the units text label
  */
 Units::Units(string& aString) :
-	_type(simmUnknownUnits)
+	_type(UnknownUnits)
 {
    if (aString == "RADIANS" || aString == "RAD" || aString == "radians" || aString == "rad")
-      _type = simmRadians;
+      _type = Radians;
    if (aString == "DEGREES" || aString == "DEG" || aString == "degrees" || aString == "deg")
-      _type = simmDegrees;
+      _type = Degrees;
    if (aString == "MM" || aString == "MILLIMETERS" || aString == "mm" || aString == "millimeters")
-      _type = simmMillimeters;
+      _type = Millimeters;
    if (aString == "CM" || aString == "CENTIMETERS" || aString == "cm" || aString == "centimeters")
-      _type = simmCentimeters;
+      _type = Centimeters;
    if (aString == "M" || aString == "METERS" || aString == "m" || aString == "meters")
-      _type = simmMeters;
+      _type = Meters;
    if (aString == "SEC" || aString == "SECONDS" || aString == "sec" || aString == "seconds")
-      _type = simmSeconds;
+      _type = Seconds;
    if (aString == "MSEC" || aString == "MILLISECONDS" || aString == "msec" || aString == "milliseconds")
-      _type = simmMilliseconds;
+      _type = Milliseconds;
 	if (aString == "N" || aString == "NEWTONS" || aString == "Newtons")
-		_type = simmNewtons;
+		_type = Newtons;
 }
 
 //_____________________________________________________________________________
@@ -156,63 +152,63 @@ double Units::convertTo(UnitType aType) const
 	if (_type == aType)
 		return 1.0;
 
-	if (_type == simmRadians)
+	if (_type == Radians)
 	{
-		if (aType == simmDegrees)
+		if (aType == Degrees)
 			return SimTK_RADIAN_TO_DEGREE;
 		else
-			return rdMath::getNAN();
+			return SimTK::NaN;
 	}
-	else if (_type == simmDegrees)
+	else if (_type == Degrees)
 	{
-		if (aType == simmRadians)
+		if (aType == Radians)
 			return SimTK_DEGREE_TO_RADIAN;
 		else
-			return rdMath::getNAN();
+			return SimTK::NaN;
 	}
-	else if (_type == simmMillimeters)
+	else if (_type == Millimeters)
 	{
-		if (aType == simmCentimeters)
+		if (aType == Centimeters)
 			return 0.1;
-		else if (aType == simmMeters)
+		else if (aType == Meters)
 			return 0.001;
 		else
-			return rdMath::getNAN();
+			return SimTK::NaN;
 	}
-	else if (_type == simmCentimeters)
+	else if (_type == Centimeters)
 	{
-		if (aType == simmMillimeters)
+		if (aType == Millimeters)
 			return 10.0;
-		else if (aType == simmMeters)
+		else if (aType == Meters)
 			return 0.01;
 		else
-			return rdMath::getNAN();
+			return SimTK::NaN;
 	}
-	else if (_type == simmMeters)
+	else if (_type == Meters)
 	{
-		if (aType == simmMillimeters)
+		if (aType == Millimeters)
 			return 1000.0;
-		else if (aType == simmCentimeters)
+		else if (aType == Centimeters)
 			return 100.0;
 		else
-			return rdMath::getNAN();
+			return SimTK::NaN;
 	}
-	else if (_type == simmSeconds)
+	else if (_type == Seconds)
 	{
-		if (aType == simmMilliseconds)
+		if (aType == Milliseconds)
 			return 1000.0;
 		else
-			return rdMath::getNAN();
+			return SimTK::NaN;
 	}
-	else if (_type == simmMilliseconds)
+	else if (_type == Milliseconds)
 	{
-		if (aType == simmSeconds)
+		if (aType == Seconds)
 			return 0.001;
 		else
-			return rdMath::getNAN();
+			return SimTK::NaN;
 	}
 
-	return rdMath::getNAN();
+	return SimTK::NaN;
 }
 
 //_____________________________________________________________________________
@@ -225,23 +221,23 @@ string Units::getLabel() const
 {
 	switch(_type)
 	{
-	   case simmRadians:
+	   case Radians:
 		   return "radians";
-	   case simmDegrees:
+	   case Degrees:
 		   return "degrees";
-	   case simmMillimeters:
+	   case Millimeters:
 		   return "millimeters";
-	   case simmCentimeters:
+	   case Centimeters:
 		   return "centimeters";
-	   case simmMeters:
+	   case Meters:
 		   return "meters";
-		case simmSeconds:
+		case Seconds:
 			return "seconds";
-		case simmMilliseconds:
+		case Milliseconds:
 			return "milliseconds";
-		case simmNewtons:
+		case Newtons:
 			return "N";
-		case simmUnknownUnits:
+		case UnknownUnits:
 		default:
 			return "unknown";
 	}
@@ -255,23 +251,23 @@ string Units::getAbbreviation() const
 {
 	switch(_type)
 	{
-	   case simmRadians:
+	   case Radians:
 		   return "rad";
-	   case simmDegrees:
+	   case Degrees:
 		   return "deg";
-	   case simmMillimeters:
+	   case Millimeters:
 		   return "mm";
-	   case simmCentimeters:
+	   case Centimeters:
 		   return "cm";
-	   case simmMeters:
+	   case Meters:
 		   return "m";
-		case simmSeconds:
+		case Seconds:
 			return "s";
-		case simmMilliseconds:
+		case Milliseconds:
 			return "ms";
-		case simmNewtons:
+		case Newtons:
 			return "N";
-		case simmUnknownUnits:
+		case UnknownUnits:
 		default:
 			return "unknown";
 	}

@@ -30,17 +30,15 @@
 // C++ INCLUDES
 #include "StepFunction.h"
 #include "Constant.h"
-#include "rdMath.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
 #include "PropertyDblArray.h"
 #include "SimmMacros.h"
-
-
+#include "XYFunctionInterface.h"
 
 using namespace OpenSim;
 using namespace std;
-
+using SimTK::Vector;
 
 //=============================================================================
 // STATICS
@@ -194,27 +192,30 @@ void StepFunction::init(Function* aFunction)
 	StepFunction* sf = dynamic_cast<StepFunction*>(aFunction);
 	if (sf != NULL) {
 		setEqual(*sf);
-	} else if (aFunction->getNumberOfPoints() == 0) {
-		// A StepFunction must have at least 2 data points.
-		// If aFunction is a Constant, use its Y value for both data points.
-		// If it is not, make up two data points.
-		double x[2] = {0.0, 1.0}, y[2];
-		Constant* cons = dynamic_cast<Constant*>(aFunction);
-		if (cons != NULL) {
-			y[0] = y[1] = cons->evaluate();
-		} else {
-			y[0] = y[1] = 1.0;
-		}
-		*this = StepFunction(2, x, y);
-	} else if (aFunction->getNumberOfPoints() == 1) {
-		double x[2], y[2];
-		x[0] = aFunction->getXValues()[0];
-		x[1] = x[0] + 1.0;
-		y[0] = y[1] = aFunction->getYValues()[0];
-		*this = StepFunction(2, x, y);
 	} else {
-		*this = StepFunction(aFunction->getNumberOfPoints(),
-			aFunction->getXValues(), aFunction->getYValues());
+		XYFunctionInterface xyFunc(aFunction);
+		if (xyFunc.getNumberOfPoints() == 0) {
+			// A StepFunction must have at least 2 data points.
+			// If aFunction is a Constant, use its Y value for both data points.
+			// If it is not, make up two data points.
+			double x[2] = {0.0, 1.0}, y[2];
+			Constant* cons = dynamic_cast<Constant*>(aFunction);
+			if (cons != NULL) {
+				y[0] = y[1] = cons->calcValue(SimTK::Vector(1, 0.));
+			} else {
+				y[0] = y[1] = 1.0;
+			}
+			*this = StepFunction(2, x, y);
+		} else if (xyFunc.getNumberOfPoints() == 1) {
+			double x[2], y[2];
+			x[0] = xyFunc.getXValues()[0];
+			x[1] = x[0] + 1.0;
+			y[0] = y[1] = xyFunc.getYValues()[0];
+			*this = StepFunction(2, x, y);
+		} else {
+			*this = StepFunction(xyFunc.getNumberOfPoints(),
+				xyFunc.getXValues(), xyFunc.getYValues());
+		}
 	}
 }
 
@@ -256,32 +257,6 @@ StepFunction& StepFunction::operator=(const StepFunction &aFunction)
 int StepFunction::getSize() const
 {
 	return(_x.getSize());
-}
-
-//-----------------------------------------------------------------------------
-// MIN AND MAX X
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the minimum value of the independent variable.
- *
- * @return Minimum value of the independent variable.
- */
-double StepFunction::getMinX() const
-{
-	if(getSize()<=0) return(rdMath::getNAN());
-	return(_x.get(0));
-}
-//_____________________________________________________________________________
-/**
- * Get the maximum value of the independent variable.
- *
- * @return Maximum value of the independent variable.
- */
-double StepFunction::getMaxX() const
-{
-	if(getSize()<=0) return(rdMath::getNAN());
-	return(_x.getLast());
 }
 
 //-----------------------------------------------------------------------------
@@ -350,69 +325,6 @@ void StepFunction::updateFromXMLNode()
 //=============================================================================
 // EVALUATION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Update the bounding box for this function.
- *
- * For an StepFunction, there is only one indepdendent variable x, so the 
- * minimum and maximum values of indepdent variables y and z is 0.0.
- *
- * When this method is called, the minimum and maximum x of the bounding box
- * is simply set to the minimum and maximum values of the x data points that
- * were used to construct the function, that is, min x = x[0] and
- * max x = x[getN()-1].
- *
- * @see Function
- */
-void StepFunction::updateBoundingBox()
-{
-	setMinX(0.0);
-	setMinY(0.0);
-	setMinZ(0.0);
-	setMaxX(0.0);
-	setMaxY(0.0);
-	setMaxZ(0.0);
-
-	if(getSize()<=0) return;
-
-	setMinX(_x.get(0));
-	setMaxX(_x.getLast());
-}
-
-/**
- * Evaluates function or its (partial) derivatives
- */
-double StepFunction::evaluate(int aDerivOrder, double aX, double aY, double aZ) const
-{
-	if (aDerivOrder < 0)
-		return rdMath::getNAN();
-	if (aDerivOrder > 0)
-		return 0.0;
-
-	int n = _x.getSize();
-
-	if (aX < _x[0] || EQUAL_WITHIN_ERROR(aX,_x[0]))
-		return _y[0];
-   if (aX > _x[n-1] || EQUAL_WITHIN_ERROR(aX,_x[n-1]))
-      return _y[n-1];
-
-   // Do a binary search to find which two points the abscissa is between.
-	int k, i = 0;
-	int j = n;
-	while (1)
-	{
-		k = (i+j)/2;
-		if (aX < _x[k])
-			j = k;
-		else if (aX > _x[k+1])
-			i = k;
-		else
-			break;
-	}
-
-	return _y[k];
-}
-
 /**
  * Evaluates total first derivative
  */
@@ -469,12 +381,6 @@ void StepFunction::setY(int aIndex, double aValue)
 	}
 }
 
-void StepFunction::scaleY(double aScaleFactor)
-{
-	for (int i = 0; i < _y.getSize(); i++)
-		_y[i] *= aScaleFactor;
-}
-
 bool StepFunction::deletePoint(int aIndex)
 {
 	if (_x.getSize() > 1 && _y.getSize() > 1 &&
@@ -520,27 +426,48 @@ int StepFunction::addPoint(double aX, double aY)
 	return i;
 }
 
-Array<XYPoint>* StepFunction::renderAsLineSegments(double aStart, double aEnd)
+double StepFunction::calcValue(const Vector& x) const
 {
-	Array<XYPoint>* foo = new Array<XYPoint>(XYPoint());
+    int n = _x.getSize();
+    double aX = x[0];
 
-	return foo;
+    if (aX < _x[0] || EQUAL_WITHIN_ERROR(aX,_x[0]))
+        return _y[0];
+    if (aX > _x[n-1] || EQUAL_WITHIN_ERROR(aX,_x[n-1]))
+        return _y[n-1];
+
+   // Do a binary search to find which two points the abscissa is between.
+    int k, i = 0;
+    int j = n;
+    while (1)
+    {
+        k = (i+j)/2;
+        if (aX < _x[k])
+            j = k;
+        else if (aX > _x[k+1])
+            i = k;
+        else
+            break;
+    }
+
+    return _y[k];
 }
 
-Array<XYPoint>* StepFunction::renderAsLineSegments(int aIndex)
+double StepFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
 {
-	if (aIndex < 0 || aIndex >= getNumberOfPoints() - 1)
-		return NULL;
-
-	Array<XYPoint>* xyPts = new Array<XYPoint>(XYPoint());
-
-	xyPts->append(XYPoint(_x[aIndex], _y[aIndex]));
-	xyPts->append(XYPoint(_x[aIndex+1], _y[aIndex]));
-	xyPts->append(XYPoint(_x[aIndex+1], _y[aIndex+1]));
-
-	return xyPts;
+    return 0.0;
 }
 
-const SimTK::Function<1>* StepFunction::createSimTKFunction() const {
-    return new FunctionAdapter(*this, 1);
+int StepFunction::getArgumentSize() const
+{
+    return 1;
+}
+
+int StepFunction::getMaxDerivativeOrder() const
+{
+    return std::numeric_limits<int>::max();
+}
+
+SimTK::Function* StepFunction::createSimTKFunction() const {
+    return new FunctionAdapter(*this);
 }

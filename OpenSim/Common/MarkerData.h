@@ -36,7 +36,6 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "Storage.h"
-#include "rdMath.h"
 #include "ArrayPtrs.h"
 #include "MarkerFrame.h"
 #include "Units.h"
@@ -82,7 +81,7 @@ public:
 	MarkerData(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
 	virtual ~MarkerData();
 	void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;
-	void averageFrames(double aThreshold = -1.0, double aStartTime = rdMath::MINUS_INFINITY, double aEndTime = rdMath::PLUS_INFINITY);
+	void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
 	const std::string& getFileName() const { return _fileName; }
 	void makeRdStorage(Storage& rStorage);
 	MarkerFrame* getFrame(int aIndex) const;

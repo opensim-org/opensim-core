@@ -159,7 +159,7 @@ operator=(const ExampleVectorFunctionUncoupledNxN &aVectorFunction)
  * @param aY Array of resulting function values.
  */
 void ExampleVectorFunctionUncoupledNxN::
-evaluate(const double *aX,double *rY)
+calcValue(const double *aX,double *rY, int aSize)
 {
 	int N = getNX();
 
@@ -191,9 +191,9 @@ evaluate(const double *aX,double *rY)
  * @param aY Array of resulting function values.
  */
 void ExampleVectorFunctionUncoupledNxN::
-evaluate(const Array<double> &aX,Array<double> &rY)
+calcValue(const Array<double> &aX,Array<double> &rY)
 {
-	evaluate(&aX[0],&rY[0]);
+	calcValue(&aX[0],&rY[0], aX.getSize());
 }
 //_____________________________________________________________________________
 /**
@@ -205,7 +205,7 @@ evaluate(const Array<double> &aX,Array<double> &rY)
  * @param aDerivWRT
  */
 void ExampleVectorFunctionUncoupledNxN::
-evaluate(const Array<double> &aX,Array<double> &rY,
+calcDerivative(const Array<double> &aX,Array<double> &rY,
 			const Array<int> &aDerivWRT)
 {
 	cout<<"\nExampleVectorFunctionUncoupledNxN.evalute(x,y,derivWRT): not implemented.\n";

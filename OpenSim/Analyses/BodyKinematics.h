@@ -35,13 +35,15 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimAnalysesDLL.h"
 
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
+class Model;
 /**
  * A class for recording the kinematics of the bodies
  * of a model during a simulation.
@@ -49,9 +51,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
-class Model;
 
 class OSIMANALYSES_API BodyKinematics : public Analysis 
 {
@@ -74,7 +73,6 @@ protected:
 	bool _recordCenterOfMass;
 	Array<double> _kin;
 
-	double *_dy;
 	Storage *_pStore;
 	Storage *_vStore;
 	Storage *_aStore;
@@ -116,22 +114,23 @@ public:
 	void setExpressResultsInLocalFrame(bool aTrueFalse);
 	bool getExpressResultsInLocalFrame();
 
-	virtual void setModel(Model *aModel);
+	void setRecordCenterOfMass(bool aTrueFalse) {_recordCenterOfMass = aTrueFalse;}
+	void setBodiesToRecord(Array<std::string> &listOfBodies) {_bodies = listOfBodies;}
+
+
+	virtual void setModel(Model& aModel);
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
-	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+    virtual int
+        begin(const SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(const SimTK::State& s );
 protected:
-	virtual int
-		record(double aT,double *aX,double *aY);
+    virtual int
+        record(const SimTK::State& s );
 
 	//--------------------------------------------------------------------------
 	// IO

@@ -72,7 +72,7 @@ SimbodySimmDof::SimbodySimmDof()
 void SimbodySimmDof::setNull()
 {
 	_name = "undefined";
-   _type = AbstractTransformAxis::Translational;
+   _type = Coordinate::Translational;
 	_userFunctionNumber = -1;
    _coordinateName = "";
    _axis[0] = _axis[1] = _axis[2] = 0.0;
@@ -87,8 +87,7 @@ void SimbodySimmDof::setNull()
  * @param aAxis Axis of rotation (not used for translations).
  * @param aValue Value of the constant DOF.
  */
-void SimbodySimmDof::setConstant(const string& aName, AbstractTransformAxis::MotionType aType,
-                                 const double* aAxis, double aValue)
+void SimbodySimmDof::setConstant(const string& aName, Coordinate::MotionType aType,  const double* aAxis, double aValue)
 {
    _name = aName;
    _type = aType;
@@ -112,7 +111,7 @@ void SimbodySimmDof::setConstant(const string& aName, AbstractTransformAxis::Mot
  * @param aCoordinateName Name of the gencoord that this DOF is a function of.
  * @param aAxis Axis of rotation (not used for translations).
  */
-void SimbodySimmDof::setFunction(const string& aName, AbstractTransformAxis::MotionType aType, int aFunctionNumber,
+void SimbodySimmDof::setFunction(const string& aName, Coordinate::MotionType aType, int aFunctionNumber,
                                  const string& aCoordinateName, const double* aAxis)
 {
    _name = aName;
@@ -139,6 +138,6 @@ void SimbodySimmDof::write(ofstream& aStream)
    } else {
       aStream << _name << " constant " << _value << endl;
    }
-   if (_type == AbstractTransformAxis::Rotational)
+   if (_type == Coordinate::Rotational)
       aStream << "axis" << _name[1] << " " << _axis[0] << " " << _axis[1] << " " << _axis[2] << endl;
 }

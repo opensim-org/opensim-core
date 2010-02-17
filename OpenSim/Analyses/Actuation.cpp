@@ -33,9 +33,9 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractActuator.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include "Actuation.h"
 
 
@@ -78,21 +78,7 @@ Actuation::Actuation(Model *aModel) :
 	// DESCRIPTION
 	constructDescription();
 
-	// STORAGE
-	allocateStorage();
 
-	// CHECK MODEL
-	if(_model==NULL) return;
-
-	// NUMBER OF ACTUATORS
-	_na = _model->getNumActuators();
-	if(_na<=0) return;
-
-	// WORK ARRAY
-	_fsp = new double[_na];
-
-	// LABELS
-	constructColumnLabels();
 }
 //_____________________________________________________________________________
 /**
@@ -181,7 +167,7 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 
 	// CHECK MODEL
 	if(_model!=NULL) {
-		_na = _model->getNumActuators();
+		_na = _model->getActuators().getSize();
 		_fsp = new double[_na];
 		constructColumnLabels();
 	}
@@ -192,21 +178,30 @@ Actuation& Actuation::operator=(const Actuation &aActuation)
 /**
  * Set the model pointer for analysis.
  */
-void Actuation::setModel(Model *aModel)
+void Actuation::setModel(Model& aModel)
 {
 	// BASE CLASS
 	Analysis::setModel(aModel);
 
+	// NUMBER OF ACTUATORS
 	if (_model)
-		_na = _model->getNumActuators();
+		_na = _model->getActuators().getSize();
 	else
 		_na = 0;
 
-	if(_na<=0) return;
+	if(_na<=0){
+		cout << "WARNING: Actuation analysis cancled. There are no Actuators in the model." << endl;
+		return;
+	}
 
 	// WORK ARRAY
 	if(_fsp!=NULL) delete[] _fsp;
 	_fsp = new double[_na];
+
+    // STORAGE
+    deleteStorage();
+    allocateStorage();
+    
 
 	// UPDATE LABELS
 	constructColumnLabels();
@@ -291,8 +286,9 @@ constructColumnLabels()
 		// ASSIGN
 		Array<string> labels;
 		labels.append("time");
-		ActuatorSet *ai = _model->getActuatorSet();
-		for (int i=0; i < ai->getSize(); i++) labels.append(ai->get(i)->getName());
+		const Set<Actuator>& ai = _model->getActuators();
+		for (int i=0; i < ai.getSize(); i++) 
+            labels.append(ai.get(i).getName());
 		setColumnLabels(labels);
 	}
 	_forceStore->setColumnLabels(getColumnLabels());
@@ -387,15 +383,15 @@ setStorageCapacityIncrements(int aIncrement)
  * Record the actuation quantities.
  */
 int Actuation::
-record(double aT,double *aX,double *aY)
+record(const SimTK::State& s)
 {
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
-	_model->getActuatorSet()->computeActuation();
+    _model->getSystem().realize(s, SimTK::Stage::Dynamics );
 
 	// NUMBER OF ACTUATORS
-	int na = _model->getNumActuators();
+	int na = _model->getActuators().getSize();
 	if(na!=_na) {
 		printf("Actuation.record: WARN- number of actuators has changed!\n");
 		_na = na;
@@ -403,26 +399,29 @@ record(double aT,double *aX,double *aY)
 
 		// REALLOCATE WORK ARRAY
 		if(_fsp!=NULL) delete[] _fsp;
-		_fsp = new double[_na];
-	}
+		_fsp = new double[_na]; 
+    }
 
 	// TIME NORMALIZATION
-	double tReal = aT * _model->getTimeNormConstant();
+	double tReal = s.getTime() * _model->getTimeNormConstant();
 
 	// FORCE
-	ActuatorSet *as = _model->getActuatorSet();
-	for(int i=0; i<as->getSize(); i++)
-		_fsp[i] = as->get(i)->getForce();
-	_forceStore->append(tReal,na,_fsp);
+	const Set<OpenSim::Actuator>& fs = _model->getActuators();
+	for(int i=0, iact=0; i<fs.getSize(); i++) {
+		    _fsp[iact++] = fs.get(i).getForce(s);
+    }
+    _forceStore->append(tReal,na,_fsp);
 
 	// SPEED
-	for(int i=0; i<as->getSize(); i++)
-		_fsp[i] = as->get(i)->getSpeed();
+	for(int i=0, iact=0; i<fs.getSize(); i++) {
+		    _fsp[iact++] = fs.get(i).getSpeed(s);
+    }
 	_speedStore->append(tReal,na,_fsp);
 
 	// POWER
-	for(int i=0; i<as->getSize(); i++)
-		_fsp[i] = as->get(i)->getPower();
+	for(int i=0, iact=0; i<fs.getSize(); i++) {
+		    _fsp[iact++] = fs.get(i).getPower(s);
+    }
 	_powerStore->append(tReal,na,_fsp);
 
 
@@ -440,32 +439,33 @@ record(double aT,double *aX,double *aY)
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
+ * @param state system State
  * @param aStep Step number of the integration.
- * @param aDT Size of the time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int Actuation::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
 	// RESET STORAGE
-	_forceStore->reset(aT);
-	_speedStore->reset(aT);
-	_powerStore->reset(aT);
+	if(_forceStore == NULL)
+		_forceStore = new Storage();
+	if(_speedStore == NULL)
+		_speedStore = new Storage();
+	if(_powerStore == NULL)
+		_powerStore = new Storage();
+
+	// RESET STORAGE
+	_forceStore->reset(s.getTime());
+	_speedStore->reset(s.getTime());
+	_powerStore->reset(s.getTime());
 
 	// RECORD
 	int status = 0;
 	if(_forceStore->getSize()<=0) {
-		status = record(aT,aX,aY);
+		status = record(s);
 	}
 
 	return(status);
@@ -483,28 +483,16 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
- * @param aXPrev Controls at the beginining of the current time step.
- * @param aYPrev States at the beginning of the current time step.
- * @param aYPPrev Pseudo states at the beginning of the current time step.
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just taken.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param state System state
  *
  * @return -1 on error, 0 otherwise.
  */
 int Actuation::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed(aStep)) return(0);
+	if(!proceed(stepNumber)) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }
@@ -519,25 +507,16 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
- *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param state System state
  *
  * @return -1 on error, 0 otherwise.
  */
 int Actuation::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end(const SimTK::State& s )
 {
 	if (!proceed()) return 0;
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }

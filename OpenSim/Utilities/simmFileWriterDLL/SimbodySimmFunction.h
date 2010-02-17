@@ -32,11 +32,9 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/AbstractTransformAxis.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 namespace OpenSim {
-
-class Function;
 
 //=============================================================================
 //=============================================================================
@@ -54,12 +52,12 @@ class SimbodySimmFunction
 //=============================================================================
 protected:
 	/** Pointer to the Function that this object was created from. */
-	const Function* _function;
+	const OpenSim::Function* _function;
 
    int _userNumber;  // user-defined number of the function
 
-   AbstractTransformAxis::MotionType _XType;
-   AbstractTransformAxis::MotionType _YType;
+   Coordinate::MotionType _XType;
+   Coordinate::MotionType _YType;
 
 //=============================================================================
 // METHODS
@@ -71,12 +69,12 @@ public:
 	virtual ~SimbodySimmFunction();
 	SimbodySimmFunction();
 	SimbodySimmFunction(const Function* aFunction, int aUserNumber,
-                       AbstractTransformAxis::MotionType aXType,
-                       AbstractTransformAxis::MotionType aYType);
+                       Coordinate::MotionType aXType,
+                       Coordinate::MotionType aYType);
    const Function* getFunction() const { return _function; }
    int getUserNumber() const { return _userNumber; }
-   AbstractTransformAxis::MotionType getXType() const { return _XType; }
-   AbstractTransformAxis::MotionType getYType() const { return _YType; }
+   Coordinate::MotionType getXType() const { return _XType; }
+   Coordinate::MotionType getYType() const { return _YType; }
    void write(std::ofstream& aStream);
 
 //=============================================================================

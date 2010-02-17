@@ -44,7 +44,7 @@
 #include "PropertyObj.h"
 #include "PropertyDblVec3.h"
 #include "IO.h"
-
+#include "OldVersionException.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -66,8 +66,8 @@ bool Object::_serializeAllDefaults=false;
 // CONSTANTS
 //============================================================================
 const string Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
-static const bool Object_DEBUG = false;
-
+int Object::_debugLevel = 0;
+Array<std::string> Object::_deprecatedTypes;
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -77,7 +77,8 @@ static const bool Object_DEBUG = false;
  */
 Object::~Object()
 {
-	delete _observable;
+    if (_observable != NULL)
+    	delete _observable;
 	if(_node) XMLNode::RemoveElementFromParent(_node);
 	//delete _document;
 }
@@ -292,7 +293,6 @@ setNull()
 	_description = "";
 
 	_observable=0;
-	_converting=false;
 }
 //_____________________________________________________________________________
 /**
@@ -342,9 +342,6 @@ operator=(const Object &aObject)
 {
 	setType(aObject.getType());
 	setName(aObject.getName());
-	if (!aObject._inlined){
-		setInlined(false, aObject._document->getFileName());
-	}
 	return(*this);
 }
 
@@ -539,6 +536,36 @@ getDescription() const
 //-----------------------------------------------------------------------------
 // REGISTER TYPE
 //-----------------------------------------------------------------------------
+void Object::
+RenameType(const std::string& oldTypeName, const Object& newTypeObject)
+{
+	Object* objectCopy = newTypeObject.copy();
+	if (objectCopy != NULL){
+		objectCopy->setType(oldTypeName);
+		RegisterType(*objectCopy);
+		if (_deprecatedTypes.findIndex(oldTypeName)==-1)
+			_deprecatedTypes.append(oldTypeName);
+	}/*
+	// To avoid having multiple entries in the map which causes trouble to parsing downstream
+	// We'll not make a copy, instead we'll have the old name map to the existing instance of the new type
+	int i;
+	for(i=0;i<_Types.getSize();i++) {
+		Object *object = _Types.get(i);
+		if(object->getType() == newTypeObject.getType()) {
+			if(_debugLevel>=2) {
+				cout<<"Object.RenameType: adding ref to object of type ";
+				cout<<newTypeObject;
+				cout<<"\n"<<endl;
+			}
+			_mapTypesToDefaultObjects[oldTypeName]= object;
+			return;
+		} 
+	}
+	// Should throw an exception or give warning that nothing happened
+	cout<<"Object.renameType: ERROR- could not find type "<< newTypeObject << endl;
+	*/
+}
+
 //_____________________________________________________________________________
 /**
  * Register a supported object type.  A global list of all supported objects
@@ -569,7 +596,7 @@ getDescription() const
  * @see isValidDefault()
  */
 void Object::
-RegisterType(const Object &aObject, bool allowOverwrite)
+RegisterType(const Object &aObject)
 {
 	// GET TYPE
 	const string &type = aObject.getType();
@@ -577,9 +604,8 @@ RegisterType(const Object &aObject, bool allowOverwrite)
 		printf("Object.RegisterType: ERR- no type name has been set.\n");
 		return;
 	}
-	// Throw an exception if overwrite was not intentional
-	if (!allowOverwrite &&  _mapTypesToDefaultObjects.find(type)!= _mapTypesToDefaultObjects.end()){
-		throw( XMLParsingException("Object type "+aObject.getType()+" already in use. Use ReplaceType instead."));
+	if (_debugLevel>=2) {
+		cout << "Object.RegisterType: " << type << " .\n";
 	}
 	// Keep track if the object being registered originated from a file vs. programmatically
 	// for future use in the deserialization code.
@@ -593,7 +619,7 @@ RegisterType(const Object &aObject, bool allowOverwrite)
 	for(i=0;i<_Types.getSize();i++) {
 		Object *object = _Types.get(i);
 		if(object->getType() == type) {
-			if(Object_DEBUG) {
+			if(_debugLevel>=2) {
 				cout<<"Object.RegisterType: replacing registered object of type ";
 				cout<<type;
 				cout<<"\n\twith a new default object of the same type."<<endl;
@@ -607,6 +633,7 @@ RegisterType(const Object &aObject, bool allowOverwrite)
 
 	// APPEND
 	Object *defaultObj = aObject.copy();
+	defaultObj->setType(aObject.getType());	// Since the copy overwrites type
 	_Types.append(defaultObj);
 	_mapTypesToDefaultObjects[aObject.getType()]= defaultObj;
 	_Types.getLast()->setName(DEFAULT_NAME);//0x00c067d8, 0x003b84f8
@@ -665,10 +692,15 @@ template<class T> void UpdateFromXMLNodeSimpleProperty(Property *aProperty, DOME
 	// Did code transformation to avoid trying to parse elmt
 	// if it's known to be NULL to avoid exception throwing overhead.
 	// -Ayman 8/06
-	if(elmt) {
-		T value = XMLNode::template GetValue<T>(elmt);
-		aProperty->setValue(value);
-		aProperty->setUseDefault(false);
+	DOMText* txtNode=NULL;
+	if(elmt && (txtNode=XMLNode::GetTextNode(elmt))) {
+		// Could still be empty or whiteSpace
+		string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
+		if (transcoded.length()>0){
+			T value = XMLNode::template GetValue<T>(elmt);
+			aProperty->setValue(value);
+			aProperty->setUseDefault(false);
+		}
 	}
 }
 
@@ -776,29 +808,15 @@ updateFromXMLNode()
 		savedCwd = IO::getCwd();
 		IO::chDir(IO::getParentDirectory(_document->getFileName()));
 	}
-	if (_document && _document->getDocumentVersion() < XMLDocument::getLatestVersion() && !_converting){
-		// An Object of an older type needs to be instantiated then copied into current object
-		// _type is new type but we need an instance of old type to serialize into
-		std::string oldType = _type;
-		std::string suffix="";
-		_document->getVersionAsString(_document->getDocumentVersion(), suffix);
-		oldType += suffix;
-		// Create an instance of this old type and populate it instead
-		Object*  oldTypeObject = Object::newInstanceOfType(oldType);
-		if (oldTypeObject != NULL){
-			oldTypeObject->_document = _document;
-			oldTypeObject->_node = _node;
-			oldTypeObject->_converting=true;
-			oldTypeObject->updateFromXMLNode();
-			oldTypeObject->_converting=false;
-			// Call the copy method on the new type
-			cout << "Version migrating an object of type " << _type << " to latest version." << endl;
-			migrateFromPreviousVersion(oldTypeObject);
-			// Remove old node from parent in DOM
-			XMLNode::RemoveElementFromParent(_node);
-			_node=NULL;	// So that it is recreated
-			return;
-		}
+	if (_document && _document->getDocumentVersion() < XMLDocument::getLatestVersion() 
+		&& _document->getDocumentVersion()<10600 && _type=="Model"){
+			if(_document) IO::chDir(savedCwd);
+			throw OldVersionException("OldVersionException Old/Deprecated model file format in file\n" + 
+				_document->getFileName() + ".\nPlease use the off-line utility to convert it first.");
+	}
+	if (_document && _document->getDocumentVersion() > XMLDocument::getLatestVersion()){
+		cout << "WARNING: UNSUPPORTED Trying to load a file from a more recent version of OpenSim." << endl;
+		cout << "Extra attributes, if any, will be ignored.";
 	}
 
 	try {
@@ -809,6 +827,31 @@ updateFromXMLNode()
 	// UPDATE DEFAULT OBJECTS
 	updateDefaultObjectsFromXMLNode();
 
+	if(_debugLevel >=1) { // Check illegal children
+		// LOOP THROUGH CHILD NODES
+		DOMNodeList *list = _node->getChildNodes();
+		unsigned int listLength = list->getLength();
+		for(unsigned int j=0;j<listLength;j++) {
+			// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
+			// to process element nodes
+			if (!list->item(j) || (list->item(j)->getNodeType() != DOMNode::ELEMENT_NODE)) continue;
+			DOMElement *objElmt = (DOMElement*) list->item(j);
+			string dTag = XMLNode::TranscodeAndTrim(objElmt->getTagName());
+			bool found = false;
+			for(int i=0;i<_propertySet.getSize() && !found;i++) {
+				Property *property = _propertySet.get(i);
+				string name = property->getName();
+				found = (name==dTag);
+				if (!found && property->getType()==Property::Obj){
+					Object &object = property->getValueObj();
+					found = (dTag==object.getType());
+				}
+			}
+			if (!found && !(dTag=="defaults"))
+				cout << "Object.updateFromXMLNode: illegal tag " << dTag << 
+					" while parsing object of type " << getType() << endl;
+		}
+	}
 	// LOOP THROUGH PROPERTIES
 	for(int i=0;i<_propertySet.getSize();i++) {
 
@@ -819,7 +862,7 @@ updateFromXMLNode()
 
 		// NAME
 		string name = property->getName();
-		if(Object_DEBUG) {
+		if(_debugLevel>=3) {
 			cout << "Object.updateFromXMLNode: ("<<getType()<<":"<<getName()<<") updating property " << name << endl;
 		}
 
@@ -886,7 +929,7 @@ updateFromXMLNode()
 
 				// WAS A NODE NOT FOUND?
 				if(!elmt) {
-					if (Object_DEBUG) {
+					if (_debugLevel>=3) {
 						cout<<"Object.updateFromXMLNode: ERROR- could not find node ";
 						cout<<"of type "<<object.getType();
 						if(propObj->getMatchName()) cout<<" with name "+object.getName();
@@ -895,7 +938,6 @@ updateFromXMLNode()
 					break;
 				}
 				object._document=_document;
-				object._converting = _converting;
 				InitializeObjectFromXMLNode(property, elmt, &object);
 			}
 			break; }
@@ -908,7 +950,7 @@ updateFromXMLNode()
 			// GET ENCLOSING ELEMENT
 			DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if(elmt==NULL) {
-				if (Object_DEBUG) {
+				if (_debugLevel>=3) {
 					cout<<"Object.updateFromXMLNode: ERR- failed to find element ";
 					cout<<name<<endl;
 				}
@@ -954,7 +996,6 @@ updateFromXMLNode()
 						if (oldTypeObject != NULL){
 							oldTypeObject->_document = _document;
 							oldTypeObject->_node = objElmt;
-							oldTypeObject->_converting=true;
 							oldTypeObject->updateFromXMLNode();
 							oldTypeObject->_converting=false;	
 							object = Object::newInstanceOfType(object->getNewType()); 
@@ -977,7 +1018,6 @@ updateFromXMLNode()
 					property->appendValue(object);
 				}
 				object->_document = _document;	// Propagate _document ptr.
-				object->_converting = _converting;
 				InitializeObjectFromXMLNode(property, objElmt, object);
 			}
 				
@@ -996,7 +1036,8 @@ updateFromXMLNode()
 		if(_document) IO::chDir(savedCwd);
 		throw(ex);
 	}
-
+	//_node=NULL;	Reset the node pointer so we don't have to make a copy in order to Print. Almost works!
+	//_document=NULL;
 	if(_document) IO::chDir(savedCwd);
 }
 
@@ -1042,9 +1083,10 @@ updateDefaultObjectsFromXMLNode()
 		// copy method! - Eran, Feb/07
 		Object *object = defaultObject->copy();
 		object->setXMLNode(elmt);
+		object->_document = _document;
 		object->updateFromXMLNode();
 		object->setName(DEFAULT_NAME);
-		ReplaceType(*object);
+		RegisterType(*object);
 		delete object;
 	}
 }
@@ -1098,7 +1140,7 @@ updateXMLNode(DOMElement *aParent, int aNodeIndex)
 
 	// GENERATE XML NODE?
 	if(_node==NULL) {
-		if(Object_DEBUG) cout<<"Generating XML node for "<<*this<<endl;
+		if(_debugLevel>=3) cout<<"Generating XML node for "<<*this<<endl;
 		generateXMLNode(aParent, aNodeIndex);
 	}
 
@@ -1270,7 +1312,11 @@ updateDefaultObjectsXMLNode(DOMElement *aParent)
 		// we're not properly removing/deleting the children. - Eran.
 		XMLNode::RemoveChildren(elmt);
 		for(int i=0;i<_Types.getSize();i++) {
-			Object *defaultObject = _Types.get(i);
+			Object* defaultObject = _Types.get(i);
+			//cout << i << " " << defaultObject->getType() << endl;
+			// Make sure no duplicates
+			if (_deprecatedTypes.findIndex(defaultObject->getType())!=-1)
+				continue;
 			if( isValidDefaultType(defaultObject) && 
 				(Object::getSerializeAllDefaults() || _defaultsReadFromFile[defaultObject->getType()])) {
 				defaultObject->setXMLNode(NULL);
@@ -1455,7 +1501,13 @@ setInlined(bool aInlined, const std::string &aFileName)
 	// but currently if you try that you will get "ERROR- document already has root" from AppendNewElementWithComment, called by generateXMLDocument
 	// TODO: use DOMDocument::adoptNode(DOMNode *source) to be able to switch owner documents...
 	// For now it's safest to delete all XML structures
+	XMLDocument* oldDocument=NULL;
+	if (!_inlined){
+		oldDocument = _document;
+	}
 	clearXMLStructures();
+	if (oldDocument)
+		delete oldDocument;
 
 	_inlined = aInlined;
 	if(!_inlined) {
@@ -1480,7 +1532,7 @@ parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rC
 		// Change _node to refer to the root of the external file
 		rRefNode = aElement;
 		rChildDocument = new XMLDocument(fileAttrib);
-		rChildDocumentElement = rChildDocument->getRootDataElement();
+		rChildDocumentElement = rChildDocument->getDOMDocument()->getDocumentElement();
 		if(aVerifyTagName && XMLString::compareString(aElement->getTagName(),rChildDocumentElement->getTagName())!=0)
 			throw Exception("Object.parseFileAttribute: ERROR- Top-level element in file '" + fileAttrib +
 								 "' named in file attribute of XML tag <" + XMLNode::TranscodeAndTrim(aElement->getTagName()) + 
@@ -1548,7 +1600,7 @@ clearXMLStructures()
 		}
 	}
 
-	//delete _document; we should do this only for the top-level if _document is owned by object
+	//delete _document;
 	_document = NULL;
 }
 
@@ -1622,10 +1674,10 @@ setAllPropertiesUseDefault(bool aUseDefault)
 bool Object::
 print(const string &aFileName)
 {
-	//	if(_node==NULL) 
-	// Check removed per Clay so that users don't have to manually call
-	// updateXMLNode for subsequent saves.  Ayman 5/07/04.
-	
+	// Make a copy in case we're already bound to a file so clients don't have to
+	if (_document!= NULL && (aFileName!= _document->getFileName())){
+		return (copy()->print(aFileName));
+	}
 	// Temporarily change current directory so that inlined files are written to correct relative directory
 	std::string savedCwd = IO::getCwd();
 	IO::chDir(IO::getParentDirectory(aFileName));
@@ -1843,3 +1895,59 @@ getRegisteredTypenames(Array<std::string>& rTypeNames)
 		rTypeNames.append(find_Iter->first);
 	}
 }
+
+/**
+ * renameChildNode is a utility, helpful for migration to allow an object to change the "tag" in the XML
+ * structure from aOldName to aNewName so that the rest of the serialization code doesn't need to handle
+ * legacy file formats.
+ */
+void Object::
+renameChildNode(const std::string& aOldName, const std::string& aNewName, DOMElement* startNode)
+{
+	DOMElement*	localStartNode=NULL;
+	if (startNode==NULL)
+		localStartNode = _node;
+	else
+		localStartNode = startNode;
+
+	DOMElement* oldNamedNode = XMLNode::GetFirstChildElementByTagName(localStartNode,aOldName);
+	if (oldNamedNode != 0) {
+		DOMElement* newNamedNode = XMLNode::CreateDOMElement(getDocument()->getDOMDocument(), aNewName);
+		DOMNodeList * children = oldNamedNode->getChildNodes();
+		for (unsigned int i=0; i<children->getLength(); i++){
+			DOMNode* nextChild = children->item(i);
+			newNamedNode->appendChild(nextChild->cloneNode(true));
+		}
+		localStartNode->insertBefore(newNamedNode, oldNamedNode);
+		localStartNode->removeChild(oldNamedNode);
+	}
+}
+
+/** 
+    * The following code accounts for an object made up to call 
+    * RegisterTypes_osimCommon function on entry to the DLL in a cross platform manner 
+    * 
+    */ 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond  
+class osimCommonInstantiator 
+{ 
+public: 
+        osimCommonInstantiator(); 
+private: 
+        void registerDllClasses(); 
+};
+    
+osimCommonInstantiator::osimCommonInstantiator() 
+{ 
+        registerDllClasses(); 
+} 
+    
+extern "C" OSIMCOMMON_API void RegisterTypes_osimCommon(); 
+void osimCommonInstantiator::registerDllClasses() 
+{ 
+        RegisterTypes_osimCommon(); 
+} 
+    
+static osimCommonInstantiator instantiator; 
+/// @endcond

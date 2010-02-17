@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="10905">
+	<ControlSet name="block_hanging_from_muscle">
+		<defaults>
+			<ControlLinear name="default">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<default_min>      -1.00000000000000000000 </default_min>
+				<default_max>       1.00000000000000000000 </default_max>
+				<filter_on> false </filter_on>
+				<use_steps> false </use_steps>
+				<x_nodes/>
+				<min_nodes/>
+				<max_nodes/>
+				<kp>     100.00000000000000000000 </kp>
+				<kv>      20.00000000000000000000 </kv>
+			</ControlLinear>
+			<Thelen2003Muscle name="default">
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--maximum isometric force of the muscle fibers-->
+				<max_isometric_force>    1000.00000000000000000000 </max_isometric_force>
+				<!--optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.10000000000000000555 </optimal_fiber_length>
+				<!--resting length of the tendon-->
+				<tendon_slack_length>       0.20000000000000001110 </tendon_slack_length>
+				<!--angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.00000000000000000000 </pennation_angle>
+				<!--time constant for ramping up of muscle activation-->
+				<activation_time_constant>       0.01000000000000000021 </activation_time_constant>
+				<!--time constant for ramping down of muscle activation-->
+				<deactivation_time_constant>       0.04000000000000000083 </deactivation_time_constant>
+				<!--maximum contraction velocity at full activation in fiber lengths per
+				    second-->
+				<Vmax>      10.00000000000000000000 </Vmax>
+				<!--maximum contraction velocity at low activation in fiber lengths per
+				    second-->
+				<Vmax0>       5.00000000000000000000 </Vmax0>
+				<!--tendon strain due to maximum isometric muscle force-->
+				<FmaxTendonStrain>       0.03300000000000000155 </FmaxTendonStrain>
+				<!--passive muscle strain due to maximum isometric muscle force-->
+				<FmaxMuscleStrain>       0.59999999999999997780 </FmaxMuscleStrain>
+				<!--shape factor for Gaussian active muscle force-length relationship-->
+				<KshapeActive>       0.50000000000000000000 </KshapeActive>
+				<!--exponential shape factor for passive force-length relationship-->
+				<KshapePassive>       4.00000000000000000000 </KshapePassive>
+				<!--passive damping in the force-velocity relationship-->
+				<damping>       0.05000000000000000278 </damping>
+				<!--force-velocity shape factor-->
+				<Af>       0.29999999999999998890 </Af>
+				<!--maximum normalized lengthening force-->
+				<Flen>       1.80000000000000004441 </Flen>
+			</Thelen2003Muscle>
+			<Schutte1993Muscle name="default">
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--Scale factor for normalizing time-->
+				<time_scale>       0.10000000000000000555 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>       0.01000000000000000021 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>       0.04000000000000000083 </activation2>
+				<!--Maximum isometric force that the fibers can generate-->
+				<max_isometric_force>    1000.00000000000000000000 </max_isometric_force>
+				<!--Optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.10000000000000000555 </optimal_fiber_length>
+				<!--Resting length of the tendon-->
+				<tendon_slack_length>       0.20000000000000001110 </tendon_slack_length>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.00000000000000000000 </pennation_angle>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>      10.00000000000000000000 </max_contraction_velocity>
+				<!--Damping factor related to maximum contraction velocity-->
+				<damping>       0.05000000000000000278 </damping>
+				<!--Function representing force-length behavior of tendon-->
+				<tendon_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -10.00000000000000000000      -0.00200000000000000004      -0.00100000000000000002       0.00000000000000000000       0.00130999999999999997       0.00281000000000000000       0.00430999999999999960       0.00581000000000000006       0.00730999999999999966       0.00881000000000000012       0.01030000000000000013       0.01179999999999999973       0.01230000000000000017       9.19999999999999928946       9.20100000000000051159       9.20199999999999995737      20.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.01080000000000000057       0.02570000000000000062       0.04349999999999999700       0.06519999999999999407       0.09149999999999999800       0.12299999999999999822       0.16100000000000000422       0.20799999999999999045       0.22700000000000000733     345.00000000000000000000     345.00000000000000000000     345.00000000000000000000     345.00000000000000000000 </y>
+					</NaturalCubicSpline>
+				</tendon_force_length_curve>
+				<!--Function representing active force-length behavior of muscle fibers-->
+				<active_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>      -5.30769200000000029860      -4.30769200000000029860      -1.92307699999999992535      -0.88461500000000004018      -0.26923099999999999810       0.23076900000000000190       0.46153800000000000381       0.52724999999999999645       0.62875000000000003109       0.71875000000000000000       0.86124999999999996003       1.04499999999999992895       1.21750000000000002665       1.43874999999999997335       1.50000000000000000000       1.61538500000000007084       2.00000000000000000000       2.96153800000000000381       3.69230800000000014549       5.46153800000000000381       9.90190199999999975944 </x>
+						<y>       0.01218799999999999918       0.02189899999999999833       0.03646599999999999842       0.05249299999999999800       0.07531200000000000394       0.11415799999999999559       0.15785899999999999932       0.22666700000000000736       0.63666699999999998294       0.85666699999999995629       0.94999999999999995559       0.99333300000000002150       0.77000000000000001776       0.24666699999999999737       0.19382099999999999329       0.13325200000000000933       0.07268299999999999761       0.04441699999999999815       0.03634099999999999830       0.02189899999999999833       0.00733199999999999998 </y>
+					</NaturalCubicSpline>
+				</active_force_length_curve>
+				<!--Function representing passive force-length behavior of muscle fibers-->
+				<passive_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>      -5.00000000000000000000       0.99799999999999999822       0.99899999999999999911       1.00000000000000000000       1.10000000000000008882       1.19999999999999995559       1.30000000000000004441       1.39999999999999991118       1.50000000000000000000       1.60000000000000008882       1.60099999999999997868       1.60200000000000009059       5.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.03500000000000000333       0.11999999999999999556       0.26000000000000000888       0.55000000000000004441       1.16999999999999992895       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000 </y>
+					</NaturalCubicSpline>
+				</passive_force_length_curve>
+				<!--Function representing force-velocity behavior of muscle fibers-->
+				<force_velocity_curve/>
+			</Schutte1993Muscle>
+		</defaults>
+		<objects>
+			<ControlLinear name="muscle.excitation">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<default_min>       0.02000000000000000042 </default_min>
+				<default_max>       1.00000000000000000000 </default_max>
+				<filter_on> false </filter_on>
+				<use_steps> false </use_steps>
+				<x_nodes>
+					<ControlLinearNode name="">
+						<t>       0.02999999999999999889 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.07000000000000000666 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.11000000000000001443 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.15000000000000002220 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.19000000000000002998 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.23000000000000003775 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.27000000000000001776 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.30999999999999999778 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.34999999999999997780 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.38999999999999995781 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.42999999999999993783 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.46999999999999991784 </t>
+						<value>       0.02000000000000000042 </value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes/>
+				<max_nodes/>
+				<kp>     100.00000000000000000000 </kp>
+				<kv>      20.00000000000000000000 </kv>
+			</ControlLinear>
+		</objects>
+		<groups/>
+	</ControlSet>
+</OpenSimDocument>
+

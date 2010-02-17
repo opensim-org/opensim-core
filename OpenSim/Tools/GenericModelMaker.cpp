@@ -132,6 +132,14 @@ void GenericModelMaker::setupProperties()
 	_propertySet.append(&_markerSetFileNameProp);
 }
 
+//_____________________________________________________________________________
+/**
+ * Register the types used by this class.
+ */
+void GenericModelMaker::registerTypes()
+{
+	//Object::RegisterType(Marker());
+}
 
 //=============================================================================
 // OPERATORS
@@ -173,12 +181,12 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject)
 		_fileName = aPathToSubject + _fileName;
 
 		model = new Model(_fileName);
-		model->setup();
+		model->initSystem();
 
 		if (model->builtOK() && !_markerSetFileNameProp.getUseDefault()) {
 			cout << "Loading marker set from '" << aPathToSubject+_markerSetFileName+"'" << endl;
 			MarkerSet *markerSet = new MarkerSet(aPathToSubject + _markerSetFileName);
-			model->getDynamicsEngine().updateMarkerSet(*markerSet);
+			model->updateMarkerSet(*markerSet);
 		}
 	}
 	catch (Exception &x)

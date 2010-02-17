@@ -51,7 +51,7 @@
  * Values of the function and its derivatives
  * are obtained by calling the evaluate() method.  The curve may or may not
  * be finite or diferentiable; the evaluate method returns values between
- * rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY, or it returns rdMath::getNAN()
+ * -SimTK::Infinity and SimTK::Infinity, or it returns SimTK::NaN 
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *
@@ -122,9 +122,9 @@ public:
 	// EVALUATE
 	//--------------------------------------------------------------------------
 	virtual void updateBoundingBox();
-	virtual void evaluate(const double *aX,double *rY)=0;
-	virtual void evaluate(const Array<double> &aX,Array<double> &rY)=0;
-	virtual void evaluate(const Array<double> &aX,Array<double> &rY,
+	virtual void calcValue(const double *aX,double *rY, int aSize)=0;
+	virtual void calcValue(const Array<double> &aX,Array<double> &rY)=0;
+	virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
 		const Array<int> &aDerivWRT)=0;
 
 //=============================================================================

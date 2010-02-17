@@ -32,11 +32,12 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include "ModelScaler.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Common/MarkerData.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Utilities/simmFileWriterDll/SimmFileWriter.h>
+#include <OpenSim/Simulation/Model/Marker.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 
 //=============================================================================
 // STATICS
@@ -218,6 +219,16 @@ void ModelScaler::setupProperties()
 	_propertySet.append(&_outputScaleFileNameProp);
 }
 
+//_____________________________________________________________________________
+/**
+ * Register the types used by this class.
+ */
+void ModelScaler::registerTypes()
+{
+	Object::RegisterType(Measurement());
+	//Object::RegisterType(Scale());
+	Measurement::registerTypes();
+}
 
 //=============================================================================
 // OPERATORS
@@ -250,8 +261,10 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  * @param aSubjectMass the final mass of the model after scaling.
  * @return Whether the scaling process was successful or not.
  */
-bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, double aSubjectMass)
+bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPathToSubject, double aSubjectMass)
 {
+    aModel->getSystem().realize(s, SimTK::Stage::Position );
+
 	if(!getApply()) return false;
 
 	int i;
@@ -260,15 +273,15 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 
 	cout << endl << "Step 2: Scaling generic model" << endl;
 
-	const BodySet* bodySet = aModel->getDynamicsEngine().getBodySet();
+	const BodySet& bodySet = aModel->getBodySet();
 
 	/* Make a scale set with an Scale for each body.
 	 * Initialize all factors to 1.0.
 	 */
-	for (i = 0; i < bodySet->getSize(); i++)
+	for (i = 0; i < bodySet.getSize(); i++)
 	{
 		Scale* bodyScale = new Scale();
-		bodyScale->setSegmentName(bodySet->get(i)->getName());
+		bodyScale->setSegmentName(bodySet.get(i).getName());
 		bodyScale->setScaleFactors(unity);
 		bodyScale->setApply(true);
 		theScaleSet.append(bodyScale);
@@ -298,16 +311,16 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 				/* Now take and apply the measurements. */
 				for (int j = 0; j < _measurementSet.getSize(); j++)
 				{
-					if (_measurementSet.get(j)->getApply())
+					if (_measurementSet.get(j).getApply())
 					{
 						if(!markerData)
 							throw Exception("ModelScaler.processModel: ERROR- "+_markerFileNameProp.getName()+
 											    " not set but measurements are used",__FILE__,__LINE__);
-						double scaleFactor = computeMeasurementScaleFactor(*aModel, *markerData, *_measurementSet.get(j));
-						if (!rdMath::isNAN(scaleFactor))
-							_measurementSet.get(j)->applyScaleFactor(scaleFactor, theScaleSet);
+						double scaleFactor = computeMeasurementScaleFactor(s,*aModel, *markerData, _measurementSet.get(j));
+						if (!SimTK::isNaN(scaleFactor))
+							_measurementSet.get(j).applyScaleFactor(scaleFactor, theScaleSet);
 						else
-							cout << "___WARNING___: " << _measurementSet.get(j)->getName() << " measurement not used to scale " << aModel->getName() << endl;
+							cout << "___WARNING___: " << _measurementSet.get(j).getName() << " measurement not used to scale " << aModel->getName() << endl;
 					}
 				}
 			}
@@ -318,15 +331,15 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 			{
 				for (int j = 0; j < _scaleSet.getSize(); j++)
 				{
-					if (_scaleSet[j]->getApply())
+					if (_scaleSet[j].getApply())
 					{
-						const string& bodyName = _scaleSet[j]->getSegmentName();
+						const string& bodyName = _scaleSet[j].getSegmentName();
 						Vec3 factors(1.0);
-						_scaleSet[j]->getScaleFactors(factors);
+						_scaleSet[j].getScaleFactors(factors);
 						for (int k = 0; k < theScaleSet.getSize(); k++)
 						{
-							if (theScaleSet[k]->getSegmentName() == bodyName)
-								theScaleSet[k]->setScaleFactors(factors);
+							if (theScaleSet[k].getSegmentName() == bodyName)
+								theScaleSet[k].setScaleFactors(factors);
 						}
 					}
 				}
@@ -338,22 +351,23 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 		}
 
 		/* Now scale the model. */
-		aModel->scale(theScaleSet, aSubjectMass, _preserveMassDist);
+		aModel->scale(s, theScaleSet, aSubjectMass, _preserveMassDist);
+
 
 		if(_printResultFiles) {
-			/* Write output files, if names specified by the user. */
-			SimmFileWriter *sfw = new SimmFileWriter(aModel);
-			if (sfw)
-			{
-				if (!_outputJointFileNameProp.getUseDefault())
-					sfw->writeJointFile(_outputJointFileName);
+			/* Write output files, if names specified by the user. 
+				* users can export the osim models in the GUI or using OpenSimtoSimm
+				* May enable if/when SimmFileWriterDLL is building again. -Ayman 8/09
+            SimmFileWriter *sfw = new SimmFileWriter(aModel);
+            if (sfw) {
+               if (!_outputJointFileNameProp.getUseDefault())
+                   sfw->writeJointFile(aPathToSubject + _outputJointFileName);
 
-				if (!_outputMuscleFileNameProp.getUseDefault())
-					sfw->writeMuscleFile(_outputMuscleFileName);
+               if (!_outputMuscleFileNameProp.getUseDefault())
+                   sfw->writeMuscleFile(aPathToSubject + _outputMuscleFileName);
 
-				delete sfw;
-			}
-
+              delete sfw;
+            }*/
 			if (!_outputModelFileNameProp.getUseDefault())
 			{
 				if (aModel->print(_outputModelFileName))
@@ -366,6 +380,9 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
 					cout << "Wrote scale file " << _outputScaleFileName << " for model " << aModel->getName() << endl;
 			}
 		}
+
+
+
 	}
 	catch (Exception &x)
 	{
@@ -382,18 +399,18 @@ bool ModelScaler::processModel(Model* aModel, const string& aPathToSubject, doub
  * For each marker pair, the scale factor is computed by dividing the average distance between the pair 
  * in the experimental marker data by the distance between the pair on the model.
  */
-double ModelScaler::computeMeasurementScaleFactor(const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const
+double ModelScaler::computeMeasurementScaleFactor(const SimTK::State& s, const Model& aModel, const MarkerData& aMarkerData, const Measurement& aMeasurement) const
 {
 	double scaleFactor = 0;
 	cout << "Measurement '" << aMeasurement.getName() << "'" << endl;
-	if(aMeasurement.getNumMarkerPairs()==0) return rdMath::getNAN();
+	if(aMeasurement.getNumMarkerPairs()==0) return SimTK::NaN;
 	for(int i=0; i<aMeasurement.getNumMarkerPairs(); i++) {
 		const MarkerPair& pair = aMeasurement.getMarkerPair(i);
 		string name1, name2;
 		pair.getMarkerNames(name1, name2);
-		double modelLength = takeModelMeasurement(aModel, name1, name2, aMeasurement.getName());
+		double modelLength = takeModelMeasurement(s, aModel, name1, name2, aMeasurement.getName());
 		double experimentalLength = takeExperimentalMarkerMeasurement(aMarkerData, name1, name2, aMeasurement.getName());
-		if(rdMath::isNAN(modelLength) || rdMath::isNAN(experimentalLength)) return rdMath::getNAN();
+		if(SimTK::isNaN(modelLength) || SimTK::isNaN(experimentalLength)) return SimTK::NaN;
 		cout << "\tpair " << i << " (" << name1 << ", " << name2 << "): model = " << modelLength << ", experimental = " << experimentalLength << endl;
 		scaleFactor += experimentalLength / modelLength;
 	}
@@ -408,21 +425,19 @@ double ModelScaler::computeMeasurementScaleFactor(const Model& aModel, const Mar
  *
  * @return The measured distance.
  */
-double ModelScaler::takeModelMeasurement(const Model& aModel, const string& aName1, const string& aName2, const string& aMeasurementName) const
+double ModelScaler::takeModelMeasurement(const SimTK::State& s, const Model& aModel, const string& aName1, const string& aName2, const string& aMeasurementName) const
 {
-	AbstractDynamicsEngine& engine = aModel.getDynamicsEngine();
-	const AbstractMarker* marker1 = engine.getMarkerSet()->get(aName1);
-	const AbstractMarker* marker2 = engine.getMarkerSet()->get(aName2);
-
-	if (marker1 && marker2) {
-		return engine.calcDistance(*marker1->getBody(), marker1->getOffset(), *marker2->getBody(), marker2->getOffset());
-	} else {
-		if (!marker1)
-			cout << "___WARNING___: marker " << aName1 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
-		if (!marker2)
-			cout << "___WARNING___: marker " << aName2 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
-		return rdMath::getNAN();
-	}
+    if (!aModel.getMarkerSet().contains(aName1)) {
+		cout << "___WARNING___: marker " << aName1 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
+        return SimTK::NaN;
+    }
+    if (!aModel.getMarkerSet().contains(aName2)) {
+		cout << "___WARNING___: marker " << aName2 << " in " << aMeasurementName << " measurement not found in " << aModel.getName() << endl;
+        return SimTK::NaN;
+    }
+	const Marker& marker1 = aModel.getMarkerSet().get(aName1);
+	const Marker& marker2 = aModel.getMarkerSet().get(aName2);
+	return aModel.getSimbodyEngine().calcDistance(s, marker1.getBody(), marker1.getOffset(), marker2.getBody(), marker2.getOffset());
 }
 
 //_____________________________________________________________________________
@@ -449,6 +464,6 @@ double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerD
 			cout << "___WARNING___: marker " << aName1 << " in " << aMeasurementName << " measurement not found in " << aMarkerData.getFileName() << endl;
 		if (marker2 < 0)
 			cout << "___WARNING___: marker " << aName2 << " in " << aMeasurementName << " measurement not found in " << aMarkerData.getFileName() << endl;
-		return rdMath::getNAN();
+		return SimTK::NaN;
 	}
 }

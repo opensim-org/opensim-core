@@ -29,11 +29,17 @@
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
  * Author: Frank C. Anderson 
  */
+#include <cstdio>
 #include "Manager.h"
 #include <OpenSim/Simulation/Control/ControlConstant.h>
-#include <OpenSim/Simulation/Control/ControlLinear.h>
-#include <OpenSim/Simulation/Model/ModelIntegrand.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Simulation/Control/ControlSet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Control/Controller.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Common/Array.h>
 
 
 
@@ -41,6 +47,7 @@
 using namespace OpenSim;
 using namespace std;
 
+#define ASSERT(cond) {if (!(cond)) throw(exception());}
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -55,7 +62,8 @@ std::string Manager::_displayName = "Simulator";
 Manager::~Manager()
 {
 	// DESTRUCTORS
-	if(_integ!=NULL) { delete _integ; _integ=NULL; }
+	delete _stateStore;
+	
 }
 
 
@@ -66,24 +74,18 @@ Manager::~Manager()
 /**
  * Construct a simulation manager.
  *
- * @param aIntegrand Integrand for the simulation.
+ * @param sys MultibodySustem for the simulation.
+ * @param model pointer to model for the simulation.
  */
-Manager::Manager(ModelIntegrand *aIntegrand) :
-	_y(0.0),
-	_yp(0.0)
+Manager::Manager(Model& model, SimTK::Integrator& integ):
+       _model(&model),
+	   _integ(&integ),	           
+       _controllerSet(&model.updControllerSet() ),
+       _stateStore(NULL),
+       _performAnalyses(true),
+       _writeToStorage(true)
 {
 	setNull();
-
-	// INTEGRAND AND MODEL
-	_integrand = aIntegrand;
-	_model = _integrand->getModel();
-
-	//INTEGRATOR
-	constructIntegrator();
-
-	// If model not set yet, exit and let setModel do the work.
-	if (_model==NULL)
-		return;
 
 	// STATES
 	constructStates();
@@ -99,9 +101,7 @@ Manager::Manager(ModelIntegrand *aIntegrand) :
  * Construct a simulation manager.
  *
  */
-Manager::Manager() :
-	_y(0.0),
-	_yp(0.0)
+Manager::Manager()
 {
 	setNull();
 }
@@ -117,12 +117,23 @@ void Manager::
 setNull()
 {
 	_sessionName = "";
-	_model = NULL;
-	_integrand = NULL;
-	_integ = NULL;
 	_ti = 0.0;
 	_tf = 1.0;
 	_firstDT = 1.0e-8;
+	_steps = 0;
+	_trys = 0;
+	_maxSteps = 10000;
+	_halt = false;
+	_dtMax = 1.0;
+	_dtMin = 1.0e-8;
+	_specifiedDT = false;
+	_constantDT = false;
+	_dt = 1.0e-4;
+    _performAnalyses=true;
+    _writeToStorage=true;
+	_tArray.setSize(0);
+    _system = 0;
+	_dtArray.setSize(0);
 }
 //_____________________________________________________________________________
 /**
@@ -131,21 +142,9 @@ setNull()
 bool Manager::
 constructStates()
 {
-	_y.setSize(_integrand->getSize());
-	_yp.setSize(_model->getNumPseudoStates());
 	return(true);
 }
-//_____________________________________________________________________________
-/**
- * Construct the integrator.
- */
-bool Manager::
-constructIntegrator()
-{
-	_integ = new IntegRKF(_integrand,1.0e-8);
 
-	return(true);
-}
 //_____________________________________________________________________________
 /**
  * Construct the storage utility.
@@ -153,39 +152,18 @@ constructIntegrator()
 bool Manager::
 constructStorage()
 {
-	Storage *store;
-	Array<string> columnLabels;
 
-	// CONTROLS
-	int i;
-	int nx = _model->getNumControls();
-	store = new Storage(512,"controls");
-	columnLabels.append("time");
-	for(i=0;i<nx;i++) columnLabels.append(_model->getControlName(i));
-	store->setColumnLabels(columnLabels);
-	_integrand->setControlStorage(store);
+	Array<string> columnLabels;
 
 	// STATES
 	Array<string> stateNames("");
 	_model->getStateNames(stateNames);
 	int ny = stateNames.getSize();
-	store = new Storage(512,"states");
+	_stateStore = new Storage(512,"states");
 	columnLabels.setSize(0);
 	columnLabels.append("time");
-	for(i=0;i<ny;i++) columnLabels.append(stateNames[i]);
-	store->setColumnLabels(columnLabels);
-	_integrand->setStateStorage(store);
-
-	// PSEUDO-STATES
-	Array<string> pseudoNames("");
-	_model->getPseudoStateNames(pseudoNames);
-	int nyp = pseudoNames.getSize();
-	store = new Storage(512,"pseudo");
-	columnLabels.setSize(0);
-	columnLabels.append("time");
-	for(i=0;i<nyp;i++) columnLabels.append(pseudoNames[i]);
-	store->setColumnLabels(columnLabels);
-	_integrand->setPseudoStateStorage(store);
+	for(int i=0;i<ny;i++) columnLabels.append(stateNames[i]);
+	_stateStore->setColumnLabels(columnLabels);
 
 	return(true);
 }
@@ -209,21 +187,9 @@ setSessionName(const string &aSessionName)
 
 	// STORAGE NAMES
 	string name;
-	Storage *store;
-	store = _integrand->getControlStorage();
-	if(store!=NULL) {
-		name = _sessionName + "_controls";
-		store->setName(name);
-	}
-	store = _integrand->getStateStorage();
-	if(store!=NULL) {
+	if(hasStateStorage()) {
 		name = _sessionName + "_states";
-		store->setName(name);
-	}
-	store = _integrand->getPseudoStateStorage();
-	if(store!=NULL) {
-		name = _sessionName + "_pseudo";
-		store->setName(name);
+		getStateStorage().setName(name);
 	}
 }
 //_____________________________________________________________________________
@@ -246,26 +212,321 @@ toString() const
 {
 	return(_displayName);
 }
+//-----------------------------------------------------------------------------
+// SPECIFIED DT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set whether or not to take a specified sequence of deltas during an
+ * integration. The time deltas are obtained from what's stored in the
+ * vector dt vector (@see setDTVector()).  In order to execute an
+ * integration in this manner, the sum of the deltas must cover any
+ * requested integration interval.  If not, an exception will be thrown
+ * at the beginning of an integration.
+ *
+ * @param aTrueFalse If true, a specified dt's will be used.
+ * If set to false, a variable-step integration or a constant step integration
+ * will be used.
+ * When set to true, the flag used to indicate whether or not a constant
+ * time step is used is set to false.
+ *
+ * @see setDTVector()
+ * @see getUseConstantDT()
+ */
+void Manager::
+setUseSpecifiedDT(bool aTrueFalse)
+{
+	_specifiedDT = aTrueFalse;
+	if(_specifiedDT==true) _constantDT = false;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not to take a specified sequence of deltas during an
+ * integration.
+ * The time deltas are obtained from what's stored in the dt vector
+ * (@see setDTVector()).  In order to execute an
+ * integration in this manner, the sum of the deltas must cover any
+ * requested integration interval.  If not, an exception will be thrown
+ * at the beginning of an integration.
+ *
+ * @return If true, a specified time step will be used if possible.
+ * If false, a variable-step integration will be performed or a constant
+ * time step will be taken.
+ *
+ * @see getUseConstantDT()
+ * @see getDT()
+ * @see getTimeVector()
+ */
+bool Manager::
+getUseSpecifiedDT() const
+{
+	return(_specifiedDT);
+}
+
+//-----------------------------------------------------------------------------
+// CONSTANT DT
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Set whether or not to take a constant integration time step. The size of
+ * the constant integration time step can be set using setDT().
+ *
+ * @param aTrueFalse If true, constant time steps are used.
+ * When set to true, the flag used to indicate whether or not to take
+ * specified time steps is set to false.
+ * If set to false, a variable-step integration or a constant integration
+ * time step will be used.
+ *
+ * @see setDT()
+ * @see setUseSpecifiedDT()
+ * @see getUseSpecifiedDT();
+ */
+void Manager::
+setUseConstantDT(bool aTrueFalse)
+{
+	_constantDT = aTrueFalse;
+	if(_constantDT==true) _specifiedDT = false;
+}
+//_____________________________________________________________________________
+/**
+ * Get whether or not to use a constant integration time step. The
+ * constant integration time step can be set using setDT().
+ *
+ * @return If true, constant time steps are used.  If false, either specified
+ * or variable time steps are used.
+ *
+ * @see setDT()
+ * @see getUseSpecifiedDTs();
+ */
+bool Manager::
+getUseConstantDT() const
+{
+	return(_constantDT);
+}
+//-----------------------------------------------------------------------------
+// DT ARRAY
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the time deltas used in the last integration.
+ *
+ * @return Constant reference to the dt array.
+ */
+const OpenSim::Array<double>& Manager::
+getDTArray()
+{
+	return(_dtArray);
+}
+//_____________________________________________________________________________
+/**
+ * Set the deltas held in the dt array.  These deltas will be used
+ * if the integrator is set to take a specified set of deltas.  In order to
+ * integrate using a specified set of deltas, the sum of deltas must cover
+ * the requested integration time interval, otherwise an exception will be
+ * thrown at the beginning of an integration.
+ *
+ * Note that the time vector is reconstructed in order to check that the
+ * sum of the deltas covers a requested integration interval.
+ *
+ * @param aN Number of deltas.
+ * @param aDT Array of deltas.
+ * @param aTI Initial time.  If not specified, 0.0 is assumed.
+ * @see getUseSpecifiedDT()
+ */
+void Manager::
+setDTArray(int aN,const double aDT[],double aTI)
+{
+	if(aN<=0) return;
+	if(aDT==NULL) return;
+
+	_dtArray.setSize(0);
+	_dtArray.ensureCapacity(aN);
+	_tArray.setSize(0);
+	_tArray.ensureCapacity(aN+1);
+	int i;
+	for(_tArray.append(aTI),i=0;i<aN;i++) {
+		_dtArray.append(aDT[i]);
+		_tArray.append(_tArray.getLast()+aDT[i]);
+	}
+}
+//_____________________________________________________________________________
+/**
+ * Get the delta used for a specified integration step.
+ * For step aStep, the delta returned is the delta used to go from
+ * step aStep to step aStep+1.
+ *
+ * @param aStep Index of the desired step.
+ * @return Delta.  SimTK::Nan is returned on error.
+ */
+double Manager::
+getDTArrayDT(int aStep)
+{
+	if((aStep<0) || (aStep>=_dtArray.getSize())) {
+		printf("Manager.getDTArrayDT: ERR- invalid step.\n");
+		return(SimTK::NaN);
+	}
+
+	return(_dtArray[aStep]);
+}
+//_____________________________________________________________________________
+/**
+ * Print the dt array.
+ */
+void Manager::
+printDTArray(const char *aFileName)
+{
+	// OPEN FILE
+	FILE *fp;
+	if(aFileName==NULL) {
+		fp = stdout;
+	} else {
+		fp = fopen(aFileName,"w");
+		if(fp==NULL) {
+			printf("Manager.printDTArray: unable to print to file %s.\n",
+				aFileName);
+			fp = stdout;
+		}
+	}
+
+	// PRINT
+	int i;
+	fprintf(fp,"\n\ndt vector =\n");
+	for(i=0;i<_dtArray.getSize();i++) {
+		fprintf(fp,"%.16lf",_dtArray[i]);
+		if(fp!=stdout) fprintf(fp,"\n");
+		else fprintf(fp," ");
+	}
+	fprintf(fp,"\n");
+
+	// CLOSE
+	if(fp!=stdout) fclose(fp);
+}
+
+//-----------------------------------------------------------------------------
+// TIME ARRAY
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the sequence of time steps taken in the last integration.
+ */
+const OpenSim::Array<double>& Manager::
+getTimeArray()
+{
+	return(_tArray);
+}
+//_____________________________________________________________________________
+/**
+ * Get the integration step (index) that occured prior to or at 
+ * a specified time.
+ *
+ * @param aTime Time of the integration step.
+ * @return Step that occured prior to or at aTime.  0 is returned if there
+ * is no such time stored.
+ */
+int Manager::
+getTimeArrayStep(double aTime)
+{
+	int step = _tArray.searchBinary(aTime);
+	return(step);
+}
+//_____________________________________________________________________________
+/**
+ * Get the next time in the time array
+ *
+ * @param aTime Time of the integration step.
+ * @return next time
+ */
+double Manager::
+getNextTimeArrayTime(double aTime)
+{
+	return(getTimeArrayTime( _tArray.searchBinary(aTime)+1));
+}
+//_____________________________________________________________________________
+//
+/**
+ * Get the time of a specified integration step.
+ *
+ * @param aStep Index of the desired step.
+ * @return Time of integration step aStep.  SimTK::NaN is returned on error.
+ */
+double Manager::
+getTimeArrayTime(int aStep)
+{
+	if((aStep<0) || (aStep>=_tArray.getSize())) {
+		printf("Manager.getTimeArrayTime: ERR- invalid step.\n");
+		return(SimTK::NaN);
+	}
+
+	return(_tArray[aStep]);
+}
+//_____________________________________________________________________________
+/**
+ * Print the time array.
+ *
+ * @param aFileName Name of the file to which to print.  If the time array
+ * cannot be written to a file of the specified name, the time array is
+ * wirttent to standard out.
+ */
+void Manager::
+printTimeArray(const char *aFileName)
+{
+	// OPEN FILE
+	FILE *fp;
+	if(aFileName==NULL) {
+		fp = stdout;
+	} else {
+		fp = fopen(aFileName,"w");
+		if(fp==NULL) {
+			printf("Manager.printTimeArray: unable to print to file %s.\n",
+				aFileName);
+			fp = stdout;
+		}
+	}
+
+	// PRINT
+	int i;
+	fprintf(fp,"\n\ntime vector =\n");
+	for(i=0;i<_tArray.getSize();i++) {
+		fprintf(fp,"%.16lf",_tArray[i]);
+		if(fp!=stdout) fprintf(fp,"\n");
+		else fprintf(fp," ");
+	}
+	fprintf(fp,"\n");
+
+	// CLOSE
+	if(fp!=stdout) fclose(fp);
+}
+//_____________________________________________________________________________
+/**
+ * Reset the time and dt arrays so that all times after the specified time
+ * and the corresponding deltas are erased.
+ *
+ * @param aTime Time after which to erase the entries in the time and dt
+ * vectors.
+ */
+void Manager::
+resetTimeAndDTArrays(double aTime)
+{
+	int size = getTimeArrayStep(aTime);
+	_tArray.setSize(size+1);
+	_dtArray.setSize(size);
+}
 
 //-----------------------------------------------------------------------------
 // INTEGRAND
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Sets the model integrand and initializes other entities that depend on it
+ * Sets the model  and initializes other entities that depend on it
  */
 void Manager::
-setIntegrand(ModelIntegrand *aIntegrand)
+setModel(Model& aModel)
 {
-	if(_integrand!=NULL){
+	if(_model!=NULL){
 		// May need to issue a warning here that model was already set to avoid a leak.
 	}
-	_integrand = aIntegrand;
-	_model = _integrand->getModel();
-
-	//INTEGRATOR needs model, we'll construct it when model is set
-	constructIntegrator();
-
+	_model = &aModel;
+    
 	// STATES
 	constructStates();
 
@@ -275,15 +536,6 @@ setIntegrand(ModelIntegrand *aIntegrand)
 	// SESSION NAME
 	setSessionName(_model->getName());
 }
-//_____________________________________________________________________________
-/**
- * Get the integrand.
- */
-ModelIntegrand* Manager::
-getIntegrand() const
-{
-	return(_integrand);
-}
 
 //-----------------------------------------------------------------------------
 // INTEGRATOR
@@ -292,11 +544,20 @@ getIntegrand() const
 /**
  * Get the integrator.
  */
-IntegRKF* Manager::
+SimTK::Integrator& Manager::
 getIntegrator() const
 {
-	return(_integ);
+	return(*_integ);
 }
+/**
+ * Set the integrator.
+ */
+void Manager::
+setIntegrator(SimTK::Integrator* integrator) 
+{
+	_integ = integrator;
+}
+
 
 //-----------------------------------------------------------------------------
 // INTIAL AND FINAL TIME
@@ -377,40 +638,38 @@ getFirstDT() const
 //=============================================================================
 // EXECUTION
 //=============================================================================
+
 //-----------------------------------------------------------------------------
-// STATE INITIALIZATION
+// STATE STORAGE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Initialize the states for integration.  This version sets the states
- * and pseudostates to the initial states and pseudostates of the model.
+ * Set the storage buffer for the integration states.
  */
-bool Manager::
-initializeStates()
+void Manager::
+setStateStorage(Storage& aStorage)
 {
-	_integrand->getInitialStates(&_y[0]);
-	_model->getInitialPseudoStates(&_yp[0]);
-	_model->setPseudoStates(&_yp[0]);
-	return(true);
+	_stateStore = &aStorage;
 }
 //_____________________________________________________________________________
 /**
- * Initialize the states for integration.  This version sets the states
- * to the specified states and pseudostates.
- *
- * @param aY Specified integrated states.
- * @param aYP Specified model pseudostates.
- * @return true when successful, false otherwise.
+ * Get the storage buffer for the integration states.
+ */
+Storage& Manager::
+getStateStorage() const 
+{
+    if( _stateStore  == NULL )
+        throw Exception("Manager::getStateStorage(): Storage is not set");
+ 	return(*_stateStore);
+}
+//_____________________________________________________________________________
+/**
+ * Get whether there is a storage buffer for the integration states.
  */
 bool Manager::
-initializeStates(double *aY,double *aYP)
+hasStateStorage() const
 {
-	if(aY==NULL) return(false);
-
-	int size = _integrand->getSize();
-	for(int i=0;i<size;i++) _y[i] = aY[i];
-	if(aYP!=NULL) _model->setPseudoStates(aYP);
-	return(true);
+    return (_stateStore != NULL);
 }
 
 //-----------------------------------------------------------------------------
@@ -424,172 +683,245 @@ initializeStates(double *aY,double *aYP)
  * the model.
  */
 bool Manager::
-integrate()
+integrate( SimTK::State& s, double dtFirst )
 {
-	// NOTE- The safe thing to do would be to send
-	// a copy of the controls and the states to the
-	// integrator.
-	// If we want to allow for concurrently changing
-	// the controls while an integration is in progress,
-	// copies should not be made of _controlSet.
-	// The storage class should also have a flag which
-	// makes it thread safe- which allows access but not
-	// modification while it is being written to.  The
-	// integrator should set that flag when it is writing
-	// to the storage class.
-	// copy(_controlSet)
-	// copy(_y)
+	
 
-	// GET STORAGE
-	Storage *controlStorage = _integrand->getControlStorage();
-	Storage *stateStorage = _integrand->getStateStorage();
-	Storage *pseudoStorage = _integrand->getPseudoStateStorage();
+    int step = 0;
 
-	// RESET STORAGE
-	if(controlStorage!=NULL) controlStorage->reset();
-	if(stateStorage!=NULL) stateStorage->reset();
-	if(pseudoStorage!=NULL) pseudoStorage->reset();
+    s.setTime( _ti );
 
-	// INITIALIZE STATES
-	initializeStates();
+    // INTEGRATE
+    return(doIntegration(s, step, dtFirst));
 
-	// INTEGRATE
-	bool submitted = _integ->integrate(_ti,_tf,&_y[0],_firstDT);
-	return(submitted);
+}
+
+bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
+
+	// CLEAR ANY INTERRUPT
+	// Halts must arrive during an integration.
+	clearHalt();
+
+	double dt,dtPrev,tReal;
+	double time =_ti;
+	dt=dtFirst;
+	if(dt>_dtMax) dt = _dtMax;
+	dtPrev=dt;
+
+//printf("doIntegration  t=%10.6e  stepToTime=%10.6e  states=%f %f %f   \n", time, _tf, s.getY()[0], s.getY()[1], s.getY()[2] );
+
+	// CHECK SPECIFIED DT STEPPING
+	char tmp[Object::NAME_LENGTH];
+	if(_specifiedDT) {
+		if(_tArray.getSize()<=0) {
+			strcpy(tmp,"IntegRKF.integrate: ERR- specified dt stepping not");
+			strcat(tmp,"possible-- empty time array.");
+			throw( Exception((const char*)tmp) );
+		}
+		double first = _tArray[0];
+		double last = _tArray.getLast();
+		if((getTimeArrayStep(_ti)<0) || (_ti<first) || (_tf>last)) {
+			strcpy(tmp,"IntegRKF.integrate: ERR- specified dt stepping not");
+			strcat(tmp,"possible-- time array does not cover the requested");
+			strcat(tmp," integration interval.");
+			throw(Exception((const char*)tmp));
+		}
+	}
+
+	// RECORD FIRST TIME STEP
+	if(!_specifiedDT) {
+		resetTimeAndDTArrays(time);
+		if(_tArray.getSize()<=0) {
+			_tArray.append(time);
+		}
+	}
+	bool fixedStep = false;
+    double fixedStepSize;
+	if( _constantDT || _specifiedDT) fixedStep = true;
+
+    //  if _system is has been set we should be integrating a CMC system
+    //  not the model's sytem.
+    SimTK::TimeStepper* ts;
+    if( _system != 0 ) {
+	    ts = new SimTK::TimeStepper(*_system, *_integ);
+    } else { 
+	    ts = new SimTK::TimeStepper(_model->getSystem(), *_integ);
+    }
+    
+
+    ts->initialize(s);
+    ts->setReportAllSignificantStates(true);
+	SimTK::Integrator::SuccessfulStepStatus status;
+
+    if( fixedStep ) {
+        dt = getFixedStepSize(getTimeArrayStep(_ti));
+    } else {
+        _integ->setReturnEveryInternalStep(true); 
+    }
+
+    if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
+   
+    initialize(s, dt);  
+
+	if( fixedStep){
+        s.updTime() = time;
+        if( _system != 0 ) {
+            _system->realize(s, SimTK::Stage::Acceleration);
+        } else {
+            _model->getSystem().realize(s, SimTK::Stage::Acceleration);
+        }
+        if(_performAnalyses)_model->updAnalysisSet().step(s, step);
+        tReal = s.getTime() * _model->getTimeNormConstant();
+        if( _writeToStorage ) {
+            getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
+            _controllerSet->storeControls(s,step);
+         }
+     }
+
+   double stepToTime = _tf;
+
+// LOOP
+    while( time  < _tf ) {
+		if( fixedStep ){
+              fixedStepSize = getNextTimeArrayTime( time ) - time;
+             if( fixedStepSize + time  >= _tf )  fixedStepSize = _tf - time;
+             _integ->setFixedStepSize( fixedStepSize );
+             stepToTime = time + fixedStepSize; 
+        }
+
+        status = ts->stepTo(stepToTime);
+
+   	   if( status == SimTK::Integrator::TimeHasAdvanced   ||
+		   status == SimTK::Integrator::ReachedReportTime ||
+           status == SimTK::Integrator::ReachedScheduledEvent ) {
+            const SimTK::State& s =  _integ->getState();
+            if(_performAnalyses)_model->updAnalysisSet().step(s,step);
+            tReal = s.getTime() * _model->getTimeNormConstant();
+            if( _writeToStorage ) {
+                getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
+                _controllerSet->storeControls(s, step);
+            }
+            step++;
+       } else {
+// cout << " integrator return status = " << status << "  advanced state time = " << _integ->getState().getTime() << endl;
+       }
+        
+       time = _integ->getState().getTime();
+		// CHECK FOR INTERRUPT
+		if(checkHalt()) break;
+// printf("\n");
+    }
+    finalize(_integ->getState() );
+    s = _integ->getState();
+
+	// CLEAR ANY INTERRUPT
+	clearHalt();
+
+    delete ts;
+
+	return true;
 }
 //_____________________________________________________________________________
 /**
- * Integrate the equations of motion for the specified model starting at the
- * states which are stored at the specified index.
- *
- * The starting states are obtained from storage.  If there are no states
- * in storage, the integration begins from the default initial states of the
- * model.  Otherwise, the integration starts from the closest posible index.
+ * return the step size when the integrator is taking fixed
+ * step sizes
+ * 
+ * @param tArrayStep Step number
  */
-bool Manager::
-integrate(int aIndex)
-{
-	// GET STORAGE
-	Storage *controlStorage = _integrand->getControlStorage();
-	Storage *stateStorage = _integrand->getStateStorage();
-	Storage *pseudoStorage = _integrand->getPseudoStateStorage();
-
-	// RESET CONTROLS
-	if(controlStorage!=NULL){
-		controlStorage->reset(aIndex);
-	}
-
-	// RESET STATES
-	StateVector *states,*pseudo;
-	if(stateStorage!=NULL) {
-		stateStorage->reset(aIndex);
-		pseudoStorage->reset(aIndex);
-		states = stateStorage->getLastStateVector();
-		pseudo = pseudoStorage->getLastStateVector();
-	}
-
-	// SET THE INITIAL STATES
-	double t;
-	if(states==NULL) {
-		t = _ti;
-		initializeStates();
-		printf("Manager.integrate(int):  no valid states stored.\n");
-	} else {
-		t = states->getTime();
-		initializeStates(states->getData().get(),pseudo->getData().get());
-		printf("Manager.integrate(int):  starting at index=%d, t=%lf.\n",
-		 aIndex,t);
-	}
-
-	// INTEGRATE
-	bool submitted = _integ->integrate(t,_tf,&_y[0],_firstDT);
-	return(submitted);
+double Manager::getFixedStepSize(int tArrayStep) const {
+	if( _constantDT ) 
+		return( _dt );
+	else { 
+        if( tArrayStep >= _dtArray.getSize() ) 
+             return( _dtArray[ _dtArray.getSize()-1 ] );
+        else 
+		    return(_dtArray[tArrayStep]);
+    }
 }
 //_____________________________________________________________________________
 /**
- * Integrate the equations of motion for the specified model starting at the
- * states which occured at or just prior to aStartTime.  aStartTime is given
- * in the normalized time units used by the manager and the integrator.
- *
- * The starting states are obtained from storage.  If there are no states
- * in storage, the integration begins from the default initial states of the
- * model.  Otherwise, the integration starts from the states which are closest
- * to aStartTime, but not after aStartTime.
- *
- * Note that it is not guarranteed that the actual start time will be very
- * close to the requested start time.  How close the requested start time is
- * to the actual start time dependes on the resolution of the stored states.
- *
- * @param aStartTime Normalized time at which to begin the integration.
- * @return true on successful integration, false otherwise.
- * @todo Check restarting integrations at the very last time step of
- * a previous integration.
+ * initialize storages and analyses 
+ * 
+ * @param s system state before integration
  */
-bool Manager::
-integrate(double aStartTime)
+void Manager::initialize(SimTK::State& s, double dt )
 {
-	// CONVERT TO REAL TIME
-	double realTime = _model->getTimeNormConstant() * aStartTime;
+	// skip initailizations for CMC's actutator system
+	if( _writeToStorage && _performAnalyses ) { 
 
-	// GET STORAGE
-	Storage *controlStorage = _integrand->getControlStorage();
-	Storage *stateStorage = _integrand->getStateStorage();
-	Storage *pseudoStorage = _integrand->getPseudoStateStorage();
+        double tReal = s.getTime() * _model->getTimeNormConstant();
+    	const double* y = &s.getY()[0];
 
-	// RESET CONTROLS
-	if(controlStorage!=NULL){
-		controlStorage->reset(realTime);
-	}
+	
+    	// STORE STARTING CONTROLS
+        _controllerSet->storeControls(s, 0);
 
-	// RESET STATES
-	StateVector *states=NULL;
-	if(stateStorage!=NULL) {
-		stateStorage->reset(realTime);
-		states = stateStorage->getLastStateVector();
-	}
+    	// STORE STARTING STATES
+    	if(hasStateStorage()) {
+    		// ONLY IF NO STATES WERE PREVIOUSLY STORED
+    		if(getStateStorage().getSize()==0) {
+    			getStateStorage().store(0,tReal,s.getNY(),y);
+    		}
+    	}
 
-	// RESET PSEUDOSTATES
-	StateVector *pseudo=NULL;
-	if(pseudoStorage!=NULL) {
-		pseudoStorage->reset(realTime);
-		pseudo = pseudoStorage->getLastStateVector();
-	}
 
-	// SET THE INITIAL STATES
-	double t,dt=1.0e-8;
-	// start from beginning
-	if(states==NULL) {
-		t = _ti;
-		initializeStates();
-		printf("Manager.integrate(double):  no valid states stored.\n");
+    	// ANALYSES 
+    	AnalysisSet& analysisSet = _model->updAnalysisSet();
+    	analysisSet.begin(s);
+    }
 
-	// start in the middle
-	} else {
-
-		// GET START TIME
-		t = states->getTime() / _model->getTimeNormConstant();
-
-		// GET TIME STEP
-		int step = _integ->getTimeArrayStep(t);
-		dt = _integ->getDTArrayDT(step);
-      if (rdMath::isNAN(dt))     throw Exception("delta t is NaN... Aborting.");
-
-		// GET DATA
-		double *y=NULL,*yp=NULL;
-		y = states->getData().get();
-		if(pseudo!=NULL) yp = pseudo->getData().get();
-		initializeStates(y,yp);
-
-		// PRINT
-		printf("Manager.integrate(aStarTime):  ");
-		printf(" (in real time)=%.15lf  (in normalized time)=%.15lf.\n",
-			_model->getTimeNormConstant()*t,t);
-		printf("Using an integration step size of %.16lf for first step.\n",
-			dt);
-	}
-
-	// INTEGRATE
-	bool submitted = _integ->integrate(t,_tf,&_y[0],dt);
-
-	return(submitted);
+	return;
 }
+//_____________________________________________________________________________
+/**
+ * finalize storages and analyses
+ * 
+ * @param s system state before integration
+ */
+void Manager::finalize(const SimTK::State& s )
+{
+    	// ANALYSES 
+	if(  _performAnalyses ) { 
+     	AnalysisSet& analysisSet = _model->updAnalysisSet();
+     	analysisSet.end(s);
+    }
+
+	return;
+}
+//=============================================================================
+// INTERRUPT
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Halt an integration.
+ *
+ * If an integration is pending or executing, the value of the interrupt
+ * flag is set to true.
+ */
+void Manager::halt()
+{
+		_halt = true;
+}
+//_____________________________________________________________________________
+/**
+ * Clear the halt flag.
+ *
+ * The value of the interrupt flag is set to false.
+ */
+void Manager::clearHalt()
+{
+	_halt = false;
+}
+//_____________________________________________________________________________
+/**
+ * Check for a halt request.
+ *
+ * The value of the halt flag is simply returned.
+ */
+bool Manager::checkHalt()
+{
+	return(_halt);
+}
+
+
+

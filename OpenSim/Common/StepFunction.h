@@ -103,8 +103,6 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	int getSize() const;
-	double getMinX() const;
-	double getMaxX() const;
 	const Array<double>& getX() const;
 	const Array<double>& getY() const;
 	virtual const double* getXValues() const;
@@ -115,21 +113,20 @@ public:
 	virtual double getZ(int aIndex) const { return 0.0; }
 	virtual void setX(int aIndex, double aValue);
 	virtual void setY(int aIndex, double aValue);
-	virtual void scaleY(double aScaleFactor);
 	virtual bool deletePoint(int aIndex);
 	virtual bool deletePoints(const Array<int>& indices);
 	virtual int addPoint(double aX, double aY);
-	virtual Array<XYPoint>* renderAsLineSegments(double aStart, double aEnd);
-	virtual Array<XYPoint>* renderAsLineSegments(int aIndex);
 
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
-	virtual void updateBoundingBox();
-	virtual double	evaluate(int aDerivOrder, double aX=0.0, double aY=0.0, double aZ=0.0) const;
 	virtual double evaluateTotalFirstDerivative(double aX,double aDxdt) const;
 	virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const;
-    const SimTK::Function<1>* createSimTKFunction() const;
+    double calcValue(const SimTK::Vector& x) const;
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
+    int getArgumentSize() const;
+    int getMaxDerivativeOrder() const;
+    SimTK::Function* createSimTKFunction() const;
 
 	virtual void updateFromXMLNode();
 

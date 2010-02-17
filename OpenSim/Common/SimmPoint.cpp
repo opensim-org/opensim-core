@@ -29,7 +29,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "rdMath.h"
 #include "SimmMacros.h"
 #include "SimmPoint.h"
 
@@ -192,9 +191,9 @@ void SimmPoint::scale(double aScaleFactor)
  */
 bool SimmPoint::isVisible() const
 {
-	if (rdMath::isNAN(_location[0]) ||
-		 rdMath::isNAN(_location[1]) ||
-		 rdMath::isNAN(_location[2]))
+	if (SimTK::isNaN(_location[0]) ||
+		 SimTK::isNaN(_location[1]) ||
+		 SimTK::isNaN(_location[2]))
 	{
 		return false;
 	}

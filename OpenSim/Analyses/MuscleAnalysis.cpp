@@ -33,14 +33,13 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractMuscle.h>
-#include <OpenSim/Simulation/Model/AbstractActuator.h>
-#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include "MuscleAnalysis.h"
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 
 
 using namespace OpenSim;
@@ -219,19 +218,19 @@ allocateStorageObjects()
 	_muscleArray.setSize(0);
 
 	// FOR MOMENT ARMS AND MOMEMTS
-	CoordinateSet *qSet = _model->getDynamicsEngine().getCoordinateSet();
-	int nq = qSet->getSize();
+	const CoordinateSet& qSet = _model->getCoordinateSet();
+	int nq = qSet.getSize();
 	Storage *store;
 	for(int i=0;i<nq;i++) {
-		AbstractCoordinate *q = qSet->get(i);
-		string name = "MomentArm_" + q->getName();
+		const Coordinate& q = qSet.get(i);
+		string name = "MomentArm_" + q.getName();
 		store = new Storage(1000,name);
 		store->setDescription(getDescription());
 		_storageList.append(store);
 	}
 	for(int i=0;i<nq;i++) {
-		AbstractCoordinate *q = qSet->get(i);
-		string name = "Moment_" + q->getName();
+		const Coordinate& q = qSet.get(i);
+		string name = "Moment_" + q.getName();
 		store = new Storage(1000,name);
 		store->setDescription(getDescription());
 		_storageList.append(store);
@@ -297,15 +296,15 @@ updateStorageObjects()
 	if(_model==NULL) return;
 
 	// POPULATE MUSCLE LIST FOR "all"
-	ActuatorSet *actSet = _model->getActuatorSet();
+	ForceSet& fSet = _model->updForceSet();
 	_muscleList = _muscleListProp.getValueStrArray();
 	int nm = _muscleList.getSize();
 	if((nm==1) && (_muscleList.get(0)=="all")) {
 		_muscleList.setSize(0);
-		int na = actSet->getSize();
-		for(int i=0;i<na;i++) {
-			AbstractActuator *act = actSet->get(i);
-			_muscleList.append(act->getName());
+		int nf = fSet.getSize();
+		for(int i=0;i<nf;i++) {
+			Muscle *m = dynamic_cast<Muscle*>(&fSet.get(i));
+            if( m ) _muscleList.append(m->getName());
 		}
 	}
 	// POPULATE ACTIVE MUSCLE ARRAY
@@ -313,8 +312,8 @@ updateStorageObjects()
 	nm = _muscleList.getSize();
 	_muscleArray.setSize(0);
 	for(int i=0; i<nm; i++) {
-		AbstractMuscle *mus = dynamic_cast<AbstractMuscle*>( actSet->get(_muscleList[i]) );
-		if(mus!=NULL) {
+		if(fSet.contains(_muscleList[i])) {
+    		Muscle* mus = dynamic_cast<Muscle*>( &fSet.get(_muscleList[i]) );
 			_muscleArray.append(mus);
 			tmpMuscleList.append(mus->getName());
 		}
@@ -322,15 +321,15 @@ updateStorageObjects()
 	_muscleList = tmpMuscleList;
 
 	// POPULATE COORDINATE LIST FOR "all"
-	CoordinateSet *qSet = _model->getDynamicsEngine().getCoordinateSet();
+	CoordinateSet& qSet = _model->updCoordinateSet();
 	_coordinateList = _coordinateListProp.getValueStrArray();
-	int nq = qSet->getSize();
+	int nq = qSet.getSize();
 	int nActiveQ = _coordinateList.getSize();
 	if((nActiveQ==1) && (_coordinateList.get(0)=="all")) {
 		_coordinateList.setSize(0);
 		for(int i=0;i<nq;i++) {
-			AbstractCoordinate *q = qSet->get(i);
-			_coordinateList.append(q->getName());
+			Coordinate& q = qSet.get(i);
+			_coordinateList.append(q.getName());
 		}
 	}
 	// POPULATE ACTIVE MOMENT ARM ARRAY
@@ -340,14 +339,14 @@ updateStorageObjects()
 	for(int i=0; i<nActiveQ; i++) {
 		string name = _coordinateList[i];
 		for(int j=0; j<nq; j++) {
-			AbstractCoordinate *q = qSet->get(j);
-			if(name == q->getName()) {
+			Coordinate& q = qSet.get(j);
+			if(name == q.getName()) {
 				StorageCoordinatePair *pair = new StorageCoordinatePair();
-				pair->q = q;
+				pair->q = &q;
 				pair->momentArmStore = _storageList[j];
 				pair->momentStore = _storageList[j+nq];
 				_momentArmStorageArray.append(pair);
-				tmpCoordinateList.append(q->getName());
+				tmpCoordinateList.append(q.getName());
 			}
 		}
 	}
@@ -413,7 +412,7 @@ MuscleAnalysis& MuscleAnalysis::operator=(const MuscleAnalysis &aAnalysis)
 /**
  * Set the model pointer for analysis.
  */
-void MuscleAnalysis::setModel(Model *aModel)
+void MuscleAnalysis::setModel(Model& aModel)
 {
 	Analysis::setModel(aModel);
 	allocateStorageObjects();
@@ -425,7 +424,7 @@ void MuscleAnalysis::setModel(Model *aModel)
  * @param aMuscles is the array of names of muscles to analyze.
  */
 void MuscleAnalysis::
-setMuscles(Array<std::string>& aMuscles)
+setMuscles(OpenSim::Array<std::string>& aMuscles)
 {
 	int size = aMuscles.getSize();
 	_muscleListProp.getValueStrArray().setSize(aMuscles.getSize());
@@ -441,7 +440,7 @@ setMuscles(Array<std::string>& aMuscles)
  * @param aCoordinates Array of coordinates about which to compute moment arms.
  */
 void MuscleAnalysis::
-setCoordinates(Array<std::string>& aCoordinates)
+setCoordinates(OpenSim::Array<std::string>& aCoordinates)
 {
 	int size = aCoordinates.getSize();
 	_coordinateListProp.getValueStrArray().setSize(size);
@@ -482,27 +481,16 @@ setStorageCapacityIncrements(int aIncrement)
  * Record the MuscleAnalysis quantities.
  */
 int MuscleAnalysis::
-record(double aT,double *aX,double *aY)
+record(const SimTK::State& s)
 {
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
 	// COMPUTE DERIVATIVES
 	// ----------------------------------
-	// SET
-	_model->set(aT,aX,aY);
-	_model->getDerivCallbackSet()->set(aT,aX,aY);
-
-	// ACTUATION
-	_model->getActuatorSet()->computeActuation();
-	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->getActuatorSet()->apply();
-	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
-
 	// TIME NORMALIZATION
-	double tReal = aT * _model->getTimeNormConstant();
+	double tReal = s.getTime() * _model->getTimeNormConstant();
 	// ----------------------------------
-
 	// LOOP THROUGH MUSCLES
 	int nm = _muscleArray.getSize();
 	Array<double> penang(0.0,nm);
@@ -512,17 +500,21 @@ record(double aT,double *aX,double *aY)
 	Array<double> actfibforce(0.0,nm),passfibforce(0.0,nm);
 	Array<double> actfibforcealongten(0.0,nm),passfibforcealongten(0.0,nm);
 	for(int i=0; i<nm; i++) {
-		penang[i] = _muscleArray[i]->getPennationAngle();
-		len[i] = _muscleArray[i]->getLength();
-		tlen[i] = _muscleArray[i]->getTendonLength();
-		fiblen[i] = _muscleArray[i]->getFiberLength();
-		normfiblen[i] = _muscleArray[i]->getNormalizedFiberLength();
-		force[i] = _muscleArray[i]->getForce();
-		fibforce[i] = _muscleArray[i]->getFiberForce();
-		actfibforce[i] = _muscleArray[i]->getActiveFiberForce();
-		passfibforce[i] = _muscleArray[i]->getPassiveFiberForce();
-		actfibforcealongten[i] = _muscleArray[i]->getActiveFiberForceAlongTendon();
-		passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon();
+		penang[i] = _muscleArray[i]->getPennationAngle(s);
+		len[i] = _muscleArray[i]->getLength(s);
+		tlen[i] = _muscleArray[i]->getTendonLength(s);
+		fiblen[i] = _muscleArray[i]->getFiberLength(s);
+		normfiblen[i] = _muscleArray[i]->getNormalizedFiberLength(s);
+
+		// Compute muscle forces that are dependent on Positions, Velocities
+		// so that later quantities are valid and setForce is called
+		_muscleArray[i]->computeActuation(s);
+		force[i] = _muscleArray[i]->getForce(s);
+		fibforce[i] = _muscleArray[i]->getFiberForce(s);
+		actfibforce[i] = _muscleArray[i]->getActiveFiberForce(s);
+		passfibforce[i] = _muscleArray[i]->getPassiveFiberForce(s);
+		actfibforcealongten[i] = _muscleArray[i]->getActiveFiberForceAlongTendon(s);
+		passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon(s);
 	}
 	// APPEND TO STORAGE
 	_pennationAngleStore->append(tReal,penang.getSize(),&penang[0]);
@@ -538,25 +530,31 @@ record(double aT,double *aX,double *aY)
 	_passiveFiberForceAlongTendonStore->append(tReal,passfibforcealongten.getSize(),&passfibforcealongten[0]);
 
 	if (_computeMoments){
-		// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
-		AbstractCoordinate *q = NULL;
-		Storage *maStore=NULL, *mStore=NULL;
-		int nq = _momentArmStorageArray.getSize();
-		Array<double> ma(0.0,nm),m(0.0,nm);
-		for(int i=0; i<nq; i++) {
+	// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
+	Coordinate *q = NULL;
+	Storage *maStore=NULL, *mStore=NULL;
+	int nq = _momentArmStorageArray.getSize();
+	Array<double> ma(0.0,nm),m(0.0,nm);
 
-			q = _momentArmStorageArray[i]->q;
-			maStore = _momentArmStorageArray[i]->momentArmStore;
-			mStore = _momentArmStorageArray[i]->momentStore;
+   _model->getSystem().realize(s,SimTK::Stage::Velocity);  // need to be at Velocity to compaute path length 
 
-			// LOOP OVER MUSCLES
-			for(int j=0; j<nm; j++) {
-				ma[j] = _muscleArray[j]->computeMomentArm(*q);
-				m[j] = ma[j] * force[j];
-			}
-			maStore->append(aT,nm,&ma[0]);
-			mStore->append(aT,nm,&m[0]);
+	for(int i=0; i<nq; i++) {
+
+		q = _momentArmStorageArray[i]->q;
+		maStore = _momentArmStorageArray[i]->momentArmStore;
+		mStore = _momentArmStorageArray[i]->momentStore;
+        
+		// Make a writable copy of the state so moment arm can be computed
+		SimTK::State tempState = s;
+		_model->getSystem().realize(tempState, s.getSystemStage() );
+		// LOOP OVER MUSCLES
+		for(int j=0; j<nm; j++) {
+            ma[j] = _muscleArray[j]->getGeometryPath().computeMomentArm(tempState,*q);
+			m[j] = ma[j] * force[j];
 		}
+		maStore->append(s.getTime(),nm,&ma[0]);
+		mStore->append(s.getTime(),nm,&m[0]);
+	}
 	}
 	return(0);
 }
@@ -565,27 +563,18 @@ record(double aT,double *aX,double *aY)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * This method is meant to be called at the begining of an integration 
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s current system state
  *
  * @return -1 on error, 0 otherwise.
  */
 int MuscleAnalysis::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
@@ -600,7 +589,7 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
 
 	// RECORD
 	int status = 0;
-	if(_storageList.get(0)->getSize() <= 0) status = record(aT,aX,aY);
+	if(_storageList.get(0)->getSize() <= 0) status = record(s);
 
 	return(status);
 }
@@ -610,35 +599,22 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
+ * When called during an integration, this method is meant to be called 
  *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
- * @param aXPrev Controls at the beginining of the current time step.
- * @param aYPrev States at the beginning of the current time step.
- * @param aYPPrev Pseudo states at the beginning of the current time step.
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just taken.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s current state of system
  *
  * @return -1 on error, 0 otherwise.
  */
 int MuscleAnalysis::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed(aStep)) return(0);
+	if(!proceed(stepNumber)) return(0);
 
-	int status = record(aT,aX,aY);
+	int status = record(s);
 
 	return(0);
 }
@@ -647,30 +623,21 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * This method is meant to be called at the end of an integration
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s current state of system
  *
  * @return -1 on error, 0 otherwise.
  */
 int MuscleAnalysis::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end(const SimTK::State& s )
 {
 	if (!proceed()) return 0;
-	record(aT,aX,aY);
+	record(s);
 	return(0);
 }
 
@@ -679,19 +646,11 @@ end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDY
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
+ * This method is meant to be called at the end of an integration 
  *
  * This method should be overriden in the child class.  It is
  * included here so that the child class will not have to implement it if it
  * is not necessary.
- *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */

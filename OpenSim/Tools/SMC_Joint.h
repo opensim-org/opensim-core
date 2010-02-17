@@ -37,7 +37,8 @@
 //============================================================================
 #include "osimToolsDLL.h"
 #include <OpenSim/Simulation/Model/Model.h>
-#include "rdCMC_Joint.h"
+#include "SimTKsimbody.h"
+#include "CMC_Joint.h"
 
 namespace OpenSim {
 
@@ -49,7 +50,7 @@ namespace OpenSim {
  * @author Ko Sasaki
  * @version 1.0
  */
-class OSIMTOOLS_API SMC_Joint : public rdCMC_Joint
+class OSIMTOOLS_API SMC_Joint : public CMC_Joint
 {
 
 //=============================================================================
@@ -89,7 +90,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computeDesiredAccelerations(double aT);
+	virtual void computeDesiredAccelerations(const SimTK::State& s, double aT);
 
 
 //=============================================================================

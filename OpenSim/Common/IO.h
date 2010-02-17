@@ -40,16 +40,16 @@
 // DEFINES
 const int IO_STRLEN = 2048;
 
+
+namespace OpenSim { 
 //=============================================================================
 //=============================================================================
 /**
- * A class for performing input and output.
+ * A class for performing input and output with OpenSim API.
  *
  * @version 1.0
  * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API IO {
 
 //=============================================================================

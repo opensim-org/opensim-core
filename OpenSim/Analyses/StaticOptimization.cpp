@@ -33,19 +33,15 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/SpeedSet.h>
-#include <OpenSim/Simulation/Model/ActuatorSet.h>
-#include <OpenSim/Simulation/Model/GeneralizedForce.h>
-#include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/AbstractMuscle.h>
-#include <OpenSim/Actuators/Torque.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <SimTKmath.h>
 #include <SimTKlapack.h>
@@ -66,20 +62,23 @@ using namespace std;
 StaticOptimization::~StaticOptimization()
 {
 	deleteStorage();
-	if(_ownsActuatorSet) delete _actuatorSet;
+	delete _modelWorkingCopy;
+	if(_ownsForceSet) delete _forceSet;
 }
 //_____________________________________________________________________________
 /**
  */
 StaticOptimization::StaticOptimization(Model *aModel) :
 	Analysis(aModel),
-	_useModelActuatorSet(_useModelActuatorSetProp.getValueBool()),
+	_useModelForceSet(_useModelForceSetProp.getValueBool()),
 	_activationExponent(_activationExponentProp.getValueDbl()),
-	_useMusclePhysiology(_useMusclePhysiologyProp.getValueBool())
+	_useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
+	_modelWorkingCopy(NULL),
+	_numCoordinateActuators(0)
 {
 	setNull();
 
-	if(aModel) setModel(aModel);
+	if(aModel) setModel(*aModel);
 	else allocateStorage();
 }
 // Copy constrctor and virtual copy 
@@ -90,9 +89,11 @@ StaticOptimization::StaticOptimization(Model *aModel) :
  */
 StaticOptimization::StaticOptimization(const StaticOptimization &aStaticOptimization):
 	Analysis(aStaticOptimization),
-	_useModelActuatorSet(_useModelActuatorSetProp.getValueBool()),
+	_useModelForceSet(_useModelForceSetProp.getValueBool()),
 	_activationExponent(_activationExponentProp.getValueDbl()),
-	_useMusclePhysiology(_useMusclePhysiologyProp.getValueBool())
+	_useMusclePhysiology(_useMusclePhysiologyProp.getValueBool()),
+	_modelWorkingCopy(NULL),
+	_numCoordinateActuators(aStaticOptimization._numCoordinateActuators)
 {
 	setNull();
 	// COPY TYPE AND NAME
@@ -127,7 +128,9 @@ operator=(const StaticOptimization &aStaticOptimization)
 	// BASE CLASS
 	Analysis::operator=(aStaticOptimization);
 
-	_useModelActuatorSet = aStaticOptimization._useModelActuatorSet;
+	_modelWorkingCopy = aStaticOptimization._modelWorkingCopy;
+	_numCoordinateActuators = aStaticOptimization._numCoordinateActuators;
+	_useModelForceSet = aStaticOptimization._useModelForceSet;
 	_activationExponent=aStaticOptimization._activationExponent;
 
 	_useMusclePhysiology=aStaticOptimization._useMusclePhysiology;
@@ -144,13 +147,14 @@ setNull()
 	setupProperties();
 
 	// OTHER VARIABLES
-	_useModelActuatorSet = true;
+	_useModelForceSet = true;
 	_activationStorage = NULL;
 	_forceStorage = NULL;
-	_ownsActuatorSet = false;
-	_actuatorSet = NULL;
+	_ownsForceSet = false;
+	_forceSet = NULL;
 	_activationExponent=2;
 	_useMusclePhysiology=true;
+	_numCoordinateActuators = 0;
 
 	setType("StaticOptimization");
 	setName("StaticOptimization");
@@ -162,10 +166,10 @@ setNull()
 void StaticOptimization::
 setupProperties()
 {
-	_useModelActuatorSetProp.setComment("If true, the model's own actuator set will be used in the static optimization computation.  "
-													"Otherwise, inverse dynamics for generalized forces will be computed for all unconstrained degrees of freedom.");
-	_useModelActuatorSetProp.setName("use_model_actuator_set");
-	_propertySet.append(&_useModelActuatorSetProp);
+	_useModelForceSetProp.setComment("If true, the model's own force set will be used in the static optimization computation.  "
+													"Otherwise, inverse dynamics for coordinate actuators will be computed for all unconstrained degrees of freedom.");
+	_useModelForceSetProp.setName("use_model_force_set");
+	_propertySet.append(&_useModelForceSetProp);
 
 	_activationExponentProp.setComment(
 		"A double indicating the exponent to raise activations to when solving static optimization.  ");
@@ -203,13 +207,13 @@ constructColumnLabels()
 	Array<string> labels;
 	labels.append("time");
 	if(_model) 
-		for (int i=0; i < _actuatorSet->getSize(); i++) labels.append(_actuatorSet->get(i)->getName());
+		for (int i=0; i < _forceSet->getSize(); i++) labels.append(_forceSet->get(i).getName());
 	setColumnLabels(labels);
 }
 
 //_____________________________________________________________________________
 /**
- * Allocate storage for the kinematics.
+ * Allocate storage for the static optimization.
  */
 void StaticOptimization::
 allocateStorage()
@@ -249,49 +253,10 @@ deleteStorage()
  * @param aModel Model pointer
  */
 void StaticOptimization::
-setModel(Model *aModel)
+setModel(Model& aModel)
 {
 	Analysis::setModel(aModel);
-
-	if(_model) {
-		// Update the _actuatorSet we'll be computing static optimization/inverse dynamics for
-		if(_ownsActuatorSet) delete _actuatorSet;
-		if(_useModelActuatorSet) {
-			// Set pointer to model's internal actuator set
-			_actuatorSet = _model->getActuatorSet();
-			_ownsActuatorSet = false;
-		} else {
-			// Generate an actuator set consisting of a generalized force actuator for every unconstrained degree of freedom
-			_actuatorSet = GeneralizedForce::CreateActuatorSetOfGeneralizedForcesForModel(_model,1,false);
-			_ownsActuatorSet = true;
-		}
-
-		// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
-		_accelerationIndices.setSize(0);
-		SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
-		for(int i=0; i<speedSet->getSize(); i++) {
-			AbstractCoordinate *coord = speedSet->get(i)->getCoordinate();
-			if(!coord->getLocked() && !coord->isConstrained()) {
-				_accelerationIndices.append(i);
-			}
-		}
-
-		int na = _actuatorSet->getSize();
-		int nacc = _accelerationIndices.getSize();
-
-		if(na < nacc) 
-			throw(Exception("StaticOptimization: ERROR- overconstrained system -- need at least as many actuators as there are degrees of freedom.\n"));
-
-		_parameters.resize(na);
-		_parameters = 0;
-	}
-
-	// DESCRIPTION AND LABELS
-	constructDescription();
-	constructColumnLabels();
-
-	deleteStorage();
-	allocateStorage();
+	//SimTK::State& s = aModel->getSystem()->updDefaultState();
 }
 
 //-----------------------------------------------------------------------------
@@ -328,7 +293,7 @@ getForceStorage()
  * Set the capacity increments of all storage instances.
  *
  * @param aIncrement Increment by which storage capacities will be increased
- * when storage capcities run out.
+ * when storage capacities run out.
  */
 void StaticOptimization::
 setStorageCapacityIncrements(int aIncrement)
@@ -340,18 +305,25 @@ setStorageCapacityIncrements(int aIncrement)
 //=============================================================================
 // ANALYSIS
 //=============================================================================
-//
 //_____________________________________________________________________________
 /**
  * Record the results.
  */
 int StaticOptimization::
-record(double aT,double *aX,double *aY,double *aDYDT)
+record(const SimTK::State& s)
 {
-	if(!_model) return -1;
-	if(!aDYDT) throw Exception("StaticOptimization: ERROR- Needs state derivatives.",__FILE__,__LINE__);
+	if(!_modelWorkingCopy) return -1;
 
-	int na = _actuatorSet->getSize();
+	// Set model Q's and U's
+	SimTK::State& sWorkingCopy = _modelWorkingCopy->getSystem().updDefaultState();
+	sWorkingCopy.setTime(s.getTime());
+	sWorkingCopy.setQ(s.getQ());
+	sWorkingCopy.setU(s.getU());
+	_modelWorkingCopy->computeEquilibriumForAuxiliaryStates(sWorkingCopy);
+
+    const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
+
+	int na = fs.getSize();
 	int nacc = _accelerationIndices.getSize();
 
 	// IPOPT
@@ -362,7 +334,10 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 	_maxIterations = 2000;
 
 	// Optimization target
-	StaticOptimizationTarget target(_model,na,nacc,aT,aX,aY,aDYDT,_useMusclePhysiology);
+	_modelWorkingCopy->setAllControllersEnabled(false);
+	StaticOptimizationTarget target(sWorkingCopy,_modelWorkingCopy,na,nacc,_useMusclePhysiology);
+	target.setStatesStore(_statesStore);
+	target.setStatesSplineSet(_statesSplineSet);
 	target.setActivationExponent(_activationExponent);
 	target.setDX(_optimizerDX);
 
@@ -392,25 +367,26 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 
 	// Parameter bounds
 	SimTK::Vector lowerBounds(na), upperBounds(na);
-	AbstractActuator *act;
-	AbstractMuscle *mus;
-	for(int a=0;a<na;a++) {
-		act = _actuatorSet->get(a);
-		mus = dynamic_cast<AbstractMuscle*>(act);
-		if(mus==NULL) {
-			lowerBounds(a) = -1;
-			upperBounds(a) = 1;
-		} else {
-			lowerBounds(a) = 0.01;
-			upperBounds(a) = 1;
-		}
+	Muscle *mus;
+	for(int i=0,j=0;i<fs.getSize();i++) {
+		Actuator& act = fs.get(i);
+	    mus = dynamic_cast<Muscle*>(&fs.get(i));
+	    if(mus==NULL) {
+		    lowerBounds(j) = -1;
+		    upperBounds(j) = 1;
+	    } else {
+		    lowerBounds(j) = 0.01;
+		    upperBounds(j) = 1;
+	    }
+        j++;
 	}
 	target.setParameterLimits(lowerBounds, upperBounds);
 
 	_parameters = 0; // Set initial guess to zeros
 
 	// Static optimization
-	target.prepareToOptimize(&_parameters[0]);
+	_modelWorkingCopy->getSystem().realize(sWorkingCopy,SimTK::Stage::Velocity);
+	target.prepareToOptimize(sWorkingCopy, &_parameters[0]);
 
 	//LARGE_INTEGER start;
 	//LARGE_INTEGER stop;
@@ -420,70 +396,71 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 	//QueryPerformanceCounter(&start);
 
 	try {
+		target.setCurrentState( &sWorkingCopy );
 		optimizer->optimize(_parameters);
 	}
 	catch (const SimTK::Exception::Base &ex) {
 		cout << ex.getMessage() << endl;
 		cout << "OPTIMIZATION FAILED..." << endl;
 		cout << endl;
-		cout << "StaticOptimization.record:  WARN- The optimizer could not find a solution at time = " << aT << endl;
+		cout << "StaticOptimization.record:  WARN- The optimizer could not find a solution at time = " << s.getTime() << endl;
 		cout << endl;
 
-		AbstractActuator *act;
-		AbstractMuscle *mus;
 		double tolBounds = 1e-1;
 		bool weakModel = false;
-		string msgWeak = "The model appears too weak for static optimization.\nTry increasing the strength and/or range of the following actuator(s):\n";
+		string msgWeak = "The model appears too weak for static optimization.\nTry increasing the strength and/or range of the following force(s):\n";
 		for(int a=0;a<na;a++) {
-			act = _actuatorSet->get(a);
-			mus = dynamic_cast<AbstractMuscle*>(act);
-			if(mus==NULL) {
-				if(_parameters(a) < (lowerBounds(a)+tolBounds)) {
-					msgWeak += "   ";
-					msgWeak += act->getName();
-					msgWeak += " approaching lower bound of ";
-					ostringstream oLower;
-					oLower << lowerBounds(a);
-					msgWeak += oLower.str();
-					msgWeak += "\n";
-					weakModel = true;
-				} else if(_parameters(a) > (upperBounds(a)-tolBounds)) {
-					msgWeak += "   ";
-					msgWeak += act->getName();
-					msgWeak += " approaching upper bound of ";
-					ostringstream oUpper;
-					oUpper << upperBounds(a);
-					msgWeak += oUpper.str();
-					msgWeak += "\n";
-					weakModel = true;
-				} 
-			} else {
-				if(_parameters(a) > (upperBounds(a)-tolBounds)) {
-					msgWeak += "   ";
-					msgWeak += mus->getName();
-					msgWeak += " approaching upper bound of ";
-					ostringstream o;
-					o << upperBounds(a);
-					msgWeak += o.str();
-					msgWeak += "\n";
-					weakModel = true;
-				}
-			}
+			Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(a));
+            if( act ) {
+			    Muscle*  mus = dynamic_cast<Muscle*>(&_forceSet->get(a));
+ 			    if(mus==NULL) {
+			    	if(_parameters(a) < (lowerBounds(a)+tolBounds)) {
+			    		msgWeak += "   ";
+			    		msgWeak += act->getName();
+			    		msgWeak += " approaching lower bound of ";
+			    		ostringstream oLower;
+			    		oLower << lowerBounds(a);
+			    		msgWeak += oLower.str();
+			    		msgWeak += "\n";
+			    		weakModel = true;
+			    	} else if(_parameters(a) > (upperBounds(a)-tolBounds)) {
+			    		msgWeak += "   ";
+			    		msgWeak += act->getName();
+			    		msgWeak += " approaching upper bound of ";
+			    		ostringstream oUpper;
+			    		oUpper << upperBounds(a);
+			    		msgWeak += oUpper.str();
+			    		msgWeak += "\n";
+			    		weakModel = true;
+			    	} 
+			    } else {
+			    	if(_parameters(a) > (upperBounds(a)-tolBounds)) {
+			    		msgWeak += "   ";
+			    		msgWeak += mus->getName();
+			    		msgWeak += " approaching upper bound of ";
+			    		ostringstream o;
+			    		o << upperBounds(a);
+			    		msgWeak += o.str();
+			    		msgWeak += "\n";
+			    		weakModel = true;
+			    	}
+			    }
+            }
 		}
 		if(weakModel) cout << msgWeak << endl;
 
 		if(!weakModel) {
 			double tolConstraints = 1e-6;
 			bool incompleteModel = false;
-			string msgIncomplete = "The model appears unsuitable for static optimization.\nTry appending the model with additional actuator(s) or locking joint(s) to reduce the following acceleration constraint violation(s):\n";
+			string msgIncomplete = "The model appears unsuitable for static optimization.\nTry appending the model with additional force(s) or locking joint(s) to reduce the following acceleration constraint violation(s):\n";
 			SimTK::Vector constraints;
 			target.constraintFunc(_parameters,true,constraints);
-			SpeedSet *speedSet = _model->getDynamicsEngine().getSpeedSet();
+			const CoordinateSet& coordSet = _modelWorkingCopy->getCoordinateSet();
 			for(int acc=0;acc<nacc;acc++) {
 				if(fabs(constraints(acc)) > tolConstraints) {
-					AbstractCoordinate *coord = speedSet->get(_accelerationIndices[acc])->getCoordinate();
+					const Coordinate& coord = coordSet.get(_accelerationIndices[acc]);
 					msgIncomplete += "   ";
-					msgIncomplete += coord->getName();
+					msgIncomplete += coord.getName();
 					msgIncomplete += ": constraint violation = ";
 					ostringstream o;
 					o << constraints(acc);
@@ -500,14 +477,14 @@ record(double aT,double *aX,double *aY,double *aDYDT)
 	//double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
 	//cout << "optimizer time = " << (duration*1.0e3) << " milliseconds" << endl;
 
-	target.printPerformance(&_parameters[0]);
+	target.printPerformance(sWorkingCopy, &_parameters[0]);
 
-	_activationStorage->append(aT,na,&_parameters[0]);
+	_activationStorage->append(sWorkingCopy.getTime(),na,&_parameters[0]);
 
 	SimTK::Vector forces(na);
-	target.getActuation(_parameters,forces);
+	target.getActuation(const_cast<SimTK::State&>(sWorkingCopy), _parameters,forces);
 
-	_forceStorage->append(aT,na,&forces[0]);
+	_forceStorage->append(sWorkingCopy.getTime(),na,&forces[0]);
 
 	return 0;
 }
@@ -516,38 +493,93 @@ record(double aT,double *aX,double *aY,double *aDYDT)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * This method is meant to be called at the begining of an integration 
  *
- * This method should be overriden in the child class.  It is
- * included here so that the child class will not have to implement it if it
- * is not necessary.
- *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s Current state .
  *
  * @return -1 on error, 0 otherwise.
  */
 int StaticOptimization::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
+	// Make a working copy of the model
+	delete _modelWorkingCopy;
+	_modelWorkingCopy =  dynamic_cast<Model*>(_model->copy());
+	//_modelWorkingCopy = _model->clone();
+	_modelWorkingCopy->initSystem();
+
+	// Replace model force set with only generalized forces
+	if(_model) {
+		SimTK::State& sWorkingCopyTemp = _modelWorkingCopy->getSystem().updDefaultState();
+		// Update the _forceSet we'll be computing inverse dynamics for
+		if(_ownsForceSet) delete _forceSet;
+		if(_useModelForceSet) {
+			// Set pointer to model's internal force set
+			_forceSet = &_modelWorkingCopy->updForceSet();
+			_ownsForceSet = false;
+		} else {
+			ForceSet& as = _modelWorkingCopy->updForceSet();
+			// Keep a copy of forces that are not muscles to restore them back.
+			ForceSet* saveForces = (ForceSet*)as.copy();
+			// Generate an force set consisting of a coordinate actuator for every unconstrained degree of freedom
+			_forceSet = CoordinateActuator::CreateForceSetOfCoordinateActuatorsForModel(sWorkingCopyTemp,*_modelWorkingCopy,1,false);
+			_ownsForceSet = false;
+			_modelWorkingCopy->setAllControllersEnabled(false);
+			_numCoordinateActuators = _forceSet->getSize();
+			// Copy whatever forces that are not muscles back into the model
+			
+			for(int i=0; i<saveForces->getSize(); i++){
+				const Force& f=saveForces->get(i);
+				if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
+					as.append((Force*)saveForces->get(i).copy());
+			}
+		}
+
+		SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
+		_modelWorkingCopy->getSystem().realize(s,SimTK::Stage::Velocity);
+		sWorkingCopy.setQ(s.getQ());
+		sWorkingCopy.setU(s.getU());
+		sWorkingCopy.setZ(s.getZ());
+		_modelWorkingCopy->computeEquilibriumForAuxiliaryStates(sWorkingCopy);
+		// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
+		_accelerationIndices.setSize(0);
+		const CoordinateSet& coordSet = _model->getCoordinateSet();
+		for(int i=0; i<coordSet.getSize(); i++) {
+			const Coordinate& coord = coordSet.get(i);
+			if(!coord.getLocked(sWorkingCopy) && !coord.isConstrained()) {
+				_accelerationIndices.append(i);
+			}
+		}
+
+		int na = _forceSet->getSize();
+		int nacc = _accelerationIndices.getSize();
+
+		if(na < nacc) 
+			throw(Exception("StaticOptimization: ERROR- overconstrained system -- need at least as many forces as there are degrees of freedom.\n"));
+
+		_parameters.resize(na);
+		_parameters = 0;
+	}
+
+	_statesSplineSet=GCVSplineSet(5,_statesStore);
+
+	// DESCRIPTION AND LABELS
+	constructDescription();
+	constructColumnLabels();
+
+	deleteStorage();
+	allocateStorage();
+
 	// RESET STORAGE
-	_activationStorage->reset(aT);
-	_forceStorage->reset(aT);
+	_activationStorage->reset(s.getTime());
+	_forceStorage->reset(s.getTime());
 
 	// RECORD
 	int status = 0;
 	if(_activationStorage->getSize()<=0 && _forceStorage->getSize()<=0) {
-		status = record(aT,aX,aY,aDYDT);
+		status = record(s);
 	}
 
 	return(status);
@@ -558,35 +590,20 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
- *
  * This method should be overriden in derived classes.  It is
  * included here so that the derived class will not have to implement it if
  * it is not necessary.
  *
- * @param aXPrev Controls at the beginining of the current time step.
- * @param aYPrev States at the beginning of the current time step.
- * @param aYPPrev Pseudo states at the beginning of the current time step.
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just taken.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s Current state .
  *
  * @return -1 on error, 0 otherwise.
  */
 int StaticOptimization::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed(aStep)) return(0);
+	if(!proceed(stepNumber)) return(0);
 
-	record(aT,aX,aY,aDYDT);
+	record(s);
 
 	return(0);
 }
@@ -595,31 +612,16 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
- *
- * This method should be overriden in the child class.  It is
- * included here so that the child class will not have to implement it if it
- * is not necessary.
- *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s Current state 
  *
  * @return -1 on error, 0 otherwise.
  */
 int StaticOptimization::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end( const SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
-	record(aT,aX,aY,aDYDT);
+	record(s);
 
 	return(0);
 }

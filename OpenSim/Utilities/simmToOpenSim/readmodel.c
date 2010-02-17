@@ -28,10 +28,6 @@
 *******************************************************************************/
 #include <ctype.h>
 
-#ifdef __MWERKS__
-   #include <unistd.h>
-#endif
-
 #include "universal.h"
 #include "globals.h"
 #include "functions.h"
@@ -53,62 +49,60 @@
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static ReturnCode read_gencoord(int mod, FILE** fp);
-static ReturnCode set_wrap_specs(WrapObject* wo, char str[]);
-static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp);
-static ReturnCode read_restraint(int mod, FILE** fp, GeneralizedCoord* gc, int minmax);
-static ReturnCode read_joint(int mod, FILE** fp);
-static ReturnCode read_segment(int mod, FILE** fp);
-static ReturnCode read_axis(int mod, FILE** fp, int joint, int axis);
-static ReturnCode read_refeq(int mod, FILE **fp, DofStruct* jointvar);
-static ReturnCode read_order(FILE **fp, int order[]);
-static ReturnCode read_show_axis(int mod, FILE** fp, JointStruct* jnt);
-static ReturnCode read_modelview(ModelStruct* ms, FILE** fp);
+static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp);
+static ReturnCode set_wrap_specs(dpWrapObject* wo, char str[]);
+static ReturnCode read_wrap_object(ModelStruct* ms, FILE* fp);
+static ReturnCode read_restraint(ModelStruct* ms, FILE* fp, GeneralizedCoord* gc, int minmax);
+static ReturnCode read_joint(ModelStruct* ms, FILE* fp);
+static ReturnCode read_segment(ModelStruct* ms, FILE* fp);
+static ReturnCode read_axis(ModelStruct* ms, FILE* fp, int joint, int axis);
+static ReturnCode read_refeq(ModelStruct* ms, FILE* fp, DofStruct* jointvar);
+static ReturnCode read_order(FILE* fp, int order[]);
+static ReturnCode read_show_axis(ModelStruct* ms, FILE* fp, JointStruct* jnt);
+static ReturnCode read_modelview(Scene* scene, ModelStruct* ms, FILE* fp);
 
-static ReturnCode read_gencoord_groups(ModelStruct*, FILE**, int gc_num);
-static ReturnCode read_segment_groups(ModelStruct*, FILE**, int segnum);
+static ReturnCode read_gencoord_groups(ModelStruct*, FILE*, GeneralizedCoord* gencoord);
+static ReturnCode read_segment_groups(ModelStruct*, FILE*, int segnum);
 static DrawingMode get_drawmode(char buffer[]);
 
-static ReturnCode read_contact(ModelStruct* ms, FILE** fp);
-static ReturnCode read_spring(ModelStruct* ms, FILE** fp);
-static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp);
-static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** fp);
-static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp);
-static ReturnCode read_contact_pair(ModelStruct* ms, FILE** fp);
-static ReturnCode read_contact_group(ModelStruct* ms, FILE** fp);
+static ReturnCode read_contact(ModelStruct* ms, FILE* fp);
+static ReturnCode read_spring(ModelStruct* ms, FILE* fp);
+static ReturnCode read_spring_floor(ModelStruct* ms, FILE* fp);
+static void add_spring_point_to_floor(SegmentStruct* segment, SpringPoint* point);
+static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE* fp);
+static ReturnCode read_contact_object(ModelStruct* ms, FILE* fp);
+static ReturnCode read_contact_pair(ModelStruct* ms, FILE* fp);
+static ReturnCode read_contact_group(ModelStruct* ms, FILE* fp);
 static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char filename[]);
-static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE** fp);
+static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE* fp);
 
-static ReturnCode read_constraint(ModelStruct *ms, FILE **fp);
+static ReturnCode read_constraint(ModelStruct *ms, FILE* fp);
 static ReturnCode set_constraint_specs(ConstraintObject* co, char str[]);
-static ConstraintPoint* read_constraint_points(int mod, FILE **fp, int *numpoints,
-					   int *cp_array_size);
-/* READ_MODEL_FILE: */
+static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *numpoints, int *cp_array_size);
+static ReturnCode read_motion_object(ModelStruct* ms, FILE* fp);
 
-ReturnCode read_model_file(int mod, char filename[], SBoolean showTopLevelMessages)
+//TODO_SCENE: ideally, this function should take a model argument, not a scene.
+// The model should be added to the scene later. But for now, you need the scene
+// to store some of the display info that is specified in the model file.
+ReturnCode read_model_file(Scene* scene, ModelStruct* ms, char filename[], SBoolean showTopLevelMessages)
 {
-
-   char tempFile[512];
+   char tempFileName[CHARBUFFER];
    int model_errors = 0;
-   FILE *fp;
+   FILE* fp;
    ReturnCode status = code_fine;
 
-#ifdef ENGINE
-strcpy(tempFile,".model");
+#if ENGINE
+	strcpy(tempFileName, ".model");
 #else
-#ifdef WIN32
-   strcpy(tempFile, glutGetTempFileName("simm-model"));
-#else
-   strcpy(tempFile, glutGetTempFileName(".model"));
-#endif
+   strcpy(tempFileName, glutGetTempFileName("simm-model"));
 #endif
 
-   if ((fp = preprocess_file(filename,tempFile)) == NULL)
+   if ((fp = preprocess_file(filename, tempFileName)) == NULL)
    {
       if (showTopLevelMessages == yes)
       {
-         (void)sprintf(errorbuffer,"Unable to open model input file %s", filename);
-         error(none,errorbuffer);
+         (void)sprintf(errorbuffer, "Unable to open model input file %s", filename);
+         error(none, errorbuffer);
       }
       return code_bad;
    }
@@ -116,49 +110,49 @@ strcpy(tempFile,".model");
    /* Now that you know the joint file exists, store the full path in the
     * model struct because the code to read bone files needs it.
     */
-   mstrcpy(&model[mod]->jointfilename,filename);
+   mstrcpy(&ms->jointfilename,filename);
 
    while (1)
    {
-      if (read_string(&fp,buffer) == EOF)
+      if (read_string(fp,buffer) == EOF)
          break;
 
       if (buffer[0] == '#')
       {
-         read_nonempty_line(&fp,buffer);
+         read_nonempty_line(fp,buffer);
          continue;
       }
 
       if (STRINGS_ARE_EQUAL(buffer,"name"))
       {
-         read_line(&fp,buffer);
-         model[mod]->name = (char*)simm_malloc(250*sizeof(char));
-         if (model[mod]->name == NULL)
+         read_line(fp,buffer);
+         ms->name = (char*)simm_malloc(250*sizeof(char));
+         if (ms->name == NULL)
             goto input_error;
-         (void)strcpy(model[mod]->name,buffer);
-         strip_trailing_white_space(model[mod]->name);
+         (void)strcpy(ms->name,buffer);
+         strip_trailing_white_space(ms->name);
       }
       else if (STRINGS_ARE_EQUAL(buffer,"force_units"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         mstrcpy(&model[mod]->forceUnits, buffer);
+         mstrcpy(&ms->forceUnits, buffer);
       }
       else if ((STRINGS_ARE_EQUAL(buffer,"length_units")) || STRINGS_ARE_EQUAL(buffer, "translation_units"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         mstrcpy(&model[mod]->lengthUnits, buffer);
+         mstrcpy(&ms->lengthUnits, buffer);
       }
       else if (STRINGS_ARE_EQUAL(buffer,"HTR_translation_units"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         mstrcpy(&model[mod]->HTRtranslationUnits, buffer);
+         mstrcpy(&ms->HTRtranslationUnits, buffer);
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"MV_gear"))
+      else if (STRINGS_ARE_EQUAL(buffer, "MV_gear") || STRINGS_ARE_EQUAL(buffer, "motion_speed"))
       {
-         if (fscanf(fp, "%lf", &model[mod]->dis.current_gear) != 1)
+         if (fscanf(fp, "%lf", &ms->dis.motion_speed) != 1)
          {
             error(recover,"Error reading MV_gear value in joint file.");
             break;
@@ -166,7 +160,7 @@ strcpy(tempFile,".model");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"solver_accuracy"))
       {
-         if (fscanf(fp, "%lf", &model[mod]->solver.accuracy) != 1)
+         if (fscanf(fp, "%lf", &ms->solver.accuracy) != 1)
          {
             error(recover,"Error reading solver_accuracy value in joint file.");
             break;
@@ -174,7 +168,7 @@ strcpy(tempFile,".model");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"solver_max_iterations"))
       {
-         if (fscanf(fp, "%d", &model[mod]->solver.max_iterations) != 1)
+         if (fscanf(fp, "%d", &ms->solver.max_iterations) != 1)
          {
             error(recover,"Error reading solver_max_iterations value in joint file.");
             break;
@@ -182,13 +176,13 @@ strcpy(tempFile,".model");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"solver_method"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer, "LM") || STRINGS_ARE_EQUAL(buffer, "lm"))
-            model[mod]->solver.method = smLevenbergMarquart;
+            ms->solver.method = smLevenbergMarquart;
          else if (STRINGS_ARE_EQUAL(buffer, "GN") || STRINGS_ARE_EQUAL(buffer, "gn"))
-            model[mod]->solver.method = smGaussNewton;
+            ms->solver.method = smGaussNewton;
          else
          {
             error(recover,"Error reading solver_method in joint file (must be LM or GN).");
@@ -197,15 +191,15 @@ strcpy(tempFile,".model");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"solver_joint_limits"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "YES")
             || STRINGS_ARE_EQUAL(buffer, "true") || STRINGS_ARE_EQUAL(buffer, "TRUE"))
-            model[mod]->solver.joint_limits = smYes;
+            ms->solver.joint_limits = smYes;
          else if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "NO")
             || STRINGS_ARE_EQUAL(buffer, "false") || STRINGS_ARE_EQUAL(buffer, "FALSE"))
-            model[mod]->solver.joint_limits = smNo;
+            ms->solver.joint_limits = smNo;
          else
          {
             error(recover,"Error reading solver_joint_limits in joint file (must be yes/true or no/false).");
@@ -214,51 +208,68 @@ strcpy(tempFile,".model");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"solver_orient_body"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "YES")
             || STRINGS_ARE_EQUAL(buffer, "true") || STRINGS_ARE_EQUAL(buffer, "TRUE"))
-            model[mod]->solver.orient_body = smYes;
+            ms->solver.orient_body = smYes;
          else if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "NO")
             || STRINGS_ARE_EQUAL(buffer, "false") || STRINGS_ARE_EQUAL(buffer, "FALSE"))
-            model[mod]->solver.orient_body = smNo;
+            ms->solver.orient_body = smNo;
          else
          {
             error(recover,"Error reading solver_orient_body in joint file (must be yes/true or no/false).");
             break;
          }
       }
+      else if (STRINGS_ARE_EQUAL(buffer,"solver_fg_contact"))
+      {
+         if (read_string(fp, buffer) == EOF)
+            break;
+
+         if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "YES")
+            || STRINGS_ARE_EQUAL(buffer, "true") || STRINGS_ARE_EQUAL(buffer, "TRUE"))
+            ms->solver.fg_contact = smYes;
+         else if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "NO")
+            || STRINGS_ARE_EQUAL(buffer, "false") || STRINGS_ARE_EQUAL(buffer, "FALSE"))
+            ms->solver.fg_contact = smNo;
+         else
+         {
+            error(recover,"Error reading solver_fg_contact in joint file (must be yes/true or no/false).");
+            break;
+         }
+      }
       else if (STRINGS_ARE_EQUAL(buffer,"window_position"))
       {
-         if (fscanf(fp, "%d %d", &model[mod]->dis.windowX1, &model[mod]->dis.windowY1) != 2)
+         if (fscanf(fp, "%d %d", &scene->windowX1, &scene->windowY1) != 2)
          {
             error(recover,"Error reading window_position (X, Y) in joint file.");
             break;
          }
          else
          {
-#ifndef ENGINE
+#if ! ENGINE
             int scrLeft, scrRight, scrTop, scrBottom;
             glutGetWorkArea(&scrLeft, &scrRight, &scrTop, &scrBottom);
-            if (model[mod]->dis.windowX1 >= scrRight)
-               model[mod]->dis.windowX1 = scrRight - 100;
+            if (scene->windowX1 >= scrRight)
+               scene->windowX1 = scrRight - 100;
 #endif
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"window_size"))
       {
-         if (fscanf(fp, "%d %d", &model[mod]->dis.windowWidth, &model[mod]->dis.windowHeight) != 2)
+         if (fscanf(fp, "%d %d", &scene->windowWidth, &scene->windowHeight) != 2)
          {
             error(recover,"Error reading window_size (width, height) in joint file.");
             break;
          }
          else
          {
-            if (model[mod]->dis.windowWidth < 50)
-               model[mod]->dis.windowWidth = 50;
-            if (model[mod]->dis.windowHeight < 50)
-               model[mod]->dis.windowHeight = 50;
+            if (scene->windowWidth < 50)
+               scene->windowWidth = 50;
+            if (scene->windowHeight < 50)
+               scene->windowHeight = 50;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer, "gravity"))
@@ -270,21 +281,21 @@ strcpy(tempFile,".model");
          }
          if (STRINGS_ARE_EQUAL(buffer,"x") || STRINGS_ARE_EQUAL(buffer,"X") ||
              STRINGS_ARE_EQUAL(buffer,"+x") || STRINGS_ARE_EQUAL(buffer,"+X"))
-            model[mod]->gravity = smX;
+            ms->gravity = smX;
          else if (STRINGS_ARE_EQUAL(buffer,"-x") || STRINGS_ARE_EQUAL(buffer,"-X"))
-            model[mod]->gravity = smNegX;
+            ms->gravity = smNegX;
          else if (STRINGS_ARE_EQUAL(buffer,"y") || STRINGS_ARE_EQUAL(buffer,"Y") ||
                   STRINGS_ARE_EQUAL(buffer,"+y") || STRINGS_ARE_EQUAL(buffer,"+Y"))
-            model[mod]->gravity = smY;
+            ms->gravity = smY;
          else if (STRINGS_ARE_EQUAL(buffer,"-y") || STRINGS_ARE_EQUAL(buffer,"-Y"))
-            model[mod]->gravity = smNegY;
+            ms->gravity = smNegY;
          else if (STRINGS_ARE_EQUAL(buffer,"z") || STRINGS_ARE_EQUAL(buffer,"Z") ||
                   STRINGS_ARE_EQUAL(buffer,"+z") || STRINGS_ARE_EQUAL(buffer,"+Z"))
-            model[mod]->gravity = smZ;
+            ms->gravity = smZ;
          else if (STRINGS_ARE_EQUAL(buffer,"-z") || STRINGS_ARE_EQUAL(buffer,"-Z"))
-            model[mod]->gravity = smNegZ;
+            ms->gravity = smNegZ;
          else if (STRINGS_ARE_EQUAL(buffer,"none") || STRINGS_ARE_EQUAL(buffer,"zero"))
-            model[mod]->gravity = smNoAlign;
+            ms->gravity = smNoAlign;
          else
          {
             error(abort_action, "Bad axis specified for gravity (must be X, -X, Y, -Y, Z, -Z, zero, or none");
@@ -293,100 +304,120 @@ strcpy(tempFile,".model");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginjoint"))
       {
-         if (read_joint(mod,&fp) == code_bad)
+         if (read_joint(ms,fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"begingencoord"))
       {
-         if (read_gencoord(mod,&fp) == code_bad)
+         if (read_gencoord(ms, fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginsegment"))
       {
-         if (read_segment(mod,&fp) == code_bad)
+         if (read_segment(ms, fp) == code_bad)
             goto input_error;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"beginfunction"))
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpFunctionTypeUndefined, 0))) // old-style function definitions
       {
-         if (read_function(mod,&fp, no) == code_bad)
+         if (read_function(ms, fp, no, dpNaturalCubicSpline, get_function_tag(dpFunctionTypeUndefined, 1)) == code_bad)
+            goto input_error;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpStepFunction, 0)))
+      {
+         if (read_function(ms, fp, no, dpStepFunction, get_function_tag(dpStepFunction, 1)) == code_bad)
+            goto input_error;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpLinearFunction, 0)))
+      {
+         if (read_function(ms, fp, no, dpLinearFunction, get_function_tag(dpLinearFunction, 1)) == code_bad)
+            goto input_error;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpNaturalCubicSpline, 0)))
+      {
+         if (read_function(ms, fp, no, dpNaturalCubicSpline, get_function_tag(dpNaturalCubicSpline, 1)) == code_bad)
+            goto input_error;
+      }
+      else if (STRINGS_ARE_EQUAL(buffer, get_function_tag(dpGCVSpline, 0)))
+      {
+         if (read_function(ms, fp, no, dpGCVSpline, get_function_tag(dpGCVSpline, 1)) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginworldobject"))
       {
-	      if (read_world_object(mod,&fp) == code_bad)
+	      if (read_world_object(ms, fp) == code_bad)
 	         goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginmotionobject"))
       {
-	      if (read_motion_object(mod,&fp) == code_bad)
+	      if (read_motion_object(ms, fp) == code_bad)
 	         goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"begincontact"))
       {
-         if (read_contact(model[mod],&fp) == code_bad)
+         if (read_contact(ms,fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginwrapobject"))
       {
-         if (read_wrap_object(model[mod],&fp) == code_bad)
+         if (read_wrap_object(ms,fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"begindeformity"))
       {
-         if (read_deformity(model[mod],&fp) == code_bad)
+         if (read_deformity(ms,fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer, "constraint_tolerance"))
       {
          double value;
          fscanf(fp, "%lg", &value);
-        /* if (fscanf(fp,"%lg", &model[mod]->constraint_tolerance) != 1)
+        /* if (fscanf(fp,"%lg", &ms->constraint_tolerance) != 1)
          {
             error(recover,"Error reading constraint_tolerance.");
-            model[mod]->constraint_tolerance = DEFAULT_CONSTRAINT_TOLERANCE;
+            ms->constraint_tolerance = DEFAULT_CONSTRAINT_TOLERANCE;
             model_errors++;
          }*/
       }
       else if (STRINGS_ARE_EQUAL(buffer, "loop_tolerance"))
       {
-         if (fscanf(fp,"%lg", &model[mod]->loop_tolerance) != 1)
+         if (fscanf(fp,"%lg", &ms->loop_tolerance) != 1)
          {
             error(recover,"Error reading loop_tolerance.");
-            model[mod]->loop_tolerance = DEFAULT_LOOP_TOLERANCE;
+            ms->loop_tolerance = DEFAULT_LOOP_TOLERANCE;
             model_errors++;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer, "loop_weight"))
       {
-         if (fscanf(fp,"%lg", &model[mod]->loop_weight) != 1)
+         if (fscanf(fp,"%lg", &ms->loop_weight) != 1)
          {
             error(recover,"Error reading loop_weight.");
-            model[mod]->loop_weight = DEFAULT_LOOP_WEIGHT;
+            ms->loop_weight = DEFAULT_LOOP_WEIGHT;
             model_errors++;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer, "beginconstraintobject"))
       {
-         if (read_constraint(model[mod], &fp) == code_bad)
+         if (read_constraint(ms, fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"beginmaterial"))
       {
-         if (read_material(mod,&fp) == code_bad)
+         if (read_material(ms, fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"begincamera") || STRINGS_ARE_EQUAL(buffer,"beginview"))
       {
-         if (read_modelview(model[mod],&fp) == code_bad)
+         if (read_modelview(scene, ms, fp) == code_bad)
             goto input_error;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"no_trackball"))
       {
-         model[mod]->dis.trackball = no;
+         scene->trackball = no;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"bone_path"))
       {
-         if (read_line(&fp, buffer) == EOF)
+         if (read_line(fp, buffer) == EOF)
          {
             error(recover,"Error reading name of bone path within joint file.");
             model_errors++;
@@ -394,12 +425,12 @@ strcpy(tempFile,".model");
          else
          {
             strip_trailing_white_space(buffer);
-            mstrcpy(&model[mod]->bonepathname,buffer);
+            mstrcpy(&ms->bonepathname,buffer);
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"muscle_file"))
       {
-         if (read_line(&fp, buffer) == EOF)
+         if (read_line(fp, buffer) == EOF)
          {
             error(recover,"Error reading name of muscle file within joint file.");
             model_errors++;
@@ -407,41 +438,41 @@ strcpy(tempFile,".model");
          else
          {
             strip_trailing_white_space(buffer);
-            mstrcpy(&model[mod]->musclefilename,buffer);
+            mstrcpy(&ms->musclefilename,buffer);
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"motion_file"))
       {
-         if (read_line(&fp, buffer) == EOF)
+         if (read_line(fp, buffer) == EOF)
          {
             error(recover,"Error reading name of motion file within joint file.");
             model_errors++;
          }
          else
          {
-            if (model[mod]->num_motion_files >= 100)
+            if (ms->num_motion_files >= 100)
             {
                error(recover,"You can specify only 100 motion files in a joint file.");
             }
             else
             {
                strip_trailing_white_space(buffer);
-               mstrcpy(&model[mod]->motionfilename[model[mod]->num_motion_files],buffer);
-               model[mod]->num_motion_files++;
+               mstrcpy(&ms->motionfilename[ms->num_motion_files],buffer);
+               ms->num_motion_files++;
             }
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer, "inverse_kinematics_solver") || STRINGS_ARE_EQUAL(buffer, "IK_solver"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
-            model[mod]->useIK = no;
+            ms->useIK = no;
          else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "on")
             ||STRINGS_ARE_EQUAL(buffer, "true"))
-            model[mod]->useIK = yes;
+            ms->useIK = yes;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"background_color"))
       {
@@ -453,10 +484,10 @@ strcpy(tempFile,".model");
          }
          else
          {
-            model[mod]->dis.background_color[0] = col[0];
-            model[mod]->dis.background_color[1] = col[1];
-            model[mod]->dis.background_color[2] = col[2];
-            model[mod]->dis.background_color_spec = yes;
+            ms->dis.background_color[0] = col[0];
+            ms->dis.background_color[1] = col[1];
+            ms->dis.background_color[2] = col[2];
+            ms->dis.background_color_spec = yes;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"rotation_axes_color"))
@@ -469,27 +500,17 @@ strcpy(tempFile,".model");
          }
          else
          {
-            model[mod]->dis.rotation_axes_color[0] = col[0];
-            model[mod]->dis.rotation_axes_color[1] = col[1];
-            model[mod]->dis.rotation_axes_color[2] = col[2];
-            model[mod]->dis.rotation_axes_color_spec = yes;
+            ms->dis.rotation_axes_color[0] = col[0];
+            ms->dis.rotation_axes_color[1] = col[1];
+            ms->dis.rotation_axes_color[2] = col[2];
+            ms->dis.rotation_axes_color_spec = yes;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"segment_axes_color"))
+      else if (STRINGS_ARE_EQUAL(buffer, "segment_axes_color"))
       {
          GLfloat col[3];
-         if (fscanf(fp,"%f %f %f", &col[0], &col[1], &col[2]) != 3)
-         {
-            error(recover,"Error reading color for body segment axes.");
-            model_errors++;
-         }
-         else
-         {
-            model[mod]->dis.segment_axes_color[0] = col[0];
-            model[mod]->dis.segment_axes_color[1] = col[1];
-            model[mod]->dis.segment_axes_color[2] = col[2];
-            model[mod]->dis.segment_axes_color_spec = yes;
-         }
+         fscanf(fp, "%f %f %f", &col[0], &col[1], &col[2]);
+         error(none, "Warning: segment_axes_color is no longer supported. Axes are now colored red/green/blue.");
       }
       else if (STRINGS_ARE_EQUAL(buffer,"vertex_label_color"))
       {
@@ -501,10 +522,10 @@ strcpy(tempFile,".model");
          }
          else
          {
-            model[mod]->dis.vertex_label_color[0] = col[0];
-            model[mod]->dis.vertex_label_color[1] = col[1];
-            model[mod]->dis.vertex_label_color[2] = col[2];
-            model[mod]->dis.vertex_label_color_spec = yes;
+            ms->dis.vertex_label_color[0] = col[0];
+            ms->dis.vertex_label_color[1] = col[1];
+            ms->dis.vertex_label_color[2] = col[2];
+            ms->dis.vertex_label_color_spec = yes;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"crosshairs_color"))
@@ -517,56 +538,56 @@ strcpy(tempFile,".model");
          }
          else
          {
-            model[mod]->dis.crosshairs_color[0] = col[0];
-            model[mod]->dis.crosshairs_color[1] = col[1];
-            model[mod]->dis.crosshairs_color[2] = col[2];
-            model[mod]->dis.crosshairs_color_spec = yes;
+            ms->dis.crosshairs_color[0] = col[0];
+            ms->dis.crosshairs_color[1] = col[1];
+            ms->dis.crosshairs_color[2] = col[2];
+            ms->dis.crosshairs_color_spec = yes;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"marker_visibility"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
-            model[mod]->marker_visibility = no;
+            ms->marker_visibility = no;
          else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "on")
             ||STRINGS_ARE_EQUAL(buffer, "true"))
-            model[mod]->marker_visibility = yes;
+            ms->marker_visibility = yes;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"marker_radius"))
       {
-         if (fscanf(fp,"%lg", &model[mod]->marker_radius) != 1)
+         if (fscanf(fp,"%lg", &ms->marker_radius) != 1)
          {
             error(recover,"Error reading marker_radius.");
-            model[mod]->marker_radius = DEFAULT_MARKER_RADIUS;
+            ms->marker_radius = DEFAULT_MARKER_RADIUS;
             model_errors++;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"masscenter_visibility"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
-            model[mod]->global_show_masscenter = no;
+            ms->global_show_masscenter = no;
          else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "on")
             ||STRINGS_ARE_EQUAL(buffer, "true"))
-            model[mod]->global_show_masscenter = yes;
+            ms->global_show_masscenter = yes;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"inertia_visibility"))
       {
-         if (read_string(&fp, buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
-            model[mod]->global_show_inertia = no;
+            ms->global_show_inertia = no;
          else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "on")
             ||STRINGS_ARE_EQUAL(buffer, "true"))
-            model[mod]->global_show_inertia = yes;
+            ms->global_show_inertia = yes;
       }
       else
       {
@@ -581,36 +602,25 @@ strcpy(tempFile,".model");
       }
    }
 
-   
    goto cleanup;
    
  input_error:
    status = code_bad;
    
  cleanup:
-   fclose(fp);
-   unlink((const char*) tempFile);
-
-#ifndef ENGINE
-   /* check for a "simmcolors" file in the same directory as the joint file.
-    * If one exists, load it into the app's color table.
-    */
-   if (status == code_fine)
-      check_for_model_color_file(filename);
-#endif
+   (void)fclose(fp);
+   (void)unlink((const char*)tempFileName);
 
    return status;
-
 }
 
 
 
 /* READ_GENCOORD: */
 
-static ReturnCode read_gencoord(int mod, FILE** fp)
+static ReturnCode read_gencoord(ModelStruct* ms, FILE* fp)
 {
-
-   int nk, gc_num;
+   int nk;
    char key1[64], key2[64];
    SBoolean range_specified = no, restraintFuncSpecified = no;
    double rangeval1, rangeval2, gc_tolerance, pd_stiffness;
@@ -623,16 +633,14 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       return code_bad;
    }
 
-   gc_num = enter_gencoord(mod, buffer, yes);
+   gc = enter_gencoord(ms, buffer, yes);
 
-   if (gc_num == -1)
+   if (gc == NULL)
    {
       sprintf(errorbuffer, "Unable to allocate space for gencoord %s", buffer);
       error(abort_action, errorbuffer);
       return code_bad;
    }
-
-   gc = &model[mod]->gencoord[gc_num];
 
    if (gc->defined == yes)
    {
@@ -647,7 +655,7 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       {
          (void)sprintf(errorbuffer,"Unexpected EOF found reading gencoord definition");
          error(abort_action,errorbuffer);
-         return (code_bad);
+         return code_bad;
       }
 
       if (STRINGS_ARE_EQUAL(buffer,"endgencoord"))
@@ -681,36 +689,36 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"range"))
       {
-         if (fscanf(*fp,"%lg %lg", &rangeval1, &rangeval2) != 2)
+         if (fscanf(fp,"%lg %lg", &rangeval1, &rangeval2) != 2)
          {
             (void)sprintf(errorbuffer, "Error reading range for gencoord %s",
                gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
-         gc->range.start = MIN(rangeval1,rangeval2);
-         gc->range.end = MAX(rangeval1,rangeval2);
+         gc->range.start = _MIN(rangeval1,rangeval2);
+         gc->range.end = _MAX(rangeval1,rangeval2);
          range_specified = yes;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"tolerance"))
       {
-         if (fscanf(*fp,"%lg", &gc_tolerance) != 1)
+         if (fscanf(fp,"%lg", &gc_tolerance) != 1)
          {
             (void)sprintf(errorbuffer, "Error reading tolerance for gencoord %s",
                gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          gc->tolerance = gc_tolerance;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"default_value"))
       {
-         if (fscanf(*fp,"%lg", &gc->default_value) != 1)
+         if (fscanf(fp,"%lg", &gc->default_value) != 1)
          {
             (void)sprintf(errorbuffer, "Error reading default value for gencoord %s",
                gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          gc->default_value_specified = yes;
       }
@@ -744,12 +752,12 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"restraint"))
       {
-         if (read_restraint(mod,fp,gc,2) == code_bad)
+         if (read_restraint(ms,fp,gc,2) == code_bad)
          {
             (void)sprintf(errorbuffer, "Error reading restraint for gencoord %s",
                gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          restraintFuncSpecified = yes;
       }
@@ -767,30 +775,29 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"minrestraint"))
       {
-         if (read_restraint(mod,fp,gc,0) == code_bad)
+         if (read_restraint(ms,fp,gc,0) == code_bad)
          {
             (void)sprintf(errorbuffer, "Error reading minrestraint for gencoord %s",
                gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"maxrestraint"))
       {
-         if (read_restraint(mod,fp,gc,1) == code_bad)
+         if (read_restraint(ms,fp,gc,1) == code_bad)
          {
             (void)sprintf(errorbuffer, "Error reading maxrestraint for gencoord %s",
                gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"begingroups"))
       {
-         if (read_gencoord_groups(model[mod], fp, gc_num) != code_fine)
+         if (read_gencoord_groups(ms, fp, gc) != code_fine)
          {
             gc->numgroups = 0;
-            
             sprintf(errorbuffer,"Error reading groups for gencoord %s.", gc->name);
             error(recover,errorbuffer);
          }
@@ -799,7 +806,7 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       {
          if (read_string(fp,buffer) == EOF)
             break;
-         
+
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
             gc->slider_visible = no;
@@ -812,17 +819,17 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       {
         char componentName[32];
         
-        if (fscanf(*fp, "%s %s", buffer, componentName) != 2)
+        if (fscanf(fp, "%s %s", buffer, componentName) != 2)
         {
            sprintf(errorbuffer, "Error reading mocap info for %s gencoord.", gc->name);
            error(abort_action, errorbuffer);
            return code_bad;
         }
         mstrcpy(&gc->mocap_segment, buffer);
-        
+
         gc->mocap_seg_index = -1;
         gc->mocap_column    = -1;
-        
+
         switch (tolower(componentName[0]))
         {
            case 't':
@@ -833,7 +840,7 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
                  case 'z': gc->mocap_column = _TZ; break;
               }
               break;
-           
+
            case 'r':
               switch (tolower(componentName[1]))
               {
@@ -846,22 +853,22 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"mocap_adjust"))
       {
-         if (fscanf(*fp,"%lg", &gc->mocap_adjust) != 1)
+         if (fscanf(fp,"%lg", &gc->mocap_adjust) != 1)
          {
             (void)sprintf(errorbuffer, "Error reading \'mocap_adjust\' for gencoord %s",
 			  gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
 #endif
-      else if (STRINGS_ARE_EQUAL(buffer,"pd_stiffness"))
+      else if (STRINGS_ARE_EQUAL(buffer,"pd_stiffness") || STRINGS_ARE_EQUAL(buffer,"PD_stiffness"))
       {
-         if (fscanf(*fp,"%lg", &pd_stiffness) != 1)
+         if (fscanf(fp,"%lg", &pd_stiffness) != 1)
          {
             (void)sprintf(errorbuffer, "Error reading pd_stiffness for gencoord %s", gc->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          gc->pd_stiffness = pd_stiffness;
       }
@@ -878,183 +885,177 @@ static ReturnCode read_gencoord(int mod, FILE** fp)
    {
       (void)sprintf(errorbuffer,"Range not specified for gencoord %s", gc->name);
       error(abort_action,errorbuffer);
-      return (code_bad);
+      return code_bad;
    }
 
    if (restraintFuncSpecified == no)
       gc->restraintFuncActive = no;
 
-   return (code_fine);
-
+   return code_fine;
 }
 
 
 
-static ReturnCode set_wrap_specs(WrapObject* wo, char str[])
+static ReturnCode set_wrap_specs(dpWrapObject* wo, char str[])
 {
-
    if (STRINGS_ARE_EQUAL(str,"none") || STRINGS_ARE_EQUAL(str,"full"))
    {
       wo->wrap_axis = 0;
       wo->wrap_sign = 0;
-      return (code_fine);
+      return code_fine;
    }
    if (STRINGS_ARE_EQUAL(str,"-x") || STRINGS_ARE_EQUAL(str,"-X"))
    {
       wo->wrap_axis = 0;
       wo->wrap_sign = -1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"x") || STRINGS_ARE_EQUAL(str,"X"))
    {
       wo->wrap_axis = 0;
       wo->wrap_sign = 1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"-y") || STRINGS_ARE_EQUAL(str,"-Y"))
    {
       wo->wrap_axis = 1;
       wo->wrap_sign = -1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"y") || STRINGS_ARE_EQUAL(str,"Y"))
    {
       wo->wrap_axis = 1;
       wo->wrap_sign = 1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"-z") || STRINGS_ARE_EQUAL(str,"-Z"))
    {
       wo->wrap_axis = 2;
       wo->wrap_sign = -1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"z") || STRINGS_ARE_EQUAL(str,"Z"))
    {
       wo->wrap_axis = 2;
       wo->wrap_sign = 1;
-      return (code_fine);
+      return code_fine;
    }
 
-   return (code_bad);
-
+   return code_bad;
 }
 
 static ReturnCode set_constraint_specs(ConstraintObject* co, char str[])
 {
-
    if (STRINGS_ARE_EQUAL(str,"none") || STRINGS_ARE_EQUAL(str,"full"))
    {
       co->constraintAxis = 0;
       co->constraintSign = 0;
-      return (code_fine);
+      return code_fine;
    }
    if (STRINGS_ARE_EQUAL(str,"-x") || STRINGS_ARE_EQUAL(str,"-X"))
    {
       co->constraintAxis = 0;
       co->constraintSign = -1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"x") || STRINGS_ARE_EQUAL(str,"X"))
    {
       co->constraintAxis = 0;
       co->constraintSign = 1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"-y") || STRINGS_ARE_EQUAL(str,"-Y"))
    {
       co->constraintAxis = 1;
       co->constraintSign = -1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"y") || STRINGS_ARE_EQUAL(str,"Y"))
    {
       co->constraintAxis = 1;
       co->constraintSign = 1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"-z") || STRINGS_ARE_EQUAL(str,"-Z"))
    {
       co->constraintAxis = 2;
       co->constraintSign = -1;
-      return (code_fine);
+      return code_fine;
    }
    else if (STRINGS_ARE_EQUAL(str,"z") || STRINGS_ARE_EQUAL(str,"Z"))
    {
       co->constraintAxis = 2;
       co->constraintSign = 1;
-      return (code_fine);
+      return code_fine;
    }
 
-   return (code_bad);
-
+   return code_bad;
 }
 
 
-static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
+static ReturnCode read_wrap_object(ModelStruct* ms, FILE* fp)
 {
-   ReturnCode  rc;
-   WrapObject* wo;
-   double  xyz[3];
+   ReturnCode rc = code_fine;
+   dpWrapObject* wo;
+   double xyz[3];
    DMatrix m;
-   
+
    if (ms->num_wrap_objects == ms->wrap_object_array_size)
    {
       ms->wrap_object_array_size += WRAP_OBJECT_ARRAY_INCREMENT;
-      ms->wrapobj = (WrapObject*)simm_realloc(ms->wrapobj,
-         ms->wrap_object_array_size*sizeof(WrapObject),&rc);
-      
+      ms->wrapobj = (dpWrapObject**)simm_realloc(ms->wrapobj, ms->wrap_object_array_size*sizeof(dpWrapObject*), &rc);
+
       if (rc == code_bad)
       {
          ms->wrap_object_array_size -= WRAP_OBJECT_ARRAY_INCREMENT;
-         return (code_bad);
+         return code_bad;
       }
    }
-   
-   wo = &ms->wrapobj[ms->num_wrap_objects];
-   
+
+   wo = ms->wrapobj[ms->num_wrap_objects] = (dpWrapObject*)simm_malloc(sizeof(dpWrapObject));
+
    initwrapobject(wo);
-   
-   if (fscanf(*fp,"%s", buffer) != 1)
+
+   if (fscanf(fp, "%s", buffer) != 1)
    {
-      error(abort_action,"Error reading name in wrap object definition");
-      return (code_bad);
+      error(abort_action, "Error reading name in wrap object definition");
+      return code_bad;
    }
    else
-      mstrcpy(&wo->name,buffer);
-   
+      mstrcpy(&wo->name, buffer);
+
    while (1)
    {
-      if (read_string(fp,buffer) == EOF)
+      if (read_string(fp, buffer) == EOF)
          break;
-      
+
       if (buffer[0] == '#')
       {
-         read_nonempty_line(fp,buffer);
+         read_nonempty_line(fp, buffer);
          continue;
       }
-      
-      if (STRINGS_ARE_EQUAL(buffer,"wraptype"))
+
+      if (STRINGS_ARE_EQUAL(buffer, "wraptype"))
       {
-         if (read_string(fp,buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         
-         if (STRINGS_ARE_EQUAL(buffer,"sphere"))
-            wo->wrap_type = wrap_sphere;
-         else if (STRINGS_ARE_EQUAL(buffer,"cylinder"))
-            wo->wrap_type = wrap_cylinder;
-         else if (STRINGS_ARE_EQUAL(buffer,"ellipsoid"))
-            wo->wrap_type = wrap_ellipsoid;
-         else if (STRINGS_ARE_EQUAL(buffer,"torus"))
-            wo->wrap_type = wrap_torus;
+
+         if (STRINGS_ARE_EQUAL(buffer, "sphere"))
+            wo->wrap_type = dpWrapSphere;
+         else if (STRINGS_ARE_EQUAL(buffer, "cylinder"))
+            wo->wrap_type = dpWrapCylinder;
+         else if (STRINGS_ARE_EQUAL(buffer, "ellipsoid"))
+            wo->wrap_type = dpWrapEllipsoid;
+         else if (STRINGS_ARE_EQUAL(buffer, "torus"))
+            wo->wrap_type = dpWrapTorus;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"wrapmethod"))
+      else if (STRINGS_ARE_EQUAL(buffer, "wrapmethod"))
       {
          int i;
-         
-         if (read_string(fp,buffer) == EOF)
+
+         if (read_string(fp, buffer) == EOF)
             break;
-         
+
          for (i = 0; i < WE_NUM_WRAP_ALGORITHMS; i++)
          {
             if (STRINGS_ARE_EQUAL(buffer, get_wrap_algorithm_name(i)))
@@ -1064,63 +1065,60 @@ static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
             }
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"segment"))
+      else if (STRINGS_ARE_EQUAL(buffer, "segment"))
       {
-         if (fscanf(*fp,"%s", buffer) != 1)
+         if (fscanf(fp,"%s", buffer) != 1)
          {
-            (void)sprintf(errorbuffer,"Error reading segment in definition of wrap object %s",
-               wo->name);
-            error(abort_action,errorbuffer);
-            return (code_bad);
+            (void)sprintf(errorbuffer, "Error reading segment in definition of wrap object %s", wo->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
          }
          else
          {
-            wo->segment = enter_segment(ms->modelnum,buffer,yes);
-            
+            wo->segment = enter_segment(ms, buffer, yes);
+
             if (wo->segment == -1)
-               return (code_bad);
+               return code_bad;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"active"))
+      else if (STRINGS_ARE_EQUAL(buffer, "active"))
       {
-         if (read_string(fp,buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         
-         if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
+
+         if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "false"))
             wo->active = no;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"visible"))
+      else if (STRINGS_ARE_EQUAL(buffer, "visible"))
       {
-         if (read_string(fp,buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         
-         if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"false"))
+
+         if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "false"))
             wo->visible = no;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"show_wrap_pts"))
+      else if (STRINGS_ARE_EQUAL(buffer, "show_wrap_pts"))
       {
-         if (read_string(fp,buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         
-         if (STRINGS_ARE_EQUAL(buffer,"yes") || STRINGS_ARE_EQUAL(buffer,"true"))
+
+         if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "true"))
             wo->show_wrap_pts = yes;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"rotation"))
+      else if (STRINGS_ARE_EQUAL(buffer, "rotation"))
       {
          sprintf(errorbuffer, "Error reading rotation for wrap object %s:", wo->name);
-         error(none,errorbuffer);
-         error(abort_action,"  The \'rotation\' keyword has been changed to \'xyz_body_rotation\'.");
-         return (code_bad);
+         error(none, errorbuffer);
+         error(abort_action, "  The \'rotation\' keyword has been changed to \'xyz_body_rotation\'.");
+         return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"xyz_body_rotation"))
+      else if (STRINGS_ARE_EQUAL(buffer, "xyz_body_rotation"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &xyz[0],
-            &xyz[1], &xyz[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
          {
-            (void)sprintf(errorbuffer, "Error reading rotation for wrap object %s",
-               wo->name);
-            error(abort_action,errorbuffer);
-            return (code_bad);
+            (void)sprintf(errorbuffer, "Error reading rotation for wrap object %s", wo->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
          }
          identity_matrix(m);
          x_rotate_matrix_bodyfixed(m, xyz[0] * DTOR);
@@ -1128,15 +1126,13 @@ static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
          z_rotate_matrix_bodyfixed(m, xyz[2] * DTOR);
          extract_rotation(m, &wo->rotation_axis, &wo->rotation_angle);
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"xyz_space_rotation"))
+      else if (STRINGS_ARE_EQUAL(buffer, "xyz_space_rotation"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &xyz[0],
-            &xyz[1], &xyz[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
          {
-            (void)sprintf(errorbuffer, "Error reading rotation for wrap object %s",
-               wo->name);
+            (void)sprintf(errorbuffer, "Error reading rotation for wrap object %s", wo->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          identity_matrix(m);
          x_rotate_matrix_spacefixed(m, xyz[0] * DTOR);
@@ -1144,52 +1140,43 @@ static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
          z_rotate_matrix_spacefixed(m, xyz[2] * DTOR);
          extract_rotation(m, &wo->rotation_axis, &wo->rotation_angle);
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"rotationaxis"))
+      else if (STRINGS_ARE_EQUAL(buffer, "rotationaxis"))
       {
-         fscanf(*fp, "%lg %lg %lg",
-            &wo->rotation_axis.xyz[0],
-            &wo->rotation_axis.xyz[1], &wo->rotation_axis.xyz[2]);
+         fscanf(fp, "%lg %lg %lg", &wo->rotation_axis.xyz[0], &wo->rotation_axis.xyz[1], &wo->rotation_axis.xyz[2]);
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"rotationangle"))
+      else if (STRINGS_ARE_EQUAL(buffer, "rotationangle"))
       {
-         if (fscanf(*fp, "%lg", &wo->rotation_angle) != 1)
+         if (fscanf(fp, "%lg", &wo->rotation_angle) != 1)
          {
-            (void)sprintf(errorbuffer, "Error reading rotation for wrap object %s",
-               wo->name);
-            error(abort_action,errorbuffer);
-            return (code_bad);
+            (void)sprintf(errorbuffer, "Error reading rotation for wrap object %s", wo->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"translation") ||
-         STRINGS_ARE_EQUAL(buffer,"translate"))
+      else if (STRINGS_ARE_EQUAL(buffer, "translation") || STRINGS_ARE_EQUAL(buffer, "translate"))
       {
-         if (fscanf(*fp,"%lg %lg %lg",
-            &wo->translation.xyz[0],
-            &wo->translation.xyz[1],
-            &wo->translation.xyz[2]) != 3)
+         if (fscanf(fp,"%lg %lg %lg", &wo->translation.xyz[0], &wo->translation.xyz[1], &wo->translation.xyz[2]) != 3)
          {
-            (void)sprintf(errorbuffer, "Error reading translation for wrap object %s",
-               wo->name);
-            error(abort_action,errorbuffer);
-            return (code_bad);
+            (void)sprintf(errorbuffer, "Error reading translation for wrap object %s", wo->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"radius"))
+      else if (STRINGS_ARE_EQUAL(buffer, "radius"))
       {
-         if (wo->wrap_type == wrap_ellipsoid)
+         if (wo->wrap_type == dpWrapEllipsoid)
          {
-            rc = ((fscanf(*fp,"%lg %lg %lg", &wo->radius.xyz[0],
-                          &wo->radius.xyz[1], &wo->radius.xyz[2]) == 3) ? code_fine : code_bad);
-            if (wo->radius.xyz[0] <= 0.0 || wo->radius.xyz[1] <= 0.0 || wo->radius.xyz[2] <= 0.0)
+            rc = ((fscanf(fp, "%lg %lg %lg", &wo->radius[0], &wo->radius[1], &wo->radius[2]) == 3) ? code_fine : code_bad);
+            if (wo->radius[0] <= 0.0 || wo->radius[1] <= 0.0 || wo->radius[2] <= 0.0)
             {
                error(none, "Value must be greater than zero.");
                rc = code_bad;
             }
          }
-         else if (wo->wrap_type == wrap_torus)
+         else if (wo->wrap_type == dpWrapTorus)
          {
-            rc = ((fscanf(*fp,"%lg %lg", &wo->radius.xyz[0], &wo->radius.xyz[1]) == 2) ? code_fine : code_bad);
-            if (wo->radius.xyz[0] <= 0.0 || wo->radius.xyz[1] <= 0.0)
+            rc = ((fscanf(fp, "%lg %lg", &wo->radius[0], &wo->radius[1]) == 2) ? code_fine : code_bad);
+            if (wo->radius[0] <= 0.0 || wo->radius[1] <= 0.0)
             {
                error(none, "Value must be greater than zero.");
                rc = code_bad;
@@ -1197,25 +1184,24 @@ static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
          }
          else
          {
-            rc = ((fscanf(*fp,"%lg", &wo->radius.xyz[0]) == 1) ? code_fine : code_bad);
-            if (wo->radius.xyz[0] <= 0.0)
+            rc = ((fscanf(fp, "%lg", &wo->radius[0]) == 1) ? code_fine : code_bad);
+            if (wo->radius[0] <= 0.0)
             {
                error(none, "Value must be greater than zero.");
                rc = code_bad;
             }
          }
-         
+
          if (rc == code_bad)
          {
-            (void)sprintf(errorbuffer, "Error reading radius for wrap object %s",
-               wo->name);
-            error(abort_action,errorbuffer);
-            return (code_bad);
+            (void)sprintf(errorbuffer, "Error reading radius for wrap object %s", wo->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"height"))
+      else if (STRINGS_ARE_EQUAL(buffer, "height"))
       {
-         int num = fscanf(*fp,"%lg", &wo->height);
+         int num = fscanf(fp, "%lg", &wo->height);
 
          if (num == 1 && wo->height <= 0.0)
          {
@@ -1225,90 +1211,87 @@ static ReturnCode read_wrap_object(ModelStruct* ms, FILE** fp)
 
          if (num != 1)
          {
-            (void)sprintf(errorbuffer, "Error reading cylinder height for wrap object %s",
-               wo->name);
-            error(abort_action,errorbuffer);
-            return (code_bad);
+            (void)sprintf(errorbuffer, "Error reading cylinder height for wrap object %s", wo->name);
+            error(abort_action, errorbuffer);
+            return code_bad;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"quadrant"))
+      else if (STRINGS_ARE_EQUAL(buffer, "quadrant"))
       {
-         if (read_string(fp,buffer) == EOF)
+         if (read_string(fp, buffer) == EOF)
             break;
-         
+
          set_wrap_specs(wo, buffer);
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"endwrapobject"))
+      else if (STRINGS_ARE_EQUAL(buffer, "endwrapobject"))
          break;
    }
    wo->undeformed_translation = wo->translation;
-   
+
    wo->xforms_valid = no;
-   
+
    ms->num_wrap_objects++;
-   
-   return (code_fine);
-   
+
+   return code_fine;
 }
 
 
-static ReturnCode read_restraint(int mod, FILE** fp, GeneralizedCoord* gc, int minmax)
+static ReturnCode read_restraint(ModelStruct* ms, FILE* fp, GeneralizedCoord* gc, int minmax)
 {
+   int user_num;
 
-   if (read_string(fp,buffer) == EOF)
-      return (code_bad);
+   if (read_string(fp, buffer) == EOF)
+      return code_bad;
 
-   /* The string just read should be of the form "f<num>", such as "f32" */
+   // The string just read should be of the form "f<num>", such as "f32".
 
    if (buffer[0] != 'f')
-      return (code_bad);
+      return code_bad;
 
    if (minmax == 2)
    {
-      if (sscanf(&buffer[1],"%d", &gc->restraint_user_num) != 1)
-	 return (code_bad);
-      gc->restraint_func_num = enter_function(mod,gc->restraint_user_num, yes);
+      if (sscanf(&buffer[1], "%d", &user_num) != 1)
+         return code_bad;
+      gc->restraint_function = ms->function[enter_function(ms, user_num, yes)];
    }
    else if (minmax == 0)
    {
-      if (sscanf(&buffer[1],"%d", &gc->min_restraint_user_num) != 1)
-	 return (code_bad);
-      gc->min_restraint_func_num = enter_function(mod,gc->min_restraint_user_num, yes);
+      if (sscanf(&buffer[1], "%d", &user_num) != 1)
+         return code_bad;
+      gc->min_restraint_function = ms->function[enter_function(ms, user_num, yes)];
    }
    else
    {
-      if (sscanf(&buffer[1],"%d", &gc->max_restraint_user_num) != 1)
-	 return (code_bad);
-      gc->max_restraint_func_num = enter_function(mod,gc->max_restraint_user_num, yes);
+      if (sscanf(&buffer[1], "%d", &user_num) != 1)
+         return code_bad;
+      gc->max_restraint_function = ms->function[enter_function(ms, user_num, yes)];
    }
 
-   return (code_fine);
-
+   return code_fine;
 }
 
 
 /* READ_JOINT: */
 
-static ReturnCode read_joint(int mod, FILE** fp)
+static ReturnCode read_joint(ModelStruct* ms, FILE* fp)
 {
-
    int i, jointnum;
    char from[CHARBUFFER], to[CHARBUFFER], jointname[CHARBUFFER];
    char check = 0;
    int jointvarnum;
    JointStruct* jnt;
 
-   if (fscanf(*fp,"%s", jointname) != 1)
+   if (fscanf(fp, "%s", jointname) != 1)
    {
       error(abort_action,"Error reading name in joint definition");
       return code_bad;
    }
 
-   jointnum = enter_joint(mod, jointname, yes);
+   jointnum = enter_joint(ms, jointname, yes);
    if (jointnum == -1)
       return code_bad;
 
-   jnt = &model[mod]->joint[jointnum];
+   jnt = &ms->joint[jointnum];
 
    if (jnt->defined == yes)
    {
@@ -1345,13 +1328,13 @@ static ReturnCode read_joint(int mod, FILE** fp)
 
       if (STRINGS_ARE_EQUAL(buffer,"show"))
       {
-         if (read_show_axis(mod,fp,jnt) == code_bad)
+         if (read_show_axis(ms,fp,jnt) == code_bad)
             return code_bad;
          continue;
       }
       if (STRINGS_ARE_EQUAL(buffer,"type"))
       {
-         if (fscanf(*fp,"%s", buffer) != 1)
+         if (fscanf(fp,"%s", buffer) != 1)
          {
             sprintf(errorbuffer, "Error reading type for joint %s", jnt->name);
             error(abort_action,errorbuffer);
@@ -1373,7 +1356,7 @@ static ReturnCode read_joint(int mod, FILE** fp)
          {
             for (j=0; j<4; j++)
             {
-               if (fscanf(*fp,"%lg", &jnt->pretransform[i][j]) != 1)
+               if (fscanf(fp,"%lg", &jnt->pretransform[i][j]) != 1)
                {
                   sprintf(errorbuffer, "Error reading pretransform for joint %s", jnt->name);
                   error(abort_action,errorbuffer);
@@ -1388,7 +1371,7 @@ static ReturnCode read_joint(int mod, FILE** fp)
 #if INCLUDE_MOCAP_MODULE
       if (STRINGS_ARE_EQUAL(buffer,"mocap_segment"))
       {
-         if (fscanf(*fp, "%s", buffer) != 1)
+         if (fscanf(fp, "%s", buffer) != 1)
          {
             sprintf(errorbuffer, "Error reading \'mocap_segment\' for joint %s.", jnt->name);
             error(abort_action, errorbuffer);
@@ -1410,7 +1393,7 @@ static ReturnCode read_joint(int mod, FILE** fp)
       
       if (jointvarnum >= 0 && jointvarnum < 6)
       {
-         if (read_refeq(mod,fp,&jnt->dofs[jointvarnum]) == code_bad)
+         if (read_refeq(ms,fp,&jnt->dofs[jointvarnum]) == code_bad)
          {
             (void)sprintf(errorbuffer,"Error reading definition of %s in joint %s",
                getjointvarname(jointvarnum), jnt->name);
@@ -1432,12 +1415,12 @@ static ReturnCode read_joint(int mod, FILE** fp)
       }
       else if (jointvarnum > 6 && jointvarnum < 10)
       {
-         if (read_axis(mod,fp,jointnum,jointvarnum-7) == code_bad)
+         if (read_axis(ms,fp,jointnum,jointvarnum-7) == code_bad)
             return code_bad;
       }
       else if (jointvarnum == 10)
       {
-         if (fscanf(*fp,"%s %s", from, to) != 2)
+         if (fscanf(fp,"%s %s", from, to) != 2)
          {
             (void)sprintf(errorbuffer,"Error reading segments in definition of joint %s", jnt->name);
             error(abort_action,errorbuffer);
@@ -1445,8 +1428,8 @@ static ReturnCode read_joint(int mod, FILE** fp)
          }
          else
          {
-            jnt->from = enter_segment(mod,from,yes);
-            jnt->to = enter_segment(mod,to,yes);
+            jnt->from = enter_segment(ms,from,yes);
+            jnt->to = enter_segment(ms,to,yes);
             if (jnt->from == -1 || jnt->to == -1)
                return code_bad;
          }
@@ -1484,7 +1467,7 @@ static ReturnCode read_joint(int mod, FILE** fp)
 
 /* READ_SEGMENT: */
 
-static ReturnCode read_segment(int mod, FILE** fp)
+static ReturnCode read_segment(ModelStruct* ms, FILE* fp)
 {
 
    int i, segmentnum, array_size = INIT_SEGMENT_FILE_ARRAY_SIZE;
@@ -1493,18 +1476,18 @@ static ReturnCode read_segment(int mod, FILE** fp)
    double shadow_trans;
    SegmentStruct* seg;
 
-   if (fscanf(*fp,"%s", segmentname) != 1)
+   if (fscanf(fp,"%s", segmentname) != 1)
    {
       (void)sprintf(errorbuffer,"Error trying to start a segment definition");
       error(abort_action,errorbuffer);
       return code_bad;
    }
 
-   segmentnum = enter_segment(mod,segmentname,yes);
+   segmentnum = enter_segment(ms,segmentname,yes);
    if (segmentnum == -1)
       return code_bad;
 
-   seg = &model[mod]->segment[segmentnum];
+   seg = &ms->segment[segmentnum];
 
    if (seg->defined == yes)
    {
@@ -1517,7 +1500,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
    {
       if (read_string(fp,buffer) == EOF)
       {
-         (void)sprintf(errorbuffer,"Unexpected EOF found reading segment definition");
+         (void)sprintf(errorbuffer, "Unexpected EOF found reading segment definition");
          error(abort_action,errorbuffer);
          return code_bad;
       }
@@ -1532,7 +1515,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
          {
             if (read_string(fp,buffer) == EOF)
             {
-               (void)sprintf(errorbuffer,"Error reading bone files for %s segment.", seg->name);
+               (void)sprintf(errorbuffer, "Error reading bone files for %s segment.", seg->name);
                error(abort_action,errorbuffer);
                return code_bad;
             }
@@ -1545,7 +1528,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
                PolyhedronStruct* ph;
 
                strcpy(name,buffer);
-               ph = make_bone(model[mod],seg,name);
+               ph = make_bone(ms,seg,name);
                if (ph != NULL)
                {
                   ph->drawmode = -1;
@@ -1558,8 +1541,8 @@ static ReturnCode read_segment(int mod, FILE** fp)
       {
          PolyhedronStruct* ph;
 
-         fscanf(*fp,"%s", name);
-         ph = make_bone(model[mod],seg,name);
+         fscanf(fp,"%s", name);
+         ph = make_bone(ms,seg,name);
          read_line(fp,buffer);
          if (ph != NULL)
          {
@@ -1576,7 +1559,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
                }
                else
                {
-                  m = enter_material(model[mod], buf[ns], declaring_element);
+                  m = enter_material(ms, buf[ns], declaring_element);
                   if (m != -1)
                   {
                      ph->material = m;
@@ -1592,7 +1575,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"begingroups"))
       {
-         if (read_segment_groups(model[mod], fp, segmentnum) != code_fine)
+         if (read_segment_groups(ms, fp, segmentnum) != code_fine)
          {
             seg->numgroups = 0;
             
@@ -1605,7 +1588,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       {
          FILE* fp_pts;
 
-         fscanf(*fp,"%s", buffer);
+         fscanf(fp,"%s", buffer);
          mstrcpy(&seg->pts_file,buffer);
          fp_pts = simm_fopen(seg->pts_file,"r");
          if (fp_pts != NULL)
@@ -1626,17 +1609,17 @@ static ReturnCode read_segment(int mod, FILE** fp)
 #endif
       else if (STRINGS_ARE_EQUAL(buffer,"force_matte"))
       {
-         if (read_force_matte(model[mod], seg, fp) == code_bad)
+         if (read_force_matte(ms, seg, fp) == code_bad)
             return code_bad;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"marker"))
       {
-         if (read_marker(model[mod], seg, fp) == code_bad)
+         if (read_marker(ms, seg, fp) == code_bad)
             return code_bad;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"shadow"))
       {
-         if (fscanf(*fp,"%s %lg", buffer, &shadow_trans) != 2)
+         if (fscanf(fp,"%s %lg", buffer, &shadow_trans) != 2)
          {
             (void)sprintf(errorbuffer,"Error reading shadow axis and/or shadow translation for %s segment", seg->name);
             error(abort_action,errorbuffer);
@@ -1663,7 +1646,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"shadowcolor"))
       {
-         if (fscanf(*fp,"%f %f %f", &seg->shadow_color.rgb[RD],
+         if (fscanf(fp,"%f %f %f", &seg->shadow_color.rgb[RD],
             &seg->shadow_color.rgb[GR], &seg->shadow_color.rgb[BL]) != 3)
          {
             (void)sprintf(errorbuffer,"Error reading shadow color for %s segment", seg->name);
@@ -1691,7 +1674,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"material"))
       {
-         if (fscanf(*fp,"%s", name) != 1)
+         if (fscanf(fp,"%s", name) != 1)
          {
             (void)sprintf(errorbuffer,"Error reading material for %s segment", seg->name);
             error(abort_action,errorbuffer);
@@ -1699,12 +1682,12 @@ static ReturnCode read_segment(int mod, FILE** fp)
          }
          else
          {
-            seg->material = enter_material(model[mod],name,declaring_element);
+            seg->material = enter_material(ms,name,declaring_element);
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"scale"))
       {
-         if (fscanf(*fp,"%f %f %f", &seg->bone_scale[0], &seg->bone_scale[1],
+         if (fscanf(fp,"%f %f %f", &seg->bone_scale[0], &seg->bone_scale[1],
             &seg->bone_scale[2]) != 3)
          {
             (void)sprintf(errorbuffer,"Error reading scale factors for %s segment", seg->name);
@@ -1714,7 +1697,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"mass"))
       {
-         if (fscanf(*fp,"%lg", &seg->mass) != 1)
+         if (fscanf(fp,"%lg", &seg->mass) != 1)
          {
             (void)sprintf(errorbuffer,"Error reading mass for %s segment", seg->name);
             error(abort_action,errorbuffer);
@@ -1726,7 +1709,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       {
          for (i=0; i<9; i++)
          {
-            if (fscanf(*fp,"%lg", &seg->inertia[i/3][i%3]) != 1)
+            if (fscanf(fp,"%lg", &seg->inertia[i/3][i%3]) != 1)
             {
                (void)sprintf(errorbuffer,"Error reading inertia for %s segment", seg->name);
                error(abort_action,errorbuffer);
@@ -1739,7 +1722,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       {
          for (i=0; i<3; i++)
          {
-            if (fscanf(*fp,"%lg", &seg->masscenter[i]) != 1)
+            if (fscanf(fp,"%lg", &seg->masscenter[i]) != 1)
             {
                (void)sprintf(errorbuffer,"Error reading masscenter for %s segment",
                   seg->name);
@@ -1751,7 +1734,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"show_masscenter"))
       {
-         if (fscanf(*fp, "%s", buffer) == EOF)
+         if (fscanf(fp, "%s", buffer) == EOF)
             break;
 
          if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
@@ -1761,12 +1744,12 @@ static ReturnCode read_segment(int mod, FILE** fp)
             ||STRINGS_ARE_EQUAL(buffer, "true"))
             seg->show_masscenter = yes;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"show_inertia"))
+      else if (STRINGS_ARE_EQUAL(buffer, "show_inertia"))
       {
-         if (fscanf(*fp, "%s", buffer) == EOF)
+         if (fscanf(fp, "%s", buffer) == EOF)
             break;
 
-         if (STRINGS_ARE_EQUAL(buffer,"no") || STRINGS_ARE_EQUAL(buffer,"off")
+         if (STRINGS_ARE_EQUAL(buffer, "no") || STRINGS_ARE_EQUAL(buffer, "off")
             || STRINGS_ARE_EQUAL(buffer, "false"))
             seg->show_inertia = no;
          else if (STRINGS_ARE_EQUAL(buffer, "yes") || STRINGS_ARE_EQUAL(buffer, "on")
@@ -1775,27 +1758,27 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"drawmode"))
       {
-         if (read_drawmode(*fp, &seg->drawmode) != code_fine)
+         if (read_drawmode(fp, &seg->drawmode) != code_fine)
          {
-            sprintf(errorbuffer,"Error reading drawmode for %s segment", seg->name);
+            sprintf(errorbuffer, "Error reading drawmode for %s segment", seg->name);
             error(abort_action, errorbuffer);
             return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"axes"))
       {
-         if (fscanf(*fp,"%lg", &seg->axis_length) != 1)
+         if (fscanf(fp, "%lg", &seg->axis_length) != 1)
          {
-            (void)sprintf(errorbuffer,"Error reading axis length for %s segment", seg->name);
-            error(abort_action,errorbuffer);
+            (void)sprintf(errorbuffer, "Error reading axis length for %s segment", seg->name);
+            error(abort_action, errorbuffer);
             return code_bad;
          }
          else
             seg->draw_axes = yes;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"axes_length"))
+      else if (STRINGS_ARE_EQUAL(buffer, "axes_length"))
       {
-         if (fscanf(*fp,"%lg", &seg->axis_length) != 1)
+         if (fscanf(fp,"%lg", &seg->axis_length) != 1)
          {
             (void)sprintf(errorbuffer,"Error reading axis length for %s segment", seg->name);
             error(abort_action,errorbuffer);
@@ -1815,7 +1798,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
 #if INCLUDE_MOCAP_MODULE
       else if (STRINGS_ARE_EQUAL(buffer,"lengthstart"))
       {
-         if (fscanf(*fp,"%f %f %f", &seg->lengthstart[0], &seg->lengthstart[1],
+         if (fscanf(fp,"%f %f %f", &seg->lengthstart[0], &seg->lengthstart[1],
             &seg->lengthstart[2]) != 3)
          {
             (void)sprintf(errorbuffer,"Error reading lengthstart for %s segment", seg->name);
@@ -1829,7 +1812,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"lengthend"))
       {
-         if (fscanf(*fp,"%f %f %f", &seg->lengthend[0], &seg->lengthend[1],
+         if (fscanf(fp,"%f %f %f", &seg->lengthend[0], &seg->lengthend[1],
             &seg->lengthend[2]) != 3)
          {
             (void)sprintf(errorbuffer,"Error reading lengthend for %s segment", seg->name);
@@ -1844,7 +1827,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
 #endif
       else if (STRINGS_ARE_EQUAL(buffer, "htr_o"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &seg->htr_o[0], &seg->htr_o[1], &seg->htr_o[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &seg->htr_o[0], &seg->htr_o[1], &seg->htr_o[2]) != 3)
          {
             (void)sprintf(errorbuffer, "Error reading htr_o for %s segment", seg->name);
             error(abort_action, errorbuffer);
@@ -1853,7 +1836,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer, "htr_x"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &seg->htr_x[0], &seg->htr_x[1], &seg->htr_x[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &seg->htr_x[0], &seg->htr_x[1], &seg->htr_x[2]) != 3)
          {
             (void)sprintf(errorbuffer, "Error reading htr_x for %s segment", seg->name);
             error(abort_action, errorbuffer);
@@ -1862,7 +1845,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer, "htr_y"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &seg->htr_y[0], &seg->htr_y[1], &seg->htr_y[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &seg->htr_y[0], &seg->htr_y[1], &seg->htr_y[2]) != 3)
          {
             (void)sprintf(errorbuffer, "Error reading htr_y for %s segment", seg->name);
             error(abort_action, errorbuffer);
@@ -1872,7 +1855,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
 #if INCLUDE_MOCAP_MODULE
       else if (STRINGS_ARE_EQUAL(buffer,"gait_scale"))
       {
-         if (fscanf(*fp, "%s %lf %lf %lf", buffer, &seg->gait_scale_factor[0],
+         if (fscanf(fp, "%s %lf %lf %lf", buffer, &seg->gait_scale_factor[0],
             &seg->gait_scale_factor[1], &seg->gait_scale_factor[2]) != 4)
          {
             sprintf(errorbuffer, "Error reading \'gait_scale\' for %s segment.", seg->name);
@@ -1883,7 +1866,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }         
       else if (STRINGS_ARE_EQUAL(buffer,"mocap_segment"))
       {
-         if (fscanf(*fp, "%s", buffer) != 1)
+         if (fscanf(fp, "%s", buffer) != 1)
          {
             sprintf(errorbuffer, "Error reading \'mocap_segment\' for %s segment.", seg->name);
             error(abort_action, errorbuffer);
@@ -1891,7 +1874,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
          }
          mstrcpy(&seg->mocap_segment, buffer);
 
-         if (fscanf(*fp, "%s", buffer) != 1)
+         if (fscanf(fp, "%s", buffer) != 1)
          {
             sprintf(errorbuffer, "Error reading \'mocap_segment\' for %s segment.", seg->name);
             error(abort_action, errorbuffer);
@@ -1908,7 +1891,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
             
             /* read the first mocap scale chain end name:
             */
-            if (fscanf(*fp, "%s", buffer) != 1)
+            if (fscanf(fp, "%s", buffer) != 1)
             {
                sprintf(errorbuffer, "Error reading \'mocap_segment\' for %s segment.", seg->name);
                error(abort_action, errorbuffer);
@@ -1918,7 +1901,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
             
             /* read the second mocap scale chain end name:
             */
-            if (fscanf(*fp, "%s", buffer) != 1)
+            if (fscanf(fp, "%s", buffer) != 1)
             {
                sprintf(errorbuffer, "Error reading \'mocap_segment\' for %s segment.", seg->name);
                error(abort_action, errorbuffer);
@@ -1929,7 +1912,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"mocap_scale_to_segment"))
       {
-         if (fscanf(*fp, "%s", buffer) != 1)
+         if (fscanf(fp, "%s", buffer) != 1)
          {
             sprintf(errorbuffer, "Error reading \'mocap_scale_to_segment\' for %s segment.", seg->name);
             error(abort_action, errorbuffer);
@@ -1941,7 +1924,7 @@ static ReturnCode read_segment(int mod, FILE** fp)
       {
          double axis[3], angle;
          
-         if (fscanf(*fp, "%lg %lg %lg %lg", &axis[XX], &axis[YY], &axis[ZZ], &angle) != 4)
+         if (fscanf(fp, "%lg %lg %lg %lg", &axis[XX], &axis[YY], &axis[ZZ], &angle) != 4)
          {
             sprintf(errorbuffer, "Error reading mocap adjustment for %s segment.", seg->name);
             error(abort_action, errorbuffer);
@@ -1972,62 +1955,53 @@ static ReturnCode read_segment(int mod, FILE** fp)
          seg->bone[i].drawmode = seg->drawmode;
    }
 
-   return (code_fine);
-
+   return code_fine;
 }
 
 
 
 /* READ_AXIS: */
 
-static ReturnCode read_axis(int mod, FILE** fp, int joint, int axis)
+static ReturnCode read_axis(ModelStruct* ms, FILE* fp, int joint, int axis)
 {
-
    int i;
    double total;
 
    for (i=0; i<3; i++)
    {
-      if (fscanf(*fp,"%lg", &model[mod]->joint[joint].parentrotaxes[axis][i]) != 1)
+      if (fscanf(fp, "%lg", &ms->joint[joint].parentrotaxes[axis][i]) != 1)
       {
-         (void)sprintf(errorbuffer,"Error reading definition of axis%d in joint %s",
-            axis, model[mod]->joint[joint].name);
-         error(abort_action,errorbuffer);
+         (void)sprintf(errorbuffer, "Error reading definition of axis%d in joint %s", axis, ms->joint[joint].name);
+         error(abort_action, errorbuffer);
          return code_bad;
       }
    }
 
-   model[mod]->joint[joint].parentrotaxes[axis][3] = 0.0;
+   ms->joint[joint].parentrotaxes[axis][3] = 0.0;
 
-   total = sqrt(model[mod]->joint[joint].parentrotaxes[axis][0]*
-                   model[mod]->joint[joint].parentrotaxes[axis][0] +
-                model[mod]->joint[joint].parentrotaxes[axis][1]*
-                   model[mod]->joint[joint].parentrotaxes[axis][1] +
-                model[mod]->joint[joint].parentrotaxes[axis][2]*
-                   model[mod]->joint[joint].parentrotaxes[axis][2]);
+   total = sqrt(ms->joint[joint].parentrotaxes[axis][0] * ms->joint[joint].parentrotaxes[axis][0] +
+                ms->joint[joint].parentrotaxes[axis][1] * ms->joint[joint].parentrotaxes[axis][1] +
+                ms->joint[joint].parentrotaxes[axis][2] * ms->joint[joint].parentrotaxes[axis][2]);
 
    if (EQUAL_WITHIN_ERROR(total, 0.0))
    {
-      (void)sprintf(errorbuffer,"Error reading axis%d in joint %s (vector has zero length)",
-         axis+1, model[mod]->joint[joint].name);
-      error(abort_action,errorbuffer);
+      (void)sprintf(errorbuffer, "Error reading axis%d in joint %s (vector has zero length)", axis+1, ms->joint[joint].name);
+      error(abort_action, errorbuffer);
       return code_bad;
    }
 
    for (i=0; i<3; i++)
-      model[mod]->joint[joint].parentrotaxes[axis][i] /= total;
+      ms->joint[joint].parentrotaxes[axis][i] /= total;
 
    return code_fine;
-
 }
 
 
 
 /* READ_REFEQ: */
 
-static ReturnCode read_refeq(int mod, FILE **fp, DofStruct* jointvar)
+static ReturnCode read_refeq(ModelStruct* ms, FILE* fp, DofStruct* jointvar)
 {
-
    int j, k, n;
    int userfuncnum;
    char usergencname[CHARBUFFER];
@@ -2037,12 +2011,12 @@ static ReturnCode read_refeq(int mod, FILE **fp, DofStruct* jointvar)
    if (STRINGS_ARE_EQUAL(buffer,"constant"))
    {
       jointvar->type = constant_dof;
-      jointvar->funcnum = -1;
-      jointvar->gencoord = -1;
-      if (fscanf(*fp,"%lg", &jointvar->value) != 1)
-	 return (code_bad);
+      jointvar->function = NULL;
+      jointvar->gencoord = NULL;
+      if (fscanf(fp,"%lg", &jointvar->value) != 1)
+         return code_bad;
       else
-	 return (code_fine);
+         return code_fine;
    }
 
    if (STRINGS_ARE_EQUAL(buffer,"function"))
@@ -2051,14 +2025,14 @@ static ReturnCode read_refeq(int mod, FILE **fp, DofStruct* jointvar)
       j = 0;
       while (1)
       {
-	 if (j == CHARBUFFER-1)
-	    return (code_bad);
-	 buffer[j] = getc(*fp);
-	 if (buffer[j] == (char) EOF)
-	    return (code_bad);
-	 if (buffer[j] == ')')
-	    break;
-	 j++;
+         if (j == CHARBUFFER-1)
+            return code_bad;
+         buffer[j] = getc(fp);
+         if (buffer[j] == (char) EOF)
+            return code_bad;
+         if (buffer[j] == ')')
+            break;
+         j++;
       }
       buffer[j+1] = STRING_TERMINATOR;
       j = 0;
@@ -2069,43 +2043,37 @@ static ReturnCode read_refeq(int mod, FILE **fp, DofStruct* jointvar)
          ;
       n = j + strlen(&buffer[j]) - 1;   /* the next four lines remove the */
       while (buffer[n] != ')')          /* close paren at the end */
-	 n--;
+         n--;
       buffer[n] = STRING_TERMINATOR;
       k += sscanf(&buffer[j],"%s", usergencname); /* now read the gencoord name */
       if (k != 2)
-	 return (code_bad);
+         return code_bad;
       else
       {
-	 jointvar->funcnum = enter_function(mod,userfuncnum, yes);
-	 jointvar->gencoord = enter_gencoord(mod,usergencname,yes);
-	 if (jointvar->gencoord == -1)
-	    return (code_bad);
-	 return (code_fine);
+         jointvar->function = ms->function[enter_function(ms, userfuncnum, yes)];
+         jointvar->gencoord = enter_gencoord(ms, usergencname, yes);
+         if (jointvar->gencoord == NULL)
+            return code_bad;
+         return code_fine;
       }
    }
 
-   return (code_bad);
-
+   return code_bad;
 }
 
 
-
-/* READ_ORDER: */
-
-static ReturnCode read_order(FILE **fp, int order[])
+static ReturnCode read_order(FILE* fp, int order[])
 {
-
    int i;
    char buf[4][CHARBUFFER];
 
-   if (fscanf(*fp,"%s %s %s %s", buf[0],buf[1],buf[2],buf[3]) != 4)
-      return (code_bad);
+   if (fscanf(fp,"%s %s %s %s", buf[0],buf[1],buf[2],buf[3]) != 4)
+      return code_bad;
 
    /* order[] holds the position of each matrix in the multiplication order.
     * Order[0] contains the order of the translation matrix, order[1] contains
     * the order of the axis1--rotation matrix, etc.
     */
-
    for (i=0; i<4; i++)
    {
       if (STRINGS_ARE_EQUAL(buf[i],"t"))
@@ -2118,134 +2086,19 @@ static ReturnCode read_order(FILE **fp, int order[])
          order[3] = i;
    }
 
-   return (code_fine);
-
-}
-
-
-
-/* READFUNCTION: */
-
-ReturnCode read_function(int mod, FILE **fp, SBoolean muscle_function)
-{
-   int userfuncnum;
-   SplineFunction func;
-   char fname[32];
-
-   /* Initialize the type to the default, natural cubic */
-   func.type = natural_cubic;
-
-   /* Malloc space for the points and coefficients of this function */
-   (void)malloc_function(&func,SPLINE_ARRAY_INCREMENT);
-
-   if (read_string(fp,buffer) == EOF)
-   {
-      (void)sprintf(errorbuffer,"Unexpected EOF found reading a function");
-      error(abort_action,errorbuffer);
-      return code_bad;
-   }
-
-   /* Read the function name, which is usually a number (e.g. "f19") */
-   if (sscanf(buffer,"f%d", &userfuncnum) != 1)
-   {
-      error(abort_action,"Error reading a function name");
-      return code_bad;
-   }
-
-   if (userfuncnum < 0)
-   {
-      (void)sprintf(errorbuffer,"Function numbers must be non-negative (%d not allowed)", userfuncnum);
-      error(abort_action,errorbuffer);
-      return code_bad;
-   }
-
-   if (muscle_function)
-      (void)sprintf(fname,"muscle function f%d", userfuncnum);
-   else
-      (void)sprintf(fname,"f%d", userfuncnum);
-
-   /* get the array of x-y pairs which comprises the function */
-   if (read_double_array(fp,"endfunction", fname, &func) == code_bad)
-   {
-      free(func.x);
-      free(func.y);
-      free(func.b);
-      free(func.c);
-      free(func.d);
-      return code_bad;
-   }
-
-   /* If you made it to here, a valid function with two or more points has been
-    * read-in. You want to leave the arrays large so that the user can add more
-    * points to the function. So just spline the function, and then load it into
-    * the model's function list.
-    */
-   calc_spline_coefficients(&func);
-
-   if (muscle_function)
-      userfuncnum *= -1;
-
-   if (load_function(mod,userfuncnum,&func) == code_bad)
-      return code_bad;
-
    return code_fine;
 }
 
 
-
-ReturnCode malloc_function(SplineFunction* func, int size)
+static ReturnCode read_show_axis(ModelStruct* ms, FILE* fp, JointStruct* jnt)
 {
-   func->numpoints = 0;
-
-   if ((func->x = (double*)simm_malloc(size*sizeof(double))) == NULL)
-      return (code_bad);
-   if ((func->y = (double*)simm_malloc(size*sizeof(double))) == NULL)
-      return (code_bad);
-   if ((func->b = (double*)simm_malloc(size*sizeof(double))) == NULL)
-      return (code_bad);
-   if ((func->c = (double*)simm_malloc(size*sizeof(double))) == NULL)
-      return (code_bad);
-   if ((func->d = (double*)simm_malloc(size*sizeof(double))) == NULL)
-      return (code_bad);
-
-   func->coefficient_array_size = size;
-
-   return (code_fine);
-}
-
-
-
-ReturnCode realloc_function(SplineFunction* func, int size)
-{
-   ReturnCode rc1, rc2, rc3, rc4, rc5;
-
-   func->x = (double*)simm_realloc(func->x,size*sizeof(double),&rc1);
-   func->y = (double*)simm_realloc(func->y,size*sizeof(double),&rc2);
-   func->b = (double*)simm_realloc(func->b,size*sizeof(double),&rc3);
-   func->c = (double*)simm_realloc(func->c,size*sizeof(double),&rc4);
-   func->d = (double*)simm_realloc(func->d,size*sizeof(double),&rc5);
-
-   if (rc1 == code_bad || rc2 == code_bad || rc3 == code_bad || rc4 == code_bad ||
-       rc5 == code_bad)
-      return (code_bad);
-
-   func->coefficient_array_size = size;
-
-   return (code_fine);
-}
-
-
-
-static ReturnCode read_show_axis(int mod, FILE** fp, JointStruct* jnt)
-{
-
    double length;
 
-   if (fscanf(*fp,"%s %lg", buffer, &length) != 2)
+   if (fscanf(fp,"%s %lg", buffer, &length) != 2)
    {
       sprintf(errorbuffer,"Error reading axis name and/or length after \"show\" keyword in joint %s", jnt->name);
       error(abort_action,errorbuffer);
-      return (code_bad);
+      return code_bad;
    }
 
    if (STRINGS_ARE_EQUAL(buffer,"axis1"))
@@ -2264,15 +2117,12 @@ static ReturnCode read_show_axis(int mod, FILE** fp, JointStruct* jnt)
       jnt->show_axes[2] = yes;
    }
 
-   return (code_fine);
-
+   return code_fine;
 }
 
 
-
-static ReturnCode read_modelview(ModelStruct* ms, FILE** fp)
+static ReturnCode read_modelview(Scene* scene, ModelStruct* ms, FILE* fp)
 {
-
    int i, j;
 
    if (ms->dis.num_file_views >= MAXSAVEDVIEWS)
@@ -2283,7 +2133,7 @@ static ReturnCode read_modelview(ModelStruct* ms, FILE** fp)
       return code_bad;
    }
 
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp,"%s", buffer) != 1)
    {
       error(abort_action,"Error reading name of camera");
       return code_bad;
@@ -2295,7 +2145,7 @@ static ReturnCode read_modelview(ModelStruct* ms, FILE** fp)
    {
       for (j=0; j<4; j++)
       {
-         if (fscanf(*fp,"%lg", &ms->dis.saved_view[ms->dis.num_file_views][i][j]) != 1)
+         if (fscanf(fp,"%lg", &ms->dis.saved_view[ms->dis.num_file_views][i][j]) != 1)
          {
             sprintf(errorbuffer,"Error reading matrix for camera %s",
                ms->dis.view_name[ms->dis.num_file_views]);
@@ -2305,7 +2155,7 @@ static ReturnCode read_modelview(ModelStruct* ms, FILE** fp)
       }
    }
 
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp,"%s", buffer) != 1)
    {
       error(abort_action,"Error reading camera");
       return code_bad;
@@ -2326,68 +2176,58 @@ static ReturnCode read_modelview(ModelStruct* ms, FILE** fp)
    ms->dis.num_file_views++;
 
    return code_fine;
-
 }
 
 
-/* read_gencoord_groups: 
- */
-static ReturnCode read_gencoord_groups (ModelStruct* ms, FILE** fp, int gc_num)
+static ReturnCode read_gencoord_groups (ModelStruct* ms, FILE* fp, GeneralizedCoord* gencoord)
 {
    int num_malloced_so_far = 10;
    
-   GeneralizedCoord* gc = &ms->gencoord[gc_num];
-
    ReturnCode rc = code_fine;
 
-   gc->numgroups = 0;
+   gencoord->numgroups = 0;
 
-   gc->group = (int*) simm_malloc(num_malloced_so_far * sizeof(int));
+   gencoord->group = (int*)simm_malloc(num_malloced_so_far * sizeof(int));
    
-   if (gc->group == NULL)
+   if (gencoord->group == NULL)
       return code_bad;
 
    while (1)
    {
-      if (fscanf(*fp, "%s", buffer) != 1)
+      if (fscanf(fp, "%s", buffer) != 1)
          return code_bad;
 
-      if (STRINGS_ARE_EQUAL(buffer,"endgroups"))
+      if (STRINGS_ARE_EQUAL(buffer, "endgroups"))
       {
-	     gc->group = (int*) simm_realloc(gc->group, gc->numgroups * sizeof(int), &rc);
-
+         gencoord->group = (int*)simm_realloc(gencoord->group, gencoord->numgroups * sizeof(int), &rc);
          break;
       }
 
-      if (gc->numgroups > num_malloced_so_far)
+      if (gencoord->numgroups > num_malloced_so_far)
       {
 	     num_malloced_so_far += 10;
 	     
-	     gc->group = (int*) simm_realloc(gc->group, num_malloced_so_far * sizeof(int), &rc);
+	     gencoord->group = (int*)simm_realloc(gencoord->group, num_malloced_so_far * sizeof(int), &rc);
 	     
 	     if (rc == code_bad)
 	        break;
       }
 
-      gc->group[gc->numgroups] = enter_gencoord_group(ms, buffer, gc_num);
+      gencoord->group[gencoord->numgroups] = enter_gencoord_group(ms, buffer, gencoord);
       
-      if (gc->group[gc->numgroups] == -1)
+      if (gencoord->group[gencoord->numgroups] == -1)
 	     return code_bad;
       
-      gc->numgroups++;
+      gencoord->numgroups++;
    }
    return rc;
 }
 
 
-/* read_segment_groups: 
- */
-static ReturnCode read_segment_groups (ModelStruct* ms, FILE** fp, int segnum)
+static ReturnCode read_segment_groups (ModelStruct* ms, FILE* fp, int segnum)
 {
    int num_malloced_so_far = 10;
-   
    SegmentStruct* seg = &ms->segment[segnum];
-
    ReturnCode rc = code_fine;
 
    seg->numgroups = 0;
@@ -2399,7 +2239,7 @@ static ReturnCode read_segment_groups (ModelStruct* ms, FILE** fp, int segnum)
 
    while (1)
    {
-      if (fscanf(*fp, "%s", buffer) != 1)
+      if (fscanf(fp, "%s", buffer) != 1)
          return code_bad;
 
       if (STRINGS_ARE_EQUAL(buffer,"endgroups"))
@@ -2466,7 +2306,7 @@ static DrawingMode get_drawmode(char buffer[])
 }
 
 
-static ReturnCode read_contact(ModelStruct* ms, FILE** fp)
+static ReturnCode read_contact(ModelStruct* ms, FILE* fp)
 {
 
    while (1)
@@ -2511,19 +2351,20 @@ static ReturnCode read_contact(ModelStruct* ms, FILE** fp)
 }
 
 
-static ReturnCode read_spring(ModelStruct* ms, FILE** fp)
+static ReturnCode read_spring(ModelStruct* ms, FILE* fp)
 {
-   int segnum;
+   int i, segnum;
+	char floorName[CHARBUFFER];
    SpringPoint* sp;
    SegmentStruct* seg;
 
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp,"%s", buffer) != 1)
    {
       sprintf(errorbuffer, "Error reading segment name for spring");
       error(abort_action,errorbuffer);
       return code_bad;
    }
-   segnum = enter_segment(ms->modelnum,buffer,yes);
+   segnum = enter_segment(ms,buffer,yes);
    seg = &ms->segment[segnum];
 
    if (seg->numSpringPoints >= seg->springPointArraySize)
@@ -2550,42 +2391,58 @@ static ReturnCode read_spring(ModelStruct* ms, FILE** fp)
 
    sp = &seg->springPoint[seg->numSpringPoints];
 
-   if (fscanf(*fp,"%lf %lf %lf %s %lf %lf %lf %lf %lf %lf %lf", &sp->point[0], &sp->point[1], &sp->point[2],
-      buffer, &sp->friction, &sp->param_a, &sp->param_b, &sp->param_c,
+   if (fscanf(fp,"%lf %lf %lf %s %lf %lf %lf %lf %lf %lf %lf", &sp->point[0], &sp->point[1], &sp->point[2],
+      floorName, &sp->friction, &sp->param_a, &sp->param_b, &sp->param_c,
       &sp->param_d, &sp->param_e, &sp->param_f) != 11)
    {
       sprintf(errorbuffer, "Error reading spring point definition in segment %s", seg->name);
-      error(abort_action,errorbuffer);
+      error(abort_action, errorbuffer);
       return code_bad;
    }
    else
    {
-      mstrcpy(&sp->floorName, buffer);
-      seg->numSpringPoints++;
+		sp->name = NULL;
+		sp->visible = yes;
+		sp->segment = segnum;
+
+		// Find the corresponding floor object and add the spring to it.
+		for (i=0; i<ms->numsegments; i++)
+		{
+			if (ms->segment[i].springFloor && STRINGS_ARE_EQUAL(floorName, ms->segment[i].springFloor->name))
+				break;
+		}
+		if (i == ms->numsegments)
+		{
+			sprintf(errorbuffer, "Unknown spring floor (%s) referenced by spring point (was point defined before floor?)", floorName);
+			error(abort_action, errorbuffer);
+			return code_bad;
+		}
+		else
+		{
+			sp->floorSegment = i;
+			add_spring_point_to_floor(seg, sp);
+			seg->numSpringPoints++;
+		}
    }
-   sp->name = NULL;
-   sp->visible = yes;
-   sp->segment = segnum;
-   sp->floorSegment = none_defined;
 
    return code_fine;
 }
 
 
-static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
+static ReturnCode read_spring_floor(ModelStruct* ms, FILE* fp)
 {
    int segnum, count;
    SegmentStruct* seg;
    ReturnCode frc;
    char str1[CHARBUFFER], str2[CHARBUFFER], str3[CHARBUFFER];
 
-   count = fscanf(*fp, "%s", str1);
-   count += _read_til_tokens(*fp, str2, "\t\r\n");
+   count = fscanf(fp, "%s", str1);
+   count += _read_til_tokens(fp, str2, "\t\r\n");
    _strip_outer_whitespace(str2);
    read_line(fp, buffer);
    count += sscanf(buffer, "%s", str3);
 
-   segnum = enter_segment(ms->modelnum, str3, yes);
+   segnum = enter_segment(ms, str3, yes);
    if (segnum < 0)
    {
       sprintf(errorbuffer, "Error reading segment name for spring floor");
@@ -2615,7 +2472,7 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
       seg->springFloor->points = NULL;
       seg->springFloor->numPoints = 0;
       seg->springFloor->pointArraySize = 0;
-#ifndef ENGINE
+#if ! ENGINE
       seg->springFloor->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
       frc = lookup_polyhedron(seg->springFloor->poly, seg->springFloor->filename, ms);
       if (frc == file_missing)
@@ -2636,8 +2493,39 @@ static ReturnCode read_spring_floor(ModelStruct* ms, FILE** fp)
    return code_fine;
 }
 
+static void add_spring_point_to_floor(SegmentStruct* segment, SpringPoint* point)
+{
+	if (segment && segment->springFloor)
+	{
+		SpringFloor* floor = segment->springFloor;
 
-static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** fp)
+		// Make the list longer if necessary.
+		if (floor->numPoints >= floor->pointArraySize)
+		{
+			ReturnCode rc = code_fine;
+
+			floor->pointArraySize += SEGMENT_ARRAY_INCREMENT;
+			if (floor->points == NULL)
+				floor->points = (SpringPoint**)simm_malloc(floor->pointArraySize * sizeof(SpringPoint*));
+			else
+				floor->points = (SpringPoint**)simm_realloc(floor->points, floor->pointArraySize * sizeof(SpringPoint*), &rc);
+			if (rc == code_bad || floor->points == NULL)
+			{
+				floor->pointArraySize -= SEGMENT_ARRAY_INCREMENT;
+				return;
+			}
+		}
+
+		// Add the point to the list.
+		sprintf(buffer, "%s_pt%d", segment->springFloor->name, floor->numPoints+1);
+		if (!point->name)
+			mstrcpy(&point->name, buffer);
+		floor->points[floor->numPoints++] = point;
+	}
+}
+
+
+static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE* fp)
 {
    int segnum;
    FileReturnCode frc;
@@ -2652,8 +2540,8 @@ static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** f
       return code_bad;
    }
 
-   count = fscanf(*fp, "%s", str1);
-   count += _read_til_tokens(*fp, str2, "\t\r\n");
+   count = fscanf(fp, "%s", str1);
+   count += _read_til_tokens(fp, str2, "\t\r\n");
    _strip_outer_whitespace(str2);
    /* If both the name and filename were specified, look for the visible/invisible keyword. */
    if (count == 2)
@@ -2685,7 +2573,7 @@ static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** f
          mstrcpy(&seg->forceMatte->name, str1);
          mstrcpy(&seg->forceMatte->filename, str2);
          
-#ifndef ENGINE
+#if ! ENGINE || OPENSMAC
          seg->forceMatte->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
          frc = lookup_polyhedron(seg->forceMatte->poly, seg->forceMatte->filename, ms);
          if (frc == file_missing)
@@ -2717,7 +2605,7 @@ static ReturnCode read_force_matte(ModelStruct* ms, SegmentStruct* seg, FILE** f
 }
 
 
-static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp)
+static ReturnCode read_contact_object(ModelStruct* ms, FILE* fp)
 {
    int segnum, count;
    ContactObject* co;
@@ -2727,8 +2615,8 @@ static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp)
    ReturnCode rc;
    FileReturnCode frc;
 
-   count = fscanf(*fp, "%s", co_name);
-   count += _read_til_tokens(*fp, co_file, "\t\r\n");
+   count = fscanf(fp, "%s", co_name);
+   count += _read_til_tokens(fp, co_file, "\t\r\n");
    _strip_outer_whitespace(co_file);
    read_line(fp, buffer);
    count += sscanf(buffer, "%s %s", segname, bufs[0]);
@@ -2746,7 +2634,7 @@ static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp)
    }
    else  //count = 3 or 4
    {      
-      segnum = enter_segment(ms->modelnum, segname, yes);
+      segnum = enter_segment(ms, segname, yes);
       seg = &ms->segment[segnum];
 
       if (seg->numContactObjects >= seg->contactObjectArraySize)
@@ -2776,7 +2664,7 @@ static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp)
       co->visible = yes;
       mstrcpy(&co->name, co_name);
       mstrcpy(&co->filename, co_file);
-#ifndef ENGINE
+#if ! ENGINE
       co->poly = (PolyhedronStruct*)simm_malloc(sizeof(PolyhedronStruct));
       frc = lookup_polyhedron(co->poly, co->filename, ms);
       if (frc == file_bad)
@@ -2808,13 +2696,13 @@ static ReturnCode read_contact_object(ModelStruct* ms, FILE** fp)
 }
 
 
-static ReturnCode read_contact_pair(ModelStruct* ms, FILE** fp)
+static ReturnCode read_contact_pair(ModelStruct* ms, FILE* fp)
 {
    ReturnCode rc;
    ContactPair* cp;
    double restitution, mu_static, mu_dynamic;
 
-   if (fscanf(*fp,"%s %s %lf %lf %lf", buffer, msg,  &restitution, &mu_static, &mu_dynamic) != 5)
+   if (fscanf(fp,"%s %s %lf %lf %lf", buffer, msg,  &restitution, &mu_static, &mu_dynamic) != 5)
    {
       sprintf(errorbuffer, "Error reading contact pair");
       error(abort_action,errorbuffer);
@@ -2857,12 +2745,12 @@ static ReturnCode read_contact_pair(ModelStruct* ms, FILE** fp)
 }
 
 
-static ReturnCode read_contact_group(ModelStruct* ms, FILE** fp)
+static ReturnCode read_contact_group(ModelStruct* ms, FILE* fp)
 {
    ReturnCode rc;
    ContactGroup* cg;
 
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp,"%s", buffer) != 1)
    {
       sprintf(errorbuffer, "Error reading name of contact group");
       error(abort_action,errorbuffer);
@@ -2899,7 +2787,7 @@ static ReturnCode read_contact_group(ModelStruct* ms, FILE** fp)
 
    while (1)
    {
-      if (fscanf(*fp,"%s", buffer) != 1)
+      if (fscanf(fp,"%s", buffer) != 1)
       {
 			sprintf(errorbuffer,"Error reading elements of group %s\n", cg->name);
          error(abort_action,errorbuffer);
@@ -2925,10 +2813,11 @@ static ReturnCode read_contact_group(ModelStruct* ms, FILE** fp)
    return code_fine;
 }
 
-// TODO: If the bone file is missing or bad, don't add an empty polyhedron to the array.
+// Note: If the bone file is missing or bad, the polyhedron is still added to the model
+// so that its filename is preserved (so it can be written back to the JNT file).
 static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char filename[])
 {
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
    FileReturnCode frc;
    PolyhedronStruct* ph = NULL;
 
@@ -2952,40 +2841,24 @@ static PolyhedronStruct* make_bone(ModelStruct* ms, SegmentStruct* seg, char fil
 
    ph = &seg->bone[seg->numBones++];
 
-#ifdef ENGINE
-#if !OPENSIM_BUILD
    preread_init_polyhedron(ph);
-#endif
-#endif
 
-   mstrcpy(&ph->name,filename);
-
-#ifndef ENGINE
    frc = lookup_polyhedron(ph, filename, ms);
    if (frc == file_bad)
 	   simm_printf(yes, "Unable to read bone from file %s\n", filename);
    else if (frc == file_missing)
 	   simm_printf(yes, "Unable to locate bone file %s\n", filename);
-#else
-#if OPENSIM_BUILD
-   frc = lookup_polyhedron(ph, filename, ms);
-   if (frc == file_bad)
-	   simm_printf(yes, "Unable to read bone from file %s\n", filename);
-   else if (frc == file_missing)
-	   simm_printf(yes, "Unable to locate bone file %s\n", filename);
-#endif
-#endif
 
    return ph;
 }
 
-static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE** fp)
+static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE* fp)
 {
    int i, count;
    Marker* m;
    char bufs[3][CHARBUFFER];
 
-   _read_til_tokens(*fp, buffer, "\t\r\n");
+   _read_til_tokens(fp, buffer, "\t\r\n");
    _strip_outer_whitespace(buffer);
 
    if (strlen(buffer) < 1)
@@ -3002,12 +2875,11 @@ static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE** fp)
       seg->markerArraySize += SEGMENT_ARRAY_INCREMENT;
       if (seg->marker == NULL)
       {
-         seg->marker = (Marker*) simm_malloc(seg->markerArraySize * sizeof(Marker));
+         seg->marker = (Marker**)simm_malloc(seg->markerArraySize * sizeof(Marker*));
       }
       else
       {
-         seg->marker = (Marker*) simm_realloc(seg->marker,
-            seg->markerArraySize * sizeof(Marker), &rc);
+         seg->marker = (Marker**)simm_realloc(seg->marker, seg->markerArraySize * sizeof(Marker*), &rc);
       }
       if (rc == code_bad || seg->marker == NULL)
       {
@@ -3016,7 +2888,7 @@ static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE** fp)
       }
    }
 
-   m = &seg->marker[seg->numMarkers];
+   m = seg->marker[seg->numMarkers] = (Marker*)simm_calloc(1, sizeof(Marker));
    m->visible = ms->marker_visibility;
    m->selected = no;
    m->fixed = no;
@@ -3060,11 +2932,11 @@ static ReturnCode read_marker(ModelStruct* ms, SegmentStruct* seg, FILE** fp)
 }
 
 
-static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
+static ReturnCode read_constraint(ModelStruct *ms, FILE* fp)
 {
-   ReturnCode  rc;
+   ReturnCode rc = code_fine;
    ConstraintObject *co;
-   double  xyz[3];
+   double xyz[3];
    DMatrix m;
    int i;
    
@@ -3077,7 +2949,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
       if (rc == code_bad)
       {
          ms->constraint_object_array_size -= CONSTRAINT_OBJECT_ARRAY_INCREMENT;
-         return (code_bad);
+         return code_bad;
       }
    }
    
@@ -3086,10 +2958,10 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
    initconstraintobject(co);
 
    /* read constraint name */
-   if (fscanf(*fp,"%s", buffer) != 1)
+   if (fscanf(fp,"%s", buffer) != 1)
    {
       error(abort_action,"Error reading name in constraint definition");
-      return (code_bad);
+      return code_bad;
    }
    else
       mstrcpy(&co->name,buffer);
@@ -3122,19 +2994,19 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"segment"))
       {
-         if (fscanf(*fp,"%s", buffer) != 1)
+         if (fscanf(fp,"%s", buffer) != 1)
          {
             (void)sprintf(errorbuffer,"Error reading segment in definition of constraint object %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          else
          {
-            co->segment = enter_segment(ms->modelnum,buffer,yes);
+            co->segment = enter_segment(ms,buffer,yes);
             
             if (co->segment == -1)
-               return (code_bad);
+               return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"active"))
@@ -3158,16 +3030,16 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
          sprintf(errorbuffer, "Error reading rotation for constraint object %s:", co->name);
          error(none,errorbuffer);
          error(abort_action,"  The \'rotation\' keyword has been changed to \'xyz_body_rotation\'.");
-         return (code_bad);
+         return code_bad;
       }
       else if (STRINGS_ARE_EQUAL(buffer,"xyz_body_rotation"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
          {
             (void)sprintf(errorbuffer, "Error reading rotation for constraint object %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          identity_matrix(m);
          x_rotate_matrix_bodyfixed(m, xyz[0] * DTOR);
@@ -3177,12 +3049,12 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"xyz_space_rotation"))
       {
-         if (fscanf(*fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
+         if (fscanf(fp, "%lg %lg %lg", &xyz[0], &xyz[1], &xyz[2]) != 3)
          {
             (void)sprintf(errorbuffer, "Error reading rotation for constraint object %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          identity_matrix(m);
          x_rotate_matrix_spacefixed(m, xyz[0] * DTOR);
@@ -3192,36 +3064,36 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
       }
       else if (STRINGS_ARE_EQUAL(buffer,"rotationaxis"))
       {
-         fscanf(*fp, "%lg %lg %lg", &co->rotationAxis.xyz[0],
+         fscanf(fp, "%lg %lg %lg", &co->rotationAxis.xyz[0],
             &co->rotationAxis.xyz[1], &co->rotationAxis.xyz[2]);
       }
       else if (STRINGS_ARE_EQUAL(buffer,"rotationangle"))
       {
-         if (fscanf(*fp, "%lg", &co->rotationAngle) != 1)
+         if (fscanf(fp, "%lg", &co->rotationAngle) != 1)
          {
             (void)sprintf(errorbuffer, "Error reading rotation for constraint object %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"translation") ||
          STRINGS_ARE_EQUAL(buffer,"translate"))
       {
-         if (fscanf(*fp,"%lg %lg %lg", &co->translation.xyz[0],
+         if (fscanf(fp,"%lg %lg %lg", &co->translation.xyz[0],
             &co->translation.xyz[1], &co->translation.xyz[2]) != 3)
          {
             (void)sprintf(errorbuffer, "Error reading translation for constraint object %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"radius"))
       {
          if (co->constraintType == constraint_ellipsoid)
          {
-            rc = ((fscanf(*fp,"%lg %lg %lg", &co->radius.xyz[0],
+            rc = ((fscanf(fp,"%lg %lg %lg", &co->radius.xyz[0],
                           &co->radius.xyz[1], &co->radius.xyz[2]) == 3) ? code_fine : code_bad);
             if (co->radius.xyz[0] <= 0.0 || co->radius.xyz[1] <= 0.0 || co->radius.xyz[2] <= 0.0)
             {
@@ -3231,7 +3103,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
          }
          else if (co->constraintType == constraint_plane)
          {
-            rc = ((fscanf(*fp,"%lg %lg", &co->radius.xyz[0], &co->radius.xyz[1]) == 2) ? code_fine : code_bad);
+            rc = ((fscanf(fp,"%lg %lg", &co->radius.xyz[0], &co->radius.xyz[1]) == 2) ? code_fine : code_bad);
             if (co->radius.xyz[0] <= 0.0 || co->radius.xyz[1] <= 0.0)
             {
                error(none, "Value must be greater than zero.");
@@ -3240,7 +3112,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
          }
          else
          {
-            rc = ((fscanf(*fp,"%lg", &co->radius.xyz[0]) == 1) ? code_fine : code_bad);
+            rc = ((fscanf(fp,"%lg", &co->radius.xyz[0]) == 1) ? code_fine : code_bad);
             if (co->radius.xyz[0] <= 0.0)
             {
                error(none, "Value must be greater than zero.");
@@ -3253,12 +3125,12 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
             (void)sprintf(errorbuffer, "Error reading radius for constraint object %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"height"))
       {
-         int num = fscanf(*fp,"%lg", &co->height);
+         int num = fscanf(fp,"%lg", &co->height);
 
          if (num == 1 && co->height <= 0.0)
          {
@@ -3271,7 +3143,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
             (void)sprintf(errorbuffer, "Error reading cylinder height for constraint object %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
       }
       else if (STRINGS_ARE_EQUAL(buffer,"quadrant"))
@@ -3284,19 +3156,19 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
 /*      else if (STRINGS_ARE_EQUAL(buffer, "plane"))
       {
          double a, b, c, d;
-         if (fscanf(*fp, "%s %lf %lf %lf %lf", buffer, &a, &b, &c, &d) != 4)
+         if (fscanf(fp, "%s %lf %lf %lf %lf", buffer, &a, &b, &c, &d) != 4)
          {
             (void)sprintf(errorbuffer,
                "Error reading definition of plane (segment a b c d) in definition of constraint %s",
                co->name);
             error(abort_action,errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
          else
          {
             co->constraintType = constraint_plane;
             
-//            co->plane.segment = enter_segment(ms->modelnum, buffer, yes);
+//            co->plane.segment = enter_segment(ms, buffer, yes);
 //            co->plane.plane.a = a;
 //            co->plane.plane.b = b;
 //            co->plane.plane.c = c;
@@ -3305,14 +3177,14 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
       }*/
       else if (STRINGS_ARE_EQUAL(buffer, "beginpoints"))
       {
-         co->points = read_constraint_points(ms->modelnum, fp, &co->numPoints,
+         co->points = read_constraint_points(ms, fp, &co->numPoints,
             &co->cp_array_size);
          if (co->points == NULL)
          {
             (void)sprintf(errorbuffer, "Error reading points for constraint %s.",
                co->name);
             error(abort_action, errorbuffer);
-            return (code_bad);
+            return code_bad;
          }
  /*        for (i = 0; i < co->numPoints; i++)
          {
@@ -3321,7 +3193,7 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
             (void)sprintf(errorbuffer, "Constraint points in %s must all be on same segment.",
                co->name);
             error(abort_action, errorbuffer);
-            return (code_bad);
+            return code_bad;
             }
          }*/
       }
@@ -3338,13 +3210,15 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
    
    co->xforms_valid = no;
    /* set constraint point activations and visibility to that of co if co is inactive/invisible*/
+//dkb nov 2009
+   /*
    for (i = 0; i < co->numPoints; i++)
    {
       if (co->visible == no)
          co->points[i].visible = co->visible;
       if (co->active == no)
          co->points[i].active = co->active;
-   }
+   }*/
    
    if (co->constraintType == constraint_none)
    {
@@ -3355,18 +3229,18 @@ static ReturnCode read_constraint(ModelStruct *ms, FILE **fp)
    }
    ms->num_constraint_objects++;
    
-   return (code_fine);
+   return code_fine;
    
 }
 
-static ConstraintPoint* read_constraint_points(int mod, FILE **fp, int *numpoints,
+static ConstraintPoint* read_constraint_points(ModelStruct* ms, FILE* fp, int *numpoints,
 					   int *cp_array_size)
 {
    int num;
    double x, y, z, w, tol;
    ConstraintPoint *cp;
    char buf2[CHARBUFFER], point_name[CHARBUFFER], segment_name[CHARBUFFER];
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
 
    *numpoints = 0;
    *cp_array_size = CP_ARRAY_INCREMENT;
@@ -3414,12 +3288,12 @@ static ConstraintPoint* read_constraint_points(int mod, FILE **fp, int *numpoint
       cp[*numpoints].offset[YY] = y;
       cp[*numpoints].offset[ZZ] = z;
       cp[*numpoints].weight = w;
-      cp[*numpoints].visible = yes;
-      cp[*numpoints].active = yes;
+//      cp[*numpoints].visible = yes;
+//      cp[*numpoints].active = yes;
       if (num == 7)
          cp[*numpoints].tolerance = tol;
       mstrcpy(&cp[*numpoints].name, point_name);
-      cp[*numpoints].segment = enter_segment(mod, segment_name, yes);
+      cp[*numpoints].segment = enter_segment(ms, segment_name, yes);
       if (cp[*numpoints].segment == -1)
       {
          (void)sprintf(errorbuffer,"Memory error while reading constraint points.", segment_name);
@@ -3428,4 +3302,169 @@ static ConstraintPoint* read_constraint_points(int mod, FILE **fp, int *numpoint
       }
       (*numpoints)++;
    }
+}
+
+/* -------------------------------------------------------------------------
+   read_motion_object - 
+---------------------------------------------------------------------------- */
+static ReturnCode read_motion_object(ModelStruct* ms, FILE* fp)
+{
+   int i;
+   MotionObject* mo;
+   ReturnCode rc = code_fine;
+
+   /* read the motion object's name:
+    */
+   if (fscanf(fp,"%s", buffer) != 1)
+   {
+      error(abort_action, "Error reading name in motion object definition");
+      return code_bad;
+   }
+   
+   /* scan the list of existing motion objects to see if one already exists
+    * with the name we just read:
+    */
+   for (i = 0; i < ms->num_motion_objects; i++)
+      if (STRINGS_ARE_EQUAL(buffer, ms->motion_objects[i].name))
+         break;
+   
+   /* create a new motion object if necessary:
+    */
+   if (i == ms->num_motion_objects)
+   {
+      i = ms->num_motion_objects++;
+   
+      if (ms->motion_objects == NULL)
+         ms->motion_objects = (MotionObject*) simm_malloc(ms->num_motion_objects * sizeof(MotionObject));
+      else
+         ms->motion_objects = (MotionObject*) simm_realloc(ms->motion_objects,
+                                                           ms->num_motion_objects * sizeof(MotionObject),
+                                                           &rc);
+      if (ms->motion_objects == NULL)
+      {
+         ms->num_motion_objects = 0;
+         return code_bad;
+      }
+      mo = &ms->motion_objects[i];
+      
+      memset(mo, 0, sizeof(MotionObject));
+   
+      mstrcpy(&mo->name, buffer);
+      
+      mstrcpy(&mo->materialname, "def_motion");
+      mo->material = enter_material(ms, mo->materialname, declaring_element);
+
+      for (i = XX; i <= ZZ; i++)
+      {
+         mo->startingPosition[i] = 0.0;
+         mo->startingScale[i] = 1.0;
+         mo->startingXYZRotation[i] = 0.0;
+      }
+      mo->drawmode = gouraud_shading;
+      mo->vector_axis = YY;
+   }
+   else
+      mo = &ms->motion_objects[i];
+      
+   mo->defined_in_file = yes;
+   
+   /* read the motion object's parameters:
+    */
+   while (1)
+   {
+      if (read_string(fp, buffer) == EOF || STRINGS_ARE_EQUAL(buffer, "endmotionobject"))
+         break;
+
+      if (buffer[0] == '#')
+      {
+         read_nonempty_line(fp,buffer);
+         continue;
+      }
+
+      if (STRINGS_ARE_EQUAL(buffer, "filename"))
+      {
+         if (fscanf(fp, "%s", buffer) != 1)
+         {
+            simm_printf(yes, "Error reading filename for motion object: %s.\n", mo->name);
+            return code_bad;
+         }
+         FREE_IFNOTNULL(mo->filename);
+         mstrcpy(&mo->filename, buffer);
+#if ! OPENSMAC && ! ENGINE
+         free_polyhedron(&mo->shape, no, ms);
+         if (lookup_polyhedron(&mo->shape, mo->filename, ms) != code_fine)
+         {
+            simm_printf(yes, "Error reading motion object: %s\n", mo->filename);
+            return code_bad;
+         }
+#endif
+      }
+      if (STRINGS_ARE_EQUAL(buffer, "position") || STRINGS_ARE_EQUAL(buffer,"origin"))
+      {
+         if (fscanf(fp, "%lg %lg %lg", &mo->startingPosition[0],
+                                        &mo->startingPosition[1],
+                                        &mo->startingPosition[2]) != 3)
+         {
+            simm_printf(yes, "Error reading position for motion object: %s.\n", mo->name);
+            return code_bad;
+         }
+      }
+      if (STRINGS_ARE_EQUAL(buffer, "scale"))
+      {
+         if (fscanf(fp, "%lg %lg %lg", &mo->startingScale[0],
+                                        &mo->startingScale[1],
+                                        &mo->startingScale[2]) != 3)
+         {
+            simm_printf(yes, "Error reading scale for motion object: %s.\n", mo->name);
+            return code_bad;
+         }
+      }
+      if (STRINGS_ARE_EQUAL(buffer, "xyzrotation"))
+      {
+         if (fscanf(fp, "%lg %lg %lg", &mo->startingXYZRotation[0],
+                                        &mo->startingXYZRotation[1],
+                                        &mo->startingXYZRotation[2]) != 3)
+         {
+            simm_printf(yes, "Error reading xyzrotation for motion object: %s.\n", mo->name);
+            return code_bad;
+         }
+      }
+      if (STRINGS_ARE_EQUAL(buffer, "material"))
+      {
+         if (fscanf(fp, "%s", buffer) != 1)
+         {
+            simm_printf(yes, "Error reading material for motion object: %s.\n", mo->name);
+            return code_bad;
+         }
+         FREE_IFNOTNULL(mo->materialname);
+            free(mo->materialname);
+
+         mstrcpy(&mo->materialname, buffer);
+
+         mo->material = enter_material(ms, mo->materialname, declaring_element);
+      }
+      if (STRINGS_ARE_EQUAL(buffer, "drawmode"))
+      {
+         if (read_drawmode(fp, &mo->drawmode) != code_fine)
+         {
+            simm_printf(yes,"Error reading drawmode for motion object: %s.\n", mo->name);
+            return code_bad;
+         }
+      }
+      if (STRINGS_ARE_EQUAL(buffer, "vectoraxis"))
+      {
+         if (fscanf(fp, "%s", buffer) != 1)
+         {
+            simm_printf(yes, "Error reading vectoraxis for motion object: %s.\n", mo->name);
+            return code_bad;
+         }
+         switch (buffer[0])
+         {
+            case 'x': case 'X': mo->vector_axis = XX; break;
+            case 'y': case 'Y': mo->vector_axis = YY; break;
+            case 'z': case 'Z': mo->vector_axis = ZZ; break;
+         }
+      }
+   }
+   return rc;
 }

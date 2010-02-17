@@ -42,15 +42,15 @@
 	#endif
 #endif
 
+
+namespace OpenSim { 
 //=============================================================================
 //=============================================================================
 /**
  * A class which implements a set of static functions which model
  * the stress-strain properties of a number of different types of springs.
- *
+ * @author Frank C. Anderson
  */
-namespace OpenSim { 
-
 class OSIMACTUATORS_API Springs  
 {
 

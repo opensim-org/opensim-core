@@ -43,13 +43,9 @@
 #define NOMINMAX
 #include <windows.h>
 #ifdef OSIMANALYSES_EXPORTS
-	#define OSIMANALYSES_API __declspec(dllexport)
+#define OSIMANALYSES_API __declspec(dllexport)
 #else
-	#ifdef STATIC_OSIM_LIBS
-		#define OSIMANALYSES_API
-	#else
-		#define OSIMANALYSES_API __declspec(dllimport)
-	#endif
+#define OSIMANALYSES_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

@@ -32,7 +32,6 @@
 
 
 // INCLUDES
-#include "rdMath.h"
 #include "GCVSplineSet.h"
 
 
@@ -175,15 +174,12 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
 		// CONSTRUCT SPLINE
 		//printf("%s\t",name);
 		spline = new GCVSpline(aDegree,nData,times,data,name,aErrorVariance);
+		spline->createSimTKFunction();
 
 		// ADD SPLINE
 		append(spline);
 	}
 	//printf("\n%d splines constructed.\n\n",i);
-
-	// MIN AND MAX TIME
-	setMinX(aStore->getFirstTime());
-	setMaxX(aStore->getLastTime());
 
 	// CLEANUP
 	if(times!=NULL) delete[] times;
@@ -202,10 +198,10 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
  * @return Function at index aIndex.  If aIndex is not value NULL is returned.
  */
 GCVSpline* GCVSplineSet::
-getGCVSpline(int aIndex)
+getGCVSpline(int aIndex) const
 {
-	GCVSpline *func = (GCVSpline *)get(aIndex);
-	return(func);
+	GCVSpline& func = (GCVSpline&)get(aIndex);
+	return(&func);
 }
 
 
@@ -306,4 +302,30 @@ constructStorage(int aDerivOrder,double aDX)
 	}
 
 	return(store);
+}
+
+double GCVSplineSet::getMinX() const
+{
+	double min = SimTK::Infinity;
+
+	for (int i=0; i<getSize(); i++) {
+		const GCVSpline* spl = getGCVSpline(i);
+		if (spl && spl->getMinX() < min)
+			min = spl->getMinX();
+	}
+
+	return min;
+}
+
+double GCVSplineSet::getMaxX() const
+{
+	double max = -SimTK::Infinity;
+
+	for (int i=0; i<getSize(); i++) {
+		const GCVSpline* spl = getGCVSpline(i);
+		if (spl && spl->getMaxX() > max)
+			max = spl->getMaxX();
+	}
+
+	return max;
 }

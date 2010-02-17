@@ -5,9 +5,9 @@ SET(UKIT COMMON)
 ## Version stuff
 ##
 SET(OPENSIM_COMMON_LIBRARY_NAME osim${KIT})
-SET(OPENSIM_COMMON_MAJOR_VERSION 0)
-SET(OPENSIM_COMMON_MINOR_VERSION 7)
-SET(OPENSIM_COMMON_BUILD_VERSION 1)
+SET(OPENSIM_COMMON_MAJOR_VERSION 2)
+SET(OPENSIM_COMMON_MINOR_VERSION 0)
+SET(OPENSIM_COMMON_BUILD_VERSION 0)
 SET(OPENSIM_COMMON_COPYRIGHT_YEARS "2005-6")
 # comma separated list of authors
 SET(OPENSIM_COMMON_AUTHORS  "Clay_Anderson-Ayman_Habib_and_Peter_Loan") 
@@ -25,45 +25,27 @@ ADD_DEFINITIONS(-DOPENSIM_COMMON_LIBRARY_NAME=${OPENSIM_COMMON_LIBRARY_NAME}
 FILE(GLOB SOURCE_FILES *.cpp gcvspl.c)
 FILE(GLOB INCLUDE_FILES *.h gcvspl.h)
 
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}/Vendors ${XERCES_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}/Vendors ${OpenSim_SOURCE_DIR} ${XERCES_INCLUDE_DIR})
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
-					${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB})
+IF( WIN32 ) 
+    LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2
+					${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} SimTKlapack pthreadVC2)
+ELSE( WIN32)
+    LINK_LIBRARIES( debug xerces-c optimized  xerces-c
+					${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} SimTKlapack )
+ENDIF(WIN32)
 
-IF (BUILD_STATIC_OSIM_LIBS)
-	ADD_LIBRARY(osim${KIT} STATIC ${SOURCE_FILES} ${INCLUDE_FILES}) 
-	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
-ELSE(BUILD_STATIC_OSIM_LIBS)
-	ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
-	SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
-		DEFINE_SYMBOL ${EXPORT_MACRO}
-		PROJECT_LABEL "Libraries - osim${KIT}"
-	)
-ENDIF(BUILD_STATIC_OSIM_LIBS)
 
-#-----------------------------------------------------------------------------
-# Copy Libraries that we depend on to the output path so that exes and libs find them
-#
-
-FILE(GLOB LIB_FILES ${SIMTK_DIR}/core/lib/*.dll  ${SIMTK_DIR}/core/lib/*.lib 
-					${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src_2_7_0/lib/Win32/${VCVERSION}/*.lib
-					${OpenSim_SOURCE_DIR}/Vendors/xerces-c-src_2_7_0/lib/Win32/${VCVERSION}/*.dll
-					)
-
-FOREACH (libFile ${LIB_FILES})
-GET_FILENAME_COMPONENT(localName ${libFile} NAME)
- ADD_CUSTOM_COMMAND(
-    TARGET osim${KIT}
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${libFile}
-    ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/${localName})
-ENDFOREACH (libFile) 
-#-----------------------------------------------------------------------------
-
+ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
+   DEFINE_SYMBOL ${EXPORT_MACRO}
+   PROJECT_LABEL "Libraries - osim${KIT}"
+)
 INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
+
+# INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
 INSTALL_FILES(/sdk/include/OpenSim/Common .h ${INCLUDE_FILES})
 
 #
@@ -86,4 +68,13 @@ ENDIF (EXECUTABLE_OUTPUT_PATH)
 #
 
 SUBDIRS(Test)
+
+FOREACH (libFile ${THIRDPARTY_DYNLIB_FILES})
+ ADD_CUSTOM_COMMAND(
+    TARGET osim${KIT}
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy
+    ${libFile}
+    ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/)
+ ENDFOREACH (libFile) 
 ENDIF(WIN32)

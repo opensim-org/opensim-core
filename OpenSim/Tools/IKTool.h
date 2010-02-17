@@ -34,6 +34,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
+#include "SimTKsimbody.h"
 
 #ifdef SWIG
 	#ifdef OSIMTOOLS_API
@@ -89,10 +90,12 @@ public:
 	IKTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	IKTool(const IKTool &aObject);
 	virtual OpenSim::Object* copy() const;
+
+	/* Register types to be used when reading an IKTool object from xml file. */
+	static void registerTypes();
 private:
 	void setNull();
 	void setupProperties();
-	void constructCorrectiveSprings();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -114,9 +117,10 @@ public:
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
-	bool initializeTrial(int i);
-	bool solveTrial(int i);
+	bool initializeTrial(const SimTK::State& s, int i);
+	bool solveTrial( SimTK::State& s, int i);
 	virtual bool run() SWIG_DECLARE_EXCEPTION;
+	bool run(SimTK::State& state);
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 

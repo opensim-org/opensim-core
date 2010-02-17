@@ -43,24 +43,23 @@ using namespace SimTK;
 /**
  * Constructor from an OpenSim::Function.
  */
-FunctionAdapter::FunctionAdapter(const OpenSim::Function& aFunction, int argumentSize) :
-_argumentSize(argumentSize), _function(aFunction)
+FunctionAdapter::FunctionAdapter(const OpenSim::Function& aFunction) : _function(aFunction)
 {
 }
 
 //=============================================================================
 // SimTK::Function METHODS
 //=============================================================================
-Vec1 FunctionAdapter::calcValue(const Vector& x) const {
-    return Vec1(_function.evaluate(0, x[0], _argumentSize > 1 ? x[1] : 0.0, _argumentSize > 2 ? x[2] : 0.0));
+double FunctionAdapter::calcValue(const Vector& x) const {
+    return _function.calcValue(x);
 }
-Vec1 FunctionAdapter::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
-    return Vec1(_function.evaluate(derivComponents.size(), x[0], _argumentSize > 1 ? x[1] : 0.0, _argumentSize > 2 ? x[2] : 0.0));
+double FunctionAdapter::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+    return _function.calcDerivative(derivComponents, x);
 }
 int FunctionAdapter::getArgumentSize() const {
-    return _argumentSize;
+    return _function.getArgumentSize();
 }
 int FunctionAdapter::getMaxDerivativeOrder() const {
-    return std::numeric_limits<int>::max();
+    return _function.getMaxDerivativeOrder();
 }
 

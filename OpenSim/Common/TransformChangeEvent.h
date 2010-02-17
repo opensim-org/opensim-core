@@ -48,7 +48,8 @@
  */
 
 namespace OpenSim { 
-
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
 class OSIMCOMMON_API TransformChangeEvent: public Event
 {
 
@@ -68,7 +69,7 @@ public:
 
 //=============================================================================
 };	// END of class TransformChangeEvent
-
+/// @endcondNo
 }; //namespace
 //=============================================================================
 //=============================================================================

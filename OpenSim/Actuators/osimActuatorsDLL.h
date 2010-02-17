@@ -44,13 +44,9 @@
 #define NOMINMAX
 #include <windows.h>
 #ifdef OSIMACTUATORS_EXPORTS
-	#define OSIMACTUATORS_API __declspec(dllexport)
+#define OSIMACTUATORS_API __declspec(dllexport)
 #else
-	#ifdef STATIC_OSIM_LIBS
-		#define OSIMACTUATORS_API
-	#else
-		#define OSIMACTUATORS_API __declspec(dllimport)
-	#endif
+#define OSIMACTUATORS_API __declspec(dllimport)
 #endif
 
 #endif // PLATFORM

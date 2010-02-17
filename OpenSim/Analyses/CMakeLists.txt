@@ -5,9 +5,9 @@ SET(UKIT ANALYSES)
 ## Version stuff
 ##
 SET(OPENSIM_ANALYSES_LIBRARY_NAME osim${KIT})
-SET(OPENSIM_ANALYSES_MAJOR_VERSION 0)
-SET(OPENSIM_ANALYSES_MINOR_VERSION 7)
-SET(OPENSIM_ANALYSES_BUILD_VERSION 1)
+SET(OPENSIM_ANALYSES_MAJOR_VERSION 2)
+SET(OPENSIM_ANALYSES_MINOR_VERSION 0)
+SET(OPENSIM_ANALYSES_BUILD_VERSION 0)
 SET(OPENSIM_ANALYSES_COPYRIGHT_YEARS "2005-6")
 # comma separated list of authors
 SET(OPENSIM_ANALYSES_AUTHORS  "Clay_Anderson-Ayman_Habib_and_Peter_Loan") 
@@ -31,23 +31,17 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-LINK_LIBRARIES( SimTKlapack
-				${SIMTK_COMMON_LIB} ${SIMTK_MATH_LIB} ${SIMTK_SIMBODY_LIB}
-				debug osimCommon_d optimized osimCommon
-				debug osimSimulation_d optimized osimSimulation
-				debug osimSimbodyEngine_d optimized osimSimbodyEngine
-				debug osimActuators_d optimized osimActuators)
+LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
+		debug osimSimulation_d optimized osimSimulation
+		debug osimActuators_d optimized osimActuators
+				${SIMTK_ALL_LIBS})
 
-IF (BUILD_STATIC_OSIM_LIBS)
-	ADD_LIBRARY(osim${KIT} STATIC ${SOURCE_FILES} ${INCLUDE_FILES}) 
-	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
-ELSE(BUILD_STATIC_OSIM_LIBS)
-	ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
-	SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
-		DEFINE_SYMBOL ${EXPORT_MACRO}
-		PROJECT_LABEL "Libraries - osim${KIT}"
-	)
-ENDIF(BUILD_STATIC_OSIM_LIBS)
+ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+
+SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
+   DEFINE_SYMBOL ${EXPORT_MACRO}
+   PROJECT_LABEL "Libraries - osim${KIT}"
+)
 
 INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
 INSTALL_FILES(/sdk/include/OpenSim/${KIT} .h ${INCLUDE_FILES})

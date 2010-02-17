@@ -59,8 +59,8 @@ STRUCT {                     /* ---- mocap model segment record: */
    char    name[128];              /* mocap segment name */
    char    parentName[128];        /* mocap parent segment name */
    int     parentIndex;            /* mocap parent segment index */
-   Coord3D offset;                 /* base position: starting translation */
-   Coord3D rotation;               /* base position: starting rotation */
+   dpCoord3D offset;                 /* base position: starting translation */
+   dpCoord3D rotation;               /* base position: starting rotation */
    DMatrix base_transform;         /* base position: as a transform matrix */
    double  boneLength;             /* mocap segment length */
    double  htr2TranslationParam;   /* htr2 translation parameter */
@@ -172,18 +172,17 @@ STRUCT {                          /* ---- forceplate record: */
 #endif
 
 #if ! OPENSIM_BUILD
-smAnalogStruct* _init_channel_mapping(SBoolean includeMuscles, const char* analogFilePath);
-smC3DStruct* read_analog_data_files(int numFiles, char* const* files, const MocapInfo*,
-                                   const glutMocapOptions*);
-SBoolean _map_channel (const char* name, smAnalogChannel* channel, const smAnalogStruct* m);
-void _rectify_emg_samples (smAnalogStruct* ad);
-void _scale_emg_samples (smAnalogStruct* ad);
-int _init_forceplates (smForcePlateSpec fp[], int n, const char* analogFile, ModelStruct* ms);
-void _nuke_forceplate_samples (smAnalogStruct* ad);
-void _autocalibrate_forceplate_channel (smAnalogStruct* ad, int col);
+smAnalogStruct* _init_channel_mapping(SBoolean includeMuscles, const char analogFile[]);
+smC3DStruct* read_analog_data_files(int numFiles, char* const* files, const MocapInfo*, const glutMocapOptions*);
+SBoolean _map_channel(const char* name, smAnalogChannel* channel, const smAnalogStruct* m);
+void _rectify_emg_samples(smAnalogStruct* ad);
+void _scale_emg_samples(smAnalogStruct* ad);
+int _init_forceplates(smForcePlateSpec fp[], int n, const char analogFile[], ModelStruct* ms);
+void _nuke_forceplate_samples(smAnalogStruct* ad);
+void _autocalibrate_forceplate_channel(smAnalogStruct* ad, int col);
 void free_analog_data(smAnalogStruct*);
 void post_process_c3d_analog_data(smC3DStruct* c3d, const MocapInfo* mi, const glutMocapOptions* mo);
-void read_critical_marker_names(char* names[]);
+void read_critical_marker_names(char* names[], const char dataFile[]);
 #endif
 
 #endif /* MOCAP_H */

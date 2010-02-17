@@ -24,7 +24,7 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "OpenSim/Common/LinearFunction.h"
+#include "OpenSim/Common/PiecewiseLinearFunction.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -35,19 +35,18 @@ int main() {
     try {
         double x[] = {0.0, 1.0, 2.0, 2.5, 5.0, 10.0};
         double y[] = {0.5, 0.7, 2.0, -1.0, 0.5, 0.1};
-        LinearFunction function(6, x, y);
-        FunctionAdapter adapter(function, 1);
-        const SimTK::Function<1>& f2 = *function.createSimTKFunction();
+        PiecewiseLinearFunction function(6, x, y);
+        FunctionAdapter adapter(function);
+        const SimTK::Function& f2 = *function.createSimTKFunction();
         SimTK::Vector xvec(1);
         vector<int> deriv(1);
         deriv[0] = 0;
         for (int i = 0; i < 100; ++i) {
-            double t = i*0.01;
-            xvec[0] = t;
-            ASSERT(function.evaluate(0, t, 0.0, 0.0) == adapter.calcValue(xvec)[0]);
-            ASSERT(function.evaluate(1, t, 0.0, 0.0) == adapter.calcDerivative(deriv, xvec)[0]);
-            ASSERT(function.evaluate(0, t, 0.0, 0.0) == f2.calcValue(xvec)[0]);
-            ASSERT(function.evaluate(1, t, 0.0, 0.0) == f2.calcDerivative(deriv, xvec)[0]);
+            xvec[0] = i*0.01;
+            ASSERT(function.calcValue(xvec) == adapter.calcValue(xvec));
+            ASSERT(function.calcDerivative(deriv, xvec) == adapter.calcDerivative(deriv, xvec));
+            ASSERT(function.calcValue(xvec) == f2.calcValue(xvec));
+            ASSERT(function.calcDerivative(deriv, xvec) == f2.calcDerivative(deriv, xvec));
         }
         ASSERT(adapter.getArgumentSize() == 1);
     }

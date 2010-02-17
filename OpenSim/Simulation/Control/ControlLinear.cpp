@@ -30,7 +30,6 @@
  * Author: Frank C. Anderson 
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Signal.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/PropertyBool.h>
@@ -39,9 +38,7 @@
 #include <OpenSim/Common/DebugUtilities.h>
 #include "ControlLinear.h"
 #include "ControlLinearNode.h"
-
-
-
+#include "SimTKcommon.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -376,11 +373,11 @@ getParameterMax(int aI) const
  * parameters are the cooefficients in the expansion, and each term in
  * the expansion corresponds not to a specific time but to a frequency.
  * Another example is a constant that has the same value for all times.
- * In these cases, this method returns rdMath::getNAN().
+ * In these cases, this method returns SimTK::NaN.
  *
  * @param aI Index of the parameter.
  * @return Time at which the control parameter occurs.  For ControlLinear
- * this value is not defined, and so rdMath::getNAN() is always returned.
+ * this value is not defined, and so SimTK::NaN is always returned.
  * @throws Exception if aI is invalid.
  */
 double ControlLinear::
@@ -400,25 +397,25 @@ getParameterTime(int aI) const
  * Changes in the specified parameter are guarranteed not to change the value
  * of the control curve below the lower bound time or above the upper bound
  * time.  If a parameter influences the value of the control curve for all
- * times, rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY are returned for
+ * times, -SimTK::Infinity and SimTK::Infinity are returned for
  * the upper and lower bound times, respectively.
  *
  * @param aI Index of the parameter.
  * @param rTLower Time below which the curve is not affected by the specified
  * parameter.  For ControlLinear, aTLower is the time of parameter aI-1 or of
  * aI if there is no parameter aI-1.  If there are no nodes at all or if
- * aI is invalid, aTLower is given the value rdMath::getNAN().
+ * aI is invalid, aTLower is given the value SimTK::NaN.
  * @param rTUpper Time above which the curve is not affected by the specified
  * parameter.  For ControlLinear, aTUpper is the time of parameter aI+1 or of
  * aI if there is no parameter aI+1.  If there are no nodes at all or if
- * aI is invalid, aTUpper is given the value rdMath::getNAN().
+ * aI is invalid, aTUpper is given the value SimTK::NaN.
  * @throws Exception if aI is invalid.
  */
 void ControlLinear::
 getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 {
-	rTLower = rdMath::getNAN();
-	rTUpper = rdMath::getNAN();
+	rTLower = SimTK::NaN;
+	rTUpper = SimTK::NaN;
 
 	// CHECK THAT THE NODE EXISTS
 	// An exception is thrown if aI is out of bounds. 
@@ -427,8 +424,8 @@ getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 	// NEIGHBORING NODES
 	int size = _xNodes.getSize();
 	if(size==1) {
-		rTLower = rdMath::MINUS_INFINITY;
-		rTUpper = rdMath::PLUS_INFINITY;
+		rTLower = -SimTK::Infinity;
+		rTUpper =  SimTK::Infinity;
 		return;
 	}
 	int lower = aI - 1;
@@ -646,7 +643,8 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 {
 	// CHECK SIZE
 	int size = aNodes.getSize();
-	if(size<=0) return(rdMath::getNAN());
+    // CMC expects NaN's to be returned if the Control set size is zero
+    if(size<=0) return(SimTK::NaN);
 
 	// GET NODE
 	_searchNode.setTime(aT);
@@ -679,7 +677,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 			v1 = aNodes[i]->getValue();
 			t2 = aNodes[i+1]->getTime();
 			v2 = aNodes[i+1]->getValue();
-			value = rdMath::Interpolate(t1,v1,t2,v2,aT);
+			value = Interpolate(t1,v1,t2,v2,aT);
 
 		// STEPS
 		} else {
@@ -704,7 +702,7 @@ getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT)
 double ControlLinear::
 extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 {
-	if(aNodes.getSize()<=0) return(rdMath::getNAN());
+	if(aNodes.getSize()<=0) return(SimTK::NaN);
 	if(aNodes.getSize()==1) return(aNodes[0]->getValue());
 
 	double t1,v1,t2,v2;
@@ -712,7 +710,7 @@ extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 	v1 = aNodes[0]->getValue();
 	t2 = aNodes[1]->getTime();
 	v2 = aNodes[1]->getValue();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
+	double value = Interpolate(t1,v1,t2,v2,aT);
 
 	return(value);
 }
@@ -721,7 +719,7 @@ double ControlLinear::
 extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 {
 	int size = aNodes.getSize();
-	if(size<=0) return(rdMath::getNAN());
+	if(size<=0) return(SimTK::NaN);
 	if(size==1) return(aNodes[0]->getValue());
 
 	int n1 = size - 2;
@@ -731,7 +729,7 @@ extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const
 	v1 = aNodes[n1]->getValue();
 	t2 = aNodes[n2]->getTime();
 	v2 = aNodes[n2]->getValue();
-	double value = rdMath::Interpolate(t1,v1,t2,v2,aT);
+	double value = Interpolate(t1,v1,t2,v2,aT);
 
 	return(value);
 }
@@ -761,7 +759,7 @@ setControlValue(double aT,double aX)
  *
  * @param aT Time at which to get the control.
  * @return Control value.  If the value of the curve is not defined,
- * rdMath::getNAN() is returned.  If the control is set to extrapolate,
+ * SimTK::NaN is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the
@@ -770,14 +768,7 @@ setControlValue(double aT,double aX)
 double ControlLinear::
 getControlValue(double aT)
 {
-	double value= getControlValue(_xNodes,aT);
-	if (rdMath::isNAN(value)){
-		char pad[10];
-		sprintf(pad, "%f", aT);
-		string msg = "ControlLinear.getControlValue(). Control value at "+ string(pad)+" is undefined!";
-				throw(Exception(msg,__FILE__,__LINE__));
-	}
-	return value;
+	return getControlValue(_xNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -835,7 +826,7 @@ setControlValueMin(double aT,double aMin)
  *
  * @param aT Time at which to get the control.
  * @return Minimum allowed control value.  If the value of the curve is not defined,
- * rdMath::getNAN() is returned.  If the control is set to extrapolate,
+ * SimTK::NaN is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the
@@ -903,7 +894,7 @@ setControlValueMax(double aT,double aMax)
  *
  * @param aT Time at which to get the control.
  * @return Maximum allowed control value.  If the value of the curve is not defined,
- * rdMath::getNAN() is returned.  If the control is set to extrapolate,
+ * SimTK::NaN is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the
@@ -1010,12 +1001,12 @@ simplify(const PropertySet &aProperties)
 	}
 
 	// SEARCH FOR THE MINIMUM TIME INTERVAL
-	double dt,dtMin=rdMath::PLUS_INFINITY;
+	double dt,dtMin= SimTK::Infinity;
 	for(i=0;i<(size-1);i++) {
 		dt = t[i+1] - t[i];
 		if(dt<dtMin) {
 			dtMin = dt;
-			if(dtMin<=rdMath::ZERO) {
+			if(dtMin<=SimTK::Zero) {
 				string msg = "ControlLinear.simplify: zero or negative dt!";
 				throw(Exception(msg,__FILE__,__LINE__));
 			}
@@ -1036,7 +1027,7 @@ simplify(const PropertySet &aProperties)
 
 	// FILTER
 	double cutoffFrequency = aProperties.get("cutoff_frequency")->getValueDbl();
-	if(cutoffFrequency < rdMath::ZERO) {
+	if(cutoffFrequency < SimTK::Zero) {
 		throw(Exception());
 	}
 	Array<double> xFilt(0.0,n);
@@ -1186,4 +1177,30 @@ filter(double aT)
 
 	// Set the control value to the newly computed value
 	setControlValue(aT, x);
+}
+
+//_____________________________________________________________________________
+/**
+ * Linearly interpolate or extrapolate given two points.
+ *
+ * @param aX1 X coordinate of point 1.
+ * @param aY1 Y coordinate of point 1.
+ * @param aX2 X coordinate of point 2.
+ * @param aY2 Y coordinate of point 2.
+ * @param aX X coordinate whose corresponding Y coordinate is desired.
+ * @return Y value corresponding to aX.
+ */
+double ControlLinear::
+Interpolate(double aX1,double aY1,double aX2,double aY2,double aX)
+{
+	double y;
+	double dx = aX2 - aX1;
+	if(fabs(dx)<SimTK::Zero) {
+		y = aY1;
+	} else {
+		double dy = aY2 - aY1;
+		double m = dy / dx;
+		y = aY1 + m*(aX-aX1);
+	}
+	return(y);
 }

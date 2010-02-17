@@ -32,8 +32,6 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include "LoadModel.h"
 #include "Model.h"
-#include "ActuatorSet.h"
-#include "ContactForceSet.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -45,8 +43,8 @@ extern "C" {
 // CreateModel() function.
 typedef OpenSim::Model* (*CREATEMODEL)();
 typedef OpenSim::Model* (*CREATEMODEL_FILE)(const string &);
-typedef OpenSim::Model* (*CREATEMODEL_ActuatorsContacts)(OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
-typedef OpenSim::Model* (*CREATEMODEL_ParamsActuatorsContacts)(const string&,OpenSim::ActuatorSet*,OpenSim::ContactForceSet*);
+typedef OpenSim::Model* (*CREATEMODEL_Forces)(OpenSim::ForceSet*);
+typedef OpenSim::Model* (*CREATEMODEL_ParamsForces)(const string&,OpenSim::ForceSet*);
 
 }
 

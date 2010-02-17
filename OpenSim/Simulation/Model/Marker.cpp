@@ -31,7 +31,7 @@
 //=============================================================================
 #include "Marker.h"
 #include "Model.h"
-#include "AbstractDynamicsEngine.h"
+#include <OpenSim/Simulation/Model/Model.h>
 #include "BodySet.h"
 
 //=============================================================================
@@ -50,6 +50,7 @@ Geometry *Marker::_defaultGeometry = AnalyticSphere::createSphere(0.01);
  * Default constructor.
  */
 Marker::Marker() :
+   Object(),
    _offset(_offsetProp.getValueDblVec3()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
@@ -76,7 +77,7 @@ Marker::~Marker()
  * @param aMarker Marker to be copied.
  */
 Marker::Marker(const Marker &aMarker) :
-   AbstractMarker(aMarker),
+   Object(aMarker),
    _offset(_offsetProp.getValueDblVec3()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
@@ -167,29 +168,32 @@ void Marker::setupProperties()
  *
  * @param aEngine dynamics engine containing this Marker.
  */
-void Marker::setup(AbstractDynamicsEngine* aEngine)
+void Marker::setup(const Model& aModel)
 {
+
+    _model = &aModel;
+
 	if (_bodyName != "")
 	{
-		AbstractBody *oldBody = _body;
-		_body = aEngine->getBodySet()->get(_bodyName);
-
-		if (!_body)
-		{
+		OpenSim::Body *oldBody = _body;
+        try {
+    		_body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
+        }
+		catch (Exception ex) {
 			string errorMessage = "Error: Body " + _bodyName + " referenced in marker " + getName() +
-				" does not exist in model " +	aEngine->getModel()->getName();
+				" does not exist in model " +	aModel.getName();
 			throw Exception(errorMessage);
 		}
 		// If marker jumped between bodies we need to fix display stuff
 		if (oldBody && oldBody != _body){
-			oldBody->getDisplayer()->removeDependent(&_displayer);
+			oldBody->updDisplayer()->removeDependent(&_displayer);
 		}
-		//TODO: make code below safe to call multiple times (since this setup() method may be
-		//called multiple times for a simm marker).  Should also try to handle case where a marker
-		// is deleted (e.g. in AbstractDynamicsEngine::updateMarkerSet) because then may end up with
+		//Todo_AYMAN: make code below safe to call multiple times (since this setup() method may be
+		//called multiple times for a marker).  Should also try to handle case where a marker
+		// is deleted (e.g. in SimbodyEngine::updateMarkerSet) because then may end up with
 		// stale pointers.
 		VisibleObject* ownerBodyDisplayer;
-		if (_body && (ownerBodyDisplayer = _body->getDisplayer())){
+		if (_body && (ownerBodyDisplayer = _body->updDisplayer())){
 			if(! ownerBodyDisplayer->hasDependent(&_displayer)){	// Only if first time to be encountered 
 				ownerBodyDisplayer->addDependent(&_displayer);
 				//_displayer.addGeometry(_defaultGeometry);
@@ -204,7 +208,7 @@ void Marker::setup(AbstractDynamicsEngine* aEngine)
 	else
 	{
 		string errorMessage = "Error: No body name specified for marker " + getName() + " in model " +
-			aEngine->getModel()->getName();
+			aModel.getName();
 		throw Exception(errorMessage);
 	}
 }
@@ -215,7 +219,7 @@ void Marker::setup(AbstractDynamicsEngine* aEngine)
 void Marker::removeSelfFromDisplay()
 {
 		VisibleObject* ownerBodyDisplayer;
-		if (_body && (ownerBodyDisplayer = _body->getDisplayer())){
+		if (_body && (ownerBodyDisplayer = _body->updDisplayer())){
 			if (ownerBodyDisplayer->hasDependent(&_displayer)){
 				ownerBodyDisplayer->removeDependent(&_displayer);
 			}
@@ -233,7 +237,7 @@ void Marker::removeSelfFromDisplay()
 Marker& Marker::operator=(const Marker &aMarker)
 {
 	// BASE CLASS
-	AbstractMarker::operator=(aMarker);
+	Object::operator=(aMarker);
 
 	copyData(aMarker);
 
@@ -251,7 +255,7 @@ Marker& Marker::operator=(const Marker &aMarker)
  *
  * @param aMarker marker to update from
  */
-void Marker::updateFromMarker(const AbstractMarker &aMarker)
+void Marker::updateFromMarker(const Marker &aMarker)
 {
 	if (!aMarker.getOffsetUseDefault())
 	{
@@ -388,25 +392,41 @@ bool Marker::setBodyNameUseDefault(bool aValue)
 
 //_____________________________________________________________________________
 /**
- * Set the body that this marker is attached to.
+ * Change the body that this marker is attached to. It assumes that the body is
+ * already set, so that setup() needs to be called to update dependent information.
  *
- * @param aBody Pointer to the body.
+ * @param aBody Reference to the body.
  */
-void Marker::setBody(AbstractBody& aBody, bool preserveLocation)
+void Marker::changeBody( OpenSim::Body& aBody)
 {
+
 	if (&aBody == _body)
+		return;
+
+	setBodyName(aBody.getName());
+	setup(aBody.getModel());
+}
+
+//_____________________________________________________________________________
+/**
+ * Change the body that this marker is attached to. It assumes that the body is
+ * already set, so that setup() needs to be called to update dependent information.
+ *
+ * @param s State.
+ * @param aBody Reference to the body.
+ */
+void Marker::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody)
+{
+
+	if (&aBody == _body || !_body)
 		return;
 
 	// Preserve location means to switch bodies without changing
 	// the location of the marker in the inertial reference frame.
-	if (preserveLocation) {
-	   AbstractDynamicsEngine* engine = aBody.getDynamicsEngine();
-	   if (engine)
-		   engine->transformPosition(*_body, _offset, aBody, _offset);
-	}
+    aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _offset, aBody, _offset);
 
-	_body = &aBody;
-	_bodyName = aBody.getName();
+	setBodyName(aBody.getName());
+	setup(aBody.getModel());
 }
 
 //=============================================================================
@@ -431,7 +451,7 @@ void Marker::scale(const SimTK::Vec3& aScaleFactors)
 void Marker::updateGeometry()
 {
 	Transform position;
-	position.translate(getOffset());
-	getDisplayer()->setTransform(position);
+	position.setP(getOffset());
+	updDisplayer()->setTransform(position);
 
 }

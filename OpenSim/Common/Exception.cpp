@@ -56,7 +56,8 @@ using namespace std;
  * @param aTrueFalse Scientific notation if true, and float if false.
  */
 Exception::
-Exception(const string &aMsg,const string &aFile,int aLine)
+Exception(const string &aMsg,const string &aFile,int aLine):
+exception()
 {
 	setNull();
 
@@ -110,7 +111,7 @@ setMessage(const string &aMsg)
  * @return Message.
  */
 const char* Exception::
-getMessage()
+getMessage() const
 {
 	return(_msg.c_str());
 }

@@ -41,7 +41,8 @@ extern "C" {
 OSIMTOOLS_API void RegisterTypes_osimTools(); 
 
 }
-
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond 
 class osimToolsInstantiator
 {
 public:
@@ -49,6 +50,7 @@ public:
 private:
        void registerDllClasses();
 };
+/// @endcond
 
 #endif // RegisterTypes_osimTools_h__
 

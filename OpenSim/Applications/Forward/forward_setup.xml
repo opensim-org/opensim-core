@@ -17,7 +17,6 @@
 	<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
 	<maximum_integrator_step_size> 0.1 </maximum_integrator_step_size>
 	<integrator_error_tolerance> 0.0001 </integrator_error_tolerance>
-	<integrator_fine_tolerance>  0.000001</integrator_fine_tolerance>
 	
 	<AnalysisSet name="Analyses">
 		<objects>

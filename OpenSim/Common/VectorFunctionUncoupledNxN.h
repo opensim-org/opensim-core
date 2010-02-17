@@ -37,6 +37,7 @@
 #include "osimCommonDLL.h"
 #include "VectorFunction.h"
 #include "Array.h"
+#include "SimTKsimbody.h"
 
 
 
@@ -51,7 +52,7 @@
  * Values of the function and its derivatives
  * are obtained by calling the evaluate() method.  The curve may or may not
  * be finite or diferentiable; the evaluate method returns values between
- * rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY, or it returns rdMath::getNAN()
+ * -SimTK::Infinity  and SimTK::Infinity , or it returns SimTK::NaN
  * (not a number) if the curve is not defined.
  * Currently, functions of up to 3 variables (x,y,z) are supported.
  *
@@ -98,6 +99,15 @@ public:
 	//--------------------------------------------------------------------------
 	// EVALUATE
 	//--------------------------------------------------------------------------
+	virtual void evaluate( const SimTK::State& s, const double *aX, double *rF) { 
+		std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const double*, double*)" << std::endl;
+	}
+	virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF){
+		std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>, Array<double>)" << std::endl;
+	}
+	virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT){
+		std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>&a, Array<double>&, const Array<int>&)" << std::endl;
+	}
 
 	OPENSIM_DECLARE_DERIVED(VectorFunctionUncoupledNxN, VectorFunction)
 

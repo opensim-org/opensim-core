@@ -1,172 +1,182 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="10600">
+<OpenSimDocument Version="10901">
 	<Model name="pendulum">
 		<credits> Model authors names.. </credits>
 		<publications> List of publications related to model... </publications>
-		<ContactForceSet name="">
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Body>
+				<Body name="Pendulum">
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+					<mass>       50.00000000 </mass>
+					<mass_center>       0.00000000      0.0000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00010000 </inertia_xx>
+					<inertia_yy>       0.00010000 </inertia_yy>
+					<inertia_zz>       0.00010000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="GroundJoint">
+							<parent_body> ground </parent_body>
+							<location_in_parent>      40.00000000       0.00000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.50000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="Pendulum_r1">
+										<default_value>       0.00000000 </default_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range> -999999.90000000  999999.90000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="Pendulum_r2">
+										<default_value>       0.00000000 </default_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range> -999999.90000000  999999.90000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="Pendulum_r3">
+										<default_value>       0.00000000 </default_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range> -999999.90000000  999999.90000000 </range>
+										<keys> </keys>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+              <SpatialTransform name="">
+                <!--Spatial transform defining the permissible motion of this CustomJoint.
+						    Motion about/along 6 spatial (transform) axes (3 rotations and 3
+						    translations) must be specified.
+						    Motion is specified via Functions, 1 per axis. Functions of 0 to 6
+						    coordinates are permitted.-->
+                  <TransformAxis name="rotation1">
+                    <function>
+                      <LinearFunction name="">
+                        <coefficients>       1.00000000       0.00000000 </coefficients>
+                      </LinearFunction>
+                    </function>
+                    <coordinates> Pendulum_r1 </coordinates>
+                    <axis>       1.00000000       0.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="rotation2">
+                    <function>
+                      <LinearFunction name="">
+                        <coefficients>       1.00000000       0.00000000 </coefficients>
+                      </LinearFunction>
+                    </function>
+                    <coordinates> Pendulum_r2 </coordinates>
+                    <axis>       0.00000000       1.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="rotation3">
+                    <function>
+                      <LinearFunction name="">
+                        <coefficients>       1.00000000       0.00000000 </coefficients>
+                      </LinearFunction>
+                    </function>
+                    <coordinates> Pendulum_r3 </coordinates>
+                    <axis>       0.00000000       0.00000000       1.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="translation1">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       1.00000000       0.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="translation2">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       1.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="translation3">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       0.00000000       1.00000000 </axis>
+                  </TransformAxis>
+              </SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
 			<objects/>
 			<groups/>
-		</ContactForceSet>
-		<DynamicsEngine>
-			<SimbodyEngine name="default">
-				<!--Acceleration due to gravity.-->
-				<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
-				<!--Bodies in the model.-->
-				<BodySet name="">
-					<objects>
-						<Body name="ground">
-							<WrapObjectSet name="">
-								<objects/>
-								<groups/>
-							</WrapObjectSet>
-							<mass>       0.00000000 </mass>
-							<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-							<inertia_xx>       0.00000000 </inertia_xx>
-							<inertia_yy>       0.00000000 </inertia_yy>
-							<inertia_zz>       0.00000000 </inertia_zz>
-							<inertia_xy>       0.00000000 </inertia_xy>
-							<inertia_xz>       0.00000000 </inertia_xz>
-							<inertia_yz>       0.00000000 </inertia_yz>
-							<!--Joint that connects this body with the parent body.-->
-							<Joint/>
-							<VisibleObject name="">
-								<geometry_files> </geometry_files>
-								<VisibleProperties name="">
-									<display_preference> 4 </display_preference>
-									<show_normals> false </show_normals>
-									<show_axes> false </show_axes>
-									<material_name> DEFAULT </material_name>
-								</VisibleProperties>
-								<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-							</VisibleObject>
-						</Body>
-						<Body name="Pendulum">
-							<WrapObjectSet name="">
-								<objects/>
-								<groups/>
-							</WrapObjectSet>
-							<mass>       50.00000000 </mass>
-							<mass_center>       0.00000000      0.0000000       0.00000000 </mass_center>
-							<inertia_xx>       0.00010000 </inertia_xx>
-							<inertia_yy>       0.00010000 </inertia_yy>
-							<inertia_zz>       0.00010000 </inertia_zz>
-							<inertia_xy>       0.00000000 </inertia_xy>
-							<inertia_xz>       0.00000000 </inertia_xz>
-							<inertia_yz>       0.00000000 </inertia_yz>
-							<!--Joint that connects this body with the parent body.-->
-							<Joint>
-								<CustomJoint name="GroundJoint">
-									<parent_body> ground </parent_body>
-									<location_in_parent>      40.00000000       0.00000000       0.00000000 </location_in_parent>
-									<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
-									<location>       0.00000000       0.50000000       0.00000000 </location>
-									<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
-									<!--Generalized coordinates parameterizing this joint.-->
-									<CoordinateSet name="">
-										<objects>
-											<Coordinate name="Pendulum_r1">
-												<default_value>       0.00000000 </default_value>
-												<initial_value>       0.00000000 </initial_value>
-												<tolerance>       0.00000001 </tolerance>
-												<stiffness>       0.00000000 </stiffness>
-												<range> -999999.90000000  999999.90000000 </range>
-												<keys> </keys>
-												<clamped> true </clamped>
-												<locked> false </locked>
-												<restraint_function/>
-												<min_restraint_function/>
-												<max_restraint_function/>
-												<restraint_active> false </restraint_active>
-												<prescribed_function/>
-											</Coordinate>
-											<Coordinate name="Pendulum_r2">
-												<default_value>       0.00000000 </default_value>
-												<initial_value>       0.00000000 </initial_value>
-												<tolerance>       0.00000001 </tolerance>
-												<stiffness>       0.00000000 </stiffness>
-												<range> -999999.90000000  999999.90000000 </range>
-												<keys> </keys>
-												<clamped> true </clamped>
-												<locked> false </locked>
-												<restraint_function/>
-												<min_restraint_function/>
-												<max_restraint_function/>
-												<restraint_active> false </restraint_active>
-												<prescribed_function/>
-											</Coordinate>
-											<Coordinate name="Pendulum_r3">
-												<default_value>       0.00000000 </default_value>
-												<initial_value>       0.00000000 </initial_value>
-												<tolerance>       0.00000001 </tolerance>
-												<stiffness>       0.00000000 </stiffness>
-												<range> -999999.90000000  999999.90000000 </range>
-												<keys> </keys>
-												<clamped> true </clamped>
-												<locked> false </locked>
-												<restraint_function/>
-												<min_restraint_function/>
-												<max_restraint_function/>
-												<restraint_active> false </restraint_active>
-												<prescribed_function/>
-											</Coordinate>
-										</objects>
-										<groups/>
-									</CoordinateSet>
-									<TransformAxisSet name="">
-										<objects>
-											<TransformAxis name="r1">
-												<function/>
-												<coordinate> Pendulum_r1 </coordinate>
-												<is_rotation> true </is_rotation>
-												<axis>       1.00000000       0.00000000       0.00000000 </axis>
-											</TransformAxis>
-											<TransformAxis name="r2">
-												<function/>
-												<coordinate> Pendulum_r2 </coordinate>
-												<is_rotation> true </is_rotation>
-												<axis>       0.00000000       1.00000000       0.00000000 </axis>
-											</TransformAxis>
-											<TransformAxis name="r3">
-												<function/>
-												<coordinate> Pendulum_r3 </coordinate>
-												<is_rotation> true </is_rotation>
-												<axis>       0.00000000       0.00000000       1.00000000 </axis>
-											</TransformAxis>
-										</objects>
-										<groups/>
-									</TransformAxisSet>
-								</CustomJoint>
-							</Joint>
-							<VisibleObject name="">
-								<geometry_files> </geometry_files>
-								<VisibleProperties name="">
-									<display_preference> 4 </display_preference>
-									<show_normals> false </show_normals>
-									<show_axes> false </show_axes>
-									<material_name> DEFAULT </material_name>
-								</VisibleProperties>
-								<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-							</VisibleObject>
-						</Body>
-					</objects>
-					<groups/>
-				</BodySet>
-				<!--Constraints in the model.-->
-				<ConstraintSet name="">
-					<objects/>
-					<groups/>
-				</ConstraintSet>
-				<!--Markers in the model.-->
-				<MarkerSet name="">
-					<objects/>
-					<groups/>
-				</MarkerSet>
-			</SimbodyEngine>
-		</DynamicsEngine>
-		<ActuatorSet name="">
+		</ConstraintSet>
+		<!--Markers in the model.-->
+		<MarkerSet name="">
 			<objects/>
 			<groups/>
-		</ActuatorSet>
+		</MarkerSet>
+		<ForceSet name="">
+			<objects/>
+			<groups/>
+		</ForceSet>
 		<length_units> Unassigned </length_units>
 		<force_units> Unassigned </force_units>
 	</Model>

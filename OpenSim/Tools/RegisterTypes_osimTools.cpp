@@ -34,9 +34,10 @@
 
 #include "ScaleTool.h"
 #include "IKTool.h"
+//#include "FIKSTool.h"
 #include "CMCTool.h"
 #include "ForwardTool.h"
-#include "PerturbationTool.h"
+//#include "PerturbationTool.h"
 #include "AnalyzeTool.h"
 
 #include "GenericModelMaker.h"
@@ -51,13 +52,13 @@
 #include "Measurement.h"
 #include "MeasurementSet.h"
 #include "ModelScaler.h"
-
-#include "rdCMC_Point.h"
-#include "rdCMC_Joint.h"
+#include "CMC.h"
+#include "CMC_Point.h"
+#include "CMC_Joint.h"
 #include "SMC_Joint.h"
-#include "rdCMC_TaskSet.h"
+#include "CMC_TaskSet.h"
+#include "CorrectionController.h"
 
-#include "SimpleFeedbackController.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -75,9 +76,10 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 
 	Object::RegisterType( ScaleTool() );
 	Object::RegisterType( IKTool() );
+	//Object::RegisterType( FIKSTool() );
 	Object::RegisterType( CMCTool() );
 	Object::RegisterType( ForwardTool() );
-	Object::RegisterType( PerturbationTool() );
+	//Object::RegisterType( PerturbationTool() );
 	Object::RegisterType( AnalyzeTool() );
 
 	Object::RegisterType( GenericModelMaker() );
@@ -93,13 +95,19 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( MeasurementSet() );
 	Object::RegisterType( ModelScaler() );
 
-	Object::RegisterType( rdCMC_Joint() );
-	Object::RegisterType( rdCMC_Point() );
-	Object::RegisterType( rdCMC_TaskSet() );
+	Object::RegisterType( CorrectionController() );
+	Object::RegisterType( CMC() );
+	Object::RegisterType( CMC_Joint() );
+	Object::RegisterType( CMC_Point() );
+	Object::RegisterType( CMC_TaskSet() );
 
 	Object::RegisterType( SMC_Joint() );
+	// Old versions
+	Object::RenameType("rdCMC_Joint", CMC_Joint());
+	Object::RenameType("rdCMC_Point", CMC_Point());
+	Object::RenameType("rdCMC_TaskSet", CMC_TaskSet());
 
-	Object::RegisterType( SimpleFeedbackController() );
+
 }
 
 

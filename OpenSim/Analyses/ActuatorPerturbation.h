@@ -35,17 +35,15 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/DerivCallback.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include "osimAnalysesDLL.h"
-#include "Contact.h"
+#include "SimTKsimbody.h"
 
 
 //=============================================================================
 //=============================================================================
 /**
- * A derivatives callback used for perturbing the actuator forces during a
+ * Used for perturbing the actuator forces during a
  * simulation.
  *
  * @author Frank C. Anderson, Saryn R. Goldberg
@@ -53,9 +51,10 @@
  */
 namespace OpenSim { 
 
+class Actuator;
 class Model;
 
-class OSIMANALYSES_API ActuatorPerturbation : public DerivCallback 
+class OSIMANALYSES_API ActuatorPerturbation : public Object 
 {
 //=============================================================================
 // DATA
@@ -66,7 +65,7 @@ public:
 
 protected:
 	/** Which actuator. */
-	AbstractActuator *_actuator;
+	Actuator *_actuator;
 	/** Negative force flag **/
 	bool _allowNegForce;
 	/** Force perturbation. */
@@ -83,19 +82,55 @@ protected:
 //=============================================================================
 public:
 	ActuatorPerturbation(Model *aModel);
+    ActuatorPerturbation(const ActuatorPerturbation &aActuatorPerturbation);
+    ActuatorPerturbation(const std::string &aFileName, bool aUpdateFromXMLNode = true);
+
 	virtual ~ActuatorPerturbation();
+    virtual Object* copy() const;
+
+protected:
+    /** Model. */
+    Model *_model;
+private:
+    /** On, off flag. */
+    PropertyBool _onProp;
+    bool &_on;
+    /** Start time in normalized time. */
+    PropertyDbl _startTimeProp;
+    double &_startTime;
+    /** End time in normalized time. */
+    PropertyDbl _endTimeProp;
+    double &_endTime;
+
+
+
 private:
 	void setNull();
+    void setupProperties();
 
 public:
+    ActuatorPerturbation& operator=(const ActuatorPerturbation &aActuatorPerturbation);
+
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	void setActuator(AbstractActuator *aActuator);
-	AbstractActuator* getActuator() const;
+	void setActuator(Actuator *aActuator);
+	Actuator* getActuator() const;
 	void setAllowNegForce(bool aTrueFalse);
 	bool getAllowNegForce() const;
-	void setPerturbation(PertType aPerturbationType, double aPerturbation);
+	void setPerturbation(const SimTK::State& s, PertType aPerturbationType, double aPerturbation);
+	// MODEL
+	virtual void setModel(Model&);
+	Model* getModel() const;
+	// ON,OFF
+	void setOn(bool aTrueFalse);
+	bool getOn() const;
+	// START,END
+	void setStartTime(double aStartTime);
+	double getStartTime() const;
+	void setEndTime(double aEndTime);
+	double getEndTime() const;
+
 	double getPerturbation() const;
 	PertType getPerturbationType() const;
 	Storage* getForceStorage();
@@ -103,15 +138,9 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	virtual void reset(); 
+	virtual void reset(const SimTK::State& s); 
 
-	//--------------------------------------------------------------------------
-	// CALLBACKS
-	//--------------------------------------------------------------------------
-	virtual void
-		computeActuation(double aT,double *aX,double *aY);
-	virtual void
-		applyActuation(double aT,double *aX,double *aY);
+	virtual void setForces(const SimTK::State& s);
 
 //=============================================================================
 };	// END of class ActuatorPerturbation

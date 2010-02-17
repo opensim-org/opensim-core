@@ -32,10 +32,8 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include "AnalysisPlugin_Template.h"
 
@@ -57,7 +55,7 @@ using namespace std;
  */
 AnalysisPlugin_Template::~AnalysisPlugin_Template()
 {
-
+	//deleteStorage();
 }
 //_____________________________________________________________________________
 /*
@@ -290,32 +288,30 @@ constructColumnLabels()
 	Array<string> labels;
 	labels.append("time");
 
-	BodySet *bodySet = _model->getDynamicsEngine().getBodySet();
+	const BodySet& bodySet = _model->getBodySet();
 
 	if(_bodyNames[0] == "all"){
-		_bodyIndices.setSize(bodySet->getSize());
+		_bodyIndices.setSize(bodySet.getSize());
 		// Get indices of all the bodies.
-		for(int j=0;j<bodySet->getSize();j++)
+		for(int j=0;j<bodySet.getSize();j++)
 			_bodyIndices[j]=j;
 	}
 	else{
 		_bodyIndices.setSize(_bodyNames.getSize());
 		// Get indices of just the bodies listed.
 		for(int j=0;j<_bodyNames.getSize();j++)
-			_bodyIndices[j]=bodySet->getIndex(_bodyNames[j]);
+			_bodyIndices[j]=bodySet.getIndex(_bodyNames[j]);
 	}
 
 	//Do the analysis on the bodies that are in the indices list
 	for(int i=0; i<_bodyIndices.getSize(); i++) {
-		AbstractBody *body = bodySet->get(_bodyIndices[i]);
-		if(body != NULL){ //If not a non-existant body
-			labels.append(body->getName() + "_X");
-			labels.append(body->getName() + "_Y");
-			labels.append(body->getName() + "_Z");
-			labels.append(body->getName() + "_Ox");
-			labels.append(body->getName() + "_Oy");
-			labels.append(body->getName() + "_Oz");
-		}
+		const Body& body = bodySet.get(_bodyIndices[i]);
+		labels.append(body.getName() + "_X");
+		labels.append(body.getName() + "_Y");
+		labels.append(body.getName() + "_Z");
+		labels.append(body.getName() + "_Ox");
+		labels.append(body.getName() + "_Oy");
+		labels.append(body.getName() + "_Oz");
 	}
 
 	setColumnLabels(labels);
@@ -356,7 +352,7 @@ setupStorage()
  * @param aModel Model pointer
  */
 void AnalysisPlugin_Template::
-setModel(Model *aModel)
+setModel(Model& aModel)
 {
 	// SET THE MODEL IN THE BASE CLASS
 	Analysis::setModel(aModel);
@@ -388,62 +384,34 @@ setModel(Model *aModel)
  * @param aY Current values of the states: includes generalized coords and speeds
  */
 int AnalysisPlugin_Template::
-record(double aT,double *aX,double *aY)
+record(const SimTK::State& s)
 {
-	// GET THE MODEL READY ----------------------------------
-	// Set the configuration (gen. coords and speeds) of the model.
-	_model->set(aT,aX,aY);
-	_model->getDerivCallbackSet()->set(aT,aX,aY);
-
-	// Compute and apply all actuator forces.
-	_model->getActuatorSet()->computeActuation();
-	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-	_model->getActuatorSet()->apply();
-	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
-
-	// compute and apply all contact forces.
-	_model->getContactSet()->computeContact();
-	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->getContactSet()->apply();
-	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
-
-	// After setting the sate of the model and applying forces
-	// Compute the derivative of the multibody system (speeds and accelerations)
-    // NOTE: computeDerivatives() on the dynamicsEngine must be called before
-	// getting acclerations and reaction forces.
-
-	// API (Doxygen html files) for AbstractDynamicsEngine can be found in 
-	// <OpenSimInstallDir>/sdk/doc/html
-
-
 	// VARIABLES
 	double dirCos[3][3];
 	SimTK::Vec3 vec,angVec;
 	double Mass = 0.0;
 
 	// GROUND BODY
-	AbstractBody &ground = _model->getDynamicsEngine().getGroundBody();
+	const Body& ground = _model->getGroundBody();
 
 	// POSITION
-	BodySet *bodySet = _model->getDynamicsEngine().getBodySet();
+	const BodySet& bodySet = _model->getBodySet();
 
 	for(int i=0;i<_bodyIndices.getSize();i++) {
 
-		AbstractBody *body = bodySet->get(_bodyIndices[i]);
+		const Body& body = bodySet.get(_bodyIndices[i]);
 		SimTK::Vec3 com;
-		body->getMassCenter(com);
+		body.getMassCenter(com);
 
 		// GET POSITIONS AND EULER ANGLES
-		_model->getDynamicsEngine().getPosition(*body,com,vec);
-		_model->getDynamicsEngine().getDirectionCosines(*body,dirCos);
-		_model->getDynamicsEngine().convertDirectionCosinesToAngles(dirCos,
+		_model->getSimbodyEngine().getPosition(s,body,com,vec);
+		_model->getSimbodyEngine().getDirectionCosines(s,body,dirCos);
+		_model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,
 			&angVec[0],&angVec[1],&angVec[2]);
 
 		// CONVERT TO DEGREES?
 		if(getInDegrees()) {
-			angVec[0] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[1] *= SimTK_RADIAN_TO_DEGREE;
-			angVec[2] *= SimTK_RADIAN_TO_DEGREE;
+			angVec *= SimTK_RADIAN_TO_DEGREE;
 		}			
 
 		// FILL KINEMATICS ARRAY
@@ -451,7 +419,7 @@ record(double aT,double *aX,double *aY)
 		memcpy(&_bodypos[I],&vec[0],3*sizeof(double));
 		memcpy(&_bodypos[I+3],&angVec[0],3*sizeof(double));
 	}
-	_storePos.append(aT,_bodypos.getSize(),&_bodypos[0]);
+	_storePos.append(s.getTime(),_bodypos.getSize(),&_bodypos[0]);
 
 	// VELOCITY 
 
@@ -475,23 +443,21 @@ record(double aT,double *aX,double *aY)
  * @param aY Current states.
  * @param aYP Current pseudo states.
  * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int AnalysisPlugin_Template::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
 	// RESET STORAGE
-	_storePos.reset(aT);
+	_storePos.reset(s.getTime());  //->reset(s.getTime());
 
 	// RECORD
 	int status = 0;
 	if(_storePos.getSize()<=0) {
-		status = record(aT,aX,aY);
+		status = record(s);
 	}
 
 	return(status);
@@ -515,18 +481,15 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * @param aY Current states.
  * @param aYP Current pseudo states.
  * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int AnalysisPlugin_Template::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s)
 {
-	if(!proceed(aStep)) return(0);
+	if(!proceed(_model->getStep(s))) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }
@@ -545,17 +508,15 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * @param aY Current states.
  * @param aYP Current pseudo states.
  * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int AnalysisPlugin_Template::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end(const SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }

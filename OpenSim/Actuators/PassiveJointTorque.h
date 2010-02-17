@@ -37,7 +37,7 @@
 //=============================================================================
 #include "osimActuatorsDLL.h"
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Simulation/Model/GeneralizedForce.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
 
 
 //=============================================================================
@@ -51,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class OSIMACTUATORS_API PassiveJointTorque : public GeneralizedForce 
+class OSIMACTUATORS_API PassiveJointTorque : public CoordinateActuator 
 {
 //=============================================================================
 // DATA
@@ -124,14 +124,14 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computeActuation();
+	virtual double computeActuation( const SimTK::State& s );
 
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------
 	//virtual void updateFromXMLNode();
 
-	OPENSIM_DECLARE_DERIVED(PassiveJointTorque,AbstractActuator);
+	OPENSIM_DECLARE_DERIVED(PassiveJointTorque,Actuator);
 
 //=============================================================================
 };	// END of class PassiveJointTorque

@@ -37,11 +37,12 @@
 // INCLUDES
 #include <stdio.h>
 #include "osimCommonDLL.h"
+#include "SimTKmath.h"
 
 // DEFINES
 #define RDSPLINE_MAXSIZE 2048
 
-
+using SimTK::Vector;
 //=============================================================================
 //=============================================================================
 /**
@@ -49,6 +50,8 @@
  */
 namespace OpenSim { 
 
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
 class OSIMCOMMON_API Spline
 {
 //=============================================================================
@@ -87,8 +90,8 @@ private:
 	// EVALUATION
 	//--------------------------------------------------------------------------
 public:
-	int getKnotIndex(double x);
-	double evaluate(double x);
+	int getKnotIndex(double x) const;
+    virtual double calcValue(const SimTK::Vector& x) const;
 
 	//--------------------------------------------------------------------------
 	// PRINTING
@@ -97,7 +100,7 @@ public:
 
 //=============================================================================
 };	// END class Spline
-
+/// @endcond
 }; //namespace
 //=============================================================================
 //=============================================================================

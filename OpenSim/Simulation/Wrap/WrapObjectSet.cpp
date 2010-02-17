@@ -47,7 +47,7 @@ WrapObjectSet::~WrapObjectSet(void)
  * Default constructor of a WrapObjectSet.
  */
 WrapObjectSet::WrapObjectSet() :
-	Set<AbstractWrapObject>()
+	Set<WrapObject>()
 {
 	setNull();
 }
@@ -57,7 +57,7 @@ WrapObjectSet::WrapObjectSet() :
  * Copy constructor of a WrapObjectSet.
  */
 WrapObjectSet::WrapObjectSet(const WrapObjectSet& aWrapObjectSet):
-	Set<AbstractWrapObject>(aWrapObjectSet)
+	Set<WrapObject>(aWrapObjectSet)
 {
 	setNull();
 	*this = aWrapObjectSet;
@@ -86,7 +86,7 @@ void WrapObjectSet::setNull()
 #ifndef SWIG
 WrapObjectSet& WrapObjectSet::operator=(const WrapObjectSet &aWrapObjectSet)
 {
-	Set<AbstractWrapObject>::operator=(aWrapObjectSet);
+	Set<WrapObject>::operator=(aWrapObjectSet);
 	return (*this);
 }
 #endif

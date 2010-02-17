@@ -37,22 +37,22 @@
 #include "GCVSplineSet.h"
 #include "ScaleSet.h"
 #include "GCVSpline.h"
-#include "Transform.h"
 #include "VectorGCVSplineR1R3.h"
 #include "Scale.h"
-#include "NatCubicSpline.h"
+#include "NaturalCubicSpline.h"
 #include "Constant.h"
 #include "StepFunction.h"
 #include "LinearFunction.h"
+#include "PiecewiseLinearFunction.h"
+#include "MultiplierFunction.h"
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
+
+
 
 using namespace OpenSim;
 using namespace std;
 
-#ifndef STATIC_OSIM_LIBS
-static osimCommonInstantiator instantiator; 
-#endif
 
 //_____________________________________________________________________________
 /**
@@ -68,24 +68,18 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::RegisterType( ScaleSet() );
 
 	Object::RegisterType( GCVSpline() );
-	// Object::RegisterType( Transform() );
 	Object::RegisterType( VectorGCVSplineR1R3() );
-	//Object::RegisterType( RootSolver() );
 	Object::RegisterType( Scale() );
-	Object::RegisterType( NatCubicSpline() );
+	Object::RegisterType( NaturalCubicSpline() );
 	Object::RegisterType( Constant() );
 	Object::RegisterType( StepFunction() );
 	Object::RegisterType( LinearFunction() );
+	Object::RegisterType( PiecewiseLinearFunction() );
+	Object::RegisterType( MultiplierFunction() );
 	Object::RegisterType( VisibleObject() );
 	Object::RegisterType( ObjectGroup() );
+
+	// To support old type name of "natCubicSpline"
+	Object::RenameType("natCubicSpline", NaturalCubicSpline());
 }
 
-osimCommonInstantiator::osimCommonInstantiator() 
-{ 
-        registerDllClasses(); 
-} 
-    
-void osimCommonInstantiator::registerDllClasses() 
-{ 
-        RegisterTypes_osimCommon(); 
-}

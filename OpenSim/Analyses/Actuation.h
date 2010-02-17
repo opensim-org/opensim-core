@@ -38,6 +38,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimAnalysesDLL.h"
+#include "SimTKsimbody.h"
 
 
 #ifdef SWIG
@@ -48,6 +49,7 @@
 #endif
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
 /**
  * A class for recording the basic actuator information for a model
  * during a simulation.
@@ -55,8 +57,6 @@
  * @author Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMANALYSES_API Actuation : public Analysis 
 {
 //=============================================================================
@@ -109,24 +109,22 @@ public:
 	Storage* getSpeedStorage() const;
 	Storage* getPowerStorage() const;
 	// MODEL
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
 
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
+#ifndef SWIG
 	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+        begin(const SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(const SimTK::State& s );
 protected:
-	virtual int
-		record(double aT,double *aX,double *aY);
-
+    virtual int
+        record(const SimTK::State& s );
+#endif
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

@@ -36,10 +36,7 @@
 //=============================================================================
 #include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/IntegCallbackSet.h>
-#include <OpenSim/Simulation/Model/Model.h>
 #include "SimtkAnimationCallback.h"
 
 
@@ -218,6 +215,6 @@ getTransformsFromKinematicsEngine(Model& dModel)
 	int i,nb = bodySet->getSize();
 	for(i=0;i<nb;i++) {
 		body = bodySet->get(i);
-		_transforms[i] = de.getTransform(*body);
+//  JACKM NEEDS STATE		_transforms[i] = de.getTransform(*body);
 	}
 }

@@ -37,7 +37,7 @@
 
 namespace OpenSim {
 
-class AbstractCoordinate;
+class Coordinate;
 
 //=============================================================================
 //=============================================================================
@@ -55,12 +55,7 @@ class SimbodySimmGencoord
 //=============================================================================
 protected:
 	/** Pointer to the coordinate that this gencoord was created from. */
-	const AbstractCoordinate* _coordinate;
-
-	/** User-defined function numbers for the three restraint functions */
-	int _restraintFuncUserNumber;
-	int _minRestraintFuncUserNumber;
-	int _maxRestraintFuncUserNumber;
+	const Coordinate* _coordinate;
 
 //=============================================================================
 // METHODS
@@ -71,10 +66,7 @@ protected:
 public:
 	virtual ~SimbodySimmGencoord();
 	SimbodySimmGencoord();
-	SimbodySimmGencoord(const AbstractCoordinate* aCoordinate,
-		int aRestraintFuncUserNumber,
-		int aMinRestraintFuncUserNumber,
-		int aMaxRestraintFuncUserNumber);
+	SimbodySimmGencoord(const Coordinate* aCoordinate);
    void write(std::ofstream& aStream);
 
 //=============================================================================

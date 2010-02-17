@@ -34,6 +34,7 @@
 #include <iostream>
 #include <string>
 #include "osimCommonDLL.h"
+#include "SimTKcommon.h"
 
 namespace OpenSim {
 
@@ -51,15 +52,15 @@ class OSIMCOMMON_API Units
 public:
 	enum UnitType
 	{
-		simmUnknownUnits = 0,
-		simmRadians,
-		simmDegrees,
-		simmMillimeters,
-		simmCentimeters,
-		simmMeters,
-		simmSeconds,
-		simmMilliseconds,
-		simmNewtons
+		UnknownUnits = 0,
+		Radians,
+		Degrees,
+		Millimeters,
+		Centimeters,
+		Meters,
+		Seconds,
+		Milliseconds,
+		Newtons
 	};
 
 //=============================================================================

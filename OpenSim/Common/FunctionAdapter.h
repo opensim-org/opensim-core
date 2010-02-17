@@ -28,10 +28,6 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
-
 
 // INCLUDES
 #include "Function.h"
@@ -46,15 +42,14 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API FunctionAdapter : public SimTK::Function<1>
+// Excluding this from Doxygen until it has better documentation! -Sam Hamner
+    /// @cond
+class OSIMCOMMON_API FunctionAdapter : public SimTK::Function
 {
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-    // PROPERTIES
-    /** The number of arguments to the function. */
-    int _argumentSize;
     // REFERENCES
     /** The OpenSim::Function used to evaluate this function. */
 	const OpenSim::Function& _function;
@@ -63,9 +58,9 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	FunctionAdapter(const OpenSim::Function &aFunction, int argumentSize);
-    SimTK::Vec1 calcValue(const SimTK::Vector& x) const;
-    SimTK::Vec1 calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
+	FunctionAdapter(const OpenSim::Function &aFunction);
+    double calcValue(const SimTK::Vector& x) const;
+    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
     int getArgumentSize() const;
     int getMaxDerivativeOrder() const;
 private:
@@ -74,6 +69,8 @@ private:
 
 //=============================================================================
 };  // END class FunctionAdapter
+
+/// @endcond
 
 }; //namespace
 //=============================================================================

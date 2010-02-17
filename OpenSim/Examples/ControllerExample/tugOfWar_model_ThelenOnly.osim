@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="10902">
+	<Model name="osimModel">
+		<credits> Unassigned </credits>
+		<publications> Unassigned </publications>
+		<ForceSet name="">
+			<objects>
+				<Thelen2003Muscle name="muscle1">
+					<GeometryPath name="muscle1">
+						<PathPointSet name="">
+							<objects>
+								<PathPoint name="muscle1-point1">
+									<location>       0.00000000       0.05000000      -0.35000000 </location>
+									<VisibleObject name="">
+										<geometry_files> </geometry_files>
+										<VisibleProperties name="">
+											<display_preference> 4 </display_preference>
+											<show_normals> false </show_normals>
+											<show_axes> false </show_axes>
+											<material_name> DEFAULT </material_name>
+										</VisibleProperties>
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									</VisibleObject>
+									<body> ground </body>
+								</PathPoint>
+								<PathPoint name="muscle1-point2">
+									<location>       0.00000000       0.00000000      -0.05000000 </location>
+									<VisibleObject name="">
+										<geometry_files> </geometry_files>
+										<VisibleProperties name="">
+											<display_preference> 4 </display_preference>
+											<show_normals> false </show_normals>
+											<show_axes> false </show_axes>
+											<material_name> DEFAULT </material_name>
+										</VisibleProperties>
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									</VisibleObject>
+									<body> block </body>
+								</PathPoint>
+							</objects>
+							<groups/>
+						</PathPointSet>
+						<VisibleObject name="">
+							<geometry_files> </geometry_files>
+							<VisibleProperties name="">
+								<display_preference> 4 </display_preference>
+								<show_normals> false </show_normals>
+								<show_axes> false </show_axes>
+								<material_name> DEFAULT </material_name>
+							</VisibleProperties>
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						</VisibleObject>
+						<PathWrapSet name="">
+							<objects/>
+							<groups/>
+						</PathWrapSet>
+					</GeometryPath>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>    1000.00000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.20000000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.20000000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="muscle2">
+					<GeometryPath name="muscle2">
+						<PathPointSet name="">
+							<objects>
+								<PathPoint name="muscle2-point1">
+									<location>       0.00000000       0.05000000       0.35000000 </location>
+									<VisibleObject name="">
+										<geometry_files> </geometry_files>
+										<VisibleProperties name="">
+											<display_preference> 4 </display_preference>
+											<show_normals> false </show_normals>
+											<show_axes> false </show_axes>
+											<material_name> DEFAULT </material_name>
+										</VisibleProperties>
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									</VisibleObject>
+									<body> ground </body>
+								</PathPoint>
+								<PathPoint name="muscle2-point2">
+									<location>       0.00000000       0.00000000       0.05000000 </location>
+									<VisibleObject name="">
+										<geometry_files> </geometry_files>
+										<VisibleProperties name="">
+											<display_preference> 4 </display_preference>
+											<show_normals> false </show_normals>
+											<show_axes> false </show_axes>
+											<material_name> DEFAULT </material_name>
+										</VisibleProperties>
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									</VisibleObject>
+									<body> block </body>
+								</PathPoint>
+							</objects>
+							<groups/>
+						</PathPointSet>
+						<VisibleObject name="">
+							<geometry_files> </geometry_files>
+							<VisibleProperties name="">
+								<display_preference> 4 </display_preference>
+								<show_normals> false </show_normals>
+								<show_axes> false </show_axes>
+								<material_name> DEFAULT </material_name>
+							</VisibleProperties>
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						</VisibleObject>
+						<PathWrapSet name="">
+							<objects/>
+							<groups/>
+						</PathWrapSet>
+					</GeometryPath>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>    1000.00000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.20000000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.20000000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+				<ElasticFoundationForce name="">
+					<ElasticFoundationForce::ContactParametersSet name="">
+						<objects>
+							<ElasticFoundationForce::ContactParameters name="">
+								<geometry> cube floor </geometry>
+								<stiffness> 100000000.00000000 </stiffness>
+								<dissipation>       0.01000000 </dissipation>
+								<static_friction>       0.00000000 </static_friction>
+								<dynamic_friction>       0.25000000 </dynamic_friction>
+								<viscous_friction>       0.00000000 </viscous_friction>
+							</ElasticFoundationForce::ContactParameters>
+						</objects>
+						<groups/>
+					</ElasticFoundationForce::ContactParametersSet>
+					<transition_velocity>       0.01000000 </transition_velocity>
+				</ElasticFoundationForce>
+			</objects>
+			<groups/>
+		</ForceSet>
+		<length_units> Unassigned </length_units>
+		<force_units> Unassigned </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       1.00000000 </inertia_xx>
+					<inertia_yy>       1.00000000 </inertia_yy>
+					<inertia_zz>       1.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<geometry_files> ground.vtp anchor1.vtp anchor2.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="block">
+					<mass>      20.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.13333333 </inertia_xx>
+					<inertia_yy>       0.13333333 </inertia_yy>
+					<inertia_zz>       0.13333333 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<FreeJoint name="blockToGround">
+							<parent_body> ground </parent_body>
+							<location_in_parent>       0.00000000       0.05000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="blockToGround_xRotation">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="blockToGround_yRotation">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="blockToGround_zRotation">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="blockToGround_xTranslation">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.00000000       1.00000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="blockToGround_yTranslation">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.00000000       1.00000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="blockToGround_zTranslation">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.00000000       1.00000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<!--Set flag to true to use Euler angles to parameterize rotations.-->
+							<use_euler_angles> true </use_euler_angles>
+						</FreeJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> block.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
+			<objects>
+				<PointOnLineConstraint name="">
+					<isDisabled> true </isDisabled>
+					<line_body> ground </line_body>
+					<line_direction_vec>       1.00000000       0.00000000      -1.00000000 </line_direction_vec>
+					<point_on_line>       1.00000000       0.00000000      -1.00000000 </point_on_line>
+					<follower_body> block </follower_body>
+					<point_on_follower>       0.00000000      -0.05000000       0.00000000 </point_on_follower>
+				</PointOnLineConstraint>
+			</objects>
+			<groups/>
+		</ConstraintSet>
+		<!--Markers in the model.-->
+		<MarkerSet name="">
+			<objects/>
+			<groups/>
+		</MarkerSet>
+		<!--ContactGeometry objects in the model.-->
+		<ContactGeometrySet name="">
+			<objects>
+				<ContactHalfSpace name="floor">
+					<body_name> ground </body_name>
+					<location>       0.00000000       0.00000000       0.00000000 </location>
+					<orientation>       0.00000000       0.00000000      -1.57079633 </orientation>
+				</ContactHalfSpace>
+				<ContactMesh name="cube">
+					<body_name> block </body_name>
+					<location>       0.00000000       0.00000000       0.00000000 </location>
+					<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+					<filename> blockRemesh192.obj </filename>
+				</ContactMesh>
+			</objects>
+			<groups/>
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>
+

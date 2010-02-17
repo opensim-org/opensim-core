@@ -12,15 +12,14 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Simulation/Wrap/AbstractWrapObject.h>
+#include <OpenSim/Simulation/Wrap/WrapObject.h>
 
 namespace OpenSim {
 
 class VisibleObject;
-class AbstractBody;
-class AbstractDynamicsEngine;
-class MusclePoint;
-class MuscleWrap;
+class Body;
+class PathPoint;
+class PathWrap;
 class WrapResult;
 
 //=============================================================================
@@ -32,7 +31,7 @@ class WrapResult;
  * @author Brian Garner, derivded from Peter Loan
  * @version 0.1
  */
-class OSIMSIMULATION_API WrapCylinderObst : public AbstractWrapObject
+class OSIMSIMULATION_API WrapCylinderObst : public WrapObject
 {
 
 //=============================================================================
@@ -49,7 +48,7 @@ class OSIMSIMULATION_API WrapCylinderObst : public AbstractWrapObject
 	double& _radius;
 
 	// Facilitate prescription of wrapping direction around obstacle: "righthand" or "lefthand".
-	// In traversing from the 1st attachment (P) to the 2nd (S), the muscle will wrap either
+	// In traversing from the 1st point (P) to the 2nd (S), the path will wrap either
 	//    righthanded or lefthanded about the obstacle's z-axis.
 	PropertyStr _wrapDirectionNameProp;
 	std::string& _wrapDirectionName;
@@ -84,11 +83,11 @@ public:
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
 	virtual void scale(const SimTK::Vec3& aScaleFactors) { }
-	virtual void setup(AbstractDynamicsEngine* aEngine, AbstractBody* aBody);
-
-	virtual int wrapLine(SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
-		const MuscleWrap& aMuscleWrap, WrapResult& aWrapResult, bool& aFlag) const;
-
+	virtual void setup(Model& aModel, OpenSim::Body& aBody);
+#ifndef SWIG
+	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
+		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
+#endif
 protected:
 	void setupProperties();
 

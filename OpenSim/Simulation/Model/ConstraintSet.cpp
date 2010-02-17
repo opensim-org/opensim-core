@@ -27,9 +27,11 @@
  */
 
 #include "ConstraintSet.h"
+#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 
 using namespace std;
 using namespace OpenSim;
+
 
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTORS
@@ -46,8 +48,13 @@ ConstraintSet::~ConstraintSet(void)
 /**
  * Default constructor of a ConstraintSet.
  */
-ConstraintSet::ConstraintSet() :
-	Set<AbstractConstraint>()
+ConstraintSet::ConstraintSet()
+{
+	setNull();
+}
+
+ConstraintSet::ConstraintSet(Model& model) :
+	ModelComponentSet<Constraint>(model)
 {
 	setNull();
 }
@@ -57,7 +64,7 @@ ConstraintSet::ConstraintSet() :
  * Copy constructor of a ConstraintSet.
  */
 ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet):
-	Set<AbstractConstraint>(aAbsConstraintSet)
+	ModelComponentSet<Constraint>(aAbsConstraintSet)
 {
 	setNull();
 	*this = aAbsConstraintSet;
@@ -77,14 +84,14 @@ void ConstraintSet::setNull()
 /**
  * Post construction initialization.
  */
-void ConstraintSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+void ConstraintSet::setup(Model& aModel)
 {
 	// Base class
-	Set<AbstractConstraint>::setup();
+	Set<Constraint>::setup();
 
 	// Do members
 	for (int i = 0; i < getSize(); i++)
-		get(i)->setup(aAbstractDynamicsEngine);
+		get(i).setup(aModel);
 
 }
 //=============================================================================
@@ -99,7 +106,7 @@ void ConstraintSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
 #ifndef SWIG
 ConstraintSet& ConstraintSet::operator=(const ConstraintSet &aAbsConstraintSet)
 {
-	Set<AbstractConstraint>::operator=(aAbsConstraintSet);
+	Set<Constraint>::operator=(aAbsConstraintSet);
 
 	return (*this);
 }
@@ -107,16 +114,16 @@ ConstraintSet& ConstraintSet::operator=(const ConstraintSet &aAbsConstraintSet)
 //_____________________________________________________________________________
 /**
  * Functional equivalent to = operator wit the added feature of associating
- * the resulting ConstraintSet with a new dynamicsEngine.
+ * the resulting ConstraintSet with a new model.
  *
  * @return Reference to this object.
  */
 ConstraintSet& ConstraintSet::copyFrom(const ConstraintSet& aConstraintSet, 
-									   AbstractDynamicsEngine* aAbstractDynamicsEngine)
+									   Model& aModel)
 {
-	Set<AbstractConstraint>::operator=(aConstraintSet);
+	Set<Constraint>::operator=(aConstraintSet);
 	for(int i=0; i<getSize(); i++)
-		get(i)->setup(aAbstractDynamicsEngine);
+		get(i).setup(aModel);
 	return (*this);
 }
 
@@ -133,5 +140,5 @@ ConstraintSet& ConstraintSet::copyFrom(const ConstraintSet& aConstraintSet,
  */
 void ConstraintSet::scale(const ScaleSet& aScaleSet)
 {
-	for(int i=0; i<getSize(); i++) get(i)->scale(aScaleSet);
+	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
 }

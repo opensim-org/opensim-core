@@ -5,9 +5,9 @@ SET(UKIT SIMULATION)
 ## Version stuff
 ##
 SET(OPENSIM_SIMULATION_LIBRARY_NAME osim${KIT})
-SET(OPENSIM_SIMULATION_MAJOR_VERSION 0)
-SET(OPENSIM_SIMULATION_MINOR_VERSION 7)
-SET(OPENSIM_SIMULATION_BUILD_VERSION 1)
+SET(OPENSIM_SIMULATION_MAJOR_VERSION 2)
+SET(OPENSIM_SIMULATION_MINOR_VERSION 0)
+SET(OPENSIM_SIMULATION_BUILD_VERSION 0)
 SET(OPENSIM_SIMULATION_COPYRIGHT_YEARS "2005-6")
 # comma separated list of authors
 SET(OPENSIM_SIMULATION_AUTHORS  "Clay_Anderson-Ayman_Habib_and_Peter_Loan") 
@@ -22,18 +22,8 @@ ADD_DEFINITIONS(-DOPENSIM_SIMULATION_LIBRARY_NAME=${OPENSIM_SIMULATION_LIBRARY_N
 
 ## Name headers under individual directories so that INSTALL doesn't barf on them
 
-SET(SIMULATION_SUBDIRS 
-.
-Control
-Integrator
-Manager
-Model
-Wrap
-)
-
-
-FILE(GLOB SOURCE_FILES Control/*.cpp Integrator/*.cpp Manager/*.cpp Model/*.cpp Wrap/*.cpp *.cpp)
-FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Wrap/*.h *.h)
+FILE(GLOB SOURCE_FILES Control/*.cpp Integrator/*.cpp Manager/*.cpp Model/*.cpp Wrap/*.cpp SimbodyEngine/*.cpp *.cpp)
+FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Wrap/*.h SimbodyEngine/*.h *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors
@@ -41,30 +31,42 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
+ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+
 IF(WIN32)
-LINK_LIBRARIES(debug osimCommon_d optimized osimCommon
-		debug xerces-c_2D optimized  xerces-c_2)
+TARGET_LINK_LIBRARIES(osim${KIT} 
+               debug osimCommon_d optimized osimCommon		     
+		       ${SIMTK_ALL_LIBS}
+		       debug xerces-c_2D optimized  xerces-c_2)
 ELSE(WIN32)
-LINK_LIBRARIES(debug osimCommon_d optimized osimCommon
-		debug xerces-c_2D optimized  xerces-c_2
+TARGET_LINK_LIBRARIES(osim${KIT} 
+               debug osimCommon_d     optimized osimCommon		     
+		       ${SIMTK_ALL_LIBS}
+  		       debug xerces-c      optimized xerces-c
 		dl)
 ENDIF(WIN32)
 
-IF (BUILD_STATIC_OSIM_LIBS)
-	ADD_LIBRARY(osim${KIT} STATIC ${SOURCE_FILES} ${INCLUDE_FILES}) 
-	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
-ELSE(BUILD_STATIC_OSIM_LIBS)
-	ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
-	SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
-		DEFINE_SYMBOL ${EXPORT_MACRO}
-		PROJECT_LABEL "Libraries - osim${KIT}"
-	)
-ENDIF(BUILD_STATIC_OSIM_LIBS)
+
+SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
+   DEFINE_SYMBOL ${EXPORT_MACRO}
+   PROJECT_LABEL "Libraries - osim${KIT}"
+)
 
 ## install stuff
 INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
+
+SET(SIMULATION_SUBDIRS 
+.
+Control
+Manager
+Model
+Wrap
+SimbodyEngine
+)
 
 FOREACH(dir ${SIMULATION_SUBDIRS})
    FILE(GLOB HEADERS ${dir}/*.h)	# returns full pathnames
    INSTALL_FILES(/sdk/include/OpenSim/Simulation/${dir} .h ${HEADERS})
 ENDFOREACH(dir)
+
+SUBDIRS(SimbodyEngine Test)

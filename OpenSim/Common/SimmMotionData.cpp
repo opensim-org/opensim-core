@@ -31,7 +31,6 @@
 //=============================================================================
 #include <fstream>
 #include <sstream>
-#include "rdMath.h"
 #include "SimmMotionData.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
@@ -629,7 +628,7 @@ double SimmMotionData::getValue(const string& aName, int aFrameIndex)
 			return _rows[aFrameIndex][i];
 	}
 
-	return rdMath::getNAN();
+	return SimTK::NaN;
 }
 //_____________________________________________________________________________
 /**

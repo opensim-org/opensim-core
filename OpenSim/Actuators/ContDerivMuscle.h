@@ -36,7 +36,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/AbstractMuscle.h>
+#include <OpenSim/Simulation/Model/Muscle.h>
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -55,7 +55,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API ContDerivMuscle : public AbstractMuscle  
+class OSIMACTUATORS_API ContDerivMuscle : public Muscle  
 {
 
 //=============================================================================
@@ -122,19 +122,11 @@ protected:
 	PropertyDbl _flenProp;
 	double &_flen;
 
-	// Muscle controls
-	double _excitation;
+    /** indexes for Forces in various components */
+    SimTK::CacheEntryIndex _tendonForceIndex;
+    SimTK::CacheEntryIndex _activeForceIndex;
+    SimTK::CacheEntryIndex _passiveForceIndex;
 
-	// Muscle states and derivatives
-	double _activation;
-	double _activationDeriv;
-	double _fiberLength;
-	double _fiberLengthDeriv;
-
-	// Forces in various components
-	double _tendonForce;
-	double _activeForce;
-	double _passiveForce;
 
 private:
 	static const int STATE_ACTIVATION;
@@ -155,34 +147,50 @@ public:
 	ContDerivMuscle& operator=(const ContDerivMuscle &aMuscle);
 #endif
    void copyData(const ContDerivMuscle &aMuscle);
-	virtual void copyPropertyValues(AbstractActuator& aActuator);
+	virtual void copyPropertyValues(Actuator& aActuator);
+    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model&model);
+
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getMaxIsometricForce() { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() { return _tendonSlackLength; }
-	virtual double getPennationAngleAtOptimalFiberLength() { return _pennationAngle; }
-	virtual double getActivationTimeConstant() { return _activationTimeConstant; }
-	virtual double getDeactivationTimeConstant() { return _deactivationTimeConstant; }
-	virtual double getVmax() { return _vmax; }
-	virtual double getVmax0() { return _vmax0; }
-	virtual double getFmaxTendonStrain() { return _fmaxTendonStrain; }
-	virtual double getFmaxMuscleStrain() { return _fmaxMuscleStrain; }
-	virtual double getKshapeActive() { return _kShapeActive; }
-	virtual double getKshapePassive() { return _kShapePassive; }
-	virtual double getDamping() { return _damping; }
-	virtual double getAf() { return _af; }
-	virtual double getFlen() { return _flen; }
+	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
+	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
+	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
+	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngle; }
+	virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
+	virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
+	virtual double getVmax() const { return _vmax; }
+	virtual double getVmax0() const { return _vmax0; }
+	virtual double getFmaxTendonStrain() const { return _fmaxTendonStrain; }
+	virtual double getFmaxMuscleStrain() const { return _fmaxMuscleStrain; }
+	virtual double getKshapeActive() const { return _kShapeActive; }
+	virtual double getKshapePassive() const { return _kShapePassive; }
+	virtual double getDamping() const { return _damping; }
+	virtual double getAf() const { return _af; }
+	virtual double getFlen() const { return _flen; }
 	// Computed quantities
-	virtual double getPennationAngle();
-	virtual double getFiberLength();
-	virtual double getNormalizedFiberLength();
-	virtual double getPassiveFiberForce();
-	virtual double getStress() const;
-	virtual double getActivation() const { return getState(STATE_ACTIVATION); }
+	virtual double getPennationAngle(const SimTK::State& s) const;
+	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
+	virtual double getPassiveFiberForce(const SimTK::State& s) const;
+	virtual double getStress(const SimTK::State& s) const;
+	virtual double getActivation(const SimTK::State& s) const { return getStateVariable(s, STATE_ACTIVATION); }
+    virtual void setActivation(SimTK::State& s, double activation) const { setStateVariable(s, STATE_ACTIVATION, activation); }
+    virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVATION); }
+    virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, STATE_ACTIVATION, activationDeriv); }
+    virtual double getFiberLength(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_LENGTH); }
+    virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariable(s, STATE_FIBER_LENGTH, fiberLength); }
+    virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_LENGTH); }
+    virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH, fiberLengthDeriv); }
+    virtual void setTendonForce(const SimTK::State& s, double aForce) const;
+    virtual double getTendonForce( const SimTK::State& s) const;
+    virtual void setActiveForce(const SimTK::State& s, double aForce) const;
+    virtual double getActiveForce( const SimTK::State& s) const;
+    virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
+    virtual double getPassiveForce( const SimTK::State& s) const;
+
+
 
 	//--------------------------------------------------------------------------
 	// FORCE-LENGTH-VELOCITY PROPERTIES
@@ -191,24 +199,25 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computeStateDerivatives(double rDYDT[]);
-	virtual void computeEquilibrium();
-	virtual void computeActuation();
-	double calcTendonForce(double aNormTendonLength) const;
-	double calcPassiveForce(double aNormFiberLength) const;
-	double calcActiveForce(double aNormFiberLength) const;
-	double calcFiberVelocity(double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	virtual double computeIsometricForce(double activation);
-	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(double aActivation);
+	virtual void computeStateDerivatives(const SimTK::State& s);
+	virtual void computeEquilibrium(SimTK::State& s ) const;
+	virtual double computeActuation(const SimTK::State& s);
+	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
+	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
+	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
+	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation);
 
 	//--------------------------------------------------------------------------
 	// SCALE
 	//--------------------------------------------------------------------------
-	virtual void postScale(const ScaleSet& aScaleSet);
-	virtual void scale(const ScaleSet& aScaleSet);
-	virtual void setup(Model* aModel);
+	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
+	virtual void setup(Model& aModel);
+    virtual void equilibrate(SimTK::State& state) const;
 
-	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, AbstractActuator);
+	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, Actuator);
 
 private:
 	void setNull();

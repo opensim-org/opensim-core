@@ -29,26 +29,13 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/Common/Object.h>
-#include "RegisterTypes_osimAnalyses.h"
-#include "Kinematics.h"
-#include "Actuation.h"
-#include "PointKinematics.h"
-#include "BodyKinematics.h"
-#include "ActuatorGeneralizedForces.h"
-#include "GeneralizedForces.h"
-#include "MuscleAnalysis.h"
-#include "InverseDynamics.h"
-#include "JointReaction.h"
-#include "StaticOptimization.h"
-#include "InducedAccelerations.h"
+#include "osimAnalyses.h"	// Add headers for new Analyses in osimAnalyses.h rather than here so they are available to the API.
 
 using namespace OpenSim;
 using namespace std;
 
-#ifndef STATIC_OSIM_LIBS
 static osimAnalysesInstantiator instantiator; 
-#endif
-
+     
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
@@ -62,19 +49,16 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 	Object::RegisterType( BodyKinematics() );
 	Object::RegisterType( MuscleAnalysis() );
 	Object::RegisterType( InverseDynamics() );
-	Object::RegisterType( InducedAccelerations() );
-	Object::RegisterType( StaticOptimization() );
 	Object::RegisterType( JointReaction() );
-	// unregistering until we verify that these work
-	//Object::RegisterType( ActuatorGeneralizedForces() );
-    //Object::RegisterType( GeneralizedForces() );
+	Object::RegisterType( StaticOptimization() );
+	Object::RegisterType( ForceReporter() );
+	Object::RegisterType( StatesReporter() );
 }
 
 osimAnalysesInstantiator::osimAnalysesInstantiator() 
 { 
         registerDllClasses(); 
 } 
-    
 void osimAnalysesInstantiator::registerDllClasses() 
 { 
         RegisterTypes_osimAnalyses(); 

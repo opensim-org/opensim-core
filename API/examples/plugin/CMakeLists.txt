@@ -1,6 +1,6 @@
 Project(OpenSimPlugin)
 
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.6)
 if(COMMAND cmake_policy)
         cmake_policy(SET CMP0003 NEW)
         cmake_policy(SET CMP0005 NEW)
@@ -9,12 +9,14 @@ endif(COMMAND cmake_policy)
 SET(KIT plugin)
 SET(UKIT PLUGIN)
 
+SET(NameSpace "OpenSim_")
+
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 1.9/" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 2.0/" CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
 
@@ -35,11 +37,10 @@ LINK_LIBRARIES(
 	debug osimSimulation_d optimized osimSimulation
 	debug osimAnalyses_d optimized osimAnalyses
 	debug osimActuators_d optimized osimActuators
-	debug osimSimbodyEngine_d optimized osimSimbodyEngine
-	debug  SimTKcommon_d optimized   SimTKcommon
-	debug  SimTKmath_d optimized  SimTKmath
-	debug SimTKcpodes_d optimized  SimTKcpodes
-	debug SimTKsimbody_d optimized  SimTKsimbody
+	debug  ${NameSpace}SimTKcommon_d optimized   ${NameSpace}SimTKcommon
+	debug  ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
+	debug ${NameSpace}SimTKcpodes_d optimized  ${NameSpace}SimTKcpodes
+	debug ${NameSpace}SimTKsimbody_d optimized  ${NameSpace}SimTKsimbody
 	SimTKlapack pthreadVC2
 )
 
@@ -49,7 +50,7 @@ IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}/ CACHE PATH "Install path prefix." FORCE)
 ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
-MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
+## MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
 MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
 

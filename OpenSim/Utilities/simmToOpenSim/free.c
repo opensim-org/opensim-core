@@ -15,12 +15,8 @@
    Routines:
       free_model       : frees a model structure
       free_plot        : frees a plot structure
-      nullify_function : frees all space malloced for a function
-      free_function    : frees the space malloced inside a function structure
-      free_muscles       : frees memory malloced for muscle structure elements
-      free_musclepoints       : frees memory malloced for muscle point structure elements
-      free_defmusc     : frees memory malloced for defaultmuscle elements
-      free_and_nullify : frees memory and sets the pointer to NULL
+      free_muscles     : frees memory malloced for muscle structure elements
+      free_default_muscle : frees memory malloced for defaultmuscle elements
       free_menu        : frees a menu structure
       free_form        : frees a form structure
 
@@ -29,6 +25,7 @@
 #include "universal.h"
 #include "globals.h"
 #include "functions.h"
+#include "normtools.h"
 
 
 /*************** DEFINES (for this file only) *********************************/
@@ -40,47 +37,79 @@
 
 
 /*************** EXTERNED VARIABLES (declared in another file) ****************/
-#ifdef WIN32
-#if ! OPENSIM_BUILD
+#if ! ENGINE
 extern ModelStruct* sMotionModel;
-#endif
 #endif
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
+static void free_segment(SegmentStruct* seg, ModelStruct* ms);
+static void free_saved_segment(SaveSegments* seg, ModelStruct* ms);
 
 
 void free_model(int mod)
 {
-   if (model[mod] != NULL)
+   if (gModel[mod] != NULL)
    {
-#ifdef WIN32
-#if ! OPENSIM_BUILD
-      if (sMotionModel == model[mod])
+#if ! ENGINE
+      if (sMotionModel == gModel[mod])
          sMotionModel = NULL;
 #endif
-#endif
-      freeModelStruct(model[mod]);
-      model[mod] = NULL;
+      freeModelStruct(gModel[mod]);
+      gModel[mod] = NULL;
    }
 }
 
 void freeModelStruct(ModelStruct* ms)
 {
-   int i, j;
+   int i, j, k;
 
    FREE_IFNOTNULL(ms->name);
-   FREE_IFNOTNULL(ms->pathptrs);
+   if (ms->pathptrs != NULL)
+   {
+      for (i=0; i<ms->numsegments*ms->numsegments; i++)
+         FREE_IFNOTNULL(ms->pathptrs[i]);
+      free(ms->pathptrs);
+   }
    FREE_IFNOTNULL(ms->jointfilename);
    FREE_IFNOTNULL(ms->musclefilename);
+   FREE_IFNOTNULL(ms->bonepathname);
+   FREE_IFNOTNULL(ms->mocap_dir);
+   for (i=0; i<ms->num_motion_files; i++)
+      FREE_IFNOTNULL(ms->motionfilename[i]);
 
    for (i=0; i<ms->numgroups; i++)
    {
       FREE_IFNOTNULL(ms->muscgroup[i].name);
+      FREE_IFNOTNULL(ms->muscgroup[i].muscle_index);
       free_menu(&ms->muscgroup[i].menu);
    }
    FREE_IFNOTNULL(ms->muscgroup);
+   for (i=0; i<ms->save.numsavedmuscgroups; i++)
+   {
+      FREE_IFNOTNULL(ms->save.muscgroup[i].name);
+      FREE_IFNOTNULL(ms->save.muscgroup[i].muscle_index);
+   }
+   FREE_IFNOTNULL(ms->save.muscgroup);
 
    free_form(&ms->gencform);
+   free_form(&ms->dynparamsform);
+
+   for (i = 0; i < ms->gc_chpanel.numoptions; i++)
+      FREE_IFNOTNULL(ms->gc_chpanel.checkbox[i].name);
+   FREE_IFNOTNULL(ms->gc_chpanel.checkbox);
+   //FREE_IFNOTNULL(ms->gc_chpanel.title); title uses static char
+
+   for (i = 0; i < ms->gc_lockPanel.numoptions; i++)
+      FREE_IFNOTNULL(ms->gc_lockPanel.checkbox[i].name);
+   FREE_IFNOTNULL(ms->gc_lockPanel.checkbox);
+   //FREE_IFNOTNULL(ms->gc_lockPanel.title); title uses static char
+
+   for (i = 0; i < ms->numseggroups; i++)
+   {
+      FREE_IFNOTNULL(ms->seggroup[i].name);
+      FREE_IFNOTNULL(ms->seggroup[i].segment);
+   }
+   FREE_IFNOTNULL(ms->seggroup);
 
    for (i=0; i<ms->numjoints; i++)
    {
@@ -93,67 +122,48 @@ void freeModelStruct(ModelStruct* ms)
    }
    FREE_IFNOTNULL(ms->joint);
 
+   for (i=0; i<ms->save.numsavedjnts; i++)
+      FREE_IFNOTNULL(ms->save.joint[i].name);
+   FREE_IFNOTNULL(ms->save.joint);
+
    for (i=0; i<ms->numsegments; i++)
-   {
-      if (ms->segment[i].defined == no)
-         continue;
-      FREE_IFNOTNULL(ms->segment[i].name);
-      for (j=0; j<ms->segment[i].numBones; j++)
-      {
-         FREE_IFNOTNULL(ms->segment[i].bone[j].name);
-         /*
-         FREE_IFNOTNULL(ms->segment[i].bone[j].vert);
-         FREE_IFNOTNULL(ms->segment[i].bone[j].poly);
-         */
-      }
-      for (j=0; j<ms->segment[i].numSpringPoints; j++)
-      {
-         FREE_IFNOTNULL(ms->segment[i].springPoint[j].name);
-         FREE_IFNOTNULL(ms->segment[i].springPoint[j].floorName);
-      }
-      FREE_IFNOTNULL(ms->segment[i].springPoint);
-
-      if (ms->segment[i].springFloor)
-      {
-         FREE_IFNOTNULL(ms->segment[i].springFloor->name);
-         FREE_IFNOTNULL(ms->segment[i].springFloor->filename);
-         FREE_IFNOTNULL(ms->segment[i].springFloor->poly);
-         FREE_IFNOTNULL(ms->segment[i].springFloor->points);
-         FREE_IFNOTNULL(ms->segment[i].springFloor);
-      }
-
-      for (j=0; j<ms->segment[i].numContactObjects; j++)
-      {
-         FREE_IFNOTNULL(ms->segment[i].contactObject[j].name);
-         FREE_IFNOTNULL(ms->segment[i].contactObject[j].filename);
-         FREE_IFNOTNULL(ms->segment[i].contactObject[j].poly);
-      }
-      FREE_IFNOTNULL(ms->segment[i].contactObject);
-
-      FREE_IFNOTNULL(ms->segment[i].marker);
-
-#if INCLUDE_MOCAP_MODULE
-      FREE_IFNOTNULL(ms->segment[i].gait_scale_segment);
-      FREE_IFNOTNULL(ms->segment[i].mocap_segment);
-      FREE_IFNOTNULL(ms->segment[i].mocap_scale_chain_end1);
-      FREE_IFNOTNULL(ms->segment[i].mocap_scale_chain_end2);
-#endif
-   }
+      free_segment(&ms->segment[i], ms);
    FREE_IFNOTNULL(ms->segment);
+   for (i=0; i<ms->save.numsavedsegments; i++)
+      free_saved_segment(&ms->save.segment[i], ms);
+   FREE_IFNOTNULL(ms->save.segment);
+
+   for (i=0; i<ms->save.num_markers; i++)
+      FREE_IFNOTNULL(ms->save.marker[i].name);
+   FREE_IFNOTNULL(ms->save.marker);
+
+   for (i=0; i<ms->num_wrap_objects; i++)
+   {
+      FREE_IFNOTNULL(ms->wrapobj[i]->name);
+      FREE_IFNOTNULL(ms->wrapobj[i]);
+   }
    FREE_IFNOTNULL(ms->wrapobj);
+   for (i=0; i<ms->save.num_wrap_objects; i++)
+      FREE_IFNOTNULL(ms->save.wrap_object[i].name);
+   FREE_IFNOTNULL(ms->save.wrap_object);
 
    for (i=0; i<ms->numgencoords; i++)
    {
-      if (ms->gencoord[i].defined == yes)
+      if (ms->gencoord[i]->defined == yes)
       {
-	      FREE_IFNOTNULL(ms->gencoord[i].name);
-	      FREE_IFNOTNULL(ms->gencoord[i].jointnum);
+	      FREE_IFNOTNULL(ms->gencoord[i]->name);
+	      FREE_IFNOTNULL(ms->gencoord[i]->jointnum);
 #if INCLUDE_MOCAP_MODULE
-         FREE_IFNOTNULL(ms->gencoord[i].mocap_segment);
+         FREE_IFNOTNULL(ms->gencoord[i]->mocap_segment);
 #endif
+	      FREE_IFNOTNULL(ms->gencoord[i]->group);
       }
    }
    FREE_IFNOTNULL(ms->gencoord);
+   FREE_IFNOTNULL(ms->save.gencoord);
+
+   for (i = 0; i < 2*GENBUFFER; i++)
+      FREE_IFNOTNULL(ms->genc_help[i].text);
 
    for (i = 0; i < ms->num_deformities; i++)
    {
@@ -167,506 +177,394 @@ void freeModelStruct(ModelStruct* ms)
 
       FREE_IFNOTNULL(ms->deformity[i].deform);
    }
+   FREE_IFNOTNULL(ms->deformity);
 
-#ifndef ENGINE
-
-   /* NOTE: the model's window *must* be set as the current GL context, otherwise
-    *  the glDeleteList() calls below will produce unpredictable bad results.
-    */
-   for (i=0; i<ms->dis.mat.num_materials; i++)
+   for (i = 0; i < ms->numligaments; i++)
    {
-      if (ms->dis.mat.materials[i].normal_list != -1)
-         glDeleteLists(ms->dis.mat.materials[i].normal_list,1);
-      if (ms->dis.mat.materials[i].highlighted_list != -1)
-         glDeleteLists(ms->dis.mat.materials[i].highlighted_list,1);
-      FREE_IFNOTNULL(ms->dis.mat.materials[i].name);
+      FREE_IFNOTNULL(ms->ligament[i].name);
+      for (j = 0; j < ms->ligament[i].numlines; j++)
+      {
+         FREE_IFNOTNULL(ms->ligament[i].line[j].mp_orig);
+         FREE_IFNOTNULL(ms->ligament[i].line[j].mp);
+      }
+      FREE_IFNOTNULL(ms->ligament[i].line);
    }
-   FREE_IFNOTNULL(ms->dis.mat.materials);
+   FREE_IFNOTNULL(ms->ligament);
 
-   free_muscles(ms->muscle,&ms->default_muscle,ms->nummuscles);
-   //free_musclepoints(ms->musclepoints, ms->nummusclepoints)
-
-   free_defmusc(&ms->default_muscle);
-#endif
+   free_muscles(ms);
+   free_default_muscle(ms->default_muscle);
 
    for (i=0; i<ms->func_array_size; i++)
-      if (ms->function[i].defined == yes)
-	 nullify_function(&ms->function[i], no);
-
+      free_function(ms->function[i], yes);
    FREE_IFNOTNULL(ms->function);
 
-#ifndef ENGINE
-   free_savedmuscles(ms->save.muscle,&ms->save.default_muscle, ms->save.numsavedmuscs);
-   free_savedmusclepaths(ms->save.musclepath, ms->save.numsavedpaths);
-   free_defmusc(&ms->save.default_muscle);
+   if (ms->save.function)
+   {
+      for (i=0; i<ms->func_array_size; i++)
+         free_function(ms->save.function[i], yes);
+      FREE_IFNOTNULL(ms->save.function);
+   }
 
+#if ! ENGINE
    for (i = 0; i < ms->num_motion_objects; i++)
       free_motion_object(&ms->motion_objects[i], ms);
-   
+
    FREE_IFNOTNULL(ms->motion_objects);
 #endif
-   
-/*
-   for (i=0; i<ms->numjoints; i++)
+
+   FREE_IFNOTNULL(ms->save.muscwrap_associations);
+
+   for (i = 0; i < ms->numworldobjects; i++)
    {
-      FREE_IFNOTNULL(ms->save.jnts[i].name);
-      for (j=0; j<6; j++)
-	 FREE_IFNOTNULL(ms->save.jnts[i].dofs[j].element);
+      FREE_IFNOTNULL(ms->worldobj[i].name);
+      FREE_IFNOTNULL(ms->worldobj[i].filename);
+      if (ms->worldobj[i].wobj)
+         free_polyhedron(ms->worldobj[i].wobj, yes, ms);
    }
-   FREE_IFNOTNULL(ms->save.jnts);
-   for (i=0; i<ms->numgencoords; i++)
-      FREE_IFNOTNULL(ms->save.gencs[i].name);
-   FREE_IFNOTNULL(ms->save.gencs);
-*/
+   FREE_IFNOTNULL(ms->worldobj);
+
+   for (i = 0; i < ms->save.num_deforms; i++)
+   {
+      FREE_IFNOTNULL(ms->save.deform[i].name);
+      FREE_IFNOTNULL(ms->save.deform[i].innerBox);
+      FREE_IFNOTNULL(ms->save.deform[i].innerBoxUndeformed);
+      FREE_IFNOTNULL(ms->save.deform[i].outerBox);
+      FREE_IFNOTNULL(ms->save.deform[i].outerBoxUndeformed);
+   }
+   FREE_IFNOTNULL(ms->save.deform);
+
+   for (i = 0; i < ms->num_constraint_objects; i++)
+   {
+      FREE_IFNOTNULL(ms->constraintobj[i].name);
+      FREE_IFNOTNULL(ms->constraintobj[i].joints);
+      FREE_IFNOTNULL(ms->constraintobj[i].qs);
+      for (j = 0; j < ms->constraintobj[i].numPoints; j++)
+         FREE_IFNOTNULL(ms->constraintobj[i].points[j].name);
+      FREE_IFNOTNULL(ms->constraintobj[i].points);
+   }
+   FREE_IFNOTNULL(ms->constraintobj);
+
+   for (i = 0; i < ms->save.num_constraint_objects; i++)
+   {
+      FREE_IFNOTNULL(ms->save.constraintobj[i].name);
+      FREE_IFNOTNULL(ms->save.constraintobj[i].joints);
+      FREE_IFNOTNULL(ms->save.constraintobj[i].qs);
+      for (j = 0; j < ms->save.constraintobj[i].numPoints; j++)
+         FREE_IFNOTNULL(ms->save.constraintobj[i].points[j].name);
+      FREE_IFNOTNULL(ms->save.constraintobj[i].points);
+   }
+   FREE_IFNOTNULL(ms->save.constraintobj);
+
+   for (i = 0; i < ms->save.num_conspt_associations; i++)
+   {
+      for (j = 0; j < ms->save.conspt_associations[i].numPoints; j++)
+         FREE_IFNOTNULL(ms->save.conspt_associations[i].savedPoints[j].name);
+      FREE_IFNOTNULL(ms->save.conspt_associations[i].savedPoints);
+   }
+   FREE_IFNOTNULL(ms->save.conspt_associations);
+
+   FREE_IFNOTNULL(ms->segment_drawing_order);
+
+   for (i = 0; i < MAXSAVEDVIEWS; i++)
+      FREE_IFNOTNULL(ms->dis.view_name[i]);
+
+   for (i = 0; i < ms->numgencgroups; i++)
+   {
+      FREE_IFNOTNULL(ms->gencgroup[i].name);
+      FREE_IFNOTNULL(ms->gencgroup[i].gencoord);
+   }
+   FREE_IFNOTNULL(ms->gencgroup);
+
+   FREE_IFNOTNULL(ms->gencslider.sl);
+   FREE_IFNOTNULL(ms->dis.devs);
+   FREE_IFNOTNULL(ms->dis.dev_values);
+   FREE_IFNOTNULL(ms->dis.muscleson);
+   FREE_IFNOTNULL(ms->forceUnits);
+   FREE_IFNOTNULL(ms->lengthUnits);
+
+   // The motions are deleted by delete_model() so that the appropriate
+   // events can be generated, so all that remains here is the array of
+   // motion structure pointers.
+   FREE_IFNOTNULL(ms->motion);
 
    FREE_IFNOTNULL(ms);
 }
 
-#ifndef ENGINE
+static void free_segment(SegmentStruct* seg, ModelStruct* ms)
+{
+   int j;
+
+   if (seg->defined == no)
+      return;
+
+   FREE_IFNOTNULL(seg->name);
+   for (j=0; j<seg->numBones; j++)
+      free_polyhedron(&seg->bone[j], no, ms);
+   FREE_IFNOTNULL(seg->bone);
+   for (j=0; j<seg->numSpringPoints; j++)
+   {
+      FREE_IFNOTNULL(seg->springPoint[j].name);
+   }
+   FREE_IFNOTNULL(seg->springPoint);
+   FREE_IFNOTNULL(seg->group);
+
+   if (seg->springFloor)
+   {
+      FREE_IFNOTNULL(seg->springFloor->name);
+      FREE_IFNOTNULL(seg->springFloor->filename);
+      free_polyhedron(seg->springFloor->poly, yes, ms);
+      FREE_IFNOTNULL(seg->springFloor->points);
+      FREE_IFNOTNULL(seg->springFloor);
+   }
+
+   for (j=0; j<seg->numContactObjects; j++)
+   {
+      FREE_IFNOTNULL(seg->contactObject[j].name);
+      FREE_IFNOTNULL(seg->contactObject[j].filename);
+      free_polyhedron(seg->contactObject[j].poly, yes, ms);
+   }
+   FREE_IFNOTNULL(seg->contactObject);
+
+   if (seg->forceMatte)
+   {
+      FREE_IFNOTNULL(seg->forceMatte->name);
+      FREE_IFNOTNULL(seg->forceMatte->filename);
+      free_polyhedron(seg->forceMatte->poly, yes, ms);
+      FREE_IFNOTNULL(seg->forceMatte);
+   }
+
+   for (j=0; j<seg->numMarkers; j++)
+   {
+      FREE_IFNOTNULL(seg->marker[j]->name);
+      FREE_IFNOTNULL(seg->marker[j]);
+   }
+   FREE_IFNOTNULL(seg->marker);
+
+   for (j=0; j<seg->num_deforms; j++)
+   {
+      FREE_IFNOTNULL(seg->deform[j].name);
+      FREE_IFNOTNULL(seg->deform[j].innerBox);
+      FREE_IFNOTNULL(seg->deform[j].innerBoxUndeformed);
+      FREE_IFNOTNULL(seg->deform[j].outerBox);
+      FREE_IFNOTNULL(seg->deform[j].outerBoxUndeformed);
+   }
+   FREE_IFNOTNULL(seg->deform);
+
+#if INCLUDE_MOCAP_MODULE
+   FREE_IFNOTNULL(seg->gait_scale_segment);
+   FREE_IFNOTNULL(seg->mocap_segment);
+   FREE_IFNOTNULL(seg->mocap_scale_chain_end1);
+   FREE_IFNOTNULL(seg->mocap_scale_chain_end2);
+#endif
+}
+
+static void free_saved_segment(SaveSegments* seg, ModelStruct* ms)
+{
+   int j;
+
+   FREE_IFNOTNULL(seg->name);
+   for (j=0; j<seg->numSpringPoints; j++)
+   {
+      FREE_IFNOTNULL(seg->springPoint[j].name);
+   }
+   FREE_IFNOTNULL(seg->springPoint);
+
+   if (seg->springFloor)
+   {
+      FREE_IFNOTNULL(seg->springFloor->name);
+      FREE_IFNOTNULL(seg->springFloor->filename);
+      free_polyhedron(seg->springFloor->poly, yes, ms);
+      FREE_IFNOTNULL(seg->springFloor->points);
+      FREE_IFNOTNULL(seg->springFloor);
+   }
+
+   for (j=0; j<seg->numContactObjects; j++)
+   {
+      FREE_IFNOTNULL(seg->contactObject[j].name);
+      FREE_IFNOTNULL(seg->contactObject[j].filename);
+      free_polyhedron(seg->contactObject[j].poly, yes, ms);
+   }
+   FREE_IFNOTNULL(seg->contactObject);
+
+   if (seg->forceMatte)
+   {
+      FREE_IFNOTNULL(seg->forceMatte->name);
+      FREE_IFNOTNULL(seg->forceMatte->filename);
+      free_polyhedron(seg->forceMatte->poly, yes, ms);
+      FREE_IFNOTNULL(seg->forceMatte);
+   }
+}
+
+#if ! ENGINE
 void free_plot(int plotnum)
 {
+   int i, j;
 
-   int i;
-
-   FREE_IFNOTNULL(plot[plotnum]->title);
-   FREE_IFNOTNULL(plot[plotnum]->xname);
+   FREE_IFNOTNULL(gPlot[plotnum]->title);
+   FREE_IFNOTNULL(gPlot[plotnum]->xname);
    /* JPL 11/2/00 TODO: for some reason, freeing the yname is causing
     * a crash, so remove it for now.
     */
-/*   FREE_IFNOTNULL(plot[plotnum]->yname);*/
+/*   FREE_IFNOTNULL(gPlot[plotnum]->yname);*/
 
-   for (i=0; i<plot[plotnum]->numcurves; i++)
+   for (i=0; i<gPlot[plotnum]->numcurves; i++)
    {
-      FREE_IFNOTNULL(plot[plotnum]->curve[i]->xvalues);
-      FREE_IFNOTNULL(plot[plotnum]->curve[i]->yvalues);
-      FREE_IFNOTNULL(plot[plotnum]->curve[i]->name);
-      FREE_IFNOTNULL(plot[plotnum]->curve[i]);
+      FREE_IFNOTNULL(gPlot[plotnum]->curve[i]->xvalues);
+      FREE_IFNOTNULL(gPlot[plotnum]->curve[i]->yvalues);
+      FREE_IFNOTNULL(gPlot[plotnum]->curve[i]->name);
+      if (gPlot[plotnum]->curve[i]->num_events > 0)
+      {
+         for (j=0; j<gPlot[plotnum]->curve[i]->num_events; j++)
+            FREE_IFNOTNULL(gPlot[plotnum]->curve[i]->event[j].name);
+         FREE_IFNOTNULL(gPlot[plotnum]->curve[i]->event);
+      }
+      FREE_IFNOTNULL(gPlot[plotnum]->curve[i]);
    }
 
-   FREE_IFNOTNULL(plot[plotnum]);
+   if (gPlot[plotnum]->num_file_events > 0)
+   {
+      for (j=0; j<gPlot[plotnum]->num_file_events; j++)
+         FREE_IFNOTNULL(gPlot[plotnum]->file_event[j].name);
+      FREE_IFNOTNULL(gPlot[plotnum]->file_event);
+   }
 
-   plot[plotnum] = NULL;
+   FREE_IFNOTNULL(gPlot[plotnum]);
 
+   gPlot[plotnum] = NULL;
 }
 #endif
 
 
-void nullify_function(SplineFunction* func, SBoolean freeTheFuncToo)
+void free_muscle(dpMuscleStruct *muscle, dpMuscleStruct* dm)
 {
-
-   if (func == NULL)
-      return;
-
-   FREE_IFNOTNULL(func->x);
-   FREE_IFNOTNULL(func->y);
-   FREE_IFNOTNULL(func->b);
-   FREE_IFNOTNULL(func->c);
-   FREE_IFNOTNULL(func->d);
-
-   if (freeTheFuncToo)
-      free(func);
-}
-
-
-
-void free_function(SplineFunction* func)
-{
-
-   if (func == NULL || func->used == no || func->defined == no)
-      return;
-
-   FREE_IFNOTNULL(func->x);
-   FREE_IFNOTNULL(func->y);
-   FREE_IFNOTNULL(func->b);
-   FREE_IFNOTNULL(func->c);
-   FREE_IFNOTNULL(func->d);
-
-   func->used = func->defined = no;
-
-}
-
-/* FREE_MUSCS: frees the muscle structure, but does NOT free the musclepoints or the saved_copy
- * since these may be used elswhere */
-
-void free_muscle(MuscleStruct *muscle, MuscleStruct* dm)
-{
-   int i, j;
+   int i;
 
    if (muscle == NULL)
       return;
 
-   if (muscle->name != dm->name && muscle->name != NULL)
+   if (muscle->name != dm->name)
       FREE_IFNOTNULL(muscle->name);
 
-   if (muscle->group != dm->group && muscle->group != NULL)
+   if (muscle->path)
+   {
+      FREE_IFNOTNULL(muscle->path->mp_orig);
+      FREE_IFNOTNULL(muscle->path->mp);
+      FREE_IFNOTNULL(muscle->path);
+   }
+
+   if (muscle->group != dm->group)
       FREE_IFNOTNULL(muscle->group);
-   if (muscle->max_isometric_force != dm->max_isometric_force && muscle->max_isometric_force != NULL)
+   if (muscle->max_isometric_force != dm->max_isometric_force)
       FREE_IFNOTNULL(muscle->max_isometric_force);
-   if (muscle->pennation_angle != dm->pennation_angle && muscle->pennation_angle != NULL)
+   if (muscle->pennation_angle != dm->pennation_angle)
       FREE_IFNOTNULL(muscle->pennation_angle);
-   if (muscle->min_thickness != dm->min_thickness && muscle->min_thickness != NULL)
+   if (muscle->min_thickness != dm->min_thickness)
       FREE_IFNOTNULL(muscle->min_thickness);
-   if (muscle->max_thickness != dm->max_thickness && muscle->max_thickness != NULL)
+   if (muscle->max_thickness != dm->max_thickness)
       FREE_IFNOTNULL(muscle->max_thickness);
-   if (muscle->min_material != dm->min_material && muscle->min_material != NULL) //dkb apr 2008 
+   if (muscle->min_material != dm->min_material)
       FREE_IFNOTNULL(muscle->min_material);
-   if (muscle->max_material != dm->max_material && muscle->max_material != NULL) //dkb apr 2008
+   if (muscle->max_material != dm->max_material)
       FREE_IFNOTNULL(muscle->max_material);
-   if (muscle->max_contraction_vel != dm->max_contraction_vel && muscle->max_contraction_vel != NULL)
+   if (muscle->max_contraction_vel != dm->max_contraction_vel)
       FREE_IFNOTNULL(muscle->max_contraction_vel);
-   if (muscle->force_vel_curve != dm->force_vel_curve)
-      nullify_function(muscle->force_vel_curve, yes);
-   if (muscle->optimal_fiber_length != dm->optimal_fiber_length && muscle->optimal_fiber_length != NULL)
+   if (muscle->optimal_fiber_length != dm->optimal_fiber_length)
       FREE_IFNOTNULL(muscle->optimal_fiber_length);
-   if (muscle->resting_tendon_length != dm->resting_tendon_length && muscle->resting_tendon_length != NULL)
+   if (muscle->resting_tendon_length != dm->resting_tendon_length)
       FREE_IFNOTNULL(muscle->resting_tendon_length);
-   if (muscle->momentarms != dm->momentarms && muscle->momentarms != NULL)
+   if (muscle->momentarms != dm->momentarms)
       FREE_IFNOTNULL(muscle->momentarms);
-   if (muscle->active_force_len_curve != dm->active_force_len_curve)
-      nullify_function(muscle->active_force_len_curve, yes);
-   if (muscle->passive_force_len_curve != dm->passive_force_len_curve)
-      nullify_function(muscle->passive_force_len_curve, yes);
-   if (muscle->tendon_force_len_curve != dm->tendon_force_len_curve)
-      nullify_function(muscle->tendon_force_len_curve, yes);
+   if (muscle->active_force_len_func != dm->active_force_len_func)
+      FREE_IFNOTNULL(muscle->active_force_len_func);
+   if (muscle->passive_force_len_func != dm->passive_force_len_func)
+      FREE_IFNOTNULL(muscle->passive_force_len_func);
+   if (muscle->tendon_force_len_func != dm->tendon_force_len_func)
+      FREE_IFNOTNULL(muscle->tendon_force_len_func);
+   if (muscle->force_vel_func != dm->force_vel_func)
+      FREE_IFNOTNULL(muscle->force_vel_func);
+   if (muscle->excitation_func != dm->excitation_func)
+      FREE_IFNOTNULL(muscle->excitation_func);
+
    if (muscle->wrapStruct)
    {
-      for (j = 0; j < muscle->numWrapStructs; j++)
+      for (i = 0; i < muscle->numWrapStructs; i++)
       {
-         FREE_IFNOTNULL(muscle->wrapStruct[j]->mp_wrap[0].wrap_pts);
-         FREE_IFNOTNULL(muscle->wrapStruct[j]->mp_wrap[1].wrap_pts);
-         FREE_IFNOTNULL(muscle->wrapStruct[j]);
+         FREE_IFNOTNULL(muscle->wrapStruct[i]->mp_wrap[0].wrap_pts);
+         FREE_IFNOTNULL(muscle->wrapStruct[i]->mp_wrap[1].wrap_pts);
+         FREE_IFNOTNULL(muscle->wrapStruct[i]);
       }
       FREE_IFNOTNULL(muscle->wrapStruct);
    }
-   if (muscle->muscle_model_index != dm->muscle_model_index && muscle->muscle_model_index != NULL) //dkb apr 2008 
+   if (muscle->muscle_model_index != dm->muscle_model_index)
       FREE_IFNOTNULL(muscle->muscle_model_index);
 
    if (muscle->dynamic_params)
    {
-      for (j = 0; j < muscle->num_dynamic_params; j++)
+      for (i = 0; i < muscle->num_dynamic_params; i++)
       {
-         if (muscle->dynamic_params[j] != dm->dynamic_params[j] && muscle->dynamic_params[j] != NULL)
-            FREE_IFNOTNULL(muscle->dynamic_params[j]);
+         if (muscle->dynamic_params[i] != dm->dynamic_params[i])
+            FREE_IFNOTNULL(muscle->dynamic_params[i]);
       }
+      FREE_IFNOTNULL(muscle->dynamic_params);
    }
-
 }
 
-/* FREE_MUSCS: frees the muscle structure, but does NOT free the musclepoints or the saved_copy
- * since these may be used elswhere */
-
-void free_muscles(MuscleStruct musc[], MuscleStruct* dm, int num)
+void free_muscles(ModelStruct* model)
 {
+   int i;
 
-   int i, j;
-
-   if (musc == NULL)
+   if (model == NULL)
       return;
 
-   for (i=0; i<num; i++)
+   for (i=0; i<model->nummuscles; i++)
    {
-      if (musc[i].name != dm->name && musc[i].name != NULL)
-         FREE_IFNOTNULL(musc[i].name);
-
-      if (musc[i].group != dm->group && musc[i].group != NULL)
-         FREE_IFNOTNULL(musc[i].group);
-      if (musc[i].max_isometric_force != dm->max_isometric_force && musc[i].max_isometric_force != NULL)
-         FREE_IFNOTNULL(musc[i].max_isometric_force);
-      if (musc[i].pennation_angle != dm->pennation_angle && musc[i].pennation_angle != NULL)
-         FREE_IFNOTNULL(musc[i].pennation_angle);
-      if (musc[i].min_thickness != dm->min_thickness && musc[i].min_thickness != NULL)
-         FREE_IFNOTNULL(musc[i].min_thickness);
-      if (musc[i].max_thickness != dm->max_thickness && musc[i].max_thickness != NULL)
-         FREE_IFNOTNULL(musc[i].max_thickness);
-      if (musc[i].min_material != dm->min_material && musc[i].min_material != NULL) //dkb apr 2008 
-         FREE_IFNOTNULL(musc[i].min_material);
-      if (musc[i].max_material != dm->max_material && musc[i].max_material != NULL) //dkb apr 2008
-         FREE_IFNOTNULL(musc[i].max_material);
-      if (musc[i].max_contraction_vel != dm->max_contraction_vel && musc[i].max_contraction_vel != NULL)
-         FREE_IFNOTNULL(musc[i].max_contraction_vel);
-      if (musc[i].force_vel_curve != dm->force_vel_curve)
-         nullify_function(musc[i].force_vel_curve, yes);
-      if (musc[i].optimal_fiber_length != dm->optimal_fiber_length && musc[i].optimal_fiber_length != NULL)
-         FREE_IFNOTNULL(musc[i].optimal_fiber_length);
-      if (musc[i].resting_tendon_length != dm->resting_tendon_length && musc[i].resting_tendon_length != NULL)
-         FREE_IFNOTNULL(musc[i].resting_tendon_length);
-      if (musc[i].momentarms != dm->momentarms && musc[i].momentarms != NULL)
-         FREE_IFNOTNULL(musc[i].momentarms);
-      if (musc[i].active_force_len_curve != dm->active_force_len_curve)
-         nullify_function(musc[i].active_force_len_curve, yes);
-      if (musc[i].passive_force_len_curve != dm->passive_force_len_curve)
-         nullify_function(musc[i].passive_force_len_curve, yes);
-      if (musc[i].tendon_force_len_curve != dm->tendon_force_len_curve)
-         nullify_function(musc[i].tendon_force_len_curve, yes);
-      if (musc[i].wrapStruct)
-      {
-         for (j = 0; j < musc[i].numWrapStructs; j++)
-         {
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[0].wrap_pts);
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[1].wrap_pts);
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]);
-         }
-         FREE_IFNOTNULL(musc[i].wrapStruct);
-      }
-      if (musc[i].muscle_model_index != dm->muscle_model_index && musc[i].muscle_model_index != NULL) //dkb apr 2008 
-         FREE_IFNOTNULL(musc[i].muscle_model_index);
-
-      if (musc[i].dynamic_params)
-      {
-         for (j = 0; j < musc[i].num_dynamic_params; j++)
-         {
-            if (musc[i].dynamic_params[j] != dm->dynamic_params[j] && musc[i].dynamic_params[j] != NULL)
-               FREE_IFNOTNULL(musc[i].dynamic_params[j]);
-         }
-      }
-      // DKB to do - free dynamic parameters ??
+      free_muscle(model->muscle[i], model->default_muscle);
+      FREE_IFNOTNULL(model->muscle[i]);
    }
 
-   FREE_IFNOTNULL(musc);
+   FREE_IFNOTNULL(model->muscle);
 }
-
-/* FREE_MUSCLEPOINTS: */
-
-void free_musclepoints(MusclePoint mp[], int num)
-{
-   int i, j;
-
-   if (mp == NULL)
-      return;
-
-/*   for (i=0; i<num; i++)
-   {
-      if (mp[i].num_orig_points != NULL)
-      {
-         for (j=0; j<*mp[i].num_orig_points; j++)
-         {
-            if (mp[i].musclepoints->mp_orig[j].numranges > 0 && mp[i].musclepoints->mp_orig[j].ranges != NULL)
-               FREE_IFNOTNULL(mp[i].musclepoints->mp_orig[j].ranges);
-         }
-         FREE_IFNOTNULL(mp[i].num_orig_points);
-      }
-      if (mp[i].musclepoints->mp_orig != NULL)
-         FREE_IFNOTNULL(mp[i].musclepoints->mp_orig);
-
-   }
-*/
-   FREE_IFNOTNULL(mp);
-}
-
-
 
 /* FREE_DEFMUSC: */
-
-void free_defmusc(MuscleStruct* dm)
-{
-
-   int i;
-
-   free_and_nullify((void**)&dm->name);
-   free_and_nullify((void**)&dm->group);
-   free_and_nullify((void**)&dm->max_isometric_force);
-   free_and_nullify((void**)&dm->pennation_angle);
-   free_and_nullify((void**)&dm->min_thickness);
-   free_and_nullify((void**)&dm->max_thickness);
-   free_and_nullify((void**)&dm->min_material);//dm->min_material = NULL; // why not free and nullify??
-   free_and_nullify((void**)&dm->max_material);//dm->max_material = NULL;
-   free_and_nullify((void**)&dm->muscle_model_index);
-   free_and_nullify((void**)&dm->max_contraction_vel);
-   nullify_function(dm->force_vel_curve, yes);
-   dm->force_vel_curve = NULL;
-
-   free_and_nullify((void**)&dm->optimal_fiber_length);
-   free_and_nullify((void**)&dm->resting_tendon_length);
-   free_and_nullify((void**)&dm->momentarms);
-
-   nullify_function(dm->active_force_len_curve, yes);
-   dm->active_force_len_curve = NULL;
-   nullify_function(dm->passive_force_len_curve, yes);
-   dm->passive_force_len_curve = NULL;
-   nullify_function(dm->tendon_force_len_curve, yes);
-   dm->tendon_force_len_curve = NULL;
-
-   // dkb to do free dynamic parameters, moment arms, excitation format
-}
-
-/* FREE_MUSCS: */
-void free_savedmuscles(SaveMuscle musc[], MuscleStruct* dm, int num)
-{
-   int i, j;
-
-   if (musc == NULL)
-      return;
-
-   for (i=0; i<num; i++)
-   {
-      if (musc[i].name != dm->name && musc[i].name != NULL)
-         FREE_IFNOTNULL(musc[i].name);
-
-      if (musc[i].group != dm->group && musc[i].group != NULL)
-         FREE_IFNOTNULL(musc[i].group);
-      if (musc[i].max_isometric_force != dm->max_isometric_force && musc[i].max_isometric_force != NULL)
-         FREE_IFNOTNULL(musc[i].max_isometric_force);
-      if (musc[i].pennation_angle != dm->pennation_angle && musc[i].pennation_angle != NULL)
-         FREE_IFNOTNULL(musc[i].pennation_angle);
-      if (musc[i].min_thickness != dm->min_thickness && musc[i].min_thickness != NULL)
-         FREE_IFNOTNULL(musc[i].min_thickness);
-      if (musc[i].max_thickness != dm->max_thickness && musc[i].max_thickness != NULL)
-         FREE_IFNOTNULL(musc[i].max_thickness);
-      if (musc[i].max_contraction_vel != dm->max_contraction_vel && musc[i].max_contraction_vel != NULL)
-         FREE_IFNOTNULL(musc[i].max_contraction_vel);
-      if (musc[i].force_vel_curve != dm->force_vel_curve)
-         nullify_function(musc[i].force_vel_curve, yes);
-      if (musc[i].optimal_fiber_length != dm->optimal_fiber_length && musc[i].optimal_fiber_length != NULL)
-         FREE_IFNOTNULL(musc[i].optimal_fiber_length);
-      if (musc[i].resting_tendon_length != dm->resting_tendon_length && musc[i].resting_tendon_length != NULL)
-         FREE_IFNOTNULL(musc[i].resting_tendon_length);
-      if (musc[i].momentarms != dm->momentarms && musc[i].momentarms != NULL)
-         FREE_IFNOTNULL(musc[i].momentarms);
-      if (musc[i].active_force_len_curve != dm->active_force_len_curve)
-         nullify_function(musc[i].active_force_len_curve, yes);
-      if (musc[i].passive_force_len_curve != dm->passive_force_len_curve)
-         nullify_function(musc[i].passive_force_len_curve, yes);
-      if (musc[i].tendon_force_len_curve != dm->tendon_force_len_curve)
-         nullify_function(musc[i].tendon_force_len_curve, yes);
-      if (musc[i].wrapStruct)
-      {
-         for (j = 0; j < musc[i].numWrapStructs; j++)
-         {
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[0].wrap_pts);
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]->mp_wrap[1].wrap_pts);
-            FREE_IFNOTNULL(musc[i].wrapStruct[j]);
-         }
-         FREE_IFNOTNULL(musc[i].wrapStruct);
-      }
-   }
-
-   FREE_IFNOTNULL(musc);
-}
-
-/* FREE_MUSCS: */
-void free_savedmuscle(SaveMuscle *saved, MuscleStruct* dm)
-{
-   int i, j;
-
-   if (saved == NULL)
-      return;
-
-   if (saved->name != dm->name && saved->name != NULL)
-      FREE_IFNOTNULL(saved->name);
-
-   if (saved->group != dm->group && saved->group != NULL)
-      FREE_IFNOTNULL(saved->group);
-   if (saved->max_isometric_force != dm->max_isometric_force && saved->max_isometric_force != NULL)
-      FREE_IFNOTNULL(saved->max_isometric_force);
-   if (saved->pennation_angle != dm->pennation_angle && saved->pennation_angle != NULL)
-      FREE_IFNOTNULL(saved->pennation_angle);
-   if (saved->min_thickness != dm->min_thickness && saved->min_thickness != NULL)
-      FREE_IFNOTNULL(saved->min_thickness);
-   if (saved->max_thickness != dm->max_thickness && saved->max_thickness != NULL)
-      FREE_IFNOTNULL(saved->max_thickness);
-   if (saved->max_contraction_vel != dm->max_contraction_vel && saved->max_contraction_vel != NULL)
-      FREE_IFNOTNULL(saved->max_contraction_vel);
-   if (saved->force_vel_curve != dm->force_vel_curve)
-      nullify_function(saved->force_vel_curve, yes);
-   if (saved->optimal_fiber_length != dm->optimal_fiber_length && saved->optimal_fiber_length != NULL)
-      FREE_IFNOTNULL(saved->optimal_fiber_length);
-   if (saved->resting_tendon_length != dm->resting_tendon_length && saved->resting_tendon_length != NULL)
-      FREE_IFNOTNULL(saved->resting_tendon_length);
-   if (saved->momentarms != dm->momentarms && saved->momentarms != NULL)
-      FREE_IFNOTNULL(saved->momentarms);
-   if (saved->active_force_len_curve != dm->active_force_len_curve)
-      nullify_function(saved->active_force_len_curve, yes);
-   if (saved->passive_force_len_curve != dm->passive_force_len_curve)
-      nullify_function(saved->passive_force_len_curve, yes);
-   if (saved->tendon_force_len_curve != dm->tendon_force_len_curve)
-      nullify_function(saved->tendon_force_len_curve, yes);
-   if (saved->wrapStruct)
-   {
-      for (j = 0; j < saved->numWrapStructs; j++)
-      {
-         FREE_IFNOTNULL(saved->wrapStruct[j]->mp_wrap[0].wrap_pts);
-         FREE_IFNOTNULL(saved->wrapStruct[j]->mp_wrap[1].wrap_pts);
-         FREE_IFNOTNULL(saved->wrapStruct[j]);
-      }
-      FREE_IFNOTNULL(saved->wrapStruct);
-   }
-
-
-   FREE_IFNOTNULL(saved);
-}
-
-/* FREE_SAVEDMUSCLEPATHS: free all the saved muscle paths */
-void free_savedmusclepaths(SaveMusclePath path[], int num)
+void free_default_muscle(dpMuscleStruct* dm)
 {
    int i;
 
-   if (path == NULL)
+   if (dm == NULL)
       return;
 
-   for (i=0; i<num; i++)
-   {
-      if (path[i].mp_orig != NULL)
-         FREE_IFNOTNULL(path[i].mp_orig);
-   }
-   FREE_IFNOTNULL(path);
+   FREE_IFNOTNULL(dm->name);
+   FREE_IFNOTNULL(dm->group);
+   FREE_IFNOTNULL(dm->max_isometric_force);
+   FREE_IFNOTNULL(dm->pennation_angle);
+   FREE_IFNOTNULL(dm->min_thickness);
+   FREE_IFNOTNULL(dm->max_thickness);
+   FREE_IFNOTNULL(dm->min_material);
+   FREE_IFNOTNULL(dm->max_material);
+   FREE_IFNOTNULL(dm->muscle_model_index);
+   FREE_IFNOTNULL(dm->max_contraction_vel);
+
+   FREE_IFNOTNULL(dm->optimal_fiber_length);
+   FREE_IFNOTNULL(dm->resting_tendon_length);
+   FREE_IFNOTNULL(dm->momentarms);
+
+   FREE_IFNOTNULL(dm->tendon_force_len_func);
+   FREE_IFNOTNULL(dm->active_force_len_func);
+   FREE_IFNOTNULL(dm->passive_force_len_func);
+   FREE_IFNOTNULL(dm->force_vel_func);
+   FREE_IFNOTNULL(dm->excitation_func);
+
+   for (i = 0; i < dm->num_dynamic_params; i++)
+      FREE_IFNOTNULL(dm->dynamic_params[i]);
+   FREE_IFNOTNULL(dm->dynamic_params);
+
+   for (i = 0; i < dm->num_dynamic_params; i++)
+      FREE_IFNOTNULL(dm->dynamic_param_names[i]);
+   FREE_IFNOTNULL(dm->dynamic_param_names);
 }
-
-void free_savedmusclepath(SaveMusclePath *path)
-{
-   int i, j;
-
-   if (path == NULL)
-      return;
-
-   if (path->mp_orig != NULL)
-      FREE_IFNOTNULL(path->mp_orig);
-}
-
-/* FREE_MUSCLEPATHS: free all the muscle paths */
-void free_musclepaths(MusclePathStruct path[], int num)
-{
-   int i;
-
-   if (path == NULL)
-      return;
-
-   for (i=0; i<num; i++)
-   {
-      if (path[i].mp_orig != NULL)
-         FREE_IFNOTNULL(path[i].mp_orig);
-   }
-   FREE_IFNOTNULL(path);
-}
-
-/* FREE_MUSCLEPATHS: free one muscle path */
-void free_musclepath(MusclePathStruct *path)
-{
-
-   if (path == NULL)
-      return;
-
-   if (path->mp_orig != NULL)
-      FREE_IFNOTNULL(path->mp_orig);
-   
-}
-
-void free_and_nullify(void** ptr)
-{
-
-   if (*ptr == NULL)
-      return;
-
-   free(*ptr);
-
-   *ptr = NULL;
-
-}
-
-
 
 void free_menu(Menu* mn)
 {
-
    int i;
 
    for (i=0; i<mn->numoptions; i++)
@@ -674,14 +572,11 @@ void free_menu(Menu* mn)
 
    FREE_IFNOTNULL(mn->title);
    FREE_IFNOTNULL(mn->option);
-
 }
-
 
 
 void free_form(Form* frm)
 {
-
    int i;
 
    for (i=0; i<frm->numoptions; i++)
@@ -689,9 +584,18 @@ void free_form(Form* frm)
 
    FREE_IFNOTNULL(frm->title);
    FREE_IFNOTNULL(frm->option);
-
 }
 
+void free_checkbox_panel(CheckBoxPanel* panel)
+{
+   int i;
+
+   for (i=0; i<panel->numoptions; i++)
+      FREE_IFNOTNULL(panel->checkbox[i].name);
+
+   FREE_IFNOTNULL(panel->title);
+   FREE_IFNOTNULL(panel->checkbox);
+}
 
 /* -------------------------------------------------------------------------
    free_motion_object - 
@@ -707,24 +611,114 @@ public void free_motion_object(MotionObject* mo, ModelStruct* ms)
    }
 }
 
-#ifndef ENGINE
-
 /* -------------------------------------------------------------------------
    free_motion_object_instance - 
 ---------------------------------------------------------------------------- */
-public void free_motion_object_instance (MotionObjectInstance* mi)
+public void free_motion_object_instance(MotionObjectInstance* mi, ModelStruct* model)
 {
    if (mi)
    {
+      FREE_IFNOTNULL(mi->name);
       mi->num_channels = 0;
       
-      if (mi->currentMaterial.normal_list != -1)
+#if ! ENGINE
+      if (mi->currentMaterial.normal_list)
          glDeleteLists(mi->currentMaterial.normal_list, 1);
-      
-      if (mi->currentMaterial.highlighted_list != -1)
+
+      if (mi->currentMaterial.highlighted_list)
          glDeleteLists(mi->currentMaterial.highlighted_list, 1);
-      
+
+      delete_display_list(mi->aux_display_obj, model);
+#endif
+
       FREE_IFNOTNULL(mi->channels);
    }
 }
+
+#if ! ENGINE
+
+void delete_display_list(GLuint display_list, ModelStruct* model)
+{
+   if (display_list)
+   {
+      if (model)
+      {
+         // TODO_SCENE: the model for this display list may be in more than one scene
+         // (window). To delete the display list, you have to glutSetWindow to the one
+         // that was current when the display list was created. For now, assume that
+         // this is the first scene that contains the model.
+         int savedWindow = glutGetWindow();
+         Scene* scene = get_first_scene_containing_model(model);
+
+         if (scene)
+         {
+            glutSetWindow(scene->window_glut_id);
+            glDeleteLists(display_list, 1);
+         }
+         glutSetWindow(savedWindow);
+      }
+      else
+      {
+         glDeleteLists(display_list, 1);
+      }
+   }
+}
+
+
+void delete_polyhedron_display_list(PolyhedronStruct* ph, ModelStruct* model)
+{
+   if (ph && ph->gl_display)
+   {
+      if (model)
+      {
+         // TODO_SCENE: the polyhedron has only one display list, but the model
+         // may be in more than one scene (window). To delete the display list,
+         // you have to glutSetWindow to the one that was current when the display
+         // list was created. For now, assume that this is the first scene that
+         // contains the model.
+         int savedWindow = glutGetWindow();
+         Scene* scene = get_first_scene_containing_model(model);
+
+         if (scene)
+         {
+            glutSetWindow(scene->window_glut_id);
+            glDeleteLists(ph->gl_display, 1);
+            ph->gl_display = 0;
+         }
+         glutSetWindow(savedWindow);
+      }
+      else
+      {
+         glDeleteLists(ph->gl_display, 1);
+         ph->gl_display = 0;
+      }
+   }
+}
+
+
+void delete_segment_display_lists(SegmentStruct* seg, ModelStruct* model)
+{
+   if (seg && model)
+   {
+      // TODO_SCENE: the segment's polyhedra have only one display list each,
+      // but the model may be in more than one scene (window). To delete the display
+      // lists, you have to glutSetWindow to the one that was current when the display
+      // lists were created. For now, assume that this is the first scene that
+      // contains the model.
+      int i, savedWindow = glutGetWindow();
+      Scene* scene = get_first_scene_containing_model(model);
+
+      if (scene)
+      {
+         glutSetWindow(scene->window_glut_id);
+         for (i=0; i<seg->numBones; i++)
+         {
+            glDeleteLists(seg->bone[i].gl_display, 1);
+            seg->bone[i].gl_display = 0;
+         }
+      }
+      glutSetWindow(savedWindow);
+   }
+}
+
 #endif

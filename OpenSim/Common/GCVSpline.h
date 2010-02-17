@@ -98,6 +98,8 @@ protected:
 	PropertyDblArray _propWeights;
 	/** Spline coefficients. */
 	PropertyDblArray _propCoefficients;
+	/** Spline Y values. */
+	PropertyDblArray _propY;
 
 	// REFERENCES
 	/** Reference to the value of the HalfOrder property. */
@@ -114,11 +116,7 @@ protected:
 	/** Y (dependent) values of the function. These are called aF in the
 	constructor and are stored here so that the function can be scaled
 	later on. */
-	Array<double> _y;
-	/** The object storing the spline coefficients. */
-	SimTK::Spline<1> _spline;
-	/** A workspace used when evaluating the spline. */
-	mutable SimTK::Vector _workX;
+	Array<double> &_y;
 	/** A workspace used when calculating derivatives of the spline. */
 	mutable std::vector<int> _workDeriv;
 
@@ -135,12 +133,12 @@ public:
 	GCVSpline(const GCVSpline &aSpline);
 	virtual ~GCVSpline();
 	virtual Object* copy() const;
+	virtual void updateFromXMLNode();
 private:
 	void setNull();
 	void setupProperties();
 	void setEqual(const GCVSpline &aSpline);
 	virtual void init(Function* aFunction);
-	void buildSpline();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -157,8 +155,6 @@ public:
 	int getOrder() const;
 	int getHalfOrder() const;
 	int getSize() const;
-	double getMinX() const;
-	double getMaxX() const;
 	const Array<double>& getX() const;
 	virtual const double* getXValues() const;
 	virtual const double* getYValues() const;
@@ -169,19 +165,16 @@ public:
 	virtual double getZ(int aIndex) const { return 0.0; }
 	virtual void setX(int aIndex, double aValue);
 	virtual void setY(int aIndex, double aValue);
-	virtual void scaleY(double aScaleFactor);
+	virtual double getMinX() const;
+	virtual double getMaxX() const;
 	virtual bool deletePoint(int aIndex);
 	virtual bool deletePoints(const Array<int>& indices);
 	virtual int addPoint(double aX, double aY);
-	virtual Array<XYPoint>* renderAsLineSegments(int aIndex);
-	const SimTK::Function<1>* createSimTKFunction() const;
+	SimTK::Function* createSimTKFunction() const;
 
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
-	virtual void updateBoundingBox();
-	virtual double
-		evaluate(int aDerivOrder,double aX=0.0,double aY=0.0,double aZ=0.0) const;
 
 	OPENSIM_DECLARE_DERIVED(GCVSpline, Function);
 

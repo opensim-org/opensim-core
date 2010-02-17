@@ -35,13 +35,13 @@
 #include "osimCommonDLL.h"
 #include <sstream>
 #include <iostream>
-#include "rdMath.h"
 #include "IO.h"
 #include "Signal.h"
 #include "Storage.h"
 #include "GCVSplineSet.h"
 #include "SimmIO.h"
 #include "SimmMacros.h"
+#include "SimTKcommon.h"
 
 
 using namespace OpenSim;
@@ -133,7 +133,7 @@ Storage::Storage(const string &aFileName) :
 	// IGNORE blank lines after header -- treat \r and \n as end of line chars
 	while(fp->good()) {
 		int c = fp->peek();
-		if(c!='\n' && c!='\r') break;
+		if(c!='\n' && c!='\r' && c!='\t' && c!=' ') break;
 		fp->get();
 	}
 	// Ayman: Support for oldStyleDescription dropped. 04/11/07
@@ -581,13 +581,13 @@ getStateVector(int aTimeIndex) const
  * Get the time of the first stored states.
  *
  * @return Time of the first stored states.  If there is no stored state,
- * the constant rdMath::getNAN() (not a number) is returned.
+ * the constant SimTK::NaN (not a number) is returned.
  */
 double Storage::
 getFirstTime() const
 {
 	if(_storage.getSize()<=0) {
-		return(rdMath::getNAN());
+		return(SimTK::NaN);
 	}
 	return(_storage[0].getTime());
 }
@@ -596,13 +596,13 @@ getFirstTime() const
  * Get the time of the last states.
  *
  * @return Time of the first stored states.  If there is no stored state,
- * the constant rdMath::getNAN() (not a number) is returned.
+ * the constant SimTK::NaN (not a number) is returned.
  */
 double Storage::
 getLastTime() const
 {
 	if(_storage.getSize()<=0) {
-		return(rdMath::getNAN());
+		return(SimTK::NaN);
 	}
 	return(_storage.getLast().getTime());
 }
@@ -610,14 +610,14 @@ getLastTime() const
 /**
  * Get the smallest time step.
  *
- * @return Smallest time step.  If there are less than 2 state vectors, rdMath::PLUS_INFINITY is returned.
+ * @return Smallest time step.  If there are less than 2 state vectors,  SimTK::Infinity  is returned.
  */
 double Storage::
 getMinTimeStep() const
 {
 	double *time=NULL;
 	int n = getTimeColumn(time);
-	double dtmin = rdMath::PLUS_INFINITY;
+	double dtmin =  SimTK::Infinity;
 	for(int i=1; i<n; i++) {
 		double dt = time[i] - time[i-1];
 		if(dt<dtmin) dtmin = dt;
@@ -902,7 +902,7 @@ getDataAtTime(double aT,int aN,double **rData) const
 	double pct;
 	double num = aT-t1;
 	double den = t2-t1;
-	if(den<rdMath::ZERO) {
+	if(den<SimTK::Eps) {
 		pct = 0.0;
 	} else {
 		pct = num/den;
@@ -1064,7 +1064,13 @@ setDataColumn(int aStateIndex,const Array<double> &aData)
 int Storage::
 getDataColumn(const std::string& aColumnName,double *&rData) const
 {
-	return getDataColumn(getStateIndex(aColumnName), rData);
+	if (aColumnName.c_str()[0]=='#'){
+		int columnNumber=-1;
+		sscanf(aColumnName.c_str(), "#%d", &columnNumber);
+		return getDataColumn(columnNumber-1, rData);
+	}
+	else
+		return getDataColumn(getStateIndex(aColumnName), rData);
 }
 
 //=============================================================================
@@ -2033,6 +2039,93 @@ pad(int aPadSize)
 
 //_____________________________________________________________________________
 /**
+ * Smooth spline each of the columns in the storage.  Note that as a part
+ * of this operation, the storage is resampled so that the statevectors are
+ * at equal spacing.
+ *
+ * @param aOrder Order of the spline.
+ * @param aCutoffFrequency Cutoff frequency.
+ */
+void Storage::
+smoothSpline(int aOrder,double aCutoffFrequency)
+{
+	double dtmin = getMinTimeStep();
+
+	if(dtmin<SimTK::Zero) {
+		cout<<"Storage.SmoothSpline: storage cannot be resampled."<<endl;
+		return;
+	}
+
+	// RESAMPLE
+	dtmin = resample(dtmin,aOrder);
+	int size = getSize();
+	if(size<(2*aOrder)) {
+		cout<<"Storage.SmoothSpline: too few data points to filter."<<endl;
+		return;
+	}
+
+	// LOOP OVER COLUMNS
+	double *times=NULL;
+	int nc = getSmallestNumberOfStates();
+	double *signal=NULL;
+	Array<double> filt(0.0,size);
+	getTimeColumn(times,0);
+	for(int i=0;i<nc;i++) {
+		getDataColumn(i,signal);
+		Signal::SmoothSpline(aOrder,dtmin,aCutoffFrequency,size,times,signal,&filt[0]);
+		setDataColumn(i,filt);
+	}
+
+	// CLEANUP
+	delete[] times;
+	delete[] signal;
+}
+
+
+//_____________________________________________________________________________
+/**
+ * Lowpass filter each of the columns in the storage.  Note that as a part
+ * of this operation, the storage is resampled so that the statevectors are
+ * at equal spacing.
+ *
+ * @param aOrder Order of the FIR filter.
+ * @param aCutoffFrequency Cutoff frequency.
+ */
+void Storage::
+lowpassIIR(double aCutoffFrequency)
+{
+	double dtmin = getMinTimeStep();
+
+	if(dtmin<SimTK::Zero) {
+		cout<<"Storage.lowpassIIR: storage cannot be resampled."<<endl;
+		return;
+	}
+
+	// RESAMPLE
+	dtmin = resample(dtmin,5);
+	int size = getSize();
+	if(size<(4)) {
+		cout<<"Storage.lowpassIIR: too few data points to filter."<<endl;
+		return;
+	}
+
+	// LOOP OVER COLUMNS
+	int nc = getSmallestNumberOfStates();
+	double *signal=NULL;
+	Array<double> filt(0.0,size);
+	for(int i=0;i<nc;i++) {
+		getDataColumn(i,signal);
+		Signal::LowpassIIR(dtmin,aCutoffFrequency,size,signal,&filt[0]);
+		setDataColumn(i,filt);
+	}
+
+	// CLEANUP
+	delete[] signal;
+}
+
+
+//_____________________________________________________________________________
+/**
  * Lowpass filter each of the columns in the storage.  Note that as a part
  * of this operation, the storage is resampled so that the statevectors are
  * at equal spacing.
@@ -2045,7 +2138,7 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 {
 	double dtmin = getMinTimeStep();
 
-	if(dtmin<rdMath::ZERO) {
+	if(dtmin<SimTK::Zero) {
 		cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
 		return;
 	}
@@ -2072,45 +2165,6 @@ lowpassFIR(int aOrder,double aCutoffFrequency)
 	delete[] signal;
 }
 
-//_____________________________________________________________________________
-/**
- * Lowpass filter each of the columns in the storage.  Note that as a part
- * of this operation, the storage is resampled so that the statevectors are
- * at equal spacing. This is same as 3rd order Butterworth Filter
- *
- * @param aCutoffFrequency Cutoff frequency.
- */
-void Storage::
-lowpassIIR(double aCutoffFrequency)
-{
-	double dtmin = getMinTimeStep();
-
-	if(dtmin<rdMath::ZERO) {
-		cout<<"Storage.lowpassFIR: storage cannot be resampled."<<endl;
-		return;
-	}
-
-	// RESAMPLE
-	dtmin = resample(dtmin,5);
-	int size = getSize();
-	if(size<(10)) {
-		cout<<"Storage.lowpassFIR: too few data points to filter."<<endl;
-		return;
-	}
-
-	// LOOP OVER COLUMNS
-	int nc = getSmallestNumberOfStates();
-	double *signal=NULL;
-	Array<double> filt(0.0,size);
-	for(int i=0;i<nc;i++) {
-		getDataColumn(i,signal);
-		Signal::LowpassIIR(dtmin,aCutoffFrequency,size,signal,&filt[0]);
-		setDataColumn(i,filt);
-	}
-
-	// CLEANUP
-	delete[] signal;
-}
 
 //=============================================================================
 // UTILITY
@@ -2274,6 +2328,7 @@ resampleLinear(double aDT)
 
 	return aDT;
 }
+
 //_____________________________________________________________________________
 /**
  * interpolateAt passed in list of time values. Tries to check if there is a data
@@ -2381,6 +2436,9 @@ print(const string &aFileName,const string &aMode, const string& aComment) const
 		return(false);
 	}
 
+//printf("Storage.cpp:print storage=%x  n=%d ",&_storage, _storage.getSize());
+//std::cout << aFileName << endl;
+
 	// VECTORS
 	for(int i=0;i<_storage.getSize();i++) {
 		n = getStateVector(i)->print(fp);
@@ -2424,6 +2482,8 @@ print(const string &aFileName,double aDT,const string &aMode) const
 	double ti = getFirstTime();
 	double tf = getLastTime();
 	int nr = IO::ComputeNumberOfSteps(ti,tf,aDT);
+//printf("Storage.cpp:print ti=%f tf=%f dt=%f nr=%d ", ti,tf,aDT,nr );
+//std::cout << aFileName << endl;
 
 	// WRITE THE HEADER
 	int n,nTotal=0;
@@ -2873,4 +2933,47 @@ void Storage::postProcessSIMMMotion()
 			}
 		}
 	}
+}
+/**
+ * Compare column named "aColumnName" in two storage objects
+ * If endTime is not specified the comparison goes to the end of the file
+ * @returns the difference or SimTK::Infinity if times do not match up.
+ *
+ * NOTE: This assumes same time sampling between both Storages.
+ */
+double Storage::compareColumn(Storage& aOtherStorage, std::string& aColumnName, double startTime, double endTime)
+{
+	int thisColumnIndex=_columnLabels.findIndex(aColumnName);
+	int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName);
+
+	double theDiff = SimTK::NaN;
+
+	if ((thisColumnIndex==-1)||(otherColumnIndex==-1))
+		return theDiff;
+
+	// Now we have two columnNumbers. get the data and coompare
+	Array<double> thisData, otherData;
+	Array<double> thisTime, otherTime;
+	getDataColumn(thisColumnIndex, thisData);
+	getTimeColumn(thisTime);
+
+	aOtherStorage.getDataColumn(otherColumnIndex, otherData);
+	aOtherStorage.getTimeColumn(otherTime);
+
+	// make sure times match (we probably should make this more flexible to interpolate missing values
+	// but that's not needed for now.
+	theDiff = -SimTK::Infinity;
+	int startIndex = findIndex(startTime);
+	int startIndexOther = aOtherStorage.findIndex(startTime);
+	int endIndex = (endTime==-1.0)?getSize():findIndex(endTime);
+	int endIndexOther = (endTime==-1.0)?(aOtherStorage.getSize()):aOtherStorage.findIndex(endTime);
+	// Make sure we have same number of rows
+	if ((endIndex -startIndex)!= (endIndexOther -startIndexOther)) return (theDiff);
+
+	for(int i=startIndex; i< endIndex; i++){
+		if (fabs(thisTime[i]-otherTime[startIndexOther+i-startIndex]) > 1E-4) 
+			return SimTK::Infinity;
+		theDiff = std::max(theDiff, fabs(thisData[i]-otherData[startIndexOther+i-startIndex]));
+	}
+	return theDiff;
 }

@@ -33,15 +33,10 @@
 //=============================================================================
 #include <iostream>
 #include <string>
-#include <OpenSim/Common/rdMath.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/DynamicsEngines/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "JointReaction.h"
-
-
 
 using namespace OpenSim;
 using namespace std;
@@ -81,12 +76,6 @@ JointReaction::JointReaction(Model *aModel) :
 	_inFrame(_inFrameProp.getValueStrArray())
 {
 	setNull();
-	if(_model==NULL) return;
-
-	// DESCRIPTION AND LABELS
-	setupReactionList();
-	constructDescription();
-	constructColumnLabels();
 
 }
 //_____________________________________________________________________________
@@ -199,7 +188,6 @@ setNull()
 
 	_storeActuation = NULL;
 
-
 }
 //_____________________________________________________________________________
 /**
@@ -267,13 +255,13 @@ void JointReaction::setupReactionList()
 		_inFrame[0] = "ground";}
 
 	/* get the joint set and  body set from the dynamics engine model*/
-	JointSet* jointSet = _model->getDynamicsEngine().getJointSet();
-	BodySet* bodySet = _model->getDynamicsEngine().getBodySet();
-	int numJoints = jointSet->getSize();
-	int numBodies = bodySet->getSize();
+	const JointSet& jointSet = _model->getJointSet();
+	const BodySet& bodySet = _model->getBodySet();
+	int numJoints = jointSet.getSize();
+	int numBodies = bodySet.getSize();
 
 	/* get the ground body index in the body set*/
-	int groundIndex = bodySet->getIndex("ground", 0);
+	int groundIndex = bodySet.getIndex("ground", 0);
 
 	/* check if jointNames is specified to "ALL".  if yes, setup to 
 	*  compute reactions loads for all joints*/
@@ -283,8 +271,8 @@ void JointReaction::setupReactionList()
 	if (firstNameEntry == "ALL") {
 		_jointNames.setSize(numJoints);
 		for(int i=0;i<numJoints;i++) {
-			AbstractJoint* joint = jointSet->get(i);
-			_jointNames.set(i, joint->getName());
+			Joint& joint = jointSet.get(i);
+			_jointNames.set(i, joint.getName());
 		}
 	}
 	int numJointNames = _jointNames.getSize();
@@ -316,15 +304,15 @@ void JointReaction::setupReactionList()
 		JointReactionKey currentJoint;
 		int validJointFlag = 0;
 		for (int j=0; j<numJoints; j++) {
-			AbstractJoint* joint = jointSet->get(j);
-			if (_jointNames.get(i) == joint->getName()) {
+			Joint& joint = jointSet.get(j);
+			if (_jointNames.get(i) == joint.getName()) {
 				validJointFlag++;
 				listNotEmptyFlag++;
-				currentJoint.jointName = joint->getName();
-				std::string childName = joint->getBody()->getName();
-				int childIndex = bodySet->getIndex(childName, 0);
-				std::string parentName = joint->getParentBody()->getName();
-				int parentIndex = bodySet->getIndex(parentName, 0);
+				currentJoint.jointName = joint.getName();
+				std::string childName = joint.getBody().getName();
+				int childIndex = bodySet.getIndex(childName, 0);
+				std::string parentName = joint.getParentBody().getName();
+				int parentIndex = bodySet.getIndex(parentName, 0);
 
 				/* set index that correponds to the appropriate index of the 
 				*  computeReactions arguements forcesVec and momentsVec.*/
@@ -426,16 +414,15 @@ constructColumnLabels()
 	Array<string> labels;
 	labels.append("time");
 
-	BodySet *bodySet = _model->getDynamicsEngine().getBodySet();
-	JointSet *jointSet = _model->getDynamicsEngine().getJointSet();
-	int numBodies = bodySet->getSize();
+	const BodySet& bodySet = _model->getBodySet();
+	int numBodies = bodySet.getSize();
 	int numOutputJoints = _reactionList.getSize();
 	//  For each joint listed in _reactionList, append 3 column labels for forces
 	//  and 3 column labels for moments.
 	for(int i=0; i<numOutputJoints; i++) {
 		std::string jointName = _reactionList.get(i).jointName;
-		std::string onBodyName = bodySet->get(_reactionList.get(i).onBodyIndex)->getName();
-		std::string inFrameName = bodySet->get(_reactionList.get(i).inFrameIndex)->getName();
+		std::string onBodyName = bodySet.get(_reactionList.get(i).onBodyIndex).getName();
+		std::string inFrameName = bodySet.get(_reactionList.get(i).inFrameIndex).getName();
 		std::string labelRoot = jointName + "_on_" + onBodyName + "_in_" + inFrameName;
 		labels.append(labelRoot + "_FX");
 		labels.append(labelRoot + "_FY");
@@ -471,7 +458,7 @@ loadForcesFromFile()
 
 		// check if actuator set and forces file have the same actuators
 		bool _containsAllActuators = true;
-		int actuatorSetSize = _model->getActuatorSet()->getSize();
+		int actuatorSetSize = _model->getActuators().getSize();
 		if(actuatorSetSize > storeSize){
 			cout << "The forces file does not contain enough actuators." << endl;
 			_containsAllActuators = false;
@@ -479,7 +466,7 @@ loadForcesFromFile()
 		else {
 			for(int actuatorIndex=0;actuatorIndex<actuatorSetSize;actuatorIndex++)
 			{
-				std::string actuatorName = _model->getActuatorSet()->get(actuatorIndex)->getName();
+				std::string actuatorName = _model->getActuators().get(actuatorIndex).getName();
 				int storageIndex = _storeActuation->getStateIndex(actuatorName,0);
 				if(storageIndex == -1) {
 					cout << "\nThe actuator " << actuatorName << " was not found in the forces file." << endl;
@@ -544,7 +531,7 @@ setupStorage()
  * @param aModel Model pointer
  */
 void JointReaction::
-setModel(Model *aModel)
+setModel(Model& aModel)
 {
 	// SET THE MODEL IN THE BASE CLASS
 	Analysis::setModel(aModel);
@@ -578,53 +565,31 @@ setModel(Model *aModel)
  * @param aY Current values of the states.
  */
 int JointReaction::
-record(double aT,double *aX,double *aY)
+record(const SimTK::State& s)
 {
-	// GET THE MODEL READY ----------------------------------
-	// Set the configuration of the model.
-	_model->set(aT,aX,aY);
-	_model->getDerivCallbackSet()->set(aT,aX,aY);
-
-	// Comput and apply all actuator forces.
-	_model->getActuatorSet()->computeActuation();
-	_model->getDerivCallbackSet()->computeActuation(aT,aX,aY);
-
-	/** If a forces file is specified, replace the computed actuation
-	 *	with the forces from storage.*/
-	if(_useForceStorage) {
-		int nF = _model->getActuatorSet()->getSize();
-		Array<double> forces(0,nF);
-		_storeActuation->getDataAtTime(aT,nF,forces);
+	/** if a forces file is specified replace the computed actuation with the 
+	/** forces from storage.*/
+	if(_useForceStorage){
+		const Set<Actuator> *actuatorSet = &_model->getActuators();
+		int nA = actuatorSet->getSize();
+		Array<double> forces(0,nA);
+		_storeActuation->getDataAtTime(s.getTime(),nA,forces);
 		int storageIndex = -1;
-		for(int actuatorIndex=0;actuatorIndex<nF;actuatorIndex++)
+		for(int actuatorIndex=0;actuatorIndex<nA;actuatorIndex++)
 		{
-			std::string actuatorName = _model->getActuatorSet()->get(actuatorIndex)->getName();
-			storageIndex = _storeActuation->getStateIndex(actuatorName,0);
-			if(storageIndex == -1) {
-				cout << "The actuator " << actuatorName << " was not found in the forces file.";
+			//Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(actuatorIndex));
+			std::string actuatorName = actuatorSet->get(actuatorIndex).getName();
+			storageIndex = _storeActuation->getStateIndex(actuatorName, 0);
+			if(storageIndex == -1){
+				cout << "The actuator, " << actuatorName << ", was not found in the forces file." << endl;
 				break;
 			}
-			_model->getActuatorSet()->get(actuatorIndex)->setForce(forces[storageIndex]);
+			actuatorSet->get(actuatorIndex).setForce(s,forces[storageIndex]);
 		}
+		// Must invalidate the velocity stage since the change in forces will cause a change in velocities
+		s.invalidateAll(SimTK::Stage::Velocity);
 
 	}
-
-	// Apply forces
-	_model->getActuatorSet()->apply();
-	_model->getDerivCallbackSet()->applyActuation(aT,aX,aY);
-
-	// compute and apply all contact forces.
-	_model->getContactSet()->computeContact();
-	_model->getDerivCallbackSet()->computeContact(aT,aX,aY);
-	_model->getContactSet()->apply();
-	_model->getDerivCallbackSet()->applyContact(aT,aX,aY);
-
-	// Compute the acclerations.
-	int nq = _model->getNumCoordinates();
-	_model->getDynamicsEngine().computeDerivatives(&_dydt[0],&_dydt[nq]);
-	// -----------------------------------------------------
-
-
 	// VARIABLES
 	int numBodies = _model->getNumBodies();
 
@@ -635,14 +600,16 @@ record(double aT,double *aX,double *aY)
 	double Mass = 0.0;
 
 	//// BodySet and JointSet and ground body index
-	BodySet* bodySet = _model->getDynamicsEngine().getBodySet();
-	JointSet* jointSet = _model->getDynamicsEngine().getJointSet();
-	AbstractBody &ground = _model->getDynamicsEngine().getGroundBody();
-	int groundIndex = bodySet->getIndex(ground.getName());
+	const BodySet& bodySet = _model->getBodySet();
+	const JointSet& jointSet = _model->getJointSet();
+	Body &ground = _model->getSimbodyEngine().getGroundBody();
+	int groundIndex = bodySet.getIndex(ground.getName());
 
 	/* Calculate All joint reaction forces and moments.
-	*  Applied to child bodies, expressed in ground frame*/ 
-	_model->getDynamicsEngine().computeReactions( allForcesVec, allMomentsVec);
+	*  Applied to child bodies, expressed in ground frame.  
+	*  computeReactions realizes to the acceleration stage internally
+	*  so you don't have to call realize in this analysis.*/ 
+	_model->getSimbodyEngine().computeReactions(s, allForcesVec, allMomentsVec);
 
 	/* retrieved desired joint reactions, convert to desired bodies, and convert
 	*  to desired reference frames*/
@@ -650,13 +617,10 @@ record(double aT,double *aX,double *aY)
 	Vector_<Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints);
 	for(int i=0; i<numOutputJoints; i++) {
 		JointReactionKey currentKey = _reactionList[i];
-		Joint* joint = dynamic_cast<Joint*>(jointSet->get(currentKey.jointName));
-		//AbstractJoint* joint = jointSet->get(currentKey.jointName);
+		const Joint& joint = jointSet.get(currentKey.jointName);
 		Vec3 force = allForcesVec[currentKey.reactionIndex];
 		Vec3 moment = allMomentsVec[currentKey.reactionIndex];
-		AbstractBody* reactionBody = bodySet->get(currentKey.reactionIndex);
-		AbstractBody* outputBody = bodySet->get(currentKey.onBodyIndex);
-		AbstractBody* expressedInBody = bodySet->get(currentKey.inFrameIndex);
+		Body& expressedInBody = bodySet.get(currentKey.inFrameIndex);
 		// check if the load on the child needs to be converted to an equivalent
 		// load on the parent body.
 		if(currentKey.onBodyIndex != currentKey.reactionIndex){
@@ -664,19 +628,20 @@ record(double aT,double *aX,double *aY)
 			force = -force;
 			moment = -moment;
 			Vec3 childLocation(0,0,0), parentLocation(0,0,0);
-			joint->getLocation(childLocation);
-			joint->getLocationInParent(parentLocation);
+			joint.getLocation(childLocation);
+			joint.getLocationInParent(parentLocation);
 			Vec3 childLocationInGlobal(0,0,0), parentLocationInGlobal(0,0,0);
-			_model->getDynamicsEngine().getPosition(*(joint->getBody()), childLocation, childLocationInGlobal);
-			_model->getDynamicsEngine().getPosition(*(joint->getParentBody()), parentLocation, parentLocationInGlobal);
+			_model->getSimbodyEngine().getPosition(s, joint.getBody(), childLocation,childLocationInGlobal);
+			_model->getSimbodyEngine().getPosition(s,joint.getParentBody(), parentLocation, parentLocationInGlobal);
+
 			// define vector from the mobilizer location on the child to the location on the parent
 			Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
 			// find equivalent moment if the load is shifted to the parent loaction
 			moment -= translation % force;
 		}
 		/* express loads in the desired reference frame*/
-		_model->getDynamicsEngine().transform(ground,force,*expressedInBody,force);
-		_model->getDynamicsEngine().transform(ground,moment,*expressedInBody,moment);
+		_model->getSimbodyEngine().transform(s,ground,force,expressedInBody,force);
+		_model->getSimbodyEngine().transform(s,ground,moment,expressedInBody,moment);
 
 		/* place results in the truncated loads vectors*/
 		forcesVec[i] = force;
@@ -692,7 +657,7 @@ record(double aT,double *aX,double *aY)
 		}
 	}
 	/* Write the reaction data to storage*/
-	_storeReactionLoads.append(aT,_Loads.getSize(),&_Loads[0]);
+	_storeReactionLoads.append(s.getTime(),_Loads.getSize(),&_Loads[0]);
 
 
 	return(0);
@@ -702,33 +667,24 @@ record(double aT,double *aX,double *aY)
  * This method is called at the beginning of an analysis so that any
  * necessary initializations may be performed.
  *
- * This method is meant to be called at the begining of an integration in
- * Model::integBeginCallback() and has the same argument list.
+ * This method is meant to be called at the begining of an integration 
  *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that will be attempted.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s reference to the current state
  *
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+begin(const SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
 	// RESET STORAGE
-	_storeReactionLoads.reset(aT);
+	_storeReactionLoads.reset(s.getTime());
 
 	// RECORD
 	int status = 0;
 	if(_storeReactionLoads.getSize()<=0) {
-		status = record(aT,aX,aY);
+		status = record(s);
 	}
 
 	return(status);
@@ -739,31 +695,17 @@ begin(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *a
  * the execution of a forward integrations or after the integration by
  * feeding it the necessary data.
  *
- * When called during an integration, this method is meant to be called in
- * Model::integStepCallback(), which has the same argument list.
  *
- * @param aXPrev Controls at the beginining of the current time step.
- * @param aYPrev States at the beginning of the current time step.
- * @param aYPPrev Pseudo states at the beginning of the current time step.
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just taken.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s reference to the current stateaClientData General use pointer for sending in client data.
  *
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-step(double *aXPrev,double *aYPrev,double *aYPPrev,
-	int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-	void *aClientData)
+step(const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(aStep)) return(0);
+	if(!proceed(stepNumber)) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }
@@ -772,27 +714,16 @@ step(double *aXPrev,double *aYPrev,double *aYPPrev,
  * This method is called at the end of an analysis so that any
  * necessary finalizations may be performed.
  *
- * This method is meant to be called at the end of an integration in
- * Model::integEndCallback() and has the same argument list.
- *
- * @param aStep Step number of the integration.
- * @param aDT Size of the time step that was just completed.
- * @param aT Current time in the integration.
- * @param aX Current control values.
- * @param aY Current states.
- * @param aYP Current pseudo states.
- * @param aDYDT Current state derivatives.
- * @param aClientData General use pointer for sending in client data.
+ * @param s reference to the current state
  *
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-end(int aStep,double aDT,double aT,double *aX,double *aY,double *aYP,double *aDYDT,
-		void *aClientData)
+end(const SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
-	record(aT,aX,aY);
+	record(s);
 
 	return(0);
 }

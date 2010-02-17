@@ -1,9 +1,9 @@
-#ifndef _Force_h_
-#define _Force_h_
+#ifndef __Force_h__
+#define __Force_h__
 // Force.h
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// Author: Peter Eastman
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+ * Copyright (c)  2009 Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -26,185 +26,96 @@
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
  */
+// INCLUDE
+#include "OpenSim/Simulation/osimSimulationDLL.h"
+#include "OpenSim/Common/Object.h"
+#include "OpenSim/Simulation/Model/ModelComponent.h"
+#include <SimTKsimbody.h>
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Common/VectorFunction.h>
-#include "AbstractActuator.h"
-
-
-//=============================================================================
-//=============================================================================
-/**
- * A class that supports the application of a force between two bodies, BodyA
- * and BodyB.  This actuator has no states; the control is simply the force to
- * be applied to the model.
- *
- * @author Frank C. Anderson
- * @version 1.0
- */
 namespace OpenSim {
 
-class AbstractBody;
+class Model;
 
-class OSIMSIMULATION_API Force : public AbstractActuator
+/**
+ * This abstract class represents a force applied to bodies or generalized coordinates during a simulation.
+ * Each subclass represents a different type of force.  The actual force computation is done by a SimTK::Force,
+ * which is created by createSimTKForce().
+ *
+ * @author Peter Eastman
+ */
+class OSIMSIMULATION_API Force : public ModelComponent
 {
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-	// PROPERTIES
-	/** name of BodyA. */
-	PropertyStr _propBodyAName;
-	/** Point on BodyA expressed in the body-local frame at which the
-	force is applied. */
-	PropertyDblVec3 _propPointA;
-	/** Unit vector expressed in the local frame of BodyA that
-	specifies the direction a positive actuator force is applied to BodyA.
-	(serialized) */
-	PropertyDblVec3 _propUnitVectorA;
-	/** name of BodyB. */
-	PropertyStr _propBodyBName;
-	/** Point on BodyB expressed in the body-local frame at which the
-	force is applied. */
-	PropertyDblVec3 _propPointB;
-	/** Optimal force. */
-	PropertyDbl _propOptimalForce;
-
-	// REFERENCES
-	std::string& _bodyAName;
-	SimTK::Vec3 &_pA;
-	SimTK::Vec3 &_uA;
-	std::string& _bodyBName;
-	SimTK::Vec3 &_pB;
-	double &_optimalForce;
-
-	AbstractBody *_bA;
-	AbstractBody *_bB;
-
-	/** Unit vector expressed in the local frame of BodyB that
-	specifies the direction a positive actuator force is applied to BodyB. */
-	SimTK::Vec3 _uB;
-	/** Pointer to a vector function that contains coordinates of point on
-	BodyA (express in the body-local frame) where force should be applied
-	as a function of time. */
-	VectorFunction *_pAFunction;
-	/** Pointer to a vector function that contains coordinates of point on
-	BodyB (express in the body-local frame) where force should be applied
-	as a function of time. */
-	VectorFunction *_pBFunction;
-	/** Function containing values for the time-dependent force scaling factor. */
-	Function* _scaleFunction;
-	/** Scale factor that pre-multiplies the applied force */
-	double _scaleFactor;
-
-	/** Excitation (control 0). */
-	double _excitation;
-
 //=============================================================================
 // METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
 public:
-	Force(const std::string &aBodyAName="",const std::string &aBodyBName="");
-	Force(const Force &aForce);
-	virtual ~Force();
-	virtual Object* copy() const;
-private:
-	void setNull();
-	void setupProperties();
-	
+	/**
+	 * Subclasses may optionally override this method to perform setup.
+	 */
+    virtual void setup(Model& model);
+	/**
+	 * Subclasses may optionally override this method to perform setup after initSystem() has been called.
+	 */
+	 virtual void postInit(Model& model) { }
+    /**
+     * Get the number of state variables allocated by this force.  The default implementation
+     * returns 0.  Subclasses that allocate state variables must override it.
+     */
+    virtual int getNumStateVariables() const;
+    /**
+     * Get the name of a state variable allocated by this force.  The default implementation
+     * throws an exception, so subclasses that allocate state variables must override it.
+     *
+     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     */
+    virtual std::string getStateVariableName(int index) const;
+    /**
+     * Get the value of a state variable allocated by this force.  The default implementation
+     * throws an exception, so subclasses that allocate state variables must override it.
+     *
+     * @param state   the State for which to get the value
+     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     */
+    virtual double getStateVariable(const SimTK::State& state, int index) const;
+    /**
+     * Set the value of a state variable allocated by this force.  The default implementation
+     * throws an exception, so subclasses that allocate state variables must override it.
+     *
+     * @param state   the State for which to set the value
+     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     * @param value   the value to set
+     */
+    virtual void setStateVariable(SimTK::State& state, int index, double value) const;
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-	Force& operator=(const Force &aForce);
-#endif
+	/**
+	 * deserialization from XML, necessary so that derived classes can (de)serialize
+	 */
+	Force(DOMElement* aNode): ModelComponent(aNode) {};
+	Force(): ModelComponent() {};
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-public:
-	// BODY A
-	void setBodyA(AbstractBody* aBody);
-	AbstractBody* getBodyA() const;
-	// POINT A
-	void setPointA(const SimTK::Vec3& aPoint);
-	void getPointA(SimTK::Vec3& rPoint) const;
-	// DIRECTION A
-	void setForceDirectionA(const SimTK::Vec3& aDirection);
-	void getForceDirectionA(SimTK::Vec3& rDirection) const;
-	// BODY B
-	void setBodyB(AbstractBody* aBody);
-	AbstractBody* getBodyB() const;
-	// POINT B
-	void setPointB(const SimTK::Vec3& aPoint);
-	void getPointB(SimTK::Vec3& rPoint) const;
-	// DIRECTION B
-	void getForceDirectionB(SimTK::Vec3& rDirection) const;
-	// POINT A FUNCTION
-	void setPointAFunction(VectorFunction* aVectorFunction);
-	const VectorFunction* getPointAFunction() const;
-	// POINT B FUNCTION
-	void setPointBFunction(VectorFunction* aVectorFunction);
-	const VectorFunction* getPointBFunction() const;
-	// SCALE FACTOR
-	void setScaleFunction(Function* _scaleFunction);
-	Function* getScaleFunction() const;
-	void setScaleFactor(double aScaleFactor);
-	double getScaleFactor();
-	// OPTIMAL FORCE
-	void setOptimalForce(double aOptimalForce);
-	double getOptimalForce() const;
-	// STRESS
-	double getStress() const;
-
-	//--------------------------------------------------------------------------
-	// APPLICATION
-	//--------------------------------------------------------------------------
-	virtual void apply();
-
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual void computeActuation();
-	void computeForceDirectionForBodyB();
-	void computeSpeed();
-	void updatePointA();
-	void updatePointB();
-
-	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	virtual bool check() const;
-	// Setup method to initialize Body references
-	void setup(Model* aModel);
-
-	//--------------------------------------------------------------------------
-	// UTILITY
-	//--------------------------------------------------------------------------
-	void computeLineOfAction(SimTK::Vec3& aLineOfAction) const;
-
-	OPENSIM_DECLARE_DERIVED(Force, AbstractActuator);
+	/** 
+	 * Methods to query a Force for the value actually applied during simulation
+	 * The names of the quantities (column labels) is returned by this first function
+	 * getRecordLabels()
+	 */
+	virtual OpenSim::Array<std::string> getRecordLabels() const {
+		return OpenSim::Array<std::string>();
+	}
+	/**
+	 * Given SimTK::State object extract all the values necessary to report forces, application location
+	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+	 */
+	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
+		return OpenSim::Array<double>();
+	};
 
 //=============================================================================
 };	// END of class Force
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif // __Force_h__
 

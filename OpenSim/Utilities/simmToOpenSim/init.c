@@ -25,7 +25,6 @@
       set_gencoord_info    : records some info about each gencoord
       init_joint            : sets initial values in the joint structure
       make_confirm_menu    : makes the menu used in the Confirm window
-      get_environment_vars : gets values of some environment variables
 
 *******************************************************************************/
 
@@ -41,7 +40,6 @@
 #define EVENT_QUEUE_SIZE 50
 #define RAMPSIZE 32
 #define INIT_WORLD_ARRAY_SIZE 10
-#define STARTING_GEAR 0.08 // must be the same as MV_STARTING_GEAR !!
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 static void make_confirm_menu(void);
@@ -60,10 +58,9 @@ char* expirationMessage = NULL;
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static void make_mocap_model_filepath(void);
 
 
-#ifndef ENGINE
+#if ! ENGINE
 
 /* INITIALIZE: the main initializing routine that is called once at startup.
  * It makes the program window, queues the keyboard and mouse buttons, and
@@ -72,19 +69,10 @@ static void make_mocap_model_filepath(void);
 
 void initialize(void)
 {
-
    int i;
-   int xtmp, ytmp;
-   WindowParams bwin;
-   WinUnion wun;
    const char* p;
 
-   strcpy(buffer,get_simm_directory());
-   mstrcpy(&root.simm_base_dir,buffer);
-
-   get_simm_resources_directory();    /* initialize the SIMM resources path */
-   
-   add_preprocessor_option(yes, "-I%s", get_simm_resources_directory());
+   add_preprocessor_option(yes, "-I%s", get_preference("RESOURCES_FOLDER"));
 
    root.numwindows = 0;
    root.messages.line = NULL;
@@ -96,45 +84,15 @@ void initialize(void)
    if (root.gldesc.max_screen_y <= 0)
       root.gldesc.max_screen_y = 768;
 
-   p = getpref("MULTIPLE_SCREENS");
-   if (p)
-   {
-      if (STRINGS_ARE_EQUAL(p, "yes") ||
-          STRINGS_ARE_EQUAL(p, "Yes") ||
-          STRINGS_ARE_EQUAL(p, "on") ||
-          STRINGS_ARE_EQUAL(p, "On") ||
-          STRINGS_ARE_EQUAL(p, "true") ||
-          STRINGS_ARE_EQUAL(p, "True"))
-      {
-         root.multiple_screens = yes;
-	  } else {
-         root.multiple_screens = no;
-	  }
-   } else {
-      root.multiple_screens = no;
-   }
-
-#ifdef WIN32
    root.gldesc.max_screen_x -= 10;
    root.gldesc.max_screen_y -= 30;
 
-   if (root.multiple_screens == no)
-   glueSetConstrainedWindows(yes);
+   if (is_preference_on(get_preference("MULTIPLE_SCREENS")) == no)
+      glueSetConstrainedWindows(yes);
    else
       glueSetConstrainedWindows(no);
-   
-   strcpy(root.pref.bonefilepath,   get_simm_resources_directory());
-   strcat(root.pref.bonefilepath,   "bones");
-   
-   strcpy(root.pref.jointfilepath,  ".");
-   strcpy(root.pref.plotfilepath,   ".");
-   strcpy(root.pref.outputfilepath, ".");
-#else
-   glueSetPrefWindowPosition(8,root.gldesc.max_screen_x-75,
-			     8,root.gldesc.max_screen_y-32);
-#endif
 
-   if (root.multiple_screens == no)
+   if (is_preference_on(get_preference("MULTIPLE_SCREENS")) == no)
 	   open_main_window();
 
    init_global_lighting();
@@ -158,11 +116,11 @@ void initialize(void)
 
    /* Set all the plot pointers to NULL */
    for (i=0; i<PLOTBUFFER; i++)
-      plot[i] = NULL;
+      gPlot[i] = NULL;
 
    /* Set all the model pointers to NULL */
    for (i=0; i<MODELBUFFER; i++)
-      model[i] = NULL;
+      gModel[i] = NULL;
 
    /* Set all the tool structures to unused */
    for (i=0; i<TOOLBUFFER; i++)
@@ -186,7 +144,7 @@ void initialize(void)
 
    /* Init the command list */
    root.num_commands = 0;
-   for (i=0; i<100; i++)
+   for (i=0; i<COMMAND_BUFFER; i++)
       root.command[i] = NULL;
 
    updatemodelmenu();
@@ -204,15 +162,6 @@ void initialize(void)
 
    root.event_queue_length = EVENT_QUEUE_SIZE;
    root.events_in_queue = 0;
-
-   make_mocap_model_filepath();
-
-#if ! SIMM_DEMO_VERSION && ! SIMM_VIEWER
-#ifdef WIN32
-   init_gm_help();
-#endif
-#endif
-
 }
 
 
@@ -265,19 +214,71 @@ void open_main_window()
 
 #endif /* ENGINE */
 
+
+ReturnCode init_scene(Scene* sc)
+{
+   int i;
+   // sc->scene_num is preset; store it here so you can restore it after memset().
+   int scene_number = sc->scene_num;
+   const char* p = NULL;
+
+   memset(sc, 0, sizeof(Scene));
+
+   sc->scene_num = scene_number;
+   sc->trackball = yes;
+   sc->camera_segment_model = NULL;
+   sc->camera_segment = -1;
+
+   sc->windowX1 = -1;
+   sc->windowY1 = -1;
+   sc->windowHeight = 400;
+   sc->windowWidth = 400;
+
+   reset_4x4matrix(sc->transform_matrix);
+
+   for (i=0; i<3; i++)
+   {
+      sc->background_color[i] = 0.2f;
+      sc->crosshairs_color[i] = 1.0f;
+   }
+
+   sc->fov_angle = 40.0;
+   sc->y_zoom_constant = tan((double)sc->fov_angle*0.5*DTOR);
+   sc->near_clip_plane = 0.0002; /* reset in size_model */
+   sc->far_clip_plane = 12.3; /* reset in size_model */
+
+   sc->snapshot_mode           = SNAPSHOT_INACTIVE;
+   sc->snapshot_counter        = 1;
+   sc->snapshot_file_suffix    = NULL;
+   sc->snapshot_include_depth  = no;
+
+   sc->movie_mode = MAKEMOVIE_INACTIVE;
+   sc->movie_file = NULL;
+
+   sc->trackball = yes;
+   sc->camera_segment = -1;
+
+   sc->windowX1 = -1;
+   sc->windowY1 = -1;
+   sc->windowHeight = 400;
+   sc->windowWidth = 400;
+
+   return code_fine;
+}
+
+
 /* INITMODEL: this guy initializes much of the model structure.
  */
-
 ReturnCode init_model(ModelStruct* ms)
 {
-
    int i;
    const char *p;
+    // ms->modelnum is preset; store it here so you can restore it after memset().
+   int model_number = ms->modelnum;
 
-   ms->name = NULL;
-   ms->forceUnits = NULL;
-   ms->lengthUnits = NULL;
-   ms->HTRtranslationUnits = NULL;
+   memset(ms, 0, sizeof(ModelStruct));
+
+   ms->modelnum = model_number;
    ms->is_demo_model = no;
    ms->useIK = yes;
    ms->defaultGCApproved = yes;
@@ -285,21 +286,9 @@ ReturnCode init_model(ModelStruct* ms)
    ms->defaultConstraintsOK = yes;
    ms->constraintsOK = yes;
    ms->loopsOK = yes;
-   ms->numjoints = 0;
-   ms->numsegments = 0;
-   ms->numgroups = 0;
-   ms->numseggroups = 0;
-   ms->numgencgroups = 0;
-   ms->numgencoords = 0;
-   ms->numunusedgencoords = 0;
-   ms->numworldobjects = 0;
-   ms->numclosedloops = 0;
-   ms->numligaments = 0;
    ms->muscle_array_size = MUSCLE_ARRAY_INCREMENT;
    ms->ligament_array_size = MUSCLE_ARRAY_INCREMENT;
    ms->muscgroup_array_size = MUSCGROUP_ARRAY_INCREMENT;
-   ms->seggroup_array_size = 0;
-   ms->gencgroup_array_size = 0;
    ms->world_array_size = INIT_WORLD_ARRAY_SIZE;
    ms->genc_array_size = GENC_ARRAY_INCREMENT;
    ms->segment_array_size = SEGMENT_ARRAY_INCREMENT;
@@ -308,14 +297,6 @@ ReturnCode init_model(ModelStruct* ms)
    ms->specified_min_thickness = yes;
    ms->specified_max_thickness = yes;
    ms->dynamics_ready = no;
-   ms->currentframe = 0;
-   ms->pushedframe = 0;
-   ms->pathptrs = NULL;
-   ms->jointfilename = NULL;
-   ms->bonepathname = NULL;
-   ms->musclefilename = NULL;
-   ms->mocap_dir = NULL;
-   ms->segment_drawing_order = NULL;
    ms->max_diagonal_needs_recalc = yes;
    ms->GEFuncOK = no;
    ms->marker_visibility = yes;
@@ -327,19 +308,14 @@ ReturnCode init_model(ModelStruct* ms)
    ms->solver.max_iterations = 100;
    ms->solver.joint_limits = smYes;
    ms->solver.orient_body = smNo;
+   ms->solver.fg_contact = smNo;
    ms->global_show_masscenter = no;
    ms->global_show_inertia = no;
 
-   ms->numContactPairs = 0;
-   ms->contactPairArraySize = 0;
-   ms->contactPair = NULL;
-   ms->numContactGroups = 0;
-   ms->contactGroupArraySize = 0;
-   ms->contactGroup = NULL;
-
    ms->gravity = smNegY;
 
-   ms->num_motions = 0;
+   ms->functionMenu = 0;
+
    ms->motion_array_size = MOTION_ARRAY_INCREMENT;
    ms->motion = (MotionSequence**)simm_malloc(ms->motion_array_size * sizeof(MotionSequence*));
    if (ms->motion == NULL)
@@ -363,44 +339,33 @@ ReturnCode init_model(ModelStruct* ms)
    ms->muscgroup = (MuscleGroup*)simm_malloc(ms->muscgroup_array_size*sizeof(MuscleGroup));
    ms->seggroup = NULL;
    ms->gencgroup = NULL;
-   ms->gencoord = (GeneralizedCoord*)simm_malloc(ms->genc_array_size*sizeof(GeneralizedCoord));
+   ms->gencoord = (GeneralizedCoord**)simm_calloc(ms->genc_array_size, sizeof(GeneralizedCoord*));
 
-   ms->muscle = (MuscleStruct*)simm_malloc(ms->muscle_array_size*sizeof(MuscleStruct));
+   ms->muscle = (dpMuscleStruct**)simm_calloc(ms->muscle_array_size, sizeof(dpMuscleStruct*));
 
    ms->ligament = (LigamentStruct*)simm_malloc(ms->ligament_array_size*sizeof(LigamentStruct));
 
-   ms->function = (SplineFunction*)simm_malloc(ms->func_array_size*sizeof(SplineFunction));
+   ms->function = (dpFunction**)simm_calloc(ms->func_array_size, sizeof(dpFunction*));
 
-   ms->save.function = (SplineFunction*)simm_malloc(ms->func_array_size*sizeof(SplineFunction));
+   ms->save.function = (dpFunction**)simm_calloc(ms->func_array_size, sizeof(dpFunction*));
 
    ms->worldobj = (WorldObject*)simm_malloc(ms->world_array_size*sizeof(WorldObject));
 
    if (ms->joint == NULL || ms->segment == NULL || ms->muscgroup == NULL ||
-//       ms->gencoord == NULL || ms->muscle == NULL || ms->function == NULL ||
        ms->gencoord == NULL || ms->function == NULL ||
        ms->save.function == NULL || ms->worldobj == NULL)
    {
       error(none,"Not enough memory to add another model.");
-      return (code_bad);
+      return code_bad;
    }
-
-   ms->save.num_wrap_objects = 0;
-   ms->save.wrapobj = NULL;
-   ms->save.wrapobjnames = NULL;
-   ms->save.num_muscwrap_associations = 0;
-   ms->save.muscwrap_associations = NULL;
-   ms->save.num_markers = 0;
-   ms->save.marker = NULL;
-   ms->save.num_constraint_objects = 0;
-   ms->save.constraintobj = NULL;
 
    ms->num_wrap_objects = 0;
    ms->wrap_object_array_size = WRAP_OBJECT_ARRAY_INCREMENT;
-   ms->wrapobj = (WrapObject*)simm_malloc(ms->wrap_object_array_size*sizeof(WrapObject));
+   ms->wrapobj = (dpWrapObject**)simm_malloc(ms->wrap_object_array_size*sizeof(dpWrapObject*));
    if (ms->wrapobj == NULL)
    {
       error(none,"Not enough memory to add another wrap object.");
-      return (code_bad);
+      return code_bad;
    }
 
 //   ms->constraint_tolerance = DEFAULT_CONSTRAINT_TOLERANCE;
@@ -410,11 +375,8 @@ ReturnCode init_model(ModelStruct* ms)
    if (ms->constraintobj == NULL)
    {
       error(none,"Not enough memory to add another constraint.");
-      return (code_bad);
+      return code_bad;
    }
-
-   ms->save.num_deforms = 0;
-   ms->save.deform = NULL;
 
    ms->num_deformities = 0;
    ms->deformity_array_size = DEFORMITY_ARRAY_INCREMENT;
@@ -422,111 +384,54 @@ ReturnCode init_model(ModelStruct* ms)
    if (ms->deformity == NULL)
    {
       error(none,"Not enough memory to add another deformity object.");
-      return (code_bad);
+      return code_bad;
    }
-
-   for (i=0; i<ms->genc_array_size; i++)
-   {
-      ms->gencoord[i].defined = no;
-      ms->gencoord[i].numgroups = 0;
-      ms->gencoord[i].group = NULL;
-      ms->gencoord[i].jointnum = NULL;
-#if INCLUDE_MOCAP_MODULE
-      ms->gencoord[i].mocap_segment   = NULL;
-      ms->gencoord[i].mocap_seg_index = -1;
-      ms->gencoord[i].mocap_column    = -1;
-      ms->gencoord[i].mocap_adjust    = 0.0;
-#endif
-   }
-   for (i=0; i<ms->func_array_size; i++)
-   {
-      ms->function[i].defined = no;
-      ms->function[i].used = no;
-      ms->function[i].usernum = UNDEFINED_USERFUNCNUM;
-      ms->save.function[i].defined = no;
-      ms->save.function[i].used = no;
-      ms->save.function[i].usernum = UNDEFINED_USERFUNCNUM;
-   }
-
-#ifndef ENGINE
-   nullify_muscle(&ms->save.default_muscle);
-#endif
-   ms->save.numsavedjnts = 0;
-   ms->save.numsavedgencs = 0;
-   ms->save.numsavedbones = 0;
-
-   ms->save.numsavedmuscs = 0;
-   ms->save.numsavedpaths = 0;
-   ms->save.muscle = NULL;
-   ms->save.musclepath = NULL;
 
    init_materials(ms);
 
    ms->num_motion_objects = 0;
    ms->motion_objects = NULL;
 
-#ifndef ENGINE
+#if ! ENGINE || OPENSMAC
    add_default_motion_objects(ms);
+#endif
 
    /* This part of the display structure must be initialized here because
     * it can be changed when reading in the joints file, which happens before
     * the display structure is initialized.
     */
-#endif
-
-   ms->dis.trackball = yes;
-   ms->dis.default_view = 0; // the default camera will be cam0 unless overridden by user
-   ms->dis.camera_segment = -1;
    ms->dis.num_file_views = 0;
-   ms->dis.current_gear = STARTING_GEAR;
 //   ms->dis.muscle_array_size = 0;//dkb = MUSCLE_ARRAY_INCREMENT;
    ms->dis.muscle_array_size = MUSCLE_ARRAY_INCREMENT;
    
    ms->dis.fast_muscle_drawing = no;
    
-   ms->dis.windowX1 = -1;
-   ms->dis.windowY1 = -1;
-   ms->dis.windowHeight = 400;
-   ms->dis.windowWidth = 400;
-
-#ifndef ENGINE
-   p = getpref("FASTER_MUSCLE_DRAWING");
-   
-   if (p)
-   {
-      if (STRINGS_ARE_EQUAL(p, "yes") ||
-          STRINGS_ARE_EQUAL(p, "Yes") ||
-          STRINGS_ARE_EQUAL(p, "on") ||
-          STRINGS_ARE_EQUAL(p, "On") ||
-          STRINGS_ARE_EQUAL(p, "true") ||
-          STRINGS_ARE_EQUAL(p, "True"))
-      {
-         ms->dis.fast_muscle_drawing = yes;
-      }
-   }
+#if ! ENGINE
+   ms->dis.fast_muscle_drawing = is_preference_on(get_preference("FASTER_MUSCLE_DRAWING"));
 
 #if INCLUDE_MSL_LENGTH_COLOR
    ms->dis.muscle_color_factor = 0.0;
 #endif
    
    for (i=0; i<MAXSAVEDVIEWS; i++)
+   {
       ms->dis.view_used[i] = no;
+      ms->dis.view_name[i] = NULL;
+   }
 
    for (i=0; i<3; i++)
    {
-      ms->dis.background_color[i] = 0.2;
-      ms->dis.vertex_label_color[i] = 0.0;
-      ms->dis.rotation_axes_color[i] = 1.0;
-      ms->dis.segment_axes_color[i] = 1.0;
-      ms->dis.crosshairs_color[i] = 1.0;
+      ms->dis.background_color[i] = 0.2f;
+      ms->dis.vertex_label_color[i] = 0.0f;
+      ms->dis.rotation_axes_color[i] = 1.0f;
+      ms->dis.crosshairs_color[i] = 1.0f;
    }
-   ms->dis.rotation_axes_color[2] = 0.0;
-   ms->dis.vertex_label_color[0] = 1.0;
+   ms->dis.rotation_axes_color[2] = 0.0f;
+   ms->dis.vertex_label_color[0] = 1.0f;
 
    ms->dis.background_color_spec = no;
    ms->dis.vertex_label_color_spec = no;
    ms->dis.rotation_axes_color_spec = no;
-   ms->dis.segment_axes_color_spec = no;
    ms->dis.crosshairs_color_spec = no;
 
    ms->modelLock = glutNewMutex();
@@ -534,15 +439,21 @@ ReturnCode init_model(ModelStruct* ms)
 
 #endif /* ENGINE */
 
-   return (code_fine);
+   ms->gencoordmenu = -1;
+   ms->gencoordmenu2 = -1;
+   ms->gencoord_group_menu = -1;
+   ms->xvarmenu = -1;
+   ms->momentgencmenu = -1;
+   ms->momentarmgencmenu = -1;
+   ms->momentarmnumgencmenu = -1;
+   ms->maxmomentgencmenu = -1;
 
+   return code_fine;
 }
-
 
 
 void init_segment(ModelStruct* ms, SegmentStruct* seg)
 {
-
    int i, j;
 
    seg->defined = no;
@@ -551,9 +462,9 @@ void init_segment(ModelStruct* ms, SegmentStruct* seg)
    seg->shadow = no;
    seg->shadow_scale[0] = seg->shadow_scale[1] = seg->shadow_scale[2] = 1.0;
    seg->shadow_trans[0] = seg->shadow_trans[1] = seg->shadow_trans[2] = 0.0;
-   seg->shadow_color.rgb[RD] = 0.1;
-   seg->shadow_color.rgb[GR] = 0.1;
-   seg->shadow_color.rgb[BL] = 0.1;
+   seg->shadow_color.rgb[RD] = 0.1f;
+   seg->shadow_color.rgb[GR] = 0.1f;
+   seg->shadow_color.rgb[BL] = 0.1f;
    seg->shadow_color_spec = no;
    seg->drawmode = gouraud_shading;
    seg->material = ms->dis.mat.default_bone_material;
@@ -632,7 +543,6 @@ void init_segment(ModelStruct* ms, SegmentStruct* seg)
    seg->mocap_scale_chain_end2 = NULL;
    identity_matrix(seg->mocap_adjustment_xform);
 #endif
-
 }
 
 
@@ -645,15 +555,10 @@ ReturnCode init_model_display(ModelStruct* ms)
 {
    int i;
 
-   ms->dis.rx = 0;
-   ms->dis.ry = 0;
-   ms->dis.rz = 0;
-
-   reset_4x4matrix(ms->dis.transform_matrix);
-
+   ms->dis.motion_speed = DEFAULT_MOTION_SPEED;
+   ms->dis.default_view = 0; // the default camera will be cam0 unless overridden by user
    ms->dis.show_highlighted_polygon = no;
    ms->dis.show_selected_coords = no;
-   ms->dis.show_crosshairs = no;
    ms->dis.show_all_muscpts = no;
    ms->dis.show_shadow = no;
    ms->dis.applied_motion = NULL;
@@ -671,8 +576,8 @@ ReturnCode init_model_display(ModelStruct* ms)
 
    for (i=0; i<ms->numgencoords; i++)
    {
-      ms->dis.devs[i*2] = ms->gencoord[i].keys[0];
-      ms->dis.devs[i*2+1] = ms->gencoord[i].keys[1];
+      ms->dis.devs[i*2] = ms->gencoord[i]->keys[0];
+      ms->dis.devs[i*2+1] = ms->gencoord[i]->keys[1];
    }
    ms->dis.numdevs = ms->numgencoords*2;
 
@@ -681,8 +586,7 @@ ReturnCode init_model_display(ModelStruct* ms)
    if (ms->dis.muscle_array_size > 0)
    {
       ms->dis.muscleson = (int*)simm_malloc(ms->dis.muscle_array_size*sizeof(int));
-      ms->save.disp.muscleson = (int*)simm_malloc(ms->dis.muscle_array_size*sizeof(int));
-      if (ms->dis.muscleson == NULL || ms->save.disp.muscleson == NULL)
+      if (ms->dis.muscleson == NULL)
          return code_bad;
    }
 
@@ -691,7 +595,7 @@ ReturnCode init_model_display(ModelStruct* ms)
    for (i=0; i<ms->dis.muscle_array_size; i++)
    {
       if (i < ms->nummuscles)
-         ms->dis.muscleson[i] = ms->muscle[i].display;
+         ms->dis.muscleson[i] = ms->muscle[i]->display;
       else
          ms->dis.muscleson[i] = 0;
    }
@@ -706,102 +610,22 @@ ReturnCode init_model_display(ModelStruct* ms)
       ms->dis.mgroup[i].yo = -1;
    }
 
-   for (i=0; i<4; i++)
-      ms->dis.viewport[i] = 0.0;
+   ms->dis.view_menu = 0;
+   ms->dis.maindrawmodemenu = 0;
+   ms->dis.allsegsdrawmodemenu = 0;
+   ms->dis.allligsdrawmodemenu = 0;
+   ms->dis.allworlddrawmodemenu = 0;
+   ms->dis.alldrawmodemenu = 0;
+   ms->dis.eachsegdrawmodemenu = 0;
 
-   for (i=0; i<16; i++)
-   {
-      ms->dis.projection_matrix[i] = 0.0;
-      ms->dis.modelview_matrix[i] = 0.0;
-   }
-
-   ms->dis.fov_angle = 40.0;
-   ms->dis.y_zoom_constant = tan((double)ms->dis.fov_angle*0.5*DTOR);
-   ms->dis.near_clip_plane = 0.0002; /* reset in size_model */
-   ms->dis.far_clip_plane = 12.3; /* reset in size_model */
-
-#if INCLUDE_SNAPSHOT
-   ms->dis.snapshot_mode           = SNAPSHOT_INACTIVE;
-   ms->dis.snapshot_counter        = 1;
-   ms->dis.snapshot_file_base_name = NULL;
-   ms->dis.snapshot_file_suffix    = NULL;
-   ms->dis.snapshot_include_depth  = no;
-
-   if (getpref("SNAPSHOT_FILE_NAME"))
-      mstrcpy(&ms->dis.snapshot_file_base_name, getpref("SNAPSHOT_FILE_NAME"));
-#endif
-   
-   ms->dis.display_animation_hz = 0x00;
-
-#ifndef ENGINE
-   /* initialize motion info display. */
-   {
-      char* p = (char*)getpref("DISPLAY_MOTION_INFO");
-      
-      if (p)
-      {
-         if (STRINGS_ARE_EQUAL(p, "no") ||
-             STRINGS_ARE_EQUAL(p, "No") ||
-             STRINGS_ARE_EQUAL(p, "NO") ||
-             STRINGS_ARE_EQUAL(p, "false") ||
-             STRINGS_ARE_EQUAL(p, "False") ||
-             STRINGS_ARE_EQUAL(p, "FALSE") ||
-             STRINGS_ARE_EQUAL(p, "off") ||
-             STRINGS_ARE_EQUAL(p, "Off") ||
-             STRINGS_ARE_EQUAL(p, "OFF"))
-            ms->dis.display_motion_info = no;
-      }
-   }
-
-   /* initialize animation frequency display. */
-   {
-      char* p;
-      p = (char*)getpref("DISPLAY_ANIMATION_HZ");
-
-      if (p)
-      {
-         if (STRINGS_ARE_EQUAL(p, "console"))
-         {
-            ms->dis.display_animation_hz |= DISPLAY_HZ_ON_CONSOLE;
-         }
-         else if (STRINGS_ARE_NOT_EQUAL(p, "no") &&
-            STRINGS_ARE_NOT_EQUAL(p, "No") &&
-            STRINGS_ARE_NOT_EQUAL(p, "NO") &&
-            STRINGS_ARE_NOT_EQUAL(p, "false") &&
-            STRINGS_ARE_NOT_EQUAL(p, "False") &&
-            STRINGS_ARE_NOT_EQUAL(p, "FALSE") &&
-            STRINGS_ARE_NOT_EQUAL(p, "off") &&
-            STRINGS_ARE_NOT_EQUAL(p, "Off") &&
-            STRINGS_ARE_NOT_EQUAL(p, "OFF"))
-         {
-            ms->dis.display_animation_hz |= DISPLAY_HZ_IN_WINDOW;
-         }
-      }
-
-      p = (char*)getpref("DISPLAY_POLYGONS_PER_SECOND");
-
-      if (p)
-      {
-         if (STRINGS_ARE_NOT_EQUAL(p, "no") &&
-             STRINGS_ARE_NOT_EQUAL(p, "No") &&
-             STRINGS_ARE_NOT_EQUAL(p, "NO") &&
-             STRINGS_ARE_NOT_EQUAL(p, "false") &&
-             STRINGS_ARE_NOT_EQUAL(p, "False") &&
-             STRINGS_ARE_NOT_EQUAL(p, "FALSE") &&
-             STRINGS_ARE_NOT_EQUAL(p, "off") &&
-             STRINGS_ARE_NOT_EQUAL(p, "Off") &&
-             STRINGS_ARE_NOT_EQUAL(p, "OFF"))
-         {
-            ms->dis.display_animation_hz |= DISPLAY_POLYS_PER_SEC;
-         }
-      }
-   }
+#if ! ENGINE
+   ms->dis.display_motion_info = is_preference_on(get_preference("DISPLAY_MOTION_INFO"));
 #endif
 
    return code_fine;
 }
 
-#ifndef ENGINE
+#if ! ENGINE
 
 /* INITPLOT: this guy initializes the plot structure, which contains viewport
  * and ortho values as well as the set of curve structures for that plot.
@@ -811,32 +635,30 @@ ReturnCode init_model_display(ModelStruct* ms)
 
 ReturnCode initplot(int plotnum)
 {
+   gPlot[plotnum]->plotnum = plotnum;
+   gPlot[plotnum]->numcurves = 0;
+   gPlot[plotnum]->zoomed_yet = no;
+   gPlot[plotnum]->numpoints = 0;
+   gPlot[plotnum]->xname_len = 0;
+   gPlot[plotnum]->yname_len = 0;
+   gPlot[plotnum]->title_len = 256;
+   gPlot[plotnum]->title = (char*)simm_malloc(gPlot[plotnum]->title_len);
+   gPlot[plotnum]->xname = NULL;
+   gPlot[plotnum]->yname = NULL;
+   gPlot[plotnum]->cursor_modelPtr = NULL;
+   gPlot[plotnum]->cursor_motion = NULL;
+   gPlot[plotnum]->show_cursor = yes;
+   gPlot[plotnum]->show_events = yes;
+   gPlot[plotnum]->needs_bounding = no;
+   gPlot[plotnum]->num_file_events = 0;
+   gPlot[plotnum]->file_event = NULL;
 
-   plot[plotnum]->plotnum = plotnum;
-   plot[plotnum]->numcurves = 0;
-   plot[plotnum]->zoomed_yet = no;
-   plot[plotnum]->numpoints = 0;
-   plot[plotnum]->xname_len = 0;
-   plot[plotnum]->yname_len = 0;
-   plot[plotnum]->title_len = 256;
-   plot[plotnum]->title = (char*)simm_malloc(plot[plotnum]->title_len);
-   plot[plotnum]->xname = NULL;
-   plot[plotnum]->yname = NULL;
-   plot[plotnum]->cursor_modelPtr = NULL;
-   plot[plotnum]->cursor_motion = NULL;
-   plot[plotnum]->show_cursor = yes;
-   plot[plotnum]->show_events = yes;
-   plot[plotnum]->needs_bounding = no;
-   plot[plotnum]->numFileEvents = 0;
-   plot[plotnum]->fileEvent = NULL;
-
-   if (plot[plotnum]->title == NULL)
+   if (gPlot[plotnum]->title == NULL)
       return code_bad;
 
-   NULLIFY_STRING(plot[plotnum]->title);
+   NULLIFY_STRING(gPlot[plotnum]->title);
 
    return code_fine;
-
 }
 
 #endif /* ! ENGINE */
@@ -847,90 +669,60 @@ ReturnCode initplot(int plotnum)
  * Thus if a certain parameter is not specified for a muscle (e.g. force-length
  * curve), the default-muscle's parameter is used. This cuts down significantly
  * on the amount of information that must be supplied in a muscle file since
- * most muscles share the same active_force_len_curve, tendon_force_len_curve,
- * passive_force_len_curve, and force_vel_curve.
+ * most muscles share the same active_force_len_func, tendon_force_len_func,
+ * passive_force_len_func, and force_vel_func.
  */
-
-ReturnCode init_muscle(int mod, int muscleIndex)
+ReturnCode init_muscle(ModelStruct* model, dpMuscleStruct* muscle, dpMuscleStruct* default_muscle)
 {
    int i;
-   MuscleStruct* muscle;
-   MuscleStruct* dm;
 
-   muscle = &model[mod]->muscle[muscleIndex];
-   dm = &model[mod]->default_muscle;
+   memset(muscle, 0, sizeof(dpMuscleStruct));
 
-   muscle->name = dm->name;
-   muscle->display = dm->display;
+   muscle->display = default_muscle->display;
    muscle->output = yes;
    muscle->selected = no;
-   muscle->numgroups = dm->numgroups;
-   muscle->group = dm->group;
-   muscle->max_isometric_force = dm->max_isometric_force;
-   muscle->pennation_angle = dm->pennation_angle;
-   muscle->optimal_fiber_length = dm->optimal_fiber_length;
-   muscle->resting_tendon_length = dm->resting_tendon_length;
-   muscle->min_thickness = dm->min_thickness;
-   muscle->max_thickness = dm->max_thickness;
-   muscle->min_material = dm->min_material;
-   muscle->max_material = dm->max_material;
-   muscle->max_contraction_vel = dm->max_contraction_vel;
-   muscle->force_vel_curve = dm->force_vel_curve;
+   muscle->numgroups = default_muscle->numgroups;
+   muscle->group = default_muscle->group;
+   muscle->max_isometric_force = default_muscle->max_isometric_force;
+   muscle->pennation_angle = default_muscle->pennation_angle;
+   muscle->optimal_fiber_length = default_muscle->optimal_fiber_length;
+   muscle->resting_tendon_length = default_muscle->resting_tendon_length;
+   muscle->min_thickness = default_muscle->min_thickness;
+   muscle->max_thickness = default_muscle->max_thickness;
+   muscle->min_material = default_muscle->min_material;
+   muscle->max_material = default_muscle->max_material;
+   muscle->max_contraction_vel = default_muscle->max_contraction_vel;
+   muscle->force_vel_func = default_muscle->force_vel_func;
 
-   if (init_dynamic_param_array(model[mod],muscle) == code_bad)
-      return (code_bad);
+   if (init_dynamic_param_array(muscle, default_muscle) == code_bad)
+      return code_bad;
 
-   for (i=0; i<muscle->num_dynamic_params; i++)
-      muscle->dynamic_params[i] = dm->dynamic_params[i];
+   muscle->muscle_model_index = default_muscle->muscle_model_index;
+   muscle->excitation_func = default_muscle->excitation_func;
+   muscle->excitation_abscissa = default_muscle->excitation_abscissa;
 
-   muscle->muscle_model_index = dm->muscle_model_index;
-   muscle->excitation = dm->excitation;
-   muscle->excitation_format = dm->excitation_format;
-   muscle->excitation_index = 0;
-   muscle->excitation_abscissa = dm->excitation_abscissa;
-
-   muscle->nummomentarms = model[mod]->numgencoords;
+   muscle->nummomentarms = model->numgencoords;
    muscle->momentarms = (double *)simm_malloc(muscle->nummomentarms*sizeof(double));
    if (muscle->momentarms == NULL)
-      return (code_bad);
+      return code_bad;
 
    for (i=0; i<muscle->nummomentarms; i++)
       muscle->momentarms[i] = 0.0;
-   muscle->activation = muscle->initial_activation = 1.0;
-   muscle->tendon_force_len_curve = dm->tendon_force_len_curve;
-   muscle->active_force_len_curve = dm->active_force_len_curve;
-   muscle->passive_force_len_curve = dm->passive_force_len_curve;
-
-   muscle->muscle_tendon_length = 0.0;
-   muscle->fiber_length = 0.0;        
-   muscle->tendon_length = 0.0;       
-   muscle->muscle_tendon_vel = 0.0;   
-   muscle->fiber_velocity = 0.0;      
-   muscle->tendon_velocity = 0.0;     
-   muscle->force = 0.0;               
-   muscle->generated_power = 0.0;     
-   muscle->applied_power = 0.0; 
-   muscle->excitation_level = 0.0;
-   muscle->dynamic_activation = 0.0;
-   muscle->energy = 0.0;
+   muscle->dynamic_activation = 1.0;
+   muscle->tendon_force_len_func = default_muscle->tendon_force_len_func;
+   muscle->active_force_len_func = default_muscle->active_force_len_func;
+   muscle->passive_force_len_func = default_muscle->passive_force_len_func;
 
    muscle->wrap_calced = no;
-   muscle->numWrapStructs = 0;
-   muscle->wrapStruct = NULL;
-   
-   muscle->musclepoints = NULL;
 
-   muscle->saved_copy = NULL;
-
-   return (code_fine);
-
+   return code_fine;
 }
 
-ReturnCode initMusclePath(MusclePathStruct *musclepoints)
+ReturnCode initMusclePath(dpMusclePathStruct *musclepoints)
 {
    musclepoints->num_orig_points = 0;
    musclepoints->mp_orig_array_size = MUSCLEPOINT_ARRAY_INCREMENT;
-   musclepoints->mp_orig = (MusclePoint *)simm_malloc(musclepoints->mp_orig_array_size * sizeof(MusclePoint));
+   musclepoints->mp_orig = (dpMusclePoint *)simm_malloc(musclepoints->mp_orig_array_size * sizeof(dpMusclePoint));
    if (musclepoints->mp_orig == NULL)
       return code_bad;
 
@@ -938,23 +730,20 @@ ReturnCode initMusclePath(MusclePathStruct *musclepoints)
    musclepoints->mp_array_size = 0;
    musclepoints->mp = NULL;
 
-   musclepoints->saved_copy = NULL;
-   
    return code_fine;
 }
 
 
-
-ReturnCode init_musclepoint(MusclePoint *mp)
+ReturnCode init_musclepoint(dpMusclePoint *mp)
 {
    int i;
 
    mp->segment = -1;
-   mp->selected = no;
-   mp->isMovingPoint = no;
-   mp->isVia = no;
-   mp->is_auto_wrap_point = no;
-   mp->viaRange.genc = -1;
+   mp->selected = dpNo;
+   mp->isMovingPoint = dpNo;
+   mp->isVia = dpNo;
+   mp->is_auto_wrap_point = dpNo;
+   mp->viaRange.gencoord = NULL;
    mp->viaRange.start = UNDEFINED_DOUBLE;
    mp->viaRange.end = UNDEFINED_DOUBLE;
    mp->num_wrap_pts = 0;
@@ -965,112 +754,93 @@ ReturnCode init_musclepoint(MusclePoint *mp)
       mp->point[i] = ERROR_DOUBLE;
       mp->ground_pt[i] = ERROR_DOUBLE;
       mp->undeformed_point[i] = ERROR_DOUBLE;
-      mp->fcn_index[i] = INVALID_FUNCTION;
-      mp->gencoord[i] = INVALID_GENCOORD;
+      mp->function[i] = NULL;
+      mp->gencoord[i] = NULL;
+      mp->normal[i] = 0.0;
    }
+
    return code_fine;
 }
+
 
 /* INIT_GENCOORD: this routine initializes a gencoord structure before a gencoord is
  * read from an input file.
  */
-
-void init_gencoord(GeneralizedCoord* gc)
+void init_gencoord(GeneralizedCoord* gencoord)
 {
-   gc->name = NULL;
-   gc->type = rotation_gencoord;
-   gc->defined = no;
-   gc->numjoints = 0;
-   gc->jointnum = NULL;
-   gc->wrap = no;
-   gc->numgroups = 0;
-   gc->group = NULL;
+   memset(gencoord, 0, sizeof(GeneralizedCoord));
 
-   gc->keys[0] = gc->keys[1] = null_key;
+   gencoord->type = rotation_gencoord;
+   gencoord->defined = no;
+   gencoord->wrap = no;
 
-   gc->tolerance = 0.0;
-   gc->default_value = 0.0;
-   gc->default_value_specified = no;
-   gc->clamped = yes;
-   gc->clamped_save = gc->clamped;
-   gc->locked = no;
-   gc->locked_save = gc->locked;
-   gc->range.start = 0.0;
-   gc->range.end = 90.0;
-   gc->restraintFuncActive = yes;
-   gc->used_in_model = no;
-   gc->used_in_loop = no;
-   gc->used_in_constraint = no;
-   gc->slider_visible = yes;
-   gc->pd_stiffness = 0.0;
+   gencoord->keys[0] = gencoord->keys[1] = null_key;
 
-   gc->restraint_user_num = 0;
-   gc->restraint_func_num = -1;
-   gc->restraint_sdcode_num = -1;
-   gc->min_restraint_user_num = 0;
-   gc->min_restraint_func_num = INVALID_FUNCTION;//-1;
-   gc->min_restraint_sdcode_num = -1;
-   gc->max_restraint_user_num = 0;
-   gc->max_restraint_func_num = INVALID_FUNCTION;//-1;
-   gc->max_restraint_sdcode_num = -1;
+   gencoord->default_value_specified = no;
+   gencoord->clamped = yes;
+   gencoord->clamped_save = gencoord->clamped;
+   gencoord->locked = no;
+   gencoord->locked_save = gencoord->locked;
+   gencoord->range.end = 90.0;
+   gencoord->restraintFuncActive = yes;
+   gencoord->used_in_model = no;
+   gencoord->used_in_loop = no;
+   gencoord->used_in_constraint = no;
+   gencoord->slider_visible = yes;
+
+   gencoord->restraint_sdcode_num = -1;
+   gencoord->min_restraint_sdcode_num = -1;
+   gencoord->max_restraint_sdcode_num = -1;
 
 #if INCLUDE_MOCAP_MODULE
-   gc->mocap_segment = NULL;
-   gc->mocap_seg_index = -1;
-   gc->mocap_column = -1;
-   gc->mocap_adjust = 0.0;
+   gencoord->mocap_seg_index = -1;
+   gencoord->mocap_column = -1;
 #endif
-
 }
+
 
 /* INIT_GENCOORDS: this function sets some of the initial values in the gencoord
  * structs. It must be called after all the joints have been read in because it
  * mallocs an array of size numjoints for each gencoord.
  */
-
 ReturnCode init_gencoords(ModelStruct* ms)
 {
-
    int i;
 
    for (i=0; i<ms->numgencoords; i++)
    {
-      if (ms->gencoord[i].default_value >= ms->gencoord[i].range.start &&
-         ms->gencoord[i].default_value <= ms->gencoord[i].range.end)
-         ms->gencoord[i].value = ms->gencoord[i].default_value;
-      else if (ms->gencoord[i].range.start > 0.0 ||
-         ms->gencoord[i].range.end < 0.0)
-         ms->gencoord[i].value = ms->gencoord[i].range.start;
+      if (ms->gencoord[i]->default_value >= ms->gencoord[i]->range.start &&
+         ms->gencoord[i]->default_value <= ms->gencoord[i]->range.end)
+         ms->gencoord[i]->value = ms->gencoord[i]->default_value;
+      else if (ms->gencoord[i]->range.start > 0.0 ||
+         ms->gencoord[i]->range.end < 0.0)
+         ms->gencoord[i]->value = ms->gencoord[i]->range.start;
       else
-         ms->gencoord[i].value = 0.0;
+         ms->gencoord[i]->value = 0.0;
 
-      ms->gencoord[i].velocity = 0.0;
+      ms->gencoord[i]->velocity = 0.0;
 
-#ifndef ENGINE
-      storeDoubleInForm(&ms->gencform.option[i], ms->gencoord[i].value, 3);
+#if ! ENGINE
+      storeDoubleInForm(&ms->gencform.option[i], ms->gencoord[i]->value, 3);
 #endif
 
-      ms->gencoord[i].numjoints = 0;
-      ms->gencoord[i].jointnum = (int*)simm_malloc(ms->numjoints*sizeof(int));
-      if (ms->gencoord[i].jointnum == NULL)
+      ms->gencoord[i]->numjoints = 0;
+      ms->gencoord[i]->jointnum = (int*)simm_malloc(ms->numjoints*sizeof(int));
+      if (ms->gencoord[i]->jointnum == NULL)
          return code_bad;
    }
 
    return code_fine;
-
 }
-
 
 
 /* SET_GENCOORD_INFO: This routine records some information about the
  * gencoords. It first makes a list of the joints that each gencoord
  * appears in, then sets the type (rotation, translation) of the gencoord.
  */
-
 void set_gencoord_info(ModelStruct* ms)
 {
-
-   int i, j, k, en, genc;
+   int i, j, k, en;
    DofStruct* adof;
 
    /* For each joint, go through the six dofs (translations and rotations)
@@ -1088,9 +858,8 @@ void set_gencoord_info(ModelStruct* ms)
     * again to see if one of them uses the same gencoord, which means you
     * don't need to [re-]tell the gencoord about the joint.
     */
-
    for (i=0; i<ms->numgencoords; i++)
-      ms->gencoord[i].numjoints = 0;
+      ms->gencoord[i]->numjoints = 0;
 
    for (i=0; i<ms->numjoints; i++)
    {
@@ -1104,17 +873,15 @@ void set_gencoord_info(ModelStruct* ms)
                   break;
                if (k == j)
                {
-                  genc = adof->gencoord;
-                  en = ms->gencoord[genc].numjoints++;
-                  ms->gencoord[genc].jointnum[en] = i;
+                  en = adof->gencoord->numjoints++;
+                  adof->gencoord->jointnum[en] = i;
                }
          }
       }
    }
 
    for (i = 0; i < ms->numgencoords; i++)
-      determine_gencoord_type(ms, i);
-
+      determine_gencoord_type(ms, ms->gencoord[i]);
 }
 
 
@@ -1136,46 +903,45 @@ void set_gencoord_info(ModelStruct* ms)
  * that the gencoord is used in. If they are all translational, then the gencoord is
  * translational. If one or more is rotational, then the gencoord is rotational.
  */
-
-void determine_gencoord_type(ModelStruct* ms, int gc)
+void determine_gencoord_type(ModelStruct* model, GeneralizedCoord* gencoord)
 {
    int j, k, dofnum, jointnum;
    GencoordType gencoord_type;
 
-   if (mark_unconstrained_dof(ms, gc, &jointnum, &dofnum, NULL))
+   if (mark_unconstrained_dof(model, gencoord, &jointnum, &dofnum, NULL))
    {
       if (dofnum == R1 || dofnum == R2 || dofnum == R3)
-         ms->gencoord[gc].type = rotation_gencoord;
+         gencoord->type = rotation_gencoord;
       else if (dofnum == TX || dofnum == TY || dofnum == TZ)
-         ms->gencoord[gc].type = translation_gencoord;
+         gencoord->type = translation_gencoord;
    }
    else
    {
       gencoord_type = translation_gencoord;
-      for (j = 0; j < ms->gencoord[gc].numjoints; j++)
+      for (j = 0; j < gencoord->numjoints; j++)
       {
-         jointnum = ms->gencoord[gc].jointnum[j];
+         jointnum = gencoord->jointnum[j];
          for (k = R1; k <= R3; k++)
          {
-            if (ms->joint[jointnum].dofs[k].type == function_dof &&
-                ms->joint[jointnum].dofs[k].gencoord == gc)
+            if (model->joint[jointnum].dofs[k].type == function_dof &&
+                model->joint[jointnum].dofs[k].gencoord == gencoord)
             {
                gencoord_type = rotation_gencoord;
-               j = ms->gencoord[gc].numjoints; // to break out of outer loop
+               j = gencoord->numjoints; // to break out of outer loop
                break;
             }
          }
       }
-      ms->gencoord[gc].type = gencoord_type;
+      gencoord->type = gencoord_type;
    }
 }
 
 
-int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof, SBoolean* constrained)
+int mark_unconstrained_dof(ModelStruct* ms, GeneralizedCoord* gencoord, int* jnt, int* dof, SBoolean* constrained)
 {
-   int i, j, fnum;
+   int i, j;
    double slope;
-   SplineFunction* func;
+   dpFunction* func;
 
    *jnt = *dof = -1;
 
@@ -1201,10 +967,9 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof, SBoolean
       for (j = 0; j < 6; j++)
       {
 	      if (ms->joint[i].dofs[j].type == function_dof &&
-	          ms->joint[i].dofs[j].gencoord == gc)
+	          ms->joint[i].dofs[j].gencoord == gencoord)
 	      {
-	         fnum = ms->joint[i].dofs[j].funcnum;
-            func = &ms->function[fnum];
+            func = ms->joint[i].dofs[j].function;
 	         if (func->numpoints == 2 && EQUAL_WITHIN_ERROR(func->x[0], func->y[0]))
 	         {
                slope = (func->y[1] - func->y[0]) / (func->x[1] - func->x[0]);
@@ -1250,7 +1015,7 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof, SBoolean
 			for (j = 0; j < 6; j++)
 			{
 				if (ms->joint[i].dofs[j].type == function_dof &&
-					ms->joint[i].dofs[j].gencoord == gc)
+					ms->joint[i].dofs[j].gencoord == gencoord)
 				{
 					ms->joint[i].dofs[j].sd.constrained = no;       // so other code will not create a new coordinate
 					ms->joint[i].dofs[j].sd.conversion_sign = 1.0;  // and constrain it to this gencoord
@@ -1270,10 +1035,8 @@ int mark_unconstrained_dof(ModelStruct* ms, int gc, int* jnt, int* dof, SBoolean
 /* INIT_JOINT: this routine initializes a joint structure before a joint is read
  * from an input file.
  */
-
 void init_joint(ModelStruct* ms, JointStruct* jointstr)
 {
-
    int i;
 
    jointstr->to = -1;
@@ -1290,20 +1053,18 @@ void init_joint(ModelStruct* ms, JointStruct* jointstr)
    /* In case the transformation order is not specified in the file, assume
     * a default ordering of t, r1, r2, r3.
     */
-
    for (i=0; i<4; i++)
       jointstr->order[i] = i;
 
    /* If any dofs are not specified in the file, the error checking will throw out
     * the bad joint (and model), but make all the dofs constants of 0.0 anyway.
     */
-
    for (i=0; i<6; i++)
    {
       jointstr->dofs[i].type = constant_dof;
       jointstr->dofs[i].value = 0.0;
-      jointstr->dofs[i].funcnum = INVALID_FUNCTION;//-1;
-      jointstr->dofs[i].gencoord = INVALID_GENCOORD;//-1;
+      jointstr->dofs[i].function = NULL;
+      jointstr->dofs[i].gencoord = NULL;
       jointstr->dofs[i].sd.name = NULL;
       jointstr->dofs[i].sd.con_name = NULL;
       jointstr->dofs[i].sd.initial_value = 0.0;
@@ -1347,20 +1108,20 @@ void init_joint(ModelStruct* ms, JointStruct* jointstr)
 }
 
 
-void initwrapobject(WrapObject* wo)
+void initwrapobject(dpWrapObject* wo)
 {
    wo->name = NULL;
-   wo->wrap_type = wrap_sphere;
+   wo->wrap_type = dpWrapSphere;
    wo->wrap_algorithm = WE_HYBRID_ALGORITHM;
    wo->segment = 0;
-   wo->display_list = -1;
+   wo->display_list = 0;
    wo->display_list_is_stale = no;
    wo->active = yes;               /* set wrap object fields to default values */
    wo->visible = yes;
    wo->show_wrap_pts = no;
-   wo->radius.xyz[0] = 0.05;
-   wo->radius.xyz[1] = 0.1;
-   wo->radius.xyz[2] = 0.05;
+   wo->radius[0] = 0.05;
+   wo->radius[1] = 0.1;
+   wo->radius[2] = 0.05;
    wo->height = 0.1;
    wo->wrap_axis = 0;
    wo->wrap_sign = 0;
@@ -1395,7 +1156,7 @@ void initconstraintobject(ConstraintObject* co)
    co->cp_array_size = CP_ARRAY_INCREMENT;
    co->constraintType = constraint_sphere;
    co->segment = 0;
-   co->display_list = -1;
+   co->display_list = 0;
    co->display_list_is_stale = no;
    co->active = yes;               
    co->visible = yes;
@@ -1443,22 +1204,19 @@ void initconstraintpoint(ConstraintPoint *pt)
    pt->offset[2] = 0.01;
    pt->segment = 0;
    pt->tolerance = DEFAULT_CONSTRAINT_TOLERANCE;
-   pt->visible = yes;
-   pt->active = yes;
+//   pt->visible = yes;
+//   pt->active = yes;
 }
 
-#ifndef ENGINE
+#if ! ENGINE
 
 static void make_confirm_menu(void)
 {
-
    Menu* ms;
 
    ms = &root.confirm_menu;
 
    ms->title = NULL;
-   ms->x_edge = 2;
-   ms->y_edge = 2;
    ms->numoptions = 2;
    ms->origin.x = 0;
    ms->origin.y = 0;
@@ -1476,79 +1234,11 @@ static void make_confirm_menu(void)
 
    SET_BOX(ms->option[0].box,30,100,30,ms->option[0].box.y1+MENU_ITEM_HEIGHT);
    SET_BOX(ms->option[1].box,160,230,30,ms->option[1].box.y1+MENU_ITEM_HEIGHT);
-
-}
-
-
-void get_environment_vars(void)
-{
-
-   const char* tmpptr;
-
-#ifdef WIN32
-   strcpy(buffer,get_simm_resources_directory());
-   mstrcpy(&root.simm_dir,buffer);
-
-   strcpy(buffer,get_simm_resources_directory());
-   mstrcpy(&root.color_dir,buffer);
-
-   strcpy(buffer,get_simm_resources_directory());
-   strcat(buffer,"help\\");
-   mstrcpy(&root.help_dir,buffer);
-
-   strcpy(buffer,get_simm_resources_directory());
-   strcat(buffer,"mocap\\");
-   mstrcpy(&root.mocap_dir,buffer);
-#else
-   /* Get environment variables which contain the paths for certain SIMM files */
-   char cwd_buf[CHARBUFFER];
-
-   _getcwd(cwd_buf, sizeof(cwd_buf));
-
-   if ((tmpptr = getenv("SIMMDIR")) == NULL)
-      (void)strcpy(buffer,cwd_buf);
-   else
-      (void)strcpy(buffer,tmpptr);
-   (void)strcat(buffer,"/");
-   mstrcpy(&root.simm_dir,buffer);
-
-   if ((tmpptr = getenv("COLORDIR")) == NULL)
-      (void)strcpy(buffer,cwd_buf);
-   else
-      (void)strcpy(buffer,tmpptr);
-   (void)strcat(buffer,"/");
-   mstrcpy(&root.color_dir,buffer);
-
-   if ((tmpptr = getenv("HELPDIR")) == NULL)
-      (void)strcpy(buffer,"help/");
-   else
-   {
-      (void)strcpy(buffer,tmpptr);
-      (void)strcat(buffer,"/");
-   }
-   mstrcpy(&root.help_dir,buffer);
-
-   if ((tmpptr = getenv("MOCAPDIR")) == NULL)
-      (void)strcpy(buffer,"mocap/");
-   else
-   {
-      (void)strcpy(buffer,tmpptr);
-      (void)strcat(buffer,"/");
-   }
-   mstrcpy(&root.mocap_dir,buffer);
-#endif
-
-   if ((tmpptr = getpref("SET_TOOLS_TO_NEW_MODEL")) == NULL)
-      root.pref.set_tools_to_new_model = no;
-   else
-      root.pref.set_tools_to_new_model = yes;
-
 }
 
 
 void make_message_port(void)
 {
-
    IntBox bbox;
    HelpStruct* hp;
    int windex;
@@ -1615,7 +1305,6 @@ void make_message_port(void)
 
 public void update_message_window(WindowParams* win_parameters, WinUnion* win_struct)
 {
-
    IntBox bbox;
    HelpStruct* hp;
 
@@ -1652,21 +1341,17 @@ public void update_message_window(WindowParams* win_parameters, WinUnion* win_st
       hp->sl.thumb_thickness = hp->lines_per_page*
          (hp->sl.shaft.y2-hp->sl.shaft.y1)/hp->num_lines;
    }
-
 }
 
 public void draw_message_window(WindowParams* win_parameters, WinUnion* win_struct)
 {
-
    draw_help_window(&root.messages);
-
 }
 
 
 public void messages_input(WindowParams* win_parameters, WinUnion* win_struct,
 			   SimmEvent se)
 {
-
    if (se.field1 == window_shut)
    {
       do_tool_window_shut("Messages", win_parameters->id);
@@ -1678,60 +1363,26 @@ public void messages_input(WindowParams* win_parameters, WinUnion* win_struct,
 
    if (check_slider(&root.messages.sl,se,move_message_text,DUMMY_INT) == yes)
       draw_help_window(&root.messages);
-
 }
 
 
 
 public void move_message_text(int dummy_int, double slider_value, double delta)
 {
-
    root.messages.starting_line = root.messages.sl.max_value - slider_value;
 
    draw_help_window(&root.messages);
-
 }
 
 #endif /* ! ENGINE */
 
 
-const char* get_simm_directory()
+#if ! OPENSIM_BUILD && ! CORTEX_PLUGIN
+
+char* get_mocap_model(void)
 {
-   static char  simm_buf[512];
-   static char* simm_directory = NULL;
-
-   if (simm_directory == NULL)
-   {
-      _getcwd(simm_buf, sizeof(simm_buf));
-      simm_directory = simm_buf;
-   }
-   return simm_directory;
-}
-
-const char* get_simm_resources_directory()
-{
-   static char  simm_resources_buf[512];
-   static char* simm_resources_dir = NULL;
-
-#ifndef WIN32
-   return root.simm_dir;
-#else
-
-   if (simm_resources_dir == NULL)
-   {
-      strcpy(simm_resources_buf, get_simm_directory());
-      simm_resources_dir = simm_resources_buf;
-
-      strcat(simm_resources_dir, "\\resources\\");
-   }
-   return simm_resources_dir;
-#endif
-}
-
-#ifndef ENGINE
-static void make_mocap_model_filepath(void)
-   {
-   const char* p = getpref("MOCAP_MODEL");
+   char* m;
+   const char* p = get_preference("MOCAP_MODEL");
 
    if (p)
    {
@@ -1741,19 +1392,21 @@ static void make_mocap_model_filepath(void)
       }
       else
       {
-         strcpy(buffer, root.simm_base_dir);
+         strcpy(buffer, get_preference("SIMM_FOLDER"));
          append_if_necessary(buffer, DIR_SEP_CHAR);
          strcat(buffer, p);
       }
    }
    else
    {
-      strcpy(buffer, root.simm_base_dir);
+      strcpy(buffer, get_preference("RESOURCES_FOLDER"));
       append_if_necessary(buffer, DIR_SEP_CHAR);
-      strcat(buffer, "resources\\mocap\\mocap.jnt");
+      strcat(buffer, "mocap\\mocap.jnt");
    }
 
-   mstrcpy(&root.mocap_model, buffer);
+   mstrcpy(&m, buffer);
+
+   return m;
 }
 #endif
 
@@ -1801,23 +1454,18 @@ static void _free_simm_state ()
 public void load_simm_state ()
 {
    FILE* file = NULL;
-   
-#ifdef WIN32
-   sprintf(buffer, "%sSimmState.txt", get_simm_resources_directory());
-#else
-   sprintf(buffer, "%s.simmState.txt", get_simm_resources_directory());
-#endif
-   
+
+   strcpy(buffer, get_preference("RESOURCES_FOLDER"));
+   append_if_necessary(buffer, DIR_SEP_CHAR);
+   strcat(buffer, "SimmState.txt");
+
    file = simm_fopen(buffer, "r");
-   
+
    if (file)
    {
       int numLines = count_remaining_lines(file, no);
-      
+
       _free_simm_state();
-      
-      
-      
       fclose(file);
    }
 }

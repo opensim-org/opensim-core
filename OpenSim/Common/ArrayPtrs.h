@@ -864,8 +864,7 @@ T* get(const std::string &aName)
 	if(index==-1) {
 		std::string msg = "ArrayPtrs.get(aName): No object with name ";
 		msg += aName;
-		//TODO JPL throw( Exception(msg,__FILE__,__LINE__) );
-		return NULL;
+		throw( Exception(msg,__FILE__,__LINE__) );
 	}
 	return(_array[index]);
 }

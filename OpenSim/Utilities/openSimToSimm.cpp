@@ -34,6 +34,7 @@
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Actuators/Delp1990Muscle.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -52,13 +53,13 @@ int main(int argc,char **argv)
 {
 	std::cout << "openSimToSimm, " << OpenSim::GetVersionAndDate() << std::endl;
 
- //  Object::RegisterType(SimbodyEngine());
-	//SimbodyEngine::registerTypes();
- //  Object::RegisterType(SimmKinematicsEngine());
-	//SimmKinematicsEngine::registerTypes();
-	//Object::RegisterType(Schutte1993Muscle());
-	//Object::RegisterType(Thelen2003Muscle());
-	//Object::RegisterType(Delp1990Muscle());
+   Object::RegisterType(SimbodyEngine());
+	SimbodyEngine::registerTypes();
+   Object::RegisterType(SimmKinematicsEngine());
+	SimmKinematicsEngine::registerTypes();
+	Object::RegisterType(Schutte1993Muscle());
+	Object::RegisterType(Thelen2003Muscle());
+	Object::RegisterType(Delp1990Muscle());
 
 	// PARSE COMMAND LINE
 	string inName = "";

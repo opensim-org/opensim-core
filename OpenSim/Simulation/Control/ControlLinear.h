@@ -192,6 +192,9 @@ public:
 	bool simplify(const double& cutoffFrequency, const double& distance);
 	virtual void filter(double aT);
 
+    // INTERPOLATE
+    static double Interpolate(double aX1,double aY1,double aX2,double aY2,double aX);
+
 private:
 	void setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aX);
 	double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);

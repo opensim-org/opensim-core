@@ -31,7 +31,7 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
-#include "AbstractMarker.h"
+#include "Marker.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -44,6 +44,7 @@ namespace OpenSim {
 
 class Model;
 class ScaleSet;
+class Body;
 
 //=============================================================================
 //=============================================================================
@@ -54,7 +55,7 @@ class ScaleSet;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API MarkerSet :	public Set<AbstractMarker>
+class OSIMSIMULATION_API MarkerSet :	public Set<Marker>
 {
 private:
 	void setNull();
@@ -64,7 +65,7 @@ public:
 	MarkerSet(const MarkerSet& aMarkerSet);
 	~MarkerSet(void);
 	virtual Object* copy() const;
-	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
+	void setup(Model& aModel);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -78,7 +79,7 @@ public:
 	void scale(const ScaleSet& aScaleSet);
 	/** Add a prefix to marker names for all markers in the set**/
 	void addNamePrefix(const std::string& prefix);
-	AbstractMarker* addMarker(const std::string& aName, const double aOffset[3], AbstractBody& aBody);
+	Marker* addMarker( const std::string& aName, const double aOffset[3], OpenSim::Body& aBody);
 //=============================================================================
 };	// END of class MarkerSet
 //=============================================================================

@@ -34,18 +34,10 @@
 #endif
 
 ENUM {
-   ADD,                              /* add new window to the list */
-   DELETE,                           /* delete window from the list */
-   PUSH,                             /* push window to bottom of the list */
-   POP                               /* pop window to top of the list */
-} WindowAction;                      /* possible window actions */
-
-
-ENUM {
-   MODEL,                            /*  */
    PLOT,                             /*  */
    PLOTKEY,                          /*  */
    TOOL,                             /*  */
+   SCENE,                            /*  */
    NOTYPE                            /*  */
 } WindowType;                        /*  */
 
@@ -66,13 +58,16 @@ STRUCT {
 
 STRUCT {
    unsigned int event_code;           /* type of event */
-   void* struct_ptr;                  /* user data */
-   int field1;                        /*  */
-   int field2;                        /* value */
+   int model_index;                   /* index of model associated with the event */
+   void* struct_ptr1;                 /* user data */
+   void* struct_ptr2;                 /* user data */
+   int field1;                        /* user data */
+   int field2;                        /* user data */
    int mouse_x;                       /* mouse X position */
    int mouse_y;                       /* mouse Y position */
    int key_modifiers;                 /* shift, ctrl, alt key states */
-   int window_id;                     /* id of window event happened in */
+   int window_id;                     /* id of window the event happened in */
+   PickIndex object;                  /* for identifying any object in a model */
 } SimmEvent;
 
 STRUCT {
@@ -88,7 +83,7 @@ STRUCT {
 
 UNION {
    ToolStruct* tool;                 /*  */
-   ModelStruct* model;               /*  */
+   Scene* scene;                     /*  */
    PlotStruct* plot;                 /*  */
    PlotKeyStruct* plotkey;           /*  */
 } WinUnion;
@@ -105,15 +100,10 @@ STRUCT {
    void (*display_function)(WindowParams*, WinUnion*);
 } WindowList;
 
-
 STRUCT {
-   char jointfilepath[150];           /*  */
-   char bonefilepath[150];            /*  */
-   char plotfilepath[150];            /*  */
-   char outputfilepath[150];          /*  */
-   SBoolean set_tools_to_new_model;   /*  */
-} GlobalPrefStruct;                   /*  */
-
+   char* name;
+   char* value;
+} SimmPreference;
 
 STRUCT {
    int num_primaries;
@@ -135,6 +125,13 @@ STRUCT {
    long max_screen_y;
 } GLStruct;
 
+/* data for handling selecting an object from a popup menu */
+typedef struct {
+    WindowParams* win_parameters;
+    int menu;
+    int* submenu;
+    int num_submenus;
+} ObjectSelectMenuData;
 
 STRUCT {
     WindowParams* win_params;
@@ -169,25 +166,20 @@ STRUCT {
    int events_in_queue;              /*  */
    int event_queue_length;           /*  */
    SimmEvent* simm_event_queue;      /*  */
-   GlobalPrefStruct pref;            /*  */
    Menu model_selector;              /*  */
    Menu plot_selector;               /*  */
    Menu help_selector;               /*  */
    SBoolean confirm_window_open;     /*  */
    void (*confirm_callback)(SBoolean); /*  */
    ColorDatabase color;              /*  */
-   char* simm_base_dir;              /* directory where SIMM executable is */
-   char* simm_dir;                   /* resources directory under SIMM */
-   char* color_dir;                  /*  */
-   char* help_dir;                   /*  */
-   char* mocap_dir;                  /* base directory of mocap import */
-   char* mocap_model;                /* joint file used as MOCAP_MODEL */
    GLStruct gldesc;                  /*  */
    const glutSysInfo* ginfo;         /*  */
    int num_commands;                 /* number of commands in command list */
-   char* command[500];               /* list of commands to be parsed */
+   char* command[COMMAND_BUFFER];    /* list of commands to be parsed */
    HelpStruct messages;              /*  */
-   SBoolean multiple_screens;        /* support for allowing tools to move beyond main SIMM window */
+   int num_preferences;
+   int preference_array_size;
+   SimmPreference* preference;
 } RootStruct;                        /*  */
 #endif
 

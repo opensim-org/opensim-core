@@ -31,10 +31,12 @@
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Set.h>
-#include "AbstractCoordinate.h"
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+
 
 namespace OpenSim {
 
+class Model;
 //=============================================================================
 //=============================================================================
 /**
@@ -44,7 +46,7 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API CoordinateSet :	public Set<AbstractCoordinate>
+class OSIMSIMULATION_API CoordinateSet :	public Set<Coordinate>
 {
 private:
 	void setNull();
@@ -52,13 +54,24 @@ public:
 	CoordinateSet();
 	CoordinateSet(const CoordinateSet& aCoordinateSet);
 	~CoordinateSet(void);
-	void setup(AbstractDynamicsEngine* aAbstractDynamicsEngine);
+	void setup(Model& aModel);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG
 	CoordinateSet& operator=(const CoordinateSet &aCoordinateSet);
 #endif
+	void getSpeedNames(OpenSim::Array<std::string> &rNames ) const
+{
+	for(int i=0;i<_objects.getSize();i++) {
+		Coordinate *obj = _objects[i];
+		if(obj==NULL) {
+			rNames.append("NULL");
+		} else {
+			rNames.append(obj->getSpeedName());
+		}
+	}
+}
 //=============================================================================
 };	// END of class CoordinateSet
 //=============================================================================

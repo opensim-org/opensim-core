@@ -2,22 +2,18 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/Vendors 		  
 		    ${XERCES_INCLUDE_DIR})
 
-FILE(GLOB SOURCE_FILES ../Simm*.cpp  ../../../Subject/Simm*.cpp testIK.cpp)
-FILE(GLOB INCLUDE_FILES ../Simm*.h ../../../Subject/Simm*.h)
 
-IF (BUILD_STATIC_OSIM_LIBS)
-	ADD_DEFINITIONS(-DSTATIC_OSIM_LIBS)
-ENDIF(BUILD_STATIC_OSIM_LIBS)
+LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
+		debug osimSimulation_d optimized osimSimulation
+		debug osimActuators_d optimized osimActuators
+		debug osimTools_d optimized osimTools
+		debug osimAnalyses_d optimized osimAnalyses
+		${SIMTK_ALL_LIBS}
+		)
 
-LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2 
-		debug osimCommon_d optimized osimCommon
-		debug osimSimulation_d optimized osimSimulation)
+ADD_EXECUTABLE(testIK testIK.cpp)
 
-# SET(EXECUTABLE_OUTPUT_PATH ${OpenSim_SOURCE_DIR}/OpenSim/Applications/IK/test)
-
-ADD_EXECUTABLE(testIK ${SOURCE_FILES} ${INCLUDE_FILES})
-
-SET(TEST_FILES subject.osim subject_ik_setup.xml subject_trial.trc subject_trial.mot std_subject_trial_ik.mot)
+FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
 
 #
 # Copy files to run dir
@@ -27,10 +23,17 @@ FOREACH (dataFile ${TEST_FILES})
     TARGET testIK
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
-    ${OpenSim_SOURCE_DIR}/OpenSim/Applications/IK/test/${dataFile}
+    ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Applications/IK/test)
  ENDFOREACH (dataFile) 
 
+
+IF (EXECUTABLE_OUTPUT_PATH)
+  SET (TEST_PATH ${EXECUTABLE_OUTPUT_PATH})
+ELSE (EXECUTABLE_OUTPUT_PATH)
+  SET (TEST_PATH .)
+ENDIF (EXECUTABLE_OUTPUT_PATH)
+
 ADD_TEST(testIK ${TEST_PATH}/testIK)
 
-SET_TARGET_PROPERTIES(testIK PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testIK")
+SET_TARGET_PROPERTIES(testIK PROPERTIES PROJECT_LABEL "Tests - testIK")

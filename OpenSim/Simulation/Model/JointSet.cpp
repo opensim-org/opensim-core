@@ -47,8 +47,13 @@ JointSet::~JointSet(void)
 /**
  * Default constructor of a JointSet.
  */
-JointSet::JointSet() :
-	Set<AbstractJoint>()
+JointSet::JointSet()
+{
+	setNull();
+}
+
+JointSet::JointSet(Model& model) :
+	ModelComponentSet<Joint>(model)
 {
 	setNull();
 }
@@ -58,7 +63,7 @@ JointSet::JointSet() :
  * Copy constructor of a JointSet.
  */
 JointSet::JointSet(const JointSet& aJointSet):
-	Set<AbstractJoint>(aJointSet)
+	ModelComponentSet<Joint>(aJointSet)
 {
 	setNull();
 	*this = aJointSet;
@@ -76,16 +81,53 @@ void JointSet::setNull()
 }
 
 /**
+ * This is overridden to ensure that joints are processed from ground outward.
+ */
+void JointSet::createSystem(SimTK::MultibodySystem& system) const
+{
+    vector<bool> hasProcessed(getSize(), false);
+    map<Body*, int> bodyMap;
+    for (int i = 0; i < getSize(); i++)
+    {
+        const Joint& joint = static_cast<const Joint&>(get(i));
+        bodyMap[&joint.getBody()] = i;
+    }
+    for (int i = 0; i < getSize(); i++)
+        createSystemForOneJoint(system, i, bodyMap, hasProcessed);
+}
+
+void JointSet::createSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const map<Body*, int>& bodyMap, vector<bool>& hasProcessed) const
+{
+    if (hasProcessed[jointIndex])
+        return;
+    hasProcessed[jointIndex] = true;
+    const Joint& joint = static_cast<const Joint&>(get(jointIndex));
+    if (joint._parentBody != NULL)
+    {
+        // Make sure the parent joint is processed first.
+
+        map<Body*, int>::const_iterator parent = bodyMap.find(&joint.getParentBody());
+        if (parent != bodyMap.end())
+        {
+            int parentIndex = parent->second;
+            if (!hasProcessed[parentIndex])
+                createSystemForOneJoint(system, parentIndex, bodyMap, hasProcessed);
+        }
+    }
+    static_cast<const Joint&>(get(jointIndex)).createSystem(system);
+}
+
+/**
  * Post construction initialization.
  */
-void JointSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+void JointSet::setup(Model& aModel)
 {
 	// Base class
-	Set<AbstractJoint>::setup();
+	Set<Joint>::setup();
 
 	// Do members
 	for (int i = 0; i < getSize(); i++)
-		get(i)->setup(aAbstractDynamicsEngine);
+		get(i).setup(aModel);
 
 }
 
@@ -101,7 +143,7 @@ void JointSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
 #ifndef SWIG
 JointSet& JointSet::operator=(const JointSet &aJointSet)
 {
-	Set<AbstractJoint>::operator=(aJointSet);
+	Set<Joint>::operator=(aJointSet);
 	return (*this);
 }
 #endif
@@ -115,5 +157,5 @@ JointSet& JointSet::operator=(const JointSet &aJointSet)
  */
 void JointSet::scale(const ScaleSet& aScaleSet)
 {
-	for(int i=0; i<getSize(); i++) get(i)->scale(aScaleSet);
+	for(int i=0; i<getSize(); i++) get(i).scale(aScaleSet);
 }

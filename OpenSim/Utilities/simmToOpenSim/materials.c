@@ -23,6 +23,9 @@
 #include "universal.h"
 #include "globals.h"
 #include "functions.h"
+#if ! ENGINE
+#include "tiffio.h"
+#endif
 
 
 /*************** DEFINES (for this file only) *********************************/
@@ -265,28 +268,36 @@ yes, 0.0f, 0.0f, 0.0f, 0.0f, /* emission */
 no, /* alpha defined */
 -1, -1 /* GL list numbers */
 };
-
-
+static MaterialStruct foot_print_mat = {"foot_print_mat", yes, no,
+yes, 0.2f, 0.2f, 0.2f, 1.0f, /* ambient */
+yes, 0.05f, 0.05f, 0.05f, 1.0f, /* diffuse */
+yes, 0.8f, 0.8f, 0.4f, 1.0f, /* specular */
+yes, 95.0f, /* shininess */
+yes, 0.0f, 0.0f, 0.0f, 0.0f, /* emission */
+no, /* alpha defined */
+-1, -1 /* GL list numbers */
+};
 
 
 /*************** EXTERNED VARIABLES (declared in another file) ****************/
 
 
-
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
+#if ! ENGINE
+static FileReturnCode load_texture_file(PolyhedronStruct* ph, char filename[]);
+static FileReturnCode load_texture_coordinates(PolyhedronStruct* ph, char filename[]);
+#endif
 
-#ifndef ENGINE
+
+#if ! ENGINE
 void init_global_lighting()
 {
-
    /* Initialize the global lighting parameters. The specific
     * values of the light source parameters need to be set in
     * each model window, not here.
     */
-
    glShadeModel(GL_FLAT);
    glEnable(GL_FRONT);
-
 }
 #endif
 
@@ -337,18 +348,18 @@ void init_materials(ModelStruct* ms)
 
       mat->masscenter_material1 = define_material(ms, &masscenter_mat1);
       mat->masscenter_material2 = define_material(ms, &masscenter_mat2);
+
       define_material(ms, &arrow);
       define_material(ms, &joint_vector);
+      define_material(ms, &foot_print_mat);
    }
 
 }
 
-#ifndef ENGINE
+#if ! ENGINE
 void init_model_lighting()
 {
-
    /* These parameters need to be set in each model window */
-
    glLightfv(GL_LIGHT0, GL_DIFFUSE, light0_diffuse);
    glLightfv(GL_LIGHT0, GL_POSITION, light0_position);
 
@@ -357,7 +368,6 @@ void init_model_lighting()
    glLightfv(GL_LIGHT1, GL_POSITION, light1_position);
 #endif
    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, light_model);
-
 }
 
 
@@ -378,7 +388,7 @@ void make_mat_display_list(MaterialStruct* mat)
    polygonBackColor[3] = 1.0;
 #endif
 
-   if (mat->normal_list != -1)
+   if (mat->normal_list)
       glDeleteLists(mat->normal_list, 1);
 
    mat->normal_list = glGenLists(1);
@@ -450,7 +460,7 @@ void make_highlight_mat_display_list(MaterialStruct* mat)
    polygonBackColor[3] = 1.0;
 #endif
 
-   if (mat->highlighted_list != -1)
+   if (mat->highlighted_list)
       glDeleteLists(mat->highlighted_list, 1);
 
    mat->highlighted_list = glGenLists(1);
@@ -458,7 +468,6 @@ void make_highlight_mat_display_list(MaterialStruct* mat)
    if (mat->highlighted_list == 0)
    {
       fprintf(stderr, "Unable to allocate GL display list.\n");
-      mat->highlighted_list = -1;
       return;
    }
 
@@ -503,37 +512,22 @@ void make_highlight_mat_display_list(MaterialStruct* mat)
 #endif /* ENGINE */
 
 
-ReturnCode read_material(int mod, FILE** fp)
+ReturnCode read_material(ModelStruct* ms, FILE* fp)
 {
-
    int i, ac = 0;
    MaterialStruct mat;
    char name[CHARBUFFER];
 
-
-   if (fscanf(*fp,"%s", name) != 1)
+   if (fscanf(fp, "%s", name) != 1)
    { 
-      error(abort_action,"Error reading name in material definition");
-      return (code_bad);
+      error(abort_action, "Error reading name in material definition");
+      return code_bad;
    }
 
-   mstrcpy(&mat.name,name);
+   memset(&mat, 0, sizeof(MaterialStruct));
 
    mat.defined_in_file = yes;
-   mat.ambient_defined = no;
-   mat.diffuse_defined = no;
-   mat.specular_defined = no;
-   mat.emission_defined = no;
-   mat.shininess_defined = no;
-   mat.alpha_defined = no;
    mat.shininess = 10.0;
-   for (i=0; i<4; i++)
-   {
-      mat.ambient[i] = 0.0;
-      mat.diffuse[i] = 0.0;
-      mat.specular[i] = 0.0;
-      mat.emission[i] = 0.0;
-   }
    /* the alpha component is stored in diffuse[3] */
    mat.diffuse[3] = 1.0;
 
@@ -541,107 +535,111 @@ ReturnCode read_material(int mod, FILE** fp)
    {
       if (read_string(fp,buffer) == EOF)
       {
-         error(abort_action,"Unexpected EOF found reading material definition");
+         error(abort_action, "Unexpected EOF found reading material definition");
          return code_bad;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"endmaterial"))
+      else if (STRINGS_ARE_EQUAL(buffer, "endmaterial"))
       {
-         if (define_material(model[mod],&mat) == -1)
+         mstrcpy(&mat.name,name);
+         if (define_material(ms, &mat) == -1)
+         {
+            FREE_IFNOTNULL(mat.name);
             return code_bad;
+         }
          break;
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"ambient"))
+      else if (STRINGS_ARE_EQUAL(buffer, "ambient"))
       {
          if (mat.ambient_defined == yes)
-            error(none,"Ignoring redefinition of ambient in material definition");
+            error(none, "Ignoring redefinition of ambient in material definition");
          else
          {
-            if (fscanf(*fp,"%f %f %f", &mat.ambient[0], &mat.ambient[1],
+            if (fscanf(fp, "%f %f %f", &mat.ambient[0], &mat.ambient[1],
                &mat.ambient[2]) != 3)
             {
-               error(abort_action,"Error reading ambient in material definition");
-               return (code_bad);
+               error(abort_action, "Error reading ambient in material definition");
+               return code_bad;
             }
             mat.ambient[3] = 1.0;
             ac += 3;
             mat.ambient_defined = yes;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"diffuse"))
+      else if (STRINGS_ARE_EQUAL(buffer, "diffuse"))
       {
          if (mat.diffuse_defined == yes)
-            error(none,"Ignoring redefinition of diffuse in material definition");
+            error(none, "Ignoring redefinition of diffuse in material definition");
          else
          {
-            if (fscanf(*fp,"%f %f %f", &mat.diffuse[0], &mat.diffuse[1],
+            if (fscanf(fp, "%f %f %f", &mat.diffuse[0], &mat.diffuse[1],
                &mat.diffuse[2]) != 3)
             {
-               error(abort_action,"Error reading diffuse in material definition");
-               return (code_bad);
+               error(abort_action, "Error reading diffuse in material definition");
+               return code_bad;
             }
             ac += 3;
             mat.diffuse_defined = yes;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"emission"))
+      else if (STRINGS_ARE_EQUAL(buffer, "emission"))
       {
          if (mat.emission_defined == yes)
-            error(none,"Ignoring redefinition of emission in material definition");
+            error(none, "Ignoring redefinition of emission in material definition");
          else
          {
-            if (fscanf(*fp,"%f %f %f", &mat.emission[0], &mat.emission[1],
+            if (fscanf(fp, "%f %f %f", &mat.emission[0], &mat.emission[1],
                &mat.emission[2]) != 3)
             {
-               error(abort_action,"Error reading emission in material definition");
-               return (code_bad);
+               error(abort_action, "Error reading emission in material definition");
+               return code_bad;
             }
             mat.emission[3] = 1.0;
             ac += 3;
             mat.emission_defined = yes;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"specular"))
+      else if (STRINGS_ARE_EQUAL(buffer, "specular"))
       {
          if (mat.specular_defined == yes)
-            error(none,"Ignoring redefinition of specular in material definition");
+            error(none, "Ignoring redefinition of specular in material definition");
          else
          {
-            if (fscanf(*fp,"%f %f %f", &mat.specular[0], &mat.specular[1],
+            if (fscanf(fp, "%f %f %f", &mat.specular[0], &mat.specular[1],
                &mat.specular[2]) != 3)
             {
-               error(abort_action,"Error reading specular in material definition");
-               return (code_bad);
+               error(abort_action, "Error reading specular in material definition");
+               return code_bad;
             }
             mat.specular[3] = 1.0;
             ac += 3;
             mat.specular_defined = yes;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"shininess"))
+      else if (STRINGS_ARE_EQUAL(buffer, "shininess"))
       {
          if (mat.shininess_defined == yes)
-            error(none,"Ignoring redefinition of shininess in material definition");
+            error(none, "Ignoring redefinition of shininess in material definition");
          else
          {
-            if (fscanf(*fp,"%f", &mat.shininess) != 1)
+            if (fscanf(fp, "%f", &mat.shininess) != 1)
             {
-               error(abort_action,"Error reading shininess in material definition");
-               return (code_bad);
+               error(abort_action, "Error reading shininess in material definition");
+               return code_bad;
             }
             ac++;
             mat.shininess_defined = yes;
          }
       }
-      else if (STRINGS_ARE_EQUAL(buffer,"alpha"))
+      else if (STRINGS_ARE_EQUAL(buffer, "alpha"))
       {
          if (mat.alpha_defined == yes)
-            error(none,"Ignoring redefinition of alpha in material definition");
+            error(none, "Ignoring redefinition of alpha in material definition");
          else
          {
-            if (fscanf(*fp,"%f", &mat.diffuse[3]) != 1)
+            if (fscanf(fp, "%f", &mat.diffuse[3]) != 1)
             {
-               error(abort_action,"Error reading alpha in material definition");
-               return (code_bad);
+               error(abort_action, "Error reading alpha in material definition");
+               return code_bad;
             }
             ac++;
             mat.alpha_defined = yes;
@@ -650,12 +648,13 @@ ReturnCode read_material(int mod, FILE** fp)
       else
       {
          (void)sprintf(errorbuffer, "Unknown string (%s) in definition of material", buffer);
-         error(recover,errorbuffer);
+         error(recover, errorbuffer);
       }
    }
 
-   return (code_fine);
+   FREE_IFNOTNULL(mat.name);
 
+   return code_fine;
 }
 
 
@@ -669,15 +668,14 @@ public void copy_material(MaterialStruct* src, MaterialStruct* dst)
 
    mstrcpy(&dst->name, src->name);
 
-   dst->normal_list = -1;
-   dst->highlighted_list = -1;
+   dst->normal_list = 0;
+   dst->highlighted_list = 0;
    dst->defined_yet = yes;
 }
 
 
 int define_material(ModelStruct* ms, MaterialStruct* mat)
 {
-
    int m;
 
    if (ms == NULL)
@@ -702,15 +700,13 @@ int define_material(ModelStruct* ms, MaterialStruct* mat)
    copy_material(mat, &ms->dis.mat.materials[m]);
 
    return m;
-
 }
 
 
-int enter_material(ModelStruct* ms, char name[], EnterMode emode)
+int enter_material(ModelStruct* ms, const char name[], EnterMode emode)
 {
-
    int i, m;
-   ReturnCode rc;
+   ReturnCode rc = code_fine;
 
    if (ms == NULL)
       return -1;
@@ -749,10 +745,9 @@ int enter_material(ModelStruct* ms, char name[], EnterMode emode)
    ms->dis.mat.num_materials++;
 
    return m;
-
 }
 
-#ifndef ENGINE
+#if ! ENGINE
 void apply_material(ModelStruct* ms, int mat, SBoolean highlight)
 {
 
@@ -762,4 +757,326 @@ void apply_material(ModelStruct* ms, int mat, SBoolean highlight)
       glCallList(ms->dis.mat.materials[mat].normal_list);
 
 }
+
+static FileReturnCode load_texture_file(PolyhedronStruct* ph, char filename[])
+{
+   int width, height;
+   unsigned int* data;
+
+   if (read_tiff_image(filename, &width, &height, &data) == file_missing)
+   {
+      ph->texture = -1;
+      return file_missing;
+   }
+
+   // allocate a texture name
+   glGenTextures(1, &ph->texture);
+
+   // select our current texture
+   glBindTexture(GL_TEXTURE_2D, ph->texture);
+
+   // select modulate to mix texture with color for shading
+   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+   // when texture area is small, bilinear filter the closest mipmap
+   //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
+   // when texture area is large, bilinear filter the first mipmap
+   //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   // if wrap is true, the texture wraps over at the edges (repeat)
+   //       ... false, the texture ends at the edges (clamp)
+   //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrap ? GL_REPEAT : GL_CLAMP);
+   //glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrap ? GL_REPEAT : GL_CLAMP);
+
+   // build our texture mipmaps
+   //gluBuild2DMipmaps(GL_TEXTURE_2D, 3, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+   glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+   // free buffer
+   _TIFFfree(data);
+
+   return file_good;
+}
+
+//TODO5.0: right now textures are supported only in world objects.
+// This function must be called when the model's window is the current
+// GL window.
+//TODO5.0: what if the model is in two windows?
+void load_model_textures(ModelStruct* model)
+{
+   int i;
+
+   for (i=0; i<model->numworldobjects; i++)
+   {
+      if (model->worldobj[i].texture_filename && model->worldobj[i].wobj)
+      {
+			FileReturnCode frc = lookup_texture_file(model->worldobj[i].wobj, model->worldobj[i].texture_filename, model);
+
+			if (frc == file_missing)
+         {
+				(void)sprintf(errorbuffer, "Unable to locate texture file %s", model->worldobj[i].texture_filename);
+				error(none, errorbuffer);
+				model->worldobj[i].wobj->texture = -1;
+         }
+         else if (frc == file_bad)
+			{
+				(void)sprintf(errorbuffer, "Unable to read texture from file %s", model->worldobj[i].texture_filename);
+				error(none, errorbuffer);
+				model->worldobj[i].wobj->texture = -1;
+			}
+      }
+   }
+}
+/* -------------------------------------------------------------------------
+   lookup_texture_file - this routine tries to read the specified texture file
+     by first checking the current directory, and then checking the
+     standard SIMM directory for bones.
+     TODO5.0: If one of the paths to search starts with a drive letter that
+     does not exist, Vista will display an annoying error dialog (other versions
+     of Windows quietly move on). Find some way to check for a valid drive
+     letter before performing the action that causes the error.
+---------------------------------------------------------------------------- */
+FileReturnCode lookup_texture_file(PolyhedronStruct* ph, char filename[], ModelStruct* ms)
+{
+   int i;
+   char* jointpath = NULL;
+   char fullpath[CHARBUFFER], tmppath[CHARBUFFER];
+   FileReturnCode rc;
+
+   /* (0) strip the joint file name from ms->jointfilename to get just
+    * the path to the joint file.
+    */
+   if (ms && ms->jointfilename)
+   {
+      get_pure_path_from_path(ms->jointfilename, &jointpath);
+   }
+
+   /* (1) First check the bone folder specified in the joint file.
+    * If this is an absolute path, use it as is. If it is a relative
+    * path, it is assumed to be relative to the joint file's folder.
+    */
+   if (ms && ms->bonepathname)
+   {
+      if (ms->jointfilename)
+         build_full_path(jointpath, ms->bonepathname, tmppath);
+      else
+         build_full_path(NULL, ms->bonepathname, tmppath);
+      build_full_path(tmppath, filename, fullpath);
+      rc = load_texture_file(ph, fullpath);
+      if (rc == file_good || rc == file_bad)
+      {
+         FREE_IFNOTNULL(jointpath);
+         return rc;
+      }
+   }
+
+   /* (2) Next check the folder "bones" under the joint file's
+    * folder (PC only).
+    */
+   if (ms->jointfilename)
+      strcat3(tmppath, jointpath, DIR_SEP_STRING, "bones", CHARBUFFER);
+   else
+      strcpy(tmppath, "bones");
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename, CHARBUFFER);
+   rc = load_texture_file(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+   {
+      FREE_IFNOTNULL(jointpath);
+      return rc;
+   }
+
+   /* (3) Next check the joint file's folder itself (PC only). */
+   if (ms->jointfilename)
+      strcpy(tmppath, jointpath);
+   else
+      strcpy(tmppath, ".");
+   FREE_IFNOTNULL(jointpath);
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename, CHARBUFFER);
+   rc = load_texture_file(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+      return rc;
+
+   /* (4) check the global bones folder. */
+   build_full_path(get_bones_folder(), filename, fullpath);
+   rc = load_texture_file(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+      return rc;
+
+   /* (5) check the mocap bones folder. */
+   sprintf(fullpath, "%s%s%s%s", get_mocap_folder(), "bones", DIR_SEP_STRING, filename);
+   rc = load_texture_file(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+      return rc;
+
+   /* You only make it to here if the file was not found in
+    * any of the folders.
+    */
+   return file_missing;
+}
+
+
+static FileReturnCode load_texture_coordinates(PolyhedronStruct* ph, char filename[])
+{
+   FileReturnCode frc = file_good;
+   FILE* fp = fopen(filename, "r");
+
+   if (fp == NULL)
+   {
+      frc = file_missing;
+   }
+   else
+   {
+      int i;
+
+      for (i=0; i<ph->num_vertices; i++)
+      {
+         if (fscanf(fp, "%f %f", &ph->vertex[i].texture[0], &ph->vertex[i].texture[1]) != 2)
+         {
+            frc = file_bad;
+            fclose(fp);
+            return frc;
+         }
+      }
+
+      fclose(fp);
+   }
+
+   return frc;
+}
+
+
+/* -------------------------------------------------------------------------
+   lookup_texture_coord_file - this routine tries to read the specified file
+     of texture coordinates by first checking the current directory, and then
+     checking the standard SIMM directory for bones.
+     TODO5.0: If one of the paths to search starts with a drive letter that
+     does not exist, Vista will display an annoying error dialog (other versions
+     of Windows quietly move on). Find some way to check for a valid drive
+     letter before performing the action that causes the error.
+---------------------------------------------------------------------------- */
+FileReturnCode lookup_texture_coord_file(PolyhedronStruct* ph, char filename[], ModelStruct* ms)
+{
+   int i;
+   char* jointpath = NULL;
+   char fullpath[CHARBUFFER], tmppath[CHARBUFFER];
+   FileReturnCode rc;
+
+   /* (0) strip the joint file name from ms->jointfilename to get just
+    * the path to the joint file.
+    */
+   if (ms && ms->jointfilename)
+   {
+      get_pure_path_from_path(ms->jointfilename, &jointpath);
+   }
+
+   /* (1) First check the bone folder specified in the joint file.
+    * If this is an absolute path, use it as is. If it is a relative
+    * path, it is assumed to be relative to the joint file's folder.
+    */
+   if (ms && ms->bonepathname)
+   {
+      if (ms->jointfilename)
+         build_full_path(jointpath, ms->bonepathname, tmppath);
+      else
+         build_full_path(NULL, ms->bonepathname, tmppath);
+      build_full_path(tmppath, filename, fullpath);
+      rc = load_texture_coordinates(ph, fullpath);
+      if (rc == file_good || rc == file_bad)
+      {
+         FREE_IFNOTNULL(jointpath);
+         return rc;
+      }
+   }
+
+   /* (2) Next check the folder "bones" under the joint file's
+    * folder (PC only).
+    */
+   if (ms->jointfilename)
+      strcat3(tmppath, jointpath, DIR_SEP_STRING, "bones", CHARBUFFER);
+   else
+      strcpy(tmppath, "bones");
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename, CHARBUFFER);
+   rc = load_texture_coordinates(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+   {
+      FREE_IFNOTNULL(jointpath);
+      return rc;
+   }
+
+   /* (3) Next check the joint file's folder itself (PC only). */
+   if (ms->jointfilename)
+      strcpy(tmppath, jointpath);
+   else
+      strcpy(tmppath, ".");
+   FREE_IFNOTNULL(jointpath);
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename, CHARBUFFER);
+   rc = load_texture_coordinates(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+      return rc;
+
+   /* (4) check the global bones folder. */
+   build_full_path(get_bones_folder(), filename, fullpath);
+   rc = load_texture_coordinates(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+      return rc;
+
+   /* (5) check the mocap bones folder. */
+   sprintf(fullpath, "%s%s%s%s", get_mocap_folder(), "bones", DIR_SEP_STRING, filename);
+   rc = load_texture_coordinates(ph, fullpath);
+   if (rc == file_good || rc == file_bad)
+      return rc;
+
+   /* You only make it to here if the file was not found in
+    * any of the folders.
+    */
+   return file_missing;
+}
+
+/* -------------------------------------------------------------------------
+   read_tiff_image - read the specified TIFF file into memory as a 32-bit
+       RGBA image.
+       
+   NOTE: if 'image' is NULL, then the image is not actually read, only the
+       width and height of the image are returned.
+       
+   NOTE: it is the caller's responsibility to deallocated the image when it
+       finished with it.
+---------------------------------------------------------------------------- */
+FileReturnCode read_tiff_image(const char* filename, int* width, int* height, unsigned** image)
+{
+   TIFF* tif;
+   FILE* fp = simm_fopen(filename, "r");
+
+   if (fp)
+   {
+      fclose(fp);
+   }
+   else
+   {
+      return file_missing;
+   }
+
+   tif = TIFFOpen(filename, "r");
+
+   if (tif)
+   {
+      TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, width);
+      TIFFGetField(tif, TIFFTAG_IMAGELENGTH, height);
+
+      if (image)
+      {
+         *image = (unsigned*) _TIFFmalloc(*width * *height * sizeof(unsigned));
+
+         if (*image)
+            TIFFReadRGBAImage(tif, *width, *height, (unsigned long*) *image, 0);
+      }
+      TIFFClose(tif);
+   }
+
+   return file_good;
+}
+
 #endif

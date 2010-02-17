@@ -30,10 +30,10 @@
  * Author: Frank C. Anderson 
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include "ControlConstant.h"
+#include "SimTKcommon.h"
 
 
 //=============================================================================
@@ -237,16 +237,16 @@ getParameterMax(int aI) const
  * parameters are the cooefficients in the expansion, and each term in
  * the expansion corresponds not to a specific time but to a frequency.
  * Another example is a constant that has the same value for all times.
- * In these cases, this method returns rdMath::getNAN().
+ * In these cases, this method returns SimTK::NaN.
  *
  * @param aI Index of the parameter.
  * @return Time at which the control parameter occurs.  For ControlConstant
- * this value is not defined, and so rdMath::getNAN() is always returned.
+ * this value is not defined, and so SimTK::getNan() is always returned.
  */
 double ControlConstant::
 getParameterTime(int aI) const
 {
-	return(rdMath::getNAN());
+	return(SimTK::NaN);
 }
 
 //-----------------------------------------------------------------------------
@@ -260,22 +260,22 @@ getParameterTime(int aI) const
  * Changes in the specified parameter are guarranteed not to change the value
  * of the control curve below the lower bound time or above the upper bound
  * time.  If a parameter influences the value of the control curve for all
- * times, rdMath::MINUS_INFINITY and rdMath::PLUS_INFINITY are returned for
+ * times, -SimTK::Infinity and SimTK::Infinity are returned for
  * the upper and lower bound times, respectively.
  *
  * @param aI Index of the parameter.
  * @param aTLower Time below which the curve is not affected the specified
- * parameter.  For ControlConstant, rdMath::MINUS_INFINITY is always
+ * parameter.  For ControlConstant, -SimTK::Infinity  is always
  * returned.
  * @param aTUpper Time above which the curve is not affected the specified
- * parameter.  For ControlConstant, rdMath::PLUS_INFINITY is always
+ * parameter.  For ControlConstant, SimTK::Infinity  is always
  * returned.
  */
 void ControlConstant::
 getParameterNeighborhood(int aI,double &rTLower,double &rTUpper) const
 {
-	rTLower = rdMath::MINUS_INFINITY;
-	rTUpper = rdMath::PLUS_INFINITY;
+	rTLower = -SimTK::Infinity;
+	rTUpper =  SimTK::Infinity;
 }
 
 //-----------------------------------------------------------------------------

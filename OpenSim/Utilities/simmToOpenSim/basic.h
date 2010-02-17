@@ -50,6 +50,8 @@
   #define COPY_COMMAND   "cp"
 #endif
 
+#define COMMAND_BUFFER 500
+
 #define PIXELSPERINCH 96
 #define PIXELSPERINCHF 96.0
 
@@ -89,24 +91,29 @@
 #define DID_NOT_PLACE_MENU 0
 #define PLACED_MENU 1
 
-#define SEL_MUSCPOINT_DELETE 1
-#define SEL_MUSCPOINT_ADD 2
-
 #define NOITEM -1
 #define TITLEBOX -2
 
 #define TITLE_BAR -2
 #define TITLE_AREA_HEIGHT 65
 
-#define SPLINE_ARRAY_INCREMENT 24 // might cause crashing, setting to 1 fixes this
+#define FUNCTION_ARRAY_INCREMENT 24 // might cause crashing, setting to 1 fixes this
 #define MOTION_ARRAY_INCREMENT 4
 #define DEFAULT_ARRAY_INCREMENT 10
 
 #define CHARBUFFER 4096
-#define MODELBUFFER 32
-#define PLOTBUFFER 24
-#define TOOLBUFFER 16
-#define COLORBUFFER 128
+#if ENGINE || CORTEX_PLUGIN
+  #define MODELBUFFER 4
+  #define PLOTBUFFER 1
+  #define TOOLBUFFER 1
+  #define SCENEBUFFER 4
+#else
+  #define MODELBUFFER 32
+  #define PLOTBUFFER 24
+  #define TOOLBUFFER 16
+  #define SCENEBUFFER 32
+#endif
+#define COLORBUFFER 256
 
 #define GENBUFFER 64         /* used only for gencoord help text in MV */
 #define GROUPBUFFER 96       /* used by JO and PM model options structs */
@@ -114,10 +121,9 @@
 
 #define FIXED_SEGMENT 0
 #define MAX_MUSCLE_POINTS 200
-#define MAX_PLOT_CURVES 40
+#define MAX_PLOT_CURVES 60
 #define MAXMDOUBLE 99999999.999
 #define MINMDOUBLE -99999999.999
-#define ALL_GENCOORDS -2
 #define TINY_NUMBER 0.0000001
 #define ERROR_DOUBLE -999999.3
 #define ROUNDOFF_ERROR 0.000000001
@@ -131,6 +137,8 @@
 #define RTOD RAD_TO_DEG
 #define DOUBLE_NOT_DONE -99999.73
 #define MAX_MATRIX_SIZE 20
+#define MAX_UINT ((unsigned int)~((unsigned int)0))
+#define MAX_INT ((int)(MAX_UINT >> 1))
 
 #define UNDEFINED_USERFUNCNUM -9999
 #define INVALID_FUNCTION -1
@@ -183,11 +191,7 @@ typedef double DMatrix[4][4];
 typedef double DCoord[3];
 typedef double Quat[4];
 
-
-STRUCT {
-   double xyz[3];                    /* coordinates of a point in 3space */
-} Coord3D;                           /* 3D point for passing to v3d() routine */
-
+typedef unsigned __int64 PickIndex;
 
 STRUCT {
    double x1;                         /* minimum x */
@@ -243,7 +247,6 @@ ENUM {
    declaring_element,                /* using the element name, not defining it */
    just_checking_element             /* just checking to see if already defined */
 } EnterMode;                         /* modes when entering/defining model elements */
-
 
 ENUM {
    type_int,                         /* integer */
@@ -345,7 +348,6 @@ ENUM {
    radio_checkbox
 } CheckBoxType;
 
-
 ENUM {
    no_field_action,
    goto_previous_field,
@@ -359,14 +361,6 @@ ENUM {
    down_arrow
 } ArrowDirection;
 
-ENUM {
-   none_defined = -1,
-   step_function = 0,
-   natural_cubic,
-   gcv_spline,
-	linear
-} SplineType;
-
 STRUCT {
    ArrowDirection direction;
    SBoolean pressed;
@@ -377,7 +371,6 @@ STRUCT {
    XYIntCoord base1;
    XYIntCoord base2;
 } ArrowButton;
-
 
 STRUCT {
    SBoolean visible;
@@ -398,8 +391,6 @@ STRUCT {
    int background_color;
    int border_color;
    int pressed_thumb_color;
-   int x_edge;                       /* pixel size, horiz. edge (shadow) of thumb */
-   int y_edge;                       /* pixel size, vertical edge (shadow) of thumb */
    void* data;                       /* user-supplied data to identify slider */
 } Slider;
 
@@ -434,8 +425,6 @@ STRUCT {
    int background_color;
    int border_color;
    int pressed_thumb_color;
-   int x_edge;                       /* pixel size, horiz. edge (shadow) of thumb */
-   int y_edge;                       /* pixel size, vertical edge (shadow) of thumb */
    void* data;                       /* user-supplied data to identify slider */
    XYIntCoord origin;
 } CropSlider;
@@ -457,8 +446,6 @@ STRUCT {
    IntBox bbox;                      /* bounding box of entire menu */
    MenuItem *option;                 /* list of menu-option structures */
    XYIntCoord origin;                /* origin of menu */
-   int x_edge;                       /* pixel size of horiz. edge (shadow) of box */
-   int y_edge;                       /* pixel size of vertical edge (shadow) of box */
 } Menu;                              /* properties of an Menu menu */
 
 
@@ -508,8 +495,6 @@ STRUCT {
    IntBox bbox;                      /* bounding box of entire checkbox region */
    CheckBox *checkbox;               /* list of checkboxes */
    XYIntCoord origin;                /* origin of menu */
-   int x_edge;                       /* pixel size of horiz. edge (shadow) of box */
-   int y_edge;                       /* pixel size of vertical edge (shadow) of box */
 } CheckBoxPanel;                     /* holds panel of checkboxes */
 
 
@@ -531,8 +516,6 @@ STRUCT {
    IntBox bbox;                     /* bounding box of entire combobox region */
    ComboBox *combobox;                 /* list of combo boxes */
    XYIntCoord origin;               /* origin of menu */
-   int x_edge;                      /* */
-   int y_edge;                      /* */
    int yPosition;
 } ComboBoxPanel;
 
@@ -562,21 +545,6 @@ STRUCT {
    int pts[25];                      /* list of vertices in polygon */
    float normal[3];                  /* polygon normal */
 } SimmPolygon;                       /* description of a polygon */
-
-
-STRUCT {
-   SplineType type;
-   int numpoints;                    /* number of points in the function */
-   int coefficient_array_size;       /* current size of x,y,b,c,d arrays */
-   int usernum;                      /* user-supplied number for this function*/
-   double* x;                        /* list of x coordinates */
-   double* y;                        /* list of y coordinates */
-   double* b;                        /* list of b coefficients for spline fit */
-   double* c;                        /* list of c coefficients for spline fit */
-   double* d;                        /* list of d coefficients for spline fit */
-   SBoolean defined;                 /* is function defined in joint file? */
-   SBoolean used;                    /* is this structure currently being used? */
-} SplineFunction;                    /* description of a cubic-spline function*/
 
 
 STRUCT {

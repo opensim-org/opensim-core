@@ -14,15 +14,13 @@
 void   append_4x4matrix(double mat1[][4], double mat2[][4]);
 void   make_translation_matrix(double mat[][4], int axis, double trans);
 void   make_scale_matrix(double mat[][4], int axis, double scale);
-int    find_end_of_array(int list[], int* length);
+int    get_array_length(int list[]);
 void   mult_4x4matrix_by_vector(double mat[][4], double vector[], double result[]);
 void   mult_4x4matrices(double mat1[][4], double mat2[][4], double result[][4]);
 void   transpose_4x4matrix(double mat[][4], double mat_transpose[][4]);
 void   cross_vectors(double vector1[], double vector2[], double result[]);
 double normalize_vector(double vector[], double norm_vector[]);
-void   calc_spline_coefficients(SplineFunction* f);
-double interpolate_spline(double abscissa, SplineFunction* func, Derivative deriv,
-			  double velocity, double acceleration);
+double normalize_vector_f(float vector[], float norm_vector[]);
 void   format_double(double number, char format[]);
 void   reset_4x4matrix(double mat[][4]);
 void   make_4x4dircos_matrix(double angle, double axis[], double mat[][4]);
@@ -76,11 +74,11 @@ void scale_matrix(double m[][4], const double* scaleBy);
 void append_matrix(DMatrix m, const DMatrix b);
 void transform_pt(double m[][4], double* pt);
 void transform_vec(double m[][4], double* vec);
-void extract_rotation(double m[][4], Coord3D* axis, double* angle);
+void extract_rotation(double m[][4], dpCoord3D* axis, double* angle);
 void extract_xyz_rot_spacefixed(double m[][4], double xyz_rot[3]);
 void extract_xyz_rot_bodyfixed(double m[][4], double xyz_rot[3]);
 void lerp_pt(double start[3], double end[3], double t, double result[3]);
-void slerp(const Coord3D* axisStart, double angleStart,
-           const Coord3D* axisEnd,   double angleEnd,
-           double t, Coord3D* axisResult, double* angleResult);
+void slerp(const dpCoord3D* axisStart, double angleStart,
+           const dpCoord3D* axisEnd,   double angleEnd,
+           double t, dpCoord3D* axisResult, double* angleResult);
 

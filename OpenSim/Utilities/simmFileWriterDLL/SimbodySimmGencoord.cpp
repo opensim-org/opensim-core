@@ -35,7 +35,7 @@
 #include <float.h>
 #include <time.h>
 
-#include <OpenSim/Simulation/Model/AbstractCoordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 #include "SimbodySimmGencoord.h"
 
@@ -73,15 +73,9 @@ SimbodySimmGencoord::SimbodySimmGencoord()
  *
  * @param aCoordinate Coordinate that this gencoord is based on.
  */
-SimbodySimmGencoord::SimbodySimmGencoord(const AbstractCoordinate* aCoordinate,
-													  int aRestraintFuncUserNumber,
-													  int aMinRestraintFuncUserNumber,
-													  int aMaxRestraintFuncUserNumber)
+SimbodySimmGencoord::SimbodySimmGencoord(const Coordinate* aCoordinate)
 {
    _coordinate = aCoordinate;
-	_restraintFuncUserNumber = aRestraintFuncUserNumber;
-	_minRestraintFuncUserNumber = aMinRestraintFuncUserNumber;
-	_maxRestraintFuncUserNumber = aMaxRestraintFuncUserNumber;
 }
 
 //_____________________________________________________________________________
@@ -94,133 +88,12 @@ void SimbodySimmGencoord::write(ofstream& aStream)
 {
    aStream << "begingencoord " << _coordinate->getName() << endl;
    double conversion = 1.0;
-   if (_coordinate->getMotionType() == AbstractTransformAxis::Rotational)
+   if (_coordinate->getMotionType() == Coordinate::Rotational)
       conversion = 180.0 / SimTK::Pi;
    aStream << "range " << _coordinate->getRangeMin() * conversion << " "
       << _coordinate->getRangeMax() * conversion << endl;
    aStream << "default_value " << _coordinate->getDefaultValue() * conversion << endl;
-   aStream << "tolerance " << _coordinate->getTolerance() * conversion << endl;
-   aStream << "pd_stiffness " << _coordinate->getStiffness() << endl;
-	aStream << "clamped " << (_coordinate->getClamped() ? "yes" : "no") << endl;
-	aStream << "locked " << (_coordinate->getLocked() ? "yes" : "no") << endl;
-	const Array<std::string>& keys = _coordinate->getKeys();
-	if (keys.getSize() > 0)
-	{
-		aStream << "keys ";
-		
-		for (int i = 0; i < MIN(2, keys.getSize()); i++)
-			aStream << keys[i] << " ";
-		aStream << endl;
-	}
-	if (_restraintFuncUserNumber >= 0)
-		aStream << "restraint f" << _restraintFuncUserNumber << endl;
-	if (_minRestraintFuncUserNumber >= 0)
-		aStream << "minrestraint f" << _minRestraintFuncUserNumber << endl;
-	if (_maxRestraintFuncUserNumber >= 0)
-		aStream << "maxrestraint f" << _maxRestraintFuncUserNumber << endl;
-	aStream << "active " << (_coordinate->isRestraintActive() ? "yes" : "no") << endl;
-
+	aStream << "clamped " << (_coordinate->getDefaultClamped() ? "yes" : "no") << endl;
+// JACKM NEEDS STATE	aStream << "locked " << (_coordinate->getLocked() ? "yes" : "no") << endl;
    aStream << "endgencoord" << endl << endl;
 }
-
-#if 0
-	int RFIndex = -1, minRFIndex = -1, maxRFIndex = -1;
-	double conversion;
-
-	if (aCoordinate.getMotionType() == AbstractTransformAxis::Rotational)
-		conversion = SimTK_RADIAN_TO_DEGREE;
-	else
-		conversion = 1.0;
-
-	aStream << "begingencoord " << aCoordinate.getName() << endl;
-	aStream << "default_value " << aCoordinate.getDefaultValue() * conversion << endl;
-	aStream << "range " << aCoordinate.getRangeMin() * conversion << " " << aCoordinate.getRangeMax() * conversion << endl;
-	aStream << "tolerance " << aCoordinate.getTolerance() << endl;
-	aStream << "pd_stiffness " << aCoordinate.getStiffness() << endl;
-
-	SimmCoordinate* sc = dynamic_cast<SimmCoordinate*>(&aCoordinate);
-
-	/* keys are for SimmCoordinates only */
-	if (sc)
-	{
-		const Array<std::string>& keys = sc->getKeys();
-		if (keys.getSize() > 0)
-		{
-			aStream << "keys ";
-			for (int i = 0; i < MIN(2, keys.getSize()); i++)
-				aStream << keys[i] << " ";
-			aStream << endl;
-		}
-	}
-
-	aStream << "clamped " << ((aCoordinate.getClamped()) ? ("yes") : ("no")) << endl;
-	aStream << "locked " << ((aCoordinate.getLocked()) ? ("yes") : ("no")) << endl;
-
-	/* Restraint functions are for SimmCoordinates only. */
-	if (sc)
-	{
-		aStream << "active " << ((sc->isRestraintActive()) ? ("yes") : ("no")) << endl;
-
-		if (sc->getRestraintFunction())
-		{
-			RFIndex = aFunctionIndex++;
-			aStream << "restraint f" << RFIndex << endl;
-		}
-
-		if (sc->getMinRestraintFunction())
-		{
-			minRFIndex = aFunctionIndex++;
-			aStream << "minrestraint f" << minRFIndex << endl;
-		}
-
-		if (sc->getMaxRestraintFunction())
-		{
-			maxRFIndex = aFunctionIndex++;
-			aStream << "maxrestraint f" << maxRFIndex << endl;
-		}
-	}
-
-	aStream << "endgencoord" << endl << endl;
-
-	if (sc)
-	{
-		Function* func;
-		NatCubicSpline* spline;
-
-		if (RFIndex >= 0)
-		{
-			func = sc->getRestraintFunction();
-			if ((spline = dynamic_cast<NatCubicSpline*>(func)))
-			{
-				aStream << "beginfunction f" << RFIndex << endl;
-				for (int i = 0; i < spline->getNumberOfPoints(); i++)
-					aStream << "(" << spline->getX()[i] * conversion << ", " << spline->getY()[i] << ")" << endl;
-				aStream << "endfunction" << endl << endl;
-			}
-		}
-
-		if (minRFIndex >= 0)
-		{
-			func = sc->getMinRestraintFunction();
-			if ((spline = dynamic_cast<NatCubicSpline*>(func)))
-			{
-				aStream << "beginfunction f" << minRFIndex << endl;
-				for (int i = 0; i < spline->getNumberOfPoints(); i++)
-					aStream << "(" << spline->getX()[i] * conversion << ", " << spline->getY()[i] << ")" << endl;
-				aStream << "endfunction" << endl << endl;
-			}
-		}
-
-		if (maxRFIndex >= 0)
-		{
-			func = sc->getMaxRestraintFunction();
-			if ((spline = dynamic_cast<NatCubicSpline*>(func)))
-			{
-				aStream << "beginfunction f" << maxRFIndex << endl;
-				for (int i = 0; i < spline->getNumberOfPoints(); i++)
-					aStream << "(" << spline->getX()[i] * conversion << ", " << spline->getY()[i] << ")" << endl;
-				aStream << "endfunction" << endl << endl;
-			}
-		}
-	}
-#endif

@@ -91,7 +91,7 @@ setNull()
  * 
  */
 Array<double> RootSolver::
-solve(const Array<double> &ax,const Array<double> &bx,
+solve(const SimTK::State& s, const Array<double> &ax,const Array<double> &bx,
 		const Array<double> &tol)
 {
 	int i;
@@ -112,8 +112,8 @@ solve(const Array<double> &ax,const Array<double> &bx,
 	// INITIALIZATIONS
 	a = ax;
 	b = bx;
-	_function->evaluate(a,fa);
-	_function->evaluate(b,fb);
+	_function->evaluate(s,a,fa);
+	_function->evaluate(s,b,fb);
 	c = a;
 	fc = fa;
 
@@ -201,7 +201,7 @@ solve(const Array<double> &ax,const Array<double> &bx,
 	 
 
 		// NEW FUNCTION EVALUATION
-		_function->evaluate(b,fb);
+		_function->evaluate(s, b,fb);
 
 
 		// FINISHED?

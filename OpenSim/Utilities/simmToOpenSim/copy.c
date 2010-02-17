@@ -19,8 +19,8 @@
       copy_4x4matrix : copies a 4x4 matrix
       copy_1x4vector : copies a 1x4 array (vector)
       copy_dof       : copies a REFEQ structure which holds a dof
-      copy_function  : copies a function's points and spline coefficients
-      copy_mps       : copies a MusclePoint array
+      copy_function  : copies a function's points and coefficients
+      copy_mps       : copies a dpMusclePoint array
       copy_nndouble  : mallocs and copies a double if 'from' is not null
       copy_nddouble  : mallocs and copies a double if 'from' is not default
       copy_nnint     : mallocs and copies a int if 'from' is not null
@@ -47,53 +47,25 @@
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static ReturnCode copy_nondefault_dyn_params(MuscleStruct* from, MuscleStruct* to,
-					     MuscleStruct* deffrom, MuscleStruct* defto);
-static ReturnCode copy_nonnull_dyn_params(MuscleStruct* from, MuscleStruct* to);
+static ReturnCode copy_nondefault_dyn_params(dpMuscleStruct* from, dpMuscleStruct* to,
+					     dpMuscleStruct* deffrom, dpMuscleStruct* defto);
+static ReturnCode copy_nonnull_dyn_params(dpMuscleStruct* from, dpMuscleStruct* to);
 static MotionSequence* copy_motion(MotionSequence* from);
+static dpQStruct* get_q_from_gencoord_dp(dpModelStruct* model, GeneralizedCoord *genc);
+static ReturnCode copy_muscle_path_dp(dpMusclePathStruct *from, dpMusclePathStruct *to, dpModelStruct *modelTo);
+static ReturnCode copy_muscle_point_dp(dpMusclePoint *from, dpMusclePoint *to, dpModelStruct *modelTo);
 
-
-
-/* COPY_4X4MATRIX: copies a 4x4 matrix */
-
-void copy_4x4matrix(double from[][4], double to[][4])
-{
-
-   to[0][0] = from[0][0];
-   to[0][1] = from[0][1];
-   to[0][2] = from[0][2];
-   to[0][3] = from[0][3];
-   to[1][0] = from[1][0];
-   to[1][1] = from[1][1];
-   to[1][2] = from[1][2];
-   to[1][3] = from[1][3];
-   to[2][0] = from[2][0];
-   to[2][1] = from[2][1];
-   to[2][2] = from[2][2];
-   to[2][3] = from[2][3];
-   to[3][0] = from[3][0];
-   to[3][1] = from[3][1];
-   to[3][2] = from[3][2];
-   to[3][3] = from[3][3];
-
-}
-
-
-
-/* COPY_1x4VECTOR: copies a 1x4 vector */
 
 void copy_1x4vector(double from[], double to[])
 {
-
    to[0] = from[0];
    to[1] = from[1];
    to[2] = from[2];
    to[3] = from[3];
-
 }
 
 
-void copy_point(Coord3D *from, Coord3D *to)
+void copy_point(dpCoord3D *from, dpCoord3D *to)
 {
    to->xyz[0] = from->xyz[0];
    to->xyz[1] = from->xyz[1];
@@ -104,15 +76,12 @@ void copy_point(Coord3D *from, Coord3D *to)
  * editor and to copy dofs from the model-file-reading buffer to a
  * model structure.
  */
-
 void copy_dof(DofStruct* from, DofStruct* to)
 {
-
    to->type = from->type;
    to->value = from->value;
-   to->funcnum = from->funcnum;
+   to->function = from->function;
    to->gencoord = from->gencoord;
-
 }
 
 
@@ -127,119 +96,173 @@ void copy_gencoord_info(GeneralizedCoord *from, SaveGencoords *to)
    to->locked = from->locked;
    to->restraintFuncActive = from->restraintFuncActive;
    to->range = from->range;
-   to->restraint_func_num = from->restraint_func_num;
-   to->restraint_user_num = from->restraint_user_num;
+   to->restraint_function = from->restraint_function;
    to->used_in_model = from->used_in_model;
 }
 
-/* COPY_Function: copies a function structure. This structure contains
+
+/* COPY_FUNCTION: copies a function structure. This structure contains
  * the original (x,y) data points and the coefficients (b,c,d) of
- * the natural cubic spline interpolants. It assumes that space
- * for x,y,a,b,c has already been allocated.
+ * the function interpolants. It assumes that space for the x, y, a, b, c
+ * arrays has already been allocated, and the size of this space
+ * is stored in to->coefficient_array_size.
  */
-
-void copy_function(SplineFunction* from, SplineFunction* to)
+void copy_function(dpFunction* from, dpFunction* to)
 {
-   int i;
+	int numToCopy = _MIN(to->coefficient_array_size, from->coefficient_array_size);
 
-   to->type = from->type;
-   to->numpoints = from->numpoints;
-   to->coefficient_array_size = from->coefficient_array_size;
-   to->usernum = from->usernum;
-   to->defined = from->defined;
-   to->used = yes;
+	to->type = from->type;
+	to->numpoints = from->numpoints;
+	to->source = from->source;
+	to->status = from->status;
+	to->used = from->used;
+	to->usernum = from->usernum;
+	to->cutoff_frequency = from->cutoff_frequency;
 
-   for (i=0; i<to->numpoints; i++)
-   {
-      to->x[i] = from->x[i];
-      to->y[i] = from->y[i];
-      to->b[i] = from->b[i];
-      to->c[i] = from->c[i];
-      to->d[i] = from->d[i];
-   }
+   memcpy(to->x, from->x, numToCopy * sizeof(double));
+   memcpy(to->y, from->y, numToCopy * sizeof(double));
+   memcpy(to->b, from->b, numToCopy * sizeof(double));
+   memcpy(to->c, from->c, numToCopy * sizeof(double));
+   memcpy(to->d, from->d, numToCopy * sizeof(double));
 }
 
-
-ReturnCode copy_musclepath(MusclePathStruct *from, MusclePathStruct *to)
+/* COPY_MUSCLE_PATH: copy the muscle paths - all the original points (mp_orig),
+ * and the active points (mp), from one path struct to another.
+ */
+ReturnCode copy_muscle_path(dpMusclePathStruct *from, dpMusclePathStruct *to)
 {
    int i;
 
-   if (to == NULL)
+   if (from == NULL || to == NULL)
       return code_bad;
 
-   initMusclePath(to);
-
    to->num_orig_points = from->num_orig_points;
-   for (i = 0; i < to->num_orig_points; i++)
-      copy_musclepoint(&from->mp_orig[i], &to->mp_orig[i]);
+   to->mp_orig_array_size = to->num_orig_points;
+   to->mp_orig = (dpMusclePoint*)simm_malloc(to->mp_orig_array_size * sizeof(dpMusclePoint));
+   for (i=0; i<to->num_orig_points; i++)
+   {
+      if (copy_muscle_point(&from->mp_orig[i], &to->mp_orig[i]) == code_bad)
+         return code_bad;
+   }
+
+   to->num_points = 0;
+   to->mp_array_size = from->mp_array_size;
+   to->mp = (dpMusclePoint**)simm_calloc(to->mp_array_size, sizeof(dpMusclePoint*));
+   if (to->mp == NULL)
+      return code_bad;
+
    return code_fine;
 }
 
-/* COPY_MPS: */
-
-ReturnCode copy_musclepoint(MusclePoint* from, MusclePoint* to)
+/* COPY_MUSCLE_POINT: copy the individual point from a path
+ * Allocate space for the wrapping points 
+ */
+ReturnCode copy_muscle_point(dpMusclePoint* from, dpMusclePoint* to)
 {
-   int i;
+   if (from == NULL || to == NULL)
+      return code_bad;
 
-   to->segment = from->segment;
-   to->selected = from->selected;
-   to->point[XX] = from->point[XX];
-   to->point[YY] = from->point[YY];
-   to->point[ZZ] = from->point[ZZ];
-   to->ground_pt[XX] = from->ground_pt[XX];
-   to->ground_pt[YY] = from->ground_pt[YY];
-   to->ground_pt[ZZ] = from->ground_pt[ZZ];
-   to->fcn_index[XX] = from->fcn_index[XX];
-   to->fcn_index[YY] = from->fcn_index[YY];
-   to->fcn_index[ZZ] = from->fcn_index[ZZ];
-   to->gencoord[XX] = from->gencoord[XX];
-   to->gencoord[YY] = from->gencoord[YY];
-   to->gencoord[ZZ] = from->gencoord[ZZ];
-   to->isMovingPoint = from->isMovingPoint;
+   memcpy(to, from, sizeof(dpMusclePoint));
 
-   to->isVia = from->isVia;
-   to->viaRange = from->viaRange;
-
-   to->is_auto_wrap_point = from->is_auto_wrap_point;
-   to->wrap_distance = from->wrap_distance;
-   to->num_wrap_pts = from->num_wrap_pts;
    if (to->num_wrap_pts > 0)
    {
       to->wrap_pts = (double*)simm_malloc(to->num_wrap_pts*3*sizeof(double));
       if (to->wrap_pts == NULL)
          return code_bad;
-      for (i=0; i<to->num_wrap_pts*3; i++)
-         to->wrap_pts[i] = from->wrap_pts[i];
+      memcpy(to->wrap_pts, from->wrap_pts, to->num_wrap_pts * 3 * sizeof(double));
    }
-   else
-      to->wrap_pts = NULL;
-
-   to->undeformed_point[XX] = from->undeformed_point[XX];
-   to->undeformed_point[YY] = from->undeformed_point[YY];
-   to->undeformed_point[ZZ] = from->undeformed_point[ZZ];
 
    return code_fine;
-
 }
 
-
-/* COPY_DEFAULT_MUSCLE: */
-
-ReturnCode copy_default_muscle(MuscleStruct* from, MuscleStruct* to)
+/* COPY_MUSCLE_PATH_DP: copy the muscle paths - all the original points (mp_orig),
+ * and the active points (mp), from one path struct to another that will be used by
+ * a Dynamics Pipeline model.
+ */
+static ReturnCode copy_muscle_path_dp(dpMusclePathStruct *from, dpMusclePathStruct *to, dpModelStruct *modelTo)
 {
-
    int i;
+
+   if (from == NULL || to == NULL)
+      return code_bad;
+
+   to->num_orig_points = from->num_orig_points;
+   to->mp_orig_array_size = to->num_orig_points;
+   to->mp_orig = (dpMusclePoint*)simm_malloc(to->mp_orig_array_size * sizeof(dpMusclePoint));
+   for (i=0; i<to->num_orig_points; i++)
+   {
+      if (copy_muscle_point_dp(&from->mp_orig[i], &to->mp_orig[i], modelTo) == code_bad)
+         return code_bad;
+   }
+
+   to->num_points = 0;
+   to->mp_array_size = from->mp_array_size;
+   to->mp = (dpMusclePoint**)simm_calloc(to->mp_array_size, sizeof(dpMusclePoint*));
+   if (to->mp == NULL)
+      return code_bad;
+
+   return code_fine;
+}
+
+/* COPY_MUSCLE_POINT_DP: copy the individual point from a path.  Since destination
+ * model is a dynamics Pipeline model, don't want to store gencoord information in
+ * GeneralizedCoord struct.  Find the equivalent QStruct and store that.
+ * Allocate space for the wrapping points.
+ */
+static ReturnCode copy_muscle_point_dp(dpMusclePoint* from, dpMusclePoint* to, dpModelStruct *modelTo)
+{
+   int i;
+
+   if (from == NULL || to == NULL)
+      return code_bad;
+
+   memcpy(to, from, sizeof(dpMusclePoint));
+
+   if (to->num_wrap_pts > 0)
+   {
+      to->wrap_pts = (double*)simm_malloc(to->num_wrap_pts*3*sizeof(double));
+      if (to->wrap_pts == NULL)
+         return code_bad;
+      memcpy(to->wrap_pts, from->wrap_pts, to->num_wrap_pts * 3 * sizeof(double));
+   }
+
+   if (to->isVia)
+      to->viaRange.gencoord = (void *)get_q_from_gencoord_dp(modelTo, (GeneralizedCoord*)from->viaRange.gencoord);
+
+   if (to->isMovingPoint)
+   {
+      for (i = 0; i < 3; i++)
+      {
+         if (from->gencoord[i] != NULL)
+            to->gencoord[i] = (void *)get_q_from_gencoord_dp(modelTo, (GeneralizedCoord*)from->gencoord[i]);
+      }
+   }
+   return code_fine;
+}
+
+/* COPY_DEFAULT_MUSCLE: copy the default muscle to another structure used by a SIMM model. */
+ReturnCode copy_default_muscle(dpMuscleStruct* from, dpMuscleStruct* to, ModelStruct* modelTo)
+{
+   int i;
+
+   if (from == NULL || to == NULL)
+      return code_fine;
 
    if (from->name == NULL)
       to->name = NULL;
    else
       mstrcpy(&to->name,from->name);
-   
-   // dkb Apr. 2008 - remove support for points inside default muscle ?
-   to->musclepoints = from->musclepoints;
+
+   to->index = from->index;
+
+   // The default muscle cannot contain path information.
+   to->path = NULL;
 
    to->nummomentarms = 0;
    to->momentarms = NULL;
+
+   if (copy_nonnull_dyn_params(from, to) == code_bad)
+      return code_bad;
 
    to->numgroups = from->numgroups;
    if (to->numgroups == 0)
@@ -262,7 +285,148 @@ ReturnCode copy_default_muscle(MuscleStruct* from, MuscleStruct* to)
       return code_bad;
    if (copy_nndouble(from->max_contraction_vel,&to->max_contraction_vel) == code_bad)
       return code_bad;
-   if (copy_nonnull_dyn_params(from,to) == code_bad)
+
+   if (copy_nndouble(from->optimal_fiber_length,&to->optimal_fiber_length) == code_bad)
+      return code_bad;
+   if (copy_nndouble(from->resting_tendon_length,&to->resting_tendon_length) == code_bad)
+      return code_bad;
+
+   if (copy_nnint(from->min_material,&to->min_material) == code_bad)
+      return code_bad;
+   if (copy_nnint(from->max_material,&to->max_material) == code_bad)
+      return code_bad;
+
+   to->dynamic_activation = from->dynamic_activation;
+
+   if (from->active_force_len_func == NULL)
+      to->active_force_len_func = NULL;
+   else
+   {
+      to->active_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->active_force_len_func == NULL)
+         return code_bad;
+      *to->active_force_len_func = *from->active_force_len_func;
+   }
+
+   if (from->passive_force_len_func == NULL)
+      to->passive_force_len_func = NULL;
+   else
+   {
+      to->passive_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->passive_force_len_func == NULL)
+         return code_bad;
+      *to->passive_force_len_func = *from->passive_force_len_func;
+   }
+
+   if (from->tendon_force_len_func == NULL)
+      to->tendon_force_len_func = NULL;
+   else
+   {
+      to->tendon_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->tendon_force_len_func == NULL)
+         return code_bad;
+      *to->tendon_force_len_func = *from->tendon_force_len_func;
+   }
+
+   if (from->force_vel_func == NULL)
+      to->force_vel_func = NULL;
+   else
+   {
+      to->force_vel_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->force_vel_func == NULL)
+         return code_bad;
+      *to->force_vel_func = *from->force_vel_func;
+   }
+
+   if (from->excitation_abscissa == NULL)
+	{
+      to->excitation_abscissa = from->excitation_abscissa;
+	}
+	else
+   {
+      to->excitation_abscissa = (void**)simm_malloc(sizeof(void*));
+      if (to->excitation_abscissa == NULL)
+         return code_bad;
+		if (*from->excitation_abscissa == TIME)
+			*to->excitation_abscissa = TIME;
+		else
+      {
+			*to->excitation_abscissa = (void*)enter_gencoord(modelTo, ((GeneralizedCoord*)(*from->excitation_abscissa))->name, no);
+         // If you got a NULL in the destination, but the source has an abscissa, something went wrong
+         if (*to->excitation_abscissa == NULL && *from->excitation_abscissa != NULL)
+            return code_bad;
+      }
+
+   }
+
+   if (from->excitation_func == NULL)
+      to->excitation_func = NULL;
+   else
+   {
+      to->excitation_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->excitation_func == NULL)
+         return code_bad;
+      *to->excitation_func = *from->excitation_func;
+   }
+
+   if (copy_nnint(from->muscle_model_index, &to->muscle_model_index) == code_bad)
+      return code_bad;
+
+   // Not used in SIMM.
+   to->numStateParams = 0;
+   to->stateParams = NULL;
+
+   return code_fine;
+}
+
+/* COPY_DEFAULT_MUSCLE_DP : copy the default muscle to another muscle structure that
+ * will be used by a Dynamics Pipeline model.  If the default muscle has an excitation
+ * function defined with an abscissa other than time, the gencoord should not be stored
+ * as a GeneralizedCoord struct, but as a QStruct.
+ */
+ReturnCode copy_default_muscle_dp(dpMuscleStruct* from, dpMuscleStruct* to, dpModelStruct* modelTo)
+{
+   int i;
+
+   if (from == NULL || to == NULL)
+      return code_fine;
+
+   if (from->name == NULL)
+      to->name = NULL;
+   else
+      mstrcpy(&to->name,from->name);
+
+   to->index = from->index;
+
+   // The default muscle cannot contain path information.
+   to->path = NULL;
+
+   to->nummomentarms = 0;
+   to->momentarms = NULL;
+
+   if (copy_nonnull_dyn_params(from, to) == code_bad)
+      return code_bad;
+
+   to->numgroups = from->numgroups;
+   if (to->numgroups == 0)
+      to->group = NULL;
+   else
+   {
+      if ((to->group = (int*)simm_malloc((to->numgroups)*sizeof(int))) == NULL)
+         return code_bad;
+      for (i=0; i<(to->numgroups); i++)
+         to->group[i] = from->group[i];
+   }
+
+   if (copy_nndouble(from->max_isometric_force,&to->max_isometric_force) == code_bad)
+      return code_bad;
+   if (copy_nndouble(from->pennation_angle,&to->pennation_angle) == code_bad)
+      return code_bad;
+   if (copy_nndouble(from->min_thickness,&to->min_thickness) == code_bad)
+      return code_bad;
+   if (copy_nndouble(from->max_thickness,&to->max_thickness) == code_bad)
+      return code_bad;
+   if (copy_nndouble(from->max_contraction_vel,&to->max_contraction_vel) == code_bad)
       return code_bad;
 
    if (copy_nndouble(from->optimal_fiber_length,&to->optimal_fiber_length) == code_bad)
@@ -275,96 +439,120 @@ ReturnCode copy_default_muscle(MuscleStruct* from, MuscleStruct* to)
    if (copy_nnint(from->max_material,&to->max_material) == code_bad)
       return code_bad;
 
-   to->activation = from->activation;
-   to->initial_activation = from->initial_activation;
+   to->dynamic_activation = from->dynamic_activation;
 
-   if (from->active_force_len_curve == NULL)
-      to->active_force_len_curve = NULL;
+   if (from->active_force_len_func == NULL)
+      to->active_force_len_func = NULL;
    else
    {
-      if (alloc_func(&to->active_force_len_curve,from->active_force_len_curve->coefficient_array_size) == code_bad)
+      to->active_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->active_force_len_func == NULL)
          return code_bad;
-      copy_function(from->active_force_len_curve,to->active_force_len_curve);
+      *to->active_force_len_func = *from->active_force_len_func;
    }
 
-   if (from->passive_force_len_curve == NULL)
-      to->passive_force_len_curve = NULL;
+   if (from->passive_force_len_func == NULL)
+      to->passive_force_len_func = NULL;
    else
    {
-      if (alloc_func(&to->passive_force_len_curve,from->passive_force_len_curve->coefficient_array_size) == code_bad)
+      to->passive_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->passive_force_len_func == NULL)
          return code_bad;
-      copy_function(from->passive_force_len_curve,to->passive_force_len_curve);
+      *to->passive_force_len_func = *from->passive_force_len_func;
    }
 
-   if (from->tendon_force_len_curve == NULL)
-      to->tendon_force_len_curve = NULL;
+   if (from->tendon_force_len_func == NULL)
+      to->tendon_force_len_func = NULL;
    else
    {
-      if (alloc_func(&to->tendon_force_len_curve,from->tendon_force_len_curve->coefficient_array_size) == code_bad)
+      to->tendon_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->tendon_force_len_func == NULL)
          return code_bad;
-      copy_function(from->tendon_force_len_curve,to->tendon_force_len_curve);
-   }
-   if (from->force_vel_curve == NULL)
-      to->force_vel_curve = NULL;
-   else
-   {
-      if (alloc_func(&to->force_vel_curve,from->force_vel_curve->coefficient_array_size) == code_bad)
-         return code_bad;
-      copy_function(from->force_vel_curve,to->force_vel_curve);
+      *to->tendon_force_len_func = *from->tendon_force_len_func;
    }
 
-   to->excitation_index = from->excitation_index;
-   to->excitation_abscissa = from->excitation_abscissa;
-   if (from->excitation == NULL)
-      to->excitation = NULL;
+   if (from->force_vel_func == NULL)
+      to->force_vel_func = NULL;
    else
    {
-      if (alloc_func(&to->excitation,from->excitation->coefficient_array_size) == code_bad)
+      to->force_vel_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->force_vel_func == NULL)
          return code_bad;
-      copy_function(from->excitation,to->excitation);
+      *to->force_vel_func = *from->force_vel_func;
    }
 
-   if (from->excitation_format == NULL)
-      to->excitation_format = NULL;
+   if (from->excitation_abscissa == NULL)
+	{
+      to->excitation_abscissa = from->excitation_abscissa;
+	}
+	else
+   {
+      to->excitation_abscissa = (void**)simm_malloc(sizeof(void*));
+      if (to->excitation_abscissa == NULL)
+         return code_bad;
+		if (*from->excitation_abscissa == TIME)
+			*to->excitation_abscissa = TIME;
+		else
+      {
+         *to->excitation_abscissa = (void*)get_q_from_gencoord_dp(modelTo, (GeneralizedCoord*)(*from->excitation_abscissa));
+         // If you got a NULL in the destination, but the source has an abscissa, something went wrong
+         if (*to->excitation_abscissa == NULL && *from->excitation_abscissa != NULL)
+            return code_bad;
+      }
+   }
+
+   if (from->excitation_func == NULL)
+      to->excitation_func = NULL;
    else
    {
-      if ((to->excitation_format = (SplineType*)simm_malloc(sizeof(SplineType))) == NULL)
+      to->excitation_func = (dpFunction**)simm_malloc(sizeof(dpFunction*));
+      if (to->excitation_func == NULL)
          return code_bad;
-      *(to->excitation_format) = *(from->excitation_format);
+      *to->excitation_func = *from->excitation_func;
    }
 
-   if (copy_nnint(from->muscle_model_index,&to->muscle_model_index) == code_bad)
+   if (copy_nnint(from->muscle_model_index, &to->muscle_model_index) == code_bad)
       return code_bad;
 
-   return code_fine;
+   // Not used in SIMM.
+   to->numStateParams = 0;
+   to->stateParams = NULL;
 
+   return code_fine;
 }
 
-/* COPY_MUSCLE: */
-ReturnCode copy_muscle(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffrom, MuscleStruct *defto)
+/* COPY_MUSCLE: copy a muscle to another struct used by a SIMM model. */
+ReturnCode copy_muscle(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStruct* deffrom, dpMuscleStruct *defto, ModelStruct* modelTo)
 {
    int i, j, mem_size;
 
-   nullify_muscle(to);
+   memcpy(to, from, sizeof(dpMuscleStruct));
 
+#if MEMORY_LEAK
+   if (from->name == deffrom->name)
+      to->name = deffrom->name;
+   else
+   {
+      mstrcpy(&to->name,from->name);
+      if (to->name == NULL)
+         return code_bad;
+   }
+#else
    if (from->name == deffrom->name)
       to->name = deffrom->name;
    else if (mstrcpy(&to->name,from->name) == code_bad)
       return code_bad;
-
-   to->display = from->display;
-
-   to->numWrapStructs = from->numWrapStructs;
+#endif
 
    if (to->numWrapStructs > 0)
    {
-      if ((to->wrapStruct = (MuscleWrapStruct**)simm_malloc(to->numWrapStructs * sizeof(MuscleWrapStruct*))) == NULL)
+      if ((to->wrapStruct = (dpMuscleWrapStruct**)simm_malloc(to->numWrapStructs * sizeof(dpMuscleWrapStruct*))) == NULL)
          return code_bad;
       for (i = 0; i < to->numWrapStructs; i++)
       {
-         if ((to->wrapStruct[i] = (MuscleWrapStruct*)simm_malloc(sizeof(MuscleWrapStruct))) == NULL)
+         if ((to->wrapStruct[i] = (dpMuscleWrapStruct*)simm_malloc(sizeof(dpMuscleWrapStruct))) == NULL)
             return code_bad;
-         memcpy(to->wrapStruct[i], from->wrapStruct[i], sizeof(MuscleWrapStruct));
+         memcpy(to->wrapStruct[i], from->wrapStruct[i], sizeof(dpMuscleWrapStruct));
          for (j = 0; j < 2; j++)
          {
             if (from->wrapStruct[i]->mp_wrap[j].num_wrap_pts > 0)
@@ -386,18 +574,16 @@ ReturnCode copy_muscle(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffr
       }
    }
 
-   /* copy the pointer to the musclepoint array - don't create a new musclepoint array 
-    * this way any saved copy pointing to the array doesn't get messed up
-    */
-   to->musclepoints = from->musclepoints;
+   if (from->path)
+   {
+      to->path = (dpMusclePathStruct*)simm_calloc(1, sizeof(dpMusclePathStruct));
+		//free_muscle(to, defto); // just to test!
 
-   /* The mp[] array is not copied; rather, space is allocated for it,
-    * and the muscle's wrapping is invalidated so that mp[] will be set later.
-    */
+      if (copy_muscle_path(from->path, to->path) == code_bad)
+         return code_bad;
+   }
    to->wrap_calced = no;
 
-
-   to->numgroups = from->numgroups;
    if (to->numgroups == 0)
       to->group = NULL;
    else
@@ -432,82 +618,109 @@ ReturnCode copy_muscle(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffr
    if (copy_ndint(from->max_material, &to->max_material, deffrom->max_material, defto->max_material) == code_bad)
       return code_bad;
 
-   to->activation = from->activation;
-   to->initial_activation = from->initial_activation;
-
    if (copy_nddouble(from->max_contraction_vel,&to->max_contraction_vel,
                 deffrom->max_contraction_vel,defto->max_contraction_vel) == code_bad)
       return code_bad;
+
    if (copy_nondefault_dyn_params(from,to,deffrom,defto) == code_bad)
       return code_bad;
 
-   to->nummomentarms = from->nummomentarms;
    if ((to->momentarms = (double*)simm_malloc(to->nummomentarms*sizeof(double))) == NULL)
       return code_bad;
    for (i=0; i<to->nummomentarms; i++)
       to->momentarms[i] = from->momentarms[i];
 
-   if (from->active_force_len_curve == deffrom->active_force_len_curve)
-      to->active_force_len_curve = defto->active_force_len_curve;
+   if (from->active_force_len_func == deffrom->active_force_len_func)
+      to->active_force_len_func = defto->active_force_len_func;
    else
    {
-      if (alloc_func(&to->active_force_len_curve,from->active_force_len_curve->coefficient_array_size) == code_bad)
-         return code_bad;
-      copy_function(from->active_force_len_curve,to->active_force_len_curve);
-   }
-
-   if (from->passive_force_len_curve == deffrom->passive_force_len_curve)
-      to->passive_force_len_curve = defto->passive_force_len_curve;
-   else
-   {
-      if (alloc_func(&to->passive_force_len_curve,from->passive_force_len_curve->coefficient_array_size) == code_bad)
-         return code_bad;
-      copy_function(from->passive_force_len_curve,to->passive_force_len_curve);
-   }
-
-   if (from->tendon_force_len_curve == deffrom->tendon_force_len_curve)
-      to->tendon_force_len_curve = defto->tendon_force_len_curve;
-   else
-   {
-      if (alloc_func(&to->tendon_force_len_curve,from->tendon_force_len_curve->coefficient_array_size) == code_bad)
-         return code_bad;
-      copy_function(from->tendon_force_len_curve,to->tendon_force_len_curve);
-   }
-   if (from->force_vel_curve == deffrom->force_vel_curve)
-      to->force_vel_curve = defto->force_vel_curve;
-   else
-   {
-      if (alloc_func(&to->force_vel_curve,from->force_vel_curve->coefficient_array_size) == code_bad)
-         return code_bad;
-      copy_function(from->force_vel_curve,to->force_vel_curve);
-   }
-
-   to->excitation_index = from->excitation_index;
-   to->excitation_abscissa = from->excitation_abscissa;
-   if (from->excitation == deffrom->excitation)
-      to->excitation = defto->excitation;
-   else
-   {
-      if (from->excitation == NULL)
-         to->excitation = NULL;
+      if (from->active_force_len_func == NULL)
+         to->active_force_len_func = NULL;
       else
       {
-         if (alloc_func(&to->excitation,from->excitation->coefficient_array_size) == code_bad)
+         if ((to->active_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
             return code_bad;
-         copy_function(from->excitation,to->excitation);
+         *to->active_force_len_func = *from->active_force_len_func;
       }
    }
-   if (from->excitation_format == deffrom->excitation_format)
-      to->excitation_format = defto->excitation_format;
+
+   if (from->passive_force_len_func == deffrom->passive_force_len_func)
+      to->passive_force_len_func = defto->passive_force_len_func;
    else
    {
-      if (from->excitation_format == NULL)
-         to->excitation_format = NULL;
+      if (from->passive_force_len_func == NULL)
+         to->passive_force_len_func = NULL;
       else
       {
-         if ((to->excitation_format = (SplineType*)simm_malloc(sizeof(SplineType))) == NULL)
+         if ((to->passive_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
             return code_bad;
-         *(to->excitation_format) = *(from->excitation_format);
+         *to->passive_force_len_func = *from->passive_force_len_func;
+      }
+   }
+
+   if (from->tendon_force_len_func == deffrom->tendon_force_len_func)
+      to->tendon_force_len_func = defto->tendon_force_len_func;
+   else
+   {
+      if (from->tendon_force_len_func == NULL)
+         to->tendon_force_len_func = NULL;
+      else
+      {
+         if ((to->tendon_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->tendon_force_len_func = *from->tendon_force_len_func;
+      }
+   }
+
+   if (from->force_vel_func == deffrom->force_vel_func)
+      to->force_vel_func = defto->force_vel_func;
+   else
+   {
+      if (from->force_vel_func == NULL)
+         to->force_vel_func = NULL;
+      else
+      {
+         if ((to->force_vel_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->force_vel_func = *from->force_vel_func;
+      }
+   }
+
+   if (from->excitation_abscissa == deffrom->excitation_abscissa)
+      to->excitation_abscissa = defto->excitation_abscissa;
+   else
+   {
+      if (from->excitation_abscissa == NULL)
+		{
+         to->excitation_abscissa = NULL;
+		}
+      else
+      {
+         if ((to->excitation_abscissa = (void**)simm_malloc(sizeof(void*))) == NULL)
+            return code_bad;
+			if (*from->excitation_abscissa == TIME)
+				*to->excitation_abscissa = TIME;
+			else
+         {
+            *to->excitation_abscissa = (void*)enter_gencoord(modelTo, ((GeneralizedCoord*)(*from->excitation_abscissa))->name, no);
+            // If you got a NULL in the destination, but the source has an abscissa, something went wron
+            if (*to->excitation_abscissa == NULL && *from->excitation_abscissa != NULL)
+               return code_bad;     
+         }
+      }
+   }
+
+   if (from->excitation_func == deffrom->excitation_func)
+      to->excitation_func = defto->excitation_func;
+   else
+   {
+      if (from->excitation_func == NULL)
+         to->excitation_func = NULL;
+      else
+      {
+         if ((to->excitation_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->excitation_func = *from->excitation_func;
       }
    }
 
@@ -515,13 +728,245 @@ ReturnCode copy_muscle(MuscleStruct* from, MuscleStruct* to, MuscleStruct* deffr
 		  deffrom->muscle_model_index,defto->muscle_model_index) == code_bad)
       return code_bad;
 
-   to->output = from->output;
+   to->saved = NULL;
+
+   // Not used in SIMM.
+   to->numStateParams = 0;
+   to->stateParams = NULL;
 
    return code_fine;
-
 }
 
-/* COPY_NNDOUBLE: */
+/* COPY_MUSCLE_DP: copy the muscle into a structure that will be used by a Dynamics Pipeline model.
+ * All references to gencoords in the muscle (via points, moving muscle points, excitation abscissae),
+ * should refer to the QSTruct, not the GeneralizedCoord struct.
+ */
+ReturnCode copy_muscle_dp(dpMuscleStruct* from, dpMuscleStruct* to, dpMuscleStruct* deffrom, dpMuscleStruct *defto, dpModelStruct* modelTo)
+{
+   int i, j, mem_size;
+
+   memcpy(to, from, sizeof(dpMuscleStruct));
+
+#if MEMORY_LEAK
+   if (from->name == deffrom->name)
+      to->name = deffrom->name;
+   else
+   {
+      mstrcpy(&to->name,from->name);
+      if (to->name == NULL)
+         return code_bad;
+   }
+#else
+   if (from->name == deffrom->name)
+      to->name = deffrom->name;
+   else if (mstrcpy(&to->name,from->name) == code_bad)
+      return code_bad;
+#endif
+
+   if (to->numWrapStructs > 0)
+   {
+      if ((to->wrapStruct = (dpMuscleWrapStruct**)simm_malloc(to->numWrapStructs * sizeof(dpMuscleWrapStruct*))) == NULL)
+         return code_bad;
+      for (i = 0; i < to->numWrapStructs; i++)
+      {
+         if ((to->wrapStruct[i] = (dpMuscleWrapStruct*)simm_malloc(sizeof(dpMuscleWrapStruct))) == NULL)
+            return code_bad;
+         memcpy(to->wrapStruct[i], from->wrapStruct[i], sizeof(dpMuscleWrapStruct));
+         // need to allocate space for wrap_object otherwise element in DP model points to element
+         // in SIMM model.  Changes to DP model (adjusting segment index for SD segments) 
+         // cause unwanted changes in SIMM model
+         // find the wrap object in dp model...
+//         to->wrapStruct[i]->wrap_object = (dpWrapObject *) simm_malloc(sizeof(dpWrapObject));
+         for (j = 0; j < modelTo->num_wrap_objects; j++)
+         {
+            if (STRINGS_ARE_EQUAL(from->wrapStruct[i]->wrap_object->name, modelTo->wrap_object[j].name))
+            {
+               to->wrapStruct[i]->wrap_object = &modelTo->wrap_object[j];
+            }
+         }
+         for (j = 0; j < 2; j++)
+         {
+            if (from->wrapStruct[i]->mp_wrap[j].num_wrap_pts > 0)
+            {
+               to->wrapStruct[i]->mp_wrap[j].num_wrap_pts = from->wrapStruct[i]->mp_wrap[j].num_wrap_pts;
+               mem_size = to->wrapStruct[i]->mp_wrap[j].num_wrap_pts * 3 * sizeof(double);
+               to->wrapStruct[i]->mp_wrap[j].wrap_pts = (double*)simm_malloc(mem_size);
+               memcpy(to->wrapStruct[i]->mp_wrap[j].wrap_pts, from->wrapStruct[i]->mp_wrap[j].wrap_pts, mem_size);
+            }
+            else
+            {
+               to->wrapStruct[i]->mp_wrap[j].num_wrap_pts = 0;
+               to->wrapStruct[i]->mp_wrap[j].wrap_pts = NULL;
+            }
+            to->wrapStruct[i]->mp_wrap[j].isVia = from->wrapStruct[i]->mp_wrap[j].isVia;
+            to->wrapStruct[i]->mp_wrap[j].viaRange = from->wrapStruct[i]->mp_wrap[j].viaRange;
+         }
+      }
+   }
+
+   if (from->path)
+   {
+      to->path = (dpMusclePathStruct*)simm_calloc(1, sizeof(dpMusclePathStruct));
+		//free_muscle(to, defto); // just to test!
+
+      if (copy_muscle_path_dp(from->path, to->path, modelTo) == code_bad)
+         return code_bad;
+   }
+   to->wrap_calced = no;
+
+   if (to->numgroups == 0)
+      to->group = NULL;
+   else
+   {
+      if ((to->group = (int*)simm_malloc(to->numgroups*sizeof(int))) == NULL)
+         return code_bad;
+      for (i=0; i<to->numgroups; i++)
+         to->group[i] = from->group[i];
+   }
+
+   if (copy_nddouble(from->max_isometric_force,&to->max_isometric_force,deffrom->max_isometric_force,defto->max_isometric_force) == code_bad)
+      return code_bad;
+   if (copy_nddouble(from->pennation_angle,&to->pennation_angle,
+                deffrom->pennation_angle,defto->pennation_angle) == code_bad)
+      return code_bad;
+   if (copy_nddouble(from->min_thickness,&to->min_thickness,
+                deffrom->min_thickness,defto->min_thickness) == code_bad)
+      return code_bad;
+   if (copy_nddouble(from->max_thickness,&to->max_thickness,
+                deffrom->max_thickness,defto->max_thickness) == code_bad)
+      return code_bad;
+   if (copy_nddouble(from->optimal_fiber_length,&to->optimal_fiber_length,
+                deffrom->optimal_fiber_length,defto->optimal_fiber_length) == code_bad)
+      return code_bad;
+   if (copy_nddouble(from->resting_tendon_length,&to->resting_tendon_length,
+                deffrom->resting_tendon_length,defto->resting_tendon_length) == code_bad)
+      return code_bad;
+
+   if (copy_ndint(from->min_material, &to->min_material, deffrom->min_material, defto->min_material) == code_bad)
+      return code_bad;
+
+   if (copy_ndint(from->max_material, &to->max_material, deffrom->max_material, defto->max_material) == code_bad)
+      return code_bad;
+
+   if (copy_nddouble(from->max_contraction_vel,&to->max_contraction_vel,
+                deffrom->max_contraction_vel,defto->max_contraction_vel) == code_bad)
+      return code_bad;
+
+   if (copy_nondefault_dyn_params(from,to,deffrom,defto) == code_bad)
+      return code_bad;
+
+   if ((to->momentarms = (double*)simm_malloc(to->nummomentarms*sizeof(double))) == NULL)
+      return code_bad;
+   for (i=0; i<to->nummomentarms; i++)
+      to->momentarms[i] = from->momentarms[i];
+
+   if (from->active_force_len_func == deffrom->active_force_len_func)
+      to->active_force_len_func = defto->active_force_len_func;
+   else
+   {
+      if (from->active_force_len_func == NULL)
+         to->active_force_len_func = NULL;
+      else
+      {
+         if ((to->active_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->active_force_len_func = *from->active_force_len_func;
+      }
+   }
+
+   if (from->passive_force_len_func == deffrom->passive_force_len_func)
+      to->passive_force_len_func = defto->passive_force_len_func;
+   else
+   {
+      if (from->passive_force_len_func == NULL)
+         to->passive_force_len_func = NULL;
+      else
+      {
+         if ((to->passive_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->passive_force_len_func = *from->passive_force_len_func;
+      }
+   }
+
+   if (from->tendon_force_len_func == deffrom->tendon_force_len_func)
+      to->tendon_force_len_func = defto->tendon_force_len_func;
+   else
+   {
+      if (from->tendon_force_len_func == NULL)
+         to->tendon_force_len_func = NULL;
+      else
+      {
+         if ((to->tendon_force_len_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->tendon_force_len_func = *from->tendon_force_len_func;
+      }
+   }
+
+   if (from->force_vel_func == deffrom->force_vel_func)
+      to->force_vel_func = defto->force_vel_func;
+   else
+   {
+      if (from->force_vel_func == NULL)
+         to->force_vel_func = NULL;
+      else
+      {
+         if ((to->force_vel_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->force_vel_func = *from->force_vel_func;
+      }
+   }
+
+   if (from->excitation_abscissa == deffrom->excitation_abscissa)
+      to->excitation_abscissa = defto->excitation_abscissa;
+   else
+   {
+      if (from->excitation_abscissa == NULL)
+		{
+         to->excitation_abscissa = NULL;
+		}
+      else
+      {
+         if ((to->excitation_abscissa = (void**)simm_malloc(sizeof(void*))) == NULL)
+            return code_bad;
+			if (*from->excitation_abscissa == TIME)
+				*to->excitation_abscissa = TIME;
+			else
+         {
+				*to->excitation_abscissa = (void*)get_q_from_gencoord_dp(modelTo, (GeneralizedCoord*)(*from->excitation_abscissa));
+            // If you got a NULL in the destination, but the source has an abscissa, something went wron
+            if (*to->excitation_abscissa == NULL && *from->excitation_abscissa != NULL)
+               return code_bad;
+         }
+      }
+   }
+
+   if (from->excitation_func == deffrom->excitation_func)
+      to->excitation_func = defto->excitation_func;
+   else
+   {
+      if (from->excitation_func == NULL)
+         to->excitation_func = NULL;
+      else
+      {
+         if ((to->excitation_func = (dpFunction**)simm_malloc(sizeof(dpFunction*))) == NULL)
+            return code_bad;
+         *to->excitation_func = *from->excitation_func;
+      }
+   }
+
+   if (copy_ndint(from->muscle_model_index,&to->muscle_model_index,
+		  deffrom->muscle_model_index,defto->muscle_model_index) == code_bad)
+      return code_bad;
+
+   to->saved = NULL;
+
+   // Not used in SIMM.
+   to->numStateParams = 0;
+   to->stateParams = NULL;
+
+   return code_fine;
+}
+
 
 ReturnCode copy_nndouble(double* from, double** to)
 {
@@ -530,16 +975,13 @@ ReturnCode copy_nndouble(double* from, double** to)
    else
    {
       if ((*to = (double*)simm_malloc(sizeof(double))) == NULL)
-         return (code_bad);
+         return code_bad;
       **to = *from;
    }
 
    return code_fine;
 }
 
-
-
-/* COPY_NDDOUBLE: */
 
 ReturnCode copy_nddouble(double* from, double** to, double* deffrom, double* defto)
 {
@@ -552,7 +994,7 @@ ReturnCode copy_nddouble(double* from, double** to, double* deffrom, double* def
       else
       {
          if ((*to = (double*)simm_malloc(sizeof(double))) == NULL)
-            return (code_bad);
+            return code_bad;
          **to = *from;
       }
    }
@@ -561,9 +1003,6 @@ ReturnCode copy_nddouble(double* from, double** to, double* deffrom, double* def
 }
 
 
-
-/* COPY_NNINT: */
-
 ReturnCode copy_nnint(int* from, int** to)
 {
    if (from == NULL)
@@ -571,16 +1010,13 @@ ReturnCode copy_nnint(int* from, int** to)
    else
    {
       if ((*to = (int*)simm_malloc(sizeof(int))) == NULL)
-         return (code_bad);
+         return code_bad;
       **to = *from;
    }
 
    return code_fine;
 }
 
-
-
-/* COPY_NDINT: */
 
 ReturnCode copy_ndint(int* from, int** to, int* deffrom, int* defto)
 {
@@ -593,7 +1029,7 @@ ReturnCode copy_ndint(int* from, int** to, int* deffrom, int* defto)
       else
       {
          if ((*to = (int*)simm_malloc(sizeof(int))) == NULL)
-            return (code_bad);
+            return code_bad;
          **to = *from;
       }
    }
@@ -626,7 +1062,7 @@ WorldObject* copy_world_objects(WorldObject from[], int num)
    return to;
 }
 
-JointStruct* copy_joints(JointStruct from[], int num, ModelStruct* ms)
+JointStruct* copy_joints(ModelStruct* model, JointStruct from[], int num)
 {
    int i, j;
    JointStruct* to = NULL;
@@ -646,11 +1082,15 @@ JointStruct* copy_joints(JointStruct from[], int num, ModelStruct* ms)
       {
          mstrcpy(&to[i].dofs[j].sd.name, from[i].dofs[j].sd.name);
          mstrcpy(&to[i].dofs[j].sd.con_name, from[i].dofs[j].sd.con_name);
+			if (from[i].dofs[j].function)
+				to[i].dofs[j].function = getFunctionByUserNumber(model, from[i].dofs[j].function->usernum);
+			if (from[i].dofs[j].gencoord)
+				to[i].dofs[j].gencoord = enter_gencoord(model, from[i].dofs[j].gencoord->name, no);
       }
-      if (ms->numsegments > 0)
+      if (model->numsegments > 0)
       {
-         to[i].in_seg_ground_path = (SBoolean*)simm_malloc(ms->numsegments*sizeof(SBoolean));
-         memcpy(to[i].in_seg_ground_path, from[i].in_seg_ground_path, ms->numsegments*sizeof(SBoolean));
+         to[i].in_seg_ground_path = (SBoolean*)simm_malloc(model->numsegments*sizeof(SBoolean));
+         memcpy(to[i].in_seg_ground_path, from[i].in_seg_ground_path, model->numsegments*sizeof(SBoolean));
       }
 #if INCLUDE_MOCAP_MODULE
       mstrcpy(&to[i].mocap_segment, from[i].mocap_segment);
@@ -738,10 +1178,19 @@ SegmentStruct* copy_segments(SegmentStruct from[], int num)
       }
       if (from[i].numMarkers > 0)
       {
-         to[i].marker = (Marker*)simm_malloc(sizeof(Marker)*from[i].numMarkers);
-         memcpy(to[i].marker, from[i].marker, sizeof(Marker)*from[i].numMarkers);
+         to[i].marker = (Marker**)simm_malloc(sizeof(Marker*) * from[i].numMarkers);
          for (j=0; j<from[i].numMarkers; j++)
-            mstrcpy(&to[i].marker[j].name, from[i].marker[j].name);
+         {
+            to[i].marker[j] = (Marker*)simm_malloc(sizeof(Marker));
+            memcpy(to[i].marker[j], from[i].marker[j], sizeof(Marker));
+            mstrcpy(&to[i].marker[j]->name, from[i].marker[j]->name);
+         }
+      }
+      else
+      {
+         // from[i].marker may be non-NULL even if from[i] has no markers.
+         // So set to[i].marker to NULL so it doesn't keep a copy of the pointer.
+         to[i].marker = NULL;
       }
       to[i].markerArraySize = from[i].numMarkers;
 #if INCLUDE_BONE_EDITOR_EXTRAS
@@ -806,12 +1255,12 @@ MuscleGroup* copy_muscle_groups(MuscleGroup from[], int num)
    for (i=0; i<num; i++)
    {
       mstrcpy(&to[i].name, from[i].name);
-      if (from[i].number_of_muscles > 0)
+      if (from[i].num_muscles > 0)
       {
-         to[i].muscle_index = (int*)simm_malloc(sizeof(int)*from[i].number_of_muscles);
-         memcpy(to[i].muscle_index, from[i].muscle_index, sizeof(int)*from[i].number_of_muscles);
+         to[i].muscle_index = (int*)simm_malloc(sizeof(int)*from[i].num_muscles);
+         memcpy(to[i].muscle_index, from[i].muscle_index, sizeof(int)*from[i].num_muscles);
       }
-      to[i].muscindex_array_size = from[i].number_of_muscles;
+      to[i].muscindex_array_size = from[i].num_muscles;
       copy_menu(&to[i].menu, &from[i].menu);
    }
 
@@ -859,8 +1308,8 @@ GencoordGroup* copy_gencoord_groups(GencoordGroup from[], int num)
       mstrcpy(&to[i].name, from[i].name);
       if (from[i].num_gencoords > 0)
       {
-         to[i].gencoord = (int*)simm_malloc(sizeof(int)*from[i].num_gencoords);
-         memcpy(to[i].gencoord, from[i].gencoord, sizeof(int)*from[i].num_gencoords);
+         to[i].gencoord = (GeneralizedCoord**)simm_malloc(sizeof(GeneralizedCoord*) * from[i].num_gencoords);
+         memcpy(to[i].gencoord, from[i].gencoord, sizeof(GeneralizedCoord*) * from[i].num_gencoords);
       }
       to[i].genc_array_size = from[i].num_gencoords;
    }
@@ -868,59 +1317,68 @@ GencoordGroup* copy_gencoord_groups(GencoordGroup from[], int num)
    return to;
 }
 
-GeneralizedCoord* copy_gencoords(GeneralizedCoord from[], int num)
+GeneralizedCoord** copy_gencoords(ModelStruct* model, GeneralizedCoord* from[], int num)
 {
    int i;
-   GeneralizedCoord* to = NULL;
+   GeneralizedCoord** to = NULL;
 
    if (num <= 0)
       return to;
 
-   to = (GeneralizedCoord*)simm_malloc(sizeof(GeneralizedCoord)*num);
-   memcpy(to, from, sizeof(GeneralizedCoord)*num);
+   to = (GeneralizedCoord**)simm_malloc(sizeof(GeneralizedCoord*)*num);
 
    for (i=0; i<num; i++)
    {
-      mstrcpy(&to[i].name, from[i].name);
-      if (from[i].numjoints > 0)
+      to[i] = (GeneralizedCoord*)simm_malloc(sizeof(GeneralizedCoord));
+      memcpy(to[i], from[i], sizeof(GeneralizedCoord));
+      mstrcpy(&to[i]->name, from[i]->name);
+      if (from[i]->numjoints > 0)
       {
-         to[i].jointnum = (int*)simm_malloc(sizeof(int)*from[i].numjoints);
-         memcpy(to[i].jointnum, from[i].jointnum, sizeof(int)*from[i].numjoints);
+         to[i]->jointnum = (int*)simm_malloc(sizeof(int)*from[i]->numjoints);
+         memcpy(to[i]->jointnum, from[i]->jointnum, sizeof(int)*from[i]->numjoints);
       }
-      if (from[i].numgroups > 0)
+      if (from[i]->numgroups > 0)
       {
-         to[i].group = (int*)simm_malloc(sizeof(int)*to[i].numgroups);
-         memcpy(to[i].group, from[i].group, sizeof(int)*to[i].numgroups);
+         to[i]->group = (int*)simm_malloc(sizeof(int)*to[i]->numgroups);
+         memcpy(to[i]->group, from[i]->group, sizeof(int)*to[i]->numgroups);
       }
+		if (from[i]->restraint_function)
+			to[i]->restraint_function = getFunctionByUserNumber(model, from[i]->restraint_function->usernum);
+		if (from[i]->min_restraint_function)
+			to[i]->min_restraint_function = getFunctionByUserNumber(model, from[i]->min_restraint_function->usernum);
+		if (from[i]->max_restraint_function)
+			to[i]->max_restraint_function = getFunctionByUserNumber(model, from[i]->max_restraint_function->usernum);
+
 #if INCLUDE_MOCAP_MODULE
-      mstrcpy(&to[i].mocap_segment, from[i].mocap_segment);
+      mstrcpy(&to[i]->mocap_segment, from[i]->mocap_segment);
 #endif
    }
 
    return to;
 }
 
-SplineFunction* copy_functions(SplineFunction from[], int fromArraySize, int* toArraySize)
+dpFunction** copy_functions(dpFunction* from[], int fromArraySize, int* toArraySize)
 {
    int i, index = 0;
-   SplineFunction* to = NULL;
+   dpFunction** to = NULL;
 
    *toArraySize = 0;
    for (i = 0; i < fromArraySize; i++)
-      if (from[i].used == yes)
+      if (from[i] && from[i]->used == dpYes)
          (*toArraySize)++;
 
    if (*toArraySize <= 0)
       return to;
 
-   to = (SplineFunction*)simm_malloc(sizeof(SplineFunction)*(*toArraySize));
+   to = (dpFunction**)simm_malloc(sizeof(dpFunction*)*(*toArraySize));
 
    for (i=0; i<fromArraySize; i++)
    {
-      if (from[i].used == yes)
+      if (from[i] && from[i]->used == dpYes)
       {
-         malloc_function(&to[index], from[i].numpoints);
-         copy_function(&from[i], &to[index]);
+         to[index] = (dpFunction*)simm_calloc(1, sizeof(dpFunction));
+         malloc_function(to[index], from[i]->numpoints);
+         copy_function(from[i], to[index]);
          index++;
       }
    }
@@ -928,91 +1386,77 @@ SplineFunction* copy_functions(SplineFunction from[], int fromArraySize, int* to
    return to;
 }
 
-void copy_muscles(ModelStruct* from, ModelStruct* to)
+/* COPY_MUSCLES: copy all the muscles from one model to another */
+ReturnCode copy_muscles(ModelStruct* from, ModelStruct* to)
 {
    int i;
 
-   copy_default_muscle(&from->default_muscle, &to->default_muscle);
+   if (from->default_muscle == NULL)
+   {
+      to->default_muscle = NULL;
+   }
+   else
+   {
+      to->default_muscle = (dpMuscleStruct*)simm_calloc(1, sizeof(dpMuscleStruct));
+      if (copy_default_muscle(from->default_muscle, to->default_muscle, to) == code_bad)
+         return code_bad;
+   }
 
-   if (from->nummuscles == 0)
+   to->nummuscles = from->nummuscles;
+
+   if (to->nummuscles == 0)
    {
       to->muscle = NULL;
       to->muscle_array_size = 0;
-      return;
+      return code_fine;
    }
 
-   /* malloc memory for all the muscle structures */
-   to->muscle = (MuscleStruct*)simm_malloc(from->nummuscles*sizeof(MuscleStruct));
+   // Malloc memory for the array of muscle pointers.
+   to->muscle = (dpMuscleStruct**)simm_malloc(from->nummuscles*sizeof(dpMuscleStruct*));
    to->muscle_array_size = to->nummuscles;
 
-   /* copy the muscle structures */
+   // Copy the muscle structures.
    for (i=0; i<from->nummuscles; i++)
-      copy_muscle(&from->muscle[i], &to->muscle[i], &from->default_muscle, &to->default_muscle);
-}
-
-LigamentPoint* copy_ligament_points(LigamentPoint from[], int num)
-{
-   int i;
-   LigamentPoint* to = NULL;
-
-   if (num <= 0)
-      return to;
-
-   to = (LigamentPoint*)simm_malloc(sizeof(LigamentPoint)*num);
-   memcpy(to, from, sizeof(LigamentPoint)*num);
-
-   for (i=0; i<num; i++)
    {
-      to[i].ranges = (PointRange*)simm_malloc(sizeof(PointRange)*from[i].numranges);
-      memcpy(to[i].ranges, from[i].ranges, sizeof(PointRange)*from[i].numranges);
+      to->muscle[i] = (dpMuscleStruct*)simm_calloc(1, sizeof(dpMuscleStruct));
+      if (copy_muscle(from->muscle[i], to->muscle[i], from->default_muscle, to->default_muscle, to) == code_bad)
+         return code_bad;
    }
-
-   return to;
+   return code_fine;
 }
 
-LigamentLine* copy_ligament_lines(LigamentLine from[], int num)
-{
-   int i;
-   LigamentLine* to = NULL;
-
-   if (num <= 0)
-      return to;
-
-   to = (LigamentLine*)simm_malloc(sizeof(LigamentLine)*num);
-   memcpy(to, from, sizeof(LigamentLine)*num);
-
-   for (i=0; i<num; i++)
-   {
-      to[i].pt = copy_ligament_points(from[i].pt, from[i].numpoints);
-      to[i].pt_array_size = from[i].numpoints;
-   }
-
-   return to;
-}
-
+/* COPY_LIGAMENTS: copy the ligament structure */
 LigamentStruct* copy_ligaments(LigamentStruct from[], int num)
 {
-   int i;
+   int i, j;
    LigamentStruct* to = NULL;
 
    if (num <= 0)
       return to;
 
-   to = (LigamentStruct*)simm_malloc(sizeof(LigamentStruct)*num);
-   memcpy(to, from, sizeof(LigamentStruct)*num);
+   to = (LigamentStruct*)simm_malloc(sizeof(LigamentStruct) * num);
+   memcpy(to, from, sizeof(LigamentStruct) * num);
 
    for (i=0; i<num; i++)
    {
       mstrcpy(&to[i].name, from[i].name);
-      to[i].line = copy_ligament_lines(from[i].line, from[i].numlines);
-      to[i].line_array_size = from[i].numlines;
+      if (from[i].line)
+      {
+         to[i].line = (dpMusclePathStruct*)simm_calloc(from[i].numlines, sizeof(dpMusclePathStruct));
+         for (j=0; j<from[i].numlines; j++)
+         {
+            if (copy_muscle_path(&from[i].line[j], &to[i].line[j]) == code_bad)
+               return NULL;
+         }
+      }
+      to[i].wrap_calced = no;
    }
 
    return to;
 }
 
-/* Copy only pointer-based sections of DisplayStruct.*/
-void copy_display_struct(DisplayStruct* from, DisplayStruct* to)
+/* Copy only pointer-based sections of ModelDisplayStruct.*/
+void copy_display_struct(ModelDisplayStruct* from, ModelDisplayStruct* to)
 {
    int i;
 
@@ -1021,10 +1465,11 @@ void copy_display_struct(DisplayStruct* from, DisplayStruct* to)
 
    for (i=0; i<MAXSAVEDVIEWS; i++)
    {
-      if (from->view_name[i])
+      if (from->view_name[i]) {
          mstrcpy(&to->view_name[i], from->view_name[i]);
-      else
+      } else {
          to->view_name[i] = NULL;
+      }
    }
    to->applied_motion = NULL;
    to->current_motion = NULL;
@@ -1035,10 +1480,6 @@ void copy_display_struct(DisplayStruct* from, DisplayStruct* to)
    }
    to->devs = NULL;
    to->dev_values = NULL;
-#if INCLUDE_SNAPSHOT
-   to->snapshot_file_base_name = NULL;
-   to->snapshot_file_suffix = NULL;
-#endif
 
    if (from->mat.num_materials > 0 && from->mat.materials != NULL)
    {
@@ -1109,25 +1550,28 @@ MotionObject* copy_motion_objects(MotionObject from[], int num)
       mstrcpy(&to[i].filename, from[i].filename);
       mstrcpy(&to[i].materialname, from[i].materialname);
       copy_polyhedron(&from[i].shape, &to[i].shape);
-      to[i].shape.gl_display = -1;
+      to[i].shape.gl_display = 0;
    }
 
    return to;
 }
 
-WrapObject* copy_wrap_objects(WrapObject from[], int num)
+dpWrapObject** copy_wrap_objects(dpWrapObject* from[], int num)
 {
    int i;
-   WrapObject* to = NULL;
+   dpWrapObject** to = NULL;
 
    if (num <= 0)
       return to;
 
-   to = (WrapObject*)simm_malloc(sizeof(WrapObject)*num);
-   memcpy(to, from, sizeof(WrapObject)*num);
+   to = (dpWrapObject**)simm_malloc(sizeof(dpWrapObject*)*num);
 
    for (i=0; i<num; i++)
-      mstrcpy(&to[i].name, from[i].name);
+   {
+      to[i] = (dpWrapObject*)simm_malloc(sizeof(dpWrapObject));
+      memcpy(to[i], from[i], sizeof(dpWrapObject));
+      mstrcpy(&to[i]->name, from[i]->name);
+   }
 
    return to;
 }
@@ -1150,7 +1594,7 @@ Deformity* copy_deformities(Deformity from[], int num, ModelStruct* ms)
       to[i].deform = (DeformObject**)simm_malloc(sizeof(DeformObject*)*from[i].num_deforms);
       for (j=0; j<from[i].num_deforms; j++)
       {
-         mstrcpy(&to[i].deform_name[j], to[i].deform_name[j]);
+         mstrcpy(&to[i].deform_name[j], from[i].deform_name[j]);
          to[i].deform[j] = lookup_deform(ms, from[i].deform_name[j]);
       }
    }
@@ -1193,8 +1637,8 @@ ConstraintObject* copy_constraint_objects(ConstraintObject from[], int num)
       to[i].cp_array_size = from[i].numPoints;
       to[i].joints = (int*)simm_malloc(sizeof(int)*from[i].num_jnts);
       memcpy(to[i].joints, from[i].joints, sizeof(int)*from[i].num_jnts);
-      to[i].qs = (int*)simm_malloc(sizeof(int)*from[i].num_qs);
-      memcpy(to[i].qs, from[i].qs, sizeof(int)*from[i].num_qs);
+      to[i].qs = (GeneralizedCoord**)simm_malloc(sizeof(GeneralizedCoord*)*from[i].num_qs);
+      memcpy(to[i].qs, from[i].qs, sizeof(GeneralizedCoord*)*from[i].num_qs);
    }
 
    return to;
@@ -1280,8 +1724,8 @@ static MotionSequence* copy_motion(MotionSequence* from)
    }
    if (from->num_events > 0)
    {
-      to->event = (MotionEvent*)simm_malloc(sizeof(MotionEvent)*from->num_events);
-      memcpy(to->event, from->event, sizeof(MotionEvent)*from->num_events);
+      to->event = (smMotionEvent*)simm_malloc(sizeof(smMotionEvent)*from->num_events);
+      memcpy(to->event, from->event, sizeof(smMotionEvent)*from->num_events);
       for (j=0; j<from->num_events; j++)
          mstrcpy(&to->event[j].name, from->event[j].name);
    }
@@ -1295,18 +1739,21 @@ ModelStruct* copy_model(ModelStruct* ms)
 
    ModelStruct* copy = (ModelStruct*)simm_malloc(sizeof(ModelStruct));
    memcpy(copy, ms, sizeof(ModelStruct));
+   memset(&copy->save, 0, sizeof(ModelSave)); // saved version is not copied
 
    mstrcpy(&copy->name, ms->name);
    mstrcpy(&copy->forceUnits, ms->forceUnits);
    mstrcpy(&copy->lengthUnits, ms->lengthUnits);
    mstrcpy(&copy->HTRtranslationUnits, ms->HTRtranslationUnits);
 
+	for (i=0; i<2*GENBUFFER; i++)
+		if (ms->genc_help[i].text)
+			mstrcpy(&copy->genc_help[i].text, ms->genc_help[i].text);
+
    // copy pathptrs
    copy->pathptrs = NULL;
    // copy segment_drawing_order
    copy->segment_drawing_order = NULL;
-   // copy musclegroupsubmenu
-   copy->musclegroupsubmenu = NULL;
    // copy gencslider
    copy->gencslider.sl = NULL;
    copy->gencslider.numsliders = 0;
@@ -1334,58 +1781,37 @@ ModelStruct* copy_model(ModelStruct* ms)
       mstrcpy(&copy->motionfilename[i], ms->motionfilename[i]);
    mstrcpy(&copy->mocap_dir, ms->mocap_dir);
 
+	// Functions must be copied first so that all components that use them can
+	// get the appropriate pointer from the copied function array.
+   copy->function = copy_functions(ms->function, ms->func_array_size, &copy->func_array_size);
+
+	// Gencoords must be copied before joints because DOFs contain pointers
+	// to gencoords.
+   copy->gencgroup = copy_gencoord_groups(ms->gencgroup, ms->numgencgroups);
+   copy->gencgroup_array_size = ms->numgencgroups;
+   copy->gencoord = copy_gencoords(copy, ms->gencoord, ms->numgencoords);
+   copy->genc_array_size = ms->numgencoords;
+
    copy->worldobj = copy_world_objects(ms->worldobj, ms->numworldobjects);
    copy->world_array_size = ms->numworldobjects;
 
-   copy->joint = copy_joints(ms->joint, ms->numjoints, ms);
-   copy->joint_array_size = ms->numjoints;
-
+	// Segments have to be copied before joints, because of joint->in_seg_ground_path.
+   copy->seggroup = copy_segment_groups(ms->seggroup, ms->numseggroups);
+   copy->seggroup_array_size = ms->numseggroups;
    copy->segment = copy_segments(ms->segment, ms->numsegments);
    copy->segment_array_size = ms->numsegments;
 
+   copy->joint = copy_joints(copy, ms->joint, ms->numjoints);
+   copy->joint_array_size = ms->numjoints;
+
    copy->muscgroup = copy_muscle_groups(ms->muscgroup, ms->numgroups);
    copy->muscgroup_array_size = ms->numgroups;
-
-   copy->seggroup = copy_segment_groups(ms->seggroup, ms->numseggroups);
-   copy->seggroup_array_size = ms->numseggroups;
-
-   copy->gencgroup = copy_gencoord_groups(ms->gencgroup, ms->numgencgroups);
-   copy->gencgroup_array_size = ms->numgencgroups;
-
-   copy->gencoord = copy_gencoords(ms->gencoord, ms->numgencoords);
-   copy->genc_array_size = ms->numgencoords;
-
-   copy->function = copy_functions(ms->function, ms->func_array_size, &copy->func_array_size);
-
    copy_muscles(ms, copy);
 
    copy->ligament = copy_ligaments(ms->ligament, ms->numligaments);
    copy->ligament_array_size = ms->numligaments;
 
    copy_display_struct(&ms->dis, &copy->dis);
-
-   // copy save
-   nullify_muscle(&copy->save.default_muscle);
-
-   copy->save.muscle = NULL;
-   copy->save.musclepath = NULL;
-   copy->save.segment = NULL;
-   copy->save.joint = NULL;
-   copy->save.gencoord = NULL;
-   copy->save.function = NULL;
-   copy->save.muscgroup = NULL;
-   copy->save.wrapobj = NULL;
-   copy->save.wrapobjnames = NULL;
-   copy->save.muscwrap_associations = NULL;
-   copy->save.deform = NULL;
-   copy->save.marker = NULL;
-   copy->save.conspt_associations = NULL;
-   copy->save.constraintobj = NULL;
-   copy->save.constraintobjnames = NULL;
-
-   copy->dynamic_param_names = (char**)simm_malloc(sizeof(char*)*ms->num_dynamic_params);
-   for (i=0; i<ms->num_dynamic_params; i++)
-      mstrcpy(&copy->dynamic_param_names[i], ms->dynamic_param_names[i]);
 
    copy->contactPair = copy_contact_pairs(ms->contactPair, ms->numContactPairs);
    copy->contactPairArraySize = ms->numContactPairs;
@@ -1414,8 +1840,8 @@ ModelStruct* copy_model(ModelStruct* ms)
    return copy;
 }
 
-static ReturnCode copy_nondefault_dyn_params(MuscleStruct* from, MuscleStruct* to,
-					                              MuscleStruct* deffrom, MuscleStruct* defto)
+static ReturnCode copy_nondefault_dyn_params(dpMuscleStruct* from, dpMuscleStruct* to,
+					                              dpMuscleStruct* deffrom, dpMuscleStruct* defto)
 {
    int i;
 
@@ -1423,7 +1849,8 @@ static ReturnCode copy_nondefault_dyn_params(MuscleStruct* from, MuscleStruct* t
 
    if (to->num_dynamic_params > 0)
    {
-      to->dynamic_param_names = from->dynamic_param_names;
+      // A muscle's param name array is always the same as its default muscle's.
+      to->dynamic_param_names = defto->dynamic_param_names;
       to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
 
       if (to->dynamic_params == NULL)
@@ -1446,17 +1873,24 @@ static ReturnCode copy_nondefault_dyn_params(MuscleStruct* from, MuscleStruct* t
 }
 
 
-static ReturnCode copy_nonnull_dyn_params(MuscleStruct* from, MuscleStruct* to)
+/* This function copies the parameter names and all of the non-null values.
+ */
+static ReturnCode copy_nonnull_dyn_params(dpMuscleStruct* from, dpMuscleStruct* to)
 {
-   int i;
-
    to->num_dynamic_params = from->num_dynamic_params;
 
    if (to->num_dynamic_params > 0)
    {
-      to->dynamic_param_names = from->dynamic_param_names;
-      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
+      int i;
 
+      to->dynamic_param_names = (char**)simm_malloc(to->num_dynamic_params * sizeof(char*));
+      if (to->dynamic_param_names == NULL)
+         return code_bad;
+
+      for (i=0; i<to->num_dynamic_params; i++)
+         mstrcpy(&to->dynamic_param_names[i], from->dynamic_param_names[i]);
+
+      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
       if (to->dynamic_params == NULL)
          return code_bad;
 
@@ -1475,12 +1909,11 @@ static ReturnCode copy_nonnull_dyn_params(MuscleStruct* from, MuscleStruct* to)
    return code_fine;
 }
 
-/* ALLOC_FUNC: */
 
-ReturnCode alloc_func(SplineFunction** func, int size)
+ReturnCode alloc_func(dpFunction** func, int size)
 {
 
-   if ((*func = (SplineFunction*)simm_malloc(sizeof(SplineFunction))) == NULL)
+   if ((*func = (dpFunction*)simm_malloc(sizeof(dpFunction))) == NULL)
       return code_bad;
    if (((*func)->x = (double*)simm_malloc(size*sizeof(double))) == NULL)
       return code_bad;
@@ -1495,4 +1928,23 @@ ReturnCode alloc_func(SplineFunction** func, int size)
 
    return code_fine;
 
+}
+
+/* Given a gencoord struct, return the QStruct that has the same name */
+static dpQStruct* get_q_from_gencoord_dp(dpModelStruct* model, GeneralizedCoord *genc)
+{
+	int i;
+
+   if (model->q == NULL)
+      return NULL;
+
+	for (i=0; i<model->nq; i++)
+	{
+      if (&model->q[i] == NULL)
+         return NULL;
+		if (STRINGS_ARE_EQUAL(genc->name, model->q[i].name))
+			return &model->q[i];
+	}
+
+	return NULL;
 }

@@ -38,6 +38,7 @@
 #include "osimAnalysesDLL.h"
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 #include <SimTKcommon.h>
 
 
@@ -48,8 +49,14 @@
 namespace OpenSim { 
 
 class Model;
-class ActuatorSet;
+class ForceSet;
 
+/**
+ * This class implements static optimization to compute Muscle Forces and 
+ * activations. 
+ *
+ * @author Jeff Reinbolt
+ */
 class OSIMANALYSES_API StaticOptimization : public Analysis 
 {
 	OPENSIM_DECLARE_DERIVED(StaticOptimization, Analysis);
@@ -57,11 +64,11 @@ class OSIMANALYSES_API StaticOptimization : public Analysis
 // DATA
 //=============================================================================
 private:
-
+	int _numCoordinateActuators;
 protected:
-	/** Use actuator set from model. */
-	PropertyBool _useModelActuatorSetProp;
-	bool &_useModelActuatorSet;
+	/** Use force set from model. */
+	PropertyBool _useModelForceSetProp;
+	bool &_useModelForceSet;
 
 	PropertyDbl _activationExponentProp;
 	double &_activationExponent;
@@ -71,19 +78,22 @@ protected:
 
 	Storage *_activationStorage;
 	Storage *_forceStorage;
+	GCVSplineSet _statesSplineSet;
 
 	Array<int> _accelerationIndices;
 
 	SimTK::Vector _parameters;
 
-	bool _ownsActuatorSet;
-	ActuatorSet *_actuatorSet;
+	bool _ownsForceSet;
+	ForceSet* _forceSet;
 
 	double _optimizerDX;
 	std::string _optimizerAlgorithm;
 	int _printLevel;
 	double _convergenceCriterion;
 	int _maxIterations;
+
+	Model *_modelWorkingCopy;
 
 //=============================================================================
 // METHODS
@@ -116,10 +126,10 @@ public:
 	Storage* getActivationStorage();
 	Storage* getForceStorage();
 
-	bool getUseModelActuatorSet() { return _useModelActuatorSet; }
-	void setUseModelActuatorSet(bool aUseModelActuatorSet) { _useModelActuatorSet = aUseModelActuatorSet; }
+	bool getUseModelForceSet() { return _useModelForceSet; }
+	void setUseModelForceSet(bool aUseModelActuatorSet) { _useModelForceSet = aUseModelActuatorSet; }
 
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
 	void setActivationExponent(const double aExponent) { _activationExponent=aExponent; }
 	double getActivationExponent() const { return _activationExponent; }
 	void setUseMusclePhysiology(const bool useIt) { _useMusclePhysiology=useIt; }
@@ -127,19 +137,17 @@ public:
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
+ #ifndef SWIG
 	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+        begin(const SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(const SimTK::State& s );
 protected:
-	virtual int
-		record(double aT,double *aX,double *aY,double *aDYDT);
-
+    virtual int
+        record(const SimTK::State& s );
+#endif
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------

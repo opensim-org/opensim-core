@@ -39,6 +39,7 @@
 #include <OpenSim/Common/Storage.h>
 #include "ControlSet.h"
 #include "ControlLinear.h"
+#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 
 
 
@@ -220,8 +221,7 @@ operator=(const ControlSet &aSet)
  *
  * @param aForModelControls Flag indicating whether or not to get the size
  * for only model controls or all controls in the set.  Model controls are
- * controls that are involved in controlling a model; the number of model
- * controls should be the same as that returned by Model::getNumControls().
+ * controls that are involved in controlling a model; 
  * Example of non-model controls include the final time of a simulation or
  * an initial value for a joint angle; these quantities are for setting up
  * a simulation, they are not involved in controlling a model.  If
@@ -234,11 +234,9 @@ getSize(bool aForModelControls) const
 	if(!aForModelControls) return( Set<Control>::getSize() );
 
 	int i,n;
-	Control *control;
 	for(n=i=0;i<Set<Control>::getSize();i++) {
-		control = get(i);
-		if(control==NULL) continue;
-		if(control->getIsModelControl()) n++;
+		Control& control = get(i);
+		if(control.getIsModelControl()) n++;
 	}
 
 	return(n);
@@ -266,13 +264,11 @@ getControlList(const char *aType,Array<int> &rList,bool aForModelControls) const
 
 	int i;
 	int size = getSize(false);
-	Control *control;
 	for(i=0;i<size;i++) {
-		control = get(i);
-		if(control==NULL) continue;
-		if(aForModelControls) if(!control->getIsModelControl()) continue;
+		Control& control = get(i);
+		if(aForModelControls) if(!control.getIsModelControl()) continue;
 
-		if(control->getType()==aType) {
+		if(control.getType()==aType) {
 			rList.append(i);
 		}
 	}
@@ -307,13 +303,11 @@ setControlValues(double aT,const double aX[],
 {
 	int i,j;
 	int size = getSize(false);
-	Control *control;
 	for(i=j=0;j<size;j++) {
-		control = get(j);
-		if(control==NULL) continue;
-		if(aForModelControls) if(!control->getIsModelControl()) continue;
+		Control& control = get(j);
+		if(aForModelControls) if(!control.getIsModelControl()) continue;
 	
-		control->setControlValue(aT,aX[i]);
+		control.setControlValue(aT,aX[i]);
 		i++;
 	}
 	generateParameterMaps();
@@ -344,13 +338,11 @@ setControlValues(double aT,const Array<double> &aX,
 {
 	int i,n;
 	int size = getSize(false);
-	Control *control;
 	for(n=i=0;(n<aX.getSize())&&(i<size);i++) {
-		control = get(i);
-		if(control==NULL) continue;
-		if(aForModelControls) if(!control->getIsModelControl()) continue;
+		Control& control = get(i);
+		if(aForModelControls) if(!control.getIsModelControl()) continue;
 	
-		control->setControlValue(aT,aX[n]);
+		control.setControlValue(aT,aX[n]);
 		n++;
 	}
 	generateParameterMaps();
@@ -373,14 +365,12 @@ getControlValues(double aT,double rX[],
 {
 	// GET VALUES
 	int i,n;
-	Control *control;
 	int size = getSize(false);
 	for(n=i=0;i<size;i++) {
-		control = get(i);
-		if(control==NULL) continue;
-		if(aForModelControls) if(!control->getIsModelControl()) continue;
+		Control& control = get(i);
+		if(aForModelControls) if(!control.getIsModelControl()) continue;
 	
-		rX[n] = control->getControlValue(aT);
+		rX[n] = control.getControlValue(aT);
 		n++;
 	}
 }
@@ -405,14 +395,12 @@ getControlValues(double aT,Array<double> &rX,
 
 	// GET VALUES
 	int i;
-	Control *control;
 	int size = getSize(false);
 	for(i=0;i<size;i++) {
-		control = get(i);
-		if(control==NULL) continue;
-		if(aForModelControls) if(!control->getIsModelControl()) continue;
+		Control& control = get(i);
+		if(aForModelControls) if(!control.getIsModelControl()) continue;
 	
-		rX.append(control->getControlValue(aT));
+		rX.append(control.getControlValue(aT));
 	}
 }
 
@@ -432,12 +420,10 @@ getNumParameters(bool aForModelControls) const
 {
 	int i,n;
 	int size = getSize(false);
-	Control *control;
 	for(n=i=0;i<size;i++) {
-		control = get(i);
-		if(control==NULL) continue;
-		if(aForModelControls) if(!control->getIsModelControl()) continue;
-		n += control->getNumParameters();
+		Control& control = get(i);
+		if(aForModelControls) if(!control.getIsModelControl()) continue;
+		n += control.getNumParameters();
 	}
 	return(n);
 }
@@ -465,13 +451,11 @@ getParameterList(Array<int> &rList,bool aForModelControls) const
 
 	int i,j,sp,n;
 	int size = getSize(false);
-	Control *control;
 	for(sp=i=0;i<size;i++) {
-		control = get(i);
-		if(control==NULL) continue;
-		n = control->getNumParameters();
+		Control& control = get(i);
+		n = control.getNumParameters();
 		for(j=0;j<n;j++,sp++) {
-			if(aForModelControls) if(!control->getIsModelControl())
+			if(aForModelControls) if(!control.getIsModelControl())
 				continue;
 			rList.append(sp);
 		}
@@ -498,26 +482,24 @@ getParameterList(double aT,Array<int> &rList,
 
 	int i,j,n;
 	int size = getSize(false);
-	Control *control;
 	Array<int> list(-1);
 	for(n=i=0;i<size;i++) {
 
 		// GET CONTROL
-		control = get(i);
-		if(control==NULL) continue;
+		Control& control = get(i);
 
 		// ACTUATOR CONTROL?
-		if(aForModelControls) if(!control->getIsModelControl()) {
-			n += control->getNumParameters();
+		if(aForModelControls) if(!control.getIsModelControl()) {
+			n += control.getNumParameters();
 			continue;
 		}
 
 		// GET LIST
-		control->getParameterList(aT,list);
+		control.getParameterList(aT,list);
 		for(j=0;j<list.getSize();j++) {
 			rList.append(n+list[j]);
 		}
-		n += control->getNumParameters();
+		n += control.getNumParameters();
 	}	
 }
 //_____________________________________________________________________________
@@ -558,26 +540,24 @@ getParameterList(double aTLower,double aTUpper,Array<int> &rList,
 
 	int i,j,n;
 	int size = getSize(false);
-	Control *control;
 	Array<int> list(-1);
 	for(n=i=0;i<size;i++) {
 
 		// GET CONTROL
-		control = get(i);
-		if(control==NULL) continue;
+		Control& control = get(i);
 
 		// ACTUATOR CONTROL?
-		if(aForModelControls) if(!control->getIsModelControl()) {
-			n += control->getNumParameters();
+		if(aForModelControls) if(!control.getIsModelControl()) {
+			n += control.getNumParameters();
 			continue;
 		}
 
 		// GET LIST
-		control->getParameterList(aTLower,aTUpper,list);
+		control.getParameterList(aTLower,aTUpper,list);
 		for(j=0;j<list.getSize();j++) {
 			rList.append(n+list[j]);
 		}
-		n += control->getNumParameters();
+		n += control.getNumParameters();
 	}	
 }
 
@@ -602,15 +582,13 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
 	// VARIABLE DECLARATIONS
 	int i,p;
 	int size = getSize(false);
-	Control *control;
 
 	// NO LIST
 	if(aList==NULL) {
 		for(i=0;i<size;i++) {
-			control = get(i);
-			if(control==NULL) continue;	
-			for(p=0;p<control->getNumParameters();p++) {
-				rMins.append(control->getParameterMin(p));
+    		Control& control = get(i);
+			for(p=0;p<control.getNumParameters();p++) {
+				rMins.append(control.getParameterMin(p));
 			}
 		}
 
@@ -629,12 +607,11 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
 				x.print(cout);
 				continue;
 			}
-			control = get(c);
-			if(control==NULL) continue;
+			Control& control = get(c);
 		
 			// GET PARAMETER MIN
 			p = _ptpMap[sp];
-			rMins.append(control->getParameterMin(p));
+			rMins.append(control.getParameterMin(p));
 		}
 	}
 }
@@ -656,15 +633,13 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
 	// VARIABLE DECLARATIONS
 	int i,p;
 	int size = getSize(false);
-	Control *control;
 
 	// NO LIST
 	if(aList==NULL) {
 		for(i=0;i<size;i++) {
-			control = get(i);
-			if(control==NULL) continue;		
-			for(p=0;p<control->getNumParameters();p++) {
-				rMaxs.append(control->getParameterMax(p));
+    		Control& control = get(i);
+			for(p=0;p<control.getNumParameters();p++) {
+				rMaxs.append(control.getParameterMax(p));
 			}
 		}
 
@@ -683,12 +658,11 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
 				x.print(cout);
 				continue;
 			}
-			control = get(c);
-			if(control==NULL) continue;
+			Control& control = get(c);
 		
 			// GET PARAMETER MAX
 			p = _ptpMap[sp];
-			rMaxs.append(control->getParameterMax(p));
+			rMaxs.append(control.getParameterMax(p));
 		}
 	}
 }
@@ -712,16 +686,14 @@ getParameterValues(double rP[],const Array<int> *aList) const
 	// VARIABLE DECLARATIONS
 	int i,p;
 	int size = getSize(false);
-	Control *control;
 
 	// NO LIST
 	if(aList==NULL) {
 		int n;
 		for(n=i=0;i<size;i++) {
-			control = get(i);
-			if(control==NULL) continue;
-			for(p=0;p<control->getNumParameters();p++,n++) {
-				rP[n] = control->getParameterValue(p);
+    		Control& control = get(i);
+			for(p=0;p<control.getNumParameters();p++,n++) {
+				rP[n] = control.getParameterValue(p);
 			}
 		}
 
@@ -740,12 +712,11 @@ getParameterValues(double rP[],const Array<int> *aList) const
 				x.print(cout);
 				continue;
 			}
-			control = get(c);
-			if(control==NULL) continue;
+			Control& control = get(c);
 		
 			// GET PARAMETER MAX
 			p = _ptpMap[sp];
-			rP[i] = control->getParameterValue(p);
+			rP[i] = control.getParameterValue(p);
 		}
 	}
 }
@@ -767,15 +738,13 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
 	// VARIABLE DECLARATIONS
 	int i,p;
 	int size = getSize(false);
-	Control *control;
 
 	// NO LIST
 	if(aList==NULL) {
 		for(i=0;i<size;i++) {
-			control = get(i);
-			if(control==NULL) continue;
-			for(p=0;p<control->getNumParameters();p++) {
-				rP.append(control->getParameterValue(p));
+    		Control& control = get(i);
+			for(p=0;p<control.getNumParameters();p++) {
+				rP.append(control.getParameterValue(p));
 			}
 		}
 
@@ -794,12 +763,11 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
 				x.print(cout);
 				continue;
 			}
-			control = get(c);
-			if(control==NULL) continue;
+			Control& control = get(c);
 		
 			// GET PARAMETER MAX
 			p = _ptpMap[sp];
-			rP.append(control->getParameterValue(p));
+			rP.append(control.getParameterValue(p));
 		}
 	}
 }
@@ -820,15 +788,13 @@ setParameterValues(const double *aP,const Array<int> *aList)
 	// VARIABLE DECLARATIONS
 	int i,sp,p;
 	int size = getSize(false);
-	Control *control;
 
 	// NO LIST
 	if(aList==NULL) {
 		for(sp=i=0;i<size;i++) {
-			control = get(i);
-			if(control==NULL) continue;
-			for(p=0;p<control->getNumParameters();p++,sp++) {
-				control->setParameterValue(p,aP[sp]);
+    		Control& control = get(i);
+			for(p=0;p<control.getNumParameters();p++,sp++) {
+				control.setParameterValue(p,aP[sp]);
 			}
 		}
 
@@ -848,12 +814,11 @@ setParameterValues(const double *aP,const Array<int> *aList)
 				x.print(cout);
 				continue;
 			}
-			control = get(c);
-			if(control==NULL) continue;
+			Control& control = get(c);
 		
 			// SET PARAMETER
 			p = _ptpMap[sp];
-			control->setParameterValue(p,aP[i]);
+			control.setParameterValue(p,aP[i]);
 		}
 	}
 }
@@ -875,20 +840,18 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
 	// VARIABLE DECLARATIONS
 	int i,sp,p;
 	int size = getSize(false);
-	Control *control;
 
 	// NO LIST
 	if(aList==NULL) {
 		for(sp=i=0;i<size;i++) {
-			control = get(i);
-			if(control==NULL) continue;
-			for(p=0;p<control->getNumParameters();p++,sp++) {
+    		Control& control = get(i);
+			for(p=0;p<control.getNumParameters();p++,sp++) {
 				if(sp>=aP.getSize()) {
 					printf("ControlSet.setParameterValues: ERR- incorrect ");
 					printf("number of parameters.\n");
 					return;
 				}
-				control->setParameterValue(p,aP[sp]);
+				control.setParameterValue(p,aP[sp]);
 			}
 		}
 
@@ -914,12 +877,11 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
 				x.print(cout);
 				continue;
 			}
-			control = get(c);
-			if(control==NULL) continue;
+			Control& control = get(c);
 		
 			// SET PARAMETER
 			p = _ptpMap[sp];
-			control->setParameterValue(p,aP[i]);
+			control.setParameterValue(p,aP[i]);
 		}
 	}
 }
@@ -944,16 +906,14 @@ simplify(const PropertySet &aProperties)
 {
 	int i;
 	int size = getSize();
-	Control *control;
 	for(i=0;i<size;i++) {
 
 		// GET CONTROL
-		control = get(i);
-		if(control==0) continue;
+		Control& control = get(i);
 
 		// SIMPLIFY
 		try {
-			control->simplify(aProperties);
+			control.simplify(aProperties);
 		} catch(Exception x) {
 			x.print(cout);
 		}
@@ -974,18 +934,16 @@ filter(double aT)
 {
 	int i;
 	int size = getSize();
-	Control *control;
 	for(i=0;i<size;i++) {
 
 		// GET CONTROL
-		control = get(i);
-		if(control==0) continue;
+		Control& control = get(i);
 
 		// FILTER
 		try {
-			if (control->getFilterOn())
+			if (control.getFilterOn())
 			{
-				control->filter(aT);
+				control.filter(aT);
 			}
 		} catch(Exception x) {
 			x.print(cout);
@@ -1090,13 +1048,11 @@ generateParameterMaps()
 
 	int i,j;
 	int size = getSize(false);
-	Control *control;
 	for(i=0;i<size;i++) {
 
-		control = get(i);
-		if(control==NULL) continue;
+   		Control& control = get(i);
 
-		for(j=0;j<control->getNumParameters();j++) {
+		for(j=0;j<control.getNumParameters();j++) {
 			_ptcMap.append(i);
 			_ptpMap.append(j);
 		}

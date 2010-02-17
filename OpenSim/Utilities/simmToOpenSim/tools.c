@@ -21,7 +21,6 @@
       evaluate         : finds the current value of a reference equation (dof)
       error            : handles error messages
       setgencoord      : sets value of a gencoord, marks joint matrices dirty
-      findfuncnum      : finds function number which uses specified gencoord
       member           : checks an int array for a specified member
       change_filename_suffix : puts a new suffix on a filename
       message          : prints a message to stdout
@@ -44,23 +43,12 @@
 #include <stdarg.h>
 #include <errno.h>
 #include <ctype.h>
+#include <io.h>
 
 #define _POSIX_ 1
 
 #include <fcntl.h>
-
-#if defined(WIN32)
-   #include <time.h>
-	#include <direct.h>
-#elif defined(__linux__)
-   #include <time.h>
-	#include <sys/stat.h>
-	#include <sys/types.h>
-#else
-   #define _IEEE 1
-   #include <nan.h>
-   #include <sys/time.h>
-#endif
+#include <direct.h>
 
 #include "globals.h"
 #include "functions.h"
@@ -68,72 +56,10 @@
 
 
 /*************** DEFINES (for this file only) *********************************/
-#define STOP_EVENT 0x1000
-#define MAX_ITEMS_IN_QUEUE 101
-#define MAXKEYS 10
 #define BETA_VERSION 0
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
-static char key_file[] = "key.simm";
-static int key_offset[] = {11,8,6,10,9,11,8,9,7,9,10,8,11,7,10,8,6,9,7,11};
-static int key_shuffle[] = {14,15,2,4,13,17,1,19,12,7,11,18,10,6,5,8,3,9,16,0};
 static int last_index = -1;
-unsigned short hourglasses[][16] = {
-    {0x7FFE, 0x4002, 0x2004, 0x300C, 
-    0x2894, 0x2424, 0x2244, 0x2244, 
-    0x2344, 0x23C4, 0x27E4, 0x2FF4, 
-    0x3FFC, 0x3FFC, 0x4FF2, 0x7FFE},
-
-    {0x7FFE, 0x43C2, 0x2184, 0x300C, 
-    0x2814, 0x2424, 0x2244, 0x2244, 
-    0x22C4, 0x23C4, 0x27E4, 0x2FF4, 
-    0x3FFC, 0x2FF4, 0x47E2, 0x7FFE},
-
-    {0x7FFE, 0x47E2, 0x23C4, 0x308C, 
-    0x2814, 0x2424, 0x2244, 0x2244, 
-    0x22C4, 0x23C4, 0x27E4, 0x2FF4, 
-    0x3FFC, 0x27F4, 0x4182, 0x7FFE},
-
-    {0x7FFE, 0x4FE2, 0x27C4, 0x318C, 
-    0x2914, 0x2424, 0x2244, 0x2244, 
-    0x22C4, 0x23C4, 0x27E4, 0x2FF4, 
-    0x37FC, 0x23F4, 0x4082, 0x7FFE},
-
-    {0x7FFE, 0x4FF2, 0x27E4, 0x33CC, 
-    0x2914, 0x2424, 0x2244, 0x2244, 
-    0x2344, 0x23C4, 0x27E4, 0x2FF4, 
-    0x37FC, 0x21C4, 0x4002, 0x7FFE},
-
-    {0x7FFE, 0x4FFA, 0x27F4, 0x33EC, 
-    0x2994, 0x2424, 0x2244, 0x2244, 
-    0x22C4, 0x23C4, 0x27E4, 0x2FF4, 
-    0x37CC, 0x2084, 0x4002, 0x7FFE},
-
-    {0x7FFE, 0x5FFA, 0x2FF4, 0x37EC, 
-    0x2B94, 0x2424, 0x2244, 0x2244, 
-    0x2344, 0x23C4, 0x27E4, 0x2FF4, 
-    0x318C, 0x2004, 0x4002, 0x7FFE},
-
-    {0x7FFE, 0x7FFE, 0x3FF4, 0x37EC, 
-    0x2BD4, 0x2424, 0x2244, 0x2244, 
-    0x22C4, 0x23C4, 0x27E4, 0x2BD4, 
-    0x300C, 0x2004, 0x4002, 0x7FFE},
-
-    {0x7FFE, 0x7FFE, 0x3FFC, 0x3FFC, 
-    0x2FD4, 0x2424, 0x2244, 0x2244, 
-    0x2344, 0x23C4, 0x27E4, 0x2814, 
-    0x300C, 0x2004, 0x4002, 0x7FFE},
-
-    {0x7FFE, 0x7FFE, 0x3FFC, 0x3FFC, 
-    0x2FF4, 0x26E4, 0x2244, 0x2244, 
-    0x22C4, 0x23C4, 0x2424, 0x2814, 
-    0x300C, 0x2004, 0x4002, 0x7FFE},
-
-    {0x7FFE, 0x7FFE, 0x3FFC, 0x3FFC, 
-    0x2FF4, 0x27E4, 0x23C4, 0x23C4, 
-    0x2244, 0x2244, 0x2424, 0x2814, 
-    0x300C, 0x2004, 0x4002, 0x7FFE},
-};
 char* keys[] = {
 "null_key","null_key","null_key","null_key","null_key","null_key","null_key","null_key",
 "backspace_key","tab_key","null_key","null_key","null_key","return_key","enter_key",
@@ -165,30 +91,30 @@ char* keys[] = {
 
 
 /*************** EXTERNED VARIABLES (declared in another file) ****************/
+#if ! ENGINE
+extern HWND __mdiClientHwnd; // Windows handle to main SIMM window
+#endif
 
 
 /*************** PROTOTYPES for STATIC FUNCTIONS (for this file only) *********/
-static double calc_muscle_segment_velocity(int mod, int musc, MusclePoint *mp1, MusclePoint *mp2);
-static void decrypt(char ciphertext[], char cleartext[]);
 static SBoolean verify_date(int day, int month, int year);
 unsigned sysid(unsigned char id[16]);
 
-#if OPENSIM_CONVERTER
-#define ENGINE
+#if OPENSMAC
+#undef ENGINE
+#define ENGINE 1
 #endif
 
 /* MAKE_STRING_LOWER_CASE: */
 
 void make_string_lower_case(char str_buffer[])
 {
-
    char c;
    int curpos = 0;
 
    while ((c=str_buffer[curpos++]) != STRING_TERMINATOR)
       if (c >= 65 && c <= 91)
          str_buffer[curpos-1] += 32;
-
 }
 
 
@@ -196,27 +122,24 @@ void make_string_lower_case(char str_buffer[])
  * vector is defined by two points, which can be in different body segment
  * reference frames.
  */
-
-double calc_vector_length(int mod, double p1[], int frame1, double p2[], int frame2)
+double calc_vector_length(ModelStruct* ms, double p1[], int frame1, double p2[], int frame2)
 {
-
    double ans, x, p3[3];
 
    p3[0] = p1[0];
    p3[1] = p1[1];
    p3[2] = p1[2];
 
-   /* convert the start point into the end point's frame */
+   // Convert the start point into the end point's frame.
    if (frame1 != frame2)
-      convert(mod,p3,frame1,frame2);
+      convert(ms, p3, frame1, frame2);
 
    x = ((p2[0]-p3[0])*(p2[0]-p3[0]) + (p2[1]-p3[1])*(p2[1]-p3[1]) +
        (p2[2]-p3[2])*(p2[2]-p3[2]));
 
    ans = sqrt(x);
 
-   return (ans);
-
+   return ans;
 }
 
 
@@ -224,12 +147,9 @@ double calc_vector_length(int mod, double p1[], int frame1, double p2[], int fra
  * segment reference frames. The path consists of the list of body segments
  * in between the two specified frames.
  */
-
-int* get_path_between_frames(int mod, int frame1, int frame2)
+int* get_path_between_frames(ModelStruct* ms, int frame1, int frame2)
 {
-
-   return (model[mod]->pathptrs[model[mod]->numsegments*frame1+frame2]);
-
+   return (ms->pathptrs[ms->numsegments*frame1+frame2]);
 }
 
 
@@ -239,21 +159,19 @@ int* get_path_between_frames(int mod, int frame1, int frame2)
  * the joint is traversed forwards or backwards to get from the from_frame
  * to the to_frame. If the reference frames are not adjacent, it returns NULL.
  */
-
-int find_joint_between_frames(int mod, int from_frame, int to_frame, Direction* dir)
+int find_joint_between_frames(ModelStruct* ms, int from_frame, int to_frame, Direction* dir)
 {
-
    int i;
 
-   for (i=0; i<model[mod]->numjoints; i++)
+   for (i=0; i<ms->numjoints; i++)
    {
-      if (model[mod]->joint[i].from == from_frame && model[mod]->joint[i].to == to_frame)
+      if (ms->joint[i].from == from_frame && ms->joint[i].to == to_frame)
       {
          *dir = FORWARD;
          return i;
       }
 
-      if (model[mod]->joint[i].from == to_frame && model[mod]->joint[i].to == from_frame)
+      if (ms->joint[i].from == to_frame && ms->joint[i].to == from_frame)
       {
          *dir = INVERSE;
          return i;
@@ -261,189 +179,49 @@ int find_joint_between_frames(int mod, int from_frame, int to_frame, Direction* 
    }
 
    return ZERO;
-
 }
 
-#if ! OPENSIM_CONVERTER
-#if ! OPENSIM_BUILD
+#if ! CORTEX_PLUGIN && ! OPENSMAC && ! SIMMTOOPENSIM
 
-/* CALC_MUSCLE_TENDON_VELOCITY: Finds the velocity of a muscle-tendon unit.
- * Muscle-tendon velocity is the sum of the velocities of each muscle path
- * segment. This routine assumes that all gencoord velocities have already
- * been calculated.
- */
-double calc_muscle_tendon_velocity(int mod, int musc)
-{
-
-   int end, start;
-   double velocity = 0.0;
-   MuscleStruct* muscl = &model[mod]->muscle[musc];
-
-   evaluate_orig_movingpoints(mod, muscl);
-
-   /* NOTE:  For the time-being, check_wrapping_points() is #ifdef'd for the
-    *   GUI version of SIMM only.  This is only because it was going to take
-    *   quite a bit more effort to prepare various wrapping source files for
-    *   compilation into the non-GUI SIMM engine, and I needed to get a version
-    *   of 'scalemodel' to RIC sooner rather than later.  Eventaully we will
-    *   want to move check_wrapping_points() and its dependancies into the
-    *   non-GUI SIMM engine.  -- KMS 5/20/99
-    */
-   check_wrapping_points(model[mod], muscl);
-
-   evaluate_active_movingpoints(mod, muscl);
-
-   if (muscl->musclepoints->num_points < 2)
-      return 0.0;
-
-   for (start = 0; start < muscl->musclepoints->num_points - 1; start++)
-   {
-      end = start + 1;
-      velocity += calc_muscle_segment_velocity(mod,musc,muscl->musclepoints->mp[start],
-                                               muscl->musclepoints->mp[end]);
-   }
-
-   /* Normalize the velocity */
-
-   velocity /= (*muscl->optimal_fiber_length)*(*muscl->max_contraction_vel);
-
-   return velocity;
-
-}
-
-
-/* CALC_MUSCLE_SEGMENT_VELOCITY: calculates the velocity of one segment of a
- * muscle-tendon path. The velocity of one segment is equal to the velocity
- * of one end of the segment with respect to the other, dotted with a unit
- * vector in the direction of the segment. The velocity of one end of the
- * segment is the sum of that point's partial velocities with respect to each
- * generalized coordinate, multiplied by the derivative of the generalized
- * coordinate (the joint velocities). If the point you're finding the velocity
- * of is called P and the reference frame of the other end of the segment is A,
- * then the velocity of P in A is:
- * 
- *   A P          A P                                                         
- *    V  =  SUM  ( V   *  dq / dt)    n = number of generalized coordinates
- *         0<i<=n   q       i                                                
- *                   i
- * 
- * If M is a unit vector in the direction of the muscle segment, then the
- * velocity of the muscle segment, VM, is:
- * 
- *      A P
- *  VM = V  .  M
- * 
- * 
- * Combining these two equations, we get:
- * 
- *                A P                                                         
- *   VM  =  SUM  ( V   *  dq / dt)   .   M
- *         0<i<=n   q       i                                                
- *                   i
- * 
- *  or,
- * 
- *                  A P                                                         
- *   VM  =  SUM  ( ( V  .  M)  *  dq / dt)
- *         0<i<=n     q             i                                                
- *                     i
- * 
- * 
- * 
- *          A P                                                         
- *   since  -V  .  M  =  moment arm of muscle segment w.r.t. q
- *            q                                               i
- *             i
- * 
- *   we get:
- * 
- * 
- *                
- *   VM  =  SUM  (-ma   *  dq / dt)
- *         0<i<=n    q       i
- *                    i
- * 
- * 
- * So to find the velocity of the muscle segment, we just sum all of the
- * segment's moment arms, each multiplied by the velocity of the generalized
- * coordinate. To show this more clearly for just one generalized coordinate:
- *        ma = -dl/dq
- *         w =  dq/dt
- *   -ma * w =  dl/dt = muscle-tendon velocity
- */
-static double calc_muscle_segment_velocity(int mod, int musc, MusclePoint *mp1, MusclePoint *mp2)
-{
-
-   int i, frame1, frame2;
-   double genc_vel, velocity = 0.0;
-
-   frame1 = mp1->segment;
-   frame2 = mp2->segment;
-
-   // DKB Jan. 2008 -  with moving muscle points this is not necessarily = 0
-   //if (frame1 == frame2)
-   //   return (0.0);
-
-   for (i=0; i<model[mod]->numgencoords; i++)
-      model[mod]->muscle[musc].momentarms[i] = 0.0;
-
-   calc_segment_arms(mod, musc, mp1, mp2);
-
-   for (i=0; i<model[mod]->numgencoords; i++)
-   {
-      genc_vel = model[mod]->gencoord[i].velocity;
-      if (model[mod]->gencoord[i].type == rotation_gencoord)
-         genc_vel *= DTOR;
-      velocity += (-model[mod]->muscle[musc].momentarms[i] * genc_vel);
-   }
-
-   return (velocity);
-
-}
-
-#endif // OPENSIM_BUILD
-#endif // OPENSIM_CONVERTER
+#endif
 
 /* EVALUATE_DOF: This routine calculates the current value of a dof. It stores
  * the value inside the dof structure, and also returns the value. If the dof
  * is a constant, then the value is already stored in var->value.
  */
-
-double evaluate_dof(int mod, DofStruct* var)
+double evaluate_dof(ModelStruct* ms, DofStruct* var)
 {
-
    if (var->type == constant_dof)
-      return (var->value);
+      return var->value;
    else
    {
-      var->value = interpolate_spline(model[mod]->gencoord[var->gencoord].value,
-			       &model[mod]->function[var->funcnum],zeroth,1.0,1.0);
-      return (var->value);
+      var->value = interpolate_function(var->gencoord->value, var->function, zeroth, 1.0, 1.0);
+      return var->value;
    }
-
 }
 
-#ifndef ENGINE
+#if ! ENGINE
 
 void deiconify_message_window ()
 {
 #if ! NO_GUI
-
    int i, savedID = glutGetWindow();
 
    for (i = 0; i < root.numwindows; i++)
       if (root.window[i].win_parameters->id == root.messages.window_id)
          break;
-   
+
+   if (i == root.numwindows)
+      return;
+
    glutSetWindow(root.messages.window_id);
-   
+
    if (i < root.numwindows && root.window[i].state == WINDOW_ICONIC)
       glutShowWindow();
    else
       glutPopWindow();
-   
-   glutSetWindow(savedID);
 
+   glutSetWindow(savedID);
 #endif
 }
 
@@ -452,11 +230,10 @@ void deiconify_message_window ()
 /* ERROR: this routine prints an error message depending on a string
  * and error status that are passed in.
  */
-
 void error(ErrorAction action, char str_buffer[])
 {
 
-#ifndef ENGINE
+#if ! ENGINE && ! CORTEX_PLUGIN
    deiconify_message_window();
 #endif
 
@@ -485,7 +262,6 @@ void error(ErrorAction action, char str_buffer[])
 
 int find_next_active_field(Form* form, int current_field, TextFieldAction tfa)
 {
-
    int field, increment;
 
    if (tfa == goto_next_field)
@@ -493,20 +269,18 @@ int find_next_active_field(Form* form, int current_field, TextFieldAction tfa)
    else if (tfa == goto_previous_field)
       increment = form->numoptions - 1;
    else
-      return (current_field);
+      return current_field;
 
    field = (current_field+increment) % form->numoptions;
 
    while (field != current_field)
    {
       if ((form->option[field].active == yes) && (form->option[field].editable == yes))
-//      if (form->option[field].visible == yes)
-	 break;
+         break;
       field = (field+increment) % form->numoptions;
    }
 
-   return (field);
-
+   return field;
 }
 
 
@@ -517,29 +291,26 @@ int find_next_active_field(Form* form, int current_field, TextFieldAction tfa)
  * The matrices which use the dof in question, as stored in the jointnum[]
  * array for that dof, are marked.
  */
-#if OPENSIM_CONVERTER
-int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndConstraints)
+#if OPENSMAC
+int set_gencoord_value(ModelStruct* ms, GeneralizedCoord* gencoord, double value, SBoolean solveLoopsAndConstraints)
 {
    int i;
-   GeneralizedCoord* gc;
    SBoolean solveLoops, solveConstraints, sol;
-
-   gc = &model[mod]->gencoord[genc];
 
    /* check whether the gencoord value has changed.  If not, don't bother
     * updating anything. */
-   if ((DABS(value - gc->value) <= gc->tolerance))
+   if ((DABS(value - gencoord->value) <= gencoord->tolerance))
       return 0;
 
-   if (gc->type == rotation_gencoord)
-      checkGencoordRange(model[mod], genc, &value);
+   if (gencoord->type == rotation_gencoord)
+      checkGencoordRange(gencoord, &value);
 
-   if (gc->clamped == yes)
+   if (gencoord->clamped == yes)
    {
-      if (value < gc->range.start)
-	      value = gc->range.start;
-      else if (value > gc->range.end)
-	      value = gc->range.end;
+      if (value < gencoord->range.start)
+	      value = gencoord->range.start;
+      else if (value > gencoord->range.end)
+	      value = gencoord->range.end;
    }
 
    /* Resolve any closed loops in the model, then update the gencoord value
@@ -551,87 +322,93 @@ int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndCo
     */
    if (solveLoopsAndConstraints == yes)
    {
-      sol = solveLCAffectedByGC(model[mod], genc, &value);
-      model[mod]->constraintsOK = sol;// && model[mod]->constraintsOK;
-      model[mod]->loopsOK = sol;// && model[mod]->loopsOK;
+      sol = solveLCAffectedByGC(ms, gencoord, &value);
+      ms->constraintsOK = sol;// && ms->constraintsOK;
+      ms->loopsOK = sol;// && ms->loopsOK;
       
-      gc->value = value;
+      gencoord->value = value;
       if (sol == no)
          return 0;
    }
    else
    {
-      /* loops and constraints are not solved, copy new value into gc */
-      gc->value = value;
+      /* loops and constraints are not solved, copy new value into gencoord */
+      gencoord->value = value;
    }
 
-   for (i=0; i<gc->numjoints; i++)
-      invalidate_joint_matrix(model[mod],gc->jointnum[i]);
+   for (i=0; i<gencoord->numjoints; i++)
+      invalidate_joint_matrix(ms, &ms->joint[gencoord->jointnum[i]]);
 
    /* if the gencoord being changed is a translational dof, then we need to
     * invalidate the current bounds of the scene to prevent the model from
     * sliding behind the far clipping plane.  -- added KMS 10/7/99
     */
-   if (gc->type == translation_gencoord)
-      model[mod]->max_diagonal_needs_recalc = yes;
+   if (gencoord->type == translation_gencoord)
+      ms->max_diagonal_needs_recalc = yes;
 
    return 1;
 }
 #else
-int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndConstraints)
+int set_gencoord_value(ModelStruct* ms, GeneralizedCoord* gencoord, double value, SBoolean solveLoopsAndConstraints)
 {
    int i;
-   GeneralizedCoord* gc;
    SBoolean sol;
+   int genc = getGencoordIndex(ms, gencoord);
 
-   gc = &model[mod]->gencoord[genc];
-
-#if ! OPENSIM_CONVERTER
+#if ! OPENSMAC
    /* check whether the gencoord value has changed.  If not, don't bother
     * updating anything.  Also check the value in the model viewer window
     * to see whether that needs updating */
-   if ((DABS(value - gc->value) <= gc->tolerance)
-      && (DABS(value - model[mod]->gencslider.sl[genc].value) <= gc->tolerance))
+   if ((DABS(value - gencoord->value) <= gencoord->tolerance)
+#if ! CORTEX_PLUGIN
+      && (DABS(value - ms->gencslider.sl[genc].value) <= gencoord->tolerance)
+#endif
+      )
+   {
       return 0;
+   }
 #endif
 
-#ifndef ENGINE
-   if (gc->type == rotation_gencoord)
-      checkGencoordRange(model[mod], genc, &value);
+#if ! ENGINE && ! CORTEX_PLUGIN
+   if (gencoord->type == rotation_gencoord)
+      checkGencoordRange(gencoord, &value);
 
-   model[mod]->gencform.option[genc].use_alternate_colors = no;
-   model[mod]->gc_chpanel.checkbox[genc].use_alternate_colors = no;
+   ms->gencform.option[genc].use_alternate_colors = no;
+   ms->gc_chpanel.checkbox[genc].use_alternate_colors = no;
 #endif
 
-
-   if (gc->clamped == yes)
-//   if ((gc->clamped == yes) && (solveLoopsAndConstraints == yes)) //added dkb apr 16 2003
+   if (gencoord->clamped == yes)
+//   if ((gencoord->clamped == yes) && (solveLoopsAndConstraints == yes)) //added dkb apr 16 2003
    {
       // if the value in the motion file for a clamped gencoord is outside the gencoord range,
       // set the value to the closest range point
       // DKB TODO: set some kind of flag, colour etc? to let user know what is happening
-      if (value < gc->range.start)
+      if (value < gencoord->range.start)
       {
-         //model[mod]->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
-         model[mod]->gc_chpanel.checkbox[genc].use_alternate_colors = yes; ///dkb jul 2008
-	      value = gc->range.start;
+#if ! CORTEX_PLUGIN
+         //ms->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
+         ms->gc_chpanel.checkbox[genc].use_alternate_colors = yes; ///dkb jul 2008
+#endif
+	      value = gencoord->range.start;
       }
-      else if (value > gc->range.end)
+      else if (value > gencoord->range.end)
       {
-     // model[mod]->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
-         model[mod]->gc_chpanel.checkbox[genc].use_alternate_colors = yes;
-	      value = gc->range.end;
+#if ! CORTEX_PLUGIN
+     // ms->gencform.option[genc].use_alternate_colors = yes; ///dkb jul 2008
+         ms->gc_chpanel.checkbox[genc].use_alternate_colors = yes;
+#endif
+	      value = gencoord->range.end;
       }
    }
    else
    {
-#ifndef ENGINE
-      if (value < gc->range.start || value > gc->range.end)
-	      model[mod]->gencform.option[genc].use_alternate_colors = yes;
+#if ! ENGINE && ! CORTEX_PLUGIN
+      if (value < gencoord->range.start || value > gencoord->range.end)
+	      ms->gencform.option[genc].use_alternate_colors = yes;
 #endif
    }
 
-#ifndef ENGINE
+#if ! ENGINE
    /* Resolve any closed loops in the model, then update the gencoord value
     * (which may have been changed to close the loops).  If any other
     * gencoord values are changed to close loops, resolveClosedLoops takes
@@ -642,200 +419,57 @@ int set_gencoord_value(int mod, int genc, double value, SBoolean solveLoopsAndCo
 
    if (solveLoopsAndConstraints == yes)
    {
-      sol = solveLCAffectedByGC(model[mod], genc, &value);
-      model[mod]->constraintsOK = sol;// && model[mod]->constraintsOK;
-      model[mod]->loopsOK = sol;// && model[mod]->loopsOK;
+      sol = solveLCAffectedByGC(ms, gencoord, &value);
+      ms->constraintsOK = sol;// && ms->constraintsOK;
+      ms->loopsOK = sol;// && ms->loopsOK;
       
-      gc->value = value;
+      gencoord->value = value;
       if (sol == no)
          return 0;
    }
    else
    {
-      /* loops and constraints are not solved, copy new value into gc */
-      gc->value = value;
+      /* loops and constraints are not solved, copy new value into gencoord */
+      gencoord->value = value;
    }
 
-   if (value < gc->range.start || value > gc->range.end)
-      model[mod]->gencform.option[genc].use_alternate_colors = yes;
+#if ! CORTEX_PLUGIN
+   if (value < gencoord->range.start || value > gencoord->range.end)
+      ms->gencform.option[genc].use_alternate_colors = yes;
 
-   model[mod]->gencslider.sl[genc].value = value;
+   ms->gencslider.sl[genc].value = value;
 
-   storeDoubleInForm(&model[mod]->gencform.option[genc], gc->value, 3);
+   storeDoubleInForm(&ms->gencform.option[genc], gencoord->value, 3);
+#endif
 
-   for (i=0; i<gc->numjoints; i++)
-      invalidate_joint_matrix(model[mod],gc->jointnum[i]);
+   for (i=0; i<gencoord->numjoints; i++)
+      invalidate_joint_matrix(ms, &ms->joint[gencoord->jointnum[i]]);
 
    /* hack so that ground-reaction forces are shown only during a motion */
-   model[mod]->dis.applied_motion = NULL;
+   ms->dis.applied_motion = NULL;
 
    /* if the gencoord being changed is a translational dof, then we need to
     * invalidate the current bounds of the scene to prevent the model from
     * sliding behind the far clipping plane.  -- added KMS 10/7/99
     */
-   if (gc->type == translation_gencoord)
-      model[mod]->max_diagonal_needs_recalc = yes;
+   if (gencoord->type == translation_gencoord)
+      ms->max_diagonal_needs_recalc = yes;
 
 #endif
 
    return 1;
-
 }
-#endif /* OPENSIM_CONVERTER */
+#endif /* OPENSMAC */
 
 
-
-void set_gencoord_velocity(int mod, int genc, double value)
+void set_gencoord_velocity(ModelStruct* ms, GeneralizedCoord* gencoord, double value)
 {
-
-   model[mod]->gencoord[genc].velocity = value;
-
+   gencoord->velocity = value;
 }
-
-
-void evaluate_orig_movingpoints(int mod, MuscleStruct *muscle)
-{
-   int i, j, m, func;
-   double value;
-   MusclePathStruct *path = muscle->musclepoints;
-
-
-   if (path->num_orig_points < 0)
-      return;
-
-   // the original points
-   for (i = 0; i < path->num_orig_points; i++)
-   {
-      func = path->mp_orig[i].fcn_index[XX];
-      if (func != INVALID_FUNCTION)   // if is a function
-      {
-         value = model[mod]->gencoord[path->mp_orig[i].gencoord[XX]].value;
-         path->mp_orig[i].point[XX] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-      }
-
-      func = path->mp_orig[i].fcn_index[YY];
-      if (func != INVALID_FUNCTION)
-      {
-         value = model[mod]->gencoord[path->mp_orig[i].gencoord[YY]].value;
-         path->mp_orig[i].point[YY] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-      }
-
-      func = path->mp_orig[i].fcn_index[ZZ];
-      if (func != INVALID_FUNCTION)
-      {
-         value = model[mod]->gencoord[path->mp_orig[i].gencoord[ZZ]].value;
-         path->mp_orig[i].point[ZZ] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-      }
-
-      path->mp_orig[i].ground_pt[XX] = path->mp_orig[i].point[XX];
-      path->mp_orig[i].ground_pt[YY] = path->mp_orig[i].point[YY];
-      path->mp_orig[i].ground_pt[ZZ] = path->mp_orig[i].point[ZZ];
-      convert(mod,path->mp_orig[i].ground_pt,path->mp_orig[i].segment, model[mod]->ground_segment);
-
-   }
-
-}
-
-void evaluate_active_movingpoints(int mod, MuscleStruct *muscle)
-{
-   int i, j, m, func;
-   double value;
-
-   // any other points
-   // DKB TODO: check functions 
-   if (muscle->musclepoints == NULL)
-      return;
-
-   for (i = 0; i < muscle->musclepoints->num_points; i++)
-   {
-      func = muscle->musclepoints->mp[i]->fcn_index[XX];
-      if (func != INVALID_FUNCTION)
-      {
-         value = model[mod]->gencoord[muscle->musclepoints->mp[i]->gencoord[XX]].value;
-         muscle->musclepoints->mp[i]->point[XX] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-      }
-
-      func = muscle->musclepoints->mp[i]->fcn_index[YY];
-      if (func != INVALID_FUNCTION)
-      {
-         value = model[mod]->gencoord[muscle->musclepoints->mp[i]->gencoord[YY]].value;
-         muscle->musclepoints->mp[i]->point[YY] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-      }
-
-      func = muscle->musclepoints->mp[i]->fcn_index[ZZ];
-      if (func != INVALID_FUNCTION)
-      {
-         value = model[mod]->gencoord[muscle->musclepoints->mp[i]->gencoord[ZZ]].value;
-         muscle->musclepoints->mp[i]->point[ZZ] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-      }
-      muscle->musclepoints->mp[i]->ground_pt[XX] = muscle->musclepoints->mp[i]->point[XX];
-      muscle->musclepoints->mp[i]->ground_pt[YY] = muscle->musclepoints->mp[i]->point[YY];
-      muscle->musclepoints->mp[i]->ground_pt[ZZ] = muscle->musclepoints->mp[i]->point[ZZ];
-      convert(mod,muscle->musclepoints->mp[i]->ground_pt,muscle->musclepoints->mp[i]->segment, model[mod]->ground_segment);
-   }
-
-}
-
-void evaluate_ligament_movingpoints(int mod)
-{
-   int i, j, m, func;
-   double value;
-   ModelStruct* ms = model[mod];
-
-   for (m = 0; m < ms->numligaments; m++)
-   {
-      for (i = 0; i < ms->ligament[m].numlines; i++)
-      {
-         for (j = 0; j < ms->ligament[m].line[i].numpoints; j++)
-         {
-            func = ms->ligament[m].line[i].pt[j].fcn_index[XX];
-            if (func != INVALID_FUNCTION)
-            {
-               value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[XX]].value;
-               ms->ligament[m].line[i].pt[j].point[XX] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-            }
-            ms->ligament[m].line[i].pt[j].ground_pt[XX] = ms->ligament[m].line[i].pt[j].point[XX];
-
-            func = ms->ligament[m].line[i].pt[j].fcn_index[YY];
-            if (func != INVALID_FUNCTION)
-            {
-               value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[YY]].value;
-               ms->ligament[m].line[i].pt[j].point[YY] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-            }
-            ms->ligament[m].line[i].pt[j].ground_pt[YY] = ms->ligament[m].line[i].pt[j].point[YY];
-
-            func = ms->ligament[m].line[i].pt[j].fcn_index[ZZ];
-            if (func != INVALID_FUNCTION)
-            {
-               value = model[mod]->gencoord[ms->ligament[m].line[i].pt[j].gencoord[ZZ]].value;
-               ms->ligament[m].line[i].pt[j].point[ZZ] = interpolate_spline(value, &model[mod]->function[func], zeroth, 1.0, 1.0);
-            }
-            ms->ligament[m].line[i].pt[j].ground_pt[ZZ] = ms->ligament[m].line[i].pt[j].point[ZZ];
-         }
-      }
-   }
-}
-
-/* FINDFUNCNUM: given the number of a generalized coordinate (dof), this
- * routine returns the number of the first function which has that dof
- * as the independent parameter.
- */
-
-int findfuncnum(DofStruct dof, int gc)
-{
-
-   if (dof.type == function_dof && dof.gencoord == gc)
-      return (dof.funcnum);
-
-   return (-1);
-
-}
-
 
 
 char* get_suffix(char str[])
 {
-
    int cp = 0;
 
    cp = strlen(str) - 1;
@@ -844,10 +478,9 @@ char* get_suffix(char str[])
       cp--;
 
    if (cp == 0)
-      return (NULL);
+      return NULL;
 
-   return (&str[cp+1]);
-
+   return &str[cp+1];
 }
 
 
@@ -859,8 +492,7 @@ char* get_suffix(char str[])
  * input = "foo", suffix = "bar" -------------> output = "foo.bar"
  * input = "foo.bar.tree", suffix = "rock" ---> output = "foo.bar.rock"
  */
-
-void change_filename_suffix(char input[], char output[], char suffix[])
+void change_filename_suffix(const char input[], char output[], const char suffix[], int outputSize)
 {
    int cp;
 
@@ -872,7 +504,7 @@ void change_filename_suffix(char input[], char output[], char suffix[])
 	if (cp == 0)
 	{
 		if (suffix)
-			sprintf(output,"%s.%s", input, suffix);
+			sprintf(output, "%s.%s", input, suffix);
 		else
 			strcpy(output, input);
 	}
@@ -892,14 +524,27 @@ void change_filename_suffix(char input[], char output[], char suffix[])
    }
 }
 
-#ifdef ENGINE
+#if ENGINE || CORTEX_PLUGIN
 #define NO_GUI 1
 #endif
 
 void message(char message_str[], int format, int xoffset)
 {
-#if NO_GUI
-
+#if OPENSMAC
+	static int overwritable = 0;
+   if (overwritable || (format & OVERWRITE_LAST_LINE))
+   {
+		add_line_to_converter_dialog(message_str, 1);
+   }
+	else
+	{
+		add_line_to_converter_dialog(message_str, 0);
+	}
+	if (format & OVERWRITABLE)
+		overwritable = 1;
+	else
+		overwritable = 0;
+#elif NO_GUI
    printf("%s\n", message_str);
    fflush(stdout);
 
@@ -941,7 +586,7 @@ void message(char message_str[], int format, int xoffset)
    if (hp->num_lines < hp->num_lines_malloced)
    {
       nl = hp->num_lines;
-      (void)mstrcpy(&hp->line[nl].text,message_str);
+      mstrcpy(&hp->line[nl].text,message_str);
       hp->line[nl].format = format;
       hp->line[nl].xoffset = xoffset;
       hp->num_lines++;
@@ -961,14 +606,14 @@ void message(char message_str[], int format, int xoffset)
          hp->line[i].xoffset = hp->line[i+1].xoffset;
       }
       nl = hp->num_lines_malloced - 1;
-      (void)mstrcpy(&hp->line[nl].text,message_str);
+      mstrcpy(&hp->line[nl].text,message_str);
       hp->line[nl].format = format;
       hp->line[nl].xoffset = xoffset;
    }
 
    hp->sl.max_value = hp->num_lines*20.0;
    hp->sl.value = hp->sl.min_value;
-   hp->starting_line = HELP_WINDOW_TEXT_Y_SPACING*MAX(0,hp->num_lines-hp->lines_per_page);
+   hp->starting_line = HELP_WINDOW_TEXT_Y_SPACING * _MAX(0,hp->num_lines-hp->lines_per_page);
 
    draw_message_window(NULL,NULL);
 
@@ -993,19 +638,19 @@ void message(char message_str[], int format, int xoffset)
 public int simm_printf (SBoolean hilite_text, const char* format, ...)
 {
    static char sMessageBuf[CHARBUFFER];
-   
+
    va_list ap;
    int n, simmMsgFormat = 0;
-   
+
    va_start(ap, format);
    n = vsprintf(msg, format, ap);
    va_end(ap);
 
-#ifndef ENGINE
+#if ! ENGINE && ! CORTEX_PLUGIN
    if (hilite_text)
    {
       simmMsgFormat += HIGHLIGHT_TEXT;
-      
+
       deiconify_message_window();
    }
 #endif
@@ -1013,57 +658,52 @@ public int simm_printf (SBoolean hilite_text, const char* format, ...)
    if (strchr(msg, '\n'))
    {
       char* p = strtok(msg, "\n");
-      
+
       if (strlen(sMessageBuf) > 0)
       {
          if (p)
             strcat(sMessageBuf, p);
-         
+
          message(sMessageBuf, simmMsgFormat, DEFAULT_MESSAGE_X_OFFSET);
-         
+
          sMessageBuf[0] = '\0';
       }
       else if (p)
          message(p, simmMsgFormat, DEFAULT_MESSAGE_X_OFFSET);
-      
+
       if (p)
          for (p = strtok(NULL, "\n"); p; p = strtok(NULL, "\n"))
             message(p, simmMsgFormat, DEFAULT_MESSAGE_X_OFFSET);
    }
    else
       strcat(sMessageBuf, msg);
-   
+
    return n;
 }
 
 
-
-SBoolean gencoord_in_path(int mod, int frame1, int frame2, int genc)
+SBoolean gencoord_in_path(ModelStruct* ms, int frame1, int frame2, GeneralizedCoord* gencoord)
 {
-
    int i, j, joint;
    int* path;
 
-   path = GET_PATH(mod,frame1,frame2);
+   path = GET_PATH(ms, frame1, frame2);
 
-   for (i=0; path[i] != model[mod]->numjoints+1; i++)
+   for (i=0; path[i] != ms->numjoints + 1; i++)
    {
       joint = ABS(path[i]) - 1;
       for (j=0; j<6; j++)
-         if (model[mod]->joint[joint].dofs[j].type == function_dof)
-            if (model[mod]->joint[joint].dofs[j].gencoord == genc)
-               return (yes);
+         if (ms->joint[joint].dofs[j].type == function_dof)
+            if (ms->joint[joint].dofs[j].gencoord == gencoord)
+               return yes;
    }
 
-   return (no);
-
+   return no;
 }
-
 
 
 void print_4x4matrix(double matrix[][4])
 {
-
    int i, j;
 
    for (i=0; i<4; i++)
@@ -1072,11 +712,10 @@ void print_4x4matrix(double matrix[][4])
          printf("%8.5lf ", matrix[i][j]);
       printf("\n");
    }
-
 }
 
 
-#ifndef ENGINE
+#if ! ENGINE
 ToolStruct* register_tool(int struct_size, unsigned int event_mask,
 			  void (*event_handler)(SimmEvent),
 			  void (*command_handler)(char*),
@@ -1116,25 +755,27 @@ ToolStruct* register_tool(int struct_size, unsigned int event_mask,
 #endif
 
 
-void strcat3(char dest[], char str1[], char str2[], char str3[])
+void strcat3(char dest[], const char str1[], const char str2[], const char str3[], int destSize)
 {
-
-   (void)strcpy(dest,str1);
-   (void)strcat(dest,str2);
-   (void)strcat(dest,str3);
-
+   if (dest && str1)
+   {
+      (void)strcpy(dest, str1);
+      if (str2)
+         (void)strcat(dest, str2);
+      if (str3)
+         (void)strcat(dest, str3);
+   }
 }
 
-
-
+#if ! MEMORY_LEAK
 /* MSTRCPY: this routine is like strcpy(), but it first mallocs space for
  * the copy of the string, and frees any space the destination pointer used
  * to point to.
  */
-
 ReturnCode mstrcpy(char* dest_str[], const char original_str[])
 {
    char* p;
+   int len;
 
 #if 0
    if (*dest_str == original_str)
@@ -1149,7 +790,9 @@ ReturnCode mstrcpy(char* dest_str[], const char original_str[])
       return code_fine;
    }
 
-   p = (char*) simm_malloc(STRLEN(original_str) * sizeof(char));
+   len = STRLEN(original_str);
+
+   p = (char*)simm_malloc(len * sizeof(char));
 
 	if (p == NULL)
    {
@@ -1157,43 +800,38 @@ ReturnCode mstrcpy(char* dest_str[], const char original_str[])
       return code_bad;
    }
 
-   strcpy(p, original_str);
+   (void)strcpy(p, original_str);
 
    *dest_str = p;
 
    return code_fine;
 }
-
+#endif
 
 
 /* MSTRCAT: this routine is like strcat(), but it first mallocs space for
  * the copy of the string.
  */
-
 ReturnCode mstrcat(char* old_str[], const char append_str[])
 {
-
    int new_size;
    ReturnCode rc;
 
    new_size = strlen(*old_str) + strlen(append_str) + 1;
 
-   if ((*old_str = (char*)simm_realloc(*old_str,new_size*sizeof(char),&rc)) == NULL)
-      return (code_bad);
+   if ((*old_str = (char*)simm_realloc(*old_str, new_size*sizeof(char), &rc)) == NULL)
+      return code_bad;
 
-   (void)strcat(*old_str,append_str);
+   (void)strcat(*old_str, append_str);
 
-   return (code_fine);
-
+   return code_fine;
 }
 
 #ifndef NO_GUI
-#ifndef ENGINE
+#if ! ENGINE
 
-void draw_title_area(WindowParams* win_params, ModelStruct* ms, PlotStruct* ps,
-		     int title_mask)
+void draw_title_area(WindowParams* win_params, ModelStruct* ms, PlotStruct* ps, int title_mask)
 {
-
    simm_color(TOOL_TITLE_AREA_BACKGROUND);
    glRecti(win_params->vp.x1, win_params->vp.y2-TITLE_AREA_HEIGHT,
 	   win_params->vp.x2+1, win_params->vp.y2+1);
@@ -1213,9 +851,9 @@ void draw_title_area(WindowParams* win_params, ModelStruct* ms, PlotStruct* ps,
       glRasterPos2i(win_params->vp.x1+15, win_params->vp.y2-23);
       glueDrawString("Model: ");
       if (ms == NULL)
-	 glueDrawString("none");
+         glueDrawString("none");
       else
-	 glueDrawString(ms->name);
+         glueDrawString(ms->name);
    }
 
    if (title_mask & SHOW_PLOT)
@@ -1248,9 +886,7 @@ void draw_title_area(WindowParams* win_params, ModelStruct* ms, PlotStruct* ps,
       root.help_selector.origin.y = win_params->vp.y2-TITLE_AREA_HEIGHT+5;
       draw_menu(&root.help_selector);
    }
-
 }
-
 
 
 typedef struct {
@@ -1277,14 +913,14 @@ static void model_menu_cb(int item, void* userData)
 
     for (i=0; i<MODELBUFFER; i++)
     {
-       if (model[i] == NULL)
+       if (gModel[i] == NULL)
           continue;
        if (++numstructs == item)
           break;
     }
     if (i == MODELBUFFER)
        return;
-    data->params.struct_ptr = (void*)(model[i]);
+    data->params.struct_ptr = (void*)(gModel[i]);
 
     if (data->titleAreaCB)
         data->titleAreaCB(MODEL_SELECTED, &data->params);
@@ -1316,14 +952,14 @@ static void plot_menu_cb(int item, void* userData)
             return;
         for (i=0; i<PLOTBUFFER; i++)
         {
-            if (plot[i] == NULL)
+            if (gPlot[i] == NULL)
                 continue;
             if (++numstructs == item)
                 break;
         }
         if (i == PLOTBUFFER)
             return;
-        data->params.struct_ptr = (void*)(plot[i]);
+        data->params.struct_ptr = (void*)(gPlot[i]);
     }
         
     if (data->titleAreaCB)
@@ -1425,59 +1061,6 @@ int check_title_area(int title_mask, int mx, int my, WindowParams* win_params,
 #endif /* ! NO_GUI */
 #endif /* ENGINE */
 
-#if !defined(WIN32) && !defined(__linux__) /* ==== TEMPORARILY COMMENTED-OUT TO COMPILE FOR WIN32 AND LINUX */
-
-static struct timeval start_tp;
-static struct timezone start_tzp;
-struct timeval end_tp;
-struct timezone end_tzp;
-
-void start_timer(void)
-{
-
-   (void)gettimeofday(&start_tp,&start_tzp);
-
-}
-
-
-
-void stop_timer(void)
-{
-
-   (void)gettimeofday(&end_tp,&end_tzp);
-
-}
-
-
-
-void print_duration(char text_string[])
-{
-
-   long duration;
-
-   duration = ((double)end_tp.tv_sec - (double)start_tp.tv_sec) * 1000000;
-   duration += ((double)end_tp.tv_usec - (double)start_tp.tv_usec);
-   printf("%40s\n",text_string);
-   printf("elapsed time: %10.6lf sec.\n", (double)duration / 1000000.0);
-
-}
-
-
-
-void print_time(void)
-{
-
-   struct timeval tp;
-   struct timezone tzp;
-
-   (void)gettimeofday(&tp,&tzp);
-
-   printf("time stamp: %d.%6d\n", (int)tp.tv_sec, (int)tp.tv_usec);
-
-}
-#endif /* WIN32 */
-
-
 
 void make_time_string(char** time_string)
 {
@@ -1486,44 +1069,9 @@ void make_time_string(char** time_string)
    strftime(buffer, CHARBUFFER, "%m/%d/%Y %I:%M:%S %p", localtime(&t));
    
    mstrcpy(time_string, buffer);
-   
-#if 0
-   
-   struct timeval tp;
-   struct timezone tzp;
-   struct tm* cur_tm;
-   char tmpbuf[20];
-
-/* Get the current time */
-
-   (void)gettimeofday(&tp,&tzp);
-
-/* Convert the raw time data into the current date and time */
-
-   cur_tm = localtime((const time_t*)&tp.tv_sec);
-
-/* Format the date and time in the time_string */
-
-   (void)sprintf(buffer,"%d/", cur_tm->tm_mon+1);
-
-   (void)sprintf(tmpbuf,"%d/%d  %2d:", cur_tm->tm_mday, cur_tm->tm_year, cur_tm->tm_hour);
-   (void)strcat(buffer,tmpbuf);
-
-   if (cur_tm->tm_min < 10)
-      (void)strcat(buffer,"0");
-   (void)sprintf(tmpbuf,"%d:", cur_tm->tm_min);
-   (void)strcat(buffer,tmpbuf);
-
-   if (cur_tm->tm_sec < 10)
-      (void)strcat(buffer,"0");
-   (void)sprintf(tmpbuf,"%d", cur_tm->tm_sec);
-   (void)strcat(buffer,tmpbuf);
-
-   (void)mstrcpy(time_string,buffer);
-#endif
-
 }
 
+#if ! SIMMTOOPENSIM && ! OPENSMAC
 
 /* CONVERT_STRING: this routine scans a string and converts all special
  * characters into underscores. A special character is any character
@@ -1533,21 +1081,12 @@ void make_time_string(char** time_string)
  * character. The resulting string is one token, and can therefore be used
  * as a variable name in SIMM-written C code.
  */
-
 void convert_string(char str[], SBoolean prependUnderscore)
 {
-
    int i, len;
 
    len = strlen(str);
 
-#if OPENSIM_BUILD
-   for (i = 0; i < len; i++)
-   {
-	   if (str[i]=='>' || str[i]=='<' || str[i]=='&')
-	 	   str[i]='_';
-   }
-#else
    for (i = 0; i < len; i++)
    {
       if (str[i] >= 97 && str[i] <= 122)  /* lowercase letters */
@@ -1566,13 +1105,13 @@ void convert_string(char str[], SBoolean prependUnderscore)
          str[i] = str[i-1];
       str[0] = '_';
    }
-#endif
 }
+
+#endif
 
 /* convertSpacesInString: this routine scans a string and converts all spaces
  * into underscores.
  */
-
 void convertSpacesInString(char str[])
 {
 
@@ -1586,18 +1125,16 @@ void convertSpacesInString(char str[])
 
 }
 
-#ifndef ENGINE
+#if ! ENGINE
+
 void simm_color(int index)
 {
-
    glColor3fv(root.color.cmap[index].rgb);
-
 }
 
 
 void set_hourglass_cursor(double percent)
 {
-
    int index, num_cursors = 11, new_cursor = 20; 
    GLshort junk = 0xfff;
 
@@ -1609,9 +1146,9 @@ void set_hourglass_cursor(double percent)
    {
       index = percent*num_cursors/100.0;
       if (index < 0)
-	 index = 0;
+         index = 0;
       if (index >= num_cursors)
-	 index = num_cursors - 1;
+         index = num_cursors - 1;
    }
 
    if (index == last_index)
@@ -1623,247 +1160,7 @@ void set_hourglass_cursor(double percent)
        glutSetCursor(GLUT_CURSOR_WAIT);
 
    last_index = index;
-
 }
-
-
-#ifndef WIN32
-
-void verify_key(void)
-{
-
-   int i, day, month, year;
-   FILE* fp;
-   char userkey[21], cleartext[21], idtext[9], datetext[3];
-   unsigned sid;
-   SBoolean read_one, valid_id, valid_key, success;
-   struct timeval tp;
-   struct timezone tzp;
-   struct tm* cur_tm;
-
-   sid = sysid(0);
-
-   (void)sprintf(idtext,"%8x", sid);
-   for (i=0; i<8; i++)
-      if (idtext[i] == ' ')
-	 idtext[i] = '0';
-
-   printf("Machine id: %s\n\n", idtext);
-
-   (void)gettimeofday(&tp,&tzp);
-
-   cur_tm = localtime((const time_t*)&tp.tv_sec);
-
-   printf("Today's date: %2d/%2d/%2d\n\n", cur_tm->tm_mon+1, cur_tm->tm_mday,
-	  cur_tm->tm_year+1900);
-
-   (void)strcpy(buffer,root.simm_dir);
-   (void)strcat(buffer,key_file);
-
-#if 0
-   pipe_included = yes;
-   printf("Compile time: %s %s\n\n", __TIME__, __DATE__);
-   if (cur_tm->tm_year == 99 && cur_tm->tm_mon < 9)
-   {
-      valid_key = yes;
-      return;
-   }
-   else
-   {
-      valid_key = no;
-      printf("This beta version of SIMM has expired. Call Pete for details.\n");
-      exit(0);
-   }
-#endif
-
-   if ((fp = simm_fopen(buffer,"r")) == NULL)
-   {
-      fprintf(stderr,"Unable to open SIMM key file: %s\n", buffer);
-      exit(0);
-   }
-
-   for (i=0, read_one = no, valid_id = no, valid_key = no; i<MAXKEYS; i++)
-   {
-      if (fscanf(fp,"%20s", userkey) != 1)
-         break;
-      
-      read_one = yes;
-      
-      decrypt(userkey,cleartext);
-      
-      for (i=0, success = yes; i<8; i++)
-      {
-         if (cleartext[i] != idtext[i])
-         {
-            success = no;
-            break;
-         }
-      }
-      if (success == yes)
-      {
-         valid_id = yes;
-      }
-      else
-      {
-         valid_id = no;
-         continue;
-      }
-
-      datetext[0] = cleartext[8];
-      datetext[1] = cleartext[9];
-      datetext[2] = STRING_TERMINATOR;
-      (void)sscanf(datetext,"%d", &month);
-
-      datetext[0] = cleartext[10];
-      datetext[1] = cleartext[11];
-      (void)sscanf(datetext,"%d", &day);
-
-      datetext[0] = cleartext[12];
-      datetext[1] = cleartext[13];
-      (void)sscanf(datetext,"%d", &year);
-
-      if ((verify_date(day,month,year) == yes)
-#if BETA_VERSION
-	  && (((cur_tm->tm_year == 99) && (cur_tm->tm_mon < 11)) ||
-	  ((cur_tm->tm_year == 100) && (cur_tm->tm_mon < 2)))
-#endif
-	  )
-      {
-         valid_key = yes;
-      }
-      else
-      {
-         valid_key = no;
-         continue;
-      }
-      
-      if (STRINGS_ARE_EQUAL(&cleartext[16],"PIPE"))
-      {
-         pipe_included = yes;
-      }
-      else if (STRINGS_ARE_EQUAL(&cleartext[16],"NOTP"))
-      {
-         pipe_included = no;
-      }
-      else /* Is either a bad, or pre-Y2K, password */
-      {
-         valid_key = no;
-         valid_id = no;
-         continue;
-      }
-   }
-
-   (void)fclose(fp);
-
-   if (valid_key == yes)
-      return;
-
-   if (read_one == no)
-   {
-      fprintf(stderr,"Error reading key from file %s\n", buffer);
-      exit(0);
-   }
-
-   if (valid_id == yes)
-   {
-      fprintf(stderr,"This version of SIMM has expired.\n");
-      exit(0);
-   }
-
-   fprintf(stderr,"The password key in %s is invalid.\nYou must enter a valid one in order to use SIMM on this workstation.\nCall the SIMM technical support line for details.\n", buffer);
-	    exit(0);
-
-}
-#endif /* WIN32 */
-
-
-static void decrypt(char ciphertext[], char cleartext[])
-{
-
-   int i, offset2, offset3;
-
-   offset2 = ciphertext[0] - 100;
-
-   ciphertext[2] -= offset2;
-   ciphertext[3] -= offset2;
-   ciphertext[6] -= offset2;
-   ciphertext[9] -= offset2;
-   ciphertext[13] -= offset2;
-   ciphertext[14] -= offset2;
-   ciphertext[16] -= offset2;
-   ciphertext[19] -= offset2;
-
-   offset3 = ciphertext[1] - 100;
-
-   ciphertext[4] -= offset3;
-   ciphertext[8] -= offset3;
-   ciphertext[10] -= offset3;
-   ciphertext[12] -= offset3;
-   ciphertext[15] -= offset3;
-   ciphertext[17] -= offset3;
-
-   for (i=0; i<20; i++)
-      ciphertext[i] -= key_offset[i];
-
-   for (i=0; i<20; i++)
-      cleartext[key_shuffle[i]] = ciphertext[i];
-
-   cleartext[20] = STRING_TERMINATOR;
-
-}
-
-
-#ifndef WIN32
-
-static SBoolean verify_date(int day, int month, int year)
-{
-
-   struct timeval tp;
-   struct timezone tzp;
-   struct tm* cur_tm;
-
-   /* To workaround the Y2K problem, add 100 to post-2000 dates.
-    * This would not work if any passwords were issued before 1990,
-    * and will stop working in the year 2090.
-    */
-   if (year < 90)
-      year += 100;
-
-   /* When you made the key, the day and month started at 1. When you call
-    * localtime(), it starts the month at 0 (and day at 1, go figure). So
-    * subtract 1 from the month that is passed in.
-    */
-
-   month--;
-
-   (void)gettimeofday(&tp,&tzp);
-
-   cur_tm = localtime((const time_t*)&tp.tv_sec);
-
-   /* To workaround the Y2K problem, add 100 to post-2000 dates.
-    * This would not work if any passwords were issued before 1990,
-    * and will stop working in the year 2090.
-    */
-   if (cur_tm->tm_year < 90)
-      cur_tm->tm_year += 100;
-
-   if (cur_tm->tm_year > year)
-      return (no);
-   else if (cur_tm->tm_year < year)
-      return (yes);
-
-   if (cur_tm->tm_mon > month)
-      return (no);
-   else if (cur_tm->tm_mon < month)
-      return (yes);
-
-   if (cur_tm->tm_mday > day)
-      return (no);
-
-   return (yes);
-
-}
-#endif /* WIN32 */
 
 #endif /* ENGINE */
 
@@ -1926,7 +1223,7 @@ FILE* simm_lookup_file (char* pathList, const char* fileName, const char* mode)
    {
       FILE* f;
       
-      char buf[1024] = "";
+      char buf[CHARBUFFER] = "";
       
       strcpy(buf, p);
       
@@ -1947,23 +1244,20 @@ FILE* simm_lookup_file (char* pathList, const char* fileName, const char* mode)
    return NULL;
 }
 
+#if ! MEMORY_LEAK
 void* simm_malloc(unsigned mem_size)
 {
-
    void* ptr;
 
-   /* Temporary hack so that you don't have to check mem_size before calling
-    * simm_malloc()-- Make sure you don't try to malloc 0 bytes because malloc
-    * will [appropriately] return NULL. The long-term solution is to check all
-    * places where simm_malloc() is called and be smart enough not to call
-    * the routine if mem_size is 0.
-    */
+   // Temporary hack so that you don't have to check mem_size before calling
+   // simm_malloc()-- Make sure you don't try to malloc 0 bytes because malloc
+   // will [appropriately] return NULL. The long-term solution is to check all
+   // places where simm_malloc() is called and be smart enough not to call
+   // the routine if mem_size is 0.
 
    if (mem_size <= 0)
       mem_size = sizeof(int);
-#if 0
-      mem_size += 512;
-#endif
+
    ptr = malloc(mem_size);
 
    if (ptr == NULL)
@@ -1974,23 +1268,19 @@ void* simm_malloc(unsigned mem_size)
       //error(none,errorbuffer);
    }
 
-   return (ptr);
-
+   return ptr;
 }
-
 
 
 void* simm_calloc(unsigned num_elements, unsigned elem_size)
 {
-
    void* ptr;
 
-   /* Temporary hack so that you don't have to check mem_size before calling
-    * simm_calloc()-- Make sure you don't try to calloc 0 bytes because calloc
-    * will [appropriately] return NULL. The long-term solution is to check all
-    * places where simm_calloc() is called and be smart enough not to call
-    * the routine if mem_size is 0.
-    */
+   // Temporary hack so that you don't have to check mem_size before calling
+   // simm_calloc()-- Make sure you don't try to calloc 0 bytes because calloc
+   // will [appropriately] return NULL. The long-term solution is to check all
+   // places where simm_calloc() is called and be smart enough not to call
+   // the routine if mem_size is 0.
 
    if (num_elements*elem_size <= 0)
    {
@@ -2002,28 +1292,24 @@ void* simm_calloc(unsigned num_elements, unsigned elem_size)
 
    if (ptr == NULL)
    {
-      sprintf(errorbuffer,"Ran out of memory. Unable to calloc %d bytes.",
+      sprintf(errorbuffer, "Ran out of memory. Unable to calloc %d bytes.",
 	      (int)(num_elements*elem_size));
-      error(none,errorbuffer);
+      error(none, errorbuffer);
    }
 
-   return (ptr);
-
+   return ptr;
 }
-
 
 
 void* simm_realloc(void* ptr, unsigned mem_size, ReturnCode* rc)
 {
-
    void* new_ptr;
 
-/* Temporary hack so that you don't have to check mem_size before calling
- * simm_realloc()-- Make sure you don't try to realloc 0 bytes because realloc
- * will [appropriately] return NULL. The long-term solution is to check all
- * places where simm_realloc() is called and be smart enough not to call
- * the routine if mem_size is 0.
- */
+   // Temporary hack so that you don't have to check mem_size before calling
+   // simm_realloc()-- Make sure you don't try to realloc 0 bytes because realloc
+   // will [appropriately] return NULL. The long-term solution is to check all
+   // places where simm_realloc() is called and be smart enough not to call
+   // the routine if mem_size is 0.
 
    if (mem_size <= 0)
       mem_size = sizeof(int);
@@ -2032,69 +1318,61 @@ void* simm_realloc(void* ptr, unsigned mem_size, ReturnCode* rc)
 
    if (new_ptr == NULL)
    {
-      sprintf(errorbuffer,"Ran out of memory. Unable to realloc %d bytes.",
+      sprintf(errorbuffer, "Ran out of memory. Unable to realloc %d bytes.",
 	      (int)mem_size);
       *rc = code_bad;
       return (ptr);
    }
 
    *rc = code_fine;
-   return (new_ptr);
-
+   return new_ptr;
 }
+#endif
 
 
 char* get_drawmode_name(DrawingMode drawmode)
 {
-
    if (drawmode == wireframe)
-      return ("wireframe");
+      return "wireframe";
    if (drawmode == solid_fill)
-      return ("solid_fill");
+      return "solid_fill";
    if (drawmode == flat_shading)
-      return ("flat_shading");
+      return "flat_shading";
    if (drawmode == gouraud_shading)
-      return ("gouraud_shading");
+      return "gouraud_shading";
    if (drawmode == outlined_polygons)
-      return ("outlined_polygons");
+      return "outlined_polygons";
    if (drawmode == no_surface)
-      return ("none");
+      return "none";
    if (drawmode == bounding_box)
-      return ("bounding_box");
+      return "bounding_box";
 
    /* this should really be an error, but return gouraud_shading
     * as if nothing is wrong.
     */
-   return ("gouraud_shading");
-
+   return "gouraud_shading";
 }
 
 
 char* get_simmkey_name(int keynum)
 {
-
-   return (keys[keynum]);
-
+   return keys[keynum];
 }
 
 
-#ifndef ENGINE
+#if ! ENGINE
 
 /* SET_VIEWPORT: the MODELVIEW and PROJECTION matrices should
  * always be reset when you change the viewport. That's why
  * this utility routine exists.
  */
-
 void set_viewport(int x1, int y1, int xsize, int ysize)
 {
-
-   glViewport(x1,y1,xsize,ysize);
-
+   glViewport(x1, y1, xsize, ysize);
    glMatrixMode(GL_PROJECTION);
    glLoadIdentity();
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
-
 }
 
 
@@ -2106,7 +1384,6 @@ void set_viewport(int x1, int y1, int xsize, int ysize)
  *  online docs).  This new approach involves a glTranslate by 0.375
  *  in the x and y direction.  -- KMS 11/19/98
  */
-
 #define NEW_ORTHO_APPROACH 1
 
 void set_ortho2o(Ortho box)
@@ -2121,6 +1398,16 @@ void set_ortho2o(Ortho box)
 #else
    glOrtho(box.x1-0.5, box.x2+0.5, box.y1-0.5, box.y2+0.5, -1.0, 1.0);
 #endif
+}
+
+void set_ortho2i(GLint ortho[])
+{
+   glMatrixMode(GL_PROJECTION);
+   glLoadIdentity();
+   gluOrtho2D(ortho[0], ortho[2], ortho[1], ortho[3]);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+   glTranslatef(0.375, 0.375, 0.0);
 }
 
 void set_ortho2(double x1, double x2, double y1, double y2)
@@ -2150,9 +1437,11 @@ ModelStruct* get_associated_model (int i)
    if (i < 0)
       return NULL;
    
-   if (root.window[i].type == MODEL)
+   if (root.window[i].type == SCENE)
    {
-      ms = root.window[i].win_struct->model;
+      // Assume that there is always at least one model in the scene
+      // and return the first one.
+      ms = root.window[i].win_struct->scene->model[0];
    }
    else if (root.window[i].type == TOOL)
    {
@@ -2172,9 +1461,9 @@ ModelStruct* get_associated_model (int i)
 
          for (j=0; j<MODELBUFFER; j++)
          {
-            if (model[j] != NULL)
+            if (gModel[j] != NULL)
             {
-               ms = model[j];
+               ms = gModel[j];
                break;
             }
          }
@@ -2217,13 +1506,18 @@ PlotStruct* get_associated_plot (int i)
 
 /* -------------------------------------------------------------------------
    lookup_polyhedron - this routine tries to read the specified polyhedron
-     file by first checking the current directory, and then checking the
+     by first checking the current directory, and then checking the
      standard SIMM directory for bones.
+     TODO5.0: If one of the paths to search starts with a drive letter that
+     does not exist, Vista will display an annoying error dialog (other versions
+     of Windows quietly move on). Find some way to check for a valid drive
+     letter before performing the action that causes the error.
 ---------------------------------------------------------------------------- */
-FileReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelStruct* ms)
+FileReturnCode lookup_polyhedron(PolyhedronStruct* ph, char filename[], ModelStruct* ms)
 {
    int i;
-   char jointpath[1024], fullpath[1024], tmppath[1024];
+   char* jointpath = NULL;
+   char fullpath[CHARBUFFER], tmppath[CHARBUFFER];
    FileReturnCode rc;
 
    /* (0) strip the joint file name from ms->jointfilename to get just
@@ -2231,23 +1525,7 @@ FileReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelSt
     */
    if (ms && ms->jointfilename)
    {
-      strcpy(jointpath, ms->jointfilename);
-      for (i = strlen(jointpath); i >= 0; i--)
-      {
-         if (jointpath[i] == '\\' || jointpath[i] == '/')
-         {
-            jointpath[i] = STRING_TERMINATOR;
-            break;
-         }
-      }
-		/* If the joint file name is just a file name with no path,
-		 * make the jointpath empty so the next step will work.
-		 */
-		if (i == -1)
-		{
-			jointpath[0] = '.';
-			jointpath[1] = STRING_TERMINATOR;
-		}
+      get_pure_path_from_path(ms->jointfilename, &jointpath);
    }
 
    /* (1) First check the bone folder specified in the joint file.
@@ -2263,43 +1541,47 @@ FileReturnCode lookup_polyhedron (PolyhedronStruct* ph, char filename[], ModelSt
       build_full_path(tmppath, filename, fullpath);
       rc = read_polyhedron(ph, fullpath, yes);
       if (rc == file_good || rc == file_bad)
+      {
+         FREE_IFNOTNULL(jointpath);
          return rc;
+      }
    }
 
-#ifdef WIN32
    /* (2) Next check the folder "bones" under the joint file's
     * folder (PC only).
     */
    if (ms->jointfilename)
-      strcat3(tmppath, jointpath, DIR_SEP_STRING, "bones");
+      strcat3(tmppath, jointpath, DIR_SEP_STRING, "bones", CHARBUFFER);
    else
       strcpy(tmppath, "bones");
-   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename, CHARBUFFER);
    rc = read_polyhedron(ph, fullpath, yes);
    if (rc == file_good || rc == file_bad)
+   {
+      FREE_IFNOTNULL(jointpath);
       return rc;
+   }
 
    /* (3) Next check the joint file's folder itself (PC only). */
    if (ms->jointfilename)
       strcpy(tmppath, jointpath);
    else
       strcpy(tmppath, ".");
-   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
+   FREE_IFNOTNULL(jointpath);
+   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename, CHARBUFFER);
    rc = read_polyhedron(ph, fullpath, yes);
    if (rc == file_good || rc == file_bad)
       return rc;
-#endif
 
-#ifndef ENGINE
+#if ! ENGINE
    /* (4) check the global bones folder. */
-   build_full_path(root.pref.bonefilepath, filename, fullpath);
+   build_full_path(get_bones_folder(), filename, fullpath);
    rc = read_polyhedron(ph, fullpath, yes);
    if (rc == file_good || rc == file_bad)
       return rc;
 
    /* (5) check the mocap bones folder. */
-   strcat3(tmppath, root.mocap_dir, DIR_SEP_STRING, "bones");
-   strcat3(fullpath, tmppath, DIR_SEP_STRING, filename);
+   sprintf(fullpath, "%s%s%s%s", get_mocap_folder(), "bones", DIR_SEP_STRING, filename);
    rc = read_polyhedron(ph, fullpath, yes);
    if (rc == file_good || rc == file_bad)
       return rc;
@@ -2361,40 +1643,34 @@ void append_if_necessary (char* str, char c)
       "file path" that may contain absolute or relative path specifications
       into a full path.
 ---------------------------------------------------------------------------- */
-void build_full_path (const char* prefPath, const char* filePath, char* fullPath)
+void build_full_path(const char* prefPath, const char* filePath, char* fullPath)
 {
-    if (fullPath == NULL)
-       return;
-    
-    /* ignore any leading spaces in 'prefPath' and 'filePath':
-     */
-    while (prefPath && *prefPath && isspace(*prefPath))
-       prefPath++;
-    
-    while (filePath && *filePath && isspace(*filePath))
-       filePath++;
-    
-    /* copy the preference path if necessary:
-     */
-    if (prefPath && ! is_absolute_path(filePath))
-    {
-       strcpy(fullPath, prefPath);
-       
-       strip_trailing_white_space(fullPath);
-       
-       append_if_necessary(fullPath, DIR_SEP_CHAR);
-    }
-    else
-       *fullPath = '\0';
-    
-    /* then append the file path:
-     */
-    if (filePath)
-    {
-       strcat(fullPath, filePath);
-       
-       strip_trailing_white_space(fullPath);
-    }
+   if (fullPath == NULL)
+      return;
+
+   // Ignore any leading spaces in 'prefPath' and 'filePath'.
+   while (prefPath && *prefPath && isspace(*prefPath))
+      prefPath++;
+
+   while (filePath && *filePath && isspace(*filePath))
+      filePath++;
+
+   // Copy the preference path if necessary.
+   if (prefPath && ! is_absolute_path(filePath))
+   {
+      strcpy(fullPath, prefPath);
+      strip_trailing_white_space(fullPath);
+      append_if_necessary(fullPath, DIR_SEP_CHAR);
+   }
+   else
+      *fullPath = '\0';
+
+   // Now append the file path.
+   if (filePath)
+   {
+      strcat(fullPath, filePath);
+      strip_trailing_white_space(fullPath);
+   }
 }
 
 /* -------------------------------------------------------------------------
@@ -2407,7 +1683,7 @@ const char* get_filename_from_path (const char* pathname)
    p1 = strrchr(pathname, DIR_SEP_CHAR);
    p2 = strrchr(pathname, '/');
 
-   p = MAX(p1,p2);
+   p = _MAX(p1,p2);
 
    return p ? (p+1) : pathname;
 }
@@ -2424,7 +1700,7 @@ void get_pure_path_from_path (const char* fullPath, char** purePath)
 
    p1 = strrchr(fullPath, DIR_SEP_CHAR);
    p2 = strrchr(fullPath, '/');
-   p = MAX(p1,p2);
+   p = _MAX(p1,p2);
 
    if (p)
    {
@@ -2433,9 +1709,9 @@ void get_pure_path_from_path (const char* fullPath, char** purePath)
       strncpy(*purePath, fullPath, len);
       (*purePath)[len] = STRING_TERMINATOR;
    }
-   else
+   else // fullPath is just a filename, so purePath is empty.
    {
-      mstrcpy(purePath, fullPath);
+      mstrcpy(purePath, ".");
    }
 }
 
@@ -2477,13 +1753,7 @@ public ReturnCode read_double (FILE* f, double* value)
 
    if (STRINGS_ARE_EQUAL(buffer, "nan"))
    {
-#ifdef __MWERKS__
-      *value = NAN;
-#elif defined(MS_VISUAL_C) || defined(__linux__)
 	  *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
-#else
-      NaN(*value);
-#endif      
    }
    else if (isdigit(buffer[0]) || buffer[0] == '.' || buffer[0] == '-' || buffer[0] == '+')
       *value = atof(buffer);
@@ -2539,13 +1809,7 @@ public ReturnCode read_double_tab(FILE* f, double* value)
 
    if (STRINGS_ARE_EQUAL(buffer, "nan"))
    {
-#ifdef __MWERKS__
-      *value = NAN;
-#elif defined(MS_VISUAL_C) || defined(__linux__)
 	  *value = 0.0;  /* ACK! can't seem to find a way to assign NAN in VC++!! */
-#else
-      NaN(*value);
-#endif      
    }
    else if (isdigit(buffer[0]) || buffer[0] == '.' || buffer[0] == '-' || buffer[0] == '+')
       *value = atof(buffer);
@@ -2555,82 +1819,6 @@ public ReturnCode read_double_tab(FILE* f, double* value)
    return code_fine;
 }
 
-#ifndef ENGINE
-/* DRAWPLOYNOMIAL: */
-void draw_polynomial(double x1, double y1, double x2, double b, double c,
-			            double d, int steps, double lineWidth)
-{
-
-   int i;
-   double stepsize, pnt[2];
-
-   stepsize = (x2-x1)/steps;
-   if (EQUAL_WITHIN_ERROR(stepsize,0.0))
-      return;
-
-//   glLineWidth(2.0);
-   glLineWidth(lineWidth);
-
-   glBegin(GL_LINE_STRIP);
-
-   for (i=0; i<=steps; i++)
-   {
-      pnt[0] = i*stepsize;
-      pnt[1] = y1 + pnt[0]*(b + pnt[0]*(c + pnt[0]*d));
-      pnt[0] += x1;
-      glVertex2dv(pnt);
-   }
-
-   glEnd();
-
-   glLineWidth(1.0);
-}
-#endif
-
-/* Find an unused function number in the function array.  If all are used
- * allocate space for more functions and add a new one onto the end of
- * the array.
- */ 
-int findUnusedFunctionNumber(int mod)
-{
-   int funcnum = enter_function(mod, findHighestUserFuncNum(mod)+1, yes);
-
-   if (funcnum == -1)
-   {
-      sprintf(buffer, "findUnusedFunctionNumber: Could not allocate a new function.\n");
-      error(none, buffer);
-   }
-
-   return funcnum;
-}
-
-/* return the highest user function number */
-int findHighestUserFuncNum(int mod)
-{
-   int i, highest_user_num = -1;
-
-   for (i=0; i<model[mod]->func_array_size; i++)
-   {
-	   if (model[mod]->function[i].used == yes &&
-	      model[mod]->function[i].usernum > highest_user_num)
-	      highest_user_num = model[mod]->function[i].usernum;
-   }
-
-   return(highest_user_num);
-
-}
-
-/* return the number of functions currently being used */
-int countUsedFunctions(ModelStruct* ms)
-{
-   int i, count=0;
-
-   for (i=0; i<ms->func_array_size; i++)
-	   if (ms->function[i].used == yes)
-	      count++;
-
-   return count;
-}
 
 int strings_equal_case_insensitive(const char str1[], const char str2[])
 {
@@ -2650,7 +1838,7 @@ int strings_equal_n_case_insensitive(const char str1[], const char str2[], int n
 {
    char buf1[1024];
 
-   if (strlen(str1) < n || strlen(str2) < n)
+   if ((int)strlen(str1) < n || (int)strlen(str2) < n)
       return 0;
 
    /* make the strings upper case and compare them */
@@ -2698,7 +1886,7 @@ void simmPrintMultiLines(char string[], SBoolean hilite, int lineSize, int pixel
    if (!string || lineSize <= 0 || pixelIndent < 0)
       return;
 
-#ifndef ENGINE
+#if ! ENGINE
    if (hilite)
    {
       simmMsgFormat += HIGHLIGHT_TEXT;
@@ -2735,76 +1923,308 @@ void simmPrintMultiLines(char string[], SBoolean hilite, int lineSize, int pixel
    }
 }
 
+#if ! OPENSIM_BUILD && ! CORTEX_PLUGIN
 
-static SBoolean read_pref(FILE* file, char* name, char* value)
+const char* get_preference(const char name[])
 {
+   int i;
+
+   for (i=0; i<root.num_preferences; i++)
+   {
+      if (STRINGS_ARE_EQUAL(root.preference[i].name, name))
+         return root.preference[i].value;
+   }
+
+   return NULL;
+}
+
+SBoolean is_preference_on(const char value[])
+{
+   if (value)
+   {
+      strcpy(buffer, value);
+      _strupr(buffer);
+
+      if (STRINGS_ARE_EQUAL(buffer, "Y") ||
+         STRINGS_ARE_EQUAL(buffer, "YES") ||
+         STRINGS_ARE_EQUAL(buffer, "TRUE") ||
+         STRINGS_ARE_EQUAL(buffer, "ON") ||
+         STRINGS_ARE_EQUAL(buffer, "1") ||
+         STRINGS_ARE_EQUAL(buffer, "")) // pre-5.0, some options were on just by being defined (with no value specified)
+      {
+         return yes;
+      }
+   }
+
+   return no;
+}
+
+void remove_preference(const char name[])
+{
+   int i, j;
+
+   for (i=0; i<root.num_preferences; i++)
+   {
+      if (STRINGS_ARE_EQUAL(root.preference[i].name, name))
+      {
+         for (j=i; j<root.num_preferences-1; j++)
+         {
+            root.preference[j].name = root.preference[j+1].name;
+            root.preference[j].value = root.preference[j+1].value;
+         }
+         root.num_preferences--;
+         return;
+      }
+   }
+}
+
+static SBoolean read_preference(FILE* file, char* name, char* value)
+{
+   int len;
    char *p = value;
-   
+
    while (1)
    {
       if (fscanf(file, "%s", name) != 1)
         return no;
-   
-      if (name[0] != '#')
+
+      if (name[0] != '#')   // Ignore commented lines.
          break;
       else
       {
-         char buf[256];   /* ignore the commented line */
-      
+         char buf[256];
+
          fgets(buf, sizeof(buf), file);
       }
    }
-   
-   read_line(&file, value);
+
+   read_line(file, value);
    _strip_outer_whitespace(value);
-   
+
+   // Remove surrounding double-quotes, if any.
+   len = strlen(value);
+   if (len > 1 && value[0] == '\"' && value[len-1] == '\"')
+   {
+      memmove(value, &value[1], len-2);
+      value[len-2] = STRING_TERMINATOR;
+   }
+
    return yes;
 }
 
-
-/* getprev - this routine is similar to the OS routine getenv().  In fact,
- *   under Unix, it simply calls getenv().  Under MS-Windows this routine
- *   opens the SIMM preference file and searches for the specified variable
- *   name.  If found it returns a pointer to the variable's value, just like
- *   getenv().  -- KMS 11/11/98
- */
-const char* getpref(const char* prefname)
+void save_preferences_file(SBoolean verbose)
 {
-   char name[256];
-   FILE* file;
-   const char* result = NULL;
+   int i;
+   FILE* fp;
+   char filename[CHARBUFFER], mess[CHARBUFFER];
 
-   strcpy(name, get_simm_resources_directory());
-   strcat(name, "preferences.txt");
+   strcpy(filename, get_preference("RESOURCES_FOLDER"));
+   append_if_necessary(filename, DIR_SEP_CHAR);
+   strcat(filename, "preferences.txt");
 
-   file = simm_fopen(name, "r");
+   fp = simm_fopen(filename, "w");
 
-   if (!file)
+   if (fp == NULL)
    {
-   	strcpy(name, get_simm_resources_directory());
-   	strcat(name, "preferences");
-   	file = simm_fopen(name, "r");
-   }
-
-   if (file)
-   {
-      static char value[256];
-
-      while (read_pref(file, name, value))
+      if (verbose == yes)
       {
-         if (STRINGS_ARE_EQUAL(name, prefname))
-         {
-            result = value;
-            break;
-         }
+         (void)sprintf(mess, "Unable to save preferences file: %s", filename);
+         error(none, mess);
       }
-      fclose(file);
    }
+   else
+   {
+      for (i=0; i<root.num_preferences; i++)
+      {
+         int len = strlen(root.preference[i].value);
+         if (root.preference[i].value[len-1] == DIR_SEP_CHAR) // put in double quotes so acpp won't barf when reading back in
+            fprintf(fp, "%s\t\"%s\"\n", root.preference[i].name, root.preference[i].value);
+         else
+            fprintf(fp, "%s\t%s\n", root.preference[i].name, root.preference[i].value);
+      }
+      fclose(fp);
 
-   return result;
+      if (verbose == yes)
+      {
+         (void)sprintf(mess, "Saved preferences to file: %s", filename);
+         error(none, mess);
+      }
+   }
 }
 
-#ifndef ENGINE
+#if ! ENGINE
+void load_preferences_file(SBoolean verbose)
+{
+   FILE* fp;
+   char filename[CHARBUFFER], buf[CHARBUFFER], mess[CHARBUFFER];
+   const char* tempFileName = glutGetTempFileName(".preferences");
+
+   strcpy(filename, get_preference("RESOURCES_FOLDER"));
+   append_if_necessary(filename, DIR_SEP_CHAR);
+   strcat(filename, "preferences.txt");
+
+   if ((fp = preprocess_file(filename, tempFileName)) == NULL)
+   {
+      (void)sprintf(errorbuffer, "Unable to open preferences file %s", filename);
+      error(none, errorbuffer);
+      return;
+   }
+
+   if (fp == NULL)
+   {
+   	strcpy(filename, get_preference("RESOURCES_FOLDER"));
+      append_if_necessary(filename, DIR_SEP_CHAR);
+   	strcat(filename, "preferences");
+   	fp = simm_fopen(filename, "r");
+   }
+
+   if (fp)
+   {
+      static char value[CHARBUFFER];
+
+      while (read_preference(fp, buf, value))
+         enter_preference(buf, value);
+      fclose(fp);
+      if (verbose == yes)
+      {
+         (void)sprintf(mess, "Read preferences file %s", filename);
+         message(mess, 0, DEFAULT_MESSAGE_X_OFFSET);
+      }
+   }
+   else
+   {
+      if (verbose == yes)
+      {
+         (void)sprintf(mess, "Unable to open preferences file: %s", filename);
+         error(none, mess);
+      }
+   }
+}
+
+#endif
+
+/* The following utility functions and static strings are
+ * for getting preferences that can either be defined in the
+ * preferences file, or depend on other preferences (user choice).
+ * For example, the bones folder can be specified in the
+ * preferences file ("BONES_FOLDER"), but if it is not, then
+ * it is created by adding "bones" to the resources folder
+ * (preference = "RESOURCES_FOLDER"). When get_bones_folder() is
+ * called, it gets/builds the appropriate value and stores it
+ * in a static string called bones_buf. It is therefore possible
+ * that some code may get and hold a pointer to this static
+ * string while other code later calls get_bones_folder() and
+ * causes the string to be overwritten with a different
+ * value. But this is an improper use of preferences.
+ * SIMM code should not store any preference values; it should
+ * get a preference, use it immediately, and discard it. This
+ * allows the user to change preferences at any time and not
+ * have problems with stale values.
+ */
+static char bones_buf[CHARBUFFER];
+
+const char* get_bones_folder(void)
+{
+	const char* p = get_preference("BONES_FOLDER");
+
+	if (p)
+   {
+      strcpy(bones_buf, p);
+      append_if_necessary(bones_buf, DIR_SEP_CHAR);
+   }
+   else
+   {
+      strcpy(bones_buf, get_preference("RESOURCES_FOLDER"));
+      append_if_necessary(bones_buf, DIR_SEP_CHAR);
+      strcat(bones_buf, "bones\\");
+   }
+
+	return bones_buf;
+}
+
+static char help_buf[CHARBUFFER];
+
+const char* get_help_folder(void)
+{
+	const char* p = get_preference("HELP_FOLDER");
+
+   if (p)
+   {
+      strcpy(help_buf, p);
+      append_if_necessary(help_buf, DIR_SEP_CHAR);
+   }
+   else
+   {
+      strcpy(help_buf, get_preference("RESOURCES_FOLDER"));
+      append_if_necessary(help_buf, DIR_SEP_CHAR);
+      strcat(help_buf, "help\\");
+   }
+
+	return help_buf;
+}
+
+static char mocap_buf[CHARBUFFER];
+
+const char* get_mocap_folder(void)
+{
+	const char* p = get_preference("MOCAP_FOLDER");
+
+   if (p)
+   {
+      strcpy(mocap_buf, p);
+      append_if_necessary(mocap_buf, DIR_SEP_CHAR);
+   }
+   else
+   {
+      strcpy(mocap_buf, get_preference("RESOURCES_FOLDER"));
+      append_if_necessary(mocap_buf, DIR_SEP_CHAR);
+      strcat(mocap_buf, "mocap\\");
+   }
+
+	return mocap_buf;
+}
+
+static char mocap_misc_buf[CHARBUFFER];
+
+const char* get_mocap_misc_folder(void)
+{
+	const char* p = get_preference("MOCAP_MISC_FOLDER");
+
+   if (p)
+   {
+      strcpy(mocap_misc_buf, p);
+      append_if_necessary(mocap_misc_buf, DIR_SEP_CHAR);
+   }
+   else
+   {
+      strcpy(mocap_misc_buf, get_mocap_folder());
+      append_if_necessary(mocap_misc_buf, DIR_SEP_CHAR);
+      strcat(mocap_misc_buf, "misc\\");
+   }
+
+	return mocap_misc_buf;
+}
+
+static char color_buf[CHARBUFFER];
+
+const char* get_color_folder(void)
+{
+   const char* p = get_preference("COLOR_FOLDER");
+
+   if (p)
+      strcpy(color_buf, p);
+   else
+      strcpy(color_buf, get_preference("RESOURCES_FOLDER"));
+
+   append_if_necessary(color_buf, DIR_SEP_CHAR);
+
+   return color_buf;
+}
+
+#endif
+
+#if ! ENGINE
+
 /* -------------------------------------------------------------------------
    lock_model - acquire the realtime mutex, but only if the model is currently
    receiving realtime motion data from EVaRT or from its simulation dll.
@@ -2821,8 +2241,8 @@ void lock_model(ModelStruct* ms)
 
       for (i = 0; i < MODELBUFFER; i++)
       {
-         if (model[i] && model[i]->modelLock)
-            glutAcquireMutex(model[i]->modelLock);
+         if (gModel[i] && gModel[i]->modelLock)
+            glutAcquireMutex(gModel[i]->modelLock);
       }
    }
    else
@@ -2848,8 +2268,8 @@ void unlock_model(ModelStruct* ms)
 
       for (i = 0; i < MODELBUFFER; i++)
       {
-         if (model[i] && model[i]->modelLock)
-            glutReleaseMutex(model[i]->modelLock);
+         if (gModel[i] && gModel[i]->modelLock)
+            glutReleaseMutex(gModel[i]->modelLock);
       }
    }
    else
@@ -2857,6 +2277,18 @@ void unlock_model(ModelStruct* ms)
       glutReleaseMutex(ms->modelLock);
    }
 }
+
+PlotStruct* get_plot_by_name(const char name[])
+{
+   int i;
+
+   for (i=0; i<PLOTBUFFER; i++)
+      if (gPlot[i] && STRINGS_ARE_EQUAL(gPlot[i]->title, name))
+         return gPlot[i];
+
+   return NULL;
+}
+
 #endif /* ! ENGINE */
 
 /* -------------------------------------------------------------------------
@@ -2876,8 +2308,8 @@ RTConnection is_model_realtime(ModelStruct* ms)
 
       for (i = 0; i < MODELBUFFER; i++)
       {
-         if (model[i] && model[i]->realtimeState != rtNotConnected)
-            return model[i]->realtimeState;
+         if (gModel[i] && gModel[i]->realtimeState != rtNotConnected)
+            return gModel[i]->realtimeState;
       }
       return rtNotConnected;
    }
@@ -2887,26 +2319,26 @@ RTConnection is_model_realtime(ModelStruct* ms)
    }
 }
 
-int getMusclePointSegment(MuscleStruct *muscle, int pointIndex)
+int getMusclePointSegment(dpMuscleStruct *muscle, int pointIndex)
 {
-   if (muscle == NULL || muscle->musclepoints == NULL)
+   if (muscle == NULL || muscle->path == NULL)
       return -1;
-   if (pointIndex < 0 || pointIndex >= muscle->musclepoints->num_orig_points)
+   if (pointIndex < 0 || pointIndex >= muscle->path->num_orig_points)
       return -1;
-   if (muscle->musclepoints->mp_orig == NULL)
+   if (muscle->path->mp_orig == NULL)
       return -1;
-   return muscle->musclepoints->mp_orig[pointIndex].segment;
+   return muscle->path->mp_orig[pointIndex].segment;
 }
 
-void setMusclePointSegment(MuscleStruct *muscle, int pointIndex, int newSeg)
+void setMusclePointSegment(dpMuscleStruct *muscle, int pointIndex, int newSeg)
 {
-   if (muscle == NULL || muscle->musclepoints == NULL)
+   if (muscle == NULL || muscle->path == NULL)
       return;
-   if (pointIndex < 0 || pointIndex >= muscle->musclepoints->num_orig_points)
+   if (pointIndex < 0 || pointIndex >= muscle->path->num_orig_points)
       return;
-   if (muscle->musclepoints->mp_orig == NULL)
+   if (muscle->path->mp_orig == NULL)
       return;
-   muscle->musclepoints->mp_orig[pointIndex].segment = newSeg;
+   muscle->path->mp_orig[pointIndex].segment = newSeg;
 }
 
 int makeDir(const char aDirName[])
@@ -2916,4 +2348,105 @@ int makeDir(const char aDirName[])
 #else
 	return _mkdir(aDirName);
 #endif
+}
+
+int find_string_in_list(const char name[], const char* string_list[], int n)
+{
+   int i;
+
+   for (i=0; i<n; i++)
+   {
+      if (STRINGS_ARE_EQUAL(name, string_list[i]))
+         return i;
+   }
+
+   return -1;
+}
+
+#if ! ENGINE
+static char simm_clipboard[CHARBUFFER];
+
+const char* get_clipboard_text(void)
+{
+	if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
+	{
+		HANDLE clipboard_handle = GetClipboardData(CF_TEXT);
+		const char* clip = (const char*)GlobalLock(clipboard_handle);
+		strncpy(simm_clipboard, clip, CHARBUFFER-1);
+		GlobalUnlock(clipboard_handle);
+		simm_clipboard[CHARBUFFER-1] = STRING_TERMINATOR;
+		CloseClipboard();
+	}
+
+	return simm_clipboard;
+}
+
+void set_clipboard_text(const char text[])
+{
+	if (OpenClipboard(__mdiClientHwnd) && IsClipboardFormatAvailable(CF_TEXT)) 
+	{
+#if 0
+		strcpy(simm_clipboard, text);
+		SetClipboardData(CF_TEXT, simm_clipboard); 
+		CloseClipboard();
+#else
+		// Allocate a global memory object for the text.
+		LPTSTR lptstrCopy; 
+		int len = strlen(text);
+		HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, (len+1) * sizeof(TCHAR));
+		if (hglbCopy == NULL) 
+		{ 
+			CloseClipboard(); 
+			return; 
+		} 
+
+		// Lock the handle and copy the text to the buffer. 
+		strcpy(simm_clipboard, text);
+		lptstrCopy = GlobalLock(hglbCopy); 
+		memcpy(lptstrCopy, simm_clipboard, len * sizeof(TCHAR)); 
+		lptstrCopy[len] = (TCHAR) 0;
+		GlobalUnlock(hglbCopy); 
+
+		// Place the handle on the clipboard. 
+		SetClipboardData(CF_TEXT, hglbCopy); 
+#endif
+	}
+}
+
+#endif
+
+
+int getGencoordIndex(ModelStruct* model, GeneralizedCoord* gencoord)
+{
+   int i;
+
+   for (i=0; i<model->numgencoords; i++)
+      if (model->gencoord[i] == gencoord)
+         return i;
+
+   return -1;
+}
+
+
+int getJointIndex(ModelStruct* model, JointStruct* joint)
+{
+   int i;
+
+   for (i=0; i<model->numjoints; i++)
+      if (&model->joint[i] == joint)
+         return i;
+
+   return -1;
+}
+
+
+int getLigamentIndex(ModelStruct* model, char lig_name[])
+{
+   int i;
+
+   for (i=0; i<model->numligaments; i++)
+      if (STRINGS_ARE_EQUAL(lig_name, model->ligament[i].name))
+	  return i;
+
+   return -1;
 }

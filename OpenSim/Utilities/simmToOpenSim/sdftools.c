@@ -26,6 +26,7 @@
 
 /*************** STATIC GLOBAL VARIABLES (for this file only) *****************/
 static char constrained_suffix[] = "_con";
+char* ground_name[] = {"$ground", "ground"};
 
 
 /*************** GLOBAL VARIABLES (used in only a few files) ******************/
@@ -34,7 +35,6 @@ static char constrained_suffix[] = "_con";
 /*************** EXTERNED VARIABLES (declared in another .c file) *************/
 extern SDSegment* SDseg;
 extern int num_SD_segs;
-extern char sdfast_ground[];
 extern int* joint_order;
 
 
@@ -42,41 +42,30 @@ extern int* joint_order;
 static SBoolean is_xyz_joint(JointStruct* jnt);
 static SBoolean axes_are_parallel(double axis1[], double axis2[], SBoolean oppositeDirAllowed);
 static SBoolean segment_affects_dynamics(ModelStruct* ms, int segNum);
-static void freeDPModelStruct(dpModelStruct* dp);
 static void freeDPDefaultMuscle(dpMuscleStruct* dm);
 static void freeDPMuscle(dpMuscleStruct* ms, dpMuscleStruct* dm);
 static void freeDPMusclePaths(dpMusclePathStruct path[], int num);
-static void freeDPPolyhedron(dpPolyhedronStruct* ph);
-static void freeDPFunction(dpSplineFunction* sf);
-static int get_q_index_for_gencoord(char gencoord_name[], dpModelStruct* dp);
+static void freeDPFunction(dpFunction* sf);
+static dpQStruct* get_q_for_gencoord(const char gencoord_name[], dpModelStruct* dp);
 static int get_sd_floor_num(dpModelStruct* dp, char* name);
 static void copyConstraintsToDPConstraints(ModelStruct* ms, dpModelStruct* dp);
-static void copyMusclesToDP(ModelStruct* ms, dpModelStruct* dp, int muscleList[]);
-static void copyDPDefaultMuscle(MuscleStruct* from, dpMuscleStruct* to, ModelStruct* ms, dpModelStruct* dp);
-static void copyMuscleToDPMuscle(MuscleStruct* from, MuscleStruct* defFrom,
-                                 dpMuscleStruct* to, dpMuscleStruct* defTo,
-                                 ModelStruct* ms, dpModelStruct* dp);
+static ReturnCode copyMusclesToDP(ModelStruct* ms, dpModelStruct* dp, int muscleList[]);
 static dpWrapObject* getDPWrapObject(dpModelStruct* dp, char name[]);
-static void copyMuscPointToDPMuscPoint(MusclePoint* from, dpMusclePoint* to, ModelStruct* ms);
 static void copyWrapObjectsToDP(ModelStruct* ms, dpModelStruct* dp);
 static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp);
-static void copyFunctionToDPFunction(SplineFunction* from, dpSplineFunction** to);
 static void copySegmentsToDP(ModelStruct* ms, dpModelStruct* dp);
-static void copyPolyhedronToDPPolyhedron(PolyhedronStruct* from, dpPolyhedronStruct** to,
-                                         int SimmSegNum, int SDSegNum, ModelStruct* ms);
-static void copySplineTypeToDPSplineType(SplineType* from, dpSplineType* to);
 
 
-dpJointType identify_joint_type(int mod, int jointnum)
+
+dpJointType identify_joint_type(ModelStruct* ms, int jointnum)
 {
-
    int i, rot_order_index;
    int num_rot_constants = 0, num_rot_functions = 0;
    int num_trans_constants = 0, num_trans_functions = 0, num_real_rot_constants = 0;
    double axis1[3], axis2[3], axis3[3];
    JointStruct* jnt;
 
-   jnt = &model[mod]->joint[jointnum];
+   jnt = &ms->joint[jointnum];
 
    /* First give the joint a one-token name. In most cases, this is just
     * the user-given name of the joint. However, if that name has special
@@ -130,23 +119,23 @@ dpJointType identify_joint_type(int mod, int jointnum)
    {
       int parent_count = 0, child_count = 0, leaf = -1;
 
-      for (i = 0; i < model[mod]->numjoints; i++)
+      for (i = 0; i < ms->numjoints; i++)
       {
-         if (jnt->from == model[mod]->joint[i].from || jnt->from == model[mod]->joint[i].to)
+         if (jnt->from == ms->joint[i].from || jnt->from == ms->joint[i].to)
             parent_count++;
-         if (jnt->to == model[mod]->joint[i].from || jnt->to == model[mod]->joint[i].to)
+         if (jnt->to == ms->joint[i].from || jnt->to == ms->joint[i].to)
             child_count++;
       }
 
       /* If either of the segments in this joint is not ground and is
        * used in exactly one joint, then it is potentially skippable.
        */
-      if (parent_count == 1 && jnt->from != model[mod]->ground_segment)
+      if (parent_count == 1 && jnt->from != ms->ground_segment)
          leaf = jnt->from;
-      else if (child_count == 1 && jnt->to != model[mod]->ground_segment)
+      else if (child_count == 1 && jnt->to != ms->ground_segment)
          leaf = jnt->to;
 
-      if (leaf >= 0 && segment_affects_dynamics(model[mod], leaf) == no)
+      if (leaf >= 0 && segment_affects_dynamics(ms, leaf) == no)
          return dpSkippable;
    }
 
@@ -276,7 +265,7 @@ dpJointType identify_joint_type(int mod, int jointnum)
 
 
 void find_sdfast_joint_order(ModelStruct* ms, JointSDF jnts[],
-                             SegmentSDF segs[], int joint_order[])
+                             SegmentSDF segs[], int joint_order[], int ground_name_index)
 {
 #define UNPROCESSED -2
 
@@ -305,8 +294,8 @@ void find_sdfast_joint_order(ModelStruct* ms, JointSDF jnts[],
          segs[ms->joint[i].to].used = yes;
          jnts[i].used = yes;
          jnts[i].dir = FORWARD;
-         jnts[i].inbname = (char*)simm_malloc(strlen(sdfast_ground) + 2);
-         strcpy(jnts[i].inbname, sdfast_ground);
+         jnts[i].inbname = (char*)simm_malloc(strlen(ground_name[ground_name_index]) + 2);
+         strcpy(jnts[i].inbname, ground_name[ground_name_index]);
          jnts[i].outbname = (char*)simm_malloc(strlen(ms->segment[ms->joint[i].to].name) + 2);
          strcpy(jnts[i].outbname, ms->segment[ms->joint[i].to].name);
          jnts[i].closes_loop = no;
@@ -318,8 +307,8 @@ void find_sdfast_joint_order(ModelStruct* ms, JointSDF jnts[],
          segs[ms->joint[i].from].used = yes;
          jnts[i].used = yes;
          jnts[i].dir = INVERSE;
-         jnts[i].inbname = (char*)simm_malloc(strlen(sdfast_ground) + 2);
-         strcpy(jnts[i].inbname, sdfast_ground);
+         jnts[i].inbname = (char*)simm_malloc(strlen(ground_name[ground_name_index]) + 2);
+         strcpy(jnts[i].inbname, ground_name[ground_name_index]);
          jnts[i].outbname = (char*)simm_malloc(strlen(ms->segment[ms->joint[i].from].name) + 2);
          strcpy(jnts[i].outbname, ms->segment[ms->joint[i].from].name);
          jnts[i].closes_loop = no;
@@ -390,7 +379,7 @@ void find_sdfast_joint_order(ModelStruct* ms, JointSDF jnts[],
       }
    }
 
-#if ! OPENSIM_BUILD
+#if ! SIMMTOOPENSIM
    /* Remove all special characters in the body segment names, so that the strings
     * are valid one-token C strings. Do not touch the ground segment name ($ground)
     * because SD/FAST requires exactly that name.
@@ -399,9 +388,9 @@ void find_sdfast_joint_order(ModelStruct* ms, JointSDF jnts[],
    {
       if (ms->joint[i].type == dpSkippable)
          continue;
-      if (STRINGS_ARE_NOT_EQUAL(jnts[i].inbname,sdfast_ground))
+      if (STRINGS_ARE_NOT_EQUAL(jnts[i].inbname, ground_name[ground_name_index]))
          convert_string(jnts[i].inbname, yes);
-      if (STRINGS_ARE_NOT_EQUAL(jnts[i].outbname,sdfast_ground))
+      if (STRINGS_ARE_NOT_EQUAL(jnts[i].outbname, ground_name[ground_name_index]))
          convert_string(jnts[i].outbname, yes);
    }
 #endif
@@ -410,23 +399,25 @@ void find_sdfast_joint_order(ModelStruct* ms, JointSDF jnts[],
 
 static SBoolean is_xyz_joint(JointStruct* jnt)
 {
-
    int i;
+   double axis[4];
    SBoolean x_taken = no, y_taken = no, z_taken = no;
 
    for (i=0; i<3; i++)
    {
-      if (x_taken == no && axes_are_parallel(jnt->parentrotaxes[i], x_axis, no) == yes)
+      COPY_1X4VECTOR(jnt->parentrotaxes[i], axis);
+      normalize_vector(axis, axis);
+      if (x_taken == no && axes_are_parallel(axis, x_axis, no) == yes)
       {
          x_taken = yes;
          break;
       }
-      else if (y_taken == no && axes_are_parallel(jnt->parentrotaxes[i], y_axis, no) == yes)
+      else if (y_taken == no && axes_are_parallel(axis, y_axis, no) == yes)
       {
          y_taken = yes;
          break;
       }
-      else if (z_taken == no && axes_are_parallel(jnt->parentrotaxes[i], z_axis, no) == yes)
+      else if (z_taken == no && axes_are_parallel(axis, z_axis, no) == yes)
       {
          z_taken = yes;
          break;
@@ -435,7 +426,6 @@ static SBoolean is_xyz_joint(JointStruct* jnt)
    }
 
    return yes;
-
 }
 
 
@@ -470,7 +460,6 @@ static SBoolean axes_are_parallel(double axis1[], double axis2[], SBoolean oppos
  */
 int find_rotation_axis(JointStruct* jnt, double axis[])
 {
-
    int i;
 
    axis[0] = axis[1] = axis[2] = 0.0;
@@ -484,14 +473,15 @@ int find_rotation_axis(JointStruct* jnt, double axis[])
    }
 
    if (i == 3)
-      return (0); /* TODO: should return -1, but not ready to handle the error */
+      return 0; /* TODO: should return -1, but not ready to handle the error */
 
    axis[0] = jnt->parentrotaxes[i][0];
    axis[1] = jnt->parentrotaxes[i][1];
    axis[2] = jnt->parentrotaxes[i][2];
 
-   return (i);
+   normalize_vector(axis, axis);
 
+   return i;
 }
 
 
@@ -586,14 +576,14 @@ static SBoolean segment_affects_dynamics(ModelStruct* ms, int segNum)
 
    for (i = 0; i < ms->num_wrap_objects; i++)
    {
-      if (ms->wrapobj[i].segment == segNum)
+      if (ms->wrapobj[i]->segment == segNum)
          return yes;
    }
 
    for (i = 0; i < ms->nummuscles; i++)
    {
-      for (j = 0; j < ms->muscle[i].musclepoints->num_points; j++)
-         if (ms->muscle[i].musclepoints->mp[j]->segment == segNum)
+      for (j = 0; j < ms->muscle[i]->path->num_points; j++)
+         if (ms->muscle[i]->path->mp[j]->segment == segNum)
             return yes;
    }
 
@@ -601,41 +591,38 @@ static SBoolean segment_affects_dynamics(ModelStruct* ms, int segNum)
 }
 
 
-void name_dofs(int mod)
+void name_dofs(ModelStruct* ms)
 {
+   int i, j;
 
-   int i, j, gc;
-   char namebuffer[CHARBUFFER];
-
-   for (i=0; i<model[mod]->numjoints; i++)
+   for (i=0; i<ms->numjoints; i++)
    {
       for (j=0; j<6; j++)
       {
-         if (model[mod]->joint[i].dofs[j].sd.constrained == no)
+         if (ms->joint[i].dofs[j].sd.constrained == no)
          {
-            gc = model[mod]->joint[i].dofs[j].gencoord;
-            model[mod]->joint[i].dofs[j].sd.name = (char*)simm_malloc(strlen(model[mod]->gencoord[gc].name) + 2);
-            strcpy(model[mod]->joint[i].dofs[j].sd.name, model[mod]->gencoord[gc].name);
-            convert_string(model[mod]->joint[i].dofs[j].sd.name, yes);
-            model[mod]->joint[i].dofs[j].sd.con_name = NULL;
+            GeneralizedCoord* gencoord = ms->joint[i].dofs[j].gencoord;
+            ms->joint[i].dofs[j].sd.name = (char*)simm_malloc(strlen(gencoord->name) + 2);
+            strcpy(ms->joint[i].dofs[j].sd.name, gencoord->name);
+            convert_string(ms->joint[i].dofs[j].sd.name, yes);
+            ms->joint[i].dofs[j].sd.con_name = NULL;
          }
          else
          {
-            strcat3(namebuffer, model[mod]->joint[i].name, "_", getjointvarname(j));
+            char namebuffer[CHARBUFFER];
+            strcat3(namebuffer, ms->joint[i].name, "_", getjointvarname(j), CHARBUFFER);
             convert_string(namebuffer, yes);
-            mstrcpy(&model[mod]->joint[i].dofs[j].sd.name, namebuffer);
+            mstrcpy(&ms->joint[i].dofs[j].sd.name, namebuffer);
             strcat(namebuffer, constrained_suffix);
-            mstrcpy(&model[mod]->joint[i].dofs[j].sd.con_name, namebuffer);
+            mstrcpy(&ms->joint[i].dofs[j].sd.con_name, namebuffer);
          }
       }
    }
-
 }
 
 
 void check_dynamic_params(ModelStruct* ms)
 {
-
    int i, j;
 
    ms->dynamics_ready = yes;
@@ -684,22 +671,14 @@ void check_dynamic_params(ModelStruct* ms)
          }
       }
    }
-
 }
 
 
-static void freeDPModelStruct(dpModelStruct* dp)
+void freeDPModelStruct(dpModelStruct* dp)
 {
    int i, j;
 
    FREE_IFNOTNULL(dp->name);
-
-   if (dp->dynamic_param_names)
-   {
-      for (i = 0; i < dp->num_dynamic_params; i++)
-         FREE_IFNOTNULL(dp->dynamic_param_names[i]);
-      FREE_IFNOTNULL(dp->dynamic_param_names);
-   }
 
    FREE_IFNOTNULL(dp->contacts);
    FREE_IFNOTNULL(dp->bilat_contacts);
@@ -744,10 +723,10 @@ static void freeDPModelStruct(dpModelStruct* dp)
       for (i = 0; i < dp->nq; i++)
       {
          FREE_IFNOTNULL(dp->q[i].name);
-         freeDPFunction(dp->q[i].restraint_func);
-         freeDPFunction(dp->q[i].min_restraint_func);
-         freeDPFunction(dp->q[i].max_restraint_func);
-         freeDPFunction(dp->q[i].constraint_func);
+         freeDPFunction(dp->q[i].restraint_function);
+         freeDPFunction(dp->q[i].min_restraint_function);
+         freeDPFunction(dp->q[i].max_restraint_function);
+         freeDPFunction(dp->q[i].constraint_function);
       }
       FREE_IFNOTNULL(dp->q);
    }
@@ -797,9 +776,8 @@ static void freeDPModelStruct(dpModelStruct* dp)
       FREE_IFNOTNULL(dp->constraint_object);
    }
 
-   memset(dp, 0, sizeof(dpModelStruct));
+   FREE_IFNOTNULL(dp);
 }
-
 
 static void freeDPDefaultMuscle(dpMuscleStruct* dm)
 {
@@ -814,47 +792,26 @@ static void freeDPDefaultMuscle(dpMuscleStruct* dm)
       FREE_IFNOTNULL(dm->resting_tendon_length);
       FREE_IFNOTNULL(dm->max_contraction_vel);
       FREE_IFNOTNULL(dm->momentarms);
-      if (dm->tendon_force_len_curve)
-      {
-         freeDPFunction(dm->tendon_force_len_curve);
-         FREE_IFNOTNULL(dm->tendon_force_len_curve);
-      }
-      if (dm->active_force_len_curve)
-      {
-         freeDPFunction(dm->active_force_len_curve);
-         FREE_IFNOTNULL(dm->active_force_len_curve);
-      }
-      if (dm->passive_force_len_curve)
-      {
-         freeDPFunction(dm->passive_force_len_curve);
-         FREE_IFNOTNULL(dm->passive_force_len_curve);
-      }
-      if (dm->force_vel_curve)
-      {
-         freeDPFunction(dm->force_vel_curve);
-         FREE_IFNOTNULL(dm->force_vel_curve);
-      }
-#if 0
-      /* dynamic_param_names should always point into the model structure. */
+      FREE_IFNOTNULL(dm->tendon_force_len_func);
+      FREE_IFNOTNULL(dm->active_force_len_func);
+      FREE_IFNOTNULL(dm->passive_force_len_func);
+      FREE_IFNOTNULL(dm->force_vel_func);
+      FREE_IFNOTNULL(dm->excitation_func);
+
       if (dm->dynamic_param_names)
       {
          for (i = 0; i < dm->num_dynamic_params; i++)
             FREE_IFNOTNULL(dm->dynamic_param_names[i]);
          FREE_IFNOTNULL(dm->dynamic_param_names);
       }
-#endif
+
       if (dm->dynamic_params)
       {
          for (i = 0; i < dm->num_dynamic_params; i++)
             FREE_IFNOTNULL(dm->dynamic_params[i]);
          FREE_IFNOTNULL(dm->dynamic_params);
       }
-      FREE_IFNOTNULL(dm->excitation_format);
-      if (dm->excitation)
-      {
-         freeDPFunction(dm->excitation);
-         FREE_IFNOTNULL(dm->excitation);
-      }
+
       FREE_IFNOTNULL(dm->muscle_model_index);
       if (dm->wrapStruct)
       {
@@ -868,7 +825,7 @@ static void freeDPDefaultMuscle(dpMuscleStruct* dm)
    }
 }
 
-/* does not free the musclepoints (path) */
+/* does not free the path (path) */
 static void freeDPMuscle(dpMuscleStruct* ms, dpMuscleStruct* dm)
 {
    if (ms && dm)
@@ -877,14 +834,14 @@ static void freeDPMuscle(dpMuscleStruct* ms, dpMuscleStruct* dm)
 
       if (ms->name != dm->name)
          FREE_IFNOTNULL(ms->name);
-      if (ms->musclepoints)
+      if (ms->path)
       {
-         for (i = 0; i < ms->musclepoints->num_orig_points; i++)
-            FREE_IFNOTNULL(ms->musclepoints->mp_orig[i].wrap_pts);
-         FREE_IFNOTNULL(ms->musclepoints->mp_orig);
-         FREE_IFNOTNULL(ms->musclepoints->mp);
+         for (i = 0; i < ms->path->num_orig_points; i++)
+            FREE_IFNOTNULL(ms->path->mp_orig[i].wrap_pts);
+         FREE_IFNOTNULL(ms->path->mp_orig);
+         FREE_IFNOTNULL(ms->path->mp);
       }
-      FREE_IFNOTNULL(ms->musclepoints);
+      FREE_IFNOTNULL(ms->path);
       if (ms->max_isometric_force != dm->max_isometric_force)
          FREE_IFNOTNULL(ms->max_isometric_force);
       if (ms->pennation_angle != dm->pennation_angle)
@@ -896,26 +853,17 @@ static void freeDPMuscle(dpMuscleStruct* ms, dpMuscleStruct* dm)
       if (ms->max_contraction_vel != dm->max_contraction_vel)
          FREE_IFNOTNULL(ms->max_contraction_vel);
       FREE_IFNOTNULL(ms->momentarms);
-      if (ms->tendon_force_len_curve && ms->tendon_force_len_curve != dm->tendon_force_len_curve)
-      {
-         freeDPFunction(ms->tendon_force_len_curve);
-         FREE_IFNOTNULL(ms->tendon_force_len_curve);
-      }
-      if (ms->active_force_len_curve && ms->active_force_len_curve != dm->active_force_len_curve)
-      {
-         freeDPFunction(ms->active_force_len_curve);
-         FREE_IFNOTNULL(ms->active_force_len_curve);
-      }
-      if (ms->passive_force_len_curve && ms->passive_force_len_curve != dm->passive_force_len_curve)
-      {
-         freeDPFunction(ms->passive_force_len_curve);
-         FREE_IFNOTNULL(ms->passive_force_len_curve);
-      }
-      if (ms->force_vel_curve && ms->force_vel_curve != dm->force_vel_curve)
-      {
-         freeDPFunction(ms->force_vel_curve);
-         FREE_IFNOTNULL(ms->force_vel_curve);
-      }
+      if (ms->tendon_force_len_func != dm->tendon_force_len_func)
+         FREE_IFNOTNULL(ms->tendon_force_len_func);
+      if (ms->active_force_len_func != dm->active_force_len_func)
+         FREE_IFNOTNULL(ms->active_force_len_func);
+      if (ms->passive_force_len_func != dm->passive_force_len_func)
+         FREE_IFNOTNULL(ms->passive_force_len_func);
+      if (ms->force_vel_func != dm->force_vel_func)
+         FREE_IFNOTNULL(ms->force_vel_func);
+      if (ms->excitation_func != dm->excitation_func)
+         FREE_IFNOTNULL(ms->excitation_func);
+
       /* The dynamic_param_names should always be equal to the default muscle's,
        * which should always be equal to the model's array of names.
        */
@@ -937,13 +885,7 @@ static void freeDPMuscle(dpMuscleStruct* ms, dpMuscleStruct* dm)
          }
          FREE_IFNOTNULL(ms->dynamic_params);
       }
-      if (ms->excitation_format != dm->excitation_format)
-         FREE_IFNOTNULL(ms->excitation_format);
-      if (ms->excitation && ms->excitation != dm->excitation)
-      {
-         freeDPFunction(ms->excitation);
-         FREE_IFNOTNULL(ms->excitation);
-      }
+
       if (ms->muscle_model_index != dm->muscle_model_index)
          FREE_IFNOTNULL(ms->muscle_model_index);
       if (ms->wrapStruct && ms->wrapStruct != dm->wrapStruct)
@@ -958,7 +900,7 @@ static void freeDPMuscle(dpMuscleStruct* ms, dpMuscleStruct* dm)
    }
 }
 
-static void freeDPPolyhedron(dpPolyhedronStruct* ph)
+void freeDPPolyhedron(dpPolyhedronStruct* ph)
 {
    if (ph)
    {
@@ -975,7 +917,7 @@ static void freeDPPolyhedron(dpPolyhedronStruct* ph)
 }
 
 
-static void freeDPFunction(dpSplineFunction* sf)
+static void freeDPFunction(dpFunction* sf)
 {
    if (sf)
    {
@@ -987,17 +929,18 @@ static void freeDPFunction(dpSplineFunction* sf)
    }
 }
 
+/* copy the SIMM model into the dp model structure */
 
-ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList[])
+dpModelStruct* copyModelToDPModel(ModelStruct* ms, int muscleList[])
 {
    int i, j, k, segNum, count;
    ReturnCode rc;
+	dpQStruct* gencoord;
+   GeneralizedCoord *temp_gc;
+   dpQStruct* temp_q;
+   dpModelStruct* dp;
 
-   /* Free the dpModelStruct, in case it was used before. This function
-    * also zeros out the entire structure, which is important because
-    * not all of the fields are explicitly set in the code below.
-    */
-   freeDPModelStruct(dp);
+   dp = (dpModelStruct*)simm_calloc(1, sizeof(dpModelStruct));
 
    dp->simmModel = (dpSimmModelID)ms;
 
@@ -1011,17 +954,17 @@ ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList
     * If there are loops in the model, this is not a one-to-one mapping.
     * So you need to call make_sdfast_model() to create the mapping.
     */
-
    check_dynamic_params(ms);
    if (ms->dynamics_ready == no)
    {
       sprintf(errorbuffer, "Unable to create dynamic simulation for %s", ms->name);
       error(none, errorbuffer);
-      return code_bad;
+      freeDPModelStruct(dp);
+      return NULL;
    }
 
    for (i = 0; i < ms->numjoints; i++)
-      ms->joint[i].type = identify_joint_type(ms->modelnum, i);
+      ms->joint[i].type = identify_joint_type(ms, i);
 
    if (valid_sdfast_model(ms) == no)
    {
@@ -1029,14 +972,16 @@ ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList
       error(none, buffer);
       error(none, errorbuffer); /* errorbuffer was filled in by valid_sdfast_model() */
       error(none, "Consult the SD/FAST manual or email technical support for more details.");
-      return code_bad;
+      freeDPModelStruct(dp);
+      return NULL;
    }
 
-   if (make_sdfast_model(ms->modelnum, NULL, no, 0) != code_fine)
+   if (make_sdfast_model(ms, NULL, no, 0) != code_fine)
    {
       sprintf(errorbuffer, "Unable to create dynamic simulation for %s", ms->name);
       error(none, errorbuffer);
-      return code_bad;
+      freeDPModelStruct(dp);
+      return NULL;
    }
 
    /* If you made it to here, then SDseg[] was filled in with the segment info,
@@ -1121,23 +1066,7 @@ ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList
    /* Copy the wrap objects. */
    copyWrapObjectsToDP(ms, dp);
 
-   /* Copy the dynamic [muscle] parameters. This must be done before
-    * the muscles are copied.
-    */
-   dp->num_dynamic_params = ms->num_dynamic_params;
-   if (dp->num_dynamic_params > 0)
-   {
-      dp->dynamic_param_names = (char**)simm_malloc(dp->num_dynamic_params * sizeof(char*));
-      for (i = 0; i < dp->num_dynamic_params; i++)
-         mstrcpy(&dp->dynamic_param_names[i], ms->dynamic_param_names[i]);
-   }
-   else
-   {
-      dp->dynamic_param_names = NULL;
-   }
-
-   /* Copy the muscles. */
-   copyMusclesToDP(ms, dp, muscleList);
+   // DKB Nov. 2009 - moved copy muscles after copy Qs since muscles may have references to Qs
 
    /* Copy the spring floors. */
    /* First count how many floors there are, since they are not stored in one array.
@@ -1202,8 +1131,8 @@ ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList
             if (ms->segment[segNum].springFloor && ms->segment[segNum].springFloor->poly)
             {
                dp->spring[count].segment = get_sd_seg_num(seg->name);
-               dp->spring[count].floor = get_sd_floor_num(dp, seg->springPoint[j].floorName);
-               mstrcpy(&dp->spring[count].floor_name, seg->springPoint[j].floorName);
+               dp->spring[count].floor = get_sd_floor_num(dp, ms->segment[segNum].springFloor->name);
+               mstrcpy(&dp->spring[count].floor_name, ms->segment[segNum].springFloor->name);
                for (k = 0; k < 3; k++)
                {
                   dp->spring[count].point[k] = seg->springPoint[j].point[k] - seg->masscenter[k];
@@ -1259,43 +1188,30 @@ ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList
    /* Copy the constraint objects. */
    copyConstraintsToDPConstraints(ms, dp);
 
-   /* Copy the functions, which are used for kinematic constraints and gencoord restraints and muscle moving points. */
-   dp->num_constraint_functions = countUsedFunctions(ms);
-   if (dp->num_constraint_functions > 0)
+   /* Copy the functions, which are used for kinematic constraints, gencoord restraints
+    * and moving muscle point definitions. */
+   dp->num_functions = countUsedFunctions(ms);
+   if (dp->num_functions > 0)
    {
       int index = 0;
-      dp->constraint_function = (dpSplineFunction*)simm_calloc(dp->num_constraint_functions, sizeof(dpSplineFunction));
+      dp->function = (dpFunction**)simm_calloc(dp->num_functions, sizeof(dpFunction*));
       for (i = 0; i < ms->func_array_size; i++)
       {
-         if (ms->function[i].used == yes)
+         if (ms->function[i] && ms->function[i]->used == dpYes)
          {
-            SplineFunction* from = &ms->function[i];
-            dpSplineFunction* to = &dp->constraint_function[index++];
-
-            copySplineTypeToDPSplineType(&from->type, &to->type);
-
-            to->cutoff_frequency = 0.0;
-            to->usernum = from->usernum;//0;
-            to->defined = dpYes;
-
-            to->numpoints = to->coefficient_array_size = from->numpoints;
-            to->x = (double*)simm_calloc(to->numpoints, sizeof(double));
-            to->y = (double*)simm_calloc(to->numpoints, sizeof(double));
-            to->b = (double*)simm_calloc(to->numpoints, sizeof(double));
-            to->c = (double*)simm_calloc(to->numpoints, sizeof(double));
-            to->d = (double*)simm_calloc(to->numpoints, sizeof(double));
-
-            /* b, c, and d are not copied because they are recalculated
-            * by the simulation.
-            */
-            memcpy(to->x, from->x, to->numpoints * sizeof(double));
-            memcpy(to->y, from->y, to->numpoints * sizeof(double));
+            dpFunction* from = ms->function[i];
+            dpFunction *to = NULL;
+            dp->function[index] = (dpFunction*)simm_calloc(1, sizeof(dpFunction));
+            to = dp->function[index++];
+            // DKB Sept 17, 2009 added malloc because copy expects coeff_array_size to be set and memory to be allocated
+            malloc_function(to, from->coefficient_array_size);  
+            copy_function(from, to);
          }
       }
    }
    else
    {
-      dp->constraint_function = NULL;
+      dp->function = NULL;
    }
 
    /* Copy the Q data. This has to be done after the constraint functions are copied
@@ -1304,30 +1220,64 @@ ReturnCode copyModelToDPModel(ModelStruct* ms, dpModelStruct* dp, int muscleList
     */
    copyQsToDP(ms, dp);
 
-   /* This must be done after the Qs have been copied. */
+   /* Copy the muscles. */   
+   if (copyMusclesToDP(ms, dp, muscleList) == code_bad)  //moved after the copy Qs because muscles may refer to Qs
+   {
+      sprintf(errorbuffer, "Unable to create dynamic simulation for %s - error in muscles", ms->name);
+      error(none, errorbuffer);
+      freeDPModelStruct(dp);
+      return NULL;
+   }
+
    for (i = 0; i < dp->num_muscles; i++)
    {
-      if (dp->muscles[i].excitation_abscissa != TIME)
+      for (j = 0; j < dp->muscles[i].path->num_orig_points; j++)
       {
-         dp->muscles[i].excitation_abscissa = get_q_index_for_gencoord(ms->gencoord[dp->muscles[i].excitation_abscissa].name, dp);
+         if (dp->muscles[i].path->mp_orig[j].isVia)
+         {
+            temp_q = (dpQStruct *)dp->muscles[i].path->mp_orig[j].viaRange.gencoord;
+            printf("muscle %s has via point for %s\n", dp->muscles[i].name, temp_q->name);
+         }
+      }
+      for (j = 0; j < dp->muscles[i].path->num_orig_points; j++)
+      {
+         if (dp->muscles[i].path->mp_orig[j].isMovingPoint)
+         {
+            if (dp->muscles[i].path->mp_orig[j].gencoord[0])
+            {
+               temp_q = (dpQStruct *)dp->muscles[i].path->mp_orig[j].gencoord[0];
+               printf("muscle %s has mmpX point for %s\n", dp->muscles[i].name, temp_q->name);
+            }
+            if (dp->muscles[i].path->mp_orig[j].gencoord[1])
+            {
+               temp_q = (dpQStruct *)dp->muscles[i].path->mp_orig[j].gencoord[1];
+               printf("muscle %s has mmpY point for %s\n", dp->muscles[i].name, temp_q->name);
+            }
+            if (dp->muscles[i].path->mp_orig[j].gencoord[2])
+            {
+               temp_q = (dpQStruct *)dp->muscles[i].path->mp_orig[j].gencoord[2];
+               printf("muscle %s has mmpZ point for %s\n", dp->muscles[i].name, temp_q->name);
+            }
+         }
       }
    }
 
-   return code_fine;
+   return dp;
 }
 
-static int get_q_index_for_gencoord(char gencoord_name[], dpModelStruct* dp)
+static dpQStruct* get_q_for_gencoord(const char gencoord_name[], dpModelStruct* dp)
 {
    int i;
 
    for (i = 0; i < dp->nq; i++)
    {
       if (STRINGS_ARE_EQUAL(gencoord_name, dp->q[i].name))
-         return i;
+         return &dp->q[i];
    }
 
-   return -1;
+   return NULL;
 }
+
 
 static int get_sd_floor_num(dpModelStruct* dp, char* name)
 {
@@ -1415,16 +1365,21 @@ static void copyConstraintsToDPConstraints(ModelStruct* ms, dpModelStruct* dp)
    }
 }
 
-
-static void copyMusclesToDP(ModelStruct* ms, dpModelStruct* dp, int muscleList[])
+/* copy muscles from the SIMM model structure to the DP structure
+ * when copied from the ModelStruct, all via point gencoords, moving muscle point gencoords,
+ * excitation abscissas , are refering to GENCOORDS (GeneralizedCoordStruct) they need
+ * to be converted to Qs (dpQStruct)
+ * Assuming the Qs have been copied to the dp struct, convert
+ * and ?? wrpa object gencoords*/
+static ReturnCode copyMusclesToDP(ModelStruct* ms, dpModelStruct* dp, int muscleList[])
 {
-   int i, index;
+   int i, j, index;
 
    dp->num_muscles = 0;
    dp->muscles = NULL;
 
    if (muscleList == NULL)
-      return;
+      return code_fine;
 
    for (i = 0; i < ms->nummuscles; i++)
       if (muscleList[i])
@@ -1432,275 +1387,51 @@ static void copyMusclesToDP(ModelStruct* ms, dpModelStruct* dp, int muscleList[]
 
    /* If there are no muscles to copy, don't copy the default muscle; just return. */
    if (dp->num_muscles == 0)
-      return;
+      return code_fine;
+
+   if (copy_default_muscle_dp(ms->default_muscle, &dp->default_muscle, dp) == code_bad)
+      return code_bad;
 
    dp->muscles = (dpMuscleStruct*)simm_malloc(dp->num_muscles * sizeof(dpMuscleStruct));
-
-   copyDPDefaultMuscle(&ms->default_muscle, &dp->default_muscle, ms, dp);
 
    for (i = 0, index = 0; i < ms->nummuscles; i++)
    {
       if (muscleList[i])
-         copyMuscleToDPMuscle(&ms->muscle[i], &ms->default_muscle, &dp->muscles[index++], &dp->default_muscle, ms, dp);
-   }
-
-}
-
-
-static void copyDPDefaultMuscle(MuscleStruct* from, dpMuscleStruct* to, ModelStruct* ms, dpModelStruct* dp)
-{
-   int i;
-
-   if (from->name == NULL)
-      to->name = NULL;
-   else
-      mstrcpy(&to->name, from->name);
-
-   to->nummomentarms = 0;
-   to->momentarms = NULL;
-
-   copy_nndouble(from->max_isometric_force, &to->max_isometric_force);
-   copy_nndouble(from->pennation_angle, &to->pennation_angle);
-   copy_nndouble(from->max_contraction_vel, &to->max_contraction_vel);
-   copy_nndouble(from->optimal_fiber_length,&to->optimal_fiber_length);
-   copy_nndouble(from->resting_tendon_length,&to->resting_tendon_length);
-
-   to->num_dynamic_params = from->num_dynamic_params;
-   if (to->num_dynamic_params > 0)
-   {
-      to->dynamic_param_names = dp->dynamic_param_names;
-      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
-      for (i = 0; i < to->num_dynamic_params; i++)
-         copy_nndouble(from->dynamic_params[i], &to->dynamic_params[i]);
-   }
-   else
-   {
-      to->dynamic_param_names = NULL;
-      to->dynamic_params = NULL;
-   }
-
-   if (from->active_force_len_curve == NULL)
-      to->active_force_len_curve = NULL;
-   else
-      copyFunctionToDPFunction(from->active_force_len_curve, &to->active_force_len_curve);
-
-   if (from->passive_force_len_curve == NULL)
-      to->passive_force_len_curve = NULL;
-   else
-      copyFunctionToDPFunction(from->passive_force_len_curve, &to->passive_force_len_curve);
-
-   if (from->tendon_force_len_curve == NULL)
-      to->tendon_force_len_curve = NULL;
-   else
-      copyFunctionToDPFunction(from->tendon_force_len_curve, &to->tendon_force_len_curve);
-
-   if (from->force_vel_curve == NULL)
-      to->force_vel_curve = NULL;
-   else
-      copyFunctionToDPFunction(from->force_vel_curve, &to->force_vel_curve);
-
-   to->excitation_abscissa = from->excitation_abscissa;
-   if (from->excitation == NULL)
-      to->excitation = NULL;
-   else
-      copyFunctionToDPFunction(from->excitation, &to->excitation);
-
-   if (from->excitation_format == NULL)
-      to->excitation_format = NULL;
-   else
-   {
-      to->excitation_format = (dpSplineType*)simm_malloc(sizeof(dpSplineType));
-      copySplineTypeToDPSplineType(from->excitation_format, to->excitation_format);
-   }
-
-   copy_nnint(from->muscle_model_index, &to->muscle_model_index);
-   /* In the Pipeline, muscle_model_index is zero-based. */
-   if (to->muscle_model_index)
-      (*to->muscle_model_index)--;
-
-   /* These are set by when simulation when reading dllparams.txt, but
-    * for the default muscle they are never used.
-    */
-   to->numStateParams = 0;
-   to->stateParams = NULL;
-}
-
-
-static void copyMuscleToDPMuscle(MuscleStruct* from, MuscleStruct* defFrom,
-                                 dpMuscleStruct* to, dpMuscleStruct* defTo,
-                                 ModelStruct* ms, dpModelStruct* dp)
-{
-   int i;
-
-   /* Start by zero-ing out the entire muscle structure. */
-   memset(to, 0, sizeof(dpMuscleStruct));
-
-   if (from->name == defFrom->name)
-      to->name = defTo->name;
-   else
-      mstrcpy(&to->name, from->name);
-
-   to->display = from->display;
-   to->output = from->output;
-   to->selected = from->selected;
-
-   if (from->max_isometric_force == defFrom->max_isometric_force)
-      to->max_isometric_force = defTo->max_isometric_force;
-   else
-   {
-      to->max_isometric_force = (double*)simm_malloc(sizeof(double));
-      *to->max_isometric_force = *from->max_isometric_force;
-   }
-
-   if (from->pennation_angle == defFrom->pennation_angle)
-      to->pennation_angle = defTo->pennation_angle;
-   else
-   {
-      to->pennation_angle = (double*)simm_malloc(sizeof(double));
-      *to->pennation_angle = *from->pennation_angle;
-   }
-
-   if (from->optimal_fiber_length == defFrom->optimal_fiber_length)
-      to->optimal_fiber_length = defTo->optimal_fiber_length;
-   else
-   {
-      to->optimal_fiber_length = (double*)simm_malloc(sizeof(double));
-      *to->optimal_fiber_length = *from->optimal_fiber_length;
-   }
-
-   if (from->resting_tendon_length == defFrom->resting_tendon_length)
-      to->resting_tendon_length = defTo->resting_tendon_length;
-   else
-   {
-      to->resting_tendon_length = (double*)simm_malloc(sizeof(double));
-      *to->resting_tendon_length = *from->resting_tendon_length;
-   }
-
-   if (from->tendon_force_len_curve == defFrom->tendon_force_len_curve)
-      to->tendon_force_len_curve = defTo->tendon_force_len_curve;
-   else
-      copyFunctionToDPFunction(from->tendon_force_len_curve, &to->tendon_force_len_curve);
-
-   if (from->active_force_len_curve == defFrom->active_force_len_curve)
-      to->active_force_len_curve = defTo->active_force_len_curve;
-   else
-      copyFunctionToDPFunction(from->active_force_len_curve, &to->active_force_len_curve);
-
-   if (from->passive_force_len_curve == defFrom->passive_force_len_curve)
-      to->passive_force_len_curve = defTo->passive_force_len_curve;
-   else
-      copyFunctionToDPFunction(from->passive_force_len_curve, &to->passive_force_len_curve);
-
-   if (from->force_vel_curve == defFrom->force_vel_curve)
-      to->force_vel_curve = defTo->force_vel_curve;
-   else
-      copyFunctionToDPFunction(from->force_vel_curve, &to->force_vel_curve);
-
-   if (from->max_contraction_vel == defFrom->max_contraction_vel)
-      to->max_contraction_vel = defTo->max_contraction_vel;
-   else
-   {
-      to->max_contraction_vel = (double*)simm_malloc(sizeof(double));
-      *to->max_contraction_vel = *from->max_contraction_vel;
-   }
-
-   to->num_dynamic_params = from->num_dynamic_params;
-   if (to->num_dynamic_params > 0)
-   {
-      to->dynamic_param_names = dp->dynamic_param_names;
-      to->dynamic_params = (double**)simm_malloc(to->num_dynamic_params * sizeof(double*));
-      for (i = 0; i < to->num_dynamic_params; i++)
       {
-         if (from->dynamic_params[i] == defFrom->dynamic_params[i])
-            to->dynamic_params[i] = defTo->dynamic_params[i];
-         else
+         if (copy_muscle_dp(ms->muscle[i], &dp->muscles[index++], ms->default_muscle, &dp->default_muscle, dp) == code_bad)
          {
-            to->dynamic_params[i] = (double*)simm_malloc(sizeof(double));
-            *to->dynamic_params[i] = *from->dynamic_params[i];
+            // if there's a problem, not going to create model, need to free muscle struct
+            FREE_IFNOTNULL(dp->muscles);
+
+            return code_bad;
          }
+
+         /* DKB: Sept. 2009 - when making the pipeline model, some segments are skippable,
+          * they don't affect the dynamics, so they are not included in the model.  Therefore,
+          * the order of the segments in SIMM (ms) and pipeline (dp) DO NOT CORRESPOND!  All
+          * segment references need to be updated so they are correct in the DP model.
+          * As well, the pipeline assumes that all muscle points are relative to the segment's mass
+          * center, not it's origin.  When the muscle file is read in in the stand-alone, the mass-center
+          * is subtracted.  Make sure to do this here for all muscle points.
+          */
+         for (j = 0; j < dp->muscles[index-1].path->num_orig_points; j++)
+         {
+            int simm_seg = dp->muscles[index-1].path->mp_orig[j].segment;
+            dp->muscles[index-1].path->mp_orig[j].segment = get_sd_seg_num(ms->segment[simm_seg].name);
+            dp->muscles[index-1].path->mp_orig[j].point[XX] -= ms->segment[simm_seg].masscenter[XX];
+            dp->muscles[index-1].path->mp_orig[j].point[YY] -= ms->segment[simm_seg].masscenter[YY];
+            dp->muscles[index-1].path->mp_orig[j].point[ZZ] -= ms->segment[simm_seg].masscenter[ZZ];
+         }
+         /* Note: because the wrapStruct has a wrap_object pointer to the actual wrap_object in
+          * the dpModel, the segment stored in the dp model does not need to be adjusted. */
+
       }
    }
-   else
-   {
-      to->dynamic_param_names = NULL;
-      to->dynamic_params = NULL;
-   }
-
-   to->excitation_abscissa = from->excitation_abscissa;
-
-   if (from->excitation == defFrom->excitation)
-      to->excitation = defTo->excitation;
-   else
-      copyFunctionToDPFunction(from->excitation, &to->excitation);
-
-   if (from->excitation_format == defFrom->excitation_format)
-      to->excitation_format = defTo->excitation_format;
-   else
-   {
-      to->excitation_format = (dpSplineType*)simm_malloc(sizeof(dpSplineType));
-      copySplineTypeToDPSplineType(from->excitation_format, to->excitation_format);
-   }
-
-   if (from->muscle_model_index == defFrom->muscle_model_index)
-      to->muscle_model_index = defTo->muscle_model_index;
-   else
-   {
-      to->muscle_model_index = (int*)simm_malloc(sizeof(int));
-      *to->muscle_model_index = *from->muscle_model_index - 1;
-   }
-
-   to->numWrapStructs = from->numWrapStructs;
-   if (from->wrapStruct == defFrom->wrapStruct)
-      to->wrapStruct = defTo->wrapStruct;
-   else
-   {
-      to->wrapStruct = (dpMuscleWrapStruct**)simm_malloc(to->numWrapStructs * sizeof(dpMuscleWrapStruct*));
-      for (i = 0; i < to->numWrapStructs; i++)
-      {
-         to->wrapStruct[i] = (dpMuscleWrapStruct*)simm_calloc(1, sizeof(dpMuscleWrapStruct));
-         to->wrapStruct[i]->wrap_algorithm = from->wrapStruct[i]->wrap_algorithm;
-         to->wrapStruct[i]->startPoint = from->wrapStruct[i]->startPoint;
-         to->wrapStruct[i]->endPoint = from->wrapStruct[i]->endPoint;
-         to->wrapStruct[i]->wrap_object = getDPWrapObject(dp, ms->wrapobj[from->wrapStruct[i]->wrap_object].name);
-      }
-   }
-
-   if (from->musclepoints != NULL)
-   {
-      to->musclepoints = (dpMusclePathStruct *)simm_malloc(sizeof(dpMusclePathStruct));
-      to->musclepoints->num_orig_points = from->musclepoints->num_orig_points;
-      to->musclepoints->mp_orig_array_size = from->musclepoints->mp_orig_array_size;
-
-      // allocate array size or actual number of points??
-      to->musclepoints->mp_orig = (dpMusclePoint*)simm_malloc(to->musclepoints->num_orig_points * sizeof(dpMusclePoint));
-      for (i = 0; i < to->musclepoints->num_orig_points; i++)
-         copyMuscPointToDPMuscPoint(&from->musclepoints->mp_orig[i], &to->musclepoints->mp_orig[i], ms);
-
-
-      to->musclepoints->mp_array_size = to->musclepoints->num_orig_points + (to->numWrapStructs * 2);
-      to->musclepoints->mp = (dpMusclePoint**)simm_malloc(sizeof(dpMusclePoint*) * to->musclepoints->mp_array_size);
-
-      /* When wrapping is calculated by the simulation, the mp[] array will be filled in
-      * and num_points set appropriately.
-      */
-      to->musclepoints->num_points = 0;
-   }
-
-   /* Copy the muscle's excitation format into the excitation spline structure,
-    * whether or not it comes from the default muscle.
-    */
-   if (to->excitation && to->excitation_format)
-      to->excitation->type = *to->excitation_format;
-
-   /* These are set by when simulation when reading dllparams.txt. */
-   to->numStateParams = 0;
-   to->stateParams = NULL;
+   return code_fine;
 }
-
 
 static dpWrapObject* getDPWrapObject(dpModelStruct* dp, char name[])
 {
-   
    int i;
    
    if (name == NULL)
@@ -1711,67 +1442,6 @@ static dpWrapObject* getDPWrapObject(dpModelStruct* dp, char name[])
          return &dp->wrap_object[i];
       
    return NULL; 
-}
-
-static void copyMuscPointToDPMuscPoint(MusclePoint* from, dpMusclePoint* to, ModelStruct* ms)
-{
-   int i;
-   DofStruct* dof;
-
-   to->segment = get_sd_seg_num(ms->segment[from->segment].name);
-//   to->refpt = from->refpt;
-   if (from->selected == no)
-      to->selected = dpNo;
-   else
-      to->selected = dpYes;
-   to->point[XX] = from->point[XX] - ms->segment[from->segment].masscenter[XX];
-   to->point[YY] = from->point[YY] - ms->segment[from->segment].masscenter[YY];
-   to->point[ZZ] = from->point[ZZ] - ms->segment[from->segment].masscenter[ZZ];
-
-   if (from->isMovingPoint == no)
-      to->isMovingPoint = dpNo;
-   else
-      to->isMovingPoint = dpYes;
-
-   if (from->isVia == no)
-      to->isVia = dpNo;
-   else
-      to->isVia = dpYes;
-
-   to->viaRange.genc = from->viaRange.genc;
-   to->viaRange.start = from->viaRange.start;
-   to->viaRange.end = from->viaRange.end;
-   if (to->isVia)
-   {
-      /* Find the SIMM DOF which uses the gencoord as an unconstrained Q. */
-      dof = find_unconstrained_sd_dof(ms->modelnum, from->viaRange.genc);
-      if (dof)
-         to->viaRange.genc = dof->sd.state_number;
-      else
-         to->viaRange.genc = 0; // TODO: serious error is index of gencoord in DP cannot be found!
-   }
-
-   to->fcn_index[XX] = from->fcn_index[XX];
-   to->fcn_index[YY] = from->fcn_index[YY];
-   to->fcn_index[ZZ] = from->fcn_index[ZZ];
-   to->gencoord[XX] = from->gencoord[XX];
-   to->gencoord[YY] = from->gencoord[YY];
-   to->gencoord[ZZ] = from->gencoord[ZZ];
-
-   if (from->is_auto_wrap_point == no)
-      to->is_auto_wrap_point = dpNo;
-   else
-      to->is_auto_wrap_point = dpYes;
-   to->wrap_distance = from->wrap_distance;
-   to->num_wrap_pts = from->num_wrap_pts;
-   if (to->num_wrap_pts > 0)
-   {
-      to->wrap_pts = (double*)simm_malloc(to->num_wrap_pts * 3 * sizeof(double));
-      for (i = 0; i < to->num_wrap_pts * 3; i++)
-         to->wrap_pts[i] = from->wrap_pts[i];
-   }
-   else
-      to->wrap_pts = NULL;
 }
 
 
@@ -1791,31 +1461,13 @@ static void copyWrapObjectsToDP(ModelStruct* ms, dpModelStruct* dp)
 
    for (i = 0; i < dp->num_wrap_objects; i++)
    {
-      WrapObject* from = &ms->wrapobj[i];
+      dpWrapObject* from = ms->wrapobj[i];
       dpWrapObject* to = &dp->wrap_object[i];
 
+      memcpy(to, from, sizeof(dpWrapObject));
       mstrcpy(&to->name, from->name);
-      if (from->wrap_type == wrap_sphere)
-         to->wrap_type = dpWrapSphere;
-      else if (from->wrap_type == wrap_cylinder)
-         to->wrap_type = dpWrapCylinder;
-      else if (from->wrap_type == wrap_ellipsoid)
-         to->wrap_type = dpWrapEllipsoid;
-      else if (from->wrap_type == wrap_torus)
-         to->wrap_type = dpWrapTorus;
-      else
-         to->wrap_type = dpWrapNone;
-
-      to->active = from->active;
-      to->wrap_algorithm = from->wrap_algorithm;
+//check that xform is being copied properly, make sure that from->segment is the correct index  dkb
       to->segment = get_sd_seg_num(ms->segment[from->segment].name);
-      to->radius[0] = from->radius.xyz[0];
-      to->radius[1] = from->radius.xyz[1];
-      to->radius[2] = from->radius.xyz[2];
-      to->height = from->height;
-      to->wrap_axis = from->wrap_axis;
-      to->wrap_sign = from->wrap_sign;
-      copy_4x4matrix(from->from_local_xform, to->from_local_xform);
       to->from_local_xform[3][XX] -= ms->segment[from->segment].masscenter[XX];
       to->from_local_xform[3][YY] -= ms->segment[from->segment].masscenter[YY];
       to->from_local_xform[3][ZZ] -= ms->segment[from->segment].masscenter[ZZ];
@@ -1845,12 +1497,9 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
 
    for (i = 0; i < dp->nq; i++)
    {
-      dof = find_nth_q_dof(ms->modelnum, i);
-      jnt = find_nth_q_joint(ms->modelnum, i);
-      if (dof->gencoord != -1) //dkb
-      gc = &ms->gencoord[dof->gencoord];
-      else
-         gc = NULL;//dkb
+      dof = find_nth_q_dof(ms, i);
+      jnt = find_nth_q_joint(ms, i);
+      gc = dof->gencoord;
       q = &dp->q[i];
 
       mstrcpy(&q->name, dof->sd.name);
@@ -1862,7 +1511,7 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
       else if (dof->sd.constrained == no)
       {
          /* Locked gencoords are modeled as fixed Qs (as of version 4.1.1). */
-         if (dof->gencoord >= 0 && gc->locked == yes)
+         if (gc && gc->locked == yes)
 				q->type = dpFixedQ;
          else
             q->type = dpUnconstrainedQ;
@@ -1891,21 +1540,19 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
       }
       if (dof->sd.fixed == yes || dof->sd.constrained == yes)
       {
-         q->restraint_func = NULL;
-         q->min_restraint_func = NULL;
-         q->max_restraint_func = NULL;
+         q->restraint_function = NULL;
+         q->min_restraint_function = NULL;
+         q->max_restraint_function = NULL;
          q->function_active = dpNo;
       }
       else
       {
-         if (gc->restraint_func_num != -1)
+         if (gc->restraint_function)
          {
-            /* The index of the function in the ModelStruct and the dpModelStruct
-             * should be the same.
-             */
-            q->restraint_func = &dp->constraint_function[gc->restraint_func_num];
-            q->min_restraint_func = NULL;
-            q->max_restraint_func = NULL;
+            // The index of the functions in the ModelStruct and the dpModelStruct should be the same.
+            q->restraint_function = dp->function[getFunctionIndex(ms, gc->restraint_function)];
+            q->min_restraint_function = NULL;
+            q->max_restraint_function = NULL;
             if (gc->restraintFuncActive == yes)
                q->function_active = dpYes;
             else
@@ -1913,34 +1560,32 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
          }
          else
          {
-            q->restraint_func = NULL;
+            q->restraint_function = NULL;
             q->function_active = dpNo;
 
-            /* The index of the functions in the ModelStruct and the dpModelStruct
-             * should be the same.
-             */
-            if (gc->min_restraint_func_num != -1)
-               q->min_restraint_func = &dp->constraint_function[gc->min_restraint_func_num];
+            // The index of the functions in the ModelStruct and the dpModelStruct should be the same.
+            if (gc->min_restraint_function)
+               q->min_restraint_function = dp->function[getFunctionIndex(ms, gc->min_restraint_function)];
             else
-               q->min_restraint_func = NULL;
+               q->min_restraint_function = NULL;
 
-            if (gc->max_restraint_func_num != -1)
-               q->max_restraint_func = &dp->constraint_function[gc->max_restraint_func_num];
+            if (gc->max_restraint_function)
+               q->max_restraint_function = dp->function[getFunctionIndex(ms, gc->max_restraint_function)];
             else
-               q->max_restraint_func = NULL;
+               q->max_restraint_function = NULL;
          }
       }
       if (dof->sd.constrained == yes)
       {
-         DofStruct* ind_dof = find_unconstrained_sd_dof(ms->modelnum, dof->gencoord);
-         /* The index of the functions in the ModelStruct and the dpModelStruct should be the same. */
-         q->constraint_func = &dp->constraint_function[dof->funcnum];
+         DofStruct* ind_dof = find_unconstrained_sd_dof(ms, dof->gencoord);
+         // The index of the functions in the ModelStruct and the dpModelStruct should be the same.
+         q->constraint_function = dp->function[getFunctionIndex(ms, dof->function)];
          q->constraint_num = dof->sd.error_number;
          q->q_ind = ind_dof->sd.state_number;
       }
       else
       {
-         q->constraint_func = NULL;
+         q->constraint_function = NULL;
          q->constraint_num = -1;
          q->q_ind = -1;
       }
@@ -1956,33 +1601,6 @@ static void copyQsToDP(ModelStruct* ms, dpModelStruct* dp)
          dp->num_gencoords++;
    }
 
-}
-
-
-static void copyFunctionToDPFunction(SplineFunction* from, dpSplineFunction** to)
-{
-   dpSplineFunction* f;
-
-   f = *to = (dpSplineFunction*)simm_calloc(1, sizeof(dpSplineFunction));
-
-   copySplineTypeToDPSplineType(&from->type, &f->type);
-
-   f->cutoff_frequency = 0;
-   f->usernum = 0;
-   f->defined = dpYes;
-
-   f->numpoints = f->coefficient_array_size = from->numpoints;
-   f->x = (double*)simm_calloc(f->numpoints, sizeof(double));
-   f->y = (double*)simm_calloc(f->numpoints, sizeof(double));
-   f->b = (double*)simm_calloc(f->numpoints, sizeof(double));
-   f->c = (double*)simm_calloc(f->numpoints, sizeof(double));
-   f->d = (double*)simm_calloc(f->numpoints, sizeof(double));
-
-   /* b, c, and d are not copied because they are recalculated
-    * by the simulation.
-    */
-   memcpy(f->x, from->x, f->numpoints * sizeof(double));
-   memcpy(f->y, from->y, f->numpoints * sizeof(double));
 }
 
 
@@ -2041,8 +1659,8 @@ static void copySegmentsToDP(ModelStruct* ms, dpModelStruct* dp)
 }
 
 
-static void copyPolyhedronToDPPolyhedron(PolyhedronStruct* from, dpPolyhedronStruct** to,
-                                         int SimmSegNum, int SDSegNum, ModelStruct* ms)
+void copyPolyhedronToDPPolyhedron(PolyhedronStruct* from, dpPolyhedronStruct** to,
+											 int SimmSegNum, int SDSegNum, ModelStruct* ms)
 {
    int i, j;
    dpPolyhedronStruct* ph;
@@ -2093,29 +1711,14 @@ static void copyPolyhedronToDPPolyhedron(PolyhedronStruct* from, dpPolyhedronStr
 }
 
 
-static void copySplineTypeToDPSplineType(SplineType* from, dpSplineType* to)
-{
-   if (*from == step_function)
-      *to = dpStepFunction;
-   else if (*from == natural_cubic)
-      *to = dpNaturalCubic;
-   else if (*from == gcv_spline)
-      *to = dpGCVSpline;
-   else
-      *to = dpNaturalCubic;
-}
-
-
 /* This routine finds the nth rotation [axis] in a joint. For example,
  * if the order of the joint is: r1 t r3 r2, r1 is the first rotation,
  * r3 is the second rotation, and r2 is the third rotation. order[0]
  * holds the position of the translation, order[1] holds the position
  * of the r1 rotation, etc.
  */
-
 int find_nth_rotation(JointStruct* jnt, int n)
 {
-
    int i, min = 9, min_index, max = -9, max_index;
 
    for (i=1; i<4; i++)
@@ -2133,85 +1736,79 @@ int find_nth_rotation(JointStruct* jnt, int n)
    }
 
    if (n == 1)
-      return (min_index);
+      return min_index;
 
    if (n == 3)
-      return (max_index);
+      return max_index;
 
    for (i=1; i<4; i++)
       if (i != min_index && i != max_index)
-	 return (i);
+	 return i;
    
    return -1;
 }
 
 /* returns the dof structure which corresponds to the nth Q in the SD/FAST code */
 
-DofStruct* find_nth_q_dof(int mod, int n)
+DofStruct* find_nth_q_dof(ModelStruct* ms, int n)
 {
-   
    int i, j;
-   
-   for (i=0; i<model[mod]->numjoints; i++)
+
+   for (i=0; i<ms->numjoints; i++)
    {
       for (j=0; j<6; j++)
       {
-         if ((model[mod]->joint[i].dofs[j].type == function_dof ||
-            model[mod]->joint[i].dofs[j].sd.fixed == yes) &&
-            model[mod]->joint[i].dofs[j].sd.state_number == n)
-            return (&model[mod]->joint[i].dofs[j]);
-         
+         if ((ms->joint[i].dofs[j].type == function_dof ||
+            ms->joint[i].dofs[j].sd.fixed == yes) &&
+            ms->joint[i].dofs[j].sd.state_number == n)
+            return &ms->joint[i].dofs[j];
       }
    }
-   
-   return (NULL);
-   
+
+   return NULL;
 }
 
 
 /* returns the joint structure which contains the nth Q in the SD/FAST code */
 
-JointStruct* find_nth_q_joint(int mod, int n)
+JointStruct* find_nth_q_joint(ModelStruct* ms, int n)
 {
-   
    int i, j;
-   
-   for (i=0; i<model[mod]->numjoints; i++)
+
+   for (i=0; i<ms->numjoints; i++)
    {
       for (j=0; j<6; j++)
       {
-         if (model[mod]->joint[i].dofs[j].type == function_dof &&
-            model[mod]->joint[i].dofs[j].sd.state_number == n)
-            return (&model[mod]->joint[i]);
-         if (model[mod]->joint[i].dofs[j].sd.fixed == yes &&
-            model[mod]->joint[i].dofs[j].sd.state_number == n)
-            return (&model[mod]->joint[i]);
+         if (ms->joint[i].dofs[j].type == function_dof &&
+            ms->joint[i].dofs[j].sd.state_number == n)
+            return &ms->joint[i];
+         if (ms->joint[i].dofs[j].sd.fixed == yes &&
+            ms->joint[i].dofs[j].sd.state_number == n)
+            return &ms->joint[i];
       }
    }
-   
-   return (NULL);
-   
-}
 
-
-DofStruct* find_unconstrained_sd_dof(int mod, int gc)
-{
-   
-   int i, j;
-   
-   for (i=0; i<model[mod]->numjoints; i++)
-   {
-      for (j=0; j<6; j++)
-      {
-         if (model[mod]->joint[i].dofs[j].sd.constrained == no &&
-            model[mod]->joint[i].dofs[j].gencoord == gc)
-            return (&model[mod]->joint[i].dofs[j]);
-      }
-   }
-   
    return NULL;
-   
 }
+
+
+DofStruct* find_unconstrained_sd_dof(ModelStruct* ms, GeneralizedCoord* gencoord)
+{
+   int i, j;
+
+   for (i=0; i<ms->numjoints; i++)
+   {
+      for (j=0; j<6; j++)
+      {
+         if (ms->joint[i].dofs[j].sd.constrained == no &&
+            ms->joint[i].dofs[j].gencoord == gencoord)
+            return &ms->joint[i].dofs[j];
+      }
+   }
+
+   return NULL;
+}
+
 
 /* GET_SD_SEG_NUM: given a segment name, this function returns the
  * number of that segment in the Pipeline code. It assumes that the
@@ -2220,10 +1817,9 @@ DofStruct* find_unconstrained_sd_dof(int mod, int gc)
  */
 int get_sd_seg_num(char simm_name[])
 {
-   
    int i;
    char* name;
-   
+
    /* When SDseg[] was created, the body segment names were
     * cleaned-up using convert_string(). So call it here too so
     * that the names will match exactly. Malloc enough space for
@@ -2233,19 +1829,17 @@ int get_sd_seg_num(char simm_name[])
    name = (char*)simm_malloc(strlen(simm_name) + 2);
    strcpy(name, simm_name);
    convert_string(name, yes);
-   
+
    for (i=0; i<num_SD_segs; i++)
    {
       if (STRINGS_ARE_EQUAL(name,SDseg[i].name))
          break;
    }
-   
+
    free (name);
-   
+
    if (i == num_SD_segs)
       return -1;
    else
       return i-1;
-   
 }
-

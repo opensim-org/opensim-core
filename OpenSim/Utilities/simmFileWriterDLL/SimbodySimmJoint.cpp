@@ -36,6 +36,7 @@
 #include <time.h>
 
 #include <OpenSim/Common/SimmMacros.h>
+#include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 #include "SimbodySimmJoint.h"
 
 
@@ -84,9 +85,8 @@ void SimbodySimmJoint::setNull()
 {
 	_name = "undefined";
    _order = "";
-	_txUsed = false;
-	_tyUsed = false;
-	_tzUsed = false;
+	for (int i=0; i<6; i++)
+		_dofUsed[i] = false;
    _rotationsUsed = 0;
    _parentBodyName = "";
    _childBodyName = "";
@@ -101,11 +101,13 @@ void SimbodySimmJoint::setNull()
  * @param aFunctionNumber User-number of the function.
  * @return Whether or not the DOF was added to the joint.
  */
-bool SimbodySimmJoint::addFunctionDof(const AbstractTransformAxis& aDof, const string& aCoordinateName,
-                                      int aFunctionNumber)
+bool SimbodySimmJoint::addFunctionDof(const SimTK::Vec3& aAxis, const string& aCoordinateName,
+												  int aFunctionNumber, Coordinate::MotionType aMotionType)
 {
-   if (aDof.getMotionType() == AbstractTransformAxis::Translational) {
-      const double* axis = aDof.getAxisPtr();
+	double axis[3];
+	axis[0] = aAxis[0]; axis[1] = aAxis[1]; axis[2] = aAxis[2];
+
+	if (aMotionType == Coordinate::Translational) {
       int component = -1;
       if (EQUAL_WITHIN_ERROR(axis[0], 1.0))
          component = 0;
@@ -116,19 +118,16 @@ bool SimbodySimmJoint::addFunctionDof(const AbstractTransformAxis& aDof, const s
       if (component == -1)
          return false;
       // TODO: check if there is something like tx, r1, ty
-      _dof[component+3].setFunction(_translationNames[component], aDof.getMotionType(), aFunctionNumber,
-                                    aCoordinateName, NULL);
+      _dof[component+3].setFunction(_translationNames[component], aMotionType, aFunctionNumber, aCoordinateName, NULL);
       updateOrder(_translationNames[component]);
-      if (component == 0) _txUsed = true;
-      if (component == 1) _tyUsed = true;
-      if (component == 2) _tzUsed = true;
+      _dofUsed[component+3] = true;
    } else {
-      if (_rotationsUsed == 3)
-         return false;
-      _dof[_rotationsUsed].setFunction(_rotationNames[_rotationsUsed], aDof.getMotionType(), aFunctionNumber,
-                                       aCoordinateName, aDof.getAxisPtr());
-      updateOrder(_rotationNames[_rotationsUsed]);
-      _rotationsUsed++;
+		if (_rotationsUsed == 3)
+			return false;
+		_dof[_rotationsUsed].setFunction(_rotationNames[_rotationsUsed], aMotionType, aFunctionNumber, aCoordinateName, axis);
+		updateOrder(_rotationNames[_rotationsUsed]);
+		_dofUsed[_rotationsUsed] = true;
+		_rotationsUsed++;
    }
 
    return true;
@@ -145,27 +144,24 @@ bool SimbodySimmJoint::addFunctionDof(const AbstractTransformAxis& aDof, const s
  */
 bool SimbodySimmJoint::addConstantDof(const string& aName, const double* aAxis, double aValue)
 {
-	// See if the name matches one of the translation names. This code
-	// currently does not check to see if the translation component was already defined.
    for (int i=0; i<3; i++) {
       if (aName == _translationNames[i]) {
-         _dof[i+3].setConstant(aName, AbstractTransformAxis::Translational, NULL, aValue);
+         _dof[i+3].setConstant(aName, Coordinate::Translational, NULL, aValue);
          updateOrder(aName);
-         if (i == 0) _txUsed = true;
-         if (i == 1) _tyUsed = true;
-         if (i == 2) _tzUsed = true;
+			_dofUsed[i+3] = true;
          return true;
       }
    }
 
-	// If you make it to here, then the DOF is a rotation. Ignore aName and
-	// name the DOF according to its place in the transform order (e.g., the
-	// first rotation is always named "r1").
-	if (_rotationsUsed == 3 || aAxis == NULL)
-		return false;
-	_dof[_rotationsUsed].setConstant(_rotationNames[_rotationsUsed], AbstractTransformAxis::Rotational, aAxis, aValue);
-	updateOrder(_rotationNames[_rotationsUsed]);
-	_rotationsUsed++;
+   //TODO get this to work when constant dofs are mixed with function dofs
+   for (int i=0; i<3; i++) {
+      if (aName == _rotationNames[i]) {
+         _dof[i].setConstant(aName, Coordinate::Rotational, defaultAxes[i], aValue);
+         updateOrder(aName);
+			_dofUsed[i] = true;
+			_rotationsUsed++;
+      }
+   }
 
    return false;
 }
@@ -179,7 +175,7 @@ bool SimbodySimmJoint::addConstantDof(const string& aName, const double* aAxis, 
 void SimbodySimmJoint::updateOrder(const string& aDofName)
 {
    if (aDofName[0] == 't') {
-      if (_txUsed == true || _tyUsed == true || _tzUsed == true)
+      if (_dofUsed[3] == true || _dofUsed[4] == true || _dofUsed[5] == true)
          return;
       _order.append(" t");
    } else {
@@ -195,26 +191,20 @@ void SimbodySimmJoint::updateOrder(const string& aDofName)
 void SimbodySimmJoint::finalize()
 {
    // Initialize the rotations that are not used.
-   for (int i=_rotationsUsed; i<3; i++) {
-      _dof[i].setConstant(_rotationNames[i], AbstractTransformAxis::Rotational, defaultAxes[i], 0.0);
-      updateOrder(_dof[i].getName());
+   for (int i=0; i<3; i++) {
+		if (!_dofUsed[i]) {
+			_dof[i].setConstant(_rotationNames[i], Coordinate::Rotational, defaultAxes[i], 0.0);
+			updateOrder(_dof[i].getName());
+		}
    }
 
    // Initialize the translations that are not used.
-   if (!_txUsed) {
-      _dof[3].setConstant(_translationNames[0], AbstractTransformAxis::Translational, NULL, 0.0);
-      updateOrder(_dof[3].getName());
-      _txUsed = true; // not ideal, but needed for updateOrder
-   }
-   if (!_tyUsed) {
-      _dof[4].setConstant(_translationNames[1], AbstractTransformAxis::Translational, NULL, 0.0);
-      updateOrder(_dof[4].getName());
-      _tyUsed = true; // not ideal, but needed for updateOrder
-   }
-   if (!_tzUsed) {
-      _dof[5].setConstant(_translationNames[2], AbstractTransformAxis::Translational, NULL, 0.0);
-      updateOrder(_dof[5].getName());
-      _tzUsed = true; // not ideal, but needed for updateOrder
+   for (int i=0; i<3; i++) {
+		if (!_dofUsed[i+3]) {
+			_dof[i+3].setConstant(_translationNames[i], Coordinate::Translational, NULL, 0.0);
+			updateOrder(_dof[i+3].getName());
+			_dofUsed[i+3] = true; // not ideal, but needed for updateOrder
+		}
    }
 }
 
@@ -229,9 +219,7 @@ void SimbodySimmJoint::write(ofstream& aStream)
    aStream << "beginjoint " << _name << endl;
    aStream << "segments " << _parentBodyName << " " << _childBodyName << endl;
    aStream << "order" << _order << endl;
-   for (int i=3; i<6; i++)
-      _dof[i].write(aStream);
-   for (int i=0; i<3; i++)
+   for (int i=0; i<6; i++)
       _dof[i].write(aStream);
    aStream << "endjoint" << endl << endl;
 }

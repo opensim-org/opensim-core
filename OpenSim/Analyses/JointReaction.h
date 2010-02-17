@@ -35,7 +35,6 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyBoolArray.h>
 #include <OpenSim/Common/PropertyInt.h>
@@ -51,6 +50,11 @@
 
 //=============================================================================
 //=============================================================================
+namespace OpenSim { 
+
+class Model;
+
+
 /**
  * An analysis for reporting the joint reaction loads from a model. For a given
  * joint, the reaction load is calculated as the forces and moments required to 
@@ -63,11 +67,6 @@
  * @author Matt DeMers, Ajay Seth, Frank C. Anderson
  * @version 1.0
  */
-namespace OpenSim { 
-
-class Model;
-
-
 class OSIMANALYSES_API JointReaction : public Analysis 
 {
 //=============================================================================
@@ -176,20 +175,18 @@ public:
 	//-------------------------------------------------------------------------
 	// GET AND SET
 	//-------------------------------------------------------------------------
-	virtual void setModel(Model *aModel);
+	virtual void setModel(Model& aModel);
 
 	//-------------------------------------------------------------------------
 	// INTEGRATION
-	//-------------------------------------------------------------------------
-	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
-	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+	//----------------------------------------------------------------------
+    virtual int
+        begin(const SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(const SimTK::State& s );
+
 
 	//-------------------------------------------------------------------------
 	// IO
@@ -201,7 +198,7 @@ public:
 
 protected:
 	//========================== Internal Methods =============================
-	int record(double aT,double *aX,double *aY);
+	int record(const SimTK::State& s );
 	void setupReactionList();
 	void constructDescription();
 	void constructColumnLabels();

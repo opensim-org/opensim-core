@@ -96,9 +96,9 @@ public:
 	//--------------------------------------------------------------------------
 	// EVALUATE
 	//--------------------------------------------------------------------------
-	virtual void evaluate(const double *aX,double *aY);
-	virtual void evaluate(const Array<double> &aX,Array<double> &rY);
-	virtual void evaluate(const Array<double> &aX,Array<double> &rY,
+	virtual void calcValue(const double *aX,double *aY, int aSize);
+	virtual void calcValue(const Array<double> &aX,Array<double> &rY);
+	virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
 		const Array<int> &aDerivWRT);
 
 //=============================================================================

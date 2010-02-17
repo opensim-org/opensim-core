@@ -10,22 +10,19 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/AbstractDynamicsEngine.h>
-#include <OpenSim/Simulation/Model/ActuatorSet.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/DerivCallbackSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
+#include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Analyses/Contact.h>
-#include <OpenSim/Actuators/LinearSpring.h>
-#include <OpenSim/Actuators/TorsionalSpring.h>
 #include <OpenSim/Analyses/ActuatorPerturbationIndependent.h>
-#include <OpenSim/Actuators/ForceApplier.h>
 
 
 
@@ -82,7 +79,10 @@ PerturbationTool::PerturbationTool(const string &aFileName,bool aUpdateFromXMLNo
 	setType("PerturbationTool");
 	setNull();
 	if(aUpdateFromXMLNode) updateFromXMLNode();
-	if(aLoadModel) { loadModel(aFileName); setToolOwnsModel(true); }
+	if(aLoadModel) { 
+		loadModel(aFileName); 
+		setToolOwnsModel(true);
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -239,6 +239,24 @@ bool PerturbationTool::run()
 		cout<<endl<<msg<<endl;
 		throw(Exception(msg,__FILE__,__LINE__));
 	}
+    bool externalLoads = createExternalLoads(_externalLoadsFileName, 
+                         _externalLoadsModelKinematicsFileName,
+                         *_model );
+
+	// Add actuation analysis -- needed in order to evaluate unperturbed forces
+	// Actuation
+	Actuation *actuation = new Actuation(_model);
+	_model->addAnalysis(actuation);
+	actuation->setStepInterval(1);
+
+    // Re create the system with forces above and Realize the topology
+    SimTK::State& si = _model->initSystem();
+    _model->getSystem().realize(si, Stage::Position );
+   
+	loadStatesStorage(_statesFileName, _yStore);  // Is using _yStore the right thing to do?
+
+    // set the desired states for controllers  
+    _model->updControllerSet().setDesiredStates( _yStore );
 
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
@@ -250,30 +268,13 @@ bool PerturbationTool::run()
 	IO::chDir(directoryOfSetupFile);
 
 	// INPUT
-	ControlSet *controlSet;
-	inputControlsStatesAndPseudoStates(controlSet,_yStore,_ypStore);  // Is using _yStore the right thing to do?
-
-	// INITIAL AND FINAL TIMES AND STATES INDEX
-	int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
-
-	// PSEUDO STATES INDEX
-	bool interpolatePseudoStates;
-	int startIndexForYPStore = determinePseudoStatesIndex(_ti,interpolatePseudoStates);
-
-	// CHECK CONTROLS
-	checkControls(controlSet);
 
 	// Initial and final times
 	// If the times lie outside the range for which control values are
 	// available, the initial and final times are altered.
-	int first = 0;
-	ControlLinear *control = (ControlLinear*)controlSet->get(first);
-	if(control==NULL) {
-		cout<<"\n\nError- There are no controls.\n\n";
-		exit(-1);
-	}
-	double ti = control->getFirstTime();
-	double tf = control->getLastTime();
+	double ti = _model->getControllerSet().getFirstTime();
+	double tf = _model->getControllerSet().getLastTime();
+
 	// Check initial time.
 	if(_ti<ti) {
 		cout<<"\n\nControls not available at "<<_ti<<".  ";
@@ -288,33 +289,44 @@ bool PerturbationTool::run()
 	}
 	
 	// GROUND REACTION FORCES
-	ForceApplier *body1Force,*body2Force;
-	InitializeExternalLoads(_ti, _tf, _model,_externalLoadsFileName,_externalLoadsModelKinematicsFileName,
-		_externalLoadsBody1,_externalLoadsBody2,_lowpassCutoffFrequencyForLoadKinematics,&body1Force,&body2Force);
+	if( externalLoads ) {
+	    initializeExternalLoads(si, _ti, _tf, *_model,
+        _externalLoadsFileName,_externalLoadsModelKinematicsFileName,
+        _lowpassCutoffFrequencyForLoadKinematics);
+     }
 
 	// CORRECTIVE SPRINGS
-	addCorrectiveSprings(_yStore,body1Force,body2Force);
-
+	// Perturbation Tool have settings for corrective springs for exactly two forces
+	// We'll keep this assumption for now and use _externalFroces[0], [1] 
+	if (_externalForces.getSize()!=2){
+		string msg = "ERROR- Perturbation Tool's number of external forces is not 2. Unsupported...";
+		cout<<endl<<msg<<endl;
+		throw(Exception(msg,__FILE__,__LINE__));
+	}
+	addCorrectiveSprings(si,_yStore,(PrescribedForce*)&(_externalForces[0]),(PrescribedForce*)&(_externalForces[1]));
 
 	// Gather actuators to perturb
-	ActuatorSet *as = _model->getActuatorSet();
-	ArrayPtrs<AbstractActuator> actuators;
+	const Set<Actuator>& fSet = _model->getActuators();
+	ArrayPtrs<Actuator> actuators;
 	Array<int> mapPerturbedActuatorsToAllActuators;
 	actuators.setMemoryOwner(false);
 	actuators.setSize(_actuatorsToPerturb.getSize());
 	for(int i=0; i<_actuatorsToPerturb.getSize(); i++) {
 		if(_actuatorsToPerturb[i] == "all") {
-			actuators.setSize(as->getSize());
-			for(int j=0;j<as->getSize();j++) {
-				actuators.set(j,as->get(j));
-				mapPerturbedActuatorsToAllActuators.append(j);
+			actuators.setSize(fSet.getSize());
+			for(int j=0,k=0;j<fSet.getSize();j++) {
+                Actuator& act = fSet.get(j);
+			    actuators.set(k,&act);
+				mapPerturbedActuatorsToAllActuators.append(k);
+                k++;
 			}
 			break;
 		}
-		int index = as->getIndex(_actuatorsToPerturb[i]);
+		int index = fSet.getIndex(_actuatorsToPerturb[i]);
 		if(index<0) throw Exception("PerturbationTool: ERR- Could not find actuator '"+_actuatorsToPerturb[i]+
 										    "' (listed in "+_actuatorsToPerturbProp.getName()+") in model's actuator set.",__FILE__,__LINE__);
-		actuators.set(i,as->get(index));
+        Actuator& act = fSet.get(index);
+	    actuators.set(i,&act);
 		mapPerturbedActuatorsToAllActuators.append(index);
 	}
 
@@ -322,45 +334,40 @@ bool PerturbationTool::run()
 		//throw Exception("PerturbationTool: ERR- Nothing to perturb (no actuators selected and gravity perturbation disabled).",__FILE__,__LINE__);
 		cout << "PerturbationTool: WARNING- Nothing will be perturbed (no actuators to perturb and gravity perturbation is off)" << endl;
 
-	// Add actuation analysis -- needed in order to evaluate unperturbed forces
-	// Actuation
-	Actuation *actuation = new Actuation(_model);
-	_model->addAnalysis(actuation);
-	actuation->setStepInterval(1);
-
 	Kinematics *kin=0;
 	BodyKinematics *bodyKin=0;
-	AnalysisSet *analysisSet = _model->getAnalysisSet();
-	for(int i=0;i<analysisSet->getSize();i++) {
-		if(!analysisSet->get(i)->getOn()) continue;
-		if(dynamic_cast<Kinematics*>(analysisSet->get(i))) kin=dynamic_cast<Kinematics*>(analysisSet->get(i));
-		else if(dynamic_cast<BodyKinematics*>(analysisSet->get(i))) bodyKin=dynamic_cast<BodyKinematics*>(analysisSet->get(i));
+	AnalysisSet& analysisSet = _model->updAnalysisSet();
+	for(int i=0;i<analysisSet.getSize();i++) {
+		if(!analysisSet.get(i).getOn()) continue;
+		if(dynamic_cast<Kinematics*>(&analysisSet.get(i))) kin=dynamic_cast<Kinematics*>(&analysisSet.get(i));
+		else if(dynamic_cast<BodyKinematics*>(&analysisSet.get(i))) bodyKin=dynamic_cast<BodyKinematics*>(&analysisSet.get(i));
 	}
+
+    // Re create the system with forces above and Realize the topology
+	SimTK::State s = _model->initSystem();
+    _model->getSystem().realize(s, Stage::Position );
 
 	// SETUP SIMULATION
 	// Manager
-	ModelIntegrand integrand(_model);
-	integrand.setControlSet(*controlSet);
-	Manager manager(&integrand);
+    RungeKuttaMersonIntegrator* integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
+    Manager manager(*_model, *integrator);
 	manager.setSessionName(getName());
 
 	manager.setInitialTime(_ti);
 	manager.setFinalTime(_tf);
+    // Initialize integrator
+    integrator->setInternalStepLimit(_maxSteps);
+    integrator->setMaximumStepSize(_maxDT);
+    integrator->setAccuracy(_errorTolerance);
+    
 	cout<<"\n\nPerforming perturbations over the range ti=";
 	cout<<_ti<<" to tf="<<_tf<<endl<<endl;
-
-	// Integrator settings
-	IntegRKF *integ = manager.getIntegrator();
-	integ->setMaximumNumberOfSteps(_maxSteps);
-	integ->setMaxDT(_maxDT);
-	integ->setMinDT(_minDT);
-	integ->setTolerance(_errorTolerance);
-	integ->setFineTolerance(_fineTolerance);
 
 	// Pertubation callback
 	ActuatorPerturbationIndependent *perturbation = 
 		new ActuatorPerturbationIndependent(_model);
-	_model->addDerivCallback(perturbation);
+
+    _model->setPerturbation(perturbation); 
 
 	int gravity_axis = 1;
 	Vec3 original_gravity;
@@ -462,6 +469,7 @@ bool PerturbationTool::run()
 	iterationTime = startTime;
 	struct tm *localTime = localtime(&startTime);
 	double elapsedTime;
+
 	cout<<"================================================================\n";
 	cout<<"Start time = "<<asctime(localTime);
 	cout<<"================================================================\n";
@@ -470,6 +478,7 @@ bool PerturbationTool::run()
 	// LOOP
 	//********************************************************************
 	double lastPertTime = _tf - _pertWindow;
+    bool resetGravity = false;
 	for(double t=_ti;t<=lastPertTime;t+=_pertIncrement) {
 		// SET INITIAL AND FINAL TIME AND THE INITIAL STATES
 		int index = _yStore->findIndex(t);
@@ -478,11 +487,23 @@ bool PerturbationTool::run()
 		double tfPert = tiPert + _pertWindow;
 		manager.setInitialTime(tiPert);
 		manager.setFinalTime(tfPert);
-		const Array<double> &yi = _yStore->getStateVector(index)->getData();
-		_model->setInitialStates(&yi[0]);
+        if( resetGravity ) {
+  		    _model->setGravity(original_gravity);
+  		    s = _model->initSystem();
+  		    integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
+  		    integrator->setInternalStepLimit(_maxSteps);
+  		    integrator->setMaximumStepSize(_maxDT);
+  		    integrator->setAccuracy(_errorTolerance);
+  		    manager.setIntegrator( integrator );
+  		    resetGravity = false;
+  	 	}
+  		 
+  		// set state to initial conditions
+		_yStore->getData(index, s.getNY(), &s.updY()[0]);
 
 		// RESET ANALYSES
-		actuation->getForceStorage()->reset();
+		if(actuation->getForceStorage())
+			actuation->getForceStorage()->reset();
 		if(kin) {
 			kin->getPositionStorage()->reset();
 			kin->getVelocityStorage()->reset();
@@ -493,23 +514,38 @@ bool PerturbationTool::run()
 			bodyKin->getVelocityStorage()->reset();
 			bodyKin->getAccelerationStorage()->reset();
 		}
-		actuation->getForceStorage()->reset();
+
+	   // SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
+ 	   if(_solveForEquilibriumForAuxiliaryStates) {
+	  	  _model->computeEquilibriumForAuxiliaryStates(s);  
+	   }
+       // TURN OFF CORRECTIVE SPRINGS
+       if(_body1Lin) _body1Lin->setOn(false);
+  	   if(_body1Tor) _body1Tor->setOn(false);
+  	   if(_body2Lin) _body2Lin->setOn(false);
+  	   if(_body2Tor) _body2Tor->setOn(false);
 
 		// INTEGRATE (1)
 		// This integration is to record the actuator forces applied during
 		// the unperturbed simulation.
-		if(_body1Lin) _body1Lin->setOn(false);
-		if(_body1Tor) _body1Tor->setOn(false);
-		if(_body2Lin) _body2Lin->setOn(false);
-		if(_body2Tor) _body2Tor->setOn(false);
-		integ->setUseSpecifiedDT(false);
 		perturbation->setOn(false);
 		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert;
 		cout<<" to record the unperturbed kinematics and actuator forces."<<endl;
-		manager.integrate();
+		manager.integrate(s);
 
 		// SET THE UNPERTURBED ACTUATOR FORCES
 		perturbation->setUnperturbedForceSplineSet(actuation->getForceStorage());
+        _model->setPerturbForcesEnabled(true);
+
+        // TURN ON CORRECTIVE SPRINGS
+        if(_body1Lin)  _body1Lin->setOn(true);
+  		if(_body1Tor)  _body1Tor->setOn(true);
+  		if(_body2Lin)  _body2Lin->setOn(true);
+  		if(_body2Tor)  _body2Tor->setOn(true);
+
+        // restore state to initial conditions
+        _yStore->getData(index, s.getNY(), &s.updY()[0]);
+
 		if(Check) {
 			double dx = 1.0e-4;
 			GCVSplineSet *forceSplines = perturbation->getUnperturbedForceSplineSet();
@@ -518,26 +554,15 @@ bool PerturbationTool::run()
 			delete forceStore;
 		}
 
-		// SET THE TARGET FUNCTIONS FOR THE CORRECTIVE SPRINGS
-		Storage qStore,uStore;
-		Storage *integStateStore = manager.getIntegrand()->getStateStorage();
-		//double dtUniform = 0.001;  // Period of ten times low-pass cutoff frequency of 6.0 Hz.
-		//integStateStore->resampleLinear(dtUniform);
-		_model->getDynamicsEngine().extractConfiguration(*integStateStore,qStore,uStore);
-		// Compute targets
-		if(_body1Lin) { _body1Lin->setOn(true); _body1Lin->computeTargetFunctions(qStore,uStore); }
-		if(_body1Tor) { _body1Tor->setOn(true); _body1Tor->computeTargetFunctions(qStore,uStore); }
-		if(_body2Lin) { _body2Lin->setOn(true); _body2Lin->computeTargetFunctions(qStore,uStore); }
-		if(_body2Tor) { _body2Tor->setOn(true); _body2Tor->computeTargetFunctions(qStore,uStore); }
-		
 		// INTEGRATE (2)
 		// This integration is to record the kinematics after the corrective
 		// springs have been added and the actuator forces are applied via the splines.
 		cout<<"\n\nUnperturbed integration (2) from "<<tiPert<<" to "<<tfPert;
-		cout<<" to record the unperturbed kinematics after coorective springs have been";
+		cout<<" to record the unperturbed kinematics after corrective springs has been";
 		cout<<" added and the perturbation analysis has been turned on."<<endl;
 		perturbation->setOn(true);
-		manager.integrate();
+		_yStore->getData(index, s.getNY(), &s.updY()[0]);
+		manager.integrate(s);
 
 		// record unperturbed accelerations:
 		Array<double> unperturbedAccel(0.0, nvalues);
@@ -565,7 +590,6 @@ bool PerturbationTool::run()
 		char fileName[Object::NAME_LENGTH];
 		sprintf(fileName,"%s/%s_unperturbedAccel_dt_%.3f_df_%.3lf.sto",getResultsDir().c_str(),getName().c_str(),_pertWindow,_pertDF);
 		unperturbedAccelStorage.print(fileName);
-		//exit(0);
 
 		// If we are not perturbing any actuators/gravity, we must only be computing unperturbed accelerations...
 		// so can skip rest of this loop body.
@@ -581,16 +605,23 @@ bool PerturbationTool::run()
 
 		// Loop over actuators/gravity to be perturbed
 		for (int m=0;m<nperturb;m++)	{
-			_model->getDerivCallbackSet()->resetCallbacks();
-			perturbation->reset(); 
+			perturbation->reset(s); 
 			string actuatorName;
 			if(m<actuators.getSize()) {
-				AbstractActuator *act = actuators.get(m);
+				Actuator *act = actuators.get(m);
 				actuatorName = act->getName();
 				// Set up pertubation callback
 				cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
 				perturbation->setActuator(act); 
-				perturbation->setPerturbation(ActuatorPerturbationIndependent::DELTA,+_pertDF);
+			    perturbation->setPerturbation(s, ActuatorPerturbationIndependent::DELTA,_pertDF);
+
+
+                // restore state to intitial conditions 
+		        _yStore->getData(index, s.getNY(), &s.updY()[0]);
+
+		  	    // Integrate
+			    manager.integrate(s);
+				cout << "actuator:\t"<<m<<"\tunperturbed force:\t"<<unperturbedForces[m]<<endl;
 			} else {
 				cout<<"\nGravity perturbation"<<endl;
 				actuatorName = "gravity";
@@ -598,18 +629,30 @@ bool PerturbationTool::run()
 				Vec3 grav;
 				grav = original_gravity;
 				grav[gravity_axis] += _pertDF;
+
+cout << "perturbed gravity = " << grav << endl;
+
 				_model->setGravity(grav);
-			}
 
-			// Integrate
- 			manager.integrate();
+                s = _model->initSystem(); 
+                delete integrator;
+                integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
+                integrator->setInternalStepLimit(_maxSteps);
+                integrator->setMaximumStepSize(_maxDT);
+                integrator->setAccuracy(_errorTolerance);
+                manager.setIntegrator( integrator );
 
-			if(m<actuators.getSize()) {
-				cout << "actuator:\t"<<m<<"\tunperturbed force:\t"<<unperturbedForces[m]<<endl;
-			} else {
+
+                // restore state to intitial conditions 
+    		    _yStore->getData(index, s.getNY(), &s.updY()[0]);
+                _model->getSystem().realize(s, Stage::Position );
+    
+    			// Integrate
+    			manager.integrate(s);
 				cout << "gravity original:\t"<<unperturbedForces[m]<<endl;
+
 				// undo gravity perturbation
-				_model->setGravity(original_gravity);
+                resetGravity = true;
 			}
 
 			// Perturbed generalized coordinate values (concatenate into values_perturbed array)
@@ -621,6 +664,7 @@ bool PerturbationTool::run()
 				const Array<double> &perturbedBodyCoordinates = bodyKin->getPositionStorage()->getLastStateVector()->getData();
 				for(int i=0;i<nbodycoords;i++) (*values_perturbed[ncoords+i])[m] = perturbedBodyCoordinates[i];
 			}
+
 
 			// COMPUTE DERIVATIVES
 			for(int i=0;i<nvalues;i++) {
@@ -634,23 +678,6 @@ bool PerturbationTool::run()
 			}
 
 			if(_outputDetailedResults) {
-				// Spring forces
-				if(_body1Lin) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_body1.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_body1Lin->getAppliedForceStorage()->print(fileName);
-				}
-				if(_body2Lin) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedForce_body2.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_body2Lin->getAppliedForceStorage()->print(fileName);
-				}
-				if(_body1Tor) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_body1.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_body1Tor->getAppliedTorqueStorage()->print(fileName);
-				}
-				if(_body2Tor) {
-					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_appliedTorque_body2.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
-					_body2Tor->getAppliedTorqueStorage()->print(fileName);
-				}
 				if(kin) {
 					sprintf(fileName,"%s/%s_detailed_actuator_%s_time_%.3f_Kinematics_q.sto",getResultsDir().c_str(),getName().c_str(),actuatorName.c_str(), tiPert);
 					kin->getPositionStorage()->print(fileName);
@@ -698,6 +725,8 @@ bool PerturbationTool::run()
 	elapsedTime = difftime(finishTime,startTime);
 	cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
 	cout<<"================================================================\n\n\n";
+  
+    delete integrator;
 
 	return true;
 }

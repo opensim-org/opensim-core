@@ -1,7 +1,7 @@
 // BSpline.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2007, Stanford University. All rights reserved. 
+* Copyright (c)  2007-2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -92,13 +92,13 @@ void BSpline::createComponents(int o, int ncp1, int ncp2)
 	_nControlPoints = ncp1;
 	_nCurvePoints = ncp2;
 	if(_order!=(_nParametricKnots-_nControlPoints-1)		// check if order has changed ...
-		&&(_nControlPoints*_nDimensions)==(int)_controlPoints.size() // ... number of control points is same ...
+		&&(_nControlPoints*_nDimensions)==(int)(_controlPoints.nrow()*_controlPoints.ncol()) // ... number of control points is same ...
 		&&_nParametricKnots==(int)_parametricKnots.size()) // ... number of parametric knots is same
 	{
 		if(_nControlPoints<_order){ _nControlPoints = _order+1; } // check if sufficient control points for order of the curve
 		_nParametricKnots = _order+_nControlPoints+1;		// number of parametric knots
 	}
-	if((_nControlPoints*_nDimensions)!=(int)_controlPoints.size()) // check if number of control points has changed
+	if((_nControlPoints*_nDimensions)!=(int)(_controlPoints.nrow()*_controlPoints.ncol())) // check if number of control points has changed
 	{ 
 		if(_nControlPoints<_order){ _nControlPoints = _order+1; } // check if sufficient control points for order of the curve
 		_nParametricKnots = _order+_nControlPoints+1;		// number of parametric knots
@@ -109,12 +109,12 @@ void BSpline::createComponents(int o, int ncp1, int ncp2)
 		_parametricKnots.resizeKeep(_nParametricKnots);	// parametric knots (vector)
 		this->createParametricKnots();					// create parametric knots
 	}
-	if((_nCurvePoints*_nDimensions)!=(int)_curvePoints.size()) // check if number of curve points has changed
+	if((_nCurvePoints*_nDimensions)!=(int)(_curvePoints.nrow()*_curvePoints.ncol())) // check if number of curve points has changed
 	{ 
 		_curvePoints.resizeKeep(_nCurvePoints, _nDimensions); // curve points (matrix)
 		_dataPoints.resizeKeep(_nCurvePoints, _nDimensions); // data points (matrix)
 	}
-	if((_nCurvePoints*_nControlPoints)!=(int)_blendingFunction.size()) // check if number of curve points and/or control points has changed
+	if((_nCurvePoints*_nControlPoints)!=(int)(_blendingFunction.nrow()*_blendingFunction.ncol())) // check if number of curve points and/or control points has changed
 	{ 
 		_blendingFunction.resizeKeep(_nCurvePoints, _nControlPoints); // blending function (matrix)
 		this->createBlendingFunction();					// create blending function 

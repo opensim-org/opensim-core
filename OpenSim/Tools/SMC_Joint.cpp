@@ -34,11 +34,8 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Common/rdMath.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
-#include <OpenSim/Simulation/Model/SpeedSet.h>
 #include "SMC_Joint.h"
 
 using namespace std;
@@ -69,7 +66,7 @@ SMC_Joint::~SMC_Joint()
  * should be used.
  */
 SMC_Joint::SMC_Joint(const string &aCoordinateName) :
-	rdCMC_Joint(aCoordinateName),
+	CMC_Joint(aCoordinateName),
 	_s(_propS.getValueDbl())
 {
 	setNull();
@@ -82,7 +79,7 @@ SMC_Joint::SMC_Joint(const string &aCoordinateName) :
  * @param aTask Joint task to be copied.
  */
 SMC_Joint::SMC_Joint(const SMC_Joint &aTask) :
-	rdCMC_Joint(aTask),
+	CMC_Joint(aTask),
 	_s(_propS.getValueDbl())
 {
 	setNull();
@@ -160,7 +157,7 @@ SMC_Joint& SMC_Joint::
 operator=(const SMC_Joint &aTask)
 {
 	// BASE CLASS
-	rdCMC_Joint::operator =(aTask);
+	CMC_Joint::operator =(aTask);
 
 	// DATA
 	copyData(aTask);
@@ -187,23 +184,26 @@ operator=(const SMC_Joint &aTask)
  * @see Model::setStates()
  */
 void SMC_Joint::
-computeDesiredAccelerations(double aT)
+computeDesiredAccelerations( const SimTK::State& state, double aT)
 {
-	_aDes = rdMath::getNAN();
+	_aDes = SimTK::NaN;
 
 	// CHECK
 	if(_model==NULL) return;
 	if(_pTrk[0]==NULL) return;
 
 	// COMPUTE ERRORS
-	computeErrors(aT);
+	computeErrors(state, aT);
 
 	// Term 1: Experimental Acceleration
 	double a;
 	if(_aTrk[0]==NULL) {
-		a = (_ka)[0]*_pTrk[0]->evaluate(2,aT);
+		std::vector<int> derivComponents(2);
+		derivComponents[0]=0;
+		derivComponents[1]=0;
+		a = (_ka)[0]*_pTrk[0]->calcDerivative(derivComponents,SimTK::Vector(1,aT));
 	} else {
-		a = (_ka)[0]*_aTrk[0]->evaluate(0,aT);
+		a = (_ka)[0]*_aTrk[0]->calcValue(SimTK::Vector(1,aT));
 	}
 
 	// Surface Error

@@ -27,6 +27,8 @@
  */
 
 #include "CoordinateSet.h"
+#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -47,7 +49,7 @@ CoordinateSet::~CoordinateSet(void)
  * Default constructor of a CoordinateSet.
  */
 CoordinateSet::CoordinateSet() :
-	Set<AbstractCoordinate>()
+	Set<Coordinate>()
 {
 	setNull();
 }
@@ -57,7 +59,7 @@ CoordinateSet::CoordinateSet() :
  * Copy constructor of a CoordinateSet.
  */
 CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
-	Set<AbstractCoordinate>(aCoordinateSet)
+	Set<Coordinate>(aCoordinateSet)
 {
 	setNull();
 	*this = aCoordinateSet;
@@ -76,14 +78,14 @@ void CoordinateSet::setNull()
 /**
  * Post construction initialization.
  */
-void CoordinateSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
+void CoordinateSet::setup(Model& model)
 {
 	// Base class
-	Set<AbstractCoordinate>::setup();
+	Set<Coordinate>::setup();
 
 	// Do members
 	for (int i = 0; i < getSize(); i++)
-		get(i)->setup(aAbstractDynamicsEngine);
+		get(i).setup(model);
 
 }
 
@@ -99,7 +101,7 @@ void CoordinateSet::setup(AbstractDynamicsEngine* aAbstractDynamicsEngine)
 #ifndef SWIG
 CoordinateSet& CoordinateSet::operator=(const CoordinateSet &aCoordinateSet)
 {
-	Set<AbstractCoordinate>::operator=(aCoordinateSet);
+	Set<Coordinate>::operator=(aCoordinateSet);
 	return (*this);
 }
 #endif

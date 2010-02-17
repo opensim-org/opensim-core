@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<rdCMC_TaskSet name="block_hanging_from_muscle">
+<CMC_TaskSet name="block_hanging_from_muscle">
 	<objects>
 		<!-- block_ty -->
-		<rdCMC_Joint name="block_ty">
+		<CMC_Joint name="block_ty">
 			<wrt_body> -1 </wrt_body>
 			<express_body> -1 </express_body>
 			<on> true </on>
@@ -11,7 +11,7 @@
 			<kp> 100.0 </kp> <!-- lower gain (<=100.0) works best -->
 			<kv>  25.0 </kv> <!-- overdamped (1,25*2*sqrt(kp)) works best -->
 			<coordinate> block_ty </coordinate>
-		</rdCMC_Joint>
+		</CMC_Joint>
     </objects>
-</rdCMC_TaskSet>
+</CMC_TaskSet>
 

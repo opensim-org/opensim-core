@@ -205,7 +205,7 @@ private:
 	void setNull();
 
 	/**
-	 * Set up the properties for th analysis.
+	 * Set up the properties for the analysis.
 	 * Each property should have meaningful name and an informative comment.
 	 * The name you give each property is the tag that will be used in the XML
 	 * file.  The comment will appear before the property in the XML file.
@@ -237,14 +237,11 @@ public:
 	// INTEGRATION
 	//-------------------------------------------------------------------------
 	virtual int
-		begin(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+		begin(const SimTK::State& s);
 	virtual int
-		step(double *aXPrev,double *aYPrev,double *aYPPrev,int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+		step(const SimTK::State& s);
 	virtual int
-		end(int aStep,double aDT,double aT,
-		double *aX,double *aY,double *aYP=NULL,double *aDYDT=NULL,void *aClientData=NULL);
+		end(const SimTK::State& s);
 
 	//-------------------------------------------------------------------------
 	// IO
@@ -256,7 +253,7 @@ public:
 
 protected:
 	//========================== Internal Methods =============================
-	int record(double aT,double *aX,double *aY);
+	int record(const SimTK::State& s);
 	void constructDescription();
 	void constructColumnLabels();
 	void setupStorage();

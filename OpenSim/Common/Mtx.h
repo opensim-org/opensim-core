@@ -39,14 +39,15 @@
 #include <stdio.h>
 #include "SimTKcommon.h"
 
+
+namespace OpenSim { 
+
 //=============================================================================
 //=============================================================================
 /**
  * A class for performing vector and matrix operations.  Most all the
  * methods in this class are static.
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API Mtx
 {
 //=============================================================================
