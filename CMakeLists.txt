@@ -46,11 +46,18 @@ ENDIF(WIN32)
 IF(WIN32)
 	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
 	   SET(VCVERSION VC8)
+	   SET(ARCH "Win32/VC8")
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
 	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
 	  SET(VCVERSION VC9)
+	  SET(ARCH "Win32/VC9")
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
+ELSE(WIN32)
+	IF(APPLE)
+	  SET(ARCH "Mac")
+	ENDIF(APPLE)
 ENDIF(WIN32)
+
 # Build using the simtk headers and libraries checked in the repository. 
 # Currently this only works on windows VC8 since these are the only libraries checked in
 IF(WIN32)
@@ -63,14 +70,7 @@ ELSE(WIN32)
     ENDIF(NOT SimTK_SDK)
 ENDIF(WIN32)
 
-## no SimTK_SDK, we're building against fixed version 1.6 in repository 
-##IF(SimTK_SDK)
-	SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries based on SimtkCore 1.6 built with vc8")
-##	SET(SIMTK_DIR ${SimTK_SDK})
-##ELSE(SimTK_SDK)
-##SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries 1.6 built with vc8")
-##ENDIF(SimTK_SDK)
-##MARK_AS_ADVANCED(SimTK_SDK)
+SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries based on SimtkCore 1.6 built with vc8")
 
 IF(WIN32)
 	SET(CMAKE_INSTALL_PREFIX "c:/Program Files/OpenSimTK" CACHE PATH "Install location to place headers and libraries")
@@ -82,9 +82,14 @@ ENDIF(WIN32)
 
 # If using prebuilt libraries reset SIMTK_DIR to relative path in source tree
 IF(USE_LIBRARIES_FROM_REPOSITORY)
-	SET(SIMTK_DIR ${OpenSim_SOURCE_DIR}/Vendors/)
+	SET(SIMTK_INCLUDE_DIR ${OpenSim_SOURCE_DIR}/Vendors/Include)
+	SET(SIMTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/lib/${ARCH})
+ELSE(USE_LIBRARIES_FROM_REPOSITORY)
+	SET(SIMTK_INCLUDE_DIR ${SIMTK_DIR}/Include)
+	SET(SIMTK_LIB_DIR ${SIMTK_DIR}/lib)	
 ENDIF(USE_LIBRARIES_FROM_REPOSITORY)
-INSTALL(DIRECTORY ${SIMTK_DIR}/include DESTINATION sdk/include/SimTK PATTERN ".svn" EXCLUDE)
+
+INSTALL(DIRECTORY ${SIMTK_INCLUDE_DIR} DESTINATION sdk/include/SimTK PATTERN ".svn" EXCLUDE)
 
 SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on simtk.org)")
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
@@ -110,14 +115,14 @@ SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
 SET(XERCES_DIR_NAME xerces-c_2_8_0)
 SET(XERCES_INCLUDE_DIR ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/include)
 
-INCLUDE_DIRECTORIES(${SIMTK_DIR}/include ${XERCES_INCLUDE_DIR})
+INCLUDE_DIRECTORIES(${SIMTK_INCLUDE_DIR} ${XERCES_INCLUDE_DIR})
 
 IF(WIN32)
-	LINK_DIRECTORIES(${SIMTK_DIR}/lib ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Win32/${VCVERSION})
+	LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Win32/${VCVERSION})
 ELSE(WIN32)
 	IF(APPLE)
-		LINK_DIRECTORIES(${SIMTK_DIR}/lib ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Mac)
-	ELSE(APPLE)
+		LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Mac)
+	ELSE(APPLE) # Linux?
 		LINK_DIRECTORIES(${SIMTK_DIR}/lib${LIB64} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib)
 	ENDIF(APPLE)
 ENDIF(WIN32)
@@ -143,12 +148,12 @@ SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB}
 					${SIMTK_SIMBODY_LIB} 
 					SimTKlapack 
 					pthreadVC2)
-SET(THIRDPARTY_DYNLIB_FILES	${SIMTK_DIR}/lib/${NameSpace}SimTKcommon.dll 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKmath.dll 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKcpodes.dll 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKsimbody.dll 
-						${SIMTK_DIR}/lib/pthreadVC2.dll
-						${SIMTK_DIR}/lib/SimTKlapack.dll
+SET(THIRDPARTY_DYNLIB_FILES	${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.dll 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKmath.dll 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKcpodes.dll 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.dll 
+						${SIMTK_LIB_DIR}/pthreadVC2.dll
+						${SIMTK_LIB_DIR}/SimTKlapack.dll
 						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Win32/${VCVERSION}/xerces-c_2_8.dll)
 ELSE(WIN32)
 SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
@@ -156,38 +161,38 @@ SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB}
 					${SIMTK_CPODES_LIB} 
 					${SIMTK_SIMBODY_LIB} 
 					SimTKlapack )
-SET(SIMTK_DYNLIB_FILES	${SIMTK_DIR}/lib/lib${NameSpace}SimTKcommon.a 
-						${SIMTK_DIR}/lib/lib${NameSpace}SimTKmath.a 
-						${SIMTK_DIR}/lib/lib${NameSpace}SimTKcpodes.a 
-						${SIMTK_DIR}/lib/lib${NameSpace}SimTKsimbody.a 
-						${SIMTK_DIR}/lib/libpthreadVC2.a
-						${SIMTK_DIR}/lib/libSimTKlapack.a)					
+SET(SIMTK_DYNLIB_FILES	${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcommon.a 
+						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKmath.a 
+						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcpodes.a 
+						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKsimbody.a 
+						${SIMTK_LIB_DIR}/libpthreadVC2.a
+						${SIMTK_LIB_DIR}/libSimTKlapack.a)					
 ENDIF(WIN32)
 
 # We don't really want to copy the version of lapack we're using because that may be specific to our machine, so we take the generic lapack version (i.e. generic pentium 32 bit single proc)
 IF(WIN32)
-INSTALL_FILES(/bin/ FILES ${SIMTK_DIR}/lib/${NameSpace}SimTKcommon.dll 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKmath.dll 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKcpodes.dll 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKsimbody.dll 
-						${SIMTK_DIR}/lib/pthreadVC2.dll
-						${SIMTK_DIR}/lib/SimTKlapack.dll
+INSTALL_FILES(/bin/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.dll 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKmath.dll 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKcpodes.dll 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.dll 
+						${SIMTK_LIB_DIR}/pthreadVC2.dll
+						${SIMTK_LIB_DIR}/SimTKlapack.dll
 						${OpenSim_SOURCE_DIR}/Vendors/vcredist_x86.exe
 						)
-INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_DIR}/lib/${NameSpace}SimTKcommon.lib 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKmath.lib 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKcpodes.lib 
-						${SIMTK_DIR}/lib/${NameSpace}SimTKsimbody.lib 
-						${SIMTK_DIR}/lib/pthreadVC2.lib
-						${SIMTK_DIR}/lib/SimTKlapack.lib)
+INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.lib 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKmath.lib 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKcpodes.lib 
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.lib 
+						${SIMTK_LIB_DIR}/pthreadVC2.lib
+						${SIMTK_LIB_DIR}/SimTKlapack.lib)
 
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 # Install windows runtime libraries to support prebuilt libraries
 INSTALL_FILES(/bin/ FILES 
 					${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
 		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll
-		            ${SIMTK_DIR}/lib/msvcr80.dll
-		            ${SIMTK_DIR}/lib/msvcp80.dll)
+		            ${SIMTK_LIB_DIR}/msvcr80.dll
+		            ${SIMTK_LIB_DIR}/msvcp80.dll)
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 ELSE(WIN32)
