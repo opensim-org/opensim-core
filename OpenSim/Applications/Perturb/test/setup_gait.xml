@@ -18,7 +18,7 @@
 	<!--Initial time for the simulation.-->
 	<initial_time> 0.84 </initial_time>
 	<!--Final time for the simulation.-->
-	<final_time> 0.90 </final_time>
+	<final_time> 0.87 </final_time>
 
 	<!-- INTEGRATOR SETTINGS -->
 	<!--Maximum number of integrator steps.-->
