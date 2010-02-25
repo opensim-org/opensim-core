@@ -784,9 +784,6 @@ void GeometryPath::compute(const SimTK::State& s) const
 
 	const SimTK::Stage& sg = s.getSystemStage();
     if (s.isCacheValueCurrent(_subsystemIndex, _currentPathIndex))  {
-        if( _owner->getName() ==  "BIClong" ) {
-//       cout << "compute path BIClong t=" << s.getTime() << "   cache is current " <<  endl;
-        }
         return;
     } else {
     }

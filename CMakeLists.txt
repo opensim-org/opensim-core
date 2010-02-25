@@ -43,6 +43,13 @@ ADD_DEFINITIONS(-D_DEBUG)
 ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
 ENDIF(WIN32)
 
+##################################################
+## Define ARCH to
+##			Win32/VC${version}
+##		or	Mac
+##################################################
+SET(SHARED_LIB_EXT ".so" CACHE STRING "Extension for shared libraries")
+
 IF(WIN32)
 	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 8")
 	   SET(VCVERSION VC8)
@@ -53,10 +60,13 @@ IF(WIN32)
 	  SET(ARCH "Win32/VC9")
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
 ELSE(WIN32)
+	SET(NameSpace "")	## No renamed libraries excpt on Windows
 	IF(APPLE)
 	  SET(ARCH "Mac")
+	  SET(SHARED_LIB_EXT ".dylib")
 	ENDIF(APPLE)
 ENDIF(WIN32)
+
 
 # Build using the simtk headers and libraries checked in the repository. 
 # Currently this only works on windows VC8 since these are the only libraries checked in
@@ -118,10 +128,10 @@ SET(XERCES_INCLUDE_DIR ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/include)
 INCLUDE_DIRECTORIES(${SIMTK_INCLUDE_DIR} ${XERCES_INCLUDE_DIR})
 
 IF(WIN32)
-	LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Win32/${VCVERSION})
+	LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH})
 ELSE(WIN32)
 	IF(APPLE)
-		LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Mac)
+		LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH})
 	ELSE(APPLE) # Linux?
 		LINK_DIRECTORIES(${SIMTK_DIR}/lib${LIB64} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib)
 	ENDIF(APPLE)
@@ -154,7 +164,7 @@ SET(THIRDPARTY_DYNLIB_FILES	${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.dll
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.dll 
 						${SIMTK_LIB_DIR}/pthreadVC2.dll
 						${SIMTK_LIB_DIR}/SimTKlapack.dll
-						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/Win32/${VCVERSION}/xerces-c_2_8.dll)
+						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH}/xerces-c_2_8.dll)
 ELSE(WIN32)
 SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
 					${SIMTK_MATH_LIB} 
@@ -166,7 +176,8 @@ SET(SIMTK_DYNLIB_FILES	${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcommon.a
 						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcpodes.a 
 						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKsimbody.a 
 						${SIMTK_LIB_DIR}/libpthreadVC2.a
-						${SIMTK_LIB_DIR}/libSimTKlapack.a)					
+						${SIMTK_LIB_DIR}/libSimTKlapack.a
+						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH}/libxerces-c${SHARED_LIB_EXT})					
 ENDIF(WIN32)
 
 # We don't really want to copy the version of lapack we're using because that may be specific to our machine, so we take the generic lapack version (i.e. generic pentium 32 bit single proc)
@@ -177,7 +188,7 @@ INSTALL_FILES(/bin/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.dll
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.dll 
 						${SIMTK_LIB_DIR}/pthreadVC2.dll
 						${SIMTK_LIB_DIR}/SimTKlapack.dll
-						${OpenSim_SOURCE_DIR}/Vendors/vcredist_x86.exe
+						${SIMTK_LIB_DIR}/vcredist_x86.exe
 						)
 INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.lib 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKmath.lib 
@@ -196,7 +207,12 @@ INSTALL_FILES(/bin/ FILES
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 ELSE(WIN32)
-INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKcommon.so ${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKmath.so ${SIMTK_DIR}/lib${LIB64}/generic_lapack/libSimTKlapack.so)
+		INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKcommon${SHARED_LIB_EXT} 
+									${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKmath${SHARED_LIB_EXT} 
+									${SIMTK_DIR}/lib${LIB64}/libSimTKlapack${SHARED_LIB_EXT}
+									${SIMTK_DIR}/lib${LIB64}/libSimTKcpodes${SHARED_LIB_EXT}
+									${SIMTK_DIR}/lib${LIB64}/libSimTKsimbody${SHARED_LIB_EXT}
+									${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH}/libxerces-c${SHARED_LIB_EXT})
 ENDIF(WIN32)
 
 
