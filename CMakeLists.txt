@@ -60,7 +60,7 @@ IF(WIN32)
 	  SET(ARCH "Win32/VC9")
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
 ELSE(WIN32)
-	SET(NameSpace "")	## No renamed libraries excpt on Windows
+	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
 	  SET(ARCH "Mac")
 	  SET(SHARED_LIB_EXT ".dylib")
@@ -80,7 +80,7 @@ ELSE(WIN32)
     ENDIF(NOT SimTK_SDK)
 ENDIF(WIN32)
 
-SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries based on SimtkCore 1.6 built with vc8")
+SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries based on SimtkCore 1.6")
 
 IF(WIN32)
 	SET(CMAKE_INSTALL_PREFIX "c:/Program Files/OpenSimTK" CACHE PATH "Install location to place headers and libraries")
@@ -170,13 +170,14 @@ SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB}
 					${SIMTK_MATH_LIB} 
 					${SIMTK_CPODES_LIB} 
 					${SIMTK_SIMBODY_LIB} 
-					SimTKlapack )
-SET(SIMTK_DYNLIB_FILES	${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcommon.a 
-						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKmath.a 
-						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcpodes.a 
-						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKsimbody.a 
-						${SIMTK_LIB_DIR}/libpthreadVC2.a
-						${SIMTK_LIB_DIR}/libSimTKlapack.a
+					SimTKlapack 
+					pthread)
+SET(THIRDPARTY_DYNLIB_FILES	${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcommon${SHARED_LIB_EXT} 
+						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKmath${SHARED_LIB_EXT} 
+						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcpodes${SHARED_LIB_EXT}
+						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKsimbody${SHARED_LIB_EXT}
+						${SIMTK_LIB_DIR}/libpthread${SHARED_LIB_EXT}
+						${SIMTK_LIB_DIR}/libSimTKlapack${SHARED_LIB_EXT}
 						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH}/libxerces-c${SHARED_LIB_EXT})					
 ENDIF(WIN32)
 
