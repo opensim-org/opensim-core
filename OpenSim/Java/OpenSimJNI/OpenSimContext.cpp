@@ -54,7 +54,8 @@ void OpenSimContext::getStates( double* statesBuffer) {
 
 // Transforms
 void OpenSimContext::transformPosition(const Body& body, double* offset, double* gOffset) {
-        _model->getSimbodyEngine().transformPosition(*_configState, body, offset, gOffset );
+	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+    _model->getSimbodyEngine().transformPosition(*_configState, body, offset, gOffset );
 }
 
 SimTK::Transform OpenSimContext::getTransform(const Body& body) { // Body Should be made const
@@ -63,6 +64,7 @@ SimTK::Transform OpenSimContext::getTransform(const Body& body) { // Body Should
 }
 
 void OpenSimContext::transform(const Body& ground, double* d, Body& body, double* dragVectorBody) {
+	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
     _model->getSimbodyEngine().transform(*_configState, ground, SimTK::Vec3(d), body, SimTK::Vec3::updAs(dragVectorBody) );
     return;
 } 
