@@ -8,13 +8,19 @@ if(COMMAND cmake_policy)
         cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+#
+# determine if we are building on a 32 or 64 bit machine
+#
+IF( ${CMAKE_SIZEOF_VOID_P} EQUAL 8 )
+  SET( LIB64 64 )
+ELSE( ${CMAKE_SIZEOF_VOID_P} EQUAL 8 )
+  SET( LIB64  )
+ENDIF( ${CMAKE_SIZEOF_VOID_P} EQUAL 8 )
 
-# Use /lib64 instead of /lib for 64 bit linux builds
-IF(ARCH64)
-SET(LIB64 64)
-ELSE(ARCH64)
-SET(LIB64)
-ENDIF(ARCH64)
+IF( APPLE )
+   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
+   SET( LIB64  )
+ENDIF( APPLE )
 
 SET(BUILD_UTILITIES ON CACHE BOOL "Build rarely used tools (primarily to handle Storages and Controls)")
 
@@ -59,6 +65,7 @@ IF(WIN32)
 	  SET(VCVERSION VC9)
 	  SET(ARCH "Win32/VC9")
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
+	SET(SHARED_LIB_EXT ".dll")
 ELSE(WIN32)
 	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
