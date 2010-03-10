@@ -14,7 +14,7 @@ IF( APPLE )
    SET( LIB64  )
 ENDIF( APPLE )
 
-SET(BUILD_UTILITIES ON CACHE BOOL "Build rarely used tools (primarily to handle Storages and Controls)")
+SET(BUILD_UTILITIES OFF CACHE BOOL "Build rarely used tools (primarily to handle Storages and Controls) and converters to/from SIMM")
 
 SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 
