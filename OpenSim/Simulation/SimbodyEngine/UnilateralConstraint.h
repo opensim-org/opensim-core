@@ -97,7 +97,8 @@ public:
 	virtual int getNumConstraintEquations() {return _numConstraintEquations;};
 
 	// The unilateral conditions for this constraint.
-	virtual std::vector<bool> unilateralConditionsSatisfied() { return std::vector<bool>(_numConstraintEquations, false); };
+	virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State &s)
+		{ return std::vector<bool>(_numConstraintEquations, false); };
 
 
 private:

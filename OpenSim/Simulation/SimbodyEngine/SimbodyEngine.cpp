@@ -571,8 +571,8 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s, const OpenSi
  */
 void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForces, Vector_<Vec3>& rTorques) const
 {
-	int nb = _model->getMatterSubsystem().getNBodies();
-	SimTK::Vector_<SpatialVec> reactionForces(_model->getMatterSubsystem().getNBodies());
+	int nb = _model->getMatterSubsystem().getNumBodies();
+	SimTK::Vector_<SpatialVec> reactionForces(_model->getMatterSubsystem().getNumBodies());
 
 	// Systems must be realized to acceleration stage
 	_model->getSystem().realize(s, Stage::Acceleration);
@@ -599,11 +599,6 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
  */
 void SimbodyEngine::computeDerivatives(const SimTK::State& s, double *dqdt,double *dudt)
 {
-	//_s.updTime() = t;
-
-	Vec3 grav;
-	_model->getGravity(grav);
-
 	// COMPUTE ACCELERATIONS
 	try {
 		_model->getSystem().realize(s,Stage::Acceleration);
@@ -741,6 +736,7 @@ transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom,const Ve
 	Vec3& rPos) const
 {
 	const Body* bFrom = (const Body*)&aBodyFrom;
+	_model->getSystem().realize(s, SimTK::Stage::Position);
 	rPos = _model->getMatterSubsystem().getMobilizedBody(bFrom->_index).findStationLocationInGround(s, aPos);
 }
 

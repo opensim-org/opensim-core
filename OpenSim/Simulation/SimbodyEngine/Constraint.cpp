@@ -99,6 +99,7 @@ Object* Constraint::copy() const
 void Constraint::copyData(const Constraint &aConstraint)
 {
 	//_isDisabled = aConstraint._isDisabled;
+	_isDisabledProp.setValue(aConstraint._isDisabledProp.getValueBool());
 	_model = aConstraint._model;
 	// A copy is no longer a live Constraint with an underlying SimTK::Constraint
 	// The system must be created, at which time the constraint will be assigned an index
@@ -151,7 +152,13 @@ void Constraint::setup(Model& aModel)
 
 void Constraint::initState(SimTK::State& s) const
 {
-	setIsDisabled(s, _isDisabledProp.getValueBool() );
+	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
+
+	// Otherwise we have to change the status of the constraint
+	if(_isDisabledProp.getValueBool())
+		simConstraint.disable(s);
+	else
+		simConstraint.enable(s);
 }
 
 void Constraint::setDefaultsFromState(const SimTK::State& state)
@@ -223,7 +230,7 @@ bool Constraint::getIsDisabled(const SimTK::State& s) const
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool Constraint::setIsDisabled(SimTK::State& s, bool isDisabled) const
+bool Constraint::setIsDisabled(SimTK::State& s, bool isDisabled)
 {
 	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
 	bool modelConstraintIsDisabled = simConstraint.isDisabled(s);
@@ -237,6 +244,8 @@ bool Constraint::setIsDisabled(SimTK::State& s, bool isDisabled) const
 		simConstraint.disable(s);
 	else
 		simConstraint.enable(s);
+
+	_isDisabledProp.setValue(isDisabled);
 	
 	return true;
 }

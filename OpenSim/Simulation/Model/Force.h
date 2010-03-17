@@ -46,6 +46,14 @@ class Model;
  */
 class OSIMSIMULATION_API Force : public ModelComponent
 {
+	protected:
+	/** Flag indicating whether the force is disabled or not.  Disabled 
+	means that the force is not active in subsequent dynamics realizations. */
+	bool _isDisabled;
+
+	/** ID for the force in Simbody. */
+	SimTK::ForceIndex _index;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -91,8 +99,8 @@ public:
 	/**
 	 * deserialization from XML, necessary so that derived classes can (de)serialize
 	 */
-	Force(DOMElement* aNode): ModelComponent(aNode) {};
-	Force(): ModelComponent() {};
+	Force(DOMElement* aNode): ModelComponent(aNode) {_isDisabled = false; };
+	Force(): ModelComponent() {_isDisabled = false; };
 
 	/** 
 	 * Methods to query a Force for the value actually applied during simulation
@@ -109,6 +117,11 @@ public:
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
 		return OpenSim::Array<double>();
 	};
+
+	/** return if the Force is disabled or not */
+	virtual bool isDisabled() const;
+	/** Set the Force as disabled (true) or not (false)*/
+	virtual void setDisabled(bool disabled);
 
 //=============================================================================
 };	// END of class Force

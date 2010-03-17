@@ -285,6 +285,7 @@ void Model::copyData(const Model &aModel)
     _gravity = aModel._gravity;
     _bodySet=aModel._bodySet;
     _constraintSet=aModel._constraintSet;
+	_controllerSet=aModel._controllerSet;
     _markerSet = aModel._markerSet;
     _contactGeometrySet = aModel._contactGeometrySet;
 	_builtOK = aModel._builtOK; //??
@@ -303,6 +304,14 @@ void Model::setNull()
     _allControllersEnabled = true;
 	_perturbActuatorForces = false,
     _groundBody = NULL;
+
+    _system = NULL;
+    _matter = NULL;
+    _forceSubsystem = NULL;
+    _userForceElements = NULL;
+    _contactSubsystem = NULL;
+    _gravityForce = NULL;
+
 }
 //_____________________________________________________________________________
 /**
@@ -380,7 +389,7 @@ SimTK::State& Model::initSystem() {
 
     updControllerSet().setup(*this);
     updControllerSet().setActuators(updActuators());
-    updControllerSet().constructStorage();
+    //updControllerSet().constructStorage();
 
 	// Satisfy the constraints.
 	getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-8);
@@ -408,7 +417,7 @@ void Model::createSystem()
         delete _forceSubsystem;
         delete _userForceElements;
         delete _contactSubsystem;
-        delete _gravitySubsystem;
+        delete _gravityForce;
         delete _system;
     }
 
@@ -418,7 +427,7 @@ void Model::createSystem()
     _forceSubsystem = new OpenSimForceSubsystem( *_system, this );
     _userForceElements = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
-    _gravitySubsystem = new SimTK::Force::UniformGravity(*_userForceElements,*_matter,_gravity);
+    _gravityForce = new SimTK::Force::Gravity(*_userForceElements,*_matter,_gravity);
 
     _coordinateSet.setMemoryOwner(false);
     _coordinateSet.setSize(0);
@@ -429,7 +438,7 @@ void Model::createSystem()
 	for(int i=0;i<getBodySet().getSize();i++) {
 		OpenSim::Body& body = getBodySet().get(i);
 		MobilizedBodyIndex idx(body.getIndex());
-        if (!idx.isValid())    throw Exception("Body: "+body.getName()+
+        if (!idx.isValid() && body.getName()!= "ground")    throw Exception("Body: "+body.getName()+
 			" has no Joint... Model initialization aborted.");
 	}
 
@@ -713,13 +722,14 @@ Model& Model::operator=(const Model &aModel)
 /**
  * Get the gravity vector in the gloabl frame.
  *
- * @param rGrav the XYZ gravity vector in the global frame is returned here.
+ * @return the XYZ gravity vector in the global frame is returned here.
  */
-void Model::getGravity(SimTK::Vec3& rGrav) const
+SimTK::Vec3 Model::getGravity() const
 {
-	rGrav = _gravity;
+	if(_gravityForce)
+		_gravity = _gravityForce->getDefaultGravityVector();
 
-	return;
+	return _gravity;
 }
 //_____________________________________________________________________________
 /**
@@ -731,6 +741,10 @@ void Model::getGravity(SimTK::Vec3& rGrav) const
 bool Model::setGravity(const SimTK::Vec3& aGrav)
 {
 	_gravity = aGrav;
+
+	if(_gravityForce)
+		_gravityForce->setDefaultGravityVector(aGrav);
+
 	return true;
 }
 

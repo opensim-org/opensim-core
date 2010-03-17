@@ -124,7 +124,7 @@ public:
 	   if (derivComponents[0] == 0){
 			if (nd == 1)
 				return 4*x[0];
-			else if(derivComponents[0] == 0)
+			else if(derivComponents[1] == 0)
 				return 4;
 	   }
 	   else if (derivComponents[0] == 1){

@@ -55,6 +55,7 @@
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
 #include "Model/PrescribedForce.h"
+#include "Model/PointToPointSpring.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"

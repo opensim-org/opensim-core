@@ -98,7 +98,7 @@ private:
    /* Simbody  multibody system */    
    SimTK::MultibodySystem* _system;
    SimTK::SimbodyMatterSubsystem* _matter;
-   SimTK::Force::UniformGravity* _gravitySubsystem;
+   SimTK::Force::Gravity* _gravityForce;
    SimTK::GeneralForceSubsystem* _userForceElements;
    SimTK::GeneralContactSubsystem* _contactSubsystem;
    OpenSimForceSubsystem* _forceSubsystem;
@@ -280,6 +280,16 @@ public:
 	 */
     SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION;
 
+
+	/**
+	 * This is called after the Model is fully created but before starting a simulation.
+     * It ONLY initializes the computational system used to simulate the model and 
+	 * createSystem() has been called already. This method should only be used if 
+	 * if additional SimTK::System components are being added using the SimTK API 
+	 * and the programmer is certain that the model's system has been created.
+	 */
+	void initStateWithoutRecreatingSystem(SimTK::State& state) const { initState(state); };
+
     /**
      * Mark the computational system as invalid.  This should be called whenever a property
      * of the model is modified.  Once this has been called, no calculations can be done until
@@ -316,7 +326,8 @@ public:
     const OpenSimForceSubsystem& getForceSubsystem() const {return *_forceSubsystem; }
     const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const {return _system->getMatterSubsystem(); }
     SimTK::SimbodyMatterSubsystem& updMatterSubsystem() {return _system->updMatterSubsystem(); }
-    const SimTK::Force::UniformGravity& getGravitySubsystem() const {return *_gravitySubsystem; }
+    const SimTK::Force::Gravity& getGravityForce() const {return *_gravityForce; }
+	SimTK::Force::Gravity& updGravityForce() {return *_gravityForce; }
     const SimTK::GeneralForceSubsystem& getUserForceSubsystem() const {return *_userForceElements; }
     SimTK::GeneralForceSubsystem& updUserForceSubsystem() {return *_userForceElements; }
 
@@ -445,7 +456,7 @@ public:
 	 *
 	 * @param rGrav The XYZ gravity vector in the global frame is returned here.
 	 */
-	virtual void getGravity(SimTK::Vec3& rGrav) const;
+	virtual SimTK::Vec3 getGravity() const;
 	
 	/**
 	 * Set the gravity vector in the gloabl frame.

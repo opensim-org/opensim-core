@@ -84,12 +84,12 @@ public:
 	void copyData(const Constraint &aConstraint);
 
 	virtual void setup(Model& aModel);
-	virtual void initState(SimTK::State& completeState) const;
+	virtual void initState(SimTK::State& state) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
 
 	virtual void updateFromConstraint(SimTK::State& s, const Constraint &aConstraint);
 	virtual bool getIsDisabled(const SimTK::State& s) const;
-	virtual bool setIsDisabled(SimTK::State& s, bool isDisabled) const;
+	virtual bool setIsDisabled(SimTK::State& s, bool isDisabled);
 
 	virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
 									  SimTK::Vector& mobilityForces);

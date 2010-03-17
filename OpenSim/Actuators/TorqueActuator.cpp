@@ -337,7 +337,7 @@ void TorqueActuator::computeForce(const SimTK::State& s) const
 
     if( isControlled() && getController().getIsEnabled() ) {
        force = computeActuation(s);
-       setForce(s,  computeActuation(s) );
+       setForce(s,  force);
     } else {
        force = getForce(s);
     }

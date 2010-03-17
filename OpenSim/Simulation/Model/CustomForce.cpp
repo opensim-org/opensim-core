@@ -126,7 +126,8 @@ void CustomForce::computeForce(const SimbodyEngine& engine, const SimTK::State& 
 	_state = &state;
 	_bodyForces = &bodyForces;
 	_mobilityForces = &mobilityForces;
-	computeForce(state);
+	if(!isDisabled())
+		computeForce(state);
 	_matter = NULL;
 	_state = NULL;
 	_bodyForces = NULL;

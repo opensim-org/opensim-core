@@ -53,6 +53,7 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 	Object::RegisterType( StaticOptimization() );
 	Object::RegisterType( ForceReporter() );
 	Object::RegisterType( StatesReporter() );
+	Object::RegisterType( InducedAccelerations() );
 }
 
 osimAnalysesInstantiator::osimAnalysesInstantiator() 

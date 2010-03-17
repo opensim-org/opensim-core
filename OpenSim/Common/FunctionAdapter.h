@@ -31,6 +31,7 @@
 
 // INCLUDES
 #include "Function.h"
+#include "SimTKcommon.h"
 
 
 //=============================================================================
@@ -60,7 +61,8 @@ protected:
 public:
 	FunctionAdapter(const OpenSim::Function &aFunction);
     double calcValue(const SimTK::Vector& x) const;
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
+	double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
+	double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const;
     int getArgumentSize() const;
     int getMaxDerivativeOrder() const;
 private:

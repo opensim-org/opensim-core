@@ -281,12 +281,14 @@ void CustomJoint::constructCoordinates()
 		Coordinate *coord = new Coordinate();
 		std::string coordName = _spatialTransform.getCoordinateNames()[i];
 		coord->setName(coordName);
-		//if (i>=3) coord->setMotionType(Coordinate::Translational);
 		int coordIndex = savedCoordinates.getIndex(coordName);
 		if (coordIndex!=-1){
-			coord->setRangeMin(savedCoordinates.get(coordIndex).getRangeMin());
-			coord->setRangeMax(savedCoordinates.get(coordIndex).getRangeMax());
-			coord->setMotionType(savedCoordinates.get(coordIndex).getMotionType());
+			Coordinate& origCoord = savedCoordinates.get(coordIndex);
+			coord->setRangeMin(origCoord.getRangeMin());
+			coord->setRangeMax(origCoord.getRangeMax());
+			coord->setMotionType(origCoord.getMotionType());
+			coord->setDefaultClamped(origCoord.getDefaultClamped());
+			coord->setDefaultLocked(origCoord.getDefaultLocked());
 		}
 		_coordinateSet.append(coord);
 	}

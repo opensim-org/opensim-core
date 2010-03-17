@@ -374,7 +374,7 @@ bool PerturbationTool::run()
 	Vec3 original_gravity;
 	int nperturb = actuators.getSize() + (_perturbGravity ? 1 : 0);
 
-	if(_perturbGravity) _model->getGravity(original_gravity);
+	if(_perturbGravity) original_gravity = _model->getGravity();
 
 	Array<string> columnLabels;
 	columnLabels.append("time");

@@ -104,7 +104,7 @@ protected:
 	std::vector<SimTK::ConstraintIndex> _indices;
 
 	/**  This cache acts a temporary hold for the constraint conditions when time has not changed */
-	std::vector<bool> _cachedUnilateralConditions;
+	std::vector<bool> _defaultUnilateralConditions;
 
 //=============================================================================
 // METHODS
@@ -119,13 +119,26 @@ public:
 	void copyData(const RollingOnSurfaceConstraint &aConstraint);
 	virtual void setup(Model& aModel);
 
+	/**
+	 * Create the SimTK::Constraints: which implements this RollingOnSurfaceConstraint.
+	 */
+	void createSystem(SimTK::MultibodySystem& system) const;
+	/**
+	 * Populate the the SimTK::State: with defaults for the RollingOnSurfaceConstraint.
+	 */
+	void initState(SimTK::State& state) const;
+	/**
+	 * Given an existing SimTK::State set defaults for the RollingOnSurfaceConstraint.
+	 */
+	void setDefaultsFromState(const SimTK::State& state);
+
 	//SET 
 	void setRollingBodyByName(std::string aBodyName);
 	void setSurfaceBodyByName(std::string aBodyName);
-	void setContactPointSurfaceBody(SimTK::Vec3 point);
+	void setContactPointOnSurfaceBody(const SimTK::State &s, SimTK::Vec3 point);
 
 	// Methods that makes this a unilateral constraint
-	virtual std::vector<bool> unilateralConditionsSatisfied(SimTK::State& state);
+	virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state);
 
 	virtual bool getIsDisabled(const SimTK::State& state) const;
 
@@ -138,7 +151,7 @@ public:
 	// Set whether constraint is enabled or disabled but use cached values for unilateral conditions
 	// instead of automatic reevaluation
 	bool setIsDisabledWithCachedUnilateralConditions(bool isDisabled, SimTK::State& state) 
-		{ return setIsDisabled(state, isDisabled, _cachedUnilateralConditions); };
+		{ return setIsDisabled(state, isDisabled, _defaultUnilateralConditions); };
 
 	virtual void calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
 									  SimTK::Vector& mobilityForces);

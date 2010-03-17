@@ -38,6 +38,7 @@
 #include <OpenSim/Tools/ForwardTool.h>
 #include "SimTKsimbody.h"
 
+#include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
 using namespace std;
@@ -137,8 +138,13 @@ int main(int argc,char **argv)
 	cout<<"-----------------------------------------------------------------------"<<endl;
 	cout<<"-----------------------------------------------------------------------"<<endl<<endl;
 
+	// start timing
+	std::clock_t startTime = std::clock();
+
 	// RUN
 	forward.run();
+
+	std::cout << "Forward simulation time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 
 	//----------------------------
 	// Catch any thrown exceptions

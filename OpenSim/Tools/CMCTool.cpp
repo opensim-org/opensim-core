@@ -1162,8 +1162,7 @@ adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Ar
 	assert(aFAve.getSize()==3 && aMAve.getSize()==3);
 
 	// GRAVITY
-	Vec3 g;
-	_model->getGravity(g);
+	Vec3 g = _model->getGravity();
 
 	// COMPUTE SEGMENT WEIGHT
 	Body *body = &_model->updBodySet().get(_adjustedCOMBody);

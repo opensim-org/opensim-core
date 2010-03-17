@@ -57,6 +57,7 @@
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
 #include "Model/PrescribedForce.h"
+#include "Model/PointToPointSpring.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -80,6 +81,8 @@
 #include "SimbodyEngine/PointConstraint.h"
 #include "SimbodyEngine/CoordinateCouplerConstraint.h"
 #include "SimbodyEngine/PointOnLineConstraint.h"
+#include "SimbodyEngine/RollingOnSurfaceConstraint.h"
+
 #include "SimbodyEngine/EllipsoidJoint.h"
 #include "SimbodyEngine/BallJoint.h"
 #include "SimbodyEngine/PinJoint.h"
@@ -171,8 +174,10 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( ElasticFoundationForce::ContactParameters() );
 	Object::RegisterType( ElasticFoundationForce::ContactParametersSet() );
 	Object::RegisterType( PointOnLineConstraint() );
+	Object::RegisterType( RollingOnSurfaceConstraint() );
 	Object::RegisterType( Ligament() );
 	Object::RegisterType( PrescribedForce() );
+	Object::RegisterType( PointToPointSpring() );
 
     Object::RegisterType( ControlSetController() );
 

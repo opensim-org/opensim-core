@@ -57,7 +57,12 @@ public:
 		xf[0] = x[0];
 		return scale*f1->calcValue(xf)-x[1];
     }
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const {
+
+	double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const {
+		return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x); 
+	}
+
+	double calcDerivative(const SimTK::Array_<int>& derivComponents, const SimTK::Vector& x) const {
 		if (derivComponents.size() == 1){
 			if (derivComponents[0]==0){
 				SimTK::Vector x1(1);

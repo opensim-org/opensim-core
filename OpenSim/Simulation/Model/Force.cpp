@@ -56,4 +56,24 @@ void Force::setStateVariable(SimTK::State& state, int index, double value) const
     throw Exception("This force has no state variables");
 }
 
+//_____________________________________________________________________________
+/**
+ * Set whether or not this Force is disabled.
+ * Simbody multibody system instance is realized every time the isDisabled
+ * changes, BUT multiple sets to the same value have no cost.
+ *
+ * @param isDisabled If true the force is disabled; if false the constraint is enabled.
+ */
+void Force::setDisabled(bool disabled) 
+{
+	//SimTK::Force& simtkForce = _model->updMatterSubsystem().updForce(_index);
+	_isDisabled = disabled;
+}
+
+bool Force::isDisabled() const
+{
+	return _isDisabled;
+}
+
+
 } // end of namespace OpenSim

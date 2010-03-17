@@ -59,9 +59,14 @@ public:
         assert(x.size() == argumentSize);
         return value;
     }
-    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+
+	T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+        return calcDerivative(SimTK::ArrayViewConst_<int>(derivComponents),x);
+    }
+	T calcDerivative(const SimTK::Array_<int>& derivComponents, const Vector& x) const {
         return static_cast<T>(0);
     }
+
     virtual int getArgumentSize() const {
         return argumentSize;
     }
@@ -704,7 +709,7 @@ bool Coordinate::getLocked(const SimTK::State& s) const
 		return !disabled;
 	}
 	else{
-		return false;
+		return _locked;
 	}
 }
 

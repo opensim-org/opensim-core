@@ -253,8 +253,7 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
    out << "solver_max_iterations " << options.maxIterations << endl;
 #endif
 
-	SimTK::Vec3 gravity;
-	_model->getGravity(gravity);
+	SimTK::Vec3 gravity =_model->getGravity();
 	const string& gravityLabel = getGravityLabel(gravity);
 
 	out << "gravity " << gravityLabel << endl;
@@ -972,10 +971,10 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 			Array<double>& range = mvp->getRange();
 			const Coordinate* coord = mvp->getCoordinate();
 			aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getBody().getName();
-			if (coord->getMotionType() == Coordinate::Rotational)
-				aStream << " ranges 1 " << coord->getName() << " (" << range[0] * SimTK_RADIAN_TO_DEGREE << ", " << range[1] * SimTK_RADIAN_TO_DEGREE << ")" << endl;
-			else
-				aStream << " ranges 1 " << coord->getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
+				if (coord->getMotionType() == Coordinate::Rotational)
+					aStream << " ranges 1 " << coord->getName() << " (" << range[0] * SimTK_RADIAN_TO_DEGREE << ", " << range[1] * SimTK_RADIAN_TO_DEGREE << ")" << endl;
+				else
+					aStream << " ranges 1 " << coord->getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
 		} else if (pt.isA("MovingPathPoint")) {
 			MovingPathPoint* mpp = (MovingPathPoint*)(&pt);
 			Vec3& attachment = mpp->getLocation();
