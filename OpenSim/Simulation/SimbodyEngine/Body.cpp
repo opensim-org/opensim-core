@@ -484,7 +484,7 @@ void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 	// Update scale factors for displayer
 	updDisplayer()->setScaleFactors(oldScaleFactors);
 
-	if (_index!=0)	// The following throws an exception if applied to ground.
+	if (_name != "ground")	// The following throws an exception if applied to ground.
 		scaleInertialProperties(aScaleFactors, aScaleMass);
 }
 
