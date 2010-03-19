@@ -385,25 +385,25 @@ operator==(const Object &aObject) const
 				continue;
 			case Property::BoolArray:
 				for(int j=0; j < myProperty.getValueBoolArray().getSize() && equal; j++)
-					equal= (myProperty.getValueBoolArray().get(j)!=
+					equal= (myProperty.getValueBoolArray().get(j)==
 								theirProperty.getValueBoolArray().get(j));
 				if (!equal) return false;
 				continue;
 			case Property::IntArray:
 				for(int j=0; j < myProperty.getValueIntArray().getSize() && equal; j++)
-					equal= (myProperty.getValueIntArray().get(j) !=
+					equal= (myProperty.getValueIntArray().get(j) ==
 								theirProperty.getValueIntArray().get(j));
 				if (!equal) return false;
 				continue;
 			case Property::DblArray:
 				for(int j=0; j < myProperty.getValueDblArray().getSize() && equal; j++)
-					equal= (myProperty.getValueDblArray().get(j)!=
+					equal= (myProperty.getValueDblArray().get(j)==
 								theirProperty.getValueDblArray().get(j));
 				if (!equal) return false;
 				continue;
 			case Property::StrArray:
 				for(int j=0; j < myProperty.getValueStrArray().getSize() && equal; j++)
-					equal= (myProperty.getValueStrArray().get(j)!=
+					equal= (myProperty.getValueStrArray().get(j)==
 								theirProperty.getValueStrArray().get(j));
 				if (!equal) return false;
 				continue;
