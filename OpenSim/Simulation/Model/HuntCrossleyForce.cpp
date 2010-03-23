@@ -86,6 +86,10 @@ void HuntCrossleyForce::createSystem(SimTK::MultibodySystem& system) const
                 params.getStaticFriction(), params.getDynamicFriction(), params.getViscousFriction());
         }
     }
+
+	// Beyond the const Component get the index so we can access the SimTK::Force later
+	HuntCrossleyForce* mutableThis = const_cast<HuntCrossleyForce *>(this);
+	mutableThis->_index = force.getForceIndex();
 }
 
 void HuntCrossleyForce::setupProperties()

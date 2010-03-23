@@ -243,7 +243,7 @@ void RollingOnSurfaceConstraint::initState(SimTK::State& state) const
 
 void RollingOnSurfaceConstraint::setDefaultsFromState(const SimTK::State& state)
 {
-    _isDisabledProp.setValue(getIsDisabled(state));
+    _isDisabledProp.setValue(isDisabled(state));
 	for(int i=0; i < _numConstraintEquations; i++){
 		SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[i]);
 		// initialize the status of the constraint
@@ -395,7 +395,7 @@ std::vector<bool> RollingOnSurfaceConstraint::unilateralConditionsSatisfied(cons
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool RollingOnSurfaceConstraint::getIsDisabled(const SimTK::State &state) const
+bool RollingOnSurfaceConstraint::isDisabled(const SimTK::State &state) const
 {
 	// The parent constraint in is the plane constraint, so check its value
 	return _model->updMatterSubsystem().updConstraint(_indices[0]).isDisabled(state);
@@ -410,7 +410,7 @@ bool RollingOnSurfaceConstraint::getIsDisabled(const SimTK::State &state) const
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool RollingOnSurfaceConstraint::setIsDisabled(SimTK::State& state, bool isDisabled)
+bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled)
 {
 	// All constraints treated the same as default behavior i.e. at initilization
 	std::vector<bool> shouldBeOn(_numConstraintEquations, !isDisabled);
@@ -421,11 +421,11 @@ bool RollingOnSurfaceConstraint::setIsDisabled(SimTK::State& state, bool isDisab
 	if(state.getSystemStage() > Stage::Dynamics)
 		shouldBeOn = unilateralConditionsSatisfied(state);
 
-	return setIsDisabled(state, isDisabled, shouldBeOn);
+	return setDisabled(state, isDisabled, shouldBeOn);
 }
 
 
-bool RollingOnSurfaceConstraint::setIsDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn)
+bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn)
 {
 
 	for(int i=0; i < _numConstraintEquations; i++){
@@ -487,8 +487,8 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
 		simConstraint.calcConstraintForcesFromMultipliers(state, simConstraint.getMultipliersAsVector(state), bfs, mfs);
 		
 
-		int sbi = NaN;
-		int rbi = NaN;
+		int sbi = -1;
+		int rbi = -1;
 		int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
 		
 		for(int j=0; j< ncb; j++){

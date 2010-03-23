@@ -88,9 +88,9 @@ public:
 	// Perform and setup that is necessary
 	virtual void setup(Model& aModel);
 
-	virtual bool getIsDisabled() const {return _isDisabled; } ;
+	virtual bool isDisabled() const {return _isDisabled; } ;
 
-	virtual void setIsDisabled(bool isDisabled) {_isDisabled = isDisabled; } ;
+	virtual void setDisabled(bool isDisabled) {_isDisabled = isDisabled; } ;
 
 	/**
 	 *  The defining condition method that subclasses must override 

@@ -1,5 +1,5 @@
 // Force.cpp
-// Author: Peter Eastman
+// Author: Peter Eastman, Ajay Seth
 /*
  * Copyright (c) 2009 Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -30,6 +30,129 @@
 #include "Model.h"
 
 namespace OpenSim {
+
+//=============================================================================
+// CONSTRUCTOR(S) AND DESTRUCTOR
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Default constructor.
+ */
+	Force::Force():ModelComponent() 
+{
+	setNull();
+	setupProperties();
+}
+
+//_____________________________________________________________________________
+/**
+ * Destructor.
+ */
+Force::~Force()
+{
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy constructor.
+ *
+ * @param aForce Force to be copied.
+ */
+Force::Force(const Force &aForce) : ModelComponent(aForce)
+{
+	setNull();
+	setupProperties();
+	copyData(aForce);
+}
+
+//_____________________________________________________________________________
+/**
+ * Copy this Force and return a pointer to the copy.
+ * The copy constructor for this class is used.
+ *
+ * @return Pointer to a copy of this Force.
+ */
+Object* Force::copy() const
+{
+	Force *fc = new Force(*this);
+	return(fc);
+}
+
+//=============================================================================
+// CONSTRUCTION METHODS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Copy data members from one Force to another.
+ *
+ * @param aForce Force to be copied.
+ */
+void Force::copyData(const Force &aForce)
+{
+	//_isDisabled = aForce._isDisabled;
+	_isDisabledProp.setValue(aForce._isDisabledProp.getValueBool());
+	_model = aForce._model;
+	// A copy is no longer a live Force with an underlying SimTK::Force
+	// The system must be created, at which time the Force will be assigned an index
+	// corresponding to a valid system SimTK::Force.
+	_index.invalidate();
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the data members of this Force to their null values.
+ */
+void Force::setNull(void)
+{
+	setType("Force");
+}
+
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void Force::setupProperties(void)
+{
+	_isDisabledProp.setName("isDisabled");
+	_isDisabledProp.setValue(false);
+	_propertySet.append(&_isDisabledProp);
+}
+
+void Force::initState(SimTK::State& s) const
+{
+	SimTK::Force& simForce = _model->updUserForceSubsystem().updForce(_index);
+
+	// Otherwise we have to change the status of the constraint
+	if(_isDisabledProp.getValueBool())
+		simForce.disable(s);
+	else
+		simForce.enable(s);
+}
+
+void Force::setDefaultsFromState(const SimTK::State& state)
+{
+    _isDisabledProp.setValue(isDisabled(state));
+}
+
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+Force& Force::operator=(const Force &aForce)
+{
+	// BASE CLASS
+	Object::operator=(aForce);
+
+	copyData(aForce);
+
+	return(*this);
+}
+
 
 void Force::setup(Model& model)
 {
@@ -62,17 +185,27 @@ void Force::setStateVariable(SimTK::State& state, int index, double value) const
  * Simbody multibody system instance is realized every time the isDisabled
  * changes, BUT multiple sets to the same value have no cost.
  *
- * @param isDisabled If true the force is disabled; if false the constraint is enabled.
+ * @param isDisabled If true the force is disabled; if false the Force is enabled.
  */
-void Force::setDisabled(bool disabled) 
+void Force::setDisabled(SimTK::State& s, bool isDisabled) 
 {
-	//SimTK::Force& simtkForce = _model->updMatterSubsystem().updForce(_index);
-	_isDisabled = disabled;
+	if(_index.isValid()){
+		SimTK::Force& simtkForce = _model->updUserForceSubsystem().updForce(_index);
+		if(isDisabled)
+			simtkForce.disable(s);
+		else
+			simtkForce.enable(s);
+	}
+	_isDisabledProp.setValue(isDisabled);
 }
 
-bool Force::isDisabled() const
+bool Force::isDisabled(const SimTK::State& s) const
 {
-	return _isDisabled;
+	if(_index.isValid()){
+		SimTK::Force& simtkForce = _model->updUserForceSubsystem().updForce(_index);
+		return simtkForce.isDisabled(s);
+	}
+	return _isDisabledProp.getValueBool();
 }
 
 

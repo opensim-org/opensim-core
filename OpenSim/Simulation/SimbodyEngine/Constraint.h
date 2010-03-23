@@ -88,8 +88,8 @@ public:
     virtual void setDefaultsFromState(const SimTK::State& state);
 
 	virtual void updateFromConstraint(SimTK::State& s, const Constraint &aConstraint);
-	virtual bool getIsDisabled(const SimTK::State& s) const;
-	virtual bool setIsDisabled(SimTK::State& s, bool isDisabled);
+	virtual bool isDisabled(const SimTK::State& s) const;
+	virtual bool setDisabled(SimTK::State& s, bool isDisabled);
 
 	virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
 									  SimTK::Vector& mobilityForces);

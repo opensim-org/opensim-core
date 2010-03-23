@@ -140,18 +140,18 @@ public:
 	// Methods that makes this a unilateral constraint
 	virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State& state);
 
-	virtual bool getIsDisabled(const SimTK::State& state) const;
+	virtual bool isDisabled(const SimTK::State& state) const;
 
 	// Unilateral conditions are automatically satisfied if constraint is not disabled
-	virtual bool setIsDisabled(SimTK::State& state, bool isDisabled);
+	virtual bool setDisabled(SimTK::State& state, bool isDisabled);
 
 	// This method allows finer granularity over the subconstraints according to imposed behavior
-	bool setIsDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn);
+	bool setDisabled(SimTK::State& state, bool isDisabled, std::vector<bool> shouldBeOn);
 
 	// Set whether constraint is enabled or disabled but use cached values for unilateral conditions
 	// instead of automatic reevaluation
-	bool setIsDisabledWithCachedUnilateralConditions(bool isDisabled, SimTK::State& state) 
-		{ return setIsDisabled(state, isDisabled, _defaultUnilateralConditions); };
+	bool setDisabledWithCachedUnilateralConditions(bool isDisabled, SimTK::State& state) 
+		{ return setDisabled(state, isDisabled, _defaultUnilateralConditions); };
 
 	virtual void calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
 									  SimTK::Vector& mobilityForces);

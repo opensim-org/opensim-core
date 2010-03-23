@@ -72,7 +72,11 @@ CustomActuator::CustomActuator(const CustomActuator &aAct) :
 void CustomActuator::createSystem(SimTK::MultibodySystem& system) const
 {
     ForceAdapter* adapter = new ForceAdapter(*this, _model->getSimbodyEngine());
-    SimTK::Force::Custom(_model->updUserForceSubsystem(), adapter);
+    SimTK::Force::Custom force(_model->updUserForceSubsystem(), adapter);
+
+	 // Beyond the const Component get the index so we can access the SimTK::Force later
+	CustomActuator* mutableThis = const_cast<CustomActuator *>(this);
+	mutableThis->_index = force.getForceIndex();
 }
 
 //-----------------------------------------------------------------------------
@@ -124,8 +128,9 @@ void CustomActuator::computeForce(const SimbodyEngine& engine, const SimTK::Stat
 	_state = &state;
 	_bodyForces = &bodyForces;
 	_mobilityForces = &mobilityForces;
-	if(!isDisabled())
-		computeForce(state);
+
+	computeForce(state);
+	
 	_matter = NULL;
 	_state = NULL;
 	_bodyForces = NULL;

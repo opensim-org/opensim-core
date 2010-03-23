@@ -1228,7 +1228,7 @@ void Model::enforceCoordinateCouplerConstraints(SimTK::State& s) const
 		Constraint& aConstraint = getConstraintSet().get(i);
 		if (aConstraint.getType() == "CoordinateCouplerConstraint") {
 			CoordinateCouplerConstraint& coupler = dynamic_cast<CoordinateCouplerConstraint&>(aConstraint);
-			if (coupler.getIsDisabled(s)) continue;
+			if (coupler.isDisabled(s)) continue;
 			const Array<string> indNames = coupler.getIndependentCoordinateNames();
 			// Build a vector of the independent coordinate values and use it to calculate
 			// the desired value of the dependent coordinate.

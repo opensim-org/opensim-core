@@ -1,5 +1,5 @@
 // WeldConstraint.cpp
-// Author: Frank C. Anderson, Peter Loan
+// Author: Frank C. Anderson, Peter Loan, Ajay Seth
 /*
  * Copyright (c)  2007, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following

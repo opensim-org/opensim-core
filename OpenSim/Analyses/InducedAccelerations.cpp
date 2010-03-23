@@ -527,14 +527,14 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 			//Make sure all the actuators are on!
 			for(int f=0; f<_model->getActuators().getSize(); f++){
-				_model->updActuators().get(f).setDisabled(false);
+				_model->updActuators().get(f).setDisabled(s_analysis, false);
 			}
 
 			// Get to  the point where we can evaluate unilateral constraint conditions
 			_model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Acceleration);
 	
 			for(int i=0; i<constraintOn.getSize(); i++) {
-				_constraintSet.get(i).setIsDisabled(s_analysis, !constraintOn[i]);
+				_constraintSet.get(i).setDisabled(s_analysis, !constraintOn[i]);
 				// Make sure we stay at Dynamics so each constraint can evaluate its conditions
 				_model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Acceleration);
 			}
@@ -557,7 +557,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 			// disable actuator forces
 			for(int f=0; f<_model->getActuators().getSize(); f++){
-				_model->updActuators().get(f).setDisabled(true);
+				_model->updActuators().get(f).setDisabled(s_analysis, true);
 			}
 		}
 		else if(_contributors[c] == "velocity"){		
@@ -573,7 +573,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 			
 			// zero actuator forces
 			for(int f=0; f<_model->getActuators().getSize(); f++){
-				_model->updActuators().get(f).setDisabled(true);
+				_model->updActuators().get(f).setDisabled(s_analysis, true);
 			}
 			// Set the configuration (gen. coords and speeds) of the model.
 			_model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Velocity);
@@ -584,7 +584,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 			// zero actuator forces
 			for(int f=0; f<_model->getActuators().getSize(); f++){
-				_model->updActuators().get(f).setDisabled(true);
+				_model->updActuators().get(f).setDisabled(s_analysis, true);
 			}
 
 			//s_analysis = _model->initSystem();
@@ -601,7 +601,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 				throw Exception("InducedAcceleration: ERR- Could not find actuator '"+_contributors[c],__FILE__,__LINE__);
 			
 			Actuator &actuator = _model->getActuators().get(ai);
-			actuator.setDisabled(false);
+			actuator.setDisabled(s_analysis, false);
 			
 			if(_computePotentialsOnly){
 				actuator.setIsControlled(false);
@@ -617,8 +617,8 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 		}// End of if to select contributor 
 
-		//cout << "Constraint 0 should be  " << constraintOn[0] << " and is " <<  (_constraintSet[0].getIsDisabled(s_analysis) ? "off" : "on") << endl;
-		//cout << "Constraint 1 should be  " << constraintOn[1] << " and is " <<  (_constraintSet[1].getIsDisabled(s_analysis) ? "off" : "on") << endl;
+		//cout << "Constraint 0 should be  " << constraintOn[0] << " and is " <<  (_constraintSet[0].isDisabled(s_analysis) ? "off" : "on") << endl;
+		//cout << "Constraint 1 should be  " << constraintOn[1] << " and is " <<  (_constraintSet[1].isDisabled(s_analysis) ? "off" : "on") << endl;
 
 		// After setting the state of the model and applying forces
 		// Compute the derivative of the multibody system (speeds and accelerations)
@@ -711,7 +711,8 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 	// Go forward with a copy of the model so Analysis can add to model if necessary
 	_model = dynamic_cast<Model*>(_model->copy());
 
-	double time = s.getTime();
+	SimTK::State s_copy = s;
+	double time = s_copy.getTime();
 
 	_externalForces.setSize(0);
 	_constraints.setSize(0);
@@ -729,7 +730,7 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 		PrescribedForce *exf = dynamic_cast<PrescribedForce *>(&_model->getForceSet().get(i));
 		if(exf){
 			addContactConstraintFromExternalForce(exf);
-			exf->setDisabled(true);
+			exf->setDisabled(s_copy, true);
 		}
 	}
 
@@ -872,7 +873,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
 		// If the applied force is "significant" replace it with a constraint
 		if (force.norm() > _forceThreshold){
 			// turn on the constraint
-			_constraintSet.get(i).setIsDisabled(s, false);
+			_constraintSet.get(i).setDisabled(s, false);
 			// return the state of the constraint
 			constraintOn[i] = true;
 
@@ -884,7 +885,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
 		}
 		else{
 			// turn on the constraint
-			_constraintSet.get(i).setIsDisabled(s, true);
+			_constraintSet.get(i).setDisabled(s, true);
 			// return the state of the constraint
 			constraintOn[i] = false;
 		}

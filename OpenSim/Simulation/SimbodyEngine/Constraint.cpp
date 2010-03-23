@@ -109,17 +109,6 @@ void Constraint::copyData(const Constraint &aConstraint)
 
 //_____________________________________________________________________________
 /**
- * Copy data members from an AbstractConstraint to an Constraint.
- *
- * @param aConstraint AbstractConstraint to be copied.
- *
-void Constraint::copyData(const AbstractConstraint &aConstraint)
-{
-	//_isDisabled = aConstraint.getIsDisabled();
-}
-
-//_____________________________________________________________________________
-/**
  * Set the data members of this Constraint to their null values.
  */
 void Constraint::setNull(void)
@@ -163,7 +152,7 @@ void Constraint::initState(SimTK::State& s) const
 
 void Constraint::setDefaultsFromState(const SimTK::State& state)
 {
-    _isDisabledProp.setValue(getIsDisabled(state));
+    _isDisabledProp.setValue(isDisabled(state));
 }
 
 
@@ -199,7 +188,7 @@ Constraint& Constraint::operator=(const Constraint &aConstraint)
  */
 void Constraint::updateFromConstraint(SimTK::State& s, const Constraint &aConstraint)
 {
-	setIsDisabled(s, aConstraint.getIsDisabled(s));
+	setDisabled(s, aConstraint.isDisabled(s));
 }
 
 //=============================================================================
@@ -217,7 +206,7 @@ void Constraint::updateFromConstraint(SimTK::State& s, const Constraint &aConstr
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool Constraint::getIsDisabled(const SimTK::State& s) const
+bool Constraint::isDisabled(const SimTK::State& s) const
 {
 	return _model->updMatterSubsystem().updConstraint(_index).isDisabled(s);
 }
@@ -230,7 +219,7 @@ bool Constraint::getIsDisabled(const SimTK::State& s) const
  *
  * @param isDisabled If true the constraint is disabled; if false the constraint is enabled.
  */
-bool Constraint::setIsDisabled(SimTK::State& s, bool isDisabled)
+bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
 {
 	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
 	bool modelConstraintIsDisabled = simConstraint.isDisabled(s);

@@ -1,7 +1,7 @@
 #ifndef __Force_h__
 #define __Force_h__
 // Force.h
-// Author: Peter Eastman
+// Author: Peter Eastman, Ajay Seth
 /*
  * Copyright (c)  2009 Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -30,6 +30,7 @@
 // INCLUDE
 #include "OpenSim/Simulation/osimSimulationDLL.h"
 #include "OpenSim/Common/Object.h"
+#include <OpenSim/Common/PropertyBool.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include <SimTKsimbody.h>
 
@@ -40,16 +41,17 @@ class Model;
 /**
  * This abstract class represents a force applied to bodies or generalized coordinates during a simulation.
  * Each subclass represents a different type of force.  The actual force computation is done by a SimTK::Force,
- * which is created by createSimTKForce().
+ * which is created by createSystem().
  *
  * @author Peter Eastman
+ * @author Ajay Seth
  */
 class OSIMSIMULATION_API Force : public ModelComponent
 {
 	protected:
 	/** Flag indicating whether the force is disabled or not.  Disabled 
 	means that the force is not active in subsequent dynamics realizations. */
-	bool _isDisabled;
+	PropertyBool _isDisabledProp;
 
 	/** ID for the force in Simbody. */
 	SimTK::ForceIndex _index;
@@ -58,10 +60,25 @@ class OSIMSIMULATION_API Force : public ModelComponent
 // METHODS
 //=============================================================================
 public:
+	Force();
+	Force(const Force &aForce);
+	virtual ~Force();
+
+	/**
+	 * deserialization from XML, necessary so that derived classes can (de)serialize
+	 */
+	Force(DOMElement* aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
+	
+	Force& operator=(const Force &aForce);
+	void copyData(const Force &aForce);
+	virtual Object* copy() const;
+
 	/**
 	 * Subclasses may optionally override this method to perform setup.
 	 */
     virtual void setup(Model& model);
+	virtual void initState(SimTK::State& state) const;
+    virtual void setDefaultsFromState(const SimTK::State& state);
 	/**
 	 * Subclasses may optionally override this method to perform setup after initSystem() has been called.
 	 */
@@ -96,11 +113,6 @@ public:
      */
     virtual void setStateVariable(SimTK::State& state, int index, double value) const;
 
-	/**
-	 * deserialization from XML, necessary so that derived classes can (de)serialize
-	 */
-	Force(DOMElement* aNode): ModelComponent(aNode) {_isDisabled = false; };
-	Force(): ModelComponent() {_isDisabled = false; };
 
 	/** 
 	 * Methods to query a Force for the value actually applied during simulation
@@ -119,9 +131,14 @@ public:
 	};
 
 	/** return if the Force is disabled or not */
-	virtual bool isDisabled() const;
+	virtual bool isDisabled(const SimTK::State &s) const;
 	/** Set the Force as disabled (true) or not (false)*/
-	virtual void setDisabled(bool disabled);
+	virtual void setDisabled(SimTK::State &s, bool disabled);
+
+private:
+
+	void setNull();
+	void setupProperties();
 
 //=============================================================================
 };	// END of class Force
