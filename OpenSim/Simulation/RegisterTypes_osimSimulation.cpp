@@ -58,6 +58,7 @@
 #include "Model/GeometryPath.h"
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
+#include "Model/BushingForce.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -178,6 +179,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( Ligament() );
 	Object::RegisterType( PrescribedForce() );
 	Object::RegisterType( PointToPointSpring() );
+	Object::RegisterType( BushingForce() );
 
     Object::RegisterType( ControlSetController() );
 

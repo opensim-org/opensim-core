@@ -34,6 +34,8 @@
 //
 //	Tests Include:
 //      1. PointToPointSpring
+//		2. BusingForce
+//		3. ElasticFoundationForce
 //		
 //     Add tests here as Forces are added to OpenSim
 //
@@ -159,6 +161,115 @@ int testSpringMass()
 	return 0;
 }
 
+int testBushingForce()
+{
+
+	double mass = 1;
+	double stiffness = 10;
+	double restlength = 0.0;
+	double h0 = 0;
+	double start_h = 0.5;
+	double ball_radius = 0.25;
+
+	double omega = sqrt(stiffness/mass);
+
+	double dh = mass*gravity_vec(1)/stiffness;
+
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	osimModel->setName("BushingTest");
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+	OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
+	ball.addDisplayGeometry("sphere.vtp");
+	ball.scale(Vec3(ball_radius), false);
+
+	// Add joints
+	SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+
+	double positionRange[2] = {-10, 10};
+	// Rename coordinates for a slider joint
+	CoordinateSet &slider_coords = slider.getCoordinateSet();
+	slider_coords[0].setName("ball_h");
+	slider_coords[0].setRange(positionRange);
+	slider_coords[0].setMotionType(Coordinate::Translational);
+
+	osimModel->addBody(&ball);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->updBodySet().setMemoryOwner(false);
+
+	Vec3 rotStiffness(0);
+	Vec3 transStiffness(stiffness);
+	Vec3 rotDamping(0);
+	Vec3 transDamping(0);
+
+	osimModel->setGravity(gravity_vec);
+
+	BushingForce spring("ground", Vec3(0), Vec3(0), "ball", Vec3(0), Vec3(0), transStiffness, rotStiffness, transDamping, rotDamping);
+
+	osimModel->addForce(&spring);
+
+	osimModel->print("BushingForceModel.osim");
+
+	// Create the force reporter
+	ForceReporter* reporter = new ForceReporter(osimModel);
+	osimModel->addAnalysis(reporter);
+
+	SimTK::State &osim_state = osimModel->initSystem();
+
+	slider_coords[0].setValue(osim_state, start_h);
+    osimModel->getSystem().realize(osim_state, Stage::Position );
+
+	//==========================================================================================================
+	// Compute the force and torque at the specified times.
+
+    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+	integrator.setAccuracy(1e-6);
+    Manager manager(*osimModel,  integrator);
+    manager.setInitialTime(0.0);
+
+	double final_t = 2.0;
+	double nsteps = 10;
+	double dt = final_t/nsteps;
+
+	for(int i = 1; i <=nsteps; i++){
+		manager.setFinalTime(dt*i);
+		manager.integrate(osim_state);
+		osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+        Vec3 pos;
+        osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
+		
+		double height = (start_h-dh)*cos(omega*osim_state.getTime())+dh;
+		ASSERT_EQUAL(height, pos(1), 1e-4);
+
+		//Now check that the force reported by spring
+		Array<double> model_force = spring.getRecordValues(osim_state);
+
+		// get the forces applied to the ground and ball
+		double analytical_force = -stiffness*height;
+		// analytical force corresponds in direction to the force on the ball Y index = 7
+		ASSERT_EQUAL(analytical_force, model_force[7], 1e-4);
+
+		manager.setInitialTime(dt*i);
+	}
+
+	manager.getStateStorage().print("bushing_model_states.sto");
+
+	// Save the forces
+	reporter->getForceStorage().print("bushing_forces.mot");  
+
+	// Before exiting lets see if copying the spring works
+	BushingForce *copyOfSpring = (BushingForce *)spring.copy();
+
+	bool isEqual = (*copyOfSpring == spring);
+	ASSERT(isEqual);
+
+	return 0;
+}
+
+
+
 // Test our wraapping of elastic foundation in OpenSim
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
@@ -232,7 +343,11 @@ int testElasticFoundation()
 int main()
 {
 	testSpringMass();
+	cout << "spring passed"  << endl;
+	testBushingForce();
+	cout << "bushing passed"  << endl;
 	testElasticFoundation();
+	cout << "elastic foundation force passed"  << endl;
 
 	return 0;
 }
