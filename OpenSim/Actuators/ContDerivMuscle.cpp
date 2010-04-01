@@ -515,10 +515,10 @@ void ContDerivMuscle::computeEquilibrium(SimTK::State& s) const
  *
  * This function is based on muscle_deriv_func9 from derivs.c (old pipeline code)
  */
-double ContDerivMuscle::computeActuation(const SimTK::State& s)
+double ContDerivMuscle::computeActuation(const SimTK::State& s) const
 {
 	// Base Class (to calculate speed)
-   Muscle::computeActuation(s);
+   Muscle::computeLengtheningSpeed(s);
 
    double normState[2], normStateDeriv[2], norm_tendon_length, ca;
    double norm_muscle_tendon_length, pennation_angle;

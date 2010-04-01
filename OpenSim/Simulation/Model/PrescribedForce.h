@@ -231,7 +231,9 @@ protected:
 	/**
 	 * Compute the force.
 	 */
-	virtual void computeForce(const SimTK::State& state) const;
+	virtual void computeForce(const SimTK::State& state, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const;
 
 private:
 	void setNull();

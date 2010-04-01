@@ -306,7 +306,9 @@ double  PointActuator::computeActuation( const SimTK::State& s ) const
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void PointActuator::computeForce(const SimTK::State& s) const
+void PointActuator::computeForce(const SimTK::State& s, 
+							     SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							     SimTK::Vector& generalizedForces) const
 {
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
@@ -330,7 +332,7 @@ void PointActuator::computeForce(const SimTK::State& s) const
 		engine.transform(s, *_body, forceVec, engine.getGroundBody(), forceVec);
 	if (_pointIsGlobal)
 			engine.transformPosition(s, engine.getGroundBody(), lpoint, *_body, lpoint);
-	applyForceToPoint(*_body, lpoint, forceVec);
+	applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
 }
 //_____________________________________________________________________________
 /**

@@ -290,7 +290,9 @@ getStiffness() const
  * Compute all quantities necessary for applying the spring force to the
  * model.
  */
-void SpringGeneralizedForce::computeForce( const SimTK::State& s) const
+void SpringGeneralizedForce::computeForce(const SimTK::State& s, 
+							      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							      SimTK::Vector& generalizedForces) const
 {
 	if(_model==NULL || _coord == NULL) return;
 
@@ -299,5 +301,5 @@ void SpringGeneralizedForce::computeForce( const SimTK::State& s) const
 	double speed =  _coord->getSpeedValue(s);
 	double force = -getStiffness()*(q - _restLength) - _viscosity*speed;
 
-	applyGeneralizedForce(*_coord, force);
+	applyGeneralizedForce(s, *_coord, force, generalizedForces);
 }

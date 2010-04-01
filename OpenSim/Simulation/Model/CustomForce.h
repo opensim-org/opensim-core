@@ -50,11 +50,7 @@ class OSIMSIMULATION_API CustomForce : public Force
 // DATA
 //=============================================================================
 private:
-	/** These temporarily store the vectors of forces while they are being computed. */
-	mutable SimTK::Vector_<SimTK::SpatialVec>* _bodyForces;
-	mutable SimTK::Vector* _mobilityForces;
-	mutable SimTK::SimbodyMatterSubsystem const * _matter;
-	mutable SimTK::State const * _state;
+
 	friend class ForceAdapter;
 
 //=============================================================================
@@ -73,8 +69,11 @@ protected:
 	/**
 	 * Subclasses must implement this method to compute the forces that should be applied to bodies
 	 * and generalized speeds.
+	 * This is invoked by ForceAdapter to perform the force computation.
 	 */
-	virtual void computeForce(const SimTK::State& state) const = 0;
+	virtual void computeForce(const SimTK::State& state, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const = 0;
 	/**
 	 * Subclasses may optionally override this method to compute a contribution to the potential
 	 * energy of the system.  The default implementation returns 0, which is appropriate for forces
@@ -91,7 +90,19 @@ protected:
 	 * @param aBody    the body to apply the force to
 	 * @param aForce   the force to apply, specified in the inertial frame
 	 */
-	void applyForce(const OpenSim::Body &aBody, const SimTK::Vec3& aForce) const;
+	/**
+	 * Apply a force to a particular body.  This method applies only a force, not a torque, which is
+	 * equivalent to applying the force at the body's center of mass.
+	 *
+	 * This method may only be called from inside computeForce().  Invoking it at any other time
+	 * will produce an exception.
+	 *
+	 * @param aBody    the body to apply the force to
+	 * @param aForce   the force to apply, specified in the inertial frame
+	 * @param bodyForces  the current set of system bodyForces this force is added to
+	 */
+	void applyForce(const SimTK::State &s, const OpenSim::Body &aBody, 
+					const SimTK::Vec3& aForce, SimTK::Vector_<SimTK::SpatialVec> &bodyForces) const;
 	/**
 	 * Apply a force to a particular body.  Based on what point the force is applied at, this method
 	 * automatically determines the torque produced by the force and applies that as well.
@@ -102,8 +113,10 @@ protected:
 	 * @param aBody    the body to apply the force to
 	 * @param aPoint   the point at which to apply the force, specifieid in the inertial frame
 	 * @param aForce   the force to apply, specified in the body's frame
+	 * @param bodyForces  the current set of system bodyForces this force is added to 
 	 */
-	void applyForceToPoint(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, const SimTK::Vec3& aForce) const;
+	void applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, 
+						   const SimTK::Vec3& aForce, SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
 	/**
 	 * Apply a torque to a particular body.
 	 *
@@ -112,22 +125,22 @@ protected:
 	 *
 	 * @param aBody    the body to apply the force to
 	 * @param aTorque  the torque to apply, specified in the inertial frame
+	 * @param bodyForces  the current set of system bodyForces this force is added to 
 	 */
-	void applyTorque(const OpenSim::Body &aBody, const SimTK::Vec3& aTorque) const;
+	void applyTorque(const SimTK::State &s, const OpenSim::Body &aBody, 
+					 const SimTK::Vec3& aTorque, SimTK::Vector_<SimTK::SpatialVec> &bodyForces) const;
 	/**
-	 * Apply a force to a generalized coordinate.
+	 * Apply a generalized force.
 	 *
 	 * This method may only be called from inside computeForce().  Invoking it at any other time
 	 * will produce an exception.
 	 *
-	 * @param aU       the generalized speed to apply the force to
-	 * @param aForce   the force to apply
+	 * @param aCoord  the generalized coordinate to apply the force to
+	 * @param aForce  the force to apply
+	 * @param generalizedForces  the current set of system generalizedForces this force is added to 
 	 */
-	void applyGeneralizedForce(const Coordinate &aCoord, double aForce) const;
-	/**
-	 * This is invoked by ForceAdapter to perform the force computation.
-	 */
-	void computeForce(const SimbodyEngine& engine, const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForces, SimTK::Vector& mobilityForces) const;
+	void applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
+							   double aForce, SimTK::Vector &generalizedForces) const;
 
 //=============================================================================
 };	// END of class CustomForce

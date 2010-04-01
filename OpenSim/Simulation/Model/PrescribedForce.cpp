@@ -370,7 +370,9 @@ void PrescribedForce::setPointIsInGlobalFrame(bool isGlobal)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-void PrescribedForce::computeForce(const SimTK::State& state) const
+void PrescribedForce::computeForce(const SimTK::State& state, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const
 {
 	double time = state.getTime();
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
@@ -384,7 +386,7 @@ void PrescribedForce::computeForce(const SimTK::State& state) const
 		if (!_forceIsGlobal)
 			engine.transform(state, *_body, force, engine.getGroundBody(), force);
 		if (_pointX == NULL) {
-			applyForce(*_body, force);
+			applyForce(state, *_body, force, bodyForces);
  
 	    }else {
 			Vec3 point(_pointX?_pointX->calcValue(timeAsVector):0.0, 
@@ -392,7 +394,7 @@ void PrescribedForce::computeForce(const SimTK::State& state) const
 				_pointZ?_pointZ->calcValue(timeAsVector):0.0);
 			if (_pointIsGlobal)
 				engine.transformPosition(state, engine.getGroundBody(), point, *_body, point);
-			applyForceToPoint(*_body, point, force);
+			applyForceToPoint(state, *_body, point, force, bodyForces);
 		}
 	}
 	if (_torqueX != NULL) {
@@ -401,7 +403,7 @@ void PrescribedForce::computeForce(const SimTK::State& state) const
 			_torqueZ?_torqueZ->calcValue(timeAsVector):0.0);
 		if (!_forceIsGlobal)
 			engine.transform(state, *_body, torque, engine.getGroundBody(), torque);
-		applyTorque(*_body, torque);
+		applyTorque(state, *_body, torque, bodyForces);
 	}
 }
 

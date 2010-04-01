@@ -129,7 +129,9 @@ public:
 	//--------------------------------------------------------------------------
 	// FORCE
 	//--------------------------------------------------------------------------
-	virtual void computeForce(const SimTK::State &s) const;
+	virtual void computeForce(const SimTK::State& state, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const;
 
 //=============================================================================
 };	// END of class LinearSpring

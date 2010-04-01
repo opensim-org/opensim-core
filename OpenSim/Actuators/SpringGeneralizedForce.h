@@ -121,7 +121,9 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 protected:
-	virtual void computeForce( const SimTK::State& s) const;
+	virtual void computeForce( const SimTK::State& state, 
+							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							   SimTK::Vector& mobilityForces) const;
 
 	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, CustomForce);
 

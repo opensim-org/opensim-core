@@ -372,7 +372,9 @@ void TorsionalSpring::computeTargetFunctions(SimTK::State &s, const Storage &aQS
  *
  * @param s States.
  */
-void TorsionalSpring::computeForce(const SimTK::State &s) const
+void TorsionalSpring::computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const
 {
 	int i;
 	SimTK::Vec3 torque(0,0,0);
@@ -434,7 +436,7 @@ void TorsionalSpring::computeForce(const SimTK::State &s) const
 //	 cout<<"torsional spring t=" << s.getTime() << " torque=" << torque << endl;
 		if(torque.norm() >= _threshold) {
 			//cout<<"applying torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
-			applyTorque(_body, torque);
+			applyTorque(s, _body, torque, bodyForces);
 			//if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);
 		}
 

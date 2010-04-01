@@ -125,7 +125,9 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual void setup(Model& aModel);
-	virtual void computeForce(const SimTK::State& s) const;
+	virtual void computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const;
 
 	//--------------------------------------------------------------------------
 	// SCALE

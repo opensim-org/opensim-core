@@ -781,7 +781,7 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
    double excitation = getExcitation(s);
 
 	// Base Class (to calculate speed)
-	Muscle::computeActuation(s);
+	Muscle::computeLengtheningSpeed(s);
 
    /* Normalize the muscle states */
    double activation = getActivation(s);

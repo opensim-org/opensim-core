@@ -201,7 +201,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void computeStateDerivatives(const SimTK::State& s);
 	virtual void computeEquilibrium(SimTK::State& s ) const;
-	virtual double computeActuation(const SimTK::State& s);
+	virtual double computeActuation(const SimTK::State& s) const;
 	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
 	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
 	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;

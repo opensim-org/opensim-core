@@ -43,11 +43,7 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-CustomActuator::CustomActuator() :
-	_bodyForces(NULL),
-	_mobilityForces(NULL),
-	_matter(NULL),
-	_state(NULL)
+CustomActuator::CustomActuator()
 {
 }
 
@@ -58,11 +54,7 @@ CustomActuator::CustomActuator() :
  * @param aActuator Actuator to copy.
  */
 CustomActuator::CustomActuator(const CustomActuator &aAct) :
-    Actuator(aAct),
-	_bodyForces(NULL),
-	_mobilityForces(NULL),
-	_matter(NULL),
-	_state(NULL)
+    Actuator(aAct)
 {
 }
 
@@ -91,48 +83,30 @@ double CustomActuator::computePotentialEnergy(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // METHODS TO APPLY FORCES AND TORQUES
 //-----------------------------------------------------------------------------
-void CustomActuator::applyForce(const OpenSim::Body &aBody, const Vec3& aForce) const
+void CustomActuator::applyForce(const SimTK::State &s, const OpenSim::Body &aBody, 
+								const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
 {
-	if (_state == NULL)
-		throw Exception("Called applyForce() from outside computeForce()");
-	_model->getMatterSubsystem().getMobilizedBody(SimTK::MobilizedBodyIndex(aBody.getIndex())).applyBodyForce(*_state, SimTK::SpatialVec(Vec3(0), aForce), *_bodyForces);
+	_model->getMatterSubsystem().getMobilizedBody(SimTK::MobilizedBodyIndex(aBody.getIndex())).applyBodyForce(s, SimTK::SpatialVec(Vec3(0), aForce), bodyForces);
 }
 
-void CustomActuator::applyForceToPoint(const OpenSim::Body &aBody, const Vec3& aPoint, const Vec3& aForce) const
+void CustomActuator::applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const Vec3& aPoint, 
+									   const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
 {
-	if (_state == NULL)
-		throw Exception("Called applyForceToPoint() from outside computeForce()");
-	_model->getMatterSubsystem().addInStationForce(*_state, SimTK::MobilizedBodyIndex(aBody.getIndex()), aPoint, aForce, *_bodyForces);
+	_model->getMatterSubsystem().addInStationForce(s, SimTK::MobilizedBodyIndex(aBody.getIndex()), 
+												   aPoint, aForce, bodyForces);
 }
 
-void CustomActuator::applyTorque(const OpenSim::Body &aBody, const Vec3& aTorque) const
+void CustomActuator::applyTorque(const SimTK::State &s, const OpenSim::Body &aBody, 
+								 const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
 {
-	if (_state == NULL)
-		throw Exception("Called applyTorque() from outside computeForce()");
-	_model->getMatterSubsystem().addInBodyTorque(*_state, SimTK::MobilizedBodyIndex(aBody.getIndex()), aTorque, *_bodyForces);
+	_model->getMatterSubsystem().addInBodyTorque(s, SimTK::MobilizedBodyIndex(aBody.getIndex()),
+												 aTorque, bodyForces);
 }
 
-void CustomActuator::applyGeneralizedForce(const Coordinate &aCoord, double aForce) const
+void CustomActuator::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
+										   double aForce, Vector &mobilityForces) const
 {
-	if (_state == NULL)
-		throw Exception("Called applyGeneralizedForce() from outside computeForce()");
-	_model->getMatterSubsystem().addInMobilityForce(*_state, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()), SimTK::MobilizerUIndex(aCoord.getMobilityIndex()), aForce, *_mobilityForces);
+	_model->getMatterSubsystem().addInMobilityForce(s, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()), 
+									SimTK::MobilizerUIndex(aCoord.getMobilityIndex()), aForce, mobilityForces);
 }
 
-//-----------------------------------------------------------------------------
-// INTERFACE USED BY FORCEADAPTER
-//-----------------------------------------------------------------------------
-void CustomActuator::computeForce(const SimbodyEngine& engine, const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForces, SimTK::Vector& mobilityForces) const
-{
-	//_matter = engine._model->getMatterSubsystem();
-	_state = &state;
-	_bodyForces = &bodyForces;
-	_mobilityForces = &mobilityForces;
-
-	computeForce(state);
-	
-	_matter = NULL;
-	_state = NULL;
-	_bodyForces = NULL;
-	_mobilityForces = NULL;
-}

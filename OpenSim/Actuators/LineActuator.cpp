@@ -340,7 +340,9 @@ double LineActuator::computeActuation( const SimTK::State& s ) const
  *
  * @param s current SimTK::State
  */
-void LineActuator::computeForce(const SimTK::State& s) const
+void LineActuator::computeForce(const SimTK::State& s, 
+							    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							    SimTK::Vector& generalizedForces) const
 {
 	if(_model==NULL) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
@@ -384,8 +386,8 @@ void LineActuator::computeForce(const SimTK::State& s) const
 	SimTK::Vec3 force = forceMagnitude*direction;
 
 	// appy equal and opposite forces to the bodies
-	applyForceToPoint(*_bodyA, _pointA, force);
-	applyForceToPoint(*_bodyB, _pointB, -force);
+	applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
+	applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
 }
 //_____________________________________________________________________________
 /**

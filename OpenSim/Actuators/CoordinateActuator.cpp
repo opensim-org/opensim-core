@@ -305,8 +305,9 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void CoordinateActuator::
-computeForce(const SimTK::State& s) const
+void CoordinateActuator::computeForce( const SimTK::State& s, 
+							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							   SimTK::Vector& mobilityForces) const
 {
 	if(_model==NULL) return;
 
@@ -317,7 +318,7 @@ computeForce(const SimTK::State& s) const
 //std::cout << "CoordinateActuator::computeForce t=" << s.getTime() << "  " << getName() <<   " force= " << getForce(s) << std::endl;
 
 	if(isCoordinateValid()){
-       applyGeneralizedForce(*_coord, getForce(s) );
+       applyGeneralizedForce(s, *_coord, getForce(s), mobilityForces);
     } else {
        std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
     }

@@ -406,7 +406,9 @@ void LinearSpring::computeTargetFunctions(SimTK::State &s, const Storage &aQStor
  * @param aX Controls.
  * @param aY States.
  */
-void LinearSpring::computeForce(const SimTK::State &s) const
+void LinearSpring::computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const
 {
 	//CALCULATE FORCE AND APPLY
 	SimTK::Vec3 dx,dv;
@@ -484,7 +486,7 @@ void LinearSpring::computeForce(const SimTK::State &s) const
  //cout<<"linear spring t=" << s.getTime() << " force=" << force << endl;
 		if(force.norm() >= _threshold) {
 			//cout<<"applying force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
-			applyForceToPoint(_body, pLocal, force);
+			applyForceToPoint(s, _body, pLocal, force, bodyForces);
 			//if(_recordAppliedLoads) _appliedForceStore->append(aT,_force);
 		}
 

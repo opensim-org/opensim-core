@@ -674,7 +674,7 @@ double Delp1990Muscle::computeActuation(const SimTK::State& s) const
 	double tendonForce;
 
 	// Base Class (to calculate speed)
-	Muscle::computeActuation(s);
+	Muscle::computeLengtheningSpeed(s);
 
    double normState[3], normStateDeriv[3], norm_tendon_length, ca, ta;
    double norm_muscle_tendon_length, pennation_angle;

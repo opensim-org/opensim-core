@@ -327,7 +327,9 @@ double TorqueActuator::computeActuation( const SimTK::State& s ) const
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void TorqueActuator::computeForce(const SimTK::State& s) const
+void TorqueActuator::computeForce(const SimTK::State& s, 
+							      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							      SimTK::Vector& generalizedForces) const
 {
 	if(_model==NULL) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
@@ -356,10 +358,10 @@ void TorqueActuator::computeForce(const SimTK::State& s) const
 	if (!_torqueIsGlobal)
 		engine.transform(s, *_bodyA, torque, engine.getGroundBody(), torque);
 	
-	applyTorque(*_bodyA, torque);
+	applyTorque(s, *_bodyA, torque, bodyForces);
 
 	if(_bodyB !=NULL)
-		applyTorque(*_bodyB, -torque);
+		applyTorque(s, *_bodyB, -torque, bodyForces);
 }
 //_____________________________________________________________________________
 /**

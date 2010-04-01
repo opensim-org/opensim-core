@@ -774,7 +774,8 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         tReal = s.getTime() * _model->getTimeNormConstant();
         if( _writeToStorage ) {
             getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
-            _controllerSet->storeControls(s,step);
+			if(_model->isControlled())
+				_controllerSet->storeControls(s,step);
          }
      }
 
@@ -797,9 +798,10 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             const SimTK::State& s =  _integ->getState();
             if(_performAnalyses)_model->updAnalysisSet().step(s,step);
             tReal = s.getTime() * _model->getTimeNormConstant();
-            if( _writeToStorage ) {
+            if( _writeToStorage) {
                 getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
-                _controllerSet->storeControls(s, step);
+				if(_model->isControlled())
+					_controllerSet->storeControls(s, step);
             }
             step++;
        } else {
@@ -854,7 +856,8 @@ void Manager::initialize(SimTK::State& s, double dt )
 
 	
     	// STORE STARTING CONTROLS
-        _controllerSet->storeControls(s, 0);
+		if(_model->isControlled())
+			_controllerSet->storeControls(s, 0);
 
     	// STORE STARTING STATES
     	if(hasStateStorage()) {

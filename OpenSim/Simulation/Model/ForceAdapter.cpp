@@ -63,9 +63,9 @@ void ForceAdapter::calcForce(const SimTK::State& state,
 	SimTK::Vector& mobilityForces) const
 {
     if (_actuator == NULL)
-    	_force->computeForce(_engine, state, bodyForces, mobilityForces);
+    	_force->computeForce(state, bodyForces, mobilityForces);
     else
-    	_actuator->computeForce(_engine, state, bodyForces, mobilityForces);
+    	_actuator->computeForce(state, bodyForces, mobilityForces);
 }
 
 SimTK::Real ForceAdapter::calcPotentialEnergy(const SimTK::State& state) const

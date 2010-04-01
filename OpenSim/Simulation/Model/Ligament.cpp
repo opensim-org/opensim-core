@@ -341,7 +341,9 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 //=============================================================================
 // COMPUTATION
 //=============================================================================
-void Ligament::computeForce(const SimTK::State& s) const
+void Ligament::computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const
 {
 	const PathPoint* start;
 	const PathPoint* end;
@@ -379,11 +381,11 @@ void Ligament::computeForce(const SimTK::State& s) const
 
 			// The force on the start body is in the direction of forceVector.
 			bodyForce = force * forceVector;
-			applyForceToPoint(start->getBody(), start->getLocation(), bodyForce);
+			applyForceToPoint(s, start->getBody(), start->getLocation(), bodyForce, bodyForces);
 
 			// The force on the end body is in the opposite direction of forceVector.
 			bodyForce = -force * forceVector;
-			applyForceToPoint(end->getBody(), end->getLocation(), bodyForce);
+			applyForceToPoint(s, end->getBody(), end->getLocation(), bodyForce, bodyForces);
 		}
 	}
 }

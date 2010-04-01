@@ -478,7 +478,7 @@ void Muscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  * Right now this is only speed (contraction velocity; all other calculations
  * are handled by the derived classes).
  */
-double Muscle::computeActuation(const SimTK::State& s) const
+double Muscle::computeLengtheningSpeed(const SimTK::State& s) const
 {
 	SimTK::Vec3 posRelative, velRelative;
 	SimTK::Vec3 posStartInertial, posEndInertial, velStartInertial, velEndInertial;
@@ -522,15 +522,11 @@ double Muscle::computeActuation(const SimTK::State& s) const
 			        velRelative[1] * posRelative[1] +
 			        velRelative[2] * posRelative[2]);
 	}
+
+	//Cache the constraction speed to access later at higher realization stages without recomputing
     setSpeed(s,speed);
-//counter++;
-//cout << "Muscle:computeActuation " << getName() << "   path size= " << currentPath.getSize() << "  count=" << counter << endl;
 
-    // return 0 because the actual muscle force is computed by derrived classes
-    // Muscle::computeActuation only computes values needed by computeActuation of 
-    // derrived class which computes the force
-
-    return(0);
+	return(speed);
 }
 
 
@@ -572,9 +568,10 @@ double Muscle::calcPennation( double aFiberLength, double aOptimalFiberLength,
 /**
  * Apply the muscle's force at its points of attachment to the bodies.
  */
-void Muscle::computeForce(const SimTK::State& s) const
+void Muscle::computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const
 {
-
 	double muscleForce = 0;
     if( isControlled() && getController().getIsEnabled() ) {
     		muscleForce = computeActuation(s);
@@ -623,11 +620,11 @@ void Muscle::computeForce(const SimTK::State& s) const
 
 			// The force on the start body is in the direction of forceVector.
 			bodyForce = muscleForce * forceVector;
-			applyForceToPoint(start->getBody(), start->getLocation(), bodyForce);
+			applyForceToPoint(s, start->getBody(), start->getLocation(), bodyForce, bodyForces);
 
 			// The force on the end body is in the opposite direction of forceVector.
 			bodyForce = -muscleForce * forceVector;
-			applyForceToPoint(end->getBody(), end->getLocation(), bodyForce);
+			applyForceToPoint(s, end->getBody(), end->getLocation(), bodyForce, bodyForces);
 //std::cout << "Muscle::computeForce t=" << s.getTime() << "  muscle " << getName() << "  Control=" << getControl(s) << " force= " << bodyForce << std::flush;
 		}
 	}

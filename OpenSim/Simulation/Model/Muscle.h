@@ -115,10 +115,8 @@ public:
     // Convenience method to add PathPoints
 	 /** Note that this function does not maintain the State and so should be used only
 		before a valid State is created */
-	 void addNewPathPoint( 
-		 const std::string& proposedName, 
-		 OpenSim::Body& aBody, 
-		 const SimTK::Vec3& aPositionOnBody);
+	 void addNewPathPoint( const std::string& proposedName, OpenSim::Body& aBody, 
+						   const SimTK::Vec3& aPositionOnBody);
 
     // Defaults
     virtual double getDefaultActivation() const;
@@ -151,7 +149,8 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double computeActuation( const SimTK::State& s ) const;
+	virtual double computeActuation( const SimTK::State& s ) const = 0;
+	virtual double computeLengtheningSpeed(const SimTK::State& s) const; 
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
 	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) = 0;
 	virtual double
@@ -179,7 +178,9 @@ protected:
 	//--------------------------------------------------------------------------
 	// FORCE APPLICATION
 	//--------------------------------------------------------------------------
-	virtual void computeForce(const SimTK::State& s) const;
+	virtual void computeForce(const SimTK::State& state, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForce) const;
 public:
 	virtual OpenSim::Array<std::string> getRecordLabels() const {
 		OpenSim::Array<std::string> labels("");
