@@ -195,9 +195,11 @@ void Body::copyData(const Body &aBody)
 	_inertiaXZ = aBody._inertiaXZ;
 	_inertiaYZ = aBody._inertiaYZ;
 	_displayer = aBody._displayer;
-	_index = aBody._index;
+	//_index = aBody._index;
 	_joint = dynamic_cast<Joint*>(Object::SafeCopy(aBody._joint));
-	_model = aBody._model;
+	//bool check = (_joint==NULL && aBody._joint==NULL) || (*_joint == *(aBody._joint));
+	if (_joint) _joint->setBody(*this);
+	_model = NULL;
 	_wrapObjectSet = aBody._wrapObjectSet;
 }
 
@@ -484,7 +486,7 @@ void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 	// Update scale factors for displayer
 	updDisplayer()->setScaleFactors(oldScaleFactors);
 
-	if (_name != "ground")	// The following throws an exception if applied to ground.
+	if (_index!=0)	// The following throws an exception if applied to ground.
 		scaleInertialProperties(aScaleFactors, aScaleMass);
 }
 

@@ -289,6 +289,8 @@ void CustomJoint::constructCoordinates()
 			coord->setMotionType(origCoord.getMotionType());
 			coord->setDefaultClamped(origCoord.getDefaultClamped());
 			coord->setDefaultLocked(origCoord.getDefaultLocked());
+			coord->setDefaultValue(origCoord.getDefaultValue());
+			coord->setInitialValue(origCoord.getInitialValue());
 		}
 		_coordinateSet.append(coord);
 	}
