@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20001">
+	<Model name="BouncingBall">
+		<defaults/>
+		<credits> Unassigned </credits>
+		<publications> Unassigned </publications>
+		<ForceSet name="">
+			<objects>
+				<ElasticFoundationForce name="contact">
+					<ElasticFoundationForce::ContactParametersSet name="">
+						<objects>
+							<ElasticFoundationForce::ContactParameters name="">
+								<geometry> ball ground </geometry>
+								<stiffness>   10000.00000000 </stiffness>
+								<dissipation>       0.750000 </dissipation>
+								<static_friction>       0.30000000 </static_friction>
+								<dynamic_friction>       0.30000000 </dynamic_friction>
+								<viscous_friction>       0.30000000 </viscous_friction>
+							</ElasticFoundationForce::ContactParameters>
+						</objects>
+						<groups/>
+					</ElasticFoundationForce::ContactParametersSet>
+					<transition_velocity>       0.100000 </transition_velocity>
+				</ElasticFoundationForce>
+			</objects>
+			<groups/>
+			<datafile>  </datafile>
+		</ForceSet>
+		<length_units> m </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80650000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       1.00000000 </inertia_xx>
+					<inertia_yy>       1.00000000 </inertia_yy>
+					<inertia_zz>       1.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="ball">
+					<mass>       1.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       1.00000000 </inertia_xx>
+					<inertia_yy>       1.00000000 </inertia_yy>
+					<inertia_zz>       1.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<FreeJoint name="ground_ball">
+							<parent_body> ground </parent_body>
+							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="ball_rz">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="ball_rx">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="ball_ry">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="ball_tx">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -5.00000000       5.00000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="ball_ty">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.00000000       2.00000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="ball_tz">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -3.00000000       3.00000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</FreeJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> sphere.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
+			<objects/>
+			<groups/>
+		</ConstraintSet>
+		<!--Markers in the model.-->
+		<MarkerSet name="">
+			<objects/>
+			<groups/>
+		</MarkerSet>
+		<!--ContactGeometry objects in the model.-->
+		<ContactGeometrySet name="">
+			<objects>
+				<ContactHalfSpace name="ground">
+					<body_name> ground </body_name>
+					<location>       0.00000000       0.00000000       0.00000000 </location>
+					<orientation>       0.00000000       0.00000000      -1.57079633 </orientation>
+				</ContactHalfSpace>
+				<ContactMesh name="ball">
+					<body_name> ball </body_name>
+					<location>       0.00000000       0.00000000       0.00000000 </location>
+					<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+					<filename> sphere.obj </filename>
+				</ContactMesh>
+			</objects>
+			<groups/>
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>
+
