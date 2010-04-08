@@ -148,9 +148,10 @@ updateWorkVariables(const SimTK::State& s)
 	if(_model) {
 
 		BodySet& bs = _model->updBodySet();
+	
+		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 		if(_wrtBodyName == "center_of_mass") {
-
 			SimTK::Vec3 pVec,vVec,com;
 			double Mass = 0.0;
 			double rP[3] = { 0.0, 0.0, 0.0 };
