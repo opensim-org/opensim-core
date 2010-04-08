@@ -139,6 +139,7 @@ Model::Model(const string &aFileName) :
 	setNull();
 	setupProperties();
 	updateFromXMLNode();
+	createGroundBodyIfNecessary();
 	_fileName = aFileName;
     _analysisSet.setMemoryOwner(false);
     _controllerSet.setModel(this);
@@ -181,7 +182,7 @@ Model::Model(const Model &aModel) :
 	setNull();
 	setupProperties();
 	copyData(aModel);
-	_groundBody = &_bodySet.get("ground");
+	createGroundBodyIfNecessary();
 	_forceSet.setup(*this);
 	_contactGeometrySet.setup(*this);
     _controllerSet.setModel(this);
