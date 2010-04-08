@@ -26,16 +26,10 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
+/* 
  * Author: Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
  */
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// The entire definition of the Controller class is contained inside this
-// #ifndef-#define-#endif _Controller_h_ block.  This is done to ensure that,
-// if someone were to include Controller.h more than once into a single file
-// (such as including Controller.h as well as including another file that also
-// includes Controller.h), then the Controller class will not be defined more
-// than once.  "#ifndef" means "if not defined."
+
 #ifndef _Controller_h_
 #define _Controller_h_
 
@@ -55,10 +49,9 @@
 //=============================================================================
 //=============================================================================
 /**
- * Controller is a class that specifies the interface (i.e., the minimal set
- * of variables and methods that should be defined by any class used to
- * control a Model.  Any class used to control a Model should be a subclass
- * (child) of Controller.  In C++ jargon, Controller is an abstract class,
+ * Controller is a class that specifies the interface that any controller 
+ * must satisfy.  Any class used to control a Model should be a subclass
+ * (child) of Controller.  Controller is an abstract class,
  * which means that you cannot create an instance of it (i.e. you cannot write
  * code that contains a statement like "Controller controller;" or
  * "Controller controller(&model,&yDesStore);".  However, you can create a
@@ -88,9 +81,6 @@ namespace OpenSim {
 // These empty declarations of the Model and Manager classes are necessary because we
 // haven't included a definition of the Model class (e.g., Model.h)
 // in this file, but we do use the Model class in the code below.
-// This way, C++ knows that Model is a class defined elsewhere and
-// won't throw compiler errors when it sees the identifier "Model"
-// used in the code below.
 class Model;
 class Manager;
 class Storage;
@@ -98,12 +88,9 @@ class Storage;
 // The entire definition of the Controller class is contained inside
 // this code block.  The identifier OSIMSIMULATION_API tells C++ that
 // the Controller class will be part of the library files exported by
-// the osimSimulation project.  The terms "public Object" tell C++
-// that the Controller class is a subclass (child) of the Object class
-// in OpenSim.
+// the osimSimulation project.  A Controller is a ModelComponent 
 class OSIMSIMULATION_API Controller : public ModelComponent
 {
-
 //=============================================================================
 // DATA
 //=============================================================================
