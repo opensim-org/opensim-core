@@ -529,13 +529,18 @@ void PrescribedForce::copyData(const PrescribedForce& orig)
 	_pointFunctionSet = orig._pointFunctionSet;
 	_torqueFunctionSet = orig._torqueFunctionSet;
 	_bodyName = orig._bodyName;
-
 }
+
+void PrescribedForce::setup(Model& model)
+{
+	setModel(model);
+
+	// hook up body pointer to name
+	if (_model)
+		_body = &_model->updBodySet().get(_bodyName);
+}
+
 void PrescribedForce::setupFromXML()
 {
 	CustomForce::setupFromXML();
-
-	// hook up body pointer to name
-	if (_model) _body = &_model->updBodySet().get(_bodyName);
-
 }

@@ -113,6 +113,7 @@ public:
 	~PrescribedForce();
 	virtual Object* copy() const;
 
+	virtual void setup(Model& model);
 	virtual void setupFromXML();
 
 	void setBodyName(const std::string& aBodyName) { _bodyName = aBodyName; };
