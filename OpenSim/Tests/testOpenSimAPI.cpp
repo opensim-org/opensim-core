@@ -251,7 +251,15 @@ int main()
 		// PERFORM A SIMULATION //
 		//////////////////////////
 
-		// Initialize the system and get the state
+		// Define the default states for the two muscles
+		// Activation
+		muscle1->setDefaultActivation(initialControl[0]);
+		muscle2->setDefaultActivation(initialControl[1]);
+		// Fiber length
+		muscle2->setDefaultFiberLength(0.1);
+		muscle1->setDefaultFiberLength(0.1);
+
+		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
 
 		// Define non-zero (defaults are 0) states for the free joint
@@ -259,17 +267,6 @@ int main()
 		modelCoordinateSet[3].setValue(si, blockSideLength); // set x-translation value
 		modelCoordinateSet[3].setSpeedValue(si, 0.1); // set x-speed value
 		modelCoordinateSet[4].setValue(si, blockSideLength/2+0.01); // set y-translation value 
-
-		// Define the initial states for the two muscles
-		// Activation
-		muscle1->setDefaultActivation(initialControl[0]);
-		muscle2->setDefaultActivation(initialControl[1]);
-		// Fiber length
-		muscle2->setDefaultFiberLength(0.1);
-		muscle1->setDefaultFiberLength(0.1);
-		// Initialize the muscle state
-		muscle1->initState(si);
-		muscle2->initState(si);
 
 		// Compute initial conditions for muscles
 		osimModel.computeEquilibriumForAuxiliaryStates(si);

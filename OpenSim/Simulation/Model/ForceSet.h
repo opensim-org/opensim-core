@@ -109,8 +109,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
-	void setup(Model& aModel);
-	void postInit(Model& aModel);
+	virtual void setup(Model& aModel);
 
 	// FORCE
 	bool remove(int aIndex);

@@ -73,11 +73,6 @@ public:
 	void copyData(const Force &aForce);
 	virtual Object* copy() const = 0;
 
-
-	/**
-	 * Subclasses may optionally override this method to perform setup after initSystem() has been called.
-	 */
-	 virtual void postInit(Model& model) { }
     /**
      * Get the number of state variables allocated by this force.  The default implementation
      * returns 0.  Subclasses that allocate state variables must override it.

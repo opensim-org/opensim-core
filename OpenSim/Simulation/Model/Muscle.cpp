@@ -222,21 +222,6 @@ void Muscle::setup(Model& aModel)
 	_path.setup(aModel);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform set up functions after initSystem() has been called on the model.
- *
- * @param aModel The model containing this muscle.
- */
-void Muscle::postInit(Model& aModel) {
-	// TODO_PETE: some of the stuff that _path.setup() does needs to be done before
-	// Model::initSystem() is called, but other stuff needs to be done after. For
-	// now, the function is called both before and after; this should not have any
-	// adverse effects, but is not ideal...
-	_path.setOwner(this);
-    _path.setup(aModel);
-}
-
 void Muscle::initState( SimTK::State& s) const
 {
     Actuator::initState(s);

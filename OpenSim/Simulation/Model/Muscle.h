@@ -91,7 +91,6 @@ public:
 	virtual ~Muscle();
 	virtual Object* copy() const = 0;
 
-	virtual void postInit(Model& aModel);
 	void setName(const std::string &aName);
 #ifndef SWIG
 	Muscle& operator=(const Muscle &aMuscle);
@@ -99,9 +98,7 @@ public:
    void copyData(const Muscle &aMuscle);
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode();
-    virtual void initState(SimTK::State& s) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
+
     virtual void equilibrate(SimTK::State& state) const;
 	 static void deleteMuscle(Muscle* aMuscle) { if (aMuscle) delete aMuscle; }
 
@@ -213,6 +210,9 @@ protected:
 	virtual void updateGeometry(const SimTK::State& s) const;
 
 	virtual void setup(Model& aModel);
+	virtual void initState(SimTK::State& s) const;
+    virtual void setDefaultsFromState(const SimTK::State& state);
+    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
 //=============================================================================
 };	// END of class Muscle
 //=============================================================================

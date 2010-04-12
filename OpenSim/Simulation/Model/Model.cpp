@@ -367,13 +367,6 @@ SimTK::State& Model::initSystem()
     getSystem().realize(s, Stage::Position );
     _analysisSet.setModel(*this);
 
-	 // TODO_PETE: moving muscle points get their coordinates from Model::_coordinateSet
-	 // during setup(), but _coordinateSet is not filled in until createSystem(), which
-	 // is called after setup(). So call a post-init function so the muscles can finish
-	 // setting up.
-	 _forceSet.postInit(*this);
-
-
     updControllerSet().setActuators(updActuators());
     //updControllerSet().constructStorage();
 

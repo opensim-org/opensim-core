@@ -177,12 +177,6 @@ void ForceSet::setup(Model& aModel)
 	updateActuators();
 }
 
-void ForceSet::postInit(Model& aModel)
-{
-	for (int i = 0; i < getSize(); i++)
-		get(i).postInit(aModel);
-}
-
 //=============================================================================
 // OPERATORS
 //=============================================================================
