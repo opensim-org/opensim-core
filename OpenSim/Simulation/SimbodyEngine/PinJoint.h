@@ -76,7 +76,6 @@ public:
 	virtual Object* copy() const;
 	PinJoint& operator=(const PinJoint &aJoint);
 	void copyData(const PinJoint &aJoint);
-	virtual void setup(Model& aModel);
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -84,7 +83,8 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-    void createSystem(SimTK::MultibodySystem& system) const;
+	virtual void setup(Model& aModel);
+    virtual void createSystem(SimTK::MultibodySystem& system) const;
 
 private:
 	void setNull();

@@ -34,6 +34,7 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDbl.h>
@@ -57,7 +58,7 @@ class Model;
  * @author Frank C. Anderson, Ajay Seth, Jeffrey A. Reinbolt
  * @version 1.0
  */
-class OSIMSIMULATION_API Coordinate : public Object  
+class OSIMSIMULATION_API Coordinate : public ModelComponent  
 {
 //=============================================================================
 // DATA
@@ -157,8 +158,6 @@ public:
 	void copyData(const Coordinate &aCoordinate);
 
 	virtual void setup(Model& aModel);
-	void initState(SimTK::State& s) const;
-    void setDefaultsFromState(const SimTK::State& state);
 
 	virtual void setJoint(const Joint& aOwningJoint);
 	virtual const Joint& getJoint() const;
@@ -226,11 +225,17 @@ public:
 
 	OPENSIM_DECLARE_DERIVED(Coordinate, Object); 
 
+protected:
+	/* Only model should be invoking these */
+    virtual void createSystem(SimTK::MultibodySystem& system) const;
+    virtual void initState(SimTK::State& s) const;
+    virtual void setDefaultsFromState(const SimTK::State& state);
+
 private:
 	void setNull();
 	void setupProperties();
 	void determineType();
-	void createConstraintsForLockClampPrescribed();
+
 	friend class Constraint; 
 	friend class CoordinateCouplerConstraint; 
 	friend class Joint; 

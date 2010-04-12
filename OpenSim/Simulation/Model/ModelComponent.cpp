@@ -1,5 +1,5 @@
 // ModelComponent.cpp
-// Authors: Peter Eastman
+// Authors: Peter Eastman, Ajay Seth
 /*
  * Copyright (c) 2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -64,25 +64,9 @@ Model& ModelComponent::updModel()
     return *_model;
 }
 
-void ModelComponent::setModel(Model& model)
+void ModelComponent::setup(Model& model)
 {
-    _model = &model;
-}
-
-void ModelComponent::setupFromXML()
-{
-}
-
-void ModelComponent::createSystem(SimTK::MultibodySystem& system) const
-{
-}
-
-void ModelComponent::initState(SimTK::State& state) const
-{
-}
-
-void ModelComponent::setDefaultsFromState(const SimTK::State& state)
-{
+	_model = &model;
 }
 
 } // end of namespace OpenSim

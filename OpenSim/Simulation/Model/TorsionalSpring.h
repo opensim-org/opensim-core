@@ -76,8 +76,6 @@ protected:
 	double _threshold;
 	const Body &_body;
 
-	/** On, off flag. */
-	bool _on;
 	/** Start time for the force. */
 	double _startTime;
 	/** End time for the force. */
@@ -89,6 +87,8 @@ protected:
 public:
 	TorsionalSpring(const Body &aBody, double startTime, double endTime);
 	virtual ~TorsionalSpring();
+	virtual Object* copy() const {throw Exception("TorsionalSpring::copy() not implmented."); };
+
 private:
 	void setNull();
 
@@ -110,8 +110,6 @@ public:
 	void getBValue(SimTK::Vec3& aB);
 	void setThreshold(double aThreshold);
 	double getThreshold() const;
-    void setOn( bool on_off ) { _on = on_off; }
-    bool getOn() const { return _on; }
 
 	//--------------------------------------------------------------------------
 	// UTILITY

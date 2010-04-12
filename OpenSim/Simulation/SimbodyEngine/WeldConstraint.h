@@ -101,18 +101,19 @@ public:
 	virtual Object* copy() const;
 	WeldConstraint& operator=(const WeldConstraint &aConstraint);
 	void copyData(const WeldConstraint &aConstraint);
-	virtual void setup(Model& aModel);
-
-	/**
-	 * Create a SimTK::Constraint::Weld which implements this Weld.
-	 */
-	void createSystem(SimTK::MultibodySystem& system) const;
 
 	//SET 
 	void setBody1ByName(std::string aBodyName);
 	void setBody1WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
 	void setBody2ByName(std::string aBodyName);
 	void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
+
+protected:
+	virtual void setup(Model& aModel);
+	/**
+	 * Create a SimTK::Constraint::Weld which implements this Weld.
+	 */
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
 
 private:
 	void setNull();

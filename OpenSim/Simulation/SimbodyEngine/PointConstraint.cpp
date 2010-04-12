@@ -158,7 +158,7 @@ void PointConstraint::setupProperties()
  *
  * @param aModel OpenSim model containing this PointConstraint.
  */
-void PointConstraint::setup(SimTK::State& s, Model& aModel)
+void PointConstraint::setup(Model& aModel)
 {
 	string errorMessage;
 
@@ -177,17 +177,20 @@ void PointConstraint::setup(SimTK::State& s, Model& aModel)
 	}
 	_body1 = &aModel.updBodySet().get(_body1Name);
 	_body2 = &aModel.updBodySet().get(_body2Name);
+}
 
+void PointConstraint::createSystem(SimTK::MultibodySystem& system) const
+{
 	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = aModel.updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getIndex());
-	SimTK::MobilizedBody b2 = aModel.updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getIndex());
+	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getIndex());
+	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getIndex());
 
     // Now create a Simbody Constraint::Point
     SimTK::Constraint::Ball simtkPoint(b1, _locationInBody1, b2, _locationInBody2);
     
-    // Get the index so we can access the SimTK::Constraint later
-    _index = simtkPoint.getConstraintIndex();
-   
+    // Beyond the const Component get the index so we can access the SimTK::Constraint later
+	PointConstraint* mutableThis = const_cast<PointConstraint *>(this);
+	mutableThis->_index  = simtkPoint.getConstraintIndex();
 }
 
 //=============================================================================

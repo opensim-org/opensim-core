@@ -2,7 +2,7 @@
 #define __ModelComponentSet_h__
 
 // ModelComponentSet.h
-// Authors: Peter Eastman
+// Authors: Peter Eastman, Ajay Seth
 /*
  * Copyright (c) 2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -119,13 +119,11 @@ public:
      */
     bool append(T *aObject)
     {
-        aObject->setModel(*_model);
         return Set<T>::append(aObject);
     }
 
 	bool append(T &aObject)
     {
-        aObject.setModel(*_model);
         return Set<T>::append((T*) aObject.copy());
     }
 
@@ -134,7 +132,6 @@ public:
      */
     bool insert(int aIndex, T *aObject)
     {
-        aObject->setModel(*_model);
         return Set<T>::insert(aIndex, aObject);
     }
     /**
@@ -142,7 +139,6 @@ public:
      */
     bool set(int aIndex, T *aObject, bool preserveGroups = false)
     {
-        aObject->setModel(*_model);
         return Set<T>::set(aIndex, aObject, preserveGroups);
     }
 
@@ -150,21 +146,11 @@ protected:
     /**
      * Set the Model this object is part of.
      */
-    void setModel(Model& model)
+    virtual void setup(Model& model)
     {
         _model = &model;
         for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<ModelComponent&>(Set<T>::get(i)).setModel(model);
-    }
-
-    /**
-     * Invoke setupFromXML() on each element of the Set.
-     */
-	virtual void setupFromXML()
-    {
-        Set<T>::setup();
-        for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<ModelComponent&>(Set<T>::get(i)).setupFromXML();
+            static_cast<ModelComponent&>(Set<T>::get(i)).setup(model);
     }
 
     /**

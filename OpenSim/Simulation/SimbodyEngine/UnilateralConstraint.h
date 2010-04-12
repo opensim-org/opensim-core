@@ -51,7 +51,7 @@ class SimbodyEngine;
 //=============================================================================
 //=============================================================================
 /**
- * A parent class for implementing an OpenSim UnilateralConstraint.
+ * An abstract class defining an OpenSim UnilateralConstraint.
  * Specific UnilateralConstraints should be derived from this class. 
  *
  * It is expeced that constraints used to model contact will be unilateral.
@@ -85,14 +85,12 @@ public:
 	UnilateralConstraint();
 	UnilateralConstraint(const UnilateralConstraint &aUnilateralConstraint);
 	virtual ~UnilateralConstraint();
-	virtual Object* copy() const;
+	virtual Object* copy() const = 0;
 
 	UnilateralConstraint& operator=(const UnilateralConstraint &aUnilateralConstraint);
 	void copyData(const UnilateralConstraint &aUnilateralConstraint);
 
 	OPENSIM_DECLARE_DERIVED(UnilateralConstraint, Constraint);
-
-	virtual void setup(Model& aModel);
 
 	virtual int getNumConstraintEquations() {return _numConstraintEquations;};
 
@@ -100,6 +98,8 @@ public:
 	virtual std::vector<bool> unilateralConditionsSatisfied(const SimTK::State &s)
 		{ return std::vector<bool>(_numConstraintEquations, false); };
 
+protected:
+	virtual void setup(Model& aModel);
 
 private:
 	void setNull();

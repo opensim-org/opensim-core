@@ -246,8 +246,6 @@ public:
 	/** Connect properties to local pointers. */
 	void setupProperties();
 
-	//Register the types used by this class.
-	//static void registerTypes();
 
 	/**
 	 * Dynamic casting across JNI is messy. This method does the upCasting on C++ side
@@ -280,6 +278,10 @@ public:
 	 */
     SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION;
 
+	/**
+     * Given a State, set all default values for this Model to match those found in the State.
+     */
+    virtual void setDefaultsFromState(const SimTK::State& state);
 
 	/**
 	 * This is called after the Model is fully created but before starting a simulation.
@@ -296,11 +298,6 @@ public:
      * initSystem() is called again.
      */
     void invalidateSystem();
-
-    /**
-     * Given a State, set all default values for this Model to match those found in the State.
-     */
-    void setDefaultsFromState(const SimTK::State& state);
 
  	/**
 	 * create a storage (statesStorage) that has same label order as model's states
@@ -342,8 +339,13 @@ protected:
 	Model& operator=(const Model &Model);
 #endif
 
-    void setupFromXML();
-    void initState(SimTK::State& state) const;
+    void setDefaultProperties();
+	virtual void setup(Model& aModel) {setup();};
+
+	virtual void createSystem(SimTK::MultibodySystem& system) const {}; 
+	virtual void createSystem();
+
+    virtual void initState(SimTK::State& state) const;
 	void createGroundBodyIfNecessary();
 
 private:
@@ -356,8 +358,7 @@ public:
 	//--------------------------------------------------------------------------
 	// CREATE THE MULTIBODY SYSTEM
 	//--------------------------------------------------------------------------
-	virtual void createSystem();
-	
+
 	/**
 	 * Add ModelComponents to the Model. Model takes ownership of the objects.
 	 */

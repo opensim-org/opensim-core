@@ -27,6 +27,8 @@
  */
 
 #include "JointSet.h"
+#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Common/ScaleSet.h>
 
 using namespace std;
@@ -123,12 +125,18 @@ void JointSet::createSystemForOneJoint(SimTK::MultibodySystem& system, int joint
 void JointSet::setup(Model& aModel)
 {
 	// Base class
-	Set<Joint>::setup();
+	ModelComponentSet::setup(aModel);
 
-	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).setup(aModel);
+    setMemoryOwner(false);
+    setSize(0);
 
+    for(int i=0; i< aModel.getNumBodies(); i++){
+        if (aModel.getBodySet().get(i).hasJoint()) { // Ground body doesn't have a jnt
+            Joint& nextJoint = aModel.getBodySet().get(i).getJoint();
+			nextJoint.setBody(aModel.getBodySet().get(i));
+            append(&nextJoint);
+        }
+    }
 }
 
 //=============================================================================

@@ -115,8 +115,7 @@ copy() const
 /**
  * Set the data members of this actuator to their null values.
  */
-void CoordinateActuator::
-setNull()
+void CoordinateActuator::setNull()
 {
 	setType("CoordinateActuator");
 	setupProperties();
@@ -135,8 +134,7 @@ void CoordinateActuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex s
 /**
  * Connect properties to local pointers.
  */
-void CoordinateActuator::
-setupProperties()
+void CoordinateActuator::setupProperties()
 {
 	_propCoordinateName.setName("coordinate"); 
 	_propertySet.append( &_propCoordinateName );
@@ -150,8 +148,7 @@ setupProperties()
 /**
  * Copy the member data of the specified actuator.
  */
-void CoordinateActuator::
-copyData(const CoordinateActuator &aGenForce)
+void CoordinateActuator::copyData(const CoordinateActuator &aGenForce)
 {
 	// MEMBER VARIABLES
 	_coordName=aGenForce._coordName;
@@ -172,8 +169,7 @@ copyData(const CoordinateActuator &aGenForce)
  *
  * @return  aCoordinateID ID (or number, or index) of the generalized coordinate.
  */
-CoordinateActuator& CoordinateActuator::
-operator=(const CoordinateActuator &aGenForce)
+CoordinateActuator& CoordinateActuator::operator=(const CoordinateActuator &aGenForce)
 {
 	// BASE CLASS
 	Actuator::operator =(aGenForce);
@@ -196,8 +192,7 @@ operator=(const CoordinateActuator &aGenForce)
  *
  * @param aCoordinate Pointer to the generalized coordinate.
  */
-void CoordinateActuator::
-setCoordinate(Coordinate* aCoordinate)
+void CoordinateActuator::setCoordinate(Coordinate* aCoordinate)
 {
 	_coord = aCoordinate;
 	if(aCoordinate)
@@ -210,8 +205,7 @@ setCoordinate(Coordinate* aCoordinate)
  *
  * @return Pointer to the coordinate
  */
-Coordinate* CoordinateActuator::
-getCoordinate() const
+Coordinate* CoordinateActuator::getCoordinate() const
 {
 	return(_coord);
 }
@@ -225,8 +219,7 @@ getCoordinate() const
  *
  * @param aOptimalForce Optimal force.
  */
-void CoordinateActuator::
-setOptimalForce(double aOptimalForce)
+void CoordinateActuator::setOptimalForce(double aOptimalForce)
 {
 	_optimalForce = aOptimalForce;
 }
@@ -236,8 +229,7 @@ setOptimalForce(double aOptimalForce)
  *
  * @return Optimal force.
  */
-double CoordinateActuator::
-getOptimalForce() const
+double CoordinateActuator::getOptimalForce() const
 {
 	return(_optimalForce);
 }
@@ -247,8 +239,7 @@ getOptimalForce() const
  *
  * @return Stress.
  */
-double CoordinateActuator::
-getStress( const SimTK::State& s) const
+double CoordinateActuator::getStress( const SimTK::State& s) const
 {
 	return fabs(getForce(s)/_optimalForce); 
 }
@@ -262,10 +253,10 @@ getStress( const SimTK::State& s) const
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double CoordinateActuator::
-computeActuation( const SimTK::State& s ) const
+double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(_model==NULL) return 0.0;
+	if(_model==NULL)
+		return 0.0;
 
 	// FORCE
 	return( getControl(s) * _optimalForce );
@@ -323,17 +314,38 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
        std::cout << "CoordinateActuator::computeForce  Invalid coordinate " << std::endl;
     }
 }
+
+
 //_____________________________________________________________________________
 /**
- * setup sets the actual Coordinate reference _coord
+ * Perform some setup functions that happen after the
+ * object has been deserialized or copied.
+ *
+ * @param aModel OpenSim model containing this CoordinateActuator.
  */
- void  CoordinateActuator::
-createSystem(SimTK::MultibodySystem& system) const {
+void CoordinateActuator::setup(Model& aModel)
+{
+	string errorMessage;
+
+	// Base class
+	CustomActuator::setup(aModel);
+
+	// Look up the coordinate
+	if (!_model->updCoordinateSet().contains(_coordName)) {
+		errorMessage = "CoordinateActuator: Invalid coordinate (" + _coordName + ") specified in Actuator " + getName();
+		throw (Exception(errorMessage.c_str()));
+	}
+	else
+		_coord = &_model->updCoordinateSet().get(_coordName);
+}
+
+//_____________________________________________________________________________
+/**
+ *  Create underlying SimTK::Force
+ */
+ void  CoordinateActuator::createSystem(SimTK::MultibodySystem& system) const {
 
      CustomActuator::createSystem( system );
-
-	if (_model) _coord = &_model->updCoordinateSet().get(_coordName);
-     
 }
 
 
@@ -346,8 +358,7 @@ createSystem(SimTK::MultibodySystem& system) const {
  *
  * @return True if valid, false if invalid.
  */
-bool CoordinateActuator::
-check() const
+bool CoordinateActuator::check() const
 {
 	if(!Actuator::check()) return(false);
 
@@ -365,8 +376,7 @@ check() const
 /**
  * Is the.
  */
-bool CoordinateActuator::
-isCoordinateValid() const
+bool CoordinateActuator::isCoordinateValid() const
 {
 	if (_model == NULL || _coord == NULL)
 		return false;
@@ -388,8 +398,7 @@ isCoordinateValid() const
  * a few methods in this class to ensure that variable members have been
  * set in a consistent manner.
  */
-void CoordinateActuator::
-updateFromXMLNode()
+void CoordinateActuator::updateFromXMLNode()
 {
 	Actuator::updateFromXMLNode();
 	setCoordinate(_coord);

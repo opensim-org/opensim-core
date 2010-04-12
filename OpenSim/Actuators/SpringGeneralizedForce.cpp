@@ -185,8 +185,7 @@ operator=(const SpringGeneralizedForce &aForce)
 /**
  * setup sets the actual Coordinate reference _coord
  */
-void SpringGeneralizedForce::
-setup(Model& aModel)
+void SpringGeneralizedForce::setup(Model& aModel)
 {
 	Force::setup( aModel);
 

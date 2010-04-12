@@ -215,7 +215,6 @@ void MovingPathPoint::updateFromXMLNode()
 
 	// Call base class now assuming _node has been corrected for current version
 	Object::updateFromXMLNode();
-	//setupFromXML();
 }
 
 //_____________________________________________________________________________

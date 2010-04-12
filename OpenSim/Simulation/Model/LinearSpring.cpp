@@ -435,7 +435,7 @@ void LinearSpring::computeForce(const SimTK::State& s,
 		return;
 	}
 
-	if( getOn() && (treal[0] >= _startTime) && (treal[0] < _endTime)){
+	if( !isDisabled(s) && (treal[0] >= _startTime) && (treal[0] < _endTime)){
 
 		if(_pointFunction!=NULL) {
 			_pointFunction->calcValue(&treal[0], &pLocal[0], 3);

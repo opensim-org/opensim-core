@@ -142,6 +142,15 @@ protected:
 	 */
 	void copyData(const ConstantController &aController);
 
+   // for any post deseraialization intialization of references
+   virtual void setup(Model& model);
+
+   // for adding any components to the model
+   virtual void createSystem( SimTK::MultibodySystem& system) const; 
+
+   // for any intialization requiring a state or the complete system 
+   virtual void initState( SimTK::State& s) const;
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -182,16 +191,6 @@ public:
      virtual double computeControl(const SimTK::State& s, int index) const;
 
     virtual void setActuators( Set<Actuator>& actuators );
-
-   // for any post XML deseraialization intialization
-   virtual void setup(Model& model);
-
-   // for adding any components to the model
-   virtual void createSystem( SimTK::MultibodySystem& system); 
-
-   // for any intialization requiring a state or the complete system 
-   virtual void initState( SimTK::State& s);
-
 
 //=============================================================================
 };	// END of class ConstantController

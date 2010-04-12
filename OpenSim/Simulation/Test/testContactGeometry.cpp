@@ -101,7 +101,7 @@ int testBouncingBall(bool useMesh)
 	FreeJoint free("", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), true);
 
 	// Rename coordinates for a free joint
-	CoordinateSet free_coords = free.getCoordinateSet();
+	CoordinateSet &free_coords = free.getCoordinateSet();
 	for(int i=0; i<free_coords.getSize(); i++){
 		std::stringstream coord_name;
 		coord_name << "free_q" << i;

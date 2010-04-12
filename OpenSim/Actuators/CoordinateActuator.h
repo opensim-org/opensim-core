@@ -139,8 +139,6 @@ public:
 	virtual bool check() const;
 	virtual bool isCoordinateValid() const;
 
-	// Setup method to initialize coordinate reference
-	void createSystem( SimTK::MultibodySystem& system) const ;
 	/** 
 	 * Methods to query a Force for the value actually applied during simulation
 	 * The names of the quantities (column labels) is returned by this first function
@@ -159,6 +157,11 @@ public:
 	virtual void updateFromXMLNode();
 
 	OPENSIM_DECLARE_DERIVED(CoordinateActuator, Actuator);
+
+protected:
+	// Setup method to initialize coordinate reference
+	virtual void setup(Model &aModel);
+	virtual void createSystem( SimTK::MultibodySystem& system) const ;
 
 //=============================================================================
 };	// END of class CoordinateActuator

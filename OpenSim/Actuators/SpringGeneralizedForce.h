@@ -99,9 +99,6 @@ public:
 	SpringGeneralizedForce&
 		operator=(const SpringGeneralizedForce &aForce);
 
-	// Setup method to initialize coordinate reference
-	void setup(Model& aModel);
-
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
@@ -124,6 +121,9 @@ protected:
 	virtual void computeForce( const SimTK::State& state, 
 							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							   SimTK::Vector& mobilityForces) const;
+
+	// Setup method to initialize coordinate reference
+	virtual void setup(Model& aModel);
 
 	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, CustomForce);
 

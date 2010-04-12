@@ -253,7 +253,6 @@ constructColumnLabels()
 		for(int i=0;i<nf;i++) {
 			// If body force we need to record six values for torque+force
 			// If muscle we record one scalar
-			OpenSim::Force nextForce = _model->getForceSet().get(i);
 			Array<string> forceLabels = _model->getForceSet().get(i).getRecordLabels();
 			// If prescribed force we need to record point, 
 			columnLabels.append(forceLabels);

@@ -263,9 +263,6 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 			setCoordinateMobilizedBodyIndex(&coord, ((i < 3) ? (_masslessBodyIndex) : (getMobilizedBodyIndex(_body))));
 			// The mobility index is the same as the order in which the coordinate appears in the coordinate set.
 			setCoordinateMobilityIndex(&coord, (i < 3 ? i : i-3));
-			// The local coordinates need to be added to the global coordinate set.  
-			// Note that only a pointer (not a copy) is appended.
-			_model->updCoordinateSet().append(&coord);
 		}
 	}
 	else {

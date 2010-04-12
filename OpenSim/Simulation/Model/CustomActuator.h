@@ -63,7 +63,6 @@ public:
 	CustomActuator();
 	CustomActuator(const CustomActuator &aActuator);
 	OPENSIM_DECLARE_DERIVED(CustomActuator, Actuator);
-	void createSystem(SimTK::MultibodySystem& system) const;
 
 protected:
 	/**
@@ -132,6 +131,8 @@ protected:
 	 */
 	void applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
 							   double aForce, SimTK::Vector &generalizedForces) const;
+
+	virtual	void createSystem(SimTK::MultibodySystem& system) const;
 	
 //=============================================================================
 };	// END of class CustomActuator

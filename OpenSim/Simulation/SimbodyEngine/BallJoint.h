@@ -78,7 +78,7 @@ public:
 	virtual Object* copy() const;
 	BallJoint& operator=(const BallJoint &aJoint);
 	void copyData(const BallJoint &aJoint);
-	virtual void setup(Model& aModel);
+
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
@@ -86,9 +86,10 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-    void createSystem(SimTK::MultibodySystem& system) const;
-    void initState(SimTK::State& s) const;
-    void setDefaultsFromState(const SimTK::State& state);
+	virtual void setup(Model& aModel);
+    virtual void createSystem(SimTK::MultibodySystem& system) const;
+    virtual void initState(SimTK::State& s) const;
+    virtual void setDefaultsFromState(const SimTK::State& state);
 
 private:
 	void setNull();

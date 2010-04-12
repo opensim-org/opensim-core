@@ -83,7 +83,7 @@ public:
 	virtual Object* copy() const;
 	CustomJoint& operator=(const CustomJoint &aJoint);
 	void copyData(const CustomJoint &aJoint);
-	virtual void setup(Model& aModel);
+
 
 	virtual int numCoordinates() const {return _coordinateSet.getSize();};
 
@@ -101,16 +101,12 @@ protected:
 
 	/** Construct coordinates according to the mobilities of the Joint */
 	void constructCoordinates();
-	void createSystem(SimTK::MultibodySystem& system) const;
+	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
 
 private:
 	void setNull();
 	void setupProperties();
-
-	friend class SimbodyEngine;
-	friend class CoordinateCouplerConstraint;
-
-
 
 //=============================================================================
 };	// END of class CustomJoint

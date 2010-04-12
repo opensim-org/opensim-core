@@ -197,16 +197,14 @@ void GeometryPath::setupProperties()
  *
  * @param aModel The model containing this path.
  */
-void GeometryPath::setup(Model& aModel, Object& aOwner) {
+void GeometryPath::setup(Model& aModel) {
 
 	// Base class
-	setModel(aModel);
+	ModelComponent::setup(aModel);
 
 	// aModel will be NULL when objects are being registered.
 	if (&aModel == NULL)
 		return;
-
-	_owner = &aOwner;
 
    // Name the path points based on the current path
    // (i.e., the set of currectly active points is numbered
@@ -228,7 +226,7 @@ void GeometryPath::setup(Model& aModel, Object& aOwner) {
 	_displayer.setOwner(this);
 }
 
-void GeometryPath::initState( SimTK::State& s)
+void GeometryPath::initState( SimTK::State& s) const
 {
 	//_model->getSystem()->realize(s, SimTK::Stage::Position); should only be done by muscle/ligament?
 
@@ -639,7 +637,7 @@ bool GeometryPath::replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPo
 		}
 		if (count >= 2 && index >= 0) {
 			_pathPointSet.set(index, aNewPathPoint, true);
-			setup(*_model, *_owner);
+			setup(*_model);
 			return true;
 		}
 	}

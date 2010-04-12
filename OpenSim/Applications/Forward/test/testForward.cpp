@@ -194,11 +194,8 @@ int main() {
 		testGait2354();    //finally include applied ground reactions forces 
 		std::cout << "gait2354 test PASSED " << std::endl;
 
-
 		testGait2354WithController();
 		std::cout << "gait2354 with correction controller test PASSED " << std::endl;
-
-
 	}
     catch(const std::exception& e) {
         cout << "exception: " << e.what() << endl;

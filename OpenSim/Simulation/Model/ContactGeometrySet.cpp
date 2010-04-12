@@ -102,11 +102,7 @@ void ContactGeometrySet::setNull()
 void ContactGeometrySet::setup(Model& aModel)
 {
 	// Base class
-	Set<ContactGeometry>::setup();
-
-	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).setup(aModel);
+	ModelComponentSet<ContactGeometry>::setup(aModel);
 }
 
 //=============================================================================

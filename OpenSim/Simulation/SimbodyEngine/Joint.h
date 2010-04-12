@@ -195,8 +195,6 @@ protected:
 	void setCoordinateMobilizedBodyIndex(Coordinate *aCoord, SimTK::MobilizedBodyIndex index) const {aCoord->_bodyIndex = index;}
 	void setCoordinateMobilityIndex(Coordinate *aCoord, int index) const {aCoord->_mobilityIndex = index;}
 	void setCoordinateModel(Coordinate *aCoord, Model *aModel) const {aCoord->_model = aModel;}
-	
-	SimTK::MultibodySystem& getMultibodySystem() const;
 
     void createSystem(SimTK::MultibodySystem& system) const;
     void initState(SimTK::State& s) const;
@@ -205,8 +203,6 @@ protected:
 private:
 	void setNull();
 	void setupProperties();
-    friend class SimbodyEngine;
-    friend class Model;
     friend class JointSet;
 
 //=============================================================================

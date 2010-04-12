@@ -138,7 +138,7 @@ void Actuator::bindStateVariable( int aIndex, const std::string &aSuffix)
  */
 void Actuator::setup(Model& aModel)
 {
-	_model = &aModel;
+	Force::setup(aModel);
 }
 
 double Actuator::getAppliedForce( const State& s) const {

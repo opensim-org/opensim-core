@@ -72,19 +72,6 @@ UnilateralConstraint::UnilateralConstraint(const UnilateralConstraint &aUnilater
 	copyData(aUnilateralConstraint);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this UnilateralConstraint and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this UnilateralConstraint.
- */
-Object* UnilateralConstraint::copy() const
-{
-	UnilateralConstraint *gc = new UnilateralConstraint(*this);
-	return(gc);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -113,7 +100,7 @@ void UnilateralConstraint::setNull(void)
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aEngine dynamics engine containing this UnilateralConstraint.
+ * @param Model containing this UnilateralConstraint.
  */
 void UnilateralConstraint::setup(Model& aModel)
 {

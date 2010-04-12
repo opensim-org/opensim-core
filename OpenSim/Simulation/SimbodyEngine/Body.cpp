@@ -1,5 +1,5 @@
 // Body.cpp
-// Author: Frank C. Anderson
+// Author: Frank C. Anderson, Ajay Seth
 /*
  * Copyright (c)  2007, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -307,12 +307,21 @@ void Body::setupProperties()
  */
 void Body::setup(Model& aModel)
 {
-	_model = &aModel;
+	ModelComponent::setup(aModel);
+
 	for(int i=0; i<_wrapObjectSet.getSize(); i++)
 		_wrapObjectSet.get(i).setup(aModel, *this);
 	if(this->getName() != "ground") {
 		if(_joint) _joint->setup(aModel);
     }
+}
+
+void Body::createSystem(SimTK::MultibodySystem& system) const
+{
+	if(_name == "ground"){
+		Body * mutableThis = const_cast<Body *>(this);
+		mutableThis->_index = SimTK::GroundIndex;
+	}
 }
 
 //=============================================================================

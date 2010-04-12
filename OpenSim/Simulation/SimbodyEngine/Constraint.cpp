@@ -74,19 +74,6 @@ Constraint::Constraint(const Constraint &aConstraint) :
 	copyData(aConstraint);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this Constraint and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Constraint.
- */
-Object* Constraint::copy() const
-{
-	Constraint *gc = new Constraint(*this);
-	return(gc);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -136,7 +123,7 @@ void Constraint::setupProperties(void)
  */
 void Constraint::setup(Model& aModel)
 {
-    _model = &aModel;
+	ModelComponent::setup(aModel);
 }
 
 void Constraint::initState(SimTK::State& s) const

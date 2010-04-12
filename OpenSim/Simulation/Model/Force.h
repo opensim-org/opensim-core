@@ -71,14 +71,9 @@ public:
 	
 	Force& operator=(const Force &aForce);
 	void copyData(const Force &aForce);
-	virtual Object* copy() const;
+	virtual Object* copy() const = 0;
 
-	/**
-	 * Subclasses may optionally override this method to perform setup.
-	 */
-    virtual void setup(Model& model);
-	virtual void initState(SimTK::State& state) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
+
 	/**
 	 * Subclasses may optionally override this method to perform setup after initSystem() has been called.
 	 */
@@ -134,6 +129,15 @@ public:
 	virtual bool isDisabled(const SimTK::State &s) const;
 	/** Set the Force as disabled (true) or not (false)*/
 	virtual void setDisabled(SimTK::State &s, bool disabled);
+
+protected:
+	/**
+	 * Subclasses may optionally override this method to perform setup.
+	 */
+    virtual void setup(Model& model);
+	virtual void initState(SimTK::State& state) const;
+    virtual void setDefaultsFromState(const SimTK::State& state);
+
 
 private:
 

@@ -97,12 +97,6 @@ public:
 	virtual Object* copy() const;
 	PointOnLineConstraint& operator=(const PointOnLineConstraint &aConstraint);
 	void copyData(const PointOnLineConstraint &aConstraint);
-	virtual void setup(Model& aModel);
-
-	/**
-	 * Create a SimTK::Constraint::PointOnLine which implements this constraint.
-	 */
-	void createSystem(SimTK::MultibodySystem& system) const;
 
 	//SET 
 	void setLineBodyByName(std::string aBodyName);
@@ -110,6 +104,14 @@ public:
 	void setLineDirection(SimTK::Vec3 direction);
 	void setPointOnLine(SimTK::Vec3 point);
 	void setPointOnFollower(SimTK::Vec3 point);
+
+protected:
+	virtual void setup(Model& aModel);
+	/**
+	 * Create a SimTK::Constraint::PointOnLine which implements this constraint.
+	 */
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+
 
 private:
 	void setNull();

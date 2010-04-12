@@ -1,7 +1,7 @@
 #ifndef __Body_h__
 #define __Body_h__
 // Body.h
-// Author: Frank C. Anderson
+// Author: Frank C. Anderson, Ajay Seth
 /*
  * Copyright (c)  2007, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -54,9 +54,9 @@ class WrapObjectSet;
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Simbody body segment.
+ * A class implementing a Simbody rigid body.
  *
- * @author Frank C. Anderson
+ * @author Frank C. Anderson, Ajay Seth
  * @version 1.0
  */
 class OSIMSIMULATION_API Body : public ModelComponent  
@@ -125,7 +125,7 @@ public:
 	Body& operator=(const Body &aBody);
 #endif
 	void copyData(const Body &aBody);
-	virtual void setup(Model& aModel);
+
 	virtual void addDisplayGeometry(const std::string &aGeometryFileName);
 	virtual double getMass() const;
 	virtual bool setMass(double aMass);
@@ -156,14 +156,16 @@ public:
 	SimTK::MassProperties getMassProperties();
 
 protected:
+	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	
+	virtual void initState(SimTK::State& state) const {};
+	virtual void setDefaultsFromState(const SimTK::State& state) {};
 
 private:
 	void setNull();
 	void setupProperties();
-    friend class Model;
-	friend class SimbodyEngine;
 	friend class Joint;
-	friend class WeldConstraint;
 
 //=============================================================================
 };	// END of class Body

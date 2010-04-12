@@ -155,6 +155,15 @@ protected:
 	 */
 	void copyData(const ControlSetController &aController);
 
+	// for any post XML deseraialization intialization
+	virtual void setup(Model& model);
+
+	// for adding any components to the model
+	virtual void createSystem( SimTK::MultibodySystem& system) const; 
+
+	// for any intialization requiring a state or the complete system 
+	virtual void initState( SimTK::State& s) const;
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -200,15 +209,6 @@ public:
 	const std::string& getControlSetFileName() const {
 		return _controlsFileName;
 	}
-
-   // for any post XML deseraialization intialization
-   virtual void setup(Model& model);
-
-   // for adding any components to the model
-   virtual void createSystem( SimTK::MultibodySystem& system); 
-
-   // for any intialization requiring a state or the complete system 
-   virtual void initState( SimTK::State& s);
 
    /** 
     *   return the min an max times that a controller knows how to supply controlls for 

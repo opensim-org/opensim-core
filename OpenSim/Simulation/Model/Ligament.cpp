@@ -188,7 +188,8 @@ void Ligament::setupProperties()
  *
  * @param aModel model containing this ligament.
  */
-void Ligament::setup(Model& aModel){
+void Ligament::setup(Model& aModel)
+{
 	CustomForce::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
@@ -198,7 +199,9 @@ void Ligament::setup(Model& aModel){
 	// Resting length must be greater than 0.0.
 	assert(_restingLength > 0.0);
 
-	_path.setup(aModel, *this);
+	_path.setOwner(this);
+	_path.setup(aModel);
+
 }
 
 void Ligament::initState( SimTK::State& s) const

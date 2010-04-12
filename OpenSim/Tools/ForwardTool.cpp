@@ -704,7 +704,6 @@ LinearSpring* ForwardTool::addLinearCorrectiveSpring(SimTK::State &s, const Stor
 
 	// Create linear spring
 	LinearSpring *spring = new LinearSpring(aAppliedForce.getBody(), tiScale, tfScale);
-	spring->setup(*_model);
 
 	//Gymnastics to get the PrescribedForce point functions (3) into a VectorFunction for the spring
 	Function *px=NULL, *py=NULL, *pz=NULL;
@@ -753,7 +752,6 @@ TorsionalSpring* ForwardTool::addTorsionalCorrectiveSpring(SimTK::State &s, cons
 	scaleSpline->setName("ScaleForTorsionalCorrectiveSpring");
 
 	TorsionalSpring *spring = new TorsionalSpring(*aBody, tiScale, tfScale);
-	spring->setup(*_model);
 	spring->computeTargetFunctions(s, aQStore, aUStore);
 	spring->setKValue(_kTor);
 	spring->setBValue(_bTor);

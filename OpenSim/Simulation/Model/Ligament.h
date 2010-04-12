@@ -105,7 +105,7 @@ public:
 	Ligament& operator=(const Ligament &aLigament);
 #endif
    void copyData(const Ligament &aLigament);
-	virtual void initState(SimTK::State& s) const;
+
 	void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
 
 	//--------------------------------------------------------------------------
@@ -124,7 +124,6 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void setup(Model& aModel);
 	virtual void computeForce(const SimTK::State& s, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const;
@@ -139,6 +138,10 @@ public:
 	// This macro allows the OpenSim GUI to check CustomForce
 	// objects to see if they are instances of this ligament class.
 	OPENSIM_DECLARE_DERIVED(Ligament, CustomForce);
+
+protected:
+	virtual void setup(Model& aModel);
+	virtual void initState(SimTK::State& s) const;
 
 private:
 	void setNull();

@@ -94,12 +94,6 @@ public:
 	virtual Object* copy() const;
 	CoordinateCouplerConstraint& operator=(const CoordinateCouplerConstraint &aConstraint);
 	void copyData(const CoordinateCouplerConstraint &aConstraint);
-	virtual void setup(Model& aModel);
-
-	/**
-	 * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
-	 */
-	void createSystem(SimTK::MultibodySystem& system) const;
 
 	// GET AND SET
 	void setIndependentCoordinateNames(const Array<std::string> &aCoordNames) { _independentCoordNames = aCoordNames; }
@@ -112,6 +106,13 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 
 	OPENSIM_DECLARE_DERIVED(CoordinateCouplerConstraint, Constraint);
+
+protected:
+	virtual void setup(Model& aModel);
+	/**
+	 * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
+	 */
+	void createSystem(SimTK::MultibodySystem& system) const;
 
 private:
 	void setNull();

@@ -62,10 +62,12 @@ private:
 public:
 	CustomForce();
 	CustomForce(const CustomForce &aForce);
-	void createSystem(SimTK::MultibodySystem& system) const;
 	CustomForce(DOMElement* aNode): Force(aNode){};
 
 protected:
+
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	
 	/**
 	 * Subclasses must implement this method to compute the forces that should be applied to bodies
 	 * and generalized speeds.

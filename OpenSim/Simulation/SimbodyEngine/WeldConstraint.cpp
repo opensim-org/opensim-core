@@ -203,8 +203,8 @@ void WeldConstraint::setup(Model& aModel)
 void WeldConstraint::createSystem(SimTK::MultibodySystem& system) const
 {
 	// Get underlying mobilized bodies
-	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->_index);
-	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(_body2->_index);
+	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->getIndex());
+	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(_body2->getIndex());
 	// Build the transforms
 	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
 	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);

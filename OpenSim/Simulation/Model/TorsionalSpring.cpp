@@ -385,7 +385,7 @@ void TorsionalSpring::computeForce(const SimTK::State& s,
 	}
 
 	double time = s.getTime();
-	if( getOn() && (time >= _startTime) && (time < _endTime)){
+	if( !isDisabled(s) && (time >= _startTime) && (time < _endTime)){
 		// Calculate Euler angles to rotate from current orientation to nominal orientation,
 		// expressed in current body reference frame 
 		double nomDirCos[9];

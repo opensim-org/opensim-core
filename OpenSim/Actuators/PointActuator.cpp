@@ -338,10 +338,15 @@ void PointActuator::computeForce(const SimTK::State& s,
 /**
  * setup sets the actual Body reference _body
  */
-void PointActuator::
-setup(Model& aModel)
+void PointActuator::setup(Model& aModel)
 {
-	Actuator::setup(aModel);
+	string errorMessage;
+	CustomActuator::setup(aModel);
+
+	if (!aModel.updBodySet().contains(_bodyName)) {
+		errorMessage = "PointActuator: Unknown body (" + _bodyName + ") specified in Actuator " + getName();
+		throw (Exception(errorMessage.c_str()));
+	}
 
 	if (_model) {
 		_body = &_model->updBodySet().get(_bodyName);

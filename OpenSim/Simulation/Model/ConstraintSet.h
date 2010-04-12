@@ -1,5 +1,5 @@
-#ifndef __AbsConstraintSet_h__
-#define __AbsConstraintSet_h__
+#ifndef __ConstraintSet_h__
+#define __ConstraintSet_h__
 
 // ConstraintSet.h
 // Author: Ajay Seth
@@ -76,8 +76,6 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITIES
 	//--------------------------------------------------------------------------
-	ConstraintSet& copyFrom(const ConstraintSet& aConstraintSet, 
-									   Model& aModel);
 
 	// SCALE
 	void scale(const ScaleSet& aScaleSet);
@@ -89,4 +87,4 @@ public:
 
 } // end of namespace OpenSim
 
-#endif // __AbsConstraintSet_h__
+#endif // __ConstraintSet_h__

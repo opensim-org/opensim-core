@@ -393,10 +393,9 @@ void LineActuator::computeForce(const SimTK::State& s,
 /**
  * setup sets the actual Body references _bodyA and _bodyB
  */
-void LineActuator::
-setup(Model& aModel)
+void LineActuator::setup(Model& aModel)
 {
-	Actuator::setup( aModel);
+	CustomActuator::setup( aModel);
 
 	if (_model) {
 		_bodyA = &_model->updBodySet().get(_bodyNameA);

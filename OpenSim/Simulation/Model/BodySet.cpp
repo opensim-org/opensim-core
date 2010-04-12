@@ -92,16 +92,8 @@ void BodySet::setup(Model& aModel)
 	Set<Body>::setup();
 
 	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).setup(aModel);
+	ModelComponentSet::setup(aModel);
 
-}
-BodySet& BodySet::copyFrom(const BodySet& aBodySet, Model& aModel)
-{
-	Set<Body>::operator=(aBodySet);
-	for(int i=0; i<getSize(); i++)
-		get(i).setup(aModel);
-	return (*this);
 }
 
 //=============================================================================

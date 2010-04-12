@@ -2,7 +2,7 @@
 #define __ModelComponent_h__
 
 // ModelComponent.h
-// Authors: Peter Eastman
+// Authors: Peter Eastman, Ajay Seth
 /*
  * Copyright (c) 2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -71,40 +71,38 @@ public:
     Model& updModel();
 protected:
     /**
-     * Set the Model this object is part of.
+     * This is called after the Model has been constructed from an XML file.  
+	 * Set the Model this object is part of and then so do required initialization,
+	 * such as looking up references to other objects in the Model (which might not 
+	 * have existed yet when this object was instantiated).
+	 * Override this method as necessary but always call the parent setup to ensure
+	 * all members (belonging to parent and child) are initialized.
      */
-    void setModel(Model& model);
+	virtual void setup(Model& model);
 
     /**
-     * This is called after the Model has been constructed from an XML file.  It may be overridden
-     * to do required initialization, such as looking up references to other objects in the
-     * Model (which might not have existed yet when this object was created).
-     */
-	virtual void setupFromXML();
-
-    /**
-     * This is called when a SimTK System is being created for the Model.  It should be overridden
+     * This is called when a SimTK System is being created for the Model.  It must be implemented 
      * to add appropriate elements to the System corresponding to this object.
      *
      * @param system   the System being created
      */
-    virtual void createSystem(SimTK::MultibodySystem& system) const;
+    virtual void createSystem(SimTK::MultibodySystem& system) const = 0;
 
     /**
-     * This is called after a SimTK System and State have been created for the Model.  It may
-     * be overridden to set initial values of state variables.
+     * This is called after a SimTK System and State have been created for the Model.  It must
+     * be implementd to set initial values of state variables.
      *
      * @param state    the State to initialize
      */
-    virtual void initState(SimTK::State& state) const;
+    virtual void initState(SimTK::State& state) const = 0;
 
     /**
-     * Set all default values for this object to match those in a specified State.  It should be
-     * overridden to set any default values defined by each subclass.
+     * Set all default values for this object to match those in a specified State.  It must be
+     * implemented/overriden to set any default values defined by each subclass.
      *
      * @param state    the State from which to take values that should become the defaults for this object
      */
-    virtual void setDefaultsFromState(const SimTK::State& state);
+    virtual void setDefaultsFromState(const SimTK::State& state) = 0;
 
 //=============================================================================
 };	// END of class ModelComponent

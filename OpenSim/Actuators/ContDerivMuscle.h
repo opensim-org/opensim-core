@@ -214,10 +214,13 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void setup(Model& aModel);
+
     virtual void equilibrate(SimTK::State& state) const;
 
 	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, Actuator);
+
+protected:
+	virtual void setup(Model& aModel);
 
 private:
 	void setNull();

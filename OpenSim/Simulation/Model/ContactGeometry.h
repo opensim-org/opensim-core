@@ -129,12 +129,7 @@ public:
      * within the Body it is attached to.
      */
     SimTK::Transform getTransform();
-    /**
-     * Perform setup functions that happen after the object has been deserialized or copied.
-     *
-     * @param aModel OpenSim model containing this Joint.
-     */
-	void setup(Model& aModel);
+
 	/**
 	* Scale a ContactGeometry based on XYZ scale factors for the bodies.
 	* 
@@ -147,6 +142,17 @@ public:
 	virtual VisibleObject* updDisplayer() { return &_displayer; };
 	// Override this method if geometry changes/deforms
 	virtual void updateGeometry() {};
+
+protected:
+	/**
+  	 * Perform setup functions that happen after the object has been deserialized or copied.
+     *
+     * @param aModel OpenSim model containing this Joint.
+     */
+	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const {};
+	virtual void initState(SimTK::State& s) const {};
+	virtual void setDefaultsFromState(const SimTK::State& state) {};
 
 private:
     // INITIALIZATION

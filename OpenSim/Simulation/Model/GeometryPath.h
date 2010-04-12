@@ -95,7 +95,7 @@ protected:
 
 	// current display path = ordered array of currently active path points (fixed + via + wrap),
 	// including points along the surfaces of wrap objects, spaced about every 2 mm.
-     SimTK::CacheEntryIndex _currentDisplayPathIndex;
+    SimTK::CacheEntryIndex _currentDisplayPathIndex;
 
 	// object that owns this GeometryPath object
 	Object* _owner;
@@ -112,7 +112,7 @@ public:
 	GeometryPath(const GeometryPath &aPath);
 	virtual ~GeometryPath();
 	virtual Object* copy() const;
-	virtual void setup(Model& aModel, Object& aOwner);
+
 	void setName(const std::string &aName);
 #ifndef SWIG
 	GeometryPath& operator=(const GeometryPath &aPath);
@@ -121,8 +121,7 @@ public:
 	const PathPointSet& getPathPointSet() const { return _pathPointSet; }
 	PathPointSet& updPathPointSet() const { return _pathPointSet; }
 	PathWrapSet& getWrapSet() { return _pathWrapSet; }
-	virtual void initState(SimTK::State& s);
-	virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
+
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -136,12 +135,14 @@ public:
 	void moveUpPathWrap(const SimTK::State& s, int aIndex);
 	void moveDownPathWrap(const SimTK::State& s, int aIndex);
 	void deletePathWrap(const SimTK::State& s, int aIndex);
-   bool replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint, PathPoint* aNewPathPoint); 
+	bool replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint, PathPoint* aNewPathPoint); 
 
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
 	Object* getOwner() const { return _owner; }
+	void setOwner(Object *anObject) {_owner = anObject; };
+
 	virtual double getLength( const SimTK::State& s) const;
 	virtual void setLength( const SimTK::State& s, double length) const;
 	virtual double getPreScaleLength( const SimTK::State& s) const;
@@ -169,7 +170,18 @@ public:
 	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+	virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
+
+	virtual void setup(Model& aModel);
+	virtual void initState(SimTK::State& s) const;
+
 protected:
+
+	virtual void createSystem(SimTK::MultibodySystem& system) const {};
+	virtual void setDefaultsFromState(const SimTK::State& state) {};
+
+
 
 public:
 	//--------------------------------------------------------------------------
@@ -191,7 +203,7 @@ private:
 	void updateGeometrySize(const SimTK::State& );
 	void updateGeometryLocations(const SimTK::State& s);
 	void namePathPoints(int aStartingIndex);
-   void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, const OpenSim::Body& aBody);
+    void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, const OpenSim::Body& aBody);
 
 //=============================================================================
 };	// END of class GeometryPath

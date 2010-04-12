@@ -1,5 +1,5 @@
 // Coordinate.cpp
-// Author: Frank C. Anderson, Jeffrey A. Reinbolt
+// Author: Frank C. Anderson, Ajay Seth, Jeffrey A. Reinbolt
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -143,7 +143,7 @@ Coordinate::~Coordinate()
  * @param aCoordinate Coordinate to be copied.
  */
 Coordinate::Coordinate(const Coordinate &aCoordinate) :
-     Object(aCoordinate),
+     ModelComponent(aCoordinate),
 	_motionTypeName(_motionTypeNameProp.getValueStr()),
 	_defaultValue(_defaultValueProp.getValueDbl()),   
 	_defaultSpeedValue(_defaultSpeedValueProp.getValueDbl()),
@@ -252,12 +252,9 @@ void Coordinate::setupProperties(void)
 	_propertySet.append(&_prescribedFunctionProp);
 }
 
-void Coordinate::createConstraintsForLockClampPrescribed()
+void Coordinate::createSystem(SimTK::MultibodySystem& system) const
 {
 	//create lock constraint automatically
-	// Define the locked value for the constraint as a function
-
-	_lockFunction = new ModifiableConstant<Real>(_defaultValue, 1); 
 	// The underlying SimTK constraint
 	SimTK::Constraint *lock;
 	lock = new SimTK::Constraint::PrescribedMotion( 
@@ -265,7 +262,10 @@ void Coordinate::createConstraintsForLockClampPrescribed()
 			_lockFunction, 
 			_bodyIndex, 
 			SimTK::MobilizerQIndex(_mobilityIndex));
-	_lockedConstraintIndex = lock->getConstraintIndex();
+
+	// Beyond the const Component get the index so we can access the SimTK::Constraint later
+	Coordinate* mutableThis = const_cast<Coordinate *>(this);
+	mutableThis->_lockedConstraintIndex = lock->getConstraintIndex();
 
 			
 	SimTK::Constraint *prescribe = NULL;
@@ -276,13 +276,15 @@ void Coordinate::createConstraintsForLockClampPrescribed()
 				_prescribedFunction->createSimTKFunction(), 
 				_bodyIndex, 
 				SimTK::MobilizerQIndex(_mobilityIndex));
-		_prescribedConstraintIndex = prescribe->getConstraintIndex();
+		mutableThis->_prescribedConstraintIndex = prescribe->getConstraintIndex();
 	}
 	else{
 		_isPrescribed = false;
 	}
 
 	//TODO add clamping
+
+
 
 }
 
@@ -296,7 +298,7 @@ void Coordinate::createConstraintsForLockClampPrescribed()
 void Coordinate::setup(Model& aModel)
 {
 	// Base class
-    _model = &aModel;
+	ModelComponent::setup(aModel);
 
 	if((IO::Lowercase(_motionTypeName) == "rotational") || _motionTypeName == "")
 		_motionType = Rotational;
@@ -306,7 +308,6 @@ void Coordinate::setup(Model& aModel)
 		_motionType = Coupled;
 	else
 		throw(Exception("Unknown motion type. Use rotational, translational, or coupled."));
-
 
 
 	// Make sure the range is min to max.
@@ -319,6 +320,9 @@ void Coordinate::setup(Model& aModel)
 		_defaultValue = _range[0];
 	else if (_defaultValue > _range[1])
 		_defaultValue = _range[1];
+
+	// Define the locked value for the constraint as a function
+	_lockFunction = new ModifiableConstant<Real>(_defaultValue, 1); 
 }
 
 void Coordinate::initState(State& s) const

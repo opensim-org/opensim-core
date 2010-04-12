@@ -78,14 +78,10 @@ public:
 	Constraint();
 	Constraint(const Constraint &aConstraint);
 	virtual ~Constraint();
-	virtual Object* copy() const;
+	virtual Object* copy() const = 0;
 
 	Constraint& operator=(const Constraint &aConstraint);
 	void copyData(const Constraint &aConstraint);
-
-	virtual void setup(Model& aModel);
-	virtual void initState(SimTK::State& state) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
 
 	virtual void updateFromConstraint(SimTK::State& s, const Constraint &aConstraint);
 	virtual bool isDisabled(const SimTK::State& s) const;
@@ -95,6 +91,11 @@ public:
 									  SimTK::Vector& mobilityForces);
 
 	virtual void scale(const ScaleSet& aScaleSet) {};
+
+protected:
+	virtual void setup(Model& aModel);
+	virtual void initState(SimTK::State& state) const;
+    virtual void setDefaultsFromState(const SimTK::State& state);
 
 private:
 	void setNull();

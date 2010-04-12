@@ -98,13 +98,11 @@ Model::Model() :
     _perturbActuatorForces(false),
     _system(NULL)
 {
-	
 	setNull();
 	setupProperties();
-    createGroundBodyIfNecessary();
     _analysisSet.setMemoryOwner(false);
-    _controllerSet.setModel(this);
-
+    
+	setup();
 }
 //_____________________________________________________________________________
 /**
@@ -139,15 +137,11 @@ Model::Model(const string &aFileName) :
 	setNull();
 	setupProperties();
 	updateFromXMLNode();
-	createGroundBodyIfNecessary();
 	_fileName = aFileName;
     _analysisSet.setMemoryOwner(false);
-    _controllerSet.setModel(this);
 
-    // Create the SimTK::MultibodySystem
-    //createSystem();
-
-	cout << "Created model " << getName() << " from file " << getInputFileName() << endl;
+	setup();
+	cout << "Loaded model " << getName() << " from file " << getInputFileName() << endl;
 }
 //_____________________________________________________________________________
 /**
@@ -182,10 +176,8 @@ Model::Model(const Model &aModel) :
 	setNull();
 	setupProperties();
 	copyData(aModel);
-	createGroundBodyIfNecessary();
-	_forceSet.setup(*this);
-	_contactGeometrySet.setup(*this);
-    _controllerSet.setModel(this);
+
+	setup();
 }
 //_____________________________________________________________________________
 /**
@@ -202,7 +194,8 @@ Model::~Model()
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
-/*virtual*/ void Model::updateFromXMLNode()
+/*virtual*/
+void Model::updateFromXMLNode()
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	if ( documentVersion < XMLDocument::getLatestVersion()){
@@ -246,7 +239,8 @@ Model::~Model()
 	}
 	// Call base class now assuming _node has been corrected for current version
 	Object::updateFromXMLNode();
-    setupFromXML();
+    
+	setDefaultProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -355,16 +349,10 @@ void Model::setupProperties()
 
     _contactGeometrySetProp.setComment("ContactGeometry objects in the model.");
     _propertySet.append(&_contactGeometrySetProp);
-
-    _bodySet.setModel(*this);
-    _constraintSet.setModel(*this);
-    _contactGeometrySet.setModel(*this);
-    _forceSet.setModel(*this);
-    _jointSet.setModel(*this);
-
 }
-SimTK::State& Model::initSystem() {
 
+SimTK::State& Model::initSystem() 
+{
     setup();
 	createSystem();
     getSystem().realizeTopology();
@@ -386,9 +374,7 @@ SimTK::State& Model::initSystem() {
 	 // setting up.
 	 _forceSet.postInit(*this);
 
-    updJointSet().setup(*this);
 
-    updControllerSet().setup(*this);
     updControllerSet().setActuators(updActuators());
     //updControllerSet().constructStorage();
 
@@ -413,7 +399,6 @@ void Model::createSystem()
     if (_system != NULL)
     {
         // Delete the old system.
-
         delete _matter;
         delete _forceSubsystem;
         delete _userForceElements;
@@ -430,17 +415,15 @@ void Model::createSystem()
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
     _gravityForce = new SimTK::Force::Gravity(*_userForceElements,*_matter,_gravity);
 
-    _coordinateSet.setMemoryOwner(false);
-    _coordinateSet.setSize(0);
-
     // Let all the ModelComponents add their parts to the System.
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
-    static_cast<const ModelComponentSet<Joint>&>(getJointSet()).createSystem(*_system);
+    
+	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).createSystem(*_system);
 	for(int i=0;i<getBodySet().getSize();i++) {
 		OpenSim::Body& body = getBodySet().get(i);
 		MobilizedBodyIndex idx(body.getIndex());
-        if (!idx.isValid() && body.getName()!= "ground")    throw Exception("Body: "+body.getName()+
-			" has no Joint... Model initialization aborted.");
+        if (!idx.isValid() && body.getName()!= "ground")   
+			throw Exception("Body: "+body.getName()+" has no Joint... Model initialization aborted.");
 	}
 
     static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).createSystem(*_system);
@@ -448,16 +431,16 @@ void Model::createSystem()
 
 
     // Add extra constraints for coordinates.
-    for (int i = 0; i < _coordinateSet.getSize(); i++)
-        _coordinateSet.get(i).createConstraintsForLockClampPrescribed();
-    
-    // controllers perform setup that requires a completed system (ie. all generalized coordinates )
-    updControllerSet().setupSystem( *_system );
-    // controllers add their parts to the System. 
-    static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
+	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).createSystem(*_system);
 
+    
     static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
 
+	// controllers perform setup that requires a completed system (ie. all generalized coordinates )
+    updControllerSet().setupSystem( *_system );
+    
+	// controllers add their parts to the System. 
+    static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
 }
 
 //_____________________________________________________________________________
@@ -516,15 +499,24 @@ void Model::addController(Controller *aController)
  */
 void Model::setup()
 {
+	createGroundBodyIfNecessary();
+
+	// List of model coordinates are updated by setting up Joints
+	// Coordinates are owned by Joints and not the model's coordinate set
+	_coordinateSet.setMemoryOwner(false);
+    _coordinateSet.setSize(0);
 
 	updBodySet().setup(*this);
-    updSimbodyEngine().setup(*this);
+	updJointSet().setup(*this);
     updCoordinateSet().setup(*this);
     updConstraintSet().setup(*this);
     updMarkerSet().setup(*this);
     updContactGeometrySet().setup(*this);
 
+    updSimbodyEngine().setup(*this);
+
 	updForceSet().setup(*this);
+	updControllerSet().setup(*this);
 
 	// The following code should be replaced by a more robust
 	// check for problems while creating the model.
@@ -562,7 +554,6 @@ void Model::createGroundBodyIfNecessary()
 	ground->setName(SimbodyGroundName);
     ground->setMass(0.0);
 	ground->setMassCenter(Vec3(0.0));
-	ground->_index = SimTK::GroundIndex;
 	_groundBody = ground;
 }
 
@@ -578,19 +569,8 @@ void Model::cleanup()
 	_forceSet.setSize(0);	
 }
 
-void Model::setupFromXML()
+void Model::setDefaultProperties()
 {
-	// Set the current directory to the directory containing the model
-	// file.  This is allow files (i.e. bone files) to be specified using
-	// relative paths in the model file.  KMS 4/26/06
-
-	string origDirPath;
-	string dirPath = IO::getParentDirectory(_fileName);
-	if(!dirPath.empty()) {
-		origDirPath = IO::getCwd();
-		IO::chDir(dirPath);
-	}
-
 	if (_creditsStrProp.getUseDefault()){
 		_creditsStr = "Model authors names..";
 	}
@@ -598,7 +578,7 @@ void Model::setupFromXML()
 		_publicationsStr = "List of publications related to model...";
 	}
 
-	//Initialize the length and force units from the strings specified in the XML file.
+	// Initialize the length and force units from the strings specified in the model file.
 	// If they were not specified, use meters and Newtons.
 
     if (_lengthUnitsStrProp.getUseDefault()){
@@ -614,43 +594,6 @@ void Model::setupFromXML()
 	}
 	else
 		_forceUnits = Units(_forceUnitsStr);
-
-    // Create the ground body if it wasn't specified in the file.
-
-    createGroundBodyIfNecessary();
-
-    // Link together the joints and bodies that were specified by name.
-
-    int nb = getBodySet().getSize();
-	for(int i=0;i<nb;i++) {
-
-		// Body
-		OpenSim::Body& body = getBodySet().get(i);
-        if (!body.hasJoint())
-            continue;
-		Joint& joint = body.getJoint();
-		joint._body = &body;
-
-		// Parent Body
-		string parentName = joint.getParentName();
-		joint._parentBody = (OpenSim::Body*)&getBodySet().get(parentName);
-		joint._model = this;
-	}
-    // Allow other parts of the model to do setup.
-
-    updBodySet().setupFromXML();
-//    updCoordinateSet().setupFromXML();
-    updConstraintSet().setupFromXML();
-//    updMarkerSet().setupFromXML();
-    updContactGeometrySet().setupFromXML();
-    updJointSet().setupFromXML();
-	updForceSet().setModel(*this);
-	updForceSet().setupFromXML();
-	updControllerSet().setupFromXML();
-
-	// Restore the current directory.
-	if(!origDirPath.empty())
-		IO::chDir(origDirPath);
 }
 
 void Model::initState(SimTK::State& state) const
@@ -1395,27 +1338,12 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
  **/
 JointSet& Model::updJointSet()
 {
-    _jointSet.setMemoryOwner(false);
-    _jointSet.setSize(0);
-    for(int i=0; i< getNumBodies(); i++){
-        if (getBodySet().get(i).hasJoint()) { // Ground body doesn't have a jnt
-            Joint& nextJoint = getBodySet().get(i).getJoint();
-			nextJoint.setModel(*this);
-            _jointSet.append(&nextJoint);
-        }
-    }
     return _jointSet;
 }
+
 const JointSet& Model::getJointSet()
 {
-    _jointSet.setMemoryOwner(false);
-    _jointSet.setSize(0);
-    for(int i=0; i< getNumBodies(); i++){
-        if (getBodySet().get(i).hasJoint()) {  // Ground body doesn't have a jnt
-            Joint& nextJoint = getBodySet().get(i).getJoint();
-            _jointSet.append(&nextJoint);
-        }
-    }
+
     return _jointSet;
 }
 

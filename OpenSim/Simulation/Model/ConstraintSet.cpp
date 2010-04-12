@@ -90,8 +90,7 @@ void ConstraintSet::setup(Model& aModel)
 	Set<Constraint>::setup();
 
 	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).setup(aModel);
+	ModelComponentSet::setup(aModel);
 
 }
 //=============================================================================
@@ -104,28 +103,13 @@ void ConstraintSet::setup(Model& aModel)
  * @return Reference to this object.
  */
 #ifndef SWIG
-ConstraintSet& ConstraintSet::operator=(const ConstraintSet &aAbsConstraintSet)
+ConstraintSet& ConstraintSet::operator=(const ConstraintSet &aConstraintSet)
 {
-	Set<Constraint>::operator=(aAbsConstraintSet);
+	Set<Constraint>::operator=(aConstraintSet);
 
 	return (*this);
 }
 #endif
-//_____________________________________________________________________________
-/**
- * Functional equivalent to = operator wit the added feature of associating
- * the resulting ConstraintSet with a new model.
- *
- * @return Reference to this object.
- */
-ConstraintSet& ConstraintSet::copyFrom(const ConstraintSet& aConstraintSet, 
-									   Model& aModel)
-{
-	Set<Constraint>::operator=(aConstraintSet);
-	for(int i=0; i<getSize(); i++)
-		get(i).setup(aModel);
-	return (*this);
-}
 
 //=============================================================================
 // UTILITY
@@ -136,7 +120,7 @@ ConstraintSet& ConstraintSet::copyFrom(const ConstraintSet& aConstraintSet,
  */
 
 /**
- * Scale joint set by a set of scale factors
+ * Scale contraint set by a set of scale factors
  */
 void ConstraintSet::scale(const ScaleSet& aScaleSet)
 {

@@ -99,6 +99,13 @@ public:
 	void setBody2ByName(std::string aBodyName);
 	void setBody2PointLocation(SimTK::Vec3 location);
 
+protected:
+	virtual void setup(Model& aModel);
+	/**
+	 * Create a SimTK::Constraint::Weld which implements this Weld.
+	 */
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+
 private:
 	void setNull();
 	void setupProperties();

@@ -87,10 +87,8 @@ ForceSet::ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromX
 {
 	setNull();
 
-	if(aUpdateFromXMLNode) updateFromXMLNode();
-	// removeInvalidObjects();
-	setModel(model);
-	setupFromXML();
+	if(aUpdateFromXMLNode)
+		updateFromXMLNode();
 }
 
 
@@ -173,14 +171,10 @@ setupSerializedMembers()
 void ForceSet::setup(Model& aModel)
 {
 	// BASE CLASS
-	Set<Force>::setup();
-	_model = &aModel;
+	ModelComponentSet<Force>::setup(aModel);
 
     // INDICES
 	updateActuators();
-	for (int i = 0; i < getSize(); i++) {
-		get(i).setup(aModel);
-    }
 }
 
 void ForceSet::postInit(Model& aModel)
@@ -198,8 +192,7 @@ void ForceSet::postInit(Model& aModel)
  *
  * @return Reference to this object.
  */
-ForceSet& ForceSet::
-operator=(const ForceSet &aAbsForceSet)
+ForceSet& ForceSet::operator=(const ForceSet &aAbsForceSet)
 {
 	// BASE CLASS
 	Set<Force>::operator=(aAbsForceSet);
@@ -225,8 +218,7 @@ operator=(const ForceSet &aAbsForceSet)
  * @param aIndex Index of the actuator to be removed.
  * @return True if the remove was successful; false otherwise.
  */
-bool ForceSet::
-remove(int aIndex)
+bool ForceSet::remove(int aIndex)
 {
 	bool success = Set<Force>::remove(aIndex);
 
@@ -246,14 +238,11 @@ remove(int aIndex)
  * @param aActuator Pointer to the actuator to be appended.
  * @return True if successful; false otherwise.
  */
-bool ForceSet::
-append(Force *aActuator)
+bool ForceSet::append(Force *aActuator)
 {
 	bool success = ModelComponentSet<Force>::append(aActuator);
 
-
 	if((success)&&(_model!=NULL)) {
-		aActuator->setup(*_model);
 		updateActuators();
 	}
 
@@ -271,8 +260,7 @@ append(Force *aActuator)
  * name already exists in this model's actuator set.
  * @return True if successful; false otherwise.
  */
-bool ForceSet::
-append(ForceSet &aForceSet, bool aAllowDuplicateNames)
+bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
 {
 	bool success = true;
 	for(int i=0;i<aForceSet.getSize() && success;i++) {
@@ -287,9 +275,8 @@ append(ForceSet &aForceSet, bool aAllowDuplicateNames)
 			}
 		}
 		if(!nameExists) {
-			if(!ModelComponentSet<Force>::append(&aForceSet.get(i))) success = false;
-			// individual actuators keep pointers to model as well!! 
-			aForceSet.get(i).setup(*_model);
+			if(!ModelComponentSet<Force>::append(&aForceSet.get(i))) 
+				success = false;
 		}
 	}
 
@@ -312,8 +299,7 @@ append(ForceSet &aForceSet, bool aAllowDuplicateNames)
  * @param aActuator Pointer to the actuator to be set.
  * @return True if successful; false otherwise.
  */
-bool ForceSet::
-set(int aIndex,Force *aActuator)
+bool ForceSet::set(int aIndex,Force *aActuator)
 {
 	bool success = ModelComponentSet<Force>::set(aIndex,aActuator);
 
@@ -324,8 +310,7 @@ set(int aIndex,Force *aActuator)
 	return(success);
 }
 
-bool ForceSet::
-insert(int aIndex, Force *aForce)
+bool ForceSet::insert(int aIndex, Force *aForce)
 {
 	bool success = ModelComponentSet<Force>::insert(aIndex, aForce);
 
@@ -340,13 +325,11 @@ insert(int aIndex, Force *aForce)
 /**
  * Get the list of Actuators.
  */
-const Set<Actuator>& ForceSet::
-getActuators() const
+const Set<Actuator>& ForceSet::getActuators() const
 {
     return _actuators;
 }
-Set<Actuator>& ForceSet::
-updActuators() 
+Set<Actuator>& ForceSet::updActuators() 
 {
     return _actuators;
 }
@@ -354,8 +337,7 @@ updActuators()
 /**
  * Rebuild the list of Actuators.
  */
-void ForceSet::
-updateActuators()
+void ForceSet::updateActuators()
 {
     _actuators.setSize(0);
     for (int i = 0; i < getSize(); ++i)

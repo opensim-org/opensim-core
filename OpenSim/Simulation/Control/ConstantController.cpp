@@ -214,14 +214,16 @@ double ConstantController::computeControl(const SimTK::State& s, int index )  co
 
 
 // for any post XML desereialization intialization
-void ConstantController::
-setup(Model& model)  {
-
+void ConstantController::setup(Model& model) 
+{
+     setActuators( _model->updActuators() );
 }
 // for adding any components to the model
-void ConstantController::createSystem( SimTK::MultibodySystem& system )  {
+void ConstantController::createSystem( SimTK::MultibodySystem& system ) const
+{
 }
+
 // for any intialization requiring a state or the complete system 
-void ConstantController::initState( SimTK::State& s)  {
-     setActuators( _model->updActuators() );
+void ConstantController::initState( SimTK::State& s)  const 
+{
 }

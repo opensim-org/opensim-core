@@ -129,12 +129,14 @@ public:
 	//--------------------------------------------------------------------------
 protected:
     void setNumStateVariables( int aNumStateVariables);
-
 	void bindStateVariable( int aIndex,const std::string &aSuffix);
-public:
+
+
 	virtual void setup(Model& aModel);
+
+public:
+
 	// MODEL
-	void setModel(Model& aModel) { _model = &aModel; }
 	Model& getModel() const { return *_model; }
 	// CONTROLS
 	virtual int getControlIndex() const;

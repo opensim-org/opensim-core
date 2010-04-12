@@ -219,7 +219,7 @@ void Joint::setup(Model& aModel)
 {
 	string errorMessage;
 
-	_model = &aModel;
+	ModelComponent::setup(aModel);
 
 	// Look up the parent and child bodies by name in the
 	// body set
@@ -549,9 +549,6 @@ void Joint::createSystem(SimTK::MultibodySystem& system) const
 		// The functions (and their dependencies) determine how the coordinates gets used when constructing
 		// the transform from parent to child.
 		q._mobilityIndex = iq;
-		// The local coordinates (of which there can only be 6) need to be added to the global
-		// coordinate set.  Note that only a pointer (not a copy) is appended.
-		_model->updCoordinateSet().append(&q);
 	}
 }
 
@@ -565,13 +562,4 @@ void Joint::setDefaultsFromState(const SimTK::State& state)
 {
     for (int i = 0; i < _coordinateSet.getSize(); i++)
         _coordinateSet.get(i).setDefaultsFromState(state);
-}
-
-//=============================================================================
-// Utilities to access friend members.
-//=============================================================================
-//_____________________________________________________________________________
-SimTK::MultibodySystem& Joint::getMultibodySystem() const 
-{
-	return _model->getSystem();
 }

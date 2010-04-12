@@ -210,8 +210,7 @@ operator=(const Controller &aController)
 /**
  * Get whether or not this controller is on.
  */
-bool Controller::
-getIsEnabled() const
+bool Controller::getIsEnabled() const
 {
     if( _model->getAllControllersEnabled() ) {
 	   return(_isControllerEnabled);
@@ -223,8 +222,7 @@ getIsEnabled() const
 /**
  * Turn this controller on or off.
  */
-void Controller::
-setIsEnabled(bool aTrueFalse)
+void Controller::setIsEnabled(bool aTrueFalse)
 {
 	_isControllerEnabled = aTrueFalse;
 }
@@ -239,17 +237,26 @@ getLastTime() const {
 }
 
 // for any post XML deseraialization intialization
-void Controller:: setup(Model& model) {
-    _model = &model;
+void Controller:: setup(Model& model)
+{
+	ModelComponent::setup(model);
+
+	Set<Actuator> actuatorsByName;
+	for(int i =0; _actuatorNameList.getSize(); i++){
+		if(model.updActuators().contains(_actuatorNameList[i]))
+			actuatorsByName.append(&model.updActuators().get(_actuatorNameList[i]));
+		else
+			throw Exception("Controller::setup : Actuator " + _actuatorNameList[i] + " not found.");
+	}
+	setActuators(actuatorsByName);
+
+	// setup actuators to ensure actuators added by controllers are also setup properly
+	_actuatorSet.setup(*_model);
 }
+
 // controller setup once the system is complete 
 void Controller::setupSystem( SimTK::MultibodySystem& system) {} 
 
-   // for adding any components to the model
-void Controller::createSystem( SimTK::MultibodySystem& system) {} 
-
-// for any intialization requiring a state or the complete system 
-void Controller::initState( SimTK::State& s) {}
 
 // makes a request for which actuators a controller suports
 void Controller::setActuators( Set<Actuator>& actuators ) {
@@ -262,6 +269,6 @@ void Controller::setActuators( Set<Actuator>& actuators ) {
 	}
 }
 
-Set<Actuator>& Controller::updActuators() { return _actuatorSet; }
+Set<Actuator>& Controller::updActuators() { return _actuatorSet.updActuators(); }
 
-const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }
+const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet.getActuators(); }

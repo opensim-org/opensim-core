@@ -115,7 +115,6 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( BodyScale() );
 	Object::RegisterType( BodyScaleSet() );
 	Object::RegisterType( BodySet() );
-	//Object::RegisterType( BoneSet() );
 	Object::RegisterType( ConstraintSet() );
 	Object::RegisterType( CoordinateSet() );
 	Object::RegisterType( ForceSet() );
@@ -145,11 +144,9 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( WrapSphereObst() );
 	Object::RegisterType( WrapDoubleCylinderObst() );
 
-	//simbodyEngine
 	// CURRENT RELEASE
 	Object::RegisterType( SimbodyEngine() );
 	Object::RegisterType( OpenSim::Body() );
-	Object::RegisterType( Constraint() );
 	Object::RegisterType( WeldConstraint() );
 	Object::RegisterType( PointConstraint() );
 	Object::RegisterType( CoordinateCouplerConstraint() );

@@ -105,19 +105,13 @@ public:
 private:
 	void setNull();
 	void copyData(const SimbodyEngine &aEngine);
-	void constructPendulum();
 	
-	void createGroundBodyIfNecessary();
-
 public:
 
     const Model& getModel() const { return *_model; }
     Model& getModel() { return *_model; }
     void setModel(Model& aModel) { _model = &aModel; }
 
-#ifndef SWIG
-	void initializeState( SimTK::State& s );
-#endif
 	virtual void setup(Model& aModel);
 	//--------------------------------------------------------------------------
 	// COORDINATES

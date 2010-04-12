@@ -30,7 +30,7 @@
  */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Set.h>
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 
 
@@ -42,11 +42,11 @@ class Model;
 /**
  * A class for holding a set of coordinates.
  *
- * @authors Peter Loan
- * @version 1.0
+ * @authors Peter Loan, Ajay Seth
+ * @version 2.0
  */
 
-class OSIMSIMULATION_API CoordinateSet :	public Set<Coordinate>
+class OSIMSIMULATION_API CoordinateSet : public ModelComponentSet<Coordinate>
 {
 private:
 	void setNull();

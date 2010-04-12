@@ -168,7 +168,6 @@ void Muscle::updateFromXMLNode()
 	}
 	// Call base class now assuming _node has been corrected for current version
 	Object::updateFromXMLNode();
-	setupFromXML();
 }
 
 //_____________________________________________________________________________
@@ -211,14 +210,16 @@ void Muscle::setupProperties()
  *
  * @param aModel The model containing this muscle.
  */
-void Muscle::setup(Model& aModel){
-	Actuator::setup(aModel);
+void Muscle::setup(Model& aModel)
+{
+	CustomActuator::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)
 		return;
 
-	_path.setup(aModel, *this);
+	_path.setOwner(this);
+	_path.setup(aModel);
 }
 
 //_____________________________________________________________________________
@@ -232,7 +233,8 @@ void Muscle::postInit(Model& aModel) {
 	// Model::initSystem() is called, but other stuff needs to be done after. For
 	// now, the function is called both before and after; this should not have any
 	// adverse effects, but is not ideal...
-    _path.setup(aModel, *this);
+	_path.setOwner(this);
+    _path.setup(aModel);
 }
 
 void Muscle::initState( SimTK::State& s) const

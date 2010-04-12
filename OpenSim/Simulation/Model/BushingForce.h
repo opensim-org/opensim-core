@@ -114,12 +114,6 @@ public:
 	virtual Object* copy() const;
 	BushingForce& operator=(const BushingForce &aForce);
 	void copyData(const BushingForce &aForce);
-	virtual void setup(Model& aModel);
-
-	/**
-	 * Create a SimTK::Force::LinarBushing which implements this BushingForce.
-	 */
-	void createSystem(SimTK::MultibodySystem& system) const;
 
 	//SET 
 	void setBody1ByName(std::string aBodyName);
@@ -139,11 +133,17 @@ public:
 	*/
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
+protected:
+	virtual void setup(Model& aModel);
+	/**
+	 * Create a SimTK::Force::LinarBushing which implements this BushingForce.
+	 */
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+
 
 private:
 	void setNull();
 	void setupProperties();
-	friend class SimbodyEngine;
 
 //=============================================================================
 };	// END of class BushingForce

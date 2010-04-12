@@ -42,6 +42,7 @@
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
+#include "OpenSim/Simulation/Model/ForceSet.h"
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include "SimTKsimbody.h"
@@ -117,7 +118,7 @@ protected:
     /**
       * set of actuators that the controller controls
       */ 
-   Set<Actuator>  _actuatorSet;
+   ForceSet  _actuatorSet;
 
 
 //=============================================================================
@@ -203,6 +204,15 @@ protected:
 	 */
 	void copyData(const Controller &aController);
 
+   // for any post deseraialization intialization
+   virtual void setup(Model& model);
+
+   virtual void createSystem(SimTK::MultibodySystem& system) const {};
+
+   // for any intialization requiring a state or the complete system 
+   virtual void initState( SimTK::State& s) const {};
+
+   virtual void setDefaultsFromState(const SimTK::State& state) {};
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -267,28 +277,20 @@ public:
    // controller setup once the system is complete 
    virtual void setupSystem( SimTK::MultibodySystem& system); 
 
-   // for any post XML deseraialization intialization
-   virtual void setup(Model& model);
-
-   // for adding any components to the model
-   virtual void createSystem( SimTK::MultibodySystem& system); 
-
-   // for any intialization requiring a state or the complete system 
-   virtual void initState( SimTK::State& s);
 
    /** 
     * return the min an max times that a controller knows how to supply controlls for 
     */ 
-   virtual double getFirstTime() const;
-   virtual double getLastTime() const;
+	virtual double getFirstTime() const;
+	virtual double getLastTime() const;
 
-   virtual Set<Actuator>& updActuators();
-   virtual const Set<Actuator>& getActuatorSet() const;
+	virtual Set<Actuator>& updActuators();
+	virtual const Set<Actuator>& getActuatorSet() const;
 
-    virtual const Array<std::string>& getActuatorList() const { return _actuatorNameList; }
+	virtual const Array<std::string>& getActuatorList() const { return _actuatorNameList; }
     
-   friend class ControlSet;
-   friend class ControllerSet;
+	friend class ControlSet;
+	friend class ControllerSet;
 
 //=============================================================================
 };	// END of class Controller

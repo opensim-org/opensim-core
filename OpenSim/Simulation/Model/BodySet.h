@@ -78,7 +78,7 @@ public:
 	// UTILITIES
 	//--------------------------------------------------------------------------
 	void scale(const ScaleSet& aScaleSet, bool aScaleMass = false);
-	BodySet& copyFrom(const BodySet& aBodySet, Model& aModel);
+
 //=============================================================================
 };	// END of class BodySet
 //=============================================================================

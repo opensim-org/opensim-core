@@ -70,7 +70,7 @@ int testStates()
     ControlSetController* controller = new ControlSetController();
     controller->setControlSetFileName( "arm26_StaticOptimization_controls.xml" );
   
-    model.updControllerSet().append( controller );
+    model.addController( controller );
     State state = model.initSystem();
     Vector y1 = state.getY();
     model.equilibrateMuscles(state);

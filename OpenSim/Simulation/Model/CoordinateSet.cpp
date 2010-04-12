@@ -28,7 +28,7 @@
 
 #include "CoordinateSet.h"
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <OpenSim/Simulation/Model/Model.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -49,7 +49,7 @@ CoordinateSet::~CoordinateSet(void)
  * Default constructor of a CoordinateSet.
  */
 CoordinateSet::CoordinateSet() :
-	Set<Coordinate>()
+	ModelComponentSet<Coordinate>()
 {
 	setNull();
 }
@@ -59,7 +59,7 @@ CoordinateSet::CoordinateSet() :
  * Copy constructor of a CoordinateSet.
  */
 CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
-	Set<Coordinate>(aCoordinateSet)
+	ModelComponentSet<Coordinate>(aCoordinateSet)
 {
 	setNull();
 	*this = aCoordinateSet;
@@ -81,11 +81,18 @@ void CoordinateSet::setNull()
 void CoordinateSet::setup(Model& model)
 {
 	// Base class
-	Set<Coordinate>::setup();
+	ModelComponentSet<Coordinate>::setup(model);
 
-	// Do members
-	for (int i = 0; i < getSize(); i++)
-		get(i).setup(model);
+	// Append Coordinate from Joints coodrinate set to the model's set as pointers
+	setMemoryOwner(false);
+    setSize(0);
+
+	for(int i=0; i< model.getJointSet().getSize(); i++){
+		for(int j=0; j< model.getJointSet().get(i).numCoordinates(); j++){
+			// Append a pointer (address) otherwise the model will get a copy that will not be updated properly
+			append(&(model.getJointSet()[i].getCoordinateSet()[j]));
+		}
+	}
 
 }
 

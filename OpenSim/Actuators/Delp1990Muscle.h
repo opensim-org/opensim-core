@@ -207,7 +207,6 @@ public:
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 #endif
-	virtual void setup(Model& aModel);
 
 	virtual Function* getActiveForceLengthCurve() const;
 	virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);
@@ -219,6 +218,9 @@ public:
 	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
 	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, Actuator);
+
+protected:
+	virtual void setup(Model& aModel);
 
 private:
 	void setNull();

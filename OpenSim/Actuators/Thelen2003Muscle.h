@@ -229,8 +229,11 @@ public:
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
     virtual void equilibrate(SimTK::State& state) const;
 #endif
-	virtual void setup(Model& aModel);
+
 	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle, Actuator);
+
+protected:
+	virtual void setup(Model& aModel);
 
 private:
 	void setNull();

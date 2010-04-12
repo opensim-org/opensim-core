@@ -533,14 +533,9 @@ void PrescribedForce::copyData(const PrescribedForce& orig)
 
 void PrescribedForce::setup(Model& model)
 {
-	setModel(model);
+	CustomForce::setup(model);
 
 	// hook up body pointer to name
 	if (_model)
 		_body = &_model->updBodySet().get(_bodyName);
-}
-
-void PrescribedForce::setupFromXML()
-{
-	CustomForce::setupFromXML();
 }

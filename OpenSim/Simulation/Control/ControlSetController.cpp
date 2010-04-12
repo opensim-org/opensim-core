@@ -240,8 +240,7 @@ getFirstTime() const {
     }
 }
 
-double ControlSetController::
-getLastTime() const {
+double ControlSetController::getLastTime() const {
     Array<int> controlList;
     _controlSet->getControlList( "ControlLinear" , controlList );
     
@@ -256,7 +255,8 @@ getLastTime() const {
 // for any post XML desereialization intialization
 void ControlSetController::setup(Model& model)  
 {
-     _model = &model;
+	Controller::setup(model);
+
     SimTK_ASSERT( _controlsFileName!="" , "ControlSetController::setup controlsFileName is NULL");
 
     if(_controlsFileName!="Unassigned") {
@@ -268,11 +268,15 @@ void ControlSetController::setup(Model& model)
        std::cout << " ControlSetController:: no Control Set Specified" << std::endl;
     }
 
+     setActuators( _model->updActuators() );
+
 }
 // for adding any components to the model
-void ControlSetController::createSystem( SimTK::MultibodySystem& system )  {
+void ControlSetController::createSystem( SimTK::MultibodySystem& system ) const
+{
 }
+
 // for any intialization requiring a state or the complete system 
-void ControlSetController::initState( SimTK::State& s)  {
-     setActuators( _model->updActuators() );
+void ControlSetController::initState( SimTK::State& s)  const
+{
 }

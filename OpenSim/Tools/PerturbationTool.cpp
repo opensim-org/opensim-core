@@ -521,10 +521,10 @@ bool PerturbationTool::run()
 	  	  _model->computeEquilibriumForAuxiliaryStates(s);  
 	   }
        // TURN OFF CORRECTIVE SPRINGS
-       if(_body1Lin) _body1Lin->setOn(false);
-  	   if(_body1Tor) _body1Tor->setOn(false);
-  	   if(_body2Lin) _body2Lin->setOn(false);
-  	   if(_body2Tor) _body2Tor->setOn(false);
+       if(_body1Lin) _body1Lin->setDisabled(s, true);
+  	   if(_body1Tor) _body1Tor->setDisabled(s, true);
+  	   if(_body2Lin) _body2Lin->setDisabled(s, true);
+  	   if(_body2Tor) _body2Tor->setDisabled(s, true);
 
 		// INTEGRATE (1)
 		// This integration is to record the actuator forces applied during
@@ -539,10 +539,10 @@ bool PerturbationTool::run()
         _model->setPerturbForcesEnabled(true);
 
         // TURN ON CORRECTIVE SPRINGS
-        if(_body1Lin)  _body1Lin->setOn(true);
-  		if(_body1Tor)  _body1Tor->setOn(true);
-  		if(_body2Lin)  _body2Lin->setOn(true);
-  		if(_body2Tor)  _body2Tor->setOn(true);
+        if(_body1Lin)  _body1Lin->setDisabled(s, false);
+  		if(_body1Tor)  _body1Tor->setDisabled(s, false);;
+  		if(_body2Lin)  _body2Lin->setDisabled(s, false);;
+  		if(_body2Tor)  _body2Tor->setDisabled(s, false);;
 
         // restore state to initial conditions
         _yStore->getData(index, s.getNY(), &s.updY()[0]);

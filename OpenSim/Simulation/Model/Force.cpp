@@ -65,19 +65,6 @@ Force::Force(const Force &aForce) : ModelComponent(aForce)
 	copyData(aForce);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this Force and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Force.
- */
-Object* Force::copy() const
-{
-	Force *fc = new Force(*this);
-	return(fc);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -156,7 +143,7 @@ Force& Force::operator=(const Force &aForce)
 
 void Force::setup(Model& model)
 {
-	ModelComponent::setModel(model);
+	ModelComponent::setup(model);
 }
 
 int Force::getNumStateVariables() const

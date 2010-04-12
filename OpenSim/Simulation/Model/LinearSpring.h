@@ -81,8 +81,6 @@ protected:
 
 	const Body &_body;
 
-	/** On, off flag. */
-	bool _on;
 	/** Start time for the force. */
 	double _startTime;
 	/** End time for the force. */
@@ -94,6 +92,12 @@ protected:
 public:
 	LinearSpring(const Body &aBody, double start, double stop);	
 	virtual ~LinearSpring();
+	virtual Object* copy() const {throw Exception("LinearSping::copy() not implmented."); };
+
+protected:
+	virtual void setup(Model& aModel) {CustomForce::setup(aModel);} ;
+	virtual void initState(SimTK::State& state) const {};
+
 private:
 	void setNull();
 
@@ -116,8 +120,6 @@ public:
 	void getBValue(SimTK::Vec3& aB) const;
 	void setThreshold(double aThreshold);
 	double getThreshold() const;
-    void setOn( bool on_off ) { _on = on_off; }
-    bool getOn() const { return _on; }
 
 	//--------------------------------------------------------------------------
 	// UTILITY

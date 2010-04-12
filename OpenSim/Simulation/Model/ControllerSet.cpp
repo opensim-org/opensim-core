@@ -122,12 +122,6 @@ void ControllerSet::setNull()
 
 }
 
-void ControllerSet::setModel(Model* model) {
-    _model = model;
-    for(int i=0;i<getSize(); i++ ) {
-        get(i).setModel(*model);
-    }
-}
 //_____________________________________________________________________________
 /**
  * Copy this ControllerSet and return a pointer to the copy.
@@ -325,13 +319,7 @@ void ControllerSet::setDesiredStates( Storage* yStore)
 void ControllerSet::setup(Model& aModel)
 {
 	// BASE CLASS
-	Set<Controller>::setup();
-    _model = &aModel;
-
-	for (int i = 0; i < getSize(); i++) {
-		if(get(i).getIsEnabled() )
-			get(i).setup(aModel);
-    }
+	ModelComponentSet<Controller>::setup(aModel);
 }
 
 void ControllerSet::printInfo() const 
@@ -359,7 +347,7 @@ void ControllerSet::printInfo() const
 void ControllerSet::setupSystem(SimTK::MultibodySystem& system)  
 {
    for(int i=0;i<getSize(); i++ ) {
-       get(i).setModel(*_model);
+       //get(i).setModel(*_model);
        if(get(i).getIsEnabled() ) get(i).setupSystem(system);
    }
 }

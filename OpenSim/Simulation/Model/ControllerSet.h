@@ -105,7 +105,7 @@ public:
     virtual void storeControls( const SimTK::State& s, int step );
     virtual void printControlStorage( const std::string& fileName) const;
     virtual void setActuators( Set<Actuator>& );
-    virtual void setModel( Model* model );
+
     virtual bool check() const;
     virtual double getFirstTime() const;
     virtual double getLastTime() const;
