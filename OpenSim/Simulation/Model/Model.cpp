@@ -1,5 +1,5 @@
 // Model.cpp
-// Authors: Frank C. Anderson, Peter Loan, Ayman Habib
+// Authors: Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -101,8 +101,7 @@ Model::Model() :
 	setNull();
 	setupProperties();
     _analysisSet.setMemoryOwner(false);
-    
-	setup();
+	createGroundBodyIfNecessary();
 }
 //_____________________________________________________________________________
 /**
@@ -450,7 +449,9 @@ void Model::createSystem()
 void Model::addBody(OpenSim::Body *aBody) 
 {
 	updBodySet().append(aBody);
-	updJointSet();
+	updBodySet().setup(*this);
+	updJointSet().populate(*this);
+	updCoordinateSet().populate(*this);
 }
 
 //_____________________________________________________________________________
@@ -460,6 +461,7 @@ void Model::addBody(OpenSim::Body *aBody)
 void Model::addConstraint(OpenSim::Constraint *aConstraint) 
 {
 	updConstraintSet().append(aConstraint);
+	updConstraintSet().setup(*this);
 }
 
 //_____________________________________________________________________________
@@ -469,6 +471,7 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
 void Model::addForce(OpenSim::Force *aForce) 
 {
 	updForceSet().append(aForce);
+	updForceSet().setup(*this);
 }
 
 //_____________________________________________________________________________
@@ -478,6 +481,7 @@ void Model::addForce(OpenSim::Force *aForce)
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry) 
 {
 	updContactGeometrySet().append(aContactGeometry);
+	updContactGeometrySet().setup(*this);
 }
 
 //_____________________________________________________________________________
@@ -488,6 +492,7 @@ void Model::addController(Controller *aController)
 {
 	if (aController ) {
 	   updControllerSet().append(aController);
+	   updControllerSet().setup(*this);
     }
 }
 //_____________________________________________________________________________
@@ -501,30 +506,32 @@ void Model::setup()
 {
 	createGroundBodyIfNecessary();
 
-	// List of model coordinates are updated by setting up Joints
-	// Coordinates are owned by Joints and not the model's coordinate set
-	_coordinateSet.setMemoryOwner(false);
-    _coordinateSet.setSize(0);
-
+	// Update model components, not that Joints and Coordinates
+	// belong to Bodies, alough model lists are assembled for convenience
 	updBodySet().setup(*this);
-	updJointSet().setup(*this);
-    updCoordinateSet().setup(*this);
+
+    // Populate lists of model joints and coordinates according to the Bodies
+	// setup here who own the Joints which in turn own the model's Coordinates
+	// this list of Coordinates is now available for setting up constraints and forces
+	updJointSet().populate(*this);
+    updCoordinateSet().populate(*this);
+
     updConstraintSet().setup(*this);
     updMarkerSet().setup(*this);
     updContactGeometrySet().setup(*this);
-
-    updSimbodyEngine().setup(*this);
-
 	updForceSet().setup(*this);
 	updControllerSet().setup(*this);
+
+	// TODO: Get rid of the SimbodyEngine
+	updSimbodyEngine().setup(*this);
+
+
 
 	// The following code should be replaced by a more robust
 	// check for problems while creating the model.
 	if ( getNumBodies() > 0) {
 		_builtOK = true;
 	}
-
-	//cout << "Model " << getName() << " setup completed" << endl;
 }
 
 /**

@@ -750,7 +750,7 @@ bool testWeldJoint(bool randomizeBodyOrder)
 	}
 
 	for(int i=0; i<4; i++){
-		osimModel->addBody(&tempBodySet.get(order[i]));
+		osimModel->updBodySet().insert(i, &tempBodySet.get(order[i]));
 	}
 
 	// BAD: have to set memoryOwner to false or program will crash when this test is complete.

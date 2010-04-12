@@ -75,14 +75,12 @@ void CoordinateSet::setNull()
 {
 	setType("CoordinateSet");
 }
+	
 /**
- * Post construction initialization.
- */
-void CoordinateSet::setup(Model& model)
+  * Populate this flat list of Coordinates given a Model that has been setup
+  */
+void CoordinateSet::populate(Model& model)
 {
-	// Base class
-	ModelComponentSet<Coordinate>::setup(model);
-
 	// Append Coordinate from Joints coodrinate set to the model's set as pointers
 	setMemoryOwner(false);
     setSize(0);
@@ -93,8 +91,16 @@ void CoordinateSet::setup(Model& model)
 			append(&(model.getJointSet()[i].getCoordinateSet()[j]));
 		}
 	}
-
 }
+
+/**
+  * Populate this flat list of Coordinates given a Model that has been setup
+  */
+void CoordinateSet::setup(Model& model)
+{
+	ModelComponentSet<Coordinate>::setup(model);
+}
+
 
 //=============================================================================
 // OPERATORS

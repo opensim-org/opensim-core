@@ -78,12 +78,11 @@ class SimbodyEngine;
 //=============================================================================
 //=============================================================================
 /**
- * A base class that specifies the interface for a musculoskeletal model.
- * This class is based on Model, written by Frank C. Anderson for Realistic
- * Dynamics, Inc., but all of the data and methods relating to kinematics
- * engines or dynamics engines have been removed.
+ * A concrete class that specifies the interface to a musculoskeletal model.
+ * It provides methods create a new model and to add model components and to
+ * define their default behavior for simulation.
  *
- * @authors Frank C. Anderson, Peter Loan
+ * @authors Frank C. Anderson, Peter Loan, Ajay Seth
  * @version 1.0
  */
 

@@ -299,6 +299,7 @@ void CorrectionController::setup(Model& model)
 	TrackingController::setup(model);
 
 	_actuatorSet.setSize(0);
+	_actuatorSet.setMemoryOwner(false);
 	
 	std::cout << "\n CorrectionController::setupSystem begin num Forces=" <<  _model->getForceSet().getSize() << std::endl;
 	for(int i=0; i< _model->getForceSet().getSize(); i++) {
@@ -316,14 +317,23 @@ void CorrectionController::setup(Model& model)
 	const CoordinateSet& cs = _model->getCoordinateSet();
 	for(int i=0; i<cs.getSize(); i++) {
 		std::cout << " CorrectionController::setup() " <<  cs.get(i).getName()+"_corrector" << "  added " << std::endl;
-		CoordinateActuator *actuator = new CoordinateActuator();
-		actuator->setCoordinate(&cs.get(i));
-		actuator->setName(cs.get(i).getName()+"_corrector");
+		std::string name = cs.get(i).getName()+"_corrector";
+		CoordinateActuator *actuator = NULL;
+		if(_model->getForceSet().contains(name)){
+			actuator = (CoordinateActuator *)&_model->getForceSet().get(name);
+		}
+		else{
+			actuator = new CoordinateActuator();
+			actuator->setCoordinate(&cs.get(i));
+			actuator->setName(name);
+			_model->updForceSet().append(actuator);
+		}
+			
 		actuator->setOptimalForce(1.0);
 		actuator->setController(this);
 		actuator->setIsControlled(true);
 		actuator->setControlIndex(i);
-		_model->updForceSet().append(actuator);
+		
 		_actuatorSet.append(actuator);
    }
 	_numControls = _actuatorSet.getSize();

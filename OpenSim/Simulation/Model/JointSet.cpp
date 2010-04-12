@@ -120,13 +120,10 @@ void JointSet::createSystemForOneJoint(SimTK::MultibodySystem& system, int joint
 }
 
 /**
- * Post construction initialization.
+ * Populate the a flat list of Joints given a Model that has been setup
  */
-void JointSet::setup(Model& aModel)
+void JointSet::populate(Model& aModel)
 {
-	// Base class
-	ModelComponentSet::setup(aModel);
-
     setMemoryOwner(false);
     setSize(0);
 

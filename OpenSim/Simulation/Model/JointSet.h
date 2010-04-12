@@ -61,7 +61,11 @@ public:
 	JointSet(Model& model);
 	JointSet(const JointSet& aJointSet);
 	~JointSet(void);
-	void setup(Model& aModel);
+	/**
+	* Populate this flat list of Joints given a Model that has been setup
+	*/
+	void populate(Model& aModel);
+
 	// Somehow the following function is not exported from base template
     JointSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true) :
         ModelComponentSet<Joint>(model, aFileName, aUpdateFromXMLNode)
