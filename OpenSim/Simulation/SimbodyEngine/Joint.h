@@ -150,6 +150,10 @@ public:
 	virtual void getLocationInChild(SimTK::Vec3& rLocation) const {
 		rLocation = _location;
 	};
+	
+	const double& getLocationInParent(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _locationInParent[aXYZ]; }
+	const double& getLocationInChild(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }
+	
 	// Coordinate Set
 	virtual CoordinateSet& getCoordinateSet() const { return _coordinateSet; }
 

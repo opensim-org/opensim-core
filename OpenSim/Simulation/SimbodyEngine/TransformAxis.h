@@ -135,7 +135,8 @@ public:
 	virtual void setAxis(const SimTK::Vec3& aAxis);
 	virtual void getAxis(SimTK::Vec3& rAxis) const;
 	virtual void getAxis(double rAxis[]) const { _axis.getAs(rAxis); }
-	const SimTK::Vec3& getAxis() const { return _axis; }
+	const SimTK::Vec3& getAxis() const { return _axis; }	
+	const double& getAxis(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _axis[aXYZ]; }
 
 	// Setup the Transform Axis for to be used by its owning Joint
     virtual void setup(Joint& aJoint);
