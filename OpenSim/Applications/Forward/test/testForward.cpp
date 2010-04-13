@@ -185,13 +185,13 @@ void testGait2354WithController() {
 int main() {
     try {
 
-        //testPendulum();	// test manager/integration process
+        testPendulum();	// test manager/integration process
 		std::cout << "Pendulum test PASSED " << std::endl;
 
-		//testArm26();	// now add computation of controls and generation of muscle forces
+		testArm26();	// now add computation of controls and generation of muscle forces
 		std::cout << "arm26 test PASSED " << std::endl;
 
-		//testGait2354();    //finally include applied ground reactions forces 
+		testGait2354();    //finally include applied ground reactions forces 
 		std::cout << "gait2354 test PASSED " << std::endl;
 
 		testGait2354WithController();

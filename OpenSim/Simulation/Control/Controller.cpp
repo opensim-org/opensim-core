@@ -254,10 +254,6 @@ void Controller:: setup(Model& model)
 	_actuatorSet.setup(*_model);
 }
 
-// controller setup once the system is complete 
-void Controller::setupSystem( SimTK::MultibodySystem& system) {} 
-
-
 // makes a request for which actuators a controller suports
 void Controller::setActuators( Set<Actuator>& actuators ) {
 	_actuatorSet.setSize(0);

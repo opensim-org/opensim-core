@@ -344,11 +344,11 @@ void ControllerSet::printInfo() const
    }
 }
 
-void ControllerSet::setupSystem(SimTK::MultibodySystem& system)  
+void ControllerSet::createSystem(SimTK::MultibodySystem& system)  
 {
    for(int i=0;i<getSize(); i++ ) {
        //get(i).setModel(*_model);
-       if(get(i).getIsEnabled() ) get(i).setupSystem(system);
+       if(get(i).getIsEnabled() ) get(i).createSystem(system);
    }
 }
 

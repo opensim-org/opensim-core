@@ -274,9 +274,6 @@ public:
 
     virtual void setActuators( Set<Actuator>& actuators );
 
-   // controller setup once the system is complete 
-   virtual void setupSystem( SimTK::MultibodySystem& system); 
-
 
    /** 
     * return the min an max times that a controller knows how to supply controlls for 

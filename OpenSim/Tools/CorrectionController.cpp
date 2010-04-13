@@ -289,7 +289,7 @@ void CorrectionController::setActuators( Set<Actuator>& as ) {
     return;
 }
 
-void CorrectionController::setupSystem(SimTK::MultibodySystem& system)
+void CorrectionController::createSystem(SimTK::MultibodySystem& system) const
 { 
 }
 
@@ -301,11 +301,11 @@ void CorrectionController::setup(Model& model)
 	_actuatorSet.setSize(0);
 	_actuatorSet.setMemoryOwner(false);
 	
-	std::cout << "\n CorrectionController::setupSystem begin num Forces=" <<  _model->getForceSet().getSize() << std::endl;
+	std::cout << "\n CorrectionController::setup begin num Forces=" <<  _model->getForceSet().getSize() << std::endl;
 	for(int i=0; i< _model->getForceSet().getSize(); i++) {
         std::cout << "Force " << i << " = "<< _model->getForceSet().get(i).getName() << std::endl;
 	}
-	std::cout << "\n CorrectionController::setupSystem begin num Actuators=" <<  _model->getActuators().getSize() << std::endl;
+	std::cout << "\n CorrectionController::setup begin num Actuators=" <<  _model->getActuators().getSize() << std::endl;
 	for(int i=0; i< _model->getActuators().getSize(); i++) {
         std::cout << "Actuator " << i << " = "<< _model->getActuators().get(i).getName() << std::endl;
 	}
@@ -341,10 +341,10 @@ void CorrectionController::setup(Model& model)
 	//Make sure to perform any setup required by actuators added to the model by this controller
 	_actuatorSet.setup(model);
 
-	printf(" CorrectionController::setupSystem end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
+	printf(" CorrectionController::setup end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
 }
 
 // for any intialization requiring a state or the complete system 
-void CorrectionController::initState( SimTK::State& s) 
+void CorrectionController::initState( SimTK::State& s) const
 {
 }

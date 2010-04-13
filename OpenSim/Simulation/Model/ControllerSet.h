@@ -115,7 +115,7 @@ public:
 	virtual void setup(Model& aModel);
 
     // post system creation setup
-    virtual void setupSystem(SimTK::MultibodySystem& system);
+    virtual void createSystem(SimTK::MultibodySystem& system);
 
      virtual void printInfo() const;
 //=============================================================================

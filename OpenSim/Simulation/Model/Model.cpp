@@ -356,16 +356,14 @@ SimTK::State& Model::initSystem()
 	createSystem();
     getSystem().realizeTopology();
     SimTK::State& s = getSystem().updDefaultState();
+
 	// The folllowing line is commented out as it removes all forces that were
 	// added to the system during realizeTopology() 
     //_matter->setUseEulerAngles(s, true);
 
-    getSystem().realizeModel(s);
-	//std::cout << s.toString() << endl;
-
     initState(s);
     getSystem().realize(s, Stage::Position );
-    _analysisSet.setModel(*this);
+
 
     updControllerSet().setActuators(updActuators());
     //updControllerSet().constructStorage();
@@ -427,10 +425,7 @@ void Model::createSystem()
 
     
     static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
-
-	// controllers perform setup that requires a completed system (ie. all generalized coordinates )
-    updControllerSet().setupSystem( *_system );
-    
+   
 	// controllers add their parts to the System. 
     static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
 }
@@ -518,7 +513,7 @@ void Model::setup()
 	// TODO: Get rid of the SimbodyEngine
 	updSimbodyEngine().setup(*this);
 
-
+	updAnalysisSet().setModel(*this);
 
 	// The following code should be replaced by a more robust
 	// check for problems while creating the model.

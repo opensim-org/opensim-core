@@ -133,15 +133,19 @@ public:
 	//--------------------------------------------------------------------------
 
     virtual double computeControl(const SimTK::State& s, int index) const;
-	// controller setup once the system is complete 
-	virtual void setupSystem( SimTK::MultibodySystem& system);   
+
 
 protected:
 	// for any post XML deseraialization intialization
 	virtual void setup(Model& model);
 
+	// controller creation once the setup is complete 
+	virtual void createSystem( SimTK::MultibodySystem& system) const;   
+
 	// for any intialization requiring a state or the complete system 
-	virtual void initState( SimTK::State& s);
+	virtual void initState( SimTK::State& s) const;
+
+
 
 //=============================================================================
 };	// END of class CorrectionController
