@@ -47,12 +47,18 @@
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
+
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
+#include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
+#include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
+
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Common/LinearFunction.h>
+#include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include <OpenSim/Common/FunctionAdapter.h>
 #include "SimTKsimbody.h"
@@ -195,7 +201,8 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
 {
     bool status = true;
 	
-	Vector q_err = q_osim;
+	Vector q_err = q_sb;
+	Vector u_err = u_sb;
 
 	int nq = q_osim.size();
 	if(q_sb.size() > nq){ // we have an unused quaternion slot in Simbody
@@ -214,10 +221,17 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
 		}
 	}
 	else{
-		q_err = q_sb - q_osim;
+		if(nq > q_sb.size()){ // OpenSim using constrains
+			q_err[0] = q_sb[0] - q_osim[0];
+			q_err[1] = q_sb[1] - q_osim[1];
+			u_err[0] = u_sb[0] - u_osim[0];
+			u_err[1] = u_sb[1] - u_osim[1];
+		}
+		else{
+			q_err = q_sb - q_osim;
+			u_err = u_sb - u_osim;
+		}
 	}
-    
-	Vector u_err = u_sb - u_osim;
 
 	//cout<<"\nSimbody - OpenSim:"<<endl;
 	//q_err.dump("Diff q's:");
@@ -260,7 +274,14 @@ bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osi
 		y.dump("simbody:");
 	}
 	else{
-		osim_state.updY() = state.getY();
+		if(nq == 2*nq_sb){ //more coordinates because OpenSim model is constrained
+			osim_state.updY()[0] = state.getY()[0];
+			osim_state.updY()[1] = state.getY()[1];
+			osim_state.updY()[nq] = state.getY()[nq_sb];
+			osim_state.updY()[nq+1] = state.getY()[nq_sb+1];
+		}
+		else	
+			osim_state.updY() = state.getY();
 	}
 
 	//==========================================================================================================
@@ -454,8 +475,186 @@ bool testPointOnLineConstraint()
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
 	return (compareSimulations(system, state, osimModel, osim_state));
-
 } // end testPointOnLineConstraint
+
+
+bool testCoordinateCouplerConstraint()
+{
+	cout << endl;
+	cout << "=================================================================" << endl;
+	cout << " OpenSim CoordinateCouplerConstraint vs. FunctionBasedMobilizer  " << endl;
+	cout << "=================================================================" << endl;
+
+	// Define spline data for the custom knee joint
+	int npx = 12;
+	double angX[] = {-2.094395102393, -1.745329251994, -1.396263401595, -1.047197551197, -0.698131700798, -0.349065850399, -0.174532925199, 0.197344221443, 0.337394955864, 0.490177570472, 1.521460267071, 2.094395102393};
+	double kneeX[] = {-0.003200000000, 0.001790000000, 0.004110000000, 0.004100000000, 0.002120000000, -0.001000000000, -0.003100000000, -0.005227000000, -0.005435000000, -0.005574000000, -0.005435000000, -0.005250000000};
+	int npy = 7;
+	double angY[] = {-2.094395102393, -1.221730476396, -0.523598775598, -0.349065850399, -0.174532925199, 0.159148563428, 2.094395102393};
+	double kneeY[] = {-0.422600000000, -0.408200000000, -0.399000000000, -0.397600000000, -0.396600000000, -0.395264000000, -0.396000000000 };
+
+
+	for(int i = 0; i<npy; i++) {
+		// Spline data points from experiment w.r.t. hip location. Change to make it w.r.t knee location
+		kneeY[i] += (-kneeInFemur[1]+hipInFemur[1]); 
+	}
+
+	NaturalCubicSpline tx(npx, angX, kneeX);
+	NaturalCubicSpline ty(npy, angY, kneeY);;
+
+	// Define the functions that specify the FunctionBased Mobilized Body.
+	std::vector<std::vector<int> > coordIndices;
+	std::vector<const SimTK::Function*> functions;
+	std::vector<bool> isdof(6,false);
+
+	// Set the 1 spatial rotation about Z-axis
+	isdof[2] = true;  //rot Z
+	int nm = 0;
+	for(int i=0; i<6; i++){
+		if(isdof[i]) {
+			Vector coeff(2);
+			coeff[0] = 1;
+			coeff[1] = 0;
+			std::vector<int> findex(1);
+			findex[0] = nm++;
+			functions.push_back(new SimTK::Function::Linear(coeff));
+			coordIndices.push_back(findex);
+		}
+		else if(i==3 || i ==4){
+			std::vector<int> findex(1,0);
+			if(i==3)
+				functions.push_back(tx.createSimTKFunction());
+			else
+				functions.push_back(ty.createSimTKFunction());
+
+			coordIndices.push_back(findex);	
+		}
+		else{
+			std::vector<int> findex(0);
+			functions.push_back(new SimTK::Function::Constant(0, 0));
+			coordIndices.push_back(findex);
+		}
+	}
+
+	// Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+	//system.updDefaultSubsystem().addEventReporter(new VTKEventReporter(system, 0.01));
+
+	// Thigh connected by hip
+	MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInGround), 
+		SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), SimTK::Transform(hipInFemur));
+	//Function-based knee connects shank
+	MobilizedBody::FunctionBased shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia), nm, functions, coordIndices);
+	//MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+
+	// Simbody model state setup
+	system.realizeTopology();
+	State state = system.getDefaultState();
+	matter.setUseEulerAngles(state, false);
+    system.realizeModel(state);
+
+	//==========================================================================================================
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+	
+	OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
+	//OpenSim::Body osim_thigh;
+	//osim_thigh.setName("thigh");
+
+	// Define hip coordinates and axes for custom joint
+	SpatialTransform hipTransform;
+	hipTransform[2].setCoordinateNames(OpenSim::Array<std::string>("hip_q0", 1, 1));
+	hipTransform[2].setFunction(new LinearFunction());
+
+	// create custom hip joint
+	CustomJoint hip("", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0), hipTransform);
+
+	// Add the thigh body which now also contains the hip joint to the model
+	osimModel->addBody(&osim_thigh);
+
+	// Add another body via a knee joint
+	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+	// Define knee coordinates and axes for custom joint spatial transform
+	SpatialTransform kneeTransform;
+	string knee_q_name = "knee_q";
+	string tx_name = "knee_tx";
+	string ty_name = "knee_ty";
+
+	Array<string> indepCoords(knee_q_name, 1, 1);
+
+	//  knee flexion/extension
+	kneeTransform[2].setCoordinateNames(indepCoords);
+	kneeTransform[2].setFunction(new LinearFunction());
+	// translation X
+	kneeTransform[3].setCoordinateNames(OpenSim::Array<std::string>(tx_name, 1, 1));
+	kneeTransform[3].setFunction(new LinearFunction());
+	// translation Y
+	kneeTransform[4].setCoordinateNames(OpenSim::Array<std::string>(ty_name, 1, 1));
+	kneeTransform[4].setFunction(new LinearFunction());
+
+	// create custom knee joint
+	CustomJoint knee("", osim_thigh, kneeInFemur, Vec3(0), osim_shank, kneeInTibia, Vec3(0), kneeTransform);
+
+	// Add the shank body which now also contains the knee joint to the model
+	osimModel->addBody(&osim_shank);
+
+	// Constrain the knee translations to follow the desired manifold
+	CoordinateCouplerConstraint knee_tx_constraint;
+	CoordinateCouplerConstraint knee_ty_constraint;
+
+	knee_tx_constraint.setIndependentCoordinateNames(indepCoords);
+	knee_ty_constraint.setIndependentCoordinateNames(indepCoords);
+
+	knee_tx_constraint.setDependentCoordinateName(tx_name);
+	knee_ty_constraint.setDependentCoordinateName(ty_name);
+
+	knee_tx_constraint.setFunction(tx);
+	knee_ty_constraint.setFunction(ty);
+
+	// Add the constraints
+	osimModel->addConstraint(&knee_tx_constraint);
+	osimModel->addConstraint(&knee_ty_constraint);
+
+	//Add analyses before setting up the model for simulation
+	Kinematics *kinAnalysis = new Kinematics(osimModel);
+	kinAnalysis->setInDegrees(false);
+	osimModel->addAnalysis(kinAnalysis);
+
+	// OpenSim model must realize the topology to get valid osim_state
+	osimModel->setGravity(gravity_vec);
+
+	PointKinematics *pointKin = new PointKinematics(osimModel);
+	// Get the point location of the shank origin in space
+	pointKin->setBodyPoint("shank", Vec3(0));
+	osimModel->addAnalysis(pointKin);
+
+	// Model cannot own model components created on the stack in this test program
+	osimModel->disownAllComponents();
+
+	// write out the model to file
+	osimModel->print("testCouplerConstraint.osim");
+
+	//wipe-out the model just constructed
+	delete osimModel;
+
+	// reconstruct from the model file
+	osimModel = new Model("testCouplerConstraint.osim");
+	
+	// Need to setup model before adding an analysis since it creates the AnalysisSet
+	// for the model if it does not exist.
+	SimTK::State osim_state = osimModel->initSystem();
+
+	//==========================================================================================================
+	// Compare Simbody system and OpenSim model simulations
+	return( compareSimulations(system, state, osimModel, osim_state) );
+}
+
 
 int main()
 {
@@ -470,6 +669,13 @@ int main()
 	if(  !testPointOnLineConstraint()) {
         status = 1;
         cout << " testPointOnLineConstraint FAILED " << endl;
+    }	
+
+	
+	// Compare behavior of CoordinateCouplerConstraint as a custom knee 
+	if(  !testCoordinateCouplerConstraint()) {
+        status = 1;
+        cout << " testCoordinateCouplerConstraint FAILED " << endl;
     }	
 
 	return status;

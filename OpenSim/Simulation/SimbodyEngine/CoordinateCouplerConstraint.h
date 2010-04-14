@@ -101,6 +101,8 @@ public:
 	void setDependentCoordinateName(const std::string &aCoordName) { _dependentCoordName = aCoordName; }
 	const std::string& getDependentCoordinateName() const { return _dependentCoordName; }
 	Function& getFunction() const {return *_function; }
+	void setFunction(const Function &aFunction)  { _function = (Function*) aFunction.copy(); }
+	void setFunction(Function *aFunction)  { _function = aFunction; }
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
@@ -112,7 +114,7 @@ protected:
 	/**
 	 * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
 	 */
-	void createSystem(SimTK::MultibodySystem& system) const;
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
 
 private:
 	void setNull();

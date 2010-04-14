@@ -219,6 +219,25 @@ void CoordinateCouplerConstraint::setup(Model& aModel)
 {
 	// Base class
 	Constraint::setup(aModel);
+
+	string errorMessage;
+
+	// Look up the bodies and coordinates being coupled by name in the
+	// model and keep lists of their indices
+	for(int i=0; i<_independentCoordNames.getSize(); i++){
+		if (!_model->updCoordinateSet().contains(_independentCoordNames[i])) {
+			errorMessage = "Coordinate coupler: unknown independent coordinate " ;
+			errorMessage += _independentCoordNames[i];
+			throw (Exception(errorMessage));
+		}
+	}
+
+	// Last coordinate in the coupler is the dependent coordinate
+	if (!_model->updCoordinateSet().contains(_dependentCoordName)) {
+		errorMessage = "Coordinate coupler: unknown dependent coordinate " ;
+		errorMessage += _dependentCoordName;
+		throw (Exception(errorMessage));
+	}
 }
 
 
@@ -234,28 +253,19 @@ void CoordinateCouplerConstraint::createSystem(SimTK::MultibodySystem& system) c
 	// Look up the bodies and coordinates being coupled by name in the
 	// model and keep lists of their indices
 	for(int i=0; i<_independentCoordNames.getSize(); i++){
-		if (!_model->updCoordinateSet().contains(_independentCoordNames[i])) {
-			errorMessage = "Coordinate coupler: unknown independent coordinate " ;
-			errorMessage += _independentCoordNames[i];
-			throw (Exception(errorMessage));
-		}
+		// Error checking was handled in setup()
 	    Coordinate& aCoordinate = _model->updCoordinateSet().get(_independentCoordNames[i]);
 		mob_bodies.push_back(aCoordinate._bodyIndex);
 		mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilityIndex));
 	}
 
 	// Last coordinate in the coupler is the dependent coordinate
-	if (!_model->updCoordinateSet().contains(_dependentCoordName)) {
-		errorMessage = "Coordinate coupler: unknown dependent coordinate " ;
-		errorMessage += _dependentCoordName;
-		throw (Exception(errorMessage));
-	}
 	Coordinate& aCoordinate = _model->updCoordinateSet().get(_dependentCoordName);
 	mob_bodies.push_back(aCoordinate._bodyIndex);
 	mob_qs.push_back(SimTK::MobilizerQIndex(aCoordinate._mobilityIndex));
 
 	if (!mob_qs.size() & (mob_qs.size() != mob_bodies.size())) {
-		errorMessage = "Coordinate coupler requires at least one body and coordinate." ;
+		errorMessage = "CoordinateCouplerConstraint:: requires at least one body and coordinate." ;
 		throw (Exception(errorMessage));
 	}
 
