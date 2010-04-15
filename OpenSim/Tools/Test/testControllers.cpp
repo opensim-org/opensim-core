@@ -50,9 +50,11 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include <OpenSim/Common/FunctionAdapter.h>
+#include <OpenSim/Common/Constant.h>
 #include <OpenSim/Tools/CorrectionController.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 
 using namespace OpenSim;
@@ -161,6 +163,98 @@ bool testControlSetControllerOnBlock()
 
 
 //==========================================================================================================
+bool testPrescribedControllerOnBlock()
+{
+	bool status = true;
+
+		// Create a new OpenSim model
+	Model osimModel;
+	osimModel.setName("osimModel");
+
+	// Get the ground body
+	OpenSim::Body& ground = osimModel.getGroundBody();
+
+	// Create a 20 kg, 0.1 m^3 block body
+	double blockMass = 20.0, blockSideLength = 0.1;
+	Vec3 blockMassCenter(0), groundOrigin(0), blockInGround(0, blockSideLength/2, 0);
+	Inertia blockIntertia = Inertia::brick(blockSideLength, blockSideLength, blockSideLength);
+
+	OpenSim::Body block("block", blockMass, blockMassCenter, blockMass*blockIntertia);
+
+	//Create a free joint with 6 degrees-of-freedom
+	SimTK::Vec3 noRotation(0);
+	SliderJoint blockToGround("",ground, blockInGround, noRotation, block, blockMassCenter, noRotation);
+	// Create 6 coordinates (degrees-of-freedom) between the ground and block
+	CoordinateSet& jointCoordinateSet = blockToGround.getCoordinateSet();
+	double posRange[2] = {-1, 1};
+	jointCoordinateSet[0].setName("xTranslation");
+	jointCoordinateSet[0].setMotionType(Coordinate::Translational);
+	jointCoordinateSet[0].setRange(posRange);
+
+	// Add the block body to the model
+	osimModel.addBody(&block);
+
+	// Define a single coordinate actuator.
+	CoordinateActuator actuator(jointCoordinateSet[0].getName());
+	actuator.setName("actuator");
+
+	// Add the actuator to the model
+	osimModel.addForce(&actuator);
+
+	double initialTime = 0;
+	double finalTime = 1.0;
+
+	// Define the initial and final control values
+	double controlForce = 100;
+
+	// Create a prescribed controller that simply applies a function of the force
+	PrescribedController actuatorController;
+	actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
+
+	// add the controller to the model
+	osimModel.addController(&actuatorController);
+
+	// Initialize the system and get the state representing the state system
+	SimTK::State& si = osimModel.initSystem();
+
+	// Specify zero slider joint kinematic states
+	CoordinateSet &coordinates = osimModel.updCoordinateSet();
+	coordinates[0].setValue(si, 0.0);    // x translation
+	coordinates[0].setSpeedValue(si, 0.0);			 // x speed
+
+	// Create the integrator and manager for the simulation.
+	double accuracy = 1.0e-3;
+	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
+	integrator.setMaximumStepSize(100);
+	integrator.setMinimumStepSize(1.0e-6);
+	integrator.setAccuracy(accuracy);
+	integrator.setAbsoluteTolerance(1.0e-4);
+	Manager manager(osimModel, integrator);
+
+	// Integrate from initial time to final time
+	manager.setInitialTime(initialTime);
+	manager.setFinalTime(finalTime);
+	std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+	manager.integrate(si);
+
+	si.getQ().dump("Final position:");
+	double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce/blockMass)*finalTime*finalTime);
+	if (x_err > accuracy){
+		cout << "PrescribedController failed to produce the expected motion of block." << endl;
+		status = false;
+	}
+
+	// Save the simulation results
+	Storage states(manager.getStateStorage());
+	states.print("block_push.sto");
+
+	osimModel.disownAllComponents();
+
+	return status;
+}// end of testPrescribedControllerOnBlock()
+
+
+//==========================================================================================================
 bool testCorrectionControllerOnBlock()
 {
 	bool status = true;
@@ -223,7 +317,12 @@ int main()
 	if(  !testControlSetControllerOnBlock()) {
         status = 1;
         cout << " testControlSetControllerOnBlock FAILED " << endl;
-    }	
+    }
+
+	if(! testPrescribedControllerOnBlock()) {
+        status = 1;
+        cout << " testPrescribedControllerOnBlock FAILED " << endl;
+    }
 
 	if(  !testCorrectionControllerOnBlock()) {
         status = 1;
