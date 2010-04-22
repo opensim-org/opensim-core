@@ -368,7 +368,7 @@ OpenSim::Array<double> BushingForce::getRecordValues(const SimTK::State& state) 
 	values.append(3, &torques[0]);
 
 	forces = bodyForces(_model->getBodySet().get(_body2Name).getIndex())[1];
-	torques = bodyForces(_model->getBodySet().get(_body1Name).getIndex())[0];
+	torques = bodyForces(_model->getBodySet().get(_body2Name).getIndex())[0];
 
 	values.append(3, &forces[0]);
 	values.append(3, &torques[0]);
