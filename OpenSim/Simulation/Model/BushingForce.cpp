@@ -219,7 +219,7 @@ void BushingForce::setupProperties()
 	_rotDampingProp.setValue(Vec3(0));
 	_propertySet.append(&_rotDampingProp);
 
-	_transDampingProp.setName("rotational_damping");
+	_transDampingProp.setName("translational_damping");
 	_transDampingProp.setValue(Vec3(0));
 	_propertySet.append(&_transDampingProp);
 }
