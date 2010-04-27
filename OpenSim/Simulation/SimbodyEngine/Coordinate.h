@@ -137,9 +137,6 @@ protected:
 	/** Simbody joint that owns this coordinate. */
 	Joint const *_joint;
 
-    /** OpenSim model that contains this coordintate */
-    Model* _model;
-
 //=============================================================================
 // METHODS
 //=============================================================================

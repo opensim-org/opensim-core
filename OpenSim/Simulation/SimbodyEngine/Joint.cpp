@@ -232,6 +232,8 @@ void Joint::setup(Model& aModel)
 	}
 
 	_coordinateSet.setup(aModel);
+	for(int i = 0; i< _coordinateSet.getSize(); i++)
+		_coordinateSet[i].setJoint(*this);
 }
 
 //=============================================================================
@@ -542,8 +544,6 @@ void Joint::createSystem(SimTK::MultibodySystem& system) const
 	for(int iq=0;iq<nq;iq++) {
 		// Coordinate
 		Coordinate &q = (Coordinate&)_coordinateSet.get(iq);
-		q.setJoint(*this);
-        q._model = _model;
 		q._bodyIndex = getMobilizedBodyIndex(_body);
 		// The mobility index is the same as the order in which the coordinate appears in the coordinate set.
 		// The functions (and their dependencies) determine how the coordinates gets used when constructing
