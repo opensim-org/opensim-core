@@ -90,7 +90,7 @@ void ConstraintSet::setup(Model& aModel)
 	Set<Constraint>::setup();
 
 	// Do members
-	ModelComponentSet::setup(aModel);
+	ModelComponentSet<Constraint>::setup(aModel);
 
 }
 //=============================================================================

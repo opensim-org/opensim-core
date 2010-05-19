@@ -161,6 +161,7 @@ Body::Body(const AbstractBody &aBody) :
 	setupProperties();
 	copyData(aBody);
 }
+*/
 
 //_____________________________________________________________________________
 /**
@@ -228,6 +229,7 @@ void Body::copyData(const AbstractBody &aBody)
 	// Displayer
 	_displayer = *aBody.getDisplayer();
 }
+*/
 
 //_____________________________________________________________________________
 /**

@@ -92,7 +92,7 @@ void BodySet::setup(Model& aModel)
 	Set<Body>::setup();
 
 	// Do members
-	ModelComponentSet::setup(aModel);
+	ModelComponentSet<Body>::setup(aModel);
 
 }
 

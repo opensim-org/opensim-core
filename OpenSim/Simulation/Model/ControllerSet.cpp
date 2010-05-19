@@ -329,7 +329,7 @@ void ControllerSet::printInfo() const
     for(int i=0;i<getSize(); i++ ) {
       Controller& c = get(i);
       if( c.getIsEnabled() ) {
-          printf(" controller %d =%x %s model=%x \n", i+1, &c, c.getName().c_str(), &c.getModel() );
+          printf(" controller %d =%x %s model=%x \n", i+1, (void*)&c, c.getName().c_str(), (void*)&c.getModel() );
 
           const Set<Actuator>& actSet = c.getActuatorSet();
           if( actSet.getSize() > 0 ) {
@@ -339,7 +339,7 @@ void ControllerSet::printInfo() const
                }
            }
       } else { 
-         printf(" controller %d =%x %s model=%x DISABLED \n", i+1, &c, c.getName().c_str(), &c.getModel() );
+         printf(" controller %d =%x %s model=%x DISABLED \n", i+1, (void*)&c, c.getName().c_str(), (void*)&c.getModel() );
       }
    }
 }
