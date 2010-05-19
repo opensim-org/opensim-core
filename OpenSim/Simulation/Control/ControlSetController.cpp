@@ -255,7 +255,6 @@ double ControlSetController::getLastTime() const {
 // for any post XML desereialization intialization
 void ControlSetController::setup(Model& model)  
 {
-	Controller::setup(model);
 
     SimTK_ASSERT( _controlsFileName!="" , "ControlSetController::setup controlsFileName is NULL");
 
@@ -268,7 +267,9 @@ void ControlSetController::setup(Model& model)
        std::cout << " ControlSetController:: no Control Set Specified" << std::endl;
     }
 
-     setActuators( _model->updActuators() );
+    // Controller::setup calls setActuators() which requires _controlSet to be valid
+    // so call setup() after the _controlSet constructor has been called
+	Controller::setup(model);
 
 }
 // for adding any components to the model

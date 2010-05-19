@@ -1,6 +1,6 @@
 AbstractTool block_hanging_from_muscle loading model 'block_hanging_from_muscle.osim'
 Updating Model file to latest format...
-Created model block_hanging_from_muscle from file block_hanging_from_muscle.osim
+Loaded model block_hanging_from_muscle from file block_hanging_from_muscle.osim
 Running tool block_hanging_from_muscle.
 No external loads will be applied (external loads file not specified).
 
@@ -40,7 +40,7 @@ Integrating from 0 to 0.5
 Printing results of investigation block_hanging_from_muscle to ForwardResultsDYNAMIC.
 AbstractTool block_hanging_from_muscle loading model 'block_hanging_from_muscle.osim'
 Updating Model file to latest format...
-Created model block_hanging_from_muscle from file block_hanging_from_muscle.osim
+Loaded model block_hanging_from_muscle from file block_hanging_from_muscle.osim
 Running tool block_hanging_from_muscle.
 No external loads will be applied (external loads file not specified).
 
@@ -106,7 +106,7 @@ Setting cmc controller to not use verbose printing.
 ================================================================
 ================================================================
 Computing initial values for muscles states (activation, length)
-Start time = Thu Feb  4 18:12:07 2010
+Start time = Wed May 19 16:26:00 2010
 
 ================================================================
 CMC.computeControls:  t = 0
@@ -116,9 +116,9 @@ CMC.computeControls:  t = 0
 Finished computing initial states:
 -----------------------------------------------------------------
 =================================================================
-Start time   = Thu Feb  4 18:12:07 2010
-Finish time  = Thu Feb  4 18:12:08 2010
-Elapsed time = 1 seconds.
+Start time   = Wed May 19 16:26:00 2010
+Finish time  = Wed May 19 16:26:09 2010
+Elapsed time = 9 seconds.
 =================================================================
 
 
@@ -127,7 +127,7 @@ Elapsed time = 1 seconds.
 ================================================================
 Using CMC to track the specified kinematics
 Integrating from 0.03 to 0.5
-Start time = Thu Feb  4 18:12:08 2010
+Start time = Wed May 19 16:26:09 2010
 ================================================================
 CMC.computeControls:  t = 0.03
 CMC.computeControls:  t = 0.07
@@ -143,9 +143,9 @@ CMC.computeControls:  t = 0.43
 ----------------------------------------------------------------
 Finished tracking the specified kinematics
 =================================================================
-Start time   = Thu Feb  4 18:12:08 2010
-Finish time  = Thu Feb  4 18:12:12 2010
-Elapsed time = 4 seconds.
+Start time   = Wed May 19 16:26:09 2010
+Finish time  = Wed May 19 16:26:37 2010
+Elapsed time = 28 seconds.
 ================================================================
 
 
@@ -154,7 +154,7 @@ Storage: file=CMCResultsDYNAMIC/block_hanging_from_muscle_controls.sto (nr=432 n
 Storage: file=block_hanging_from_muscle_controls.sto (nr=5001 nc=2)
 AbstractTool subject01_walk1 loading model 'subject01_simbody_adjusted.osim'
 Updating Model file to latest format...
-Created model subject01 from file subject01_simbody_adjusted.osim
+Loaded model subject01 from file subject01_simbody_adjusted.osim
 Adding force object set from gait2354_CMC_Actuators.xml
 Running tool subject01_walk1.
 
@@ -188,12 +188,12 @@ body[2] = femur_r (mass: 8.98404) (inertia: 0.170221 0 0 0 0.044621 0 0 0 0.1795
 body[3] = tibia_r (mass: 3.581) (inertia: 0.0475694 0 0 0 0.00481357 0 0 0 0.04823)
 body[4] = talus_r (mass: 0.096588) (inertia: 0.00119861 0 0 0 0.00119861 0 0 0 0.00119861)
 body[5] = calcn_r (mass: 1.20735) (inertia: 0.00142647 0 0 0 0.00397375 0 0 0 0.00417753)
-body[6] = toes_r (mass: 0.20921) (inertia: 0.00010189 0 0 0 0.00020378 0 0 0 0.00101891)
+body[6] = toes_r (mass: 0.20921) (inertia: 0.00010189 0 0 0 0.00020378 0 0 0 0.00030555)
 body[7] = femur_l (mass: 8.98404) (inertia: 0.170221 0 0 0 0.044621 0 0 0 0.179501)
 body[8] = tibia_l (mass: 3.581) (inertia: 0.0475694 0 0 0 0.00481357 0 0 0 0.04823)
 body[9] = talus_l (mass: 0.096588) (inertia: 0.00119861 0 0 0 0.00119861 0 0 0 0.00119861)
 body[10] = calcn_l (mass: 1.20735) (inertia: 0.00142647 0 0 0 0.00397375 0 0 0 0.00417753)
-body[11] = toes_l (mass: 0.20921) (inertia: 0.00010189 0 0 0 0.00020378 0 0 0 0.00101891)
+body[11] = toes_l (mass: 0.20921) (inertia: 0.00010189 0 0 0 0.00020378 0 0 0 0.00030555)
 body[12] = torso (mass: 33.0685) (inertia: 1.66031 0 0 0 0.850707 0 0 0 1.61178)
 
 ACTUATORS (66)
@@ -450,7 +450,7 @@ Setting cmc controller to not use verbose printing.
 ================================================================
 ================================================================
 Computing initial values for muscles states (activation, length)
-Start time = Thu Feb  4 18:12:16 2010
+Start time = Wed May 19 16:26:52 2010
 
 ================================================================
 CMC.computeControls:  t = 0.8
@@ -460,9 +460,9 @@ CMC.computeControls:  t = 0.8
 Finished computing initial states:
 -----------------------------------------------------------------
 =================================================================
-Start time   = Thu Feb  4 18:12:16 2010
-Finish time  = Thu Feb  4 18:12:39 2010
-Elapsed time = 23 seconds.
+Start time   = Wed May 19 16:26:52 2010
+Finish time  = Wed May 19 16:30:04 2010
+Elapsed time = 192 seconds.
 =================================================================
 
 
@@ -471,7 +471,7 @@ Elapsed time = 23 seconds.
 ================================================================
 Using CMC to track the specified kinematics
 Integrating from 0.83 to 0.94
-Start time = Thu Feb  4 18:12:39 2010
+Start time = Wed May 19 16:30:04 2010
 ================================================================
 CMC.computeControls:  t = 0.83
 CMC.computeControls:  t = 0.84
@@ -486,9 +486,9 @@ CMC.computeControls:  t = 0.92
 ----------------------------------------------------------------
 Finished tracking the specified kinematics
 =================================================================
-Start time   = Thu Feb  4 18:12:39 2010
-Finish time  = Thu Feb  4 18:13:47 2010
-Elapsed time = 68 seconds.
+Start time   = Wed May 19 16:30:04 2010
+Finish time  = Wed May 19 16:39:37 2010
+Elapsed time = 573 seconds.
 ================================================================
 
 
@@ -496,8 +496,8 @@ Printing results of investigation subject01_walk1 to ./Results.
 
 
 Average residuals:
-FX=-0.777182 FY=-5.10869 FZ=2.3298
-MX=5.70453 MY=3.54296 MZ=25.3214
+FX=-0.885095 FY=-5.04954 FZ=2.97763
+MX=4.25289 MY=3.29733 MZ=25.0376
 
 
 Storage: file=Results/subject01_walk1_Kinematics_q.sto (nr=101 nc=24)
