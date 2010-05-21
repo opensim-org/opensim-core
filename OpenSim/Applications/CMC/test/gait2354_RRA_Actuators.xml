@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ForceSet name="gait2354_RRA">
+
+	<defaults>
+
+		<Force name="default">
+			<max_force> 10000.000 </max_force>
+			<min_force> -10000.000 </min_force>
+			<optimal_force> 1000.00000000 </optimal_force>
+			<body_A> </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 1.000 0.000 0.000 </direction_A>
+			<body_B> </body_B>
+			<point_B> 0.000 0.000 0.000 </point_B>
+		</Force>
+
+		<Torque name="default">
+			<max_force> 1000.000 </max_force>
+			<min_force> -1000.000 </min_force>
+			<optimal_force> 300.00000000 </optimal_force>
+			<body_A> </body_A>
+			<direction_A> 1.000 0.000 0.000 </direction_A>
+			<body_B> </body_B>
+		</Torque>
+
+		<CoordinateActuator name="default">
+			<max_force> 1000.000 </max_force>
+			<min_force> -1000.000 </min_force>
+			<optimal_force> 300.00000000 </optimal_force>
+			<coordinate> </coordinate>
+		</CoordinateActuator>
+
+	</defaults>
+
+	<objects>
+
+		<!-- Residuals -->
+
+     <!--
+		<Force name="FX">
+			<optimal_force> 4.0 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> -1.000 0.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.0724376 0.00000000 0.00000000 </point_B>
+		</Force>
+      -->
+       <PointActuator name="FX">
+          <optimal_force> 4.00000000 </optimal_force>
+          <max_force> 10000.0 </max_force>
+          <min_force> -10000.0 </min_force>
+          <body> pelvis </body>
+          <point> -0.0724376 0.00000000 0.00000000 </point>
+          <point_is_global> false </point_is_global>
+          <direction> -1.0 0.0 0.0 </direction>
+          <force_is_global> true </force_is_global>
+        </PointActuator>
+
+
+     <!--
+		<Force name="FY">
+			<optimal_force> 8.0 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 -1.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.0724376 0.00000000 0.00000000 </point_B>
+		</Force>
+      -->
+    <PointActuator name="FY">
+      <optimal_force> 8.00000000 </optimal_force>
+      <max_force> 10000.0 </max_force>
+      <min_force> -10000.0 </min_force>
+      <body> pelvis </body>
+      <point> -0.0724376 0.00000000 0.00000000 </point>
+      <point_is_global> false </point_is_global>
+      <direction> 0 -1 0 </direction>
+      <force_is_global> true </force_is_global>
+    </PointActuator>
+
+
+     <!--
+		<Force name="FZ">
+			<optimal_force> 4.0 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 0.000 -1.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.0724376 0.00000000 0.00000000 </point_B>
+		</Force>
+      -->
+      <PointActuator name="FZ">
+          <optimal_force> 4.00000000 </optimal_force>
+          <max_force> 10000.0 </max_force>
+          <min_force> -10000.0 </min_force>
+          <body> pelvis </body>
+          <point> -0.0724376 0.00000000 0.00000000 </point>
+          <point_is_global> false </point_is_global>
+          <direction> 0 0 -1 </direction>
+          <force_is_global> true </force_is_global>
+        </PointActuator>
+
+
+		<TorqueActuator name="MX">
+			<optimal_force> 2.0 </optimal_force>
+			<axis> -1.000 0.000 0.000 </axis>
+            <bodyA> pelvis </bodyA>
+            <bodyB> ground </bodyB>
+            <torque_is_global> true </torque_is_global>
+		</TorqueActuator>
+
+		<TorqueActuator name="MY">
+			<optimal_force> 2.0 </optimal_force>
+			<axis> 0.000 -1.000 0.000 </axis>
+            <bodyA> pelvis </bodyA>
+            <bodyB> ground </bodyB>
+            <torque_is_global> true </torque_is_global>
+		</TorqueActuator>
+
+		<TorqueActuator name="MZ">
+			<optimal_force> 2.0 </optimal_force>
+			<axis> 0.000 0.000 -1.000 </axis>
+            <bodyA> pelvis </bodyA>
+            <bodyB> ground </bodyB>
+            <torque_is_global> true </torque_is_global>
+		</TorqueActuator>
+
+
+		<!-- Right Leg -->
+
+		<CoordinateActuator name="hip_flexion_r">
+			<coordinate> hip_flexion_r </coordinate>
+			<optimal_force> 300.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_adduction_r">
+			<coordinate> hip_adduction_r </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_rotation_r">
+			<coordinate> hip_rotation_r </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="knee_angle_r">
+			<coordinate> knee_angle_r </coordinate>
+			<optimal_force> 300.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="ankle_angle_r">
+			<coordinate> ankle_angle_r </coordinate>
+			<optimal_force> 300.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="subtalar_angle_r">
+			<coordinate> subtalar_angle_r </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="mtp_angle_r">
+			<coordinate> mtp_angle_r </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+
+		<!-- Left Leg -->
+
+		<CoordinateActuator name="hip_flexion_l">
+			<coordinate> hip_flexion_l </coordinate>
+			<optimal_force> 300.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_adduction_l">
+			<coordinate> hip_adduction_l </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="hip_rotation_l">
+			<coordinate> hip_rotation_l </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="knee_angle_l">
+			<coordinate> knee_angle_l </coordinate>
+			<optimal_force> 300.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="ankle_angle_l">
+			<coordinate> ankle_angle_l </coordinate>
+			<optimal_force> 300.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="subtalar_angle_l">
+			<coordinate> subtalar_angle_l </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="mtp_angle_l">
+			<coordinate> mtp_angle_l </coordinate>
+			<optimal_force> 100.0 </optimal_force>
+		</CoordinateActuator>
+
+
+		<!-- Back Joint -->
+
+		<CoordinateActuator name="lumbar_extension">
+			<coordinate> lumbar_extension </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="lumbar_bending">
+			<coordinate> lumbar_bending </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</CoordinateActuator>
+
+		<CoordinateActuator name="lumbar_rotation">
+			<coordinate> lumbar_rotation </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</CoordinateActuator>
+
+	</objects>
+
+</ForceSet>
+

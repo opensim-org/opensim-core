@@ -57,7 +57,6 @@ INSTALL_FILES(/sdk/include/OpenSim/Common .h ${INCLUDE_FILES})
 #  LINK_LIBRARIES(gcov)
 #ENDIF (UNIX)
 
-IF(WIN32)
 ENABLE_TESTING()
 
 IF (EXECUTABLE_OUTPUT_PATH)
@@ -70,11 +69,20 @@ ENDIF (EXECUTABLE_OUTPUT_PATH)
 SUBDIRS(Test)
 
 FOREACH (libFile ${THIRDPARTY_DYNLIB_FILES})
- ADD_CUSTOM_COMMAND(
-    TARGET osim${KIT}
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${libFile}
-    ${EXECUTABLE_OUTPUT_PATH}/${CMAKE_CFG_INTDIR}/)
- ENDFOREACH (libFile) 
-ENDIF(WIN32)
+    GET_FILENAME_COMPONENT(LIBFILE_NAME ${libFile} NAME)
+    IF(WIN32)
+        ADD_CUSTOM_COMMAND(
+        TARGET copyLibraryFiles
+        COMMAND ${CMAKE_COMMAND}
+        ARGS -E copy
+        ${libFile}
+        ${OpenSim_LIBRARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBFILE_NAME})
+    ELSE(WIN32)
+        ADD_CUSTOM_COMMAND(
+        TARGET copyLibraryFiles
+        COMMAND ${CMAKE_COMMAND}
+        ARGS -E copy
+        ${libFile}
+        ${OpenSim_LIBRARY_DIR}/${LIBFILE_NAME})
+    ENDIF(WIN32)
+ENDFOREACH (libFile)
