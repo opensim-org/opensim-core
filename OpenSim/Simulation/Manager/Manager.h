@@ -186,7 +186,7 @@ public:
     bool integrate( SimTK::State& s, double dtFirst=1.0e-6 );
     bool doIntegration( SimTK::State& s, int step, double dtFirst );
     void initialize(SimTK::State& s, double dt);
-    void finalize(const SimTK::State& s);
+    void finalize( SimTK::State& s);
     double getFixedStepSize(int tArrayStep) const;
 
 	// STATE STORAGE

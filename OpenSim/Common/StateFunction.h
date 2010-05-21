@@ -1,12 +1,9 @@
-#ifndef _ActuatorPerturbation_h_
-#define _ActuatorPerturbation_h_
-// ActuatorPerturbation.h
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHOR: Frank C. Anderson, Saryn R. Goldberg
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifndef _State_Function_h_
+#define _State_Function_h_
+// StateFunction.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -31,121 +28,80 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+/*  
+ * Author: Jack Middleton
+ */
 
-//=============================================================================
+
 // INCLUDES
-//=============================================================================
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include "osimAnalysesDLL.h"
-#include "SimTKsimbody.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <fstream>
+#include "osimCommonDLL.h"
+#include "Object.h"
+#include "PropertyDbl.h"
+#include "SimTKmath.h"
 
 
 //=============================================================================
 //=============================================================================
 /**
- * Used for perturbing the actuator forces during a
- * simulation.
+ * An abstract class for representing a function that takes the current State as an arguement.
  *
- * @author Frank C. Anderson, Saryn R. Goldberg
- * @version 1.0
+ *
+ * @author Jack Middleton 
  */
 namespace OpenSim { 
 
-class Actuator;
-class Model;
-
-class OSIMANALYSES_API ActuatorPerturbation : public Object 
+class OSIMCOMMON_API StateFunction : public Object
 {
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	/** Perturbation types. See setPerturbation(). */
-	enum PertType {SCALE, DELTA, CONSTANT};
-
 protected:
-	/** Which actuator. */
-	Actuator *_actuator;
-	/** Negative force flag **/
-	bool _allowNegForce;
-	/** Force perturbation. */
-	double _perturbationSize;
-	/** Type of perturbation */
-	PertType _perturbationType;
-	/** Nominal actuator force. */
-	double _force;
-	/** Storage for holding nominal and perturbed force. */
-	Storage *_forceStore;
+    // The SimTK::StateFunction object implementing this class.
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	ActuatorPerturbation(Model *aModel);
-    ActuatorPerturbation(const ActuatorPerturbation &aActuatorPerturbation);
-    ActuatorPerturbation(const std::string &aFileName, bool aUpdateFromXMLNode = true);
-
-	virtual ~ActuatorPerturbation();
-    virtual Object* copy() const;
-
-protected:
-    /** Model. */
-    Model *_model;
-private:
-    /** On, off flag. */
-    PropertyBool _onProp;
-    bool &_on;
-    /** Start time in normalized time. */
-    PropertyDbl _startTimeProp;
-    double &_startTime;
-    /** End time in normalized time. */
-    PropertyDbl _endTimeProp;
-    double &_endTime;
-
-
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+	StateFunction(){};
+	virtual ~StateFunction() { };
+	virtual Object* copy() const = 0;
 
 private:
-	void setNull();
-    void setupProperties();
 
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
 public:
-    ActuatorPerturbation& operator=(const ActuatorPerturbation &aActuatorPerturbation);
-
 	//--------------------------------------------------------------------------
-	// GET AND SET
+	// SET AND GET
 	//--------------------------------------------------------------------------
-	void setActuator(Actuator *aActuator);
-	Actuator* getActuator() const;
-	void setAllowNegForce(bool aTrueFalse);
-	bool getAllowNegForce() const;
-	void setPerturbationParameters(PertType aPerturbationType, double aPerturbation);
-	// MODEL
-	virtual void setModel(Model&);
-	Model* getModel() const;
-	// ON,OFF
-	void setOn(bool aTrueFalse);
-	bool getOn() const;
-	// START,END
-	void setStartTime(double aStartTime);
-	double getStartTime() const;
-	void setEndTime(double aEndTime);
-	double getEndTime() const;
-
-	double getPerturbationSize() const;
-	PertType getPerturbationType() const;
-	Storage* getForceStorage();
-
+public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	virtual void reset(const SimTK::State& s); 
+	//--------------------------------------------------------------------------
+	// EVALUATE
+	//--------------------------------------------------------------------------
+    /**
+     * Calculate the value of this function given the current state of the system.
+     * 
+     * @param s     reference to a SimTK State 
+     */
+    virtual double calcValue(const SimTK::State& s) const = 0;
+
+	OPENSIM_DECLARE_DERIVED(StateFunction, Object);
 
 //=============================================================================
-};	// END of class ActuatorPerturbation
+};	// END class StateFunction
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-
-#endif // #ifndef __ActuatorPerturbation_h__
+#endif  // __State_Function_h__

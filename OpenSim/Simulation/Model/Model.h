@@ -443,8 +443,8 @@ public:
 	//--------------------------------------------------------------------------
 	// PERTURBATION
 	//--------------------------------------------------------------------------
-	virtual ActuatorPerturbation& getPerturbation() {return *_perturb; } 
-	virtual void setPerturbation(ActuatorPerturbation* perturbationMethod) {_perturb = perturbationMethod; } 
+	virtual ActuatorPerturbation& getPerturbation();
+	virtual void setPerturbation(ActuatorPerturbation* perturbationMethod);
     virtual bool getPerturbForcesEnabled() const { return ( _perturbActuatorForces ); }
     virtual void setPerturbForcesEnabled( bool enabled ) {  _perturbActuatorForces = enabled; }
 	//--------------------------------------------------------------------------
@@ -762,6 +762,11 @@ public:
 	 * to the caller.
 	 */
 	void disownAllComponents();
+    /**
+     * Convenice function to turn on/off overriding the force for all actuators 
+     */
+    void overrideAllActuators( SimTK::State& s, bool flag);
+
 
 
 //=============================================================================

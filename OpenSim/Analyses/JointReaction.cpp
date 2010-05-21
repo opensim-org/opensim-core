@@ -674,7 +674,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-begin(const SimTK::State& s)
+begin(SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
@@ -701,7 +701,7 @@ begin(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-step(const SimTK::State& s, int stepNumber)
+step( const SimTK::State& s, int stepNumber)
 {
 	if(!proceed(stepNumber)) return(0);
 
@@ -719,7 +719,7 @@ step(const SimTK::State& s, int stepNumber)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-end(const SimTK::State& s)
+end(SimTK::State& s)
 {
 	if(!proceed()) return(0);
 

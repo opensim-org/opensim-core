@@ -150,11 +150,11 @@ public:
 #endif
 
    virtual int
-        begin( const SimTK::State& s);
+        begin( SimTK::State& s);
     virtual int
         step( const SimTK::State& s, int stepNumber);
     virtual int
-        end( const SimTK::State& s);
+        end( SimTK::State& s);
 
 
 	//--------------------------------------------------------------------------

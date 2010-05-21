@@ -101,7 +101,7 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 // CONSTRUCTION
 //==============================================================================
 bool StaticOptimizationTarget::
-prepareToOptimize(const SimTK::State& s, double *x)
+prepareToOptimize(SimTK::State& s, double *x)
 {
 	// COMPUTE MAX ISOMETRIC FORCE
 	const ForceSet& fSet = _model->getForceSet();
@@ -288,7 +288,7 @@ getDXArray()
  * Get an optimal force.
  */
 void StaticOptimizationTarget::
-getActuation(const SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &forces)
+getActuation(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &forces)
 {
 	//return(_optimalForce[aIndex]);
 	const ForceSet& fs = _model->getForceSet();
@@ -582,7 +582,7 @@ constraintFunc(const SimTK::Vector &parameters, const bool new_parameters, SimTK
  * Compute all constraints given parameters.
  */
 void StaticOptimizationTarget::
-computeConstraintVector(const SimTK::State& s, const Vector &parameters,Vector &constraints) const
+computeConstraintVector(SimTK::State& s, const Vector &parameters,Vector &constraints) const
 {
 	//LARGE_INTEGER start;
 	//LARGE_INTEGER stop;
@@ -657,7 +657,7 @@ constraintJacobian(const SimTK::Vector &parameters, const bool new_parameters, S
 //=============================================================================
 //
 void StaticOptimizationTarget::
-computeAcceleration(const SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
+computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vector &rAccel) const
 {
 	//LARGE_INTEGER start;
 	//LARGE_INTEGER stop;
@@ -670,8 +670,8 @@ computeAcceleration(const SimTK::State& s, const SimTK::Vector &parameters,SimTK
 	for(int i=0,j=0;i<fs.getSize();i++)  {
          Actuator *act = dynamic_cast<Actuator*>(&fs.get(i));
 		 if( act ) {
-			 act->setForce(s, parameters[j]*_optimalForce[j]);
-			 s.invalidateAll(SimTK::Stage::Velocity);
+             act->overrideForce(s,true);
+             act->setOverrideForce(s,parameters[j]*_optimalForce[j]);
 		 }
          j++;
     }

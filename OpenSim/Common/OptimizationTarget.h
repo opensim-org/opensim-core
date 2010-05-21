@@ -80,7 +80,7 @@ public:
 	// UTILITY
 	void validatePerturbationSize(double &aSize);
 
-	virtual bool prepareToOptimize(const SimTK::State& s, double *x) { return false; }
+	virtual bool prepareToOptimize(SimTK::State& s, double *x) { return false; }
 	virtual void printPerformance(double *x);
 
 	static int

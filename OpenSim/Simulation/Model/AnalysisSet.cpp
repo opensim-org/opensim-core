@@ -218,7 +218,7 @@ getOn() const
  * @param s Current state 
  */
 void AnalysisSet::
-begin(const SimTK::State& s )
+begin(SimTK::State& s )
 {
 	int i;
 	for(i=0;i<getSize();i++) {
@@ -252,7 +252,7 @@ step( const SimTK::State& s, int stepNumber )
  * @param s Current state 
  */
 void AnalysisSet::
-end(const SimTK::State& s)
+end(SimTK::State& s)
 {
 	int i;
 	for(i=0;i<getSize();i++) {

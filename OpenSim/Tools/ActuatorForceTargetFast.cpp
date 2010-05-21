@@ -123,7 +123,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 // CONSTRUCTION AND DESTRUCTION
 //==============================================================================
 bool ActuatorForceTargetFast::
-prepareToOptimize(const SimTK::State& s, double *x)
+prepareToOptimize(SimTK::State& s, double *x)
 {
 
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
@@ -284,16 +284,16 @@ constraintFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vecto
  * Compute all constraints given x.
  */
 void ActuatorForceTargetFast::
-computeConstraintVector(const SimTK::State& s, const Vector &x,Vector &c) const
+computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
 {
 	CMC_TaskSet&  taskSet = _controller->updTaskSet();
 	const Set<Actuator>& fSet = _controller->getModel().getActuators();
 	for(int i=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-	    act.setForce(s, x[i]);
-	    act.setIsControlled(false);
+        act.setOverrideForce(s, x[i]);
+        act.overrideForce(s,true);
+
 	}
-	s.invalidateAll(SimTK::Stage::Dynamics);
 	_controller->getModel().getSystem().realize(s, SimTK::Stage::Acceleration );
 
 	taskSet.computeAccelerations(s);
@@ -306,8 +306,12 @@ computeConstraintVector(const SimTK::State& s, const Vector &x,Vector &c) const
 	// reset the actuator control 
 	for(int i=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-	    act.setIsControlled(true);
+        act.overrideForce(s,false);
+
 	}
+    _controller->getModel().getSystem().realizeModel(s);
+    _controller->getModel().getSystem().realize(s, SimTK::Stage::Position );
+
 }
 //______________________________________________________________________________
 /**

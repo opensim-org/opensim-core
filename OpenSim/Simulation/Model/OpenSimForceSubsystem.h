@@ -56,7 +56,6 @@ class OpenSimForceSubsystemRep : public SimTK::Subsystem::Guts {
    ~OpenSimForceSubsystemRep() { }
 
   int realizeSubsystemTopologyImpl(SimTK::State& s) const;
-  int realizeSubsystemVelocityImpl(const SimTK::State& s) const;
   int realizeSubsystemAccelerationImpl(const SimTK::State& s) const;
   
   int getStep(const SimTK::State& s ) const;

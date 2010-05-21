@@ -1472,3 +1472,18 @@ void Model::disownAllComponents()
 	updAnalysisSet().setMemoryOwner(false);
 	updMarkerSet().setMemoryOwner(false);
 }
+void Model::setPerturbation(ActuatorPerturbation* perturbationMethod) {
+      _perturb = perturbationMethod;
+}
+ActuatorPerturbation& Model::getPerturbation() {return *_perturb; }
+
+
+void Model::overrideAllActuators( SimTK::State& s, bool flag) {
+     Set<Actuator>& as = updActuators();
+
+     for(int i=0;i<as.getSize();i++) {
+         as[i].overrideForce(s, flag );
+     }
+
+}
+

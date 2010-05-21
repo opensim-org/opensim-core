@@ -560,15 +560,14 @@ void Muscle::computeForce(const SimTK::State& s,
 							  SimTK::Vector& generalizedForces) const
 {
 	double muscleForce = 0;
-    if( isControlled() && getController().getIsEnabled() ) {
-    		muscleForce = computeActuation(s);
-//std::cout << "Muscle::computeForce t=" << s.getTime() << "  " << getName() <<   " force= " << muscleForce  << std::endl;
-    		setForce(s,  muscleForce );
-    } 
-	else {
-		muscleForce = getForce(s); // used when controls are disabled (i.e., NaN) during inverse dynamics
-//std::cout << "Muscle::computeForce t=" << s.getTime() << "  " << getName() <<   " not controlled force= " << muscleForce  << std::endl;
+
+    if( isForceOverriden(s) ) {
+       muscleForce = computeOverrideForce(s);
+    } else {
+       muscleForce = computeActuation(s);
     }
+    setForce(s,  muscleForce );
+
 
 	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.

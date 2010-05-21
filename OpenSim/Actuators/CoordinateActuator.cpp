@@ -302,11 +302,13 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
 {
 	if(_model==NULL) return;
 
-    if( isControlled() && getController().getIsEnabled() ) {
-       setForce(s,  computeActuation(s) );
+   double force;
+    if( isForceOverriden(s) ) {
+       force = computeOverrideForce(s);
+    } else {
+       force = computeActuation(s);
     }
-
-//std::cout << "CoordinateActuator::computeForce t=" << s.getTime() << "  " << getName() <<   " force= " << getForce(s) << std::endl;
+    setForce(s,  force );
 
 	if(isCoordinateValid()){
        applyGeneralizedForce(s, *_coord, getForce(s), mobilityForces);

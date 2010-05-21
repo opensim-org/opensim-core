@@ -15,10 +15,45 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/Object.h>
 #include "ActuatorPerturbationIndependent.h"
+#include "ForcePerturbationFunction.h"
 
 
 using namespace OpenSim;
 using namespace std;
+ 
+/**
+ ** Set which actuator has its force perturbed 
+ **
+ ** @param aAct Pointer to the actuator.
+ **/
+void ActuatorPerturbationIndependent::
+setActuator(Actuator *act)
+{
+    ForcePerturbationFunction* pertFunc;
+ 
+    _actuator = act;
+    Set<Actuator>& actuators = _model->updActuators();
+ 
+    //
+    // only one actuator is perturbed at a time, 
+    // so first turn off perturbation for all actuators
+    // 
+    for( int i=0;i<actuators.getSize();i++) {
+        pertFunc = static_cast<ForcePerturbationFunction*>(actuators.get(i).updOverrideForceFunction());
+        pertFunc->setIsPerturbed( false );
+    }
+    //
+    // perturb the actuator
+    // 
+    if( act != 0 ) { 
+        pertFunc = static_cast<ForcePerturbationFunction*>(act->updOverrideForceFunction());
+        pertFunc->setIsPerturbed( true );
+     }
+
+}
+
+
+
 
 
 //=============================================================================
@@ -64,7 +99,6 @@ void ActuatorPerturbationIndependent::
 setNull()
 {
 	setType("ActuatorPerturbationIndependent");
-	_step = 0;
 	_unperturbedForceSplines = NULL;
 	_unperturbedForceStorage = NULL;
 	_perturbedForceStorage = new Storage();
@@ -151,6 +185,20 @@ setUnperturbedForceSplineSet(Storage *aStore)
 	delete _unperturbedForceSplines;
 	_unperturbedForceSplines = new GCVSplineSet(3,_unperturbedForceStorage);
 }
+void ActuatorPerturbationIndependent::
+initalizeOverrideForces() {
+
+  Set<Actuator>& as = _model->updActuators();
+
+   // create override functions for muscles to use during perturb
+   for( int i=0;i<as.getSize(); i++ ) {
+       ForcePerturbationFunction* perturbFunc = new ForcePerturbationFunction(&as.get(i), this );
+       perturbFunc->setUnperturbedForce( _unperturbedForceSplines->getGCVSpline(i));
+       as.get(i).setOverrideForceFunction( perturbFunc );
+       _overrideFunctions.append( perturbFunc );
+   }
+}
+
 //_____________________________________________________________________________
 /**
  * Get a pointer to the spline set used to fit the unperturbed actuator
@@ -188,7 +236,6 @@ getPerturbedForceStorage()
 void ActuatorPerturbationIndependent::
 reset(const SimTK::State& s)
 {
-	_step = 0;
 	_perturbedForceStorage->reset();
 	const Set<Actuator>& fs = _model->getActuators();
 
@@ -197,89 +244,29 @@ reset(const SimTK::State& s)
 
 }
 
-//-----------------------------------------------------------------------------
-// GET STEP
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the current value of the step counter.
- *
- * @return The current integrator step value.
- */
-int ActuatorPerturbationIndependent::
-getStep()
-{
-	return(_step);
-}
 
 //_____________________________________________________________________________
 /**
- * called right after actuation has been computed by the model.
+ * The nominal actuator force is recorded so that it can be restored
  *
- * The nominal actuator force is recorded so that it can be restored, and the
- * actuator force is replaced by its perturbed value.
- *
- * @param aT Real time.
- * @param aX Controls.
- * @param aY States.
- * @todo Fix output of perturbed forces.
- * @todo Reset perturbed forces storage object for use in multiple
- * integrations.  For now, appending to this storage is disabled.
  */
 void ActuatorPerturbationIndependent::
-setForces(const SimTK::State& s)
-{
-	//printf("ActuatorPerturbationIndependent.computeActuation: aT=%.16lf  aY[0]=%.16lf\n",aT,aY[0]);
+record(const SimTK::State& s) {
 
 	if(_model==NULL) {
-		printf("ActuatorPerturbation.setPerturbation: WARN- no model.\n");
+		printf("ActuatorPerturbationIndepent.record: WARN- no model.\n");
 		return;
 	}
 	if(!getOn()) return;
 
-	// SET UNPERTURBED FORCES
-	int actuatorIndex = -1;
-	const Set<Actuator>& fs = _model->getActuators();
-
-	_unperturbedForceSplines->evaluate(_forces,0,s.getTime());
-	for (int i=0; i<fs.getSize(); i++) {
-        Actuator& act = fs.get(i);
-	    if(&act==_actuator) actuatorIndex = i;
-        act.setForce(s,_forces[i]);
-        act.setIsControlled(false);
+    const Set<Actuator>& as = _model->getActuators();
+	for (int i=0; i<as.getSize(); i++) {
+        Actuator& act = as.get(i);
+        _forces[i] = act.getForce(s);
 	}
 
-	// COMPUTE PERTURBED FORCE
-	if(!_actuator) return;
-	_unperturbedForce = _actuator->getForce(s);
-	double force = _unperturbedForce;
-	if((s.getTime()>=getStartTime()) && (s.getTime()<=getEndTime())){
-		if(_perturbationType==SCALE) {
-			force = force + _perturbation*force;
-		}
-		else if(_perturbationType==DELTA) {
-			force = force + _perturbation;
-		}
-		else if(_perturbationType==CONSTANT) {
-			force = _perturbation;
-		}
-		else {
-			printf("ActuatorPerturbationIndependent.setPerturbation :WARN - unrecognized perturbationType.\n");
-		}
-        _actuator->setForce(s, force );
-	}
-
-	// MAKE CORRECTION IF PERTRUBED FORCE IS NEGATIVE AND NEG FORCE FLAG IS SET
-	if((_allowNegForce==false) && (_actuator->getForce(s) < 0.0))	{
-        _actuator->setForce(s,0.0);
-	}
-
-
-	// Update _forces array and add it to the perturbed force storage
-	if(actuatorIndex>=0) _forces[actuatorIndex] = force;
 	_perturbedForceStorage->append(s.getTime()*_model->getTimeNormConstant(),_model->getActuators().getSize(),&_forces[0]);
 }
-
 
 
 

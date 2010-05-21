@@ -117,7 +117,7 @@ private:
 
 public:
 
-	bool prepareToOptimize(const SimTK::State& s, double *x);
+	bool prepareToOptimize(SimTK::State& s, double *x);
 
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
@@ -128,7 +128,7 @@ public:
 	int constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::Matrix &jac) const;
 	CMC* getController() {return (_controller); }
 private:
-	void computeConstraintVector(const SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
+	void computeConstraintVector(SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 };	// END class ActuatorForceTargetFast

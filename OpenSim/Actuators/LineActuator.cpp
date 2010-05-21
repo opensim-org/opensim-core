@@ -376,12 +376,13 @@ void LineActuator::computeForce(const SimTK::State& s,
 
 	// find the force magnitude and set it. then form the force vector
 	double forceMagnitude;
-    if( isControlled() && getController().getIsEnabled() ) {
-	    forceMagnitude = computeActuation(s);
-        setForce(s,  forceMagnitude );
+
+    if( isForceOverriden(s) ) {
+       forceMagnitude = computeOverrideForce(s);
     } else {
-	    forceMagnitude = getForce(s);
+       forceMagnitude = computeActuation(s);
     }
+    setForce(s,  forceMagnitude );
 
 	SimTK::Vec3 force = forceMagnitude*direction;
 

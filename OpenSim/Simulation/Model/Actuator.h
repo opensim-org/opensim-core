@@ -48,6 +48,7 @@ namespace OpenSim {
 class Model;
 class VisibleObject;
 class Controller;
+class StateFunction;
 
 //=============================================================================
 //=============================================================================
@@ -96,6 +97,12 @@ protected:
     // indexes into SimTK::State 
     mutable SimTK::ZIndex _zIndex; // index of (z's) for this actuator
     SimTK::CacheEntryIndex _stateVariableDerivIndex; // index of state derivaties (zdots) for this actuator
+
+     SimTK::DiscreteVariableIndex _isOverridenIndex;
+     SimTK::DiscreteVariableIndex _overrideForceIndex;
+ 
+     StateFunction* _overrideForceFunction;
+
 
 //=============================================================================
 // METHODS
@@ -201,6 +208,20 @@ public:
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
     int getNumControls() { return 1; }  // all actuators can have one control
+
+    //--------------------------------------------------------------------------
+    // Overriding forces
+    //--------------------------------------------------------------------------
+    void overrideForce(SimTK::State& s, bool flag ) const;
+    bool isForceOverriden(const SimTK::State& s ) const;
+    void setOverrideForce(SimTK::State& s, double value ) const;
+    double getOverrideForce(const SimTK::State& s ) const;
+    double computeOverrideForce(const SimTK::State& s ) const;
+    void setOverrideForceFunction( StateFunction* );
+    const StateFunction* getOverrideForceFunction( ) const;
+    StateFunction* updOverrideForceFunction( );
+    void resetOverrideForceFunction();
+
 
 //=============================================================================
 };	// END of class Actuator

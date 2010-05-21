@@ -368,6 +368,7 @@ bool PerturbationTool::run()
 	ActuatorPerturbationIndependent *perturbation = 
 		new ActuatorPerturbationIndependent(_model);
 
+    perturbation->setPerturbationParameters(ActuatorPerturbationIndependent::DELTA,_pertDF);
     _model->setPerturbation(perturbation); 
 
 	int gravity_axis = 1;
@@ -529,14 +530,13 @@ bool PerturbationTool::run()
 		// INTEGRATE (1)
 		// This integration is to record the actuator forces applied during
 		// the unperturbed simulation.
-		perturbation->setOn(false);
 		cout<<"\n\nUnperturbed integration (1) from "<<tiPert<<" to "<<tfPert;
 		cout<<" to record the unperturbed kinematics and actuator forces."<<endl;
 		manager.integrate(s);
 
-		// SET THE UNPERTURBED ACTUATOR FORCES
+       // create the actuator's overrideForce function from the pre calculated 
+       // unperturbed forces and set all actuators to use the forces
 		perturbation->setUnperturbedForceSplineSet(actuation->getForceStorage());
-        _model->setPerturbForcesEnabled(true);
 
         // TURN ON CORRECTIVE SPRINGS
         if(_body1Lin)  _body1Lin->setDisabled(s, false);
@@ -545,6 +545,8 @@ bool PerturbationTool::run()
   		if(_body2Tor)  _body2Tor->setDisabled(s, false);;
 
         // restore state to initial conditions
+        _model->getSystem().realizeModel(s );
+        _model->getSystem().realize(s, Stage::Position );
         _yStore->getData(index, s.getNY(), &s.updY()[0]);
 
 		if(Check) {
@@ -561,7 +563,6 @@ bool PerturbationTool::run()
 		cout<<"\n\nUnperturbed integration (2) from "<<tiPert<<" to "<<tfPert;
 		cout<<" to record the unperturbed kinematics after corrective springs has been";
 		cout<<" added and the perturbation analysis has been turned on."<<endl;
-		perturbation->setOn(true);
 		_yStore->getData(index, s.getNY(), &s.updY()[0]);
 		manager.integrate(s);
 
@@ -604,6 +605,10 @@ bool PerturbationTool::run()
 		// include unperturbed gravity value if doing gravity perturbation
 		if(_perturbGravity) unperturbedForces.append(original_gravity[gravity_axis]);
 
+        perturbation->setOn(true);
+        perturbation->initalizeOverrideForces();
+         _model->overrideAllActuators(s, true);
+
 		// Loop over actuators/gravity to be perturbed
 		for (int m=0;m<nperturb;m++)	{
 			perturbation->reset(s); 
@@ -614,10 +619,16 @@ bool PerturbationTool::run()
 				// Set up pertubation callback
 				cout<<"\nPerturbation of muscle "<<act->getName()<<" ("<<m<<") in loop"<<endl;
 				perturbation->setActuator(act); 
-			    perturbation->setPerturbation(s, ActuatorPerturbationIndependent::DELTA,_pertDF);
-
 
                 // restore state to intitial conditions 
+                _model->getSystem().realizeModel(s );
+                _model->getSystem().realize(s, Stage::Position );
+                delete integrator;
+                integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
+                integrator->setInternalStepLimit(_maxSteps);
+                integrator->setMaximumStepSize(_maxDT);
+                integrator->setAccuracy(_errorTolerance);
+                manager.setIntegrator( integrator );
 		        _yStore->getData(index, s.getNY(), &s.updY()[0]);
 
 		  	    // Integrate
@@ -631,18 +642,10 @@ bool PerturbationTool::run()
 				grav = original_gravity;
 				grav[gravity_axis] += _pertDF;
 
-cout << "perturbed gravity = " << grav << endl;
 
 				_model->setGravity(grav);
 
                 s = _model->initSystem(); 
-                delete integrator;
-                integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
-                integrator->setInternalStepLimit(_maxSteps);
-                integrator->setMaximumStepSize(_maxDT);
-                integrator->setAccuracy(_errorTolerance);
-                manager.setIntegrator( integrator );
-
 
                 // restore state to intitial conditions 
     		    _yStore->getData(index, s.getNY(), &s.updY()[0]);
@@ -726,6 +729,9 @@ cout << "perturbed gravity = " << grav << endl;
 	elapsedTime = difftime(finishTime,startTime);
 	cout<<"Elapsed time = "<<elapsedTime<<" seconds.\n";
 	cout<<"================================================================\n\n\n";
+
+    printResults();
+    manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
   
     delete integrator;
 
@@ -740,18 +746,16 @@ cout << "perturbed gravity = " << grav << endl;
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Print the results of the analysis.
+ * Print the results of the perturbation analysis.
  *
- * @param aFileName File to which to print the data.
- * @param aDT Time interval between results (linear interpolation is used).
- * If not included as an argument or negative, all time steps are printed
- * without interpolation.
- * @param aExtension Extension for written files.
  */
 void PerturbationTool::
-printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+printResults()
 {
+
 	cout<<"PerturbationTool.printResults: ";
 	cout<<"Printing results of investigation "<<getName()<<".\n";
+
+    // create output directory and print out analyses results
+    AbstractTool::printResults(getName(),getResultsDir());
 }

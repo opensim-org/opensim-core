@@ -114,7 +114,7 @@ public:
 
 public:
 	void setStressTermWeight(double aWeight);
-	bool prepareToOptimize(const SimTK::State& s, double *x);
+	bool prepareToOptimize(SimTK::State& s, double *x);
 
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
@@ -123,7 +123,7 @@ public:
    int gradientFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &gradient ) const;
 
 private:
-	void computePerformanceVectors(const SimTK::State& s, const SimTK::Vector &aF, SimTK::Vector &rAccelPerformanceVector, SimTK::Vector &rForcePerformanceVector);
+	void computePerformanceVectors(SimTK::State& s, const SimTK::Vector &aF, SimTK::Vector &rAccelPerformanceVector, SimTK::Vector &rForcePerformanceVector);
 
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 };	// END class ActuatorForceTarget

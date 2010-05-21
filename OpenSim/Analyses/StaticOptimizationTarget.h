@@ -100,7 +100,7 @@ public:
 	void setDX(int aIndex,double aVal);
 	double getDX(int aIndex);
 	double* getDXArray();
-	void getActuation(const SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &forces);
+	void getActuation(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector &forces);
 	void setActivationExponent(double aActivationExponent) { _activationExponent=aActivationExponent; }
 	double getActivationExponent() const { return _activationExponent; }
 	void setCurrentState( const SimTK::State* state) { _currentState = state; }
@@ -120,7 +120,7 @@ public:
 		CentralDifferences(const StaticOptimizationTarget *aTarget,
 		double *dx,const SimTK::Vector &x,SimTK::Vector &dpdx);
 
-	bool prepareToOptimize(const SimTK::State& s, double *x);
+	bool prepareToOptimize(SimTK::State& s, double *x);
 
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
@@ -131,8 +131,8 @@ public:
 	int constraintJacobian(const SimTK::Vector &x, const bool new_coefficients, SimTK::Matrix &jac) const;
 
 private:
-	void computeConstraintVector(const SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
-	void computeAcceleration(const SimTK::State& s, const SimTK::Vector &aF,SimTK::Vector &rAccel) const;
+	void computeConstraintVector(SimTK::State& s, const SimTK::Vector &x, SimTK::Vector &c) const;
+	void computeAcceleration(SimTK::State& s, const SimTK::Vector &aF,SimTK::Vector &rAccel) const;
 	void cumulativeTime(double &aTime, double aIncrement);
 };
 

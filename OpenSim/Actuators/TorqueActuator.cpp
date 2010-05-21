@@ -333,18 +333,15 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 {
 	if(_model==NULL) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
-
 	
     double force;
 
-    if( isControlled() && getController().getIsEnabled() ) {
-       force = computeActuation(s);
-       setForce(s,  force);
+    if( isForceOverriden(s) ) {
+       force = computeOverrideForce(s);
     } else {
-       force = getForce(s);
+       force = computeActuation(s);
     }
-
-//std::cout << "TorqueActuator::computeForce t=" << s.getTime() << "  " << getName() <<   " force= " << force <<  std::endl;
+    setForce(s,  force );
 
 	if(_bodyA ==NULL)
 		return;

@@ -55,6 +55,8 @@
  */
 namespace OpenSim { 
 
+class ForcePerturbationFunction;
+
 class OSIMANALYSES_API ActuatorPerturbationIndependent :
 	public ActuatorPerturbation  
 {
@@ -71,8 +73,9 @@ protected:
 	Storage *_unperturbedForceStorage;
 	/** Storage for holding perturbed forces. */
 	Storage *_perturbedForceStorage;
-	/** Counter to track the number of integration steps. */
-	int _step;
+    /** set of functions to compute the override forces for actuators */
+    Set<ForcePerturbationFunction> _overrideFunctions;
+
 private:
 	/** Buffer to store nominal forces at current time step (basically used as 
 	 *  a local variable in computeActuation, but is made a member to avoid
@@ -101,8 +104,12 @@ public:
 	GCVSplineSet* getUnperturbedForceSplineSet();
 	Storage* getPerturbedForceStorage();
 	virtual void reset(const SimTK::State& s); 
-	int getStep();
-    void setForces( const SimTK::State& s );
+    bool getAllowNegForce() const  { return _allowNegForce; };
+ 
+    void setActuator(Actuator *act);
+    void initalizeOverrideForces();
+    void record(const SimTK::State& s);
+
 
 //=============================================================================
 };	// END of class ActuatorPerturbationIndependent

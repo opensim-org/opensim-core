@@ -813,7 +813,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 		if(checkHalt()) break;
 // printf("\n");
     }
-    finalize(_integ->getState() );
+    finalize(_integ->updAdvancedState() );
     s = _integ->getState();
 
 	// CLEAR ANY INTERRUPT
@@ -881,7 +881,7 @@ void Manager::initialize(SimTK::State& s, double dt )
  * 
  * @param s system state before integration
  */
-void Manager::finalize(const SimTK::State& s )
+void Manager::finalize(SimTK::State& s )
 {
     	// ANALYSES 
 	if(  _performAnalyses ) { 

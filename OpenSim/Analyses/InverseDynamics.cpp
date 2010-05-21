@@ -295,18 +295,19 @@ setStorageCapacityIncrements(int aIncrement)
 //=============================================================================
 //
 void InverseDynamics::
-computeAcceleration(const SimTK::State& s, double *aF,double *rAccel) const
+computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 {
  
+    //SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
+    if( s.getTime() < 0.0 ) s.updTime() = 0;
+
 	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
         Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
         if( act ) {
-            act->setIsControlled(false);
-            act->setForce(s,aF[j++]);
-			s.invalidateAll(SimTK::Stage::Velocity);
+            act->overrideForce(s,true);
+            act->setOverrideForce(s,aF[j++]);
         }
 	}
-	_modelWorkingCopy->setAllControllersEnabled(false); // used to be controls=0
 
 	// NEED TO APPLY OTHER FORCES (e.g. Prescribed) FROM ORIGINAL MODEL 
 
@@ -408,7 +409,7 @@ record(const SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int InverseDynamics::
-begin(const SimTK::State& s )
+begin(SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
@@ -546,17 +547,13 @@ step(const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int InverseDynamics::
-end(const SimTK::State& s )
+end(SimTK::State& s )
 {
 	if(!proceed()) return(0);
 
 	record(s);
 
-    // reset the force multipliers and deltas back to defaults
-    for(int i=0; i<_model->getActuators().getSize(); i++) {
-        Actuator& act = _model->getActuators().get(i);
-        act.setIsControlled(true);
-    }
+    _model->overrideAllActuators( s, false );
 
 	return(0);
 }

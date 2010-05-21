@@ -32,6 +32,7 @@
 #include "Actuator.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/DebugUtilities.h>
+#include <OpenSim/Common/StateFunction.h>
 #include <sstream>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Controller.h>
@@ -67,6 +68,7 @@ Actuator::Actuator() :
     _numStateVariables(0),
     _controlIndex(-1),
     _isControlled(false),
+    _overrideForceFunction(0),
     _controller(0)
 {
 	setNull();
@@ -85,6 +87,7 @@ Actuator::Actuator(const Actuator &aAct) :
     _numStateVariables(0),
     _controlIndex(-1),
     _isControlled(false),
+    _overrideForceFunction(0),
     _controller(0)
 {
 	setNull();
@@ -162,8 +165,10 @@ void Actuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIn
     _subsystemIndex = subsystemIndex;
     _model = &model;
 
-    _forceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-    _speedIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+    _forceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>(0.0) );
+    _speedIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>(0.0) );
+    _overrideForceIndex = s.allocateDiscreteVariable( subsystemIndex, SimTK::Stage::Instance, new SimTK::Value<double>(0.0) );
+    _isOverridenIndex = s.allocateDiscreteVariable( subsystemIndex, SimTK::Stage::Instance, new SimTK::Value<bool>(false) );
 
     if( _numStateVariables > 0 ) {
         Vector z(_numStateVariables, 0.0);
@@ -468,3 +473,48 @@ double Actuator::getOptimalForce() const
 {
 	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
+//_____________________________________________________________________________
+/**
+ * overrideForce sets flag indicating if an actuator's force compuation is overriden
+ */
+void Actuator::overrideForce(SimTK::State& s, bool flag ) const 
+{
+    SimTK::Value<bool>::downcast(s.updDiscreteVariable( _subsystemIndex, _isOverridenIndex)).upd() = flag;
+}
+bool Actuator::isForceOverriden(const SimTK::State& s ) const 
+{
+    return SimTK::Value<bool>::downcast(s.getDiscreteVariable( _subsystemIndex, _isOverridenIndex)).get();
+}
+       
+//_____________________________________________________________________________
+/**
+ * setOverrideForce sets the value used when an actuator's force compuation is orriden
+ */
+void Actuator::setOverrideForce(SimTK::State& s, double force ) const
+{
+    SimTK::Value<double>::downcast(s.updDiscreteVariable( _subsystemIndex, _overrideForceIndex)).upd() = force;
+}
+double Actuator::getOverrideForce(const SimTK::State& s ) const
+{
+    return SimTK::Value<double>::downcast(s.getDiscreteVariable( _subsystemIndex, _overrideForceIndex)).get();
+}
+double Actuator::computeOverrideForce( const SimTK::State& s ) const {
+      if( _overrideForceFunction ) {
+          return( _overrideForceFunction->calcValue(s ) );
+      } else {
+          return( getOverrideForce(s) );
+      }
+}
+void Actuator::setOverrideForceFunction( StateFunction* overrideFunc ) {
+       _overrideForceFunction = overrideFunc;
+}
+const StateFunction* Actuator::getOverrideForceFunction() const {
+       return( _overrideForceFunction); 
+}
+StateFunction* Actuator::updOverrideForceFunction() {
+       return( _overrideForceFunction); 
+}
+void Actuator::resetOverrideForceFunction() {
+     _overrideForceFunction = 0;
+}
+

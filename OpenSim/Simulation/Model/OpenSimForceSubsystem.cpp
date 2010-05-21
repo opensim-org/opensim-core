@@ -39,14 +39,6 @@ OpenSimForceSubsystemRep::OpenSimForceSubsystemRep( Model* model) :
 
       return 0;
   }
-  int OpenSimForceSubsystemRep::realizeSubsystemVelocityImpl(const SimTK::State& s) const {
-
-      // If we are doing perturbation, set the forces for each actuator 
-      if( _model->getPerturbForcesEnabled() ) {
-          _model->getPerturbation().setForces(s);
-      }
-      return 0;
-  }
 
   
   int OpenSimForceSubsystemRep::realizeSubsystemAccelerationImpl(const SimTK::State& s) const {

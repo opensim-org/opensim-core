@@ -143,7 +143,7 @@ setNull()
     _endTime = SimTK::Infinity;
 	_actuator = NULL;
 	_allowNegForce = true;
-	_perturbation = 0.0;
+	_perturbationSize = 0.0;
 	_perturbationType = SCALE;
 	_force = 0.0;
 	_forceStore = new Storage();
@@ -263,14 +263,11 @@ getAllowNegForce() const
  * @param aPerturbation Perturbation value.
  */
 void ActuatorPerturbation::
-setPerturbation(const SimTK::State& s, PertType aPerturbationType, double aPerturbation)
+setPerturbationParameters( PertType aPerturbationType, double aPerturbationSize)
 {
 	_perturbationType = aPerturbationType;
-	_perturbation = aPerturbation;
+	_perturbationSize = aPerturbationSize;
     
-    _actuator->setIsControlled(false);
-
-
 }
 //_____________________________________________________________________________
 /**
@@ -280,9 +277,9 @@ setPerturbation(const SimTK::State& s, PertType aPerturbationType, double aPertu
  * @return aPerturbation 
  */
 double ActuatorPerturbation::
-getPerturbation() const
+getPerturbationSize() const
 {
-	return(_perturbation);
+	return(_perturbationSize);
 }
 //_____________________________________________________________________________
 /**
@@ -337,74 +334,6 @@ reset(const SimTK::State& s)
 }
 
 
-//_____________________________________________________________________________
-/**
- * ActuatorPerturbation called right after actuation has been computed by the model.
- *
- * The nominal atuator force is recorded so that it can be restored, and the
- * actuator force is replaced by its perturbed value.
- *
- *  @param s System state
- */
-void ActuatorPerturbation::
-setForces(const SimTK::State& s )
-{
-
-	if(_model==NULL) {
-		printf("ActuatorPerturbation.computeActuation: WARN- no model.\n");
-		return;
-	}
-	if(!getOn()) return;
-
-	// RECORD NOMINAL FORCE
-	_force = _actuator->getForce(s);
-
-	// COMPUTE PERTURBED FORCE
-	int index;
-	double forceArray[2];
-	double force;
-	force = _force;
-	//printf("time=%lf  start=%lf   end=%lf\n",s.getTime(),getStartTime(),getEndTime());
-	if((s.getTime()>=getStartTime()) && (s.getTime()<getEndTime())){
-
-	//	printf("perturbing\n");
-
-		// SCALE
-		if( _perturbationType == SCALE)	{
-			force = _force + _perturbation*_force;
-
-		// DELTA
-		} else if( _perturbationType == DELTA)	{
-			force = _force + _perturbation;
-
-		// CONSTANT
-		} else if( _perturbationType == CONSTANT)	{
-			force = _perturbation;
-
-		// UNRECOGNIZED
-		} else {
-			printf("ActuatorPerturbation.computeActuation:- unrecognized perturbationType.\n");
-			force = _force;
-		}
-
-//		printf("nominal force: %f\t new force: %f\n",_force,force);
-
-
-	}
-	
-	// MAKE CORRECTION IF PERTRUBED FORCE IS NEGATIVE AND NEG FORCE FLAG IS SET
-	if(_allowNegForce==false && force < 0.0)
-		force = 0.0;
-
-	forceArray[0] = _force;
-	forceArray[1] = force;
-
-	//printf("time = %lf\toriginal force = %lf\n",s.getTime()*_model->getTimeNormConstant(),_force);
-	//printf("perturbed force = %lf\n",force);
-	index = _forceStore->append(s.getTime()*_model->getTimeNormConstant(),2,forceArray);
-	// SET PERTURBED FORCE
-	_actuator->setForce(s, force);
-}
 
 //=============================================================================
 // OPERATORS

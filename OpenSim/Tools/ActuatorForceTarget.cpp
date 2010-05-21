@@ -125,7 +125,7 @@ setStressTermWeight(double aWeight)
 //------------------------------------------------------------------------------
 
 bool ActuatorForceTarget::
-prepareToOptimize(const SimTK::State& s, double *x)
+prepareToOptimize(SimTK::State& s, double *x)
 {
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 	int nu = _controller->getModel().getNumSpeeds();
@@ -232,17 +232,17 @@ prepareToOptimize(const SimTK::State& s, double *x)
 }
 
 void ActuatorForceTarget::
-computePerformanceVectors(const SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
+computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerformanceVector, Vector &rForcePerformanceVector)
 {
 	const Set<Actuator> &fSet = _controller->getModel().getActuators();
 
 	for(int i=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-	    act.setForce(s, aF[i]);
-        act.setIsControlled(false);
+        act.setOverrideForce(s, aF[i]);
+        act.overrideForce(s,true);
+
         
 	}
-	s.invalidateAll(SimTK::Stage::Dynamics);
     _controller->getModel().getSystem().realize(s, SimTK::Stage::Acceleration );
 
 	CMC_TaskSet& taskSet = _controller->updTaskSet();
@@ -264,7 +264,7 @@ computePerformanceVectors(const SimTK::State& s, const Vector &aF, Vector &rAcce
 	// reset the actuator control
 	for(int i=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-        act.setIsControlled(true);
+        act.overrideForce(s,false);
 	}
 
 

@@ -316,12 +316,13 @@ void PointActuator::computeForce(const SimTK::State& s,
 
     double force;
 
-    if( isControlled() && getController().getIsEnabled() ) {
-       force = computeActuation(s);
-       setForce(s,  computeActuation(s) );
+    if( isForceOverriden(s) ) {
+       force = computeOverrideForce(s);
     } else {
-       force = getForce(s);
+       force = computeActuation(s);
     }
+    setForce(s,  force );
+
 
 //std::cout << "PointActuator::computeForce t=" << s.getTime() << "  " << getName() <<   " force= " << force << std::endl;
 

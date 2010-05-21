@@ -191,9 +191,9 @@ public:
 	// INTEGRATION
 	//-------------------------------------------------------------------------
 	virtual void initialize(const SimTK::State& s); 
-	virtual int begin( const SimTK::State& s);
+	virtual int begin( SimTK::State& s);
     virtual int step( const SimTK::State& s, int stepNumber);
-    virtual int end( const SimTK::State& s);
+    virtual int end( SimTK::State& s);
 
 	//-------------------------------------------------------------------------
 	// IO

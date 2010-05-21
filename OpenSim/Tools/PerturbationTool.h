@@ -119,8 +119,7 @@ public:
 	// INTERFACE
 	//--------------------------------------------------------------------------
 	virtual bool run() SWIG_DECLARE_EXCEPTION;
-	virtual void printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+	virtual void printResults();
 
 //=============================================================================
 };	// END of class PerturbationTool

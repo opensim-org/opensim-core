@@ -503,7 +503,7 @@ getEndTime() const
  * @return -1 on error, 0 otherwise.
  */
 int Analysis::
-begin( const SimTK::State& s )
+begin( SimTK::State& s )
 {
 	//printf("Analysis.begin: %s.\n",getName());
 	return (0);
@@ -537,7 +537,7 @@ step( const SimTK::State& s, int stepNumber )
  * @return -1 on error, 0 otherwise.
  */
 int Analysis::
-end( const SimTK::State& s )
+end( SimTK::State& s )
 {
 	//printf("Analysis.end: %s.\n",getName());
 	return(0);
