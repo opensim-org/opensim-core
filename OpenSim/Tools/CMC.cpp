@@ -182,6 +182,7 @@ void CMC::copyData( const CMC &aCmc )
    _vErrStore             = aCmc._vErrStore;
    _stressTermWeightStore = aCmc._stressTermWeightStore;
    _controlSet            = aCmc._controlSet;
+   _taskSet               = aCmc._taskSet;
    _paramList             = aCmc._paramList;
    _verbose               = aCmc._verbose;
    _predictor             = aCmc._predictor;

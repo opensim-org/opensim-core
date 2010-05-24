@@ -666,6 +666,11 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
 	//QueryPerformanceFrequency(&frequency);
 	//QueryPerformanceCounter(&start);
 
+	// SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
+	// JACKM: Need to talk to sherm if this restriction can be removed
+	if( s.getTime() < 0.0 ) s.updTime() = 0;
+	
+
 	const ForceSet& fs = _model->getForceSet();
 	for(int i=0,j=0;i<fs.getSize();i++)  {
          Actuator *act = dynamic_cast<Actuator*>(&fs.get(i));

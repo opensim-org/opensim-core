@@ -298,7 +298,8 @@ void InverseDynamics::
 computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 {
  
-    //SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
+    // SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
+    // JACKM: Need to talk to sherm if this restriction can be removed
     if( s.getTime() < 0.0 ) s.updTime() = 0;
 
 	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
