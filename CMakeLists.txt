@@ -147,11 +147,13 @@ IF(USE_STATIC_SIMTK_LIBRARIES)
 	SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath_static_d optimized ${NameSpace}SimTKmath_static)
 	SET(SIMTK_CPODES_LIB debug ${NameSpace}SimTKcpodes_static_d optimized ${NameSpace}SimTKcpodes_static)
 	SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody_static_d optimized ${NameSpace}SimTKsimbody_static)
+	SET(SIMTK_LAPACK_LIB ${NameSpace}SimTKlapack)
 ELSE(USE_STATIC_SIMTK_LIBRARIES)
 	SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon)
 	SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath_d optimized ${NameSpace}SimTKmath)
 	SET(SIMTK_CPODES_LIB debug ${NameSpace}SimTKcpodes_d optimized ${NameSpace}SimTKcpodes)
 	SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody)
+	SET(SIMTK_LAPACK_LIB ${NameSpace}SimTKlapack)
 ENDIF(USE_STATIC_SIMTK_LIBRARIES)
 
 IF(WIN32)
@@ -159,28 +161,28 @@ SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB}
 					${SIMTK_MATH_LIB} 
 					${SIMTK_CPODES_LIB} 
 					${SIMTK_SIMBODY_LIB} 
-					SimTKlapack 
+					${SIMTK_LAPACK_LIB}
 					pthreadVC2)
 SET(THIRDPARTY_DYNLIB_FILES	${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.dll 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKmath.dll 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKcpodes.dll 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.dll 
 						${SIMTK_LIB_DIR}/pthreadVC2.dll
-						${SIMTK_LIB_DIR}/SimTKlapack.dll
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKlapack.dll
 						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH}/xerces-c_2_8.dll)
 ELSE(WIN32)
 SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
 					${SIMTK_MATH_LIB} 
 					${SIMTK_CPODES_LIB} 
 					${SIMTK_SIMBODY_LIB} 
-					SimTKlapack 
+					${SIMTK_LAPACK_LIB}
 					pthread)
 SET(THIRDPARTY_DYNLIB_FILES	${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcommon${SHARED_LIB_EXT} 
 						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKmath${SHARED_LIB_EXT} 
 						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcpodes${SHARED_LIB_EXT}
 						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKsimbody${SHARED_LIB_EXT}
 						${SIMTK_LIB_DIR}/libpthread${SHARED_LIB_EXT}
-						${SIMTK_LIB_DIR}/libSimTKlapack${SHARED_LIB_EXT}
+						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKlapack${SHARED_LIB_EXT}
 						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH}/libxerces-c${SHARED_LIB_EXT})					
 ENDIF(WIN32)
 
@@ -191,7 +193,7 @@ INSTALL_FILES(/bin/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.dll
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKcpodes.dll 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.dll 
 						${SIMTK_LIB_DIR}/pthreadVC2.dll
-						${SIMTK_LIB_DIR}/SimTKlapack.dll
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKlapack.dll
 						${SIMTK_LIB_DIR}/vcredist_x86.exe
 						)
 INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.lib 
@@ -199,7 +201,7 @@ INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.lib
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKcpodes.lib 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.lib 
 						${SIMTK_LIB_DIR}/pthreadVC2.lib
-						${SIMTK_LIB_DIR}/SimTKlapack.lib)
+						${SIMTK_LIB_DIR}/${NameSpace}SimTKlapack.lib)
 
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 # Install windows runtime libraries to support prebuilt libraries
@@ -213,9 +215,9 @@ ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 ELSE(WIN32)
 		INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKcommon${SHARED_LIB_EXT} 
 									${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKmath${SHARED_LIB_EXT} 
-									${SIMTK_DIR}/lib${LIB64}/libSimTKlapack${SHARED_LIB_EXT}
-									${SIMTK_DIR}/lib${LIB64}/libSimTKcpodes${SHARED_LIB_EXT}
-									${SIMTK_DIR}/lib${LIB64}/libSimTKsimbody${SHARED_LIB_EXT}
+									${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKlapack${SHARED_LIB_EXT}
+									${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKcpodes${SHARED_LIB_EXT}
+									${SIMTK_DIR}/lib${LIB64}/lib${NameSpace}SimTKsimbody${SHARED_LIB_EXT}
 									${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${ARCH}/libxerces-c${SHARED_LIB_EXT})
 ENDIF(WIN32)
 
