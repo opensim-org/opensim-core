@@ -17,11 +17,12 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/StateFunction.h>
-#include "ActuatorPerturbationIndependent.h"
 
 
 namespace OpenSim {
 using namespace std;
+
+class ActuatorPerturbationIndependent;
 
 class ForcePerturbationFunction : public StateFunction {
 

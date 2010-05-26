@@ -47,6 +47,7 @@
 #include "MultiplierFunction.h"
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
+#include "StateFunction.h"
 
 
 

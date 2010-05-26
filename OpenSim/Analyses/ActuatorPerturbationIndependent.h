@@ -14,7 +14,7 @@
 #include "osimAnalysesDLL.h"
 #include "ActuatorPerturbation.h"
 #include "SimTKsimbody.h"
-
+#include "ForcePerturbationFunction.h"
 
 //=============================================================================
 //=============================================================================
@@ -54,8 +54,6 @@
  * be gotten and queried for this information.
  */
 namespace OpenSim { 
-
-class ForcePerturbationFunction;
 
 class OSIMANALYSES_API ActuatorPerturbationIndependent :
 	public ActuatorPerturbation  
