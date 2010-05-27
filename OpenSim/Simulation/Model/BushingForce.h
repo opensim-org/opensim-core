@@ -42,8 +42,11 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Bushing Constraint.
- * The underlying Force in Simbody is a Force::LinearBushing
+ * A class implementing a Bushing Force.
+ * A Bushing Force is the force proportional to the deviation of two frames. 
+ * One can think of the Bushing as being composed of 3 linear and 3 torsional
+ * spring-dampers, which act along or about the bushing frames. 
+ * The underlying Force in Simbody is a SimtK::Force::LinearBushing
  *
  * @author Ajay Seth
  * @version 1.0

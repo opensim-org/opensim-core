@@ -68,9 +68,6 @@ class OSIMSIMULATION_API Actuator : public Force
 public:
 	static const double LARGE;
 
-	/** Model which the actuator actuates. */
-	//Model *_model;
-
 protected:
     /** Flag indicating whether the actuator applies a force or a torque. */
     bool _appliesForce;
