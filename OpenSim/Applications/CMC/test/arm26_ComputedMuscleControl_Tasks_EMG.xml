@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CMC_TaskSet name="arm26">
+  <datafile>muscle_emg.sto</datafile>
+	<objects>
+		<!-- Shoulder -->
+		<CMC_Joint name="r_shoulder_elev">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e0 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> r_shoulder_elev </coordinate>
+		</CMC_Joint>
+	    <!-- Elbow -->
+	    <CMC_Joint name="r_elbow_flex">
+	      <wrt_body> -1 </wrt_body>
+	      <express_body> -1 </express_body>
+	      <on> true </on>
+	      <active> true false false </active>
+	      <weight> 1.0e0 </weight>
+	      <kp> 100.0 </kp>
+	      <kv>  20.0 </kv>
+	      <coordinate> r_elbow_flex </coordinate>
+	    </CMC_Joint>
+    <MuscleStateTrackingTask name="TRIlat.activation">
+      <on> true </on>
+      <active> true false false </active>
+      <weight> 100.00 0. 0.</weight>
+    </MuscleStateTrackingTask>
+    </objects>
+</CMC_TaskSet>
+

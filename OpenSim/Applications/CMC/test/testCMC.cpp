@@ -54,7 +54,7 @@ void testGait2354() {
 	cmc.print("check.xml");
 
 	Storage results("Results/subject01_walk1_Kinematics_q.sto");
-	Storage standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
+	Storage standard("subject01_walk1_CMC_Kinematics_q_standard.sto");
 
 	ASSERT(results.getFirstTime() >= standard.getFirstTime());
 	ASSERT(results.getLastTime() <= standard.getLastTime());
@@ -126,8 +126,17 @@ void testSingleMuscle() {
 	}
 }
 
+void testEMGDrivenArm() {
+
+	CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
+	cmc.run();
+	cmc.print("check.xml");
+
+}
+
 int main() {
     try {
+		testEMGDrivenArm();
 		testSingleMuscle();
 		testGait2354();
     }
