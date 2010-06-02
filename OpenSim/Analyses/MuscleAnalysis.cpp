@@ -549,7 +549,7 @@ record(const SimTK::State& s)
 		_model->getSystem().realize(tempState, s.getSystemStage() );
 		// LOOP OVER MUSCLES
 		for(int j=0; j<nm; j++) {
-            ma[j] = _muscleArray[j]->getGeometryPath().computeMomentArm(tempState,*q);
+            ma[j] = _muscleArray[j]->computeMomentArm(tempState,*q);
 			m[j] = ma[j] * force[j];
 		}
 		maStore->append(s.getTime(),nm,&ma[0]);
