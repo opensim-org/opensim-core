@@ -804,21 +804,6 @@ Set<Muscle>& Model::updMuscles()
 
 //_____________________________________________________________________________
 /**
- * Get the subset of Forces in the model which are muscles
- *
- * @return The set of Muscles
- */
-const Set<Muscle>& Model::getMuscles() const
-{
-	return _forceSet.getMuscles();
-}
-Set<Muscle>& Model::updMuscles() 
-{
-	return _forceSet.updMuscles();
-}
-
-//_____________________________________________________________________________
-/**
  * Get the number of analyses in the model.
  *
  * @return The number of analyses
