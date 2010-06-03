@@ -96,6 +96,12 @@ protected:
 public:
 	// CONSTRUCTION
 	WeldConstraint();
+	// Convenience constructors
+	WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
+					OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2);
+	WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Transform transformInBody1, 
+											OpenSim::Body& body2, SimTK::Transform transformInBody2);
+
 	WeldConstraint(const WeldConstraint &aConstraint);
 	virtual ~WeldConstraint();
 	virtual Object* copy() const;

@@ -72,6 +72,44 @@ WeldConstraint::WeldConstraint() :
 	setNull();
 	setupProperties();
 }
+
+WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Vec3 locationInBody1, SimTK::Vec3 orientationInBody1,
+							   OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2) : Constraint(),
+	_body1Name(_body1NameProp.getValueStr()),
+	_body2Name(_body2NameProp.getValueStr()),
+	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3())
+{
+	setName(name);
+	_body1Name = body1.getName();
+	_body2Name = body2.getName();
+	_locationInBody1 = locationInBody1;
+	_orientationInBody1 = orientationInBody1;
+	_locationInBody2 = locationInBody2;
+	_orientationInBody2 = orientationInBody2;
+}
+
+WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, SimTK::Transform transformInBody1, 
+							   OpenSim::Body& body2, SimTK::Transform transformInBody2) : Constraint(),
+	_body1Name(_body1NameProp.getValueStr()),
+	_body2Name(_body2NameProp.getValueStr()),
+	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3())
+{
+	setName(name);
+	_body1Name = body1.getName();
+	_body2Name = body2.getName();
+	_locationInBody1 = transformInBody1.p();
+	_orientationInBody1 = transformInBody1.R().convertRotationToBodyFixedXYZ();
+	_locationInBody2 = transformInBody2.p();
+	_orientationInBody2 = transformInBody2.R().convertRotationToBodyFixedXYZ();
+}
+
+
 //_____________________________________________________________________________
 /**
  * Copy constructor.

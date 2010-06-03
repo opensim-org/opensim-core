@@ -1,5 +1,5 @@
 // testConstraints.cpp
-// Author:  Samuel Hamner, Ajay Seth
+// Authors: Ajay Seth, Samuel Hamner 
 /*
 * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -34,7 +34,8 @@
 //
 //	Tests Include:
 //		1. Test locking (constraint) mechansim on coordinates
-//      2. PointOnLineConstraint against Simbody built-in PointOnLine constraint
+//		2. Test WelConstraint againsts Simbody Constraint::Weld
+//      3. PointOnLineConstraint against Simbody built-in PointOnLine constraint (samner)
 //     Add tests here as new constraint types are added to OpenSim
 //
 //==========================================================================================================
@@ -53,6 +54,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
+#include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 
@@ -69,7 +71,7 @@ using namespace std;
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
-const static double integ_accuracy = 1.0e-5;
+const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.00;
 const static Vec3 gravity_vec = Vec3(0, -9.8065, 0);
 
@@ -85,7 +87,7 @@ const static MassProperties footMass(1.20, Vec3(0), Inertia(Vec3(0.001361, 0.003
 const static MassProperties toesMass(0.205126, Vec3(0), Inertia(Vec3(0.000117, 0.000179, 0.000119)));
 
 // Joint locations
-const static Vec3 hipInGround(0);
+const static Vec3 hipInGround(0, 0.7, 0);
 const static Vec3 hipInFemur(0.0020, 0.1715, 0);
 const static Vec3 kneeInFemur(0.0033, -0.2294, 0);
 const static Vec3 kneeInTibia(0.0, 0.1862, 0.0);
@@ -238,11 +240,11 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
 	//u_err.dump("Diff u's:");
 
 	if(q_err.norm() > 10*integ_accuracy) {
-         cout<<"testJoints compareSimulationStates failed q_err.norm = "<< q_err.norm() << endl;
+         cout<<"testConstraints compareSimulationStates failed q_err.norm = "<< q_err.norm() << endl;
          status = false;
      }
-	if(u_err.norm() > 10*integ_accuracy) {
-         cout<<"testJoints compareSimulationStates failed u_err.norm = "<< u_err.norm() << endl;
+	if(u_err.norm() > 20*integ_accuracy) {
+         cout<<"testConstraints compareSimulationStates failed u_err.norm = "<< u_err.norm() << endl;
          status = false;
     }
 
@@ -405,6 +407,97 @@ bool testCoordinateLocking()
 	return status;
 }
 
+bool testWeldConstraint()
+{
+	cout << endl;
+	cout << "==================================================================" << endl;
+	cout << " OpenSim WeldConstraint vs. Simbody Constraint::Weld " << endl;
+	cout << "==================================================================" << endl;
+
+	Random::Uniform randomValue(-0.05, 0.1);
+	Vec3 weldInGround(randomValue.getValue(), randomValue.getValue(), 0);
+	Vec3 weldInFoot(0.1*randomValue.getValue(), 0.1*randomValue.getValue(), 0);
+
+	// Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+	// Thigh connected by hip
+	MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInGround), 
+		SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), SimTK::Transform(hipInFemur));
+	// Pin knee connects shank
+	MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+	// Pin ankle connects foot
+	MobilizedBody::Pin foot(shank, SimTK::Transform(ankleInTibia), SimTK::Body::Rigid(footMass), SimTK::Transform(ankleInFoot));
+
+	SimTK::Constraint::Weld weld(matter.Ground(), SimTK::Transform(weldInGround), foot, SimTK::Transform(weldInFoot));
+
+	// Simbody model state setup
+	system.realizeTopology();
+	State state = system.getDefaultState();
+	matter.setUseEulerAngles(state, false);
+    system.realizeModel(state);
+
+	//==========================================================================================================
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+
+	//OpenSim thigh
+	OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
+
+	// create Pin hip joint
+	PinJoint hip("hip", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
+
+	// Add the thigh body which now also contains the hip joint to the model
+	osimModel->updBodySet().append(&osim_thigh);
+
+	//OpenSim shank
+	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+	// create Pin knee joint
+	PinJoint knee("knee", osim_thigh, kneeInFemur, Vec3(0), osim_shank, kneeInTibia, Vec3(0));
+
+	// Add the thigh body which now also contains the hip joint to the model
+	osimModel->updBodySet().append(&osim_shank);
+
+	//OpenSim foot
+	OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
+
+	// create Pin ankle joint
+	PinJoint ankle("ankle", osim_shank, ankleInTibia, Vec3(0), osim_foot, ankleInFoot, Vec3(0));
+
+	// Add the foot body which now also contains the hip joint to the model
+	osimModel->updBodySet().append(&osim_foot);
+
+
+	// add a point on line constraint
+	WeldConstraint footConstraint("footConstraint", ground, SimTK::Transform(weldInGround), osim_foot, SimTK::Transform(weldInFoot));
+	osimModel->updConstraintSet().append(&footConstraint);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->updBodySet().setMemoryOwner(false);
+
+	osimModel->setGravity(gravity_vec);
+
+    //Add analyses before setting up the model for simulation
+	Kinematics *kinAnalysis = new Kinematics(osimModel);
+	kinAnalysis->setInDegrees(false);
+	osimModel->addAnalysis(kinAnalysis);
+
+	// Need to setup model before adding an analysis since it creates the AnalysisSet
+	// for the model if it does not exist.
+	SimTK::State osim_state = osimModel->initSystem();
+
+	//==========================================================================================================
+	// Compare Simbody system and OpenSim model simulations
+	return (compareSimulations(system, state, osimModel, osim_state));
+} // end testPointOnLineConstraint
+
+
 
 bool testPointOnLineConstraint()
 {
@@ -563,17 +656,13 @@ bool testCoordinateCouplerConstraint()
     OpenSim::Body& ground = osimModel->getGroundBody();
 	
 	OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
-	//OpenSim::Body osim_thigh;
-	//osim_thigh.setName("thigh");
 
-	// Define hip coordinates and axes for custom joint
-	SpatialTransform hipTransform;
-	hipTransform[2].setCoordinateNames(OpenSim::Array<std::string>("hip_q0", 1, 1));
-	hipTransform[2].setFunction(new LinearFunction());
+	// create hip as a pin joint
+	PinJoint hip("",ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0));
 
-	// create custom hip joint
-	CustomJoint hip("", ground, hipInGround, Vec3(0), osim_thigh, hipInFemur, Vec3(0), hipTransform);
-
+	// Rename hip coordinates for a pin joint
+	hip.getCoordinateSet()[0].setName("hip_flex");
+	
 	// Add the thigh body which now also contains the hip joint to the model
 	osimModel->addBody(&osim_thigh);
 
@@ -665,13 +754,18 @@ int main()
         cout << " testCoordinateLocking FAILED " << endl;
     }	
 
+	if(  !testWeldConstraint()) {
+        status = 1;
+        cout << " testWeldConstraint FAILED " << endl;
+    }	
+	
+
 	// Compare behavior of PointOnLineConstraint between the foot and ground 
 	if(  !testPointOnLineConstraint()) {
         status = 1;
         cout << " testPointOnLineConstraint FAILED " << endl;
     }	
 
-	
 	// Compare behavior of CoordinateCouplerConstraint as a custom knee 
 	if(  !testCoordinateCouplerConstraint()) {
         status = 1;
