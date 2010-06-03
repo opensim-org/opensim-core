@@ -108,8 +108,10 @@ private:
 	
 public:
 
+#ifndef SWIG
     const Model& getModel() const { return *_model; }
-    Model& getModel() { return *_model; }
+#endif
+	Model& getModel() { return *_model; }
     void setModel(Model& aModel) { _model = &aModel; }
 
 	virtual void setup(Model& aModel);

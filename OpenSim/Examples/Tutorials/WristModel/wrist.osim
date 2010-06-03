@@ -7183,7 +7183,7 @@
 									<Coordinate name="flexion">
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
+										<motion_type> rotational </motion_type>
 										<default_value>       0.00000000 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
@@ -7198,13 +7198,16 @@
 							<reverse> false </reverse>
 							<SpatialTransform name="">
 								<!--3 Axes for rotations are listed first.-->
+								
+								<!--3 Axes for translations are listed next.-->
 								<TransformAxis name="rotation1">
 									<function>
-										<Constant name="">
-											<value>       0.00000000 </value>
-										</Constant>
+										<NaturalCubicSpline name="">
+											<x>      -1.57079633       0.00000000       1.57079633 </x>
+											<y>      -0.01000000       0.00000000       0.01000000 </y>
+										</NaturalCubicSpline>
 									</function>
-									<coordinates> </coordinates>
+									<coordinates> flexion </coordinates>
 									<axis>       1.00000000       0.00000000       0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="rotation2">
@@ -7225,15 +7228,14 @@
 									<coordinates> </coordinates>
 									<axis>       0.00000000       0.00000000       1.00000000 </axis>
 								</TransformAxis>
-								<!--3 Axes for translations are listed next.-->
+								
 								<TransformAxis name="translation1">
 									<function>
-										<NaturalCubicSpline name="">
-											<x>      -1.57079633       0.00000000       1.57079633 </x>
-											<y>      -0.01000000       0.00000000       0.01000000 </y>
-										</NaturalCubicSpline>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
 									</function>
-									<coordinates> flexion </coordinates>
+									<coordinates> </coordinates>
 									<axis>       1.00000000       0.00000000       0.00000000 </axis>
 								</TransformAxis>
 								<TransformAxis name="translation2">

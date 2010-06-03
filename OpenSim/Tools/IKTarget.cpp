@@ -1,6 +1,6 @@
 // IKTarget.cpp
-// Authors: Ayman Habib, Peter Loan, Eran Guendelman
-/* Copyright (c)  2005, Stanford University, Ayman Habib, Peter Loan, and Eran Guendelman.
+// Authors: Ayman Habib, Peter Loan, Eran Guendelman, Jeff Reinbolt, Ajay Seth
+/* Copyright (c)  2005, Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -65,7 +65,7 @@ _interrupted(false)
 	buildMarkerMap(aExperimentalDataStorage.getColumnLabels());
 	buildCoordinateMap(s,aExperimentalDataStorage.getColumnLabels());
 
-	/** Number of controls -- also allocates _dx. */
+	/** Number of coordinates to determine -- also allocates _dx. */
 	setNumParameters(_unprescribedQs.getSize());
 
 	for (int i = 0; i < getNumParameters(); i++)
@@ -130,13 +130,10 @@ int IKTarget::objectiveFunc( const SimTK::Vector &x, const bool new_parameters, 
 		SimTK::Vec3 globalPos;
 		_model.getSimbodyEngine().transformPosition(*s, *_markers[i]->body, localPos, globalPos);
 
-		double markerError = 0.0;
-		for (int j = 0; j < 3; j++)
-		{
-			_markers[i]->computedPosition[j] = globalPos[j];
-			double err = _markers[i]->experimentalPosition[j] - _markers[i]->computedPosition[j];
-			markerError += (err * err);
-		}
+		_markers[i]->computedPosition = globalPos;
+		SimTK::Vec3 err = _markers[i]->experimentalPosition - _markers[i]->computedPosition;
+		double markerError = (~err * err);
+
 
 		totalMarkerSquaredErrors += markerError;
 		if (markerError > maxMarkerError)
@@ -199,7 +196,7 @@ int IKTarget::objectiveFunc( const SimTK::Vector &x, const bool new_parameters, 
 
 //_____________________________________________________________________________
 /**
- * Compute derivative of objective function using finite differences
+ * Compute derivative of objective function using forward difference 
  */
 int IKTarget::gradientFunc(const SimTK::Vector &x, const bool new_parameters, SimTK::Vector &dpdx) const
 {
@@ -207,8 +204,60 @@ int IKTarget::gradientFunc(const SimTK::Vector &x, const bool new_parameters, Si
 	int status = OptimizationTarget::ForwardDifferences(this,&_dx[0],x,dpdx);
 	calcDerivs=false;
 
+/*  //Alternatively use the Jacobian of errors with respect to coordinates 
+
+	const SimTK::State *s = getCurrentState();
+	SimTK::State stmp = const_cast<SimTK::State&>(*s); 
+
+	// Assemble model in new configuration
+	// x contains values only for unprescribed coordinates
+	for (int i = 0; i < getNumParameters(); i++)
+		_unprescribedQs[i]->coord->setValue(stmp,x[i], i==(getNumParameters()-1));
+
+	int nm = _markers.getSize();
+	int nq = getNumParameters();
+	int nerr = 3*nm + _unprescribedWeightedQs.getSize();
+	SimTK::Matrix dErr_dq(nerr, nq);
+	dErr_dq = 0;
+	
+	// Get the jacobian of errors vectors w.r.t. q's
+	createJacobian(stmp, x, dErr_dq);
+
+	SimTK::Vector errors(nerr);
+	errors = 0;
+
+	// compute individual marker errors
+	for (int i = 0; i < _markers.getSize(); i++)
+	{
+		// Get marker offset in local frame
+		SimTK::Vec3 localPos;
+		_markers[i]->marker->getOffset(localPos);
+
+		// transform local marker to world frame
+		SimTK::Vec3 globalPos;
+		_model.getSimbodyEngine().transformPosition(stmp, *_markers[i]->body, localPos, globalPos);
+
+		_markers[i]->computedPosition = globalPos;
+		SimTK::Vec3 err = sqrt(_markers[i]->weight)*(_markers[i]->experimentalPosition - _markers[i]->computedPosition);
+		for(int j =0; j<3; j++)
+			errors[3*i+j] = err[j];
+	}
+
+	// evaluate individual coordinate errors
+	for (int i = 0; i < _unprescribedWeightedQs.getSize(); i++)
+	{
+		double experimentalValue = _unprescribedWeightedQs[i]->experimentalValue;
+		double computedValue = _unprescribedWeightedQs[i]->coord->getValue(stmp);
+		errors[3*nm+i] =  sqrt(_unprescribedWeightedQs[i]->weight) * (experimentalValue - computedValue);
+	}
+
+	dpdx = (~(-2*(~errors)*dErr_dq)).getAsVector();
+
+*/
 	return (status);
 }
+
+
 //_____________________________________________________________________________
 /**
  * Compute derivative of objective function using finite differences
@@ -217,10 +266,7 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 {
 	// Iterative optimization method
 	//
-    //    de = J*dQ , which can be rearranged as: dQ = J^-1 * de , where J^-1 = (J'*J)^-1*J'
-	//
-	SimTK::Matrix J((3*_markers.getSize()+_unprescribedWeightedQs.getSize()), getNumParameters());
-	//SimTK::Matrix Jinv(getNumParameters(), (3*_markers.getSize()+_unprescribedWeightedQs.getSize()));
+    //    de = J*dQ , use linear (lapack) solver to determine dQ
 
 	// Tally the square of the errors from markers
 	double totalWeightedSquaredErrors = 0.0;
@@ -228,6 +274,10 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 	double totalCoordinateSquaredErrors = 0.0;
 	double maxMarkerError = 0.0, maxCoordinateError = 0.0; // these are the max unweighted errors
 	int worstMarker = -1, worstCoordinate = -1;
+
+	SimTK::Vec3 localPos;
+	SimTK::Vec3 globalPos;
+	SimTK::Vec3 err;
 
 	// Compute the change in Q's to reduce error in Marker Positions
 	SimTK::Matrix dQ(getNumParameters(), 1); 
@@ -237,8 +287,6 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 	int iter = 0;
 
 	int info;
-	SimTK::Matrix performanceMatrixCopy;
-	SimTK::Vector performanceVectorCopy;
 	int m = (3*_markers.getSize()+_unprescribedWeightedQs.getSize());
 	int n = getNumParameters();
 	int nrhs = 1;
@@ -248,13 +296,16 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 	int rank = n;
 	int *jpvt = new int[n];
 
+	SimTK::Matrix performanceMatrixCopy(m, n);
+	SimTK::Vector performanceVectorCopy;
+
 	SimTK::Real previousDErrorNorm = 0.0;
 	SimTK::Real currentDErrorNorm = 0.0;
 	SimTK::Real tempDErrorNorm = 0.0;
 	SimTK::Real deltaDErrorNorm = 100.0;
 
 	// Set matrices and vectors to zero
-	J = 0;
+	performanceMatrixCopy = 0;
 	dQ = 0;
 	dError = 0;
 	lapackWork = 0;
@@ -270,18 +321,16 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		Vec3 localPos;
 		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
-		Vec3 globalPos;
 		_model.getSimbodyEngine().transformPosition(s,*_markers[i]->body, localPos, globalPos);
+		_markers[i]->computedPosition = globalPos;
+
+		err = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition - _markers[i]->computedPosition);
 
 		for (int r=0; r<3; r++)
-		{
-			_markers[i]->computedPosition[r] = globalPos[r];
-			dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - _markers[i]->computedPosition[r]); 
-		}
+			dError(i*3+r, 0) =  err[r];
 	}
 
 	// Q ERRORS
@@ -300,16 +349,8 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 	{
 		previousDErrorNorm = currentDErrorNorm;
 
-		//// Pseudo-inverse method
-		//J = 0;
-		//Jinv = 0;
-		//createJacobian(results, J);
-		//createPseudoInverseJacobian(J, Jinv);
-		//dQ = Jinv*dError;
-
 		// Linear least squares method
-        createJacobian(s, results, J);
-		performanceMatrixCopy = J;
+        createJacobian(s, results, performanceMatrixCopy);
 		performanceVectorCopy = dError.col(0);
 		for(int i=0; i<n; i++) { jpvt[i] = 0; }
 		dgelsy_(m, n, nrhs, &performanceMatrixCopy(0,0), m, &performanceVectorCopy[0], m, &jpvt[0], rcond, rank, &lapackWork[0], lapackWork.size(), info);
@@ -333,18 +374,15 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 			if(!_markers[i]->validExperimentalPosition) continue;
 
 			// Get marker offset in local frame
-			Vec3 localPos;
 			_markers[i]->marker->getOffset(localPos);
 
 			// transform local marker to world frame
-			Vec3 globalPos;
 			_model.getSimbodyEngine().transformPosition(s,*_markers[i]->body, localPos, globalPos);
+			_markers[i]->computedPosition = globalPos;
+			err = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition - _markers[i]->computedPosition);
 
 			for (int r=0; r<3; r++)
-			{
-				_markers[i]->computedPosition[r] = globalPos[r];
-				dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - _markers[i]->computedPosition[r]); 
-			}
+				dError(i*3+r, 0) = err(r);
 		}
 
 		// Q ERRORS
@@ -368,30 +406,25 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 			//	dError = dError*0.5;
 			//	cout << "dQ reduced by a 10 percent" << "   dError.norm " << dError.norm() << "   dQ.norm " << dQ.norm() << endl;
 				dQ = dQ*0.5;
-				cout << "dQ reduced by a 50 percent" << "   dError.norm " << dError.norm() << "   dQ.norm " << dQ.norm() << endl;
+				cout << "dQ reduced by 50 percent" << "   dError.norm " << dError.norm() << "   dQ.norm " << dQ.norm() << endl;
 
 				for (int i = 0; i < getNumParameters(); i++)
-				{
 					_unprescribedQs[i]->coord->setValue(s,results[i]+dQ(i, 0), i==(getNumParameters()-1));
-				}
 
-				for (int i = 0; i < _markers.getSize(); i++)
-				{
+				for (int i = 0; i < _markers.getSize(); i++){
 					if(!_markers[i]->validExperimentalPosition) continue;
 
 					// Get marker offset in local frame
-					Vec3 localPos;
 					_markers[i]->marker->getOffset(localPos);
 
 					// transform local marker to world frame
-					Vec3 globalPos;
 					_model.getSimbodyEngine().transformPosition(s, *_markers[i]->body, localPos, globalPos);
+					_markers[i]->computedPosition = globalPos;
+
+					err = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition - _markers[i]->computedPosition);
 
 					for (int r=0; r<3; r++)
-					{
-						_markers[i]->computedPosition[r] = globalPos[r];
-						dError(i*3+r, 0) = sqrt(_markers[i]->weight) * (_markers[i]->experimentalPosition[r] - _markers[i]->computedPosition[r]); 
-					}
+						dError(i*3+r, 0) = err(r); 
 				}
 
 				// Q ERRORS
@@ -437,9 +470,7 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 	// Assemble model in new configuration
 	// x contains values only for unprescribed coordinates
 	for (int i = 0; i < getNumParameters(); i++)
-	{
 		_unprescribedQs[i]->coord->setValue(s,results[i], i==(getNumParameters()-1));
-	}
 
 	// We keep track of worst marker for debugging/tuning purposes
 	for (int i = 0; i < _markers.getSize(); i++)
@@ -447,19 +478,14 @@ int IKTarget::iterativeOptimization(SimTK::State& s, SimTK::Vector &results)
 		if(!_markers[i]->validExperimentalPosition) continue;
 
 		// Get marker offset in local frame
-		Vec3 localPos;
 		_markers[i]->marker->getOffset(localPos);
 
 		// transform local marker to world frame
-		Vec3 globalPos;
 		_model.getSimbodyEngine().transformPosition(s, *_markers[i]->body, localPos, globalPos);
 
-        double markerError = 0.0;
-		for (int j = 0; j < 3; j++)
-		{
-			double err = _markers[i]->experimentalPosition[j] - _markers[i]->computedPosition[j];
-			markerError += (err * err);
-		}
+		err = _markers[i]->experimentalPosition - _markers[i]->computedPosition;
+		double markerError = (~err * err);
+	
 
 		totalMarkerSquaredErrors += markerError;
 		if (markerError > maxMarkerError)
@@ -824,8 +850,52 @@ void IKTarget::setErrorReportingQuantities(const double& aMarkerError, const std
 	_nameOfWorstCoordinate=aCoordinateName;
 }
 
+// Form the Jacobian matrix of the individual errors with respect to the coordinates
+void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, SimTK::Matrix &J) const
+{
 
-void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, SimTK::Matrix &J)
+	const SimTK::SimbodyMatterSubsystem& matter = _model.getSystem().getMatterSubsystem();
+   
+	int row = 3*_markers.getSize();
+
+    s.updU() = 0; // no velocity
+
+	Vec3 localPos;
+
+    for (int i=0; i < getNumParameters(); ++i) {
+
+        _unprescribedQs[i]->coord->setSpeedValue(s, 1.0);
+
+		_model.getSystem().realize(s, SimTK::Stage::Velocity);
+
+		for (int m=0; m<_markers.getSize(); m++){
+			// Get marker offset in local frame
+			_markers[m]->marker->getOffset(localPos);
+
+			 const SimTK::MobilizedBody& mobod = matter.getMobilizedBody(_markers[m]->body->getIndex());
+
+			// Compute marker velocity in ground and scale according to weight
+			// this yields it partial with respect to coordinate when its velocity is 1.
+			Vec3 dPdq_i = sqrt(_markers[m]->weight)*mobod.findStationVelocityInGround(s, localPos);
+			
+			//Fill in the indiviudal components of the Jacobian matrix
+			for (int r=0; r<3; r++)
+				J(3*m+r,i) = dPdq_i[r];
+		}
+		
+		// re-zero the velocity
+        _unprescribedQs[i]->coord->setSpeedValue(s, 0.0);
+
+		if(_unprescribedQs[i]->weight) {
+			J(row, i) = sqrt(_unprescribedQs[i]->weight);
+			row++;
+		}
+    }
+}
+
+/*
+// Create the Jacobian matrix numerically
+void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, SimTK::Matrix &J) const
 {
 	// Compute the Jacobian using central differences
 	SimTK::Vector xp=jointQs.col(0);
@@ -845,9 +915,8 @@ void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, Sim
 	}
 
 	pf = 0;
-	pb = 0;
 
-	// LOOP OVER CONTROLS
+	// LOOP OVER Coordinates
 	for(int i=0;i<getNumParameters();i++) {
 
 		//actualDX = 0.0;
@@ -880,30 +949,6 @@ void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, Sim
 			}
 		}
 
-		//// PERTURB BACKWARD
-		//xp[i] = jointQs[i] - _dx[i];
-
-		//// Assemble model in new configuration
-		//// xp contains values only for unprescribed coordinates
-		//_unprescribedQs[i]->coord->setValue(xp[i], true);
-
-		//// Compute marker position in world frame	
-		//for (int m=0; m<_markers.getSize(); m++)
-		//{
-		//	if(!_markers[m]->validExperimentalPosition) continue;
-
-		//	// Get marker offset in local frame
-		//	_markers[m]->marker->getOffset(localPos);
-
-		//	// transform local marker to world frame
-		//	de.transformPosition(*_markers[m]->body, localPos, globalPos);
-
-		//	for (int r=0; r<3; r++)
-		//	{
-		//		pb(m*3+r) = markerWeights(m) * globalPos[r];
-		//	}
-		//}
-
 		// DERIVATIVES OF PERFORMANCE
 		//rdx = 0.5 / _dx[i];
 		//J.updCol(i) = (rdx*(pf-pb));
@@ -922,7 +967,7 @@ void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, Sim
 		}
 	}
 }
-
+*/
 
 void IKTarget::createPseudoInverseJacobian(const SimTK::Matrix &J, SimTK::Matrix &Jinv)
 {

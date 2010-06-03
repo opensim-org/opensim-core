@@ -480,6 +480,7 @@ virtual bool append(T *aObject)
 {
 	return( _objects.append(aObject) );
 }
+
 //_____________________________________________________________________________
 /**
  * Append to the array.  A copy is made of the object and added to the Set.
@@ -517,6 +518,7 @@ virtual bool insert(int aIndex,T *aObject)
 {
 	return( _objects.insert(aIndex,aObject) );
 }
+#ifndef SWIG
 //_____________________________________________________________________________
 /**
  * Insert an object into the array at a specified index.  A copy is made of the
@@ -537,6 +539,7 @@ virtual bool insert(int aIndex, const T& aObject)
 {
 	return insert(aIndex, (T*) aObject.copy());
 }
+#endif
 //-----------------------------------------------------------------------------
 // REMOVE
 //-----------------------------------------------------------------------------
@@ -623,6 +626,7 @@ virtual bool set(int aIndex, T *aObject, bool preserveGroups = false)
 	}
 	return false;
 }
+#ifndef SWIG
 //_____________________________________________________________________________
 /**
  * Set the object at a specified index.  A copy is made of the
@@ -641,6 +645,7 @@ virtual bool set(int aIndex, const T& aObject, bool preserveGroups = false)
 {
     return set(aIndex, (T*) aObject.copy(), preserveGroups);
 }
+#endif
 //_____________________________________________________________________________
 /**
  * Get the value at a specified array index.

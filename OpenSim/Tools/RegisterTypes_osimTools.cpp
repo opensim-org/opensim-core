@@ -58,7 +58,7 @@
 #include "SMC_Joint.h"
 #include "CMC_TaskSet.h"
 #include "CorrectionController.h"
-
+#include "MuscleStateTrackingTask.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -99,6 +99,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( CMC() );
 	Object::RegisterType( CMC_Joint() );
 	Object::RegisterType( CMC_Point() );
+	Object::RegisterType( MuscleStateTrackingTask() );
 	Object::RegisterType( CMC_TaskSet() );
 
 	Object::RegisterType( SMC_Joint() );

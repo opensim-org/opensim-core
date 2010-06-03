@@ -37,6 +37,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -59,7 +60,7 @@ SpringGeneralizedForce::~SpringGeneralizedForce()
 SpringGeneralizedForce::
 SpringGeneralizedForce(string aCoordinateName) :
 	CustomForce(),
-	_coordName(aCoordinateName),
+	_coordName(_propCoordinateName.getValueStr()),
 	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestLength.getValueDbl()),
 	_viscosity(_propViscosity.getValueDbl()),
@@ -67,7 +68,7 @@ SpringGeneralizedForce(string aCoordinateName) :
 {
 	// NULL
 	setNull();
-
+	_coordName=aCoordinateName;
 	if (_model) {
 		_coord = &_model->updCoordinateSet().get(_coordName);
 	} 
@@ -90,6 +91,7 @@ SpringGeneralizedForce(const SpringGeneralizedForce &aForce) :
 	setNull();
 
 	// MEMBER VARIABLES
+	_coordName = aForce._coordName;
 	setStiffness(aForce.getStiffness());
 	setRestLength(aForce.getRestLength());
 	setViscosity(aForce.getViscosity());
@@ -127,6 +129,7 @@ setNull()
 	_stiffness = 0.0;
 	_restLength = 0.0;
 	_viscosity = 0.0;
+	_coordName="";
 }
 
 	
@@ -174,6 +177,7 @@ operator=(const SpringGeneralizedForce &aForce)
 	CustomForce::operator =(aForce);
 
 	// MEMBER VARIABLES
+	_coordName = aForce._coordName;
 	setStiffness(aForce.getStiffness());
 	setRestLength(aForce.getRestLength());
 	setViscosity(aForce.getViscosity());
@@ -183,7 +187,8 @@ operator=(const SpringGeneralizedForce &aForce)
 
 //_____________________________________________________________________________
 /**
- * setup sets the actual Coordinate reference _coord
+ * setup sets the _model pointer to proper value
+ * _coordinate is actually set inside _createSystem
  */
 void SpringGeneralizedForce::setup(Model& aModel)
 {
@@ -288,6 +293,7 @@ getStiffness() const
 /**
  * Compute all quantities necessary for applying the spring force to the
  * model.
+ * Force applied = -stiffness * (_coordinateValue - restLength) - viscosity * _coordinateSpeed
  */
 void SpringGeneralizedForce::computeForce(const SimTK::State& s, 
 							      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
@@ -296,9 +302,51 @@ void SpringGeneralizedForce::computeForce(const SimTK::State& s,
 	if(_model==NULL || _coord == NULL) return;
 
 	// FORCE
+	applyGeneralizedForce(s, *_coord, computeForceMagnitude(s), generalizedForces);
+}
+//_____________________________________________________________________________
+/**
+ * setup sets the actual Coordinate reference _coord
+ */
+ void  SpringGeneralizedForce::
+createSystem(SimTK::MultibodySystem& system) const {
+
+     CustomForce::createSystem( system );
+
+	if (_model) 
+		_coord = &_model->updCoordinateSet().get(_coordName);
+     
+}
+/** 
+ * Methods to query a Force for the value actually applied during simulation
+ * The names of the quantities (column labels) is returned by this first function
+ * getRecordLabels()
+ */
+OpenSim::Array<std::string> SpringGeneralizedForce::getRecordLabels() const {
+	OpenSim::Array<std::string> labels("");
+	labels.append(getName()+"_Force");
+	return labels;
+}
+/**
+ * Given SimTK::State object extract all the values necessary to report forces, application location
+ * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+ */
+OpenSim::Array<double> SpringGeneralizedForce::getRecordValues(const SimTK::State& state) const {
+	OpenSim::Array<double> values(1);
+
+	values.append(computeForceMagnitude(state));
+	return values;
+};
+
+/**
+ * Given SimTK::State object Compute the (signed) magnitude of the force applied
+ * along the _coordinate
+ */
+double SpringGeneralizedForce::
+computeForceMagnitude(const SimTK::State& s) const
+{
 	double q = _coord->getValue(s);
 	double speed =  _coord->getSpeedValue(s);
 	double force = -getStiffness()*(q - _restLength) - _viscosity*speed;
-
-	applyGeneralizedForce(s, *_coord, force, generalizedForces);
+	return force;
 }

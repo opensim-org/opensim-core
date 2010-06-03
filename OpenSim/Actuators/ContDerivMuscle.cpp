@@ -590,6 +590,7 @@ double ContDerivMuscle::computeActuation(const SimTK::State& s) const
      setFiberLengthDeriv(s, normStateDeriv[STATE_FIBER_LENGTH] * Vmax );
 
     tendonForce = tendonForce * _maxIsometricForce;
+    setForce( s, tendonForce );
     setTendonForce( s, tendonForce );
     setPassiveForce( s, passiveForce * _maxIsometricForce);
     setActiveForce( s, activeForce*getActivation(s) * _maxIsometricForce);

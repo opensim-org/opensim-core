@@ -52,6 +52,9 @@ private:
 	void setNull();
 public:
 	CoordinateSet();
+	CoordinateSet(Model& model): ModelComponentSet<Coordinate>(model) {};
+	CoordinateSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode=true):
+	ModelComponentSet<Coordinate>(model, aFileName, aUpdateFromXMLNode) {};
 	CoordinateSet(const CoordinateSet& aCoordinateSet);
 	~CoordinateSet(void);
 

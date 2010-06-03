@@ -174,12 +174,12 @@ void Delp1990Muscle::setupProperties()
 
 	_activation1Prop.setName("activation1");
 	_activation1Prop.setComment("Parameter used in time constant of ramping up of muscle force");
-	_activation1Prop.setValue(0.01);
+	_activation1Prop.setValue(7.667);
 	_propertySet.append(&_activation1Prop, "Parameters");
 
 	_activation2Prop.setName("activation2");
 	_activation2Prop.setComment("Parameter used in time constant of ramping up and ramping down of muscle force");
-	_activation2Prop.setValue(0.04);
+	_activation2Prop.setValue(1.459854);
 	_propertySet.append(&_activation2Prop, "Parameters");
 
 	_maxIsometricForceProp.setName("max_isometric_force");

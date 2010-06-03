@@ -210,8 +210,6 @@ void Ligament::initState( SimTK::State& s) const
 
 	_model->getSystem().realize(s, SimTK::Stage::Position );
 
-	// All this does is call compute(), so that's why it's after the realize call.
-	_path.initState(s);
 }
 
 //=============================================================================

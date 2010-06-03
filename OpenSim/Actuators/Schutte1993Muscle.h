@@ -114,12 +114,9 @@ protected:
 	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
 	Function *&_passiveForceLengthCurve;
 
-	/* Function representing force-velocity behavior of muscle fibers */
-	PropertyObjPtr<Function> _forceVelocityCurveProp;
-	Function *&_forceVelocityCurve;
-
     // index for Forces in various components
     SimTK::CacheEntryIndex _passiveForceIndex;
+	 SimTK::CacheEntryIndex _tendonForceIndex;
 
 protected:
 	static const int STATE_ACTIVATION;
@@ -182,7 +179,8 @@ public:
     virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH, fiberLengthDeriv); }
     virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
     virtual double getPassiveForce( const SimTK::State& s) const;
-   
+	 virtual void setTendonForce(const SimTK::State& s, double aForce) const;
+	 virtual double getTendonForce(const SimTK::State& s) const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
@@ -204,8 +202,6 @@ public:
 	virtual bool setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve);
 	virtual Function* getTendonForceLengthCurve() const;
 	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
-	virtual Function* getForceVelocityCurve() const;
-	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
 	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, Actuator);
 

@@ -316,9 +316,13 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 	std::vector<const SimTK::Function*> functions = _spatialTransform.getFunctions();
 	std::vector<Vec3> axes = _spatialTransform.getAxes();
 
+	SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(_parentBody);
+	if (!parentIndex.isValid())
+		throw(Exception("CustomJoint " + getName() + " has invalid parent body "+_parentBody->getName()));
+
 	// CREATE MOBILIZED BODY
 	MobilizedBody::FunctionBased
-		simtkBody(system.updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
+		simtkBody(system.updMatterSubsystem().updMobilizedBody(parentIndex),
 			parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
 			childTransform,numMobilities,functions,coordinateIndices,axes, (getReverse() ? MobilizedBody::Reverse : MobilizedBody::Forward));
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
@@ -449,6 +453,17 @@ void CustomJoint::updateFromXMLNode()
 						Coordinate::Translational : Coordinate::Rotational);
 				break;
 			}
+		}
+	}
+	// Axes should be independent otherwise Simbody throws an exception in createSystem
+	double tol = 1e-5;
+    // Verify that none of the rotation axes are colinear
+	std::vector<SimTK::Vec3> axes=_spatialTransform.getAxes();
+	for(int startIndex=0; startIndex<=3; startIndex+=3){
+        if(((axes[startIndex+0]%axes[startIndex+1]).norm() < tol)||
+			((axes[startIndex+0]%axes[startIndex+2]).norm() < tol)||
+			((axes[startIndex+1]%axes[startIndex+2]).norm() < tol)){
+				throw(Exception("CustomJoint " + getName() + " has colinear axes and so is not wel-defined. Please fix and retry loading.."));
 		}
 	}
 }

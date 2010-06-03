@@ -128,6 +128,7 @@ public:
 	virtual void getLocation(SimTK::Vec3& rLocation) const;
 	virtual void setOrientation(const SimTK::Vec3& aOrientation);
 	virtual void getOrientation(SimTK::Vec3& rOrientation) const;
+
 	// Relating to the parent body
 	void setParentName(const std::string& aName);
 	std::string getParentName() const;
@@ -138,14 +139,22 @@ public:
 	virtual void setOrientationInParent(const SimTK::Vec3& aOrientation);
 	virtual void getOrientationInParent(SimTK::Vec3& rOrientation) const;
 
-	virtual void getLocationInParent(double rLocation[]) const {
-		_locationInParent.getAs(&rLocation[0]);
+	// A set of functions that use double[] to be invoked by GUI, not Vec3 aware
+	virtual void getOrientationInChild(double rOrientation[]) const {
+		_orientation.getAs(&rOrientation[0]);
 	};
-	virtual void setLocationInChild(const SimTK::Vec3& aLocation) {
-		_location = aLocation;
+	virtual void getOrientationInParent(double rOrientation[]) const {
+		_orientationInParent.getAs(&rOrientation[0]);
 	};
 	virtual void getLocationInChild(double rLocation[]) const {
 		_location.getAs(&rLocation[0]);
+	};
+	virtual void getLocationInParent(double rLocation[]) const {
+		_locationInParent.getAs(&rLocation[0]);
+	};
+
+	virtual void setLocationInChild(const SimTK::Vec3& aLocation) {
+		_location = aLocation;
 	};
 	virtual void getLocationInChild(SimTK::Vec3& rLocation) const {
 		rLocation = _location;

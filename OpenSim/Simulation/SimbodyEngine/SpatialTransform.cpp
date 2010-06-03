@@ -337,6 +337,14 @@ void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
 		TransformAxis *transform = &operator[](i);
         if (transform->hasFunction()) {
 			Function& function = transform->getFunction();
+			// If the function is a linear function with coefficients of 1.0 and 0.0, do
+			// not scale it because this transform axis represents a degree of freedom.
+			LinearFunction* lf = dynamic_cast<LinearFunction*>(&function);
+			if (lf) {
+				const Array<double> coefficients = lf->getCoefficients();
+				if (coefficients[0] == 1.0 && coefficients[1] == 0.0)
+					continue;
+			}
 			SimTK::Vec3 axis;
             transform->getAxis(axis);
             double scaleFactor = ~axis * scaleFactors;

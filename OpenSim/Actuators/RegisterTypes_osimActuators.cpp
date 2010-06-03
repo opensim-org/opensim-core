@@ -40,6 +40,7 @@
 #include "Schutte1993Muscle.h"
 #include "Delp1990Muscle.h"
 #include "PassiveJointTorque.h"
+#include "SpringGeneralizedForce.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -65,6 +66,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( Schutte1993Muscle() );
 	Object::RegisterType( Delp1990Muscle() );
 	Object::RegisterType( PassiveJointTorque() );
+	Object::RegisterType( SpringGeneralizedForce() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

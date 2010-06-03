@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="10905">
+<OpenSimDocument Version="20001">
 	<CMCTool name="subject01_walk1">
 		<defaults>
 			<ControlLinear name="default">
@@ -151,11 +151,19 @@
 					</NaturalCubicSpline>
 				</passive_force_length_curve>
 				<!--Function representing force-velocity behavior of muscle fibers-->
-				<force_velocity_curve/>
+				<force_velocity_curve>
+					<NaturalCubicSpline name="">
+						<x>      -1.00000000000000000000      -0.94999999999999995559      -0.90000000000000002220      -0.84999999999999997780      -0.80000000000000004441      -0.75000000000000000000      -0.69999999999999995559      -0.65000000000000002220      -0.59999999999999997780      -0.55000000000000004441      -0.50000000000000000000      -0.45000000000000001110      -0.40000000000000002220      -0.34999999999999997780      -0.29999999999999998890      -0.25000000000000000000      -0.20000000000000001110      -0.14999999999999999445      -0.10000000000000000555      -0.05000000000000000278       0.00000000000000000000       0.05000000000000000278       0.10000000000000000555       0.14999999999999999445       0.20000000000000001110       0.25000000000000000000       0.29999999999999998890       0.34999999999999997780       0.40000000000000002220       0.45000000000000001110       0.50000000000000000000       0.55000000000000004441       0.59999999999999997780       0.65000000000000002220       0.69999999999999995559       0.75000000000000000000       0.80000000000000004441       0.84999999999999997780       0.90000000000000002220       0.94999999999999995559       1.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.01041699999999999918       0.02173900000000000138       0.03409100000000000324       0.04761900000000000160       0.06250000000000000000       0.07894700000000000328       0.09722200000000000286       0.11764700000000000157       0.14062500000000000000       0.16666700000000000959       0.19642899999999999250       0.23076900000000000190       0.27083299999999999041       0.31818200000000002037       0.37500000000000000000       0.44444400000000000572       0.53125000000000000000       0.64285700000000001175       0.79166700000000000959       1.00000000000000000000       1.48201399999999994250       1.60157100000000007789       1.65579100000000001280       1.68673899999999998833       1.70675099999999990708       1.72075299999999997702       1.73109899999999994336       1.73905500000000001748       1.74536500000000005528       1.75049000000000010147       1.75473600000000007348       1.75831200000000009709       1.76136399999999992971       1.76399900000000009470       1.76629799999999992366       1.76832100000000003170       1.77011500000000010502       1.77171699999999998631       1.77315500000000003666       1.77445499999999989349 </y>
+					</NaturalCubicSpline>
+				</force_velocity_curve>
 			</Schutte1993Muscle>
 			<CMC_Joint name="default">
 				<!--Flag (true or false) indicating whether or not a task is on.-->
 				<on> false </on>
+				<!--Weight with which a task is tracked relative to other tasks. To track
+				    a task more tightly, make the weight larger.-->
+				<weight>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </weight>
 				<!--Name of body frame with respect to which a tracking objective is
 				    specified. The special name 'center_of_mass' refers to the system
 				    center of mass. This property is not used for tracking joint angles.-->
@@ -169,9 +177,6 @@
 				    those to be made active (true) or inactive (false).  A task for
 				    tracking a joint coordinate only has one component.-->
 				<active> false false false </active>
-				<!--Weight with which a task is tracked relative to other tasks. To track
-				    a task more tightly, make the weight larger.-->
-				<weight>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </weight>
 				<!--Position error feedback gain (stiffness). To achieve critical damping
 				    of errors, choose kv = 2*sqrt(kp).-->
 				<kp>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </kp>
@@ -242,18 +247,12 @@
 		<!--Motion (.mot) or storage (.sto) file containing the desired kinematic
 		    trajectories.-->
 		<desired_kinematics_file> subject01_walk1_RRA_Kinematics_initial_q.sto </desired_kinematics_file>
-		<!--Motion file (.mot) or storage file (.sto) containing the external
-		    loads applied to the model.-->
+		<!--XML file (.xml) containing the external loads applied to the model as
+		    a set of PrescribedForce(s).-->
 		<external_loads_file> subject01_externalForces.xml </external_loads_file>
 		<!--Motion file (.mot) or storage file (.sto) containing the model
 		    kinematics corresponding to the external loads.-->
 		<external_loads_model_kinematics_file> subject01_walk1_ik.mot </external_loads_model_kinematics_file>
-		<!--Name of the body to which the first set of external loads should be
-		    applied (e.g., the name of the right foot).-->
-		<external_loads_body1> calcn_r </external_loads_body1>
-		<!--Name of the body to which the second set of external loads should be
-		    applied (e.g., the name of the left foot).-->
-		<external_loads_body2> calcn_l </external_loads_body2>
 		<!--File containing the tracking tasks. Which coordinates are tracked and
 		    with what weights are specified here.-->
 		<task_set_file> gait2354_CMC_Tasks.xml </task_set_file>

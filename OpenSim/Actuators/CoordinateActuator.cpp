@@ -317,6 +317,12 @@ void CoordinateActuator::computeForce( const SimTK::State& s,
     }
 }
 
+double CoordinateActuator::
+getSpeed( const SimTK::State& s) const
+{
+	assert(_coord);
+	return _coord->getSpeedValue(s);
+};
 
 //_____________________________________________________________________________
 /**

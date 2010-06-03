@@ -63,8 +63,7 @@ Schutte1993Muscle::Schutte1993Muscle() :
 	_damping(_dampingProp.getValueDbl()),
 	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
 	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
-	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
-	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
+	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -87,8 +86,7 @@ Schutte1993Muscle::Schutte1993Muscle(const std::string &aName,double aMaxIsometr
 	_damping(_dampingProp.getValueDbl()),
 	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
 	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
-	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
-	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
+	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -126,8 +124,7 @@ Schutte1993Muscle::Schutte1993Muscle(const Schutte1993Muscle &aMuscle) :
 	_damping(_dampingProp.getValueDbl()),
 	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
 	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
-	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
-	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
+	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef())
 {
 	setNull();
 	setupProperties();
@@ -171,7 +168,6 @@ void Schutte1993Muscle::copyData(const Schutte1993Muscle &aMuscle)
 	_tendonForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._tendonForceLengthCurve);
 	_activeForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._activeForceLengthCurve);
 	_passiveForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._passiveForceLengthCurve);
-	_forceVelocityCurve = (Function*)Object::SafeCopy(aMuscle._forceVelocityCurve);
 }
 
 //_____________________________________________________________________________
@@ -202,12 +198,12 @@ void Schutte1993Muscle::setupProperties()
 
 	_activation1Prop.setName("activation1");
 	_activation1Prop.setComment("Parameter used in time constant of ramping up of muscle force");
-	_activation1Prop.setValue(0.01);
+	_activation1Prop.setValue(7.667);
 	_propertySet.append(&_activation1Prop, "Parameters");
 
 	_activation2Prop.setName("activation2");
 	_activation2Prop.setComment("Parameter used in time constant of ramping up and ramping down of muscle force");
-	_activation2Prop.setValue(0.04);
+	_activation2Prop.setValue(1.459854);
 	_propertySet.append(&_activation2Prop, "Parameters");
 
 	_maxIsometricForceProp.setName("max_isometric_force");
@@ -237,7 +233,7 @@ void Schutte1993Muscle::setupProperties()
 
 	_dampingProp.setName("damping");
 	_dampingProp.setComment("Damping factor related to maximum contraction velocity");
-	_dampingProp.setValue(0.05);
+	_dampingProp.setValue(0.1);
 	_propertySet.append(&_dampingProp, "Parameters");
 
 	_tendonForceLengthCurveProp.setName("tendon_force_length_curve");
@@ -266,10 +262,6 @@ void Schutte1993Muscle::setupProperties()
 	NaturalCubicSpline *passiveForceLengthCurve = new NaturalCubicSpline(passiveForceLengthCurvePoints, passiveForceLengthCurveX, passiveForceLengthCurveY);
 	_passiveForceLengthCurveProp.setValue(passiveForceLengthCurve);
 	_propertySet.append(&_passiveForceLengthCurveProp, "Functions");
-
-	_forceVelocityCurveProp.setName("force_velocity_curve");
-	_forceVelocityCurveProp.setComment("Function representing force-velocity behavior of muscle fibers");
-	_propertySet.append(&_forceVelocityCurveProp, "Functions");
 }
 
 //_____________________________________________________________________________
@@ -315,7 +307,7 @@ void Schutte1993Muscle:: initStateCache(SimTK::State& s, SimTK::SubsystemIndex s
     Muscle::initStateCache(s, subsystemIndex, model);
 
     _passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-
+	 _tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
 }
 
 void Schutte1993Muscle::setPassiveForce( const SimTK::State& s, double force ) const {
@@ -324,6 +316,14 @@ void Schutte1993Muscle::setPassiveForce( const SimTK::State& s, double force ) c
 double Schutte1993Muscle::getPassiveForce( const SimTK::State& s) const {
     return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _passiveForceIndex)).get());
 }
+
+void Schutte1993Muscle::setTendonForce(const SimTK::State& s, double force) const {
+	SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _tendonForceIndex)).upd() = force;
+}
+double Schutte1993Muscle::getTendonForce(const SimTK::State& s) const {
+	return SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _tendonForceIndex)).get();
+}
+
 //_____________________________________________________________________________
 /**
  * Copy the property values from another actuator, which may not be
@@ -378,12 +378,6 @@ void Schutte1993Muscle::copyPropertyValues(Actuator& aActuator)
 	if (prop2) {
 	   Object* obj = prop2->getValueObjPtr();
 		if (obj) _passiveForceLengthCurveProp.setValue(obj);
-	}
-
-	prop2 = aActuator.getPropertySet().contains("force_velocity_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _forceVelocityCurveProp.setValue(obj);
 	}
 }
 
@@ -738,7 +732,9 @@ double Schutte1993Muscle::computeActuation(const SimTK::State& s) const
    setActivationDeriv(s,  activationDeriv / _timeScale);
    setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / _timeScale);
 
-	tendonForce = tendonForce * _maxIsometricForce; 
+	tendonForce = tendonForce * _maxIsometricForce;
+	setForce(s, tendonForce);
+	setTendonForce(s, tendonForce);
 	setPassiveForce(s, passiveForce * _maxIsometricForce);
 
 
@@ -817,30 +813,6 @@ Function* Schutte1993Muscle::getTendonForceLengthCurve() const
 bool Schutte1993Muscle::setTendonForceLengthCurve(Function* aTendonForceLengthCurve)
 {
 	_tendonForceLengthCurve = aTendonForceLengthCurve;
-	return true;
-}
-
-//_____________________________________________________________________________
-/**
- * Get the force-velocity curve.
- *
- * @return Pointer to the force-velocity curve (Function).
- */
-Function* Schutte1993Muscle::getForceVelocityCurve() const
-{
-	return _forceVelocityCurve;
-}
-
-//_____________________________________________________________________________
-/**
- * Get the force-velocity curve.
- *
- * @param aForceVelocityCurve Pointer to a force-velocity curve (Function).
- * @return Whether force-velocity curve was successfully changed.
- */
-bool Schutte1993Muscle::setForceVelocityCurve(Function* aForceVelocityCurve)
-{
-	_forceVelocityCurve = aForceVelocityCurve;
 	return true;
 }
 
@@ -963,10 +935,11 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
    double error_force = 0.0, old_error_force, tendon_force, tendon_strain;
    double passiveForce, activeForce, tendonForce, fiberLength;
 
-   // If the muscle has no fibers, then treat it as a ligament.
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
-		// ligaments should be a separate class, so _optimalFiberLength should
-		// never be zero.
+      setStateVariable(s, STATE_FIBER_LENGTH, 0.0);
+		setPassiveForce(s, 0.0);
+      setForce(s, 0.0);
+      setTendonForce(s, 0.0);
       return 0.0;
    }
  
@@ -998,12 +971,13 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
 		setStateVariable(s, STATE_FIBER_LENGTH,  fiberLength);
 		tendonForce = (activeForce + passiveForce) * cos_factor;
 		setForce(s, tendonForce);
+		setTendonForce(s, tendonForce);
       return tendonForce;
    } else if (length < _tendonSlackLength) {
-      tendon_length = length;
 		setStateVariable(s, STATE_FIBER_LENGTH,  muscle_width);
 		setPassiveForce(s, 0.0);
-		setForce(s, 0.0);
+      setForce(s, 0.0);
+      setTendonForce(s, 0.0);
       return 0.0;
    } else {
       fiberLength = _optimalFiberLength;
@@ -1042,6 +1016,7 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
       else
          tendon_force = getTendonForceLengthCurve()->calcValue(SimTK::Vector(1, tendon_strain)) * _maxIsometricForce;
 		setForce(s, tendon_force);
+		setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
  

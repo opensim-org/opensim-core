@@ -60,6 +60,7 @@ class CoordinateSet;
 class Force;
 class ForceSet;
 class MarkerSet;
+class Muscle;
 class ContactGeometry;
 class ActuatorPerturbation;
 class ContactGeometrySet;
@@ -774,8 +775,6 @@ public:
      * Convenice function to turn on/off overriding the force for all actuators 
      */
     void overrideAllActuators( SimTK::State& s, bool flag);
-
-
 
 //=============================================================================
 };	// END of class Model

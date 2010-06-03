@@ -146,12 +146,45 @@ void MovingPathPoint::init(const PathPoint& aPoint)
 		copyData(*mmp);
 	} else {
 		double x[2], y[2];
-		x[0] = 0.0;
-		x[1] = 1.0;
+
+		// See if you can find a coordinate to use as the default for this point.
+		const Coordinate* coord = NULL;
+		GeometryPath* path = aPoint.getPath();
+		if (path) {
+			ModelComponent* comp = dynamic_cast<ModelComponent*>(path->getOwner());
+			if (comp) {
+				const CoordinateSet& coordSet = comp->getModel().getCoordinateSet();
+				if (coordSet.getSize() > 0) {
+					int index = 0;
+					coord = &coordSet.get(index);
+				}
+			}
+		}
+
+		// If there is a coordinate, use its range as the range for each function.
+		if (coord) {
+			x[0] = coord->getRangeMin();
+			x[1] = coord->getRangeMax();
+		} else {
+			x[0] = 0.0;
+			x[1] = 1.0;
+		}
+
+		// Create the default X component.
+		if (coord)
+			_xCoordinateName = coord->getName();
 		y[0] = y[1] = aPoint.getLocation()[0];
 		_xLocation = new NaturalCubicSpline(2, x, y);
+
+		// Create the default Y component.
+		if (coord)
+			_yCoordinateName = coord->getName();
 		y[0] = y[1] = aPoint.getLocation()[1];
 		_yLocation = new NaturalCubicSpline(2, x, y);
+
+		// Create the default Z component.
+		if (coord)
+			_zCoordinateName = coord->getName();
 		y[0] = y[1] = aPoint.getLocation()[2];
 		_zLocation = new NaturalCubicSpline(2, x, y);
 	}

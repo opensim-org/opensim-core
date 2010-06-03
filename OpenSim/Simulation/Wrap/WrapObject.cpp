@@ -154,19 +154,13 @@ void WrapObject::setup(Model& aModel, OpenSim::Body& aBody)
 
 	setupQuadrant();
 
-	// Form a transform matrix containing _xyzBodyRotation and _translation
-	_pose.setIdentity();
-	_pose.rotateXBodyFixed(_xyzBodyRotation[0], SIMMTransform::Radians);
-	_pose.rotateYBodyFixed(_xyzBodyRotation[1], SIMMTransform::Radians);
-	_pose.rotateZBodyFixed(_xyzBodyRotation[2], SIMMTransform::Radians);
-	_pose.translate(_translation);
-
-	/* Invert the forward transform and store the inverse. */
-	Mtx::Invert(4, _pose.getMatrix(), _inversePose.getMatrix());
+	SimTK::Rotation rot;
+	rot.setRotationToBodyFixedXYZ(Vec3(_xyzBodyRotation[0], _xyzBodyRotation[1], _xyzBodyRotation[2]));
+	_pose.set(rot, _translation);
 
 	// Object is visible (has displayer) and depends on body it's attached to.
 	_body->updDisplayer()->addDependent(getDisplayer());
-	_displayer.setTransform(* _pose.getSimTKTransform());
+	_displayer.setTransform(_pose);
 	_displayer.setOwner(this);
 }
 
@@ -326,23 +320,21 @@ int WrapObject::wrapPathSegment(const SimTK::State& s, PathPoint& aPoint1, PathP
 
 	// Convert the path points from the frame of the wrap object's body
 	// into the frame of the wrap object
-	_inversePose.transformPoint(pt1);
-	_inversePose.transformPoint(pt2);
+	pt1 = _pose.shiftBaseStationToFrame(pt1);
+	pt2 = _pose.shiftBaseStationToFrame(pt2);
 
 	return_code = wrapLine(s, pt1, pt2, aPathWrap, aWrapResult, p_flag);
 
-   if (p_flag == true && return_code > 0)
-   {
+   if (p_flag == true && return_code > 0) {
 		// Convert the tangent points from the frame of the wrap object to the
 		// frame of the wrap object's body
-		_pose.transformPoint(aWrapResult.r1);
-		_pose.transformPoint(aWrapResult.r2);
+		aWrapResult.r1 = _pose.shiftFrameStationToBase(aWrapResult.r1);
+		aWrapResult.r2 = _pose.shiftFrameStationToBase(aWrapResult.r2);
 
 		// Convert the surface points (between the tangent points) from the frame of
 		// the wrap object to the frame of the wrap object's body
-		int i;
-		for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-			_pose.transformPoint(aWrapResult.wrap_pts.get(i).get());
+		for (int i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
+			aWrapResult.wrap_pts.get(i).get() = _pose.shiftFrameStationToBase(aWrapResult.wrap_pts.get(i).get());
    }
 
    return return_code;

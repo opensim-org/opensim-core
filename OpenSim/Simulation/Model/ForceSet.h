@@ -68,8 +68,8 @@ protected:
 	PropertyStr _dataFileNameProp;
 	std::string &_dataFileName;
 
-	/** The subset of Forces that extend Actuator. */
-	Set<Actuator> _actuators;
+   /** The subset of Forces that extend Actuator. */
+    Set<Actuator> _actuators;
 
 	/** The subset of Forces that extend Muscle. */
 	Set<Muscle> _muscles;
@@ -119,9 +119,14 @@ public:
 	// FORCE
 	bool remove(int aIndex);
 	bool append(Force *aForce);
+#ifndef SWIG
+	bool append(Force &aForce);
+#endif
 	bool append(ForceSet &aForceSet, bool aAllowDuplicateNames=false);
 	bool set(int aIndex, Force *aForce);
     bool insert(int aIndex, Force *aObject);
+
+    // subsets 
     const Set<Actuator>& getActuators() const;
     Set<Actuator>& updActuators();
 	const Set<Muscle>& getMuscles() const;
@@ -129,7 +134,6 @@ public:
 
     // STATES
     void getStateVariableNames(Array<std::string> &rNames) const;
-    //Actuator *mapStateToActuator(int aStateIndex, int &rLocalIndex) const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS

@@ -118,8 +118,8 @@ setNull()
     setupProperties();
 	setType("ControlSetController");
 
-	// MODEL
 	_model = NULL;
+    _controlSet = NULL;
 
 
 }
@@ -261,6 +261,7 @@ void ControlSetController::setup(Model& model)
     if(_controlsFileName!="Unassigned") {
 //        std::cout<<"\n\nControlSetController::setup Loading controls from file "<<_controlsFileName<<"."<<std::endl;
 //        std::cout<<"ControlSetController::setup Found "<<_controlSet->getSize()<<" controls."<<std::endl;
+        delete  _controlSet;
         _controlSet = new ControlSet(_controlsFileName);
     }
 	else if (_controlSet == NULL) {

@@ -756,6 +756,14 @@ bool CMCTool::run()
 			qAndPosSet->append(&qSet->get(i));
 		}
 	}
+	if (taskSet.getDataFileName()!=""){
+		// Add functions from data files to track states
+		Storage stateStorage(taskSet.getDataFileName());
+		GCVSplineSet* stateFuntcions = new GCVSplineSet(3, &stateStorage);
+		for (int i=0; i< stateFuntcions->getSize(); i++)
+			qAndPosSet->append(stateFuntcions->get(i));
+
+	}
     taskSet.setFunctions(*qAndPosSet);  	 	 
  
 

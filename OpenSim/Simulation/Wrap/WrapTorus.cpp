@@ -145,24 +145,20 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
    // Base class, to scale origin in body frame
    WrapObject::scale(aScaleFactors);
 
-   double orientation[3][3];
-   _pose.getOrientation(orientation);
+	SimTK::Vec3 localScaleVector[2]; // only need X and Y for torus
 
-   SimTK::Vec3 localScaleVector[2]; // only need X and Y for torus
+   // _pose.x() holds the torus's X axis expressed in the
+   // body's reference frame, and _pose.y() holds the Y.
+   // Multiplying these vectors by the scale factor vector gives
+	// localScaleVector[]. The magnitudes of the localScaleVectors
+	// gives the amount to scale the torus in the XYZ dimensions.
+	// The wrap torus is oriented along the Z axis, so the inner and
+	// outer radii are scaled by the average of the X and Y scale factors.
+	for (int i=0; i<3; i++) {
+		localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
+		localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
+	}
 
-   // orientation[0][*] holds the torus's X axis expressed in the
-   // body's reference frame. orientation[1][*] holds the Y, and
-   // orientation[2][*] holds the Z. Multiplying these vectors by
-   // the scale factor vector gives localScaleVector[]. The magnitudes
-   // of the localScaleVectors gives the amount to scale the torus
-   // in the XYZ dimensions. The wrap torus is oriented along
-   // the Z axis, so the inner and outer radii are scaled by the
-   // average of the X and Y scale factors.
-   for (int i=0; i<2; i++) {
-      localScaleVector[i][0] = orientation[i][0] * aScaleFactors[0];
-      localScaleVector[i][1] = orientation[i][1] * aScaleFactors[1];
-      localScaleVector[i][2] = orientation[i][2] * aScaleFactors[2];
-   }
    double averageXYScale = (localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5;
    _innerRadius *= averageXYScale;
    _outerRadius *= averageXYScale;
@@ -299,34 +295,23 @@ int WrapTorus::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3
 	cylYaxis[1] = 0.0;
 	cylYaxis[2] = -1.0;
 	Mtx::CrossProduct(cylXaxis, cylYaxis, cylZaxis);
+	// Note: you don't need to recalculate Y as Z x X because X and Z are always in the XY plane, so Y will remain 0 0 -1.
 
-	// torusToCylinder is the transform to convert points in the
-	// torus frame into the cylinder frame.
+	// cylinderToTorus is the transform from the cylinder to the torus.
 	// The origin of the cylinder frame in the torus frame is closestPt.
-	SIMMTransform torusToCylinder, cylinderToTorus;
-	double* mat = torusToCylinder.getMatrix();
-	for (i = 0; i < 3; i++) {
-		mat[i*4 + 0] = cylXaxis[i];
-		mat[i*4 + 1] = cylYaxis[i];
-		mat[i*4 + 2] = cylZaxis[i];
-	}
-
-	torusToCylinder.transformPoint(closestPt);
-	torusToCylinder.translate(closestPt);
-	Mtx::Invert(4, torusToCylinder.getMatrix(), cylinderToTorus.getMatrix());
-
-	mat = cylinderToTorus.getMatrix();
-	Vec3 p1(aPoint1), p2(aPoint2);
-	torusToCylinder.transformPoint(p1);
-	torusToCylinder.transformPoint(p2);
-
+	// closestPtCyl is along the X axis of the cylinder since cylXaxis = closestPt.
+	SimTK::Transform cylinderToTorus(SimTK::Rotation(SimTK::Mat33(cylXaxis[0], cylXaxis[1], cylXaxis[2],
+		cylYaxis[0], cylYaxis[1], cylYaxis[2], cylZaxis[0], cylZaxis[1], cylZaxis[2])));
+	SimTK::Vec3 closestPtCyl = cylinderToTorus.shiftFrameStationToBase(closestPt);
+	cylinderToTorus.setP(closestPtCyl);
+	Vec3 p1 = cylinderToTorus.shiftFrameStationToBase(aPoint1);
+	Vec3 p2 = cylinderToTorus.shiftFrameStationToBase(aPoint2);
 	int return_code = cyl.wrapLine(s, p1, p2, aPathWrap, aWrapResult, aFlag);
-
    if (aFlag == true && return_code > 0) {
-		cylinderToTorus.transformPoint(aWrapResult.r1);
-		cylinderToTorus.transformPoint(aWrapResult.r2);
+		aWrapResult.r1 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r1);
+		aWrapResult.r2 = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.r2);
 		for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-			cylinderToTorus.transformPoint(aWrapResult.wrap_pts.get(i).get());
+			aWrapResult.wrap_pts.get(i).get() = cylinderToTorus.shiftBaseStationToFrame(aWrapResult.wrap_pts.get(i).get());
 	}
 
 	return wrapped;

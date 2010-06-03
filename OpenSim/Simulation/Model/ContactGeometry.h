@@ -99,10 +99,12 @@ public:
 	 * Set the orientation of the geometry within the Body it is attached to.
 	 */
 	void setOrientation(const SimTK::Vec3& orientation);
+#ifndef SWIG
 	/**
 	 * Get the Body this geometry is attached to.
 	 */
 	const OpenSim::Body& getBody() const;
+#endif
 	/**
 	 * Get the Body this geometry is attached to.
 	 */

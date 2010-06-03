@@ -124,6 +124,7 @@ protected:
 
    /** indexes for Forces in various components */
    SimTK::CacheEntryIndex _passiveForceIndex;
+	SimTK::CacheEntryIndex _tendonForceIndex;
 
 
 protected:
@@ -202,6 +203,8 @@ public:
 	virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH, fiberLengthDeriv); }
     virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
     virtual double getPassiveForce( const SimTK::State& s) const;
+	 virtual void setTendonForce(const SimTK::State& s, double aForce) const;
+	 virtual double getTendonForce(const SimTK::State& s) const;
 
 
 

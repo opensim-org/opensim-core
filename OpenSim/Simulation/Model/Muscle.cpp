@@ -228,10 +228,7 @@ void Muscle::initState( SimTK::State& s) const
 
     _model->getSystem().realize(s, SimTK::Stage::Position );
 
-	 // All this does is call compute(), so that's why it's after the realize call.
-	 _path.initState(s);
-
-	 setActivation(s, _defaultActivation);
+	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);
 }
 
@@ -536,6 +533,9 @@ double Muscle::getShorteningSpeed(const SimTK::State& s) const
 double Muscle::calcPennation( double aFiberLength, double aOptimalFiberLength,
 											    double aInitialPennationAngle) const
 {
+	if (aFiberLength < ROUNDOFF_ERROR)
+		return 0.0;
+
    double value = aOptimalFiberLength * sin(aInitialPennationAngle) / aFiberLength;
 
    if ( isnan(value)  ) 

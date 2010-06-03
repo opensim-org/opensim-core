@@ -597,6 +597,7 @@ record(const SimTK::State& s)
 	_vStore->append(s.getTime(),vec);
 
 	// ACCELERATIONS
+	_model->getSystem().realize(s, SimTK::Stage::Acceleration);
 	de.getAcceleration(s, *_body,_point,vec);
 	if(_relativeToBody){
 		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);

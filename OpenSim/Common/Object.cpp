@@ -371,7 +371,7 @@ operator==(const Object &aObject) const
 				if (myProperty.getValueInt()!=theirProperty.getValueInt()) return false;
 				continue;
 			case Property::Dbl:
-				if (myProperty.getValueDbl()!=theirProperty.getValueDbl()) return false;
+				if (fabs(myProperty.getValueDbl()-theirProperty.getValueDbl())>1e-7) return false;
 				continue;
 			case Property::Str:
 				if (myProperty.getValueStr()!=theirProperty.getValueStr()) return false;
@@ -397,8 +397,8 @@ operator==(const Object &aObject) const
 				continue;
 			case Property::DblArray:
 				for(int j=0; j < myProperty.getValueDblArray().getSize() && equal; j++)
-					equal= (myProperty.getValueDblArray().get(j)==
-								theirProperty.getValueDblArray().get(j));
+					equal= (fabs(myProperty.getValueDblArray().get(j)-
+								theirProperty.getValueDblArray().get(j))<1e-8);
 				if (!equal) return false;
 				continue;
 			case Property::StrArray:
@@ -862,7 +862,7 @@ updateFromXMLNode()
 
 		// NAME
 		string name = property->getName();
-		if(_debugLevel>=3) {
+		if(_debugLevel>=4) {
 			cout << "Object.updateFromXMLNode: ("<<getType()<<":"<<getName()<<") updating property " << name << endl;
 		}
 
@@ -929,7 +929,7 @@ updateFromXMLNode()
 
 				// WAS A NODE NOT FOUND?
 				if(!elmt) {
-					if (_debugLevel>=3) {
+					if (_debugLevel>=4) {
 						cout<<"Object.updateFromXMLNode: ERROR- could not find node ";
 						cout<<"of type "<<object.getType();
 						if(propObj->getMatchName()) cout<<" with name "+object.getName();
@@ -950,7 +950,7 @@ updateFromXMLNode()
 			// GET ENCLOSING ELEMENT
 			DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
 			if(elmt==NULL) {
-				if (_debugLevel>=3) {
+				if (_debugLevel>=4) {
 					cout<<"Object.updateFromXMLNode: ERR- failed to find element ";
 					cout<<name<<endl;
 				}
@@ -1140,7 +1140,7 @@ updateXMLNode(DOMElement *aParent, int aNodeIndex)
 
 	// GENERATE XML NODE?
 	if(_node==NULL) {
-		if(_debugLevel>=3) cout<<"Generating XML node for "<<*this<<endl;
+		if(_debugLevel>=4) cout<<"Generating XML node for "<<*this<<endl;
 		generateXMLNode(aParent, aNodeIndex);
 	}
 
@@ -1311,16 +1311,20 @@ updateDefaultObjectsXMLNode(DOMElement *aParent)
 		// resetting the child object's XML nodes if a new parent node is created...  this may be a potential memory leak (since
 		// we're not properly removing/deleting the children. - Eran.
 		XMLNode::RemoveChildren(elmt);
+		Array<std::string> writtenTypes;
 		for(int i=0;i<_Types.getSize();i++) {
 			Object* defaultObject = _Types.get(i);
 			//cout << i << " " << defaultObject->getType() << endl;
-			// Make sure no duplicates
-			if (_deprecatedTypes.findIndex(defaultObject->getType())!=-1)
+			// Make sure to not write _deprecated types
+			if (_deprecatedTypes.findIndex(defaultObject->getType())!=-1 || writtenTypes.findIndex(defaultObject->getType())!=-1){
+				//cout << "Found and ignored " << defaultObject->getType() << std::endl;
 				continue;
+			}
 			if( isValidDefaultType(defaultObject) && 
 				(Object::getSerializeAllDefaults() || _defaultsReadFromFile[defaultObject->getType()])) {
 				defaultObject->setXMLNode(NULL);
 				defaultObject->updateXMLNode(elmt);
+				writtenTypes.append(defaultObject->getType());
 			}
 		}
 		// If it will end up an empty <defaults/> tag then we just get rid of it
@@ -1532,7 +1536,7 @@ parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rC
 		// Change _node to refer to the root of the external file
 		rRefNode = aElement;
 		rChildDocument = new XMLDocument(fileAttrib);
-		rChildDocumentElement = rChildDocument->getDOMDocument()->getDocumentElement();
+		rChildDocumentElement = rChildDocument->getRootDataElement();
 		if(aVerifyTagName && XMLString::compareString(aElement->getTagName(),rChildDocumentElement->getTagName())!=0)
 			throw Exception("Object.parseFileAttribute: ERROR- Top-level element in file '" + fileAttrib +
 								 "' named in file attribute of XML tag <" + XMLNode::TranscodeAndTrim(aElement->getTagName()) + 

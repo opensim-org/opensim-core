@@ -1,6 +1,27 @@
 SET(KIT Common)
 SET(UKIT COMMON)
 
+ADD_CUSTOM_TARGET(copyLibraryFiles)
+
+FOREACH (libFile ${THIRDPARTY_DYNLIB_FILES})
+	GET_FILENAME_COMPONENT(LIBFILE_NAME ${libFile} NAME)
+	IF(WIN32)
+		ADD_CUSTOM_COMMAND(
+		TARGET copyLibraryFiles
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy
+		${libFile}
+		${OpenSim_LIBRARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBFILE_NAME})
+	ELSE(WIN32)
+		ADD_CUSTOM_COMMAND(
+		TARGET copyLibraryFiles
+		COMMAND ${CMAKE_COMMAND}
+		ARGS -E copy
+		${libFile}
+		${OpenSim_LIBRARY_DIR}/${LIBFILE_NAME})
+	ENDIF(WIN32)
+ENDFOREACH (libFile)
+
 ##
 ## Version stuff
 ##
@@ -39,6 +60,11 @@ ENDIF(WIN32)
 
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
+SET(COPY_PREBUILT_LIBRARIES ON CACHE BOOL "Always copy prebuilt libraries to common destination with build. Slows continuous builds")
+IF (COPY_PREBUILT_LIBRARIES)
+ADD_DEPENDENCIES(osim${KIT} copyLibraryFiles)
+ENDIF(COPY_PREBUILT_LIBRARIES)
+
 SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    DEFINE_SYMBOL ${EXPORT_MACRO}
    PROJECT_LABEL "Libraries - osim${KIT}"
@@ -68,21 +94,3 @@ ENDIF (EXECUTABLE_OUTPUT_PATH)
 
 SUBDIRS(Test)
 
-FOREACH (libFile ${THIRDPARTY_DYNLIB_FILES})
-    GET_FILENAME_COMPONENT(LIBFILE_NAME ${libFile} NAME)
-    IF(WIN32)
-        ADD_CUSTOM_COMMAND(
-        TARGET copyLibraryFiles
-        COMMAND ${CMAKE_COMMAND}
-        ARGS -E copy
-        ${libFile}
-        ${OpenSim_LIBRARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBFILE_NAME})
-    ELSE(WIN32)
-        ADD_CUSTOM_COMMAND(
-        TARGET copyLibraryFiles
-        COMMAND ${CMAKE_COMMAND}
-        ARGS -E copy
-        ${libFile}
-        ${OpenSim_LIBRARY_DIR}/${LIBFILE_NAME})
-    ENDIF(WIN32)
-ENDFOREACH (libFile)

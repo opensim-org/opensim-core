@@ -92,6 +92,11 @@ void SimbodySimmJoint::setNull()
    _childBodyName = "";
 }
 
+void SimbodySimmJoint::setName(const std::string& aName)
+{
+	_name = aName;
+}
+
 //_____________________________________________________________________________
 /**
  * Add a DOF that is a function of a gencoord.
@@ -156,7 +161,7 @@ bool SimbodySimmJoint::addConstantDof(const string& aName, const double* aAxis, 
    //TODO get this to work when constant dofs are mixed with function dofs
    for (int i=0; i<3; i++) {
       if (aName == _rotationNames[i]) {
-         _dof[i].setConstant(aName, Coordinate::Rotational, defaultAxes[i], aValue);
+         _dof[i].setConstant(aName, Coordinate::Rotational, aAxis, aValue);
          updateOrder(aName);
 			_dofUsed[i] = true;
 			_rotationsUsed++;
@@ -184,16 +189,53 @@ void SimbodySimmJoint::updateOrder(const string& aDofName)
    }
 }
 
+void SimbodySimmJoint::makeUniqueAxis(int aDofIndex, double rAxis[]) const
+{
+	// If this is the first axis being added to the joint, just use the X axis.
+	// If this is the second axis being added, use the Y axis unless the first
+	// axis is Y (in which case use X). If this is the third axis, cross the first
+	// two to get the third.
+	if (aDofIndex == 0) {
+		rAxis[0] = defaultAxes[0][0];
+		rAxis[1] = defaultAxes[0][1];
+		rAxis[2] = defaultAxes[0][2];
+	} else if (aDofIndex == 1) {
+		double firstAxis[3];
+		_dof[0].getAxis(firstAxis);
+		if (EQUAL_WITHIN_TOLERANCE(firstAxis[1], 1.0, 0.1)) {
+			rAxis[0] = 1.0;
+			rAxis[1] = 0.0;
+			rAxis[2] = 0.0;
+		} else {
+			rAxis[0] = 0.0;
+			rAxis[1] = 1.0;
+			rAxis[2] = 0.0;
+		}
+	} else {
+		double firstAxis[3], secondAxis[3];
+		_dof[0].getAxis(firstAxis);
+		_dof[1].getAxis(secondAxis);
+		rAxis[0] = firstAxis[1]*secondAxis[2] - firstAxis[2]*secondAxis[1];
+		rAxis[1] = firstAxis[2]*secondAxis[0] - firstAxis[0]*secondAxis[2];
+		rAxis[2] = firstAxis[0]*secondAxis[1] - firstAxis[1]*secondAxis[0];
+	}
+}
+
 //_____________________________________________________________________________
 /**
  * Finalize the joint-- make sure all 6 DOFs are initialized.
  */
 void SimbodySimmJoint::finalize()
 {
-   // Initialize the rotations that are not used.
+   // Initialize the rotations that are not used. The axes do not matter to SIMM because
+	// the DOFs are unused, but if you import the SIMM model back into OpenSim it is a
+	// problem to have collinear axes. So as you add [the unused 0.0] DOFs, make sure the
+	// axes are unique.
    for (int i=0; i<3; i++) {
 		if (!_dofUsed[i]) {
-			_dof[i].setConstant(_rotationNames[i], Coordinate::Rotational, defaultAxes[i], 0.0);
+			double axis[3];
+			makeUniqueAxis(i, axis);
+			_dof[i].setConstant(_rotationNames[i], Coordinate::Rotational, axis, 0.0);
 			updateOrder(_dof[i].getName());
 		}
    }

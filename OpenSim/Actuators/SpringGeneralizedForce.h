@@ -39,6 +39,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/CustomForce.h>
+#include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 //=============================================================================
 //=============================================================================
@@ -77,7 +78,7 @@ protected:
 
 	/** Corresponding generalized coordinate to which the coordinate actuator
        is applied. */
-    Coordinate *_coord;
+    mutable Coordinate *_coord;
 
 //=============================================================================
 // METHODS
@@ -90,9 +91,11 @@ public:
 private:
 	void setNull();
 	void setupProperties();
+	double computeForceMagnitude(const SimTK::State& s) const;
 
 public:
 
+	void createSystem(SimTK::MultibodySystem& system) const;
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
@@ -114,6 +117,17 @@ public:
 	// VISCOSITY
 	void setViscosity(double aViscosity);
 	double getViscosity() const;
+	/** 
+	 * Methods to query a Force for the value actually applied during simulation
+	 * The names of the quantities (column labels) is returned by this first function
+	 * getRecordLabels()
+	 */
+	virtual OpenSim::Array<std::string> getRecordLabels() const ;
+	/**
+	 * Given SimTK::State object extract all the values necessary to report forces, application location
+	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+	 */
+	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS

@@ -451,6 +451,9 @@ double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerD
 	int marker2 = experimentalMarkerNames.findIndex(aName2);
 	if (marker1 >= 0 && marker2 >= 0) {
 		int startIndex, endIndex;
+		if (_timeRange.getSize()<2) 
+			throw Exception("ModelScaler::takeExperimentalMarkerMeasurement, time_range is unspecified.");
+
 		aMarkerData.findFrameRange(_timeRange[0], _timeRange[1], startIndex, endIndex);
 		double length = 0;
 		for(int i=startIndex; i<=endIndex; i++) {

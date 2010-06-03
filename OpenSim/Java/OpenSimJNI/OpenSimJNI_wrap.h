@@ -21,7 +21,6 @@ public:
     virtual OpenSim::Object *copy(DOMElement *aNode) const;
     virtual OpenSim::VisibleObject const *getDisplayer() const;
     virtual OpenSim::VisibleObject *updDisplayer();
-    virtual std::string const &getNewType() const;
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
     virtual void updateFromXMLNode();
     virtual void updateDefaultObjectsFromXMLNode();
@@ -31,9 +30,9 @@ public:
     virtual void update(OpenSim::Object const &aObject, OpenSim::Event &aEvent);
     virtual bool isA(char const *type) const;
     virtual void copy(OpenSim::Object const &aObject);
-    virtual int begin(SimTK::State const &s);
+    virtual int begin(SimTK::State &s);
     virtual int step(SimTK::State const &s, int stepNumber);
-    virtual int end(SimTK::State const &s);
+    virtual int end(SimTK::State &s);
     virtual void setModel(OpenSim::Model &aModel);
     virtual void setStatesStore(OpenSim::Storage const &aStatesStore);
     virtual bool proceed(int aStep = 0);
@@ -41,10 +40,10 @@ public:
     virtual int printResults(std::string const &aBaseName, std::string const &aDir = "", double aDT = -1.0, std::string const &aExtension = ".sto");
 public:
     bool swig_overrides(int n) {
-      return (n < 28 ? swig_override[n] : false);
+      return (n < 27 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[28];
+    bool swig_override[27];
 };
 
 class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {

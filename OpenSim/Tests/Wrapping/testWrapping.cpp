@@ -91,7 +91,7 @@ int testModel(std::string modelPrefix)
 	// Compare results to a standard 
 	Storage currentResult("Results/"+modelPrefix+"_Actuation_force.sto");
 	Storage stdStorage("std_"+modelPrefix+"_Actuation_force.sto");
-	bool equal = equalStorage(stdStorage, currentResult, 1e-2);
+	bool equal = equalStorage(stdStorage, currentResult, .1);
 	return (equal?0:1);
 }
 int main(int argc,char **argv)

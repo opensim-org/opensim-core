@@ -103,9 +103,11 @@ public:
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
+#ifndef SWIG
 	TransformAxis& operator[](int aIndex) const;
-	TransformAxis& getTransformAxis(int aIndex) const;
 	SpatialTransform& operator=(const SpatialTransform &aSpatialTransform);
+#endif
+	TransformAxis& getTransformAxis(int aIndex) const;
 private:
 	// Make sure axes are not parallel
 	void constructIndepndentAxes(int nAxes, int startIndex);

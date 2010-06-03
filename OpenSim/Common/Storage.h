@@ -39,7 +39,6 @@
 #include "SimTKcommon.h"
 
 const int Storage_DEFAULT_CAPACITY = 256;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -103,6 +102,9 @@ protected:
 	Units _units;
 	/** Map between keys in file header and values */
 	MapKeysToValues	_keyValueMap;
+
+	std::string _fileName;
+	FILE *_fp;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -114,6 +116,7 @@ public:
 	Storage(const Storage &aStorage,bool aCopyData=true);
 	Storage(const Storage &aStorage,int aStateIndex,int aN,
 		const char *aDelimiter="\t");
+
 	virtual Object* copy() const;
 	virtual ~Storage();
 
@@ -194,6 +197,7 @@ public:
 	virtual int append(const StateVector &aVec, bool aCheckForDuplicateTime=true);
 	virtual int append(const Array<StateVector> &aArray);
 	virtual int append(double aT,int aN,const double *aY, bool aCheckForDuplicateTime=true);
+	virtual int append(double aT,const SimTK::Vector& aY, bool aCheckForDuplicateTime=true);
 	int append(double aT, const SimTK::Vec3& aY,bool aCheckForDuplicateTime=true){
 		return append(aT, 3, &aY[0], aCheckForDuplicateTime);
 	}
@@ -245,13 +249,14 @@ public:
 	double compareColumn(Storage& aOtherStorage, 
 						 std::string& aColumnName,
 						 double startTime, double endTime=-1.0);
-
+	bool makeStorageLabelsUnique();
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------
 	void print() const;
 	bool print(const std::string &aFileName,const std::string &aMode="w", const std::string& aComment="") const;
 	int print(const std::string &aFileName,double aDT,const std::string &aMode="w") const;
+	void setOutputFileName(const std::string& aFileName) ;
 	// convenience function for Analyses and DerivCallbacks
 	static void printResult(const Storage *aStorage,const std::string &aName,
 		const std::string &aDir,double aDT,const std::string &aExtension);

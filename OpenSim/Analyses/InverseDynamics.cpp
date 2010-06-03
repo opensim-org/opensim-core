@@ -347,21 +347,11 @@ record(const SimTK::State& s)
 	SimTK::Vector f(nf), c(nacc);
 	f = 0;
 	computeAcceleration(sWorkingCopy, &f[0], &_constraintVector[0]);
-//cout << "\n_constraintVector  : \n" << _constraintVector  << endl << endl;
-	//char t='t';
-	//cout << "NEW Constraint Vector = " << endl;
-	//_constraintVector.dump(&t);
 
-//cout << "c  : " <<  endl;
 	for(int j=0; j<nf; j++) {
 		f[j] = 1;
 		computeAcceleration(sWorkingCopy, &f[0], &c[0]);
-//cout <<  c  << endl;
-		//cout << "NEW Acceleration vector, j=" << j <<" is " << endl;
-		//c.dump(&t);
 		for(int i=0; i<nacc; i++) _constraintMatrix(i,j) = (c[i] - _constraintVector[i]);
-		//cout << "NEW ConstraintMatrix[" << j << "]=" <<  endl;
-		//_constraintMatrix.dump(&t);
 		f[j] = 0;
 	}
 	for(int i=0; i<nacc; i++) {
@@ -413,6 +403,31 @@ int InverseDynamics::
 begin(SimTK::State& s )
 {
 	if(!proceed()) return(0);
+
+	SimTK::Matrix massMatrix;
+	const int nu = _model->getNumCoordinates();
+    massMatrix.resize(nu,nu);
+ 
+    // This could be calculated much faster by doing it directly and calculating
+    // only half of it. As a placeholder, however, we're doing this with
+    // repeated O(n) calls to calcMV() to get M one column at a time.
+	SimTK::Vector v(nu); v = 0;
+    for (int i=0; i < nu; ++i) {
+        v[i] = 1;
+        _model->getMatterSubsystem().calcMV(s, v, massMatrix(i));
+        v[i] = 0;
+    }
+	//massMatrix.dump("mass matrix is:");
+	// Check that m is full rank
+	try {
+ 	    SimTK::FactorLU lu(massMatrix);
+    } catch (SimTK::Exception::Base e) {
+        throw Exception("InverseDynamics: ERROR- mass matrix is singular  ",__FILE__,__LINE__);
+    }
+    // enable the line below when simmath is fixed
+	//bool singularMassMatrix = lu.isSingular();
+
+	//cout << "Mass matrix is " << (singularMassMatrix?"singular":"Non-singular");
 
 	// Make a working copy of the model
 	delete _modelWorkingCopy;

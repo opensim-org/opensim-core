@@ -209,6 +209,8 @@ void Coordinate::setNull(void)
 
 	// By default, the motion type is Rotational.
 	_motionType = Rotational;
+
+	_lockedWarningGiven=false;
 }
 
 //_____________________________________________________________________________
@@ -328,6 +330,12 @@ void Coordinate::setup(Model& aModel)
 void Coordinate::initState(State& s) const
 {
 	// Cannot enforce the constraint, since state of constraints may still be undefined
+	const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
+	int nq=mb.getNumQ(s);
+	if (_mobilityIndex>=nq){
+		//Something is wrong/inconsistent with model definition. Abort
+		throw(Exception("Coordinate: "+getName()+" is not consistent with owner Joint. Aborting."));
+	}
 	_model->getMatterSubsystem().getMobilizedBody(_bodyIndex).setOneQ(s,_mobilityIndex,_defaultValue);
     _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).setOneU(s,_mobilityIndex,_defaultSpeedValue);
 	setIsPrescribed(s, _isPrescribed);
@@ -459,8 +467,10 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 	// If the coordinate is locked and aValue is not the current value, print an error.
 	// Otherwise, set the value to aValue.
 	if (_locked) {
-		if (aValue != getValue(s))
+		if (aValue != getValue(s) && !_lockedWarningGiven){
 			cout<<"Coordinate.setValue: WARN- coordinate "<<getName()<<" is locked. Unable to change its value." << endl;
+			_lockedWarningGiven=true;
+		}
 	} else {
 		_model->updMatterSubsystem().getMobilizedBody(_bodyIndex).setOneQ(s,_mobilityIndex,aValue);
 	}
@@ -674,6 +684,7 @@ bool Coordinate::setLocked(SimTK::State& s, bool aLocked) const
 	// Do nothing if the same
 	if(aLocked == getLocked(s)) return true;
 	
+	_lockedWarningGiven=false;	// reset flag in case needed later
 	SimTK::Constraint *lock = NULL;
 
 	// Get constraint

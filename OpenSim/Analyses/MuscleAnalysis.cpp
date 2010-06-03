@@ -589,6 +589,17 @@ begin(SimTK::State& s )
 
 	// RECORD
 	int status = 0;
+	// Make sure cooridnates are not locked
+	if (_computeMoments){
+	// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
+		Coordinate *q = NULL;
+		int nq = _momentArmStorageArray.getSize();
+		for(int i=0; i<nq; i++) {
+			q = _momentArmStorageArray[i]->q;
+			if (q->getLocked(s))
+				throw(Exception("Coordinate: "+q->getName()+" is locked and can't be varied. Aborting.")); 
+		}
+	}
 	if(_storageList.get(0)->getSize() <= 0) status = record(s);
 
 	return(status);

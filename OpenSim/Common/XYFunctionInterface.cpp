@@ -115,7 +115,7 @@ int XYFunctionInterface::getNumberOfPoints() const
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getNumberOfPoints();
 	   case typeLinearFunction:
-		   return 0;
+		   return 2;
 	    case typeNatCubicSpline:
 		   return _natCubicSpline->getNumberOfPoints();
 	   case typeGCVSpline:
@@ -136,8 +136,13 @@ const double* XYFunctionInterface::getXValues() const
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getXValues();
 	   case typeLinearFunction:
-		   return 0;
-	    case typeNatCubicSpline:
+			{
+				double* xValues = new double[2];
+				xValues[0] = -1.0;
+				xValues[1] = 1.0;
+				return xValues; // possible memory leak
+			}
+		case typeNatCubicSpline:
 		   return _natCubicSpline->getXValues();
 	   case typeGCVSpline:
 		   return _gcvSpline->getXValues();
@@ -149,6 +154,7 @@ const double* XYFunctionInterface::getXValues() const
 const double* XYFunctionInterface::getYValues() const
 {
 	const double* yValues = NULL;
+	double* tmp = NULL;
 	int numPoints = getNumberOfPoints();
 
 	switch (_functionType)
@@ -162,7 +168,9 @@ const double* XYFunctionInterface::getYValues() const
 		   yValues = _piecewiseLinearFunction->getYValues();
 			break;
 	   case typeLinearFunction:
-		   return NULL;
+		   tmp = new double[2];
+			tmp[0] = _linearFunction->getCoefficients()[1] - _linearFunction->getCoefficients()[0];
+			tmp[1] = _linearFunction->getCoefficients()[1] + _linearFunction->getCoefficients()[0];
 			break;
 	    case typeNatCubicSpline:
 		   yValues = _natCubicSpline->getYValues();
@@ -179,6 +187,9 @@ const double* XYFunctionInterface::getYValues() const
 	for (int i=0; i<numPoints; i++)
 		scaledY[i] *= _scaleFactor;
 
+	if (tmp)
+		delete tmp;
+
 	// possible memory leak
 	return scaledY;
 }
@@ -194,8 +205,13 @@ double XYFunctionInterface::getX(int aIndex) const
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getX(aIndex);
 	   case typeLinearFunction:
-		   return 0.0;
-	    case typeNatCubicSpline:
+		   if (aIndex == 0)
+				return -1.0;
+			else if (aIndex == 1)
+				return 1.0;
+			else
+				return 0.0;
+		case typeNatCubicSpline:
 		   return _natCubicSpline->getX(aIndex);
 	   case typeGCVSpline:
 		   return _gcvSpline->getX(aIndex);
@@ -215,7 +231,12 @@ double XYFunctionInterface::getY(int aIndex) const
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getY(aIndex) * _scaleFactor;
 	   case typeLinearFunction:
-		   return 0.0;
+		   if (aIndex == 0)
+				return (_linearFunction->getCoefficients()[1] - _linearFunction->getCoefficients()[0]) * _scaleFactor;
+			else if (aIndex == 1)
+				return (_linearFunction->getCoefficients()[1] + _linearFunction->getCoefficients()[0]) * _scaleFactor;
+			else
+				return 0.0;
 	    case typeNatCubicSpline:
 		   return _natCubicSpline->getY(aIndex) * _scaleFactor;
 	   case typeGCVSpline:

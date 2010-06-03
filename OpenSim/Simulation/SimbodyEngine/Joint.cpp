@@ -141,11 +141,11 @@ void Joint::copyData(const Joint &aJoint)
 	_location = aJoint._location;
 	_orientationInParent = aJoint._orientationInParent;
 	_orientation = aJoint._orientation;
-	_body = aJoint._body;
-	_parentBody = aJoint._parentBody;
+	//_body = aJoint._body;
+	//_parentBody = aJoint._parentBody;
 	_coordinateSet = aJoint._coordinateSet;
 	_reverse = aJoint._reverse;
-	_model = aJoint._model;
+	_model = NULL;
 }
 
 //_____________________________________________________________________________

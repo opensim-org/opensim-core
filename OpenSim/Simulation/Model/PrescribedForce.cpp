@@ -139,6 +139,8 @@ PrescribedForce::PrescribedForce(const PrescribedForce& force) :
 {
 	setNull();
 	setupProperties();
+	_pointIsGlobal = force._pointIsGlobal;
+	_forceIsGlobal = force._forceIsGlobal;
 	_body=force._body;
 	_bodyName = force._bodyName;
 	_forceFunctionSet = force._forceFunctionSet;

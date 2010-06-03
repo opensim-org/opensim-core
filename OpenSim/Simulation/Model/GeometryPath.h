@@ -121,6 +121,7 @@ public:
 	const PathPointSet& getPathPointSet() const { return _pathPointSet; }
 	PathPointSet& updPathPointSet() const { return _pathPointSet; }
 	PathWrapSet& getWrapSet() { return _pathWrapSet; }
+	virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
 
 
 	//--------------------------------------------------------------------------
@@ -170,8 +171,6 @@ public:
 	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-
-	virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
 
 	virtual void setup(Model& aModel);
 	virtual void initState(SimTK::State& s) const;

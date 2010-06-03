@@ -198,7 +198,7 @@ int main()
 		PiecewiseLinearFunction *pointX = new PiecewiseLinearFunction(2, time, pXofT);
 
 		// Create a new prescribed force applied to the block
-		PrescribedForce *prescribedForce = new PrescribedForce(*block);
+		PrescribedForce *prescribedForce = new PrescribedForce(block);
 		prescribedForce->setName("prescribedForce");
 
 		// Set the force and point functions for the new prescribed force

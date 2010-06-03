@@ -81,6 +81,7 @@ public:
                     const std::string& aCoordinateName, const double* aAxis);
    void setNull();
    void write(std::ofstream& aStream);
+	void getAxis(double rAxis[]) const;
 
 //=============================================================================
 };	// END of class SimbodySimmDof

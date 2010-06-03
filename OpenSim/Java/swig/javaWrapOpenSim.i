@@ -43,7 +43,6 @@
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/CustomForce.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
-#include <OpenSim/Simulation/Model/Ligament.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 
@@ -110,6 +109,7 @@
 #include <OpenSim/Simulation/Model/ConditionalPathPoint.h>
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
+#include <OpenSim/Simulation/Model/Ligament.h>
 
 #include <OpenSim/Common/SimmPoint.h>
 
@@ -436,7 +436,6 @@ static bool trace=false;
 %include <OpenSim/Simulation/Model/ForceSet.h>
 %include <OpenSim/Simulation/Model/CustomForce.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
-%include <OpenSim/Simulation/Model/Ligament.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
 %template(SetContactGeometry) OpenSim::Set<OpenSim::ContactGeometry>;
@@ -494,6 +493,7 @@ static bool trace=false;
 %include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 %include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 %template(SetCoordinates) OpenSim::Set<OpenSim::Coordinate>;
+%template(ModelComponentSetCoordinates) OpenSim::ModelComponentSet<OpenSim::Coordinate>;
 %include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
@@ -512,6 +512,7 @@ static bool trace=false;
 %template(ArrayPathPoint) OpenSim::Array<OpenSim::PathPoint*>;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
 %include <OpenSim/Simulation/Model/GeometryPath.h>
+%include <OpenSim/Simulation/Model/Ligament.h>
 %include <OpenSim/Simulation/Model/Muscle.h>
 
 //osimAnalyses

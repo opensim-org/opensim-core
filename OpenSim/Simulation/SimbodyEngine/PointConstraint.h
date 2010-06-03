@@ -91,14 +91,12 @@ public:
 	virtual Object* copy() const;
 	PointConstraint& operator=(const PointConstraint &aConstraint);
 	void copyData(const PointConstraint &aConstraint);
-	void setup(SimTK::State& s, Model& aModel);
 
 	//SET 
 	void setBody1ByName(std::string aBodyName);
 	void setBody1PointLocation(SimTK::Vec3 location);
 	void setBody2ByName(std::string aBodyName);
 	void setBody2PointLocation(SimTK::Vec3 location);
-
 protected:
 	virtual void setup(Model& aModel);
 	/**

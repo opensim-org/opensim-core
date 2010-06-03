@@ -127,6 +127,9 @@ void OpenSimContext::updateDisplayer(Muscle& m) {
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
 	to.copy(from);
+	_configState->invalidateAll(SimTK::Stage::Position);
+	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	to.getGeometryPath().updateGeometry(*_configState);
 }
 
 // Muscle Points
@@ -333,11 +336,12 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
 									   const std::string& aPathToSubject, 
 									   double aFinalMass) {
 	aModel->getSystem().realizeTopology();
-    *_configState=aModel->getSystem().updDefaultState();
+    _configState=&aModel->getSystem().updDefaultState();
 	bool retValue= modelScaler.processModel(*_configState, aModel, aPathToSubject, aFinalMass);
 	// Model has changed need to recreate a valid state 
 	aModel->getSystem().realizeTopology();
-    *_configState=aModel->getSystem().updDefaultState();
+    _configState=&aModel->getSystem().updDefaultState();
+	aModel->getSystem().realize(*_configState, SimTK::Stage::Position);
 	return retValue;
 }
 	

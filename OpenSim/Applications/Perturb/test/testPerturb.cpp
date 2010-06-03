@@ -62,7 +62,7 @@ int checkValues( const string &filename,  double epsilon) {
     StateVector* resultsValues = results.getStateVector(results.getSize()-1);
     StateVector* standardValues = standard.getStateVector(standard.getSize()-1);
 
-    for(int i=0;i<NUM_VALUES;i++ ) {
+    for(int i=0;i<resultsValues->getSize();i++ ) {
         diff = resultsValues->getData()[i] - standardValues->getData()[i];
         label = results.getColumnLabels()[i+1];
 //        cout << label << "  diff= " << diff << endl;

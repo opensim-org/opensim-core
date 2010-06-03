@@ -246,9 +246,7 @@ ConvertAxisAngleTo4x4DirCosMatrix(const SimTK::Vec3& axis, double angle, double 
 {
 	SimTK::Vec3 normAxis;
 
-	//Mtx::Identity(4, (double*)mat);
-	SimTK::Mat44 mat44((double*)mat);
-	mat44 = 1.0;
+	Mtx::Identity(4, (double*)mat);
 	Mtx::Normalize(3, axis, normAxis);
 
 	double cl = cos(angle);

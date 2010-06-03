@@ -81,7 +81,9 @@ public:
 	CustomJoint(const CustomJoint &aJoint);
 	virtual ~CustomJoint();
 	virtual Object* copy() const;
+#ifndef SWIG
 	CustomJoint& operator=(const CustomJoint &aJoint);
+#endif
 	void copyData(const CustomJoint &aJoint);
 
 

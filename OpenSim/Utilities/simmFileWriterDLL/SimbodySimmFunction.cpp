@@ -98,14 +98,7 @@ void SimbodySimmFunction::write(ofstream& aStream)
 {
 	XYFunctionInterface xyFunc((OpenSim::Function*)_function);
 
-	if (xyFunc.getFunctionType() == XYFunctionInterface::typeLinearFunction) {
-		const LinearFunction* linearFunc = dynamic_cast<const LinearFunction*>(_function);
-		const Array<double> coeff = linearFunc->getCoefficients();
-		aStream << "beginlinearfunction f" << _userNumber << endl;
-		aStream << "(-1.0," << coeff[1] - coeff[0] << ")" << endl;
-		aStream << "( 1.0," << coeff[1] + coeff[0] << ")" << endl;
-		aStream << "endlinearfunction" << endl << endl;
-	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typeGCVSpline) {
+	if (xyFunc.getFunctionType() == XYFunctionInterface::typeGCVSpline) {
 		aStream << "begingcvspline f" << _userNumber << endl;
 		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
 			double x = xyFunc.getX(i);
@@ -129,7 +122,8 @@ void SimbodySimmFunction::write(ofstream& aStream)
 			aStream << "(" << x << "," << y << ")" << endl;
 		}
 		aStream << "endnaturalcubicspline" << endl << endl;
-	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typePiecewiseLinearFunction) {
+	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typePiecewiseLinearFunction ||
+		        xyFunc.getFunctionType() == XYFunctionInterface::typeLinearFunction) {
 		aStream << "beginlinearfunction f" << _userNumber << endl;
 		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
 			double x = xyFunc.getX(i);

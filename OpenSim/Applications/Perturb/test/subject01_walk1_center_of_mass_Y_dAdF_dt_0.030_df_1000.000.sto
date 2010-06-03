@@ -1,6 +1,6 @@
 center_of_mass_Y_dAdF
 nRows=1
-nColumns=5
+nColumns=4
 endheader
-time	glut_med1_l	glut_max1_r	psoas_r	gravity
-      0.839827670000	     -0.000007035504	      0.000011451856	      0.000000361363	      1.000000000146
+time	glut_med1_l	psoas_r	gravity
+      0.839827670000	     -0.000007035504	      0.000000361363	      1.000000000146

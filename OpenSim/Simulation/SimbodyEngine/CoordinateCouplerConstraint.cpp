@@ -170,7 +170,7 @@ Object* CoordinateCouplerConstraint::copy() const
 void CoordinateCouplerConstraint::copyData(const CoordinateCouplerConstraint &aConstraint)
 {
 	Constraint::copyData(aConstraint);
-	_function = aConstraint._function;
+	_function = (Function*)Object::SafeCopy(aConstraint._function);
 	_independentCoordNames = aConstraint._independentCoordNames;
 	_dependentCoordName = aConstraint._dependentCoordName;
     _scaleFactor = aConstraint._scaleFactor;
@@ -283,6 +283,10 @@ void CoordinateCouplerConstraint::createSystem(SimTK::MultibodySystem& system) c
 	mutableThis->_index = simtkCoordinateCoupler.getConstraintIndex();
 }
 
+double CoordinateCouplerConstraint::getValue(const Vector& aIndValues) const
+{
+	return getFunction().calcValue(aIndValues) * _scaleFactor;
+}
 
 //=============================================================================
 // SCALE

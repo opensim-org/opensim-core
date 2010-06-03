@@ -30,6 +30,7 @@ using namespace OpenSim;
 using namespace std;
 
 #define ASSERT(cond) {if (!(cond)) throw exception();}
+#define ASSERT_EQUAL(expected, found, tol) {if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 int main() {
     try {
@@ -43,10 +44,10 @@ int main() {
         deriv[0] = 0;
         for (int i = 0; i < 100; ++i) {
             xvec[0] = i*0.01;
-            ASSERT(function.calcValue(xvec) == adapter.calcValue(xvec));
-            ASSERT(function.calcDerivative(deriv, xvec) == adapter.calcDerivative(deriv, xvec));
-            ASSERT(function.calcValue(xvec) == f2.calcValue(xvec));
-            ASSERT(function.calcDerivative(deriv, xvec) == f2.calcDerivative(deriv, xvec));
+            ASSERT_EQUAL( function.calcValue(xvec), adapter.calcValue(xvec), 1e-10);
+            ASSERT_EQUAL( function.calcDerivative(deriv,xvec), adapter.calcDerivative(deriv,xvec), 1e-10);
+            ASSERT_EQUAL( function.calcValue(xvec), f2.calcValue(xvec),  1e-10);
+            ASSERT_EQUAL( function.calcDerivative(deriv,xvec), f2.calcDerivative(deriv,xvec), 1e-10);
         }
         ASSERT(adapter.getArgumentSize() == 1);
     }

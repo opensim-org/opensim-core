@@ -36,8 +36,6 @@
 #include "SimTKsimbody.h"
 #include <OpenSim/Tools/IKTool.h>
 
-class SimTK::Transform;
-
 namespace OpenSim {
 
 class Body;
@@ -159,6 +157,9 @@ public:
 		 double* matStart = &aTransform.toMat44()[0][0];
 		 for (int i=0; i<16; i++) flattened[i]=matStart[i];
 	}
+	void setDefaultsFromState() {	// Sets the defaults in the model from the current state
+		_model->setDefaultsFromState(*_configState);
+	}
 
 }; // class OpenSimContext
 
@@ -206,7 +207,7 @@ public:
 	void interrupt() {
 		_throwException=true;
 	}
-	virtual int step( const SimTK::State& s) {
+	virtual int step( const SimTK::State& s, int stepNumber) {
 		if (_throwException)
 			throw Exception("Operation Aborted");
 		return 0;

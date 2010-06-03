@@ -110,6 +110,14 @@ public:
 	Array<XYPoint>* renderAsLineSegments(int aIndex);
 	static void deleteXYPointArray(Array<XYPoint>* aArray) { if (aArray) delete aArray; }
 	FunctionType getFunctionType() const { return _functionType; }
+	double getScale() const { return _scaleFactor; }
+	// Utility methods for getting the function as each of the supported types
+	Constant* getConstant() const { return _constant; }
+	StepFunction* getStepFunction() const { return _stepFunction; }
+	PiecewiseLinearFunction* getPiecewiseLinearFunction() const { return _piecewiseLinearFunction; }
+	LinearFunction* getLinearFunction() const { return _linearFunction; }
+	NaturalCubicSpline* getNaturalCubicSpline() const { return _natCubicSpline; }
+	GCVSpline* getGCVSpline() const { return _gcvSpline; }
 
 }; // class XYFunctionInterface
 /// @endcond

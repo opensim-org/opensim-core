@@ -32,7 +32,7 @@ FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 #
 FOREACH (dataFile ${TEST_FILES})
  ADD_CUSTOM_COMMAND(
-    TARGET testJoints
+    TARGET testControllers
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}

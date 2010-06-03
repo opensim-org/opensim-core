@@ -150,6 +150,11 @@ public:
 	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
 	 */
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+	/**
+	 * For a CooridnateActuator, the speed is really the speed of the coordinate underneath it
+	 * this overrides the default behavior (bug )
+	 */
+	virtual double getSpeed( const SimTK::State& s) const;
 
 	//--------------------------------------------------------------------------
 	// XML

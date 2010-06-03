@@ -102,6 +102,9 @@ private:
 	int _lapackLWork;
 	double *_lapackWork;
 
+	// Save a (copy) of the state for state tracking purposes
+	SimTK::State	_saveState;
+
 //==============================================================================
 // METHODS
 //==============================================================================

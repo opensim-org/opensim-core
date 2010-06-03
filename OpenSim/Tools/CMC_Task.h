@@ -37,13 +37,16 @@
 // INCLUDES
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyBoolArray.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyDbl.h>
+#include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyBoolArray.h>
+#include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include "TrackingTask.h"
 
 namespace OpenSim {
 
@@ -58,7 +61,7 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMC_Task : public Object
+class OSIMTOOLS_API CMC_Task : public TrackingTask
 {
 
 //=============================================================================
@@ -66,16 +69,12 @@ class OSIMTOOLS_API CMC_Task : public Object
 //=============================================================================
 protected:
 	// PROPERTIES
-	/** Property to indicate on or off state. */
-	PropertyBool _propOn;
 	/** Body with respect to which the task goals are specified. */
 	PropertyStr _propWRTBodyName;
 	/** Body frame in which the task goals are expressed. */
 	PropertyStr _propExpressBodyName;
 	/** Property to specify the active task goals. */
 	PropertyBoolArray _propActive;
-	/** Weights of the task goals. */
-	PropertyDblArray _propW;
 	/** Position error feedback gain. */
 	PropertyDblArray _propKP;
 	/** Velocity error feedback gain. */
@@ -96,15 +95,13 @@ protected:
 	// variables are initialized.  The properties must be initialized
 	// before the references can be initialized to something meaningful.
 	/** Reference to the value of the on property. */
-	bool &_on;
+	//bool &_on;
 	/** Reference to the value of the WRTBody property. */
 	std::string &_wrtBodyName;
 	/** Reference to the value of the ExpressBody property. */
 	std::string &_expressBodyName;
 	/** Reference to the value of the Active property. */
 	Array<bool> &_active;
-	/** Reference to the value of the Weight property. */
-	Array<double> &_w;
 	/** Reference to the value of the KP property. */
 	Array<double> &_kp;
 	/** Reference to the value of the KV property. */
@@ -118,23 +115,6 @@ protected:
 	/** Reference to the value of the R2 property. */
 	SimTK::Vec3 &_r2;
 
-
-	/** Model. */
-	Model *_model;
-
-	/** Number of task functions. */
-	int _nTrk;
-	/** Position task functions.  Different types of tasks can 
-	require different numbers of task functions.  For example, to track
-	a joint angle, only one task function is needed.  However, to track
-	a position, up to three task functions may be needed. */
-	Function *_pTrk[3];
-	/** Velocity task functions.  If velocity task functions are
-	not specified, derivatives of the position task function are used. */
-	Function *_vTrk[3];
-	/** Acceleration task functions.  If acceleration task functions are
-	not specified, derivatives of the position task function are used. */
-	Function *_aTrk[3];
 	/** Last position error. */
 	SimTK::Vec3 _pErrLast;
 	/** Position error. */
@@ -180,12 +160,6 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	// MODEL
-	virtual void setModel(Model& aModel);
-	Model* getModel() const;
-	// ON,OFF
-	void setOn(bool aTrueFalse);
-	bool getOn() const;
 	// WRT BODY
 	void setWRTBodyName(std::string aBodyName);
 	std::string getWRTBodyName() const;
@@ -217,9 +191,6 @@ public:
 	void setDirection_2(const SimTK::Vec3& aR);
 	void getDirection_2(SimTK::Vec3& rR) const;
 	// TASK FUNCTIONS
-	int getNumTaskFunctions() const;
-	void setTaskFunctions(Function *aF0,
-		Function *aF1=NULL,Function *aF2=NULL);
 	Function* getTaskFunction(int aWhich) const;
 	void setTaskFunctionsForVelocity(Function *aF0,
 		Function *aF1=NULL,Function *aF2=NULL);

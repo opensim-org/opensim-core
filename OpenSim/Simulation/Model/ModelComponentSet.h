@@ -121,12 +121,12 @@ public:
     {
         return Set<T>::append(aObject);
     }
-
+#ifndef SWIG
 	bool append(T &aObject)
     {
         return Set<T>::append((T*) aObject.copy());
     }
-
+#endif
     /**
      * Adding an object to the set causes its Model field to be set.
      */

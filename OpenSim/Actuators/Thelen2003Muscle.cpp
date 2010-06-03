@@ -310,9 +310,10 @@ void Thelen2003Muscle::initStateCache(SimTK::State& s, SimTK::SubsystemIndex sub
 {
      Muscle::initStateCache(s, subsystemIndex, model);
      _passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-
+	  _tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
 
 }
+
 void Thelen2003Muscle::setPassiveForce( const SimTK::State& s, double force ) const {
     SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _passiveForceIndex)).upd() = force;
 }
@@ -320,6 +321,12 @@ double Thelen2003Muscle::getPassiveForce( const SimTK::State& s) const {
     return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _passiveForceIndex)).get());
 }
 
+void Thelen2003Muscle::setTendonForce(const SimTK::State& s, double force) const {
+	SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _tendonForceIndex)).upd() = force;
+}
+double Thelen2003Muscle::getTendonForce(const SimTK::State& s) const {
+	return SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _tendonForceIndex)).get();
+}
 
 //_____________________________________________________________________________
 /**
@@ -848,6 +855,8 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
    setFiberLengthDeriv(s, fiberLengthDeriv * Vmax );
 
    tendonForce = tendonForce *  _maxIsometricForce;
+	setForce(s, tendonForce);
+	setTendonForce(s, tendonForce);
    setPassiveForce( s, passiveForce * _maxIsometricForce);
 
 //cout << "ThelenMuscle computeActuation " << getName() << "  t=" << s.getTime() << " force = " << tendonForce << endl;
@@ -1045,10 +1054,11 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    double passiveForce;
    double fiberLength;
 
-   // If the muscle has no fibers, then treat it as a ligament.
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
-		// ligaments should be a separate class, so _optimalFiberLength should
-		// never be zero.
+      setStateVariable(s, STATE_FIBER_LENGTH, 0.0);
+		setPassiveForce(s, 0.0);
+      setForce(s, 0.0);
+      setTendonForce(s, 0.0);
       return 0.0;
    }
 
@@ -1066,25 +1076,29 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
    double muscle_width = _optimalFiberLength * sin(_pennationAngle);
 
-   if (_tendonSlackLength < ROUNDOFF_ERROR) {
-      tendon_length = 0.0;
-      cos_factor = cos(atan(muscle_width / length));
-      fiberLength = length / cos_factor;
+	if (_tendonSlackLength < ROUNDOFF_ERROR) {
+		tendon_length = 0.0;
+		cos_factor = cos(atan(muscle_width / length));
+		fiberLength = length / cos_factor;
 
-	  double activeForce = calcActiveForce(s, fiberLength / _optimalFiberLength)  * aActivation;
-	  if (activeForce < 0.0) activeForce = 0.0;
+		double activeForce = calcActiveForce(s, fiberLength / _optimalFiberLength)  * aActivation;
+		if (activeForce < 0.0) activeForce = 0.0;
 
-	  passiveForce =   calcPassiveForce(s, fiberLength / _optimalFiberLength);
-	  if (passiveForce < 0.0) passiveForce = 0.0;
+		passiveForce = calcPassiveForce(s, fiberLength / _optimalFiberLength);
+		if (passiveForce < 0.0) passiveForce = 0.0;
 
-      setPassiveForce(s, passiveForce );
-      setStateVariable(s, STATE_FIBER_LENGTH, fiberLength);
-      return (activeForce + passiveForce) * _maxIsometricForce * cos_factor;
+		setPassiveForce(s, passiveForce );
+		setStateVariable(s, STATE_FIBER_LENGTH, fiberLength);
+		tendon_force = (activeForce + passiveForce) * _maxIsometricForce * cos_factor;
+		setForce(s, tendon_force);
+		setTendonForce(s, tendon_force);
+		return tendon_force;
    } else if (length < _tendonSlackLength) {
+		setPassiveForce(s, 0.0);
       setStateVariable(s, STATE_FIBER_LENGTH, muscle_width);
       _model->getSystem().realize(s, SimTK::Stage::Velocity);
-      tendon_length = length;
       setForce(s, 0.0);
+      setTendonForce(s, 0.0);
       return 0.0;
    } else {
       fiberLength = _optimalFiberLength;
@@ -1121,7 +1135,8 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
       norm_tendon_length = tendon_length / _optimalFiberLength;
       tendon_force = calcTendonForce(s, norm_tendon_length) * _maxIsometricForce;
-	  setForce(s, tendon_force);
+		setForce(s, tendon_force);
+		setTendonForce(s, tendon_force);
 
       old_error_force = error_force;
  

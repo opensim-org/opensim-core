@@ -268,6 +268,7 @@ setNull()
 	setHeaderToken(DEFAULT_HEADER_TOKEN);
 	_stepInterval = 1;
 	_lastI = 0;
+	_fp = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -1161,6 +1162,11 @@ append(const StateVector &aStateVector,bool aCheckForDuplicateTime)
 		_storage.getLast() = aStateVector;
 	else
 		_storage.append(aStateVector);
+
+	if (_fp!=0){
+		aStateVector.print(_fp);
+		fflush(_fp);
+	}
 	return(_storage.getSize());
 }
 //_____________________________________________________________________________
@@ -1176,7 +1182,8 @@ append(const StateVector &aStateVector,bool aCheckForDuplicateTime)
 int Storage::
 append(const Array<StateVector> &aStorage)
 {
-	_storage.append(aStorage);
+	for(int i=0; i<aStorage.getSize(); i++)
+		_storage.append(aStorage[i]);
 	return(_storage.getSize());
 }
 //_____________________________________________________________________________
@@ -1204,6 +1211,21 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 
 	return(_storage.getSize());
 }
+//_____________________________________________________________________________
+/**
+ * Append an array of data that occured at a specified time.
+ *
+ * @param aT Time stamp of the data.
+ * @param aY Vector.
+ * @return Index of the first empty storage element.
+ */
+int Storage::
+append(double aT,const SimTK::Vector& aY,bool aCheckForDuplicateTime)
+{
+	// APPEND
+	return( append ( aT, aY.size(), &aY[0], aCheckForDuplicateTime ));
+}
+//_____________________________________________________________________________
 //_____________________________________________________________________________
 /**
  * Store a simulation vector.
@@ -2379,6 +2401,27 @@ print() const
 }
 //_____________________________________________________________________________
 /**
+ * Set name of output file to be written into.
+ * This has the side effect of openning the file for writing. The header will not have the correct
+ * number of rows but this may not be an issue for ersion 2 of the Storage class
+ */
+void Storage::
+setOutputFileName(const std::string& aFileName)
+{
+	assert(_fileName=="");
+	_fileName = aFileName;
+
+	// OPEN THE FILE
+	_fp = IO::OpenFile(aFileName,"w");
+	if(_fp==NULL) throw(Exception("Could not open file "+aFileName));
+	// WRITE THE HEADER
+	int n=0,nTotal=0;
+	n = writeHeader(_fp);
+	// WRITE THE COLUMN LABELS
+	n = writeColumnLabels(_fp);
+}
+//_____________________________________________________________________________
+/**
  * Print the contents of this storage instance to a file.
  *
  * The argument aMode specifies whether the file is openned for writting, "w",
@@ -2976,4 +3019,35 @@ double Storage::compareColumn(Storage& aOtherStorage, std::string& aColumnName, 
 		theDiff = std::max(theDiff, fabs(thisData[i]-otherData[startIndexOther+i-startIndex]));
 	}
 	return theDiff;
+}
+/**
+ * Force column labels for a Storage object to become unique. This is done by appenging the string (n)
+ * as needed where n=1, 2, ...
+ *
+ * @returns true if labels were changed false otherwise.
+ **/
+bool Storage::makeStorageLabelsUnique() {
+	Array<std::string> lbls = getColumnLabels();
+	std::string offending="";
+	bool changedLabels=false;
+	for(int i=0; i< lbls.getSize(); i++){
+		bool isUnique= (lbls.findIndex(lbls[i])==i);
+		if (!isUnique){ // Make new names
+			offending =lbls[i];
+			bool exist=true;
+			std::string newName =offending;
+			changedLabels = true;
+			int c=1;
+			while(exist){
+				char cString[20];
+				sprintf(cString,"%d", c);
+				newName = offending+"("+cString+")";
+				exist= (lbls.findIndex(newName)!=-1);
+				c++;
+			}
+			lbls[i]= newName;
+		}
+	}
+	if (changedLabels) setColumnLabels(lbls);
+	return (!changedLabels);
 }

@@ -43,6 +43,7 @@
 #include "ActuatorForceTargetFast.h"
 #include "CMC_TaskSet.h"
 #include "CMC.h" 
+#include "StateTrackingTask.h"
 
 #include <OpenSim/Common/Storage.h>
 
@@ -125,7 +126,9 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 bool ActuatorForceTargetFast::
 prepareToOptimize(SimTK::State& s, double *x)
 {
-
+	// Keep around a "copy" of the state so we can use it in objective function 
+	// in cases where we're tracking states
+	_saveState = s;
 #ifdef USE_LINEAR_CONSTRAINT_MATRIX
 	int nf = _controller->getModel().getActuators().getSize();
 	int nc = getNumConstraints();
@@ -203,6 +206,7 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
 	const Set<Actuator>& fSet = _controller->getModel().getActuators();
 	double p = 0.0;
+	const CMC_TaskSet& tset=_controller->getTaskSet();
 	for(int i=0,j=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
 	    Muscle* mus = dynamic_cast<Muscle*>(&act);
@@ -217,8 +221,20 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
         }
         j++;
 	}
-//std::cout << "ActuatorForceTargetFast::objectiveFunc =" << p << std::endl;
+	double pre = p;
+	// If tracking states, add in errors from them squared
+	for(int t=0; t<tset.getSize(); t++){
+		TrackingTask& ttask = tset.get(t);
+		StateTrackingTask* stateTask=NULL;
+		if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
+			double err = stateTask->getTaskError(_saveState);
+			//cout << "task error " << err << endl;
+			p+= (err * err * stateTask->getWeight(0));
+
+		}
+	}
 	rP = p;
+	//cout << "Objective function" << rP << " vs. without emg " << pre << endl;
 
 	return(0);
 }
@@ -246,6 +262,16 @@ gradientFunc(const Vector &x, const bool new_coefficients, Vector &gradient) con
         index++;
     }
 //std::cout << "rdActuatorForceTargetFast::gradentFuncgradient =" << gradient << std::endl;
+	// Add in the terms for the stateTracking
+	const CMC_TaskSet& tset=_controller->getTaskSet();
+	for(int t=0; t<tset.getSize(); t++){
+		TrackingTask& ttask = tset.get(t);
+		StateTrackingTask* stateTask=NULL;
+		if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
+			Vector errGradient = stateTask->getTaskErrorGradient(_saveState);
+			gradient += errGradient;
+		}
+	}
 
 	return(0);
 }

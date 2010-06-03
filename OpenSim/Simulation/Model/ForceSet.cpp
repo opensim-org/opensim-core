@@ -176,7 +176,6 @@ void ForceSet::setup(Model& aModel)
 	// BASE CLASS
 	ModelComponentSet<Force>::setup(aModel);
 
-    // INDICES
 	updateActuators();
 	updateMuscles();
 }
@@ -237,13 +236,38 @@ bool ForceSet::remove(int aIndex)
  * @param aActuator Pointer to the actuator to be appended.
  * @return True if successful; false otherwise.
  */
-bool ForceSet::append(Force *aActuator)
+bool ForceSet::
+append(Force *aForce)
 {
-	bool success = ModelComponentSet<Force>::append(aActuator);
+	bool success = ModelComponentSet<Force>::append(aForce);
 
 	if((success)&&(_model!=NULL)) {
 		updateActuators();
 		updateMuscles();
+	}
+
+	return(success);
+}
+//_____________________________________________________________________________
+/**
+ * Append an actuator on to the set.  A copy of the specified actuator
+ * is made.
+ *
+ * This method overrides the method in Set<Force> so that several
+ * internal variables of the actuator set can be updated.
+ *
+ * @param aActuator reference to the actuator to be appended.
+ * @return True if successful; false otherwise.
+ */
+bool ForceSet::
+append(Force &aForce)
+{
+	bool success = ModelComponentSet<Force>::append(aForce);
+
+
+	if((success)&&(_model!=NULL)) {
+		updateActuators();
+	    updateMuscles();
 	}
 
 	return(success);

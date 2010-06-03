@@ -122,7 +122,7 @@
 	<perturbation_size> 1000 </perturbation_size>
 	<!--List of actuator names to perturb (for which induced acceleration will be computed).
 	    Use 'all' to perturb all actuators. -->
-    <perturbed_actuators> glut_med1_l glut_max1_r psoas_r </perturbed_actuators> 
+    <perturbed_actuators> glut_med1_l  psoas_r </perturbed_actuators> 
 	<!--Whether or not to compute induced accelerations due to gravity perturbation.-->
 	<perturb_gravity> true </perturb_gravity>
     <ControllerSet>

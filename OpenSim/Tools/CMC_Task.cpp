@@ -63,26 +63,16 @@ using SimTK::Vec3;
  */
 CMC_Task::~CMC_Task()
 {
-	if(_pTrk[0]!=NULL) { delete _pTrk[0];  _pTrk[0]=NULL; }
-	if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }
-	if(_pTrk[2]!=NULL) { delete _pTrk[2];  _pTrk[2]=NULL; }
-	if(_vTrk[0]!=NULL) { delete _vTrk[0];  _vTrk[0]=NULL; }
-	if(_vTrk[1]!=NULL) { delete _vTrk[1];  _vTrk[1]=NULL; }
-	if(_vTrk[2]!=NULL) { delete _vTrk[2];  _vTrk[2]=NULL; }
-	if(_aTrk[0]!=NULL) { delete _aTrk[0];  _aTrk[0]=NULL; }
-	if(_aTrk[1]!=NULL) { delete _aTrk[1];  _aTrk[1]=NULL; }
-	if(_aTrk[2]!=NULL) { delete _aTrk[2];  _aTrk[2]=NULL; }
 }
 //_____________________________________________________________________________
 /**
  * Construct a default track object for a specified model.
  */
 CMC_Task::CMC_Task() :
-	_on(_propOn.getValueBool()),
+	TrackingTask(),
 	_wrtBodyName(_propWRTBodyName.getValueStr()),
 	_expressBodyName(_propExpressBodyName.getValueStr()),
 	_active(_propActive.getValueBoolArray()),
-	_w(_propW.getValueDblArray()),
 	_kp(_propKP.getValueDblArray()),
 	_kv(_propKV.getValueDblArray()),
 	_ka(_propKA.getValueDblArray()),
@@ -99,12 +89,10 @@ CMC_Task::CMC_Task() :
  * @param aTask Task object to be copied.
  */
 CMC_Task::CMC_Task(const CMC_Task &aTask) :
-	Object(aTask),
-	_on(_propOn.getValueBool()),
+	TrackingTask(aTask),
 	_wrtBodyName(_propWRTBodyName.getValueStr()),
 	_expressBodyName(_propExpressBodyName.getValueStr()),
 	_active(_propActive.getValueBoolArray()),
-	_w(_propW.getValueDblArray()),
 	_kp(_propKP.getValueDblArray()),
 	_kv(_propKV.getValueDblArray()),
 	_ka(_propKA.getValueDblArray()),
@@ -144,9 +132,6 @@ setNull()
 	_r1[0] = _r1[1] = _r1[2] = 0.0;
 	_r2[0] = _r2[1] = _r2[2] = 0.0;
 	_nTrk = 0;
-	_pTrk[0] = _pTrk[1] = _pTrk[2] = NULL;
-	_vTrk[0] = _vTrk[1] = _vTrk[2] = NULL;
-	_aTrk[0] = _aTrk[1] = _aTrk[2] = NULL;
 	_pErrLast[0] = _pErrLast[1] = _pErrLast[2] = 0.0;
 	_pErr[0] = _pErr[1] = _pErr[2] = 0.0;
 	_vErrLast[0] = _vErrLast[1] = _vErrLast[2] = 0.0;
@@ -309,58 +294,6 @@ operator=(const CMC_Task &aTask)
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// MODEL
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the model to which this track object applies.
- *
- * @param aModel Model.
- */
-void CMC_Task::
-setModel(Model& aModel)
-{
-	_model = &aModel;
-}
-
-//_____________________________________________________________________________
-/**
- * Get the model to which this track object applies.
- *
- * @return Pointer to the model.
- */
-Model* CMC_Task::
-getModel() const
-{
-	return(_model);
-}
-
-//-----------------------------------------------------------------------------
-// ON/OFF
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Turn this track object on or off.
- *
- * @param aTureFalse Turns analysis on if "true" and off if "false".
- */
-void CMC_Task::
-setOn(bool aTrueFalse)
-{
-	_on = aTrueFalse;
-}
-//_____________________________________________________________________________
-/**
- * Get whether or not this track object is on.
- *
- * @return True if on, false if off.
- */
-bool CMC_Task::
-getOn() const
-{
-	return(_on);
-}
-
 //-----------------------------------------------------------------------------
 // WRT BODY
 //-----------------------------------------------------------------------------
@@ -657,44 +590,8 @@ getDirection_2(SimTK::Vec3& rR) const
 }
 
 //-----------------------------------------------------------------------------
-// NUMBER OF TRACK FUNCTIONS
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the number of position track functions.
- *
- * @return Number of position track functions.
- */
-int CMC_Task::
-getNumTaskFunctions() const
-{
-	return(_nTrk);
-}
-
-//-----------------------------------------------------------------------------
 // TRACK FUNCTIONS - POSITION
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the track functions.  Note that this method makes copies of the
- * specified track functions, so the caller may use the specified functions
- * for whatever purposes.
- *
- * @param aF0 Function for track goal 0.
- * @param aF1 Function for track goal 1.
- * @param aF2 Function for track goal 2.
- */
-void CMC_Task::
-setTaskFunctions(OpenSim::Function *aF0, OpenSim::Function *aF1, OpenSim::Function *aF2)
-{
-	if(_pTrk[0]!=NULL) { delete _pTrk[0];  _pTrk[0]=NULL; }
-	if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }
-	if(_pTrk[2]!=NULL) { delete _pTrk[2];  _pTrk[2]=NULL; }
-
-	if(aF0!=NULL) _pTrk[0] = (Function*)aF0->copy();
-	if(aF1!=NULL) _pTrk[1] = (Function*)aF1->copy();
-	if(aF2!=NULL) _pTrk[2] = (Function*)aF2->copy();
-}
 //_____________________________________________________________________________
 /**
  * Get a specified track function.

@@ -113,7 +113,9 @@ public:
    void copyData(const PathPoint &aPoint);
 	virtual void init(const PathPoint& aPoint);
 
+#ifndef SWIG
 	const SimTK::Vec3& getLocation() const { return _location; }
+#endif
 	SimTK::Vec3& getLocation()  { return _location; }
 
 	const double& getLocationCoord(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }

@@ -296,7 +296,7 @@ SimTK::Optimizer *IKSolverImpl::createOptimizer(const IKTrial &aIKOptions, SimTK
 		std::cout << "Using Jacobian with Linear Least Squares Solver." << std::endl;
 		algorithm = SimTK::BestAvailiable;
 	} else {
-		throw Exception("CMCTool: ERROR- Unrecognized optimizer algorithm: '"+aIKOptions.getOptimizerAlgorithm()+"'",__FILE__,__LINE__);
+		throw Exception("IKTool: ERROR- Unrecognized optimizer algorithm: '"+aIKOptions.getOptimizerAlgorithm()+"'",__FILE__,__LINE__);
 	}
 
 	SimTK::Optimizer *optimizer = NULL;

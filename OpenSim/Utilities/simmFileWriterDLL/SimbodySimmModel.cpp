@@ -146,7 +146,9 @@ void SimbodySimmModel::copyData(const SimbodySimmModel &aModel)
 void SimbodySimmModel::setNull()
 {
 	setType("SimbodySimmModel");
-   _model = NULL;
+	_model = NULL;
+	_maxFunctionUserNumber = 0;
+	_uniqueJointNumber = 0;
 }
 
 //_____________________________________________________________________________
@@ -253,7 +255,7 @@ bool SimbodySimmModel::writeJointFile(const string& aFileName) const
    out << "solver_max_iterations " << options.maxIterations << endl;
 #endif
 
-	SimTK::Vec3 gravity =_model->getGravity();
+	SimTK::Vec3 gravity=_model->getGravity();
 	const string& gravityLabel = getGravityLabel(gravity);
 
 	out << "gravity " << gravityLabel << endl;
@@ -435,6 +437,7 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 	// parent can be merged with the primary joint. So begin making the joint by
 	// adding the non-zero components to the SimbodySimmJoint.
 	if (parentJointAdded == false) {
+		int rotationsSoFar = 0;
 		SimTK::Vec3 location;
 		SimTK::Vec3 orientation;
 		joint.getLocationInParent(location);
@@ -446,11 +449,11 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 		if (NOT_EQUAL_WITHIN_ERROR(location[2], 0.0))
 			ssj->addConstantDof("tz", NULL, location[2]);
 		if (NOT_EQUAL_WITHIN_ERROR(orientation[0], 0.0))
-			ssj->addConstantDof("r1", defaultAxes[0], orientation[0] * 180.0 / SimTK::Pi);
+			ssj->addConstantDof(_rotationNames[rotationsSoFar++], defaultAxes[0], orientation[0] * 180.0 / SimTK::Pi);
 		if (NOT_EQUAL_WITHIN_ERROR(orientation[1], 0.0))
-			ssj->addConstantDof("r2", defaultAxes[1], orientation[1] * 180.0 / SimTK::Pi);
+			ssj->addConstantDof(_rotationNames[rotationsSoFar++], defaultAxes[1], orientation[1] * 180.0 / SimTK::Pi);
 		if (NOT_EQUAL_WITHIN_ERROR(orientation[2], 0.0))
-			ssj->addConstantDof("r3", defaultAxes[2], orientation[2] * 180.0 / SimTK::Pi);
+			ssj->addConstantDof(_rotationNames[rotationsSoFar++], defaultAxes[2], orientation[2] * 180.0 / SimTK::Pi);
 	}
 
 	if (joint.isA("WeldJoint")) {
@@ -513,7 +516,7 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 	}
 
 	ssj->finalize();
-	_simmJoint.append(ssj);
+	addSimmJoint(ssj);
 }
 
 //_____________________________________________________________________________
@@ -558,7 +561,7 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 {
 	// If the joint has no "real" DOFs (e.g., WeldJoints), then the parent joint is not needed.
 	if (aJoint.isA("WeldJoint"))
-		return true;
+		return false;
 
 	SimTK::Vec3 location;
 	SimTK::Vec3 orientation;
@@ -584,9 +587,7 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 		}
 	}
 
-	if (aJoint.isA("WeldJoint")) {
-		return false;
-	} else if (aJoint.isA("PinJoint")) {
+	if (aJoint.isA("PinJoint")) {
 		if (numRotations >= 3) // have already defined three rotations (can't add more)
 			return true;
 	} else if (aJoint.isA("SliderJoint")) {
@@ -634,6 +635,30 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
    return false;
 }
 
+bool SimbodySimmModel::jointArrayContains(const string& aName)
+{
+	for (int i=0; i<_simmJoint.getSize(); i++)
+		if (_simmJoint.get(i)->getName() == aName)
+			return true;
+
+	return false;
+}
+
+void SimbodySimmModel::addSimmJoint(SimbodySimmJoint* joint)
+{
+   // Make sure the name is unique
+   string uniqueName = joint->getName();
+   while (jointArrayContains(uniqueName))
+   {
+	   ostringstream num;
+	   num << _uniqueJointNumber++;
+	   uniqueName = joint->getName() + "_" + num.str();
+   }
+
+   joint->setName(uniqueName);
+   _simmJoint.append(joint);
+}
+
 //_____________________________________________________________________________
 /**
  * Make a joint of all constants to represent a translation and XYZ Euler rotation.
@@ -655,7 +680,7 @@ void SimbodySimmModel::makeSimmJoint(const string& aName, const string& aParentN
    ssj->addConstantDof("r2", defaultAxes[1], aOrientation[1] * 180.0 / SimTK::Pi);
    ssj->addConstantDof("r3", defaultAxes[2], aOrientation[2] * 180.0 / SimTK::Pi);
    ssj->finalize();
-   _simmJoint.append(ssj);
+   addSimmJoint(ssj);
 }
 
 //_____________________________________________________________________________
@@ -969,12 +994,16 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 			ConditionalPathPoint* mvp = (ConditionalPathPoint*)(&pt);
 			Vec3& attachment = mvp->getLocation();
 			Array<double>& range = mvp->getRange();
-			const Coordinate* coord = mvp->getCoordinate();
 			aStream << attachment[0] << " " << attachment[1] << " " << attachment[2] << " segment " << mvp->getBody().getName();
+			const Coordinate* coord = mvp->getCoordinate();
+			if (coord) {
 				if (coord->getMotionType() == Coordinate::Rotational)
 					aStream << " ranges 1 " << coord->getName() << " (" << range[0] * SimTK_RADIAN_TO_DEGREE << ", " << range[1] * SimTK_RADIAN_TO_DEGREE << ")" << endl;
 				else
 					aStream << " ranges 1 " << coord->getName() << " (" << range[0] << ", " << range[1] << ")" << endl;
+			} else {
+				aStream << " ranges 1 " << mvp->getCoordinateName() << " (0.0, 1.0)" << endl;
+			}
 		} else if (pt.isA("MovingPathPoint")) {
 			MovingPathPoint* mpp = (MovingPathPoint*)(&pt);
 			Vec3& attachment = mpp->getLocation();

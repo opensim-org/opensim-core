@@ -233,7 +233,6 @@ public:
 public:
 	void setType(const std::string &aType);
 	const std::string& getType() const;
-	virtual const std::string& getNewType() const { return getType(); };
 	void setName(const std::string &aName);
 	const std::string& getName() const;
 	void setDescription(const std::string &aDescrip);

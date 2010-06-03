@@ -131,7 +131,7 @@ private:
 	void buildCoordinateMap(const SimTK::State& s, const Array<std::string>& aNameArray);
 	void setErrorReportingQuantities(const double& aMarkerError, const std::string& aMarkerName,
 									const double& aCoordinateError, const std::string& aCoordinateName) const;
-	void createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, SimTK::Matrix &J);
+	void createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, SimTK::Matrix &J) const;
 	void createPseudoInverseJacobian(const SimTK::Matrix &J, SimTK::Matrix &Jinv);
 public:
 	//---------------------------------------------------------------------------

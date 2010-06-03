@@ -279,6 +279,9 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	 * frames in the user-specified time range.
 	 */
 	MarkerData staticPose(aPathToSubject + _markerFileName);
+	if (_timeRange.getSize()<2) 
+		throw Exception("MarkerPlacer::processModel, time_range is unspecified.");
+
 	staticPose.averageFrames(_maxMarkerMovement, _timeRange[0], _timeRange[1]);
 	staticPose.convertToUnits(aModel->getLengthUnits());
 

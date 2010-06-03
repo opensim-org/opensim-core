@@ -101,7 +101,9 @@ private:
 
 	SimTK::Matrix _constraintMatrix;
 	SimTK::Vector _constraintVector;
-
+	
+	// Save a (copy) of the state for state tracking purposes
+	SimTK::State	_saveState;
 //==============================================================================
 // METHODS
 //==============================================================================

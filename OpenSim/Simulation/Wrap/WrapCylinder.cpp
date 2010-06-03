@@ -146,24 +146,21 @@ void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
    // Base class, to scale origin in body frame
    WrapObject::scale(aScaleFactors);
 
-   double orientation[3][3];
-   _pose.getOrientation(orientation);
+	SimTK::Vec3 localScaleVector[3];
 
-   SimTK::Vec3 localScaleVector[3];
-
-   // orientation[0][*] holds the ellipsoid's X axis expressed in the
-   // body's reference frame. orientation[1][*] holds the Y, and
-   // orientation[2][*] holds the Z. Multiplying these vectors by
+   // _pose.x() holds the ellipsoid's X axis expressed in the
+   // body's reference frame, _pose.y() holds the Y, and
+   // _pose.z() holds the Z. Multiplying these vectors by
    // the scale factor vector gives localScaleVector[]. The magnitudes
    // of the localScaleVectors gives the amount to scale the cylinder
    // in the XYZ dimensions. The wrap cylinder is oriented along
    // the Z axis, so the length is scaled by the Z scale factor,
    // and the radius is scaled by the average of the X and Y scale factors.
-   for (int i=0; i<3; i++) {
-      localScaleVector[i][0] = orientation[i][0] * aScaleFactors[0];
-      localScaleVector[i][1] = orientation[i][1] * aScaleFactors[1];
-      localScaleVector[i][2] = orientation[i][2] * aScaleFactors[2];
-   }
+	for (int i=0; i<3; i++) {
+		localScaleVector[0][i] = _pose.x()[i] * aScaleFactors[i];
+		localScaleVector[1][i] = _pose.y()[i] * aScaleFactors[i];
+		localScaleVector[2][i] = _pose.z()[i] * aScaleFactors[i];
+	}
    _radius *= ((localScaleVector[0].norm() + localScaleVector[1].norm()) * 0.5);
    _length *= localScaleVector[2].norm();
 }

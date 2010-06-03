@@ -37,6 +37,8 @@
 #include "AnalyzeTool.h"
 
 #include "GenericModelMaker.h"
+#include "TrackingTask.h"
+#include "MuscleStateTrackingTask.h"
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
 #include "IKTaskSet.h"

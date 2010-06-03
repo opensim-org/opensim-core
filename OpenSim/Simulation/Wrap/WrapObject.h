@@ -39,7 +39,6 @@
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/SIMMTransform.h>
 #include "SimTKsimbody.h"
 
 #ifdef SWIG
@@ -117,9 +116,8 @@ protected:
 
 	Body* _body;
 
-	SIMMTransform _pose;
-	SIMMTransform _inversePose;
-    const Model* _model;
+	SimTK::Transform _pose;
+	const Model* _model;
 
 //=============================================================================
 // METHODS

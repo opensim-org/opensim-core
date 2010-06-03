@@ -128,12 +128,27 @@ void ConditionalPathPoint::init(const PathPoint& aPoint)
 	PathPoint::copyData(aPoint);
 
 	// If aPoint is a ConditionalPathPoint, then you can copy all of its members over.
-	// Otherwise, set the range to default values and leave the coordinate unassigned.
+	// Otherwise, set the range and coordinate name to default values (using the first
+	// coordinate in the model, if there is one).
    const ConditionalPathPoint* mmp = dynamic_cast<const ConditionalPathPoint*>(&aPoint);
 	if (mmp) {
 		copyData(*mmp);
 	} else {
-		_range[0] = _range[1] = 0.0;
+		_range[0] = 0.0;
+		_range[1] = 0.0;
+		GeometryPath* path = aPoint.getPath();
+		if (path) {
+			ModelComponent* comp = dynamic_cast<ModelComponent*>(path->getOwner());
+			if (comp) {
+				CoordinateSet coords = comp->getModel().getCoordinateSet();
+				if (coords.getSize() > 0) {
+					int index = 0;
+					_coordinateName = coords.get(index).getName();
+					_range[0] = coords.get(index).getRangeMin();
+					_range[1] = coords.get(index).getRangeMax();
+				}
+			}
+		}
 	}
 }
 
@@ -258,11 +273,18 @@ void ConditionalPathPoint::setup(const Model& aModel, GeometryPath& aPath)
 	// base class
 	PathPoint::setup(aModel, aPath);
 
-	/* Look up the coordinate by name in the dynamics engine and
-	 * store a pointer to it.
-	 */
-    if (aModel.getCoordinateSet().contains(_coordinateName))
-    	_coordinate = &aModel.getCoordinateSet().get(_coordinateName);
+	// Setup() can be called before the model's coordinate set has been constructed, in which
+	// case you don't want to throw an exception if the coordinate is not found.
+	if (aModel.getCoordinateSet().getSize() > 0) {
+		// Look up the coordinate by name and store a pointer to it.
+		if (aModel.getCoordinateSet().contains(_coordinateName)) {
+			_coordinate = &aModel.getCoordinateSet().get(_coordinateName);
+		} else {
+			string errorMessage = "Error: Coordinate " + _coordinateName + " referenced in muscle " + aPath.getOwner()->getName() +
+				" does not exist in model " +	aModel.getName();
+			throw Exception(errorMessage);
+		}
+	}
 }
 
 //=============================================================================

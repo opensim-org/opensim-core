@@ -134,7 +134,7 @@ public:
 	virtual double getValue(const SimTK::State& s );
 	virtual void setAxis(const SimTK::Vec3& aAxis);
 	virtual void getAxis(SimTK::Vec3& rAxis) const;
-	virtual void getAxis(double rAxis[]) const { _axis.getAs(rAxis); }
+	virtual void getAxis(double rAxis[]) const { SimTK::Vec3 temp; temp.updAs(rAxis)=_axis; }
 	const SimTK::Vec3& getAxis() const { return _axis; }	
 	const double& getAxis(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _axis[aXYZ]; }
 

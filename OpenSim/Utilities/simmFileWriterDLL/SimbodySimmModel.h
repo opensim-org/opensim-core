@@ -95,6 +95,7 @@ protected:
 	Array<SimbodySimmFunction*> _simmMuscleFunction;
 
 	int _maxFunctionUserNumber;
+	int _uniqueJointNumber;
 
 //=============================================================================
 // METHODS
@@ -116,6 +117,7 @@ private:
 	void setNull();
 	void copyData(const SimbodySimmModel &aEngine);
 	void setup(const Model* aModel);
+	bool jointArrayContains(const std::string& aName);
 
 public:
    bool writeJointFile(const std::string& aFileName) const;
@@ -124,6 +126,7 @@ public:
    void convertBody(const OpenSim::Body& aBody, const MarkerSet* aMarkerSet);
    bool isChildJointNeeded(const OpenSim::Joint& aJoint);
 	bool isParentJointNeeded(const OpenSim::Joint& aJoint);
+	void addSimmJoint(SimbodySimmJoint* joint);
    void makeSimmJoint(const std::string& aName, const std::string& aParentName, const std::string& aChildName,
                       SimTK::Vec3& aLocation, SimTK::Vec3& aOrientation);
    bool addExtraJoints(const OpenSim::Joint& aJoint, std::string& rParentName, std::string& rChildName);

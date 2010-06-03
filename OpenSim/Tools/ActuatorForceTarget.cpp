@@ -42,6 +42,7 @@
 #include "CMC_TaskSet.h"
 #include <SimTKmath.h>
 #include <SimTKlapack.h>
+#include "StateTrackingTask.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -127,6 +128,9 @@ setStressTermWeight(double aWeight)
 bool ActuatorForceTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
+	// Keep around a "copy" of the state so we can use it in objective function 
+	// in cases where we're tracking states
+	_saveState = s;
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 	int nu = _controller->getModel().getNumSpeeds();
 	int nf = _controller->getModel().getActuators().getSize();
@@ -281,6 +285,7 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 int ActuatorForceTarget::
 objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 {
+	const CMC_TaskSet& tset=_controller->getTaskSet();
 #ifndef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 
 	// Explicit computation of performance (use this if it's not actually linear)
@@ -295,6 +300,16 @@ objectiveFunc(const Vector &aF, const bool new_coefficients, Real& rP) const
 	// Use precomputed matrices/vectors to simplify computing performance (works if it's really linear)
 	rP = (_accelPerformanceMatrix * aF + _accelPerformanceVector).normSqr() + (_forcePerformanceMatrix * aF + _forcePerformanceVector).normSqr();
 #endif
+	// If tracking states, add in errors from them squared
+	for(int t=0; t<tset.getSize(); t++){
+		TrackingTask& ttask = tset.get(t);
+		StateTrackingTask* stateTask=NULL;
+		if ((stateTask=dynamic_cast<StateTrackingTask*>(&ttask))!= NULL){
+			double err = stateTask->getTaskError(_saveState);
+			rP+= (err * err);
+
+		}
+	}
 
 	return(0);
 }

@@ -180,6 +180,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
     Object::RegisterType( ControlSetController() );
 
+	Object::RegisterType( BushingForce() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

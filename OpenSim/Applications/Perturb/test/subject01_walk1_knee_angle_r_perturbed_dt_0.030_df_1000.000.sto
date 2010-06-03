@@ -1,6 +1,6 @@
 knee_angle_r_perturbed
 nRows=1
-nColumns=5
+nColumns=4
 endheader
-time	glut_med1_l	glut_max1_r	psoas_r	gravity
-      0.839827670000	    -15.238440038576	    -11.014435157935	    -27.762689007983	    -20.379316352075
+time	glut_med1_l	psoas_r	gravity
+      0.839827670000	    -15.238440038576	    -27.762689007983	    -20.379316352074

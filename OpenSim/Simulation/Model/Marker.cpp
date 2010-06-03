@@ -117,7 +117,7 @@ void Marker::copyData(const Marker &aMarker)
 	_offset = aMarker._offset;
 	_fixed = aMarker._fixed;
 	_bodyName = aMarker._bodyName;
-	_body = aMarker._body;
+	_body = NULL;
 	_displayer = aMarker._displayer;
 	_virtual = aMarker._virtual;
 }
@@ -185,7 +185,7 @@ void Marker::setup(const Model& aModel)
 			throw Exception(errorMessage);
 		}
 		// If marker jumped between bodies we need to fix display stuff
-		if (oldBody && oldBody != _body){
+		if (oldBody && oldBody->getName() != _body->getName()){
 			oldBody->updDisplayer()->removeDependent(&_displayer);
 		}
 		//Todo_AYMAN: make code below safe to call multiple times (since this setup() method may be

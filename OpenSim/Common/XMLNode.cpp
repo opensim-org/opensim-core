@@ -829,6 +829,10 @@ GetBoolArray(const DOMNode *aNode,bool *&rData)
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
 
+	if(textNode==NULL) {
+		rData = NULL;
+		return(0);
+	}
 	// TOKENIZE THE STRING
 	XMLStringTokenizer tokenizer(textNode->getNodeValue());
 
@@ -968,6 +972,10 @@ GetIntArray(const DOMNode *aNode,int *&rData)
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
 
+	if(textNode==NULL) {
+		rData = NULL;
+		return(0);
+	}
 	// TOKENIZE THE STRING
 	XMLStringTokenizer tokenizer(textNode->getNodeValue());
 
@@ -1107,6 +1115,10 @@ GetDblArray(const DOMNode *aNode,double *&rData)
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
 
+	if(textNode==NULL) {
+		rData = NULL;
+		return(0);
+	}
 	// TOKENIZE THE STRING
 	XMLStringTokenizer tokenizer(textNode->getNodeValue());
 
@@ -1136,6 +1148,7 @@ GetDblArray(const DOMNode *aNode,double *&rData)
 		// INTERPRET
 		status = sscanf(str,"%lf",&rData[n]);
 		if(status==1) n++;
+		else printf("XMLNode.GetDblArray: ERROR- found a non-number %s while expecting array of doubles. It will be ignored.\n", str);
 
 		// CLEANUP
 		delete[] str;
@@ -1243,6 +1256,10 @@ GetStrArray(const DOMNode *aNode,string* &rData)
 	// GET THE TEXT NODE
 	DOMText *textNode = GetTextNode(aNode);
 
+	if(textNode==NULL) {
+		rData = NULL;
+		return(0);
+	}
 	// TOKENIZE THE STRING
 	XMLStringTokenizer tokenizer(textNode->getNodeValue());
 

@@ -87,6 +87,7 @@ private:
 	SimTK::ConstraintIndex _lockedConstraintIndex;
 	SimTK::ConstraintIndex _clampedConstraintIndex;
 
+	mutable bool _lockedWarningGiven;
 protected:
 
 	PropertyStr _motionTypeNameProp;

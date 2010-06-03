@@ -1,6 +1,6 @@
 center_of_mass_Z_perturbed
 nRows=1
-nColumns=5
+nColumns=4
 endheader
-time	glut_med1_l	glut_max1_r	psoas_r	gravity
-      0.839827670000	      0.043063295556	      0.043207399768	      0.043139261697	      0.043137052888
+time	glut_med1_l	psoas_r	gravity
+      0.839827670000	      0.043063295556	      0.043139261697	      0.043137052888

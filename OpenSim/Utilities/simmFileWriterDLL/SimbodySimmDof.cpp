@@ -141,3 +141,16 @@ void SimbodySimmDof::write(ofstream& aStream)
    if (_type == Coordinate::Rotational)
       aStream << "axis" << _name[1] << " " << _axis[0] << " " << _axis[1] << " " << _axis[2] << endl;
 }
+
+//_____________________________________________________________________________
+/**
+ * Return the DOF's axis.
+ *
+ * @param rAxis The axis.
+ */
+void SimbodySimmDof::getAxis(double rAxis[]) const
+{
+	rAxis[0] = _axis[0];
+	rAxis[1] = _axis[1];
+	rAxis[2] = _axis[2];
+}

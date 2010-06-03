@@ -49,7 +49,7 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMC_TaskSet : public Set<CMC_Task> 
+class OSIMTOOLS_API CMC_TaskSet : public Set<TrackingTask> 
 {
 
 //=============================================================================
@@ -85,6 +85,14 @@ protected:
 	/** Array of accelerations. */
 	Array<double> _a;
 
+	/** In case there're tracking targets loaded from file, the filename goes here
+	 * and the column names go into individual targets.
+	 */
+	PropertyStr _dataFileNameProp;
+	std::string &_dataFileName;
+
+	FunctionSet  _functions;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -106,6 +114,8 @@ public:
 	// MODEL
 	void setModel(Model& aModel);
 	Model* getModel() const;
+
+	const std::string& getDataFileName() const { return _dataFileName; };
 	// FUNCTIONS
 	void setFunctions(FunctionSet &aFuncSet);
 	void setFunctionsForVelocity(FunctionSet &aFuncSet);

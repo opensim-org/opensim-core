@@ -88,8 +88,11 @@ public:
 		int aFunctionNumber, Coordinate::MotionType aMotionType);
    bool addConstantDof(const std::string& aName, const double* aAxis, double aValue);
    void updateOrder(const std::string& aDofName);
+	void makeUniqueAxis(int aDofIndex, double rAxis[]) const;
    void finalize();
    void write(std::ofstream& aStream);
+   const std::string& getName() const { return _name; }
+   void setName(const std::string& aName);
 
 //=============================================================================
 };	// END of class SimbodySimmJoint

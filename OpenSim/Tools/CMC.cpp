@@ -57,6 +57,7 @@
 #include <OpenSim/Tools/ActuatorForceTarget.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include "SimTKcommon.h" 
+#include "MuscleStateTrackingTask.h"
 
 using namespace std;
 using SimTK::Vector;
@@ -142,7 +143,9 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
 		strcat(tmp,"track objects.\n");
 		throw(new Exception(tmp,__FILE__,__LINE__));
 	}
-
+	//TrackingTask* dTask = new MuscleStateTrackingTask();
+	//_taskSet->append(dTask);
+	//_taskSet->print("MyTasks.xml");
 	// STORAGE
 	Array<string> labels;
 	labels.append("time");
@@ -187,6 +190,7 @@ void CMC::copyData( const CMC &aCmc )
    _verbose               = aCmc._verbose;
    _predictor             = aCmc._predictor;
    _f                     = aCmc._f;
+   _taskSet               = aCmc._taskSet;
 
 }
 //_____________________________________________________________________________
@@ -791,7 +795,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 	int e=0;
 	for(i=0;i<_taskSet->getSize();i++) {
 		
-		CMC_Task& task = _taskSet->get(i);
+		TrackingTask& task = _taskSet->get(i);
 
 		if(_verbose) {
 			for(j=0;j<task.getNumTaskFunctions();j++) {
