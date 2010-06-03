@@ -539,6 +539,14 @@ public:
     const Set<Actuator>& getActuators() const;
     Set<Actuator>& updActuators();
 
+    /**
+     * Get the subset of Forces in the model which are muscles
+     *
+     * @return The set of Muscles
+     */
+    const Set<Muscle>& getMuscles() const;
+    Set<Muscle>& updMuscles();
+
     const ForceSet& getForceSet() const { return _forceSet; };
     ForceSet& updForceSet() { return _forceSet; };
 	/**

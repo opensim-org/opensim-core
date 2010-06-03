@@ -371,7 +371,7 @@ SimTK::State& Model::initSystem()
 	// Satisfy the constraints.
 	getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-8);
 
-	 return(s);
+	return(s);
 }
 
 void Model::invalidateSystem()
@@ -787,6 +787,21 @@ Set<Actuator>& Model::updActuators()
 	return _forceSet.updActuators();
 }
 
+
+//_____________________________________________________________________________
+/**
+ * Get the subset of Forces in the model which are muscles
+ *
+ * @return The set of Muscles
+ */
+const Set<Muscle>& Model::getMuscles() const
+{
+	return _forceSet.getMuscles();
+}
+Set<Muscle>& Model::updMuscles() 
+{
+	return _forceSet.updMuscles();
+}
 
 //_____________________________________________________________________________
 /**

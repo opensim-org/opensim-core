@@ -36,6 +36,7 @@
 #include <OpenSim/Common/Set.h>
 #include "Force.h"
 #include "Actuator.h"
+#include "Muscle.h"
 #include "ModelComponentSet.h"
 #include "SimTKsimbody.h"
 
@@ -46,7 +47,7 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding and managing a set of actuators for a model.
+ * A class for holding and managing a set of forces for a model.
  * This class is based on ForceSet
  *
  * @authors Jack Middleton 
@@ -67,8 +68,11 @@ protected:
 	PropertyStr _dataFileNameProp;
 	std::string &_dataFileName;
 
-   /** The subset of Forces that extend Actuator. */
-    Set<Actuator> _actuators;
+	/** The subset of Forces that extend Actuator. */
+	Set<Actuator> _actuators;
+
+	/** The subset of Forces that extend Muscle. */
+	Set<Muscle> _muscles;
 
 //=============================================================================
 // METHODS
@@ -97,6 +101,7 @@ private:
 	void setupSerializedMembers();
 	void copyForce(Force* aFrom, Force* aTo);
     void updateActuators();
+	void updateMuscles();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -119,6 +124,8 @@ public:
     bool insert(int aIndex, Force *aObject);
     const Set<Actuator>& getActuators() const;
     Set<Actuator>& updActuators();
+	const Set<Muscle>& getMuscles() const;
+    Set<Muscle>& updMuscles();
 
     // STATES
     void getStateVariableNames(Array<std::string> &rNames) const;

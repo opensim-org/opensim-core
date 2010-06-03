@@ -126,6 +126,8 @@ void ForceSet::setNull()
 	setupSerializedMembers();
 
 	_actuators.setMemoryOwner(false);
+
+	_muscles.setMemoryOwner(false);
 }
 
 //_____________________________________________________________________________
@@ -152,6 +154,8 @@ void ForceSet::copyData(const ForceSet &aAbsForceSet)
     // ACTUATORS
     _actuators = aAbsForceSet._actuators;
 	_actuators.setMemoryOwner(false);
+	_muscles = aAbsForceSet._muscles;
+	_muscles.setMemoryOwner(false);
 	_dataFileName = aAbsForceSet._dataFileName;
 }
 
@@ -159,8 +163,7 @@ void ForceSet::copyData(const ForceSet &aAbsForceSet)
 /**
  * Set up the serialized member variables.
  */
-void ForceSet::
-setupSerializedMembers()
+void ForceSet::setupSerializedMembers()
 {
 	_dataFileNameProp.setName("datafile");
 	_dataFileName="";
@@ -175,6 +178,7 @@ void ForceSet::setup(Model& aModel)
 
     // INDICES
 	updateActuators();
+	updateMuscles();
 }
 
 //=============================================================================
@@ -217,6 +221,7 @@ bool ForceSet::remove(int aIndex)
 	bool success = Set<Force>::remove(aIndex);
 
 	updateActuators();
+	updateMuscles();
 
 	return(success);
 }
@@ -238,6 +243,7 @@ bool ForceSet::append(Force *aActuator)
 
 	if((success)&&(_model!=NULL)) {
 		updateActuators();
+		updateMuscles();
 	}
 
 	return(success);
@@ -276,6 +282,7 @@ bool ForceSet::append(ForceSet &aForceSet, bool aAllowDuplicateNames)
 
 	if(success) {
 		updateActuators();
+		updateMuscles();
 	}
 
 	return(success);
@@ -299,6 +306,7 @@ bool ForceSet::set(int aIndex,Force *aActuator)
 
 	if(success) {
 		updateActuators();
+		updateMuscles();
 	}
 
 	return(success);
@@ -310,6 +318,7 @@ bool ForceSet::insert(int aIndex, Force *aForce)
 
 	if(success) {
 		updateActuators();
+		updateMuscles();
 	}
 
 	return(success);
@@ -338,6 +347,33 @@ void ForceSet::updateActuators()
     {
         Actuator* act = dynamic_cast<Actuator*>(&get(i));
         if (act != NULL)  _actuators.append(act);
+    }
+}
+
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Get the list of Muscles.
+ */
+const Set<Muscle>& ForceSet::getMuscles() const
+{
+    return _muscles;
+}
+Set<Muscle>& ForceSet::updMuscles() 
+{
+    return _muscles;
+}
+//_____________________________________________________________________________
+/**
+ * Rebuild the list of Muscles.
+ */
+void ForceSet::updateMuscles()
+{
+    _muscles.setSize(0);
+    for (int i = 0; i < getSize(); ++i)
+    {
+        Muscle* m = dynamic_cast<Muscle*>(&get(i));
+        if (m != NULL)  _muscles.append(m);
     }
 }
 
