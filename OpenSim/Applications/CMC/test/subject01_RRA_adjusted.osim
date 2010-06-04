@@ -155,12 +155,13 @@
 						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.03500000000000000333       0.11999999999999999556       0.26000000000000000888       0.55000000000000004441       1.16999999999999992895       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000 </y>
 					</NaturalCubicSpline>
 				</passive_force_length_curve>
-				<!--Function representing force-velocity behavior of muscle fibers-->
-				<force_velocity_curve/>
 			</Schutte1993Muscle>
 			<CMC_Joint name="default">
 				<!--Flag (true or false) indicating whether or not a task is on.-->
 				<on> false </on>
+				<!--Weight with which a task is tracked relative to other tasks. To track
+				    a task more tightly, make the weight larger.-->
+				<weight>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </weight>
 				<!--Name of body frame with respect to which a tracking objective is
 				    specified. The special name 'center_of_mass' refers to the system
 				    center of mass. This property is not used for tracking joint angles.-->
@@ -174,9 +175,6 @@
 				    those to be made active (true) or inactive (false).  A task for
 				    tracking a joint coordinate only has one component.-->
 				<active> false false false </active>
-				<!--Weight with which a task is tracked relative to other tasks. To track
-				    a task more tightly, make the weight larger.-->
-				<weight>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </weight>
 				<!--Position error feedback gain (stiffness). To achieve critical damping
 				    of errors, choose kv = 2*sqrt(kp).-->
 				<kp>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </kp>
