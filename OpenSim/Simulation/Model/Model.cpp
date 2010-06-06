@@ -306,6 +306,8 @@ void Model::setNull()
     _contactSubsystem = NULL;
     _gravityForce = NULL;
 
+	_validationLog="";
+
 }
 //_____________________________________________________________________________
 /**
@@ -352,6 +354,11 @@ void Model::setupProperties()
 
 SimTK::State& Model::initSystem() 
 {
+	// Some validation
+	validateMassProperties();
+	if (getValidationLog().size()>0)
+		cout << "The following Errors/Warnings were encountered while building the model. " << 
+		getValidationLog() << endl;
     setup();
 	createSystem();
     getSystem().realizeTopology();
@@ -1500,4 +1507,47 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
      }
 
 }
+//_____________________________________________________________________________
+/**
+ * validateMassProperties: Internal method to check that specified mass properties for the bodies are physically possible
+ * that is, satisfy the triangular inequality condition specified in the Docygen doc. of SimTK::MassPRoperties
+ * If not true, then the values are forced to satisfy the inequality and a warning is issued.
+ * It is assumed that mass properties are all set already
+ *
+ * 
+ */
 
+void Model::validateMassProperties(bool fixMassProperties) 
+{
+	for (int i=0; i < _bodySet.getSize(); i++){
+		bool valid = true;
+		Body& b = _bodySet.get(i);
+		if (b == getGroundBody()) continue;	// Ground's mass properties are unused
+		SimTK::Mat33 inertiaMat;
+		String msg = "";
+		try {
+			b.getInertia(inertiaMat);
+			SimTK::Inertia_<SimTK::Real>(inertiaMat[0][0], inertiaMat[1][1], inertiaMat[2][2], 
+				inertiaMat[0][1], inertiaMat[1][2], inertiaMat[0][2]);
+		}
+		catch(SimTK::Exception::Base& ex){
+			valid = false;
+			msg = "Body: "+b.getName()+" has non-physical mass properties.";
+			msg += ex.getMessage();
+		}
+		if (!valid){
+			if (!fixMassProperties)
+				throw Exception(msg);
+			else{
+
+				inertiaMat[0][0] = fabs(inertiaMat[0][0]);
+				inertiaMat[1][1] = inertiaMat[2][2] = inertiaMat[0][0];
+				inertiaMat[0][1] = inertiaMat[0][2] = inertiaMat[1][2] = 0.0;
+				b.setInertia(SimTK::Inertia_<Real>(inertiaMat));
+				_validationLog += msg;
+				_validationLog += "Inertia vector for body "+b.getName()+" has been reset\n";
+			}
+		}
+	}
+	
+}

@@ -196,6 +196,9 @@ private:
    /** default controller */
    ControllerSet _controllerSet;
 
+	/*** Private place to save some deserializtion/error checking info in case needed later */
+	std::string _validationLog;
+
 
 //=============================================================================
 // METHODS
@@ -353,6 +356,11 @@ private:
 	/** Set the values of all data members to an appropriate "null" value. */
 	void setNull();
     friend class ForceSet;
+	/** Internal method to check that specified mass properties for the bodies are physically possible
+	 * that is, satisfy the triangular inequality condition specified in the Docygen doc. of SimTK::MassPRoperties
+	 * If not true, then the values are forced to satisfy the inequality and a warning is issued.
+	 */
+	void validateMassProperties(bool fixMassProperties=true);
 
 public:
 	//--------------------------------------------------------------------------
@@ -776,6 +784,11 @@ public:
      */
     void overrideAllActuators( SimTK::State& s, bool flag);
 
+	/**
+	 * Get a log of errors/warnings ecountered when loading/constructing the model
+	 */
+	const std::string& getValidationLog() { return _validationLog; };
+	void clearValidationLog() { _validationLog = ""; };
 //=============================================================================
 };	// END of class Model
 //=============================================================================
