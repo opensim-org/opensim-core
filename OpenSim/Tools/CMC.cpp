@@ -786,6 +786,10 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
         cout<<"\nUCorrections:"<<uCorrection << endl;
     }
 
+    // reailize to Veclocity because some tasks (eg. CMC_Point) need to be
+    // at velocity to compute errors
+    _model->getSystem().realize(s, Stage::Velocity );
+
 	// ERRORS
 	_taskSet->computeErrors(s, tiReal);
 	_taskSet->recordErrorsAsLastErrors();
