@@ -208,20 +208,69 @@ public:
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
     int getNumControls() { return 1; }  // all actuators can have one control
 
-    //--------------------------------------------------------------------------
-    // Overriding forces
-    //--------------------------------------------------------------------------
+    ///--------------------------------------------------------------------------
+    /// Overriding forces
+    ///--------------------------------------------------------------------------
+    /// The force normally produced by an Actuator can be overriden and 
+    /// When the Actuator's force is overriden, the Actuator will by defualt
+    /// produce a constant force which can be set with setOverrideForce(). 
+    /// If the override force is not a constant, setOverrideForceFunction() 
+    /// can be used supply a function which computes the Actuator's force. 
+    ///
+    
+    /**
+    * enable/disable an Actuator's override force
+    *  
+    * @param s    current state
+    * @param flag true = override Actuator's output force
+    *             false = use Actuator's computed forc (normal operation)
+    */
     void overrideForce(SimTK::State& s, bool flag ) const;
+
+    /**
+    *  return Actuator's override status
+    */
     bool isForceOverriden(const SimTK::State& s ) const;
+
+    /**
+    * set the force value  used when  the override is true 
+    *  
+    * 
+    * @param s      current state
+    * @param value  value of override force   
+    */
     void setOverrideForce(SimTK::State& s, double value ) const;
+
+    /**
+    * return override force 
+    */
     double getOverrideForce(const SimTK::State& s ) const;
-    double computeOverrideForce(const SimTK::State& s ) const;
+
+    /**
+    * set the function used to compute the override  force 
+    * 
+    * @param StateFunction    pointer to object used to compute the force
+    */
     void setOverrideForceFunction( StateFunction* );
+
+    /**
+    * return a read only pointer to the function used to compute the override force 
+    */
     const StateFunction* getOverrideForceFunction( ) const;
+
+    /**
+    * return a writable pointer to the function used to compute the override force 
+    */
     StateFunction* updOverrideForceFunction( );
+
+
+    /**
+    * set override force function back to default (constant) 
+    */
     void resetOverrideForceFunction();
 
-
+    protected:
+    double computeOverrideForce(const SimTK::State& s ) const;
 //=============================================================================
 };	// END of class Actuator
 //=============================================================================
