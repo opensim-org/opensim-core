@@ -81,7 +81,7 @@ ELSE(WIN32)
     ENDIF(NOT SimTK_SDK)
 ENDIF(WIN32)
 
-SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries based on SimtkCore 1.6")
+SET(USE_LIBRARIES_FROM_REPOSITORY OFF CACHE BOOL "Use stock SimTK libraries based on SimtkCore 1.6")
 
 IF(WIN32)
 	SET(CMAKE_INSTALL_PREFIX "c:/Program Files/OpenSimTK" CACHE PATH "Install location to place headers and libraries")
