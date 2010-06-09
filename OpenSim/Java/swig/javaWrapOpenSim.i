@@ -111,6 +111,9 @@
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/Ligament.h>
 
+#include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+#include <OpenSim/Simulation/Model/ConstraintSet.h>
+
 #include <OpenSim/Common/SimmPoint.h>
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
@@ -501,6 +504,12 @@ static bool trace=false;
 %template(SetJoints) OpenSim::Set<OpenSim::Joint>;
 %template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;
 %include <OpenSim/Simulation/Model/JointSet.h>
+
+
+%include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
+%template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
+%template(ModelComponentSetConstraints) OpenSim::ModelComponentSet<OpenSim::Constraint>;
+%include <OpenSim/Simulation/Model/ConstraintSet.h>
 
 %include <OpenSim/Simulation/Model/Model.h>
 
