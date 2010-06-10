@@ -65,6 +65,8 @@ public:
 	ConstraintSet();
 	ConstraintSet(Model& model);
 	ConstraintSet(const ConstraintSet& aAbsConstraintSet);
+	ConstraintSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode=true):
+	ModelComponentSet<Constraint>(model, aFileName, aUpdateFromXMLNode) {};
 	~ConstraintSet(void);
 	void setup(Model& aModel);
 	//--------------------------------------------------------------------------
