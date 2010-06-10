@@ -180,7 +180,8 @@ void MarkerData::readTRCFile(const string& aFileName, MarkerData& aSMD)
        * return an error.
        */
       coordsRead = 0;
-      while (readCoordinatesFromString(line, &coords[0]))
+	  bool allowNaNs = true;
+      while (readCoordinatesFromString(line, &coords[0], allowNaNs))
       {
          if (coordsRead >= aSMD._numMarkers)
          {
@@ -501,7 +502,7 @@ void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartF
 
 	for (i = _numFrames - 1; i >= 0 ; i--)
 	{
-		if (_frames[i]->getFrameTime() <= aStartTime + SimTK::Zero)
+		if (_frames[i]->getFrameTime() <= aStartTime)
 		{
 			rStartFrame = i;
 			break;

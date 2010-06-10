@@ -42,10 +42,10 @@ bool OSIMCOMMON_API readStringFromStream(std::istream &aStream, std::string &rBu
 bool OSIMCOMMON_API readStringFromString(std::string &aString, std::string &rBuffer);
 bool OSIMCOMMON_API readTabDelimitedStringFromString(std::string &aString, std::string &rBuffer);
 bool OSIMCOMMON_API readIntegerFromString(std::string &aString, int *rNumber);
-bool OSIMCOMMON_API readDoubleFromString(std::string &aString, double *rNumber);
+bool OSIMCOMMON_API readDoubleFromString(std::string &aString, double *rNumber, bool allowNaNs=false);
 bool OSIMCOMMON_API readVectorFromString(std::string &aString, SimmPoint &rVec);
 bool OSIMCOMMON_API readVectorFromString(std::string &aString, double *rVX, double *rVY, double *rVZ);
-bool OSIMCOMMON_API readCoordinatesFromString(std::string &aString, double rVec[3]);
+bool OSIMCOMMON_API readCoordinatesFromString(std::string &aString, double rVec[3], bool allowNaNs=false);
 int OSIMCOMMON_API findFirstNonWhiteSpace(std::string &aString);
 int OSIMCOMMON_API findFirstWhiteSpace(std::string &aString);
 void OSIMCOMMON_API convertString(std::string& aString, bool aPrependUnderscore);

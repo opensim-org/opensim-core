@@ -29,50 +29,82 @@
 */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
+* Author: Frank C. Anderson 
+*/
 
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 
 //extern template class OSIMCOMMON_API Array<double>;
 
 //=============================================================================
 //=============================================================================
 /**
- * An object for mainly for testing XML serialization.
- *
- * @author Frank C. Anderson
- * @version 1.0
- */
+* An object for mainly for testing XML serialization.
+*
+* @author Frank C. Anderson
+* @version 1.0
+*/
 namespace OpenSim { 
 
-class rdSerializableObject2 : public Object
-{
+	class rdSerializableObject2 : public Object
+	{
 
-//=============================================================================
-// MEMBER DATA
-//=============================================================================
+		//=============================================================================
+		// MEMBER DATA
+		//=============================================================================
 
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-	rdSerializableObject2();
-	rdSerializableObject2(const std::string &aFileName);
-	rdSerializableObject2(const rdSerializableObject2 &aNode);
-	virtual Object* copy() const;
-private:
-	void setNull();
-	void setupSerializedMembers();
+		//=============================================================================
+		// METHODS
+		//=============================================================================
+	public:
+		rdSerializableObject2(){
+			setNull();
+			setupSerializedMembers();
+		};
+		rdSerializableObject2(const std::string &aFileName) :
+		Object(aFileName,false)
+		{
+			setNull();
+			setupSerializedMembers();
+			updateFromXMLNode();
+		};
+		rdSerializableObject2(const rdSerializableObject2 &aObject){
+			setNull();
+			setupSerializedMembers();
+			*this = aObject;
+		};
+		virtual Object* copy() const{
+			rdSerializableObject2 *object = new rdSerializableObject2(*this);
+			return(object);
+		};
+	private:
+		void setNull(){
+			setType("rdSerializableObject2");
+		};
+		void setupSerializedMembers(){
+			// Bool
+			PropertyBool pBool("Test_Bool2",false);
+			_propertySet.append(pBool.copy());
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-	rdSerializableObject2& operator=(const rdSerializableObject2 &aObject);
+			// DblArray
+			Array<double> dblArray(0.1);
+			dblArray.setSize(3);
+			PropertyDblArray pDblArray("Test_DblArray2",dblArray);
+			_propertySet.append(pDblArray.copy());
+		};
 
-//=============================================================================
-};
+		//--------------------------------------------------------------------------
+		// OPERATORS
+		//--------------------------------------------------------------------------
+	public:
+		rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
+			Object::operator=(aObject);
+			return(*this);
+		};
+
+		//=============================================================================
+	};
 
 }; //namespace
 

@@ -1,51 +1,38 @@
-INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-					${OpenSim_SOURCE_DIR}/Vendors 
-					${XERCES_INCLUDE_DIR})
 
-LINK_LIBRARIES( debug osimCommon_d	optimized osimCommon
-				debug osimSimulation_d optimized osimSimulation
-				debug osimActuators_d optimized osimActuators
-				${SIMTK_ALL_LIBS})
-IF(WIN32)
-    LINK_LIBRARIES( debug xerces-c_2D optimized  xerces-c_2)
-ELSE(WIN32)
-    LINK_LIBRARIES( debug xerces-c optimized  xerces-c)
-ENDIF(WIN32)
-				
-ADD_EXECUTABLE(testRootSolver testRootSolver.cpp ExampleVectorFunctionUncoupledNxN.cpp)
-TARGET_LINK_LIBRARIES(testRootSolver ${LINK_LIBRARIES})
-ADD_TEST(testRootSolver ${TEST_PATH}/testRootSolver)
+# Automatically create tests using files named "test*.cpp"	// Adopted from SimTK core
+FILE(GLOB TEST_PROGS "*est*.cpp")
 
-ADD_EXECUTABLE(testSerialization testSerialization.cpp rdSerializableObject.cpp rdSerializableObject2.cpp)
-TARGET_LINK_LIBRARIES(testSerialization ${LINK_LIBRARIES})
-ADD_TEST(testSerialization ${TEST_PATH}/testSerialization)
+LINK_LIBRARIES(debug osimCommon_d	optimized osimCommon
+               ${SIMTK_ALL_LIBS}
+)
 
-ADD_EXECUTABLE(testFunctionAdapter TestFunctionAdapter.cpp)
-TARGET_LINK_LIBRARIES(testFunctionAdapter ${LINK_LIBRARIES})
-ADD_TEST(testFunctionAdapter ${TEST_PATH}/testFunctionAdapter)
+FOREACH(TEST_PROG ${TEST_PROGS})
+    GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)
 
-ADD_EXECUTABLE(testGCVSpline TestGCVSpline.cpp)
-TARGET_LINK_LIBRARIES(testGCVSpline ${LINK_LIBRARIES})
-ADD_TEST(testGCVSpline ${TEST_PATH}/testGCVSpline)
+    # Link with shared library
+    ADD_EXECUTABLE(${TEST_ROOT} ${TEST_PROG})
+    TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES})
+    ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
+    SET_TARGET_PROPERTIES(${TEST_ROOT} 
+		PROPERTIES 
+		PROJECT_LABEL "Tests - ${TEST_ROOT}")
+	# MESSAGE( "Adding test "${TEST_PROG} )
 
+ENDFOREACH(TEST_PROG ${TEST_PROGS})
 
-ADD_EXECUTABLE(testStorage testStorage.cpp)
-ADD_TEST(testStorage ${TEST_PATH}/testStorage test.sto)
-ADD_CUSTOM_COMMAND(
-    TARGET testStorage
+# Also need to copy data files (.osim, .xml, .sto, .trc, .mot) to run directory
+FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot *.trc)
+
+#
+# Copy files to run dir
+#
+FOREACH (dataFile ${TEST_FILES})
+ ADD_CUSTOM_COMMAND(
+    TARGET testSerialization
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
-    ${OpenSim_SOURCE_DIR}/OpenSim/Common/Test/test.sto
+    ${dataFile}
     ${OpenSim_BINARY_DIR}/OpenSim/Common/Test)
-ADD_CUSTOM_COMMAND(
-    TARGET testStorage
-    COMMAND ${CMAKE_COMMAND}
-    ARGS -E copy
-    ${OpenSim_SOURCE_DIR}/OpenSim/Common/Test/testDiff.sto
-    ${OpenSim_BINARY_DIR}/OpenSim/Common/Test)
+    # MESSAGE( "IN file "${dataFile} )
+ ENDFOREACH (dataFile) 
 
-SET_TARGET_PROPERTIES(testRootSolver PROPERTIES PROJECT_LABEL "Tests - testRootSolver")
-SET_TARGET_PROPERTIES(testSerialization PROPERTIES PROJECT_LABEL "Tests - testSerialization")
-SET_TARGET_PROPERTIES(testFunctionAdapter PROPERTIES PROJECT_LABEL "Tests - testFunctionAdapter")
-SET_TARGET_PROPERTIES(testGCVSpline PROPERTIES PROJECT_LABEL "Tests - testGCVSpline")
-SET_TARGET_PROPERTIES(testStorage PROPERTIES PROJECT_LABEL "Tests - testStorage")

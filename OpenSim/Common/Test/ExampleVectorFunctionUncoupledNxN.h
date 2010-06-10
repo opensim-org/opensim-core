@@ -29,8 +29,8 @@
 */
 
 /*  
- * Author: Frank C. Anderson 
- */
+* Author: Frank C. Anderson 
+*/
 
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
@@ -40,69 +40,124 @@
 //=============================================================================
 //=============================================================================
 /**
- * An abstract class for representing a vector function.
- *
- * A vector function is a relation between some number of independent variables 
- * and some number of dependent values such that for any particular set of
- * independent variables the correct number of dependent variables is returned.
- * Values of the function and its derivatives
- * are obtained by calling the evaluate() method.  The curve may or may not
- * be finite or diferentiable; the evaluate method returns values between
- * Math::MINUS_INFINITY and Math::PLUS_INFINITY, or it returns Math::NAN
- * (not a number) if the curve is not defined.
- * Currently, functions of up to 3 variables (x,y,z) are supported.
- *
- * @author Frank C. Anderson
- */
+* An abstract class for representing a vector function.
+*
+* A vector function is a relation between some number of independent variables 
+* and some number of dependent values such that for any particular set of
+* independent variables the correct number of dependent variables is returned.
+* Values of the function and its derivatives
+* are obtained by calling the evaluate() method.  The curve may or may not
+* be finite or diferentiable; the evaluate method returns values between
+* Math::MINUS_INFINITY and Math::PLUS_INFINITY, or it returns Math::NAN
+* (not a number) if the curve is not defined.
+* Currently, functions of up to 3 variables (x,y,z) are supported.
+*
+* @author Frank C. Anderson
+*/
 namespace OpenSim { 
 
-class ExampleVectorFunctionUncoupledNxN : public VectorFunctionUncoupledNxN
-{
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+	class ExampleVectorFunctionUncoupledNxN : public VectorFunctionUncoupledNxN
+	{
+		//=============================================================================
+		// DATA
+		//=============================================================================
+	protected:
 
 
 
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	ExampleVectorFunctionUncoupledNxN();
-	ExampleVectorFunctionUncoupledNxN(int aN);
-	ExampleVectorFunctionUncoupledNxN(const ExampleVectorFunctionUncoupledNxN &aFunction);
-	virtual ~ExampleVectorFunctionUncoupledNxN();
-	virtual Object* copy() const;
-private:
-	void setNull();
-	void setEqual(const ExampleVectorFunctionUncoupledNxN &aVectorFunction);
+		//=============================================================================
+		// METHODS
+		//=============================================================================
+	public:
+		//--------------------------------------------------------------------------
+		// CONSTRUCTION
+		//--------------------------------------------------------------------------
+		ExampleVectorFunctionUncoupledNxN():
+		  VectorFunctionUncoupledNxN(1)
+		  {
+			  setNull();
+		  };
+		  ExampleVectorFunctionUncoupledNxN(int aN):
+		  VectorFunctionUncoupledNxN(aN)
+		  {
+			  setNull();
+		  };
+		  ExampleVectorFunctionUncoupledNxN(const ExampleVectorFunctionUncoupledNxN &aVectorFunction) :
+		  VectorFunctionUncoupledNxN(aVectorFunction)
+		  {
+			  setNull();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-	ExampleVectorFunctionUncoupledNxN&
-		operator=(const ExampleVectorFunctionUncoupledNxN &aFunction);
+			  // ASSIGN
+			  setEqual(aVectorFunction);
+		  };
+		  virtual ~ExampleVectorFunctionUncoupledNxN() {};
+		  virtual Object* copy() const{
+			  ExampleVectorFunctionUncoupledNxN *func =
+				  new ExampleVectorFunctionUncoupledNxN(*this);
+			  return(func);
+		  };
+	private:
+		void setNull(){
+			setType("ExampleVectorFunctionUncoupledNxN");
+		};
+		void setEqual(const ExampleVectorFunctionUncoupledNxN &aVectorFunction){};
 
-	//--------------------------------------------------------------------------
-	// SET AND GET
-	//--------------------------------------------------------------------------
-public:
-	
-	//--------------------------------------------------------------------------
-	// EVALUATE
-	//--------------------------------------------------------------------------
-	virtual void calcValue(const double *aX,double *aY, int aSize);
-	virtual void calcValue(const Array<double> &aX,Array<double> &rY);
-	virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
-		const Array<int> &aDerivWRT);
+		//--------------------------------------------------------------------------
+		// OPERATORS
+		//--------------------------------------------------------------------------
+	public:
+		ExampleVectorFunctionUncoupledNxN&
+			operator=(const ExampleVectorFunctionUncoupledNxN &aVectorFunction){
+				// BASE CLASS
+				VectorFunctionUncoupledNxN::operator=(aVectorFunction);
 
-//=============================================================================
-};
+				// DATA
+				setEqual(aVectorFunction);
+
+				return(*this);
+		};
+
+		//--------------------------------------------------------------------------
+		// SET AND GET
+		//--------------------------------------------------------------------------
+	public:
+
+		//--------------------------------------------------------------------------
+		// EVALUATE
+		//--------------------------------------------------------------------------
+		virtual void calcValue(const double *aX,double *rY, int aSize){
+			int N = getNX();
+
+			// COMMON PART
+			int i;
+			double sum;
+			double scale = 0.01;
+			for(sum=0.0,i=0;i<N;i++) {
+				sum += (double)i;
+			}
+			sum *= scale;
+
+			// UNIQUE PART
+			// Uncoupled-- each aY depends only on its corresponding aX.
+			double root;
+			for(i=0;i<N;i++) {
+				root = scale * (double)i;
+				// sin test function
+				rY[i] = sum * sin(aX[i] - root);
+				// parabolic test function
+				//rY[i] = sum *aX[i]*aX[i]*aX[i] - sum*root*root*root; 
+			}
+		};
+		virtual void calcValue(const Array<double> &aX,Array<double> &rY){
+			calcValue(&aX[0],&rY[0], aX.getSize());
+		};
+		virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
+			const Array<int> &aDerivWRT){
+				std::cout<<"\nExampleVectorFunctionUncoupledNxN.evalute(x,y,derivWRT): not implemented.\n";
+		};
+
+		//=============================================================================
+	};
 
 }; //namespace
 //=============================================================================

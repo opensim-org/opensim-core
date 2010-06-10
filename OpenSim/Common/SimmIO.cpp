@@ -262,7 +262,7 @@ bool OpenSim::readIntegerFromString(string &aString, int *rNumber)
  * @param rNumber double that is read is returned here.
  * @return True if double was read, false if not.
  */
-bool OpenSim::readDoubleFromString(string &aString, double *rNumber)
+bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowNaNs)
 {
    size_t i, end;
    string buffer;
@@ -272,9 +272,19 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber)
 
    /* remove any characters before the number */
    i = aString.find_first_of("0123456789-.", 0);
-   if (i != 0)
+   if (i != 0){
+	   if (allowNaNs){
+		   std::string NaNString = "NAN";
+		   std::string prefix = aString.substr(0, 3);
+		   std::transform(prefix.begin(), prefix.end(),prefix.begin(), ::toupper);
+		   if (prefix==NaNString){
+				aString.erase(0, 3);
+				*rNumber = SimTK::NaN;
+				return true;
+		   }
+	   }
       aString.erase(0, i);
-
+   }
    /* remove number from string, copy number to buffer */
    i = aString.find_first_not_of("0123456789-.eE", 0);
    end = aString.length();
@@ -352,7 +362,7 @@ bool OpenSim::readVectorFromString(string &aString, double *rVX, double *rVY, do
  * @param rVec vector of coordinates is returned here.
  * @return True if coordinates were read, false if not.
  */
-bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3])
+bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3], bool allowNaNs)
 {
    int numTabs = 0, numCoords = 0;
    double value;
@@ -366,7 +376,7 @@ bool OpenSim::readCoordinatesFromString(string &aString, double rVec[3])
       }
       else
       {
-         if (!OpenSim::readDoubleFromString(aString, &value))
+         if (!OpenSim::readDoubleFromString(aString, &value, allowNaNs))
          {
             return false;
          }

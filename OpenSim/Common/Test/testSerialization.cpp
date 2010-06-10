@@ -57,17 +57,6 @@ int TestSerialization();
  */
 int main(int argc, char* argv[])
 {
-	SimTK::Mat33 mat(2.0);
-	mat[0][1]=0.1;
-	double *raw = &mat[0][0];
-	double mat9[]={0., 1, 2, 10, 11, 12, 20, 21, 22};
-	SimTK::Mat33 matFromDoubleArray(mat9);
-	double *pRow = &matFromDoubleArray[0][0];
-	for(int i=0; i<6; i++)
-		pRow[i]=100 * i;
-	double test20=matFromDoubleArray[2][0];  // 20?
-	double test10=matFromDoubleArray[1][0];  
-	int x=0;
 	return(TestSerialization());
 }
 
@@ -93,14 +82,7 @@ int TestSerialization()
 
 		obj2.updateXMLNode(NULL);
 		obj2.print("roundtrip.xml");
-#if 0
-		int diff = system("diff -b obj1.xml roundtrip.xml");
 
-		success =  (diff == 0);
-		if (!success) {
-			throw Exception("round trip file diffs other than spaces",__FILE__,__LINE__);
-		}
-#endif
 		// Now compare object properties to make sure we're not reading and writing the file as just text!
 		int numProperties1 = obj1.getPropertySet().getSize();
 		success = (numProperties1 == obj2.getPropertySet().getSize());

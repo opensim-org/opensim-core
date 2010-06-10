@@ -29,57 +29,157 @@
 */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
+* Author: Frank C. Anderson 
+*/
 
 
 // INCLUDES
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyObjArray.h>
 
+#include "rdSerializableObject2.h"
 //extern template class OSIMCOMMON_API Array<double>;
 
 //=============================================================================
 //=============================================================================
 /**
- * An object for mainly for testing XML serialization.
- *
- * @author Frank C. Anderson
- * @version 1.0
- */
+* An object for mainly for testing XML serialization.
+*
+* @author Frank C. Anderson
+* @version 1.0
+*/
+using std::string;
 namespace OpenSim { 
 
-class rdSerializableObject : public Object
-{
+	class rdSerializableObject : public Object
+	{
 
-//=============================================================================
-// MEMBER DATA
-//=============================================================================
+		//=============================================================================
+		// MEMBER DATA
+		//=============================================================================
 
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-	rdSerializableObject();
-	rdSerializableObject(const std::string &aFileName);
-	rdSerializableObject(const rdSerializableObject &aNode);
-	virtual Object* copy() const;
-private:
-	void setNull();
-	void setupSerializedMembers();
+		//=============================================================================
+		// METHODS
+		//=============================================================================
+	public:
+		rdSerializableObject(){
+			setNull();
+			setupSerializedMembers();
+		};
+		rdSerializableObject(const std::string &aFileName) :
+		Object(aFileName,false)
+		{
+			setNull();
+			setupSerializedMembers();
+			updateFromXMLNode();
+		};
+		rdSerializableObject(const rdSerializableObject &aControl)
+		{
+			setNull();
+			setupSerializedMembers();
+			*this = aControl;
+		};
+		virtual Object* copy() const
+		{
+			rdSerializableObject *object = new rdSerializableObject(*this);
+			return(object);
+		};
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-	rdSerializableObject& operator=(const rdSerializableObject &aObject);
+	private:
+		void setNull() {setType("rdSerializableObject");};
+		void setupSerializedMembers(){
+			int i;
 
-	//--------------------------------------------------------------------------
-	// XML SERIALIZATION
-	//--------------------------------------------------------------------------
-	virtual bool isValidDefaultType(const Object *aObject) const;
+			// Bool
+			PropertyBool pBool("Test_Bool",true);
+			pBool.setComment("Comment on a boolean");
+			_propertySet.append(pBool.copy());
 
-//=============================================================================
-};
+			// Int
+			PropertyInt pInt("Test_Int",0);
+			pInt.setComment("Comment on a Int");
+			_propertySet.append(pInt.copy());
+
+			// Dbl
+			PropertyDbl pDbl("Test_Dbl",0.0);
+			pDbl.setComment("Comment on a Double");
+			_propertySet.append(pDbl.copy());
+
+			// Str
+			PropertyStr pStr("Test_Str","ABC");
+			pStr.setComment("Comment on a String");
+			_propertySet.append(pStr.copy());
+
+			// Obj
+			rdSerializableObject2 obj;
+			PropertyObj pObj("Test_Obj",obj);
+			pObj.setComment("Comment on an Object");
+			_propertySet.append(pObj.copy());
+
+			// IntArray
+			Array<int> arrayInt(2);
+			arrayInt.setSize(4);
+			for(i=0;i<arrayInt.getSize();i++) arrayInt[i] = i;
+			PropertyIntArray pIntArray("Test_IntArray",arrayInt);
+			pIntArray.setComment("Comment on an int-array");
+			_propertySet.append(pIntArray.copy());
+
+			// DblArray
+			Array<double> arrayDbl(0.0);
+			arrayDbl.setSize(4);
+			for(i=0;i<arrayDbl.getSize();i++) arrayDbl[i] = (double)i;
+			PropertyDblArray pDblArray("Test_DblArray",arrayDbl);
+			pDblArray.setComment("Comment on a Dbl-array");
+			_propertySet.append(pDblArray.copy());
+
+			// StrArray
+			Array<string> arrayStr("");
+			arrayStr.setSize(4);
+			arrayStr[0] = "abc";
+			arrayStr[1] = "def";
+			arrayStr[2] = "ghi";
+			arrayStr[3] = "jkl";
+			PropertyStrArray pStrArray("Test_StrArray",arrayStr);
+			pStrArray.setComment("Comment on a str-array");
+			_propertySet.append(pStrArray.copy());
+
+			// ObjArray
+			ArrayPtrs<Object> arrayObj;
+			rdSerializableObject2 object;
+			object.setName("Obj1");
+			arrayObj.append(object.copy());
+			object.setName("Obj2");
+			arrayObj.append(object.copy());
+			object.setName("Obj3");
+			arrayObj.append(object.copy());
+			PropertyObjArray<Object> pObjArray("Test_ObjArray",arrayObj);
+			pObjArray.setComment("Comment on Object Array");
+			_propertySet.append(pObjArray.copy());
+		}
+		//--------------------------------------------------------------------------
+		// OPERATORS
+		//--------------------------------------------------------------------------
+	public:
+		rdSerializableObject& operator=(const rdSerializableObject &aObject){
+			Object::operator=(aObject);
+			return(*this);
+		};
+
+
+		//--------------------------------------------------------------------------
+		// XML SERIALIZATION
+		//--------------------------------------------------------------------------
+		virtual bool isValidDefaultType(const Object *aObject) const{
+			if(aObject==NULL) return(false);
+
+			string type1 = "rdSerializableObject2";
+			if(type1 == aObject->getType()) return(true);
+
+			return(false);
+		}
+		//=============================================================================
+	};
 
 }; //namespace
 
