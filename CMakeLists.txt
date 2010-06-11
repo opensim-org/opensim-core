@@ -19,6 +19,9 @@ SET(BUILD_UTILITIES OFF CACHE BOOL "Build rarely used tools (primarily to handle
 SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 
 SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Set to '' to use stock SimTK libraries.")
+IF (SimTK_SDK AND WIN32)
+	SET(NameSpace "")	## No renamed SimTK libraries for nightly build on Trunk.
+ENDIF (SimTK_SDK AND WIN32)
 MARK_AS_ADVANCED(NameSpace)
 
 # Uncomment to make the linux Makefiles print the compile/link commands they are executing
