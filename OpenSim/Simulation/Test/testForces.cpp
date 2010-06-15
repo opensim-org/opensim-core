@@ -61,6 +61,7 @@ static int counter=0;
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
+
 int testSpringMass()
 {
 
@@ -101,7 +102,12 @@ int testSpringMass()
 
 	osimModel->setGravity(gravity_vec);
 
-	PointToPointSpring spring("ground", Vec3(0,restlength,0), "ball", Vec3(0), stiffness, restlength);
+	PointToPointSpring spring("ground", 
+		Vec3(0.,restlength,0.), 
+		"ball", 
+		Vec3(0.), 
+		stiffness, 
+		restlength);
 
 	osimModel->addForce(&spring);
 
@@ -267,7 +273,6 @@ int testBushingForce()
 
 	return 0;
 }
-
 
 
 // Test our wraapping of elastic foundation in OpenSim
