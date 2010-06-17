@@ -35,9 +35,7 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include "SimTKcommon.h"
+
 
 //=============================================================================
 // STATICS

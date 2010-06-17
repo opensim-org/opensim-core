@@ -124,6 +124,7 @@ void PinJoint::setNull()
 {
 	setType("PinJoint");
 	constructCoordinates();
+	_coordinateSet[0].setMotionType(Coordinate::Rotational);
 }
 
 //_____________________________________________________________________________
