@@ -193,7 +193,6 @@ public:
 	virtual double computeActuation( const SimTK::State& s) const = 0;
 	virtual void computeStateDerivatives(const SimTK::State& s ) { }
 	virtual void computeEquilibrium(SimTK::State& s) const { }
-	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord);
 
 	//--------------------------------------------------------------------------
 	// CHECK

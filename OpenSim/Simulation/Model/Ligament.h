@@ -44,7 +44,6 @@
 #include <OpenSim/Common/Function.h>
 #include "Model.h"
 #include "CustomForce.h"
-#include "GeometryPath.h"
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -54,6 +53,8 @@
 #endif
 
 namespace OpenSim {
+
+class GeometryPath;
 
 //=============================================================================
 //=============================================================================
@@ -124,6 +125,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
+	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord) const;
 	virtual void computeForce(const SimTK::State& s, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const;

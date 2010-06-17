@@ -1,5 +1,5 @@
 // GeometryPath.cpp
-// Author: Peter Loan
+// Author: Peter Loan, Ajay Seth
 /*
  * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "ConditionalPathPoint.h"
+#include "PointForceDirection.h"
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
@@ -43,6 +44,8 @@
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include "SimTKsimbody.h"
+
+#include <OpenSim/Simulation/MomentArmSolver.h>
 
 //=============================================================================
 // STATICS
@@ -288,6 +291,53 @@ updCurrentPath(const SimTK::State& s) const {
 
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.updCacheEntry( _subsystemIndex, _currentPathIndex)).upd() );
 }
+
+/** get the the path as PointForceDirections directions */
+void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array<PointForceDirection*> *rPFDs) const
+{
+	int i;
+	PathPoint* start;
+	PathPoint* end;
+	const OpenSim::Body* startBody;
+	const OpenSim::Body* endBody;
+    const Array<PathPoint*>& currentPath = getCurrentPath(s);
+
+	int np = currentPath.getSize();
+
+	const SimbodyEngine& engine = _model->getSimbodyEngine();
+
+	rPFDs->ensureCapacity(np);
+	
+	for (i = 0; i < np; i++){
+		PointForceDirection *pfd = new PointForceDirection(currentPath[i]->getLocation(), currentPath[i]->getBody(), Vec3(0));
+		rPFDs->append(pfd);
+	}
+
+	for (i = 0; i < np-1; i++) {
+		start = currentPath[i];
+		end = currentPath[i+1];
+		startBody = &start->getBody();
+		endBody = &end->getBody();
+
+		if (startBody != endBody)
+		{
+			Vec3 posStart, posEnd;
+			Vec3 direction(0);
+
+			// Find the positions of start and end in the inertial frame.
+			engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
+			engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
+
+			// Form a vector from start to end, in the inertial frame.
+			direction = (posEnd - posStart).normalize();
+
+			// Get resultant direction at each point 
+			rPFDs->get(i)->addToDirection(direction);
+			rPFDs->get(i+1)->addToDirection(-direction);
+		}
+	}
+}
+
 //_____________________________________________________________________________
 /**
  * get the current display path of the path
@@ -1116,100 +1166,32 @@ double GeometryPath::calcLengthAfterPathComputation(const SimTK::State& s, const
  *
  * @param rMomentArms Array of moments arms
  */   
-void GeometryPath::computeMomentArms(SimTK::State& s, OpenSim::Array<double> &rMomentArms)
+SimTK::Vector GeometryPath::computeMomentArms(SimTK::State& s)
 {
-	const CoordinateSet& coordSet = _model->getCoordinateSet();
-
-	int size = coordSet.getSize();
-	rMomentArms.setSize(size);
-	for(int i=0;i<size;i++) {
-		Coordinate& coord = coordSet.get(i);
-		rMomentArms[i] = computeMomentArm(s, coord);
-	}
+	// Get the underlying geometry of the muscle in terms of individual point 
+	// force directions
+	OpenSim::Array<PointForceDirection*> PFDs;
+	getPointForceDirections(s, &PFDs);
+	
+	MomentArmSolver maSolver(*_model);
+	SimTK::Vector mas = maSolver.solve(s, PFDs);
+	return mas;
 }
 //_____________________________________________________________________________
 /**
- * Compute the path's moment arm for a coordinate, using the dl/dtheta
- * numerical technique. The length of the path is found at coordinate-delta,
- * coordinate, and coordinate+delta. A quadratic is fit to these three points, and
- * the derivative is found at the value of the coordinate. This is equal to the negative of the
- * moment arm.
+ * Compute the path's moment arm for a given coordinate.
  * @param aCoord Coordinate for which to compute moment arm.
  * @return Moment arm value.
  */   
 double GeometryPath::computeMomentArm(SimTK::State& s, Coordinate& aCoord)
 {
-   double delta, originalValue, x[3], y[3];
-	bool lockedSave;
+	SimTK::Vector mas = computeMomentArms(s);
 
-	// Make an array to hold the model's configuration.
-	Array<double> config(0.0, _model->getNumConfigurations());
+	int index = _model->getCoordinateSet().getIndex(&aCoord);
+	if(index < 0)
+		throw Exception("GeometryPath::computeMomentArm(): Coordinate does not exist.");
 
-	compute(s);
-
-	// This code assumes that coordinate angles are in radians.
-	if (aCoord.getMotionType() == Coordinate::Rotational)
-		delta = 0.000873; // 0.05 degrees * DEG_TO_RAD
-	else
-		delta = 0.00005; // model units, assume meters (TODO)
-
-	// Unlock the gencoord so you can change it by +/- delta
-	lockedSave = aCoord.getLocked(s);
-	aCoord.setClamped(s,false);
-	aCoord.setLocked(s, false);
-	originalValue = aCoord.getValue(s);
-
-	double min, mid, max;
-
-	// Determine the 3 data points that will form the path-length spline
-	// which is used to calculate moment arm. These are usually +/- delta
-	// from the coordinate's original value, but you have to look out for
-	// hitting the ends of the coordinate's range of motion.
-	// JPL 1/23/08: some curves exhibit undesireable end effects when
-	// derivatives are taken at the ends of the range of motion. To
-	// lessen these effects, increase delta when computing the two
-	// endpoints.
-	if (originalValue - delta < aCoord.getRangeMin()) {
-		min = originalValue;
-		mid = originalValue + (delta * 10.0);
-		max = mid + (delta * 10.0);
-	} else if (originalValue + delta > aCoord.getRangeMax()) {
-		max = originalValue;
-		mid = originalValue - (delta * 10.0);
-		min = mid - (delta * 10.0);
-	} else {
-		min = originalValue - delta;
-		mid = originalValue;
-		max = originalValue + delta;
-	}
-
-	aCoord.setValue(s,min,true);
-	x[0] = aCoord.getValue(s);
-	y[0] = getLength(s);
-
-	aCoord.setValue(s,mid,true);
-	x[1] = aCoord.getValue(s);
-	y[1] = getLength(s);
-
-	aCoord.setValue(s,max,true);
-	x[2] = aCoord.getValue(s);
-	y[2] = getLength(s);
-
-	/* Put the coordinate back to its original value. */
-	aCoord.setValue(s,originalValue,true);
-	aCoord.setLocked(s, lockedSave);
-
-	// Make a spline function with room for 3 points, to hold the path
-	// length at the current coordinate value and at +/- delta from
-	// the current value.
-	NaturalCubicSpline spline(3, x, y);
-
-	// The path's moment arm is the negative of the first derivative
-	// of this spline function at originalValue.
-	std::vector<int> derivComponents;
-	derivComponents.push_back(0);
-	return -spline.calcDerivative(derivComponents, SimTK::Vector(1, originalValue));
-	//return -spline.evaluate(1, originalValue, 1.0, 1.0);
+	return mas[index];
 }
 
 //_____________________________________________________________________________

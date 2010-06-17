@@ -446,7 +446,7 @@ public:
 	//--------------------------------------------------------------------------
 	// MultibodySystem
 	//--------------------------------------------------------------------------
-	virtual SimTK::MultibodySystem& getMultibodySystem() {return *_system; } 
+	virtual SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
 	virtual void  setMultibodySystem(SimTK::MultibodySystem& system) { _system = &system; } 
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------

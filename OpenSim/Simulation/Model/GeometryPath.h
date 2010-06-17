@@ -55,6 +55,7 @@ namespace OpenSim {
 class Coordinate;
 class WrapResult;
 class WrapObject;
+class PointForceDirection;
 
 //=============================================================================
 //=============================================================================
@@ -152,6 +153,9 @@ public:
 	virtual Array<PathPoint*>& updCurrentPath( const SimTK::State& s) const;
 	virtual const Array<PathPoint*>& getCurrentDisplayPath(const SimTK::State& s) ;
 	virtual Array<PathPoint*>& updCurrentDisplayPath(const SimTK::State& s) const;
+	/** get the the path as PointForceDirections directions */
+	void getPointForceDirections(const SimTK::State& s, OpenSim::Array<PointForceDirection*> *rPFDs) const;
+
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -162,8 +166,8 @@ private:
 	double _calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr, const Array<PathPoint*>& path) const; 
 	virtual double calcLengthAfterPathComputation(const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 public:
-	virtual double computeMomentArm( SimTK::State& s, Coordinate& aCoord);
-	virtual void computeMomentArms( SimTK::State& s, Array<double> &rMomentArms);
+	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord);
+	virtual SimTK::Vector computeMomentArms(SimTK::State& s);
 
 	//--------------------------------------------------------------------------
 	// SCALING

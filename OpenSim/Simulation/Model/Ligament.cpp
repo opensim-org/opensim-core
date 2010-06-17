@@ -33,6 +33,8 @@
 // INCLUDES
 //=============================================================================
 #include "Ligament.h"
+#include "GeometryPath.h"
+#include "PointForceDirection.h"
 #include <OpenSim/Common/NaturalCubicSpline.h>
 
 //=============================================================================
@@ -342,51 +344,30 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 //=============================================================================
 // COMPUTATION
 //=============================================================================
+/**
+ * Compute the moment-arm of this muscle about a coordinate.
+ */
+double Ligament::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
+{
+	return _path.computeMomentArm(s, aCoord);
+}
+
+
+
 void Ligament::computeForce(const SimTK::State& s, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
-	const PathPoint* start;
-	const PathPoint* end;
-	const OpenSim::Body* startBody;
-	const OpenSim::Body* endBody;
-	const SimbodyEngine& engine = _model->getSimbodyEngine();
+	if (_path.getLength(s) <= _restingLength)
+		return;
 
+	double strain = (_path.getLength(s) - _restingLength) / _restingLength;
+	double force = getForceLengthCurve()->calcValue(SimTK::Vector(1, strain)) * _pcsaForce;
 
-   if (_path.getLength(s) <= _restingLength)
-	   return;
+	OpenSim::Array<PointForceDirection*> PFDs;
+	_path.getPointForceDirections(s, &PFDs);
 
-   double strain = (_path.getLength(s) - _restingLength) / _restingLength;
-   double force = getForceLengthCurve()->calcValue(SimTK::Vector(1, strain)) * _pcsaForce;
-
-    const Array<PathPoint*>& currentPath =  _path.getCurrentPath(s);
-	for (int i = 0; i < currentPath.getSize() - 1; i++) {
-		start = currentPath[i];
-		end = currentPath[i+1];
-		startBody = &start->getBody();
-		endBody = &end->getBody();
-
-		if (startBody != endBody)
-		{
-			Vec3 posStart, posEnd, forceVector, bodyForce;
-
-			// Find the positions of start and end in the inertial frame.
-			engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
-			engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
-
-			// Form a vector from start to end, in the inertial frame.
-			forceVector = posEnd - posStart;
-
-			// Normalize the vector from start to end.
-			forceVector = forceVector.normalize();
-
-			// The force on the start body is in the direction of forceVector.
-			bodyForce = force * forceVector;
-			applyForceToPoint(s, start->getBody(), start->getLocation(), bodyForce, bodyForces);
-
-			// The force on the end body is in the opposite direction of forceVector.
-			bodyForce = -force * forceVector;
-			applyForceToPoint(s, end->getBody(), end->getLocation(), bodyForce, bodyForces);
-		}
+	for (int i=0; i < PFDs.getSize(); i++) {
+		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), force*PFDs[i]->direction(), bodyForces);
 	}
 }

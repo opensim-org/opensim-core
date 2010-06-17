@@ -36,6 +36,8 @@
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "ConditionalPathPoint.h"
+#include "PointForceDirection.h"
+#include "GeometryPath.h"
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapResult.h>
 #include <OpenSim/Simulation/Wrap/PathWrap.h>
@@ -456,6 +458,15 @@ void Muscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 //--------------------------------------------------------------------------
 // COMPUTATIONS
 //--------------------------------------------------------------------------
+/**
+ * Compute the moment-arm of this muscle about a coordinate.
+ */
+double Muscle::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
+{
+	return _path.computeMomentArm(s, aCoord);
+}
+
+
 //_____________________________________________________________________________
 /**
  * Compute values needed for calculating the muscle's actuation.
@@ -566,54 +577,30 @@ void Muscle::computeForce(const SimTK::State& s,
     } else {
        muscleForce = computeActuation(s);
     }
-    setForce(s,  muscleForce );
-
+    setForce(s, muscleForce);
 
 	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
 	if (fabs( muscleForce ) < TINY_NUMBER) {
-//std::cout << "Muscle::computeForce muscleForce < TINY_NUMBER" << getName() << std::endl;
+		//std::cout << "Muscle::computeForce muscleForce < TINY_NUMBER" << getName() << std::endl;
 		return;
     }
 
-	const SimbodyEngine& engine = _model->getSimbodyEngine();
+	OpenSim::Array<PointForceDirection*> PFDs;
+	_path.getPointForceDirections(s, &PFDs);
 
-	int i;
-	PathPoint* start;
-	PathPoint* end;
-	const OpenSim::Body* startBody;
-	const OpenSim::Body* endBody;
-    const Array<PathPoint*>& currentPath = _path.getCurrentPath(s);
-	for (i = 0; i < currentPath.getSize() - 1; i++) {
-		start = currentPath[i];
-		end = currentPath[i+1];
-		startBody = &start->getBody();
-		endBody = &end->getBody();
-
-		if (startBody != endBody)
-		{
-			Vec3 posStart, posEnd, forceVector, bodyForce;
-
-			// Find the positions of start and end in the inertial frame.
-			engine.getPosition(s, start->getBody(), start->getLocation(), posStart);
-			engine.getPosition(s, end->getBody(), end->getLocation(), posEnd);
-
-			// Form a vector from start to end, in the inertial frame.
-			forceVector = posEnd - posStart;
-
-			// Normalize the vector from start to end.
-			forceVector = forceVector.normalize(); //Mtx::Normalize(3, forceVector, forceVector);
-
-			// The force on the start body is in the direction of forceVector.
-			bodyForce = muscleForce * forceVector;
-			applyForceToPoint(s, start->getBody(), start->getLocation(), bodyForce, bodyForces);
-
-			// The force on the end body is in the opposite direction of forceVector.
-			bodyForce = -muscleForce * forceVector;
-			applyForceToPoint(s, end->getBody(), end->getLocation(), bodyForce, bodyForces);
-//std::cout << "Muscle::computeForce t=" << s.getTime() << "  muscle " << getName() << "  Control=" << getControl(s) << " force= " << bodyForce << std::flush;
-		}
+	for (int i=0; i < PFDs.getSize(); i++) {
+		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), muscleForce*PFDs[i]->direction(), bodyForces);
 	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the visible object used to represent the muscle.
+ */
+VisibleObject* Muscle::getDisplayer() const
+{ 
+	return getGeometryPath().getDisplayer(); 
 }
 
 //_____________________________________________________________________________

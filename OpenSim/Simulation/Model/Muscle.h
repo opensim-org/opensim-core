@@ -40,7 +40,6 @@
 #include "CustomActuator.h"
 #include "GeometryPath.h"
 
-
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
 		#undef OSIMSIMULATION_API
@@ -147,6 +146,7 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s ) const = 0;
+	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord) const;
 	virtual double computeLengtheningSpeed(const SimTK::State& s) const; 
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
 	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) = 0;
@@ -194,9 +194,7 @@ public:
 	//--------------------------------------------------------------------------
 	// Visible Object Support
 	//--------------------------------------------------------------------------
-	virtual VisibleObject* getDisplayer() const { 
-		return getGeometryPath().getDisplayer(); 
-	}
+	virtual VisibleObject* getDisplayer() const;
 	virtual void updateDisplayer(const SimTK::State& s);
 	OPENSIM_DECLARE_DERIVED(Muscle, CustomActuator);
 
