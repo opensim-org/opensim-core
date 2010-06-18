@@ -43,12 +43,14 @@
 #include "Property.h"
 #include "PropertyObj.h"
 #include "PropertyDblVec3.h"
+#include "PropertyTransform.h"
 #include "IO.h"
 #include "OldVersionException.h"
 
 using namespace OpenSim;
 using namespace std;
 using SimTK::Vec3;
+using SimTK::Transform;
 
 //=============================================================================
 // STATICS
@@ -417,6 +419,14 @@ operator==(const Object &aObject) const
 					((const PropertyDblVec3&)theirProperty).getValueDblVec3()).norm() < 1e-8;
 				if (!equal) return false;
 				continue;
+			case Property::Transform:
+				const SimTK::Transform& t1 = ((const PropertyTransform&)myProperty).getValueTransform();
+				const SimTK::Transform& t2 = ((const PropertyTransform&)theirProperty).getValueTransform();
+				const SimTK::Transform& tComposed =  t1.compose(t2.invert());
+				equal = (tComposed.p().norm() < 1e-8 &&
+					tComposed.R().trace() < 1e-8);
+				if (!equal) return false;
+				continue;
 
 		}
 	}
@@ -782,6 +792,19 @@ void UpdateXMLNodeVec3(const Property *aProperty, DOMElement *aNode, const strin
 	// The following is a hack to reuse the code in SetValueArray<double> for Vec3
 	XMLNode::SetValueArray<double>(elmt,3,&((PropertyDblVec3*)aProperty)->getValueDblVec3()[0]);
 }
+void UpdateXMLNodeTransform(const Property *aProperty, DOMElement *aNode, const string &aName)
+{
+	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(aNode,aName);
+	if(!elmt && !aProperty->getUseDefault()) {
+		elmt = XMLNode::AppendNewElementWithComment(aNode, aName, "", aProperty->getComment());
+	} else if (elmt && !aProperty->getComment().empty()) {
+		XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,aProperty->getComment());
+	}
+	// Get 6 raw numbers into an array and then use those to update the node
+	double rawData[6];
+	((PropertyTransform *)aProperty)->getRotationsAndTranslationsAsArray6(rawData);
+	XMLNode::SetValueArray<double>(elmt,6,rawData);
+}
 //-----------------------------------------------------------------------------
 // UPDATE OBJECT
 //-----------------------------------------------------------------------------
@@ -896,6 +919,7 @@ updateFromXMLNode()
 		// DblArray
 		case(Property::DblArray) :
 		case(Property::DblVec3) :
+		case(Property::Transform) :
 			UpdateFromXMLNodeArrayProperty<double>(property,_node,name);
 			break;
 			break;
@@ -1201,6 +1225,10 @@ updateXMLNode(DOMElement *aParent, int aNodeIndex)
 		// DblVec3
 		case(Property::DblVec3) :
 			UpdateXMLNodeVec3(property,_node,name);
+			break;
+		// DblVec3
+		case(Property::Transform) :
+			UpdateXMLNodeTransform(property,_node,name);
 			break;
 		// StrArray
 		case(Property::StrArray) :
@@ -1575,6 +1603,7 @@ clearXMLStructures()
 		case(Property::DblArray) :
 		case(Property::StrArray) :
 		case(Property::DblVec3) :
+		case(Property::Transform) :
 			break; // Nothing to do for the basic types
 
 		// Obj
@@ -1633,6 +1662,7 @@ setAllPropertiesUseDefault(bool aUseDefault)
 		case(Property::DblArray) :
 		case(Property::StrArray) :
 		case(Property::DblVec3) :
+		case(Property::Transform) :
 			break; // Nothing to do for the basic types
 
 		// Obj

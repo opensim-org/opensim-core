@@ -100,7 +100,17 @@ public:
 	{
 		None=0,Bool, Int, Dbl, Str, Obj, ObjPtr,
 		BoolArray, IntArray, DblArray, StrArray, ObjArray,
-		DblVec3
+		DblVec3, 
+		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
+		//Station	   Point on a Body: String, Vec3 
+	};
+
+	enum PropertyCategory
+	{
+		NoCategory,
+		Display,
+		System,
+		Dynamics
 	};
 
 private:
@@ -108,6 +118,9 @@ private:
 	PropertyType _type;
 	/** Name of the property. */
 	std::string _name;
+	/** Category of property */
+	PropertyCategory _category;
+
 	/** Flag indicating whether or not this property uses some
 	default property for initializing its value. */
 	bool _useDefault;

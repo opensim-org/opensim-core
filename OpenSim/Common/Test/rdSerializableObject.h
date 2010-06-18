@@ -36,6 +36,7 @@
 // INCLUDES
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyObj.h>
+#include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 
 #include "rdSerializableObject2.h"
@@ -156,6 +157,18 @@ namespace OpenSim {
 			PropertyObjArray<Object> pObjArray("Test_ObjArray",arrayObj);
 			pObjArray.setComment("Comment on Object Array");
 			_propertySet.append(pObjArray.copy());
+
+			// Transform
+			SimTK::Transform xform;
+			xform.updP() = SimTK::Vec3(3., 2., 1.);
+			xform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(2, 1, 0.5));
+			PropertyTransform* transformP=new PropertyTransform("MyTransformProperty", xform);
+			_propertySet.append(transformP);
+			/*
+			PropertyObj pObj("Test_Obj",obj);
+			pObj.setComment("Comment on an Object");
+			_propertySet.append(pObj.copy());*/
+
 		}
 		//--------------------------------------------------------------------------
 		// OPERATORS
