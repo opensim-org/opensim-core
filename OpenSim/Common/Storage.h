@@ -37,6 +37,7 @@
 #include "StateVector.h"
 #include "Units.h"
 #include "SimTKcommon.h"
+#include "StorageInterface.h"
 
 const int Storage_DEFAULT_CAPACITY = 256;
 //=============================================================================
@@ -66,17 +67,13 @@ namespace OpenSim {
 typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToValues;
 
 //static std::string[] simmReservedKeys;
-class OSIMCOMMON_API Storage : public Object
+class OSIMCOMMON_API Storage : public StorageInterface
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 public:
-	/** Large negative number. */
-	static const double LARGE_NEGATIVE;
-	/** Large positive number. */
-	static const double LARGE_POSITIVE;
 	/** Default token used to mark the end of the storage description in
 	a file. */
 	static const char *DEFAULT_HEADER_TOKEN;
@@ -102,9 +99,13 @@ protected:
 	Units _units;
 	/** Map between keys in file header and values */
 	MapKeysToValues	_keyValueMap;
-
+	/** Cache for fileName and file pointer when the file is opened so we can flush and write intermediate files if needed */
 	std::string _fileName;
 	FILE *_fp;
+	/** Name and Description */
+	std::string _name;
+	std::string _description;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -117,9 +118,13 @@ public:
 	Storage(const Storage &aStorage,int aStateIndex,int aN,
 		const char *aDelimiter="\t");
 
-	virtual Object* copy() const;
+	virtual StorageInterface* copy() const;
 	virtual ~Storage();
 
+	const std::string& getName() const { return _name; };
+	const std::string& getDescription() const { return _description; };
+	void setName(const std::string& aName) { _name = aName; };
+	void setDescription(const std::string& aDescription) { _description = aDescription; };
 private:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION METHODS
@@ -138,19 +143,19 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// SIZE
-	int getSize() const { return(_storage.getSize()); }
+	virtual int getSize() const { return(_storage.getSize()); }
 	// STATEVECTOR
 	int getSmallestNumberOfStates() const;
-	StateVector* getStateVector(int aTimeIndex) const;
-	StateVector* getLastStateVector() const;
+	virtual StateVector* getStateVector(int aTimeIndex) const;
+	virtual StateVector* getLastStateVector() const;
 	// TIME
-	double getFirstTime() const;
-	double getLastTime() const;
+	virtual double getFirstTime() const;
+	virtual double getLastTime() const;
 	double getMinTimeStep() const;
 	bool getTime(int aTimeIndex,double &rTime,int aStateIndex=-1) const;
-	int getTimeColumn(double *&rTimes,int aStateIndex=-1) const;
-	int getTimeColumn(Array<double>& rTimes,int aStateIndex=-1) const;
-	void getTimeColumnWithStartTime(Array<double>& rTimes,double startTime=0.0) const;
+	virtual int getTimeColumn(double *&rTimes,int aStateIndex=-1) const;
+	virtual int getTimeColumn(Array<double>& rTimes,int aStateIndex=-1) const;
+	virtual void getTimeColumnWithStartTime(Array<double>& rTimes,double startTime=0.0) const;
 	// HEADERS, Key-Value pairs
 	void addKeyValuePair(const std::string& aKey, const std::string& aValue);
 	void getValueForKey(const std::string& aKey, std::string& rValue) const;
@@ -198,7 +203,7 @@ public:
 	virtual int append(const Array<StateVector> &aArray);
 	virtual int append(double aT,int aN,const double *aY, bool aCheckForDuplicateTime=true);
 	virtual int append(double aT,const SimTK::Vector& aY, bool aCheckForDuplicateTime=true);
-	int append(double aT, const SimTK::Vec3& aY,bool aCheckForDuplicateTime=true){
+	virtual int append(double aT, const SimTK::Vec3& aY,bool aCheckForDuplicateTime=true){
 		return append(aT, 3, &aY[0], aCheckForDuplicateTime);
 	}
 	virtual int store(int aStep,double aT,int aN,const double *aY);
@@ -241,8 +246,8 @@ public:
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	int findIndex(double aT) const;
-	int findIndex(int aI,double aT) const;
+	virtual int findIndex(double aT) const;
+	virtual int findIndex(int aI,double aT) const;
 	void findFrameRange(double aStartTime, double aEndTime, int& oStartFrame, int& oEndFrame) const;
 	double resample(double aDT, int aDegree);
 	double resampleLinear(double aDT);

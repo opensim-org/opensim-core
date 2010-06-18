@@ -48,6 +48,7 @@
 #include "StateFunction.h"
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
+#include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
 #include "RegisterTypes_osimCommon.h"	// to expose RegisterTypes_osimCommon
 

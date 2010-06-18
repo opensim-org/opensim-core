@@ -56,8 +56,8 @@ using namespace std;
 //============================================================================
 // CONSTANTS
 //============================================================================
-const double Storage::LARGE_NEGATIVE = -1.0e-30;
-const double Storage::LARGE_POSITIVE =  1.0e-30;
+//const double Storage::LARGE_NEGATIVE = -1.0e-30;
+//const double Storage::LARGE_POSITIVE =  1.0e-30;
 const char* Storage::DEFAULT_HEADER_TOKEN = "endheader";
 const char* Storage::DEFAULT_HEADER_SEPARATOR = " \t\r\n";
 const int Storage::MAX_RESAMPLE_SIZE = 100000;
@@ -95,6 +95,7 @@ Storage::~Storage()
  * Default constructor.
  */
 Storage::Storage(int aCapacity,const string &aName) :
+	StorageInterface(aName),
 	_storage(StateVector())
 {
 	// SET NULL STATES
@@ -116,6 +117,7 @@ Storage::Storage(int aCapacity,const string &aName) :
  * constructed.
  */
 Storage::Storage(const string &aFileName) :
+	StorageInterface(aFileName),
 	_storage(StateVector())
 {
 	// SET NULL STATES
@@ -170,6 +172,7 @@ Storage::Storage(const string &aFileName) :
  * Copy constructor.
  */
 Storage::Storage(const Storage &aStorage,bool aCopyData) :
+	StorageInterface(aStorage),
 	_storage(StateVector())
 {
 	// NULL THE DATA
@@ -202,6 +205,7 @@ Storage::Storage(const Storage &aStorage,bool aCopyData) :
 Storage::
 Storage(const Storage &aStorage,int aStateIndex,int aN,
 			 const char *aDelimiter) :
+	 StorageInterface(aStorage),
 	_storage(StateVector())
 {
 	// NULL THE DATA
@@ -246,7 +250,7 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
  *
  * @return Pointer to a copy of this object.
  */
-Object* Storage::
+StorageInterface* Storage::
 copy() const
 {
 	Storage *store = new Storage(*this);
@@ -2762,7 +2766,7 @@ void Storage::addToRdStorage(Storage& rStorage, double aStartTime, double aEndTi
 		if (j == getSize())
 		{
 			stringstream errorMessage;
-			errorMessage << "Error: no coordinate data found at time " << stateTime << " in " << getDocumentFileName();
+			errorMessage << "Error: no coordinate data found at time " << stateTime << " in " << _fileName;
 			throw (Exception(errorMessage.str()));
 		}
 	}
