@@ -1103,6 +1103,12 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 		int indices[9][2];
 		for(int i=0; i<9; i++){
 			indices[i][0]= labels.findIndex(forceLabels[i]);
+			if (indices[i][0]==-1){	// Something went wrong, abort here 
+				if(_document) IO::chDir(savedCwd);
+				string msg =
+					"Object: ERR- Could not find label "+forceLabels[i]+ "in file " + oldFile+ ". Aborting.";
+				throw Exception(msg,__FILE__,__LINE__);
+			}
 			for(int j=indices[i][0]+1; j<labels.getSize(); j++){
 				if (labels[j]==forceLabels[i]){
 					indices[i][1]=j;
