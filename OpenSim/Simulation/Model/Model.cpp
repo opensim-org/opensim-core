@@ -410,7 +410,10 @@ void Model::createSystem()
     _forceSubsystem = new OpenSimForceSubsystem( *_system, this );
     _userForceElements = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
-    _gravityForce = new SimTK::Force::Gravity(*_userForceElements,*_matter,_gravity);
+	// create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
+	double magnitude = _gravity.norm();
+	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
+	_gravityForce = new SimTK::Force::Gravity(*_userForceElements, *_matter, direction, magnitude);
 
     // Let all the ModelComponents add their parts to the System.
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
@@ -1543,6 +1546,7 @@ void Model::validateMassProperties(bool fixMassProperties)
 				inertiaMat[0][0] = fabs(inertiaMat[0][0]);
 				inertiaMat[1][1] = inertiaMat[2][2] = inertiaMat[0][0];
 				inertiaMat[0][1] = inertiaMat[0][2] = inertiaMat[1][2] = 0.0;
+				inertiaMat[1][0] = inertiaMat[2][0] = inertiaMat[2][1] = 0.0;
 				b.setInertia(SimTK::Inertia_<Real>(inertiaMat));
 				_validationLog += msg;
 				_validationLog += "Inertia vector for body "+b.getName()+" has been reset\n";
