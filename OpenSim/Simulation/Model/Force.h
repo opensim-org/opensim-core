@@ -69,7 +69,9 @@ public:
 	 */
 	Force(DOMElement* aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
 	
+#ifndef SWIG
 	Force& operator=(const Force &aForce);
+#endif
 	void copyData(const Force &aForce);
 	virtual Object* copy() const = 0;
 

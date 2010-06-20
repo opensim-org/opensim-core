@@ -13,6 +13,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/PropertySet.h>
 #include <OpenSim/Common/Object.h>
@@ -23,6 +24,7 @@
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/Set.h>
 #include <OpenSim/Common/StateVector.h>
+#include <OpenSim/Common/StorageInterface.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/Range.h>
 #include <OpenSim/Common/Scale.h>
@@ -393,6 +395,7 @@ static bool trace=false;
 %include <OpenSim/Common/Property.h>
 %include <OpenSim/Common/PropertyStr.h>
 %template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property>;
+%include <OpenSim/Common/PropertyTransform.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
 %include <OpenSim/Common/PropertySet.h>
@@ -403,6 +406,7 @@ static bool trace=false;
 %include <OpenSim/Common/VisibleObject.h>
 %include <OpenSim/Common/Set.h>
 %include <OpenSim/Common/StateVector.h>
+%include <OpenSim/Common/StorageInterface.h>
 %include <OpenSim/Common/Storage.h>
 %include <OpenSim/Common/Units.h>
 %include <OpenSim/Common/IO.h>

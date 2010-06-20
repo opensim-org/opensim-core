@@ -58,8 +58,10 @@ class OSIMSIMULATION_API AnalysisSet : public Set<Analysis>
 // DATA
 //=============================================================================
 public:
+#ifndef SWIG
    AnalysisSet&
         operator=(const AnalysisSet &aAnalysisSet);
+#endif
 protected:
 	/** Model on which the callbacks have been set. */
 	Model *_model;
