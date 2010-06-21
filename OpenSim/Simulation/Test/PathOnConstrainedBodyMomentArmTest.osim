@@ -1,0 +1,538 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20001">
+	<Model name="PathOnConstrainedBodyMomentArmTest">
+		<defaults>
+		</defaults>
+		<credits>  </credits>
+		<publications>  </publications>
+		<ForceSet name="">
+      <objects>
+        <Thelen2003Muscle name="vas_int_r">
+          <GeometryPath name="">
+            <PathPointSet name="">
+              <objects>
+                <PathPoint name="vas_int_r-P1">
+                  <location>       0.02900000000000000100      -0.19239999999999999000       0.03100000000000000000 </location>
+                  <VisibleObject name="">
+                    <geometry_files> </geometry_files>
+                    <VisibleProperties name="">
+                      <display_preference> 4 </display_preference>
+                      <show_normals> false </show_normals>
+                      <show_axes> false </show_axes>
+                      <material_name> DEFAULT </material_name>
+                    </VisibleProperties>
+                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+                  </VisibleObject>
+                  <body> femur_r </body>
+                </PathPoint>
+                <PathPoint name="vas_int_r-P2">
+                  <location>       0.03350000000000000200      -0.20840000000000000000       0.02850000000000000100 </location>
+                  <VisibleObject name="">
+                    <geometry_files> </geometry_files>
+                    <VisibleProperties name="">
+                      <display_preference> 4 </display_preference>
+                      <show_normals> false </show_normals>
+                      <show_axes> false </show_axes>
+                      <material_name> DEFAULT </material_name>
+                    </VisibleProperties>
+                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+                  </VisibleObject>
+                  <body> femur_r </body>
+                </PathPoint>
+                <ConditionalPathPoint name="vas_int_r-P3">
+                  <location>       0.03429999999999999700      -0.40300000000000002000       0.00549999999999999970 </location>
+                  <VisibleObject name="">
+                    <geometry_files> </geometry_files>
+                    <VisibleProperties name="">
+                      <display_preference> 4 </display_preference>
+                      <show_normals> false </show_normals>
+                      <show_axes> false </show_axes>
+                      <material_name> DEFAULT </material_name>
+                    </VisibleProperties>
+                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+                  </VisibleObject>
+                  <body> femur_r </body>
+                  <range>      -2.61799388000000020000      -1.41999988000000000000 </range>
+                  <coordinate> knee_angle_r </coordinate>
+                </ConditionalPathPoint>
+                <PathPoint name="vas_int_r-P4">
+                  <location>       0.00579999999999999960       0.04800000000000000100      -0.00059999999999999995 </location>
+                  <VisibleObject name="">
+                    <geometry_files> </geometry_files>
+                    <VisibleProperties name="">
+                      <display_preference> 4 </display_preference>
+                      <show_normals> false </show_normals>
+                      <show_axes> false </show_axes>
+                      <material_name> DEFAULT </material_name>
+                    </VisibleProperties>
+                    <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+                  </VisibleObject>
+                  <body> patella_r </body>
+                </PathPoint>
+              </objects>
+              <groups/>
+            </PathPointSet>
+            <VisibleObject name="">
+              <geometry_files> </geometry_files>
+              <VisibleProperties name="">
+                <display_preference> 4 </display_preference>
+                <show_normals> false </show_normals>
+                <show_axes> false </show_axes>
+                <material_name> DEFAULT </material_name>
+              </VisibleProperties>
+              <scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+            </VisibleObject>
+            <PathWrapSet name="">
+              <objects/>
+              <groups/>
+            </PathWrapSet>
+          </GeometryPath>
+          <!--maximum isometric force of the muscle fibers-->
+          <max_isometric_force>    1365.00000000000000000000 </max_isometric_force>
+          <!--optimal length of the muscle fibers-->
+          <optimal_fiber_length>       0.08699999999999999400 </optimal_fiber_length>
+          <!--resting length of the tendon-->
+          <tendon_slack_length>       0.13600000000000001000 </tendon_slack_length>
+          <!--angle between tendon and fibers at optimal fiber length-->
+          <pennation_angle>       0.05235987999999999800 </pennation_angle>
+          <!--time constant for ramping up of muscle activation-->
+          <activation_time_constant>       0.01000000000000000000 </activation_time_constant>
+          <!--time constant for ramping down of muscle activation-->
+          <deactivation_time_constant>       0.04000000000000000100 </deactivation_time_constant>
+          <!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+          <Vmax>      10.00000000000000000000 </Vmax>
+          <!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+          <Vmax0>       5.00000000000000000000 </Vmax0>
+          <!--tendon strain due to maximum isometric muscle force-->
+          <FmaxTendonStrain>       0.03300000000000000200 </FmaxTendonStrain>
+          <!--passive muscle strain due to maximum isometric muscle force-->
+          <FmaxMuscleStrain>       0.59999999999999998000 </FmaxMuscleStrain>
+          <!--shape factor for Gaussian active muscle force-length relationship-->
+          <KshapeActive>       0.50000000000000000000 </KshapeActive>
+          <!--exponential shape factor for passive force-length relationship-->
+          <KshapePassive>       4.00000000000000000000 </KshapePassive>
+          <!--passive damping in the force-velocity relationship-->
+          <damping>       0.05000000000000000300 </damping>
+          <!--force-velocity shape factor-->
+          <Af>       0.29999999999999999000 </Af>
+          <!--maximum normalized lengthening force-->
+          <Flen>       1.80000000000000000000 </Flen>
+        </Thelen2003Muscle>
+      </objects>
+			<groups/>
+			<datafile>  </datafile>
+		</ForceSet>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000000000000000      -9.80664999999999940000       0.00000000000000000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000000000000000 </mass>
+					<mass_center>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </mass_center>
+					<inertia_xx>       0.00000000000000000000 </inertia_xx>
+					<inertia_yy>       0.00000000000000000000 </inertia_yy>
+					<inertia_zz>       0.00000000000000000000 </inertia_zz>
+					<inertia_xy>       0.00000000000000000000 </inertia_xy>
+					<inertia_xz>       0.00000000000000000000 </inertia_xz>
+					<inertia_yz>       0.00000000000000000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="femur_r">
+					<mass>       9.30139999999999920000 </mass>
+					<mass_center>       0.00000000000000000000      -0.17000000000000001000       0.00000000000000000000 </mass_center>
+					<inertia_xx>       0.13389999999999999000 </inertia_xx>
+					<inertia_yy>       0.03509999999999999900 </inertia_yy>
+					<inertia_zz>       0.14119999999999999000 </inertia_zz>
+					<inertia_xy>       0.00000000000000000000 </inertia_xy>
+					<inertia_xz>       0.00000000000000000000 </inertia_xz>
+					<inertia_yz>       0.00000000000000000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="hip_r">
+							<parent_body> ground </parent_body>
+							<location_in_parent>     0      0       0 </location_in_parent>
+							<orientation_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation_in_parent>
+							<location>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location>
+							<orientation>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> femur.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="tibia_r">
+					<mass>       3.60749999999999990000 </mass>
+					<mass_center>       0.00000000000000000000      -0.18700000000000000000       0.00000000000000000000 </mass_center>
+					<inertia_xx>       0.05040000000000000000 </inertia_xx>
+					<inertia_yy>       0.00510000000000000040 </inertia_yy>
+					<inertia_zz>       0.05110000000000000000 </inertia_zz>
+					<inertia_xy>       0.00000000000000000000 </inertia_xy>
+					<inertia_xz>       0.00000000000000000000 </inertia_xz>
+					<inertia_yz>       0.00000000000000000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="knee_r">
+							<parent_body> femur_r </parent_body>
+							<location_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation_in_parent>
+							<location>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location>
+							<orientation>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="knee_angle_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000000000000000 </default_value>
+										<default_speed_value>       0.00000000000000000000 </default_speed_value>
+										<initial_value>       0.00000000000000000000 </initial_value>
+										<range>      -2.09439509999999980000       0.17453293000000000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="tib_tx_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>      -0.00449985612125893860 </default_value>
+										<default_speed_value>       0.00000000000000000000 </default_speed_value>
+										<initial_value>      -0.00449985612125893860 </initial_value>
+										<range>      -5.00000000000000000000       5.00000000000000000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="tib_ty_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>      -0.39582069603402981000 </default_value>
+										<default_speed_value>       0.00000000000000000000 </default_speed_value>
+										<initial_value>      -0.39582069603402981000 </initial_value>
+										<range>      -1.00000000000000000000       2.00000000000000000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
+								<TransformAxis name="rotation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> knee_angle_r </coordinates>
+									<axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> tib_tx_r </coordinates>
+									<axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> tib_ty_r </coordinates>
+									<axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> tibia.vtp fibula.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="patella_r">
+					<mass>       0.10000000000000001000 </mass>
+					<mass_center>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </mass_center>
+					<inertia_xx>       0.00100000000000000000 </inertia_xx>
+					<inertia_yy>       0.00100000000000000000 </inertia_yy>
+					<inertia_zz>       0.00100000000000000000 </inertia_zz>
+					<inertia_xy>       0.00000000000000000000 </inertia_xy>
+					<inertia_xz>       0.00000000000000000000 </inertia_xz>
+					<inertia_yz>       0.00000000000000000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="tib_pat_r">
+							<parent_body> tibia_r </parent_body>
+							<location_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation_in_parent>
+							<location>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </location>
+							<orientation>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="pat_angle_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>      -0.00116916370362218910 </default_value>
+										<default_speed_value>       0.00000000000000000000 </default_speed_value>
+										<initial_value>      -0.00116916370362218910 </initial_value>
+										<range>      -2.09399999999999990000       0.17499999999999999000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="pat_tx_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.04959999999999999800 </default_value>
+										<default_speed_value>       0.00000000000000000000 </default_speed_value>
+										<initial_value>       0.04959999999999999800 </initial_value>
+										<range>      -5.00000000000000000000       5.00000000000000000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="pat_ty_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>      -0.02270000000000000100 </default_value>
+										<default_speed_value>       0.00000000000000000000 </default_speed_value>
+										<initial_value>      -0.02270000000000000100 </initial_value>
+										<range>      -5.00000000000000000000       5.00000000000000000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
+								<TransformAxis name="rotation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pat_angle_r </coordinates>
+									<axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pat_tx_r </coordinates>
+									<axis>       1.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000000000000000       0.00000000000000000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pat_ty_r </coordinates>
+									<axis>       0.00000000000000000000       1.00000000000000000000       0.00000000000000000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000000000000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000000000000000       0.00000000000000000000       1.00000000000000000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> pat.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
+			<objects>
+				<CoordinateCouplerConstraint name="knee_tx_r">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<NaturalCubicSpline name="">
+							<x>      -2.09439509999999980000      -1.74532924999999990000      -1.39626340000000000000      -1.04719754999999990000      -0.69813170000000002000      -0.34906585000000001000      -0.17453293000000000000       0.19734421999999999000       0.33739496000000002000       0.49017757000000001000       1.52146026999999990000       2.09439509999999980000 </x>
+							<y>      -0.00320000000000000020       0.00178999999999999990       0.00410999999999999990       0.00410000000000000030       0.00211999999999999990      -0.00100000000000000000      -0.00309999999999999990      -0.00522699999999999990      -0.00543499999999999970      -0.00557400000000000000      -0.00543499999999999970      -0.00525000000000000030 </y>
+						</NaturalCubicSpline>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> knee_angle_r </independent_coordinate_names>
+					<dependent_coordinate_name> tib_tx_r </dependent_coordinate_name>
+					<scale_factor>       1.00000000000000000000 </scale_factor>
+				</CoordinateCouplerConstraint>
+				<CoordinateCouplerConstraint name="knee_ty_r">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<NaturalCubicSpline name="">
+							<x>      -2.09439509999999980000      -1.22173048000000000000      -0.52359878000000004000      -0.34906585000000001000      -0.17453293000000000000       0.15914855999999999000       2.09439509999999980000 </x>
+							<y>      -0.42259999999999998000      -0.40820000000000001000      -0.39900000000000002000      -0.39760000000000001000      -0.39660000000000001000      -0.39526400000000000000      -0.39600000000000002000 </y>
+						</NaturalCubicSpline>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> knee_angle_r </independent_coordinate_names>
+					<dependent_coordinate_name> tib_ty_r </dependent_coordinate_name>
+					<scale_factor>       1.00000000000000000000 </scale_factor>
+				</CoordinateCouplerConstraint>
+				<CoordinateCouplerConstraint name="pat_tx_r">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<NaturalCubicSpline name="">
+							<x>      -2.09439509999999980000      -1.39626340000000000000      -1.04719754999999990000      -0.69813170000000002000      -0.34906585000000001000      -0.17453293000000000000       0.00000000000000000000       0.00017453000000000000       0.00034906999999999999       0.08726646000000000400       2.09439509999999980000 </x>
+							<y>       0.01729999999999999900       0.03239999999999999800       0.03810000000000000200       0.04299999999999999700       0.04689999999999999700       0.04839999999999999900       0.04959999999999999800       0.04959999999999999800       0.04959999999999999800       0.04959999999999999800       0.04959999999999999800 </y>
+						</NaturalCubicSpline>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> knee_angle_r </independent_coordinate_names>
+					<dependent_coordinate_name> pat_tx_r </dependent_coordinate_name>
+					<scale_factor>       1.00000000000000000000 </scale_factor>
+				</CoordinateCouplerConstraint>
+				<CoordinateCouplerConstraint name="pat_ty_r">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<NaturalCubicSpline name="">
+							<x>      -2.09439509999999980000      -1.57079633000000010000      -1.39626340000000000000      -1.04719754999999990000      -0.69813170000000002000      -0.34906585000000001000      -0.17453293000000000000       0.00000000000000000000       0.00017453000000000000       0.00034906999999999999       0.08726646000000000400       2.09439509999999980000 </x>
+							<y>      -0.02189999999999999900      -0.02019999999999999900      -0.02000000000000000000      -0.02040000000000000100      -0.02110000000000000100      -0.02189999999999999900      -0.02230000000000000000      -0.02270000000000000100      -0.02270000000000000100      -0.02270000000000000100      -0.02270000000000000100      -0.02270000000000000100 </y>
+						</NaturalCubicSpline>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> knee_angle_r </independent_coordinate_names>
+					<dependent_coordinate_name> pat_ty_r </dependent_coordinate_name>
+					<scale_factor>       1.00000000000000000000 </scale_factor>
+				</CoordinateCouplerConstraint>
+				<CoordinateCouplerConstraint name="pat_angle_r">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<NaturalCubicSpline name="">
+							<x>      -2.09439509999999980000      -1.99997278999999990000      -1.45752445999999990000      -0.52639130000000001000       0.02792526999999999900       0.17453293000000000000 </x>
+							<y>       0.30805061000000000000       0.30805061000000000000       0.30630528000000001000       0.27017697000000002000      -0.03700098000000000300      -0.27995080999999999000 </y>
+						</NaturalCubicSpline>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> knee_angle_r </independent_coordinate_names>
+					<dependent_coordinate_name> pat_angle_r </dependent_coordinate_name>
+					<scale_factor>       1.00000000000000000000 </scale_factor>
+				</CoordinateCouplerConstraint>
+			</objects>
+			<groups/>
+		</ConstraintSet>
+		<!--Markers in the model.-->
+		<MarkerSet name="">
+			<objects/>
+			<groups/>
+		</MarkerSet>
+		<!--ContactGeometry objects in the model.-->
+		<ContactGeometrySet name="">
+			<objects/>
+			<groups/>
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>
+
