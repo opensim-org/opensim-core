@@ -198,8 +198,7 @@ INSTALL_FILES(/bin/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.dll
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKcpodes.dll 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKsimbody.dll 
 						${SIMTK_LIB_DIR}/pthreadVC2.dll
-						${SIMTK_LIB_DIR}/SimTKlapack.dll
-						${SIMTK_LIB_DIR}/vcredist_x86.exe
+						${SIMTK_LIB_DIR}/SimTKlapack.dll						
 						)
 INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.lib 
 						${SIMTK_LIB_DIR}/${NameSpace}SimTKmath.lib 
@@ -209,12 +208,13 @@ INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_LIB_DIR}/${NameSpace}SimTKcommon.lib
 						${SIMTK_LIB_DIR}/SimTKlapack.lib)
 
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-# Install windows runtime libraries to support prebuilt libraries
+# Install windows runtime libraries to support prebuilt libraries and redistributable
 INSTALL_FILES(/bin/ FILES 
 					${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
 		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll
 		            ${SIMTK_LIB_DIR}/msvcr80.dll
-		            ${SIMTK_LIB_DIR}/msvcp80.dll)
+		            ${SIMTK_LIB_DIR}/msvcp80.dll
+		            ${SIMTK_LIB_DIR}/vcredist_x86.exe)
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 ELSE(WIN32)
@@ -238,12 +238,12 @@ SET(INSTALL_DOC OFF CACHE BOOL "Install Doxygen generated files into distributio
 
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
-SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center of BioComputation")
+SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center of Biomedical Computation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
 SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-SET(CPACK_PACKAGE_VERSION_MINOR "0")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "1")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make
