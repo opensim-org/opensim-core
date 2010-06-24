@@ -1,4 +1,5 @@
 /* MomentArmSolver.cpp 
+* Author: Ajay Seth 
 * Copyright (c)  2006 Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:

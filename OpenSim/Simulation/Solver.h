@@ -41,8 +41,8 @@ class Model;
 //=============================================================================
 /**
  * The base (abstract) class for a family of objects repsonsible for solving
- * system equations (statics, dynamic, kinematics, muscle, etc...) defined by a
- * for values of interest.
+ * system equations (statics, dynamic, kinematics, muscle, etc...) given by a
+ * model for values of interest.
  *
  * @author Ajay Seth
  * @version 1.0
