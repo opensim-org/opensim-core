@@ -34,7 +34,6 @@
 
 #include "SimTKcommon/internal/common.h"
 
-#include "SimTKcommon/internal/List.h"
 #include "SimTKcommon/internal/String.h"
 #include "SimTKcommon/internal/Exception.h"
 
@@ -98,7 +97,7 @@ public:
         if (!isA(v)) SimTK_THROW2(Exception::IncompatibleValues,v.getTypeName(),getTypeName());
         *this = downcast(v);
     }
-    String getTypeName() const { return TypeInfo<T>::name(); }
+    String getTypeName() const { return NiceTypeName<T>::name(); }
     String getValueAsString() const 
     { std::ostringstream s; s << thing; return s.str(); }
     

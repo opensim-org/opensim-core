@@ -52,9 +52,8 @@
 #include "SimTKcommon/internal/String.h"
 #include "SimTKcommon/internal/Concretize.h"
 #include "SimTKcommon/internal/Fortran.h"
-#include "SimTKcommon/internal/StableArray.h"
 #include "SimTKcommon/internal/Array.h"
-#include "SimTKcommon/internal/List.h"
+#include "SimTKcommon/internal/StableArray.h"
 #include "SimTKcommon/internal/Value.h"
 #include "SimTKcommon/internal/Stage.h"
 #endif

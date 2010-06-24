@@ -94,15 +94,26 @@ public:
     QIndex allocateQ(State&, const Vector& qInit) const;
     UIndex allocateU(State&, const Vector& uInit) const;
     ZIndex allocateZ(State&, const Vector& zInit) const;
-    DiscreteVariableIndex allocateDiscreteVariable(State&, Stage, AbstractValue* v) const;
 
-    CacheEntryIndex allocateCacheEntry   (const State&, Stage dependsOn, Stage computedBy, AbstractValue* v) const;
-    CacheEntryIndex allocateCacheEntry   (const State& state, Stage g, AbstractValue* v) const 
+    DiscreteVariableIndex allocateDiscreteVariable
+       (State&, Stage invalidates, AbstractValue* v) const;
+    DiscreteVariableIndex allocateAutoUpdateDiscreteVariable
+       (State&, Stage invalidates, AbstractValue* v, Stage updateDependsOn) const; 
+
+    CacheEntryIndex allocateCacheEntry
+       (const State&, Stage dependsOn, Stage computedBy, AbstractValue* v) const;
+    CacheEntryIndex allocateCacheEntry   
+       (const State& state, Stage g, AbstractValue* v) const 
     {   return allocateCacheEntry(state, g, g, v); }
+    CacheEntryIndex allocateLazyCacheEntry   
+       (const State& state, Stage earliest, AbstractValue* v) const 
+    {   return allocateCacheEntry(state, earliest, Stage::Infinity, v); }
+
     QErrIndex allocateQErr         (const State&, int nqerr) const;
     UErrIndex allocateUErr         (const State&, int nuerr) const;
     UDotErrIndex allocateUDotErr      (const State&, int nudoterr) const;
-    EventTriggerByStageIndex allocateEventTriggersByStage(const State&, Stage, int ntriggers) const;
+    EventTriggerByStageIndex allocateEventTriggersByStage
+       (const State&, Stage, int ntriggers) const;
 
     // These return views on State shared global resources. The views
     // are private to this subsystem, but the global resources themselves
@@ -164,19 +175,35 @@ public:
     // this Subsystem. These variables and cache entries are available
     // as soon as this subsystem is at stage Model.
     Stage getStage(const State&) const;
-    const AbstractValue& getDiscreteVariable(const State&, DiscreteVariableIndex) const;
+    const AbstractValue& getDiscreteVariable(const State& s, DiscreteVariableIndex dx) const;
+
+    Real getDiscreteVarLastUpdateTime(const State& s, DiscreteVariableIndex dx) const
+    {   return s.getDiscreteVarLastUpdateTime(getMySubsystemIndex(),dx); }
+    CacheEntryIndex getDiscreteVarUpdateIndex(const State& s, DiscreteVariableIndex dx) const
+    {   return s.getDiscreteVarUpdateIndex(getMySubsystemIndex(),dx); }
+    const AbstractValue& getDiscreteVarUpdateValue(const State& s, DiscreteVariableIndex dx) const
+    {   return s.getDiscreteVarUpdateValue(getMySubsystemIndex(),dx); }
+    AbstractValue& updDiscreteVarUpdateValue(const State& s, DiscreteVariableIndex dx) const
+    {   return s.updDiscreteVarUpdateValue(getMySubsystemIndex(),dx); }
+    bool isDiscreteVarUpdateValueRealized(const State& s, DiscreteVariableIndex dx) const
+    {   return s.isDiscreteVarUpdateValueRealized(getMySubsystemIndex(),dx); }
+    void markDiscreteVarUpdateValueRealized(const State& s, DiscreteVariableIndex dx) const
+    {   return s.markDiscreteVarUpdateValueRealized(getMySubsystemIndex(),dx); }
+
     // State is *not* mutable here -- must have write access to change state variables.
     AbstractValue& updDiscreteVariable(State&, DiscreteVariableIndex) const;
+
     const AbstractValue& getCacheEntry(const State&, CacheEntryIndex) const;
     // State is mutable here.
     AbstractValue& updCacheEntry(const State&, CacheEntryIndex) const;
 
-    bool isCacheValueCurrent(const State&, CacheEntryIndex) const;
+    bool isCacheValueRealized(const State&, CacheEntryIndex) const;
     void markCacheValueRealized(const State&, CacheEntryIndex) const;
 
-    // Dimensions. These are valid at System Stage::Model while access to the various
-    // arrays may have stricter requirements. Hence it is better to use these
-    // routines than to get a reference to a Vector above and ask for its size().
+    // Dimensions. These are valid at System Stage::Model while access to the 
+    // various arrays may have stricter requirements. Hence it is better to use
+    // these routines than to get a reference to a Vector above and ask for 
+    // its size().
 
     SystemQIndex getQStart      (const State&) const;
     int getNQ          (const State&) const;
@@ -216,9 +243,9 @@ public:
 
     // Add a new Measure to this Subsystem. This method is generally used by Measure
     // constructors to install a newly-constructed Measure into its Subsystem.
-    MeasureIndex adoptMeasure(Measure&);
+    MeasureIndex adoptMeasure(AbstractMeasure&);
 
-    Measure getMeasure(MeasureIndex) const;
+    AbstractMeasure getMeasure(MeasureIndex) const;
     template <class T> Measure_<T> getMeasure_(MeasureIndex mx) const
     {   return Measure_<T>::getAs(getMeasure(mx));}
 
@@ -238,21 +265,24 @@ public:
 };
 
 
-/**
- * This is a concrete Subsystem that is part of every System.  It provides a variety of services
- * for the System, such as maintaining lists of event handlers and reporters, and acting as a
- * source of globally unique event IDs.  To obtain the default subsystem for a System, call
- * getDefaultSubsystem() or updDefaultSubsystem() on it.
- */
+
+/** This is a concrete Subsystem that is part of every System. It provides a 
+variety of services for the System, such as maintaining lists of event handlers
+and reporters, and acting as a source of globally unique event IDs. To obtain 
+the default subsystem for a System, call getDefaultSubsystem() or 
+updDefaultSubsystem() on it. **/
 class SimTK_SimTKCOMMON_EXPORT DefaultSystemSubsystem : public Subsystem {
 public:
-    DefaultSystemSubsystem(System& sys);
+    explicit DefaultSystemSubsystem(System& sys);
     void addEventHandler(ScheduledEventHandler* handler);
     void addEventHandler(TriggeredEventHandler* handler);
     void addEventReporter(ScheduledEventReporter* handler) const;
     void addEventReporter(TriggeredEventReporter* handler) const;
     EventId createEventId(SubsystemIndex subsys, const State& state) const;
-    void findSubsystemEventIds(SubsystemIndex subsys, const State& state, const std::vector<EventId>& allEvents, std::vector<EventId>& eventsForSubsystem) const;
+    void findSubsystemEventIds
+       (SubsystemIndex subsys, const State& state, 
+        const Array_<EventId>& allEvents, 
+        Array_<EventId>& eventsForSubsystem) const;
 private:
     const DefaultSystemSubsystemGuts& getGuts() const;
     DefaultSystemSubsystemGuts& updGuts();

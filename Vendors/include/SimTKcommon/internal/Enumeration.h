@@ -34,7 +34,7 @@
 
 #include "SimTKcommon/internal/common.h"
 #include "SimTKcommon/internal/ExceptionMacros.h"
-#include <vector>
+#include "SimTKcommon/internal/Array.h"
 
 namespace SimTK {
 
@@ -174,9 +174,16 @@ public:
         name = copy.name;
         return *this;
     }
-    Enumeration<T>* operator&() {
+    // Address operator should usually return a Stage*, not a Enumeration<Stage>*
+    // The previous Enumeration<Stage>* return value was causing a problem in 
+    // boost.python headers, in a statment equivalent to:
+    //    "Stage* const p = &const_cast<Stage&>((Stage const&)stage);"
+    // Which looks innocent, except that it fails to compile when that first "&" 
+    // generated an Enumeration<Stage>* instead of a Stage*.  Wrapping now works with
+    // this method returning a T*.
+    T* operator&() {
         init();
-        return this;
+        return static_cast<T*>(this);
     }
     bool operator==(const Enumeration<T>& value) const {
         init();
@@ -255,8 +262,8 @@ protected:
         SimTK_ASSERT_ALWAYS(index == updAllValues().size(), "Indices must be consecutive ints starting from 0.");
         updAllValues().push_back(&thisElement);
     }
-    static std::vector<const T*>& updAllValues() {
-        static std::vector<const T*> allValues;
+    static Array_<const T*>& updAllValues() {
+        static Array_<const T*> allValues;
         return allValues;
     }
 private:

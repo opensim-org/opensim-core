@@ -100,6 +100,7 @@ namespace SimTK {
  */
 class SimTK_CPODES_EXPORT CPodesSystem {
 public:
+    virtual ~CPodesSystem() {}
     // The default implementations of these virtual functions
     // just throw an "unimplemented virtual function" exception. 
 
@@ -310,7 +311,7 @@ public:
 
     int setErrFile(FILE* errfp);
     int setMaxOrd(int maxord);
-    int setMaxNumSteps(long mxsteps);
+    int setMaxNumSteps(int mxsteps);
     int setMaxHnilWarns(int mxhnil);
     int setStabLimDet(bool stldet) ;
     int setInitStep(Real hin);
@@ -324,9 +325,9 @@ public:
     int setNonlinConvCoef(Real nlscoef);
 
     int setProjUpdateErrEst(bool proj_err);
-    int setProjFrequency(long proj_freq);
+    int setProjFrequency(int proj_freq);
     int setProjTestCnstr(bool test_cnstr);
-    int setProjLsetupFreq(long proj_lset_freq);
+    int setProjLsetupFreq(int proj_lset_freq);
     int setProjNonlinConvCoef(Real prjcoef);
 
     int setQuadErrCon(bool errconQ, 
@@ -334,21 +335,21 @@ public:
 
     int setTolerances(int tol_type, Real reltol, void* abstol);
     
-    int setRootDirection(std::vector<int>& rootdir);
+    int setRootDirection(Array_<int>& rootdir);
 
     int getDky(Real t, int k, Vector& dky);
 
     int getQuad(Real t, Vector& yQout);
     int getQuadDky(Real t, int k, Vector& dky);
 
-    int getWorkSpace(long* lenrw, long* leniw);
-    int getNumSteps(long* nsteps);
-    int getNumFctEvals(long* nfevals);
-    int getNumLinSolvSetups(long* nlinsetups);
-    int getNumErrTestFails(long* netfails);
+    int getWorkSpace(int* lenrw, int* leniw);
+    int getNumSteps(int* nsteps);
+    int getNumFctEvals(int* nfevals);
+    int getNumLinSolvSetups(int* nlinsetups);
+    int getNumErrTestFails(int* netfails);
     int getLastOrder(int* qlast);
     int getCurrentOrder(int* qcur);
-    int getNumStabLimOrderReds(long* nslred);
+    int getNumStabLimOrderReds(int* nslred);
     int getActualInitStep(Real* hinused);
     int getLastStep(Real* hlast);
     int getCurrentStep(Real* hcur);
@@ -356,37 +357,37 @@ public:
     int getTolScaleFactor(Real* tolsfac);
     int getErrWeights(Vector& eweight);
     int getEstLocalErrors(Vector& ele) ;
-    int getNumGEvals(long* ngevals);
+    int getNumGEvals(int* ngevals);
     int getRootInfo(int* rootsfound);
-    int getIntegratorStats(long* nsteps,
-                           long* nfevals, long* nlinsetups,
-                           long* netfails, int* qlast,
+    int getIntegratorStats(int* nsteps,
+                           int* nfevals, int* nlinsetups,
+                           int* netfails, int* qlast,
                            int* qcur, Real* hinused, Real* hlast,
                            Real* hcur, Real* tcur);
 
-    int getNumNonlinSolvIters(long* nniters);
-    int getNumNonlinSolvConvFails(long* nncfails);
-    int getNonlinSolvStats(long* nniters, long* nncfails);
-    int getProjNumProj(long* nproj);
-    int getProjNumCnstrEvals(long* nce);
-    int getProjNumLinSolvSetups(long* nsetupsP);
-    int getProjNumFailures(long* nprf) ;
-    int getProjStats(long* nproj,
-                     long* nce, long* nsetupsP,
-                     long* nprf);
-    int getQuadNumFunEvals(long* nqevals);
+    int getNumNonlinSolvIters(int* nniters);
+    int getNumNonlinSolvConvFails(int* nncfails);
+    int getNonlinSolvStats(int* nniters, int* nncfails);
+    int getProjNumProj(int* nproj);
+    int getProjNumCnstrEvals(int* nce);
+    int getProjNumLinSolvSetups(int* nsetupsP);
+    int getProjNumFailures(int* nprf) ;
+    int getProjStats(int* nproj,
+                     int* nce, int* nsetupsP,
+                     int* nprf);
+    int getQuadNumFunEvals(int* nqevals);
     int getQuadErrWeights(Vector& eQweight);
     char* getReturnFlagName(int flag);
 
 
-    int dlsGetWorkSpace(long* lenrwLS, long* leniwLS);
-    int dlsGetNumJacEvals(long* njevals);
-    int dlsGetNumFctEvals(long* nfevalsLS);
+    int dlsGetWorkSpace(int* lenrwLS, int* leniwLS);
+    int dlsGetNumJacEvals(int* njevals);
+    int dlsGetNumFctEvals(int* nfevalsLS);
     int dlsGetLastFlag(int* flag);
     char* dlsGetReturnFlagName(int flag);
 
-    int dlsProjGetNumJacEvals(long* njPevals);
-    int dlsProjGetNumFctEvals(long* ncevalsLS);
+    int dlsProjGetNumJacEvals(int* njPevals);
+    int dlsProjGetNumFctEvals(int* ncevalsLS);
 
     int lapackDense(int N);
     int lapackBand(int N, int mupper, int mlower);

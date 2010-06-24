@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2005-7 Stanford University and the Authors.         *
+ * Portions copyright (c) 2005-10 Stanford University and the Authors.        *
  * Authors: Michael Sherman                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -106,7 +106,9 @@ public:
     enum {
         NRows               = M,
         NCols               = M,
-        NPackedElements     = (M*(M+1))/2,
+        NDiagElements       = M,
+        NLowerElements      = (M*(M-1))/2,
+        NPackedElements     = NDiagElements+NLowerElements,
         NActualElements     = RS * NPackedElements,
         NActualScalars      = CNT<E>::NActualScalars * NActualElements,
         RowSpacing          = RS,
@@ -237,53 +239,119 @@ public:
         typedef SymMat<M,P> Type;
     };
 
-    // Default construction initializes to NaN when debugging but
-    // is left uninitialized otherwise.
+    /// Default construction initializes to NaN when debugging but
+    /// is left uninitialized otherwise.
 	SymMat(){ 
     #ifndef NDEBUG
         setToNaN();
     #endif
     }
 
+    /// Copy constructor.
     SymMat(const SymMat& src) {
         updAsVec() = src.getAsVec();
     }
 
-    SymMat& operator=(const SymMat& src) {    // no harm if src and 'this' are the same
+    /// Copy assignment; no harm if source and this are the same matrix.
+    SymMat& operator=(const SymMat& src) {
         updAsVec() = src.getAsVec();
         return *this;
     }
 
-    // Allow an explicit conversion from square Mat of right size, looking only at lower
-    // elements and real part of diagonal elements.
+    /// This is an \e explicit conversion from square Mat of right size, assuming
+    /// that the source matrix is symmetric to within a reasonable numerical 
+    /// tolerance. In Debug mode we'll test that assumption and throw an exception
+    /// if it is wrong. In Release mode you're on your own. All the elements of
+    /// the source Mat are used; off-diagonal elements (i,j) are averaged with
+    /// their corresponding element (j,i); the imaginary part of the diagonal
+    /// is set exactly to zero. If you don't want to spend the flops to average
+    /// the off-diagonals, and you're sure the source is symmetric, use either
+    /// setFromLower() or setFromUpper() which will just copy the elements.
+    /// @see setFromLower(), setFromUpper()
     template <class EE, int CSS, int RSS>
-    explicit SymMat(const Mat<M,M,EE,CSS,RSS>& m) {
-        updDiag() = m.diag().real();
+    explicit SymMat(const Mat<M,M,EE,CSS,RSS>& m)
+    {   setFromSymmetric(m); }
+
+    /// Create a new SymMat of this type from a square Mat of the right
+    /// size, looking only at lower elements and the real part of the
+    /// diagonal.
+    template <class EE, int CSS, int RSS>
+    SymMat& setFromLower(const Mat<M,M,EE,CSS,RSS>& m) {
+        this->updDiag() = m.diag().real();
         for (int j=0; j<M; ++j)
             for (int i=j+1; i<M; ++i)
-                updEltLower(i,j) = m(i,j);
+                this->updEltLower(i,j) = m(i,j);
+        return *this;
     }
 
-    // We want an implicit conversion from a SymMat of the same length
-    // and element type but with different spacings.
+    /// Create a new SymMat of this type from a square Mat of the right
+    /// size, looking only at upper elements and the real part of the
+    /// diagonal. Note that the SymMat's stored elements are still in
+    /// its \e lower triangle; they are just initialized from the Mat's
+    /// \e upper triangle. There is no transposing of elements here;
+    /// we simply copy the upper elements of the Mat to the corresponding
+    /// lower elements of the SymMat.
+    template <class EE, int CSS, int RSS>
+    SymMat& setFromUpper(const Mat<M,M,EE,CSS,RSS>& m) {
+        this->updDiag() = m.diag().real();
+        for (int j=0; j<M; ++j)
+            for (int i=j+1; i<M; ++i)
+                this->updEltLower(i,j) = m(j,i);
+        return *this;
+    }
+
+    /// Create a new SymMat of this type from a square Mat of the right
+    /// size, that is expected to be symmetric (hermitian) to within
+    /// a tolerance. All elements are used; we average the upper and
+    /// lower elements of the Mat to produce the corresponding element
+    /// of the SymMat.
+    template <class EE, int CSS, int RSS>
+    SymMat& setFromSymmetric(const Mat<M,M,EE,CSS,RSS>& m) {
+        SimTK_ERRCHK1(m.isNumericallySymmetric(), "SymMat::setFromSymmetric()",
+            "The allegedly symmetric source matrix was not symmetric to within "
+            "a tolerance of %g.", m.getDefaultTolerance());
+        this->updDiag() = m.diag().real();
+        for (int j=0; j<M; ++j)
+            for (int i=j+1; i<M; ++i)
+                this->updEltLower(i,j) = 
+                    (m(i,j) + CNT<EE>::transpose(m(j,i)))/2;
+        return *this;
+    }
+
+    /// This is an \e implicit conversion from a SymMat of the same length
+    /// and element type but with different spacing.
     template <int RSS> SymMat(const SymMat<M,E,RSS>& src) 
       { updAsVec() = src.getAsVec(); }
 
-    // We want an implicit conversion from a SymMat of the same length
-    // and *negated* element type, possibly with different spacings.
+    /// This is an \e implicit conversion from a SymMat of the same length
+    /// and \e negated element type, possibly with different spacing.
     template <int RSS> SymMat(const SymMat<M,ENeg,RSS>& src)
       { updAsVec() = src.getAsVec(); }
 
-    // Construct a SymMat from a SymMat of the same dimensions, with any
-    // spacings. Works as long as the element types are assignment compatible.
+    /// Construct a SymMat from a SymMat of the same dimensions, with any
+    /// element type and spacing. Works as long as the element types are 
+    /// assignment compatible.
     template <class EE, int RSS> explicit SymMat(const SymMat<M,EE,RSS>& src)
       { updAsVec() = src.getAsVec(); }
 
     // Construction using an element repeats that element on the diagonal
     // but sets the rest of the matrix to zero.
-    // TODO: diag should just use real part
-    explicit SymMat(const E& e)
-      { updDiag() = e; updLower() = E(0); }
+    explicit SymMat(const E& e) {
+        updDiag() = CNT<E>::real(e); 
+        for (int i=0; i < NLowerElements; ++i) updlowerE(i) = E(0); 
+    }
+
+    // Construction using a negated element is just like construction from
+    // the element.
+    explicit SymMat(const ENeg& e) {
+        updDiag() = CNT<ENeg>::real(e); 
+        for (int i=0; i < NLowerElements; ++i) updlowerE(i) = E(0); 
+    }
+
+    // Given an int, turn it into a suitable floating point number
+    // and then feed that to the above single-element constructor.
+    explicit SymMat(int i) 
+      { new (this) SymMat(E(Precision(i))); }
 
     /// A bevy of constructors from individual exact-match elements IN ROW ORDER,
     /// giving the LOWER TRIANGLE, like this:
@@ -445,6 +513,19 @@ public:
             (getAsVec().conformingSubtract(r.getAsVec()));
     }
 
+    // symmetric * symmetric produces a full result
+    // m= this * s
+    // TODO: this is not a good implementation
+    template <class E2, int RS2>
+    typename Result<SymMat<M,E2,RS2> >::Mul
+    conformingMultiply(const SymMat<M,E2,RS2>& s) const {
+        typename Result<SymMat<M,E2,RS2> >::Mul result;
+        for (int j=0;j<M;++j)
+            for (int i=0;i<M;++i)
+                result(i,j) = (*this)[i] * s(j);
+        return result;
+    }
+
     // TODO: need the rest of the SymMat operators
     
     // Must be i >= j.
@@ -453,22 +534,28 @@ public:
     E& operator()(int i,int j)
       { return i==j ? updDiag()[i] : updEltLower(i,j); }
 
+    // These are slow for a symmetric matrix, requiring copying and
+    // possibly floating point operations for conjugation.
+    TRow operator[](int i) const {return row(i);}
+    TCol operator()(int j) const {return col(j);}
+
+
     // This is the scalar Frobenius norm.
     ScalarNormSq normSqr() const { return scalarNormSqr(); }
     typename CNT<ScalarNormSq>::TSqrt 
         norm() const { return CNT<ScalarNormSq>::sqrt(scalarNormSqr()); }
 
-    // There is no conventional meaning for normalize() applied to a matrix. We
-    // choose to define it as follows:
-    // If the elements of this SymMat are scalars, the result is what you get by
-    // dividing each element by the Frobenius norm() calculated above. If the elements are
-    // *not* scalars, then the elements are *separately* normalized.
-    //
-    // Normalize returns a matrix of the same dimension but in new, packed storage
-    // and with a return type that does not include negator<> even if the original
-    // SymMat<> does, because we can eliminate the negation here almost for free.
-    // But we can't standardize (change conjugate to complex) for free, so we'll retain
-    // conjugates if there are any.
+    /// There is no conventional meaning for normalize() applied to a matrix. We
+    /// choose to define it as follows:
+    /// If the elements of this SymMat are scalars, the result is what you get by
+    /// dividing each element by the Frobenius norm() calculated above. If the elements are
+    /// *not* scalars, then the elements are *separately* normalized.
+    ///
+    /// Normalize returns a matrix of the same dimension but in new, packed storage
+    /// and with a return type that does not include negator<> even if the original
+    /// SymMat<> does, because we can eliminate the negation here almost for free.
+    /// But we can't standardize (change conjugate to complex) for free, so we'll retain
+    /// conjugates if there are any.
     TNormalize normalize() const {
         if (CNT<E>::IsScalar) {
             return castAwayNegatorIfAny() / (SignInterpretation*norm());
@@ -607,7 +694,8 @@ public:
     template <class EE> SymMat& scalarDivideEqFromLeft(const EE& ee)
       { updAsVec().scalarDivideEqFromLeft(ee); return *this; } 
 
-    void setToNaN() { updAsVec().setToNaN(); }
+    void setToNaN()  { updAsVec().setToNaN();  }
+    void setToZero() { updAsVec().setToZero(); }
 
     // These assume we are given a pointer to d[0] of a SymMat<M,E,RS> like this one.
     static const SymMat& getAs(const ELT* p)  {return *reinterpret_cast<const SymMat*>(p);}
@@ -617,6 +705,90 @@ public:
     static TPacked getNaN() {
         return TPacked(CNT<typename TPacked::TDiag>::getNaN(),
                        CNT<typename TPacked::TLower>::getNaN());
+    }
+
+    /// Return true if any element of this SymMat contains a NaN anywhere.
+    bool isNaN() const {return getAsVec().isNaN();}
+
+    /// Return true if any element of this SymMat contains a +Inf
+    /// or -Inf somewhere but no element contains a NaN anywhere.
+    bool isInf() const {return getAsVec().isInf();}
+
+    /// Return true if no element contains an Infinity or a NaN.
+    bool isFinite() const {return getAsVec().isFinite();}
+
+    /// For approximate comparisions, the default tolerance to use for a matrix is
+    /// its shortest dimension times its elements' default tolerance.
+    static double getDefaultTolerance() {return M*CNT<ELT>::getDefaultTolerance();}
+
+    /// %Test whether this matrix is numerically equal to some other matrix with
+    /// the same shape, using a specified tolerance.
+    template <class E2, int RS2>
+    bool isNumericallyEqual(const SymMat<M,E2,RS2>& m, double tol) const {
+        return getAsVec().isNumericallyEqual(m.getAsVec(), tol);
+    }
+
+    /// %Test whether this matrix is numerically equal to some other matrix with
+    /// the same shape, using a default tolerance which is the looser of the
+    /// default tolerances of the two objects being compared.
+    template <class E2, int RS2>
+    bool isNumericallyEqual(const SymMat<M,E2,RS2>& m) const {
+        const double tol = std::max(getDefaultTolerance(),m.getDefaultTolerance());
+        return isNumericallyEqual(m, tol);
+    }
+
+    /// %Test whether this is numerically a "scalar" matrix, meaning that it is 
+    /// a diagonal matrix in which each diagonal element is numerically equal to 
+    /// the same scalar, using either a specified tolerance or the matrix's 
+    /// default tolerance (which is always the same or looser than the default
+    /// tolerance for one of its elements).
+    bool isNumericallyEqual
+       (const ELT& e,
+        double     tol = getDefaultTolerance()) const 
+    {
+        if (!diag().isNumericallyEqual(e, tol))
+            return false;
+        return getLower().isNumericallyEqual(ELT(0), tol);
+    }
+
+    // Rows and columns have to be copied and Hermitian elements have to
+    // be conjugated at a floating point cost. This isn't the best way
+    // to work with a symmetric matrix.
+    TRow row(int i) const {
+        SimTK_INDEXCHECK(i,M,"SymMat::row[i]");
+        TRow rowi;
+        // Columns left of diagonal are lower.
+        for (int j=0; j<i; ++j)
+            rowi[j] = getEltLower(i,j);
+        rowi[i] = getEltDiag(i);
+        for (int j=i+1; j<M; ++j)
+            rowi[j] = getEltUpper(i,j); // conversion from EHerm to E may cost flops
+        return rowi;
+    }
+
+    TCol col(int j) const {
+        SimTK_INDEXCHECK(j,M,"SymMat::col(j)");
+        TCol colj;
+        // Rows above diagonal are upper (with conjugated elements).
+        for (int i=0; i<j; ++i)
+            colj[i] = getEltUpper(i,j); // conversion from EHerm to E may cost flops
+        colj[j] = getEltDiag(j);
+        for (int i=j+1; i<M; ++i)
+            colj[i] = getEltLower(i,j);
+        return colj;
+    }
+
+    /// Return a value for \e any element of a symmetric matrix, even those
+    /// in the upper triangle which aren't actually stored anywhere. For elements
+    /// whose underlying numeric types are complex, this will require computation
+    /// in order to return the conjugates. So we always have to copy out the
+    /// element, and may also have to conjugate it (one flop per complex number).
+    E elt(int i, int j) const {
+        SimTK_INDEXCHECK(i,M,"SymMat::elt(i,j)");
+        SimTK_INDEXCHECK(j,M,"SymMat::elt(i,j)");
+        if      (i>j)  return getEltLower(i,j); // copy element
+        else if (i==j) return getEltDiag(i);    // copy element
+        else           return getEltUpper(i,j); // conversion from EHerm to E may cost flops 
     }
 
     const TDiag&  getDiag()  const {return TDiag::getAs(d);}
@@ -635,6 +807,9 @@ public:
     const TAsVec& getAsVec() const {return TAsVec::getAs(d);}
     TAsVec&       updAsVec()       {return TAsVec::updAs(d);}
 
+    const E& getEltDiag(int i) const {return getDiag()[i];}
+    E&       updEltDiag(int i)       {return updDiag()[i];}
+
     // must be i > j
     const E& getEltLower(int i, int j) const {return getLower()[lowerIx(i,j)];}
     E&       updEltLower(int i, int j)       {return updLower()[lowerIx(i,j)];}
@@ -647,15 +822,20 @@ public:
         TRow temp(~getDiag());
         for (int i = 1; i < M; ++i)
             for (int j = 0; j < i; ++j) {
-                E value = getEltLower(i, j);;
+                const E& value = getEltLower(i, j);;
                 temp[i] += value;
-                temp[j] += value;
+                temp[j] += E(reinterpret_cast<const EHerm&>(value));
             }
         return temp;
     }
 
 private:
     E d[NActualElements];
+
+    // This utility doesn't turn lower or upper into a Vec which could turn
+    // out to have zero length if this is a 1x1 matrix.
+    const E& getlowerE(int i) const {return d[(M+i)*RS];}
+    E& updlowerE(int i) {return d[(M+i)*RS];}
 
     SymMat(const TDiag& di, const TLower& low) {
         updDiag() = di; updLower() = low;
@@ -700,7 +880,7 @@ operator-(const SymMat<M,E1,S1>& l, const SymMat<M,E2,S2>& r) {
 // The result will not be symmetric.
 template <int M, class E1, int S1, class E2, int S2> inline
 typename SymMat<M,E1,S1>::template Result< SymMat<M,E2,S2> >::Mul
-operator-(const SymMat<M,E1,S1>& l, const SymMat<M,E2,S2>& r) {
+operator*(const SymMat<M,E1,S1>& l, const SymMat<M,E2,S2>& r) {
     return SymMat<M,E1,S1>::template Result< SymMat<M,E2,S2> >
         ::MulOp::perform(l,r);
 }

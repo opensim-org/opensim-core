@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2005-7 Stanford University and the Authors.         *
+ * Portions copyright (c) 2005-9 Stanford University and the Authors.         *
  * Authors: Michael Sherman                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -33,14 +33,13 @@
  * -------------------------------------------------------------------------- */
 
 /** @file
- * This file contains classes and typedefs needed to provide uniform
- * handling of floating point numeric values. There are three numeric
- * classes: real, complex, conjugate and each comes in float, double,
- * and long double precision. Each of these may be modified by a
- * negator, which does not change the in-memory *representation* but 
- * negates the *interpretation*. Thus there are 18 distinct scalar
- * types: 3 precisions each of real, complex, and conjugate and their
- * negators.
+ * This file contains classes and typedefs needed to provide uniform handling of 
+ * floating point numeric values. There are three numeric types: real, complex, 
+ * conjugate and each comes in float, double, and long double precision. Each of 
+ * these may be modified by a negator, which does not change the in-memory 
+ * \e representation but negates the \e interpretation. Thus there are 18 
+ * distinct scalar types: 3 precisions each of real, complex, and conjugate and 
+ * their negators.
  * @verbatim
  *      The Scalar Types
  *      ----------------
@@ -74,11 +73,11 @@ namespace SimTK {
 // our conjugate type and complex type have identical sizes and representations.
 // Together, these defininitions and guarantees permit conjugation
 // to be done by reinterpretation rather than be computation.
-template <class R> class conjugate;    // Only defined for float, double, long double
+template <class R> class conjugate; // Only defined for float, double, long double
 
-// Specializations of this class provide information about Composite Numerical Types
-// in the style of std::numeric_limits<T>. It is specialized for the numeric types
-// but can be invoked on any composite numerical type as well.
+// Specializations of this class provide information about Composite Numerical 
+// Types in the style of std::numeric_limits<T>. It is specialized for the 
+// numeric types but can be invoked on any composite numerical type as well.
 template <class T> class CNT;
 
 // NTraits provides information like CNT, but for numeric types only.
@@ -90,10 +89,10 @@ template <> class NTraits<double>;
 template <> class NTraits<long double>;
 
 // This is an adaptor for numeric types which negates the apparent values. A
-// negator<N> has exactly the same internal representation as a numeric
-// value N, but it is to be interpreted has having the negative of the value
-// it would have if interpreted as an N. This permits negation to be done
-// by reinterpretation rather than compuation. A full set of arithmetic operators
+// negator<N> has exactly the same internal representation as a numeric value N, 
+// but it is to be interpreted has having the negative of the value it would 
+// have if interpreted as an N. This permits negation to be done by 
+// reinterpretation rather than compuation. A full set of arithmetic operators
 // are provided involving negator<N>'s and N's. Sometimes we can save an op or
 // two this way. For example negator<N>*negator<N> can be performed as an N*N
 // since the negations cancel, and we saved two floating point negations.
@@ -102,32 +101,419 @@ template <class N> class negator;      // Only defined for numbers
 // This is here so we can provide references to 0's when needed, e.g.
 // when returning the imaginary part of a real number. These are local to
 // the compilation unit, so the returned addresses will differ in different
-// files. There are enough zeroes here for the widest number, complex<long double>
-// (or conjugate<long double>).
+// files. There are enough zeroes here for the widest number, 
+// complex<long double> (or conjugate<long double>).
 static const complex<long double> zeroes(0);
 
-// This class is specialized for all 36 combinations of standard types
-// (that is, real and complex types in each of three precisions)
-// and has a single typedef "Type" which is the appropriate "widened"
-// type for use when R1 & R2 appear in an operation together. For example,
-// if R1=complex<float> and R2=long double, Widest<R1,R2>::Type is
-// complex<long double>.
+/// This class is specialized for all 36 combinations of standard types
+/// (that is, real and complex types in each of three precisions)
+/// and has typedefs "Type" which is the appropriate "widened"
+/// type for use when R1 & R2 appear in an operation together, and
+/// "Precision" which is the wider precision (float,double,long double). 
+/// For example, if R1=complex< float > and R2=long double, Widest<R1,R2>::Type is
+/// complex<long double> and Widest<R1,R2>::Precision is long double.
 template <class R1, class R2> struct Widest {/* Only defined for built-ins. */};
-template <> struct Widest<float,float>              {typedef float Type;};
-template <> struct Widest<float,double>             {typedef double Type;};
-template <> struct Widest<float,long double>        {typedef long double Type;};
-template <> struct Widest<double,float>             {typedef double Type;};
-template <> struct Widest<double,double>            {typedef double Type;};
-template <> struct Widest<double,long double>       {typedef long double Type;};
-template <> struct Widest<long double,float>        {typedef long double Type;};
-template <> struct Widest<long double,double>       {typedef long double Type;};
-template <> struct Widest<long double,long double>  {typedef long double Type;};
-template <class R1, class R2> struct Widest< complex<R1>,complex<R2> >
-  { typedef complex< typename Widest<R1,R2>::Type > Type; };
-template <class R1, class R2> struct Widest< complex<R1>,R2 >
-  { typedef complex< typename Widest<R1,R2>::Type > Type; };
-template <class R1, class R2> struct Widest< R1,complex<R2> >
-  { typedef complex< typename Widest<R1,R2>::Type > Type; };
+template <> struct Widest<float,float>              {typedef float       Type;  typedef float       Precision;};
+template <> struct Widest<float,double>             {typedef double      Type;  typedef double      Precision;};
+template <> struct Widest<float,long double>        {typedef long double Type;  typedef long double Precision;};
+template <> struct Widest<double,float>             {typedef double      Type;  typedef double      Precision;};
+template <> struct Widest<double,double>            {typedef double      Type;  typedef double      Precision;};
+template <> struct Widest<double,long double>       {typedef long double Type;  typedef long double Precision;};
+template <> struct Widest<long double,float>        {typedef long double Type;  typedef long double Precision;};
+template <> struct Widest<long double,double>       {typedef long double Type;  typedef long double Precision;};
+template <> struct Widest<long double,long double>  {typedef long double Type;  typedef long double Precision;};
+template <class R1, class R2> struct Widest< complex<R1>,complex<R2> > { 
+    typedef complex< typename Widest<R1,R2>::Type > Type; 
+    typedef typename Widest<R1,R2>::Precision       Precision; 
+};
+template <class R1, class R2> struct Widest< complex<R1>,R2 > { 
+    typedef complex< typename Widest<R1,R2>::Type > Type; 
+    typedef typename Widest<R1,R2>::Precision       Precision;  
+};
+template <class R1, class R2> struct Widest< R1,complex<R2> > { 
+    typedef complex< typename Widest<R1,R2>::Type > Type; 
+    typedef typename Widest<R1,R2>::Precision       Precision; 
+};
+
+/// This class is specialized for all 36 combinations of standard types
+/// (that is, real and complex types in each of three precisions)
+/// and has typedefs "Type" which is the appropriate "narrowed"
+/// type for use when R1 & R2 appear in an operation together where the
+/// result must be of the narrower precision, and "Precision" which is
+/// the expected precision of the result (float,
+/// double, long double). For example, if R1=complex< double > and R2=float, 
+/// Narrowest<R1,R2>::Type is complex< float > and Narrowest<R1,R2>::Precision
+/// is float.
+template <class R1, class R2> struct Narrowest {/* Only defined for built-ins. */};
+template <> struct Narrowest<float,float>              {typedef float  Type;};
+template <> struct Narrowest<float,double>             {typedef float  Type;};
+template <> struct Narrowest<float,long double>        {typedef float  Type;};
+template <> struct Narrowest<double,float>             {typedef float  Type;};
+template <> struct Narrowest<double,double>            {typedef double Type;};
+template <> struct Narrowest<double,long double>       {typedef double Type;};
+template <> struct Narrowest<long double,float>        {typedef float  Type;};
+template <> struct Narrowest<long double,double>       {typedef double Type;};
+template <> struct Narrowest<long double,long double>  {typedef long double Type;};
+template <class R1, class R2> struct Narrowest< complex<R1>,complex<R2> > { 
+    typedef complex< typename Narrowest<R1,R2>::Type >  Type; 
+    typedef typename Narrowest<R1,R2>::Precision        Precision;
+};
+template <class R1, class R2> struct Narrowest< complex<R1>,R2 > { 
+    typedef complex< typename Narrowest<R1,R2>::Type >  Type; 
+    typedef typename Narrowest<R1,R2>::Precision        Precision; 
+};
+template <class R1, class R2> struct Narrowest< R1,complex<R2> > { 
+    typedef complex< typename Narrowest<R1,R2>::Type >  Type; 
+    typedef typename Narrowest<R1,R2>::Precision        Precision; 
+};
+
+/// RTraits is a helper class for NTraits.
+template <class R> class RTraits {/* Only defined for real types */};
+template <> class RTraits<float> {
+public:
+    /// Attainable accuracy at this precision.
+    static const float& getEps()         {static const float c=std::numeric_limits<float>::epsilon(); return c;}
+    /// What multiple of attainable accuracy do we consider significant? 
+    static const float& getSignificant() {static const float c=std::pow(getEps(), 0.875f); return c;}
+    /// The default numerical error tolerance is always given in double precision.
+    static double getDefaultTolerance()  {return (double)getSignificant();}
+};
+template <> class RTraits<double> {
+public:
+    static const double& getEps()         {static const double c=std::numeric_limits<double>::epsilon(); return c;}
+    static const double& getSignificant() {static const double c=std::pow(getEps(), 0.875); return c;}
+    static double getDefaultTolerance()   {return getSignificant();}
+};
+template <> class RTraits<long double> {
+public:
+    static const long double& getEps()         {static const long double c=std::numeric_limits<long double>::epsilon(); return c;}
+    static const long double& getSignificant() {static const long double c=std::pow(getEps(), 0.875L); return c;}
+    static double getDefaultTolerance()        {return (double)getSignificant();}
+};
+
+/**
+ * @defgroup isNaN isNaN()
+ * @ingroup ScalarFunctions
+ *
+ * isNaN(x) provides a reliable way to determine if x is one of the "not a 
+ * number" floating point forms. Comparing x==NaN does not work because any 
+ * relational operation involving NaN always return false, even (NaN==NaN)! 
+ * This routine is specialized for all SimTK scalar types:
+ *  - float, double, long double
+ *  - std::complex<P>        (P is one of the above precisions)
+ *  - SimTK::conjugate<P>
+ *  - SimTK::negator<T>      (T is any of the above)
+ *
+ * For complex and conjugate types, isNaN() returns true if either the real or 
+ * imaginary part or both are NaN.
+ */
+// See negator.h for isNaN() applied to negated scalars.
+//@{
+inline bool isNaN(const float& x)  {return std::isnan(x);}
+inline bool isNaN(const double& x) {return std::isnan(x);}
+inline bool isNaN(const long double& x) {return std::isnan(x);}
+
+template <class P> inline bool
+isNaN(const std::complex<P>& x)
+{   return isNaN(x.real()) || isNaN(x.imag());}
+
+template <class P> inline bool
+isNaN(const conjugate<P>& x)
+{   return isNaN(x.real()) || isNaN(x.negImag());}
+//@}
+
+/**
+ * @defgroup isFinite isFinite()
+ * @ingroup ScalarFunctions
+ *
+ * isFinite(x) provides a reliable way to determine if x is a "normal"
+ * floating point number, meaning not a NaN or +/- Infinity.
+ * This routine is specialized for all SimTK scalar types:
+ * float, double, std::complex<P>, SimTK::conjugate<P>,
+ * and SimTK::negator<T>, where T is any of the above. For
+ * complex and conjugate types, isFinite() returns true if
+ * the real and imaginary parts are both finite.
+ */
+// See negator.h for isFinite() applied to negated scalars.
+//@{
+inline bool isFinite(const float&  x) {return std::isfinite(x);}
+inline bool isFinite(const double& x) {return std::isfinite(x);}
+inline bool isFinite(const long double& x) {return std::isfinite(x);}
+
+template <class P> inline bool
+isFinite(const std::complex<P>& x)
+{   return isFinite(x.real()) && isFinite(x.imag());}
+
+template <class P> inline bool
+isFinite(const conjugate<P>& x)
+{   return isFinite(x.real()) && isFinite(x.negImag());}
+//@}
+
+/**
+ * @defgroup isInf isInf()
+ * @ingroup ScalarFunctions
+ *
+ * isInf(x) provides a reliable way to determine if x is one of
+ * the two infinities (either negative or positive).
+ * This routine is specialized for all SimTK scalar types:
+ * float, double std::complex<P>, SimTK::conjugate<P>,
+ * and SimTK::negator<T>, where T is any of the above. For
+ * complex and conjugate types, isInf() returns true if both
+ * components are infinite, or one is infinite and the other
+ * finite. That is, isInf() will never return true if one
+ * component is NaN.
+ */
+// See negator.h for isInf() applied to negated scalars.
+//@{
+inline bool isInf(const float&  x) {return std::isinf(x);}
+inline bool isInf(const double& x) {return std::isinf(x);}
+inline bool isInf(const long double& x) {return std::isinf(x);}
+
+template <class P> inline bool
+isInf(const std::complex<P>& x) {
+    return (isInf(x.real()) && !isNaN(x.imag()))
+        || (isInf(x.imag()) && !isNaN(x.real()));
+}
+
+template <class P> inline bool
+isInf(const conjugate<P>& x) {
+    return (isInf(x.real())    && !isNaN(x.negImag()))
+        || (isInf(x.negImag()) && !isNaN(x.real()));
+}
+//@}
+
+/**
+ * @defgroup isNumericallyEqual isNumericallyEqual()
+ * @ingroup ScalarFunctions
+ *
+ * isNumericallyEqual(x,y) compares two scalar types using a tolerance (default
+ * or explicitly specified) and returns true if they are close enough.
+ *
+ * The default tolerance used is the NTraits<P>::getSignificant() value (about 
+ * 1e-14 in double precision, 1e-6 in float) for the narrower of the types being 
+ * compared but you can override that. The tolerance is both a relative and 
+ * absolute tolerance; for two numbers a and b and tolerance tol we compute the 
+ * following condition:
+ * <pre>
+ *      scale = max(|a|,|b|,1)
+ *      isNumericallyEqual = |a-b| <= scale*tol
+ * </pre>
+ * For complex or conjugate numbers we insist that both the real and
+ * imaginary parts independently satisfy the above condition.
+ *
+ * \par Mixed precision
+ * We support mixed argument types here in which case the default
+ * tolerance used is the one appropriate to the \e lower-precision
+ * argument. When one argument is an integer, the default tolerance
+ * used is that of the floating point argument. Comparisons may be performed
+ * at a higher precision than the tolerance to avoid incorrect truncation; for
+ * example an int cannot generally be contained in a float so an int/float
+ * comparison is done as double/double, but to float tolerance.
+ *
+ * \par Treatment of NaN
+ * When both arguments are NaN they are considered equal here, which is different
+ * than the behavior of the IEEE-sanctioned "==" comparison for which 
+ * NaN==NaN returns false. If only one argument is NaN we return false. When
+ * comparing complex or conjugate numbers the real and imaginary parts are
+ * tested separately, so (NaN,0) and (0,NaN) don't test equal despite the
+ * fact that isNaN() would return true for both of them. We don't distinguish
+ * among *types* of NaNs, though, so NaN and -NaN (if there is such a thing)
+ * will test numerically equal.
+ */
+//@{
+/// Compare two floats for approximate equality.
+inline bool isNumericallyEqual(const float& a, const float& b, 
+                               double tol = RTraits<float>::getDefaultTolerance())
+{   if (isNaN(a)) return isNaN(b); else if (isNaN(b)) return false;
+    const float scale = std::max(std::max(std::abs(a),std::abs(b)), 1.f);
+    return std::abs(a-b) <= scale*(float)tol; }
+/// Compare two doubles for approximate equality.
+inline bool isNumericallyEqual(const double& a, const double& b, 
+                               double tol = RTraits<double>::getDefaultTolerance())
+{   if (isNaN(a)) return isNaN(b); else if (isNaN(b)) return false;
+    const double scale = std::max(std::max(std::abs(a),std::abs(b)), 1.);
+    return std::abs(a-b) <= scale*tol; }
+/// Compare two long doubles for approximate equality.
+inline bool isNumericallyEqual(const long double& a, const long double& b, 
+                               double tol = RTraits<long double>::getDefaultTolerance())
+{   if (isNaN(a)) return isNaN(b); else if (isNaN(b)) return false;
+    const long double scale = std::max(std::max(std::abs(a),std::abs(b)), 1.L);
+    return std::abs(a-b) <= scale*(long double)tol; }
+
+/// Compare a float and a double for approximate equality at float precision.
+inline bool isNumericallyEqual(const float& a, const double& b, 
+                               double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual((double)a, b, tol); }
+/// Compare a float and a double for approximate equality at float precision.
+inline bool isNumericallyEqual(const double& a, const float& b, 
+                               double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual(a, (double)b, tol); }
+/// Compare a float and a long double for approximate equality at float precision.
+inline bool isNumericallyEqual(const float& a, const long double& b, 
+                               double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual((long double)a, b, tol); }
+/// Compare a float and a long double for approximate equality at float precision.
+inline bool isNumericallyEqual(const long double& a, const float& b, 
+                               double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual(a, (long double)b, tol); }
+/// Compare a double and a long double for approximate equality at double precision.
+inline bool isNumericallyEqual(const double& a, const long double& b, 
+                               double tol = RTraits<double>::getDefaultTolerance())
+{   return isNumericallyEqual((long double)a, b, tol); }
+/// Compare a double and a long double for approximate equality at double precision.
+inline bool isNumericallyEqual(const long double& a, const double& b, 
+                               double tol = RTraits<double>::getDefaultTolerance())
+{   return isNumericallyEqual(a, (long double)b, tol); }
+
+/// %Test a float for approximate equality to an integer.
+inline bool isNumericallyEqual(const float& a, int b,
+                               double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual(a, (double)b, tol); }
+/// %Test a float for approximate equality to an integer.
+inline bool isNumericallyEqual(int a, const float& b,
+                               double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual((double)a, b, tol); }
+/// %Test a double for approximate equality to an integer.
+inline bool isNumericallyEqual(const double& a, int b,
+                               double tol = RTraits<double>::getDefaultTolerance())
+{   return isNumericallyEqual(a, (double)b, tol); }
+/// %Test a double for approximate equality to an integer.
+inline bool isNumericallyEqual(int a, const double& b,
+                               double tol = RTraits<double>::getDefaultTolerance())
+{   return isNumericallyEqual((double)a, b, tol); }
+/// %Test a long double for approximate equality to an integer.
+inline bool isNumericallyEqual(const long double& a, int b,
+                               double tol = RTraits<long double>::getDefaultTolerance())
+{   return isNumericallyEqual(a, (long double)b, tol); }
+/// %Test a long double for approximate equality to an integer.
+inline bool isNumericallyEqual(int a, const long double& b,
+                               double tol = RTraits<long double>::getDefaultTolerance())
+{   return isNumericallyEqual((long double)a, b, tol); }
+
+/// Compare two complex numbers for approximate equality, using the numerical 
+/// accuracy expectation of the narrower of the two precisions in the case of mixed 
+/// precision.
+template <class P, class Q>
+inline bool isNumericallyEqual
+  ( const std::complex<P>& a, const std::complex<Q>& b, 
+    double tol = RTraits<typename Narrowest<P,Q>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b.real(),tol)
+        && isNumericallyEqual(a.imag(),b.imag(),tol); }
+
+/// Compare two conjugate numbers for approximate equality, using the numerical 
+/// accuracy expectation of the narrower of the two precisions in the case of mixed 
+/// precision.
+template <class P, class Q>
+inline bool isNumericallyEqual
+  ( const conjugate<P>& a, const conjugate<Q>& b, 
+    double tol = RTraits<typename Narrowest<P,Q>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b.real(),tol)
+        && isNumericallyEqual(a.imag(),b.imag(),tol); }
+
+/// Compare a complex and a conjugate number for approximate equality, using the 
+/// numerical accuracy expectation of the narrower of the two precisions in the 
+/// case of mixed precision.
+template <class P, class Q>
+inline bool isNumericallyEqual
+  ( const std::complex<P>& a, const conjugate<Q>& b, 
+    double tol = RTraits<typename Narrowest<P,Q>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b.real(),tol)
+        && isNumericallyEqual(a.imag(),b.imag(),tol); }
+
+/// Compare a complex and a conjugate number for approximate equality, using the 
+/// numerical accuracy expectation of the narrower of the two precisions in the 
+/// case of mixed precision.
+template <class P, class Q>
+inline bool isNumericallyEqual
+  ( const conjugate<P>& a, const std::complex<Q>& b, 
+    double tol = RTraits<typename Narrowest<P,Q>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b.real(),tol)
+        && isNumericallyEqual(a.imag(),b.imag(),tol); }
+
+/// %Test whether a complex number is approximately equal to a particular real float.
+template <class P> inline bool 
+isNumericallyEqual(const std::complex<P>& a, const float& b, 
+                   double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b,tol) && isNumericallyEqual(a.imag(),0.f,tol); }
+/// %Test whether a complex number is approximately equal to a particular real float.
+template <class P> inline bool 
+isNumericallyEqual(const float& a, const std::complex<P>& b,
+                   double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+/// %Test whether a complex number is approximately equal to a particular real double.
+template <class P> inline bool 
+isNumericallyEqual(const std::complex<P>& a, const double& b, 
+                   double tol = RTraits<typename Narrowest<P,double>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b,tol) && isNumericallyEqual(a.imag(),0.,tol); }
+/// %Test whether a complex number is approximately equal to a particular real double.
+template <class P> inline bool 
+isNumericallyEqual(const double& a, const std::complex<P>& b,
+                   double tol = RTraits<typename Narrowest<P,double>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+/// %Test whether a complex number is approximately equal to a particular real long double.
+template <class P> inline bool 
+isNumericallyEqual(const std::complex<P>& a, const long double& b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b,tol) && isNumericallyEqual(a.imag(),0.L,tol); }
+/// %Test whether a complex number is approximately equal to a particular real long double.
+template <class P> inline bool 
+isNumericallyEqual(const long double& a, const std::complex<P>& b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+/// %Test whether a complex number is approximately equal to a particular integer.
+template <class P> inline bool 
+isNumericallyEqual(const std::complex<P>& a, int b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   typedef typename Widest<P,double>::Precision W; return isNumericallyEqual(a,(W)b,tol); }
+/// %Test whether a complex number is approximately equal to a particular integer.
+template <class P> inline bool 
+isNumericallyEqual(int a, const std::complex<P>& b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+
+/// %Test whether a conjugate number is approximately equal to a particular real float.
+template <class P> inline bool 
+isNumericallyEqual(const conjugate<P>& a, const float& b, 
+                   double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b,tol) && isNumericallyEqual(a.imag(),0.f,tol); }
+/// %Test whether a conjugate number is approximately equal to a particular real float.
+template <class P> inline bool 
+isNumericallyEqual(const float& a, const conjugate<P>& b,
+                   double tol = RTraits<float>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+/// %Test whether a conjugate number is approximately equal to a particular real double.
+template <class P> inline bool 
+isNumericallyEqual(const conjugate<P>& a, const double& b, 
+                   double tol = RTraits<typename Narrowest<P,double>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b,tol) && isNumericallyEqual(a.imag(),0.,tol); }
+/// %Test whether a conjugate number is approximately equal to a particular real double.
+template <class P> inline bool 
+isNumericallyEqual(const double& a, const conjugate<P>& b,
+                   double tol = RTraits<typename Narrowest<P,double>::Precision>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+/// %Test whether a conjugate number is approximately equal to a particular real long double.
+template <class P> inline bool 
+isNumericallyEqual(const conjugate<P>& a, const long double& b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   return isNumericallyEqual(a.real(),b,tol) && isNumericallyEqual(a.imag(),0.L,tol); }
+/// %Test whether a conjugate number is approximately equal to a particular real long double.
+template <class P> inline bool 
+isNumericallyEqual(const long double& a, const conjugate<P>& b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+/// %Test whether a conjugate number is approximately equal to a particular integer.
+template <class P> inline bool 
+isNumericallyEqual(const conjugate<P>& a, int b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   typedef typename Widest<P,double>::Precision W; return isNumericallyEqual(a,(W)b,tol); }
+/// %Test whether a conjugate number is approximately equal to a particular integer.
+template <class P> inline bool 
+isNumericallyEqual(int a, const conjugate<P>& b, 
+                   double tol = RTraits<P>::getDefaultTolerance())
+{   return isNumericallyEqual(b,a,tol); }
+
+//@}
+
 
 template <class N> class NTraits { 
     // only the specializations below are allowed 
@@ -243,10 +629,35 @@ public:
         static const T c=T(NTraits<R>::getInfinity(),NTraits<R>::getInfinity());
         return c;
     }
+
     static const T& getI() {
         static const T c = T(0,1);
         return c;
     }
+
+    static bool isFinite(const T& t) {return SimTK::isFinite(t);}
+    static bool isNaN(const T& t) {return SimTK::isNaN(t);}
+    static bool isInf(const T& t) {return SimTK::isInf(t);}
+
+    static double getDefaultTolerance() {return RTraits<R>::getDefaultTolerance();}
+
+    template <class R2> static bool isNumericallyEqual(const T& a, const complex<R2>& b)
+    {   return SimTK::isNumericallyEqual(a,b); }
+    template <class R2> static bool isNumericallyEqual(const T& a, const complex<R2>& b, double tol)
+    {   return SimTK::isNumericallyEqual(a,b,tol); }
+    template <class R2> static bool isNumericallyEqual(const T& a, const conjugate<R2>& b)
+    {   return SimTK::isNumericallyEqual(a,b); }
+    template <class R2> static bool isNumericallyEqual(const T& a, const conjugate<R2>& b, double tol)
+    {   return SimTK::isNumericallyEqual(a,b,tol); }
+
+    static bool isNumericallyEqual(const T& a, const float& b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, const float& b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
+    static bool isNumericallyEqual(const T& a, const double& b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, const double& b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
+    static bool isNumericallyEqual(const T& a, const long double& b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, const long double& b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
+    static bool isNumericallyEqual(const T& a, int b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, int b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
 
     // The rest are the same as the real equivalents, with zero imaginary part.              
     static const T& getZero()         {static const T c(NTraits<R>::getZero());         return c;}
@@ -423,6 +834,30 @@ public:
         return c;
     }
 
+    static bool isFinite(const T& t) {return SimTK::isFinite(t);}
+    static bool isNaN(const T& t) {return SimTK::isNaN(t);}
+    static bool isInf(const T& t) {return SimTK::isInf(t);}
+
+    static double getDefaultTolerance() {return RTraits<R>::getDefaultTolerance();}
+
+    template <class R2> static bool isNumericallyEqual(const T& a, const conjugate<R2>& b)
+    {   return SimTK::isNumericallyEqual(a,b); }
+    template <class R2> static bool isNumericallyEqual(const T& a, const conjugate<R2>& b, double tol)
+    {   return SimTK::isNumericallyEqual(a,b,tol); }
+    template <class R2> static bool isNumericallyEqual(const T& a, const complex<R2>& b)
+    {   return SimTK::isNumericallyEqual(a,b); }
+    template <class R2> static bool isNumericallyEqual(const T& a, const complex<R2>& b, double tol)
+    {   return SimTK::isNumericallyEqual(a,b,tol); }
+
+    static bool isNumericallyEqual(const T& a, const float& b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, const float& b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
+    static bool isNumericallyEqual(const T& a, const double& b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, const double& b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
+    static bool isNumericallyEqual(const T& a, const long double& b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, const long double& b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
+    static bool isNumericallyEqual(const T& a, int b) {return SimTK::isNumericallyEqual(a,b);}
+    static bool isNumericallyEqual(const T& a, int b, double tol) {return SimTK::isNumericallyEqual(a,b,tol);}
+
     // The rest are the same as the real equivalents, with zero imaginary part.              
     static const T& getZero()         {static const T c(NTraits<R>::getZero());         return c;}
     static const T& getOne()          {static const T c(NTraits<R>::getOne());          return c;}
@@ -576,17 +1011,32 @@ public:                                         \
     static TNormalize normalize(const T& t) {return (t>0?T(1):(t<0?T(-1):getNaN()));} \
     static TInvert invert(const T& t) {return T(1)/t;}                      \
     /* properties of this floating point representation, with memory addresses */     \
+    static const T& getEps()          {return RTraits<T>::getEps();}                                    \
+    static const T& getSignificant()  {return RTraits<T>::getSignificant();}                            \
     static const T& getNaN()          {static const T c=std::numeric_limits<T>::quiet_NaN(); return c;} \
     static const T& getInfinity()     {static const T c=std::numeric_limits<T>::infinity();  return c;} \
-    static const T& getEps()          {static const T c=std::numeric_limits<T>::epsilon();   return c;} \
     static const T& getLeastPositive(){static const T c=std::numeric_limits<T>::min();       return c;} \
     static const T& getMostPositive() {static const T c=std::numeric_limits<T>::max();       return c;} \
     static const T& getLeastNegative(){static const T c=-std::numeric_limits<T>::min();      return c;} \
     static const T& getMostNegative() {static const T c=-std::numeric_limits<T>::max();      return c;} \
     static const T& getSqrtEps()      {static const T c=std::sqrt(getEps());                 return c;} \
     static const T& getTiny()         {static const T c=std::pow(getEps(), (T)1.25L);        return c;} \
-    static const T& getSignificant()  {static const T c=std::pow(getEps(), (T)0.875L);       return c;} \
-    /* carefully calculated constants with convenient memory addresses */                \
+    static bool isFinite(const T& t) {return SimTK::isFinite(t);}   \
+    static bool isNaN   (const T& t) {return SimTK::isNaN(t);}      \
+    static bool isInf   (const T& t) {return SimTK::isInf(t);}      \
+    /* Methods to use for approximate comparisons. Perform comparison in the wider of the two */                \
+    /* precisions, using the default tolerance from the narrower of the two precisions.       */                \
+    static double getDefaultTolerance() {return RTraits<T>::getDefaultTolerance();}                             \
+    static bool isNumericallyEqual(const T& t, const float& f) {return SimTK::isNumericallyEqual(t,f);}         \
+    static bool isNumericallyEqual(const T& t, const double& d) {return SimTK::isNumericallyEqual(t,d);}        \
+    static bool isNumericallyEqual(const T& t, const long double& l) {return SimTK::isNumericallyEqual(t,l);}   \
+    static bool isNumericallyEqual(const T& t, int i) {return SimTK::isNumericallyEqual(t,i);}                  \
+    /* Here the tolerance is given so we don't have to figure it out. */                                                        \
+    static bool isNumericallyEqual(const T& t, const float& f, double tol){return SimTK::isNumericallyEqual(t,f,tol);}          \
+    static bool isNumericallyEqual(const T& t, const double& d, double tol){return SimTK::isNumericallyEqual(t,d,tol);}         \
+    static bool isNumericallyEqual(const T& t, const long double& l, double tol){return SimTK::isNumericallyEqual(t,l,tol);}    \
+    static bool isNumericallyEqual(const T& t, int i, double tol){return SimTK::isNumericallyEqual(t,i,tol);}                   \
+    /* Carefully calculated constants with convenient memory addresses. */               \
     static const T& getZero()         {static const T c=(T)(0);               return c;} \
     static const T& getOne()          {static const T c=(T)(1);               return c;} \
     static const T& getMinusOne()     {static const T c=(T)(-1);              return c;} \

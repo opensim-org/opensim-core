@@ -73,7 +73,12 @@ public:
      *                         less than or equal to the value returned by getMaxDerivativeOrder().
      * @param x                the Vector of input arguments.  Its size must equal the value returned by getArgumentSize().
      */
-    virtual T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const = 0;
+    virtual T calcDerivative(const Array_<int>& derivComponents, const Vector& x) const = 0;
+
+    /** This provides compatibility with std::vector without requiring any copying. **/
+    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const 
+    {   return calcDerivative(ArrayViewConst_<int>(derivComponents),x); }
+
     /**
      * Get the number of components expected in the input vector.
      */
@@ -99,13 +104,13 @@ public:
      * @param value        the value which should be returned by calcValue();
      * @param argumentSize the value which should be returned by getArgumentSize();
      */
-    Constant(T value, int argumentSize) : value(value), argumentSize(argumentSize) {
+    Constant(T value, int argumentSize) : argumentSize(argumentSize), value(value) {
     }
     T calcValue(const Vector& x) const {
         assert(x.size() == argumentSize);
         return value;
     }
-    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+    T calcDerivative(const Array_<int>& derivComponents, const Vector& x) const {
         return static_cast<T>(0);
     }
     virtual int getArgumentSize() const {
@@ -114,6 +119,11 @@ public:
     int getMaxDerivativeOrder() const {
         return std::numeric_limits<int>::max();
     }
+
+    /** This provides compatibility with std::vector without requiring any copying. **/
+    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const 
+    {   return calcDerivative(ArrayViewConst_<int>(derivComponents),x); }
+
 private:
     const int argumentSize;
     const T value;
@@ -145,7 +155,7 @@ public:
         value += coefficients[x.size()];
         return value;
     }
-    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+    T calcDerivative(const Array_<int>& derivComponents, const Vector& x) const {
         assert(x.size() == coefficients.size()-1);
         assert(derivComponents.size() > 0);
         if (derivComponents.size() == 1)
@@ -158,6 +168,10 @@ public:
     int getMaxDerivativeOrder() const {
         return std::numeric_limits<int>::max();
     }
+
+    /** This provides compatibility with std::vector without requiring any copying. **/
+    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const 
+    {   return calcDerivative(ArrayViewConst_<int>(derivComponents),x); }
 private:
     const Vector_<T> coefficients;
 };
@@ -186,7 +200,7 @@ public:
             value = value*arg + coefficients[i];
         return value;
     }
-    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+    T calcDerivative(const Array_<int>& derivComponents, const Vector& x) const {
         assert(x.size() == 1);
         assert(derivComponents.size() > 0);
         Real arg = x[0];
@@ -207,6 +221,10 @@ public:
     int getMaxDerivativeOrder() const {
         return std::numeric_limits<int>::max();
     }
+
+    /** This provides compatibility with std::vector without requiring any copying. **/
+    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const 
+    {   return calcDerivative(ArrayViewConst_<int>(derivComponents),x); }
 private:
     const Vector_<T> coefficients;
 };

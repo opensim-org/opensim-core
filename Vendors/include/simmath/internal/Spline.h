@@ -32,7 +32,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include "simmath/internal/Function.h"
+#include "SimTKcommon.h"
 #include "simmath/internal/GCVSPLUtil.h"
 
 #include <limits>
@@ -97,7 +97,7 @@ public:
      * only allows a single independent variable, all elements of derivComponents should be 0, and its
      * length determines the order of the derivative to calculate.
      */
-    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const {
+    T calcDerivative(const Array_<int>& derivComponents, const Vector& x) const {
         assert(impl);
         assert(x.size() == 1);
         assert(derivComponents.size() > 0);
@@ -130,6 +130,10 @@ public:
         assert(impl);
         return impl->degree;
     }
+
+    /** This provides compatibility with std::vector without requiring any copying. **/
+    T calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const 
+    {   return calcDerivative(ArrayViewConst_<int>(derivComponents),x); }
 private:
     class SplineImpl;
     SplineImpl* impl;
@@ -140,7 +144,7 @@ typedef Spline_<Real> Spline;
 template <class T>
 class Spline_<T>::SplineImpl {
 public:
-    SplineImpl(int degree, const Vector& x, const Vector_<T>& y) : degree(degree), x(x), y(y), referenceCount(1) {
+    SplineImpl(int degree, const Vector& x, const Vector_<T>& y) : referenceCount(1), degree(degree), x(x), y(y) {
     }
     ~SplineImpl() {
         assert(referenceCount == 0);

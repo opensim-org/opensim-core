@@ -185,6 +185,37 @@ public:
     static negator<N> getNaN()      {return recast(NTraits<N>::getNaN());}
 	static negator<N> getInfinity() {return recast(NTraits<N>::getInfinity());}
 
+    /// Returns true if the negated value is finite (i.e., not NaN or Inf).
+    inline bool isFinite() const;
+    /// Returns true if the negated value contains a NaN.
+    inline bool isNaN() const;
+    /// Returns true if the negated value contains an Inf or -Inf and does not
+    /// contain a NaN.
+    inline bool isInf() const;
+
+    static double getDefaultTolerance() {return NTraits<N>::getDefaultTolerance();}
+
+    /// In the generic case we'll perform the negation here to get a number, 
+    /// and then delegate to the other type which can be any CNT.
+    template <class T2> bool isNumericallyEqual(const T2& t2) const
+    {   return CNT<T2>::isNumericallyEqual(t2, -v); } // perform negation
+
+    /// In this partial specialization we know that both types have negators so we
+    /// can just compare the underlying numbers, each of which has the reversed sign,
+    /// using the global SimTK method available for comparing numbers.
+    template <class N2> bool isNumericallyEqual(const negator<N2>& t2) const 
+    {   return SimTK::isNumericallyEqual(v, t2.v); }
+
+    /// This is the generic case (see above) but with an explicitly-provided tolerance.
+    template <class T2> bool isNumericallyEqual(const T2& t2, double tol) const
+    {   return CNT<T2>::isNumericallyEqual(t2, -v, tol); } // perform negation
+
+    /// This is the partially specialized case again (see above) but with an explicitly-provided
+    /// tolerance.
+    template <class N2> bool isNumericallyEqual(const negator<N2>& t2, double tol) const
+    {   return SimTK::isNumericallyEqual(v, t2.v, tol); }
+
+
     negator() {
     #ifndef NDEBUG
         v = NTraits<N>::getNaN();
@@ -193,26 +224,25 @@ public:
     negator(const negator& n) : v(n.v) { }
     negator& operator=(const negator& n) { v=n.v; return *this; }
 
-    // These are explicit conversion from numeric type NN to negator<N>. The value must
-    // be unchanged, so we must negate. Note that NN==N is a certainty for one of these cases.
+    // These are implicit conversions from numeric type NN to negator<N>. The
+    // value must be unchanged, so we must negate. Note that NN==N is a 
+    // certainty for one of these cases.
+    negator(int                t) {v = -N((typename NTraits<N>::Precision)t);}
+    negator(const float&       t) {v = -N((typename NTraits<N>::Precision)t);}
+    negator(const double&      t) {v = -N((typename NTraits<N>::Precision)t);}
+    negator(const long double& t) {v = -N((typename NTraits<N>::Precision)t);}
 
-    explicit negator(int t) {v = -N((typename NTraits<N>::Precision)t);}
-    explicit negator(const float& t) {v = -N(t);}
-    explicit negator(const double& t) {v = -N(t);}
-    explicit negator(const long double& t) {v = -N(t);}
-    explicit negator(const std::complex<float>& t) {v = -N(t);}
-    explicit negator(const std::complex<double>& t) {v = -N(t);}
-    explicit negator(const std::complex<long double>& t) {v = -N(t);}
-    explicit negator(const conjugate<float>& t) {v = -N(t);}
-    explicit negator(const conjugate<double>& t) {v = -N(t);}
-    explicit negator(const conjugate<long double>& t) {v = -N(t);}
+    // Some of these may not compile if instantiated -- you can't cast a complex
+    // to a float, for example.
+    template <class P> negator(const std::complex<P>& t) {v = -N(t);}
+    template <class P> negator(const conjugate<P>&    t) {v = -N(t);}
 
     // This can be used to negate a value of type N at zero cost. It is typically
     // used for recasting temporary expressions to apply a final negation. Note that
     // this is *not* the same as constructing a negator<N> from an N, which actually
     // peforms a floating point negation.
     static const negator<N>& recast(const N& val)
-        { return reinterpret_cast<const negator<N>&>(val); }
+    {   return reinterpret_cast<const negator<N>&>(val); }
 
     const N& operator-() const { return v;  }
     N&       operator-()       { return v;  } // an lvalue!
@@ -226,17 +256,72 @@ public:
     template <class P> negator& operator*=(const P& t) { v *= t; return *this; } //don't swap!
     template <class P> negator& operator/=(const P& t) { v /= t; return *this; }
 
-    // If we know we've got a negator as an argument, get rid of its negation and change
-    // signs as necessary. We're guaranteed to get rid of at least one negator<> this way.
-    // Nothing to gain for multiplication or division, though.
-    template <class NN> negator& operator =(const negator<NN>& t) { v =  -t; return *this; }
-    template <class NN> negator& operator+=(const negator<NN>& t) { v += -t; return *this; } //swap sign
-    template <class NN> negator& operator-=(const negator<NN>& t) { v -= -t; return *this; }
+    // If we know we've got a negator as an argument, get rid of its negation 
+    // and change signs as necessary. We're guaranteed to get rid of at least 
+    // one negator<> this way. Nothing to gain for multiplication or division,
+    // though.
+    template <class NN> negator& operator =(const negator<NN>& t) 
+    {   v =  -t; return *this; }
+    template <class NN> negator& operator+=(const negator<NN>& t) 
+    {   v += -t; return *this; } //swap sign
+    template <class NN> negator& operator-=(const negator<NN>& t) 
+    {   v -= -t; return *this; }
 
 private:
     N v;
+
+template <class N2> friend class negator;
 };
 
+// isNaN() for real, complex, and conjugate numbers is provided in
+// NTraits. Here we add isNaN() for negated scalar types.
+
+/// @addtogroup isNaN
+//@{
+inline bool isNaN(const negator<float>&  x) {return isNaN(-x);}
+inline bool isNaN(const negator<double>& x) {return isNaN(-x);}
+inline bool isNaN(const negator<long double>& x) {return isNaN(-x);}
+template <class P> inline bool
+isNaN(const negator< std::complex<P> >& x) {return isNaN(-x);}
+template <class P> inline bool
+isNaN(const negator< conjugate<P> >&    x) {return isNaN(-x);}
+//@}
+
+// isFinite() for real, complex, and conjugate numbers is provided in
+// NTraits. Here we add isFinite() for negated scalar types.
+
+/// @addtogroup isFinite
+//@{
+inline bool isFinite(const negator<float>&  x) {return isFinite(-x);}
+inline bool isFinite(const negator<double>& x) {return isFinite(-x);}
+inline bool isFinite(const negator<long double>& x) {return isFinite(-x);}
+template <class P> inline bool
+isFinite(const negator< std::complex<P> >& x) {return isFinite(-x);}
+template <class P> inline bool
+isFinite(const negator< conjugate<P> >&    x) {return isFinite(-x);}
+//@}
+
+// isInf(x) for real, complex, and conjugate numbers is provided in
+// NTraits. Here we add isInf() for negated scalar types.
+
+/// @addtogroup isInf
+//@{
+inline bool isInf(const negator<float>&  x) {return isInf(-x);}
+inline bool isInf(const negator<double>& x) {return isInf(-x);}
+inline bool isInf(const negator<long double>& x) {return isInf(-x);}
+template <class P> inline bool
+isInf(const negator< std::complex<P> >& x) {return isInf(-x);}
+template <class P> inline bool
+isInf(const negator< conjugate<P> >&    x) {return isInf(-x);}
+//@}
+
+// The member functions call the global ones just defined.
+template <class N> inline bool
+negator<N>::isFinite() const {return SimTK::isFinite(*this);}
+template <class N> inline bool
+negator<N>::isNaN()    const {return SimTK::isNaN(*this);}
+template <class N> inline bool
+negator<N>::isInf()    const {return SimTK::isInf(*this);}
 
 // Handle all binary numerical operators involving a negator<A> and a B, or negator<A>
 // and negator<B>, obtaining results by stripping away the negator<>s and fiddling

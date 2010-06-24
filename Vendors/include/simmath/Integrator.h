@@ -118,7 +118,7 @@ class IntegratorRep;
  * We are given a set of weights W for the y's, and a set of tolerances T
  * for the constraint errors. Given an accuracy specification (like 0.1%),
  * the integrators here are expected to solve for y(t) such that the
- * local error |W*y|_RMS <= accuracy, and |T*c(t,y)|_RMS <= accuracy at
+ * local error |W*yerr|_RMS <= accuracy, and |T*c(t,y)|_RMS <= accuracy at
  * all times.
  *
  * TODO: isolation tolerances for witnesses; dealing with simultaneity.
@@ -161,7 +161,7 @@ public:
     /// changed and allow the Integrator to figure out how much reinitialization
     /// to do.
     ///
-    /// If 'shouldTerminate" is passed in true, the Integrator will wrap
+    /// If "shouldTerminate" is passed in true, the Integrator will wrap
     /// things up and report that the end of the simulation has been reached.
     void reinitialize(Stage stage, bool shouldTerminate);
 
@@ -253,13 +253,13 @@ public:
     Vec2 getEventWindow() const;
     /// Get the IDs of all events which have been localized within the event window.  This may only be called
     /// when stepTo() or stepBy() has returned ReachedEventTrigger.
-    const std::vector<EventId>& getTriggeredEvents() const;
+    const Array_<EventId>& getTriggeredEvents() const;
     /// Get the estimated times of all events which have been localized within the event window.  This may only be called
     /// when stepTo() or stepBy() has returned ReachedEventTrigger.
-    const std::vector<Real>& getEstimatedEventTimes() const;
+    const Array_<Real>& getEstimatedEventTimes() const;
     /// Get EventTriggers describing the events which have been localized within the event window.  This may only be called
     /// when stepTo() or stepBy() has returned ReachedEventTrigger.
-    const std::vector<Event::Trigger>& getEventTransitionsSeen() const;
+    const Array_<Event::Trigger>& getEventTransitionsSeen() const;
 
 
         // TERMINATION //
@@ -298,35 +298,37 @@ public:
 
     /// Get the total number of steps that have been attempted (successfully or unsuccessfully) since
     /// the last call to resetAllStatistics().
-    long getNumStepsAttempted() const;
+    int getNumStepsAttempted() const;
     /// Get the total number of steps that have been successfully taken since the last call to resetAllStatistics().
-    long getNumStepsTaken() const; 
+    int getNumStepsTaken() const; 
     /// Get the total number of state realizations that have been performed since the last call to resetAllStatistics().
-    long getNumRealizations() const;
+    int getNumRealizations() const;
     /// Get the total number of times a state has been projected since the last call to resetAllStatistics().
-    long getNumProjections() const;
+    int getNumProjections() const;
     /// Get the number of attempted steps that have failed due to the error being unacceptably high since
     /// the last call to resetAllStatistics().
-    long getNumErrorTestFailures() const;
-    /// Get the number of attempted steps that failed due to non-convergence of internal step iterations.
-    /// This applies only to iterative methods and is reset to zero by resetAllStatistics.
-    long getNumConvergenceTestFailures() const;
+    int getNumErrorTestFailures() const;
+    /// Get the number of attempted steps that failed due to non-convergence of
+    /// internal step iterations. This is most common with iterative methods 
+    /// but can occur if for some reason a step can't be completed. It is reset
+    /// to zero by resetAllStatistics.
+    int getNumConvergenceTestFailures() const;
     /// Get the number of attempted steps that have failed due to an error when realizing the state since
     /// the last call to resetAllStatistics().
-    long getNumRealizationFailures() const;
+    int getNumRealizationFailures() const;
     /// Get the number of attempted steps that have failed due to an error when projecting the state since
     /// the last call to resetAllStatistics().
-    long getNumProjectionFailures() const;
+    int getNumProjectionFailures() const;
     /// For iterative methods, get the number of internal step iterations in steps that led to 
     /// convergence (not necessarily successful steps). Reset to zero by resetAllStatistics().
-    long getNumConvergentIterations() const;
+    int getNumConvergentIterations() const;
     /// For iterative methods, get the number of internal step iterations in steps that did not lead 
     /// to convergence. Reset to zero by resetAllStatistics().
-    long getNumDivergentIterations() const;
+    int getNumDivergentIterations() const;
     /// For iterative methods, this is the total number of internal step iterations taken regardless
     /// of whether those iterations led to convergence or to successful steps. This is the sum of
     /// the number of convergent and divergent iterations which are available separately.
-    long getNumIterations() const;
+    int getNumIterations() const;
 
     /// Set the time at which the simulation should end.  The default is infinity.  Some integrators may
     /// not support this option.
@@ -378,7 +380,7 @@ public:
     void setProjectEveryStep(bool forceProject);    
     /// Set whether the Integrator is permitted to return interpolated states for reporting purposes
     /// which may be less accurate than the "real" states that form the trajectory.  Setting this to
-    /// true may significantly affect performance, since the Integrator will be forced to decrease its
+    /// false may significantly affect performance, since the Integrator will be forced to decrease its
     /// step size at every scheduled reporting time.
     ///
     /// This option is generally only meaningful if interpolated states are less accurate than other
@@ -389,14 +391,6 @@ public:
     /// interpolation is performed.
     void setProjectInterpolatedStates(bool shouldProject);
 
-    // OBSOLETE
-    long getNStepsAttempted() const {return getNumStepsAttempted();}
-    long getNStepsTaken() const {return getNumStepsTaken();} 
-    long getNRealizations() const {return getNumRealizations();}
-    long getNProjections() const {return getNumProjections();}
-    long getNErrorTestFailures() const {return getNumErrorTestFailures();}
-    long getNRealizationFailures() const {return getNumRealizationFailures();}
-    long getNProjectionFailures() const {return getNumProjectionFailures();}
 
 protected:
     const IntegratorRep& getRep() const {assert(rep); return *rep;}
@@ -405,6 +399,16 @@ protected:
     // opaque implementation for binary compatibility
     IntegratorRep* rep;
     friend class IntegratorRep;
+
+private:
+    // OBSOLETE
+    int getNStepsAttempted() const {return getNumStepsAttempted();}
+    int getNStepsTaken() const {return getNumStepsTaken();} 
+    int getNRealizations() const {return getNumRealizations();}
+    int getNProjections() const {return getNumProjections();}
+    int getNErrorTestFailures() const {return getNumErrorTestFailures();}
+    int getNRealizationFailures() const {return getNumRealizationFailures();}
+    int getNProjectionFailures() const {return getNumProjectionFailures();}
 };
 
 } // namespace SimTK

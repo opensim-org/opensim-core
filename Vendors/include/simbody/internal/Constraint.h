@@ -36,8 +36,8 @@
  * This defines the Constraint class, which is used to specify limitations
  * on the mobility of the MobilizedBodies in a MatterSubsystem.
  *
- * Constraint is a PIMPL-style abstract base class, with concrete classes defined
- * for each kind of constraint. There are a set of built-in constraints
+ * Constraint is a PIMPL-style abstract base class, with concrete classes 
+ * defined for each kind of constraint. There are a set of built-in constraints
  * and a generic "Custom" constraint (an abstract base class) from
  * which advanced users may derive their own constraints.
  */
@@ -55,8 +55,9 @@ class MobilizedBody;
 class Constraint;
 class ConstraintImpl;
 
-// We only want the template instantiation to occur once. This symbol is defined in the SimTK core
-// compilation unit that defines the Constraint class but should not be defined any other time.
+// We only want the template instantiation to occur once. This symbol is 
+// defined in the SimTK core compilation unit that defines the Constraint 
+// class but should not be defined any other time.
 #ifndef SimTK_SIMBODY_DEFINING_CONSTRAINT
     extern template class PIMPLHandle<Constraint, ConstraintImpl, true>;
 #endif
@@ -66,23 +67,36 @@ class ConstraintImpl;
     ///////////////////////////
 
 /**
- * This is the base class for all Constraint classes, which is just a handle for the underlying
- * hidden implementation. Each built-in Constraint type is a local subclass within
- * Constraint, and is also derived from Constraint.
+ * This is the base class for all Constraint classes, which is just a handle 
+ * for the underlying hidden implementation. Each built-in Constraint type is 
+ * a local subclass within Constraint, and is also derived from Constraint.
  */
 class SimTK_SIMBODY_EXPORT Constraint : public PIMPLHandle<Constraint, ConstraintImpl, true> {
 public:
     Constraint() { }
     explicit Constraint(ConstraintImpl* r) : HandleBase(r) { }
 
+    /// Disable this constraint, effectively removing it from the system. This
+    /// is an Instance-stage change and affects the allocation of constraint-
+    /// related cache variables in the supplied State.
     void disable(State&) const;
+    /// Enable this constraint, without necessarily satisfying it. This
+    /// is an Instance-stage change and affects the allocation of constraint-
+    /// related cache variables in the supplied State. Note that merely 
+    /// enabling a constraint does not ensure that the State's positions and 
+    /// velocities satisfy that constraint; initial satisfaction requires use
+    /// of an appropriate solver.
     void enable(State&) const;
+    /// Test whether this constraint is currently disabled in the supplied State.
     bool isDisabled(const State&) const;
+    /// Test whether this constraint is disabled by default in which case it
+    /// must be explicitly enabled before it will take effect.
+    /// @see enable()
     bool isDisabledByDefault() const;
 
     /// Normally Constraints are enabled when defined and can be disabled later. If
-    /// you want to define this constraint but have it be off by default, use this
-    /// method.
+    /// you want to define this constraint but have it be off by default, use
+    /// this method.
     void setDisabledByDefault(bool shouldBeDisabled);
 
     // Implicit conversion to ConstraintIndex when needed.
@@ -98,21 +112,22 @@ public:
 
         // TOPOLOGY STAGE (i.e., post-construction) //
 
-    /// Return the number of bodies *directly* restricted by this
-    /// constraint. Included are any bodies to which the Constraint may
-    /// apply a body force (i.e., torque or point force). The Ancestor body is not
-    /// included unless it was specified as a ConstrainedBody. This is the length
-    /// of the bodyForces array for this Constraint.
+    /// Return the number of bodies *directly* restricted by this constraint. 
+    /// Included are any bodies to which the Constraint may apply a body force
+    /// (i.e., torque or point force). The Ancestor body is not included unless
+    /// it was specified as a ConstrainedBody. This is the length of the 
+    /// bodyForces array for this Constraint.
     int getNumConstrainedBodies() const;
 
     /// Return a reference to the actual MobilizedBodies included in the count
     /// above. 0 <= index < getNumConstrainedBodies().
-    const MobilizedBody& getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex) const;
+    const MobilizedBody& 
+        getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex) const;
 
     /// Return a reference to the actual MobilizedBody which is serving as
     /// the Ancestor body for the constrained bodies in this Constraint. This
-    /// will fail if there are no constrained bodies
-    /// (i.e., if getNumConstrainedBodies()==0).
+    /// will fail if there are no constrained bodies (i.e., if 
+    /// getNumConstrainedBodies()==0).
     const MobilizedBody& getAncestorMobilizedBody() const;
 
     /// Return the number of mobilizers *directly* restricted by this
@@ -122,8 +137,10 @@ public:
     int getNumConstrainedMobilizers() const;
 
     /// Return a reference to the actual MobilizedBodies included in the count
-    /// of constrained mobilizers above. 0 <= index < getNumConstrainedMobilizers().
-    const MobilizedBody& getMobilizedBodyFromConstrainedMobilizer(ConstrainedMobilizerIndex) const;
+    /// of constrained mobilizers above. 
+    /// 0 <= index < getNumConstrainedMobilizers().
+    const MobilizedBody& 
+        getMobilizedBodyFromConstrainedMobilizer(ConstrainedMobilizerIndex) const;
 
     const SimbodyMatterSubtree& getSubtree() const;
 
@@ -131,27 +148,29 @@ public:
 
     /// Return the number of constrainable generalized coordinates q
     /// associated with a particular constrained mobilizer. This is just
-    /// the number of generalized coordinates for that mobilizer.
+    /// the number of generalized coordinates for that mobilizer; any or all
+    /// of them may actually be unconstrained.
     int getNumConstrainedQ(const State&, ConstrainedMobilizerIndex) const;
-    /// Return the number of constrainable mobilities u associated with a particular
-    /// constrained mobilizer. This is just the number of generalized speeds for that
-    /// mobilizer.
+    /// Return the number of constrainable mobilities u associated with a 
+    /// particular constrained mobilizer. This is just the number of 
+    /// generalized speeds for that mobilizer; any or all of them may actually
+    /// be unconstrained. The number of constrainable udots is the same.
     int getNumConstrainedU(const State&, ConstrainedMobilizerIndex) const;
 
-    /// Return the index into the constrained mobilities u array corresponding to
-    /// a particular mobility of the indicated ConstrainedMobilizer. Don't confuse
-    /// this with the set of *participating* mobilities which also includes all 
-    /// mobilities on each branch between the ancestor and a constrained body.
-    /// The *constrained* mobilities are just those belonging to the mobilizers
-    /// which are directly constrained.
+    /// Return the index into the constrained mobilities u array corresponding
+    /// to a particular mobility of the indicated ConstrainedMobilizer. Don't 
+    /// confuse this with the set of \e participating mobilities which also 
+    /// includes all mobilities on each branch between the ancestor and a 
+    /// constrained body. The \e constrained mobilities are just those belonging
+    /// to the mobilizers which are directly constrained.
     ConstrainedUIndex getConstrainedUIndex
         (const State&, ConstrainedMobilizerIndex, MobilizerUIndex which) const;
-    /// Return the index into the constrained coordinates q array corresponding to
-    /// a particular coordinate of the indicated ConstrainedMobilizer. Don't confuse
-    /// this with the set of *participating* coordinates which also includes all 
-    /// coordinates on each branch between the ancestor and a constrained body.
-    /// The *constrained* coordinates are just those belonging to the mobilizers
-    /// which are directly constrained.
+    /// Return the index into the constrained coordinates q array corresponding
+    /// to a particular coordinate of the indicated ConstrainedMobilizer. Don't 
+    /// confuse this with the set of \e participating coordinates which also 
+    /// includes all coordinates on each branch between the ancestor and a 
+    /// constrained body. The \e constrained coordinates are just those 
+    /// belonging to the mobilizers which are directly constrained.
     ConstrainedQIndex getConstrainedQIndex
         (const State&, ConstrainedMobilizerIndex, MobilizerQIndex which) const;
 
@@ -165,16 +184,17 @@ public:
     /// of the mobilityForces array.
     int getNumConstrainedU(const State&) const;
     
-    /// Find out how many holonomic (position), nonholonomic (velocity),
-    /// and acceleration-only constraint equations are generated by this Constraint.
+    /// Find out how many holonomic (position), nonholonomic (velocity), and
+    /// acceleration-only constraint equations are currently being generated 
+    /// by this Constraint.
     void getNumConstraintEquationsInUse(const State&, int& mp, int& mv, int& ma) const;
 
         // INSTANCE STAGE //
     // nothing in base class currently
 
         // POSITION STAGE //
-    /// Get a Vector containing the position errors.  Many subclasses provide their
-    /// own methods for getting this information in a more specific form.
+    /// Get a Vector containing the position errors. Many subclasses provide 
+    /// their own methods for getting this information in a more specific form.
     Vector getPositionErrorsAsVector(const State&) const;	// mp of these
 	Vector calcPositionErrorFromQ(const State&, const Vector& q) const;
 
@@ -185,33 +205,33 @@ public:
 	// Matrix PNInv = partial(perr)/partial(q) = P*N^-1
 	Matrix calcPositionConstraintMatrixPNInv(const State&) const; // mp X nq
 
-    // This operator calculates this constraint's body and mobility forces
-    // given the complete set of multipliers lambda. We expect that lambda
-    // has been packed to include multipliers associated with the
-    // second derivatives of the position
-    // (holonomic) constraints, the first derivatives of the velocity
-    // (nonholonomic) constraints, and the acceleration only constraints, in
-    // that order.
-    // The state must be realized already to Stage::Position. Returned body
-    // forces correspond only to the *constrained bodies* and the mobility
-    // forces correspond only to the *constrained mobilities*; they must 
-    // be unpacked by the caller into the actual system mobilized bodies and 
-    // actual system mobilities.
-    // Note that the body forces are in the ancestor body frame A, not necessarily
-    // the Ground frame G.
+    /// This operator calculates this constraint's body and mobility forces
+    /// given the complete set of multipliers lambda for this Constraint. We 
+    /// expect that lambda has been packed to include multipliers associated 
+    /// with the second derivatives of the position (holonomic) constraints, 
+    /// the first derivatives of the velocity (nonholonomic) constraints, and 
+    /// the acceleration only constraints, in that order.
+    /// 
+    /// The state must be realized already to Stage::Position. Returned body
+    /// forces correspond only to the <em>constrained bodies</em> and the 
+    /// mobility forces correspond only to the <em>constrained mobilities</em>; 
+    /// they must be unpacked by the caller into the actual system mobilized 
+    /// bodies and actual system mobilities. Note that the body forces are in 
+    /// the ancestor body frame A, not necessarily the Ground frame G.
     void calcConstraintForcesFromMultipliers(const State&,
         const Vector&        lambda,                // mp+mv+ma of these
         Vector_<SpatialVec>& bodyForcesInA,         // numConstrainedBodies
         Vector&              mobilityForces) const; // numConstrainedU
 
         // VELOCITY STAGE //
-    /// Get a Vector containing the velocity errors.  Many subclasses provide their
-    /// own methods for getting this information in a more specific form.
+    /// Get a Vector containing the velocity errors. Many subclasses provide 
+    /// their own methods for getting this information in a more specific form.
     Vector getVelocityErrorsAsVector(const State&) const;	// mp+mv of these
 	Vector calcVelocityErrorFromU(const State&,     // mp+mv of these
                                   const Vector& u) const;   // numParticipatingU u's
 
-	// Matrix V = partial(verr)/partial(u) for just the non-holonomic constraints.
+	// Matrix V = partial(verr)/partial(u) for just the non-holonomic 
+    // constraints.
 	Matrix calcVelocityConstraintMatrixV(const State&) const;  // mv X nu
 	Matrix calcVelocityConstraintMatrixVt(const State&) const; // nu X mv
 
@@ -219,17 +239,20 @@ public:
     // nothing in base class currently
 
         // ACCELERATION STAGE //
-    /// Get a Vector containing the acceleration errors.  Many subclasses provide their
-    /// own methods for getting this information in a more specific form.
+    /// Get a Vector containing the acceleration errors. Many subclasses 
+    /// provide their own methods for getting this information in a more 
+    /// specific form.
     Vector getAccelerationErrorsAsVector(const State&) const;	// mp+mv+ma of these
 	Vector calcAccelerationErrorFromUDot(const State&,  // mp+mv+ma of these
                                          const Vector& udot) const; // numParticipatingU udot's
 
-    /// Get a Vector containing the Lagrange multipliers.  Many subclasses provide their
-    /// own methods for getting this information in a more specific form.
+    /// Get a Vector containing the Lagrange multipliers. Many subclasses 
+    /// provide their own methods for getting this information in a more 
+    /// specific form.
     Vector getMultipliersAsVector(const State&) const;			// mp+mv+ma of these   
 
-	// Matrix A = partial(aerr)/partial(udot) for just the acceleration-only constraints.
+	// Matrix A = partial(aerr)/partial(udot) for just the acceleration-only 
+    // constraints.
 	Matrix calcAccelerationConstraintMatrixA(const State&) const;  // ma X nu
 	Matrix calcAccelerationConstraintMatrixAt(const State&) const; // nu X ma
 
@@ -244,6 +267,7 @@ public:
     class ConstantOrientation; // allows any translation but no rotation
     class NoSlip1D; // same velocity at a point along a direction
     class ConstantSpeed; // prescribe generalized speed value
+    class ConstantAcceleration; // prescribe generalized acceleration value
     class Custom;
     class CoordinateCoupler;
     class SpeedCoupler;
@@ -258,6 +282,7 @@ public:
     class ConstantOrientationImpl;
     class NoSlip1DImpl;
     class ConstantSpeedImpl;
+    class ConstantAccelerationImpl;
     class CustomImpl;
     class CoordinateCouplerImpl;
     class SpeedCouplerImpl;
@@ -269,17 +294,19 @@ public:
     ////////////////////////////////////////
 
 /**
- *  One constraint equation. This constraint enforces a constant distance between
- *  a point on one body and a point on another body. This is like connecting them
- *  by a rigid, massless rod with ball joints at either end. The constraint is
- *  enforced by a force acting along the rod with opposite signs at either end.
- *  When positive, this represents tension in the rod pulling the points together;
- *  when negative it represents compression keeping the points separated.
+ * This constraint consists of one constriant equation that enforces a constant 
+ * distance between a point on one body and a point on another body. This is 
+ * like connecting them by a rigid, massless rod with ball joints at either end. 
+ * The constraint is enforced by a force acting along the rod with opposite 
+ * signs at either end. When positive, this represents tension in the rod 
+ * pulling the points together; when negative it represents compression keeping 
+ * the points separated.
  * 
- *  Caution: you can't use this to enforce a distance of zero between two points.
- *  That takes three constraints because there is no restriction on the force direction.
- *  For a distance of zero (i.e., you want the points to be coincident) use a Ball
- *  constraint, a.k.a. CoincidentPoints constraint.
+ * @warning
+ * You can't use this to enforce a distance of zero between two points.
+ * That takes three constraints because there is no restriction on the force 
+ * direction. For a distance of zero (i.e., you want the points to be 
+ * coincident) use a Ball constraint, a.k.a. CoincidentPoints constraint.
  */
  class SimTK_SIMBODY_EXPORT Constraint::Rod : public Constraint {
 public:
@@ -323,14 +350,14 @@ public:
     ///////////////////////////////
 
 /**
- *  One constraint equation. This constraint enforces that a point fixed to
- *  one body (the "follower body") must travel in a plane fixed on another body (the
- *  "plane body"). The constraint is enforced by an internal (non-working)
- *  scalar force acting at the spatial location of the follower point, directed along
- *  the plane normal, and equal and opposite on the two bodies.
+ * One constraint equation. This constraint enforces that a point fixed to
+ * one body (the "follower body") must travel in a plane fixed on another body
+ * (the "plane body"). The constraint is enforced by an internal (non-working)
+ * scalar force acting at the spatial location of the follower point, directed 
+ * along the plane normal, and equal and opposite on the two bodies.
  * 
- *  The assembly condition is the same as the run-time constraint: the point
- *  has to be moved into the plane.
+ * The assembly condition is the same as the run-time constraint: the point
+ * has to be moved into the plane.
  */
 class SimTK_SIMBODY_EXPORT Constraint::PointInPlane : public Constraint  {
 public:
@@ -437,17 +464,32 @@ public:
     ///////////////////////////////
 
 /**
- *  One constraint equation. This constraint enforces that a vector fixed to
- *  one body (the "base body") must maintain a fixed angle with respect to
- *  a vector fixed on the other body (the "follower body"). That is, we have a
- *  single constraint equation that prohibits rotation about the mutual perpendicular
- *  to the two vectors.
+ * This constraint consists of a single constraint equation that enforces that
+ * a unit vector v1 fixed to one body (the "base body") must maintain a fixed 
+ * angle theta with respect to a unit vector v2 fixed on the other body (the 
+ * "follower body"). This can be done with a single constraint equation as long 
+ * as theta is sufficiently far away from 0 and +/-Pi (180 degrees), with the 
+ * numerically best performance at theta=Pi/2 (90 degrees).
+ *
+ * @warning
+ * Do not use this constraint to \e align the vectors, that is for angles near 
+ * 0 or +/- Pi; performance will noticeably degrade within a few degrees of 
+ * these limits and numerical integration will eventually fail at the limits.
  * 
- *  This constraint is enforced by an internal scalar torque applied equal and
- *  opposite on each body, about the mutual perpendicular to the two vectors.
+ * If you want to enforce that two axes are aligned with one another (that 
+ * is, the angle between them is 0 or +/-Pi), that takes \e two constraint 
+ * equations since the only remaining rotation is about the common axis. (That 
+ * is, two rotational degrees of freedom are removed; that can't be done with 
+ * one constraint equation -- the situation is analogous to the inability of
+ * a Rod (distance) constraint to keep two points at 0 distance.) Instead,
+ * you can use two ConstantAngle constraints on pairs of vectors perpendicular 
+ * to the aligned ones, so that each ConstantAngle is set to the optimal 90 degrees.
  * 
- *  The assembly condition is the same as the run-time constraint: the 
- *  bodies must be rotated until the vectors have the right angle between them.
+ * This constraint is enforced by an internal scalar torque applied equal and
+ * opposite on each body, about the mutual perpendicular to the two vectors.
+ * 
+ * The assembly condition is the same as the run-time constraint: the 
+ * bodies must be rotated until the vectors have the right angle between them.
  */
 class SimTK_SIMBODY_EXPORT Constraint::ConstantAngle : public Constraint {
 public:
@@ -771,8 +813,12 @@ class SimTK_SIMBODY_EXPORT Constraint::ConstantSpeed : public Constraint
 {
 public:
     // no default constructor
-   ConstantSpeed(MobilizedBody& mobilizer, MobilizerUIndex, Real speed);
-   ConstantSpeed(MobilizedBody& mobilizer, Real speed); // only if 1 dof mobilizer
+    /** Construct a constant speed constraint on a particular mobility
+    of the given mobilizer. **/
+    ConstantSpeed(MobilizedBody& mobilizer, MobilizerUIndex, Real speed);
+    /** Construct a constant speed constraint on the mobility
+    of the given mobilizer, assuming there is only one mobility. **/
+    ConstantSpeed(MobilizedBody& mobilizer, Real speed); 
 
     // Stage::Topology
     MobilizedBodyIndex getMobilizedBodyIndex() const;
@@ -787,21 +833,76 @@ public:
     Real getAccelerationError(const State&) const;
     Real getMultiplier(const State&) const;
     Real getGeneralizedForce(const State&) const;
-    SimTK_INSERT_DERIVED_HANDLE_DECLARATIONS(ConstantSpeed, ConstantSpeedImpl, Constraint);
+
+    /** @cond **/ // hide from Doxygen
+    SimTK_INSERT_DERIVED_HANDLE_DECLARATIONS
+       (ConstantSpeed, ConstantSpeedImpl, Constraint);
+    /** @endcond **/
+};
+
+    ///////////////////////////
+    // CONSTANT ACCELERATION //
+    ///////////////////////////
+
+/**
+ * One acceleration-only constraint equation. Some generalized acceleration
+ * udot is required to be at a particular value a.
+ * 
+ * There is no assembly condition because this does not involve state
+ * variables q or u, just u's time derivative udot.
+ */
+class SimTK_SIMBODY_EXPORT Constraint::ConstantAcceleration : public Constraint
+{
+public:
+    // no default constructor
+    /** Construct a constant acceleration constraint on a particular mobility
+    of the given mobilizer. **/
+    ConstantAcceleration(MobilizedBody& mobilizer, MobilizerUIndex, 
+                         Real defaultAcceleration);
+    /** Construct a constant acceleration constraint on the mobility
+    of the given mobilizer, assuming there is only one mobility. **/
+    ConstantAcceleration(MobilizedBody& mobilizer, 
+                         Real defaultAcceleration);
+
+    // Stage::Topology
+    MobilizedBodyIndex getMobilizedBodyIndex() const;
+    MobilizerUIndex    getWhichU() const;
+    Real               getDefaultAcceleration() const;
+    ConstantAcceleration& setDefaultAcceleration(Real accel);
+
+    /** Override the default acceleration with this one. This invalidates
+    the Acceleration stage in the state. **/
+    void setAcceleration(State& state, Real accel) const;
+    Real getAcceleration(const State& state) const;
+
+    // Stage::Position, Velocity
+        // no position or velocity error
+
+    // Stage::Acceleration
+    Real getAccelerationError(const State&) const;
+    Real getMultiplier(const State&) const;
+    Real getGeneralizedForce(const State&) const;
+
+    /** @cond **/ // hide from Doxygen
+    SimTK_INSERT_DERIVED_HANDLE_DECLARATIONS
+       (ConstantAcceleration, ConstantAccelerationImpl, Constraint);
+    /** @endcond **/
 };
 
 /**
- * The handle class Constraint::Custom (dataless) and its companion class Constraint::Custom::Implementation
- * can be used together to define new Constraint types with arbitrary properties. To use it, create a class
- * that extends Constraint::Custom::Implementation. You can then create an instance of it and pass it to the
- * Constraint::Custom constructor:
+ * The handle class Constraint::Custom (dataless) and its companion class 
+ * Constraint::Custom::Implementation can be used together to define new 
+ * Constraint types with arbitrary properties. To use it, create a class that 
+ * extends Constraint::Custom::Implementation. You can then create an instance 
+ * of it and pass it to the Constraint::Custom constructor:
  * 
  * <pre>
  * Constraint::Custom myConstraint(new MyConstraintImplementation( args ));
  * </pre>
  * 
- * Alternatively, you can also create a new Handle class which is a subclass of Constraint::Custom
- * and which creates the Implementation itself in its constructors.
+ * Alternatively, you can also create a new Handle class which is a subclass of 
+ * Constraint::Custom and which creates the Implementation itself in its 
+ * constructors.
  * 
  * <pre>
  * class MyConstraint : public Constraint::Custom {
@@ -817,63 +918,68 @@ public:
  * MyConstraint( args );
  * </pre>
  * 
- * and not worry about implementation classes or creating objects on the heap.  If you do this, your Constraint::Custom
- * subclass must not have any data members or virtual methods.  If it does, it will not work correctly.  Instead,
- * store all data in the Implementation subclass.
+ * and not worry about implementation classes or creating objects on the heap.  
+ * If you do this, your Constraint::Custom subclass must not have any data 
+ * members or virtual methods.  If it does, it will not work correctly. 
+ * Instead, store all data in the Implementation subclass.
  */
-class SimTK_SIMBODY_EXPORT Constraint::Custom : public Constraint 
-{
+class SimTK_SIMBODY_EXPORT Constraint::Custom : public Constraint {
 public:
     class Implementation;
     class ImplementationImpl;
 
-    /* Create a Custom Constraint.
+    /** Create a Custom Constraint.
      * 
-     * @param implementation the object which implements the custom constraint.  The Constraint::Custom takes over
-     *                       ownership of the implementation object, and deletes it when the Constraint itself
-     *                       is deleted.
+     * @param implementation
+     *      The object which implements the custom constraint. The 
+     *      Constraint::Custom takes over ownership of the implementation 
+     *      object, and deletes it when the Constraint itself is deleted.
      */
     explicit Custom(Implementation* implementation);
     SimTK_INSERT_DERIVED_HANDLE_DECLARATIONS(Custom, CustomImpl, Constraint);
 protected:
     const Implementation& getImplementation() const;
     Implementation&       updImplementation();
+
+    Custom() {}
 };
 
-// We only want the template instantiation to occur once. This symbol is defined in the SimTK core
-// compilation unit that defines the Constraint class but should not be defined any other time.
+// We only want the template instantiation to occur once. This symbol is 
+// defined in the SimTK core compilation unit that defines the Constraint 
+// class but should not be defined any other time.
 #ifndef SimTK_SIMBODY_DEFINING_CONSTRAINT
     extern template class PIMPLHandle<Constraint::Custom::Implementation, 
                                       Constraint::Custom::ImplementationImpl>;
 #endif
 
 class SimTK_SIMBODY_EXPORT Constraint::Custom::Implementation 
-  : public PIMPLHandle<Implementation,ImplementationImpl> 
-{
+:   public PIMPLHandle<Implementation,ImplementationImpl> {
 public:
-    // No default constructor because you have to supply at least the SimbodyMatterSubsystem
-    // to which this Constraint belongs.
+    // No default constructor because you have to supply at least the 
+    // SimbodyMatterSubsystem to which this Constraint belongs.
 
-    /// Destructor is virtual so derived classes get a chance to clean up if necessary.
+    /// Destructor is virtual so derived classes get a chance to clean up if 
+    /// necessary.
     virtual ~Implementation() { }
 
-    /// This method should produce a deep copy identical to the concrete derived Implementation
-    /// object underlying this Implementation base class object.
-    /// Note that the result is new heap space; the caller must be sure to take ownership
-    /// of the returned pointer and call delete on it when done.
+    /// This method should produce a deep copy identical to the concrete 
+    /// derived Implementation object underlying this Implementation base 
+    /// class object. Note that the result is new heap space; the caller must 
+    /// be sure to take ownership of the returned pointer and call delete on 
+    /// it when done.
     virtual Implementation* clone() const = 0;
 
-
-    /// This Implementation base class constructor sets the topological defaults for
-    /// the number of position level (holonomic), velocity level (nonholonomic), and
-    /// acceleration-only constraint equations to be generated.
+    /// This Implementation base class constructor sets the topological 
+    /// defaults for the number of position level (holonomic), velocity level 
+    /// (nonholonomic), and acceleration-only constraint equations to be 
+    /// generated.
     Implementation(SimbodyMatterSubsystem&, int mp, int mv, int ma);
 
-    /// The default constructor for the Implementation base class sets the number of
-    /// generated equations to zero for this constraint, meaning the Constraint won't
-    /// do anything by default.  The actual number can be changed using
-    /// setNumConstraintEquationsInUse() prior to realizeModel(). 
-    Implementation(SimbodyMatterSubsystem&);
+    /// The default constructor for the Implementation base class sets the 
+    /// number of generated equations to zero for this constraint, meaning the
+    /// Constraint won't do anything by default. The actual number can be 
+    /// changed using setNumConstraintEquationsInUse() prior to realizeModel(). 
+    explicit Implementation(SimbodyMatterSubsystem&);
 
     const SimbodyMatterSubsystem& getMatterSubsystem() const;
 
@@ -899,22 +1005,25 @@ public:
     /// used in a sequence like an assignment operator.
     Implementation& setDisabledByDefault(bool shouldBeDisabled);
 
-    /// Call this during construction phase to add a body to the topological structure of
-    /// this Constraint. This body's mobilizer's mobilities are *not* part of the constraint; 
-    /// mobilizers must be added separately. Numbering starts from 0 for each Constraint.
-    /// The supplied MobilizedBody must be in the Matter Subsystem of which this Constraint
-    /// is a part.
+    /// Call this during construction phase to add a body to the topological 
+    /// structure of this Constraint. This body's mobilizer's mobilities are 
+    /// \e not part of the constraint; mobilizers must be added separately. 
+    /// Numbering starts from 0 for each Constraint. The supplied MobilizedBody
+    /// must be in the Matter Subsystem of which this Constraint is a part.
     ConstrainedBodyIndex addConstrainedBody(const MobilizedBody&);
 
-    /// Call this during construction phase to add a mobilizer to the topological structure of
-    /// this Constraint. All the coordinates q and mobilities u for this mobilizer are added also,
-    /// but we don't know how many of those there will be until Stage::Model. Numbering starts
-    /// from 0 for each Constraint. The supplied MobilizedBody must be in the Matter Subsystem
-    /// of which this Constraint is a part.
+    /// Call this during construction phase to add a mobilizer to the 
+    /// topological structure of this Constraint. All the coordinates q and
+    /// mobilities u for this mobilizer are added also, but we don't know how 
+    /// many of those there will be until Stage::Model. Numbering starts
+    /// from 0 for each Constraint. The supplied MobilizedBody must be in the 
+    /// Matter Subsystem of which this Constraint is a part.
     ConstrainedMobilizerIndex addConstrainedMobilizer(const MobilizedBody&);
 
-    MobilizedBodyIndex getMobilizedBodyIndexOfConstrainedBody(ConstrainedBodyIndex) const;
-    MobilizedBodyIndex getMobilizedBodyIndexOfConstrainedMobilizer(ConstrainedMobilizerIndex) const;
+    MobilizedBodyIndex 
+    getMobilizedBodyIndexOfConstrainedBody(ConstrainedBodyIndex) const;
+    MobilizedBodyIndex 
+    getMobilizedBodyIndexOfConstrainedMobilizer(ConstrainedMobilizerIndex) const;
 
         // Model stage information //
 
@@ -947,132 +1056,127 @@ public:
     /// in which case the State need only have been realized to the previous (Dynamics) stage.
     Real getOneUDot(const State&, ConstrainedMobilizerIndex, MobilizerUIndex, bool realizingAcceleration=false) const;
 
-    /// Apply a scalar generalized (mobility) force \p force to a particular mobility of one of this
-    /// Constraint's Constrained Mobilizers, <em>adding</em> it in to the appropriate slot of the
-    /// mobilityForces vector, which is of length getNumConstrainedU() for this Constraint.
-    /// State need only have been realized to Model stage, but this is intended for use in
+    /// Apply a scalar generalized (mobility) force \p force to a particular 
+    /// mobility of one of this Constraint's Constrained Mobilizers, 
+    /// \e adding it in to the appropriate slot of the mobilityForces vector, 
+    /// which is of length getNumConstrainedU() for this Constraint. State need
+    /// only have been realized to Model stage, but this is intended for use in
     /// applyConstraintForce methods at Position stage.
-    void addInOneMobilityForce(const State&, ConstrainedMobilizerIndex, MobilizerUIndex whichU,
+    void addInOneMobilityForce(const State&, 
+                               ConstrainedMobilizerIndex, MobilizerUIndex whichU,
                                Real force, Vector& mobilityForces) const;
 
         // Methods for use with ConstrainedBodies
 
-    /// Extract from the State cache the spatial transform X_AB giving the location and orientation of a Constrained Body B's
-    /// body frame in this Constraint's Ancestor frame A. The State must already be realized to the Position stage,
-    /// or if you are currently realizing that stage set \p realizingPosition true in which case State need
-    /// only have been realized to the previous (Time) stage.
-    const Transform&  getBodyTransform(const State& s, ConstrainedBodyIndex B, bool realizingPosition=false)     const; // X_AB
-    /// Extract from the State cache the spatial velocity V_AB giving the linear and angular velocity of a Constrained Body B's
-    /// body frame measured and expressed in this Constraint's Ancestor frame A. The State must already be realized to the Velocity stage,
-    /// or if you are currently realizing that stage set \p realizingVelocity true in which case State need
-    /// only have been realized to the previous (Position) stage.
-    const SpatialVec& getBodyVelocity(const State& s, ConstrainedBodyIndex B, bool realizingVelocity=false)     const; // V_AB
-    /// Extract from the State cache the spatial acceleration A_AB giving the linear and angular acceleration of a Constrained Body B's
-    /// body frame measured and expressed in this Constraint's Ancestor frame A. The State must already be realized to the Acceleration stage,
-    /// or if you are currently realizing that stage set \p realizingAcceleration true in which case State need
-    /// only have been realized to the previous (Dynamics) stage.
-    const SpatialVec& getBodyAcceleration(const State& s, ConstrainedBodyIndex B, bool realizingAcceleration=false) const; // A_AB
+    /// Extract from the State cache the spatial transform X_AB giving the 
+    /// location and orientation of a Constrained Body B's body frame in this 
+    /// Constraint's Ancestor frame A.
+    const Transform&  getBodyTransform(const State& s, ConstrainedBodyIndex B)    const; // X_AB
+    /// Extract from the State cache the spatial velocity V_AB giving the linear
+    /// and angular velocity of a Constrained Body B's body frame measured and 
+    /// expressed in this Constraint's Ancestor frame A.
+    const SpatialVec& getBodyVelocity(const State& s, ConstrainedBodyIndex B)     const; // V_AB
+    /// Extract from the State cache the spatial acceleration A_AB giving the 
+    /// linear and angular acceleration of a Constrained Body B's body frame 
+    /// measured and expressed in this Constraint's Ancestor frame A.
+    const SpatialVec& getBodyAcceleration(const State& s, ConstrainedBodyIndex B) const; // A_AB
 
-        // Extract just the rotational quantities from the spatial quantities above.
+        // Extract just the rotational part of spatial quantities above.
 
-    /// Extract from the State cache the rotation matrix R_AB giving the orientation of a Constrained Body B's
-    /// body frame in this Constraint's Ancestor frame A. The State must already be realized to the Position stage,
-    /// or if you are currently realizing that stage set \p realizingPosition true in which case State need
-    /// only have been realized to the previous (Time) stage.
-    const Rotation& getBodyRotation           (const State& s, ConstrainedBodyIndex B, bool realizingPosition=false) const
-       {return getBodyTransform(s,B,realizingPosition).R();}   // R_AB
-    /// Extract from the State cache the angular velocity w_AB giving the angular velocity of a Constrained Body B's
-    /// body frame measured and expressed in this Constraint's Ancestor frame A. The State must already be realized to the Velocity stage,
-    /// or if you are currently realizing that stage set \p realizingVelocity true in which case State need
-    /// only have been realized to the previous (Position) stage.
-    const Vec3& getBodyAngularVelocity    (const State& s, ConstrainedBodyIndex B, bool realizingVelocity=false) const
-       {return getBodyVelocity(s,B,realizingVelocity)[0];}     // w_AB
-    /// Extract from the State cache the angular acceleration b_AB giving the angular acceleration of a Constrained Body B's
-    /// body frame measured and expressed in this Constraint's Ancestor frame A. The State must already be realized to the Acceleration stage,
-    /// or if you are currently realizing that stage set \p realizingAcceleration true in which case State need
-    /// only have been realized to the previous (Dynamics) stage.
-    const Vec3& getBodyAngularAcceleration(const State& s, ConstrainedBodyIndex B, bool realizingAcceleration=false) const
-       {return getBodyAcceleration(s,B,realizingAcceleration)[0];} // b_AB
+    /// Extract from the State cache the rotation matrix R_AB giving the 
+    /// orientation of a Constrained Body B's body frame in this Constraint's 
+    /// Ancestor frame A.
+    const Rotation& getBodyRotation(const State& s, ConstrainedBodyIndex B) const
+       {return getBodyTransform(s,B).R();}   // R_AB
+    /// Extract from the State cache the angular velocity w_AB giving the 
+    /// angular velocity of a Constrained Body B's body frame measured and 
+    /// expressed in this Constraint's Ancestor frame A.
+    const Vec3& getBodyAngularVelocity(const State& s, ConstrainedBodyIndex B) const
+       {return getBodyVelocity(s,B)[0];}     // w_AB
+    /// Extract from the State cache the angular acceleration b_AB giving the 
+    /// angular acceleration of a Constrained Body B's body frame measured and 
+    /// expressed in this Constraint's Ancestor frame A.
+    const Vec3& getBodyAngularAcceleration(const State& s, ConstrainedBodyIndex B) const
+       {return getBodyAcceleration(s,B)[0];} // b_AB
 
-        // Extract just the translational (linear) quantities from the spatial quantities above.
+        // Extract just the translational (linear) part of spatial quantities above.
 
-    /// Extract from the State cache the position vector p_AB (or more explicitly, p_OA_OB) giving the location of a Constrained Body B's
-    /// body frame origin OB relative to this Constraint's Ancestor (A) frame origin OA. The State must already be realized to the Position stage,
-    /// or if you are currently realizing that stage set \p realizingPosition true in which case State need
-    /// only have been realized to the previous (Time) stage.
-    const Vec3& getBodyOriginLocation    (const State& s, ConstrainedBodyIndex B, bool realizingPosition=false) const
-       {return getBodyTransform(s,B,realizingPosition).p();}   // p_AB
-    /// Extract from the State cache the linear velocity v_AB (or more explicitly, v_A_OB) giving the linear velocity of a Constrained Body B's
-    /// body frame origin OB measured and expressed in this Constraint's Ancestor frame A. The State must already be realized to the Velocity stage,
-    /// or if you are currently realizing that stage set \p realizingVelocity true in which case State need
-    /// only have been realized to the previous (Position) stage.
-    const Vec3& getBodyOriginVelocity    (const State& s, ConstrainedBodyIndex B, bool realizingVelocity=false) const 
-       {return getBodyVelocity(s,B,realizingVelocity)[1];}     // v_AB
-    /// Extract from the State cache the linear acceleration a_AB (or more explicitly, a_A_OB)
-    /// giving the linear acceleration of a Constrained Body B's body frame origin OB, measured and expressed
-    /// in this Constraint's Ancestor frame A. The State must already be realized to the Acceleration stage,
-    /// or if you are currently realizing that stage set \p realizingAcceleration true in which case State need
-    /// only have been realized to the previous (Dynamics) stage.
-    const Vec3& getBodyOriginAcceleration(const State& s, ConstrainedBodyIndex B, bool realizingAcceleration=false) const 
-       {return getBodyAcceleration(s,B,realizingAcceleration)[1];} // a_AB
+    /// Extract from the State cache the position vector p_AB (or more 
+    /// explicitly, p_OA_OB) giving the location of a Constrained Body B's
+    /// body frame origin OB relative to this Constraint's Ancestor (A) frame 
+    /// origin OA.
+    const Vec3& getBodyOriginLocation(const State& s, ConstrainedBodyIndex B) const
+       {return getBodyTransform(s,B).p();}   // p_AB
+    /// Extract from the State cache the linear velocity v_AB (or more 
+    /// explicitly, v_A_OB) giving the linear velocity of a Constrained Body B's
+    /// body frame origin OB measured and expressed in this Constraint's Ancestor
+    /// frame A.
+    const Vec3& getBodyOriginVelocity    (const State& s, ConstrainedBodyIndex B) const 
+       {return getBodyVelocity(s,B)[1];}     // v_AB
+    /// Extract from the State cache the linear acceleration a_AB (or more 
+    /// explicitly, a_A_OB) giving the linear acceleration of a Constrained Body 
+    /// B's body frame origin OB, measured and expressed in this Constraint's 
+    /// Ancestor frame A.
+    const Vec3& getBodyOriginAcceleration(const State& s, ConstrainedBodyIndex B) const 
+       {return getBodyAcceleration(s,B)[1];} // a_AB
 
         // Calculate location, velocity, and acceleration for a given station.
 
-    /// Calculate the location p_AS in the Ancestor frame of a station S of a Constrained Body B, specified with
-    /// the position vector p_BS (or more explicitly, p_OB_S) from the B frame origin to the point S, expressed
-    /// in the B frame. The return value is a position vector from the Ancestor frame's origin OA to the location
-    /// of the point S, expressed in the Ancestor frame. The State must already be realized to the Position stage,
-    /// or if you are currently realizing that stage set \p realizingPosition true in which case State need
-    /// only have been realized to the previous (Time) stage.
-    Vec3 findStationLocation(const State& s, ConstrainedBodyIndex B, const Vec3& p_BS, bool realizingPosition=false) const {
-        return getBodyTransform(s,B,realizingPosition) * p_BS; // re-measure and re-express
+    /// Calculate the location p_AS in the Ancestor frame of a station S of a 
+    /// Constrained Body B, specified with the position vector p_BS (or more 
+    /// explicitly, p_OB_S) from the B frame origin to the point S, expressed
+    /// in the B frame. The return value is a position vector from the Ancestor 
+    /// frame's origin OA to the location of the point S, expressed in the 
+    /// Ancestor frame.
+    Vec3 findStationLocation(const State& s, ConstrainedBodyIndex B, const Vec3& p_BS) const {
+        return getBodyTransform(s,B) * p_BS; // re-measure and re-express
     }
-    /// Calculate the velocity v_AS in the Ancestor frame of a station S of a Constrained Body B, specified with
-    /// the position vector p_BS (or more explicitly, p_OB_S) from the B frame origin to the point S, expressed
-    /// in the B frame. The return value is a vector expressed in the Ancestor frame.
-    /// The State must already be realized to the Velocity stage,
-    /// or if you are currently realizing that stage set \p realizingVelocity true in which case State need
-    /// only have been realized to the previous (Position) stage.
-    Vec3 findStationVelocity(const State& s, ConstrainedBodyIndex B, const Vec3& p_BS, bool realizingVelocity=false) const {
+    /// Calculate the velocity v_AS in the Ancestor frame of a station S of a 
+    /// Constrained Body B, specified with the position vector p_BS (or more 
+    /// explicitly, p_OB_S) from the B frame origin to the point S, expressed
+    /// in the B frame. The return value is a vector expressed in the Ancestor 
+    /// frame.
+    Vec3 findStationVelocity(const State& s, ConstrainedBodyIndex B, const Vec3& p_BS) const {
         const Vec3        p_AS = getBodyRotation(s,B) * p_BS; // rexpressed but not shifted
-        const SpatialVec& V_AB = getBodyVelocity(s,B,realizingVelocity);
+        const SpatialVec& V_AB = getBodyVelocity(s,B);
         return V_AB[1] + (V_AB[0] % p_AS);
     }
-    /// Calculate the acceleration a_AS in the Ancestor frame of a station S of a Constrained Body B, specified with
-    /// the position vector p_BS (or more explicitly, p_OB_S) from the B frame origin to the point S, expressed
-    /// in the B frame. The return value is a vector expressed in the Ancestor frame.
-    /// The State must already be realized to the Acceleration stage,
-    /// or if you are currently realizing that stage set \p realizingAcceleration true in which case State need
-    /// only have been realized to the previous (Dynamics) stage.
-    Vec3 findStationAcceleration(const State& s, ConstrainedBodyIndex B, const Vec3& p_BS, bool realizingAcceleration=false) const {
+    /// Calculate the acceleration a_AS in the Ancestor frame of a station S of
+    /// a Constrained Body B, specified with the position vector p_BS (or more 
+    /// explicitly, p_OB_S) from the B frame origin to the point S, expressed
+    /// in the B frame. The return value is a vector expressed in the Ancestor 
+    /// frame.e.
+    Vec3 findStationAcceleration(const State& s, ConstrainedBodyIndex B, const Vec3& p_BS) const {
         const Vec3        p_AS = getBodyRotation(s,B) * p_BS; // rexpressed but not shifted
         const Vec3&       w_AB = getBodyAngularVelocity(s,B);
-        const SpatialVec& A_AB = getBodyAcceleration(s,B,realizingAcceleration);
+        const SpatialVec& A_AB = getBodyAcceleration(s,B);
         return A_AB[1] + (A_AB[0] % p_AS) + w_AB % (w_AB % p_AS); // careful: cross product is not associative
     }
 
         // Utilities for applying constraint forces to ConstrainedBodies.
 
-    /// Apply an Ancestor-frame force to a B-frame station S given by the position vector p_BS (or more explicitly,
-    /// p_OB_S) from the B frame origin to the point S, expressed in the B frame, <em>adding to</em> the appropriate
-    /// \p bodyForcesInA entry for this ConstrainedBody B.
-    void addInStationForce(const State& s, ConstrainedBodyIndex B, const Vec3& p_BS, 
+    /// Apply an Ancestor-frame force to a B-frame station S given by the 
+    /// position vector p_BS (or more explicitly, p_OB_S) from the B frame 
+    /// origin to the point S, expressed in the B frame, <em>adding to</em> 
+    /// the appropriate \p bodyForcesInA entry for this ConstrainedBody B.
+    void addInStationForce(const State& s,  ConstrainedBodyIndex B,
+                           const Vec3& p_BS, 
                            const Vec3& forceInA, Vector_<SpatialVec>& bodyForcesInA) const;
 
-    /// Apply an Ancestor-frame torque to body B, <em>adding to</em> the appropriate \p bodyForcesInA entry
-    /// for this ConstrainedBody B.
+    /// Apply an Ancestor-frame torque to body B, <em>adding to</em> the 
+    /// appropriate \p bodyForcesInA entry for this ConstrainedBody B.
     void addInBodyTorque(const State& s, ConstrainedBodyIndex B,
                          const Vec3& torqueInA, Vector_<SpatialVec>& bodyForcesInA) const;
 
 
 protected:
-    /// @name Optional realize() Virtual Methods
+    /// @name Optional realize() virtual methods
     /// Provide implementations of these methods if you want to allocate State variables (such
     /// as modeling options or parameters) or want to pre-calculate some expensive quantities and
     /// store them in the State cache for your future use. Note that the Position, Velocity, and
     /// Acceleration-stage realize methods will be called <em>before</em> the constraint error
     /// calculating methods associated with this Constraint's constraint equations. That means,
-    /// for example, you can calculate some distances in realizePosition() and them use them
+    /// for example, you can calculate some distances in realizePosition() and then use them
     /// in realizePositionErrors().
 
     //@{
@@ -1169,18 +1273,20 @@ protected:
     /// Stage::Acceleration cache information relating to MobilizedBodies is available.
     virtual void realizePositionDotDotErrors(const State&, int mp,  Real* paerr) const;
 
-    /// From the \p mp supplied Lagrange multipliers provided in \p multipliers, calculate the
-    /// forces produced by this Constraint on its ConstrainedBodies and ConstrainedMobilizers.
-    /// Body spatial forces are applied at the body origin and expressed in the Ancestor frame
-    /// and written to an array \p bodyForces of length getNumConstrainedBodies().
-    /// Mobility forces are written to an array \p mobilityForces of length getNumConstrainedU(),
-    /// that is, the number of constrained <em>mobilities</em>, not the number of constrained
-    /// <em>mobilizers</em>. The State will have been realize to Stage::Position and all 
-    /// Position-stage cache information is available including any that may have been
-    /// calculated during the prior call to this Constraint's realizePositionErrors() method
-    /// and realizePosition() method. Simbody will already have ensured that the force-return
-    /// arrays have been allocated to the right size and initialized to zero; you need only write the
-    /// non-zero ones.
+    /// From the \p mp supplied Lagrange multipliers provided in \p multipliers,
+    /// calculate the forces produced by this Constraint on its 
+    /// ConstrainedBodies and ConstrainedMobilizers. Body spatial forces are 
+    /// applied at the body origin and expressed in the Ancestor frame and 
+    /// written to an array \p bodyForces of length getNumConstrainedBodies().
+    /// Mobility forces are written to an array \p mobilityForces of length 
+    /// getNumConstrainedU(), that is, the number of constrained \e mobilities, 
+    /// not the number of constrained \e mobilizers. The State will have been 
+    /// realized to Stage::Position and all Position-stage cache information is 
+    /// available including any that may have been calculated during the prior 
+    /// call to this Constraint's realizePositionErrors() method and 
+    /// realizePosition() method. Simbody will already have ensured that the 
+    /// force-return arrays have been allocated to the right size and 
+    /// initialized to zero; you need only write the non-zero ones.
     virtual void applyPositionConstraintForces
        (const State&, int mp, const Real* multipliers,
         Vector_<SpatialVec>& bodyForces,
@@ -1202,19 +1308,20 @@ protected:
     /// Stage::Acceleration cache information relating to MobilizedBodies is available.
     virtual void realizeVelocityDotErrors(const State&, int mv,  Real* vaerr) const;
 
-    /// From the \p mv supplied Lagrange multipliers provided in \p multipliers, calculate the
-    /// forces produced by this Constraint on its ConstrainedBodies and ConstrainedMobilizers due
-    /// to its velocity-level (nonholonomic) constraints. Body spatial forces are applied at the
-    /// body origin and expressed in the Ancestor frame and written to an array \p bodyForces
-    /// of length getNumConstrainedBodies(). Mobility forces are written to an array
-    /// \p mobilityForces of length getNumConstrainedU(), that is, the number of constrained
-    /// <em>mobilities</em>, not the number of constrained
-    /// <em>mobilizers</em>. The State will have been realize to Stage::Position and all 
-    /// Position-stage cache information is available including any that may have been
-    /// calculated during the prior call to this Constraint's realizePosition() method.
-    /// Simbody will already have ensured that the force-return
-    /// arrays have been allocated to the right size and initialized to zero; you need only write the
-    /// non-zero ones.
+    /// From the \p mv supplied Lagrange multipliers provided in \p multipliers,
+    /// calculate the forces produced by this Constraint on its 
+    /// ConstrainedBodies and ConstrainedMobilizers due to its velocity-level 
+    /// (nonholonomic) constraints. Body spatial forces are applied at the body 
+    /// origin and expressed in the Ancestor frame and written to an array 
+    /// \p bodyForces of length getNumConstrainedBodies(). Mobility forces are
+    /// written to an array \p mobilityForces of length getNumConstrainedU(), 
+    /// that is, the number of constrained \e mobilities, not the number of 
+    /// constrained \e mobilizers. The State will have been realized to 
+    /// Stage::Position and all Position-stage cache information is available
+    /// including any that may have been calculated during the prior call to 
+    /// this Constraint's realizePosition() method. Simbody will already have 
+    /// ensured that the force-return arrays have been allocated to the right 
+    /// size and initialized to zero; you need only write the non-zero ones.
     virtual void applyVelocityConstraintForces
        (const State&, int mv, const Real* multipliers,
         Vector_<SpatialVec>& bodyForces,
@@ -1229,19 +1336,20 @@ protected:
     /// to \p aerr. The State will have been realized to Stage::Dynamics, and the part of the
     /// Stage::Acceleration cache information relating to MobilizedBodies is available.
     virtual void realizeAccelerationErrors(const State&, int ma,  Real* aerr) const;
-    /// From the \p ma supplied Lagrange multipliers provided in \p multipliers, calculate the
-    /// forces produced by this Constraint on its ConstrainedBodies and ConstrainedMobilizers due
-    /// to its acceleration-only constraints. Body spatial forces are applied at the
-    /// body origin and expressed in the Ancestor frame and written to an array \p bodyForces
-    /// of length getNumConstrainedBodies(). Mobility forces are written to an array
-    /// \p mobilityForces of length getNumConstrainedU(), that is, the number of constrained
-    /// <em>mobilities</em>, not the number of constrained
-    /// <em>mobilizers</em>. The State will have been realize to Stage::Position and all 
-    /// Position-stage cache information is available including any that may have been
-    /// calculated during the prior call to this Constraint's realizePosition() method.
-    /// Simbody will already have ensured that the force-return
-    /// arrays have been allocated to the right size and initialized to zero; you need only write the
-    /// non-zero ones.
+    /// From the \p ma supplied Lagrange multipliers provided in \p multipliers,
+    /// calculate the forces produced by this Constraint on its 
+    /// ConstrainedBodies and ConstrainedMobilizers due to its acceleration-only
+    /// constraints. Body spatial forces are applied at the body origin and 
+    /// expressed in the Ancestor frame and written to an array \p bodyForces of
+    /// length getNumConstrainedBodies(). Mobility forces are written to an 
+    /// array \p mobilityForces of length getNumConstrainedU(), that is, the 
+    /// number of constrained \e mobilities, not the number of constrained
+    /// \e mobilizers. The State will have been realized to Stage::Position and 
+    /// all Position-stage cache information is available including any that 
+    /// may have been calculated during the prior call to this Constraint's 
+    /// realizePosition() method. Simbody will already have ensured that the 
+    /// force-return arrays have been allocated to the right size and 
+    /// initialized to zero; you need only write the non-zero ones.
     virtual void applyAccelerationConstraintForces
        (const State&, int ma, const Real* multipliers,
         Vector_<SpatialVec>& bodyForces,
@@ -1255,7 +1363,7 @@ protected:
     /// provide methods for controlling the presence or appearance of your generated geometry.
     /// If you don't implement this routine no geometry will be generated.
     virtual void calcDecorativeGeometryAndAppend
-       (const State& s, Stage stage, std::vector<DecorativeGeometry>& geom) const
+       (const State& s, Stage stage, Array_<DecorativeGeometry>& geom) const
     {
     }
 
@@ -1263,13 +1371,16 @@ protected:
 };
 
 /**
- * This is a subclass of Constraint::Custom which uses a Function object to define a holonomic (position) constraint.
- * You provide a Function which takes some subset of the system's generalized coordinates as arguments, and returns
- * a single value.  It also must support partial derivatives up to second order.  The constraint enforces that the value
- * of the function should equal 0 at all times.
+ * This is a subclass of Constraint::Custom which uses a Function object to 
+ * define a holonomic (position) constraint. You provide a Function which takes
+ * some subset of the system's generalized coordinates as arguments, and 
+ * returns a single value.  It also must support partial derivatives up to 
+ * second order.  The constraint enforces that the value of the function should
+ * equal 0 at all times.
  */
   
-class SimTK_SIMBODY_EXPORT Constraint::CoordinateCoupler : public Constraint::Custom {
+class SimTK_SIMBODY_EXPORT Constraint::CoordinateCoupler 
+:   public Constraint::Custom {
 public:
     /**
      * Create a CoordinateCoupler.  You specify a Function and a list of generalized coordinates to pass to it as arguments.
@@ -1283,7 +1394,19 @@ public:
      * @param coordBody   the MobilizedBody corresponding to each generalized coordinate that should be passed as a function argument
      * @param coordIndex  the index corresponding to each generalized coordinate that should be passed as a function argument
      */
-    CoordinateCoupler(SimbodyMatterSubsystem& matter, const Function* function, const std::vector<MobilizedBodyIndex>& coordBody, const std::vector<MobilizerQIndex>& coordIndex);
+    CoordinateCoupler(SimbodyMatterSubsystem& matter, const Function* function, 
+                      const Array_<MobilizedBodyIndex>& coordBody, 
+                      const Array_<MobilizerQIndex>& coordIndex);
+
+    /** For compatibility with std::vector; no copying is done. **/
+    CoordinateCoupler(SimbodyMatterSubsystem& matter, const Function* function, 
+                      const std::vector<MobilizedBodyIndex>& coordBody, 
+                      const std::vector<MobilizerQIndex>& coordIndex) 
+    {   // Invoke the above constructor with converted arguments.
+        new (this) CoordinateCoupler(matter,function,
+            ArrayViewConst_<MobilizedBodyIndex>(coordBody),
+            ArrayViewConst_<MobilizerQIndex>(coordIndex));
+    }
 };
 
 /**
@@ -1311,7 +1434,20 @@ public:
      * @param speedBody   the MobilizedBody corresponding to each generalized speed that should be passed as a function argument
      * @param speedIndex  the index corresponding to each generalized speed that should be passed as a function argument
      */
-    SpeedCoupler(SimbodyMatterSubsystem& matter, const Function* function, const std::vector<MobilizedBodyIndex>& speedBody, const std::vector<MobilizerUIndex>& speedIndex);
+    SpeedCoupler(SimbodyMatterSubsystem& matter, const Function* function, 
+                 const Array_<MobilizedBodyIndex>& speedBody, 
+                 const Array_<MobilizerUIndex>& speedIndex);
+
+    /** For compatibility with std::vector; no copying is done. **/
+    SpeedCoupler(SimbodyMatterSubsystem& matter, const Function* function, 
+                 const std::vector<MobilizedBodyIndex>& speedBody, 
+                 const std::vector<MobilizerUIndex>& speedIndex) 
+    {   // Invoke above constructor with converted arguments.
+        new (this) SpeedCoupler(matter, function,
+                                ArrayViewConst_<MobilizedBodyIndex>(speedBody),
+                                ArrayViewConst_<MobilizerUIndex>(speedIndex));
+    }
+
     /**
      * Create a SpeedCoupler.  You specify a Function and a list of generalized coordinates and speeds to pass to it as arguments.
      * Each generalized speed is specified by a MobilizedBody and the index of the speeds within that body.  For example
@@ -1328,8 +1464,25 @@ public:
      * @param coordBody   the MobilizedBody corresponding to each generalized coordinate that should be passed as a function argument
      * @param coordIndex  the index corresponding to each generalized coordinate that should be passed as a function argument
      */
-    SpeedCoupler(SimbodyMatterSubsystem& matter, const Function* function, const std::vector<MobilizedBodyIndex>& speedBody, const std::vector<MobilizerUIndex>& speedIndex,
-            const std::vector<MobilizedBodyIndex>& coordBody, const std::vector<MobilizerQIndex>& coordIndex);
+    SpeedCoupler(SimbodyMatterSubsystem& matter, const Function* function, 
+                 const Array_<MobilizedBodyIndex>& speedBody, 
+                 const Array_<MobilizerUIndex>& speedIndex,
+                 const Array_<MobilizedBodyIndex>& coordBody, 
+                 const Array_<MobilizerQIndex>& coordIndex);
+
+    /** For compatibility with std::vector; no copying is done. **/
+    SpeedCoupler(SimbodyMatterSubsystem& matter, const Function* function, 
+                 const std::vector<MobilizedBodyIndex>& speedBody, 
+                 const std::vector<MobilizerUIndex>& speedIndex,
+                 const std::vector<MobilizedBodyIndex>& coordBody, 
+                 const std::vector<MobilizerQIndex>& coordIndex)
+    {   // Invoke above constructor with converted arguments.
+        new (this) SpeedCoupler(matter, function,
+                                ArrayViewConst_<MobilizedBodyIndex>(speedBody),
+                                ArrayViewConst_<MobilizerUIndex>(speedIndex),
+                                ArrayViewConst_<MobilizedBodyIndex>(coordBody),
+                                ArrayViewConst_<MobilizerQIndex>(coordIndex));
+    }
 };
 
 /**
@@ -1350,7 +1503,8 @@ public:
      * @param coordBody   the MobilizedBody corresponding to the generalized coordinate which will be constrained
      * @param coordIndex  the index of the generalized coordinate which will be constrained
      */
-    PrescribedMotion(SimbodyMatterSubsystem& matter, const Function* function, MobilizedBodyIndex coordBody, MobilizerQIndex coordIndex);
+    PrescribedMotion(SimbodyMatterSubsystem& matter, const Function* function, 
+                     MobilizedBodyIndex coordBody, MobilizerQIndex coordIndex);
 };
 
 } // namespace SimTK

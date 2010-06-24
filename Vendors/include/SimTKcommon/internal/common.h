@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2005-7 Stanford University and the Authors.         *
+ * Portions copyright (c) 2005-10 Stanford University and the Authors.        *
  * Authors: Michael Sherman                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -33,10 +33,10 @@
  * -------------------------------------------------------------------------- */
 
 /**@file
- * Mandatory first inclusion for any SimTK source or header file.
+ * Mandatory first inclusion for any %SimTK source or header file.
  * 
- * Every source and most header files using SimTK must include this 
- * header as its <em>first</em> inclusion. Declarations and definitions that 
+ * Every source and most header files using %SimTK must include this 
+ * header as its \e first inclusion. Declarations and definitions that 
  * must be available and compiler-and machine-specific issues are dealt
  * with here.
  *
@@ -45,29 +45,68 @@
  * only under C++.
  */
 
+// Provide doxygen documentation for the SimTK namespace.
+
+/**@namespace SimTK
+ *
+ * This is the top-level %SimTK namespace into which all %SimTK names are 
+ * placed to avoid collision with other symbols. If you get tired of prefacing 
+ * every symbol with "SimTK::", include the statement "using namespace SimTK;" 
+ * at the beginning of your %SimTK-using compilation units. Any names which 
+ * cannot be put in the namespace (macro names, for example) begin with the 
+ * prefix "SimTK_" instead. 
+ */
+
+// Define shared doxygen "modules" and sub-modules here. We'll put things 
+// in them at various places when appropriate.
+
+/**@defgroup GlobalFunctions Global Functions in the SimTK namespace
+ *
+ * These are functions at the top level of the SimTK namespace, meaning
+ * that a function named funcName() is invoked as SimTK::funcName(), or
+ * just funcName() if there is a "using namespace SimTK;" statement in effect.
+ */
+
+/**@defgroup ScalarFunctions Scalar Functions
+ * @ingroup GlobalFunctions
+ *
+ * These functions are overloaded to act on %SimTK scalar types and C++
+ * built-in types, including integral types when appropriate.
+ */
+
+/**@defgroup BitFunctions Bit-twiddling Functions
+ * @ingroup GlobalFunctions
+ *
+ * These functions perform highly optimized bit-twiddling operations on
+ * the built-in integral types, and sometimes on the representations of
+ * floating point types as well.
+ */
+
 /*****************************/
 /* ANSI-C COMPATIBLE SECTION */
 /*****************************/
 
 /* Set up a few compile-time options that affect all SimTK Core headers. */
 
-/* 
+/**
  * This compile-time constant determines the default precision used everywhere
- * in SimTK Core code. Wherever a SimTK::Real, SimTK::Vector, SimTK::Matrix,
+ * in %SimTK Core code. Wherever a SimTK::Real, SimTK::Vector, SimTK::Matrix,
  * etc. appears with no precision specified, it will have this underlying precision.
  * We use 1==float, 2==double, 4==long double. Any other value will cause
- * a compile time error. The default is 2.
+ * a compile time error. The default is 2, i.e., double precision.
  */
 #ifndef SimTK_DEFAULT_PRECISION
 #   define SimTK_DEFAULT_PRECISION 2
 #endif
 
-/* This type is for use in C. In C++ use SimTK::Real instead. */
 #if   (SimTK_DEFAULT_PRECISION == 1)
+/** This type is for use in C; in C++ use SimTK::Real instead. */
     typedef float SimTK_Real;
 #elif (SimTK_DEFAULT_PRECISION == 2)
+/** This type is for use in C; in C++ use SimTK::Real instead. */
     typedef double SimTK_Real;
 #elif (SimTK_DEFAULT_PRECISION == 4)
+/** This type is for use in C; in C++ use SimTK::Real instead. */
     typedef long double SimTK_Real;
 #else
     #error ILLEGAL VALUE FOR DEFAULT PRECISION
@@ -119,33 +158,38 @@
 
 #ifdef _WIN32
     #ifdef _MSC_VER
-    #pragma warning(disable:4231) // need to use 'extern' template explicit instantiation
-    #pragma warning(disable:4251) // no DLL interface for type of member of exported class
+    #pragma warning(disable:4231) /*need to use 'extern' template explicit instantiation*/
+    #pragma warning(disable:4251) /*no DLL interface for type of member of exported class*/
+    #pragma warning(disable:4275) /*no DLL interface for base class of exported class*/
+    #pragma warning(disable:4345) /*warning about PODs being default-initialized*/
     #endif
     #if defined(SimTK_SimTKCOMMON_BUILDING_SHARED_LIBRARY)
         #define SimTK_SimTKCOMMON_EXPORT __declspec(dllexport)
-        // Keep MS VC++ quiet when it tries to instantiate incomplete template classes in a DLL.
+        /* Keep MS VC++ quiet when it tries to instantiate incomplete template classes in a DLL. */
         #ifdef _MSC_VER
         #pragma warning(disable:4661)
         #endif
     #elif defined(SimTK_SimTKCOMMON_BUILDING_STATIC_LIBRARY) || defined(SimTK_USE_STATIC_LIBRARIES)
         #define SimTK_SimTKCOMMON_EXPORT
     #else
-        #define SimTK_SimTKCOMMON_EXPORT __declspec(dllimport)   // i.e., a client of a shared library
+        #define SimTK_SimTKCOMMON_EXPORT __declspec(dllimport) /*i.e., a client of a shared library*/
     #endif
-	// VC++ tries to be secure by leaving bounds checking on for STL containers
-	// even in Release mode. This macro exists to disable that feature and can
-	// result in a considerable speedup.
-	// CAUTION: every linked-together compilation unit must have this set the same
-	// way. Everyone who properly includes this file first is fine; but as of this
-	// writing Simmath's IpOpt doesn't do so.
-	// (sherm 081204 disabling for now: doesn't work on VC++ 8 and is 
-	// tricky on VC++ 9 because all libraries, including 3rd party, must
-	// be built the same way)
-	//#ifdef NDEBUG
-	//	#undef _SECURE_SCL
-	//	#define _SECURE_SCL 0
-	//#endif
+	/* VC++ tries to be secure by leaving bounds checking on for STL containers
+	 * even in Release mode. This macro exists to disable that feature and can
+	 * result in a considerable speedup.
+	 * CAUTION: every linked-together compilation unit must have this set the same
+	 * way. Everyone who properly includes this file first is fine; but as of this
+	 * writing Simmath's IpOpt doesn't do so.
+     */
+	/* (sherm 081204 disabling for now: doesn't work on VC++ 8 and is 
+	 * tricky on VC++ 9 because all libraries, including 3rd party, must
+	 * be built the same way). Better to use the SimTK::Array_<T> class in
+     * place of the std::vector<T> class to get better performance.
+	 #ifdef NDEBUG
+	 	#undef _SECURE_SCL
+	 	#define _SECURE_SCL 0
+	 #endif
+     */
 #else
     #define SimTK_SimTKCOMMON_EXPORT // Linux, Mac
 #endif
@@ -156,7 +200,14 @@
 #if defined(__cplusplus)
 extern "C" {
 #endif
+    /** Obtain version information for the currently-loaded SimTKcommon library. */
     SimTK_SimTKCOMMON_EXPORT void SimTK_version_SimTKcommon(int* major, int* minor, int* build);
+    /** 
+     * Obtain "about" information for the currently-loaded SimTKcommon library.
+     * Available keywords are "version" (major.minor.build), "library", 
+     * "type" (shared or static), "copyright", "svn_revision", "authors", 
+     * "debug" (debug or release).
+     */
     SimTK_SimTKCOMMON_EXPORT void SimTK_about_SimTKcommon(const char* key, int maxlen, char* value);
 #if defined(__cplusplus)
 }
@@ -177,27 +228,33 @@ extern "C" {
 #include <typeinfo>
 
 
-/* Currently (Microsoft VC++ 9) these C99-compatible floating point functions are
- * missing. We'll create them here and install them into namespace std.
- * TODO: This should be removed when these are available.
- */
+/* Currently (Microsoft VC++ 9) these C99-compatible floating point functions 
+are missing. We'll create them here and install them into namespace std.
+TODO: This should be removed when these are available. */
 #ifdef _MSC_VER
 namespace std {
 inline bool isfinite(float f) {return _finite(f) != 0;}
 inline bool isfinite(double d) {return _finite(d) != 0;}
+inline bool isfinite(long double l) {return _finite(l) != 0;}
 inline bool isnan(float f) {return _isnan(f) != 0;}
 inline bool isnan(double d) {return _isnan(d) != 0;}
+inline bool isnan(long double l) {return _isnan(l) != 0;}
 inline bool isinf(float f) {return std::abs(f)==std::numeric_limits<float>::infinity();}
 inline bool isinf(double d) {return std::abs(d)==std::numeric_limits<double>::infinity();}
+inline bool isinf(long double l) {return std::abs(l)==std::numeric_limits<double>::infinity();}
 inline bool signbit(float f) {return (*reinterpret_cast<unsigned*>(&f) & 0x80000000U) != 0;}
 inline bool signbit(double d) {return (*reinterpret_cast<unsigned long long*>(&d)
-                                & 0x8000000000000000ULL) != 0;}
+                               & 0x8000000000000000ULL) != 0;}
+inline bool signbit(long double l) {return (*reinterpret_cast<unsigned long long*>(&l)
+                                    & 0x8000000000000000ULL) != 0;}
 }
 #endif
 
 
+namespace SimTK {
 // This utility answers the question "if I put this integral value in an int and then
 // get it back, will its value be the same?".
+inline bool canStoreInInt(bool)            {return true;}
 inline bool canStoreInInt(char)            {return true;}
 inline bool canStoreInInt(unsigned char)   {return true;}
 inline bool canStoreInInt(signed char)     {return true;}
@@ -207,9 +264,12 @@ inline bool canStoreInInt(int)             {return true;}
 inline bool canStoreInInt(unsigned int  u) {return (unsigned int)(int(u)) == u;}
 inline bool canStoreInInt(long i)          {return long(int(i)) == i;}
 inline bool canStoreInInt(unsigned long u) {return (unsigned long)(int(u)) == u;}
+inline bool canStoreInInt(long long i)          {return (long long)(int(i)) == i;}
+inline bool canStoreInInt(unsigned long long u) {return (unsigned long long)(int(u)) == u;}
 
 // This utility answers the question "is this integral value a nonnegative number
 // that can be stored in an int?".
+inline bool canStoreInNonnegativeInt(bool)             {return true;}
 inline bool canStoreInNonnegativeInt(char c)           {return c >= 0;}
 inline bool canStoreInNonnegativeInt(unsigned char c)  {return true;}
 inline bool canStoreInNonnegativeInt(signed char c)    {return c >= 0;}
@@ -217,29 +277,90 @@ inline bool canStoreInNonnegativeInt(short s)          {return s >= 0;}
 inline bool canStoreInNonnegativeInt(unsigned short s) {return true;}
 inline bool canStoreInNonnegativeInt(int  i)           {return i >= 0;}
 inline bool canStoreInNonnegativeInt(long l)           {return canStoreInInt(l) && l >= 0;}
+inline bool canStoreInNonnegativeInt(long long l)      {return canStoreInInt(l) && l >= 0;}
 inline bool canStoreInNonnegativeInt(unsigned int  u)  {return canStoreInInt(u);}
 inline bool canStoreInNonnegativeInt(unsigned long u)  {return canStoreInInt(u);}
+inline bool canStoreInNonnegativeInt(unsigned long long u) {return canStoreInInt(u);}
 
+// This utility answers the question of whether an integer is suitable as a size
+// limited by the given maximum size. Signed types must be checked for being
+// nonegative; doing that with unsigned types leads to compiler warnings.
+
+// char can be signed or unsigned depending on the compiler; assume signed.
+inline bool isSizeInRange(char           sz, char           mx){return 0<=sz&&sz<=mx;}
+inline bool isSizeInRange(signed char    sz, signed char    mx){return 0<=sz&&sz<=mx;}
+inline bool isSizeInRange(short          sz, short          mx){return 0<=sz&&sz<=mx;}
+inline bool isSizeInRange(int            sz, int            mx){return 0<=sz&&sz<=mx;}
+inline bool isSizeInRange(long           sz, long           mx){return 0<=sz&&sz<=mx;}
+inline bool isSizeInRange(long long      sz, long long      mx){return 0<=sz&&sz<=mx;}
+inline bool isSizeInRange(unsigned char  sz, unsigned char  mx){return sz<=mx;}
+inline bool isSizeInRange(unsigned short sz, unsigned short mx){return sz<=mx;}
+inline bool isSizeInRange(unsigned int   sz, unsigned int   mx){return sz<=mx;}
+inline bool isSizeInRange(unsigned long  sz, unsigned long  mx){return sz<=mx;}
+inline bool isSizeInRange(unsigned long long sz, unsigned long long mx){return sz<=mx;}
+
+// This utility answers the question of whether an integer is suitable as an index
+// for an array limited by the given maximum size. Signed types must be checked for being
+// nonegative; doing that with unsigned types leads to compiler warnings. This is just
+// like the "size in range" check above except the maximum value allowed for an index
+// is one less that the size.
+
+// char can be signed or unsigned depending on the compiler; assume signed.
+inline bool isIndexInRange(char           ix, char           sz){return 0<=ix&&ix<sz;}
+inline bool isIndexInRange(signed char    ix, signed char    sz){return 0<=ix&&ix<sz;}
+inline bool isIndexInRange(short          ix, short          sz){return 0<=ix&&ix<sz;}
+inline bool isIndexInRange(int            ix, int            sz){return 0<=ix&&ix<sz;}
+inline bool isIndexInRange(long           ix, long           sz){return 0<=ix&&ix<sz;}
+inline bool isIndexInRange(long long      ix, long long      sz){return 0<=ix&&ix<sz;}
+inline bool isIndexInRange(unsigned char  ix, unsigned char  sz){return ix<sz;}
+inline bool isIndexInRange(unsigned short ix, unsigned short sz){return ix<sz;}
+inline bool isIndexInRange(unsigned int   ix, unsigned int   sz){return ix<sz;}
+inline bool isIndexInRange(unsigned long  ix, unsigned long  sz){return ix<sz;}
+inline bool isIndexInRange(unsigned long long ix, unsigned long long sz){return ix<sz;}
+
+// This utility answers the question: is this integral value nonnegative? The answer
+// is always true for unsigned types and you'll get a warning from some compilers if
+// you check.
+
+inline bool isNonnegative(bool           n){return true;}
+// char can be signed or unsigned depending on the compiler; assume signed.
+inline bool isNonnegative(char           n){return n>=0;}
+inline bool isNonnegative(signed char    n){return n>=0;}
+inline bool isNonnegative(short          n){return n>=0;}
+inline bool isNonnegative(int            n){return n>=0;}
+inline bool isNonnegative(long           n){return n>=0;}
+inline bool isNonnegative(long long      n){return n>=0;}
+inline bool isNonnegative(unsigned char  n){return true;}
+inline bool isNonnegative(unsigned short n){return true;}
+inline bool isNonnegative(unsigned int   n){return true;}
+inline bool isNonnegative(unsigned long  n){return true;}
+inline bool isNonnegative(unsigned long long n){return true;}
+
+// A NaN-like value for unique index types created using the macro
+// SimTK_DEFINE_UNIQUE_INDEX_TYPE(). A unique, typed constant with
+// this numerical value is created for each index type.
+static const int InvalidIndex = -1111111111;
+}
 
 /**
  * Use this macro to define a unique "Index" type which is just a type-safe
  * non-negative int, augmented with a "NaN" value given by the predefined
  * int constant SimTK::InvalidIndex. We also allow the Index to take on
- * the value -1 if that is produced by a subtraction
- * operation acting on a previously-valid Index, since that can occur
- * during loops which are processed from the end towards the beginning.
- * -1 is then allowed in comparision operators but not
- * in any other operations, including further decrementing.
+ * the value -1 if that is produced by a subtraction operation acting on a 
+ * previously-valid Index, since that can occur during loops which are 
+ * processed from the end towards the beginning. -1 is then allowed in 
+ * comparision operators but not in any other operations, including further 
+ * decrementing.
  *
- * No namespace is assumed for the newly-
- * defined type; if you want the symbol in a namespace be sure to invoke
- * the macro within that namespace. Make sure that the system include
- * file <cassert> has been included by the point of invocation, because
- * the define Index type uses the assert() macro when in Debug mode.
+ * No namespace is assumed for the newly-defined type; if you want the 
+ * symbol in a namespace be sure to invoke the macro within that namespace. 
+ * Make sure that the statement "#include <cassert>" appears somewhere before 
+ * the point of invocation of this macro, because the defined Index type uses 
+ * the assert() macro when in Debug mode.
  *
  * For most uses it will behave like an int, and it has an implicit
- * conversion *to* int. Importantly though, it has no implicit conversion
- * *from* int so you can't pass some other kind of number where a particular
+ * conversion \e to int. Importantly though, it has no implicit conversion
+ * \e from int so you can't pass some other kind of number where a particular
  * kind of Index was expected. This is used to create Index types
  * which can be used as array indices but which prevent accidental mixing
  * of types. Examples: SubsystemIndex, ConstraintIndex.
@@ -249,67 +370,75 @@ inline bool canStoreInNonnegativeInt(unsigned long u)  {return canStoreInInt(u);
  * value of any objects of type ThingIndex, and will have the same numerical
  * value as SimTK::InvalidIndex.
  */
-namespace SimTK {
-    static const int InvalidIndex = -1111111111;
-}
 
-/// Define a global (that is, SimTK namespace level) Index class that
-/// is not exported in MS VC++ DLLs.
+/** Define a global (that is, SimTK namespace level) Index class that is not 
+exported in MS VC++ DLLs. **/
 #define SimTK_DEFINE_UNIQUE_INDEX_TYPE(NAME)                   \
     SimTK_DEFINE_AND_EXPORT_UNIQUE_LOCAL_INDEX_TYPE(,,,NAME)   \
     static const NAME Invalid ## NAME;
 
-/// Define a global (that is, SimTK namespace level) Index class with
-/// a MS VC++ "export" specification for DLLs.
+/** Define a global (that is, SimTK namespace level) Index class with a MS VC++
+"export" specification for DLLs. **/
 #define SimTK_DEFINE_AND_EXPORT_UNIQUE_INDEX_TYPE(EXPORT,NAME)     \
     SimTK_DEFINE_AND_EXPORT_UNIQUE_LOCAL_INDEX_TYPE(EXPORT,,,NAME) \
     static const NAME Invalid ## NAME;
 
-/// Define a local Index class within a Parent class.
+/** Define a local Index class within a Parent class. **/
 #define SimTK_DEFINE_UNIQUE_LOCAL_INDEX_TYPE(PARENT,NAME) \
     SimTK_DEFINE_AND_EXPORT_UNIQUE_LOCAL_INDEX_TYPE(,PARENT,::,NAME)
 
-/// The most general form allows a MS VC++ "export" specification for DLLs,
-/// and a Parent class (with SEP=::) for local Index names.
+/** The most general form allows a MS VC++ "export" specification for DLLs,
+and a Parent class (with SEP=::) for local Index names. **/
 #define SimTK_DEFINE_AND_EXPORT_UNIQUE_LOCAL_INDEX_TYPE(EXPORT,PARENT,SEP,NAME)   \
 class EXPORT NAME {                         \
     int ix;                                 \
 public:                                     \
     NAME() : ix(SimTK::InvalidIndex) { }       \
     explicit NAME(int i) : ix(i)      {assert(i>=0 || i==SimTK::InvalidIndex);} \
-    explicit NAME(long l): ix((int)l) {assert(canStoreInNonnegativeInt(l));}    \
-    explicit NAME(unsigned int  u)  : ix((int)u)  {assert(canStoreInInt(u));}   \
-    explicit NAME(unsigned long ul) : ix((int)ul) {assert(canStoreInInt(ul));}  \
+    explicit NAME(long l): ix((int)l) {assert(SimTK::canStoreInNonnegativeInt(l));}    \
+    explicit NAME(unsigned int  u)  : ix((int)u)  {assert(SimTK::canStoreInInt(u));}   \
+    explicit NAME(unsigned long ul) : ix((int)ul) {assert(SimTK::canStoreInInt(ul));}  \
     operator int() const {return ix;}               \
     bool isValid() const {return ix>=0;}            \
     bool isValidExtended() const {return ix>=-1;}   \
     void invalidate(){ix=SimTK::InvalidIndex;}      \
     \
     bool operator==(int  i) const {assert(isValidExtended() && isValidExtended(i)); return ix==i;}    \
+    bool operator==(short s) const{assert(isValidExtended() && isValidExtended(s)); return ix==(int)s;}  \
     bool operator==(long l) const {assert(isValidExtended() && isValidExtended(l)); return ix==(int)l;}  \
     bool operator==(unsigned int  u)  const {assert(isValidExtended() && isValid(u)); return ix==(int)u;}   \
+    bool operator==(unsigned short us)const {assert(isValidExtended() && isValid(us)); return ix==(int)us;} \
     bool operator==(unsigned long ul) const {assert(isValidExtended() && isValid(ul)); return ix==(int)ul;} \
     bool operator!=(int  i)           const {return !operator==(i);}    \
+    bool operator!=(short s)          const {return !operator==(s);}    \
     bool operator!=(long l)           const {return !operator==(l);}    \
     bool operator!=(unsigned int  u)  const {return !operator==(u);}    \
     bool operator!=(unsigned long ul) const {return !operator==(ul);}   \
     \
     bool operator< (int  i) const {assert(isValidExtended() && isValidExtended(i)); return ix<i;}        \
+    bool operator< (short s) const{assert(isValidExtended() && isValidExtended(s)); return ix<(int)s;}   \
     bool operator< (long l) const {assert(isValidExtended() && isValidExtended(l)); return ix<(int)l;}   \
     bool operator< (unsigned int  u)  const {assert(isValidExtended() && isValid(u));  return ix<(int)u;}    \
+    bool operator< (unsigned short us)const {assert(isValidExtended() && isValid(us)); return ix<(int)us;}   \
     bool operator< (unsigned long ul) const {assert(isValidExtended() && isValid(ul)); return ix<(int)ul;}   \
     bool operator>=(int  i)           const {return !operator<(i);}    \
+    bool operator>=(short s)          const {return !operator<(s);}    \
     bool operator>=(long l)           const {return !operator<(l);}    \
     bool operator>=(unsigned int  u)  const {return !operator<(u);}    \
+    bool operator>=(unsigned short us)const {return !operator<(us);}   \
     bool operator>=(unsigned long ul) const {return !operator<(ul);}   \
     \
     bool operator> (int  i) const {assert(isValidExtended() && isValidExtended(i)); return ix>i;}        \
+    bool operator> (short s) const{assert(isValidExtended() && isValidExtended(s)); return ix>(int)s;}   \
     bool operator> (long l) const {assert(isValidExtended() && isValidExtended(l)); return ix>(int)l;}   \
     bool operator> (unsigned int  u)  const {assert(isValidExtended() && isValid(u));  return ix>(int)u;}    \
+    bool operator> (unsigned short us)const {assert(isValidExtended() && isValid(us)); return ix>(int)us;}   \
     bool operator> (unsigned long ul) const {assert(isValidExtended() && isValid(ul)); return ix>(int)ul;}   \
     bool operator<=(int  i)           const {return !operator>(i);}    \
+    bool operator<=(short s)          const {return !operator>(s);}    \
     bool operator<=(long l)           const {return !operator>(l);}    \
     bool operator<=(unsigned int  u)  const {return !operator>(u);}    \
+    bool operator<=(unsigned short us)const {return !operator>(us);}   \
     bool operator<=(unsigned long ul) const {return !operator>(ul);}   \
     \
     const NAME& operator++() {assert(isValid()); ++ix; return *this;}       /*prefix */   \
@@ -319,27 +448,36 @@ public:                                     \
     \
     NAME& operator+=(int i)  {assert(isValid() && isValidExtended(ix+i)); ix+=i; return *this;}     \
     NAME& operator-=(int i)  {assert(isValid() && isValidExtended(ix-i)); ix-=i; return *this;}     \
-    NAME& operator+=(long l) {assert(isValid() && canStoreInInt(l) && isValidExtended(ix+(int)l)); ix+=(int)l; return *this;}     \
-    NAME& operator-=(long l) {assert(isValid() && canStoreInInt(l) && isValidExtended(ix-(int)l)); ix-=(int)l; return *this;}     \
-    NAME& operator+=(unsigned int  u)  {assert(isValid()&& canStoreInInt(u)  && isValid(ix+(int)u));  ix+=(int)u;  return *this;}  \
-    NAME& operator-=(unsigned int  u)  {assert(isValid()&& canStoreInInt(u)  && isValidExtended(ix-(int)u));  ix-=(int)u;  return *this;}  \
-    NAME& operator+=(unsigned long ul) {assert(isValid()&& canStoreInInt(ul) && isValid(ix+(int)ul)); ix+=(int)ul; return *this;}  \
-    NAME& operator-=(unsigned long ul) {assert(isValid()&& canStoreInInt(ul) && isValidExtended(ix-(int)ul)); ix-=(int)ul; return *this;}  \
+    NAME& operator+=(short s){assert(isValid() && SimTK::canStoreInInt(s) && isValidExtended(ix+(int)s)); ix+=(int)s; return *this;}     \
+    NAME& operator-=(short s){assert(isValid() && SimTK::canStoreInInt(s) && isValidExtended(ix-(int)s)); ix-=(int)s; return *this;}     \
+    NAME& operator+=(long l) {assert(isValid() && SimTK::canStoreInInt(l) && isValidExtended(ix+(int)l)); ix+=(int)l; return *this;}     \
+    NAME& operator-=(long l) {assert(isValid() && SimTK::canStoreInInt(l) && isValidExtended(ix-(int)l)); ix-=(int)l; return *this;}     \
+    NAME& operator+=(unsigned int  u)  {assert(isValid()&& SimTK::canStoreInInt(u)  && isValid(ix+(int)u));  ix+=(int)u;  return *this;}  \
+    NAME& operator-=(unsigned int  u)  {assert(isValid()&& SimTK::canStoreInInt(u)  && isValidExtended(ix-(int)u));  ix-=(int)u;  return *this;}  \
+    NAME& operator+=(unsigned short us){assert(isValid()&& SimTK::canStoreInInt(us) && isValid(ix+(int)us)); ix+=(int)us; return *this;}  \
+    NAME& operator-=(unsigned short us){assert(isValid()&& SimTK::canStoreInInt(us) && isValidExtended(ix-(int)us)); ix-=(int)us; return *this;}  \
+    NAME& operator+=(unsigned long ul) {assert(isValid()&& SimTK::canStoreInInt(ul) && isValid(ix+(int)ul)); ix+=(int)ul; return *this;}  \
+    NAME& operator-=(unsigned long ul) {assert(isValid()&& SimTK::canStoreInInt(ul) && isValidExtended(ix-(int)ul)); ix-=(int)ul; return *this;}  \
     \
     static const NAME& Invalid() {static const NAME invalid; return invalid;}       \
     static bool isValid(int  i) {return i>=0;}                                      \
-    static bool isValid(long l) {return canStoreInNonnegativeInt(l);}               \
-    static bool isValid(unsigned int  u)  {return canStoreInInt(u);}                \
-    static bool isValid(unsigned long ul) {return canStoreInInt(ul);}               \
+    static bool isValid(short s){return s>=0;}                                      \
+    static bool isValid(long l) {return SimTK::canStoreInNonnegativeInt(l);}        \
+    static bool isValid(unsigned int  u)  {return SimTK::canStoreInInt(u);}         \
+    static bool isValid(unsigned short)   {return true;}                            \
+    static bool isValid(unsigned long ul) {return SimTK::canStoreInInt(ul);}        \
     static bool isValidExtended(int  i) {return i>=-1;}                             \
-    static bool isValidExtended(long l) {return canStoreInInt(l) && l>=-1;}         \
+    static bool isValidExtended(short s){return s>=-1;}                             \
+    static bool isValidExtended(long l) {return SimTK::canStoreInInt(l) && l>=-1;}  \
+    /* IndexTraits for use in Array_<T,X> with this as X; same as int */            \
+    typedef int size_type;                                                  \
+    typedef int difference_type;                                            \
+    static size_type max_size() {return std::numeric_limits<int>::max();}   \
 };
 
-/**
- * Add public static method declaration in class derived from an abstract
- * parent to assist in downcasting objects of the parent type to the 
- * derived type.
- */
+/** Add public static method declaration in class derived from an abstract
+parent to assist in downcasting objects of the parent type to the derived 
+type. **/
 #define SimTK_DOWNCAST(Derived,Parent) \
     static bool isA(const Parent& p)                        \
         { return dynamic_cast<const Derived*>(&p) != 0; }   \
@@ -350,10 +488,8 @@ public:                                     \
 	static Derived& downcast(Parent& p)                     \
         { return dynamic_cast<Derived&>(p); }
 
-/**
- * This is like SimTK_DOWNCAST except it allows for an intermediate
- * "helper" class between Derived and Parent.
- */
+/** This is like SimTK_DOWNCAST except it allows for an intermediate "helper" 
+class between Derived and Parent. **/
 #define SimTK_DOWNCAST2(Derived,Helper,Parent) \
     static bool isA(const Parent& p)                                        \
         { return Helper::isA(p); }                                          \
@@ -365,9 +501,9 @@ public:                                     \
         { return reinterpret_cast<Derived&>(Helper::downcast(p)); }
 
 
-// Similar to the above but for private implementation abstract classes, that
-// is, abstract class hierarchies where the virtual function table is 
-// hidden on the library side.
+/** Similar to the above but for private implementation abstract classes, that
+is, abstract class hierarchies where the virtual function table is hidden on 
+the library side. **/
 #define SimTK_PIMPL_DOWNCAST(Derived, Parent)           \
     static bool           isInstanceOf(const Parent&);  \
     static const Derived& downcast(const Parent&);      \
@@ -378,9 +514,15 @@ namespace SimTK {
 namespace Options { }
 namespace Exception { }
 
+/** This is the default compiled-in floating point type for SimTK, either
+float or double. @see SimTK_DEFAULT_PRECISION **/
 typedef SimTK_Real              Real;
+/** This is the default complex type for SimTK, with precision for the real 
+and imaginary parts set to the compiled-in Real type. @see Real **/
 typedef std::complex<Real>      Complex;
 
+/** A convenient struct for anything requiring an offset and length to specify
+a segment of some larger sequence. **/
 struct Segment {
     Segment() : length(0), offset(0) { }
     explicit Segment(int l, int ofs=0) : length(l), offset(ofs) { 
@@ -391,203 +533,174 @@ struct Segment {
     int offset;
 };  
 
-template <class T> class TypeInfo {
-public:
+
+/** This is a special type used for causing invocation of a particular
+constructor or method overload that will avoid making a copy of the source
+(that is, perform a "shallow" copy rather than a "deep" copy). Typically these
+methods will have some dangerous side effects so make sure you know what you're
+doing. **/
+struct DontCopy {};
+/** This is a special type used for forcing invocation of a particularly
+dangerous constructor or method overload; don't use this unless you are an
+advanced user and know exactly what you're getting into. **/
+struct TrustMe {};
+
+/** This is a compile-time equivalent of "false", used in compile-time
+condition checking in templatized implementations. **/
+struct FalseType {};
+/** This is a compile-time equivalent of "true", used in compile-time
+condition checking in templatized implementations. **/
+struct TrueType {};
+
+/** This is an operator for and-ing compile-time truth types. */
+template <class L, class R> struct AndOpType {};
+template<> struct AndOpType<FalseType,FalseType> {typedef FalseType Result;};
+template<> struct AndOpType<FalseType,TrueType>  {typedef FalseType Result;};
+template<> struct AndOpType<TrueType, FalseType> {typedef FalseType Result;};
+template<> struct AndOpType<TrueType, TrueType>  {typedef TrueType  Result;};
+
+/** This is an operator for or-ing compile-time truth types. */
+template <class L, class R> struct OrOpType {};
+template<> struct OrOpType<FalseType,FalseType> {typedef FalseType Result;};
+template<> struct OrOpType<FalseType,TrueType>  {typedef TrueType  Result;};
+template<> struct OrOpType<TrueType, FalseType> {typedef TrueType  Result;};
+template<> struct OrOpType<TrueType, TrueType>  {typedef TrueType  Result;};
+
+/** This is an operator for exclusive or-ing compile-time truth types. */
+template <class L, class R> struct XorOpType {};
+template<> struct XorOpType<FalseType,FalseType> {typedef FalseType Result;};
+template<> struct XorOpType<FalseType,TrueType>  {typedef TrueType  Result;};
+template<> struct XorOpType<TrueType, FalseType> {typedef TrueType  Result;};
+template<> struct XorOpType<TrueType, TrueType>  {typedef FalseType Result;};
+
+/** Compile-time type test: is this one of the built-in integral types?. **/
+template <class T> struct IsIntegralType {
+    /** This typedef is TrueType if the template type T is an integral type;
+    otherwise it is FalseType. **/
+    typedef FalseType Result;
+    /** This compile-time constant bool is true if the template type T is an
+    integral type otherwise it is false. **/
+    static const bool result = false;
+};
+/** This macro must be invoked once for each of the built-in integral types to
+specialize the IsIntegralType struct template for those types. **/
+#define SimTK_SPECIALIZE_INTEGRAL_TYPE(T)       \
+    template<> struct IsIntegralType<T>         \
+    {typedef TrueType Result; static const bool result = true;}
+
+SimTK_SPECIALIZE_INTEGRAL_TYPE(bool); 
+SimTK_SPECIALIZE_INTEGRAL_TYPE(char);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(wchar_t);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(signed char);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(unsigned char);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(short);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(unsigned short);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(int);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(unsigned int); // a.k.a. "unsigned"
+SimTK_SPECIALIZE_INTEGRAL_TYPE(long);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(unsigned long);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(long long);
+SimTK_SPECIALIZE_INTEGRAL_TYPE(unsigned long long);
+
+/** Compile-time type test: is this one of the built-in floating point types?. **/
+template <class T> struct IsFloatingType {
+    /** This typedef is TrueType if the template type T is a floating point type;
+    otherwise it is FalseType. **/
+    typedef FalseType Result;
+    /** This compile-time constant bool is true if the template type T is a
+    floating point type otherwise it is false. **/
+    static const bool result = false;
+};
+/** This macro must be invoked once for each of the built-in floating point 
+types to specialize the IsFloatingType struct template for those types. **/
+#define SimTK_SPECIALIZE_FLOATING_TYPE(T)       \
+    template<> struct IsFloatingType<T>         \
+    {typedef TrueType Result; static const bool result = true;}
+
+SimTK_SPECIALIZE_FLOATING_TYPE(float); 
+SimTK_SPECIALIZE_FLOATING_TYPE(double); 
+SimTK_SPECIALIZE_FLOATING_TYPE(long double); 
+
+/** Compile-time type test: is this the void type?. **/
+template <class T> struct IsVoidType {
+    /** This typedef is TrueType if the template type T is "void";
+    otherwise it is FalseType. **/
+    typedef FalseType Result;
+    /** This compile-time constant bool is true if the template type T is
+    "void" otherwise it is false. **/
+    static const bool result = false;
+};
+template<> struct IsVoidType<void> 
+{typedef TrueType Result; static const bool result = true;};
+
+/** Compile-time test: is this one of the built-in "arithmetic" types, meaning
+an integral or floating type? **/
+template <class T> struct IsArithmeticType {
+    /** This typedef is TrueType if the template type T is one of the integral;
+    or floating point types, otherwise it is FalseType. **/
+    typedef OrOpType<typename IsIntegralType<T>::Result,
+                     typename IsFloatingType<T>::Result>    Result;
+    /** This compile-time constant bool is true if the template type T is
+    one of the integral or floating point types, otherwise it is false. **/
+    static const bool result = IsIntegralType<T>::result 
+                            || IsFloatingType<T>::result;
+};
+
+// This struct's sole use is to allow us to define the typedef 
+// Is64BitPlatformType as equivalent to either TrueType or FalseType.
+template <bool is64Bit> struct Is64BitHelper {};
+template<> struct Is64BitHelper<true>  
+{typedef TrueType  Result; static const bool result = true;};
+template<> struct Is64BitHelper<false> 
+{typedef FalseType Result; static const bool result = false;};
+
+/** Compile-time test: this typedef will be TrueType if this is a 64-bit 
+platform, meaning that the size of a pointer is the same as the size of a 
+long long; otherwise it will be FalseType and we have a 32-bit platform meaning
+that the size of a pointer is the same as an int. **/
+static const bool Is64BitPlatform = sizeof(size_t) > sizeof(int);
+typedef Is64BitHelper<Is64BitPlatform>::Result Is64BitPlatformType;
+
+
+/** In case you don't like the name you get from typeid(), you can specialize
+this class to provide a nicer name. This is typically used for error messages 
+and testing. **/
+template <class T> struct NiceTypeName {
     static const char* name() {return typeid(T).name();}
 };
 
-#define SimTK_TYPEINFO_SPECIALIZE(T)            \
-template <> class TypeInfo< T > {               \
-public:                                         \
+/** This specializes the name of a type to be exactly the text you use to
+specify it, rather than whatever ugly thing might result on different platforms
+from resolution of typedefs, default template arguments, etc. **/
+#define SimTK_NICETYPENAME_LITERAL(T)           \
+template <> struct NiceTypeName< T > {          \
     static const char* name() { return #T; }    \
 };
-// Built-in types
-SimTK_TYPEINFO_SPECIALIZE(bool);            SimTK_TYPEINFO_SPECIALIZE(signed char); 
-SimTK_TYPEINFO_SPECIALIZE(char);            SimTK_TYPEINFO_SPECIALIZE(unsigned char);
-SimTK_TYPEINFO_SPECIALIZE(short);           SimTK_TYPEINFO_SPECIALIZE(int); 
-SimTK_TYPEINFO_SPECIALIZE(long);
-SimTK_TYPEINFO_SPECIALIZE(unsigned short);  SimTK_TYPEINFO_SPECIALIZE(unsigned int); 
-SimTK_TYPEINFO_SPECIALIZE(unsigned long);
-SimTK_TYPEINFO_SPECIALIZE(float);           SimTK_TYPEINFO_SPECIALIZE(double); 
-SimTK_TYPEINFO_SPECIALIZE(long double);
-SimTK_TYPEINFO_SPECIALIZE(std::complex<float>);
-SimTK_TYPEINFO_SPECIALIZE(std::complex<double>); 
-SimTK_TYPEINFO_SPECIALIZE(std::complex<long double>); 
 
+// Some types for which we'd like to see nice type names.
+SimTK_NICETYPENAME_LITERAL(bool);            
+SimTK_NICETYPENAME_LITERAL(char);            
+SimTK_NICETYPENAME_LITERAL(wchar_t);            
+SimTK_NICETYPENAME_LITERAL(signed char); 
+SimTK_NICETYPENAME_LITERAL(unsigned char);
+SimTK_NICETYPENAME_LITERAL(short);           
+SimTK_NICETYPENAME_LITERAL(unsigned short);  
+SimTK_NICETYPENAME_LITERAL(int); 
+SimTK_NICETYPENAME_LITERAL(unsigned); // preferred to "unsigned int"
+SimTK_NICETYPENAME_LITERAL(long);            
+SimTK_NICETYPENAME_LITERAL(unsigned long);   
+SimTK_NICETYPENAME_LITERAL(long long);
+SimTK_NICETYPENAME_LITERAL(unsigned long long);
+SimTK_NICETYPENAME_LITERAL(float);           
+SimTK_NICETYPENAME_LITERAL(double); 
+SimTK_NICETYPENAME_LITERAL(long double);
+SimTK_NICETYPENAME_LITERAL(std::complex<float>);
+SimTK_NICETYPENAME_LITERAL(std::complex<double>); 
+SimTK_NICETYPENAME_LITERAL(std::complex<long double>); 
+SimTK_NICETYPENAME_LITERAL(SimTK::FalseType);
+SimTK_NICETYPENAME_LITERAL(SimTK::TrueType); 
 
 } // namespace SimTK
-
-namespace SimTKimpl {
-
-///\{
-/// Template-free signatures of TypeDescriptor methods	
-typedef void*		(*IndexT)(void* tp, int n);
-typedef const void*	(*IndexConstT)(const void* tp, int n);
-typedef void*		(*CreateOneT)(const void* iptr);
-typedef void		(*DestructOneT)(void*& tvptr);	
-typedef void		(*AssignArrayOfT)(void* dest, const void* src, int n);
-typedef void		(*SetT)(void* dest, const void* valuep, int n);
-typedef void*		(*CreateArrayOfT)(int n, const void* iptr);
-typedef void		(*DestructArrayOfT)(void*& tvptr);
-///\}
-
-struct TypeManipulatorT {
-	TypeManipulatorT(int z, IndexT it, IndexConstT ict,
-					 CreateOneT c1t, DestructOneT d1t, AssignArrayOfT aat, SetT st,
-					 CreateArrayOfT cat, DestructArrayOfT dat)
-		: sizeOfT(z), indexT(it), indexConstT(ict), 
-		  createOneT(c1t), destructOneT(d1t), assignArrayOfT(aat), setT(st),
-		  createArrayOfT(cat), destructArrayOfT(dat)
-	{ }
-    
-    bool operator==(const TypeManipulatorT& t) const
-      { return sizeOfT==t.sizeOfT && indexT==t.indexT; }
-
-    // THESE MUST NEVER CHANGE ORDER! This is effectively a compiler-independent
-    // virtual function table. The first entry is a size in bytes and the rest have
-    // type "pointer to function" so all the data should have a very predictable
-    // and stable layout in memory.
-    //
-    // This is the one place in the SimTK API where the client
-    // side and library side must agree on the physical layout of the class. 
-    // It is safe to add new entries to the end of this list, but inserting earlier,
-    // deleting or reordering anything already here will break binary compatibility.
-	const int               sizeOfT;
-	const IndexT            indexT;
-	const IndexConstT       indexConstT;
-	const CreateOneT        createOneT;
-	const DestructOneT      destructOneT;
-	const AssignArrayOfT    assignArrayOfT;
-	const SetT              setT;
-	const CreateArrayOfT    createArrayOfT;
-	const DestructArrayOfT  destructArrayOfT;
-};
-
-/** 
- * Templatized helper class builds a non-templatized descriptor for T.
- *
- * This can then be used to provide a hidden implementation of a visible
- * templatized class like List<T>. The hidden implementation uses services
- * from this class to manipulate the elements.
- * 
- * Note that all members are static, so there need be only one object
- * of class MakeTypeManipulator<T> for any type T. Also note that the whole
- * implementation of MakeTypeManipulator must be contained in this header file
- * so that its definition is always consistent with its declaration. This is
- * what allows us to use templatized classes in the SimTK API without risk
- * of source/binary incompatibilities.
- */
-template <class T> class MakeTypeManipulator {
-public:
-	MakeTypeManipulator() { }
-	// default copy, assignment, destructor
-	
-	static const TypeManipulatorT& getTypeManipulatorT() { return manipT; }
-	static T& updAs(void* v) 
-      { assert(v); return *reinterpret_cast<T*>(v); }
-	static const T& getAs(const void* v) 
-      { assert(v); return *reinterpret_cast<const T*>(v); }
-
-private:	
-	/// Return the number of bytes used to contain an object of type T.
-	/// More specifically, this is the offset in bytes from one T to
-	/// the next in an ordinary C++ array T[]. It does not matter if
-	/// the object contains pointers to more memory in the heap; we
-	/// expect the object to handle that itself.
-	static int sizeT() { return (int)sizeof(T); }
-	
-	///\{
-	/// These two routines perform an offset calculation on a void*
-	/// pointer to an array of T to find the n'th following T and
-	/// then return a pointer to it as a void*.
-	static void* indexT(void* tp, int n)
-		{ return (void*)(reinterpret_cast<T*>(tp) + n); }
-	static const void* indexConstT(const void* tp, int n)
-		{ return (const void*)(reinterpret_cast<const T*>(tp) + n); }
-	///\}
-
-	/// Heap allocate, default construct and optionally initialize a single
-	/// object of type T. Return an obfuscated pointer to it as a void*.
-	/// This object must be explicitly destructed with destructOneT.
-	static void* createOneT(const void* iptr=0)
-	{
-		T* tptr = new T;
-		if (iptr) *tptr = *reinterpret_cast<const T*>(iptr);
-		return tptr;
-	}
-	
-	/// Destruct an object that was created with createOneT. We zero out
-	/// the passed-in pointer as a good hygiene measure.
-	static void destructOneT(void*& tvptr)
-	{
-		T* tptr = reinterpret_cast<T*>(tvptr);
-		delete tptr;
-		tvptr = 0;
-	}
-
-	/// Copy an array of T's to another array of T's. The destination
-	/// T's must have already been constructed for this to work properly
-	/// although there is no way to check. 
-	/// The n elements of source and destination must not overlap and
-	/// both array pointers must be non-null, unless n is 0.		
-	static void assignArrayOfT(void* dest, const void* src, int n)
-	{   assert(n>=0);
-		if (n==0) return;
-		assert(dest && src);
-		assert(indexT(dest,n) < src || indexConstT(src,n) < dest);		
-		T*		 d = reinterpret_cast<T*>(dest);
-		const T* s = reinterpret_cast<const T*>(src);
-		for (int i=0; i < n; ++i) *d++ = *s++;
-	}
-		
-	/// Assign a single value repeatedly to each element of an array of T's.
-	/// we assume that the destination T's have already been constructed.
-	/// It is an error to call this with null destination or value unless
-	/// the number of elements is 0. 
-	static void setT(void* dest, const void* valuep, int n=1)
-	{   assert(n>=0);
-		if (n==0) return;
-		assert(dest && valuep);
-		T*		 d = reinterpret_cast<T*>(dest);
-		const T& v = *reinterpret_cast<const T*>(valuep);
-		for (int i=0; i < n; ++i) *d++ = v; 
-	}
-	
-	/// Allocate and default-construct an array of n T's, with 
-	/// optional initialization.
-	static void* createArrayOfT(int n, const void* iptr=0)
-	{   assert(n>=0);
-		if (n == 0) return 0;
-		T* tptr = new T[n];
-		if (iptr) {
-			const T& init = *reinterpret_cast<const T*>(iptr);
-			for (int i=0; i < n; ++i) tptr[i] = init;
-		}		
-		return tptr;
-	}
-	
-	/// Destruct an array which was created with createArrayOfT. You
-	/// <em>must</em> pass the original pointer (to the 0th element)
-	/// here! You cannot use this to destruct part of an array, just
-	/// the whole thing at once.
-	static void destructArrayOfT(void*& tvptr)
-	{
-		T* tptr = reinterpret_cast<T*>(tvptr);
-		delete[] tptr;
-		tvptr = 0;
-	}
-	
-private:	
-	static const TypeManipulatorT manipT;
-};
-
-/*static*/ template <class T> const TypeManipulatorT
-MakeTypeManipulator<T>::manipT = TypeManipulatorT(
-									(int)sizeof(T),indexT,indexConstT,
-				 					createOneT, destructOneT, assignArrayOfT, setT, 
-				 					createArrayOfT, destructArrayOfT);
-} // namespace SimTKimpl
-
 
 #endif /* C++ stuff */
 

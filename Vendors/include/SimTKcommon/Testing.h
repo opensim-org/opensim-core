@@ -34,6 +34,7 @@
 
 #include "SimTKcommon/basics.h"
 #include "SimTKcommon/Simmatrix.h"
+#include "SimTKcommon/internal/Random.h"
 
 #include <cmath>     
 #include <ctime>
@@ -343,14 +344,25 @@ public:
     static bool numericallyEqual(const Matrix_<E1>& m1, const Matrix_<E2>& m2, int n, double tol=(defTol2<E1,E2>()))
     {   return numericallyEqual((const MatrixView_<E1>&)m1, (const MatrixView_<E2>&)m2, n, tol); }
 
-
-    static bool numericallyEqual(const Rotation& R1, const Rotation& R2, int n, double tol=defTol<Real>()) {
+    template <class P>
+    static bool numericallyEqual(const Rotation_<P>& R1, const Rotation_<P>& R2, int n, double tol=defTol<P>()) {
         return R1.isSameRotationToWithinAngle(R2, (Real)(n*tol));
     }
 
-    static bool numericallyEqual(const Transform& T1, const Transform& T2, int n, double tol=defTol<Real>()) {
+    template <class P>
+    static bool numericallyEqual(const Transform_<P>& T1, const Transform_<P>& T2, int n, double tol=defTol<P>()) {
         return numericallyEqual(T1.R(), T2.R(), n, tol)
             && numericallyEqual(T1.p(), T2.p(), n, tol);
+    }
+
+    template <class P>
+    static bool numericallyEqual(const Gyration_<P>& G1, const Gyration_<P>& G2, int n, double tol=defTol<P>()) {
+        return numericallyEqual(G1.asSymMat33(),G2.asSymMat33(), n, tol);
+    }
+
+    template <class P>
+    static bool numericallyEqual(const Inertia_<P>& I1, const Inertia_<P>& I2, int n, double tol=defTol<P>()) {
+        return numericallyEqual(I1.asSymMat33(),I2.asSymMat33(), n, tol);
     }
 
     // Random numbers
@@ -368,7 +380,8 @@ public:
     template <int N> static Row<N> randRow() {return ~randVec<N>();}
     template <int M, int N> static Mat<M,N> randMat()
     {   Mat<M,N> m; for (int j=0; j<N; ++j) m(j)=randVec<M>(); return m;}
-    template <int N> static SymMat<N> randSymMat() {SymMat<N> s; s.updAsVec() = randVec<N*(N+1)/2>(); return s;}
+    template <int N> static SymMat<N> randSymMat() 
+    {   SymMat<N> s; s.updAsVec() = randVec<N*(N+1)/2>(); return s; }
 
     static Vector randVector(int m)
     {   Vector v(m); for (int i=0; i<m; ++i) v[i]=randReal(); return v;}
@@ -377,6 +390,7 @@ public:
 
     static Vec3 randVec3() {return randVec<3>();}
     static Mat33 randMat33() {return randMat<3,3>();}
+    static SymMat33 randSymMat33() {return randSymMat<3>();}
     static SpatialVec randSpatialVec() {
         return SpatialVec(randVec3(), randVec3());
     }
@@ -448,6 +462,14 @@ private:
 /// friendly output and timing information.
 #define SimTK_SUBTEST2(testFunction,arg1,arg2) \
     do {SimTK::Test::Subtest sub(#testFunction); (testFunction)(arg1,arg2);} while(false)
+/// Invoke a subtest in the form of a 3-argument function, arranging for some 
+/// friendly output and timing information.
+#define SimTK_SUBTEST3(testFunction,arg1,arg2,arg3) \
+    do {SimTK::Test::Subtest sub(#testFunction); (testFunction)(arg1,arg2,arg3);} while(false)
+/// Invoke a subtest in the form of a 4-argument function, arranging for some 
+/// friendly output and timing information.
+#define SimTK_SUBTEST4(testFunction,arg1,arg2,arg3,arg4) \
+    do {SimTK::Test::Subtest sub(#testFunction); (testFunction)(arg1,arg2,arg3,arg4);} while(false)
 
 /// Test that some condition holds and complain if it doesn't.
 #define SimTK_TEST(cond) {SimTK_ASSERT_ALWAYS((cond), "Test condition failed.");}
@@ -507,6 +529,7 @@ private:
     {SimTK_ASSERT1_ALWAYS(!SimTK::Test::numericallyEqual((v1),(v2),1,(tol)),   \
      "Test values should NOT have been numerically equivalent at tolerance=%g.",(tol));}
 
+/// Test that the supplied statement throws an std::exception of some kind.
 #define SimTK_TEST_MUST_THROW(stmt)             \
     do {int threw=0; try {stmt;}                \
         catch(const std::exception&){threw=1;}  \
@@ -515,6 +538,7 @@ private:
         if (threw==2) SimTK_TEST_FAILED1("Expected statement\n%s\n  to throw an std::exception but it threw something else.",#stmt); \
     }while(false)
 
+/// Test that the supplied statement throws a particular exception.
 #define SimTK_TEST_MUST_THROW_EXC(stmt,exc)     \
     do {int threw=0; try {stmt;}                \
         catch(const exc&){threw=1;}             \
@@ -522,6 +546,42 @@ private:
         if (threw==0) SimTK_TEST_FAILED1("Expected statement\n----\n%s\n----\n  to throw an exception but it did not.",#stmt); \
         if (threw==2) SimTK_TEST_FAILED2("Expected statement\n----\n%s\n----\n  to throw exception type %s but it threw something else.",#stmt,#exc); \
     }while(false)
+
+/// Allow the supplied statement to throw any std::exception without failing.
+#define SimTK_TEST_MAY_THROW(stmt)             \
+    do {int threw=0; try {stmt;}                \
+        catch(const std::exception&){threw=1;}  \
+        catch(...){threw=2;}                    \
+        if (threw==2) SimTK_TEST_FAILED1("Expected statement\n%s\n  to throw an std::exception but it threw something else.",#stmt); \
+    }while(false)
+
+/// Allow the supplied statement to throw a particular exception without failing.
+#define SimTK_TEST_MAY_THROW_EXC(stmt,exc)     \
+    do {int threw=0; try {stmt;}                \
+        catch(const exc&){threw=1;}             \
+        catch(...){threw=2;}                    \
+        if (threw==2) SimTK_TEST_FAILED2("Expected statement\n----\n%s\n----\n  to throw exception type %s but it threw something else.",#stmt,#exc); \
+    }while(false)
+
+// When we're only required to throw in Debug, we have to suppress the
+// test case altogether in Release because it may cause damage. 
+#if defined(NDEBUG)
+    /// Include a bad statement when in Debug and insist that it get caught,
+    /// but don't include the statement at all in Release.
+    #define SimTK_TEST_MUST_THROW_DEBUG(stmt)
+    /// Include a bad statement when in Debug and insist that it get caught,
+    /// but don't include the statement at all in Release.
+    #define SimTK_TEST_MUST_THROW_EXC_DEBUG(stmt,exc)
+#else
+    /// Include a bad statement when in Debug and insist that it get caught,
+    /// but don't include the statement at all in Release.
+    #define SimTK_TEST_MUST_THROW_DEBUG(stmt) SimTK_TEST_MUST_THROW(stmt)
+    /// Include a bad statement when in Debug and insist that it get caught,
+    /// but don't include the statement at all in Release.
+    #define SimTK_TEST_MUST_THROW_EXC_DEBUG(stmt,exc) \
+                SimTK_TEST_MUST_THROW_EXC(stmt,exc)
+#endif
+
 
 
 

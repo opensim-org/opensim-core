@@ -15,7 +15,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2005-7 Stanford University and the Authors.         *
+ * Portions copyright (c) 2005-9 Stanford University and the Authors.         *
  * Authors: Michael Sherman and Paul Mitiguy                                  *
  *                                                                            *
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -50,8 +50,12 @@ namespace SimTK {
 
 //-----------------------------------------------------------------------------
 // Forward declarations
-class Rotation;
+template <class P> class Rotation_;
+template <class P> class Quaternion_;
 
+typedef Quaternion_<Real>    Quaternion;
+typedef Quaternion_<float>  fQuaternion;
+typedef Quaternion_<double> dQuaternion;
 
 //-----------------------------------------------------------------------------
 /**
@@ -61,77 +65,116 @@ class Rotation;
  *     angle a, axis unit vector v, as:  q = [ cos(a/2) sin(a/2)*v ]
  * A quaternion is in "canonical form" when its first element is nonnegative. 
  * This corresponds to rotation angles in the range -180 < a <= 180 degrees. 
- * Quaternions are not required to be in canonical form (e.g., during numerical integration).
- * When appropriate, they are put in canonical form.
+ * Quaternions are not required to be in canonical form (e.g., during numerical
+ * integration). When appropriate, they are put in canonical form.
  *
  * Conversion from quaternion to (angle,axis) form is handled here also. 
  * (angle,axis) is in canonical form when -180 < angle <= 180 and |axis|=1.
- * However, (angle,axis) is meaningful for any angle and for any axis where |axis| > 0.
+ * However, (angle,axis) is meaningful for any angle and for any axis where 
+ * |axis| > 0.
  */
 //-----------------------------------------------------------------------------
-class Quaternion : public Vec4 {
+template <class P>
+class Quaternion_ : public Vec<4,P> {
+    typedef P           RealP;
+    typedef Vec<3,P>    Vec3P;
+    typedef Vec<4,P>    Vec4P;
 public:
-    /// Default constructor produces the ZeroRotation quaternion [1 0 0 0] (not NaN - even in debug mode).
-    Quaternion() : Vec4(1,0,0,0) { }
+    /// Default constructor produces the ZeroRotation quaternion [1 0 0 0] 
+    /// (not NaN - even in debug mode).
+    Quaternion_() :  Vec4P(1,0,0,0) { }
 
-    /// Zero-cost copy constructor just copies the source without conversion to canonical form or normalization.
-    Quaternion( const Quaternion& q ) : Vec4(q) {}
+    /// Zero-cost copy constructor just copies the source without conversion to 
+    /// canonical form or normalization.
+    Quaternion_(const Quaternion_& q) :  Vec4P(q) {}
 
-    /// Zero-cost copy assignment just copies the source without conversion to canonical form or normalization.
-    Quaternion& operator=( const Quaternion& q ) { Vec4::operator=( q.asVec4() );  return *this; }
+    /// Zero-cost copy assignment just copies the source without conversion to 
+    /// canonical form or normalization.
+    Quaternion_& operator=( const Quaternion_& q ) 
+    {   Vec4P::operator=(q.asVec4()); return *this; }
     
-    /// Construct a quaternion and normalize it 
-    Quaternion( Real e0, Real e1, Real e2, Real e3 ) : Vec4(e0,e1,e2,e3)  { normalizeThis(); }
-    explicit Quaternion( const Vec4& q ) : Vec4(q)                        { normalizeThis(); }
+    /// Construct a quaternion from four scalars and normalize the result,
+    /// which costs about 40 flops.
+    Quaternion_( RealP e0, RealP e1, RealP e2, RealP e3 ) : Vec4P(e0,e1,e2,e3) 
+    {   normalizeThis(); }
+    /// Construct a quaternion from a 4-vector and normalize the result,
+    /// which costs about 40 flops.
+    explicit Quaternion_( const Vec4P& q ) : Vec4P(q) 
+    {   normalizeThis(); }
 
-    /// Constructs a canonical quaternion from a rotation matrix (cost is about 60 flops).
-    SimTK_SimTKCOMMON_EXPORT explicit Quaternion( const Rotation& );
+    /// Constructs a canonical quaternion from a rotation matrix (cost is 
+    /// about 60 flops).
+    SimTK_SimTKCOMMON_EXPORT explicit Quaternion_(const Rotation_<P>&);
 
-    /// The ZeroRotation quaternion is [1 0 0 0].
-    /// Note: Default constructor is ZeroRotation (unlike Vec4 which start as NaN in Debug mode).
-    void setQuaternionToZeroRotation()  { Vec4::operator=( Vec4(1,0,0,0) ); }
-    void setQuaternionToNaN()           { Vec4::setToNaN(); }
+    /// The ZeroRotation quaternion is [1 0 0 0]. Note: Default constructor 
+    /// is ZeroRotation (unlike Vec4P which start as NaN in Debug mode).
+    void setQuaternionToZeroRotation()  {Vec4P::operator=( Vec4P(1,0,0,0) );}
+    /// Set quaternion to all-NaN. Note that this is not the same as produced
+    /// by default construction, even in Debug mode -- default construction
+    /// always produces an identity rotation of [1 0 0 0].
+    void setQuaternionToNaN()           {Vec4P::setToNaN();}
 
-    /// The quaternion that is set by this method has a non-negative first element (canonical form).
-    /// If the "axis" portion of av is a zero vector, the quaternion is set to all-NaN.
-    SimTK_SimTKCOMMON_EXPORT void  setQuaternionFromAngleAxis( const Vec4& av );
-    SimTK_SimTKCOMMON_EXPORT void  setQuaternionFromAngleAxis( const Real& a, const UnitVec3& v );
+    /// Set this quaternion from an angle-axis rotation packed into a 4-vector
+    /// as [a vx vy vz]. The result will be put in canonical form, i.e., 
+    /// it will have a non-negative first element. If the "axis" portion of av 
+    /// is a zero vector on input, the quaternion is set to all-NaN.
+    SimTK_SimTKCOMMON_EXPORT void  setQuaternionFromAngleAxis(const Vec4P& av);
+    /// Set this quaternion from an angle-axis rotation provided as an angle a
+    /// and a separate unit vector [vx vy vz]. The result will be put in 
+    /// canonical form, i.e., it will have a non-negative first element.
+    SimTK_SimTKCOMMON_EXPORT void  setQuaternionFromAngleAxis(const RealP& a, const UnitVec<P,1>& v);
 
-    /// Returns [ a vx vy vz ] with (a,v) in canonical form, i.e., -180 < a <= 180 and |v|=1. 
-    SimTK_SimTKCOMMON_EXPORT Vec4  convertQuaternionToAngleAxis() const;
+    /// Returns [ a vx vy vz ] with (a,v) in canonical form, i.e., 
+    /// -180 < a <= 180 and |v|=1. 
+    SimTK_SimTKCOMMON_EXPORT Vec4P convertQuaternionToAngleAxis() const;
 
-    /// Zero-cost cast of a Quaternion to a Vec4.
-    const Vec4&  asVec4() const  { return *static_cast<const Vec4*>(this); }
+    /// Zero-cost cast of a Quaternion_ to its underlying Vec4; this is \e not
+    /// converted to axis-angle form.
+    const Vec4P& asVec4() const  {return *static_cast<const Vec4P*>(this);}
 
-    /// Normalize an already constructed quaternion.
-    /// If the quaternion is *exactly* zero, set it to [1 0 0 0].
-    /// If its magnitude is:  0 < magnitude < epsilon  (epsilon is machine tolerance), set it to NaN (treated as an error). 
-    /// Otherwise, normalize the quaternion which costs about 40 flops.
-    /// The quaternion is NOT put in canonical form.
-    Quaternion&  normalizeThis() { 
-        const Real epsilon = std::numeric_limits<Real>::epsilon();
-        const Real magnitude = Vec4::norm();
+    /// Normalize an already constructed quaternion in place; but do you really
+    /// need to do this? Quaternions should be kept normalized at all times. 
+    /// One of the advantages of using them is that you don't have to check if 
+    /// they are normalized or renormalize them. However, under some situations
+    /// they do need renormalization, but it is costly if you don't actually 
+    /// need it. If the quaternion is \e exactly zero, set it to [1 0 0 0]. If 
+    /// its magnitude is 0 < magnitude < epsilon  (epsilon is machine 
+    /// tolerance), set it to NaN (treated as an error). Otherwise, normalize 
+    /// the quaternion which costs about 40 flops. The quaternion is NOT put 
+    /// in canonical form.
+    Quaternion_& normalizeThis() { 
+        const RealP epsilon = std::numeric_limits<RealP>::epsilon();
+        const RealP magnitude = Vec4P::norm();
         if(      magnitude == 0      )  setQuaternionToZeroRotation();
         else if( magnitude < epsilon )  setQuaternionToNaN();
-        else (*this) *= (1.0/magnitude);
+        else (*this) *= (1/magnitude);
         return *this;
     }
 
+    /// Return a normalized copy of this quaternion; but do you really need to
+    /// do this? Quaternions should be kept normalized at all times. One of
+    /// the advantages of using them is that you don't have to check if they
+    /// are normalized or renormalize them. However, under some situations they
+    /// do need renormalization, but it is costly if you don't actually need it.
+    /// @see normalizeThis() for details.
+    Quaternion_ normalize() const {return Quaternion_(*this).normalizeThis();}
+
     /// Use this constructor only if you are *sure* v is normalized to 1.0.
-    /// This zero cost method is faster than the Quaternion(Vec4) constructor which normalizes the Vec4. 
-    /// The second argument forces the compiler to call the fast constructor; it is otherwise ignored. 
-    /// By convention, set the second argument to "true". 
-    Quaternion( const Vec4& v, bool ) : Vec4(v) {}
+    /// This zero cost method is faster than the Quaternion(Vec4) constructor 
+    /// which normalizes the Vec4. The second argument forces the compiler to 
+    /// call the fast constructor; it is otherwise ignored. By convention, set 
+    /// the second argument to "true". 
+    Quaternion_(const Vec4P& v, bool) : Vec4P(v) {}
 
 //----------------------------------------------------------------------------------------------------
 // The following code is obsolete - it is here temporarily for backward compatibility (Mitiguy 10/13/2007)
 //----------------------------------------------------------------------------------------------------
 private:
-    Vec4  convertToAngleAxis() const                          { return convertQuaternionToAngleAxis(); }
-    void  setToAngleAxis( const Vec4& av )                    { setQuaternionFromAngleAxis(av); }
-    void  setToAngleAxis( const Real& a, const UnitVec3& v )  { setQuaternionFromAngleAxis(a,v); }
+    Vec4P convertToAngleAxis() const                          { return convertQuaternionToAngleAxis();}
+    void setToAngleAxis(const Vec4P& av)                      { setQuaternionFromAngleAxis(av);}
+    void setToAngleAxis(const RealP& a, const UnitVec<P,1>& v){ setQuaternionFromAngleAxis(a,v);}
     void setToNaN()                                           { setQuaternionToNaN(); }
-    void setToZero()                                          { setQuaternionToZeroRotation(); }
+    void setToZero()                                          { setQuaternionToZeroRotation();}
 
 };
 

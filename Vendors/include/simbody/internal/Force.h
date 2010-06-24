@@ -8,7 +8,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2008-9 Stanford University and the Authors.         *
+ * Portions copyright (c) 2008-10 Stanford University and the Authors.        *
  * Authors: Peter Eastman                                                     *
  * Contributors: Michael Sherman                                              *
  *                                                                            *
@@ -43,27 +43,133 @@ class MobilizedBody;
 class Force;
 class ForceImpl;
 
-// We only want the template instantiation to occur once. This symbol is defined in the SimTK core
-// compilation unit that defines the Force class but should not be defined any other time.
+// We only want the template instantiation to occur once. This symbol is defined
+// in the SimTK core compilation unit that defines the Force class but should 
+// not be defined any other time.
 #ifndef SimTK_SIMBODY_DEFINING_FORCE
     extern template class PIMPLHandle<Force, ForceImpl, true>;
 #endif
 
-/**
- * A Force object applies forces to the bodies in a system.  There are subclasses for various standard types
- * of forces, or you can create your own forces by using Custom.
- */
-    
+/** This is the base class from which all Force element handle classes derive.
+A Force object applies forces to some or all of the bodies, particles, and 
+mobilities in a System. There are subclasses for various standard types of 
+forces, or you can create your own forces by deriving from Force::Custom. **/
 class SimTK_SIMBODY_EXPORT Force : public PIMPLHandle<Force, ForceImpl, true> {
 public:
-    Force() { }
-    explicit Force(ForceImpl* r) : HandleBase(r) { }
+    /**@name                   Enabling and disabling
+    These methods determine whether this force element is active in a given
+    State. When disabled, the Force element is completely ignored and will
+    not be updated during realization. Normally force elements are enabled
+    when defined unless explicitly disabled; you can reverse that using the
+    setDisabledByDefault() method below. **/
+    /*@{*/
+    /** Disable this force element, effectively removing it from the System
+    for computational purposes (it is still using its ForceIndex, however).
+    This is an Instance-stage change. **/
+    void disable(State&) const;
+    /** Enable this force element if it was previously disabled. This is an 
+    Instance-stage change. Nothing happens if the force element was already
+    enabled. **/
+    void enable(State&) const;
+    /** Test whether this force element is currently disabled in the supplied 
+    State. If it is disabled you cannot depend on any computations it 
+    normally performs being available. **/
+    bool isDisabled(const State&) const;
+    /** Normally force elements are enabled when defined and can be disabled 
+    later. If you want to define this force element but have it be off by 
+    default, use this method. Note that this is a Topology-stage (construction)
+    change; you will have to call realizeTopology() before using the containing
+    System after a change to this setting has been made. **/
+    void setDisabledByDefault(bool shouldBeDisabled);
+    /** Test whether this force element is disabled by default in which case it
+    must be explicitly enabled before it will take effect.
+    @see enable() **/
+    bool isDisabledByDefault() const;
+    /*@}*/
 
-	/// Get the GeneralForceSubsystem of which this Force is an element.
+    /**@name                   Advanced methods
+    Don't use these unless you're sure you know what you're doing. They aren't
+    normally necessary but can be handy sometimes, especially when debugging
+    newly-developed force elements. **/
+    /*@{*/
+    /** Calculate the force that would be applied by this force element if
+    the given \a state were realized to Dynamics stage. This sizes the given
+    arrays if necessary, zeroes them, and then calls the force element's
+    calcForce() method which adds its force contributions if any to the
+    appropriate array elements for bodies, particles, and mobilities. Note that
+    in general we have no idea what elements of the system are affected by a 
+    force element, and in fact that can change based on state and time (consider
+    contact forces, for example). A disabled force element will return all 
+    zeroes without invoking calcForce(), since that method may depend on
+    earlier computations which may not have been performed in that case.
+    @param[in]      state
+        The State containing information to be used by the force element to
+        calculate the current force. This must have already been realized to
+        a high enough stage for the force element to get what it needs; if you
+        don't know then realize it to Stage::Velocity.
+    @param[out]     bodyForces
+        This is a Vector of spatial forces, one per mobilized body in the 
+        matter subsystem associated with this force element. This Vector is
+        indexed by MobilizedBodyIndex so it has a 0th entry corresponding
+        to Ground. A spatial force contains two Vec3's; index with [0] to get
+        the moment vector, with [1] to get the force vector. This argument is
+        resized if necessary to match the number of mobilized bodies and any
+        unused entry will be set to zero on return.
+    @param[out]     particleForces
+        This is a Vector of force vectors, one per particle in the 
+        matter subsystem associated with this force element. This vector is
+        indexed by ParticleIndex; the 0th entry is the 1st particle, not Ground.
+        This argument is resized if necessary to match the number of particles
+        and any unused entry will be set to zero on return. (As of March 2010 
+        Simbody treats particles as mobilized bodies so this is unused.)
+    @param[out]     mobilityForces
+        This is a Vector of scalar generalized forces, one per mobility in 
+        the matter subsystem associated with this force element. This is the
+        same as the number of generalized speeds u that collectively represent
+        all the mobilities of the mobilizers. To determine the per-mobilizer
+        correspondence, you must call methods of MobilizedBody; there is no
+        hint here. 
+    @note This method must zero out the passed in arrays, and in most cases
+    almost all returned entries will be zero, so this is \e not the most
+    efficent way to calculate forces; use it sparingly. **/
+    void calcForceContribution(const State&          state,
+                               Vector_<SpatialVec>&  bodyForces,
+                               Vector_<Vec3>&        particleForces,
+                               Vector&               mobilityForces) const;
+    /** Calculate the potential energy contribution that is made by this
+    force element at the given \a state. This calls the force element's
+    calcPotentialEnergy() method. A disabled force element will return zero 
+    without invoking calcPotentialEnergy().
+    @param[in]      state
+        The State containing information to be used by the force element to
+        calculate the current potential energy. This must have already been 
+        realized to a high enough stage for the force element to get what it 
+        needs; if you don't know then realize it to Stage::Position.
+    @return The potential energy contribution of this force element at this
+    \a state value. **/
+    Real calcPotentialEnergyContribution(const State& state) const;
+    /*@}*/
+
+    /**@name                   Bookkeeping
+    These methods are not normally needed. They provide bookkeeping 
+    information such as access to the parent force subsystem and the force
+    index assigned to this force element. **/
+    /*@{*/
+    /** Default constructor for Force handle base class does nothing. **/
+    Force() {}
+    /** Implicit conversion to ForceIndex when needed. This will throw an 
+    exception if the force element has not yet been adopted by a force 
+    subsystem. **/
+    operator ForceIndex() const {return getForceIndex();}
+	/** Get the GeneralForceSubsystem of which this Force is an element. 
+    This will throw an exception if the force element has not yet been
+    adopted by a force subsystem. **/
 	const GeneralForceSubsystem& getForceSubsystem() const;
-
-    /// Get the index of this Force in its GeneralForceSubsystem.
+    /** Get the index of this force element within its parent force subsystem.
+    The returned index will be invalid if the force element has not yet been
+    adopted by any subsystem (test with the index.isValid() method). **/
     ForceIndex getForceIndex() const;
+    /*@}*/
     
     class TwoPointLinearSpring;
     class TwoPointLinearDamper;
@@ -71,11 +177,13 @@ public:
     class MobilityLinearSpring;
     class MobilityLinearDamper;
     class MobilityConstantForce;
+    class LinearBushing;
     class ConstantForce;
     class ConstantTorque;
     class GlobalDamper;
     class Thermostat;
     class UniformGravity;
+    class Gravity;
     class Custom;
     
     class TwoPointLinearSpringImpl;
@@ -84,13 +192,21 @@ public:
     class MobilityLinearSpringImpl;
     class MobilityLinearDamperImpl;
     class MobilityConstantForceImpl;
+    class LinearBushingImpl;
     class ConstantForceImpl;
     class ConstantTorqueImpl;
     class GlobalDamperImpl;
     class ThermostatImpl;
     class UniformGravityImpl;
+    class GravityImpl;
     class CustomImpl;
+
+protected:
+    /** Use this in a derived Force handle class constructor to supply the 
+    concrete implementation object to be stored in the handle base. **/
+    explicit Force(ForceImpl* r) : HandleBase(r) { }
 };
+
 
 /**
  * A linear spring between two points, specified as a station on
@@ -293,203 +409,6 @@ class SimTK_SIMBODY_EXPORT Force::GlobalDamper : public Force {
 public:
     GlobalDamper(GeneralForceSubsystem& forces, const SimbodyMatterSubsystem& matter, Real damping);
     SimTK_INSERT_DERIVED_HANDLE_DECLARATIONS(GlobalDamper, GlobalDamperImpl, Force);
-};
-
-/**
- * This is a feedback-controlled force that maintains a particular temperature Tb, as though
- * the system were immersed in an infinite heat bath at that temperature. There are two
- * parameters, the temperature Tb and a "relaxation time" t which controls how tightly
- * the temperature is maintained. This thermostat is particularly useful in molecular 
- * simulations but can be applied to any mechanical system also.
- *
- * Temperature is defined here as T = (2*KE) / (N*Kb) where KE is the system
- * kinetic energy, N is the number of coupled degrees of freedom (mobilities minus 
- * active, nonredundant constraints), and Kb is Boltzmann's constant in appropriate
- * units. 
- *
- * We use a Nose'-Hoover chain to achieve excellent statistical mechanics properties
- * with a continuous force. At equilibrium the temperature will have a Boltzmann
- * distribution; the relaxation time controls how long it takes the system to reach
- * equilibrium with the bath. Smaller values of relaxation time produce faster
- * response but can make the system stiff and will normally require smaller step
- * sizes; larger values will take longer to equilibrate but will run faster.
- *
- * This Force does not produce any potential energy. However, there is a "bath energy"
- * available through a separate call which can be used in combination with the
- * system energy to construct a conserved quantity; this is described further below.
- *
- * \par Theory:
- *
- * For an m-chain Nose'-Hoover chain, we will define m auxiliary 
- * "thermostat" state variables ci, 0<=i<=m-1, with units of 1/time.
- * The 0'th thermostat variable c0 is used to generate a 
- * force f applied to the system mobilities u:
- * <pre>
- *		f = -c0 * M * u
- * </pre>
- * where M is the system mass matrix and u is the vector of generalized
- * speeds. The c variables should be initialized to zero at the start of a 
- * simulation. Ideally, you should initialize the u's so that they
- * are already at the right temperature, but if not you should still
- * make them non-zero -- you can see above that if you have no
- * velocities you will get no Nose'-Hoover forces.
- *
- * If m==1, we have the standard Nose'-Hoover method except with
- * a relaxation time specified instead of the thermal mass parameter, as
- * in reference [2]:
- * <pre>
- *      cdot[0]   =   (T/Tb - 1)/t^2
- * </pre>
- * Otherwise, for m > 1 we have:
- * <pre>
- *      cdot[0]   =   (T/Tb - 1)/t^2 - c0*c1
- *      cdot[1]   =   N*c0^2 - 1/t^2 - c1*c2
- *      cdot[i]   = c[i-1]^2 - 1/t^2 - c[i]*c[i+1]   (2<=i<m-1)
- *      cdot[m-1] = c[m-2]^2 - 1/t^2 
- * </pre>
- * For comparision with the literature where thermal mass
- * parameters Qi are used, we use Q0 = N Kb Tb t^2 and
- * Qi = Kb Tb t^2, i > 0. That is, the first thermostat
- * that controls the N degrees of freedom is N times "heavier"
- * than the subsequent ones, each of which controls only
- * the one dof of its next-lower thermostat. See refs [1]
- * and [2].
- * 
- * In addition there is a set of state variables si given by
- * sdot[i] = c[i]. Together these permit us to define a "bath energy"
- * which can be combined with system energy to produce a conserved
- * quantity. Bath energy is KEb + PEb where
- * <pre>
- *		KEb = 1/2 Kb Tb t^2 (N c0^2 + sum(ci^2))
- *		PEb = Kb Tb (N s0 + sum(si))
- * </pre>
- * where Kb is Boltzmann's constant, Tb the bath temperature, N the
- * number of degrees of freedom in the temperature definition, and
- * the sums run from 1 to m-1.
- * Note that you must request the bath energy separately; we do
- * not return any potential energy for this force otherwise.
- *
- * \par References:
- *
- * [1] Martyna, GJ; Klien, ML; Tuckerman, M. Nose'-Hoover chains:
- * The canonical ensemble via continuous dynamics. J. Chem. Phys.
- * 97(4):2635-2643 (1992).
- *
- * [2] Vaidehi, N; Jain, A; Goddard, WA. Constant Temperature
- * Constrained Molecular Dynamics: The Newton-Euler Inverse Mass
- * Operator Method. J. Phys. Chem. 100:10508-10517 (1996).
- */
-
-class SimTK_SIMBODY_EXPORT Force::Thermostat : public Force {
-public:
-	/// Define a global thermostat (one that affects all degrees of freedom) at
-	/// a given default temperature and relaxation time. The number of Nose'-Hoover
-	/// chains is given a default value.
-    Thermostat(GeneralForceSubsystem& forces, const SimbodyMatterSubsystem& matter, 
-			   Real boltzmannsConstant, Real bathTemperature, Real relaxationTime);
-
-	/// TODO: not implemented yet. Remove a body from consideration in
-	/// the thermostat. Typically this would be the system base body so
-	/// that overall rigid body translation and orientation is not counted
-	/// as part of the temperature.
-	Thermostat& excludeMobilizedBody(MobilizedBodyIndex);
-
-	/// Set the default (state independent) number of Nose'-Hoover chains.
-	/// This is a Topology-stage change.
-	Thermostat& setDefaultNumChains(int numChains);
-
-	/// Set the default (state independent) bath temperature. This will be 
-	/// interpreted using the value of Boltzmann's constant Kb provided on
-	/// construction. The units will be Kb/energy, typically Kelvins.
-	Thermostat& setDefaultBathTemperature(Real bathTemperature);
-
-	/// Set the default (state independent) relaxation time.
-	Thermostat& setDefaultRelaxationTime(Real relaxationTime);
-
-	/// Get the initial value for the number of chains that will be used for
-	/// the "number of chains" State variable. A new value may be set in 
-	/// a particular State.
-	int getDefaultNumChains() const;
-	/// Get the initial value for the bath temperature that will be use for
-	/// the "bath temperature" State variable. A new value may be set in 
-	/// a particular State.
-	Real getDefaultBathTemperature() const;
-	/// Get the initial value for the bath temperature that will be use for
-	/// the "bath temperature" State variable.
-	Real getDefaultRelaxationTime() const;
-	/// Can't change the value of Boltzmann's constant after construction.
-	Real getBoltzmannsConstant() const;
-
-	/// Set the actual number of Nose'-Hoover chains to be used. This variable
-	/// controls the number of auxiliary state variables allocated by the Thermostat
-	/// so invalidates Model stage (TODO: should be Instance).
-	void setNumChains(State&, int numChains) const;
-	/// Set the bath temperature which serves as the target temperature for
-	/// the thermostat. This is given in units defined by the value of 
-	/// Boltzmann's constant (which has units of energy/temperature) that was 
-	/// set on construction. This sets an Instance-stage state variable so
-	/// invalidates Instance and higher stages in the given State.
-	void setBathTemperature(State&, Real Tb) const;
-	/// Set the relaxation time which determines how long the system will
-	/// take to equilibrate to the bath temperature. This sets an 
-	/// Instance-stage state variable so invalidates Instance and higher 
-	/// stages in the given State.
-	void setRelaxationTime(State&, Real t) const;
-
-	/// Obtain the current number of Nose'-Hoover chains in use. This is a
-	/// state variable so can be obtained any time after realization of
-	/// the Model stage.
-	int getNumChains(const State&) const;
-	/// Obtain the current bath temperature, in units which are determined
-	/// by the value of Boltzmann's constant that was supplied on construction
-	/// of this Thermostat force element. This is a state variable so can 
-	/// be obtained any time after realization of the Model stage.
-	Real getBathTemperature(const State&) const;
-	/// Obtain the current relaxation time. This is a state variable so can 
-	/// be obtained any time after realization of the Model stage.
-	Real getRelaxationTime(const State&) const;
-
-	/// Return the number of degrees of freedom being used in the definition
-	/// of temperature for this thermostat. This is the net of the total 
-	/// number of mobilities selected minus nonredundant constraints.
-	int getNumDegreesOfFreedom(const State&) const;
-
-	/// Return the temperature of the controlled degrees of freedom
-	/// via the definition T = 2*ke / (N*Kb) where N is the number
-	/// of degrees of freedom. You can call this after Stage::Velocity
-	/// has been realized.
-	Real getCurrentTemperature(const State&) const;
-
-	/// This is a solver that initializes the thermostat state variables to zero.
-	void initializeChainState(State&) const;
-	/// Set the thermostat state variables to particular values. The Vector's
-	/// length must be the same as twice the current number of chains called for by
-	/// the State.
-	void setChainState(State&, const Vector&) const;
-
-	/// Return the current values of the thermostat chain variables. The 
-	/// returned vector will have twice the length that getNumChains(s) would return
-	/// if called on this same State.
-	Vector getChainState(const State&) const;
-
-	/// Calculate the total "bath energy" which, when added to the system
-	/// energy, should yield a conserved quantity (assuming all other forces
-	/// are conservative).
-    Real calcBathEnergy(const State& state) const;
-
-	/// Set the controlled system to a set of randomized velocities which
-	/// yields the bath temperature. This ignores the current system velocities.
-	/// TODO: not implemented yet.
-	void initializeSystemToBathTemperature(State&) const;
-
-	/// Set the controlled system to a set of randomized velocities which
-	/// yields a particular temperature. This ignores the current system velocities.
-	/// The temperature is interpreted using the value of Boltzmann's constant
-	/// that was provided on construction of this Thermostat.
-	/// TODO: not implemented yet.
-	void setSystemToTemperature(State&, Real T) const;
-
-    SimTK_INSERT_DERIVED_HANDLE_DECLARATIONS(Thermostat, ThermostatImpl, Force);
 };
 
 /**

@@ -38,10 +38,10 @@ enum { TRACE, MAX_FUNCTION_EVALUATIONS, DEFAULT_STEP_LENGTH, LINE_SEARCH_ACCURAC
 #include "simmath/CPodesIntegrator.h"
 #include "simmath/RungeKuttaMersonIntegrator.h"
 #include "simmath/RungeKuttaFeldbergIntegrator.h"
+#include "simmath/RungeKutta3Integrator.h"
 #include "simmath/ExplicitEulerIntegrator.h"
 #include "simmath/VerletIntegrator.h"
 
-#include "simmath/internal/Function.h"
 #include "simmath/internal/Spline.h"
 #include "simmath/internal/SplineFitter.h"
 #include "simmath/internal/common.h"

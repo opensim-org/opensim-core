@@ -48,18 +48,19 @@
 #include "SimTKcommon/internal/System.h"
 #include "SimTKcommon/internal/Subsystem.h"
 #include "SimTKcommon/internal/Study.h"
+#include "SimTKcommon/internal/Function.h"
 #include "SimTKcommon/internal/Random.h"
 #include "SimTKcommon/internal/PolynomialRootFinder.h"
 #include "SimTKcommon/internal/Enumeration.h"
 #include "SimTKcommon/internal/PrivateImplementation.h"
 #include "SimTKcommon/internal/EventHandler.h"
 #include "SimTKcommon/internal/EventReporter.h"
-#include "SimTKcommon/internal/UserFunction.h"
 #include "SimTKcommon/internal/ParallelExecutor.h"
 #include "SimTKcommon/internal/Parallel2DExecutor.h"
 #include "SimTKcommon/internal/ThreadLocal.h"
 #include "SimTKcommon/internal/AtomicInteger.h"
 #include "SimTKcommon/internal/Plugin.h"
+#include "SimTKcommon/internal/Xml.h"
 #endif
 
 

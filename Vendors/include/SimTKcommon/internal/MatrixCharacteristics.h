@@ -767,10 +767,10 @@ public:
     typedef unsigned int SizeMask;
     static const SizeMask SizeUncommitted = 0xffffffffU;
 
-    bool isResizable()      const {return nr==SizeUncommitted || nc==SizeUncommitted;}
-    bool isFullyResizable() const {return nr==SizeUncommitted && nc==SizeUncommitted;}
-    bool isNumRowsLocked()  const {return nr!=SizeUncommitted;}
-    bool isNumColsLocked()  const {return nc!=SizeUncommitted;}
+    bool isResizeable()      const {return nr==SizeUncommitted || nc==SizeUncommitted;}
+    bool isFullyResizeable() const {return nr==SizeUncommitted && nc==SizeUncommitted;}
+    bool isNumRowsLocked()   const {return nr!=SizeUncommitted;}
+    bool isNumColsLocked()   const {return nc!=SizeUncommitted;}
 
     unsigned int getNumRowsMask() const {return nr;}
     unsigned int getNumColsMask() const {return nc;}
@@ -782,8 +782,8 @@ public:
 
     bool isLowerBandwidthLocked()  const {return lband!=SizeUncommitted;}
     bool isUpperBandwidthLocked()  const {return uband!=SizeUncommitted;}
-    int getDefaultLowerBandwidth() const {isLowerBandwidthLocked() ? lband : 0;}
-    int getDefaultUpperBandwidth() const {isUpperBandwidthLocked() ? uband : 0;}
+    int getDefaultLowerBandwidth() const {return isLowerBandwidthLocked() ? lband : 0;}
+    int getDefaultUpperBandwidth() const {return isUpperBandwidthLocked() ? uband : 0;}
 
     /// Set all bits to one ("Uncommitted").
     Mask& setToUncommitted() {
@@ -934,6 +934,11 @@ public:
     {   return getOutlineMask().isSatisfiedBy(o); }
     bool isConditionOK(const MatrixCondition& c) const
     {   return getConditionMask().isSatisfiedBy(c); }
+
+    bool isResizeable()      const {return masks.isResizeable();}
+    bool isFullyResizeable() const {return masks.isFullyResizeable();;}
+    bool isNumRowsLocked()  const {return masks.isNumRowsLocked();}
+    bool isNumColsLocked()  const {return masks.isNumColsLocked();}
 
     bool isStructureCommitted() const 
     {   return !getStructureMask().isUncommitted(); }

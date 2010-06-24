@@ -1,5 +1,5 @@
-#ifndef SimTK_SIMMATH_RUNGE_KUTTA_FELDBERG_INTEGRATOR_H_
-#define SimTK_SIMMATH_RUNGE_KUTTA_FELDBERG_INTEGRATOR_H_
+#ifndef SimTK_SIMMATH_RUNGE_KUTTA_3_INTEGRATOR_H_
+#define SimTK_SIMMATH_RUNGE_KUTTA_3_INTEGRATOR_H_
 
 /* -------------------------------------------------------------------------- *
  *                      SimTK Core: SimTK Simmath(tm)                         *
@@ -9,8 +9,8 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2006-8 Stanford University and the Authors.         *
- * Authors: Michael Sherman, Peter Eastman                                    *
+ * Portions copyright (c) 2010 Stanford University and the Authors.           *
+ * Authors: Michael Sherman                                                   *
  * Contributors:                                                              *
  *                                                                            *
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -38,22 +38,22 @@
 #include "simmath/Integrator.h"
 
 namespace SimTK {
+class RungeKutta3IntegratorRep;
 
 /**
- * This is an Integrator based on the Runge-Kutta-Feldberg algorithm.  It is an
- * error controlled, fifth order explicit integrator.
+ * This is a 3rd order Runge-Kutta Integrator using coefficents from J.C. Butcher's
+ * book "The Numerical Analysis of Ordinary Differential Equations", John Wiley & Sons,
+ * 1987, page 325.  It is an error controlled, third order, three stage explicit integrator
+ * with an embedded 2nd order error estimate.
  */
-
-class RungeKuttaFeldbergIntegratorRep;
-
-class SimTK_SIMMATH_EXPORT RungeKuttaFeldbergIntegrator : public Integrator {
+class SimTK_SIMMATH_EXPORT RungeKutta3Integrator : public Integrator {
 public:
-    explicit RungeKuttaFeldbergIntegrator(const System& sys);
-    ~RungeKuttaFeldbergIntegrator();
+    explicit RungeKutta3Integrator(const System& sys);
+    ~RungeKutta3Integrator();
 };
 
 } // namespace SimTK
 
-#endif // SimTK_SIMMATH_RUNGE_KUTTA_FELDBERG_INTEGRATOR_H_
+#endif // SimTK_SIMMATH_RUNGE_KUTTA_3_INTEGRATOR_H_
 
 

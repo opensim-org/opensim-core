@@ -9,7 +9,7 @@
  * Biological Structures at Stanford, funded under the NIH Roadmap for        *
  * Medical Research, grant U54 GM072970. See https://simtk.org.               *
  *                                                                            *
- * Portions copyright (c) 2005-7 Stanford University and the Authors.         *
+ * Portions copyright (c) 2005-10 Stanford University and the Authors.        *
  * Authors: Michael Sherman                                                   *
  * Contributors:                                                              *
  *                                                                            *
@@ -274,6 +274,16 @@ public:
     // but sets the rest of the matrix to zero.
     explicit Mat(const E& e)
       { for (int j=0;j<N;++j) (*this)(j) = E(0); diag()=e; }
+
+    // Construction using a negated element is just like construction from
+    // the element.
+    explicit Mat(const ENeg& e)
+      { for (int j=0;j<N;++j) (*this)(j) = E(0); diag()=e; }
+
+    // Given an int, turn it into a suitable floating point number
+    // and then feed that to the above single-element constructor.
+    explicit Mat(int i) 
+      { new (this) Mat(E(Precision(i))); }
 
     // A bevy of constructors from individual exact-match elements IN ROW ORDER.
     Mat(const E& e0,const E& e1)
@@ -562,8 +572,8 @@ public:
     const TCol& operator()(int j) const { return col(j); }
     TCol&       operator()(int j)       { return col(j); }
     
-    const E& operator()(int i,int j) const { return d[i*RS+j*CS]; }
-    E&       operator()(int i,int j)       { return d[i*RS+j*CS]; }
+    const E& operator()(int i,int j) const { return elt(i,j); }
+    E&       operator()(int i,int j)       { return elt(i,j); }
 
     // This is the scalar Frobenius norm.
     ScalarNormSq normSqr() const { return scalarNormSqr(); }
@@ -644,16 +654,34 @@ public:
     const TWithoutNegator& castAwayNegatorIfAny() const {return *reinterpret_cast<const TWithoutNegator*>(this);}
     TWithoutNegator&       updCastAwayNegatorIfAny()    {return *reinterpret_cast<TWithoutNegator*>(this);}
 
-    const TRow& row(int i) const 
-      { assert(0<=i&&i<M); return *reinterpret_cast<const TRow*>(&d[i*RS]); }
-    TRow&       row(int i)       
-      { assert(0<=i&&i<M); return *reinterpret_cast<      TRow*>(&d[i*RS]); }
+    const TRow& row(int i) const { 
+        SimTK_INDEXCHECK(i,M, "Mat::row[i]");
+        return *reinterpret_cast<const TRow*>(&d[i*RS]); 
+    }
+    TRow& row(int i) { 
+        SimTK_INDEXCHECK(i,M, "Mat::row[i]");
+        return *reinterpret_cast<TRow*>(&d[i*RS]); 
+    }
 
-    const TCol& col(int j) const 
-      { assert(0<=j&&j<N); return *reinterpret_cast<const TCol*>(&d[j*CS]); }
-    TCol&       col(int j)       
-      { assert(0<=j&&j<N); return *reinterpret_cast<      TCol*>(&d[j*CS]); }    
-
+    const TCol& col(int j) const { 
+        SimTK_INDEXCHECK(j,N, "Mat::col(j)");
+        return *reinterpret_cast<const TCol*>(&d[j*CS]); 
+    }
+    TCol& col(int j) { 
+        SimTK_INDEXCHECK(j,N, "Mat::col(j)");
+        return *reinterpret_cast<TCol*>(&d[j*CS]); 
+    }    
+    
+    const E& elt(int i, int j) const {
+        SimTK_INDEXCHECK(i,M, "Mat::elt(i,j)");
+        SimTK_INDEXCHECK(j,N, "Mat::elt(i,j)");
+        return d[i*RS+j*CS]; 
+    }
+    E& elt(int i, int j) { 
+        SimTK_INDEXCHECK(i,M, "Mat::elt(i,j)");
+        SimTK_INDEXCHECK(j,N, "Mat::elt(i,j)");
+        return d[i*RS+j*CS]; 
+    }
 
     const TDiag& diag() const { return *reinterpret_cast<const TDiag*>(d); }
     TDiag&       diag()       { return *reinterpret_cast<TDiag*>(d); }
@@ -756,6 +784,11 @@ public:
     void setToNaN() {
         for (int j=0; j<N; ++j)
             (*this)(j).setToNaN();
+    }
+
+    void setToZero() {
+        for (int j=0; j<N; ++j)
+            (*this)(j).setToZero();
     }
 
     // Extract a sub-Mat with size known at compile time. These have to be
@@ -928,11 +961,118 @@ public:
         m.setToNaN();
         return m;
     }
+
+    /// Return true if any element of this Mat contains a NaN anywhere.
+    bool isNaN() const {
+        for (int j=0; j<N; ++j)
+            if (this->col(j).isNaN())
+                return true;
+        return false;
+    }
+
+    /// Return true if any element of this Mat contains a +Inf
+    /// or -Inf somewhere but no element contains a NaN anywhere.
+    bool isInf() const {
+        bool seenInf = false;
+        for (int j=0; j<N; ++j) {
+            if (!this->col(j).isFinite()) {
+                if (!this->col(j).isInf()) 
+                    return false; // something bad was found
+                seenInf = true; 
+            }
+        }
+        return seenInf;
+    }
+
+    /// Return true if no element contains an Infinity or a NaN.
+    bool isFinite() const {
+        for (int j=0; j<N; ++j)
+            if (!this->col(j).isFinite())
+                return false;
+        return true;
+    }
+
+    /// For approximate comparisions, the default tolerance to use for a matrix is
+    /// its shortest dimension times its elements' default tolerance.
+    static double getDefaultTolerance() {return MinDim*CNT<ELT>::getDefaultTolerance();}
+
+    /// %Test whether this matrix is numerically equal to some other matrix with
+    /// the same shape, using a specified tolerance.
+    template <class E2, int CS2, int RS2>
+    bool isNumericallyEqual(const Mat<M,N,E2,CS2,RS2>& m, double tol) const {
+        for (int j=0; j < N; ++j)
+            if (!(*this)(j).isNumericallyEqual(m(j), tol))
+                return false;
+        return true;
+    }
+
+    /// %Test whether this matrix is numerically equal to some other matrix with
+    /// the same shape, using a default tolerance which is the looser of the
+    /// default tolerances of the two objects being compared.
+    template <class E2, int CS2, int RS2>
+    bool isNumericallyEqual(const Mat<M,N,E2,CS2,RS2>& m) const {
+        const double tol = std::max(getDefaultTolerance(),m.getDefaultTolerance());
+        return isNumericallyEqual(m, tol);
+    }
+
+    /// %Test whether this is numerically a "scalar" matrix, meaning that it is 
+    /// a diagonal matrix in which each diagonal element is numerically equal to 
+    /// the same scalar, using either a specified tolerance or the matrix's 
+    /// default tolerance (which is always the same or looser than the default
+    /// tolerance for one of its elements).
+    bool isNumericallyEqual
+       (const ELT& e,
+        double     tol = getDefaultTolerance()) const 
+    {
+        for (int i=0; i<M; ++i)
+            for (int j=0; j<N; ++j) {
+                if (i==j) {
+                    if (!CNT<ELT>::isNumericallyEqual((*this)(i,i), e, tol))
+                        return false;
+                } else {
+                    // off-diagonals must be zero
+                    if (!CNT<ELT>::isNumericallyEqual((*this)(i,j), ELT(0), tol))
+                        return false;
+                }
+            }
+        return true;
+    }
+
+    /// A Matrix is symmetric (actually Hermitian) if it is square and each 
+    /// element (i,j) is the Hermitian transpose of element (j,i). Here we
+    /// are testing for numerical symmetry, meaning that the symmetry condition
+    /// is satisified to within a tolerance (supplied or default). This is 
+    /// a relatively expensive test since all elements must be examined but
+    /// can be very useful in Debug mode to check assumptions.
+    /// @see isExactlySymmetric() for a rarely-used exact equality test
+    bool isNumericallySymmetric(double tol = getDefaultTolerance()) const {
+        if (M != N) return false; // handled at compile time
+        for (int j=0; j<M; ++j)
+            for (int i=j; i<M; ++i)
+                if (!CNT<ELT>::isNumericallyEqual(elt(j,i), CNT<ELT>::transpose(elt(i,j)), tol))
+                    return false;
+        return true;
+    }
+
+    /// A Matrix is symmetric (actually Hermitian) if it is square and each 
+    /// element (i,j) is the Hermitian (conjugate) transpose of element (j,i). This
+    /// method tests for exact (bitwise) equality and is too stringent for most 
+    /// purposes; don't use it unless you know that the corresponding elements
+    /// should be bitwise conjugates, typically because you put them there directly.
+    /// @see isNumericallySymmetric() for a more useful method
+    bool isExactlySymmetric() const {
+        if (M != N) return false; // handled at compile time
+        for (int j=0; j<M; ++j)
+            for (int i=j; i<M; ++i)
+                if (elt(j,i) != CNT<ELT>::transpose(elt(i,j)))
+                    return false;
+        return true;
+    }
     
     TRow sum() const {
         TRow temp;
-        for (int i = 0; i < N; ++i)
-            temp[i] = col(i).sum();
+        for (int j = 0; j < N; ++j)
+            temp[j] = col(j).sum();
         return temp;
     }
 
@@ -1068,42 +1208,50 @@ operator*(const negator<R>& l, const Mat<M,N,E,CS,RS>& r) {return r * (typename 
 // SCALAR DIVIDE. This is a scalar operation when the scalar is on the right,
 // but when it is on the left it means scalar * pseudoInverse(mat), 
 // which is a matrix whose type is like the matrix's Hermitian transpose.
+// TODO: for now it is just going to call mat.invert() which will fail on
+// singular matrices.
 
 // m = m/real, real/m 
 template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<float>::Dvd
 operator/(const Mat<M,N,E,CS,RS>& l, const float& r)
-  { return Mat<M,N,E,CS,RS>::template Result<float>::DvdOp::perform(l,r); }
+{   return Mat<M,N,E,CS,RS>::template Result<float>::DvdOp::perform(l,r); }
+
 template <int M, int N, class E, int CS, int RS> inline
 typename CNT<float>::template Result<Mat<M,N,E,CS,RS> >::Dvd
 operator/(const float& l, const Mat<M,N,E,CS,RS>& r)
-  { return CNT<float>::template Result<Mat<M,N,E,CS,RS> >::DvdOp::perform(l,r); }
+{   return l * r.invert(); }
 
 template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<double>::Dvd
 operator/(const Mat<M,N,E,CS,RS>& l, const double& r)
-  { return Mat<M,N,E,CS,RS>::template Result<double>::DvdOp::perform(l,r); }
+{   return Mat<M,N,E,CS,RS>::template Result<double>::DvdOp::perform(l,r); }
+
 template <int M, int N, class E, int CS, int RS> inline
 typename CNT<double>::template Result<Mat<M,N,E,CS,RS> >::Dvd
 operator/(const double& l, const Mat<M,N,E,CS,RS>& r)
-  { return CNT<double>::template Result<Mat<M,N,E,CS,RS> >::DvdOp::perform(l,r); }
+{   return l * r.invert(); }
 
 template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<long double>::Dvd
 operator/(const Mat<M,N,E,CS,RS>& l, const long double& r)
-  { return Mat<M,N,E,CS,RS>::template Result<long double>::DvdOp::perform(l,r); }
+{   return Mat<M,N,E,CS,RS>::template Result<long double>::DvdOp::perform(l,r); }
+
 template <int M, int N, class E, int CS, int RS> inline
 typename CNT<long double>::template Result<Mat<M,N,E,CS,RS> >::Dvd
 operator/(const long double& l, const Mat<M,N,E,CS,RS>& r)
-  { return CNT<long double>::template Result<Mat<M,N,E,CS,RS> >::DvdOp::perform(l,r); }
+{   return l * r.invert(); }
 
 // m = m/int, int/m -- just convert int to m's precision float
 template <int M, int N, class E, int CS, int RS> inline
 typename Mat<M,N,E,CS,RS>::template Result<typename CNT<E>::Precision>::Dvd
-operator/(const Mat<M,N,E,CS,RS>& l, int r) {return l / (typename CNT<E>::Precision)r;}
+operator/(const Mat<M,N,E,CS,RS>& l, int r) 
+{   return l / (typename CNT<E>::Precision)r; }
+
 template <int M, int N, class E, int CS, int RS> inline
 typename CNT<typename CNT<E>::Precision>::template Result<Mat<M,N,E,CS,RS> >::Dvd
-operator/(int l, const Mat<M,N,E,CS,RS>& r) {return (typename CNT<E>::Precision)l / r;}
+operator/(int l, const Mat<M,N,E,CS,RS>& r) 
+{   return (typename CNT<E>::Precision)l / r; }
 
 
 // Complex, conjugate, and negator are all easy to templatize.

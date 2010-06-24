@@ -37,9 +37,12 @@
 
 #include "simbody/internal/common.h"
 #include "simbody/internal/OrientedBoundingBox.h"
-#include <vector>
+
+#include <cassert>
 
 namespace SimTK {
+
+SimTK_DEFINE_UNIQUE_INDEX_TYPE(ContactGeometryTypeId);
 
 class ContactGeometryImpl;
 class OBBTreeNodeImpl;
@@ -92,6 +95,10 @@ public:
     void getBoundingSphere(Vec3& center, Real& radius) const;
     bool isOwnerHandle() const;
     bool isEmptyHandle() const;
+
+    /**
+     * Copy assignment makes a deep copy.
+     */
     ContactGeometry& operator=(const ContactGeometry& src);
     bool hasImpl() const {
         return impl != 0;
@@ -114,6 +121,10 @@ public:
      * A unique index is generated automatically for each unique type value as returned by getType().
      */
     int getTypeIndex() const;
+
+    ContactGeometryTypeId getTypeId() const;
+
+   
 protected:
     ContactGeometryImpl* impl;
 };
@@ -125,6 +136,19 @@ protected:
 class SimTK_SIMBODY_EXPORT ContactGeometry::HalfSpace : public ContactGeometry {
 public:
     HalfSpace();
+
+    /** Return true if the supplied ContactGeometry object is a halfspace. **/
+    static bool isInstance(const ContactGeometry& geo)
+    {   return geo.getTypeId()==classTypeId(); }
+    /** Cast the supplied ContactGeometry object to a const halfspace. **/
+    static const HalfSpace& getAs(const ContactGeometry& geo)
+    {   assert(isInstance(geo)); return static_cast<const HalfSpace&>(geo); }
+    /** Cast the supplied ContactGeometry object to a writable halfspace. **/
+    static HalfSpace& updAs(ContactGeometry& geo)
+    {   assert(isInstance(geo)); return static_cast<HalfSpace&>(geo); }
+
+    /** Obtain the unique id for HalfSpace contact geometry. **/
+    static ContactGeometryTypeId classTypeId();
 };
 
 /**
@@ -132,9 +156,23 @@ public:
  */
 class SimTK_SIMBODY_EXPORT ContactGeometry::Sphere : public ContactGeometry {
 public:
-    Sphere(Real radius);
+    explicit Sphere(Real radius);
     Real getRadius() const;
     void setRadius(Real radius);
+
+    /** Return true if the supplied ContactGeometry object is a sphere. **/
+    static bool isInstance(const ContactGeometry& geo)
+    {   return geo.getTypeId()==classTypeId(); }
+    /** Cast the supplied ContactGeometry object to a const sphere. **/
+    static const Sphere& getAs(const ContactGeometry& geo)
+    {   assert(isInstance(geo)); return static_cast<const Sphere&>(geo); }
+    /** Cast the supplied ContactGeometry object to a writable sphere. **/
+    static Sphere& updAs(ContactGeometry& geo)
+    {   assert(isInstance(geo)); return static_cast<Sphere&>(geo); }
+
+    /** Obtain the unique id for Sphere contact geometry. **/
+    static ContactGeometryTypeId classTypeId();
+
     const SphereImpl& getImpl() const;
     SphereImpl& updImpl();
 };
@@ -173,7 +211,7 @@ public:
      *                     will be smoothly interpolated between vertices.  If false, it will be treated
      *                     as a faceted mesh with a constant normal vector over each face.
      */
-    TriangleMesh(const std::vector<Vec3>& vertices, const std::vector<int>& faceIndices, bool smooth=false);
+    TriangleMesh(const ArrayViewConst_<Vec3>& vertices, const ArrayViewConst_<int>& faceIndices, bool smooth=false);
     /**
      * Create a TriangleMesh based on a PolygonalMesh object.  If any faces of the PolygonalMesh
      * have more than three vertices, they are automatically triangulated.
@@ -183,7 +221,7 @@ public:
      *                  will be smoothly interpolated between vertices.  If false, it will be treated
      *                  as a faceted mesh with a constant normal vector over each face.
      */
-    TriangleMesh(const PolygonalMesh& mesh, bool smooth=false);
+    explicit TriangleMesh(const PolygonalMesh& mesh, bool smooth=false);
     /**
      * Get the number of edges in the mesh.
      */
@@ -242,7 +280,7 @@ public:
      * @param vertex  the index of the vertex
      * @param edges   the indices of all edges intersecting the vertex will be added to this
      */
-    void findVertexEdges(int vertex, std::vector<int>& edges) const;
+    void findVertexEdges(int vertex, Array_<int>& edges) const;
     /**
      * Get the normal vector for a face.  This points outward from the mesh.
      *
@@ -255,6 +293,23 @@ public:
      * @param face    the index of the face
      */
     Real getFaceArea(int face) const;
+    /**
+     * Calculate the location of a point on the surface, in the local frame of
+     * the TriangleMesh. Cost is 11 flops.
+     *
+     * @param face    the index of the face containing the point
+     * @param uv      the point within the face, specified by its barycentric uv coordinates
+     */
+    Vec3 findPoint(int face, const Vec2& uv) const;
+    /**
+     * Calculate the location of a face's centroid, that is, the point
+     * uv=(1/3,1/3) which is the average of the three vertex locations. This is 
+     * a common special case of findPoint() that can be calculated more quickly 
+     * (7 flops).
+     *
+     * @param face    the index of the face whose centroid is of interest
+     */
+    Vec3 findCentroid(int face) const;
     /**
      * Calculate the normal vector at a point on the surface.
      *
@@ -314,6 +369,27 @@ public:
      * Get the OBBTreeNode which forms the root of this mesh's Oriented Bounding Box Tree.
      */
     OBBTreeNode getOBBTreeNode() const;
+
+    /**
+     * Generate a PolygonalMesh from this TriangleMesh; useful mostly for
+     * debugging because you can create a DecorativeMesh from this and then
+     * look at it.
+     */
+    PolygonalMesh createPolygonalMesh() const;
+
+    /** Return true if the supplied ContactGeometry object is a triangle mesh. **/
+    static bool isInstance(const ContactGeometry& geo)
+    {   return geo.getTypeId()==classTypeId(); }
+    /** Cast the supplied ContactGeometry object to a const triangle mesh. **/
+    static const TriangleMesh& getAs(const ContactGeometry& geo)
+    {   assert(isInstance(geo)); return static_cast<const TriangleMesh&>(geo); }
+    /** Cast the supplied ContactGeometry object to a writable triangle mesh. **/
+    static TriangleMesh& updAs(ContactGeometry& geo)
+    {   assert(isInstance(geo)); return static_cast<TriangleMesh&>(geo); }
+
+    /** Obtain the unique id for TriangleMesh contact geometry. **/
+    static ContactGeometryTypeId classTypeId();
+
     const TriangleMeshImpl& getImpl() const;
     TriangleMeshImpl& updImpl();
 };
@@ -347,7 +423,7 @@ public:
     /**
      * Get the indices of all triangles contained in this node.  Calling this on a non-leaf node will produce an exception.
      */
-    const std::vector<int>& getTriangles() const;
+    const Array_<int>& getTriangles() const;
     /**
      * Get the number of triangles inside this node.  If this is not a leaf node, this is the total number
      * of triangles contained by all children of this node.
