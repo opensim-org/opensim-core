@@ -363,7 +363,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, MarkerData& aPose)
 {
 	aPose.averageFrames(0.01);
-	MarkerFrame* frame = aPose.getFrame(0);
+	const MarkerFrame &frame = aPose.getFrame(0);
 
 	const SimbodyEngine& engine = aModel.getSimbodyEngine();
 
@@ -379,11 +379,11 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
 			int index = aPose.getMarkerIndex(modelMarker.getName());
 			if (index >= 0)
 			{
-				SimmPoint& globalMarker = frame->getMarker(index);
-				if (globalMarker.isVisible())
+				Vec3& globalMarker = frame.getMarker(index);
+				if (!globalMarker.isNaN())
 				{
 					Vec3 pt, pt2;
-					Vec3 globalPt = globalMarker.get();
+					Vec3 globalPt = globalMarker;
 					double conversionFactor = aPose.getUnits().convertTo(aModel.getLengthUnits());
 					pt = conversionFactor*globalPt;
 					engine.transformPosition(s, engine.getGroundBody(), pt, modelMarker.getBody(), pt2);

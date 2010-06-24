@@ -457,8 +457,8 @@ double ModelScaler::takeExperimentalMarkerMeasurement(const MarkerData& aMarkerD
 		aMarkerData.findFrameRange(_timeRange[0], _timeRange[1], startIndex, endIndex);
 		double length = 0;
 		for(int i=startIndex; i<=endIndex; i++) {
-			Vec3& p1 = aMarkerData.getFrame(i)->getMarker(marker1).get();
-			Vec3& p2 = aMarkerData.getFrame(i)->getMarker(marker2).get();
+			Vec3& p1 = aMarkerData.getFrame(i).getMarker(marker1);
+			Vec3& p2 = aMarkerData.getFrame(i).getMarker(marker2);
 			length += (p2 - p1).norm();
 		}
 		return length/(endIndex-startIndex+1);
