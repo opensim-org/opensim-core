@@ -116,8 +116,8 @@ void MarkerFrame::setNull()
  */
 void MarkerFrame::addMarker(const SimTK::Vec3& aCoords)
 {
-	SimmPoint* pt = new SimmPoint(aCoords);
-	_markers.append(pt);
+	//SimmPoint* pt = new SimmPoint(aCoords);
+	_markers.push_back(aCoords);
 }
 
 //=============================================================================
@@ -133,7 +133,7 @@ void MarkerFrame::scale(double aScaleFactor)
 {
 	for (int i = 0; i < _numMarkers; i++)
 	{
-		SimTK::Vec3& pt = _markers[i]->get();
-		pt *= aScaleFactor;
+		//SimTK::Vec3& pt = _markers[i]->get();
+		_markers[i] *= aScaleFactor;
 	}
 }

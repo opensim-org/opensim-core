@@ -84,7 +84,7 @@ public:
 	void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
 	const std::string& getFileName() const { return _fileName; }
 	void makeRdStorage(Storage& rStorage);
-	MarkerFrame* getFrame(int aIndex) const;
+	const MarkerFrame& getFrame(int aIndex) const;
 	int getMarkerIndex(const std::string& aName) const;
 	const Units& getUnits() const { return _units; }
 	void convertToUnits(const Units& aUnits);

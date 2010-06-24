@@ -319,15 +319,15 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowN
  * @param rVec vector that is read is returned here.
  * @return True if vector was read, false if not.
  */
-bool OpenSim::readVectorFromString(string &aString, SimmPoint &rVec)
+bool OpenSim::readVectorFromString(string &aString, SimTK::Vec3 &rVec)
 {
-   bool ok = true;
+	bool ok = true;
 
-	SimTK::Vec3& vecPtr = rVec.get();
+	SimTK::Vec3& vecPtr = rVec;
 	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[0]);
-   ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[1]);
-   ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[2]);
-   return ok;
+	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[1]);
+	ok = ok && OpenSim::readDoubleFromString(aString, &vecPtr[2]);
+	return ok;
 }
 
 //_____________________________________________________________________________

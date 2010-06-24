@@ -599,16 +599,16 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 	for (int i = 0; i < _numMarkers; i++)
 	{
 		int numFrames = 0;
-		SimmPoint& avePt = averagedFrame->getMarker(i);
-		avePt.set(0.0, 0.0, 0.0);
+		Vec3& avePt = averagedFrame->getMarker(i);
+		avePt = Vec3(0);
 
 		for (int j = startIndex; j <= endIndex; j++)
 		{
-			SimmPoint& pt = _frames[j]->getMarker(i);
-			if (pt.isVisible())
+			Vec3& pt = _frames[j]->getMarker(i);
+			if (!pt.isNaN())
 			{
-				Vec3& coords = pt.get();
-				avePt += pt;
+				Vec3& coords = pt; //.get();
+				avePt += coords;
 				numFrames++;
 				if (aThreshold > 0.0)
 				{
@@ -632,7 +632,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 		if (numFrames > 0)
 			avePt /= (double)numFrames;
 		else
-			avePt.set(SimTK::NaN, SimTK::NaN, SimTK::NaN);
+			avePt = Vec3(SimTK::NaN) ;//(SimTK::NaN, SimTK::NaN, SimTK::NaN);
 	}
 
 	/* Store the indices from the file of the first frame and
@@ -651,9 +651,9 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 	{
 		for (int i = 0; i < _numMarkers; i++)
 		{
-			SimmPoint& pt = _frames[0]->getMarker(i);
+			Vec3& pt = _frames[0]->getMarker(i);
 
-			if (!pt.isVisible())
+			if (pt.isNaN())
 			{
 				cout << "___WARNING___: marker " << _markerNames[i] << " is missing in frames " << startUserIndex
 					  << " to " << endUserIndex << ". Coordinates will be set to NAN." << endl;
@@ -718,7 +718,7 @@ void MarkerData::makeRdStorage(Storage& rStorage)
 	{
 		for (int j = 0, index = 0; j < _numMarkers; j++)
 		{
-			SimTK::Vec3& marker = _frames[i]->getMarker(j).get();
+			SimTK::Vec3& marker = _frames[i]->getMarker(j);
 			for (int k = 0; k < 3; k++)
 				row[index++] = marker[k];
 		}
@@ -761,12 +761,12 @@ void MarkerData::convertToUnits(const Units& aUnits)
  * @param aIndex index of the row to get.
  * @return Pointer to the frame of data.
  */
-MarkerFrame* MarkerData::getFrame(int aIndex) const
+const MarkerFrame& MarkerData::getFrame(int aIndex) const
 {
 	if (aIndex < 0 || aIndex >= _numFrames)
-		return NULL;
+		throw Exception("MarkerData::getFrame() invalid frame index.");
 
-	return _frames[aIndex];
+	return *_frames[aIndex];
 }
 
 //_____________________________________________________________________________

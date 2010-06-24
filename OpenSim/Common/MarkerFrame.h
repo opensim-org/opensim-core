@@ -36,7 +36,6 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "ArrayPtrs.h"
-#include "SimmPoint.h"
 #include "Units.h"
 
 namespace OpenSim {
@@ -60,7 +59,7 @@ private:
 	int _frameNumber;
 	double _frameTime;
 	Units _units;
-	ArrayPtrs<SimmPoint> _markers;
+	SimTK::Array_<SimTK::Vec3> _markers;
 
 //=============================================================================
 // METHODS
@@ -74,11 +73,13 @@ public:
 	MarkerFrame(const MarkerFrame& aFrame);
 	virtual ~MarkerFrame();
 	void addMarker(const SimTK::Vec3& aCoords);
-	SimmPoint& getMarker(int aIndex) { return *_markers[aIndex]; }
+	SimTK::Vec3 getMarker(int aIndex) const { return _markers[aIndex]; }
 	int getFrameNumber() const { return _frameNumber; }
 	void setFrameNumber(int aNumber) { _frameNumber = aNumber; }
 	double getFrameTime() const { return _frameTime; }
 	void scale(double aScaleFactor);
+	
+	const SimTK::Array_<SimTK::Vec3>& getMarkers() const { return _markers;} 
 
 private:
 	void setNull();
