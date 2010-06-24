@@ -251,8 +251,10 @@ int WrapSphereObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK:
 	// Register results and return
 	aFlag = true;
 	aWrapResult.wrap_path_length = QT;	// PQ + TS + QT;
-	aWrapResult.r1=aPointQ;  	SimmPoint wppt1(aWrapResult.r1);	aWrapResult.wrap_pts.append(wppt1);
-	aWrapResult.r2=aPointT;		SimmPoint wppt2(aWrapResult.r2);	aWrapResult.wrap_pts.append(wppt2);
+	aWrapResult.r1=aPointQ;  	//SimmPoint wppt1(aWrapResult.r1);	
+	aWrapResult.wrap_pts.append(aWrapResult.r1);
+	aWrapResult.r2=aPointT;		//SimmPoint wppt2(aWrapResult.r2);	
+	aWrapResult.wrap_pts.append(aWrapResult.r2);
 
 	return wrapped;
 }

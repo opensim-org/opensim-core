@@ -791,8 +791,8 @@ restart_spiral_wrap:
 				goto restart_spiral_wrap;
 			}
 		}
-		SimmPoint wppt(wrap_pt);
-		aWrapResult.wrap_pts.append(wppt);
+
+		aWrapResult.wrap_pts.append(wrap_pt);
 	}
 }
 

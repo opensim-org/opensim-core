@@ -574,8 +574,8 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 	if (numWrapSegments < 1)
 		numWrapSegments = 1;
 
-	SimmPoint sp1(aWrapResult.r1);
-	aWrapResult.wrap_pts.append(sp1);
+	//SimmPoint sp1(aWrapResult.r1);
+	aWrapResult.wrap_pts.append(aWrapResult.r1);
 
    vec[0] = r1m[0];
    vec[1] = r1m[1];
@@ -591,12 +591,12 @@ int WrapSphere::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec
 		SimTK::Vec3 wp;
 		for (j = 0; j < 3; j++)
 			wp[j] = origin[j] + rotvec[j];
-		SimmPoint wppt(wp);
-		aWrapResult.wrap_pts.append(wppt);
+		//SimmPoint wppt(wp);
+		aWrapResult.wrap_pts.append(wp);
    }
 
-	SimmPoint sp2(aWrapResult.r2);
-	aWrapResult.wrap_pts.append(sp2);
+	//SimmPoint sp2(aWrapResult.r2);
+	aWrapResult.wrap_pts.append(aWrapResult.r2);
 
    return return_code;
 }

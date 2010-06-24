@@ -36,7 +36,6 @@
 #include <math.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/SimmPoint.h>
 #include <OpenSim/Simulation/Model/PathPoint.h>
 
 #ifdef SWIG
@@ -70,7 +69,7 @@ class OSIMSIMULATION_API PathWrapPoint : public PathPoint
 // DATA
 //=============================================================================
 private:
-	Array<SimmPoint> _wrapPath; // points defining muscle path on surface of wrap object
+	Array<SimTK::Vec3> _wrapPath; // points defining muscle path on surface of wrap object
    double _wrapPathLength; // length of _wrapPath
 
 	WrapObject* _wrapObject; // the wrap object this point is on
@@ -95,7 +94,7 @@ public:
 	virtual void setup(const Model& aModel, GeometryPath& aPath);
 #endif
 
-	Array<SimmPoint>& getWrapPath() { return _wrapPath; }
+	Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }
 	double getWrapLength() const { return _wrapPathLength; }
 	void setWrapLength(double aLength) { _wrapPathLength = aLength; }
 	virtual WrapObject* getWrapObject() const { return _wrapObject; }

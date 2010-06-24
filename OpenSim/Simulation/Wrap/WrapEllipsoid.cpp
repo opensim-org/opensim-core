@@ -622,8 +622,8 @@ calc_wrap_path:
 	{
 		SimTK::Vec3 r1p1, r2p2, r1w1, r2w2;
 
-		SimTK::Vec3& w1 = aWrapResult.wrap_pts.get(1).get();
-		SimTK::Vec3& w2 = aWrapResult.wrap_pts.get(aWrapResult.wrap_pts.getSize() - 2).get();
+		SimTK::Vec3& w1 = aWrapResult.wrap_pts.get(1);
+		SimTK::Vec3& w2 = aWrapResult.wrap_pts.get(aWrapResult.wrap_pts.getSize() - 2);
 
 		// check for wrong-way wrap by testing angle of first and last
 		// wrap path segments:
@@ -652,7 +652,7 @@ calc_wrap_path:
 	aWrapResult.wrap_path_length /= aWrapResult.factor;
 
 	for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-		aWrapResult.wrap_pts[i].scale(1.0 / aWrapResult.factor);
+		aWrapResult.wrap_pts[i] * (1.0 / aWrapResult.factor);
 
 	// transform back to starting coordinate system
 	// Note: c1 and sv do not get transformed
@@ -898,10 +898,10 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
 		// Just use r1 and r2 as the surface points and return the distance
 		// between them as the distance along the ellipsoid.
 		aWrapResult.wrap_pts.setSize(0);
-		SimmPoint p1(r1);
-		aWrapResult.wrap_pts.append(p1);
-		SimmPoint p2(r2);
-		aWrapResult.wrap_pts.append(p2);
+		//SimmPoint p1(r1);
+		aWrapResult.wrap_pts.append(r1);
+		//SimmPoint p2(r2);
+		aWrapResult.wrap_pts.append(r2);
 		aWrapResult.wrap_path_length = len * aWrapResult.factor; // the length is unnormalized later
 		return;
 	} else {
@@ -1014,27 +1014,27 @@ void WrapEllipsoid::CalcDistanceOnEllipsoid(SimTK::Vec3& r1, SimTK::Vec3& r2, Si
 	}
 
 	aWrapResult.wrap_pts.setSize(0);
-	SimmPoint p1(r1);
-	aWrapResult.wrap_pts.append(p1);
+	//SimmPoint p1(r1);
+	aWrapResult.wrap_pts.append(r1);
 
 	for (i = 0; i < numInteriorPts; i++)
 	{
-		SimmPoint spt(Vec3::getAs(&s[i][0]));
+		Vec3 spt(Vec3::getAs(&s[i][0]));
 		aWrapResult.wrap_pts.append(spt);
 	}
 
-	SimmPoint p2(r2);
-	aWrapResult.wrap_pts.append(p2);
+	//SimmPoint p2(r2);
+	aWrapResult.wrap_pts.append(r2);
 
 	aWrapResult.wrap_path_length = 0.0;
 
 	for (i = 0; i < numPathSegments; i++)
 	{
-		SimmPoint p = aWrapResult.wrap_pts.get(i);
-		SimmPoint q = aWrapResult.wrap_pts.get(i+1);
-		MAKE_3DVECTOR21(q.get(), p.get(), dv); 
+		Vec3 p = aWrapResult.wrap_pts.get(i);
+		Vec3 q = aWrapResult.wrap_pts.get(i+1);
+		MAKE_3DVECTOR21(q, p, dv); 
 
-		aWrapResult.wrap_path_length += Mtx::Magnitude(3, dv);
+		aWrapResult.wrap_path_length += dv.norm(); //Mtx::Magnitude(3, dv);
 	}
 }
 

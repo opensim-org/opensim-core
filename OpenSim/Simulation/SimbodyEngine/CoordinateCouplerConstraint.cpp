@@ -283,11 +283,6 @@ void CoordinateCouplerConstraint::createSystem(SimTK::MultibodySystem& system) c
 	mutableThis->_index = simtkCoordinateCoupler.getConstraintIndex();
 }
 
-double CoordinateCouplerConstraint::getValue(const Vector& aIndValues) const
-{
-	return getFunction().calcValue(aIndValues) * _scaleFactor;
-}
-
 //=============================================================================
 // SCALE
 //=============================================================================

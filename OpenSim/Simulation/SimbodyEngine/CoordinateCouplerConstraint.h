@@ -103,7 +103,6 @@ public:
 	Function& getFunction() const {return *_function; }
 	void setFunction(const Function &aFunction)  { _function = (Function*) aFunction.copy(); }
 	void setFunction(Function *aFunction)  { _function = aFunction; }
-	double getValue(const SimTK::Vector& aIndValues) const;
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);

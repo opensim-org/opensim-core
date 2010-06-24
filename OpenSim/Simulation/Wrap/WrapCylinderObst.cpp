@@ -285,16 +285,16 @@ int WrapCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimT
 	aWrapResult.r2[0]=Tx;  aWrapResult.r2[1]=Ty;  aWrapResult.r2[2]=Tz;
 	
 	// Generate wrap_pts sequence of points tracing out wrapping path
-	SimmPoint wppt1(aWrapResult.r1);	aWrapResult.wrap_pts.append(wppt1);
+	aWrapResult.wrap_pts.append(aWrapResult.r1);
 	double Qang=atan2(Qy,Qx);				// Angle of point Q
 	int i, n=1+(QtoTang>=0?QtoTang:-QtoTang)/max_wrap_pts_circle_ang;	// Number of angle steps from Q to T angles
 	double angDelt=(QtoTang)/(double)(n);	// Delta angle for n steps from Q to T angles
 	for(i=0;i<=n;i++) {
 		double ang = Qang + i*angDelt;		// Angle ranging from that of Q to that of T
 		SimTK::Vec3 aPointi( R*cos(ang), R*sin(ang), Qz+(Tz-Qz)*(double)(i)/(double)(n) );
-		SimmPoint wppti(aPointi);		aWrapResult.wrap_pts.append(wppti);
+		aWrapResult.wrap_pts.append(aPointi);
 	}
-	SimmPoint wppt2(aWrapResult.r2);	aWrapResult.wrap_pts.append(wppt2);
+	aWrapResult.wrap_pts.append(aWrapResult.r2);
 
 	return wrapped;
 }

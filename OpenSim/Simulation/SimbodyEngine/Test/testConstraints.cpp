@@ -36,6 +36,7 @@
 //		1. Test locking (constraint) mechansim on coordinates
 //		2. Test WelConstraint againsts Simbody Constraint::Weld
 //      3. PointOnLineConstraint against Simbody built-in PointOnLine constraint (samner)
+//		4. CoordinateCouplerConstraint as a custom knee 
 //     Add tests here as new constraint types are added to OpenSim
 //
 //==========================================================================================================

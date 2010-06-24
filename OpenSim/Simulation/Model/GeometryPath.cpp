@@ -1040,7 +1040,7 @@ void GeometryPath::applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& pa
                // If wrapping did occur, copy wrap information into the PathStruct.
                ws.getWrapPoint(0).getWrapPath().setSize(0);
 
-					Array<SimmPoint>& wrapPath = ws.getWrapPoint(1).getWrapPath();
+			   Array<SimTK::Vec3>& wrapPath = ws.getWrapPoint(1).getWrapPath();
 					wrapPath = best_wrap.wrap_pts;
 
 					// In OpenSim, all conversion to/from the wrap object's reference
@@ -1228,10 +1228,10 @@ void GeometryPath::updateDisplayPath(const SimTK::State& s)
 			// path before adding the second tangent point.
 			// Note: the first surface point is coincident with the
 			// first tangent point, so don't add it to the path.
-		   const Array<SimmPoint>& surfacePoints = mwp->getWrapPath();
+		   const Array<Vec3>& surfacePoints = mwp->getWrapPath();
 			for (int j=1; j<surfacePoints.getSize(); j++) {
 				PathWrapPoint* p = new PathWrapPoint();
-				p->setLocation(s, surfacePoints.get(j).get());
+				p->setLocation(s, surfacePoints.get(j));
 				p->setBody(mwp->getBody());
 				currentDisplayPath.append(p);
 			}

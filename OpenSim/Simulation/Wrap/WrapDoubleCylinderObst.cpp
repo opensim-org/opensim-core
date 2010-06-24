@@ -560,10 +560,10 @@ int WrapDoubleCylinderObst::wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1
 //	aWrapResult.sv[0]=T[0];  aWrapResult.sv[1]=T[1];  aWrapResult.sv[2]=T[2];
 	
 	// Generate wrap_pts sequence of points tracing out wrapping path
-	SimmPoint wppt1(aWrapResult.r1);	aWrapResult.wrap_pts.append(wppt1);
+	aWrapResult.wrap_pts.append(aWrapResult.r1);
 //	SimmPoint wppt2(aWrapResult.c1);	aWrapResult.wrap_pts.append(wppt2);
 //	SimmPoint wppt3(aWrapResult.sv);	aWrapResult.wrap_pts.append(wppt3);
-	SimmPoint wppt4(aWrapResult.r2);	aWrapResult.wrap_pts.append(wppt4);
+	aWrapResult.wrap_pts.append(aWrapResult.r2);
 
 	return wrapped;
 }
