@@ -1207,12 +1207,14 @@ append(double aT,int aN,const double *aY,bool aCheckForDuplicateTime)
 
 	// APPEND
 	StateVector vec(aT,aN,aY);
+	append(vec,aCheckForDuplicateTime);
 	// TODO: use some tolerance when checking for duplicate time?
+	/*
 	if(aCheckForDuplicateTime && _storage.getSize() && _storage.getLast().getTime()==vec.getTime())
 		_storage.getLast() = vec;
 	else
 		_storage.append(vec);
-
+	*/
 	return(_storage.getSize());
 }
 //_____________________________________________________________________________

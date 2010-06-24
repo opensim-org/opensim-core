@@ -936,6 +936,9 @@ bool CMCTool::run()
 	controller->updTaskSet().computeAccelerations(s);
 
     cmcActSubsystem.setCompleteState( s );
+
+	// Set output file names so that files are flushed regularly in case we fail
+	manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
 	manager.integrate(s);
 	time(&finishTime);
 	cout<<"----------------------------------------------------------------\n";
