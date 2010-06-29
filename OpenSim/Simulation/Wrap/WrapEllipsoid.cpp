@@ -652,7 +652,7 @@ calc_wrap_path:
 	aWrapResult.wrap_path_length /= aWrapResult.factor;
 
 	for (i = 0; i < aWrapResult.wrap_pts.getSize(); i++)
-		aWrapResult.wrap_pts[i] * (1.0 / aWrapResult.factor);
+		aWrapResult.wrap_pts[i] *= (1.0 / aWrapResult.factor);
 
 	// transform back to starting coordinate system
 	// Note: c1 and sv do not get transformed
