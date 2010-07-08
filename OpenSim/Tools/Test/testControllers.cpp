@@ -209,6 +209,7 @@ bool testPrescribedControllerOnBlock()
 
 	// Create a prescribed controller that simply applies a function of the force
 	PrescribedController actuatorController;
+	actuatorController.setActuators(osimModel.updActuators());
 	actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
 
 	// add the controller to the model
