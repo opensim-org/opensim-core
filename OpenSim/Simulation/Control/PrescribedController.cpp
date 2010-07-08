@@ -164,12 +164,10 @@ PrescribedController& PrescribedController::operator=(const PrescribedController
 }
 
 // compute the control value for an actuator
-double PrescribedController::computeControl(const SimTK::State& s, int index )  const{
-   
-   SimTK_ASSERT( _prescribedControlFunctions.getSize() == _actuatorSet.getSize()  , "PrescribedController::computeControl number of functions does not match number of actuators.");
-
+double PrescribedController::computeControl(const SimTK::State& s, int index )  const
+{
    SimTK_ASSERT( index < _actuatorSet.getSize(),
-   "PrescribedController::computeControl:  index > size of actuator set" );
+   "PrescribedController::computeControl:  index > number of actuators" );
 
    SimTK_ASSERT( index >= 0,  "PrescribedController::computeControl:  index < 0" );
 
@@ -184,12 +182,18 @@ double PrescribedController::computeControl(const SimTK::State& s, int index )  
 
 void PrescribedController::prescribeControlForActuator(int index, OpenSim::Function *prescribedFunction)
 {
+	SimTK_ASSERT( index < _actuatorSet.getSize(), "PrescribedController::computeControl:  index > number of actuators" );
+	SimTK_ASSERT( index >= 0,  "PrescribedController::computeControl:  index < 0" );
+	if(index >= _prescribedControlFunctions.getSize())
+		_prescribedControlFunctions.setSize(index+1);
 	_prescribedControlFunctions.set(index, prescribedFunction);  
 }
 
 void PrescribedController::prescribeControlForActuator(const std::string actName, OpenSim::Function *prescribedFunction)
 {
 	int index = _actuatorNameList.findIndex(actName);
+	if(index < 0 )
+		throw Exception("PrescribedController does not have "+actName+" in its list of actuators to control.");
 	prescribeControlForActuator(index, prescribedFunction);
 }
 

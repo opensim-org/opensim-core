@@ -242,27 +242,32 @@ void Controller:: setup(Model& model)
 	ModelComponent::setup(model);
 
 	Set<Actuator> actuatorsByName;
-	for(int i =0; _actuatorNameList.getSize(); i++){
+	for(int i =0; i < _actuatorNameList.getSize(); i++){
 		if(model.updActuators().contains(_actuatorNameList[i]))
 			actuatorsByName.append(&model.updActuators().get(_actuatorNameList[i]));
 		else
 			throw Exception("Controller::setup : Actuator " + _actuatorNameList[i] + " not found.");
 	}
+	actuatorsByName.setMemoryOwner(false);
 	setActuators(actuatorsByName);
 
 	// setup actuators to ensure actuators added by controllers are also setup properly
 	_actuatorSet.setup(*_model);
 }
 
-// makes a request for which actuators a controller suports
+// makes a request for which actuators a controller will control
 void Controller::setActuators( Set<Actuator>& actuators ) {
+	//Rebuild consistent set of actuator lists
 	_actuatorSet.setSize(0);
+	_actuatorNameList.setSize(0);
 	for(int i=0; i< actuators.getSize(); i++){
 		actuators[i].setController(this);
 		actuators[i].setIsControlled(true);
 		actuators[i].setControlIndex(i);
 		_actuatorSet.append(&actuators[i]);
+		_actuatorNameList.append(actuators[i].getName());
 	}
+	_actuatorSet.setMemoryOwner(false);
 }
 
 Set<Actuator>& Controller::updActuators() { return _actuatorSet.updActuators(); }

@@ -354,10 +354,12 @@ bool ForceSet::insert(int aIndex, Force *aForce)
  */
 const Set<Actuator>& ForceSet::getActuators() const
 {
-    return _actuators;
+	return _actuators;
 }
+
 Set<Actuator>& ForceSet::updActuators() 
 {
+	updateActuators();
     return _actuators;
 }
 //_____________________________________________________________________________
