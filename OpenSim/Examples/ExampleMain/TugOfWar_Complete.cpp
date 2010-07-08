@@ -131,6 +131,10 @@ int main()
 		///////////////////////////////////////
 		// DEFINE FORCES ACTING ON THE MODEL //
 		///////////////////////////////////////
+		// GRAVITY
+
+		// Define the acceleration due to gravity
+		osimModel.setGravity(Vec3(0,-9.80665,0));
 
 		// MUSCLE FORCES
 
@@ -160,27 +164,27 @@ int main()
 
 		// CONTACT FORCE
 
-		// Create new contact geometry for the floor and a cube
+		// Define contact geometry
 		// Create new floor contact halfspace
-		ContactHalfSpace *floor = new ContactHalfSpace(SimTK::Vec3(0), SimTK::Vec3(0, 0, -0.5*SimTK_PI), ground);
-		floor->setName("floor");
+		ContactHalfSpace *floor = new ContactHalfSpace(SimTK::Vec3(0), SimTK::Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
 		// Create new cube contact mesh
-		OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockRemesh192.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block);
-		cube->setName("cube");
+		OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockRemesh192.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
 
 		// Add contact geometry to the model
 		osimModel.addContactGeometry(floor);
 		osimModel.addContactGeometry(cube);
 
-		// Create a new elastic foundation force between the floor and cube.
-		OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce();
-		OpenSim::ElasticFoundationForce::ContactParameters contactParams;
-		contactParams.updGeometry().append("cube");
-		contactParams.updGeometry().append("floor");
-		contactParams.setStiffness(1.0e8);
-		contactParams.setDissipation(0.01);
-		contactParams.setDynamicFriction(0.25);
-		contactForce->updContactParametersSet().append(contactParams);
+		// Contact parameters
+		double stiffness = 1.0e8, dissipation = 0.01, friction = 0.25;
+
+		// Define contact parameters for elastic foundation force
+		OpenSim::ElasticFoundationForce::ContactParameters *contactParams = 
+			new OpenSim::ElasticFoundationForce::ContactParameters(stiffness, dissipation, friction, 0, 0);
+		contactParams->addGeometry("cube");
+		contactParams->addGeometry("floor");
+		
+		// Create a new elastic foundation (contact) force between the floor and cube.
+		OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce(contactParams);
 		contactForce->setName("contactForce");
 
 		// Add the new elastic foundation force to the model
@@ -208,11 +212,6 @@ int main()
 		// Add the new prescribed force to the model
 		osimModel.addForce(prescribedForce);
 
-		// GRAVITY
-
-		// Define the acceleration due to gravity
-		osimModel.setGravity(Vec3(0,-9.80665,0));
-
 		///////////////////////////////////
 		// DEFINE CONTROLS FOR THE MODEL //
 		///////////////////////////////////
@@ -231,6 +230,8 @@ int main()
 		// Specify control values at the initial and final times
 		muscleControls->setControlValues(initialTime, initialControl);
 		muscleControls->setControlValues(finalTime, finalControl);
+
+		muscleControls->print("ControlsForTugOfWar.xml");
 		// Create a new control set controller that applies controls from a ControlSet
 		ControlSetController *muscleController = new ControlSetController();
 		muscleController->setControlSet(muscleControls);
@@ -238,11 +239,20 @@ int main()
 		// Add the control set controller to the model
 		osimModel.addController(muscleController);
 
+
+		// Define the default states for the two muscles
+		// Activation
+		muscle1->setDefaultActivation(initialControl[0]);
+		muscle2->setDefaultActivation(initialControl[1]);
+		// Fiber length
+		muscle2->setDefaultFiberLength(0.1);
+		muscle1->setDefaultFiberLength(0.1);
+
 		//////////////////////////
 		// PERFORM A SIMULATION //
 		//////////////////////////
 
-		// Initialize the system and get the state
+		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
 
 		// Define non-zero (defaults are 0) states for the free joint
@@ -251,30 +261,18 @@ int main()
 		modelCoordinateSet[3].setSpeedValue(si, 0.1); // set x-speed value
 		modelCoordinateSet[4].setValue(si, blockSideLength/2+0.01); // set y-translation value 
 
-		// Define the initial states for the two muscles
-		// Activation
-		muscle1->setDefaultActivation(initialControl[0]);
-		muscle2->setDefaultActivation(initialControl[1]);
-		// Fiber length
-		muscle2->setDefaultFiberLength(0.1);
-		muscle1->setDefaultFiberLength(0.1);
-		// Initialize the muscle state
-		muscle1->initState(si);
-		muscle2->initState(si);
-
 		// Compute initial conditions for muscles
 		osimModel.computeEquilibriumForAuxiliaryStates(si);
 
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator
-		SimTK::RungeKuttaFeldbergIntegrator integrator(osimModel.getSystem());
-		integrator.setMaximumStepSize(3.7e-3);
-		integrator.setMinimumStepSize(1.0e-4);
+		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
 		integrator.setAccuracy(1.0e-3);
 		integrator.setAbsoluteTolerance(1.0e-3);
 		// Create the force reporter
 		ForceReporter* reporter = new ForceReporter(&osimModel);
-		osimModel.updAnalysisSet().append(reporter);
+		osimModel.addAnalysis(reporter);
+		
 		// Create the manager
 		Manager manager(osimModel,  integrator);
 
