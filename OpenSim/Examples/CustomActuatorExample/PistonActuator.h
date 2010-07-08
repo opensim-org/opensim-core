@@ -160,7 +160,9 @@ public:
 	//--------------------------------------------------------------------------
 	// APPLICATION
 	//--------------------------------------------------------------------------
-	virtual void computeForce(const SimTK::State& s) const;
+	virtual void computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
+							  SimTK::Vector& generalizedForces) const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
