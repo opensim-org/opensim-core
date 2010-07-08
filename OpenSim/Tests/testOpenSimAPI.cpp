@@ -48,16 +48,8 @@ using namespace SimTK;
  */
 int main()
 {
-
-#ifdef WIN32
-	// Variables for Windows performance clocking
-	LARGE_INTEGER start;
-	LARGE_INTEGER stop;
-	LARGE_INTEGER frequency;
-	QueryPerformanceFrequency(&frequency);
-	QueryPerformanceCounter(&start);
-#endif
 	try {
+		const clock_t start = clock();
 
 		///////////////////////////////////////////
 		// DEFINE BODIES AND JOINTS OF THE MODEL //
@@ -223,26 +215,20 @@ int main()
 		///////////////////////////////////
 		// DEFINE CONTROLS FOR THE MODEL //
 		///////////////////////////////////
-
-		// Define the initial and final control values for the two muscles
-		double initialControl[2] = {1.0, 0.05};
-		double finalControl[2] = {0.05, 1.0};
-		// Create two new linear control signals
-		ControlLinear *control1 = new ControlLinear();
-		ControlLinear *control2 = new ControlLinear();
-		control1->setName("muscle1"); control2->setName("muscle2");
-		// Create a new control set and add the control signals to the set
-		ControlSet *muscleControls = new ControlSet();
-		muscleControls->append(control1);
-		muscleControls->append(control2);
-		// Specify control values at the initial and final times
-		muscleControls->setControlValues(initialTime, initialControl);
-		muscleControls->setControlValues(finalTime, finalControl);
-
-		muscleControls->print("ControlsForTugOfWar.xml");
-		// Create a new control set controller that applies controls from a ControlSet
-		ControlSetController *muscleController = new ControlSetController();
-		muscleController->setControlSet(muscleControls);
+		// Create a prescribed controller that simply applies controls as function of time
+		PrescribedController *muscleController = new PrescribedController();
+		muscleController->setActuators(osimModel.updActuators());
+		// Define linear functions for the control values for the two muscles
+		Array<double> slopeAndIntercept1(0.0, 2);  // array of 2 doubles
+		Array<double> slopeAndIntercept2(0.0, 2);
+		// muscle1 control has slope of -1 starting 1 at t = 0
+		slopeAndIntercept1[0] = -1.0;  slopeAndIntercept1[1] = 1.0;
+		// muscle2 control has slope of 1 starting 0.05 at t = 0
+		slopeAndIntercept2[0] = 1.0;  slopeAndIntercept2[1] = 0.05;
+		
+		// Set the indiviudal muscle control functions for the prescribed muscle controller
+		muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
+		muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
 
 		// Add the control set controller to the model
 		osimModel.addController(muscleController);
@@ -253,8 +239,8 @@ int main()
 
 		// Define the default states for the two muscles
 		// Activation
-		muscle1->setDefaultActivation(initialControl[0]);
-		muscle2->setDefaultActivation(initialControl[1]);
+		muscle1->setDefaultActivation(slopeAndIntercept1[1]);
+		muscle2->setDefaultActivation(slopeAndIntercept2[1]);
 		// Fiber length
 		muscle2->setDefaultFiberLength(0.1);
 		muscle1->setDefaultFiberLength(0.1);
@@ -317,6 +303,8 @@ int main()
 		osimModel.print("tugOfWar_model.osim");
 
 
+		std::cout << "OpenSim Installation verified.\n" << std::endl;
+		std::cout << "main() routine time = " << (double)(clock()-start)/CLOCKS_PER_SEC << " seconds" << std::endl;
 	}
     catch (std::exception ex)
     {
@@ -332,12 +320,7 @@ int main()
 		getchar();
        return 1;
     }
-	std::cout << "OpenSim Installation verified.\n";
-#ifdef WIN32
-	QueryPerformanceCounter(&stop);
-	double duration = (double)(stop.QuadPart-start.QuadPart)/(double)frequency.QuadPart;
-	std::cout << "main() routine time = " << (duration*1.0e3) << " milliseconds" << std::endl;
-#endif
+
 	std::cout << "press any key to continue..." << std::endl;
 	getchar();
 	return 0;
