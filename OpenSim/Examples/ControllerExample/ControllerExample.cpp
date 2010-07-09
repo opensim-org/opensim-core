@@ -72,88 +72,12 @@ double desiredModelZAcceleration( double t ) {
 	return -0.15 * Pi * Pi * sin( Pi * t );
 }
 
-
-//______________________________________________________________________________
-/**
- * This class implements basic setup functions for custom controllers.
- * We intend for this class to be incorporated into the OpenSim code base
- * in the near future, instead of having to define it in this file.
- */
-class CustomController : public Controller {
-public:
-
-	/**
-	 * Constructor
-	 *
-	 * @param aModel Model to be controlled
-	 */
-	CustomController( Model& aModel ) :
-	  Controller( aModel ) {}
-
-	/**
-	 * This function connects the model actuators to this controller.
-	 *
-	 * @param as Actuator set to be controlled
-	 */
-	void setActuators( Set<Actuator>& as ) {
-		int i, j;
-		for( i = 0, j = 0; i < as.getSize(); i++ ) {
-			Actuator& act = as.get(i);
-			if( act.getControlIndex() == -1 ) { // check if already controlled
-				act.setController( this );
-				act.setIsControlled( true );
-				act.setControlIndex( j++ );
-			}
-		}
-	}
-
-	/**
-	 * A function called during system setup
-	 *
-	 * @param aModel Model to be controlled
-	 */
-	void setup( Model& aModel )  {
-		 _model = &aModel;
-	}
-
-	/**
-	 * Another function called during system setup
-	 *
-	 * @param aModel Model to be controlled
-	 */
-	void setupSystem( SimTK::MultibodySystem& system ) { 
-		_actuatorSet.setSize(0);
-		std::cout << "\n CustomController::setupSystem begin num Forces=" <<  _model->getForceSet().getSize() << std::endl;
-		for(int i=0; i< _model->getForceSet().getSize(); i++) {
-			std::cout << "Force " << i << " = "<< _model->getForceSet().get(i).getName() << std::endl;
-		}
-		std::cout << "\n CustomController::setupSystem begin num Actuators=" <<  _model->getActuators().getSize() << std::endl;
-		for(int i=0; i< _model->getActuators().getSize(); i++) {
-			std::cout << "Actuator " << i << " = "<< _model->getActuators().get(i).getName() << std::endl;
-		}
-		std::cout << std::endl;
-		// Add these actuators to the model and set their indexes 
-		const Set<Actuator>& cs = _model->getActuators();
-		for(int i=0; i<cs.getSize(); i++) {
-			std::cout << " CustomController::setupSystem " <<  cs.get(i).getName()+"_corrector" << "  added " << std::endl;
-			Actuator *actuator = &cs.get(i);
-			actuator->setController(this);
-			actuator->setIsControlled(true);
-			actuator->setControlIndex(i);
-			_actuatorSet.append(actuator);
-		}
-		_numControls = _actuatorSet.getSize();
-		printf(" CustomController::setupSystem end  num Actuators= %d \n",  _model->getForceSet().getSize() );
-	}
-};
-
-
 //______________________________________________________________________________
 /**
  * This controller will try to track a desired trajectory of the block in
  * the tug-of-war model.
  */
-class TugOfWarController : public CustomController {
+class TugOfWarController : public Controller {
 
 // This section contains methods that can be called in this controller class.
 public:
@@ -173,7 +97,7 @@ public:
 	//    the comment above (below the line describing aKp).   //
 	/////////////////////////////////////////////////////////////
 	TugOfWarController( Model& aModel, double aKp ) : 
-		CustomController( aModel ), kp( aKp ) {
+		Controller( aModel ), kp( aKp ) {
 
 		// Read the mass of the block.
 		blockMass = aModel.getBodySet().get( "block" ).getMass();
@@ -370,19 +294,18 @@ int main()
 			dynamic_cast<Muscle*>( &actuatorSet.get(0) );
 		Muscle* muscle2 =
 			dynamic_cast<Muscle*>( &actuatorSet.get(1) );
-		muscle1->setDefaultActivation( 0.01 ); // muscle1 activation
-		muscle1->setDefaultFiberLength( 0.2 ); // muscle1 fiber length
-		muscle1->initState( si ); // initialize muscle1 state
-		muscle2->setDefaultActivation( 0.01 ); // muscle2 activation
-		muscle2->setDefaultFiberLength( 0.2 ); // muscle2 fiber length
-		muscle2->initState( si ); // initialize muscle2 state
+		muscle1->setActivation(si, 0.01 ); // muscle1 activation
+		muscle1->setFiberLength(si, 0.2 ); // muscle1 fiber length
+		muscle2->setActivation(si, 0.01 ); // muscle2 activation
+		muscle2->setFiberLength(si, 0.2 ); // muscle2 fiber length
+
 
         // Compute initial conditions for muscles.
-		osimModel.equilibrateMuscles( si );
+		//osimModel.equilibrateMuscles( si );
 
 		// Create the integrator and manager for the simulation.
 		SimTK::RungeKuttaMersonIntegrator
-			integrator( osimModel.getSystem() );
+			integrator( osimModel.getMultibodySystem() );
 		integrator.setAccuracy( 1.0e-4 );
 		integrator.setAbsoluteTolerance( 1.0e-4 );
 		Manager manager( osimModel, integrator );
