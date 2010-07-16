@@ -54,7 +54,7 @@ PrescribedForce::~PrescribedForce()
 /**
  * Default constructor.
  */
-PrescribedForce::PrescribedForce(Body* body) :
+PrescribedForce::PrescribedForce(Body* body) : CustomForce(),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
 	_forceIsGlobal(_forceIsGlobalProp.getValueBool()),
@@ -76,6 +76,8 @@ PrescribedForce::PrescribedForce(Body* body) :
 {
 	setNull();
 	setupProperties();
+	updateFromXMLNode();
+
 	_body = body;
 	if (_body)
 		_bodyName = _body->getName();
@@ -108,8 +110,9 @@ PrescribedForce::PrescribedForce(DOMElement* aNode) :
 {
 	setNull();
 	setupProperties();
-	_body = NULL;
 	updateFromXMLNode();
+
+	_body = NULL;
 }
 
 //_____________________________________________________________________________
@@ -139,15 +142,8 @@ PrescribedForce::PrescribedForce(const PrescribedForce& force) :
 {
 	setNull();
 	setupProperties();
-	_pointIsGlobal = force._pointIsGlobal;
-	_forceIsGlobal = force._forceIsGlobal;
-	_body=force._body;
-	_bodyName = force._bodyName;
-	_forceFunctionSet = force._forceFunctionSet;
-	_pointFunctionSet = force._pointFunctionSet;
-	_torqueFunctionSet = force._torqueFunctionSet;
-	_pointIsGlobal = force._pointIsGlobal;
-	_forceIsGlobal = force._forceIsGlobal;
+	updateFromXMLNode();
+	copyData(force);
 }
 
 //_____________________________________________________________________________
@@ -162,6 +158,51 @@ Object* PrescribedForce::copy() const
 	PrescribedForce *force = new PrescribedForce(*this);
 	return force;
 }
+
+//-----------------------------------------------------------------------------
+// UPDATE FROM XML NODE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Update this object based on its XML node.
+ */
+void PrescribedForce::updateFromXMLNode()
+{
+	// Base class
+	CustomForce::updateFromXMLNode();
+
+		//Specify all or none of the components
+	if(_forceFunctionSet.getSize() == 3) { 
+		_forceX = &_forceFunctionSet[0];
+		_forceY = &_forceFunctionSet[1];
+		_forceZ = &_forceFunctionSet[2];
+	}
+	else if (_forceFunctionSet.getSize() != 0)
+	{
+		throw Exception("PrescribedForce:: three components of the force must be specified.");
+	}
+
+	if(_pointFunctionSet.getSize() == 3) { 
+		_pointX= &_pointFunctionSet[0];
+		_pointY = &_pointFunctionSet[1];
+		_pointZ = &_pointFunctionSet[2];
+	}
+	else if (_pointFunctionSet.getSize() != 0)
+	{
+		throw Exception("PrescribedForce:: three components of the point must be specified.");
+	}
+
+	if(_torqueFunctionSet.getSize() == 3) { 
+		_torqueX = &_torqueFunctionSet[0];
+		_torqueY = &_torqueFunctionSet[1];
+		_torqueZ = &_torqueFunctionSet[2];
+	}
+	else if (_torqueFunctionSet.getSize() != 0)
+	{
+		throw Exception("PrescribedForce:: three components of the torque must be specified.");
+	}
+}	
+
 
 /**
  * Connect properties to local pointers.
@@ -222,7 +263,6 @@ PrescribedForce& PrescribedForce::operator=(const PrescribedForce &aForce)
 	CustomForce::operator=(aForce);
 	copyData(aForce);
 	return(*this);
-
 }
 
 void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
@@ -518,6 +558,7 @@ void PrescribedForce::setNull()
 	_forceIsGlobal=true;
 	_pointIsGlobal=false;
 	setType("PrescribedForce");
+
 	_forceFunctionSet.setMemoryOwner(false);
 	_pointFunctionSet.setMemoryOwner(false);
 	_torqueFunctionSet.setMemoryOwner(false);
@@ -527,10 +568,13 @@ void PrescribedForce::copyData(const PrescribedForce& orig)
 {
 	_forceIsGlobal = orig._forceIsGlobal;
 	_pointIsGlobal = orig._pointIsGlobal;
+
 	_forceFunctionSet = orig._forceFunctionSet;
 	_pointFunctionSet = orig._pointFunctionSet;
 	_torqueFunctionSet = orig._torqueFunctionSet;
+
 	_bodyName = orig._bodyName;
+	_body = orig._body;
 }
 
 void PrescribedForce::setup(Model& model)
@@ -540,4 +584,7 @@ void PrescribedForce::setup(Model& model)
 	// hook up body pointer to name
 	if (_model)
 		_body = &_model->updBodySet().get(_bodyName);
+
+
+
 }

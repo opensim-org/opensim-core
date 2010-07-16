@@ -113,6 +113,9 @@ public:
 	~PrescribedForce();
 	virtual Object* copy() const;
 
+	// Copy properties from XML into member variables
+	virtual void updateFromXMLNode();
+
 	virtual void setup(Model& model);
 
 	void setBodyName(const std::string& aBodyName) { _bodyName = aBodyName; };
