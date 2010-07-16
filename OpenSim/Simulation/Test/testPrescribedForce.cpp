@@ -1,5 +1,5 @@
 // testPrescribedForce.cpp
-// Author:  Peter Eastman
+// Author:  Peter Eastman, Ajay Seth
 /*
 * Copyright (c) 2005-2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -27,19 +27,15 @@
 */
 
 //==========================================================================================================
-//	testJoints builds OpenSim models using the OpenSim API and builds an equivalent
-//  Simbody system using the Simbody API for each test case. A test fails if the
-//  OpenSim and Simbody final states of the simulation are not equivelent (norm-err
-//  less than 10x integration error tolerance)
-//
+//	testPrescribedForce tests the application of function speciefied forces applied to a body
+//  as a force and torque on the body, with the point force application also a function
 //	Tests Include:
-//      1. CustomJoint against Simbody built-in Pin and Universal joints
-//      2. CustomJoint versus Simbody FunctionBased with spline based functions
-//		3. WeldJoint versus Weld Mobilizer by welding bodies to those in test 1.
-//		4. Randomized order of bodies in the BodySet (in 3.) to test connectBodies()
-//		
-//		TODO random branching toplogy.
-//     Add tests here as new joint types are added to OpenSim
+//      1. No force
+//      2. Force on the body
+//		3. Force at a point
+//		4. Torque on a body
+//		4. Forces from a file.
+//     Add tests here 
 //
 //==========================================================================================================
 #include <iostream>
@@ -123,7 +119,7 @@ int testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, Op
 	osimModel->updForceSet().append(&force);
 
 	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
+	osimModel->disownAllComponents();
 
     //Set mass
 	ball.setMass(ballMass.getMass());
@@ -131,12 +127,18 @@ int testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, Op
 	ball.setInertia(ballMass.getInertia());
 
 	osimModel->setGravity(gravity_vec);
+	osimModel->print("TestPrescribedForceModel.osim");
 
+	delete osimModel;
+	// Check that serialization/deserialization is working correctly as well
+	osimModel = new Model("TestPrescribedForceModel.osim");
     SimTK::State osim_state = osimModel->initSystem();
     osimModel->getSystem().realize(osim_state, Stage::Position );
 
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
+
+	const OpenSim::Body& body = osimModel->getBodySet().get("ball");
 
     RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
     Manager manager(*osimModel,  integrator);
@@ -147,8 +149,8 @@ int testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, Op
         manager.integrate(osim_state);
         osimModel->getSystem().realize(osim_state, Stage::Acceleration);
         Vec3 accel, angularAccel;
-        osimModel->updSimbodyEngine().getAcceleration(osim_state, ball, Vec3(0), accel);
-        osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, ball, angularAccel);
+        osimModel->updSimbodyEngine().getAcceleration(osim_state, body, Vec3(0), accel);
+        osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, body, angularAccel);
         ASSERT_EQUAL(accelerations[i][0], accel[0], 1e-10);
         ASSERT_EQUAL(accelerations[i][1], accel[1], 1e-10);
         ASSERT_EQUAL(accelerations[i][2], accel[2], 1e-10);
