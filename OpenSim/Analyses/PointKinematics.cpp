@@ -714,15 +714,12 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {
 	// ACCELERATIONS
-	_aStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_"+getPointName()+"_acc",aDir,aDT,aExtension);
 
 	// VELOCITIES
-	_vStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_"+getPointName()+"_vel",aDir,aDT,aExtension);
 
 	// POSITIONS
-	_pStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_"+getPointName()+"_pos",aDir,aDT,aExtension);
 
 	return(0);

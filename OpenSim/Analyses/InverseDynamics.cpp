@@ -470,7 +470,7 @@ begin(SimTK::State& s )
 		const CoordinateSet& coordSet = _model->getCoordinateSet();
 		for(int i=0; i<coordSet.getSize(); i++) {
 			const Coordinate& coord = coordSet.get(i);
-			if(!coord.getLocked(sWorkingCopy) && !coord.isConstrained()) {
+			if(!coord.isConstrained(sWorkingCopy)) {
 				_accelerationIndices.append(i);
 			}
 		}
@@ -598,7 +598,6 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {
 	// ACCELERATIONS
-	_storage->scaleTime(_modelWorkingCopy->getTimeNormConstant());
 	Storage::printResult(_storage,aBaseName+"_"+getName(),aDir,aDT,aExtension);
 
 	return(0);

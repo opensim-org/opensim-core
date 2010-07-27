@@ -844,7 +844,6 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 {
 	// Write out induced accelerations for all kinematic variables
 	for(int i = 0; i < _storeInducedAccelerations.getSize(); i++){
-		_storeInducedAccelerations[i]->scaleTime(_model->getTimeNormConstant());
 		Storage::printResult(_storeInducedAccelerations[i],aBaseName+"_"
 			                   +getName()+"_"+_storeInducedAccelerations[i]->getName(),aDir,aDT,aExtension);
 	}

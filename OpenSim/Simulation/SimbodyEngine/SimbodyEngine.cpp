@@ -214,47 +214,7 @@ void SimbodyEngine::getUnlockedCoordinates(const SimTK::State &s, CoordinateSet&
 			rUnlockedCoordinates.append(&_model->getCoordinateSet().get(i));
 }
 
-/**
- * Project (change) the current configuration such that it satisfies the constraints acting
- * on the system. This alters the configuration (state) down in Simbody and then returns
- * the projected configuration. This method is intended for corrections to the state during
- * integration and should be called after a successful integrations step.
- * It can also be called to pose the model (i.e. in coord->setValue() after )
- * so that the configuration satisfies the constraints but WARNING this may produce upredictable
- * results when the current configuration is far from satisfying the constraints.
- *
- * returns true iff the engine configuration (state) was changed by the projection
- * @param cTol constraint tolerance. (input)
- */
-bool SimbodyEngine::projectConfigurationToSatisfyConstraints(SimTK::State& s, const double cTol) const 
-{
-	// Enforce all coordinate coupler constraints. This is needed because if the coordinate values
-	// have changed a lot, MultibodySystem::project() will change the unconstrained
-	// coordinate values as it searches for a pose that satisfies all of the constraints.
-	// Once project() supports the locking of coordinates, this call will no longer be needed.
-	getModel().enforceCoordinateCouplerConstraints(s);
 
-	// REALIZE AT THE VELOCITY STAGE
-	_model->getSystem().realize(s, Stage::Velocity);
-
-	// Project configuration on to constraints to make sure we
-	// are not violating locking and other constraints
-	Vector weights; _model->getSystem().calcYUnitWeights(s, weights);
-	Vector tols; _model->getSystem().calcYErrUnitTolerances(s, tols); 
-
-	// Don't bother attempting to project constraints if there are none.
-	if (_model->getMatterSubsystem().getNumConstraints() > 0){
-		Vector yErrEst; // should send in Null vector if don't have any estimates 
-		_model->getSystem().project(s, cTol, weights, tols, yErrEst, SimTK::System::ProjectOptions::All);
-		//bool Qchanged = _system->updMatterSubsystem().projectQConstraints(_s, cTol, weights, tols,
-		//												errEst, System::ProjectOptions::All);
-		//
-		//bool Uchanged =  _system->updMatterSubsystem().projectUConstraints(_s, cTol, Vector(ny, 1), Vector(nc, 1),
-		//												errEst, System::ProjectOptions::All);
-		return true;
-	}
-	return false;
-}
 //--------------------------------------------------------------------------
 // BODY INFORMATION
 //--------------------------------------------------------------------------
@@ -1017,7 +977,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
             coord.setValue(constrainedState, qu[j], false);
             coord.setSpeedValue(constrainedState, qu[nq+j]);
         }
-        projectConfigurationToSatisfyConstraints(constrainedState, 1e-5);
+        _model->assemble(constrainedState);
         for (int j = 0; j < nq; j++) {
     		Coordinate& coord = coordinateSet.get(j);
             qu[j] = coord.getValue(constrainedState);

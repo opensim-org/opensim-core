@@ -206,7 +206,7 @@ public:
 	virtual bool getLockedUseDefault() const { return _lockedProp.getUseDefault(); }
 
 	//Prescribed motion for Coordinate
-	virtual bool isPrescribed(const SimTK::State& s) const {return _isPrescribed;}
+	virtual bool isPrescribed(const SimTK::State& s) const;
 	void setIsPrescribed(SimTK::State& s, bool isPrescribed ) const;
 	virtual bool getDefaultIsPrescribed() const {return _isPrescribed;}
     void setDefaultIsPrescribed(bool isPrescribed ) {_isPrescribed = isPrescribed;}
@@ -215,8 +215,12 @@ public:
 
 	virtual MotionType getMotionType() const { return _motionType; }
 	virtual void setMotionType(MotionType aMotionType);
-	// Return true if coordinate is dependent on other coordinates 
-	virtual bool isConstrained() const; 
+	
+	// Return true if coordinate is dependent on other coordinates via a coupler constraint
+	virtual bool isDependent(const SimTK::State& s) const;
+
+	/** Return true if coordinate is locked, prescribed, or dependent on other coordinates */
+	virtual bool isConstrained(const SimTK::State& s) const; 
 
 	int getMobilityIndex() const { return _mobilityIndex; };
 	SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };

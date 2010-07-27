@@ -124,13 +124,6 @@ public:
 #endif
 
 	//--------------------------------------------------------------------------
-	// PROJECT to satisfy constaints
-	//--------------------------------------------------------------------------
-#ifndef SWIG
-	virtual bool projectConfigurationToSatisfyConstraints(SimTK::State& s, const double cTol) const ;
-#endif
-
-	//--------------------------------------------------------------------------
 	// SCALING
 	//--------------------------------------------------------------------------
 #ifndef SWIG

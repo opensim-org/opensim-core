@@ -265,7 +265,7 @@ record(const SimTK::State& s) {
         _forces[i] = act.getForce(s);
 	}
 
-	_perturbedForceStorage->append(s.getTime()*_model->getTimeNormConstant(),_model->getActuators().getSize(),&_forces[0]);
+	_perturbedForceStorage->append(s.getTime(),_model->getActuators().getSize(),&_forces[0]);
 }
 
 

@@ -32,6 +32,7 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/IKTool.h>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Tools/IKTrialSet.h>
 
 using namespace std;
@@ -39,17 +40,62 @@ using namespace OpenSim;
 
 bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
 {
-	actualStorage.subtract(&stdStorage);
-	bool equal = true;
-	Array<double> dData(-SimTK::Infinity);
-	for (int i=0; i <actualStorage.getSize() && equal; i++){
-		dData = actualStorage.getStateVector(i)->getData();
-		double dMax = -SimTK::Infinity;
-		for (int j=0; j<dData.getSize(); j++)
-			dMax = std::max(dMax, fabs(dData[j]));
-		equal = (dMax <= tol);
+	double dMax = -SimTK::Infinity;
+
+	const Array<std::string> &col_names = actualStorage.getColumnLabels();
+	
+	bool equal = false;
+	double error = 0;
+	double max_error = 0;
+
+	for(int i=0; i<col_names.getSize(); i++){
+		error = actualStorage.compareColumn(stdStorage, col_names[i], actualStorage.getFirstTime());
+		max_error = error > max_error ? error : max_error;
 	}
+
+	equal = (max_error <= tol);
+		
 	return equal;
+}
+
+bool testInverseKinematicsGait2354()
+{
+	// read setup file and construct model
+	InverseKinematicsTool* tool = new InverseKinematicsTool("subject01_Setup_InverseKinematics.xml");
+	try {
+		tool->run();
+		Storage actualOutput(tool->getOutputMotionFileName());
+		Storage stdStorage("std_subject01_walk1_ik.mot");
+
+		// Check that we can match the input kinematics to within a fifth of a degree
+		bool equal = equalStorage(stdStorage, actualOutput, 0.2);
+		std::cout << (equal?"Success":"Failure") << endl;
+		
+		return equal;
+	}
+	catch(const std::exception& e) {
+        cout << "exception: " << e.what() << endl;
+        return false;
+    }
+
+	return true;
+}
+
+bool testInverseKinematicsUWDynamic()
+{
+	// read setup file and construct model
+	InverseKinematicsTool* tool = new InverseKinematicsTool("uwdynamic_setup_ik.xml");
+	try {
+		tool->run();
+	}
+	catch(const std::exception& e) {
+        cout << "exception: " << e.what() << endl;
+        return false;
+    }
+
+	tool->print("ik_setup_test.xml");
+
+	return true;
 }
 
 //______________________________________________________________________________
@@ -59,6 +105,16 @@ bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
 */
 int main()
 {
+	if(!testInverseKinematicsGait2354()){
+		cout << "testInverseKinematicsGait2354 Failed." << endl;
+		//return 1;
+	}
+
+	if(!testInverseKinematicsUWDynamic()){
+		cout << "testInverseKinematicsUWDynamic Failed." << endl;
+		return 1;
+	}
+
 	// Construct model and read parameters file
 	IKTool* tool = new IKTool("subject01_Setup_IK.xml");
 	Model& model = tool->getModel();

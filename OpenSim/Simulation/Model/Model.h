@@ -68,6 +68,7 @@ class OpenSimForceSubsystem;
 class Storage;
 class ScaleSet;
 class SimbodyEngine;
+class AssemblySolver;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -154,14 +155,11 @@ private:
 
 	// WORK VARIABLES
 
-	/** Time normalization. */
-	double _tNormConst;
-
-	/** Were all model components properly defined? */
-	bool _builtOK;
+	/** Assembly solver used for satisfying constraints and other configuration goals */
+	AssemblySolver *_assemblySolver;
 
     /** global flag  used to disable all Controllers */
-   bool _allControllersEnabled;
+	 bool _allControllersEnabled;
 
     /** flag indicating the model has actuators that are being perturbed  */
     bool _perturbActuatorForces; 
@@ -173,21 +171,9 @@ private:
     SimbodyEngine _simbodyEngine;
 
 	/** Set containing the joints in this model. */
-	// 2008_06_06: No longer a property because the joints are kept
-	// local to the bodies in the Simbody Dynamics Engine.
-	// For the SIMM and SDFast engines to continue to work, the properties
-	// must be moved local to those classes.
-	// The strategy now is to get OpenSim working with the Simbody engine
-	// as quickly as possible.
 	JointSet _jointSet;
 
 	/** Set containing the generalized coordinates in this model. */
-	// 2008_06_06: No longer a property because the coordinates are kept
-	// local to the joints in the Simbody Dynamics Engine.
-	// For the SIMM and SDFast engines to continue to work, the properties
-	// must be moved local to those classes.
-	// The strategy now is to get OpenSim working with the Simbody engine
-	// as quickly as possible.
 	CoordinateSet _coordinateSet;
 
    	/** Body used for ground, the inertial frame. */
@@ -310,19 +296,17 @@ public:
 	void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
     void formQStorage(const Storage& originalStorage, Storage& qStorage);
 
+   /**
+     * Find the kinematic state of the model that satisfies constraints and coordinate goals
+     */
+	void assemble(SimTK::State& state);
+
 
    /**
      * Update the state of all Muscles so they are in equilibrium.
      */
     void equilibrateMuscles(SimTK::State& state);
 
-    /**
-	 * Indicates whether or not problems were encountered during
-	 * model setup().
-	 *
-	 * @return True if the number of bodies is > 0.
-	 */
-	bool builtOK() { return _builtOK; }
     const OpenSimForceSubsystem& getForceSubsystem() const {return *_forceSubsystem; }
     const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const {return _system->getMatterSubsystem(); }
     SimTK::SimbodyMatterSubsystem& updMatterSubsystem() {return _system->updMatterSubsystem(); }
@@ -447,7 +431,7 @@ public:
 	// MultibodySystem
 	//--------------------------------------------------------------------------
 	virtual SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
-	virtual void  setMultibodySystem(SimTK::MultibodySystem& system) { _system = &system; } 
+
 	//--------------------------------------------------------------------------
 	//--------------------------------------------------------------------------
 	// PERTURBATION
@@ -597,41 +581,18 @@ public:
     // CONFIGURATION
     //--------------------------------------------------------------------------
     virtual void applyDefaultConfiguration(SimTK::State& s );
-	 virtual void enforceCoordinateCouplerConstraints(SimTK::State& s) const;
-
 
 	//--------------------------------------------------------------------------
 	// DYNAMICS ENGINE
 	//--------------------------------------------------------------------------
-		
-
 	/**
 	 * Get the model's dynamics engine
 	 *
-	 * @return Reference to the abstract dynamics engine
+	 * @return Reference to the Simbody dynamics engine
 	 */
 	const SimbodyEngine& getSimbodyEngine() const { return _simbodyEngine; }
 	SimbodyEngine& updSimbodyEngine() { return _simbodyEngine; }
 
-	//-------------------------------------------------------------------------
-	// TIME NORMALIZATION
-	//--------------------------------------------------------------------------
-	
-	/**
-	 * Set the constant by which time is normalized.
-	 * The normalization constant must be greater than or equal to the constant Zero
-	 *
-	 * @param Time normalization constant.
-	 */	
-	virtual void setTimeNormConstant(double aNormConst);
-
-	/**
-	 * Get the constant by which time is normalized.
-	 * By default, the time normalization constant is 1.0.
-	 *
-	 * @return Current time normalization constant.
-	 */
-	virtual double getTimeNormConstant() const;
 
 	//--------------------------------------------------------------------------
 	// STATES
@@ -653,7 +614,6 @@ public:
    
 	// SYSTEM
 	//--------------------------------------------------------------------------
-	void setSystem( SimTK::MultibodySystem* mbs ) ;
 	SimTK::MultibodySystem& getSystem() const;
 	//--------------------------------------------------------------------------
    //--------------------------------------------------------------------------

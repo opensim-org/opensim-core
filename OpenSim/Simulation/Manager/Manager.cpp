@@ -771,7 +771,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             _model->getSystem().realize(s, SimTK::Stage::Acceleration);
         }
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
-        tReal = s.getTime() * _model->getTimeNormConstant();
+        tReal = s.getTime();
         if( _writeToStorage ) {
             getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
 			if(_model->isControlled())
@@ -797,7 +797,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
            status == SimTK::Integrator::ReachedScheduledEvent ) {
             const SimTK::State& s =  _integ->getState();
             if(_performAnalyses)_model->updAnalysisSet().step(s,step);
-            tReal = s.getTime() * _model->getTimeNormConstant();
+            tReal = s.getTime();
             if( _writeToStorage) {
                 getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
 				if(_model->isControlled())
@@ -851,7 +851,7 @@ void Manager::initialize(SimTK::State& s, double dt )
 	// skip initailizations for CMC's actutator system
 	if( _writeToStorage && _performAnalyses ) { 
 
-        double tReal = s.getTime() * _model->getTimeNormConstant();
+        double tReal = s.getTime();
     	const double* y = &s.getY()[0];
 
 	

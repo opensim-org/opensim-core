@@ -2990,10 +2990,11 @@ void Storage::postProcessSIMMMotion()
  *
  * NOTE: This assumes same time sampling between both Storages.
  */
-double Storage::compareColumn(Storage& aOtherStorage, std::string& aColumnName, double startTime, double endTime)
+double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime)
 {
-	int thisColumnIndex=_columnLabels.findIndex(aColumnName);
-	int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName);
+	//Subtract one since, the data does not include the time column anymore.
+	int thisColumnIndex=_columnLabels.findIndex(aColumnName)-1;
+	int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName)-1;
 
 	double theDiff = SimTK::NaN;
 
@@ -3020,7 +3021,7 @@ double Storage::compareColumn(Storage& aOtherStorage, std::string& aColumnName, 
 	if ((endIndex -startIndex)!= (endIndexOther -startIndexOther)) return (theDiff);
 
 	for(int i=startIndex; i< endIndex; i++){
-		if (fabs(thisTime[i]-otherTime[startIndexOther+i-startIndex]) > 1E-4) 
+		if (fabs(thisTime[i]-otherTime[startIndexOther+i-startIndex]) > 1E-3) 
 			return SimTK::Infinity;
 		theDiff = std::max(theDiff, fabs(thisData[i]-otherData[startIndexOther+i-startIndex]));
 	}

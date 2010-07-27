@@ -272,12 +272,11 @@ double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 ForceSet *CoordinateActuator::
 CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce,bool aIncludeLockedAndConstrainedCoordinates)
 {
-	//ForceSet *as = new ForceSet();
 	ForceSet& as = aModel.updForceSet();
 	as.setSize(0);
 	const CoordinateSet& cs = aModel.getCoordinateSet();
 	for(int i=0; i<cs.getSize(); i++) {
-		if(!aIncludeLockedAndConstrainedCoordinates && (cs.get(i).getLocked(s) || cs.get(i).isConstrained())) continue;
+		if(!aIncludeLockedAndConstrainedCoordinates && (cs[i].isConstrained(s))) continue;
 		CoordinateActuator *actuator = new CoordinateActuator();
 		actuator->setCoordinate(&cs.get(i));
 		actuator->setName(cs.get(i).getName());

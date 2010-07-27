@@ -89,6 +89,7 @@ public:
 	const Units& getUnits() const { return _units; }
 	void convertToUnits(const Units& aUnits);
 	const Array<std::string>& getMarkerNames() const { return _markerNames; }
+	int getNumMarkers() const { return _numMarkers; }
 	int getNumFrames() const { return _numFrames; }
 	double getStartFrameTime() const;
 	double getLastFrameTime() const;

@@ -547,8 +547,8 @@ computeInitialStates(SimTK::State& s, double &rTI)
 	int N = _predictor->getNX();
 	SimTK::State initialState = s;
 	Array<double> xmin(0.01,N),forces(0.0,N);
-	double normConstant = _model->getTimeNormConstant();
-	double tiReal = rTI * normConstant;
+
+	double tiReal = rTI;
     if( _verbose ) {
         cout<<"\n\n=============================================\n";
         cout<<"enter CMC.computeInitialStates: ti="<< rTI << "  q's=" << s.getQ() <<endl;
@@ -742,9 +742,8 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 	_model->updAnalysisSet().setOn(false);
 
 	// TIME STUFF
-	double normConstant = _model->getTimeNormConstant();
-	double tiReal = s.getTime() * normConstant;
-	double tfReal = _tf * normConstant;
+	double tiReal = s.getTime(); 
+	double tfReal = _tf; 
 
     cout<<"CMC.computeControls:  t = "<<s.getTime()<<endl;
     if(_verbose) { 

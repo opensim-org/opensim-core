@@ -735,15 +735,12 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	else suffix = "_global";
 
 	// ACCELERATIONS
-	_aStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_aStore,aBaseName+"_"+getName()+"_acc"+suffix,aDir,aDT,aExtension);
 
 	// VELOCITIES
-	_vStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_vel"+suffix,aDir,aDT,aExtension);
 
 	// POSITIONS
-	_pStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_pos_global",aDir,aDT,aExtension);
 
 	return(0);

@@ -687,7 +687,7 @@ void IKTarget::buildCoordinateMap(const SimTK::State& s, const OpenSim::Array<st
 
 		coordinateInfo *info = new coordinateInfo;
 		info->coord = &coord;
-		info->prescribed = coord.getLocked(s) || coord.isConstrained();
+		info->prescribed = coord.getLocked(s) || coord.isDependent(s);
 
 		// Initialize as if it has no task
 		info->experimentalColumn = -1;

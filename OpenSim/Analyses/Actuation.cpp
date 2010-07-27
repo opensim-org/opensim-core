@@ -403,7 +403,7 @@ record(const SimTK::State& s)
     }
 
 	// TIME NORMALIZATION
-	double tReal = s.getTime() * _model->getTimeNormConstant();
+	double tReal = s.getTime();
 
 	// FORCE
 	const Set<OpenSim::Actuator>& fs = _model->getActuators();

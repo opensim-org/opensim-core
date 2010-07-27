@@ -848,10 +848,8 @@ void GeometryPath::compute(const SimTK::State& s) const
 		currentPath.append(&_pathPointSet[i]);
 
  	}
-  
-	const SimTK::Stage& sg2 = s.getSystemStage();
 
-   // Use the current path so far to check for intersection
+	// Use the current path so far to check for intersection
 	// with wrap objects, which may add additional points to
 	// the path.
 	applyWrapObjects(s, currentPath);

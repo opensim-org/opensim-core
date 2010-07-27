@@ -252,7 +252,7 @@ public:
 	double resample(double aDT, int aDegree);
 	double resampleLinear(double aDT);
 	double compareColumn(Storage& aOtherStorage, 
-						 std::string& aColumnName,
+						 const std::string& aColumnName,
 						 double startTime, double endTime=-1.0);
 	bool makeStorageLabelsUnique();
 	//--------------------------------------------------------------------------

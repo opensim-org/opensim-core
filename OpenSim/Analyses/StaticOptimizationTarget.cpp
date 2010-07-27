@@ -89,7 +89,7 @@ StaticOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC, b
 	const CoordinateSet& coordSet = _model->getCoordinateSet();
 	for(int i=0; i<coordSet.getSize(); i++) {
 		const Coordinate& coord = coordSet.get(i);
-		if(!coord.getLocked(s) && !coord.isConstrained()) {
+		if(!coord.isConstrained(s)) {
 			_accelerationIndices.append(i);
 		}
 	}

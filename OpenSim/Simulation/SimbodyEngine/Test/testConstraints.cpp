@@ -212,7 +212,7 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
 
 		q_sb.dump("Simbody q's:");
 		q_osim.dump("OpenSim q's:");
-		//This is a hack knowing the free and ball joint tests have the quaternion joint first
+		//This is a hack knowing the free and ball joint tests have the quaternion q's first
 		// And that the q's are packed as qqqq or aaa* for a ball and qqqqxyz or aaaxyz* for a free joint
 		int quat_ind = ((nq > 6) ? 6 : 3);
 		int j = 0;

@@ -754,7 +754,6 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {
 	// Reaction Loads
-	_storeReactionLoads.scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(&_storeReactionLoads,aBaseName+"_"+getName()+"_ReactionLoads",aDir,aDT,aExtension);
 
 	return(0);

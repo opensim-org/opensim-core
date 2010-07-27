@@ -259,7 +259,7 @@ double CorrectionController::computeControl(const SimTK::State& s, int index ) c
     CoordinateActuator* act = dynamic_cast<CoordinateActuator*>(&_actuatorSet.get(index));
     SimTK_ASSERT( act,  "CorrectionController::computeControl dynamic cast failed");
 
-    if( act->getCoordinate()->getLocked(s) || act->getCoordinate()->isConstrained() ) {
+    if( act->getCoordinate()->isConstrained(s) ) {
 //		std::cout << "CorrectionController::computeControl " << act->getName() << " t=" << s.getTime() << "  control= LOCKED" << std::endl;
         newControl =  0.0;
     } 

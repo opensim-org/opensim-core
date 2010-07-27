@@ -81,7 +81,8 @@ Kinematics::Kinematics(Model *aModel) :
 	constructDescription();
 
 	// CHECK MODEL
-	if(_model==NULL) return;
+	if(aModel==NULL) return;
+	setModel(*aModel);
 
 }
 //=============================================================================
@@ -448,10 +449,19 @@ printf("\n");
 */
 
     for(i=0;i<nq;i++) _q[i] = s.getQ()[i]; 
-	_model->getSystem().realize(s, SimTK::Stage::Acceleration);
-    for(i=0;i<nu;i++)  {
-           _u[i] = s.getU()[i]; 
-           _udot[i] = s.getUDot()[i]; 
+
+	if(_recordAccelerations){
+		_model->getSystem().realize(s, SimTK::Stage::Acceleration);
+			for(i=0;i<nu;i++)  {
+				_u[i] = s.getU()[i]; 
+				_udot[i] = s.getUDot()[i];
+			}
+    }
+	else{
+		_model->getSystem().realize(s, SimTK::Stage::Velocity);
+		for(i=0;i<nu;i++)  {
+           _u[i] = s.getU()[i];
+		}
     }
 
 	// CONVERT TO DEGREES
@@ -501,8 +511,11 @@ begin( SimTK::State& s )
 	// RECORD
 	int status = 0;
 	if(_pStore->getSize()<=0) {
-        if( s.getSystemStage() < SimTK::Stage::Acceleration ) 
+        if(_recordAccelerations && s.getSystemStage() < SimTK::Stage::Acceleration ) 
             _model->getSystem().realize(s, SimTK::Stage::Acceleration);
+		else
+			_model->getSystem().realize(s, SimTK::Stage::Velocity);
+
 		status = record(s);
 	}
 
@@ -588,16 +601,13 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 
 	// ACCELERATIONS
 	if(_recordAccelerations) {
-		_aStore->scaleTime(_model->getTimeNormConstant());
 		Storage::printResult(_aStore,aBaseName+"_"+getName()+"_dudt",aDir,aDT,aExtension);
 	}
 
 	// VELOCITIES
-	_vStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_vStore,aBaseName+"_"+getName()+"_u",aDir,aDT,aExtension);
 
 	// POSITIONS
-	_pStore->scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_q",aDir,aDT,aExtension);
 
 	// POSITIONS (.mot file)
@@ -605,7 +615,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	// an .mot file so the motion can be viewed in SIMM -- Eran.
 	bool writeSIMMHeader=_pStore->getWriteSIMMHeader();
 	_pStore->setWriteSIMMHeader(true);
-	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_q",aDir,aDT,".mot");
+	Storage::printResult(_pStore,aBaseName,aDir,aDT,"");
 	_pStore->setWriteSIMMHeader(writeSIMMHeader);
 
 	return(0);

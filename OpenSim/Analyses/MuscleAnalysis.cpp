@@ -489,7 +489,7 @@ record(const SimTK::State& s)
 	// COMPUTE DERIVATIVES
 	// ----------------------------------
 	// TIME NORMALIZATION
-	double tReal = s.getTime() * _model->getTimeNormConstant();
+	double tReal = s.getTime();
 	// ----------------------------------
 	// LOOP THROUGH MUSCLES
 	int nm = _muscleArray.getSize();

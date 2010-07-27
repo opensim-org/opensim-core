@@ -283,9 +283,6 @@ void Coordinate::createSystem(SimTK::MultibodySystem& system) const
 	}
 
 	//TODO add clamping
-
-
-
 }
 
 //_____________________________________________________________________________
@@ -481,9 +478,8 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 		_model->getSystem().realize(s, Stage::Position);
 
 		if (_model->getConstraintSet().getSize()>0){
-			//project states onto to constraint manifold to make sure states satisfy ALL constraints
-			// Replaced _tolerance with 1e-5 per Sherm. -Ayman 4/09
-			_model->getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-5);
+			// assemble model so that states satisfy ALL constraints
+			_model->assemble(s);
 		}
 	}
 
@@ -648,21 +644,30 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
 
 //_____________________________________________________________________________
 /**
- *  Determine if the the coordinate is constrained or not.
- *  Specifically, is it a dependent coordinate in any of the constraints?\
+ *  Determine if the the coordinate is dependent on other coordinates or not.
  *  If so return true, false otherwise.
  */
-bool Coordinate::isConstrained() const
+ bool Coordinate::isDependent(const SimTK::State& s) const
 {
 	for(int i=0; i<_model->getConstraintSet().getSize(); i++){
 		Constraint& aConstraint = _model->getConstraintSet().get(i);
 		if(aConstraint.getType() == "CoordinateCouplerConstraint"){
 			CoordinateCouplerConstraint& coupler = dynamic_cast<CoordinateCouplerConstraint&>(aConstraint);
 			if (coupler.getDependentCoordinateName() == this->_name)
-				return true;
+				return !coupler.isDisabled(s);
 		}
 	}
 	return false;
+}
+//_____________________________________________________________________________
+/**
+ *  Determine if the the coordinate is constrained or not.
+ *  Specifically, is locked, prescribed, or completely dependent on other coordinates?
+ *  If so return true, false otherwise.
+ */
+bool Coordinate::isConstrained(const SimTK::State& s) const
+{
+	return (getLocked(s) || isPrescribed(s) || isDependent(s));
 }
 
 
@@ -765,6 +770,18 @@ void Coordinate::setIsPrescribed(SimTK::State& s, bool isPrescribed) const
 	}
 	else
 		prescribe->disable(s);
+}
+
+bool Coordinate::isPrescribed(const SimTK::State& s) const
+{
+	if(int(_prescribedConstraintIndex) != SimTK::InvalidIndex){
+		bool disabled = _model->getSystem().updMatterSubsystem().getConstraint(_prescribedConstraintIndex).isDisabled(s);
+		return !disabled;
+	}
+	else{
+		return _isPrescribed;
+	}
+	
 }
 
 //-----------------------------------------------------------------------------

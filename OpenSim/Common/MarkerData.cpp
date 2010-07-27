@@ -495,9 +495,7 @@ void MarkerData::findFrameRange(double aStartTime, double aEndTime, int& rStartF
 
 	if (aStartTime > aEndTime)
 	{
-		double tmp = aStartTime;
-		aStartTime = aEndTime;
-		aEndTime = tmp;
+		throw Exception("MarkerData: findFrameRange start time is past end time.");
 	}
 
 	for (i = _numFrames - 1; i >= 0 ; i--)

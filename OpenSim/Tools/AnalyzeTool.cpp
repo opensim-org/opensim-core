@@ -600,9 +600,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
     Array<double> dydt(0.0,ny);
     Array<double> yFromStorage(0.0,ny);
 
-	aModel.getSystem().realize(s, SimTK::Stage::Velocity);
 	for(int i=iInitial;i<=iFinal;i++) {
-
 		tPrev = t;
 		aStatesStore.getTime(i,s.updTime()); // time
 		t = s.getTime();
@@ -610,21 +608,14 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
 
 		aStatesStore.getData(i,s.getNY(),&s.updY()[0]); // states
 
-		aModel.getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-5);
+		// Adjust configuration to match constraints and other goals
+		aModel.assemble(s);
 
-		//statesSplineSet.evaluate(dydt,1,t);
-
-		// must be at least at model state to set U's
-		aModel.getSystem().realize(s, SimTK::Stage::Model);
-        //s.updU() = SimTK::Vector(s.getNU(), &dydt[0] ); 
-		
 		// computeEquilibriumForAuxiliaryStates before realization as it may affect forces
 		if(aSolveForEquilibrium) aModel.computeEquilibriumForAuxiliaryStates(s);
-		//DO NOT Do the following realization as model could be kinematic only, no massess
-		// Realize to acceleration stage before begining the analysis
-		//std::cout << s.toString() << std::endl;
-		//aModel.getSystem()->realize(s, SimTK::Stage::Dynamics);
 
+		// Make sure model is atleast ready to provide kinematics
+		aModel.getSystem().realize(s, SimTK::Stage::Velocity);
 
 		if(i==iInitial) {
 			analysisSet.begin(s);

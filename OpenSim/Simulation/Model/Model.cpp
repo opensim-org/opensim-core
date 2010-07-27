@@ -56,6 +56,10 @@
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
 #include "SimTKcommon/internal/SystemGuts.h"
 
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/CoordinateReference.h>
+
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
@@ -275,14 +279,12 @@ void Model::copyData(const Model &aModel)
 	_forceUnitsStr = aModel._forceUnitsStr;
 	_forceSet = aModel._forceSet;
 	_analysisSet = aModel._analysisSet;
-	_tNormConst = aModel._tNormConst;
     _gravity = aModel._gravity;
     _bodySet=aModel._bodySet;
     _constraintSet=aModel._constraintSet;
 	_controllerSet=aModel._controllerSet;
     _markerSet = aModel._markerSet;
     _contactGeometrySet = aModel._contactGeometrySet;
-	_builtOK = aModel._builtOK; //??
 
 }
 //_____________________________________________________________________________
@@ -292,9 +294,6 @@ void Model::copyData(const Model &aModel)
 void Model::setNull()
 {
 	setType("Model");
-
-	_tNormConst = 1.0;
-	_builtOK = false;
     _allControllersEnabled = true;
 	_perturbActuatorForces = false,
     _groundBody = NULL;
@@ -305,6 +304,8 @@ void Model::setNull()
     _userForceElements = NULL;
     _contactSubsystem = NULL;
     _gravityForce = NULL;
+
+	_assemblySolver = NULL;
 
 	_validationLog="";
 
@@ -359,26 +360,76 @@ SimTK::State& Model::initSystem()
 	if (getValidationLog().size()>0)
 		cout << "The following Errors/Warnings were encountered while building the model. " << 
 		getValidationLog() << endl;
-    setup();
+    
+	setup();
 	createSystem();
-    getSystem().realizeTopology();
-    SimTK::State& s = getSystem().updDefaultState();
+    getMultibodySystem().realizeTopology();
+    SimTK::State& s = getMultibodySystem().updDefaultState();
 
 	// The folllowing line is commented out as it removes all forces that were
 	// added to the system during realizeTopology() 
     //_matter->setUseEulerAngles(s, true);
+	//getMultibodySystem().realizeModel(s);
 
     initState(s);
-    getSystem().realize(s, Stage::Position );
-
+    getMultibodySystem().realize(s, Stage::Position );
 
     updControllerSet().setActuators(updActuators());
     //updControllerSet().constructStorage();
 
-	// Satisfy the constraints.
-	getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-8);
+
+	SimTK::Array_<CoordinateReference> &coordsToTrack = *new SimTK::Array_<CoordinateReference>();
+	for(int i=0; i<getNumCoordinates(); i++){
+		CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), Constant(_coordinateSet[i].getValue(s)));
+		coordsToTrack.push_back(*coordRef);
+	}
+
+	// Have an AssemblySolver on hand, but delete any old one first
+	delete _assemblySolver;
+
+	// Use the assembler to generate the initial pose from Coordinate defualts
+	// that also satisfies the constraints
+	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
+	
+	assemble(s);
 
 	return(s);
+}
+
+void Model::assemble(SimTK::State& s)
+{
+	// Don't bother assembling if the model has no coupled constraints
+	// Coordinates have locks as prescribed motion constraints but do not need assemble to be resolved
+	if(_constraintSet.getSize()< 1){
+		// just realize the current state to position
+		getMultibodySystem().realize(s, Stage::Position);
+		return;
+	}
+
+	for(int i=0; i<getNumCoordinates(); i++){
+		_assemblySolver->updateCoordinateReference(_coordinateSet[i].getName(), _coordinateSet[i].getValue(s));
+	}
+
+	try{
+		// Try to assemble the model satisfying the constraints exactly.
+		_assemblySolver->assemble(s);
+	}
+	catch (std::exception ex)    {
+		cout << "Model unable to assemble: " << ex.what() << endl;
+		cout << "Model relaxing constraints and trying again." << endl;
+		
+		try{
+			// Try to satisfy with constraints as errors weighted heavily.
+			_assemblySolver->setConstraintWeight(20.0);
+			_assemblySolver->assemble(s);
+		}
+		catch (std::exception ex){
+			cout << "Model unable to assemble with relaxed constraints: " << ex.what() << endl;
+		}
+	}
+
+	// Have a new working confirguration so should realize to atleast position
+	getMultibodySystem().realize(s, Stage::Position);
 }
 
 void Model::invalidateSystem()
@@ -524,12 +575,6 @@ void Model::setup()
 	updSimbodyEngine().setup(*this);
 
 	updAnalysisSet().setModel(*this);
-
-	// The following code should be replaced by a more robust
-	// check for problems while creating the model.
-	if ( getNumBodies() > 0) {
-		_builtOK = true;
-	}
 }
 
 /**
@@ -829,33 +874,6 @@ int Model::getNumAnalyses() const
 // TIME NORMALIZATION CONSTANT
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the constant by which time is normalized.
- *
- * The normalization constant must be greater than or equal to the constant
- * Zero.
- *
- * @param Time normalization constant.
- */
-void Model::setTimeNormConstant(double aNormConst)
-{
-	_tNormConst = aNormConst;
-
-	if(_tNormConst < Zero) _tNormConst = Zero; 
-}
-//_____________________________________________________________________________
-/**
- * Get the constant by which time is normalized.
- *
- * By default, the time normalization constant is 1.0.
- *
- * @return Current time normalization constant.
- */
-double Model::getTimeNormConstant() const
-{
-	return _tNormConst;
-}
-
 
 
 //=============================================================================
@@ -990,7 +1008,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	//    default pose, so pre- and post-scale muscle lengths
 	//    can be found.
     SimTK::Vector savedConfiguration = s.getY();
-	applyDefaultConfiguration(s );
+	applyDefaultConfiguration(s);
 	// 2. For each Actuator, call its preScale method so it
 	//    can calculate and store its pre-scale length in the
 	//    current position, and then call its scale method to
@@ -1141,17 +1159,6 @@ SimTK::MultibodySystem& Model::
 getSystem()  const {
    return(*_system);
 }
-//____________________________________________________________________________
-/**
- * set pointer to MultibodySystem
- * @param mbs pointer to a SimTK::MultibodySystem 
- */
-void Model::
-setSystem( SimTK::MultibodySystem* mbs ) {
-   _system = mbs;
-   return;
-
-}
 
 //--------------------------------------------------------------------------
 // CONFIGURATION
@@ -1176,37 +1183,9 @@ void Model::applyDefaultConfiguration(SimTK::State& s)
 	}
 
 	// Satisfy the constraints.
-	getSimbodyEngine().projectConfigurationToSatisfyConstraints(s, 1e-8);
+	assemble(s);
 }
 
-/* Enforce the coordinate coupler constraints. This should be done before
- * calling a Simbody function to project the constraints so that the values
- * of the dependent coordinates are already at their proper values. This
- * prevents the projection from changing the independent coordinate values
- * to satisfy the constraints.
- */
-void Model::enforceCoordinateCouplerConstraints(SimTK::State& s) const
-{
-	for (int i=0; i<getConstraintSet().getSize(); i++) {
-		Constraint& aConstraint = getConstraintSet().get(i);
-		if (aConstraint.getType() == "CoordinateCouplerConstraint") {
-			CoordinateCouplerConstraint& coupler = dynamic_cast<CoordinateCouplerConstraint&>(aConstraint);
-			if (coupler.isDisabled(s)) continue;
-			const Array<string> indNames = coupler.getIndependentCoordinateNames();
-			// Build a vector of the independent coordinate values and use it to calculate
-			// the desired value of the dependent coordinate.
-			SimTK::Vector indValues(indNames.getSize());
-			for (int k=0; k<indNames.getSize(); k++) {
-				const Coordinate& ind = getCoordinateSet().get(indNames.get(k));
-				indValues[k] = ind.getValue(s);
-			}
-			double desiredValue = coupler.getFunction().calcValue(indValues);
-			const string& depName = coupler.getDependentCoordinateName();
-			const Coordinate& dep = getCoordinateSet().get(depName);
-			dep.setValue(s, desiredValue, false);
-		}
-	}
-}
 
 
 //--------------------------------------------------------------------------
