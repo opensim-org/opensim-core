@@ -36,7 +36,8 @@ using namespace std;
 int main() {
 	// Create a storge from a std file "std_storage.sto"
     try {
-		MarkerData md("TRCFileWithNANs.trc");
+		//MarkerData md("TRCFileWithNANs.trc");
+                MarkerData md = MarkerData("TRCFileWithNANS.trc");
 		int rStartFrame=-1;
 		int rEndFrame=-1;
 		md.findFrameRange(0.0, 1.0, rStartFrame, rEndFrame);
@@ -49,7 +50,10 @@ int main() {
 		ASSERT(md.getFileName()=="TRCFileWithNANs.trc");
 		Storage storage;
 		md.makeRdStorage(storage);*/
-		ASSERT(md.getUnits().getType()==Units(std::string("mm")).getType());
+		//ASSERT(md.getUnits().getType()==Units(std::string mm("mm")).getType());
+                //std::string mm("mm");
+                Units lengthUnit = Units::Millimeters;
+                ASSERT(md.getUnits().getType()==lengthUnit.getType())
 		const Array<std::string>& markerNames = md.getMarkerNames();
 		ASSERT(markerNames.getSize()==14);
 		ASSERT(md.getMarkerIndex("toe")==0);

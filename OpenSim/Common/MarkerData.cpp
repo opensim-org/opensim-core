@@ -597,12 +597,12 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 	for (int i = 0; i < _numMarkers; i++)
 	{
 		int numFrames = 0;
-		Vec3& avePt = averagedFrame->getMarker(i);
+		Vec3& avePt = averagedFrame->updMarker(i);
 		avePt = Vec3(0);
 
 		for (int j = startIndex; j <= endIndex; j++)
 		{
-			Vec3& pt = _frames[j]->getMarker(i);
+			Vec3& pt = _frames[j]->updMarker(i);
 			if (!pt.isNaN())
 			{
 				Vec3& coords = pt; //.get();
@@ -649,7 +649,7 @@ void MarkerData::averageFrames(double aThreshold, double aStartTime, double aEnd
 	{
 		for (int i = 0; i < _numMarkers; i++)
 		{
-			Vec3& pt = _frames[0]->getMarker(i);
+			Vec3& pt = _frames[0]->updMarker(i);
 
 			if (pt.isNaN())
 			{
@@ -716,7 +716,7 @@ void MarkerData::makeRdStorage(Storage& rStorage)
 	{
 		for (int j = 0, index = 0; j < _numMarkers; j++)
 		{
-			SimTK::Vec3& marker = _frames[i]->getMarker(j);
+			SimTK::Vec3& marker = _frames[i]->updMarker(j);
 			for (int k = 0; k < 3; k++)
 				row[index++] = marker[k];
 		}

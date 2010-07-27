@@ -379,7 +379,7 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
 			int index = aPose.getMarkerIndex(modelMarker.getName());
 			if (index >= 0)
 			{
-				Vec3& globalMarker = frame.getMarker(index);
+				Vec3 globalMarker = frame.getMarker(index);
 				if (!globalMarker.isNaN())
 				{
 					Vec3 pt, pt2;
