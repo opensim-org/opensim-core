@@ -131,7 +131,7 @@ protected:
 		assembly solver. Subclasses, can add and override to include other goals  
 		such as point of interest matching (Marker tracking). This method is
 		automatically called by assemble. */
-	virtual void setupGoals(const SimTK::State &s);
+	virtual void setupGoals(SimTK::State &s);
 	/** Internal method to update the time, reference values and/or their 
 		weights that define the goals, based on the passed in state. This method
 		is called at the end of setupGoals() and beginning of track()*/

@@ -77,7 +77,7 @@ namespace OpenSim {
 		assembly solver. Subclasses, override and call base to include other goals  
 		such as point of interest matching (Marker tracking). This method is
 		automatically called by assemble. */
-void AssemblySolver::setupGoals(const SimTK::State &s)
+void AssemblySolver::setupGoals(SimTK::State &s)
 {
 	// wipe-out the previous SimTK::Assembler
 	delete _assembler;
@@ -104,6 +104,9 @@ void AssemblySolver::setupGoals(const SimTK::State &s)
 			if(coord.getLocked(s)){
 				cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
 				_assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilityIndex()));
+				//No longer need the lock on
+				coord.setLocked(s, false);
+				
 				//Get rid of the corresponding reference too
 				_coordinateReferences.erase(p);
 				p--; //decrement since erase automatically points to next in the list
@@ -160,8 +163,13 @@ void AssemblySolver::updateGoals(const SimTK::State &s)
  * The input state is used to initialize the assembly and then is updated to 
  * return the resulting assembled configuration.
  */
-void AssemblySolver::assemble(SimTK::State &s)
+void AssemblySolver::assemble(SimTK::State &state)
 {
+	// Make a working copy of the state that will be used to set the internal state of the solver
+	// This is necessary because we may wish to disable redundant constraints, but do not want this
+	// to effect the state of constraints the user expects
+	SimTK::State s = state;
+	
 	// Make sure goals are up-to-date.
 	setupGoals(s);
 
@@ -174,7 +182,9 @@ void AssemblySolver::assemble(SimTK::State &s)
 
 	try{
 		// Now do the assembly and return the updated state.
-		_assembler->assemble(s);
+		_assembler->assemble();
+		// Update the q's in the state passed in
+		_assembler->updateFromInternalState(state);
 
 		printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g err=%g, cost=%g, qerr=%g)\n",
 			_assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 

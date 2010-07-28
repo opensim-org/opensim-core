@@ -80,7 +80,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 
 /** Internal method to convert the MarkerReferences into additional goals of the 
 	of the base assembly solver, that is going to do the assembly.  */
-void InverseKinematicsSolver::setupGoals(const SimTK::State &s)
+void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 {
 	// Setup coordinates performed by the base class
 	AssemblySolver::setupGoals(s);

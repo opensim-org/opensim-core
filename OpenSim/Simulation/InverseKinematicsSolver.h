@@ -106,7 +106,7 @@ protected:
 		assembly solver. Subclasses, can add oveeride  to include other goals  
 		such as point of interest matching (Marker tracking). This method is
 		automatically called by assemble. */
-	virtual void setupGoals(const SimTK::State &s);
+	virtual void setupGoals(SimTK::State &s);
 	/** Internal method to update the time, reference values and/or their 
 		weights that define the goals, based on the passed in state */
 	virtual void updateGoals(const SimTK::State &s);

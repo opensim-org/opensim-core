@@ -1,0 +1,4242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20001">
+	<Model name="PushUpToesOnGround">
+		<defaults>
+			<ControlLinear name="default">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<default_min>      -1.00000000 </default_min>
+				<default_max>       1.00000000 </default_max>
+				<filter_on> false </filter_on>
+				<use_steps> false </use_steps>
+				<x_nodes/>
+				<min_nodes/>
+				<max_nodes/>
+				<kp>     100.00000000 </kp>
+				<kv>      20.00000000 </kv>
+			</ControlLinear>
+			<CoordinateActuator name="default">
+				<isDisabled> false </isDisabled>
+				<coordinate>  </coordinate>
+				<optimal_force>     300.00000000 </optimal_force>
+			</CoordinateActuator>
+			<PointActuator name="default">
+				<isDisabled> false </isDisabled>
+				<body>  </body>
+				<point>       0.00000000       0.00000000       0.00000000 </point>
+				<point_is_global> false </point_is_global>
+				<direction>      -1.00000000      -0.00000000      -0.00000000 </direction>
+				<force_is_global> true </force_is_global>
+				<optimal_force>    1000.00000000 </optimal_force>
+			</PointActuator>
+			<TorqueActuator name="default">
+				<isDisabled> false </isDisabled>
+				<bodyA>  </bodyA>
+				<bodyB>  </bodyB>
+				<torque_is_global> true </torque_is_global>
+				<axis>      -1.00000000      -0.00000000      -0.00000000 </axis>
+				<optimal_force>     300.00000000 </optimal_force>
+			</TorqueActuator>
+			<Thelen2003Muscle name="default">
+				<isDisabled> false </isDisabled>
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--maximum isometric force of the muscle fibers-->
+				<max_isometric_force>     546.00000000 </max_isometric_force>
+				<!--optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.05350000 </optimal_fiber_length>
+				<!--resting length of the tendon-->
+				<tendon_slack_length>       0.07800000 </tendon_slack_length>
+				<!--angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.13962634 </pennation_angle>
+				<!--time constant for ramping up of muscle activation-->
+				<activation_time_constant>       0.01000000 </activation_time_constant>
+				<!--time constant for ramping down of muscle activation-->
+				<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+				<!--maximum contraction velocity at full activation in fiber lengths per
+				    second-->
+				<Vmax>      10.00000000 </Vmax>
+				<!--maximum contraction velocity at low activation in fiber lengths per
+				    second-->
+				<Vmax0>       5.00000000 </Vmax0>
+				<!--tendon strain due to maximum isometric muscle force-->
+				<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+				<!--passive muscle strain due to maximum isometric muscle force-->
+				<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+				<!--shape factor for Gaussian active muscle force-length relationship-->
+				<KshapeActive>       0.50000000 </KshapeActive>
+				<!--exponential shape factor for passive force-length relationship-->
+				<KshapePassive>       4.00000000 </KshapePassive>
+				<!--passive damping in the force-velocity relationship-->
+				<damping>       0.05000000 </damping>
+				<!--force-velocity shape factor-->
+				<Af>       0.30000000 </Af>
+				<!--maximum normalized lengthening force-->
+				<Flen>       1.80000000 </Flen>
+			</Thelen2003Muscle>
+			<Schutte1993Muscle name="default">
+				<isDisabled> false </isDisabled>
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--Scale factor for normalizing time-->
+				<time_scale>       0.10000000 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>       0.01000000 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>       0.04000000 </activation2>
+				<!--Maximum isometric force that the fibers can generate-->
+				<max_isometric_force>     546.00000000 </max_isometric_force>
+				<!--Optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.05350000 </optimal_fiber_length>
+				<!--Resting length of the tendon-->
+				<tendon_slack_length>       0.07800000 </tendon_slack_length>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.13962634 </pennation_angle>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>       0.00000000 </max_contraction_velocity>
+				<!--Damping factor related to maximum contraction velocity-->
+				<damping>       0.05000000 </damping>
+				<!--Function representing force-length behavior of tendon-->
+				<tendon_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -10.00000000      -0.00200000      -0.00100000       0.00000000       0.00131000       0.00281000       0.00431000       0.00581000       0.00731000       0.00881000       0.01030000       0.01180000       0.01230000       9.20000000       9.20100000       9.20200000      20.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.01080000       0.02570000       0.04350000       0.06520000       0.09150000       0.12300000       0.16100000       0.20800000       0.22700000     345.00000000     345.00000000     345.00000000     345.00000000 </y>
+					</NaturalCubicSpline>
+				</tendon_force_length_curve>
+				<!--Function representing active force-length behavior of muscle fibers-->
+				<active_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -35.00000000       0.00000000       0.40100000       0.40200000       0.40350000       0.52725000       0.62875000       0.71875000       0.86125000       1.04500000       1.21750000       1.43875000       1.61875000       1.62000000       1.62100000       2.20000000      35.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.22666700       0.63666700       0.85666700       0.95000000       0.99333300       0.77000000       0.24666700       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </y>
+					</NaturalCubicSpline>
+				</active_force_length_curve>
+				<!--Function representing passive force-length behavior of muscle fibers-->
+				<passive_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -35.00000000       0.99800000       0.99900000       1.15000000       1.25000000       1.35000000       1.45000000       1.55000000       1.65000000       1.75000000       1.75010000       1.75020000      35.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.03500000       0.12000000       0.26000000       0.55000000       1.17000000       2.00000000       2.00000000       2.00000000       2.00000000 </y>
+					</NaturalCubicSpline>
+				</passive_force_length_curve>
+			</Schutte1993Muscle>
+			<Delp1990Muscle name="default">
+				<isDisabled> false </isDisabled>
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--Scale factor for normalizing time-->
+				<time_scale>       0.10000000 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>       0.01000000 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>       0.04000000 </activation2>
+				<!--Maximum isometric force that the fibers can generate-->
+				<max_isometric_force>     546.00000000 </max_isometric_force>
+				<!--Optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.05350000 </optimal_fiber_length>
+				<!--Resting length of the tendon-->
+				<tendon_slack_length>       0.07800000 </tendon_slack_length>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.13962634 </pennation_angle>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>       0.00000000 </max_contraction_velocity>
+				<!--Normalized mass of the muscle between the tendon and muscle fibers-->
+				<mass>       0.00287000 </mass>
+				<!--Function representing force-length behavior of tendon-->
+				<tendon_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -10.00000000      -0.00200000      -0.00100000       0.00000000       0.00131000       0.00281000       0.00431000       0.00581000       0.00731000       0.00881000       0.01030000       0.01180000       0.01230000       9.20000000       9.20100000       9.20200000      20.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.01080000       0.02570000       0.04350000       0.06520000       0.09150000       0.12300000       0.16100000       0.20800000       0.22700000     345.00000000     345.00000000     345.00000000     345.00000000 </y>
+					</NaturalCubicSpline>
+				</tendon_force_length_curve>
+				<!--Function representing active force-length behavior of muscle fibers-->
+				<active_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -35.00000000       0.00000000       0.40100000       0.40200000       0.40350000       0.52725000       0.62875000       0.71875000       0.86125000       1.04500000       1.21750000       1.43875000       1.61875000       1.62000000       1.62100000       2.20000000      35.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.22666700       0.63666700       0.85666700       0.95000000       0.99333300       0.77000000       0.24666700       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </y>
+					</NaturalCubicSpline>
+				</active_force_length_curve>
+				<!--Function representing passive force-length behavior of muscle fibers-->
+				<passive_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -35.00000000       0.99800000       0.99900000       1.15000000       1.25000000       1.35000000       1.45000000       1.55000000       1.65000000       1.75000000       1.75010000       1.75020000      35.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.03500000       0.12000000       0.26000000       0.55000000       1.17000000       2.00000000       2.00000000       2.00000000       2.00000000 </y>
+					</NaturalCubicSpline>
+				</passive_force_length_curve>
+				<!--Function representing force-velocity behavior of muscle fibers-->
+				<force_velocity_curve>
+					<NaturalCubicSpline name="">
+						<x>      -1.00100000      -1.00000000      -0.95000000      -0.90000000      -0.85000000      -0.80000000      -0.75000000      -0.70000000      -0.65000000      -0.60000000      -0.55000000      -0.50000000      -0.45000000      -0.40000000      -0.35000000      -0.30000000      -0.25000000      -0.20000000      -0.15000000      -0.10000000      -0.05000000       0.00000000       0.05000000       0.10000000       0.15000000       0.20000000       0.25000000       0.30000000       0.35000000       0.40000000       0.45000000       0.50000000       0.55000000       0.60000000       0.65000000       0.70000000       0.75000000       0.80000000       0.85000000       0.90000000       0.95000000       1.00000000 </x>
+						<y>       0.00000000       0.00000000       0.01041700       0.02173900       0.03409100       0.04761900       0.06250000       0.07894700       0.09722200       0.11764700       0.14062500       0.16666700       0.19642900       0.23076900       0.27083300       0.31818200       0.37500000       0.44444400       0.53125000       0.64285700       0.79166700       1.00000000       1.48201400       1.60157100       1.65579100       1.68673900       1.70675100       1.72075300       1.73109900       1.73905500       1.74536500       1.75049000       1.75473600       1.75831200       1.76136400       1.76399900       1.76629800       1.76832100       1.77011500       1.77171700       1.77315500       1.77445500 </y>
+					</NaturalCubicSpline>
+				</force_velocity_curve>
+			</Delp1990Muscle>
+			<CMC_Joint name="default">
+				<!--Flag (true or false) indicating whether or not a task is on.-->
+				<on> false </on>
+				<!--Weight with which a task is tracked relative to other tasks. To track
+				    a task more tightly, make the weight larger.-->
+				<weight>       1.00000000       1.00000000       1.00000000 </weight>
+				<!--Name of body frame with respect to which a tracking objective is
+				    specified. The special name 'center_of_mass' refers to the system
+				    center of mass. This property is not used for tracking joint angles.-->
+				<wrt_body> -1 </wrt_body>
+				<!--Name of body frame in which the tracking objectives are expressed.
+				    This property is not used for tracking joint angles.-->
+				<express_body> -1 </express_body>
+				<!--Array of 3 flags (each true or false) specifying whether a component
+				    of a task is active.  For example, tracking the trajectory of a point
+				    in space could have three components (x,y,z).  This allows each of
+				    those to be made active (true) or inactive (false).  A task for
+				    tracking a joint coordinate only has one component.-->
+				<active> false false false </active>
+				<!--Position error feedback gain (stiffness). To achieve critical damping
+				    of errors, choose kv = 2*sqrt(kp).-->
+				<kp>       1.00000000       1.00000000       1.00000000 </kp>
+				<!--Velocity error feedback gain (damping). To achieve critical damping of
+				    errors, choose kv = 2*sqrt(kp).-->
+				<kv>       1.00000000       1.00000000       1.00000000 </kv>
+				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no
+				    gain.-->
+				<ka>       1.00000000       1.00000000       1.00000000 </ka>
+				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use
+				    this propery.-->
+				<r0>       0.00000000       0.00000000       0.00000000 </r0>
+				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use
+				    this property.-->
+				<r1>       0.00000000       0.00000000       0.00000000 </r1>
+				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use
+				    this property.-->
+				<r2>       0.00000000       0.00000000       0.00000000 </r2>
+				<!--Name of the coordinate to be tracked.-->
+				<coordinate>  </coordinate>
+				<!--Error limit on the tracking accuracy for this coordinate. If the
+				    tracking errors approach this limit, the weighting for this coordinate
+				    is increased.-->
+				<limit>       0.00000000 </limit>
+			</CMC_Joint>
+		</defaults>
+		<credits> Menegolo Andrea </credits>
+		<publications> Delp, S.L., Loan, J.P., Hoy, M.G., Zajac, F.E., Topp E.L., Rosen, J.M.: An interactive graphics-based model of the lower extremity to study orthopaedic surgical procedures,  IEEE Transactions on Biomedical Engineering, vol. 37, pp. 757-767, 1990.
+
+		Yamaguchi G.T., Zajac F.E.: A planar model of the knee joint to characterize the knee extensor mechanism." J . Biomecl7. vol. 21. pp. 1-10. 1989.
+
+		Anderson F.C., Pandy M.G.: A dynamic optimization solution for vertical jumping in three dimensions. Computer Methods in Biomechanics and Biomedical Engineering 2:201-231, 1999.
+
+		Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Biomechanical Engineering 123:381-390, 2001.	
+		
+		Delp SL, Anderson FC, Arnold AS, Loan P, Habib A, John CT, Guendelman E, Thelen DG (in press). OpenSim: Open-source Software to Create and Analyze Dynamic Simulations of Movement. IEEE Transactions on Biomedical Engineering. (2007)
+		
+		Holzbaur KR, Murray WM, Delp SL.: A model of the upper extremity for simulating musculoskeletal surgery and analyzing neuromuscular control., Ann Biomed Eng. 2005 Jun;33(6):829-40. (2005)
+		
+		NOTE: This model has been developed on the base of the 3DGaitModel2354.osim model (developed by Delp S.L. et all) and the Stanford VA Upper Limb Model.osim model
+		           (developed by Holzbaur KR et all). Not additional informations are present in this model that cannot be found in the original ones.
+				   This model has been built by the author aiming only to provide a starting model for a full body model. </publications>
+		<ForceSet name="">
+			<objects>
+			</objects>
+			<groups>
+			</groups>
+			<datafile>  </datafile>
+		</ForceSet>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<geometry_files> treadmill.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="pelvis">
+					<mass>      11.77699999999999900000 </mass>
+					<mass_center>      -0.07069999999999999900       0.00000000000000000000       0.00000000000000000000 </mass_center>
+					<inertia_xx>       0.10280000000000000000 </inertia_xx>
+					<inertia_yy>       0.08709999999999999700 </inertia_yy>
+					<inertia_zz>       0.05790000000000000000 </inertia_zz>
+					<inertia_xy>       0.00000000000000000000 </inertia_xy>
+					<inertia_xz>       0.00000000000000000000 </inertia_xz>
+					<inertia_yz>       0.00000000000000000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="ground_pelvis">
+							<parent_body> ground </parent_body>
+							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="pelvis_rotation">
+										<!--Coordinate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>      -1.3244191529497447  </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>      -1.32645023 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="pelvis_tx">
+										<!--Coordinate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.75000000  </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.75000000 </initial_value>
+										<range>      -5.00000000       5.00000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="pelvis_ty">
+										<!--Coordinate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.3550167214805286  </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.35000000 </initial_value>
+										<range>      -5.00000000       5.00000000 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
+								<TransformAxis name="rotation1">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates>  </coordinates>
+									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+
+								<TransformAxis name="rotation3">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pelvis_rotation </coordinates>
+									<axis>       0.00000000       0.00000000       1.00000000 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pelvis_tx </coordinates>
+									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pelvis_ty </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates>  </coordinates>
+									<axis>       0.00000000       0.00000000       1.00000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> sacrum.vtp pelvis_r.vtp pelvis_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="thorax">
+					<mass>      27.85300000 </mass>
+					<mass_center>       -0.03178525      -0.08584666      0.00000000 </mass_center>
+					<inertia_xx>       1.181757 </inertia_xx>
+					<inertia_yy>       0.2775728 </inertia_yy>
+					<inertia_zz>       1.04043 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="back">
+							<parent_body> pelvis </parent_body>
+							<location_in_parent>      -0.10070000       0.08150000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>      -0.02050000      -0.37850000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="back_rotation">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> thorax.vtp hat_spine.vtp hat_jaw.vtp hat_skull.vtp  </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+  			<Body name="femur_r">
+					<mass>       9.30140000 </mass>
+					<mass_center>       0.00000000      -0.17000000       0.00000000 </mass_center>
+					<inertia_xx>       0.13390000 </inertia_xx>
+					<inertia_yy>       0.03510000 </inertia_yy>
+					<inertia_zz>       0.14120000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="hip_r">
+							<parent_body> pelvis </parent_body>
+							<location_in_parent>      -0.07070000      -0.06610000       0.08350000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="hip_flexion_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -2.09439510       2.09439510 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> femur_r.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="femur_l">
+					<mass>       9.30140000 </mass>
+					<mass_center>       0.00000000      -0.17000000       0.00000000 </mass_center>
+					<inertia_xx>       0.13390000 </inertia_xx>
+					<inertia_yy>       0.03510000 </inertia_yy>
+					<inertia_zz>       0.14120000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="hip_l">
+							<parent_body> pelvis </parent_body>
+							<location_in_parent>      -0.07070000      -0.06610000      -0.08350000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="hip_flexion_l">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -2.09439510       2.09439510 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> femur_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="tibia_r">
+					<mass>       3.70750000 </mass>
+					<mass_center>       0.00000000      -0.18670000       0.00000000 </mass_center>
+					<inertia_xx>       0.05040000 </inertia_xx>
+					<inertia_yy>       0.00510000 </inertia_yy>
+					<inertia_zz>       0.05110000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="knee_r">
+							<parent_body> femur_r </parent_body>
+							<location_in_parent>       0.00000000       -0.40000      0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       3.1415926535897931       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       3.1415926535897931       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="knee_flexion_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -0.17453293      2.09439510  </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> tibia_r.vtp fibula_r.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="tibia_l">
+					<mass>       3.70750000 </mass>
+					<mass_center>       0.00000000      -0.18670000       0.00000000 </mass_center>
+					<inertia_xx>       0.05040000 </inertia_xx>
+					<inertia_yy>       0.00510000 </inertia_yy>
+					<inertia_zz>       0.05110000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="knee_l">
+							<parent_body> femur_l </parent_body>
+							<location_in_parent>       0.00000000       -0.40000      0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       3.1415926535897931       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       3.1415926535897931      0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="knee_flexion_l">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -0.17453293   2.09439510    </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> tibia_l.vtp fibula_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="talus_r">
+					<mass>       0.10000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00100000 </inertia_xx>
+					<inertia_yy>       0.00100000 </inertia_yy>
+					<inertia_zz>       0.00100000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="ankle_r">
+							<parent_body> tibia_r </parent_body>
+							<location_in_parent>       0.00000000      -0.43000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       3.1415926535897931       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       3.1415926535897931       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="ankle_plantarflexion_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.24637717384515201 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -0.26179938779914941       0.78539816339744828 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> talus_r.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="calcn_r">
+					<mass>       1.25000000 </mass>
+					<mass_center>       0.10000000       0.03000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00140000 </inertia_xx>
+					<inertia_yy>       0.00390000 </inertia_yy>
+					<inertia_zz>       0.00410000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="subtalar_r">
+							<parent_body> talus_r </parent_body>
+							<location_in_parent>      -0.04877000      -0.04195000       0.00792000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> foot_r.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="toes_r">
+					<mass>       0.21660000 </mass>
+					<mass_center>       0.03460000       0.00600000      -0.01750000 </mass_center>
+					<inertia_xx>       0.00010000 </inertia_xx>
+					<inertia_yy>       0.00020000 </inertia_yy>
+					<inertia_zz>       0.00030000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="toe_flexion_r">
+							<parent_body> calcn_r </parent_body>
+							<location_in_parent>       0.17880000      -0.00200000       0.00108000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> bofoot_r.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="talus_l">
+					<mass>       0.10000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00100000 </inertia_xx>
+					<inertia_yy>       0.00100000 </inertia_yy>
+					<inertia_zz>       0.00100000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="ankle_l">
+							<parent_body> tibia_l </parent_body>
+							<location_in_parent>       0.00000000      -0.43000000       0.00000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       3.1415926535897931       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       3.1415926535897931       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="ankle_plantarflexion_l">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.24637717384515201 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -0.26179938779914941       0.78539816339744828 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> talus_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="calcn_l">
+					<mass>       1.25000000 </mass>
+					<mass_center>       0.10000000       0.03000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00140000 </inertia_xx>
+					<inertia_yy>       0.00390000 </inertia_yy>
+					<inertia_zz>       0.00410000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="subtalar_l">
+							<parent_body> talus_l </parent_body>
+							<location_in_parent>      -0.04877000      -0.04195000       -0.00792000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> foot_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="toes_l">
+					<mass>       0.21660000 </mass>
+					<mass_center>       0.03460000       0.00600000      0.01750000 </mass_center>
+					<inertia_xx>       0.00010000 </inertia_xx>
+					<inertia_yy>       0.00020000 </inertia_yy>
+					<inertia_zz>       0.00030000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="toe_flexion_l">
+							<parent_body> calcn_l </parent_body>
+							<location_in_parent>       0.17880000      -0.00200000       -0.00108000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> bofoot_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="clavicle_r">
+					<mass>  0 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="sternoclavicular_r">
+							<parent_body> thorax </parent_body>
+							<location_in_parent>       0.00632500       0.00693000       0.02546500 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> clavicle.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="clavicle_l">
+					<mass>  0 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="sternoclavicular_l">
+							<parent_body> thorax </parent_body>
+							<location_in_parent>       0.00632500       0.00693000      -0.02546500 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> clavicle_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="scapula_r">
+					<mass>       0 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="acromioclavicular_r">
+							<parent_body> clavicle_r </parent_body>
+							<location_in_parent>       -0.01433000       0.02007000       0.13553500 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> scapula.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="scapula_l">
+					<mass>       0</mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000001 </inertia_xx>
+					<inertia_yy>       0.00000001 </inertia_yy>
+					<inertia_zz>       0.00000001 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="acromioclavicular_l">
+							<parent_body> clavicle_l </parent_body>
+							<location_in_parent>        -0.01433000       0.02007000      -0.13553500 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> scapula_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="humerus_r">
+					<mass>       1.92410000 </mass>
+					<mass_center>       -0.00500000      -0.16760000      -0.00800000 	</mass_center>
+					<inertia_xx>       0.01320000 </inertia_xx>
+					<inertia_yy>       0.00410000 </inertia_yy>
+					<inertia_zz>       0.01170000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="shoulder_r">
+							<parent_body> scapula_r </parent_body>
+							<location_in_parent>       -0.00955000      -0.03400000       0.00900000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="shoulder_flexion_r">
+										<motion_type> rotational </motion_type>
+										<default_value>      1.3244191529497447 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>      -0.23610814 </initial_value>
+										<range>  -3.1415926535897931   3.1415926535897931 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="shoulder_rotation_r">
+										<motion_type> rotational </motion_type>
+										<default_value>      0 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>      -0.23610814 </initial_value>
+										<range>  -3.1415926535897931  3.1415926535897931 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<TransformAxis name="rotation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> shoulder_flexion_r </coordinates>
+									<axis>       0       0       1 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> shoulder_rotation_r </coordinates>
+									<axis>       0       1      0 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<function>
+										<Constant name="">
+											<coefficients>  0.00000000 </coefficients>
+										</Constant>
+									</function>
+									<coordinates>  </coordinates>
+									<axis>      1       0       0 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       0.00000000       1.00000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> humerus.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="humerus_l">
+					<mass>       1.92410000 </mass>
+					<mass_center>      -0.00500000      -0.16760000       0.00800000 	</mass_center>
+					<inertia_xx>       0.01320000 </inertia_xx>
+					<inertia_yy>       0.00410000 </inertia_yy>
+					<inertia_zz>       0.01170000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="shoulder_r">
+							<parent_body> scapula_l </parent_body>
+							<location_in_parent>      -0.00955000      -0.03400000      -0.00900000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="shoulder_flexion_l">
+										<motion_type> rotational </motion_type>
+										<default_value>      1.3244191529497447 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>      -0.23610814 </initial_value>
+										<range>  -3.1415926535897931   3.1415926535897931 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="shoulder_rotation_l">
+										<motion_type> rotational </motion_type>
+										<default_value>      0 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>      -0.23610814 </initial_value>
+										<range>  -3.1415926535897931  3.1415926535897931 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<TransformAxis name="rotation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> shoulder_flexion_l </coordinates>
+									<axis>       0       0       1 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> shoulder_rotation_l </coordinates>
+									<axis>       0       -1      0 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<function>
+										<Constant name="">
+											<coefficients>  0.00000000 </coefficients>
+										</Constant>
+									</function>
+									<coordinates>  </coordinates>
+									<axis>      1       0       0 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       0.00000000       1.00000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> humerus_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="ulna_r">
+					<mass>       1.15020000 </mass>
+					<mass_center>       0.01000000      -0.11600000       0.01500000 </mass_center>
+					<inertia_xx>       0.00560000 </inertia_xx>
+					<inertia_yy>       0.00110000 </inertia_yy>
+					<inertia_zz>       0.00520000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="elbow_r">
+							<parent_body> humerus_r </parent_body>
+							<location_in_parent>       0.00610000      -0.29040000      -0.01230000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="elbow_flexion_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>       0.00000000       2.26892803 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> ulna.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="ulna_l">
+					<mass>       1.15020000 </mass>
+					<mass_center>       0.01000000      -0.11600000      -0.01500000 </mass_center>
+					<inertia_xx>       0.00560000 </inertia_xx>
+					<inertia_yy>       0.00110000 </inertia_yy>
+					<inertia_zz>       0.00520000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="elbow_l">
+							<parent_body> humerus_l </parent_body>
+							<location_in_parent>       0.00610000      -0.29040000       0.01230000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="elbow_flexion_l">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>       0.00000000       2.26892803 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> ulna_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="radius_r">
+					<mass>       0 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.0000000 </inertia_xx>
+					<inertia_yy>       0.0000000 </inertia_yy>
+					<inertia_zz>       0.0000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="radioulnar">
+							<parent_body> ulna_r </parent_body>
+							<location_in_parent>       0.00040000      -0.01150300       0.01999900 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="pro_sup_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       1.5707963267948966 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       1.57079633 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
+								<TransformAxis name="rotation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pro_sup_r </coordinates>
+									<axis>      -0.01716099       0.99266564      -0.11966796 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>      -0.11966796       0.00000000       0.01716099 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       0.00000000       1.00000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> radius.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="radius_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="radioulnar_l">
+							<parent_body> ulna_l </parent_body>
+							<location_in_parent>       0.00040000      -0.01150300      -0.01999900 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="pro_sup_l">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>       1.5707963267948966 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       1.57079633 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
+								<TransformAxis name="rotation1">
+									<function>
+										<LinearFunction name="">
+											<coefficients>       1.00000000       0.00000000 </coefficients>
+										</LinearFunction>
+									</function>
+									<coordinates> pro_sup_l </coordinates>
+									<axis>       0.01716099      -0.99266564      -0.11966796 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="rotation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>      -0.11966796       0.00000000      -0.01716099 </axis>
+								</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
+								<TransformAxis name="translation1">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       1.00000000       0.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation2">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       1.00000000       0.00000000 </axis>
+								</TransformAxis>
+								<TransformAxis name="translation3">
+									<function>
+										<Constant name="">
+											<value>       0.00000000 </value>
+										</Constant>
+									</function>
+									<coordinates> </coordinates>
+									<axis>       0.00000000       0.00000000       1.00000000 </axis>
+								</TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> radius_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="lunate_r">
+					<mass>       0.43310000 </mass>
+					<mass_center>       0.01000000      -0.06360000       0.00000000 </mass_center>
+					<inertia_xx>       0.00110000 </inertia_xx>
+					<inertia_yy>       0.00045130 </inertia_yy>
+					<inertia_zz>       0.00073861 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="radiocarpal">
+							<parent_body> radius_r </parent_body>
+							<location_in_parent>       0.01800000      -0.24200000       0.02500000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       1.57079633       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       1.57079633       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="wrist_flexion_r">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>      -1.5707963267948966 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>      -1.57079633 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> lunate.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="scaphoid_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="lun_scaph_r">
+							<parent_body> lunate_r </parent_body>
+							<location_in_parent>       0.01234500      -0.00446400      -0.00125400 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> scaphoid.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="pisiform_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="lun_pis_r">
+							<parent_body> lunate_r </parent_body>
+							<location_in_parent>      -0.01338800      -0.00988600      -0.01059300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> pisiform.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="triquetrum_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="lun_triq_r">
+							<parent_body> lunate_r </parent_body>
+							<location_in_parent>      -0.01078400      -0.00749900      -0.00128900 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> triquetrum.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="capitate_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="proximal_distal_r">
+							<parent_body> lunate_r </parent_body>
+							<location_in_parent>       0.00399200      -0.01505400       0.00232700 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> capitate.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="trapezium_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="cap_trpzm">
+							<parent_body> capitate_r </parent_body>
+							<location_in_parent>       0.01529300      -0.00456900      -0.01030800 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> trapezium.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="trapezoid_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="cap_trpzd">
+							<parent_body> capitate_r </parent_body>
+							<location_in_parent>       0.00914300      -0.00406200      -0.00246400 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> trapezoid.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="hamate_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="cap_ham">
+							<parent_body> capitate_r </parent_body>
+							<location_in_parent>      -0.01096900      -0.00249500      -0.00075000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> hamate.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="firstmc_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="CMC1b">
+							<parent_body> trapezium_r </parent_body>
+							<location_in_parent>       0.00720000      -0.00540000      -0.00250000 </location_in_parent>
+							<orientation_in_parent>       0.112005112540506      -0.808046402178707       0.455822628027301 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 1mc.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="secondmc_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000</inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="CMC2">
+							<parent_body> capitate_r </parent_body>
+							<location_in_parent>       0.01468500      -0.03762000       0.00503200 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2mc.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="thirdmc_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="CMC3">
+							<parent_body> capitate_r </parent_body>
+							<location_in_parent>       0.00047700      -0.03923900       0.00737700 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3mc.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="fourthmc_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="CMC4">
+							<parent_body> capitate_r </parent_body>
+							<location_in_parent>      -0.01204600      -0.04051900       0.00351300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4mc.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="fifthmc_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="CMC5">
+							<parent_body> capitate_r </parent_body>
+							<location_in_parent>      -0.02189600      -0.03468300      -0.00421800 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5mc.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="proximal_thumb_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="MCP">
+							<parent_body> firstmc_r </parent_body>
+							<location_in_parent>       0.01650000      -0.02920000      -0.01270000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">									
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> thumbprox.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="distal_thumb_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="IP">
+							<parent_body> proximal_thumb_r </parent_body>
+							<location_in_parent>       0.01400000      -0.02590000      -0.01010000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> thumbdist.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="2proxph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="2MCP">
+							<parent_body> secondmc_r </parent_body>
+							<location_in_parent>       0.00350100      -0.02824300       0.00362000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2proxph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>			
+				<Body name="2midph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="2prox-midph">
+							<parent_body> 2proxph_r </parent_body>
+							<location_in_parent>       0.00751700      -0.04127300       0.00732600 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2midph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="2distph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="2mid-distph">
+							<parent_body> 2midph_r </parent_body>
+							<location_in_parent>       0.00333300      -0.02488800       0.00122000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2distph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="3proxph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="3MCP">
+							<parent_body> thirdmc_r </parent_body>
+							<location_in_parent>       0.00024000      -0.02629000       0.00177800 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3proxph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="3midph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="3prox-midph">
+							<parent_body> 3proxph_r </parent_body>
+							<location_in_parent>       0.00165000      -0.04421100       0.00623000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3midph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="3distph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="3mid-distph">
+							<parent_body> 3midph_r </parent_body>
+							<location_in_parent>       0.00136500      -0.02904700       0.00195400 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3distph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="4proxph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="4MCP">
+							<parent_body> fourthmc_r </parent_body>
+							<location_in_parent>      -0.00183000      -0.02368900      -0.00017300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4proxph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="4midph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="4prox-midph">
+							<parent_body> 4proxph_r </parent_body>
+							<location_in_parent>      -0.00352800      -0.04025500       0.00134500 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4midph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="4distph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="4mid-distph">
+							<parent_body> 4midph_r </parent_body>
+							<location_in_parent>      -0.00231700      -0.02478900       0.00056300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4distph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="5proxph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="5MCP">
+							<parent_body> fifthmc_r </parent_body>
+							<location_in_parent>      -0.00159700      -0.02143100      -0.00149600 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5proxph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="5midph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="5prox-midph">
+							<parent_body> 5proxph_r </parent_body>
+							<location_in_parent>      -0.00527900      -0.03556300      -0.00287900 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5midph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="5distph_r">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="5mid-distph">
+							<parent_body> 5midph_r </parent_body>
+							<location_in_parent>      -0.00287100      -0.02067700      -0.00224300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5distph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="lunate_l">
+					<mass>       0.43310000 </mass>
+					<mass_center>       0.01000000      -0.06360000       0.00000000 </mass_center>
+					<inertia_xx>       0.00110000 </inertia_xx>
+					<inertia_yy>       0.00045130 </inertia_yy>
+					<inertia_zz>       0.00073861 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<PinJoint name="radiocarpal_l">
+							<parent_body> radius_l </parent_body>
+							<location_in_parent>       0.01800000      -0.24200000      -0.02500000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       -1.57079633       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       -1.57079633       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="wrist_flexion_l">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
+										<default_value>      -1.5707963267948966 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>      -1.57079633 </initial_value>
+										<range>      -1.57079633       1.57079633 </range>
+										<clamped> true </clamped>
+										<locked> true </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</PinJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> lunate_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="scaphoid_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="lun_scaph_l">
+							<parent_body> lunate_l </parent_body>
+							<location_in_parent>       0.01234500      -0.00446400       0.00125400 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> scaphoid_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="pisiform_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="lun_pis_l">
+							<parent_body> lunate_l </parent_body>
+							<location_in_parent>      -0.01338800      -0.00988600       0.01059300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> pisiform_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="triquetrum_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="lun_triq_l">
+							<parent_body> lunate_l </parent_body>
+							<location_in_parent>      -0.01078400      -0.00749900       0.00128900 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> triquetrum_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+  			<Body name="capitate_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="proximal_distal_l">
+							<parent_body> lunate_l </parent_body>
+							<location_in_parent>       0.00399200      -0.01505400      -0.00232700 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> capitate_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="trapezium_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="cap_trpzm_l">
+							<parent_body> capitate_l </parent_body>
+							<location_in_parent>       0.01529300      -0.00456900       0.01030800 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> trapezium_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="trapezoid_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="cap_trpzd_l">
+							<parent_body> capitate_l </parent_body>
+							<location_in_parent>       0.00914300      -0.00406200       0.00246400 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> trapezoid_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="hamate_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="cap_ham_l">
+							<parent_body> capitate_l </parent_body>
+							<location_in_parent>      -0.01096900      -0.00249500       0.00075000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> hamate_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="firstmc_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="CMC1b_l">
+							<parent_body> trapezium_l  </parent_body>
+							<location_in_parent>       0.00720000      -0.00540000       0.00250000 </location_in_parent>
+							<orientation_in_parent>       -0.112005112540506      0.808046402178707       0.455822628027301 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 1mc_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="secondmc_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="CMC2_l">
+							<parent_body> capitate_l </parent_body>
+							<location_in_parent>       0.01468500      -0.03762000      -0.00503200 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2mc_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="thirdmc_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="CMC3_l">
+							<parent_body> capitate_l </parent_body>
+							<location_in_parent>       0.00047700      -0.03923900      -0.00737700 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3mc_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="fourthmc_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="CMC4_l">
+							<parent_body> capitate_l </parent_body>
+							<location_in_parent>      -0.01204600      -0.04051900      -0.00351300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4mc_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="fifthmc_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="CMC5_l">
+							<parent_body> capitate_l </parent_body>
+							<location_in_parent>      -0.02189600      -0.03468300       0.00421800 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5mc_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="proximal_thumb_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="MCP_l">
+							<parent_body> firstmc_l </parent_body>
+							<location_in_parent>       0.01650000      -0.02920000       0.01270000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> thumbprox_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="distal_thumb_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="IP_l">
+							<parent_body> proximal_thumb_l </parent_body>
+							<location_in_parent>       0.01400000      -0.02590000       0.01010000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> thumbdist_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="2proxph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="2MCP_l">
+							<parent_body> secondmc_l </parent_body>
+							<location_in_parent>       0.00350100      -0.02824300      -0.00362000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2proxph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="2midph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="2prox-midph_l">
+							<parent_body> 2proxph_l </parent_body>
+							<location_in_parent>       0.00751700      -0.04127300      -0.00732600 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2midph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="2distph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<Joint>
+						<WeldJoint name="2mid-distph_l">
+							<parent_body> 2midph_l </parent_body>
+							<location_in_parent>       0.00333300      -0.02488800      -0.00122000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 2distph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+ 				<Body name="3proxph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="3MCP_l">
+							<parent_body> thirdmc_l </parent_body>
+							<location_in_parent>       0.00024000      -0.02629000      -0.00177800 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3proxph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="3midph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="3prox-midph_l">
+							<parent_body> 3proxph_l </parent_body>
+							<location_in_parent>       0.00165000      -0.04421100      -0.00623000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3midph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="3distph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="3mid-distph_l">
+							<parent_body> 3midph_l </parent_body>
+							<location_in_parent>       0.00136500      -0.02904700      -0.00195400 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 3distph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="4proxph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="4MCP_l">
+							<parent_body> fourthmc_l </parent_body>
+							<location_in_parent>      -0.00183000      -0.02368900       0.00017300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4proxph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="4midph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="4prox-midph_l">
+							<parent_body> 4proxph_l </parent_body>
+							<location_in_parent>      -0.00352800      -0.04025500      -0.00134500 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4midph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="4distph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="4mid-distph_l">
+							<parent_body> 4midph_l </parent_body>
+							<location_in_parent>      -0.00231700      -0.02478900      -0.00056300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 4distph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="5proxph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="5MCP_l">
+							<parent_body> fifthmc_l </parent_body>
+							<location_in_parent>      -0.00159700      -0.02143100       0.00149600 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5proxph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="5midph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="5prox-midph_l">
+							<parent_body> 5proxph_l </parent_body>
+							<location_in_parent>      -0.00527900      -0.03556300       0.00287900 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5midph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="5distph_l">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="5mid-distph_l">
+							<parent_body> 5midph_l </parent_body>
+							<location_in_parent>      -0.00287100      -0.02067700       0.00224300 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> 5distph_l.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>			
+				<Body name="ForcePlateRightToe">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="toe_forceSensor_r">
+							<parent_body> toes_r </parent_body>
+							<location_in_parent>       0.075     0    -0.015 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="ForcePlateLeftToe">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="toe_forceSensor_l">
+							<parent_body> toes_l </parent_body>
+							<location_in_parent>       0.075   0     0.015 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="ForcePlateRightHand">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="hand_forceSensor_r">
+							<parent_body> lunate_r </parent_body>
+							<location_in_parent>       0    -0.05    -0.01 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="ForcePlateLeftHand">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<WeldJoint name="hand_forceSensor_l">
+							<parent_body> lunate_l </parent_body>
+							<location_in_parent>       0    -0.05    0.01 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects/>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+						</WeldJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
+			<objects>
+				<PointConstraint name="rightToeOnGround">
+					<isDisabled> false </isDisabled>
+					<body_1> ForcePlateRightToe </body_1>
+					<body_2> ground </body_2>
+					<location_body_1>       0.00000000       0.00000000       0.00000000 </location_body_1>
+					<location_body_2>      -0.18023       0     0.0775 </location_body_2>
+				</PointConstraint>
+
+				<PointConstraint name="leftToeOnGround">
+					<isDisabled> false </isDisabled>
+					<body_1> ForcePlateLeftToe </body_1>
+					<body_2> ground </body_2>
+					<location_body_1>       0.00000000       0.00000000       0.00000000 </location_body_1>
+					<location_body_2>      -0.18023       0     -0.0775 </location_body_2>
+				</PointConstraint>
+
+				<PointConstraint name="rightHandOnGround">
+					<isDisabled> false </isDisabled>
+					<body_1> ForcePlateRightHand </body_1>
+					<body_2> ground </body_2>
+					<location_body_1>       0.00000000       0.00000000       0.00000000 </location_body_1>
+					<location_body_2>      1.2207       0     0.19520 </location_body_2>
+				</PointConstraint>
+
+				<PointConstraint name="leftHandOnGround">
+					<isDisabled> false </isDisabled>
+					<body_1> ForcePlateLeftHand </body_1>
+					<body_2> ground </body_2>
+					<location_body_1>       0.00000000       0.00000000       0.00000000 </location_body_1>
+					<location_body_2>      1.2207       0     -0.19520 </location_body_2>
+				</PointConstraint>
+
+<!--			<CoordinateCouplerConstraint name="ankleR">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<Linear name="f1">
+							<coefficients>       1.00000000       1.570796326794897 </coefficients>
+						</Linear>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> pelvis_rotation </independent_coordinate_names>
+					<dependent_coordinate_name> ankle_plantarflexion_r </dependent_coordinate_name>
+					<scale_factor>       1.00000000 </scale_factor>
+				</CoordinateCouplerConstraint>-->
+
+<!--			<CoordinateCouplerConstraint name="ankleL">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<Linear name="f2">
+							<coefficients>       1.00000000       1.570796326794897 </coefficients>
+						</Linear>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> pelvis_rotation </independent_coordinate_names>
+					<dependent_coordinate_name> ankle_plantarflexion_l </dependent_coordinate_name>
+					<scale_factor>       1.00000000 </scale_factor>
+				</CoordinateCouplerConstraint>-->
+
+<!--			<CoordinateCouplerConstraint name="shoulderR">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<Linear name="f3">
+							<coefficients>       -1.00000000       0 </coefficients>
+						</Linear>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> pelvis_rotation </independent_coordinate_names>
+					<dependent_coordinate_name> shoulder_flexion_r </dependent_coordinate_name>
+					<scale_factor>       1.00000000 </scale_factor>
+				</CoordinateCouplerConstraint>-->
+
+<!--			<CoordinateCouplerConstraint name="shoulderL">
+					<isDisabled> false </isDisabled>
+					<coupled_coordinates_function>
+						<Linear name="f4">
+							<coefficients>       -1.00000000       0 </coefficients>
+						</Linear>
+					</coupled_coordinates_function>
+					<independent_coordinate_names> pelvis_rotation </independent_coordinate_names>
+					<dependent_coordinate_name> shoulder_flexion_l </dependent_coordinate_name>
+					<scale_factor>       1.00000000 </scale_factor>
+				</CoordinateCouplerConstraint>-->
+
+			</objects>
+			<groups/>
+		</ConstraintSet>
+
+
+		<!--Markers in the model.-->
+		<MarkerSet name="">
+			<objects>
+				<Marker name="ToeTipR">
+					<!--Body segment in the model on which the marker resides.-->
+					<body> toes_r </body>
+					<!--Location of a marker on the body segment.-->
+					<location>       0.07500000      -0.00000000      -0.01500000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+					<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Marker>
+				<Marker name="ToeTipL">
+					<!--Body segment in the model on which the marker resides.-->
+					<body> toes_l </body>
+					<!--Location of a marker on the body segment.-->
+					<location>       0.07500000       0.00000000       0.01500000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+					<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Marker>
+				<Marker name="HandCenterR">
+					<!--Body segment in the model on which the marker resides.-->
+					<body> lunate_r </body>
+					<!--Location of a marker on the body segment.-->
+					<location>       0.00000000      -0.05000000      -0.01000000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+					<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Marker>
+				<Marker name="HandCenterL">
+					<!--Body segment in the model on which the marker resides.-->
+					<body> lunate_l </body>
+					<!--Location of a marker on the body segment.-->
+					<location>       0.00000000      -0.05000000       0.01000000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+					<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Marker>
+			</objects>
+			<groups/>
+		</MarkerSet>
+
+
+		<!--ContactGeometry objects in the model.-->
+		<ContactGeometrySet name="">
+			<objects/>
+			<groups/>
+		</ContactGeometrySet>
+
+
+	</Model>
+
+
+</OpenSimDocument>
+
