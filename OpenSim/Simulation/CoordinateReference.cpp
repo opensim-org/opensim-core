@@ -1,25 +1,25 @@
-/* CoordinateReference.cpp 
-* Author: Ajay Seth 
+/* CoordinateReference.cpp
+* Author: Ajay Seth
 * Copyright (c)  2010 Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
 *     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
+* 	2. The software is not distributed or redistributed.  Software distribution is allowed
 *     only through https://simtk.org/home/opensim.
 * 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
 *      presentations, or documents describing work in which OpenSim or derivatives are used.
 * 	4. Credits to developers may not be removed from executables
 *     created from modifications of the source.
 * 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
+*     conditions and the following disclaimer.
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
 *  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -43,12 +43,12 @@ CoordinateReference::CoordinateReference() : Reference_<double>(),
 
 //______________________________________________________________________________
 /**
- * An implementation of the CoordinateReference 
+ * An implementation of the CoordinateReference
  *
- * @param name of the reference to be found in the model and 
+ * @param name of the reference to be found in the model and
  * @param referenceFunction is its its function returning its value
  */
-	CoordinateReference::CoordinateReference(std::string name, Function &referenceFunction) : Reference_<double>(name),
+	CoordinateReference::CoordinateReference(const std::string name, Function &referenceFunction) : Reference_<double>(name),
 	_coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
 	_defaultWeight(_defaultWeightProp.getValueDbl())
 {
@@ -63,7 +63,7 @@ CoordinateReference& CoordinateReference::operator=(const CoordinateReference &a
 	Reference_<double>::operator=(aRef);
 	_coordinateValueFunction = aRef._coordinateValueFunction;
 	_defaultWeight = aRef._defaultWeight;
-	return(*this); 
+	return(*this);
 };
 
 
@@ -78,7 +78,7 @@ const SimTK::Array_<std::string>& CoordinateReference::getNames() const
 void CoordinateReference::getValues(const SimTK::State &s, SimTK::Array_<double> &values) const
 {
 	SimTK::Vector t(1, s.getTime());
-	values.resize(getNumRefs()); 
+	values.resize(getNumRefs());
 	values[0] = _coordinateValueFunction->calcValue(t);
 }
 
@@ -109,7 +109,7 @@ double CoordinateReference::getSpeedValue(const SimTK::State &s) const
 /** get the acceleration value of the CoordinateReference */
 double CoordinateReference::getAccelerationValue(const SimTK::State &s) const
 {
-	SimTK::Vector t(1, s.getTime()); 
+	SimTK::Vector t(1, s.getTime());
 	std::vector<int> order(2, 0);
 	return _coordinateValueFunction->calcDerivative(order, t);
 }
@@ -117,7 +117,7 @@ double CoordinateReference::getAccelerationValue(const SimTK::State &s) const
 /** get the weight of the CoordinateReference */
 double CoordinateReference::getWeight(const SimTK::State &s) const
 {
-	return Reference_::getWeights(s)[0];
+	return Reference_<double>::getWeights(s)[0];
 }
 
 /** set the weight of the CoordinateReference */

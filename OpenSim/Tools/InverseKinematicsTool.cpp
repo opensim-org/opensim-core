@@ -5,21 +5,21 @@
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
 *     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
+* 	2. The software is not distributed or redistributed.  Software distribution is allowed
 *     only through https://simtk.org/home/opensim.
 * 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
 *      presentations, or documents describing work in which OpenSim or derivatives are used.
 * 	4. Credits to developers may not be removed from executables
 *     created from modifications of the source.
 * 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
+*     conditions and the following disclaimer.
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
 *  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -122,7 +122,7 @@ InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoad
  * @param aTool Object to be copied.
 
  */
-InverseKinematicsTool::InverseKinematicsTool(const InverseKinematicsTool &aTool) : 
+InverseKinematicsTool::InverseKinematicsTool(const InverseKinematicsTool &aTool) :
 	Tool(aTool),
 	_modelFileName(_modelFileNameProp.getValueStr()),
 	_constraintWeight(_constraintWeightProp.getValueDbl()),
@@ -274,7 +274,7 @@ bool InverseKinematicsTool::run()
 		kinematicsReporter.setInDegrees(true);
 
 		cout<<"Running tool "<<getName()<<".\n";
-		
+
 		// Initialize the the model's underlying computational system and get its default state.
 		SimTK::State& s = _model->initSystem();
 
@@ -282,7 +282,7 @@ bool InverseKinematicsTool::run()
 		MarkersReference markersReference;
 		Set<MarkerWeight> markerWeights;
 		SimTK::Array_<CoordinateReference> coordinateReferences;
-		
+
 		FunctionSet *coordFunctions = NULL;
 		// Load the coordinate data
 		bool haveCoordinateFile = false;
@@ -293,7 +293,7 @@ bool InverseKinematicsTool::run()
 			haveCoordinateFile = true;
 			coordFunctions = new GCVSplineSet(5,&coordinateValues);
 		}
-			
+
 		// Loop through old "IKTaskSet" and assign weights to the coordinate and marker references
 		// For coordinates, create the functions for coordinate reference values
 		int index = 0;
@@ -307,11 +307,13 @@ bool InverseKinematicsTool::run()
 					 }
 				}
 				else if((coordTask->getValueType() == IKCoordinateTask::ManualValue)){
-						coordRef = new CoordinateReference(coordTask->getName(), Constant(coordTask->getValue()));
+                        Constant reference(Constant(coordTask->getValue()));
+						coordRef = new CoordinateReference(coordTask->getName(), reference);
 				}
-				else{ // assume it should be held at its current/default value 
+				else{ // assume it should be held at its current/default value
 					double value = _model->getCoordinateSet().get(coordTask->getName()).getValue(s);
-					coordRef = new CoordinateReference(coordTask->getName(), Constant(value));
+					Constant reference = Constant(value);
+					coordRef = new CoordinateReference(coordTask->getName(), reference);
 				}
 
 				if(coordRef == NULL)
@@ -321,7 +323,7 @@ bool InverseKinematicsTool::run()
 			}
 			else if(IKMarkerTask *markerTask = dynamic_cast<IKMarkerTask *>(&_ikTaskSet[i])){
 				MarkerWeight *markerWeight = new MarkerWeight(markerTask->getName(), markerTask->getWeight());
-				markerWeights.append(markerWeight);		
+				markerWeights.append(markerWeight);
 			}
 		}
 
@@ -342,7 +344,7 @@ bool InverseKinematicsTool::run()
 		s.updTime() = start_time;
 		ikSolver.assemble(s);
 		kinematicsReporter.begin(s);
-		
+
 		const clock_t start = clock();
 		double dt = 1.0/markersReference.getSamplingFrequency();
 		int Nframes = int((final_time-start_time)/dt)+1;

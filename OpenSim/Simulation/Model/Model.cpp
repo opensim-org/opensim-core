@@ -1,26 +1,26 @@
 // Model.cpp
 // Authors: Frank C. Anderson, Peter Loan, Ayman Habib, Ajay Seth
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006, Stanford University. All rights reserved.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
 *     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
+* 	2. The software is not distributed or redistributed.  Software distribution is allowed
 *     only through https://simtk.org/home/opensim.
 * 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
 *      presentations, or documents describing work in which OpenSim or derivatives are used.
 * 	4. Credits to developers may not be removed from executables
 *     created from modifications of the source.
 * 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
+*     conditions and the following disclaimer.
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
 *  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -210,7 +210,7 @@ void Model::updateFromXMLNode()
 			//Get node for SimbodyEngine
 			if (enginesNode != 0){
 				DOMElement* simbodyEngineNode = XMLNode::GetFirstChildElementByTagName(enginesNode,"SimbodyEngine");
-				// Move all Children of simbodyEngineNode to be children of _node 
+				// Move all Children of simbodyEngineNode to be children of _node
 				// we'll keep inserting before enginesNode then remove it;
 				if (simbodyEngineNode!= 0){
 					for(DOMNode *child=simbodyEngineNode->getFirstChild(); child!=NULL;
@@ -242,7 +242,7 @@ void Model::updateFromXMLNode()
 	}
 	// Call base class now assuming _node has been corrected for current version
 	Object::updateFromXMLNode();
-    
+
 	setDefaultProperties();
 }
 //_____________________________________________________________________________
@@ -353,21 +353,21 @@ void Model::setupProperties()
     _propertySet.append(&_contactGeometrySetProp);
 }
 
-SimTK::State& Model::initSystem() 
+SimTK::State& Model::initSystem()
 {
 	// Some validation
 	validateMassProperties();
 	if (getValidationLog().size()>0)
-		cout << "The following Errors/Warnings were encountered while building the model. " << 
+		cout << "The following Errors/Warnings were encountered while building the model. " <<
 		getValidationLog() << endl;
-    
+
 	setup();
 	createSystem();
     getMultibodySystem().realizeTopology();
     SimTK::State& s = getMultibodySystem().updDefaultState();
 
 	// The folllowing line is commented out as it removes all forces that were
-	// added to the system during realizeTopology() 
+	// added to the system during realizeTopology()
     //_matter->setUseEulerAngles(s, true);
 	//getMultibodySystem().realizeModel(s);
 
@@ -380,7 +380,8 @@ SimTK::State& Model::initSystem()
 
 	SimTK::Array_<CoordinateReference> &coordsToTrack = *new SimTK::Array_<CoordinateReference>();
 	for(int i=0; i<getNumCoordinates(); i++){
-		CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), Constant(_coordinateSet[i].getValue(s)));
+	    Constant reference(Constant(_coordinateSet[i].getValue(s)));
+	    CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), reference);
 		coordsToTrack.push_back(*coordRef);
 	}
 
@@ -390,7 +391,7 @@ SimTK::State& Model::initSystem()
 	// Use the assembler to generate the initial pose from Coordinate defualts
 	// that also satisfies the constraints
 	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
-	
+
 	assemble(s);
 
 	return(s);
@@ -417,7 +418,7 @@ void Model::assemble(SimTK::State& s)
 	catch (std::exception ex)    {
 		cout << "Model unable to assemble: " << ex.what() << endl;
 		cout << "Model relaxing constraints and trying again." << endl;
-		
+
 		try{
 			// Try to satisfy with constraints as errors weighted heavily.
 			_assemblySolver->setConstraintWeight(20.0);
@@ -440,7 +441,7 @@ void Model::invalidateSystem()
 //_____________________________________________________________________________
 /**
  * Create the multibody system.
- * 
+ *
  */
 void Model::createSystem()
 {
@@ -455,7 +456,7 @@ void Model::createSystem()
         delete _system;
     }
 
-    // create system 
+    // create system
     _system = new SimTK::MultibodySystem;
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
     _forceSubsystem = new OpenSimForceSubsystem( *_system, this );
@@ -468,12 +469,12 @@ void Model::createSystem()
 
     // Let all the ModelComponents add their parts to the System.
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
-    
+
 	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).createSystem(*_system);
 	for(int i=0;i<getBodySet().getSize();i++) {
 		OpenSim::Body& body = getBodySet().get(i);
 		MobilizedBodyIndex idx(body.getIndex());
-        if (!idx.isValid() && body.getName()!= "ground")   
+        if (!idx.isValid() && body.getName()!= "ground")
 			throw Exception("Body: "+body.getName()+" has no Joint... Model initialization aborted.");
 	}
 
@@ -484,10 +485,10 @@ void Model::createSystem()
     // Add extra constraints for coordinates.
 	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).createSystem(*_system);
 
-    
+
     static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
-   
-	// controllers add their parts to the System. 
+
+	// controllers add their parts to the System.
     static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
 }
 
@@ -495,7 +496,7 @@ void Model::createSystem()
 /**
  * Add a body to the Model.
  */
-void Model::addBody(OpenSim::Body *aBody) 
+void Model::addBody(OpenSim::Body *aBody)
 {
 	updBodySet().append(aBody);
 	updBodySet().setup(*this);
@@ -507,7 +508,7 @@ void Model::addBody(OpenSim::Body *aBody)
 /**
  * Add a constraint to the Model.
  */
-void Model::addConstraint(OpenSim::Constraint *aConstraint) 
+void Model::addConstraint(OpenSim::Constraint *aConstraint)
 {
 	updConstraintSet().append(aConstraint);
 	updConstraintSet().setup(*this);
@@ -517,7 +518,7 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
 /**
  * Add a force to the Model.
  */
-void Model::addForce(OpenSim::Force *aForce) 
+void Model::addForce(OpenSim::Force *aForce)
 {
 	updForceSet().append(aForce);
 	updForceSet().setup(*this);
@@ -527,7 +528,7 @@ void Model::addForce(OpenSim::Force *aForce)
 /**
  * Add a contact geometry to the Model.
  */
-void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry) 
+void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 {
 	updContactGeometrySet().append(aContactGeometry);
 	updContactGeometrySet().setup(*this);
@@ -537,7 +538,7 @@ void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 /**
  * Add a controller to the Model.
  */
-void Model::addController(Controller *aController) 
+void Model::addController(Controller *aController)
 {
 	if (aController ) {
 	   updControllerSet().append(aController);
@@ -616,7 +617,7 @@ void Model::createGroundBodyIfNecessary()
  */
 void Model::cleanup()
 {
-	_forceSet.setSize(0);	
+	_forceSet.setSize(0);
 }
 
 void Model::setDefaultProperties()
@@ -752,9 +753,9 @@ bool Model::setGravity(const SimTK::Vec3& aGrav)
  *
  * @return Number of markers.
  */
-int Model::getNumMarkers() const 
-{ 
-    return _markerSet.getSize(); 
+int Model::getNumMarkers() const
+{
+    return _markerSet.getSize();
 }
 /**
  * Get the number of ContactGeometry objects in the model.
@@ -765,7 +766,7 @@ int Model::getNumContactGeometries() const
 {
 	return _contactGeometrySet.getSize();
 }
-int Model::getNumStates() const 
+int Model::getNumStates() const
 {
     return( _system->getDefaultState().getNY() );
 }
@@ -837,7 +838,7 @@ const Set<Actuator>& Model::getActuators() const
 {
 	return _forceSet.getActuators();
 }
-Set<Actuator>& Model::updActuators() 
+Set<Actuator>& Model::updActuators()
 {
 	return _forceSet.updActuators();
 }
@@ -852,7 +853,7 @@ const Set<Muscle>& Model::getMuscles() const
 {
 	return _forceSet.getMuscles();
 }
-Set<Muscle>& Model::updMuscles() 
+Set<Muscle>& Model::updMuscles()
 {
 	return _forceSet.updMuscles();
 }
@@ -920,7 +921,7 @@ void Model::addAnalysis(Analysis *aAnalysis)
  *
  * @param aAnalysis Pointer to the analysis to remove.
  * If deleteIt is true (default) the Analysis object itself is destroyed
- * else only removed from te list which is the desired behavior when the Analysis 
+ * else only removed from te list which is the desired behavior when the Analysis
  * is created from the GUI.
  */
 void Model::removeAnalysis(Analysis *aAnalysis, bool deleteIt)
@@ -935,7 +936,7 @@ void Model::removeAnalysis(Analysis *aAnalysis, bool deleteIt)
 		_analysisSet.remove(aAnalysis);
 		_analysisSet.setMemoryOwner(saveStatus);
 	}
-	else 
+	else
 		_analysisSet.remove(aAnalysis);
 }
 
@@ -1030,8 +1031,8 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	//    can calculate its post-scale length in the current
 	//    position and then scale the tendon and fiber length
 	//    properties.
-	
-	
+
+
 	if (returnVal)
 	{
 		initSystem();	// This crashes now trying to delete the old matterSubsystem
@@ -1048,7 +1049,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
         }
 
 		// 5. Put the model back in whatever pose it was in.
-		
+
         newState.updY() = savedConfiguration;
 		getSystem().realize( newState, SimTK::Stage::Velocity );
 	}
@@ -1151,9 +1152,9 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 
 //____________________________________________________________________________
 /**
- * get pointer to MultibodySystem 
+ * get pointer to MultibodySystem
  *
- * @param state SimTK::State 
+ * @param state SimTK::State
  */
 SimTK::MultibodySystem& Model::
 getSystem()  const {
@@ -1172,7 +1173,7 @@ getSystem()  const {
 void Model::applyDefaultConfiguration(SimTK::State& s)
 {
 	int i;
-	
+
 	// Coordinates
 	int ncoords = getCoordinateSet().getSize();
 
@@ -1332,7 +1333,7 @@ int Model::deleteUnusedMarkers(const OpenSim::Array<string>& aMarkerNames)
 
 /**
  ** Get a flat list of Joints contained in the model
- ** 
+ **
  **/
 JointSet& Model::updJointSet()
 {
@@ -1381,8 +1382,8 @@ void Model::setAllControllersEnabled( bool enabled ) {
 }
 /**
  * Model::formStateStorage is intended to take any storage and populate stateStorage.
- * stateStorage is supposed to be a Storage with labels identical to those obtained by calling 
- * Model::getStateNames(). Columns/entries found in the "originalStorage" are copied to the 
+ * stateStorage is supposed to be a Storage with labels identical to those obtained by calling
+ * Model::getStateNames(). Columns/entries found in the "originalStorage" are copied to the
  * output statesStorage. Entries not found are populated with 0s.
  */
 void Model::formStateStorage(const Storage& originalStorage, Storage& statesStorage)
@@ -1399,11 +1400,11 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 	int* mapColumns = new int[rStateNames.getSize()];
 	for(int i=0; i< rStateNames.getSize(); i++){
 		// the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
-		mapColumns[i] = originalStorage.getColumnLabels().findIndex(rStateNames[i]); 
+		mapColumns[i] = originalStorage.getColumnLabels().findIndex(rStateNames[i]);
 		if (mapColumns[i]==-1)
 			cout << "Column "<< rStateNames[i] << " not found in formStateStorage, assuming 0." << endl;
 	}
-	// Now cycle thru and shuffle each 
+	// Now cycle thru and shuffle each
 
 	for (int row =0; row< originalStorage.getSize(); row++){
 		StateVector* originalVec = originalStorage.getStateVector(row);
@@ -1415,7 +1416,7 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 				originalVec->getDataValue(mapColumns[column]-1, valueInOriginalStorage);
 
 			stateVec->setDataValue(column, valueInOriginalStorage);
-			
+
 		}
 		statesStorage.append(*stateVec);
 	}
@@ -1426,8 +1427,8 @@ void Model::formStateStorage(const Storage& originalStorage, Storage& statesStor
 
 /**
  * Model::formStateStorage is intended to take any storage and populate qStorage.
- * stateStorage is supposed to be a Storage with labels identical to those obtained by calling 
- * Model::getStateNames(). Columns/entries found in the "originalStorage" are copied to the 
+ * stateStorage is supposed to be a Storage with labels identical to those obtained by calling
+ * Model::getStateNames(). Columns/entries found in the "originalStorage" are copied to the
  * output qStorage. Entries not found are populated with 0s.
  */
 void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
@@ -1440,13 +1441,13 @@ void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
 	int* mapColumns = new int[qNames.getSize()];
 	for(int i=0; i< nq; i++){
 		// the index is -1 if not found, >=1 otherwise since time has index 0 by defn.
-		mapColumns[i] = originalStorage.getColumnLabels().findIndex(qNames[i]); 
+		mapColumns[i] = originalStorage.getColumnLabels().findIndex(qNames[i]);
 		if (mapColumns[i]==-1)
 			cout << "\n Column "<< qNames[i] << " not found in formQStorage, assuming 0.\n" << endl;
 	}
 
 
-	// Now cycle thru and shuffle each 
+	// Now cycle thru and shuffle each
 	for (int row =0; row< originalStorage.getSize(); row++){
 		StateVector* originalVec = originalStorage.getStateVector(row);
 		StateVector* stateVec = new StateVector(originalVec->getTime());
@@ -1496,10 +1497,10 @@ void Model::overrideAllActuators( SimTK::State& s, bool flag) {
  * If not true, then the values are forced to satisfy the inequality and a warning is issued.
  * It is assumed that mass properties are all set already
  *
- * 
+ *
  */
 
-void Model::validateMassProperties(bool fixMassProperties) 
+void Model::validateMassProperties(bool fixMassProperties)
 {
 	for (int i=0; i < _bodySet.getSize(); i++){
 		bool valid = true;
@@ -1509,7 +1510,7 @@ void Model::validateMassProperties(bool fixMassProperties)
 		String msg = "";
 		try {
 			b.getInertia(inertiaMat);
-			SimTK::Inertia_<SimTK::Real>(inertiaMat[0][0], inertiaMat[1][1], inertiaMat[2][2], 
+			SimTK::Inertia_<SimTK::Real>(inertiaMat[0][0], inertiaMat[1][1], inertiaMat[2][2],
 				inertiaMat[0][1], inertiaMat[1][2], inertiaMat[0][2]);
 		}
 		catch(SimTK::Exception::Base& ex){
@@ -1532,5 +1533,5 @@ void Model::validateMassProperties(bool fixMassProperties)
 			}
 		}
 	}
-	
+
 }
