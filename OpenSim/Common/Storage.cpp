@@ -250,7 +250,7 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
  *
  * @return Pointer to a copy of this object.
  */
-StorageInterface* Storage::
+Object* Storage::
 copy() const
 {
 	Storage *store = new Storage(*this);
@@ -2998,7 +2998,7 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
 
 	double theDiff = SimTK::NaN;
 
-	if ((thisColumnIndex==-1)||(otherColumnIndex==-1))
+	if ((thisColumnIndex==-2)||(otherColumnIndex==-2))// not found is now -2 since we subtracted 1 already
 		return theDiff;
 
 	// Now we have two columnNumbers. get the data and coompare

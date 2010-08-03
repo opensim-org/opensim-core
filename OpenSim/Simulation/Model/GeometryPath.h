@@ -178,6 +178,7 @@ public:
 
 	virtual void setup(Model& aModel);
 	virtual void initState(SimTK::State& s) const;
+	virtual int getNumStateVariables() const { return 0;};
 
 protected:
 

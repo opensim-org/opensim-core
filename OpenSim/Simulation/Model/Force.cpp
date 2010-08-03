@@ -146,26 +146,6 @@ void Force::setup(Model& model)
 	ModelComponent::setup(model);
 }
 
-int Force::getNumStateVariables() const
-{
-    return 0;
-}
-
-std::string Force::getStateVariableName(int index) const
-{
-    throw Exception("This force has no state variables");
-}
-
-double Force::getStateVariable(const SimTK::State& state, int index) const
-{
-    throw Exception("This force has no state variables");
-}
-
-void Force::setStateVariable(SimTK::State& state, int index, double value) const
-{
-    throw Exception("This force has no state variables");
-}
-
 //_____________________________________________________________________________
 /**
  * Set whether or not this Force is disabled.

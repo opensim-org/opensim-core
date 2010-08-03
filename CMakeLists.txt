@@ -19,9 +19,7 @@ SET(BUILD_UTILITIES OFF CACHE BOOL "Build rarely used tools (primarily to handle
 SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 
 SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Set to '' to use stock SimTK libraries.")
-IF (SimTK_SDK AND WIN32)
-	SET(NameSpace "")	## No renamed SimTK libraries for nightly build on Trunk.
-ENDIF (SimTK_SDK AND WIN32)
+#MARK_AS_ADVANCED(NameSpace)
 MARK_AS_ADVANCED(NameSpace)
 
 # Uncomment to make the linux Makefiles print the compile/link commands they are executing
@@ -65,9 +63,14 @@ ELSE(WIN32)
 	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
 	  SET(ARCH "Mac")
+	  SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
+      SET( LIB64  )
 	  SET(SHARED_LIB_EXT ".dylib")
+	  SET(ATLAS_LIB "libSimTKAtlas")
 	ELSE(APPLE)
 	  SET(ARCH "Linux")
+	  SET( CMAKE_CXX_FLAGS "-m32" )
+	  SET(ATLAS_LIB "libSimTKAtlas_Lin_generic")
 	ENDIF(APPLE)
 ENDIF(WIN32)
 
@@ -90,7 +93,7 @@ IF(WIN32)
 	SET(CMAKE_INSTALL_PREFIX "c:/Program Files/OpenSimTK" CACHE PATH "Install location to place headers and libraries")
 	SET(SIMTK_DIR "c:/Program Files/SimTK/" CACHE PATH "Top-level directory of SimTK install")
 ELSE(WIN32)
-	SET(CMAKE_INSTALL_PREFIX "/usr/local/OpenSim")
+	SET(CMAKE_INSTALL_PREFIX ${SimTK_INSTALL_PREFIX} CACHE PATH "Install location to place headers and libraries")
 	SET(SIMTK_DIR "/usr/local/SimTK" CACHE PATH "Top-level directory of SimTK install")
 ENDIF(WIN32)
 
@@ -103,7 +106,16 @@ ELSE(USE_LIBRARIES_FROM_REPOSITORY)
 	SET(SIMTK_LIB_DIR ${SIMTK_DIR}/lib)	
 ENDIF(USE_LIBRARIES_FROM_REPOSITORY)
 
-INSTALL(DIRECTORY ${SIMTK_INCLUDE_DIR} DESTINATION sdk/include/SimTK PATTERN ".svn" EXCLUDE)
+INSTALL(DIRECTORY ${SIMTK_INCLUDE_DIR} DESTINATION sdk/include/SimTK 
+			PATTERN ".svn" EXCLUDE
+			PATTERN "Win32" EXCLUDE)
+
+IF(WIN32 AND USE_LIBRARIES_FROM_REPOSITORY)
+INSTALL(FILES ${SIMTK_INCLUDE_DIR}/Win32/pthread.h DESTINATION sdk/include/SimTK/include)
+INSTALL(FILES ${SIMTK_INCLUDE_DIR}/Win32/sched.h DESTINATION sdk/include/SimTK/include)
+INSTALL(FILES ${SIMTK_INCLUDE_DIR}/Win32/semaphore.h DESTINATION sdk/include/SimTK/include)
+MESSAGE(STATUS ${SIMTK_INCLUDE_DIR}/Win32)
+ENDIF(WIN32 AND USE_LIBRARIES_FROM_REPOSITORY)
 
 SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on simtk.org)")
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
@@ -243,7 +255,7 @@ SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
 SET(CPACK_PACKAGE_VERSION_MAJOR "2")
 SET(CPACK_PACKAGE_VERSION_MINOR "1")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "0_b2")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make

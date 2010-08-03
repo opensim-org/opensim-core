@@ -592,6 +592,8 @@ void Muscle::computeForce(const SimTK::State& s,
 	for (int i=0; i < PFDs.getSize(); i++) {
 		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), muscleForce*PFDs[i]->direction(), bodyForces);
 	}
+	for(int i=0; i < PFDs.getSize(); i++)
+		delete PFDs[i];
 }
 
 //_____________________________________________________________________________

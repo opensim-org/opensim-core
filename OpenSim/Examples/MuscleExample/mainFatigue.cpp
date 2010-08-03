@@ -203,6 +203,13 @@ int main()
 		// Add the control set controller to the model
 		osimModel.addController(muscleController);
 
+		// Define the initial states for the two muscles
+		// Activation
+		muscle1->setDefaultActivation(initialControl[0]);
+		muscle2->setDefaultActivation(initialControl[1]);
+		// Fiber length
+		muscle2->setDefaultFiberLength(0.1);
+		muscle1->setDefaultFiberLength(0.1);
 		//////////////////////////
 		// PERFORM A SIMULATION //
 		//////////////////////////
@@ -222,16 +229,9 @@ int main()
 		coordinates[1].setLocked(si, true);
 		coordinates[2].setLocked(si, true);
 
-		// Define the initial states for the two muscles
-		// Activation
-		muscle1->setDefaultActivation(initialControl[0]);
-		muscle2->setDefaultActivation(initialControl[1]);
-		// Fiber length
-		muscle2->setDefaultFiberLength(0.1);
-		muscle1->setDefaultFiberLength(0.1);
 		// Initialize the muscle state
-		muscle1->initState(si);
-		muscle2->initState(si);
+		//muscle1->initState(si);
+		//muscle2->initState(si);
 
 		// Compute initial conditions for muscles
 		osimModel.computeEquilibriumForAuxiliaryStates(si);

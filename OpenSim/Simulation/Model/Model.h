@@ -185,6 +185,12 @@ private:
 	/*** Private place to save some deserializtion/error checking info in case needed later */
 	std::string _validationLog;
 
+	/** A Flat list of ModelComponents contained by the model */
+	ArrayPtrs<const ModelComponent> _modelComponents;
+
+private:
+	OpenSim::Array<std::string>	_stateNames;
+	OpenSim::Array<int>			_stateYIndices;
 
 //=============================================================================
 // METHODS
@@ -315,6 +321,7 @@ public:
     const SimTK::GeneralForceSubsystem& getUserForceSubsystem() const {return *_userForceElements; }
     SimTK::GeneralForceSubsystem& updUserForceSubsystem() {return *_userForceElements; }
 
+	virtual int getNumStateVariables() const;
 
 protected:
 #ifndef SWIG
@@ -334,7 +341,6 @@ protected:
 
     virtual void initState(SimTK::State& state) const;
 	void createGroundBodyIfNecessary();
-
 private:
 
 	/** Set the values of all data members to an appropriate "null" value. */
@@ -358,6 +364,9 @@ public:
 	virtual void addConstraint(Constraint *aConstraint);
 	virtual void addForce(Force *aForce);
 	virtual void addContactGeometry(ContactGeometry *aContactGeometry);
+	void addModelComponent(const ModelComponent* aComponent) {
+		_modelComponents.append(aComponent);
+	}
 
 	//--------------------------------------------------------------------------
 	// FILE NAME
@@ -479,7 +488,7 @@ public:
 	 *
 	 * @return Number of states.
 	 */
-	virtual int getNumStates() const;
+	virtual int getNumStates(bool includeSimTKStates=false) const;
 
 	/**
 	 * Get the number of controls in the model.
@@ -599,11 +608,30 @@ public:
 	//--------------------------------------------------------------------------
 
 	/**
-	 * Get the names of the states.
+	 * Get the names of the states. These are the continuous states introduced by OpenSim
+	 * ModelComponents and exposed thru the ModelComponent API. Other internal SimTK states
+	 * may exist, but we have no way to name them or access them otherwise..
 	 *
 	 * @param rStateNames Array of state names..
 	 */
-	virtual void getStateNames(Array<std::string> &rStateNames) const;
+	virtual void getStateNames(Array<std::string> &rStateNames, bool includeInternalStates=false) const;
+	
+	/**
+	 * Get the values of state variables in the same ordering as getStateNames. values are
+	 * dug out from the passed in State object based on pre-stored Yindices
+	 *
+	 * @param const SimTK::State& s state to be queried..
+	 * @param rStatValues Array of state values..
+	 */
+	virtual void getStateValues(const SimTK::State& s, Array<double> &rStateValues) const;
+	/**
+	 * Set the values of state variables (passed in the same ordering as getStateNames). values are
+	 * set on the passed in State object based on pre-stored Yindices
+	 *
+	 * @param const SimTK::State& s state to be queried..
+	 * @param aStatValues Array of state values to be set on s..
+	 */	
+	virtual void setStateValues(SimTK::State& s, double *aStateValues) const;
 
     int getNumMuscleStates() const;
 

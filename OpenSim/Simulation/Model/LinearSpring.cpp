@@ -69,6 +69,7 @@ LinearSpring::LinearSpring(const Body &aBody, double startTime, double endTime) 
 {
 	setNull();
 	setType("LinearSpring");
+	_model = const_cast<OpenSim::Model *>(&aBody.getModel());
 }
 
 //_____________________________________________________________________________

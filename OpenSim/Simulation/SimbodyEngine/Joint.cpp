@@ -191,6 +191,7 @@ void Joint::setupProperties()
 	_propertySet.append(&_orientationProp);
 
 	// Generalized coordinates
+	_coordinateSetProp.setName("CoordinateSet");
 	_coordinateSetProp.setComment("Generalized coordinates parameterizing this joint.");
 	_propertySet.append(&_coordinateSetProp);
 

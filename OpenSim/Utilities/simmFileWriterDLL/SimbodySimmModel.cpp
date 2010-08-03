@@ -609,19 +609,19 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 				ta->getAxis(axis);
 				for (int j=0; j<3; j++) {
 					if (EQUAL_WITHIN_ERROR(axis[j], 1.0)) {
-						if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if if has no coordinate names
-							if (translationsUsed[i]) // this translation component already defined
+						if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if it has no coordinate names
+							if (translationsUsed[i-3]) // this translation component already defined
 								return true;
 							if (translationsDone) // have already defined translations then rotation (can't add more translations)
 								return true;
-							translationsUsed[i] = true;
+							translationsUsed[i-3] = true;
 							numTranslations++;
 						}
 						break;
 					}
 				}
 			} else {
-				if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if if has no coordinate names
+				if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if it has no coordinate names
 					if (numRotations >= 3) // have already defined three rotations (can't add more)
 						return true;
 					numRotations++;

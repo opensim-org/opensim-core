@@ -91,7 +91,7 @@ public:
 	virtual double getTaskError(const SimTK::State& s) {
 		if (_stateIndex==-1){
 			Array<std::string> stateNames;
-			_model->getStateNames(stateNames);
+			_model->getStateNames(stateNames, true);	// Since we'll use YIndex we need to account for internal SimTK states too
 			_stateIndex = stateNames.findIndex(getName());
 		}
 		// map State name to Y index
@@ -102,6 +102,7 @@ public:
 			//	std::cout<< _pTrk[0]->calcValue(SimTK::Vector(1,t));
 			return (_pTrk[0]->calcValue(SimTK::Vector(1,time))-s.getY()[_stateIndex]);
 		}
+		throw Exception("StateTrackingTask::getTaskError(): State name not found"+getName());
 		return(0.);
 	}
 	/**
@@ -126,7 +127,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 private:
-	int _stateIndex;	// Index of state being tracked in _model, -1 if not found
+	int _stateIndex;	// YIndex of state being tracked in _model, -1 if not found
 //=============================================================================
 };	// END of class StateTrackingTask
 //=============================================================================

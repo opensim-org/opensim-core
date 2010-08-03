@@ -939,7 +939,9 @@ const Manager& ForwardTool::getManager() const {
 
 			}
 		}
+		else
+			AbstractTool::updateFromXMLNode();
 	}
 	else
-		Object::updateFromXMLNode();
+		AbstractTool::updateFromXMLNode();
 }

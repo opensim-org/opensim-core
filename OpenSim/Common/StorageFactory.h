@@ -51,7 +51,7 @@
 namespace OpenSim { 
 
 abstract class StorageCreator {
-	virtual StorageInterface* createStorage()=0;
+	virtual StorageInterface* createStorage(std::string& fileNameWithExtension)=0;
 	virtual ~StorageCreator() {}
 };
 typedef std::map<std::string, OpenSim::StorageCreator*, std::less<std::string> > mapExtensionsToCreators;
@@ -75,7 +75,7 @@ public:
 	//--------------------------------------------------------------------------
 	// SIZE
 	virtual StorageInterface* createStorage(std::string& fileNameWithExtension){
-		std::string& extension = IO::ExtractFileExtension(fileNameWithExtension);
+		std::string extension = fileNameWithExtension.substr(fileNameWithExtension. find_last_of("."));
 		mapExtensionsToCreators::const_iterator find_Iter = _mapExtensionsToCreators.find(extension);
 		Object* newObj=0;
 		if (find_Iter != _mapExtensionsToCreators.end()){
@@ -85,7 +85,7 @@ public:
 		throw Exception("Don't know how to handle extension "+extension+" in StorageFactory");
 	}
 	static void registerStorageCreator(std::string& ext, StorageCreator* newCreator) {
-		_mapExtensionsToCreators.put(ext, newCreator);
+		_mapExtensionsToCreators[ext]= newCreator;
 	};  
 //=============================================================================
 };	// END of class StorageFactory

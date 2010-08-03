@@ -16,7 +16,7 @@ FILE(GLOB INCLUDE_FILES *.h)
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 2.0/" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 2.1/" CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
 

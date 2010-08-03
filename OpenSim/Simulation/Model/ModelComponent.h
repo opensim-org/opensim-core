@@ -2,7 +2,7 @@
 #define __ModelComponent_h__
 
 // ModelComponent.h
-// Authors: Peter Eastman, Ajay Seth
+// Authors: Peter Eastman, Ajay Seth, Ayman Habib
 /*
  * Copyright (c) 2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -50,6 +50,7 @@ class OSIMSIMULATION_API ModelComponent : public Object
 {
 protected:
 	Model* _model;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -69,6 +70,57 @@ public:
      * Get a modifiable reference to the Model this object is part of.
      */
     Model& updModel();
+	/**
+     * Gets the number of "Continuous" state variables maintained by the ModelComponent
+     * If the ModelComponent defines any that are of interest to the user, names should also be given
+	 */
+    virtual int getNumStateVariables() const = 0;
+
+    /**
+     * Get the name of a state variable allocated by this ModelComponent.  The default implementation
+     * throws an exception, so subclasses that allocate state variables must override it.
+     *
+     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     */
+	virtual std::string ModelComponent::getStateVariableName(int index) const
+	{
+		throw Exception("This ModelComponent has no state variables");
+	}
+    /**
+     * Get the YIndex of a state variable allocated by this ModelComponent.  The default implementation
+     * throws an exception, so subclasses that allocate state variables must override it.
+     *
+     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     */
+	virtual int ModelComponent::getStateVariableYIndex(int index) const
+	{
+		throw Exception("This ModelComponent has no state variables");
+	}
+
+    /**
+     * Get the value of a state variable allocated by this ModelComponent.  The default implementation
+     * throws an exception, so subclasses that allocate state variables must override it.
+     *
+     * @param state   the State for which to get the value
+     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     */
+	virtual double ModelComponent::getStateVariable(const SimTK::State& state, int index) const
+	{
+		throw Exception("This ModelComponent has no state variables");
+	}
+    /**
+     * Set the value of a state variable allocated by this ModelComponent.  The default implementation
+     * throws an exception, so subclasses that allocate state variables must override it.
+     *
+     * @param state   the State for which to set the value
+     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     * @param value   the value to set
+     */
+	void ModelComponent::setStateVariable(SimTK::State& state, int index, double value) const
+	{
+		throw Exception("This ModelComponent has no state variables");
+	}
+
 protected:
     /**
      * This is called after the Model has been constructed from an XML file.  
@@ -103,6 +155,7 @@ protected:
      * @param state    the State from which to take values that should become the defaults for this object
      */
     virtual void setDefaultsFromState(const SimTK::State& state) = 0;
+
 
 //=============================================================================
 };	// END of class ModelComponent

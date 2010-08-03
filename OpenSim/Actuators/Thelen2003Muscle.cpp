@@ -974,16 +974,16 @@ double Thelen2003Muscle::calcActiveForce(const SimTK::State& s, double aNormFibe
  */
 double Thelen2003Muscle::calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const
 {
-   double epsilon=1.e-6;
+	double epsilon=1.e-6;
 
-   // Don't allow zero activation
+	// Don't allow zero activation
 	if (aActivation<epsilon) 
 		aActivation=epsilon;
 
 	double Fa = aActivation*aActiveForce;
 	double Fv = aVelocityDependentForce;
 
-   double norm_fiber_velocity;
+	double norm_fiber_velocity;
 	if (Fv<Fa) {		// Muscle shortening
 		if (Fv<0) {	// Extend the force-velocity curve for negative forces using linear extrapolation
 			double F0=0;
@@ -1005,17 +1005,17 @@ double Thelen2003Muscle::calcFiberVelocity(const SimTK::State& s, double aActiva
 		norm_fiber_velocity = (Fv-Fa)/(b+_damping);
 	}
 	else {  // Extend the force-velocity curve for forces that exceed maximum using linear extrapolation
-			double F0=.95*Fa*_flen;
-			double b=(2+2./_af)*(Fa*_flen-F0)/(_flen-1.);
-        	double fv0 = (F0-Fa)/(b+_damping);
-			double F1=(.95+epsilon)*Fa*_flen;
-			b=(2+2./_af)*(Fa*_flen-F1)/(_flen-1.);
-        	double fv1 = (F1-Fa)/(b+_damping);
-			b = (fv1-fv0)/(F1-F0);
-        	norm_fiber_velocity = fv0 + b*(Fv-F0);
-    }
+		double F0=.95*Fa*_flen;
+		double b=(2+2./_af)*(Fa*_flen-F0)/(_flen-1.);
+		double fv0 = (F0-Fa)/(b+_damping);
+		double F1=(.95+epsilon)*Fa*_flen;
+		b=(2+2./_af)*(Fa*_flen-F1)/(_flen-1.);
+		double fv1 = (F1-Fa)/(b+_damping);
+		b = (fv1-fv0)/(F1-F0);
+		norm_fiber_velocity = fv0 + b*(Fv-F0);
+	}
 
-    return norm_fiber_velocity;
+	return norm_fiber_velocity;
 }
 //_____________________________________________________________________________
 /**
@@ -1253,4 +1253,14 @@ computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aAct
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 	
 	return isometricForce * normalizedForceVelocity;
+}
+
+int Thelen2003Muscle::getStateVariableYIndex(int index) const
+{
+	if (index==0)
+		return _model->getSystem().getDefaultState().getZStart()+_zIndex;
+	if (index ==1)
+		return _model->getSystem().getDefaultState().getZStart()+_zIndex+1;
+	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
+
 }

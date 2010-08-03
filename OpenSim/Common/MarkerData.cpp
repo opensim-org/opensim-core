@@ -367,7 +367,7 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
     * coordinate labels. This is done because the first frame is read incorrectly
     * in certain cases.
 	 */
-   long pos = aStream.tellg();
+   /////long pos = aStream.tellg();
    /* read line 5 - coordinate labels (X1 Y1 Z1 X2 Y2 Z2 ...) */
    getline(aStream, line);
 
@@ -375,21 +375,21 @@ void MarkerData::readTRCFileHeader(ifstream &aStream, const string& aFileName, M
     * frame of data.  Read the line of code - if there is a blank line of code,
     * read the next line which will contain the data.
     */
-   getline(aStream, line);
-   if (line.empty())
-      getline(aStream, line);
+   /////getline(aStream, line);
+   /////if (line.empty())
+      /////getline(aStream, line);
 
-   if (!readIntegerFromString(line, &aSMD._firstFrameNumber))
+   /////if (!readIntegerFromString(line, &aSMD._firstFrameNumber))
       aSMD._firstFrameNumber = 1;
 
    /* reposition the pointer into the file so it points to before the coordinate
     * labels */
-   aStream.seekg(pos, ios::beg);
+   /////aStream.seekg(pos, ios::beg);
 
    /* reread the coordinate labels so pointer into file points to data */
-   getline(aStream, line);
-   if (line.empty())
-      getline(aStream, line);
+   /////getline(aStream, line);
+   /////if (line.empty())
+      /////getline(aStream, line);
 }
 
 //_____________________________________________________________________________
@@ -735,6 +735,8 @@ void MarkerData::makeRdStorage(Storage& rStorage)
 void MarkerData::convertToUnits(const Units& aUnits)
 {
 	double scaleFactor = _units.convertTo(aUnits);
+
+	if (fabs(scaleFactor-1.0)<SimTK::Eps) return;
 
 	if (!SimTK::isNaN(scaleFactor))
 	{

@@ -938,6 +938,7 @@ bool CMCTool::run()
     cmcActSubsystem.setCompleteState( s );
 
 	// Set output file names so that files are flushed regularly in case we fail
+	IO::makeDir(getResultsDir());	// Create directory for output in case it doesn't exist
 	manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
 	manager.integrate(s);
 	time(&finishTime);

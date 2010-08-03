@@ -188,7 +188,7 @@ void Coordinate::copyData(const Coordinate &aCoordinate)
 	_locked = aCoordinate._locked;
 	_isPrescribed = aCoordinate._isPrescribed;
 	_prescribedFunction = (Function*)Object::SafeCopy(aCoordinate._prescribedFunction);
-	_model = aCoordinate._model;
+	_model = NULL;
 	_motionType = aCoordinate._motionType;
 	_motionTypeName = aCoordinate._motionTypeName;
 }
@@ -209,6 +209,8 @@ void Coordinate::setNull(void)
 	_motionType = Rotational;
 
 	_lockedWarningGiven=false;
+
+	_qIndex = -1;
 }
 
 //_____________________________________________________________________________
@@ -266,7 +268,7 @@ void Coordinate::createSystem(SimTK::MultibodySystem& system) const
 	// Beyond the const Component get the index so we can access the SimTK::Constraint later
 	Coordinate* mutableThis = const_cast<Coordinate *>(this);
 	mutableThis->_lockedConstraintIndex = lock->getConstraintIndex();
-
+	mutableThis->_model->addModelComponent(this);
 			
 	SimTK::Constraint *prescribe = NULL;
 	if(_prescribedFunction != NULL){
@@ -820,3 +822,22 @@ bool Coordinate::getClamped(const SimTK::State& s) const
 //=============================================================================
 //_____________________________________________________________________________
 
+std::string Coordinate::getStateVariableName(int index) const
+{
+	if (index==0)
+		return _name;
+	if (index==1)
+		return getSpeedName();
+	throw Exception("Trying to get Coordinate State variable name for Coorindate "+getName()+" at undefined index"); 
+}
+int Coordinate::getStateVariableYIndex(int index) const
+{
+	const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
+	int startQIndex = mb.getFirstQIndex(_model->getSystem().getDefaultState());
+	if (index==0)
+		return (_model->getSystem().getDefaultState().getQStart()+startQIndex+_mobilityIndex);
+	if (index ==1)
+		return (_model->getSystem().getDefaultState().getUStart()+startQIndex+_mobilityIndex);
+	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
+
+}

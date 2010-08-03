@@ -773,7 +773,11 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
         tReal = s.getTime();
         if( _writeToStorage ) {
-            getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
+			OpenSim::Array<double> stateValues;
+			_model->getStateValues(s, stateValues);
+			StateVector vec;
+			vec.setStates(tReal, stateValues.getSize(), &stateValues[0]);
+            getStateStorage().append(vec);
 			if(_model->isControlled())
 				_controllerSet->storeControls(s,step);
          }
@@ -799,7 +803,11 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             if(_performAnalyses)_model->updAnalysisSet().step(s,step);
             tReal = s.getTime();
             if( _writeToStorage) {
-                getStateStorage().append(tReal, s.getNY(), &(s.getY()[0]) );
+				OpenSim::Array<double> stateValues;
+				_model->getStateValues(s, stateValues);
+				StateVector vec;
+				vec.setStates(tReal, stateValues.getSize(), &stateValues[0]);
+				getStateStorage().append(vec);
 				if(_model->isControlled())
 					_controllerSet->storeControls(s, step);
             }

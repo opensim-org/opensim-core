@@ -80,8 +80,9 @@ public:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
 	PropertyTransform& operator=(const PropertyTransform &aProperty);
-
+#endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
@@ -91,7 +92,9 @@ public:
 	// VALUE
 	virtual void setValue(const SimTK::Transform &aTransform);
 	virtual SimTK::Transform& getValueTransform();
+#ifndef SWIG
 	virtual const SimTK::Transform& getValueTransform() const;
+#endif
 	virtual void setValue(int aSize,const double aArray[]);
 	void getRotationsAndTranslationsAsArray6(double aArray[]) const;
 	// VALUE as String

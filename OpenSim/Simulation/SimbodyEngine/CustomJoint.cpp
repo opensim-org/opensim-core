@@ -284,13 +284,17 @@ void CustomJoint::constructCoordinates()
 		int coordIndex = savedCoordinates.getIndex(coordName);
 		if (coordIndex!=-1){
 			Coordinate& origCoord = savedCoordinates.get(coordIndex);
+			coord->setDefaultValue(origCoord.getDefaultValue());
+			coord->setDefaultSpeedValue(origCoord.getDefaultSpeedValue());
+			coord->setInitialValue(origCoord.getInitialValue());
 			coord->setRangeMin(origCoord.getRangeMin());
 			coord->setRangeMax(origCoord.getRangeMax());
 			coord->setMotionType(origCoord.getMotionType());
 			coord->setDefaultClamped(origCoord.getDefaultClamped());
 			coord->setDefaultLocked(origCoord.getDefaultLocked());
-			coord->setDefaultValue(origCoord.getDefaultValue());
-			coord->setInitialValue(origCoord.getInitialValue());
+			coord->setDefaultIsPrescribed(origCoord.getDefaultIsPrescribed());
+			if (origCoord.getPrescribedFunction()!=NULL)
+				coord->setPrescribedFunction(*origCoord.getPrescribedFunction());
 		}
 		_coordinateSet.append(coord);
 	}

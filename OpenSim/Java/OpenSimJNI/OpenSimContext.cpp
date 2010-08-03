@@ -33,23 +33,21 @@ OpenSimContext::OpenSimContext( SimTK::State* s, Model* model ) :
 
 // States
 void OpenSimContext::setStates( Array<double>&  states) {
-        SimTK::Vector& y = _configState->updY(); 
-        for(int i=0;i<_configState->getNY();i++ ) {
-             y[i] = states[i];
-	    }
+		_model->setStateValues(*_configState, &states[0]);
 }
 void OpenSimContext::setStates( double* statesBuffer) {
-        _configState->updY() = SimTK::Vector(_configState->getNY(), statesBuffer);
-}
+	_model->setStateValues(*_configState, statesBuffer);
+ }
 
 void OpenSimContext::computeConstrainedCoordinates( double* statesBuffer) {
 //        _model->getSimbodyEngine().computeConstrainedCoordinates(*_configState, statesBuffer );
 }
 
 void OpenSimContext::getStates( double* statesBuffer) {
-        SimTK::Vector& y = _configState->updY(); 
+        Array<double> rStateValues; 
+		_model->getStateValues(*_configState, rStateValues);
 		//string statedump= _configState->toString();
-        for(int i=0;i<_configState->getNY();i++ ) *(statesBuffer+i) = y[i];
+        for(int i=0;i<_model->getNumStates();i++ ) *(statesBuffer+i) = rStateValues[i];
 }
 
 // Transforms

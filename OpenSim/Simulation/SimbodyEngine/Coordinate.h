@@ -138,6 +138,7 @@ protected:
 	/** Simbody joint that owns this coordinate. */
 	Joint const *_joint;
 
+	int _qIndex;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -225,6 +226,9 @@ public:
 	int getMobilityIndex() const { return _mobilityIndex; };
 	SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
 
+	virtual std::string getStateVariableName(int index) const;
+	virtual int getStateVariableYIndex(int index) const;
+
 	OPENSIM_DECLARE_DERIVED(Coordinate, Object); 
 
 protected:
@@ -232,6 +236,7 @@ protected:
     virtual void createSystem(SimTK::MultibodySystem& system) const;
     virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
+	virtual int getNumStateVariables() const { return 2; };	// For value and Speed
 
 private:
 	void setNull();

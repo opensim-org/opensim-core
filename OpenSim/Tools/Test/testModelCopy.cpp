@@ -73,6 +73,6 @@ int main()
 	LoadOpenSimLibrary("osimActuators");
 	testCopyModel("arm26.osim");
 	testCopyModel("snowboard.osim");
-
+	testCopyModel("Neck3dof_point_constraint.osim");
 	return 0;
 }

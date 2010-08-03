@@ -84,16 +84,6 @@ protected:
 
 private:
 	OpenSim::Body *_body;
-	Function* _forceX;
-	Function* _forceY;
-	Function* _forceZ;
-	Function* _pointX;
-	Function* _pointY;
-	Function* _pointZ;
-	Function* _torqueX;
-	Function* _torqueY;
-	Function* _torqueZ;
-	Array<NaturalCubicSpline> splines;
 
 //=============================================================================
 // METHODS

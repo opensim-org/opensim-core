@@ -317,9 +317,9 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
 	if(aQStore.getSize() != aUStore.getSize())
 		throw Exception("AnalyzeTool.initializeFromFiles: ERROR- The coordinates storage and speeds storage should have the same number of rows, but do not.",__FILE__,__LINE__);
 
-	Array<string> stateNames;
-	stateNames.append("time");
+	Array<string> stateNames("");
 	aModel.getStateNames(stateNames);
+	stateNames.insert(0, "time");
 
 	Storage *statesStore = new Storage(512,"states");
 	statesStore->setColumnLabels(stateNames);

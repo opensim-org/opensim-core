@@ -31,7 +31,6 @@
 #include <OpenSim/version.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/VisibleProperties.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/ScaleTool.h>

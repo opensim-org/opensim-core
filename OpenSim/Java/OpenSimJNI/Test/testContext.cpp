@@ -75,6 +75,8 @@ int main()
 
 	Model *model = new Model("arm26_20.osim");
 	OpenSimContext* context = new OpenSimContext(&model->initSystem(), model);
+	Array<std::string> stateNames;
+	model->getStateNames(stateNames);
 	OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
 	Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
 	assert(dTRIlong);

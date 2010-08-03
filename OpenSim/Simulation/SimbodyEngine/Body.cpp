@@ -324,6 +324,7 @@ void Body::createSystem(SimTK::MultibodySystem& system) const
 		Body * mutableThis = const_cast<Body *>(this);
 		mutableThis->_index = SimTK::GroundIndex;
 	}
+
 }
 
 //=============================================================================

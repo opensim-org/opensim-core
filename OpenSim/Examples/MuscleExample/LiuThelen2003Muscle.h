@@ -171,6 +171,8 @@ public:
 	// This macro allows the OpenSim GUI to check Actuator
 	// objects to see if they are instances of this muscle class.
 	OPENSIM_DECLARE_DERIVED(LiuThelen2003Muscle, Actuator);
+	
+	virtual int getStateVariableYIndex(int index) const;
 
 private:
 	void setNull();

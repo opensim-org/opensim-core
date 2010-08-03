@@ -203,6 +203,7 @@ public:
 	virtual Function* getTendonForceLengthCurve() const;
 	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
 
+	virtual int getStateVariableYIndex(int index) const;
 	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, Actuator);
 
 private:

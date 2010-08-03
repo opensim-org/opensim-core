@@ -112,6 +112,11 @@ Object* PointConstraint::copy() const
 void PointConstraint::copyData(const PointConstraint &aConstraint)
 {
 	Constraint::copyData(aConstraint);
+	_body1Name = aConstraint._body1Name;
+	_body2Name = aConstraint._body2Name;
+	_locationInBody1 = aConstraint._locationInBody1;
+	_locationInBody2 = aConstraint._locationInBody2;
+
 }
 
 //_____________________________________________________________________________

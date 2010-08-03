@@ -75,6 +75,11 @@ Ligament::Ligament() :
  */
 Ligament::~Ligament()
 {
+	VisibleObject* disp;
+	if ((disp = getDisplayer())){
+		 // Free up allocated geometry objects
+		disp->freeGeometry();
+	}
 }
 
 //_____________________________________________________________________________
@@ -370,4 +375,22 @@ void Ligament::computeForce(const SimTK::State& s,
 	for (int i=0; i < PFDs.getSize(); i++) {
 		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), force*PFDs[i]->direction(), bodyForces);
 	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the visible object used to represent the Ligament.
+ */
+VisibleObject* Ligament::getDisplayer() const
+{ 
+	return getGeometryPath().getDisplayer(); 
+}
+
+//_____________________________________________________________________________
+/**
+ * Update the visible object used to represent the Ligament.
+ */
+void Ligament::updateDisplayer(const SimTK::State& s)
+{
+	_path.updateDisplayer(s);
 }

@@ -63,16 +63,7 @@ PrescribedForce::PrescribedForce(Body* body) : CustomForce(),
 	_pointFunctionSetProp(PropertyObj("", FunctionSet())),
     _pointFunctionSet((FunctionSet&)_pointFunctionSetProp.getValueObj()),
 	_torqueFunctionSetProp(PropertyObj("", FunctionSet())),
-    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj()),
-	_forceX(NULL),
-	_forceY(NULL),
-	_forceZ(NULL),
-	_pointX(NULL),
-	_pointY(NULL),
-	_pointZ(NULL),
-	_torqueX(NULL),
-	_torqueY(NULL),
-	_torqueZ(NULL)
+    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -97,16 +88,7 @@ PrescribedForce::PrescribedForce(DOMElement* aNode) :
 	_pointFunctionSetProp(PropertyObj("", FunctionSet())),
     _pointFunctionSet((FunctionSet&)_pointFunctionSetProp.getValueObj()),
 	_torqueFunctionSetProp(PropertyObj("", FunctionSet())),
-    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj()),
-	_forceX(NULL),
-	_forceY(NULL),
-	_forceZ(NULL),
-	_pointX(NULL),
-	_pointY(NULL),
-	_pointZ(NULL),
-	_torqueX(NULL),
-	_torqueY(NULL),
-	_torqueZ(NULL)
+    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -129,16 +111,7 @@ PrescribedForce::PrescribedForce(const PrescribedForce& force) :
 	_pointFunctionSetProp(PropertyObj("", FunctionSet())),
     _pointFunctionSet((FunctionSet&)_pointFunctionSetProp.getValueObj()),
 	_torqueFunctionSetProp(PropertyObj("", FunctionSet())),
-    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj()),
-	_forceX(force._forceX == NULL ? NULL : static_cast<Function*>(force._forceX->copy())),
-	_forceY(force._forceY == NULL ? NULL : static_cast<Function*>(force._forceY->copy())),
-	_forceZ(force._forceZ == NULL ? NULL : static_cast<Function*>(force._forceZ->copy())),
-	_pointX(force._pointX == NULL ? NULL : static_cast<Function*>(force._pointX->copy())),
-	_pointY(force._pointY == NULL ? NULL : static_cast<Function*>(force._pointY->copy())),
-	_pointZ(force._pointZ == NULL ? NULL : static_cast<Function*>(force._pointZ->copy())),
-	_torqueX(force._torqueX == NULL ? NULL : static_cast<Function*>(force._torqueX->copy())),
-	_torqueY(force._torqueY == NULL ? NULL : static_cast<Function*>(force._torqueY->copy())),
-	_torqueZ(force._torqueZ == NULL ? NULL : static_cast<Function*>(force._torqueZ->copy()))
+    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj())
 {
 	setNull();
 	setupProperties();
@@ -171,33 +144,18 @@ void PrescribedForce::updateFromXMLNode()
 	// Base class
 	CustomForce::updateFromXMLNode();
 
-		//Specify all or none of the components
-	if(_forceFunctionSet.getSize() == 3) { 
-		_forceX = &_forceFunctionSet[0];
-		_forceY = &_forceFunctionSet[1];
-		_forceZ = &_forceFunctionSet[2];
-	}
-	else if (_forceFunctionSet.getSize() != 0)
+	//Specify all or none of the components
+	if(_forceFunctionSet.getSize() != 3&& _forceFunctionSet.getSize() != 0)
 	{
 		throw Exception("PrescribedForce:: three components of the force must be specified.");
 	}
 
-	if(_pointFunctionSet.getSize() == 3) { 
-		_pointX= &_pointFunctionSet[0];
-		_pointY = &_pointFunctionSet[1];
-		_pointZ = &_pointFunctionSet[2];
-	}
-	else if (_pointFunctionSet.getSize() != 0)
+	if(_pointFunctionSet.getSize() != 3 && _pointFunctionSet.getSize() != 0)
 	{
 		throw Exception("PrescribedForce:: three components of the point must be specified.");
 	}
 
-	if(_torqueFunctionSet.getSize() == 3) { 
-		_torqueX = &_torqueFunctionSet[0];
-		_torqueY = &_torqueFunctionSet[1];
-		_torqueZ = &_torqueFunctionSet[2];
-	}
-	else if (_torqueFunctionSet.getSize() != 0)
+	if(_torqueFunctionSet.getSize() != 3 && _torqueFunctionSet.getSize() != 0)
 	{
 		throw Exception("PrescribedForce:: three components of the torque must be specified.");
 	}
@@ -267,9 +225,6 @@ PrescribedForce& PrescribedForce::operator=(const PrescribedForce &aForce)
 
 void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
 {
-	_forceX = forceX;
-	_forceY = forceY;
-	_forceZ = forceZ;
 	_forceFunctionSet.setSize(0);
 	_forceFunctionSet.append(forceX);
 	_forceFunctionSet.append(forceY);
@@ -279,9 +234,6 @@ void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Func
 
 void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Function* pointZ)
 {
-	_pointX = pointX;
-	_pointY = pointY;
-	_pointZ = pointZ;
 	_pointFunctionSet.setSize(0);
 	_pointFunctionSet.append(pointX);
 	_pointFunctionSet.append(pointY);
@@ -290,9 +242,6 @@ void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Func
 
 void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ)
 {
-	_torqueX = torqueX;
-	_torqueY = torqueY;
-	_torqueZ = torqueZ;
 	_torqueFunctionSet.setSize(0);
 	_torqueFunctionSet.append(torqueX);
 	_torqueFunctionSet.append(torqueY);
@@ -315,7 +264,7 @@ void PrescribedForce::setFunctionsFromFile(std::string anExternalLoadsFileName)
 
 	kineticsStore.getTimeColumn(t);
 	double *column=0;
-
+	Array<NaturalCubicSpline> splines;
 	for(int i=0;i<9;i++)
 	{
 		kineticsStore.getDataColumn(labels[i], column);
@@ -421,28 +370,46 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 	SimTK::Vector  timeAsVector(1, time);
 
 	assert(_body!=0);
-	if (_forceX != NULL) {
-		Vec3 force(_forceX?_forceX->calcValue(timeAsVector):0.0, 
-			_forceY?_forceY->calcValue(timeAsVector):0.0, 
-			_forceZ?_forceZ->calcValue(timeAsVector):0.0);
+	Function* forceX=NULL;
+	Function* forceY=NULL;
+	Function* forceZ=NULL;
+	if (_forceFunctionSet.getSize()==3){
+		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	}
+	if (forceX != NULL) {
+		Function* pointX=NULL;
+		Function* pointY=NULL;
+		Function* pointZ=NULL;
+		if (_pointFunctionSet.getSize()==3){
+			pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+		}
+		Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
+			forceY?forceY->calcValue(timeAsVector):0.0, 
+			forceZ?forceZ->calcValue(timeAsVector):0.0);
 		if (!_forceIsGlobal)
 			engine.transform(state, *_body, force, engine.getGroundBody(), force);
-		if (_pointX == NULL) {
+		if (pointX == NULL) {
 			applyForce(state, *_body, force, bodyForces);
  
 	    }else {
-			Vec3 point(_pointX?_pointX->calcValue(timeAsVector):0.0, 
-				_pointY?_pointY->calcValue(timeAsVector):0.0, 
-				_pointZ?_pointZ->calcValue(timeAsVector):0.0);
+			Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
+				pointY?pointY->calcValue(timeAsVector):0.0, 
+				pointZ?pointZ->calcValue(timeAsVector):0.0);
 			if (_pointIsGlobal)
 				engine.transformPosition(state, engine.getGroundBody(), point, *_body, point);
 			applyForceToPoint(state, *_body, point, force, bodyForces);
 		}
 	}
-	if (_torqueX != NULL) {
-		Vec3 torque(_torqueX?_torqueX->calcValue(timeAsVector):0.0, 
-			_torqueY?_torqueY->calcValue(timeAsVector):0.0, 
-			_torqueZ?_torqueZ->calcValue(timeAsVector):0.0);
+	Function* torqueX=NULL;
+	Function* torqueY=NULL;
+	Function* torqueZ=NULL;
+	if (_torqueFunctionSet.getSize()==3){
+		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	}
+	if (torqueX != NULL) {
+		Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
+			torqueY?torqueY->calcValue(timeAsVector):0.0, 
+			torqueZ?torqueZ->calcValue(timeAsVector):0.0);
 		if (!_forceIsGlobal)
 			engine.transform(state, *_body, torque, engine.getGroundBody(), torque);
 		applyTorque(state, *_body, torque, bodyForces);
@@ -455,27 +422,45 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 Vec3 PrescribedForce::getForceAtTime(double aTime) const	
 {
 	SimTK::Vector timeAsVector(1, aTime);
-	Vec3 force(_forceX?_forceX->calcValue(timeAsVector):0.0, 
-		_forceY?_forceY->calcValue(timeAsVector):0.0, 
-		_forceZ?_forceZ->calcValue(timeAsVector):0.0);
+	Function* forceX=NULL;
+	Function* forceY=NULL;
+	Function* forceZ=NULL;
+	if (_forceFunctionSet.getSize()==3){
+		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	}
+	Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
+		forceY?forceY->calcValue(timeAsVector):0.0, 
+		forceZ?forceZ->calcValue(timeAsVector):0.0);
 	return force;
 }
 
 Vec3 PrescribedForce::getPointAtTime(double aTime) const
 {
 	SimTK::Vector timeAsVector(1, aTime);
-	Vec3 point(_pointX?_pointX->calcValue(timeAsVector):0.0, 
-		_pointY?_pointY->calcValue(timeAsVector):0.0, 
-		_pointZ?_pointZ->calcValue(timeAsVector):0.0);
+	Function* pointX=NULL;
+	Function* pointY=NULL;
+	Function* pointZ=NULL;
+	if (_pointFunctionSet.getSize()==3){
+		pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+	}
+	Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
+		pointY?pointY->calcValue(timeAsVector):0.0, 
+		pointZ?pointZ->calcValue(timeAsVector):0.0);
 	return point;
 }
 
 Vec3 PrescribedForce::getTorqueAtTime(double aTime) const
 {
 	SimTK::Vector timeAsVector(1, aTime);
-	Vec3 torque(_torqueX?_torqueX->calcValue(timeAsVector):0.0, 
-		_torqueY?_torqueY->calcValue(timeAsVector):0.0, 
-		_torqueZ?_torqueZ->calcValue(timeAsVector):0.0);
+	Function* torqueX=NULL;
+	Function* torqueY=NULL;
+	Function* torqueZ=NULL;
+	if (_torqueFunctionSet.getSize()==3){
+		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	}
+	Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
+		torqueY?torqueY->calcValue(timeAsVector):0.0, 
+		torqueZ?torqueZ->calcValue(timeAsVector):0.0);
 	return torque;
 }
 
@@ -488,8 +473,26 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 
 	// Compute flags to find out if a point is specified or not and if a torque or force or both are specified
-	bool appliesForce = (_forceX!=NULL) || (_forceY!=NULL) || (_forceZ!=NULL);
-	bool pointSpecified = (_pointX!=NULL) || (_pointY!=NULL) || (_pointZ!=NULL);
+	Function* forceX=NULL;
+	Function* forceY=NULL;
+	Function* forceZ=NULL;
+	if (_forceFunctionSet.getSize()==3){
+		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	}
+	Function* pointX=NULL;
+	Function* pointY=NULL;
+	Function* pointZ=NULL;
+	if (_pointFunctionSet.getSize()==3){
+		pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+	}
+	Function* torqueX=NULL;
+	Function* torqueY=NULL;
+	Function* torqueZ=NULL;
+	if (_torqueFunctionSet.getSize()==3){
+		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	}
+	bool appliesForce = (forceX!=NULL) || (forceY!=NULL) || (forceZ!=NULL);
+	bool pointSpecified = (pointX!=NULL) || (pointY!=NULL) || (pointZ!=NULL);
 	// Instead of trying to figure out which values are not specified we'll write NaNs 
 	std::string BodyToReport = (_forceIsGlobal?"ground":_body->getName());
 	if (appliesForce) {
@@ -502,7 +505,7 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
 		labels.append(BodyToReport+"_"+getName()+"_py");
 		labels.append(BodyToReport+"_"+getName()+"_pz");
 	}
-	if (_torqueX!=NULL){
+	if (torqueX!=NULL){
 		labels.append(BodyToReport+"_"+getName()+"_torque_x");
 		labels.append(BodyToReport+"_"+getName()+"_torque_y");
 		labels.append(BodyToReport+"_"+getName()+"_torque_z");
@@ -521,19 +524,37 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 	SimTK::Vector  timeAsVector(1, time);
 
-	if (_forceX != NULL) {
-		Vec3 force(_forceX?_forceX->calcValue(timeAsVector):0.0, 
-			_forceY?_forceY->calcValue(timeAsVector):0.0, 
-			_forceZ?_forceZ->calcValue(timeAsVector):0.0);
+	Function* forceX=NULL;
+	Function* forceY=NULL;
+	Function* forceZ=NULL;
+	if (_forceFunctionSet.getSize()==3){
+		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	}
+	Function* pointX=NULL;
+	Function* pointY=NULL;
+	Function* pointZ=NULL;
+	if (_pointFunctionSet.getSize()==3){
+		pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+	}
+	Function* torqueX=NULL;
+	Function* torqueY=NULL;
+	Function* torqueZ=NULL;
+	if (_torqueFunctionSet.getSize()==3){
+		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	}
+	if (forceX != NULL) {
+		Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
+			forceY?forceY->calcValue(timeAsVector):0.0, 
+			forceZ?forceZ->calcValue(timeAsVector):0.0);
 		if (!_forceIsGlobal)
 			engine.transform(state, *_body, force, engine.getGroundBody(), force);
-		if (_pointX == NULL) {
+		if (pointX == NULL) {
 			//applyForce(*_body, force);
 			for (int i=0; i<3; i++) values.append(force[i]);
 	    }else {
-			Vec3 point(_pointX?_pointX->calcValue(timeAsVector):0.0, 
-				_pointY?_pointY->calcValue(timeAsVector):0.0, 
-				_pointZ?_pointZ->calcValue(timeAsVector):0.0);
+			Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
+				pointY?pointY->calcValue(timeAsVector):0.0, 
+				pointZ?pointZ->calcValue(timeAsVector):0.0);
 			if (_pointIsGlobal)
 				engine.transformPosition(state, engine.getGroundBody(), point, *_body, point);
 			//applyForceToPoint(*_body, point, force);
@@ -541,10 +562,10 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 			for (int i=0; i<3; i++) values.append(point[i]);
 		}
 	}
-	if (_torqueX != NULL) {
-		Vec3 torque(_torqueX?_torqueX->calcValue(timeAsVector):0.0, 
-			_torqueY?_torqueY->calcValue(timeAsVector):0.0, 
-			_torqueZ?_torqueZ->calcValue(timeAsVector):0.0);
+	if (torqueX != NULL) {
+		Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
+			torqueY?torqueY->calcValue(timeAsVector):0.0, 
+			torqueZ?torqueZ->calcValue(timeAsVector):0.0);
 		if (!_forceIsGlobal)
 			engine.transform(state, *_body, torque, engine.getGroundBody(), torque);
 		for (int i=0; i<3; i++) values.append(torque[i]);

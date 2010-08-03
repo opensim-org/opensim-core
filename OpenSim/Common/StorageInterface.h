@@ -53,7 +53,7 @@ public:
 	// make this constructor explicit so you don't get implicit casting of int to StorageInterface
 	StorageInterface(const std::string &aFileName) SWIG_DECLARE_EXCEPTION{};
 	StorageInterface(const StorageInterface& aStorageInterface) {};
-	virtual StorageInterface* copy() const=0;
+	virtual Object* copy() const=0;
 	virtual ~StorageInterface(){};
 
 	//--------------------------------------------------------------------------

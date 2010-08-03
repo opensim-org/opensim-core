@@ -226,7 +226,9 @@ record(const SimTK::State& s)
     _model->getSystem().realize(s, SimTK::Stage::Velocity );
 
 	StateVector nextRow = StateVector(s.getTime());
-	nextRow.getData().append(s.getY().size(), &s.getY()[0]);
+	OpenSim::Array<double> StateValues;
+	_model->getStateValues(s, StateValues);
+	nextRow.getData().append(StateValues);
 	_statesStore.append(nextRow);
 
 	return(0);

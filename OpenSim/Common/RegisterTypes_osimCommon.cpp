@@ -45,6 +45,8 @@
 #include "LinearFunction.h"
 #include "PiecewiseLinearFunction.h"
 #include "MultiplierFunction.h"
+#include "DisplayGeometry.h"
+#include "GeometrySet.h"
 #include "VisibleObject.h"
 #include "ObjectGroup.h"
 #include "StateFunction.h"
@@ -77,6 +79,8 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::RegisterType( LinearFunction() );
 	Object::RegisterType( PiecewiseLinearFunction() );
 	Object::RegisterType( MultiplierFunction() );
+	Object::RegisterType( DisplayGeometry() );
+	Object::RegisterType( GeometrySet() );
 	Object::RegisterType( VisibleObject() );
 	Object::RegisterType( ObjectGroup() );
 

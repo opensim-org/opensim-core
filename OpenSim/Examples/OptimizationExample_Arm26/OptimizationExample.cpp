@@ -64,37 +64,35 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		((ControlSetController *)(&osimModel.updControllerSet()[0]))->updControlSet()->setControlValues(finalTime, &newControls[0]);
         
 		// Create the integrator for the simulation.
-		std::clock_t startTime = std::clock();	
 		RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
 		integrator.setAccuracy(1.0e-5);
 
 		// Create a manager to run the simulation
 		Manager manager(osimModel, integrator);
-		Manager man(osimModel,
+
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
 		osimModel.getSystem().realize(s, Stage::Acceleration);
 		manager.integrate(s);
-		std::cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
-		char c;
-		std::cout << "Press RETURN to end program...\n" << std::endl;
-		std::cin.get(c);
+
 		/* Calculate the scalar quantity we want to minimize or maximize. 
 		*  In this case, we’re maximizing forward velocity of the 
 		*  forearm/hand mass center, so to maximize, compute velocity 
 		*  and multiply it by -1.
 		*/
+		Vec3 massCenter;
+		Vec3 velocity;
+		osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter(massCenter);
+		osimModel.getSystem().realize(s, Stage::Acceleration);
+		osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet().get("r_ulna_radius_hand"), massCenter, velocity);
 		
-		// YOUR OBJECTIVE FUNCTION GOES HERE!!
-		f = 0;
-		
+		f = -velocity[0];
 		stepCount++;
 		
 		// Store and print the results of a "random sample"
 		if( stepCount == 23 ){
 			Storage statesDegrees(manager.getStateStorage());
-			statesDegrees.
 			osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 			statesDegrees.print("Arm26_randomSample_states_degrees.sto");
 		}
@@ -164,8 +162,7 @@ int main()
 		osimModel.addController(muscleController);
 		
 		// Initialize the system and get the state representing the state system
-		State& si = osimModel.initSystem();
-
+		
 		// Define the initial muscle states
 		const OpenSim::Set<OpenSim::Actuator> &muscleSet = osimModel.getActuators();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
@@ -173,8 +170,10 @@ int main()
 			OpenSim::Muscle* mus = dynamic_cast<Muscle*>(act);
 			mus->setDefaultActivation(0.5);
 			mus->setDefaultFiberLength(0.1);
-			mus->initState(si);
+			// mus->initState(si);
 		}
+
+		State& si = osimModel.initSystem();
 	
 		// Make sure the muscles states are in equilibrium
 		osimModel.equilibrateMuscles(si);

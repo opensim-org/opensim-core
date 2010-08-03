@@ -155,6 +155,7 @@ protected:
 	virtual void createSystem(SimTK::MultibodySystem& system) const {};
 	virtual void initState(SimTK::State& s) const {};
 	virtual void setDefaultsFromState(const SimTK::State& state) {};
+	virtual int getNumStateVariables() const { return 0; };
 
 private:
     // INITIALIZATION

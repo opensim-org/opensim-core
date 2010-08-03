@@ -35,6 +35,8 @@
 //============================================================================
 // INCLUDES
 //============================================================================
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Common/XMLNode.h>
 #include "VisibleObject.h"
 #include "Exception.h"
 #include "PropertyInt.h"
@@ -42,13 +44,15 @@
 #include "PropertyObj.h"
 #include "PropertyStrArray.h"
 #include "PropertyDblArray.h"
+#include "PropertyTransform.h"
 #include "Geometry.h"
+#include "GeometrySet.h"
 
 
 using namespace OpenSim;
 using namespace std;
 using SimTK::Vec3;
-
+using OpenSim::GeometrySet;
 
 //============================================================================
 // CONSTANTS
@@ -67,18 +71,22 @@ VisibleObject::~VisibleObject()
 	freeGeometry();
 	_owner = NULL;
 	_dependents.setSize(0);
-}
+};
 
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
 VisibleObject::VisibleObject():
-_geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_allGeometry(0),
-_propVisibleProp(PropertyObj("", VisibleProperties())),
-_visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
+Object(),
+_propGeometrySet(PropertyObj("", GeometrySet())),
+_geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
 _scaleFactors(_propScaleFactors.getValueDblVec3()),
+_transformProp(PropertyTransform("transform", SimTK::Transform())),
+_transform(_transformProp.getValueTransform()),
+_showAxes(_propShowAxes.getValueBool()),
+_displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
+_allGeometry(0),
 _dependents(0)
 {
 	// NULL STATES
@@ -100,11 +108,14 @@ _dependents(0)
  */
 VisibleObject::VisibleObject(const string &aFileName):
 Object(aFileName, false),
-_geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_allGeometry(0),
-_propVisibleProp(PropertyObj("", VisibleProperties())),
-_visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
+_propGeometrySet(PropertyObj("", GeometrySet())),
+_geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
 _scaleFactors(_propScaleFactors.getValueDblVec3()),
+_transformProp(PropertyTransform("transform", SimTK::Transform())),
+_transform(_transformProp.getValueTransform()),
+_showAxes(_propShowAxes.getValueBool()),
+_displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
+_allGeometry(0),
 _dependents(0)
 {
 	// NULL STATES
@@ -150,11 +161,14 @@ _dependents(0)
  */
 VisibleObject::VisibleObject(const VisibleObject &aObject):
 Object(aObject),
-_geometryFileNames(_propGeometryFileNames.getValueStrArray()),
-_allGeometry(0),
-_propVisibleProp(PropertyObj("", VisibleProperties())),
-_visibleProp((VisibleProperties&)_propVisibleProp.getValueObj()),
+_propGeometrySet(PropertyObj("", GeometrySet())),
+_geometrySet((GeometrySet&)_propGeometrySet.getValueObj()),
 _scaleFactors(_propScaleFactors.getValueDblVec3()),
+_transformProp(PropertyTransform("transform", SimTK::Transform())),
+_transform(_transformProp.getValueTransform()),
+_showAxes(_propShowAxes.getValueBool()),
+_displayPreference((DisplayGeometry::DisplayPreference&)_propDisplayPreference.getValueInt()),
+_allGeometry(0),
 _dependents(0)
 {
 	// NULL MEMBER VARIABLES
@@ -172,22 +186,23 @@ _dependents(0)
 /**
  * Set all member variables to their null or default values.
  */
-void VisibleObject::
-setNull()
+void VisibleObject::setNull()
 {
 	setupProperties();
 
 	_scaleFactors = 1.0;
-
+	_transform = SimTK::Transform();
 	_owner = 0;
 	_dependents.setMemoryOwner(false);
+	_showAxes=false;
+	_displayPreference=DisplayGeometry::GouraudShaded;
+
 
 }
 /**
  * virtual copy constructor
  */
-Object* VisibleObject::
-copy() const
+Object* VisibleObject::copy() const
 {
 
 	VisibleObject *object = new VisibleObject(*this);
@@ -200,17 +215,27 @@ copy() const
 void VisibleObject::setupProperties()
 {
 
-	_propGeometryFileNames.setName("geometry_files");
-	Array<string> filenames("");
-	_propGeometryFileNames.setValue(filenames);
-	_propertySet.append(&_propGeometryFileNames);
+	_propGeometrySet.setName("GeometrySet");
+	_propGeometrySet.setComment("Set of geometry files and associated attributes, allow .vtp, .stl, .obj");
 
-	_propVisibleProp.setName("visible_properties");
-	_propertySet.append(&_propVisibleProp);
+	_propertySet.append(&_propGeometrySet);
 
 	_propScaleFactors.setName("scale_factors");
-	//_propScaleFactors.setAllowableArraySize(3);
+	_propScaleFactors.setComment("Three scale factors for display purposes: scaleX scaleY scaleZ");
 	_propertySet.append(&_propScaleFactors);
+
+	_transformProp.setName("transform");
+	_transformProp.setComment("transform relative to owner specified as 3 rotations (rad) followed by 3 translations rX rY rZ tx ty tz");
+	_propertySet.append(&_transformProp);
+
+	_propShowAxes.setName("show_axes");
+	_propShowAxes.setComment("Whether to show a coordinate frame");
+	_propertySet.append(&_propShowAxes);
+
+	_propDisplayPreference.setName("display_preference");
+	_propDisplayPreference.setComment("Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for individual geometries");
+	_propertySet.append(&_propDisplayPreference);
+
 }
 
 //=============================================================================
@@ -225,20 +250,14 @@ void VisibleObject::setupProperties()
  *
  * @return Reference to this object.
  */
-VisibleObject& VisibleObject::
-operator=(const VisibleObject &aObject)
+VisibleObject& VisibleObject::operator=(const VisibleObject &aObject)
 {
 	// BASE CLASS
 	Object::operator=(aObject);
 
-	setNumGeometryFiles(aObject.getNumGeometryFiles());
-	for(int i=0; i < aObject.getNumGeometryFiles(); i++)
-		setGeometryFileName(i, aObject.getGeometryFileName(i));
-
-	_transform = aObject._transform;
-	_visibleProp = aObject._visibleProp;
-
+	_geometrySet = aObject._geometrySet;
 	_scaleFactors = aObject._scaleFactors;
+	_transform = aObject._transform;
 	return(*this);
 }
 
@@ -251,8 +270,7 @@ operator=(const VisibleObject &aObject)
  *
  * @return True if the two objects are equal, false otherwise.
  */
-bool VisibleObject::
-operator==(const VisibleObject &aObject)
+bool VisibleObject::operator==(const VisibleObject &aObject)
 {
 	return(Object::operator==(aObject));
 }
@@ -261,65 +279,12 @@ operator==(const VisibleObject &aObject)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//------------- Geometry files mgmt. -------------------------------------------
-/**
- * set the number of geometry files associated with visible object
- */
-void VisibleObject::
-setNumGeometryFiles(int n)
-{
-	_geometryFileNames.setSize(n);
-}
-/**
- * Get the number of geometry files associated with visible object
- */
-const int VisibleObject::
-getNumGeometryFiles() const
-{
-	return (_geometryFileNames.getSize());
-}
-/**
- * set the name of ith geometry files associated with visible object
- */
-void VisibleObject::
-setGeometryFileName(int i, const string &aGeometryFileName)
-{
-	_geometryFileNames.set(i,aGeometryFileName);
-}
-/**
- * Get the name of ith geometry files associated with visible object
- */
-
-const std::string& VisibleObject::
-getGeometryFileName(int i) const
-{
-	return _geometryFileNames[i];
-}
-
-/**
- * set the visible properties of a visible object
- */
-//------------- Properties: Shading, Color, etc. -------------------------------
-void VisibleObject::
-setVisibleProperties(const VisibleProperties &aVisibleProperties)
-{
-	_visibleProp = aVisibleProperties;
-}
-/**
- * Retrieve the visible properties of a visible object
- */
-VisibleProperties& VisibleObject::
-getVisibleProperties()
-{
-	return (_visibleProp);
-}
 //_____________________________________________________________________________
 /**
  * Set Scale factors for geometry.
  *
  */
-void VisibleObject::
-setScaleFactors(const SimTK::Vec3& aScaleFactors)
+void VisibleObject::setScaleFactors(const SimTK::Vec3& aScaleFactors)
 {
 	_propScaleFactors.setUseDefault(false);
 	_scaleFactors=aScaleFactors;
@@ -329,8 +294,93 @@ setScaleFactors(const SimTK::Vec3& aScaleFactors)
  * Get Scale factors for geometry.
  *
  */
-void VisibleObject::
-getScaleFactors(SimTK::Vec3& aScaleFactors) const
+void VisibleObject::getScaleFactors(SimTK::Vec3& aScaleFactors) const
 {
 	aScaleFactors = _scaleFactors;
+}
+
+void VisibleObject::getRotationsAndTranslationsAsArray6(double aArray[]) const
+{
+	_transformProp.getRotationsAndTranslationsAsArray6(aArray);
+}
+
+
+void VisibleObject::setGeometryFileName(int i, const std::string &aGeometryFileName)
+{
+	_geometrySet.append(new DisplayGeometry(aGeometryFileName));
+}
+
+const int VisibleObject::getNumGeometryFiles() const
+{
+	return _geometrySet.getSize();
+}
+void VisibleObject::setNumGeometryFiles(int n)
+{
+	_geometrySet.setSize(n);
+}
+const std::string& VisibleObject::getGeometryFileName(int idx) const 
+{
+	if (idx > _geometrySet.getSize()-1)
+		throw ( Exception("getGeometryFileName: no geometry corresponding to index") );
+	return _geometrySet[idx].getGeometryFile();
+}
+
+// DisplayPreference
+DisplayGeometry::DisplayPreference VisibleObject::getDisplayPreference() const
+{
+	return _displayPreference;
+}
+void VisibleObject::setDisplayPreference(const DisplayGeometry::DisplayPreference& aPreference)
+{
+	_displayPreference = aPreference;
+	// Push preference down to pieces
+	for(int i=0; i<_geometrySet.getSize(); i++)
+		_geometrySet[i].setDisplayPreference(aPreference);
+}
+// Handle conversion from older format
+void VisibleObject::updateFromXMLNode()
+{
+	int documentVersion = getDocument()->getDocumentVersion();
+	if ( documentVersion < XMLDocument::getLatestVersion()){
+		// Now check if we need to create a correction controller to replace springs
+		if (_node!=NULL && documentVersion<20101){
+			// Get geometry files and Preferences if any and set them into 
+			DOMElement*visiblePropertiesNode = XMLNode::GetFirstChildElementByTagName(_node, "VisibleProperties");
+			if (visiblePropertiesNode!=NULL){
+				// Move display_prference, and show_axes nodes up to VisibleObject
+				DOMElement*dNode = XMLNode::GetFirstChildElementByTagName(visiblePropertiesNode, "display_prference");
+				if (dNode){
+					((DOMNode *)visiblePropertiesNode)->removeChild(dNode);
+					_node->appendChild(dNode);
+				}
+				dNode = XMLNode::GetFirstChildElementByTagName(visiblePropertiesNode, "show_axes");
+				if (dNode){
+					((DOMNode *)visiblePropertiesNode)->removeChild(dNode);
+					_node->appendChild(dNode);
+				}
+			}
+			DOMElement*geometryNode = XMLNode::GetFirstChildElementByTagName(_node, "geometry_files");
+			string propValue="";
+			bool hasPieces=false;
+			if (geometryNode!= NULL){
+				DOMText* txtNode=NULL;
+				if(txtNode=XMLNode::GetTextNode(geometryNode)) {
+					// Could still be empty or whiteSpace
+					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
+					if (transcoded.length()>0){
+						propValue = XMLNode::GetValue<std::string>(txtNode);
+						Object::updateFromXMLNode();
+						stringstream ss(propValue);
+						string nextFile;
+						while (ss>>nextFile){
+							setGeometryFileName(0, nextFile);	// This actually appends
+							hasPieces=true;
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+		Object::updateFromXMLNode();
 }

@@ -1173,6 +1173,10 @@ SimTK::Vector GeometryPath::computeMomentArms(SimTK::State& s)
 	
 	MomentArmSolver maSolver(*_model);
 	SimTK::Vector mas = maSolver.solve(s, PFDs);
+
+	for(int i=0; i < PFDs.getSize(); i++)
+		delete PFDs[i];
+
 	return mas;
 }
 //_____________________________________________________________________________

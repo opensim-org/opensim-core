@@ -74,38 +74,6 @@ public:
 #endif
 	void copyData(const Force &aForce);
 	virtual Object* copy() const = 0;
-
-    /**
-     * Get the number of state variables allocated by this force.  The default implementation
-     * returns 0.  Subclasses that allocate state variables must override it.
-     */
-    virtual int getNumStateVariables() const;
-    /**
-     * Get the name of a state variable allocated by this force.  The default implementation
-     * throws an exception, so subclasses that allocate state variables must override it.
-     *
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
-     */
-    virtual std::string getStateVariableName(int index) const;
-    /**
-     * Get the value of a state variable allocated by this force.  The default implementation
-     * throws an exception, so subclasses that allocate state variables must override it.
-     *
-     * @param state   the State for which to get the value
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
-     */
-    virtual double getStateVariable(const SimTK::State& state, int index) const;
-    /**
-     * Set the value of a state variable allocated by this force.  The default implementation
-     * throws an exception, so subclasses that allocate state variables must override it.
-     *
-     * @param state   the State for which to set the value
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
-     * @param value   the value to set
-     */
-    virtual void setStateVariable(SimTK::State& state, int index, double value) const;
-
-
 	/** 
 	 * Methods to query a Force for the value actually applied during simulation
 	 * The names of the quantities (column labels) is returned by this first function
@@ -126,6 +94,11 @@ public:
 	virtual bool isDisabled(const SimTK::State &s) const;
 	/** Set the Force as disabled (true) or not (false)*/
 	virtual void setDisabled(SimTK::State &s, bool disabled);
+    /**
+     * Get the number of state variables allocated by this force.  The default implementation
+     * returns 0.  Subclasses that allocate state variables must override it.
+     */
+	virtual int getNumStateVariables() const { return 0;};
 
 protected:
 	/**

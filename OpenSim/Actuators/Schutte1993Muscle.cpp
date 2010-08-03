@@ -876,8 +876,8 @@ double Schutte1993Muscle::calcNonzeroPassiveForce(const SimTK::State& s, double 
  */
 double Schutte1993Muscle::calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const
 {
-   double b, c, fiber_velocity;
-   double kv = 0.15, slope_k = 0.13, fmax = 1.4;
+	double b, c, fiber_velocity;
+	double kv = 0.15, slope_k = 0.13, fmax = 1.4;
 
    if (aVelocityDependentForce < -_damping)
 	{
@@ -896,10 +896,10 @@ double Schutte1993Muscle::calcFiberVelocity(const SimTK::State& s, double aActiv
 	      (aVelocityDependentForce - aActivation * aActiveForce);
       b = -(aVelocityDependentForce / _damping
 			-fmax * aActivation * aActiveForce / _damping - slope_k * kv / (kv + 1));
-      fiber_velocity = (-b + sqrt(b * b - 4 * c)) / 2.0;
-   }
+		fiber_velocity = (-b + sqrt(b * b - 4 * c)) / 2.0;
+	}
 
-   return fiber_velocity;
+	return fiber_velocity;
 }
 //_____________________________________________________________________________
 /**
@@ -1133,4 +1133,14 @@ computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aAct
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,normalizedLength,normalizedVelocity);
 
 	return isometricForce * normalizedForceVelocity;
+}
+
+int Schutte1993Muscle::getStateVariableYIndex(int index) const
+{
+	if (index==0)
+		return _model->getSystem().getDefaultState().getZStart()+_zIndex;
+	if (index ==1)
+		return _model->getSystem().getDefaultState().getZStart()+_zIndex+1;
+	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
+
 }

@@ -422,9 +422,9 @@ operator==(const Object &aObject) const
 			case Property::Transform:
 				const SimTK::Transform& t1 = ((const PropertyTransform&)myProperty).getValueTransform();
 				const SimTK::Transform& t2 = ((const PropertyTransform&)theirProperty).getValueTransform();
-				const SimTK::Transform& tComposed =  t1.compose(t2.invert());
+				SimTK::Transform tComposed =  t1.compose(t2.invert());
 				equal = (tComposed.p().norm() < 1e-8 &&
-					tComposed.R().trace() < 1e-8);
+					fabs(tComposed.R().trace()-3) < 1e-8);
 				if (!equal) return false;
 				continue;
 

@@ -137,6 +137,13 @@ public:
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
+
+	//--------------------------------------------------------------------------
+	// Display
+	//--------------------------------------------------------------------------
+	virtual VisibleObject* getDisplayer() const;
+	virtual void updateDisplayer(const SimTK::State& s);
+
 	// This macro allows the OpenSim GUI to check CustomForce
 	// objects to see if they are instances of this ligament class.
 	OPENSIM_DECLARE_DERIVED(Ligament, CustomForce);

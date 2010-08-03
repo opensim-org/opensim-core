@@ -69,6 +69,9 @@ void CustomActuator::createSystem(SimTK::MultibodySystem& system) const
 	 // Beyond the const Component get the index so we can access the SimTK::Force later
 	CustomActuator* mutableThis = const_cast<CustomActuator *>(this);
 	mutableThis->_index = force.getForceIndex();
+	// Add this line if exposing named states 
+	mutableThis->_model->addModelComponent(this);
+
 }
 
 //-----------------------------------------------------------------------------

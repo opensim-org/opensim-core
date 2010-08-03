@@ -489,11 +489,12 @@ virtual bool append(T *aObject)
  * @param aObject Object to be appended.
  * @return True if the append was successful, false otherwise.
  */
+#ifndef SWIG
 virtual bool append(const T& aObject)
 {
 	return append((T*) aObject.copy());
 }
-
+#endif
 //-----------------------------------------------------------------------------
 // INSERT
 //-----------------------------------------------------------------------------

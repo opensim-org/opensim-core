@@ -141,16 +141,16 @@ public:
 
 	// A set of functions that use double[] to be invoked by GUI, not Vec3 aware
 	virtual void getOrientationInChild(double rOrientation[]) const {
-		_orientation.getAs(&rOrientation[0]);
+		for(int i=0; i<3; i++) rOrientation[i]=_orientation[i];
 	};
 	virtual void getOrientationInParent(double rOrientation[]) const {
-		_orientationInParent.getAs(&rOrientation[0]);
+		for(int i=0; i<3; i++) rOrientation[i]=_orientationInParent[i];
 	};
 	virtual void getLocationInChild(double rLocation[]) const {
-		_location.getAs(&rLocation[0]);
+		for(int i=0; i<3; i++) rLocation[i]=_location[i];
 	};
 	virtual void getLocationInParent(double rLocation[]) const {
-		_locationInParent.getAs(&rLocation[0]);
+		for(int i=0; i<3; i++) rLocation[i]=_locationInParent[i];
 	};
 
 	virtual void setLocationInChild(const SimTK::Vec3& aLocation) {
@@ -212,6 +212,7 @@ protected:
     void createSystem(SimTK::MultibodySystem& system) const;
     void initState(SimTK::State& s) const;
     void setDefaultsFromState(const SimTK::State& state);
+	virtual int getNumStateVariables() const { return 0; };
 
 private:
 	void setNull();

@@ -70,6 +70,8 @@ TorsionalSpring::TorsionalSpring(const Body &aBody, double startTime, double end
 {
 	setNull();
 	setType("TorsionalSpring");
+	_model = const_cast<OpenSim::Model *>(&aBody.getModel());
+
 }
 
 //_____________________________________________________________________________

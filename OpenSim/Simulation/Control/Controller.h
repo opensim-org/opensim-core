@@ -204,15 +204,15 @@ protected:
 	 */
 	void copyData(const Controller &aController);
 
-   // for any post deseraialization intialization
-   virtual void setup(Model& model);
+	// for any post deseraialization intialization
+	virtual void setup(Model& model);
 
-   virtual void createSystem(SimTK::MultibodySystem& system) const {};
+	virtual void createSystem(SimTK::MultibodySystem& system) const {};
 
-   // for any intialization requiring a state or the complete system 
-   virtual void initState( SimTK::State& s) const {};
-
-   virtual void setDefaultsFromState(const SimTK::State& state) {};
+	// for any intialization requiring a state or the complete system 
+	virtual void initState( SimTK::State& s) const {};
+	virtual void setDefaultsFromState(const SimTK::State& state) {};
+	virtual int getNumStateVariables() const { return 0; };
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

@@ -309,6 +309,7 @@ void Model::setNull()
 
 	_validationLog="";
 
+	_modelComponents.setMemoryOwner(false);
 }
 //_____________________________________________________________________________
 /**
@@ -327,9 +328,11 @@ void Model::setupProperties()
 	_propertySet.append(&_forceSetProp);
 
 	_lengthUnitsStrProp.setName("length_units");
+	_lengthUnitsStrProp.setValue("meters");
 	_propertySet.append(&_lengthUnitsStrProp);
 
 	_forceUnitsStrProp.setName("force_units");
+	_forceUnitsStrProp.setValue("N");
 	_propertySet.append(&_forceUnitsStrProp);
 
    const SimTK::Vec3 defaultGravity(0.0, -9.80665, 0.0);
@@ -360,12 +363,16 @@ SimTK::State& Model::initSystem()
 	if (getValidationLog().size()>0)
 		cout << "The following Errors/Warnings were encountered while building the model. " <<
 		getValidationLog() << endl;
-
+	
+	_modelComponents.setSize(0);	// Make sure we start on a clean slate
+	_stateNames.setSize(0);
+	_stateYIndices.setSize(0);
 	setup();
 	createSystem();
     getMultibodySystem().realizeTopology();
     SimTK::State& s = getMultibodySystem().updDefaultState();
 
+	getStateNames(_stateNames);
 	// The folllowing line is commented out as it removes all forces that were
 	// added to the system during realizeTopology()
     //_matter->setUseEulerAngles(s, true);
@@ -766,9 +773,9 @@ int Model::getNumContactGeometries() const
 {
 	return _contactGeometrySet.getSize();
 }
-int Model::getNumStates() const
+int Model::getNumStates(bool includeSimTKStates) const 
 {
-    return( _system->getDefaultState().getNY() );
+	return( includeSimTKStates?_system->getDefaultState().getNY():_stateNames.getSize() );
 }
 
 /**
@@ -886,13 +893,47 @@ int Model::getNumAnalyses() const
  *
  * @param rStateNames Array of state names..
  */
-void Model::getStateNames(OpenSim::Array<string> &rStateNames) const
+void Model::getStateNames(OpenSim::Array<string> &rStateNames, bool includeInternalStates) const
 {
-	getCoordinateSet().getNames(rStateNames);
-	getCoordinateSet().getSpeedNames(rStateNames);
-	getForceSet().getStateVariableNames(rStateNames);
+
+	std::string internalStatesName="_unnamedState_";
+	OpenSim::Array<string> allStateNames(internalStatesName, _system->updDefaultState().getY().size());
+	//cout << "All states " << _system->updDefaultState().getY().size() << endl;
+	for(int i=0; i< _modelComponents.getSize(); i++){
+		const ModelComponent* comp=_modelComponents.get(i);
+		int numStates = comp->getNumStateVariables();
+		for(int j=0; j < numStates; j++){
+			//cout << comp->getStateVariableName(j) << ", " <<
+			//	    comp->getStateVariableYIndex(j) << endl;
+			allStateNames[comp->getStateVariableYIndex(j)] = comp->getStateVariableName(j);
+}
+	}
+	if (includeInternalStates)
+		rStateNames = allStateNames;
+	else { // pack allStateNames into rStateNames removing internalStates
+		rStateNames.setSize(0);
+		Model* mutableThis = const_cast<Model *>(this);
+		mutableThis->_stateYIndices.setSize(0);
+		//int j=0;
+		for(int i=0; i< allStateNames.getSize(); i++)
+			if (allStateNames[i]!= internalStatesName) {
+				rStateNames.append(allStateNames[i]);
+				mutableThis->_stateYIndices.append(i);
+			}
+	}
 }
 
+void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) const
+{
+	rStateValues.setSize(getNumStates());
+	for(int i=0; i< _stateYIndices.getSize(); i++) 
+		rStateValues[i] = s.getY()[_stateYIndices[i]];
+}
+void Model::setStateValues(SimTK::State& s, double* aStateValues) const
+{
+	for(int i=0; i< _stateYIndices.getSize(); i++) // initialize to NaN
+			s.updY()[_stateYIndices[i]]=aStateValues[i]; 
+}
 //=============================================================================
 // INITIAL STATES
 //=============================================================================
@@ -1147,7 +1188,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 	Array<string> stateNames("");
 	getStateNames(stateNames);
 	aOStream<<"\nSTATES ("<<stateNames.getSize()<<")"<<std::endl;
-	for(int i=0;i<s.getNY();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
+	for(int i=0;i<stateNames.getSize();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
 }
 
 //____________________________________________________________________________
@@ -1534,4 +1575,13 @@ void Model::validateMassProperties(bool fixMassProperties)
 		}
 	}
 
+}
+int Model::getNumStateVariables() const
+{
+	// Cycle thru all ModelComponents under this model and add up their getNumStateVariables
+	int numStateVariables = 0;
+	for(int i=0; i< _modelComponents.getSize(); i++)
+		numStateVariables += _modelComponents.get(i)->getNumStateVariables();
+	
+	return numStateVariables;
 }

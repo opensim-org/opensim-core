@@ -200,8 +200,6 @@ void Marker::setup(const Model& aModel)
 			}
 		}
 		_displayer.setOwner(this);
-		double defaultColor[3] = { 0.0, 0.0, 1.0 };
-		_displayer.getVisibleProperties().setColor(defaultColor);
 		updateGeometry();
 			
 	}

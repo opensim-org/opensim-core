@@ -28,6 +28,7 @@
 
 // INCLUDES
 #include "OpenSim/Simulation/Model/ModelComponent.h"
+#include "OpenSim/Simulation/Model/Model.h"
 
 namespace OpenSim {
 

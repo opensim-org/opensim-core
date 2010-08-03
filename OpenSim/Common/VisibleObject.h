@@ -36,13 +36,16 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "Object.h"
-#include "VisibleProperties.h"
 #include "PropertyStrArray.h"
 #include "PropertyObj.h"
 #include "PropertyDblArray.h"
 #include "PropertyDblVec3.h"
+#include "PropertyTransform.h"
+#include "PropertyBool.h"
 #include "Geometry.h"
+#include "DisplayGeometry.h"
 #include "SimTKcommon.h"
+#include "GeometrySet.h"
 
 #ifndef SWIG
 using SimTK::Transform;
@@ -51,6 +54,7 @@ using SimTK::Transform;
 namespace OpenSim { 
 
 class Geometry;
+class GeometrySet;
 // CONSTANTS
 
 //=============================================================================
@@ -72,26 +76,33 @@ class OSIMCOMMON_API VisibleObject: public Object
 //=============================================================================
 private:
 	// PROPERTIES
-	/** Name of geometry file name(s) */
-	PropertyStrArray	_propGeometryFileNames;
-	Array<std::string>&	_geometryFileNames;	
+	/** Name of geometry(s) */
+	PropertyObj			_propGeometrySet;
+	OpenSim::GeometrySet&	_geometrySet;	
 
-	Array<Geometry*>   _allGeometry;
-	/** Object that represents shading, material, colors */
-	PropertyObj		_propVisibleProp;
-	VisibleProperties&	_visibleProp;
-
-	/** Scale factors for geometry. unserialized */
-	PropertyDblVec3	_propScaleFactors;
+	/** Scale factors for geometry. */
+	PropertyDblVec3		_propScaleFactors;
 	SimTK::Vec3&		_scaleFactors;
 
-	// In general these can use the Observable mechanism but that would be slow 
-	// for display purposes.
-	ArrayPtrs<VisibleObject>	_dependents;
+	/** Transform of Geometries relative to owner frame */
+	PropertyTransform	_transformProp;
+	Transform&			_transform; // transform relative to _owner's frame. 
+
+	/** Whether to show frame at the origin of the geometry owner */
+	PropertyBool		_propShowAxes;
+	bool&				_showAxes;
+
+	/** DisplayPreference 0 up to 4 if geometry contains pieces their preferences take precedence*/
+	PropertyInt	_propDisplayPreference;
+	DisplayGeometry::DisplayPreference& _displayPreference;
 
 protected:
 	Object*				_owner;	// Actual object that owns this VisibleObject
-	Transform			_transform; // transform relative to _owner's frame. unserialized
+
+	Array<Geometry*>   _allGeometry;
+	// In general these can use the Observable mechanism but that would be slow 
+	// for display purposes.
+	ArrayPtrs<VisibleObject>	_dependents;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -135,18 +146,18 @@ public:
 	void setGeometryFileName(int i, const std::string &aGeometryFileName);
 	const int getNumGeometryFiles() const;
 	const std::string& getGeometryFileName(int i) const;
-	// VISIBLE PROPERTIES
-	void setVisibleProperties(const VisibleProperties &aVisibleProperties);
-	VisibleProperties& getVisibleProperties();
+
+	const GeometrySet& getGeometrySet() const { 
+		return (_geometrySet); 
+	};
 	// TRANSFORM
-#ifndef SWIG
 	const SimTK::Transform& getTransform() {
 		return _transform;
 	}
 	SimTK::Transform& updTransform() {
 		return _transform;
 	}
-#endif
+	void getRotationsAndTranslationsAsArray6(double aArray[]) const;
 	void getTransformAsDouble16(double flatList[]) {
 		double* matStart = &_transform.toMat44()[0][0];
 		for (int i=0; i<16; i++) flatList[i]=matStart[i];
@@ -159,6 +170,7 @@ public:
 		_transform.updP() = _transform.p()+t;
 	}
 
+	// Scale
 	void setScaleFactors(const SimTK::Vec3& aScaleFactors);
 	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 	// A variation that uses raw arrays for use from GUI only.
@@ -168,8 +180,20 @@ public:
 	void getScaleFactors(double aScaleFactors[]) const {
 		getScaleFactors(SimTK::Vec3::updAs(aScaleFactors));
 	} 
+
+	// Axes
+	bool getShowAxes() const { return _showAxes; };
+	void setShowAxes(const bool showAxes) { _showAxes = showAxes; };
+
+	// DisplayPreference
+	DisplayGeometry::DisplayPreference getDisplayPreference() const;
+	void setDisplayPreference(const DisplayGeometry::DisplayPreference& aPreference);
+
 	// DEPENDENTS
-	void addDependent(VisibleObject *aChild){ _dependents.append(aChild); };
+	void addDependent(VisibleObject *aChild){ 
+		if (!hasDependent(aChild))
+			_dependents.append(aChild);
+	};
 	bool hasDependent(VisibleObject *aChild){ // Check if dependency already added
 		for(int i=0; i < _dependents.getSize(); i++){
 			if (_dependents.get(i)==aChild)
@@ -215,6 +239,8 @@ public:
 	// XML
 	//--------------------------------------------------------------------------
 	void setupProperties();
+
+	virtual void updateFromXMLNode();
 
 	// updateGeometry is the method used to update geometry that can change (e.g. muscles
 	// changing geometry during motion).

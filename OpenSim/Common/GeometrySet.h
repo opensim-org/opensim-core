@@ -1,9 +1,9 @@
-#ifndef _version_h_
-#define _version_h_
-// version.h
+#ifndef _GeometrySet_h_
+#define _GeometrySet_h_
+// GeometrySet.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2007, Stanford University. All rights reserved. 
+* Copyright (c)  2005, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -28,24 +28,41 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#if defined(__cplusplus) || defined(SWIG)
-#include <string>
-namespace OpenSim {
+/*  
+ * Author:  
+ */
+
+#include "osimCommonDLL.h"
+#include "Object.h"
+#include "DisplayGeometry.h"
+#include "Set.h"
+
+namespace OpenSim { 
+
+class OSIMCOMMON_API GeometrySet :	public Set<DisplayGeometry> 
+{
+public:
+	GeometrySet(){ setType("GeometrySet"); };
+	virtual ~GeometrySet() {};
+#ifndef SWIG
+	GeometrySet& operator=(const GeometrySet& aGeometrySet) { 
+		Set<DisplayGeometry>::operator=(aGeometrySet);
+		return (*this);
+	};
+
+	bool operator==(const GeometrySet& aGeometrySet) { 
+		bool sizeMatch = (getSize()==aGeometrySet.getSize()); 
+		if (!sizeMatch) return false;
+		bool match=true;
+		for(int i=0; i< getSize() && match; i++)
+			match = (get(i)==aGeometrySet[i]);
+		return match;
+	};
 #endif
+};
 
-	static const char *OpenSimVersion = "2.1.0_b5";
+}; //namespace
+//=============================================================================
+//=============================================================================
 
-#if defined(__cplusplus) || defined(SWIG)
-	std::string GetVersionAndDate() { 
-		char buffer[256];
-		sprintf(buffer,"version %s, build date %s %s", OpenSimVersion, __TIME__, __DATE__);
-		return std::string(buffer);
-	}
-
-	std::string GetVersion() {
-		return OpenSimVersion;
-	}
-}
-#endif
-
-#endif
+#endif //__GeometrySet_h__

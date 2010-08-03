@@ -118,7 +118,7 @@ public:
 	Storage(const Storage &aStorage,int aStateIndex,int aN,
 		const char *aDelimiter="\t");
 
-	virtual StorageInterface* copy() const;
+	virtual Object* copy() const;
 	virtual ~Storage();
 
 	const std::string& getName() const { return _name; };

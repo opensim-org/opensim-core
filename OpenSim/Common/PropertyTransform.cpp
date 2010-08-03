@@ -221,13 +221,11 @@ const string &PropertyTransform::
 toString()
 {
 	string str = "(";
-	char dbl[256];
-	for(int i=0; i < 3; i++){
-		for(int j=0; j < 4; j++){
-			sprintf(dbl, "%g", _transform.asMat34()[i][j]);
-			str += (i>0?" ":"") + string(dbl);
-		}
-	}
+	char pad[256];
+	double rawData[6];
+	getRotationsAndTranslationsAsArray6(rawData);
+	sprintf(pad, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
+	str += string(pad);
 	str += ")";
 	_valueString = str;
 	return (_valueString);

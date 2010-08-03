@@ -80,7 +80,9 @@ public:
 	virtual ~Constraint();
 	virtual Object* copy() const = 0;
 
+#ifndef SWIG
 	Constraint& operator=(const Constraint &aConstraint);
+#endif
 	void copyData(const Constraint &aConstraint);
 
 	virtual void updateFromConstraint(SimTK::State& s, const Constraint &aConstraint);
@@ -96,6 +98,7 @@ protected:
 	virtual void setup(Model& aModel);
 	virtual void initState(SimTK::State& state) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
+	virtual int getNumStateVariables() const { return 0; };
 
 private:
 	void setNull();

@@ -352,12 +352,12 @@ void LiuThelen2003Muscle::computeEquilibrium(SimTK::State& s) const
  */
 double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
-	double tendonForce;
+   double tendonForce;
    double normState[4], normStateDeriv[4], norm_tendon_length, ca;
    double norm_muscle_tendon_length, pennation_angle;
 
 	// Base Class (to calculate speed)
-	Muscle::computeActuation(s);
+	Muscle::computeLengtheningSpeed(s);
 
 	// Normalize the muscle states.
    normState[STATE_ACTIVATION] = getActivation(s);
@@ -385,7 +385,7 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 
    tendonForce = calcTendonForce(s,norm_tendon_length);
    setPassiveForce(s, calcPassiveForce(s,normState[STATE_FIBER_LENGTH]) );
-   setActiveForce(s, calcActiveForce(s,normState[STATE_FIBER_LENGTH]) );
+   double activeForce = calcActiveForce(s,normState[STATE_FIBER_LENGTH]);
 	
    // If pennation equals 90 degrees, fiber length equals muscle width and fiber
    // velocity goes to zero.  Pennation will stay at 90 until tendon starts to
@@ -410,7 +410,7 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
    else
    {
       double velocity_dependent_force = tendonForce / ca - getPassiveForce(s);
-      normStateDeriv[STATE_FIBER_LENGTH] = calcFiberVelocity(s, getActiveMotorUnits(s), getActiveForce(s), velocity_dependent_force);
+      normStateDeriv[STATE_FIBER_LENGTH] = calcFiberVelocity(s, getActiveMotorUnits(s), activeForce, velocity_dependent_force);
    }
 
 	normStateDeriv[STATE_ACTIVE_MOTOR_UNITS] = normStateDeriv[STATE_ACTIVATION] - getFatigueFactor() * getActiveMotorUnits(s) + getRecoveryFactor() * getFatiguedMotorUnits(s);
@@ -425,10 +425,10 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 	setFatiguedMotorUnitsDeriv(s, normStateDeriv[STATE_FATIGUED_MOTOR_UNITS]);
 
 	tendonForce = tendonForce *  _maxIsometricForce;
+	setForce( s, tendonForce );
 	setTendonForce( s, tendonForce );
 	setPassiveForce( s, getPassiveForce(s) * _maxIsometricForce);
-	setActiveForce( s, getActiveForce(s)*getActivation(s) * _maxIsometricForce);
-
+	
 	return tendonForce;
 }
 
@@ -471,4 +471,12 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
 	// Now you can call the base class's function with the steady-state activation
 	return Thelen2003Muscle::computeIsometricForce(s, aActivation);
+}
+
+int LiuThelen2003Muscle::getStateVariableYIndex(int index) const
+{
+	if (index<4 && index >=0)
+		return _model->getSystem().getDefaultState().getZStart()+_zIndex+index;
+	throw Exception("Trying to get State variable YIndex for LiuThelen2003Muscle "+getName()+" at undefined index"); 
+
 }
