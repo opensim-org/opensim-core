@@ -43,14 +43,14 @@ int main() {
 		md.findFrameRange(0.0, 1.0, rStartFrame, rEndFrame);
 		ASSERT(rStartFrame==0);
 		ASSERT(rEndFrame==4);
-		/*md.findFrameRange(0.004, 0.012, rStartFrame, rEndFrame);
+		md.findFrameRange(0.004, 0.012, rStartFrame, rEndFrame);
 		ASSERT(rStartFrame==1);
 		ASSERT(rEndFrame==3);
 		// ToBeTested void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
 		ASSERT(md.getFileName()=="TRCFileWithNANs.trc");
 		Storage storage;
-		md.makeRdStorage(storage);*/
-		//ASSERT(md.getUnits().getType()==Units(std::string mm("mm")).getType());
+		md.makeRdStorage(storage);
+		ASSERT(md.getUnits().getType()==Units(std::string("mm")).getType());
                 //std::string mm("mm");
                 Units lengthUnit = Units::Millimeters;
                 ASSERT(md.getUnits().getType()==lengthUnit.getType())
