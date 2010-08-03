@@ -36,6 +36,7 @@
 #include "ForwardTool.h"
 #include "AnalyzeTool.h"
 
+#include "InverseKinematicsTool.h"
 #include "GenericModelMaker.h"
 #include "TrackingTask.h"
 #include "MuscleStateTrackingTask.h"

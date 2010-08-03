@@ -350,7 +350,6 @@ bool InverseKinematicsTool::run()
 		int Nframes = int((final_time-start_time)/dt)+1;
 		for (int i = 1; i < Nframes; i++) {
 			s.updTime() = start_time + i*dt;
-			// update solver state to match new observed locations
 			ikSolver.track(s);
 			kinematicsReporter.step(s, i);
 		}

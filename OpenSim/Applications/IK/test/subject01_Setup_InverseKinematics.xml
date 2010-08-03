@@ -32,5 +32,6 @@
   <!-- A positive scalar that is used to weight the importance of satisfying constraints."
 		  A weighting of 'Infinity' or if it is unassigned results in the constraints being strictly enforced-->
   <constraint_weight> 100.0 </constraint_weight>
+  <accuracy>1e-5</accuracy>
 </InverseKinemtaticsTool>
 

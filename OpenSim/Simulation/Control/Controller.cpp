@@ -35,6 +35,7 @@
 // INCLUDES
 //=============================================================================
 #include <cstdio>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Set.h>
 #include "Controller.h"
@@ -240,6 +241,13 @@ getLastTime() const {
 void Controller:: setup(Model& model)
 {
 	ModelComponent::setup(model);
+
+	if(IO::Uppercase(_actuatorNameList[0]) == "ALL"){
+		setActuators(model.updActuators());
+		// setup actuators to ensure actuators added by controllers are also setup properly
+		_actuatorSet.setup(*_model);
+		return;
+	}
 
 	Set<Actuator> actuatorsByName;
 	for(int i =0; i < _actuatorNameList.getSize(); i++){

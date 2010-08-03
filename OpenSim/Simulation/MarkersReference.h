@@ -140,7 +140,7 @@ public:
 	virtual void getValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &values) const;
 	/** get the speed value of the MarkersReference */
 	virtual void getSpeedValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &speedValues) const;
-	/** get the speed value of the MarkersReference */
+	/** get the acceleration value of the MarkersReference */
 	virtual void getAccelerationValues(const SimTK::State &s, SimTK::Array_<SimTK::Vec3> &accValues) const;
 	/** get the weighting (importance) of meeting this MarkersReference in the same order as names*/
 	virtual void getWeights(const SimTK::State &s, SimTK::Array_<double> &weights) const;

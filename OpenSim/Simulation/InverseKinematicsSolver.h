@@ -69,7 +69,7 @@ class OSIMSIMULATION_API InverseKinematicsSolver: public AssemblySolver
 protected:
 
 	// The marker reference values and weightings
-	const MarkersReference &_markersReference;
+	MarkersReference &_markersReference;
 
 	// Markers collectively form a single assembly condition for the SimTK::Assembler
 	SimTK::Markers *_markerAssemblyCondition;
@@ -100,6 +100,35 @@ public:
 		coordinate values can and should be updated between repeated calls
 		to track a desired trajectory of coordinate values. */
 	//virtual void track(SimTK::State &s);
+
+	/** Change the weighting of a marker to take affect when assemble or track is called next. 
+		Update a marker's weight by name. */
+	void updateMarkerWeight(const std::string &markerName, double value);
+	/** Update a marker's weight by its index. */
+	void updateMarkerWeight(int markerIndex, double value);
+	/** Update all markers weights by order in the markersRerence passed in to
+	    construct the solver. */
+	void updateMarkerWeights(const SimTK::Array_<double> &weights);
+
+	/** Compute and return the spatial location of a marker in ground. */
+	SimTK::Vec3 computeCurrentMarkerLocation(const std::string &markerName);
+	SimTK::Vec3 computeCurrentMarkerLocation(int markerIndex);
+	/** Compute and return the spatial locations of all markers in ground. */
+	void computeCurrentMarkerLocations(SimTK::Array_<SimTK::Vec3> &markerLocations);
+
+	/** Compute and return the distance error between model marker and observation. */
+	double computeCurrentMarkerError(const std::string &markerName);
+	double computeCurrentMarkerError(int markerIndex);
+	/** Compute and return the distance errors between all model markers and their observations. */
+	void computeCurrentMarkerErrors(SimTK::Array_<double> &markerErrors);
+
+	/** Compute and return the squared-distance error between model marker and observation. 
+	    This is cheaper than calling the error and squaring it, since distance from norm-2 */
+	double computeCurrentSquaredMarkerError(const std::string &markerName);
+	double computeCurrentSquaredMarkerError(int markerIndex);
+	/** Compute and return the distance errors between all model marker and observations. */
+	void computeCurrentSquaredMarkerErrors(SimTK::Array_<double> &markerErrors);
+
 
 protected:
 	/** Internal method to convert the CoordinateReferences into goals of the 

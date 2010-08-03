@@ -79,7 +79,7 @@ public:
 	/**
 	 * Another constructor.
 	 *
-	 * @param aModel The model that has actualtors being controlled by this Controller.
+	 * @param aModel The model that has actuators being controlled by this Controller.
 	 */
 	PrescribedController(Model& aModel);
 
