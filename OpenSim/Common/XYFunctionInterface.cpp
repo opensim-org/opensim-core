@@ -110,8 +110,8 @@ int XYFunctionInterface::getNumberOfPoints() const
 	{
 		case typeConstant:
 			return 0;
-	   case typeStepFunction:
-			return _stepFunction->getNumberOfPoints();
+	   //case typeStepFunction:
+		//	return _stepFunction->getNumberOfPoints();
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getNumberOfPoints();
 	   case typeLinearFunction:
@@ -132,7 +132,7 @@ const double* XYFunctionInterface::getXValues() const
 		case typeConstant:
 			return NULL;
 	   case typeStepFunction:
-			return _stepFunction->getXValues();
+			return NULL;
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getXValues();
 	   case typeLinearFunction:
@@ -162,7 +162,7 @@ const double* XYFunctionInterface::getYValues() const
 		case typeConstant:
 			return NULL;
 	   case typeStepFunction:
-			yValues = _stepFunction->getYValues();
+			return NULL;;
 			break;
 	   case typePiecewiseLinearFunction:
 		   yValues = _piecewiseLinearFunction->getYValues();
@@ -201,7 +201,7 @@ double XYFunctionInterface::getX(int aIndex) const
 		case typeConstant:
 			return 0; //_constant->getX(aIndex);
 	   case typeStepFunction:
-			return _stepFunction->getX(aIndex);
+			return 0; //_stepFunction->getX(aIndex);
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getX(aIndex);
 	   case typeLinearFunction:
@@ -227,7 +227,7 @@ double XYFunctionInterface::getY(int aIndex) const
 		case typeConstant:
 			return _constant->getValue() * _scaleFactor;
 	   case typeStepFunction:
-			return _stepFunction->getY(aIndex) * _scaleFactor;
+		   return SimTK::NaN;
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getY(aIndex) * _scaleFactor;
 	   case typeLinearFunction:
@@ -252,9 +252,9 @@ void XYFunctionInterface::setX(int aIndex, double aValue)
 	{
 		case typeConstant:
 			break;
-	   case typeStepFunction:
-		   _stepFunction->setX(aIndex, aValue);
-		   break;
+	  // case typeStepFunction:
+		//   _stepFunction->setX(aIndex, aValue);
+		  // break;
 	   case typePiecewiseLinearFunction:
 		   _piecewiseLinearFunction->setX(aIndex, aValue);
 		   break;
@@ -277,9 +277,9 @@ void XYFunctionInterface::setY(int aIndex, double aValue)
 	{
 		case typeConstant:
 			break;
-	   case typeStepFunction:
-		   _stepFunction->setY(aIndex, aValue);
-		   break;
+	   //case typeStepFunction:
+		 //  _stepFunction->setY(aIndex, aValue);
+		   //break;
 	   case typePiecewiseLinearFunction:
 		   _piecewiseLinearFunction->setY(aIndex, aValue);
 		   break;
@@ -301,7 +301,7 @@ bool XYFunctionInterface::deletePoint(int aIndex)
 		case typeConstant:
 			return true;
 	   case typeStepFunction:
-		   return _stepFunction->deletePoint(aIndex);
+		   return false;
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->deletePoint(aIndex);
 	   case typeLinearFunction:
@@ -322,7 +322,7 @@ bool XYFunctionInterface::deletePoints(const Array<int>& indices)
 		case typeConstant:
 			return true;
 	   case typeStepFunction:
-		   return _stepFunction->deletePoints(indices);
+		   return false;
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->deletePoints(indices);
 	   case typeLinearFunction:
@@ -345,7 +345,7 @@ int XYFunctionInterface::addPoint(double aX, double aY)
 		case typeConstant:
 			return 1;
 	   case typeStepFunction:
-		   return _stepFunction->addPoint(aX, aY);
+		   return 0;
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->addPoint(aX, aY);
 	   case typeLinearFunction:
