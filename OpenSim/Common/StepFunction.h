@@ -1,75 +1,74 @@
-#ifndef _StepFunction_h_
-#define _StepFunction_h_
+#ifndef __StepFunction_h__
+#define __StepFunction_h__
 
 // StepFunction.h
-// Author: Peter Loan
+// Author: Ajay Seth
 /*
- * Copyright (c) 2007, Stanford University. All rights reserved. 
- * Redistribution and use in source and binary forms, with or without 
- * modification, are permitted provided that the following conditions
- * are met: 
- *  - Redistributions of source code must retain the above copyright 
- *    notice, this list of conditions and the following disclaimer. 
- *  - Redistributions in binary form must reproduce the above copyright 
- *    notice, this list of conditions and the following disclaimer in the 
- *    documentation and/or other materials provided with the distribution. 
- *  - Neither the name of the Stanford University nor the names of its 
- *    contributors may be used to endorse or promote products derived 
- *    from this software without specific prior written permission. 
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS 
- * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE 
- * COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, 
- * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; 
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER 
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN 
- * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
- * POSSIBILITY OF SUCH DAMAGE. 
+ * Copyright (c)  2009, Stanford University. All rights reserved. 
+* Use of the OpenSim software in source form is permitted provided that the following
+* conditions are met:
+* 	1. The software is used only for non-commercial research and education. It may not
+*     be used in relation to any commercial activity.
+* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
+*     only through https://simtk.org/home/opensim.
+* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
+*      presentations, or documents describing work in which OpenSim or derivatives are used.
+* 	4. Credits to developers may not be removed from executables
+*     created from modifications of the source.
+* 	5. Modifications of source code must retain the above copyright notice, this list of
+*     conditions and the following disclaimer. 
+* 
+*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
+*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
 // INCLUDES
-#include "osimCommonDLL.h"
 #include <string>
-#include "Array.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
 #include "Function.h"
-#include "FunctionAdapter.h"
+#include "PropertyDbl.h"
 
+namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a step function.
+ * A class for representing a StepFunction.
+ *
+ *	  		{	start_value,	t <= start_time 
+ * f(t) =   {	S-plolynomial(t), start_time < t < end_time
+ *			{   end_value,		t >= end_time
  *
  * This class inherits from Function and so can be used as input to
- * any class requiring a Function as input.
+ * any class requiring a Fuction as input.
  *
- * @author Peter Loan
+ * @author Ajay Seth
  * @version 1.0
  */
-namespace OpenSim { 
-
 class OSIMCOMMON_API StepFunction : public Function
 {
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Array of values for the independent variables (i.e., the knot
-	sequence).  This array must be monotonically increasing. */
-	PropertyDblArray _propX;
-	Array<double> &_x;
+	PropertyDbl _startTimeProp;
+	double &_startTime;
 
-	/** Y values. */
-	PropertyDblArray _propY;
-	Array<double> &_y;
+	PropertyDbl _endTimeProp;
+	double &_endTime;
+
+	PropertyDbl _startValueProp;
+	double &_startValue;
+
+	PropertyDbl _endValueProp;
+	double &_endValue;
 
 //=============================================================================
 // METHODS
@@ -79,64 +78,68 @@ public:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 	StepFunction();
-	StepFunction(int aN,const double *aTimes,const double *aValues,
-		const std::string &aName="");
-	StepFunction(const StepFunction &aFunction);
+	StepFunction(double startTime, double endTime, double startValue=0.0, double endValue=1.0);
+	StepFunction(const StepFunction &aSpline);
 	virtual ~StepFunction();
 	virtual Object* copy() const;
-	virtual void init(Function* aFunction);
 
 private:
 	void setNull();
 	void setupProperties();
-	void setEqual(const StepFunction &aFunction);
+	void copyData(const StepFunction &aStepFunction);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	StepFunction& operator=(const StepFunction &aFunction);
+	StepFunction& operator=(const StepFunction &aStepFunction);
 #endif
+
 	//--------------------------------------------------------------------------
-	// SET AND GET
+	// SET AND GET Coefficients
 	//--------------------------------------------------------------------------
 public:
-	int getSize() const;
-	const Array<double>& getX() const;
-	const Array<double>& getY() const;
-	virtual const double* getXValues() const;
-	virtual const double* getYValues() const;
-	virtual int getNumberOfPoints() const { return _x.getSize(); }
-	virtual double getX(int aIndex) const;
-	virtual double getY(int aIndex) const;
-	virtual double getZ(int aIndex) const { return 0.0; }
-	virtual void setX(int aIndex, double aValue);
-	virtual void setY(int aIndex, double aValue);
-	virtual bool deletePoint(int aIndex);
-	virtual bool deletePoints(const Array<int>& indices);
-	virtual int addPoint(double aX, double aY);
+	/** Set step transition start time */
+	void setStartTime(double time)
+		{ _startTime = time; };
+	/** Get step transition time */
+	double getStartTime() const
+		{ return _startTime; };
+
+	/** Set step transition end time */
+	void setEndTime(double time)
+		{ _endTime = time; };
+	/** Get step transition time */
+	double getEndTime() const
+		{ return _endTime; };
+
+	/** Set start value before step */
+	void setStartValue(double start)
+		{ _startValue = start; };
+	/** Get start value before step */
+	double getStartValue() const
+		{ return _startValue; };
+
+	/** Set end value before step */
+	void setEndValue(double end)
+		{ _endValue = end; };
+	/** Get end value before step */
+	double getEndValue() const
+		{ return _endValue; };
 
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
-	virtual double evaluateTotalFirstDerivative(double aX,double aDxdt) const;
-	virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const;
-    double calcValue(const SimTK::Vector& x) const;
-    double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
-    int getArgumentSize() const;
-    int getMaxDerivativeOrder() const;
-    SimTK::Function* createSimTKFunction() const;
+    virtual SimTK::Function* createSimTKFunction() const;
 
-	virtual void updateFromXMLNode();
-
-	OPENSIM_DECLARE_DERIVED(StepFunction, Function)
+	OPENSIM_DECLARE_DERIVED(StepFunction, Function);
 
 //=============================================================================
 };	// END class StepFunction
+//=============================================================================
+//=============================================================================
 
-}; //namespace
-//=============================================================================
-//=============================================================================
+} // end of namespace OpenSim
 
 #endif  // __StepFunction_h__

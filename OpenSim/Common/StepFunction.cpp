@@ -1,7 +1,7 @@
 // StepFunction.cpp
-// Author: Peter Loan
+// Author: Ajay Seth
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+ * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -24,26 +24,19 @@
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
-
-// C++ INCLUDES
+//=============================================================================
+// INCLUDES
+//=============================================================================
 #include "StepFunction.h"
-#include "Constant.h"
-#include "PropertyInt.h"
-#include "PropertyDbl.h"
-#include "PropertyDblArray.h"
-#include "SimmMacros.h"
-#include "XYFunctionInterface.h"
-
-using namespace OpenSim;
-using namespace std;
-using SimTK::Vector;
+#include <OpenSim/Common/FunctionAdapter.h>
 
 //=============================================================================
 // STATICS
 //=============================================================================
-
+using namespace std;
+using namespace OpenSim;
 
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTORS
@@ -55,64 +48,60 @@ using SimTK::Vector;
 StepFunction::~StepFunction()
 {
 }
+
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
 StepFunction::StepFunction() :
-	_x(_propX.getValueDblArray()),
-	_y(_propY.getValueDblArray())
+	_startTime(_startTimeProp.getValueDbl()), 
+	_endTime(_endTimeProp.getValueDbl()),
+	_startValue(_startValueProp.getValueDbl()),
+	_endValue(_endValueProp.getValueDbl())
+
 {
 	setNull();
+	setupProperties();
 }
+
 //_____________________________________________________________________________
 /**
  */
-StepFunction::StepFunction(int aN,const double *aX,const double *aY,
-	const string &aName) :
-	_x(_propX.getValueDblArray()),
-	_y(_propY.getValueDblArray())
+StepFunction::StepFunction(double startTime, double endTime, double startValue, double endValue) :
+	_startTime(_startTimeProp.getValueDbl()), 
+	_endTime(_endTimeProp.getValueDbl()),
+	_startValue(_startValueProp.getValueDbl()),
+	_endValue(_endValueProp.getValueDbl())
+
 {
 	setNull();
+	setupProperties();
 
-	// OBJECT TYPE AND NAME
-	setName(aName);
-
-	// NUMBER OF DATA POINTS
-	if(aN < 2)
-	{
-		printf("StepFunction: ERROR- there must be 2 or more data points.\n");
-		return;
-	}
-
-	// CHECK DATA
-	if((aX==NULL)||(aY==NULL))
-	{
-		printf("StepFunction: ERROR- NULL arrays for data points encountered.\n");
-		return;
-	}
-
-	// INDEPENDENT VALUES (KNOT SEQUENCE)
-	_x.setSize(0);
-	_x.append(aN,aX);
-
-	_y.setSize(0);
-	_y.append(aN,aY);
+	setStartTime(startTime);
+	setEndTime(endTime);
+	setStartValue(startValue);
+	setEndValue(endValue);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy constructor.
- * All data members of the specified function are copied.
+ * All data members of the specified StepFunction are copied.
  *
- * @param aFunction StepFunction object to be copied.
+ * @param aStepFunction StepFunction object to be copied.
  */
-StepFunction::StepFunction(const StepFunction &aFunction) :
-	Function(aFunction),
-	_x(_propX.getValueDblArray()),
-	_y(_propY.getValueDblArray())
+StepFunction::StepFunction(const StepFunction &aStepFunction) :
+	_startTime(_startTimeProp.getValueDbl()), 
+	_endTime(_endTimeProp.getValueDbl()),
+	_startValue(_startValueProp.getValueDbl()),
+	_endValue(_endValueProp.getValueDbl())
+
 {
-	setEqual(aFunction);
+	setNull();
+	setupProperties();
+	copyData(aStepFunction);
 }
+
 //_____________________________________________________________________________
 /**
  * Copy this object.
@@ -121,13 +110,12 @@ StepFunction::StepFunction(const StepFunction &aFunction) :
  */
 Object* StepFunction::copy() const
 {
-	StepFunction *function = new StepFunction(*this);
-	return(function);
+	StepFunction *aStepFunction = new StepFunction(*this);
+	return(aStepFunction);
 }
 
-
 //=============================================================================
-// CONSTRUCTION
+// CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
@@ -136,8 +124,8 @@ Object* StepFunction::copy() const
 void StepFunction::setNull()
 {
 	setType("StepFunction");
-	setupProperties();
 }
+
 //_____________________________________________________________________________
 /**
  * Set up the serialized member variables.  This involves both generating
@@ -146,77 +134,40 @@ void StepFunction::setNull()
  */
 void StepFunction::setupProperties()
 {
-	// X- INDEPENDENT VARIABLES
-	_propX.setName("x");
-	Array<double> x(0.0);
-	_propX.setValue(x);
-	_propertySet.append( &_propX );
+	_startTimeProp.setName("transition_start_time");
+	_startTimeProp.setValue(0.99);
+	_propertySet.append(&_startTimeProp);
 
-	// Y- DEPENDENT VARIABLES
-	_propY.setName("y");
-	Array<double> y(0.0);
-	_propY.setValue(y);
-	_propertySet.append( &_propY );
+	_endTimeProp.setName("transition_end_time");
+	_endTimeProp.setValue(1.01);
+	_propertySet.append(&_endTimeProp);
+
+	_startValueProp.setName("start_value");
+	_startValueProp.setValue(0.0);
+	_propertySet.append(&_startValueProp);
+
+	_endValueProp.setName("end_value");
+	_endValueProp.setValue(1.0);
+	_propertySet.append(&_endValueProp);
+
 }
+
 //_____________________________________________________________________________
 /**
  * Set all member variables equal to the members of another object.
  * Note that this method is private.  It is only meant for copying the data
  * members defined in this class.  It does not, for example, make any changes
  * to data members of base classes.
- */
-void StepFunction::setEqual(const StepFunction &aFunction)
-{
-	setNull();
-
-	// CHECK ARRAY SIZES
-	if(aFunction.getSize()<=0) return;
-
-	// ALLOCATE ARRAYS
-	_x = aFunction._x;
-	_y = aFunction._y;
-}
-//_____________________________________________________________________________
-/**
- * Initialize the function with X and Y values.
  *
- * @param aN the number of X and Y values
- * @param aXValues the X values
- * @param aYValues the Y values
+ * @param aStepFunction StepFunction to be copied.
  */
-void StepFunction::init(Function* aFunction)
+void StepFunction::copyData(const StepFunction &aStepFunction)
 {
-	if (aFunction == NULL)
-		return;
-
-	StepFunction* sf = dynamic_cast<StepFunction*>(aFunction);
-	if (sf != NULL) {
-		setEqual(*sf);
-	} else {
-		XYFunctionInterface xyFunc(aFunction);
-		if (xyFunc.getNumberOfPoints() == 0) {
-			// A StepFunction must have at least 2 data points.
-			// If aFunction is a Constant, use its Y value for both data points.
-			// If it is not, make up two data points.
-			double x[2] = {0.0, 1.0}, y[2];
-			Constant* cons = dynamic_cast<Constant*>(aFunction);
-			if (cons != NULL) {
-				y[0] = y[1] = cons->calcValue(SimTK::Vector(1, 0.));
-			} else {
-				y[0] = y[1] = 1.0;
-			}
-			*this = StepFunction(2, x, y);
-		} else if (xyFunc.getNumberOfPoints() == 1) {
-			double x[2], y[2];
-			x[0] = xyFunc.getXValues()[0];
-			x[1] = x[0] + 1.0;
-			y[0] = y[1] = xyFunc.getYValues()[0];
-			*this = StepFunction(2, x, y);
-		} else {
-			*this = StepFunction(xyFunc.getNumberOfPoints(),
-				xyFunc.getXValues(), xyFunc.getYValues());
-		}
-	}
+	setStartTime(aStepFunction._startTime);
+	setEndTime(aStepFunction._endTime);
+	setStartValue(aStepFunction._startValue);
+	setEndValue(aStepFunction._endValue);
+    resetFunction();
 }
 
 //=============================================================================
@@ -227,247 +178,25 @@ void StepFunction::init(Function* aFunction)
  * Assignment operator.
  * Note that data members of the base class are also assigned.
  *
+ * @param aStepFunction StepFunction to be copied.
  * @return Reference to this object.
  */
-StepFunction& StepFunction::operator=(const StepFunction &aFunction)
+StepFunction& StepFunction::operator=(const StepFunction &aStepFunction)
 {
 	// BASE CLASS
-	Function::operator=(aFunction);
+	Function::operator=(aStepFunction);
 
 	// DATA
-	setEqual(aFunction);
+	copyData(aStepFunction);
 
 	return(*this);
 }
 
 
 //=============================================================================
-// SET AND GET
+// UTILITY
 //=============================================================================
-//-----------------------------------------------------------------------------
-// NUMBER OF DATA POINTS (N)
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get size or number of independent data points (or number of coefficients)
- * used to construct the function.
- *
- * @return Number of data points (or number of coefficients).
- */
-int StepFunction::getSize() const
+SimTK::Function* StepFunction::createSimTKFunction() const 
 {
-	return(_x.getSize());
-}
-
-//-----------------------------------------------------------------------------
-// X AND COEFFICIENTS
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the array of independent variables used to construct the function.
- * For the number of independent variable data points use getN().
- *
- * @return Pointer to the independent variable data points.
- * @see getN();
- */
-const Array<double>& StepFunction::getX() const
-{
-	return(_x);
-}
-//_____________________________________________________________________________
-/**
- * Get the array of Y values for the function.
- * For the number of Y values use getNX().
- *
- * @return Pointer to the coefficients.
- * @see getCoefficients();
- */
-const Array<double>& StepFunction::getY() const
-{
-	return(_y);
-}
-//_____________________________________________________________________________
-/**
- * Get the array of independent variables used to construct the function.
- * For the number of independent variable data points use getN().
- *
- * @return Pointer to the independent variable data points.
- * @see getN();
- */
-const double* StepFunction::getXValues() const
-{
-	return(&_x[0]);
-}
-//_____________________________________________________________________________
-/**
- * Get the array of dependent variables used to construct the function.
- *
- * @return Pointer to the dependent variable data points.
- */
-const double* StepFunction::getYValues() const
-{
-	return(&_y[0]);
-}
-
-
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- */
-void StepFunction::updateFromXMLNode()
-{
-	Function::updateFromXMLNode();
-}	
-
-//=============================================================================
-// EVALUATION
-//=============================================================================
-/**
- * Evaluates total first derivative
- */
-double StepFunction::
-evaluateTotalFirstDerivative(double aX,double aDxdt) const
-{
-	return 0.0;
-}
-
-/**
- * Evaluates total second derivative
- */
-double StepFunction::
-evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const
-{
-	return 0.0;
-}
-
-double StepFunction::getX(int aIndex) const
-{
-	if (aIndex >= 0 && aIndex < _x.getSize())
-		return _x.get(aIndex);
-	else {
-		throw Exception("StepFunction::getX(): index out of bounds.");
-		return 0.0;
-	}
-}
-
-double StepFunction::getY(int aIndex) const
-{
-	if (aIndex >= 0 && aIndex < _y.getSize())
-		return _y.get(aIndex);
-	else {
-		throw Exception("StepFunction::getY(): index out of bounds.");
-		return 0.0;
-	}
-}
-
-void StepFunction::setX(int aIndex, double aValue)
-{
-	if (aIndex >= 0 && aIndex < _x.getSize()) {
-		_x[aIndex] = aValue;
-	} else {
-		throw Exception("StepFunction::setX(): index out of bounds.");
-	}
-}
-
-void StepFunction::setY(int aIndex, double aValue)
-{
-	if (aIndex >= 0 && aIndex < _y.getSize()) {
-		_y[aIndex] = aValue;
-	} else {
-		throw Exception("StepFunction::setY(): index out of bounds.");
-	}
-}
-
-bool StepFunction::deletePoint(int aIndex)
-{
-	if (_x.getSize() > 1 && _y.getSize() > 1 &&
-		 aIndex < _x.getSize() && aIndex < _y.getSize()) {
-	   _x.remove(aIndex);
-	   _y.remove(aIndex);
-		return true;
-	}
-
-	return false;
-}
-
-bool StepFunction::deletePoints(const Array<int>& indices)
-{
-	bool pointsDeleted = false;
-	int numPointsLeft = _x.getSize() - indices.getSize();
-
-	if (numPointsLeft >= 1) {
-		// Assume the indices are sorted highest to lowest
-		for (int i=0; i<indices.getSize(); i++) {
-			int index = indices.get(i);
-			if (index >= 0 && index < _x.getSize()) {
-	         _x.remove(index);
-	         _y.remove(index);
-				pointsDeleted = true;
-			}
-		}
-	}
-
-   return pointsDeleted;
-}
-
-int StepFunction::addPoint(double aX, double aY)
-{
-	int i=0;
-	for (i=0; i<_x.getSize(); i++)
-		if (_x[i] > aX)
-			break;
-
-	_x.insert(i, aX);
-	_y.insert(i, aY);
-
-	return i;
-}
-
-double StepFunction::calcValue(const Vector& x) const
-{
-    int n = _x.getSize();
-    double aX = x[0];
-
-    if (aX < _x[0] || EQUAL_WITHIN_ERROR(aX,_x[0]))
-        return _y[0];
-    if (aX > _x[n-1] || EQUAL_WITHIN_ERROR(aX,_x[n-1]))
-        return _y[n-1];
-
-   // Do a binary search to find which two points the abscissa is between.
-    int k, i = 0;
-    int j = n;
-    while (1)
-    {
-        k = (i+j)/2;
-        if (aX < _x[k])
-            j = k;
-        else if (aX > _x[k+1])
-            i = k;
-        else
-            break;
-    }
-
-    return _y[k];
-}
-
-double StepFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
-{
-    return 0.0;
-}
-
-int StepFunction::getArgumentSize() const
-{
-    return 1;
-}
-
-int StepFunction::getMaxDerivativeOrder() const
-{
-    return std::numeric_limits<int>::max();
-}
-
-SimTK::Function* StepFunction::createSimTKFunction() const {
-    return new FunctionAdapter(*this);
+	return new SimTK::Function::Step(_startValue, _endValue, _startTime, _endTime);
 }
