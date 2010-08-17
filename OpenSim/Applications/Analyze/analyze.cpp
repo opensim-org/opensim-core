@@ -35,6 +35,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
+#include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
 using namespace OpenSim;
 using namespace std;
@@ -130,8 +131,13 @@ int main(int argc,char **argv)
 	cout<<"-----------------------------------------------------------------------\n";
 	cout<<"-----------------------------------------------------------------------\n\n";
 
+	// start timing
+	std::clock_t startTime = std::clock();
+
 	// RUN
 	analyze.run();
+
+	std::cout << "Analyze compute time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n" << endl;
 
 	//----------------------------
 	// Catch any thrown exceptions
