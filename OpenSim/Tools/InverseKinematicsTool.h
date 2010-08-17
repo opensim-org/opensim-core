@@ -52,7 +52,7 @@ class IKTaskSet;
 //=============================================================================
 //=============================================================================
 /**
- * A that performs an Inverse Kinematics analysis with a given model.
+ * A Tool that performs an Inverse Kinematics analysis with a given model.
  * Inverse kinematics is the solution of internal coordinates that poses
  * the model such that the landmark locations (markers), affixed to the model,
  * minimize the weighted least-squares error with observations of markers 
@@ -84,7 +84,6 @@ private:
 	    to which the solution can be trusted. */
 	PropertyDbl _accuracyProp;
 	double &_accuracy;
-
 
 	// Markers and coordinates to be matched and their respective weightings
 	PropertyObj _ikTaskSetProp;

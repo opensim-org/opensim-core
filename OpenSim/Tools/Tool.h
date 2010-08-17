@@ -118,7 +118,9 @@ private:
 	/**
 	* Set all member variables to their null or default values.
 	*/
-	void setNull() {setupProperties();} ;
+	void setNull() {
+		setupProperties();
+		_resultsDir = "./"; };
 	
 	/**
 	* Connect properties to local pointers.
