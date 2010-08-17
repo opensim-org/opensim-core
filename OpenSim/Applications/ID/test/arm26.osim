@@ -1,0 +1,1346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="10901">
+	<Model name="arm26">
+		<defaults>
+			<CoordinateActuator name="default">
+				<coordinate> Unassigned </coordinate>
+				<optimal_force>     300.00000000 </optimal_force>
+			</CoordinateActuator>
+			<ControlLinear name="default">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<default_min>      -1.00000000 </default_min>
+				<default_max>       1.00000000 </default_max>
+				<filter_on> false </filter_on>
+				<use_steps> false </use_steps>
+				<x_nodes/>
+				<min_nodes/>
+				<max_nodes/>
+				<kp>     100.00000000 </kp>
+				<kv>      20.00000000 </kv>
+			</ControlLinear>
+			<Thelen2003Muscle name="default">
+				<MusclePointSet name="">
+					<objects/>
+					<groups/>
+				</MusclePointSet>
+				<VisibleObject name="">
+					<geometry_files> </geometry_files>
+					<VisibleProperties name="">
+						<display_preference> 4 </display_preference>
+						<show_normals> false </show_normals>
+						<show_axes> false </show_axes>
+						<material_name> DEFAULT </material_name>
+					</VisibleProperties>
+					<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+				</VisibleObject>
+				<MuscleWrapSet name="">
+					<objects/>
+					<groups/>
+				</MuscleWrapSet>
+				<muscle_model> 9 </muscle_model>
+				<!--maximum isometric force of the muscle fibers-->
+				<max_isometric_force>       0.00000000 </max_isometric_force>
+				<!--optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.00000000 </optimal_fiber_length>
+				<!--resting length of the tendon-->
+				<tendon_slack_length>       0.00000000 </tendon_slack_length>
+				<!--angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.00000000 </pennation_angle>
+				<!--time constant for ramping up of muscle activation-->
+				<activation_time_constant>       0.01000000 </activation_time_constant>
+				<!--time constant for ramping down of muscle activation-->
+				<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+				<!--maximum contraction velocity at full activation in fiber lengths per
+				    second-->
+				<Vmax>      10.00000000 </Vmax>
+				<!--maximum contraction velocity at low activation in fiber lengths per
+				    second-->
+				<Vmax0>       5.00000000 </Vmax0>
+				<!--tendon strain due to maximum isometric muscle force-->
+				<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+				<!--passive muscle strain due to maximum isometric muscle force-->
+				<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+				<!--shape factor for Gaussian active muscle force-length relationship-->
+				<KshapeActive>       0.50000000 </KshapeActive>
+				<!--exponential shape factor for passive force-length relationship-->
+				<KshapePassive>       4.00000000 </KshapePassive>
+				<!--passive damping in the force-velocity relationship-->
+				<damping>       0.05000000 </damping>
+				<!--force-velocity shape factor-->
+				<Af>       0.30000000 </Af>
+				<!--maximum normalized lengthening force-->
+				<Flen>       1.80000000 </Flen>
+			</Thelen2003Muscle>
+			<Schutte1993Muscle name="default">
+				<MusclePointSet name="">
+					<objects/>
+					<groups/>
+				</MusclePointSet>
+				<VisibleObject name="">
+					<geometry_files> </geometry_files>
+					<VisibleProperties name="">
+						<display_preference> 4 </display_preference>
+						<show_normals> false </show_normals>
+						<show_axes> false </show_axes>
+						<material_name> DEFAULT </material_name>
+					</VisibleProperties>
+					<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+				</VisibleObject>
+				<MuscleWrapSet name="">
+					<objects/>
+					<groups/>
+				</MuscleWrapSet>
+				<muscle_model> 9 </muscle_model>
+				<!--Function representing force-velocity behavior of muscle fibers-->
+				<time_scale>       0.10000000 </time_scale>
+				<activation1>       0.00000000 </activation1>
+				<activation2>       0.00000000 </activation2>
+				<max_isometric_force>       0.00000000 </max_isometric_force>
+				<optimal_fiber_length>       0.00000000 </optimal_fiber_length>
+				<tendon_slack_length>       0.00000000 </tendon_slack_length>
+				<pennation_angle>       0.00000000 </pennation_angle>
+				<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
+				<damping>       0.05000000 </damping>
+				<tendon_force_length_curve>
+					<natCubicSpline name="">
+						<x>     -10.00000000      -0.00200000      -0.00100000       0.00000000       0.00131000       0.00281000       0.00431000       0.00581000       0.00731000       0.00881000       0.01030000       0.01180000       0.01230000       9.20000000       9.20100000       9.20200000      20.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.01080000       0.02570000       0.04350000       0.06520000       0.09150000       0.12300000       0.16100000       0.20800000       0.22700000     345.00000000     345.00000000     345.00000000     345.00000000 </y>
+					</natCubicSpline>
+				</tendon_force_length_curve>
+				<active_force_length_curve>
+					<natCubicSpline name="">
+						<x>     -35.00000000       0.00000000       0.40100000       0.40200000       0.40350000       0.52725000       0.62875000       0.71875000       0.86125000       1.04500000       1.21750000       1.43875000       1.61875000       1.62000000       1.62100000       2.20000000      35.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.22666700       0.63666700       0.85666700       0.95000000       0.99333300       0.77000000       0.24666700       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </y>
+					</natCubicSpline>
+				</active_force_length_curve>
+				<passive_force_length_curve>
+					<natCubicSpline name="">
+						<x>     -35.00000000       0.99800000       0.99900000       1.15000000       1.25000000       1.35000000       1.45000000       1.55000000       1.65000000       1.75000000       1.75010000       1.75020000      35.00000000 </x>
+						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.03500000       0.12000000       0.26000000       0.55000000       1.17000000       2.00000000       2.00000000       2.00000000       2.00000000 </y>
+					</natCubicSpline>
+				</passive_force_length_curve>
+				<force_velocity_curve/>
+			</Schutte1993Muscle>
+		</defaults>
+		<credits> Model authors names.. </credits>
+		<publications> List of publications related to model... </publications>
+		<ForceSet name="">
+			<objects>
+				<Thelen2003Muscle name="TRIlong">
+					<MusclePointSet name="">
+						<objects>
+							<MusclePoint name="TRIlong-P1">
+								<location>      -0.05365000      -0.01373000       0.14723000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> ground </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlong-P2">
+								<location>      -0.02714000      -0.11441000      -0.00664000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlong-P3">
+								<location>      -0.03184000      -0.22637000      -0.01217000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlong-P4">
+								<location>      -0.01743000      -0.26757000      -0.01208000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlong-P5">
+								<location>      -0.02190000       0.01046000      -0.00078000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_ulna_radius_hand </body>
+							</MusclePoint>
+						</objects>
+						<groups/>
+					</MusclePointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<MuscleWrapSet name="">
+						<objects>
+							<MuscleWrap name="">
+								<wrap_object> TRI </wrap_object>
+								<method> hybrid </method>
+								<range> -1 -1 </range>
+							</MuscleWrap>
+							<MuscleWrap name="">
+								<wrap_object> TRIlonghh </wrap_object>
+								<method> hybrid </method>
+								<range> -1 -1 </range>
+							</MuscleWrap>
+							<MuscleWrap name="">
+								<wrap_object> TRIlongglen </wrap_object>
+								<method> hybrid </method>
+								<range> -1 -1 </range>
+							</MuscleWrap>
+						</objects>
+						<groups/>
+					</MuscleWrapSet>
+					<muscle_model> 9 </muscle_model>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>     798.52000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.13400000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.14300000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.20943951 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="TRIlat">
+					<MusclePointSet name="">
+						<objects>
+							<MusclePoint name="TRIlat-P1">
+								<location>      -0.00599000      -0.12646000       0.00428000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlat-P2">
+								<location>      -0.02344000      -0.14528000       0.00928000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlat-P3">
+								<location>      -0.03184000      -0.22637000      -0.01217000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlat-P4">
+								<location>      -0.01743000      -0.26757000      -0.01208000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRIlat-P5">
+								<location>      -0.02190000       0.01046000      -0.00078000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_ulna_radius_hand </body>
+							</MusclePoint>
+						</objects>
+						<groups/>
+					</MusclePointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<MuscleWrapSet name="">
+						<objects>
+							<MuscleWrap name="">
+								<wrap_object> TRI </wrap_object>
+								<method> hybrid </method>
+								<range> -1 -1 </range>
+							</MuscleWrap>
+						</objects>
+						<groups/>
+					</MuscleWrapSet>
+					<muscle_model> 9 </muscle_model>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>     624.30000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.11380000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.09800000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.15707963 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="TRImed">
+					<MusclePointSet name="">
+						<objects>
+							<MusclePoint name="TRImed-P1">
+								<location>      -0.00838000      -0.13695000      -0.00906000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRImed-P2">
+								<location>      -0.02601000      -0.15139000      -0.01080000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRImed-P3">
+								<location>      -0.03184000      -0.22637000      -0.01217000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRImed-P4">
+								<location>      -0.01743000      -0.26757000      -0.01208000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="TRImed-P5">
+								<location>      -0.02190000       0.01046000      -0.00078000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_ulna_radius_hand </body>
+							</MusclePoint>
+						</objects>
+						<groups/>
+					</MusclePointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<MuscleWrapSet name="">
+						<objects>
+							<MuscleWrap name="">
+								<wrap_object> TRI </wrap_object>
+								<method> hybrid </method>
+								<range> -1 -1 </range>
+							</MuscleWrap>
+						</objects>
+						<groups/>
+					</MuscleWrapSet>
+					<muscle_model> 9 </muscle_model>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>     624.30000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.11380000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.09080000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.15707963 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="BIClong">
+					<MusclePointSet name="">
+						<objects>
+							<MusclePoint name="BIClong-P1">
+								<location>      -0.03923500       0.00347000       0.14795000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> ground </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P2">
+								<location>      -0.02894500       0.01391000       0.15639000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> ground </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P3">
+								<location>       0.02131000       0.01793000       0.01028000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P4">
+								<location>       0.02378000      -0.00511000       0.01201000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P5">
+								<location>       0.01345000      -0.02827000       0.00136000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P6">
+								<location>       0.01068000      -0.07736000      -0.00165000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P7">
+								<location>       0.01703000      -0.12125000       0.00024000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P8">
+								<location>       0.02280000      -0.17540000      -0.00630000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BIClong-P9">
+								<location>       0.00751000      -0.04839000       0.02179000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_ulna_radius_hand </body>
+							</MusclePoint>
+						</objects>
+						<groups/>
+					</MusclePointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<MuscleWrapSet name="">
+						<objects>
+							<MuscleWrap name="">
+								<wrap_object> BIClonghh </wrap_object>
+								<method> hybrid </method>
+								<range> 2 3 </range>
+							</MuscleWrap>
+						</objects>
+						<groups/>
+					</MuscleWrapSet>
+					<muscle_model> 9 </muscle_model>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>     624.30000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.11570000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.27230000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="BICshort">
+					<MusclePointSet name="">
+						<objects>
+							<MusclePoint name="BICshort-P1">
+								<location>       0.00467500      -0.01231000       0.13475000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> ground </body>
+							</MusclePoint>
+							<MusclePoint name="BICshort-P2">
+								<location>      -0.00707500      -0.04004000       0.14507000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> ground </body>
+							</MusclePoint>
+							<MusclePoint name="BICshort-P3">
+								<location>       0.01117000      -0.07576000      -0.01101000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BICshort-P4">
+								<location>       0.01703000      -0.12125000      -0.01079000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BICshort-P5">
+								<location>       0.02280000      -0.17540000      -0.00630000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BICshort-P6">
+								<location>       0.00751000      -0.04839000       0.02179000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_ulna_radius_hand </body>
+							</MusclePoint>
+						</objects>
+						<groups/>
+					</MusclePointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<MuscleWrapSet name="">
+						<objects/>
+						<groups/>
+					</MuscleWrapSet>
+					<muscle_model> 9 </muscle_model>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>     435.56000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.13210000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.19230000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+				<Thelen2003Muscle name="BRA">
+					<MusclePointSet name="">
+						<objects>
+							<MusclePoint name="BRA-P1">
+								<location>       0.00680000      -0.17390000      -0.00360000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_humerus </body>
+							</MusclePoint>
+							<MusclePoint name="BRA-P2">
+								<location>      -0.00320000      -0.02390000       0.00090000 </location>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<body> r_ulna_radius_hand </body>
+							</MusclePoint>
+						</objects>
+						<groups/>
+					</MusclePointSet>
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<MuscleWrapSet name="">
+						<objects>
+							<MuscleWrap name="">
+								<wrap_object> TRI </wrap_object>
+								<method> hybrid </method>
+								<range> -1 -1 </range>
+							</MuscleWrap>
+						</objects>
+						<groups/>
+					</MuscleWrapSet>
+					<muscle_model> 9 </muscle_model>
+					<!--maximum isometric force of the muscle fibers-->
+					<max_isometric_force>     987.26000000 </max_isometric_force>
+					<!--optimal length of the muscle fibers-->
+					<optimal_fiber_length>       0.08580000 </optimal_fiber_length>
+					<!--resting length of the tendon-->
+					<tendon_slack_length>       0.05350000 </tendon_slack_length>
+					<!--angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--time constant for ramping up of muscle activation-->
+					<activation_time_constant>       0.01000000 </activation_time_constant>
+					<!--time constant for ramping down of muscle activation-->
+					<deactivation_time_constant>       0.04000000 </deactivation_time_constant>
+					<!--maximum contraction velocity at full activation in fiber lengths per
+					    second-->
+					<Vmax>      10.00000000 </Vmax>
+					<!--maximum contraction velocity at low activation in fiber lengths per
+					    second-->
+					<Vmax0>       5.00000000 </Vmax0>
+					<!--tendon strain due to maximum isometric muscle force-->
+					<FmaxTendonStrain>       0.03300000 </FmaxTendonStrain>
+					<!--passive muscle strain due to maximum isometric muscle force-->
+					<FmaxMuscleStrain>       0.60000000 </FmaxMuscleStrain>
+					<!--shape factor for Gaussian active muscle force-length relationship-->
+					<KshapeActive>       0.50000000 </KshapeActive>
+					<!--exponential shape factor for passive force-length relationship-->
+					<KshapePassive>       4.00000000 </KshapePassive>
+					<!--passive damping in the force-velocity relationship-->
+					<damping>       0.05000000 </damping>
+					<!--force-velocity shape factor-->
+					<Af>       0.30000000 </Af>
+					<!--maximum normalized lengthening force-->
+					<Flen>       1.80000000 </Flen>
+				</Thelen2003Muscle>
+			</objects>
+			<groups/>
+		</ForceSet>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
+		<!--Acceleration due to gravity.-->
+		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<!--Bodies in the model.-->
+		<BodySet name="">
+			<objects>
+				<Body name="ground">
+					<mass>       0.00000000 </mass>
+					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
+					<inertia_xx>       0.00000000 </inertia_xx>
+					<inertia_yy>       0.00000000 </inertia_yy>
+					<inertia_zz>       0.00000000 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint/>
+					<VisibleObject name="">
+						<geometry_files> ground_ribs.vtp ground_spine.vtp ground_skull.vtp ground_jaw.vtp ground_r_clavicle.vtp ground_r_scapula.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects>
+							<WrapCylinder name="TRIlongglen">
+								<xyz_body_rotation>       1.37531945      -0.29461158       2.43595604 </xyz_body_rotation>
+								<translation>      -0.04390500      -0.00390000       0.14780000 </translation>
+								<active> true </active>
+								<quadrant> x </quadrant>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<radius>       0.00300000 </radius>
+								<length>       0.03000000 </length>
+							</WrapCylinder>
+						</objects>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="r_humerus">
+					<mass>       1.86457200 </mass>
+					<mass_center>       0.00000000      -0.18049600       0.00000000 </mass_center>
+					<inertia_xx>       0.01481000 </inertia_xx>
+					<inertia_yy>       0.00455100 </inertia_yy>
+					<inertia_zz>       0.01319300 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="r_shoulder">
+							<parent_body> ground </parent_body>
+							<location_in_parent>      -0.01754500      -0.00700000       0.17000000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="r_shoulder_elev">
+										<default_value>       0.00000000 </default_value>
+                    <default_speed_value> 0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -1.57079633       3.14159265 </range>
+                    <clamped> true </clamped>
+                    <locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+                  <TransformAxis name="rotation1">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       1.00000000       0.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="rotation2">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       1.00000000       0.00000000 </axis>
+                  </TransformAxis>
+									<TransformAxis name="rotation3">
+                    <function>
+                      <LinearFunction name="">
+                        <coefficients>       1.00000000       0.00000000 </coefficients>
+                      </LinearFunction>
+                    </function>
+										<coordinates> r_shoulder_elev </coordinates>
+										<axis>      -0.05889802       0.00230000       0.99826136 </axis>
+									</TransformAxis>
+                  <TransformAxis name="translation1">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       1.00000000       0.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="translation2">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       1.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="translation3">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       0.00000000       1.00000000 </axis>
+                  </TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> arm_r_humerus.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects>
+							<WrapEllipsoid name="TRIlonghh">
+								<xyz_body_rotation>       3.00161725      -0.85346600       2.57418611 </xyz_body_rotation>
+								<translation>      -0.00780000      -0.00410000      -0.00140000 </translation>
+								<active> true </active>
+								<quadrant> z </quadrant>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<dimensions>       0.03500000       0.02000000       0.02000000 </dimensions>
+							</WrapEllipsoid>
+							<WrapEllipsoid name="BIClonghh">
+								<xyz_body_rotation>      -2.00433611      -1.00164446       0.97546452 </xyz_body_rotation>
+								<translation>       0.00330000       0.00730000       0.00030000 </translation>
+								<active> true </active>
+								<quadrant> -y </quadrant>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<dimensions>       0.02500000       0.02000000       0.02000000 </dimensions>
+							</WrapEllipsoid>
+							<WrapCylinder name="TRI">
+								<xyz_body_rotation>      -0.14014994      -0.00628319       0.15498524 </xyz_body_rotation>
+								<translation>       0.00280000      -0.29190000      -0.00690000 </translation>
+								<active> true </active>
+								<quadrant> all </quadrant>
+								<VisibleObject name="">
+									<geometry_files> </geometry_files>
+									<VisibleProperties name="">
+										<display_preference> 4 </display_preference>
+										<show_normals> false </show_normals>
+										<show_axes> false </show_axes>
+										<material_name> DEFAULT </material_name>
+									</VisibleProperties>
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+								</VisibleObject>
+								<radius>       0.01600000 </radius>
+								<length>       0.05000000 </length>
+							</WrapCylinder>
+						</objects>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+				<Body name="r_ulna_radius_hand">
+					<mass>       1.53431500 </mass>
+					<mass_center>       0.00000000      -0.18147900       0.00000000 </mass_center>
+					<inertia_xx>       0.01928100 </inertia_xx>
+					<inertia_yy>       0.00157100 </inertia_yy>
+					<inertia_zz>       0.02006200 </inertia_zz>
+					<inertia_xy>       0.00000000 </inertia_xy>
+					<inertia_xz>       0.00000000 </inertia_xz>
+					<inertia_yz>       0.00000000 </inertia_yz>
+					<!--Joint that connects this body with the parent body.-->
+					<Joint>
+						<CustomJoint name="r_elbow">
+							<parent_body> r_humerus </parent_body>
+							<location_in_parent>       0.00610000      -0.29040000      -0.01230000 </location_in_parent>
+							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
+							<location>       0.00000000       0.00000000       0.00000000 </location>
+							<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
+							<!--Generalized coordinates parameterizing this joint.-->
+							<CoordinateSet name="">
+								<objects>
+									<Coordinate name="r_elbow_flex">
+										<default_value>       0.00000000 </default_value>
+                    <default_speed_value> 0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>       0.00000000       2.26892803 </range>
+										<clamped> true </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+								</objects>
+								<groups/>
+							</CoordinateSet>
+							<reverse> false </reverse>
+							<SpatialTransform name="">
+                  <TransformAxis name="rotation1">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       1.00000000       0.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="rotation2">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       1.00000000       0.00000000 </axis>
+                  </TransformAxis>
+									<TransformAxis name="rotation3">
+                    <function>
+                      <LinearFunction name="">
+                        <coefficients>       1.00000000       0.00000000 </coefficients>
+                      </LinearFunction>
+                    </function>
+										<coordinates> r_elbow_flex </coordinates>
+										<axis>       0.04940001       0.03660001       0.99810825 </axis>
+									</TransformAxis>
+                  <TransformAxis name="translation1">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       1.00000000       0.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="translation2">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       1.00000000       0.00000000 </axis>
+                  </TransformAxis>
+                  <TransformAxis name="translation3">
+                    <function>
+                      <Constant name="">
+                        <value>       0.00000000 </value>
+                      </Constant>
+                    </function>
+                    <coordinates> </coordinates>
+                    <axis>       0.00000000       0.00000000       1.00000000 </axis>
+                  </TransformAxis>
+							</SpatialTransform>
+						</CustomJoint>
+					</Joint>
+					<VisibleObject name="">
+						<geometry_files> arm_r_ulna.vtp arm_r_radius.vtp arm_r_lunate.vtp arm_r_scaphoid.vtp arm_r_pisiform.vtp arm_r_triquetrum.vtp arm_r_capitate.vtp arm_r_trapezium.vtp arm_r_trapezoid.vtp arm_r_hamate.vtp arm_r_1mc.vtp arm_r_2mc.vtp arm_r_3mc.vtp arm_r_4mc.vtp arm_r_5mc.vtp arm_r_thumbprox.vtp arm_r_thumbdist.vtp arm_r_2proxph.vtp arm_r_2midph.vtp arm_r_2distph.vtp arm_r_3proxph.vtp arm_r_3midph.vtp arm_r_3distph.vtp arm_r_4proxph.vtp arm_r_4midph.vtp arm_r_4distph.vtp arm_r_5proxph.vtp arm_r_5midph.vtp arm_r_5distph.vtp </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+					<WrapObjectSet name="">
+						<objects/>
+						<groups/>
+					</WrapObjectSet>
+				</Body>
+			</objects>
+			<groups/>
+		</BodySet>
+		<!--Constraints in the model.-->
+		<ConstraintSet name="">
+			<objects/>
+			<groups/>
+		</ConstraintSet>
+		<!--Markers in the model.-->
+		<MarkerSet name="">
+			<objects>
+				<Marker name="r_acromion">
+					<!--Body segment in the model on which the marker resides.-->
+					<body> ground </body>
+					<!--Location of a marker on the body segment.-->
+					<location>      -0.01256000       0.04000000       0.17000000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+					<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Marker>
+				<Marker name="r_humerus_epicondyle">
+					<!--Body segment in the model on which the marker resides.-->
+					<body> r_humerus </body>
+					<!--Location of a marker on the body segment.-->
+					<location>       0.00500000      -0.29040000       0.03000000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+					<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Marker>
+				<Marker name="r_radius_styloid">
+					<!--Body segment in the model on which the marker resides.-->
+					<body> r_ulna_radius_hand </body>
+					<!--Location of a marker on the body segment.-->
+					<location>      -0.00110000      -0.23559000       0.09430000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+					<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<geometry_files> </geometry_files>
+						<VisibleProperties name="">
+							<display_preference> 4 </display_preference>
+							<show_normals> false </show_normals>
+							<show_axes> false </show_axes>
+							<material_name> DEFAULT </material_name>
+						</VisibleProperties>
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+					</VisibleObject>
+				</Marker>
+			</objects>
+			<groups/>
+		</MarkerSet>
+		<!--ContactGeometry objects in the model.-->
+		<ContactGeometrySet name="">
+			<objects/>
+			<groups/>
+		</ContactGeometrySet>
+	</Model>
+</OpenSimDocument>
+
