@@ -268,7 +268,17 @@ void ControlSetController::setup(Model& model)
        std::cout << " ControlSetController:: no Control Set Specified" << std::endl;
     }
 
-    // Controller::setup calls setActuators() which requires _controlSet to be valid
+	// Make sure that we are controlling all the actuators that the control set specifies
+	std::string ext = ".excitation";
+	for(int i =0; i<_controlSet->getSize(); i++){
+		std::string actName = _controlSet->get(i).getName();
+		if(actName.length()>ext.length() && !(actName.compare(actName.length()-ext.length(), ext.length(), ".excitation"))){
+			actName.erase(actName.length()-ext.length(), ext.length());
+		}
+		_actuatorNameList.append(actName);
+	}
+
+    // Controller::setup calls setActuators() with actuators in the _actuatorNameList
     // so call setup() after the _controlSet constructor has been called
 	Controller::setup(model);
 

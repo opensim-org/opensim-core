@@ -125,8 +125,6 @@ public:
 	double getKv() const;
 	void setKv(double aKv);
 
-    virtual void setActuators( Set<Actuator>& actuators );
-
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION

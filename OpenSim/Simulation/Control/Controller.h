@@ -1,7 +1,7 @@
 // Controller.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -27,7 +27,7 @@
 */
 
 /* 
- * Author: Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
+ * Author: Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner
  */
 
 #ifndef _Controller_h_
@@ -38,8 +38,6 @@
 //============================================================================
 // These files contain declarations and definitions of variables and methods
 // that will be used by the Controller class.
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "OpenSim/Simulation/Model/ForceSet.h"
@@ -50,75 +48,41 @@
 //=============================================================================
 //=============================================================================
 /**
- * Controller is a class that specifies the interface that any controller 
- * must satisfy.  Any class used to control a Model should be a subclass
- * (child) of Controller.  Controller is an abstract class,
- * which means that you cannot create an instance of it (i.e. you cannot write
- * code that contains a statement like "Controller controller;" or
- * "Controller controller(&model,&yDesStore);".  However, you can create a
- * subclass of Controller (such as ControlSetController) that is not
- * abstract, which means you can create an instance of it.  Controller is
- * abstract because it has a method, computeControl, that is "pure virtual."
- * This means that computeControl must be implemented by any subclass of
- * Controller, because Controller itself does not implement computeControl.
- *
- * @author Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
- * @version 1.0
+ * Controller specifies the interface of a controller in OpenSim 
+  *
+ * @author Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner 
+ * @version 2.0
  */
 
-// The definition of the Controller class is wrapped inside this
-// namespace OpenSim {} block, which makes the class a part of the
-// OpenSim namespace, i.e., the Controller class and all its variables
-// and methods can only be used by a file that contains the command
-// "using namespace OpenSim;" or prefixes any call to a Controller class
-// public method or variable with "OpenSim::", e.g., the Controller
-// class would be referred to as OpenSim::Controller.  The advantage of
-// this design is that if someone defined another namespace also contained
-// a Controller class that is completely different from OpenSim's
-// Controller class, you could refer to these two Controller classes
-// separately even though both Controller classes have the same name.
 namespace OpenSim { 
 
-// These empty declarations of the Model and Manager classes are necessary because we
-// haven't included a definition of the Model class (e.g., Model.h)
-// in this file, but we do use the Model class in the code below.
+// Forward declarations of classes that are used by the controller implementation
 class Model;
 class Manager;
 class Storage;
 
-// The entire definition of the Controller class is contained inside
-// this code block.  The identifier OSIMSIMULATION_API tells C++ that
-// the Controller class will be part of the library files exported by
-// the osimSimulation project.  A Controller is a ModelComponent 
+// A Controller is a ModelComponent
+// The interface (defined herein) is  exported by the osimSimulation dll
 class OSIMSIMULATION_API Controller : public ModelComponent
 {
 //=============================================================================
 // DATA
 //=============================================================================
-// These are the member variables of the Controller class.  The "protected"
-// keyword indicates that these member variables can be accessed not only by
-// methods of the Controller class, but also by any subclass of the Controller
-// class.
+// These are the member variables of the Controller class.  
 protected:
      OpenSim::PropertyBool _isControllerEnabledProp;
 	 bool _isControllerEnabled;
 
-    /**  
-      * number of controls this controller has
-      */
+    /** number of controls this controller computes */
     int _numControls;
 
-    /**  
-      * list of actuator names  
-      */
+    /** list of actuator names to be controlled */
     PropertyStrArray _actuatorNameListProp;
     Array<std::string>& _actuatorNameList;
 
 
-    /**
-      * set of actuators that the controller controls
-      */ 
-   ForceSet  _actuatorSet;
+    /** set of actuators that the controller controls */ 
+   ForceSet _actuatorSet;
 
 
 //=============================================================================
@@ -128,91 +92,60 @@ protected:
 	// CONSTRUCTION AND DESTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	// These methods can be called to initialize or destroy an object that is
-	// an instance of Controller (or really, an instance of a subclass of
-	// Controller, since Controller itself cannot be instantiated since it is
-	// an abstract class (see above)).  These methods are all "public," which
-	// means any code that includes a definition of the Controller class (e.g.,
-	// by including Controller.h) can call these methods.
 
-	/**
-	 * Default constructor.
-	 */
+	/** Default constructor. */
 	Controller();
 
-	/**
-	 * Another constructor.
-	 *
-	 * @param aModel The model that is to be controlled by this Controller.
-	 */
+	/** A convenience constructor.
+	 * @param aModel The model that is to be controlled by this Controller. */
 	Controller(Model& aModel);
 
-	/**
-	 * Constructor from an XML Document.
+	/** Constructor from an XML Document.
 	 *
-	 * @param aFileName The name of the XML file in which this Controller is
-	 * defined.
+	 * @param aFileName The XML file in which this a controller is defined.
 	 * @param aUpdateFromXMLNode A flag indicating whether or not to call
-	 * updateFromXMLNode() from this constructor.  If true, the method will
-	 * be called from this class.  Typically, the flag should be true for this
-	 * class, but in the member initializer list for this constructor, this
-	 * class's parent class's constructor with the same parameters will be
-	 * called, but with aUpdateFromXMLNode set to false.
+	 * updateFromXMLNode() from this constructor.  This method is only necessary
+	 * if changes to the XML format (i.e. tag names) are made and future
+	 * versions must convert old syntax to the latest.
 	 */
 	Controller(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 
-	/**
-	 * Copy constructor.  This constructor is called by any code that contains
-	 * a command of the form "Controller newController(oldController);".
-	 *
+	/** Copy constructor.  
 	 * @param aController The controller to be copied.
 	 */
 	Controller(const Controller &aController);
 
-	/**
-	 * Destructor.  This method should be a member of any subclass of the
-	 * Controller class.  It will be called automatically whenever an
-	 * instance of the subclass is deleted from memory.
-	 */
+	/** Default destructor.	 */
 	virtual ~Controller();
 
-private:
-	// A "private" method is one that can be called only by this class,
-	// and not even by subclasses of this class.
-
-	/**
-	 * This method sets all member variables to default (e.g., NULL) values.
-	 */
-	void setNull();
+	/** Public model component interface to obtain the number of state variables
+	    introduced by the controller. */
+	virtual int getNumStateVariables() const { return 0; };
 
 protected:
 
-	/**
-	 * Connect properties to local pointers.  Currently, the Controller class
-	 * has no properties, so this method does nothing.  However, a subclass
-	 * of Controller (e.g., ControlSetController) can contain member
-	 * variables that are properties, which should be defined in the
-	 * setupProperties() method of the subclass.
-	 */
-	virtual void setupProperties();
-
-	/**
-	 * Copy the member variables of the specified controller.  This method is
+	/** Copy the member variables of the specified controller.  This method is
 	 * called by the copy constructor of the Controller class.
 	 *
 	 * @param aController The controller whose data is to be copied.
 	 */
 	void copyData(const Controller &aController);
 
-	// for any post deseraialization intialization
-	virtual void setup(Model& model);
+	/** Model component interface that permits the controller to be "wired" up
+	   to its actuators. Subclasses can override to perform additional setup. */
+	virtual void setup(Model& model);  
 
+	/** Model component interface that creates underlying computational components
+	    in the SimTK::MultibodySystem. This includes adding states, creating 
+		measures, etc... required by the controller. */
 	virtual void createSystem(SimTK::MultibodySystem& system) const {};
 
-	// for any intialization requiring a state or the complete system 
+	/** Model component interface to initialize states introduced by the controller */
 	virtual void initState( SimTK::State& s) const {};
+
+	/** Model component interface to initialize defualt values of the controller
+	    from/based on the given state. */
 	virtual void setDefaultsFromState(const SimTK::State& state) {};
-	virtual int getNumStateVariables() const { return 0; };
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -241,38 +174,39 @@ public:
 #endif
 
 	//--------------------------------------------------------------------------
-	// GET AND SET
+	// Controller Interface
 	//--------------------------------------------------------------------------
-	/**
-	 * Get whether or not this controller is on.
+	/** Get whether or not this controller is on.
 	 *
 	 * @return true if on, false if off.
 	 */
 	bool getIsEnabled() const;
 
-	/**
-	 * Turn this controller on or off.
+	/** Turn this controller on or off.
 	 *
 	 * @param aTrueFalse Turns controller on if "true" and off if "false".
 	 */
 	void setIsEnabled(bool aTrueFalse);
 
-	//--------------------------------------------------------------------------
-	// CONTROL
-	//--------------------------------------------------------------------------
-
-	/**
-	 *
-	 * Note that this method is "pure virtual", which means that the Controller
-	 * class does not implement it, and that subclasses must implement it.
+	/** Compute the control for actuator
+	 *  This method defines the behavior for any concrete controller 
+	 *  and therefore must be implemented by concrete subclasses.
 	 *
 	 * @param s system state 
-	 * @param rControlSet Control set used for the simulation.  This method
-	 * alters the control set in order to control the simulation.
+	 * @param index of the actuator for which the control should be computed
 	 */
 	virtual double computeControl(const SimTK::State& s, int index) const = 0;
 
+	/** replace the current set of actuators with the provided set */
     virtual void setActuators( Set<Actuator>& actuators );
+	/** add to the current set of actuators */
+	void addActuator(Actuator *actuator);
+	/** get a const reference to the current set of actuators */
+	virtual const Set<Actuator>& getActuatorSet() const;
+	/** get a writable reference to the set of actuators for this controller */
+	virtual Set<Actuator>& updActuators();
+	/** get the names of the actuators being controlled */
+	virtual const Array<std::string>& getActuatorNames() const { return _actuatorNameList; }
 
 
    /** 
@@ -281,12 +215,14 @@ public:
 	virtual double getFirstTime() const;
 	virtual double getLastTime() const;
 
-	virtual Set<Actuator>& updActuators();
-	virtual const Set<Actuator>& getActuatorSet() const;
 
-	virtual const Array<std::string>& getActuatorList() const { return _actuatorNameList; }
-    
-	friend class ControlSet;
+private:
+	// This method sets all pointer member variables to NULL. 
+	void setNull();
+	// Connect properties to local pointers.  */
+	virtual void setupProperties();
+
+	//friend class ControlSet;
 	friend class ControllerSet;
 
 //=============================================================================

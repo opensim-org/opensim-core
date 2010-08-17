@@ -30,7 +30,6 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/Object.h"
 #include "OpenSim/Common/Set.h"
 #include "SimTKsimbody.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>

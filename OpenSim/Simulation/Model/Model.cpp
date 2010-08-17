@@ -172,6 +172,10 @@ Model::Model(const Model &aModel) :
     _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
+    _jointSet(JointSet()),
+    _analysisSet(AnalysisSet()),
+    _coordinateSet(CoordinateSet()),
+    _controllerSet(ControllerSet()),
     _system(NULL)
 {
 	//cout << "Construct copied model " <<  endl;
@@ -383,7 +387,6 @@ SimTK::State& Model::initSystem()
 
     updControllerSet().setActuators(updActuators());
     //updControllerSet().constructStorage();
-
 
 	SimTK::Array_<CoordinateReference> &coordsToTrack = *new SimTK::Array_<CoordinateReference>();
 	for(int i=0; i<getNumCoordinates(); i++){
@@ -1399,9 +1402,19 @@ OpenSim::Body& Model::getGroundBody() const
 }
 
 
-    //--------------------------------------------------------------------------
-    // CONTROLS
-    //--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+// CONTROLS
+//--------------------------------------------------------------------------
+/** Get a flag indicating if the model needs controls to operate its actuators */
+bool Model::isControlled() const
+{
+	bool isControlled = false;
+	for(int i=0; i< getActuators().getSize() && !isControlled; i++){
+		isControlled = getActuators().get(i).isControlled();
+	}
+	return isControlled;
+}
+
 const ControllerSet& Model::getControllerSet() const{
     return(_controllerSet);
 }

@@ -26,8 +26,8 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
+/* 
+ * Author: Ajay Seth
  */
 
 
@@ -48,9 +48,6 @@
 // STATICS
 //=============================================================================
 
-// This command indicates that any identifier (class, variable, method, etc.)
-// defined within the OpenSim namespace can be used in this file without the
-// "OpenSim::" prefix.
 using namespace OpenSim;
 using namespace std;
 
@@ -63,8 +60,7 @@ using namespace std;
 /**
  * Default constructor.
  */
-TrackingController::TrackingController() :
-	Controller()
+TrackingController::TrackingController() : Controller()
 {
 	setNull();
 }
@@ -72,8 +68,7 @@ TrackingController::TrackingController() :
 /**
  * Constructor.
  */
-TrackingController::TrackingController(Model& aModel) :
-	Controller(aModel)
+TrackingController::TrackingController(Model& aModel) :	Controller(aModel)
 {
 	setNull();
 }
@@ -128,8 +123,7 @@ void TrackingController::setNull()
  */
 void TrackingController::setupProperties()
 {
-    string comment;
-	Controller::setupProperties();
+
 }
 //_____________________________________________________________________________
 /**

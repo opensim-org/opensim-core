@@ -37,15 +37,14 @@
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
+#include <OpenSim/Common/PropertyDblVec3.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ControllerSet.h>
+#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include "SimTKsimbody.h"
-
-
 
 namespace OpenSim {
 
@@ -53,9 +52,9 @@ class Actuator;
 class Analysis;
 class Body;
 class BodySet;
+class JointSet;
 class Constraint;
 class ConstraintSet;
-class Controller;
 class CoordinateSet;
 class Force;
 class ForceSet;
@@ -67,7 +66,6 @@ class ContactGeometrySet;
 class OpenSimForceSubsystem;
 class Storage;
 class ScaleSet;
-class SimbodyEngine;
 class AssemblySolver;
 
 #ifdef SWIG
@@ -179,8 +177,8 @@ private:
    	/** Body used for ground, the inertial frame. */
 	Body *_groundBody;
 
-   /** default controller */
-   ControllerSet _controllerSet;
+	/** Model controllers */
+	ControllerSet _controllerSet;
 
 	/*** Private place to save some deserializtion/error checking info in case needed later */
 	std::string _validationLog;
@@ -571,14 +569,7 @@ public:
 	/**
 	 * Get a flag indicating if the model needs controls to operate its actuators
 	 */
-	bool isControlled() const
-	{
-		bool isControlled = false;
-		for(int i=0; i< getActuators().getSize() && !isControlled; i++){
-			isControlled = getActuators().get(i).isControlled();
-		}
-		return isControlled;
-	}
+	bool isControlled() const;
     virtual void storeControls( const SimTK::State& s, int step );
     virtual void printControlStorage(const std::string& fileName ) const;
     virtual const ControllerSet& getControllerSet() const;

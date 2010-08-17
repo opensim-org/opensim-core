@@ -32,16 +32,15 @@
 
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
 #include <OpenSim/Simulation/Control/Controller.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
-#include "ModelComponentSet.h"
+#include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include "SimTKsimbody.h"
 
 namespace OpenSim {
 
 class Model;
+class Actuator;
+class Controller;
 
 //=============================================================================
 //=============================================================================

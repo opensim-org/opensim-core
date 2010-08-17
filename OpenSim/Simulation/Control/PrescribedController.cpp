@@ -128,8 +128,6 @@ void PrescribedController::setNull()
  */
 void PrescribedController::setupProperties()
 {
-    string comment;
-	Controller::setupProperties();
 }
 //_____________________________________________________________________________
 /**

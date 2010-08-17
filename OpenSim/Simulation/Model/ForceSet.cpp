@@ -387,6 +387,7 @@ const Set<Muscle>& ForceSet::getMuscles() const
 }
 Set<Muscle>& ForceSet::updMuscles() 
 {
+	updateMuscles();
     return _muscles;
 }
 //_____________________________________________________________________________

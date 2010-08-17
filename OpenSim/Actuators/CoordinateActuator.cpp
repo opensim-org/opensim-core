@@ -279,7 +279,7 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 		if(!aIncludeLockedAndConstrainedCoordinates && (cs[i].isConstrained(s))) continue;
 		CoordinateActuator *actuator = new CoordinateActuator();
 		actuator->setCoordinate(&cs.get(i));
-		actuator->setName(cs.get(i).getName());
+		actuator->setName(cs.get(i).getName()+"_actuator");
 		actuator->setOptimalForce(aOptimalForce);
 		as.append(actuator);
 	}
@@ -419,7 +419,7 @@ void CoordinateActuator::updateFromXMLNode()
  */
 OpenSim::Array<std::string> CoordinateActuator::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
-	labels.append(getName()+"_Actuator");
+	labels.append(getName());
 	return labels;
 }
 /**

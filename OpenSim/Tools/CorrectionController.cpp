@@ -284,10 +284,6 @@ double CorrectionController::computeControl(const SimTK::State& s, int index ) c
     return( newControl );
 
 }
-void CorrectionController::setActuators( Set<Actuator>& as ) {
-    // this should have been taken care of in the setupSystem();
-    return;
-}
 
 void CorrectionController::createSystem(SimTK::MultibodySystem& system) const
 { 

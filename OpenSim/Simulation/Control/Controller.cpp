@@ -1,7 +1,7 @@
 // Controller.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -26,8 +26,8 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
+/* 
+ * Author: Ajay Seth Frank C. Anderson, Chand T. John, Samuel R. Hamner, 
  */
 
 
@@ -228,12 +228,10 @@ void Controller::setIsEnabled(bool aTrueFalse)
 	_isControllerEnabled = aTrueFalse;
 }
 
-double Controller::
-getFirstTime() const {
+double Controller::getFirstTime() const {
   return( -SimTK::Infinity); 
 }
-double Controller::
-getLastTime() const {
+double Controller::getLastTime() const {
   return( SimTK::Infinity); 
 }
 
@@ -269,14 +267,20 @@ void Controller::setActuators( Set<Actuator>& actuators ) {
 	_actuatorSet.setSize(0);
 	_actuatorNameList.setSize(0);
 	for(int i=0; i< actuators.getSize(); i++){
-		actuators[i].setController(this);
-		actuators[i].setIsControlled(true);
-		actuators[i].setControlIndex(i);
-		_actuatorSet.append(&actuators[i]);
-		_actuatorNameList.append(actuators[i].getName());
+		addActuator(&actuators[i]);
 	}
 	_actuatorSet.setMemoryOwner(false);
 }
+
+void Controller::addActuator(Actuator *actuator)
+{
+	actuator->setController(this);
+	actuator->setIsControlled(true);
+	actuator->setControlIndex(_actuatorSet.getSize());
+	_actuatorSet.append(actuator);
+	_actuatorNameList.append(actuator->getName());
+}
+
 
 Set<Actuator>& Controller::updActuators() { return _actuatorSet.updActuators(); }
 
