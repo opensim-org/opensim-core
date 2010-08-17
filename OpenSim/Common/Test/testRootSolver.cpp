@@ -34,7 +34,6 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/SIMMUtilities.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyInt.h>
@@ -75,9 +74,6 @@ int main(int argc, char* argv[])
 
 	// TEST GCVSplineSet
 	//TestGCVSplineSet();
-
-	// TEST SIMM UTILITIES
-	//TestSIMMUtilities();
 
 	// EXCEPTIONS
 	//TestExceptions();
