@@ -34,9 +34,9 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Simulation/Model/CustomActuator.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
 #include "SimTKsimbody.h"
 
 
@@ -56,7 +56,7 @@ namespace OpenSim {
 class Body;
 class Model;
 
-class LineActuator : public CustomActuator
+class LineActuator : public Actuator
 {
 //=============================================================================
 // DATA
@@ -152,8 +152,6 @@ public:
 #ifndef SWIG
 	double getStress( const SimTK::State& s ) const;
 
-    // SIMTK STATE CACHE 
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
 	//--------------------------------------------------------------------------
 	// APPLICATION
 	//--------------------------------------------------------------------------

@@ -29,9 +29,12 @@
  */
 // INCLUDE
 #include "OpenSim/Simulation/osimSimulationDLL.h"
+#include "OpenSim/Common/PropertyStr.h"
+#include "OpenSim/Common/PropertyBool.h"
+#include "OpenSim/Common/PropertyObj.h"
 #include "OpenSim/Common/Function.h"
 #include "OpenSim/Common/NaturalCubicSpline.h"
-#include "CustomForce.h"
+#include "Force.h"
 #include "OpenSim/Common/FunctionSet.h"
 
 namespace OpenSim {
@@ -55,7 +58,7 @@ class Storage;
  *
  * @author Peter Eastman, Matt DeMers
  */
-class OSIMSIMULATION_API PrescribedForce : public CustomForce
+class OSIMSIMULATION_API PrescribedForce : public Force
 {
 
 //=============================================================================

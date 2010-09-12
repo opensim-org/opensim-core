@@ -63,7 +63,7 @@ CMC_Point::~CMC_Point()
  *
  */
 CMC_Point::CMC_Point(const SimTK::Vec3 &aPoint) :
-	_point(_propPoint.getValueDblVec3())
+	_point(_propPoint.getValueDblVec())
 {
 	setNull();
 	setPoint(aPoint);
@@ -77,7 +77,7 @@ CMC_Point::CMC_Point(const SimTK::Vec3 &aPoint) :
  */
 CMC_Point::CMC_Point(const CMC_Point &aTask) :
 	CMC_Task(aTask),
-	_point(_propPoint.getValueDblVec3())
+	_point(_propPoint.getValueDblVec())
 {
 	setNull();
 	copyData(aTask);

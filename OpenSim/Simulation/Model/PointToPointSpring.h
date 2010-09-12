@@ -35,7 +35,7 @@
 #include "Force.h"
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 
 //=============================================================================
 //=============================================================================

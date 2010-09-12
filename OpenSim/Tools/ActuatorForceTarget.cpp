@@ -247,7 +247,7 @@ computePerformanceVectors(SimTK::State& s, const Vector &aF, Vector &rAccelPerfo
 
         
 	}
-    _controller->getModel().getSystem().realize(s, SimTK::Stage::Acceleration );
+    _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
 	CMC_TaskSet& taskSet = _controller->updTaskSet();
 	taskSet.computeAccelerations(s);

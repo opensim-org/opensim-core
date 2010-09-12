@@ -940,7 +940,14 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 			</objects>
-			<groups/>
+			<groups>
+        <ObjectGroup name="elbow_flexors">
+          <members> BIClong BICshort BRA </members>
+        </ObjectGroup>
+        <ObjectGroup name="elbow_extensors">
+          <members> TRIlong TRIlat TRImed </members>
+        </ObjectGroup>
+      </groups>
 		</ForceSet>
 		<length_units> meters </length_units>
 		<force_units> N </force_units>

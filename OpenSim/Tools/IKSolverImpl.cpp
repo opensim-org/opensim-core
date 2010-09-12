@@ -150,7 +150,7 @@ void IKSolverImpl::solveFrames(SimTK::State& s, const IKTrial& aIKOptions, Stora
 		double timeT = inputData.getStateVector(index)->getTime();
 
 		s.setTime(timeT);
-		_ikTarget.getModel().getSystem().realize( s, SimTK::Stage::Time );
+		_ikTarget.getModel().getMultibodySystem().realize( s, SimTK::Stage::Time );
 
 		// Set value for prescribed coordinates and get initial guess for unprescribed coordinates
 		_ikTarget.prepareToSolve(s, index, &unprescribedQGuess[0]);
@@ -169,7 +169,7 @@ void IKSolverImpl::solveFrames(SimTK::State& s, const IKTrial& aIKOptions, Stora
 
 		if(optimizer){
 			try {
-				_ikTarget.getModel().getSystem().realize( s, SimTK::Stage::Velocity );
+				_ikTarget.getModel().getMultibodySystem().realize( s, SimTK::Stage::Velocity );
 				_ikTarget.setCurrentState( &s );
 				optimizer->optimize(results);
 			}
@@ -218,7 +218,7 @@ void IKSolverImpl::solveFrames(SimTK::State& s, const IKTrial& aIKOptions, Stora
 		// TODO: pass callback a reasonable "dt" value
 		AnalysisSet& analysisSet = _ikTarget.getModel().updAnalysisSet();
 		
-		analysisSet.step(_ikTarget.getModel().getSystem().getDefaultState(), index);
+		analysisSet.step(_ikTarget.getModel().getMultibodySystem().getDefaultState(), index);
 	    
 
 	}

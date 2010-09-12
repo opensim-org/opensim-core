@@ -37,7 +37,7 @@
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ScaleSet.h>
-#include "CustomActuator.h"
+#include "Actuator.h"
 #include "GeometryPath.h"
 
 #ifdef SWIG
@@ -64,7 +64,7 @@ class Coordinate;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMSIMULATION_API Muscle : public CustomActuator  
+class OSIMSIMULATION_API Muscle : public Actuator  
 {
 //=============================================================================
 // DATA
@@ -74,9 +74,18 @@ protected:
 	PropertyObj _pathProp;
 	GeometryPath &_path;
 
+	Array<std::string> _stateVariableSuffixes;
+
     // Defaults for state variables.
     double _defaultActivation;
     double _defaultFiberLength;
+
+	//Starting index of the Muscle's states in its subsystem 
+	SimTK::ZIndex _zIndex;
+	SimTK::CacheEntryIndex _stateVariableDerivIndex;
+
+	static const int STATE_ACTIVATION;
+	static const int STATE_FIBER_LENGTH;
 
 //=============================================================================
 // METHODS
@@ -99,12 +108,13 @@ public:
 	virtual void updateFromXMLNode();
 
     virtual void equilibrate(SimTK::State& state) const;
-	 static void deleteMuscle(Muscle* aMuscle) { if (aMuscle) delete aMuscle; }
 
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    // Properties
+    virtual int getNumStateVariables() const;
+	
+	// Properties
 	 virtual double getPennationAngleAtOptimalFiberLength() const = 0;
 	 GeometryPath& getGeometryPath() const { return _path; }
 
@@ -140,7 +150,6 @@ public:
 	virtual double getActivation(const SimTK::State& s) const = 0;
     virtual void setActivation(SimTK::State& s, double activation) const = 0;
     virtual double getExcitation( const SimTK::State& s) const;
-
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -196,7 +205,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual VisibleObject* getDisplayer() const;
 	virtual void updateDisplayer(const SimTK::State& s);
-	OPENSIM_DECLARE_DERIVED(Muscle, CustomActuator);
+	OPENSIM_DECLARE_DERIVED(Muscle, Actuator);
 
 private:
 	void setNull();
@@ -208,9 +217,20 @@ protected:
 	virtual void updateGeometry(const SimTK::State& s) const;
 
 	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
+
+	
+    virtual void setNumStateVariables( int aNumStateVariables);
+	virtual std::string getStateVariableName(int aIndex) const;
+
+	virtual void Muscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const;
+	virtual double getStateVariableDeriv(const SimTK::State& s, int aIndex) const;
+
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State) 
+	{ return SimTK::Vector(getNumStateVariables(), 0.0); };
+
 //=============================================================================
 };	// END of class Muscle
 //=============================================================================

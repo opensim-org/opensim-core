@@ -29,8 +29,6 @@
 /*  
  * Author:  Ayman Habib
  */
-#include "Object.h"
-#include "PropertyTransform.h"
 #include "DisplayGeometry.h"
 
 using namespace std;
@@ -53,11 +51,11 @@ using namespace OpenSim;
  */
 DisplayGeometry::DisplayGeometry() :
 _geometryFile(_propGeometryFile.getValueStr()),
-_color(_propColor.getValueDblVec3()),
+_color(_propColor.getValueDblVec()),
 _textureFile(_propTextureFile.getValueStr()),
 _propTransform(PropertyTransform("", SimTK::Transform())),
 _transform(_propTransform.getValueTransform()),
-_scaleFactors(_propScaleFactors.getValueDblVec3()),
+_scaleFactors(_propScaleFactors.getValueDblVec()),
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _opacity(_propOpacity.getValueDbl())
 {
@@ -66,11 +64,11 @@ _opacity(_propOpacity.getValueDbl())
 
 DisplayGeometry::DisplayGeometry(const std::string &aFileName) :
 _geometryFile(_propGeometryFile.getValueStr()),
-_color(_propColor.getValueDblVec3()),
+_color(_propColor.getValueDblVec()),
 _textureFile(_propTextureFile.getValueStr()),
 _propTransform(PropertyTransform("", SimTK::Transform())),
 _transform(_propTransform.getValueTransform()),
-_scaleFactors(_propScaleFactors.getValueDblVec3()),
+_scaleFactors(_propScaleFactors.getValueDblVec()),
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _opacity(_propOpacity.getValueDbl())
 {
@@ -88,11 +86,11 @@ _opacity(_propOpacity.getValueDbl())
 DisplayGeometry::DisplayGeometry(const DisplayGeometry &aGeometryPiece) :
 Object(aGeometryPiece),
 _geometryFile(_propGeometryFile.getValueStr()),
-_color(_propColor.getValueDblVec3()),
+_color(_propColor.getValueDblVec()),
 _textureFile(_propTextureFile.getValueStr()),
 _propTransform(PropertyTransform("", SimTK::Transform())),
 _transform(_propTransform.getValueTransform()),
-_scaleFactors(_propScaleFactors.getValueDblVec3()),
+_scaleFactors(_propScaleFactors.getValueDblVec()),
 _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _opacity(_propOpacity.getValueDbl())
 {

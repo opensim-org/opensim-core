@@ -64,8 +64,8 @@ PointConstraint::PointConstraint() :
 	Constraint(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -80,8 +80,8 @@ PointConstraint::PointConstraint(const PointConstraint &aConstraint) :
    Constraint(aConstraint),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec())
 {
 	setNull();
 	setupProperties();

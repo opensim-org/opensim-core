@@ -33,7 +33,6 @@
 #include "Manager.h"
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
@@ -745,7 +744,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     if( _system != 0 ) {
 	    ts = new SimTK::TimeStepper(*_system, *_integ);
     } else { 
-	    ts = new SimTK::TimeStepper(_model->getSystem(), *_integ);
+	    ts = new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ);
     }
     
 
@@ -768,7 +767,7 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
         if( _system != 0 ) {
             _system->realize(s, SimTK::Stage::Acceleration);
         } else {
-            _model->getSystem().realize(s, SimTK::Stage::Acceleration);
+            _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
         }
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
         tReal = s.getTime();

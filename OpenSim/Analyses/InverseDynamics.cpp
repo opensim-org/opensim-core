@@ -41,8 +41,7 @@
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
-#include <OpenSim/Simulation/Model/CustomForce.h>
+#include <OpenSim/Simulation/Model/Force.h>
 #include <SimTKmath.h>
 #include <SimTKlapack.h>
 #include "InverseDynamics.h"
@@ -256,7 +255,7 @@ setModel(Model& aModel)
 {
     
 	Analysis::setModel(aModel);
-	//SimTK::State& s = aModel->getSystem()->updDefaultState();
+	//SimTK::State& s = aModel->getMultibodySystem()->updDefaultState();
 }
 
 //-----------------------------------------------------------------------------
@@ -297,22 +296,16 @@ setStorageCapacityIncrements(int aIncrement)
 void InverseDynamics::
 computeAcceleration(SimTK::State& s, double *aF,double *rAccel) const
 {
- 
-    // SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
-    // JACKM: Need to talk to sherm if this restriction can be removed
-    if( s.getTime() < 0.0 ) s.updTime() = 0;
-
 	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
         Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
         if( act ) {
-            act->overrideForce(s,true);
             act->setOverrideForce(s,aF[j++]);
         }
 	}
 
 	// NEED TO APPLY OTHER FORCES (e.g. Prescribed) FROM ORIGINAL MODEL 
 
-	_modelWorkingCopy->getSystem().realize(s,SimTK::Stage::Acceleration);
+	_modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
 	SimTK::Vector udot = _modelWorkingCopy->getMatterSubsystem().getUDot(s);
 
@@ -332,10 +325,26 @@ record(const SimTK::State& s)
 
 //cout << "\nInverse Dynamics record() : \n" << endl;
 	// Set model Q's and U's
-	SimTK::State sWorkingCopy = _modelWorkingCopy->getSystem().updDefaultState();
+	SimTK::State sWorkingCopy = _modelWorkingCopy->updMultibodySystem().updDefaultState();
+
+	// Set modeiling options for Actuators to be overriden
+	for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+        Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
+        if( act ) {
+            act->overrideForce(sWorkingCopy,true);
+        }
+	}
+
+	// Having updated the model atleast re-realize Model stage!
+	_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Model);
+
 	sWorkingCopy.setTime(s.getTime());
 	sWorkingCopy.setQ(s.getQ());
 	sWorkingCopy.setU(s.getU());
+
+
+	// Having updated the states atleast realize to velocity!
+	_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
 
 	int nf = _numCoordinateActuators;
 	int nacc = _accelerationIndices.getSize();
@@ -483,6 +492,9 @@ begin(SimTK::State& s )
 		if(nf < nacc) 
 			throw(Exception("InverseDynamics: ERROR- overconstrained system -- need at least as many forces as there are degrees of freedom.\n"));
 
+		// Realize to velocity in case there are any velocity dependent forces
+		_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
+
 		_constraintMatrix.resize(nacc,nf);
 		_constraintVector.resize(nacc);
 
@@ -492,8 +504,6 @@ begin(SimTK::State& s )
             Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
             if( act ) {
                 act->setForce(sWorkingCopy,1);
-
-
 			    _performanceMatrix(j,j) = act->getStress(sWorkingCopy);
                 j++;
              }

@@ -150,6 +150,8 @@ protected:
         _model = &model;
         for (int i = 0; i < Set<T>::getSize(); i++)
             static_cast<ModelComponent&>(Set<T>::get(i)).setup(model);
+
+		Set<T>::setup();
     }
 
     /**

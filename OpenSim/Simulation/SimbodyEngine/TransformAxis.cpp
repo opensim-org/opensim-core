@@ -55,7 +55,7 @@ TransformAxis::TransformAxis() :
 	Object(),
     _function(_functionProp.getValueObjPtrRef()),
     _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec3())
+	_axis(_axisProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -69,7 +69,7 @@ TransformAxis::TransformAxis() :
     Object(),
 	_function(_functionProp.getValueObjPtrRef()),
     _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec3())
+	_axis(_axisProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -82,7 +82,7 @@ TransformAxis::TransformAxis() :
 TransformAxis::TransformAxis(DOMElement *aNode) :
     _function(_functionProp.getValueObjPtrRef()),
     _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec3())
+	_axis(_axisProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -108,7 +108,7 @@ TransformAxis::TransformAxis(const TransformAxis &anAxis) :
     Object(anAxis),
     _function(_functionProp.getValueObjPtrRef()),
     _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec3())
+	_axis(_axisProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();

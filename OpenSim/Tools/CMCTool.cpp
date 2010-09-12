@@ -37,7 +37,6 @@
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include "VectorFunctionForActuators.h"
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
@@ -544,6 +543,7 @@ bool CMCTool::run()
 
     CMC* controller = new CMC(_model,&taskSet);	// Need to make it a pointer since Model takes ownership 
     controller->setName( "CMC" );
+	controller->setActuators(_model->updActuators());
     _model->addController(controller );
     controller->setIsEnabled(true);
     controller->setUseCurvatureFilter(_useCurvatureFilter);
@@ -551,8 +551,8 @@ bool CMCTool::run()
     controller->setCheckTargetTime(true);
 
 	//Make sure system is uptodate with model (i.e. added actuators, etc...)
-	SimTK::State s = _model->initSystem();
-    _model->getSystem().realize(s, Stage::Position );
+	SimTK::State &s = _model->initSystem();
+    _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
   
@@ -675,7 +675,7 @@ bool CMCTool::run()
 	Storage *uStore=NULL;
 
 	if(desiredKinFlag) {
-        _model->getSystem().realize(s, Stage::Time );
+        _model->getMultibodySystem().realize(s, Stage::Time );
 	    _model->getSimbodyEngine().formCompleteStorages(s, *desiredKinStore,qStore,uStore);
 		_model->getSimbodyEngine().convertDegreesToRadians(*qStore);
 		_model->getSimbodyEngine().convertDegreesToRadians(*uStore);
@@ -802,7 +802,15 @@ bool CMCTool::run()
     actuatorSystem.realizeTopology();
 	// initialize the actuator states 
 	SimTK::State& actuatorSystemState = actuatorSystem.updDefaultState(); 
-    actuatorSystemState.updZ() = _model->getForceSubsystem().getZ(s);
+    
+	SimTK::Vector &actSysZ = actuatorSystemState.updZ();
+	const SimTK::Vector &modelZ = _model->getForceSubsystem().getZ(s);
+	
+	int nra = actSysZ.size();
+	int nrm = modelZ.size();
+
+	assert(nra == nrm);
+	actSysZ = modelZ;
 
 	VectorFunctionForActuators *predictor =
 		new VectorFunctionForActuators(&actuatorSystem, _model, &cmcActSubsystem);
@@ -864,7 +872,7 @@ bool CMCTool::run()
 	// ---- SIMULATION ----
 	//
 	// Manager
-    RungeKuttaMersonIntegrator integrator(_model->getSystem());
+    RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
 	integrator.setMaximumStepSize(_maxDT);
 	integrator.setMinimumStepSize(_minDT);
     Manager manager(*_model, integrator);
@@ -931,7 +939,7 @@ bool CMCTool::run()
 	cout<<"Start time = "<<asctime(localTime);
 	cout<<"================================================================\n";
 
-    _model->getSystem().realize(s, Stage::Acceleration );
+    _model->getMultibodySystem().realize(s, Stage::Acceleration );
 
 	controller->updTaskSet().computeAccelerations(s);
 
@@ -1110,7 +1118,7 @@ adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage
     s = _model->initSystem();
 
     s.updY() = restoreStates;
-    _model->getSystem().realize(s, Stage::Position );
+    _model->getMultibodySystem().realize(s, Stage::Position );
     
 	computeAverageResiduals(s, *_model, ti, tf, *statesStore, FAve, MAve);
 	cout<<"Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
@@ -1140,7 +1148,7 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
 	aStatesStore.getTime(iInitial,aTi);
 	aStatesStore.getTime(iFinal,aTf);
     
-    aModel.getSystem().realize(s, Stage::Position );
+    aModel.getMultibodySystem().realize(s, Stage::Position );
 
 	cout << "\nComputing average residuals between " << aTi << " and " << aTf << endl;
 	AnalyzeTool::run(s, aModel, iInitial, iFinal, aStatesStore, false);

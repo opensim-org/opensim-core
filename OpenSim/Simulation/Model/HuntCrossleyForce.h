@@ -69,10 +69,6 @@ public:
 	void copyData(const HuntCrossleyForce& copy);
 	Object* copy() const;
 
-	/**
-	 * Create a SimTK::Force which implements this Force.
-	 */
-	void createSystem(SimTK::MultibodySystem& system) const;
     ContactParametersSet& updContactParametersSet();
     const ContactParametersSet& getContactParametersSet();
     void addContactParameters(ContactParameters* params);
@@ -84,6 +80,15 @@ public:
      * Set the transition velocity for switching between static and dynamic friction.
      */
     void setTransitionVelocity(double velocity);
+
+protected:
+
+	/**
+	 * Create a SimTK::Force which implements this Force.
+	 */
+	void createSystem(SimTK::MultibodySystem& system) const;
+
+
 private:
     // INITIALIZATION
 	void setupProperties();

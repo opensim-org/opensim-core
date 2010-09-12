@@ -63,7 +63,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint() :
 	UnilateralConstraint(),
 	_rollingBodyName(_rollingBodyNameProp.getValueStr()),
 	_surfaceBodyName(_surfaceBodyNameProp.getValueStr()),
-	_surfaceNormal(_surfaceNormalProp.getValueDblVec3()),
+	_surfaceNormal(_surfaceNormalProp.getValueDblVec()),
 	_surfaceHeight(_surfaceHeightProp.getValueDbl()),
 	_coulombFrictionCoefficient(_coulombFrictionCoefficientProp.getValueDbl()),
 	_surfaceContactRadius(_surfaceContactRadiusProp.getValueDbl())
@@ -81,7 +81,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint(const RollingOnSurfaceCon
    UnilateralConstraint(aConstraint),
 	_rollingBodyName(_rollingBodyNameProp.getValueStr()),
 	_surfaceBodyName(_surfaceBodyNameProp.getValueStr()),
-	_surfaceNormal(_surfaceNormalProp.getValueDblVec3()),
+	_surfaceNormal(_surfaceNormalProp.getValueDblVec()),
 	_surfaceHeight(_surfaceHeightProp.getValueDbl()),
 	_coulombFrictionCoefficient(_coulombFrictionCoefficientProp.getValueDbl()),
 	_surfaceContactRadius(_surfaceContactRadiusProp.getValueDbl())

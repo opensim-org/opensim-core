@@ -59,7 +59,7 @@ SpringGeneralizedForce::~SpringGeneralizedForce()
  */
 SpringGeneralizedForce::
 SpringGeneralizedForce(string aCoordinateName) :
-	CustomForce(),
+	Force(),
 	_coordName(_propCoordinateName.getValueStr()),
 	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestLength.getValueDbl()),
@@ -81,7 +81,7 @@ SpringGeneralizedForce(string aCoordinateName) :
  */
 SpringGeneralizedForce::
 SpringGeneralizedForce(const SpringGeneralizedForce &aForce) :
-	CustomForce(aForce),
+	Force(aForce),
 	_coordName(_propCoordinateName.getValueStr()),
 	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestLength.getValueDbl()),
@@ -174,7 +174,7 @@ SpringGeneralizedForce& SpringGeneralizedForce::
 operator=(const SpringGeneralizedForce &aForce)
 {
 	// BASE CLASS
-	CustomForce::operator =(aForce);
+	Force::operator =(aForce);
 
 	// MEMBER VARIABLES
 	_coordName = aForce._coordName;
@@ -311,7 +311,7 @@ void SpringGeneralizedForce::computeForce(const SimTK::State& s,
  void  SpringGeneralizedForce::
 createSystem(SimTK::MultibodySystem& system) const {
 
-     CustomForce::createSystem( system );
+     Force::createSystem( system );
 
 	if (_model) 
 		_coord = &_model->updCoordinateSet().get(_coordName);

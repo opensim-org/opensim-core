@@ -4,6 +4,9 @@
 	<model_file> arm26.osim </model_file>
   <!--Time range over which to perform inverse dynamics. -->
   <time_range> 0.0 1.0 </time_range>
+  <!--List of forces by individual or grouping name (e.g. All, actuators, muscles, ...)
+      to be excluded when computing model dynamics.-->
+  <forces_to_exclude> elbow_extensors elbow_flexors </forces_to_exclude>;
   <!--Motion file (.mot) or storage file (.sto) containing the time history
 	    of the generalized coordinates for the model. These can be specified
 	    in place of the states file.-->

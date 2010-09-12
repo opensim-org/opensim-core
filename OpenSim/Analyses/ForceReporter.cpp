@@ -289,7 +289,7 @@ record(const SimTK::State& s)
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ForceReporter QUANTITIES ARE VALID
-    _model->getSystem().realize(s, SimTK::Stage::Dynamics );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
 
 	// NUMBER OF ACTUATORS
 	const ForceSet& forces = _model->getForceSet(); // This does not contain gravity

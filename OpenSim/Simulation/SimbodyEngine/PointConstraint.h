@@ -35,7 +35,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include "Constraint.h"
 #include "Body.h"
 
@@ -107,7 +107,6 @@ protected:
 private:
 	void setNull();
 	void setupProperties();
-	friend class SimbodyEngine;
 
 //=============================================================================
 };	// END of class PointConstraint

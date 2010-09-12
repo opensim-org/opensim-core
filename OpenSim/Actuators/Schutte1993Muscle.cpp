@@ -296,32 +296,39 @@ void Schutte1993Muscle::equilibrate(SimTK::State& state) const
 	// Reasonable initial activation value
 	setActivation(state, 0.01);
 	setFiberLength(state, getOptimalFiberLength());
-	_model->getSystem().realize(state, SimTK::Stage::Velocity);
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
 	// Compute isometric force to get starting value
 	// of fiberLength.
 	computeEquilibrium(state);
 }
 
-void Schutte1993Muscle:: initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model) {
-    Muscle::initStateCache(s, subsystemIndex, model);
+void Schutte1993Muscle::createSystem(SimTK::MultibodySystem& system) const
+{
+	Muscle::createSystem(system);
+	Schutte1993Muscle* mutableThis = const_cast<Schutte1993Muscle *>(this);
 
+	// Cache the computed passive muscle force
+	// note the total muscle force is the tendon force and is already a cached variable of the actuator
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
+/*
     _passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-	 _tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+	_tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+*/
 }
 
-void Schutte1993Muscle::setPassiveForce( const SimTK::State& s, double force ) const {
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _passiveForceIndex)).upd() = force;
+void Schutte1993Muscle::setPassiveForce(const SimTK::State& s, double force ) const {
+    updCacheVariable<double>(s, "passiveForce") = force;
 }
 double Schutte1993Muscle::getPassiveForce( const SimTK::State& s) const {
-    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _passiveForceIndex)).get());
+    return getCacheVariable<double>(s, "passiveForce");
 }
 
 void Schutte1993Muscle::setTendonForce(const SimTK::State& s, double force) const {
-	SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _tendonForceIndex)).upd() = force;
+	updCacheVariable<double>(s, "force") = force;
 }
 double Schutte1993Muscle::getTendonForce(const SimTK::State& s) const {
-	return SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _tendonForceIndex)).get();
+	return getCacheVariable<double>(s, "force");
 }
 
 //_____________________________________________________________________________
@@ -645,11 +652,12 @@ void Schutte1993Muscle::postScale(const SimTK::State& s, const ScaleSet& aScaleS
  *
  * @param rDYDT the state derivatives are returned here.
  */
-void Schutte1993Muscle::computeStateDerivatives(const SimTK::State& s)
+SimTK::Vector Schutte1993Muscle::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-
-	s.updZDot(_subsystemIndex)[_zIndex+STATE_ACTIVATION] = getActivationDeriv(s);
-    s.updZDot(_subsystemIndex)[_zIndex+STATE_FIBER_LENGTH] = getFiberLengthDeriv(s);
+	SimTK::Vector derivs(getNumStateVariables());
+	derivs[0] = getActivationDeriv(s);
+	derivs[1] = getFiberLengthDeriv(s);
+	return derivs; 
 }
 
 //_____________________________________________________________________________
@@ -1138,9 +1146,9 @@ computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aAct
 int Schutte1993Muscle::getStateVariableYIndex(int index) const
 {
 	if (index==0)
-		return _model->getSystem().getDefaultState().getZStart()+_zIndex;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex;
 	if (index ==1)
-		return _model->getSystem().getDefaultState().getZStart()+_zIndex+1;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+1;
 	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
 
 }

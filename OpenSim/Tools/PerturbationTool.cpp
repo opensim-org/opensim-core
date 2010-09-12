@@ -11,7 +11,6 @@
 #include <OpenSim/Common/VectorGCVSplineR1R3.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
@@ -251,7 +250,7 @@ bool PerturbationTool::run()
 
     // Re create the system with forces above and Realize the topology
     SimTK::State& si = _model->initSystem();
-    _model->getSystem().realize(si, Stage::Position );
+    _model->getMultibodySystem().realize(si, Stage::Position );
    
 	loadStatesStorage(_statesFileName, _yStore);  // Is using _yStore the right thing to do?
 
@@ -346,11 +345,11 @@ bool PerturbationTool::run()
 
     // Re create the system with forces above and Realize the topology
 	SimTK::State s = _model->initSystem();
-    _model->getSystem().realize(s, Stage::Position );
+    _model->getMultibodySystem().realize(s, Stage::Position );
 
 	// SETUP SIMULATION
 	// Manager
-    RungeKuttaMersonIntegrator* integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
+    RungeKuttaMersonIntegrator* integrator = new RungeKuttaMersonIntegrator(_model->getMultibodySystem());
     Manager manager(*_model, *integrator);
 	manager.setSessionName(getName());
 
@@ -369,7 +368,6 @@ bool PerturbationTool::run()
 		new ActuatorPerturbationIndependent(_model);
 
     perturbation->setPerturbationParameters(ActuatorPerturbationIndependent::DELTA,_pertDF);
-    _model->setPerturbation(perturbation); 
 
 	int gravity_axis = 1;
 	Vec3 original_gravity;
@@ -492,7 +490,7 @@ bool PerturbationTool::run()
         if( resetGravity ) {
   		    _model->setGravity(original_gravity);
   		    s = _model->initSystem();
-  		    integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
+  		    integrator = new RungeKuttaMersonIntegrator(_model->getMultibodySystem());
   		    integrator->setInternalStepLimit(_maxSteps);
   		    integrator->setMaximumStepSize(_maxDT);
   		    integrator->setAccuracy(_errorTolerance);
@@ -545,8 +543,8 @@ bool PerturbationTool::run()
   		if(_body2Tor)  _body2Tor->setDisabled(s, false);;
 
         // restore state to initial conditions
-        _model->getSystem().realizeModel(s );
-        _model->getSystem().realize(s, Stage::Position );
+        _model->getMultibodySystem().realizeModel(s );
+        _model->getMultibodySystem().realize(s, Stage::Position );
         _yStore->getData(index, s.getNY(), &s.updY()[0]);
 
 		if(Check) {
@@ -621,10 +619,10 @@ bool PerturbationTool::run()
 				perturbation->setActuator(act); 
 
                 // restore state to intitial conditions 
-                _model->getSystem().realizeModel(s );
-                _model->getSystem().realize(s, Stage::Position );
+                _model->getMultibodySystem().realizeModel(s );
+                _model->getMultibodySystem().realize(s, Stage::Position );
                 delete integrator;
-                integrator = new RungeKuttaMersonIntegrator(_model->getSystem());
+                integrator = new RungeKuttaMersonIntegrator(_model->getMultibodySystem());
                 integrator->setInternalStepLimit(_maxSteps);
                 integrator->setMaximumStepSize(_maxDT);
                 integrator->setAccuracy(_errorTolerance);
@@ -649,7 +647,7 @@ bool PerturbationTool::run()
 
                 // restore state to intitial conditions 
     		    _yStore->getData(index, s.getNY(), &s.updY()[0]);
-                _model->getSystem().realize(s, Stage::Position );
+                _model->getMultibodySystem().realize(s, Stage::Position );
     
     			// Integrate
     			manager.integrate(s);

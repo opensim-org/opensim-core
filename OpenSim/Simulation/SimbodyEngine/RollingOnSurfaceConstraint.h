@@ -34,7 +34,7 @@
 #include <string>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include "UnilateralConstraint.h"
 #include "Body.h"
 
@@ -160,7 +160,6 @@ private:
 
 	void setNull();
 	void setupProperties();
-	friend class SimbodyEngine;
 
 //=============================================================================
 };	// END of class RollingOnSurfaceConstraint

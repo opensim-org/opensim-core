@@ -63,7 +63,7 @@ CoordinateActuator::~CoordinateActuator()
  * Default constructor.
  */
 CoordinateActuator::CoordinateActuator( string aCoordinateName) :
-	CustomActuator(),
+	Actuator(),
 	_coordName(_propCoordinateName.getValueStr()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_coord(NULL)
@@ -85,7 +85,7 @@ CoordinateActuator::CoordinateActuator( string aCoordinateName) :
  * @param aForce Force to be copied.
  */
 CoordinateActuator::CoordinateActuator(const CoordinateActuator &aGenForce) :
-	CustomActuator(aGenForce),
+	Actuator(aGenForce),
 	_coordName(_propCoordinateName.getValueStr()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_coord(NULL)
@@ -119,15 +119,6 @@ void CoordinateActuator::setNull()
 {
 	setType("CoordinateActuator");
 	setupProperties();
-
-	setNumStateVariables( 0);
-
-}
-
-void CoordinateActuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model )
-{
-    Actuator::initStateCache(s, subsystemIndex, model);
-
 }
 
 //_____________________________________________________________________________
@@ -335,7 +326,7 @@ void CoordinateActuator::setup(Model& aModel)
 	string errorMessage;
 
 	// Base class
-	CustomActuator::setup(aModel);
+	Actuator::setup(aModel);
 
 	// Look up the coordinate
 	if (!_model->updCoordinateSet().contains(_coordName)) {
@@ -352,7 +343,7 @@ void CoordinateActuator::setup(Model& aModel)
  */
  void  CoordinateActuator::createSystem(SimTK::MultibodySystem& system) const {
 
-     CustomActuator::createSystem( system );
+     Actuator::createSystem( system );
 }
 
 

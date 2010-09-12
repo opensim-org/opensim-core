@@ -37,19 +37,12 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include "SimTKsimbody.h"
-#include "OpenSimForceSubsystem.h"
 #include "ForceAdapter.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
-
-
-//=============================================================================
-// STATICS
-//=============================================================================
-const double Actuator::LARGE = 1.0e8;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -61,9 +54,8 @@ const double Actuator::LARGE = 1.0e8;
  * @param aNX Number of controls.
  * @param aNY Number of states.
  */
-Actuator::Actuator() :
+Actuator::Actuator() : Force(),
 	_controlSuffixes(""),
-	_stateVariableSuffixes(""),
     _subsystemIndex(SimTK::InvalidIndex),
     _numStateVariables(0),
     _controlIndex(-1),
@@ -83,7 +75,6 @@ Actuator::Actuator(const Actuator &aAct) :
 	Force(aAct),
 	_controlSuffixes(""),
     _subsystemIndex(SimTK::InvalidIndex),
-	_stateVariableSuffixes(""),
     _numStateVariables(0),
     _controlIndex(-1),
     _isControlled(false),
@@ -115,24 +106,11 @@ void Actuator::
 setNull()
 {
 	setType("Actuator");
-	_model=0;
+	_model=NULL;
 }
 
-//_____________________________________________________________________________
-/**
- */
-void Actuator::setNumStateVariables( int aNumStateVariables)
-{
-	_numStateVariables = aNumStateVariables;
-	_stateVariableSuffixes.setSize(aNumStateVariables);
-}
-//_____________________________________________________________________________
-/**
- */
-void Actuator::bindStateVariable( int aIndex, const std::string &aSuffix)
-{
-	_stateVariableSuffixes.set(aIndex, aSuffix);
-}
+
+
 //_____________________________________________________________________________
 /**
  * Perform set up functions after model has been deserialized or copied.
@@ -144,38 +122,67 @@ void Actuator::setup(Model& aModel)
 	Force::setup(aModel);
 }
 
-double Actuator::getAppliedForce( const State& s) const {
-	return( getForce(s) );
-}
-double Actuator::getForce( const State& s) const {
-    return( Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _forceIndex)).get());
-}
-void Actuator::setForce( const State& s, double aForce ) const {
+// Create the underlying computational system component(s) that support the
+// Actuator model component
+void Actuator::createSystem(SimTK::MultibodySystem& system) const
+{
+	Force::createSystem(system);
+    // Beyond the const Component get the index so we can access the SimTK::Force later
+	Actuator* mutableThis = const_cast<Actuator *>(this);
 
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _forceIndex)).upd() = aForce;
+	mutableThis->_subsystemIndex = getIndexOfSubsystemForAllocations();
+
+	// Add modeling flag to compute actuation with dynamic or by-pass with override force provided
+	Array<std::string> modelingFlags;
+	modelingFlags.append("ComputeActuation");
+	modelingFlags.append("OverrideForce");
+	mutableThis->addModelingOption(modelingFlags);
+
+	// Cache the computed force and speed of the actuator
+	mutableThis->addCacheVariable<double>("force", 0.0, Stage::Velocity);
+	mutableThis->addCacheVariable<double>("speed", 0.0, Stage::Velocity);
+
+	// Discrete state variable is the override force value if in override mode
+	mutableThis->addDiscreteVariables(Array<string>("override_force",1), Stage::Time);
 }
-double Actuator::getSpeed( const State& s) const {
-    return( Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _speedIndex)).get());
+
+void Actuator::initState(SimTK::State& state) const
+{
+	Force::initState(state);
+	// Before initializing any state variable, get the current indices
+	Actuator* mutableThis = const_cast<Actuator *>(this);
+
+	// keep track of the cache indices
+	mutableThis->_forceIndex = getCacheVariableIndex("force");
+	mutableThis->_speedIndex = getCacheVariableIndex("speed");
+
+	// if in override mode, this index will be valid
+	mutableThis->_overrideForceIndex = getDiscreteVariableIndex("override_force");
 }
-void Actuator::setSpeed( const State& s, double speed) const {
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _speedIndex)).upd() = speed;
+
+void Actuator::setDefaultsFromState(const SimTK::State& state)
+{
+	Force::setDefaultsFromState(state);
 }
-void Actuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model) {
 
-    _subsystemIndex = subsystemIndex;
-    _model = &model;
+double Actuator::getForce(const State &s) const
+{
+    return getCacheVariable<double>(s, "force");
+}
 
-    _forceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>(0.0) );
-    _speedIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>(0.0) );
-    _overrideForceIndex = s.allocateDiscreteVariable( subsystemIndex, SimTK::Stage::Instance, new SimTK::Value<double>(0.0) );
-    _isOverridenIndex = s.allocateDiscreteVariable( subsystemIndex, SimTK::Stage::Instance, new SimTK::Value<bool>(false) );
+void Actuator::setForce(const State& s, double aForce) const
+{
+    updCacheVariable<double>(s, "force") = aForce;
+}
 
-    if( _numStateVariables > 0 ) {
-        Vector z(_numStateVariables, 0.0);
-        _zIndex = s.allocateZ( subsystemIndex, z);
-        _stateVariableDerivIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<Vector>(z) );
-    }
+double Actuator::getSpeed(const State& s) const
+{
+    return getCacheVariable<double>(s, "speed");
+}
 
+void Actuator::setSpeed(const State &s, double speed) const
+{
+    updCacheVariable<double>(s, "speed") = speed;
 }
 
 //_____________________________________________________________________________
@@ -210,7 +217,6 @@ operator=(const Actuator &aAct)
 	//  this object; it is safe to  copy the suffixes, though possibly unnecessary (since they will be set in 
 	//  the object's setNull() before we copy into it).
 	_controlSuffixes = aAct._controlSuffixes;
-	_stateVariableSuffixes = aAct._stateVariableSuffixes;
 
 	return(*this);
 }
@@ -252,187 +258,6 @@ double Actuator::getControl(const SimTK::State& s ) const
 }
 
 
-// STATES
-
-int Actuator::getNumStateVariables() const
-{
-    return _numStateVariables;
-}
-
-//_____________________________________________________________________________
-/**
- * Get the name of a state variable, given its index.
- *
- * @param aIndex The index of the state variable to get.
- * @return The name of the state variable.
- */
-string Actuator::getStateVariableName(int aIndex) const
-{
-	if(0<=aIndex && aIndex<_numStateVariables)
-		return getName() + "." + _stateVariableSuffixes[aIndex];
-	else {
-		std::stringstream msg;
-		msg << "Actuator::getStateVariableName: ERR- index out of bounds.\nActuator " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " state variables.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Get the index of a state, given the name.
- *
- * @param aName The name of the state to get.
- * @return The index of the state.
- */
-int Actuator::getStateVariableIndex(const string &aName) const
-{
-	for(int i=0;i<_stateVariableSuffixes.getSize();i++)
-		if(getName()+"."+_stateVariableSuffixes[i]==aName)
-			return i;
-	return -1;
-}
-
-//_____________________________________________________________________________
-/**
- * Set an actuator state, specified by index
- *
- * @param aIndex The index of the state to set.
- * @param aValue The value to set the state to.
- */
-void Actuator::setStateVariable(SimTK::State& s, int aIndex, double aValue) const {
-    Vector& z = s.updZ( _subsystemIndex);
-	if(0<=aIndex && aIndex<_numStateVariables) {
-		z[_zIndex+aIndex] = aValue;
-	} else {
-		std::stringstream msg;
-		msg << "Actuator::setStateVariable: ERR- index out of bounds.\nActuator " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Set all of the states of an actuator.
- *
- * @param aY The array of states to set.
- */
-
-void Actuator::setStateVariables(SimTK::State& s, const double aY[]) const 
-{
-    Vector& z = s.updZ(_subsystemIndex );
-	for(int i=0;i<_numStateVariables;i++) {
-		z[_zIndex+i]=aY[i];
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Get an actuator state, by index.
- *
- * @param aIndex the index of the state to get.
- * @return The value of the state.
- */
-double Actuator::getStateVariable(const SimTK::State& s, int aIndex) const
-{
-    const Vector& z = s.getZ(_subsystemIndex);
-
-	if(0<=aIndex && aIndex<_numStateVariables) {
-        return( z[_zIndex+aIndex] );
-
-	} else {
-		std::stringstream msg;
-		msg << "Actuator::getStateVariable: ERR- index out of bounds.\nActuator " 
-		    << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Get all of the states of the actuator.
- *
- * @param rY The array of states is returned here.
- */
-void Actuator::getStateVariables(const SimTK::State& s, double rY[]) const
-{
-    const Vector& z= s.getZ( _subsystemIndex);
-	for(int i=0;i<_numStateVariables;i++) {
-		 rY[i] = z[_zIndex+i];
-	
-	}
-}
-//_____________________________________________________________________________
-/**
- * Set the derivative of an actuator state, specified by index
- *
- * @param aIndex The index of the state to set.
- * @param aValue The value to set the state to.
- */
-void Actuator::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const {
-
-    Vector& stateDeriv =  Value<SimTK::Vector>::downcast(s.updCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).upd();
-	if(0<=aIndex && aIndex<_numStateVariables) {
-		stateDeriv[aIndex] = aValue;
-	} else {
-		std::stringstream msg;
-		msg << "Actuator::setStateVariableDeriv: ERR- index out of bounds.\nActuator " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Set the derivatives of all of the states of an actuator.
- *
- * @param aY The array of states to set.
- */
-void Actuator::setStateVariableDerivs(const SimTK::State& s, const double aY[]) const 
-{
-    Vector& stateDeriv =  Value<SimTK::Vector>::downcast(s.updCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).upd();
-	for(int i=0;i<_numStateVariables;i++) {
-		stateDeriv[+i]=aY[i];
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Get the derivative of an actuator state, by index.
- *
- * @param aIndex the index of the state to get.
- * @return The value of the state.
- */
-double Actuator::getStateVariableDeriv(const SimTK::State& s, int aIndex) const
-{
-    const Vector& stateDeriv =  Value<SimTK::Vector>::downcast(s.getCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).get();
-	if(0<=aIndex && aIndex<_numStateVariables) {
-        return( stateDeriv[aIndex] );
-	} else {
-		std::stringstream msg;
-		msg << "Actuator::getStateVariableDeriv: ERR- index out of bounds.\nActuator " 
-		    << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Get the derivatives of all of the states of the actuator.
- *
- * @param rY The array of states is returned here.
- */
-
-void Actuator::getStateVariableDerivs(const SimTK::State& s, double rY[]) const
-{
-
-    const Vector& stateDeriv =  Value<SimTK::Vector>::downcast(s.getCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).get();
-	for(int i=0;i<_numStateVariables;i++) {
-		 rY[i] = stateDeriv[i];
-	
-	}
-}
 
 //_____________________________________________________________________________
 /**
@@ -479,11 +304,11 @@ double Actuator::getOptimalForce() const
  */
 void Actuator::overrideForce(SimTK::State& s, bool flag ) const 
 {
-    SimTK::Value<bool>::downcast(s.updDiscreteVariable( _subsystemIndex, _isOverridenIndex)).upd() = flag;
+    setModelingOption(s, int(flag));
 }
 bool Actuator::isForceOverriden(const SimTK::State& s ) const 
 {
-    return SimTK::Value<bool>::downcast(s.getDiscreteVariable( _subsystemIndex, _isOverridenIndex)).get();
+    return (getModelingOption(s) > 0);
 }
        
 //_____________________________________________________________________________
@@ -496,7 +321,7 @@ void Actuator::setOverrideForce(SimTK::State& s, double force ) const
 }
 double Actuator::getOverrideForce(const SimTK::State& s ) const
 {
-    return SimTK::Value<double>::downcast(s.getDiscreteVariable( _subsystemIndex, _overrideForceIndex)).get();
+    return getDiscreteVariable(s, "override_force");
 }
 double Actuator::computeOverrideForce( const SimTK::State& s ) const {
       if( _overrideForceFunction ) {

@@ -32,15 +32,15 @@
 // INCLUDES
 #include "OpenSim/Simulation/osimSimulationDLL.h"
 #include <SimTKsimbody.h>
-#include "CustomForce.h"
-#include "CustomActuator.h"
+#include "Force.h"
+#include "Actuator.h"
 
 namespace OpenSim {
 
 //=============================================================================
 //=============================================================================
 /**
- * This acts as an adapter to allow a CustomForce or CustomActuator to be used as a SimTK::Force.
+ * This acts as an adapter to allow a Force or Actuator to be used as a SimTK::Force.
  *
  * @authors Peter Eastman
  */
@@ -50,17 +50,14 @@ class OSIMSIMULATION_API ForceAdapter : public SimTK::Force::Custom::Implementat
 // DATA
 //=============================================================================
 private:
-    const CustomForce* _force;
-	const CustomActuator* _actuator;
-	const SimbodyEngine& _engine;
+    const Force* _force;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
 	// CONSTRUCTION AND DESTRUCTION
-	ForceAdapter(const CustomForce& force, const SimbodyEngine& engine);
-	ForceAdapter(const CustomActuator& actuator, const SimbodyEngine& engine);
+	ForceAdapter(const Force& force);
 
    // CALC FORCES (Called by Simbody)
 	void calcForce(const SimTK::State& state,
@@ -69,6 +66,17 @@ public:
 
    // CALC POTENTIAL ENERGY (Called by Simbody)
 	SimTK::Real calcPotentialEnergy(const SimTK::State& state) const;   
+
+	// Add state, discrete, and cache variables as requested by OpenSim::Force
+	virtual void realizeTopology(SimTK::State& state) const;
+	virtual void realizeModel(SimTK::State& state) const {};
+    virtual void realizeInstance(const SimTK::State& state) const {};
+    virtual void realizeTime(const SimTK::State& state) const {};
+    virtual void realizePosition(const SimTK::State& state) const {};
+    virtual void realizeVelocity(const SimTK::State& state) const {};
+    virtual void realizeDynamics(const SimTK::State& state) const {};
+    virtual void realizeAcceleration(const SimTK::State& state) const;
+    virtual void realizeReport(const SimTK::State& state) const {};
 };
 
 } // end of namespace OpenSim

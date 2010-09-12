@@ -139,7 +139,6 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	void computeEquilibrium(SimTK::State& s);
-    void computeStateDerivatives(const SimTK::State& s);
 
 	//--------------------------------------------------------------------------
 	// CHECK

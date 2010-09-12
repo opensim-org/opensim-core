@@ -69,7 +69,7 @@ void ElasticFoundationForce::createSystem(SimTK::MultibodySystem& system) const
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
     SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
     SimTK::ContactSetIndex set = contacts.createContactSet();
-    SimTK::ElasticFoundationForce force(_model->updUserForceSubsystem(), contacts, set);
+    SimTK::ElasticFoundationForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(_transitionVelocity);
     for (int i = 0; i < _contactParametersSet.getSize(); ++i)
     {
@@ -356,7 +356,7 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
 {
 	OpenSim::Array<double> values(1);
 
-	const SimTK::ElasticFoundationForce &simtkForce = (SimTK::ElasticFoundationForce &)(_model->getUserForceSubsystem().getForce(_index));
+	const SimTK::ElasticFoundationForce &simtkForce = (SimTK::ElasticFoundationForce &)(_model->getForceSubsystem().getForce(_index));
 
 	SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
 	SimTK::Vector_<SimTK::Vec3> particleForces(0);

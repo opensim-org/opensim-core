@@ -57,7 +57,7 @@ EllipsoidJoint::~EllipsoidJoint()
  */
 EllipsoidJoint::EllipsoidJoint() :
 	Joint(),
-	_ellipsoidRadii(_ellipsoidRadiiProp.getValueDblVec3())
+	_ellipsoidRadii(_ellipsoidRadiiProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -71,7 +71,7 @@ EllipsoidJoint::EllipsoidJoint(const std::string &name, OpenSim::Body& parent, S
 				SimTK::Vec3 ellipsoidRadii, bool reverse) :
 	Joint(name, parent, locationInParent,orientationInParent,
 			body, locationInBody, orientationInBody, reverse),
-	_ellipsoidRadii(_ellipsoidRadiiProp.getValueDblVec3())
+	_ellipsoidRadii(_ellipsoidRadiiProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -88,7 +88,7 @@ EllipsoidJoint::EllipsoidJoint(const std::string &name, OpenSim::Body& parent, S
  */
 EllipsoidJoint::EllipsoidJoint(const EllipsoidJoint &aJoint) :
    Joint(aJoint),
-	_ellipsoidRadii(_ellipsoidRadiiProp.getValueDblVec3())
+	_ellipsoidRadii(_ellipsoidRadiiProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();

@@ -64,7 +64,7 @@ LinearSpring::~LinearSpring()
  *
  * @param aBody Body upon which spring forces are to be applied.
  */
-LinearSpring::LinearSpring(const Body &aBody, double startTime, double endTime) : CustomForce(),
+LinearSpring::LinearSpring(const Body &aBody, double startTime, double endTime) : Force(),
 	_body(aBody), _startTime(startTime), _endTime(endTime)
 {
 	setNull();
@@ -349,7 +349,7 @@ void LinearSpring::computeTargetFunctions(SimTK::State &s, const Storage &aQStor
 		s.setQ(SimTK::Vector(nq,&q[0]));
 		s.setU(SimTK::Vector(nu,&u[0]));
 
-		_model->getSystem().realize(s, SimTK::Stage::Velocity );
+		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
 		// Get global position and velocity
 		_pointFunction->calcValue(&t[0],&pLocal[0],3);

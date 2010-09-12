@@ -35,7 +35,7 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include "Tool.h"
+#include "DynamicsTool.h"
 
 #ifdef SWIG
 	#ifdef OSIMTOOLS_API
@@ -61,20 +61,13 @@ class Model;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API InverseDynamicsTool: public Tool
+class OSIMTOOLS_API InverseDynamicsTool: public DynamicsTool
 {
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
-private:
+protected:
 	
-	/** Pointer to the model being investigated. */
-	Model *_model;
-
-	/** Name of the xml file used to deserialize or construct a model. */
-	PropertyStr _modelFileNameProp;
-	std::string &_modelFileName;
-
 	/** name of storage file that contains coordinate values for inverse dynamics solving */
 	PropertyStr _coordinatesFileNameProp;
 	std::string &_coordinatesFileName;
@@ -86,10 +79,6 @@ private:
 	/** Low-pass cut-off frequency for filtering the coordinates (does not apply to states). */
 	PropertyDbl _lowpassCutoffFrequencyProp;
 	double &_lowpassCutoffFrequency;
-
-	// range of time to process
-	PropertyDblArray _timeRangeProp;
-	Array<double> &_timeRange;
 
 	// name of storage file containing generalized forces from innverse dynamics
 	PropertyStr _outputGenForceFileNameProp;

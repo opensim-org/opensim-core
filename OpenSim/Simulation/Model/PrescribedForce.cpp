@@ -54,7 +54,7 @@ PrescribedForce::~PrescribedForce()
 /**
  * Default constructor.
  */
-PrescribedForce::PrescribedForce(Body* body) : CustomForce(),
+PrescribedForce::PrescribedForce(Body* body) : Force(),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
 	_forceIsGlobal(_forceIsGlobalProp.getValueBool()),
@@ -79,7 +79,7 @@ PrescribedForce::PrescribedForce(Body* body) : CustomForce(),
  * Constructor from XML file
  */
 PrescribedForce::PrescribedForce(DOMElement* aNode) :
-	CustomForce(aNode),
+	Force(aNode),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
 	_forceIsGlobal(_forceIsGlobalProp.getValueBool()),
@@ -102,7 +102,7 @@ PrescribedForce::PrescribedForce(DOMElement* aNode) :
  * Copy constructor.
  */
 PrescribedForce::PrescribedForce(const PrescribedForce& force) :
-	CustomForce(force),
+	Force(force),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
 	_forceIsGlobal(_forceIsGlobalProp.getValueBool()),
@@ -142,7 +142,7 @@ Object* PrescribedForce::copy() const
 void PrescribedForce::updateFromXMLNode()
 {
 	// Base class
-	CustomForce::updateFromXMLNode();
+	Force::updateFromXMLNode();
 
 	//Specify all or none of the components
 	if(_forceFunctionSet.getSize() != 3&& _forceFunctionSet.getSize() != 0)
@@ -218,7 +218,7 @@ void PrescribedForce::setupProperties()
 
 PrescribedForce& PrescribedForce::operator=(const PrescribedForce &aForce)
 {
-	CustomForce::operator=(aForce);
+	Force::operator=(aForce);
 	copyData(aForce);
 	return(*this);
 }
@@ -600,7 +600,7 @@ void PrescribedForce::copyData(const PrescribedForce& orig)
 
 void PrescribedForce::setup(Model& model)
 {
-	CustomForce::setup(model);
+	Force::setup(model);
 
 	// hook up body pointer to name
 	if (_model)

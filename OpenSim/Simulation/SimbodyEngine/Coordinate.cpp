@@ -477,7 +477,7 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 	// the last setValue() call in a string of them (e.g., to set a model pose), in which case you only try to
 	// enforce constraints during the last call.
 	if (enforceConstraints) {
-		_model->getSystem().realize(s, Stage::Position);
+		_model->getMultibodySystem().realize(s, Stage::Position);
 
 		if (_model->getConstraintSet().getSize()>0){
 			// assemble model so that states satisfy ALL constraints
@@ -694,7 +694,7 @@ bool Coordinate::setLocked(SimTK::State& s, bool aLocked) const
 
 	// Get constraint
 	if(int(_lockedConstraintIndex) != SimTK::InvalidIndex){
-		lock = &_model->getSystem().updMatterSubsystem().updConstraint(_lockedConstraintIndex);
+		lock = &_model->updMultibodySystem().updMatterSubsystem().updConstraint(_lockedConstraintIndex);
 	}
 	else{
 		string msg = "Lock constraint for coordinate could not be found.";
@@ -725,7 +725,7 @@ bool Coordinate::setLocked(SimTK::State& s, bool aLocked) const
 bool Coordinate::getLocked(const SimTK::State& s) const
 {
 	if(int(_lockedConstraintIndex) != SimTK::InvalidIndex){
-		bool disabled = _model->getSystem().updMatterSubsystem().getConstraint(_lockedConstraintIndex).isDisabled(s);
+		bool disabled = _model->updMultibodySystem().updMatterSubsystem().getConstraint(_lockedConstraintIndex).isDisabled(s);
 		return !disabled;
 	}
 	else{
@@ -756,7 +756,7 @@ void Coordinate::setIsPrescribed(SimTK::State& s, bool isPrescribed) const
 	// Get constraint
 	if(int(_prescribedConstraintIndex) != SimTK::InvalidIndex){
 		//get constraint
-		prescribe = &_model->getSystem().updMatterSubsystem().updConstraint(_prescribedConstraintIndex);
+		prescribe = &_model->updMultibodySystem().updMatterSubsystem().updConstraint(_prescribedConstraintIndex);
 	}
 	else{
 		string msg = "Preecribed motion for coordinate not found.";
@@ -777,7 +777,7 @@ void Coordinate::setIsPrescribed(SimTK::State& s, bool isPrescribed) const
 bool Coordinate::isPrescribed(const SimTK::State& s) const
 {
 	if(int(_prescribedConstraintIndex) != SimTK::InvalidIndex){
-		bool disabled = _model->getSystem().updMatterSubsystem().getConstraint(_prescribedConstraintIndex).isDisabled(s);
+		bool disabled = _model->updMultibodySystem().updMatterSubsystem().getConstraint(_prescribedConstraintIndex).isDisabled(s);
 		return !disabled;
 	}
 	else{
@@ -833,11 +833,11 @@ std::string Coordinate::getStateVariableName(int index) const
 int Coordinate::getStateVariableYIndex(int index) const
 {
 	const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
-	int startQIndex = mb.getFirstQIndex(_model->getSystem().getDefaultState());
+	int startQIndex = mb.getFirstQIndex(_model->getMultibodySystem().getDefaultState());
 	if (index==0)
-		return (_model->getSystem().getDefaultState().getQStart()+startQIndex+_mobilityIndex);
+		return (_model->getMultibodySystem().getDefaultState().getQStart()+startQIndex+_mobilityIndex);
 	if (index ==1)
-		return (_model->getSystem().getDefaultState().getUStart()+startQIndex+_mobilityIndex);
+		return (_model->getMultibodySystem().getDefaultState().getUStart()+startQIndex+_mobilityIndex);
 	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
 
 }

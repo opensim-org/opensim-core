@@ -29,7 +29,7 @@
 */
 
 /* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
+ * Author: Frank C. Anderson, Ajay Seth 
  */
 #ifdef WIN32
 #pragma warning( disable : 4251 )
@@ -40,6 +40,7 @@
 #include "ArrayPtrs.h"
 #include "Property.h"
 #include "PropertyGroup.h"
+#include "PropertyDblVec.h"
 
 
 #ifdef SWIG
@@ -57,6 +58,14 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property>;
 
 
 namespace OpenSim { 
+
+// convenient abbreviations
+typedef PropertyDblVec_<2> PropertyDblVec2;
+typedef PropertyDblVec_<3> PropertyDblVec3;
+typedef PropertyDblVec_<4> PropertyDblVec4;
+typedef PropertyDblVec_<5> PropertyDblVec5;
+typedef PropertyDblVec_<6> PropertyDblVec6;
+
 //=============================================================================
 //=============================================================================
 /**

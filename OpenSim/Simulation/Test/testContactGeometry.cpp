@@ -156,13 +156,13 @@ int testBouncingBall(bool useMesh)
 	//osimModel = new Model("BouncingBallModel.osim");
 
     SimTK::State osim_state = osimModel->initSystem();
-    osimModel->getSystem().realize(osim_state, Stage::Position );
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
     osim_state.updQ()[4] = 5.0;
 
 	//==========================================================================================================
 	// Simulate it and see if it bounces correctly.
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     Manager manager(*osimModel, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(0.1);
@@ -170,7 +170,7 @@ int testBouncingBall(bool useMesh)
     {
         double time = 0.1*(i+1);
         manager.integrate(osim_state);
-        osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
         double y = 5.0+0.5*gravity_vec[1]*time*time;

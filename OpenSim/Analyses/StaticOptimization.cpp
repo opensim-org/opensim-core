@@ -256,7 +256,7 @@ void StaticOptimization::
 setModel(Model& aModel)
 {
 	Analysis::setModel(aModel);
-	//SimTK::State& s = aModel->getSystem()->updDefaultState();
+	//SimTK::State& s = aModel->getMultibodySystem()->updDefaultState();
 }
 
 //-----------------------------------------------------------------------------
@@ -315,7 +315,8 @@ record(const SimTK::State& s)
 	if(!_modelWorkingCopy) return -1;
 
 	// Set model Q's and U's
-	SimTK::State& sWorkingCopy = _modelWorkingCopy->getSystem().updDefaultState();
+	SimTK::State& sWorkingCopy = _modelWorkingCopy->updMultibodySystem().updDefaultState();
+
 	sWorkingCopy.setTime(s.getTime());
 	sWorkingCopy.setQ(s.getQ());
 	sWorkingCopy.setU(s.getU());
@@ -385,7 +386,7 @@ record(const SimTK::State& s)
 	_parameters = 0; // Set initial guess to zeros
 
 	// Static optimization
-	_modelWorkingCopy->getSystem().realize(sWorkingCopy,SimTK::Stage::Velocity);
+	_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy,SimTK::Stage::Velocity);
 	target.prepareToOptimize(sWorkingCopy, &_parameters[0]);
 
 	//LARGE_INTEGER start;
@@ -512,7 +513,7 @@ begin(SimTK::State& s )
 
 	// Replace model force set with only generalized forces
 	if(_model) {
-		SimTK::State& sWorkingCopyTemp = _modelWorkingCopy->getSystem().updDefaultState();
+		SimTK::State& sWorkingCopyTemp = _modelWorkingCopy->updMultibodySystem().updDefaultState();
 		// Update the _forceSet we'll be computing inverse dynamics for
 		if(_ownsForceSet) delete _forceSet;
 		if(_useModelForceSet) {
@@ -538,10 +539,19 @@ begin(SimTK::State& s )
 		}
 
 		SimTK::State& sWorkingCopy = _modelWorkingCopy->initSystem();
-		_modelWorkingCopy->getSystem().realize(s,SimTK::Stage::Velocity);
+
+		// Set modeiling options for Actuators to be overriden
+		for(int i=0,j=0; i<_forceSet->getSize(); i++) {
+			Actuator* act = dynamic_cast<Actuator*>(&_forceSet->get(i));
+			if( act ) {
+				act->overrideForce(sWorkingCopy,true);
+			}
+		}
+
 		sWorkingCopy.setQ(s.getQ());
 		sWorkingCopy.setU(s.getU());
 		sWorkingCopy.setZ(s.getZ());
+		_modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
 		_modelWorkingCopy->computeEquilibriumForAuxiliaryStates(sWorkingCopy);
 		// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
 		_accelerationIndices.setSize(0);

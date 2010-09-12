@@ -56,7 +56,7 @@ using SimTK::Vec3;
  * Default constructor.
  */
 Ligament::Ligament() :
-   CustomForce(),
+   Force(),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
    _restingLength(_restingLengthProp.getValueDbl()),
@@ -89,7 +89,7 @@ Ligament::~Ligament()
  * @param aLigament Ligament to be copied.
  */
 Ligament::Ligament(const Ligament &aLigament) :
-   CustomForce(aLigament),
+   Force(aLigament),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
    _restingLength(_restingLengthProp.getValueDbl()),
@@ -146,9 +146,9 @@ void Ligament::setNull()
 /**
  * allocate and initialize the SimTK state for this ligament.
  */
- void Ligament::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model)
+ void Ligament::createSystem(SimTK::MultibodySystem& system) const
 {
-	_path.initStateCache(s, subsystemIndex, model);
+	_path.createSystem(system);
 }
 
 //_____________________________________________________________________________
@@ -197,7 +197,7 @@ void Ligament::setupProperties()
  */
 void Ligament::setup(Model& aModel)
 {
-	CustomForce::setup(aModel);
+	Force::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)
@@ -213,10 +213,8 @@ void Ligament::setup(Model& aModel)
 
 void Ligament::initState( SimTK::State& s) const
 {
-	CustomForce::initState(s);
-
-	_model->getSystem().realize(s, SimTK::Stage::Position );
-
+	Force::initState(s);
+	_path.initState(s);
 }
 
 //=============================================================================
@@ -231,7 +229,7 @@ void Ligament::initState( SimTK::State& s) const
 Ligament& Ligament::operator=(const Ligament &aLigament)
 {
 	// BASE CLASS
-	CustomForce::operator=(aLigament);
+	Force::operator=(aLigament);
 
 	copyData(aLigament);
 

@@ -65,7 +65,7 @@ TorsionalSpring::~TorsionalSpring()
  * @param aModel Model for which external torques are to be applied.
  * @param aBody Body to which external torques are to be applied.
  */
-TorsionalSpring::TorsionalSpring(const Body &aBody, double startTime, double endTime) : CustomForce(),
+TorsionalSpring::TorsionalSpring(const Body &aBody, double startTime, double endTime) : Force(),
 	_body(aBody), _startTime(startTime), _endTime(endTime)
 {
 	setNull();
@@ -321,7 +321,7 @@ void TorsionalSpring::computeTargetFunctions(SimTK::State &s, const Storage &aQS
 		s.setQ(SimTK::Vector(nq,&q[0]));
 		s.setU(SimTK::Vector(nu,&u[0]));
 
-		_model->getSystem().realize(s, SimTK::Stage::Velocity );
+		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
 		// Get global position and velocity
 		_model->getSimbodyEngine().getDirectionCosines(s, _body, dirCos);

@@ -78,7 +78,7 @@ int testStates()
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(model.getSystem());
+    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     Manager manager(model, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(0.05);

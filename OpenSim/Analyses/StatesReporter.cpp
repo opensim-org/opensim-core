@@ -223,7 +223,7 @@ record(const SimTK::State& s)
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL StatesReporter QUANTITIES ARE VALID
-    _model->getSystem().realize(s, SimTK::Stage::Velocity );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
 	StateVector nextRow = StateVector(s.getTime());
 	OpenSim::Array<double> StateValues;

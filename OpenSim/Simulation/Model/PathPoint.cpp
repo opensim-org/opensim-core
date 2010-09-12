@@ -53,7 +53,7 @@ Geometry *PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
  * Default constructor.
  */
 PathPoint::PathPoint() :
-   _location(_locationProp.getValueDblVec3()),
+   _location(_locationProp.getValueDblVec()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())
@@ -78,7 +78,7 @@ PathPoint::~PathPoint()
  */
 PathPoint::PathPoint(const PathPoint &aPoint) :
    Object(aPoint),
-   _location(_locationProp.getValueDblVec3()),
+   _location(_locationProp.getValueDblVec()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
    _displayer((VisibleObject&)_displayerProp.getValueObj())

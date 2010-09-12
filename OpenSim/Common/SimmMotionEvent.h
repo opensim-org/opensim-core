@@ -36,7 +36,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
-#include "PropertyDblVec3.h"
+#include "PropertyDblVec.h"
 
 namespace OpenSim {
 

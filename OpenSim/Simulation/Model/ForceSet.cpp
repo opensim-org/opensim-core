@@ -35,7 +35,6 @@
 #include "ForceSet.h"
 #include "Model.h"
 #include "Muscle.h"
-#include "OpenSimForceSubsystem.h"
 #include <OpenSim/Simulation/Control/Controller.h>
 #include "SimTKsimbody.h"
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
@@ -431,23 +430,6 @@ computeEquilibrium(SimTK::State& s)
 		}
 	}
 }
-
-/**
- *  Compute the time derivatives of the states that characterize the actuators.
- *   
- *   @param rDY Array of state derivatives.
- **/
-void ForceSet::
-computeStateDerivatives(const SimTK::State& s)
-{
-    int i;
-    Actuator *act;
-    for(i=0;i<getSize();i++) {
-        act = dynamic_cast<Actuator *>(&get(i));
-        if(act!=NULL) act->computeStateDerivatives( s );
-    }
-}
-
 
 //_____________________________________________________________________________
 /**

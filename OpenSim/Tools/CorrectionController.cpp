@@ -334,9 +334,6 @@ void CorrectionController::setup(Model& model)
    }
 	_numControls = _actuatorSet.getSize();
 
-	//Make sure to perform any setup required by actuators added to the model by this controller
-	_actuatorSet.setup(model);
-
 	printf(" CorrectionController::setup end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
 }
 

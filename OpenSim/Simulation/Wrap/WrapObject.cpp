@@ -56,7 +56,7 @@ using SimTK::Vec3;
 WrapObject::WrapObject() :
 	Object(),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblVec3()),
+   _translation(_translationProp.getValueDblVec()),
 	_active(_activeProp.getValueBool()),
 	_quadrantName(_quadrantNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -84,7 +84,7 @@ WrapObject::~WrapObject()
 WrapObject::WrapObject(const WrapObject& aWrapObject) :
 	Object(aWrapObject),
    _xyzBodyRotation(_xyzBodyRotationProp.getValueDblArray()),
-   _translation(_translationProp.getValueDblVec3()),
+   _translation(_translationProp.getValueDblVec()),
 	_active(_activeProp.getValueBool()),
 	_quadrantName(_quadrantNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),

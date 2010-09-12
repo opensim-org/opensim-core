@@ -122,11 +122,6 @@ protected:
 	PropertyDbl _flenProp;
 	double &_flen;
 
-   /** indexes for Forces in various components */
-   SimTK::CacheEntryIndex _passiveForceIndex;
-	SimTK::CacheEntryIndex _tendonForceIndex;
-
-
 protected:
 	static const int STATE_ACTIVATION;
 	static const int STATE_FIBER_LENGTH;
@@ -149,7 +144,7 @@ public:
     void copyData(const Thelen2003Muscle &aMuscle);
 	virtual void copyPropertyValues(Actuator& aActuator);
 #ifndef SWIG
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
+
 #endif
 
 	//--------------------------------------------------------------------------
@@ -215,7 +210,6 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computeStateDerivatives(const SimTK::State& s);
 	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
@@ -237,7 +231,10 @@ public:
 	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle, Actuator);
 
 protected:
+	// Model Component Interface
 	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:
 	void setNull();

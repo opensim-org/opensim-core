@@ -451,14 +451,14 @@ printf("\n");
     for(i=0;i<nq;i++) _q[i] = s.getQ()[i]; 
 
 	if(_recordAccelerations){
-		_model->getSystem().realize(s, SimTK::Stage::Acceleration);
+		_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
 			for(i=0;i<nu;i++)  {
 				_u[i] = s.getU()[i]; 
 				_udot[i] = s.getUDot()[i];
 			}
     }
 	else{
-		_model->getSystem().realize(s, SimTK::Stage::Velocity);
+		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 		for(i=0;i<nu;i++)  {
            _u[i] = s.getU()[i];
 		}
@@ -512,9 +512,9 @@ begin( SimTK::State& s )
 	int status = 0;
 	if(_pStore->getSize()<=0) {
         if(_recordAccelerations && s.getSystemStage() < SimTK::Stage::Acceleration ) 
-            _model->getSystem().realize(s, SimTK::Stage::Acceleration);
+            _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
 		else
-			_model->getSystem().realize(s, SimTK::Stage::Velocity);
+			_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 		status = record(s);
 	}

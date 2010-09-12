@@ -39,7 +39,7 @@
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyBoolArray.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyStrArray.h>

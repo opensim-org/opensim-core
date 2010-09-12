@@ -103,7 +103,6 @@ protected:
 
 private:
 	void setNull();
-	friend class SimbodyEngine;
 
 //=============================================================================
 };	// END of class Constraint

@@ -120,12 +120,12 @@ int testSpringMass()
 	SimTK::State osim_state = osimModel->initSystem();
 
 	slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getSystem().realize(osim_state, Stage::Position );
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(1e-6);
     Manager manager(*osimModel,  integrator);
     manager.setInitialTime(0.0);
@@ -137,7 +137,7 @@ int testSpringMass()
 	for(int i = 1; i <=nsteps; i++){
 		manager.setFinalTime(dt*i);
 		manager.integrate(osim_state);
-		osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+		osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
 		
@@ -225,12 +225,12 @@ int testBushingForce()
 	SimTK::State &osim_state = osimModel->initSystem();
 
 	slider_coords[0].setValue(osim_state, start_h);
-    osimModel->getSystem().realize(osim_state, Stage::Position );
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(1e-6);
     Manager manager(*osimModel,  integrator);
     manager.setInitialTime(0.0);
@@ -242,7 +242,7 @@ int testBushingForce()
 	for(int i = 1; i <=nsteps; i++){
 		manager.setFinalTime(dt*i);
 		manager.integrate(osim_state);
-		osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+		osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
         osimModel->updSimbodyEngine().getPosition(osim_state, ball, Vec3(0), pos);
 		
@@ -292,14 +292,14 @@ int testElasticFoundation()
 	SimTK::State osim_state = osimModel->initSystem();
 
 	osimModel->getCoordinateSet()[4].setValue(osim_state, start_h);
-    osimModel->getSystem().realize(osim_state, Stage::Position );
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
 	const OpenSim::Body &ball = osimModel->getBodySet().get("ball"); 
 
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(1e-6);
     Manager manager(*osimModel,  integrator);
     manager.setInitialTime(0.0);
@@ -309,7 +309,7 @@ int testElasticFoundation()
 	manager.setFinalTime(final_t);
 	manager.integrate(osim_state);
 	//make sure we can access dynamic variables
-	osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
 
 	// Print out the motion for visualizing/debugging
 	manager.getStateStorage().print("bouncing_ball_states.sto");

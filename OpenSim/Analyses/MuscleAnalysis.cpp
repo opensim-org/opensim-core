@@ -536,7 +536,7 @@ record(const SimTK::State& s)
 	int nq = _momentArmStorageArray.getSize();
 	Array<double> ma(0.0,nm),m(0.0,nm);
 
-   _model->getSystem().realize(s,SimTK::Stage::Velocity);  // need to be at Velocity to compaute path length 
+   _model->getMultibodySystem().realize(s,SimTK::Stage::Velocity);  // need to be at Velocity to compaute path length 
 
 	for(int i=0; i<nq; i++) {
 
@@ -546,7 +546,7 @@ record(const SimTK::State& s)
         
 		// Make a writable copy of the state so moment arm can be computed
 		SimTK::State tempState = s;
-		_model->getSystem().realize(tempState, s.getSystemStage() );
+		_model->getMultibodySystem().realize(tempState, s.getSystemStage() );
 		// LOOP OVER MUSCLES
 		for(int j=0; j<nm; j++) {
             ma[j] = _muscleArray[j]->computeMomentArm(tempState,*q);

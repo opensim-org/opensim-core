@@ -455,7 +455,7 @@ void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForc
 	SimTK::Vector_<SpatialVec> reactionForces(_model->getMatterSubsystem().getNumBodies());
 
 	// Systems must be realized to acceleration stage
-	_model->getSystem().realize(s, Stage::Acceleration);
+	_model->getMultibodySystem().realize(s, Stage::Acceleration);
     _model->getMatterSubsystem().calcMobilizerReactionForces(s, reactionForces);
 
     //Separate SimTK SpatialVecs to Forces and Torques	
@@ -481,7 +481,7 @@ void SimbodyEngine::computeDerivatives(const SimTK::State& s, double *dqdt,doubl
 {
 	// COMPUTE ACCELERATIONS
 	try {
-		_model->getSystem().realize(s,Stage::Acceleration);
+		_model->getMultibodySystem().realize(s,Stage::Acceleration);
 	} catch(std::exception &x) {
 		cout<<x.what()<<endl;
 		cout<<"SimbodyEngine.computeDerivatives: invalid derivatives."<<endl;
@@ -616,7 +616,7 @@ transformPosition(const SimTK::State& s, const OpenSim::Body &aBodyFrom,const Ve
 	Vec3& rPos) const
 {
 	const Body* bFrom = (const Body*)&aBodyFrom;
-	_model->getSystem().realize(s, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 	rPos = _model->getMatterSubsystem().getMobilizedBody(bFrom->getIndex()).findStationLocationInGround(s, aPos);
 }
 
@@ -967,7 +967,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 	rQComplete = new Storage();
 	rUComplete = new Storage();
     State constrainedState = s;
-     _model->getSystem().realize(constrainedState, s.getSystemStage());
+     _model->getMultibodySystem().realize(constrainedState, s.getSystemStage());
 	for(i=0;i<size;i++) {
 		qStore->getTime(i,time);
 		qStore->getData(i,nq,&qu[0]);

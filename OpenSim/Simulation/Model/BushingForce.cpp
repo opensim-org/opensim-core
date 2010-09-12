@@ -59,14 +59,14 @@ BushingForce::BushingForce() :
 	Force(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3()),
-	_rotStiffness(_rotStiffnessProp.getValueDblVec3()),
-	_transStiffness(_transStiffnessProp.getValueDblVec3()),
-	_rotDamping(_rotDampingProp.getValueDblVec3()),
-	_transDamping(_transDampingProp.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec()),
+	_rotStiffness(_rotStiffnessProp.getValueDblVec()),
+	_transStiffness(_transStiffnessProp.getValueDblVec()),
+	_rotDamping(_rotDampingProp.getValueDblVec()),
+	_transDamping(_transDampingProp.getValueDblVec())
 {
 	setNull();
 }
@@ -78,14 +78,14 @@ BushingForce::BushingForce( std::string body1Name, SimTK::Vec3 point1, SimTK::Ve
 	Force(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3()),
-	_rotStiffness(_rotStiffnessProp.getValueDblVec3()),
-	_transStiffness(_transStiffnessProp.getValueDblVec3()),
-	_rotDamping(_rotDampingProp.getValueDblVec3()),
-	_transDamping(_transDampingProp.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec()),
+	_rotStiffness(_rotStiffnessProp.getValueDblVec()),
+	_transStiffness(_transStiffnessProp.getValueDblVec()),
+	_rotDamping(_rotDampingProp.getValueDblVec()),
+	_transDamping(_transDampingProp.getValueDblVec())
 {
 	setNull();
 	_body1Name = body1Name;
@@ -111,14 +111,14 @@ BushingForce::BushingForce(const BushingForce &aForce) :
    Force(aForce),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3()),
-	_rotStiffness(_rotStiffnessProp.getValueDblVec3()),
-	_transStiffness(_transStiffnessProp.getValueDblVec3()),
-	_rotDamping(_rotDampingProp.getValueDblVec3()),
-	_transDamping(_transDampingProp.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec()),
+	_rotStiffness(_rotStiffnessProp.getValueDblVec()),
+	_transStiffness(_transStiffnessProp.getValueDblVec()),
+	_rotDamping(_rotDampingProp.getValueDblVec()),
+	_transDamping(_transDampingProp.getValueDblVec())
 {
 	setNull();
 	copyData(aForce);
@@ -268,7 +268,7 @@ void BushingForce::createSystem(SimTK::MultibodySystem& system) const
 	Vec6 damping(_rotDamping[0], _rotDamping[1], _rotDamping[2], _transDamping[0], _transDamping[1], _transDamping[2]);
 
     // Now create a Simbody Force::LinearBushing
-    SimTK::Force::LinearBushing simtkForce(_model->updUserForceSubsystem(), b1, inb1, b2, inb2, stiffness, damping);
+    SimTK::Force::LinearBushing simtkForce(_model->updForceSubsystem(), b1, inb1, b2, inb2, stiffness, damping);
     
     // Beyond the const Component get the index so we can access the SimTK::Force later
 	BushingForce* mutableThis = const_cast<BushingForce *>(this);
@@ -354,7 +354,7 @@ OpenSim::Array<double> BushingForce::getRecordValues(const SimTK::State& state) 
 {
 	OpenSim::Array<double> values(1);
 
-	const SimTK::Force::LinearBushing &simtkSpring = (SimTK::Force::LinearBushing &)(_model->getUserForceSubsystem().getForce(_index));
+	const SimTK::Force::LinearBushing &simtkSpring = (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
 
 	SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
 	SimTK::Vector_<SimTK::Vec3> particleForces(0);

@@ -132,7 +132,7 @@ bool testControlSetControllerOnBlock()
 
 	// Create the integrator and manager for the simulation.
 	double accuracy = 1.0e-3;
-	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
+	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 	integrator.setMaximumStepSize(100);
 	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(accuracy);
@@ -225,7 +225,7 @@ bool testPrescribedControllerOnBlock()
 
 	// Create the integrator and manager for the simulation.
 	double accuracy = 1.0e-3;
-	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
+	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 	integrator.setMaximumStepSize(100);
 	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(accuracy);
@@ -299,7 +299,7 @@ bool testCorrectionControllerOnBlock()
 	SimTK::State& si = osimModel.initSystem();
 
 	// Create the integrator and manager for the simulation.
-	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
+	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 	integrator.setMaximumStepSize(1.0e-3);
 	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(1.0e-3);

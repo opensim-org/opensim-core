@@ -44,7 +44,6 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "Model.h"
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include "SimTKsimbody.h"
 
@@ -55,6 +54,9 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
+const int Muscle::STATE_ACTIVATION = 0;
+const int Muscle::STATE_FIBER_LENGTH = 1;
+
 static int counter=0;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -63,15 +65,15 @@ static int counter=0;
 /**
  * Default constructor.
  */
-Muscle::Muscle() :
-   CustomActuator(),
+Muscle::Muscle() : Actuator(),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
-   _defaultActivation(0),
-   _defaultFiberLength(0)
+	_defaultActivation(0),
+	_defaultFiberLength(0)
 {
 	setNull();
 	setupProperties();
+	includeAsSubComponent(&_path);
 }
 
 //_____________________________________________________________________________
@@ -93,16 +95,16 @@ Muscle::~Muscle()
  *
  * @param aMuscle Muscle to be copied.
  */
-Muscle::Muscle(const Muscle &aMuscle) :
-   CustomActuator(aMuscle),
+Muscle::Muscle(const Muscle &aMuscle) : Actuator(aMuscle),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
-   _defaultActivation(aMuscle._defaultActivation),
-   _defaultFiberLength(aMuscle._defaultFiberLength)
+	_defaultActivation(aMuscle._defaultActivation),
+	_defaultFiberLength(aMuscle._defaultFiberLength)
 {
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
+	includeAsSubComponent(&_path);
 }
 
 //=============================================================================
@@ -126,6 +128,7 @@ void Muscle::copyData(const Muscle &aMuscle)
 void Muscle::setNull()
 {
 	setType("Muscle");
+	_model = NULL;
 }
 
 //_____________________________________________________________________________
@@ -174,13 +177,64 @@ void Muscle::updateFromXMLNode()
 
 //_____________________________________________________________________________
 /**
+ * Perform set up functions after model has been deserialized or copied.
+ *
+ * @param aModel The model containing this muscle.
+ */
+void Muscle::setup(Model& aModel)
+{
+	Actuator::setup(aModel);
+
+	// _model will be NULL when objects are being registered.
+	if (_model == NULL)
+		return;
+
+    setNumStateVariables(2);
+
+	_stateVariableSuffixes[STATE_ACTIVATION]="activation";
+	_stateVariableSuffixes[STATE_FIBER_LENGTH]="fiber_length";
+
+	_path.setOwner(this);
+}
+
+//_____________________________________________________________________________
+/**
  * allocate and initialize the SimTK state for this acuator.
  */
- void Muscle::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model )
+ void Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	Actuator::initStateCache(s, subsystemIndex, model);
+	Actuator::createSystem(system);
 
-	_path.initStateCache(s, subsystemIndex, model);
+	Muscle* mutableThis = const_cast<Muscle *>(this);
+
+	mutableThis->setNumStateVariables(_stateVariableSuffixes.getSize());
+	mutableThis->addStateVariables(_stateVariableSuffixes);
+	mutableThis->addCacheVariable<SimTK::Vector>("stateDerivs", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Position);
+
+	mutableThis->_model->addModelComponent(this);
+ }
+
+ void Muscle::initState( SimTK::State& s) const
+{
+    Actuator::initState(s);
+
+	Muscle* mutableThis = const_cast<Muscle *>(this);
+
+	// keep track of the index for the first state variable derivatives in the cache 
+	mutableThis->_zIndex = getZIndex(_stateVariableSuffixes[0]);
+
+	// keep track of the index for state variable derivatives in the cache 
+	mutableThis->_stateVariableDerivIndex = getCacheVariableIndex("stateDerivs");
+
+	setActivation(s, _defaultActivation);
+	setFiberLength(s, _defaultFiberLength);
+}
+
+void Muscle::setDefaultsFromState(const SimTK::State& state)
+{
+	Actuator::setDefaultsFromState(state);
+    _defaultActivation = getActivation(state);
+    _defaultFiberLength = getFiberLength(state);
 }
 
 double Muscle::getDefaultActivation() const {
@@ -206,39 +260,6 @@ void Muscle::setupProperties()
 	_propertySet.append(&_pathProp);
 }
 
-//_____________________________________________________________________________
-/**
- * Perform set up functions after model has been deserialized or copied.
- *
- * @param aModel The model containing this muscle.
- */
-void Muscle::setup(Model& aModel)
-{
-	CustomActuator::setup(aModel);
-
-	// _model will be NULL when objects are being registered.
-	if (_model == NULL)
-		return;
-
-	_path.setOwner(this);
-	_path.setup(aModel);
-}
-
-void Muscle::initState( SimTK::State& s) const
-{
-    Actuator::initState(s);
-
-    _model->getSystem().realize(s, SimTK::Stage::Position );
-
-	setActivation(s, _defaultActivation);
-	setFiberLength(s, _defaultFiberLength);
-}
-
-void Muscle::setDefaultsFromState(const SimTK::State& state)
-{
-    _defaultActivation = getActivation(state);
-    _defaultFiberLength = getFiberLength(state);
-}
 
 void Muscle::equilibrate(SimTK::State& state) const
 {
@@ -260,6 +281,85 @@ void Muscle::setName(const string &aName)
 	// it and so the path points can be named appropriately.
 	_path.setName(aName);
 }
+
+
+//_____________________________________________________________________________
+/**
+ */
+void Muscle::setNumStateVariables( int aNumStateVariables)
+{
+	_numStateVariables = aNumStateVariables;
+	_stateVariableSuffixes.setSize(aNumStateVariables);
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the name of a state variable, given its index.
+ *
+ * @param aIndex The index of the state variable to get.
+ * @return The name of the state variable.
+ */
+string Muscle::getStateVariableName(int aIndex) const
+{
+	if(0<=aIndex && aIndex<_numStateVariables)
+		return getName() + "." + _stateVariableSuffixes[aIndex];
+	else {
+		std::stringstream msg;
+		msg << "Actuator::getStateVariableName: ERR- index out of bounds.\nActuator " 
+			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " state variables.";
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+	}
+}
+
+// STATES
+int Muscle::getNumStateVariables() const
+{
+	Muscle* mutableThis = const_cast<Muscle *>(this);
+    return mutableThis->updRep()->getNumStateVariablesAddedByModelComponent(); //+ numStatesOfUnderlyingComponent
+}
+
+//_____________________________________________________________________________
+/**
+ * Set the derivative of an actuator state, specified by index
+ *
+ * @param aIndex The index of the state to set.
+ * @param aValue The value to set the state to.
+ */
+void Muscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const {
+
+	SimTK::Vector& stateDeriv =  SimTK::Value<SimTK::Vector>::downcast(s.updCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).upd();
+	if(0<=aIndex && aIndex<_numStateVariables) {
+		stateDeriv[aIndex] = aValue;
+	} else {
+		std::stringstream msg;
+		msg << "Muscle::setStateVariableDeriv: ERR- index out of bounds.\nActuator " 
+			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+	}
+}
+
+//_____________________________________________________________________________
+/**
+ * Get the derivative of an actuator state, by index.
+ *
+ * @param aIndex the index of the state to get.
+ * @return The value of the state.
+ */
+double Muscle::getStateVariableDeriv(const SimTK::State& s, int aIndex) const
+{
+	const SimTK::Vector& stateDeriv = SimTK::Value<SimTK::Vector>::downcast(s.getCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).get();
+	if(0<=aIndex && aIndex<_numStateVariables) {
+        return( stateDeriv[aIndex] );
+	} else {
+		std::stringstream msg;
+		msg << "MusclegetStateVariableDeriv: ERR- index out of bounds.\nActuator " 
+		    << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+	}
+}
+
+
+
 
 //=============================================================================
 // OPERATORS
@@ -544,7 +644,7 @@ double Muscle::getShorteningSpeed(const SimTK::State& s) const
 double Muscle::calcPennation( double aFiberLength, double aOptimalFiberLength,
 											    double aInitialPennationAngle) const
 {
-	if (aFiberLength < ROUNDOFF_ERROR)
+	if (aFiberLength < SimTK::Eps)
 		return 0.0;
 
    double value = aOptimalFiberLength * sin(aInitialPennationAngle) / aFiberLength;
@@ -581,8 +681,8 @@ void Muscle::computeForce(const SimTK::State& s,
 
 	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
-	if (fabs( muscleForce ) < TINY_NUMBER) {
-		//std::cout << "Muscle::computeForce muscleForce < TINY_NUMBER" << getName() << std::endl;
+	if (fabs( muscleForce ) < SimTK::SqrtEps) {
+		//std::cout << "Muscle::computeForce muscleForce < SimTK::SqrtEps" << getName() << std::endl;
 		return;
     }
 

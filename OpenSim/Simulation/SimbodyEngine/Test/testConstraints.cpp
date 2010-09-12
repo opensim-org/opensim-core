@@ -177,8 +177,8 @@ void integrateSimbodySystem(MultibodySystem &system, SimTK::State &state)
 void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 {
 	// SETUP OpenSim SIMULATION Manager
-	osimModel->getSystem().realize(osim_state, Stage::Velocity);
-    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(integ_accuracy);
 	integrator.setAbsoluteTolerance(integ_accuracy);
     Manager manager(*osimModel,  integrator);
@@ -374,10 +374,10 @@ bool testCoordinateLocking()
 	// Re-initialize the state of the model based on now saved defaults of the model.
 	si = osimModel->initSystem();
 
-	osimModel->getSystem().realize(si, Stage::Velocity );
+	osimModel->getMultibodySystem().realize(si, Stage::Velocity );
  
 	// Create the integrator and manager for the simulation.
-	SimTK::RungeKuttaMersonIntegrator integrator(osimModel->getSystem());
+	SimTK::RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
 	integrator.setMaximumStepSize(1.0e-3);
 	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(integ_accuracy);

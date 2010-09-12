@@ -63,10 +63,10 @@ PointOnLineConstraint::~PointOnLineConstraint()
 PointOnLineConstraint::PointOnLineConstraint() :
 	Constraint(),
 	_lineBodyName(_lineBodyNameProp.getValueStr()),
-	_lineDirection(_lineDirectionProp.getValueDblVec3()),
-	_pointOnLine(_pointOnLineProp.getValueDblVec3()),
+	_lineDirection(_lineDirectionProp.getValueDblVec()),
+	_pointOnLine(_pointOnLineProp.getValueDblVec()),
 	_followerBodyName(_followerBodyNameProp.getValueStr()),
-	_pointOnFollower(_pointOnFollowerProp.getValueDblVec3())
+	_pointOnFollower(_pointOnFollowerProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -80,10 +80,10 @@ PointOnLineConstraint::PointOnLineConstraint() :
 PointOnLineConstraint::PointOnLineConstraint(const PointOnLineConstraint &aConstraint) :
    Constraint(aConstraint),
 	_lineBodyName(_lineBodyNameProp.getValueStr()),
-	_lineDirection(_lineDirectionProp.getValueDblVec3()),
-	_pointOnLine(_pointOnLineProp.getValueDblVec3()),
+	_lineDirection(_lineDirectionProp.getValueDblVec()),
+	_pointOnLine(_pointOnLineProp.getValueDblVec()),
 	_followerBodyName(_followerBodyNameProp.getValueStr()),
-	_pointOnFollower(_pointOnFollowerProp.getValueDblVec3())
+	_pointOnFollower(_pointOnFollowerProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -98,10 +98,10 @@ PointOnLineConstraint::PointOnLineConstraint(const PointOnLineConstraint &aConst
 			OpenSim::Body& followerBody, Vec3 followerPoint) :
 	Constraint(),
 	_lineBodyName(_lineBodyNameProp.getValueStr()),
-	_lineDirection(_lineDirectionProp.getValueDblVec3()),
-	_pointOnLine(_pointOnLineProp.getValueDblVec3()),
+	_lineDirection(_lineDirectionProp.getValueDblVec()),
+	_pointOnLine(_pointOnLineProp.getValueDblVec()),
 	_followerBodyName(_followerBodyNameProp.getValueStr()),
-	_pointOnFollower(_pointOnFollowerProp.getValueDblVec3())
+	_pointOnFollower(_pointOnFollowerProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();

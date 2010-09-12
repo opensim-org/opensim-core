@@ -517,8 +517,8 @@ bool AnalyzeTool::run()
                                      *_model);
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
-	SimTK::State& s = (getToolOwnsModel())? _model->initSystem(): _model->getSystem().updDefaultState();
-    _model->getSystem().realize(s, SimTK::Stage::Position );
+	SimTK::State& s = (getToolOwnsModel())? _model->initSystem(): _model->updMultibodySystem().updDefaultState();
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
 //printf("after AnalyzeTool.run() initSystem \n\n");
 
 	if(_loadModelAndInput) {
@@ -561,9 +561,15 @@ bool AnalyzeTool::run()
 	int iFinal = _statesStore->findIndex(_tf);
 	_statesStore->getTime(iInitial,ti);
 	_statesStore->getTime(iFinal,tf);
+
+	// It is rediculous too start before the specified time! So check we aren't doing something stupid.
+	while(ti < _ti){
+		_statesStore->getTime(++iInitial,ti);
+	}
+
 	cout<<"Executing the analyses from "<<ti<<" to "<<tf<<"..."<<endl;
 	run(s, *_model, iInitial, iFinal, *_statesStore, _solveForEquilibriumForAuxiliaryStates);
-	_model->getSystem().realize(s, SimTK::Stage::Position );
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Position );
 	} catch (Exception &x) {
 		x.print(cout);
 		completed = false;
@@ -615,7 +621,7 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
 		if(aSolveForEquilibrium) aModel.computeEquilibriumForAuxiliaryStates(s);
 
 		// Make sure model is atleast ready to provide kinematics
-		aModel.getSystem().realize(s, SimTK::Stage::Velocity);
+		aModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 		if(i==iInitial) {
 			analysisSet.begin(s);

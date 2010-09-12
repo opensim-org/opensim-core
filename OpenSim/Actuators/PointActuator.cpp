@@ -65,11 +65,11 @@ PointActuator::~PointActuator()
  * Default constructor.
  */
 PointActuator::PointActuator( string aBodyName) :
-	CustomActuator(),
+	Actuator(),
 	_bodyName(_propBodyName.getValueStr()),
-	_point(_propPoint.getValueDblVec3()),
+	_point(_propPoint.getValueDblVec()),
 	_pointIsGlobal(_propPointIsGlobal.getValueBool()),
-	_direction(_propDirection.getValueDblVec3()),
+	_direction(_propDirection.getValueDblVec()),
 	_forceIsGlobal(_propForceIsGlobal.getValueBool()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_body(NULL)
@@ -91,11 +91,11 @@ PointActuator::PointActuator( string aBodyName) :
  * @param aForce Force to be copied.
  */
 PointActuator::PointActuator(const PointActuator &anActuator) :
-	CustomActuator(anActuator),
+	Actuator(anActuator),
 	_bodyName(_propBodyName.getValueStr()),
-	_point(_propPoint.getValueDblVec3()),
+	_point(_propPoint.getValueDblVec()),
 	_pointIsGlobal(_propPointIsGlobal.getValueBool()),
-	_direction(_propDirection.getValueDblVec3()),
+	_direction(_propDirection.getValueDblVec()),
 	_forceIsGlobal(_propForceIsGlobal.getValueBool()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_body(NULL)
@@ -130,14 +130,6 @@ setNull()
 {
 	setType("PointActuator");
 	setupProperties();
-
-	setNumStateVariables( 0);
-}
-
-void PointActuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model )
-{
-    Actuator::initStateCache(s, subsystemIndex, model);
-
 }
 
 //_____________________________________________________________________________
@@ -342,7 +334,7 @@ void PointActuator::computeForce(const SimTK::State& s,
 void PointActuator::setup(Model& aModel)
 {
 	string errorMessage;
-	CustomActuator::setup(aModel);
+	Actuator::setup(aModel);
 
 	if (!aModel.updBodySet().contains(_bodyName)) {
 		errorMessage = "PointActuator: Unknown body (" + _bodyName + ") specified in Actuator " + getName();

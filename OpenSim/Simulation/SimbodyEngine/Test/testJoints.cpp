@@ -181,8 +181,8 @@ void integrateSimbodySystem(MultibodySystem &system, SimTK::State &state)
 void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 {
 	// SETUP OpenSim SIMULATION Manager
-	osimModel->getSystem().realize(osim_state, Stage::Velocity);
-    RungeKuttaFeldbergIntegrator integrator(osimModel->getSystem() );
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
+    RungeKuttaFeldbergIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(integ_accuracy);
 	integrator.setAbsoluteTolerance(integ_accuracy);
     Manager manager(*osimModel, integrator);

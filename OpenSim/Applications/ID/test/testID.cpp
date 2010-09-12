@@ -31,6 +31,7 @@
 #include <OpenSim/version.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 
 

@@ -38,7 +38,7 @@
 #include "osimActuatorsDLL.h"
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/CustomForce.h>
+#include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
 //=============================================================================
@@ -54,7 +54,7 @@ namespace OpenSim {
 
 class Coordinate;
 
-class OSIMACTUATORS_API SpringGeneralizedForce : public CustomForce 
+class OSIMACTUATORS_API SpringGeneralizedForce : public Force 
 {
 //=============================================================================
 // DATA
@@ -139,7 +139,7 @@ protected:
 	// Setup method to initialize coordinate reference
 	virtual void setup(Model& aModel);
 
-	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, CustomForce);
+	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, Force);
 
 	//=============================================================================
 };	// END of class SpringGeneralizedForce

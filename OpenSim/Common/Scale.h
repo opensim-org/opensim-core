@@ -39,7 +39,7 @@
 #include "PropertyDblArray.h"
 #include "PropertyDbl.h"
 #include "PropertyBool.h"
-#include "PropertyDblVec3.h"
+#include "PropertyDblVec.h"
 
 //=============================================================================
 /*

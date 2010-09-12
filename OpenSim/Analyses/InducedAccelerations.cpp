@@ -491,7 +491,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 	// Reset Accelerations for system center of mass at this time step
 	_comIndAccs.setSize(0);
 
-	SimTK::State s_analysis = _model->getMultibodySystem().updDefaultState();
+	SimTK::State s_analysis = _model->updMultibodySystem().updDefaultState();
 	_model->initStateWithoutRecreatingSystem(s_analysis);
 	// Just need to set current time and position to determine state of constraints
 	s_analysis.setTime(aT);
@@ -545,7 +545,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 		}
 		else if(_contributors[c] == "gravity"){
 			// Set gravity ON
-			_model->updUserForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), false);
+			_model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), false);
 
 			//s_analysis = _model->initSystem();
 			s_analysis.setTime(aT);
@@ -562,7 +562,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 		}
 		else if(_contributors[c] == "velocity"){		
 			// Set gravity off
-			_model->updUserForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
+			_model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
 
 			s_analysis.setTime(aT);
 			s_analysis.setQ(Q);
@@ -580,7 +580,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 		}
 		else{ //The rest are actuators		
 			// Set gravity ON
-			_model->updUserForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
+			_model->updForceSubsystem().setForceIsDisabled(s_analysis, _model->getGravityForce().getForceIndex(), true);
 
 			// zero actuator forces
 			for(int f=0; f<_model->getActuators().getSize(); f++){

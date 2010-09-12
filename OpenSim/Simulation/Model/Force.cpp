@@ -28,6 +28,11 @@
 
 #include "Force.h"
 #include "Model.h"
+#include <OpenSim/Simulation/SimbodyEngine/Body.h>
+#include <OpenSim/Simulation/Model/ForceAdapter.h>
+
+
+using namespace SimTK;
 
 namespace OpenSim {
 
@@ -105,20 +110,49 @@ void Force::setupProperties(void)
 	_propertySet.append(&_isDisabledProp);
 }
 
+void Force::setup(Model& model)
+{
+	ModelComponent::setup(model);
+}
+
+/**
+ * Create a SimTK::Force which implements a SimTK::Force by default
+ */
+void Force::createSystem(SimTK::MultibodySystem& system) const
+{
+	ForceAdapter* adapter = new ForceAdapter(*this);
+    SimTK::Force::Custom force(_model->updForceSubsystem(), adapter);
+
+	 // Beyond the const Component get the index so we can access the SimTK::Force later
+	Force* mutableThis = const_cast<Force *>(this);
+	mutableThis->_index = force.getForceIndex();
+
+	// Keep track of the subystem the force is a part of in case subclasses want to 
+	// extend by adding states, etc...
+	mutableThis->setIndexOfSubsystemForAllocations(_model->updForceSubsystem().getMySubsystemIndex());
+
+	ModelComponent::createSystem(system);
+}
+
+
 void Force::initState(SimTK::State& s) const
 {
-	SimTK::Force& simForce = _model->updUserForceSubsystem().updForce(_index);
+	SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 
 	// Otherwise we have to change the status of the constraint
 	if(_isDisabledProp.getValueBool())
 		simForce.disable(s);
 	else
 		simForce.enable(s);
+
+	ModelComponent::initState(s);
 }
 
 void Force::setDefaultsFromState(const SimTK::State& state)
 {
     _isDisabledProp.setValue(isDisabled(state));
+
+	ModelComponent::setDefaultsFromState(state);
 }
 
 //=============================================================================
@@ -140,12 +174,6 @@ Force& Force::operator=(const Force &aForce)
 	return(*this);
 }
 
-
-void Force::setup(Model& model)
-{
-	ModelComponent::setup(model);
-}
-
 //_____________________________________________________________________________
 /**
  * Set whether or not this Force is disabled.
@@ -157,7 +185,7 @@ void Force::setup(Model& model)
 void Force::setDisabled(SimTK::State& s, bool isDisabled) 
 {
 	if(_index.isValid()){
-		SimTK::Force& simtkForce = _model->updUserForceSubsystem().updForce(_index);
+		SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
 		if(isDisabled)
 			simtkForce.disable(s);
 		else
@@ -169,10 +197,49 @@ void Force::setDisabled(SimTK::State& s, bool isDisabled)
 bool Force::isDisabled(const SimTK::State& s) const
 {
 	if(_index.isValid()){
-		SimTK::Force& simtkForce = _model->updUserForceSubsystem().updForce(_index);
+		SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
 		return simtkForce.isDisabled(s);
 	}
 	return _isDisabledProp.getValueBool();
+}
+
+//-----------------------------------------------------------------------------
+// ABSTRACT METHODS
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+double Force::computePotentialEnergy(const SimTK::State& state) const
+{
+	return 0.0;
+}
+
+//-----------------------------------------------------------------------------
+// METHODS TO APPLY FORCES AND TORQUES
+//-----------------------------------------------------------------------------
+void Force::applyForce(const SimTK::State &s, const OpenSim::Body &aBody, 
+							 const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
+{
+	_model->getMatterSubsystem().getMobilizedBody(SimTK::MobilizedBodyIndex(aBody.getIndex())).applyBodyForce(s, SimTK::SpatialVec(Vec3(0), aForce), bodyForces);
+}
+
+void Force::applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const Vec3& aPoint, 
+									const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
+{
+	_model->getMatterSubsystem().addInStationForce(s, SimTK::MobilizedBodyIndex(aBody.getIndex()), 
+												   aPoint, aForce, bodyForces);
+}
+
+void Force::applyTorque(const SimTK::State &s, const OpenSim::Body &aBody, 
+							  const Vec3& aTorque, Vector_<SpatialVec> &bodyForces) const
+{
+	_model->getMatterSubsystem().addInBodyTorque(s, SimTK::MobilizedBodyIndex(aBody.getIndex()),
+												 aTorque, bodyForces);
+}
+
+void Force::applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
+										double aForce, Vector &mobilityForces) const
+{
+	_model->getMatterSubsystem().addInMobilityForce(s, SimTK::MobilizedBodyIndex(aCoord.getBodyIndex()), 
+									SimTK::MobilizerUIndex(aCoord.getMobilityIndex()), aForce, mobilityForces);
 }
 
 

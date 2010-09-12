@@ -51,7 +51,7 @@ Geometry *Marker::_defaultGeometry = AnalyticSphere::createSphere(0.01);
  */
 Marker::Marker() :
    Object(),
-   _offset(_offsetProp.getValueDblVec3()),
+   _offset(_offsetProp.getValueDblVec()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),
@@ -78,7 +78,7 @@ Marker::~Marker()
  */
 Marker::Marker(const Marker &aMarker) :
    Object(aMarker),
-   _offset(_offsetProp.getValueDblVec3()),
+   _offset(_offsetProp.getValueDblVec()),
 	_fixed(_fixedProp.getValueBool()),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_displayerProp(PropertyObj("", VisibleObject())),

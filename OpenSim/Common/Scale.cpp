@@ -47,7 +47,7 @@ Scale::~Scale(void)
  * Default constructor of an Scale
  */
 Scale::Scale():
-_scaleFactors(_propScaleFactors.getValueDblVec3()),
+_scaleFactors(_propScaleFactors.getValueDblVec()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
@@ -61,7 +61,7 @@ _apply(_propApply.getValueBool())
  */
 Scale::Scale(const Scale &aScale) :
 Object(aScale),
-_scaleFactors(_propScaleFactors.getValueDblVec3()),
+_scaleFactors(_propScaleFactors.getValueDblVec()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
@@ -76,7 +76,7 @@ _apply(_propApply.getValueBool())
  */
 Scale::Scale(const string& scaleFileName):
 Object(scaleFileName, false),
-_scaleFactors(_propScaleFactors.getValueDblVec3()),
+_scaleFactors(_propScaleFactors.getValueDblVec()),
 _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {

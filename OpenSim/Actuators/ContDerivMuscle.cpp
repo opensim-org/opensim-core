@@ -157,12 +157,6 @@ void ContDerivMuscle::copyData(const ContDerivMuscle &aMuscle)
 void ContDerivMuscle::setNull()
 {
 	setType("ContDerivMuscle");
-
-    setNumStateVariables(2);
-
-	_stateVariableSuffixes[STATE_ACTIVATION]="activation";
-	_stateVariableSuffixes[STATE_FIBER_LENGTH]="fiber_length";
-
 }
 
 //_____________________________________________________________________________
@@ -267,43 +261,49 @@ void ContDerivMuscle::equilibrate(SimTK::State& state) const
 	// Reasonable initial activation value
 	setActivation(state, 0.01);
 	setFiberLength(state, getOptimalFiberLength());
-	_model->getSystem().realize(state, SimTK::Stage::Velocity);
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
 	// Compute isometric force to get starting value
 	// of _fiberLength.
 	computeEquilibrium(state);
 }
     
-void ContDerivMuscle::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model)
+void ContDerivMuscle::createSystem(SimTK::MultibodySystem& system) const
 {
-     Muscle::initStateCache(s, subsystemIndex, model);
+	Muscle::createSystem(system);
+	ContDerivMuscle* mutableThis = const_cast<ContDerivMuscle *>(this);
 
-    _tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-    _activeForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-    _passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-
+	// Cache the computed active and passive muscle force
+	// note the total muscle force is the tendon force and is already a cached variable of the actuator
+	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Dynamics);
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
 }
 
-void ContDerivMuscle::setTendonForce( const SimTK::State& s, double force ) const {
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _tendonForceIndex)).upd() = force;
+
+void ContDerivMuscle::setPassiveForce(const SimTK::State& s, double force ) const {
+    updCacheVariable<double>(s, "passiveForce") = force;
 }
-double ContDerivMuscle::getTendonForce( const SimTK::State& s) const {
-    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _tendonForceIndex)).get());
+
+double ContDerivMuscle::getPassiveForce( const SimTK::State& s) const {
+    return getCacheVariable<double>(s, "passiveForce");
+}
+
+void ContDerivMuscle::setTendonForce(const SimTK::State& s, double force) const {
+	updCacheVariable<double>(s, "force") = force;
+}
+
+double ContDerivMuscle::getTendonForce(const SimTK::State& s) const {
+	return getCacheVariable<double>(s, "force");
 }
 
 void ContDerivMuscle::setActiveForce( const SimTK::State& s, double force ) const {
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _activeForceIndex)).upd() = force;
-}
-double ContDerivMuscle::getActiveForce( const SimTK::State& s) const {
-    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _activeForceIndex)).get());
+    updCacheVariable<double>(s, "activeForce") = force;
 }
 
-void ContDerivMuscle::setPassiveForce( const SimTK::State& s, double force ) const {
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _passiveForceIndex)).upd() = force;
+double ContDerivMuscle::getActiveForce( const SimTK::State& s) const {
+    return getCacheVariable<double>(s, "activeForce");
 }
-double ContDerivMuscle::getPassiveForce( const SimTK::State& s) const {
-    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _passiveForceIndex)).get());
-}
+
 
 
 //_____________________________________________________________________________
@@ -489,11 +489,14 @@ double ContDerivMuscle::getPassiveFiberForce(const SimTK::State& s) const
  *
  * @param rDYDT the state derivatives are returned here.
  */
-void ContDerivMuscle::computeStateDerivatives(const SimTK::State& s)
-{
-    s.updZDot(_subsystemIndex)[_zIndex+STATE_ACTIVATION] = getActivationDeriv(s);
 
+SimTK::Vector ContDerivMuscle::computeStateVariableDerivatives(const SimTK::State &s) const
+{
+	SimTK::Vector derivs(getNumStateVariables());
+	derivs[0] = getActivationDeriv(s);
+	return derivs; 
 }
+
 
 //_____________________________________________________________________________
 /**
@@ -813,7 +816,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 		tendon_length = 0.0;
 		cos_factor = cos(atan(muscle_width /length));
 		setStateVariable(s, STATE_FIBER_LENGTH,  length / cos_factor);
-		_model->getSystem().realize(s, SimTK::Stage::Velocity);
+		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 		setActiveForce(s,  calcActiveForce(s, getFiberLength(s) / _optimalFiberLength) * aActivation * _maxIsometricForce);
 		if (getActiveForce(s) < 0.0)
@@ -828,7 +831,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 		return getTendonForce(s);
    } else if (length < _tendonSlackLength) {
       setStateVariable(s, STATE_FIBER_LENGTH, muscle_width);
-      _model->getSystem().realize(s, SimTK::Stage::Velocity);
+      _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 		setActiveForce(s, 0.0);
 		setPassiveForce(s, 0.0);
 		setTendonForce(s, 0.0);
@@ -848,7 +851,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
          setStateVariable(s, STATE_FIBER_LENGTH,  (length - tendon_length) / cos_factor);
          if (getFiberLength(s) < muscle_width)
            setStateVariable(s, STATE_FIBER_LENGTH,  muscle_width);
-           _model->getSystem().realize(s, SimTK::Stage::Velocity);
+           _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
       }
    }
@@ -950,7 +953,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
       }
    }
 
-   _model->getSystem().realize(s, SimTK::Stage::Position);
+   _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 
 	setPassiveForce(s, getPassiveForce(s) * _maxIsometricForce);
 	setActiveForce(s, getActiveForce(s) * _maxIsometricForce);

@@ -150,49 +150,6 @@ void GeometryPath::setNull()
 	setType("GeometryPath");
 
 }
-//_____________________________________________________________________________
-/**
- * allocate and initialize the SimTK state for this acuator.
- */
- void GeometryPath::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model)
-{
-	_subsystemIndex = subsystemIndex;
-
-     // allocate a slot to save the current length of the path in the cache
-	_lengthIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Position, new SimTK::Value<double>(0.0) );
-
-     // allocate slots to save the current path and current display paths in the cache
-     // when any q's changed the systems will mark these as dirty
-	_currentPathIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Position, SimTK::Stage::Infinity, new SimTK::Value<Array<PathPoint *> >() );
-	_currentDisplayPathIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Position, SimTK::Stage::Infinity, new SimTK::Value<Array<PathPoint *> >() );
-}
-
-void GeometryPath::setLength( const SimTK::State& s, double length ) const {
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _lengthIndex)).upd() = length;
-}
-
-void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
-    _preScaleLength = length;
-}
-double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
-    return( _preScaleLength);
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void GeometryPath::setupProperties()
-{
-	_pathPointSetProp.setName("PathPointSet");
-	_propertySet.append(&_pathPointSetProp);
-
-	_displayerProp.setName("display");
-	_propertySet.append(&_displayerProp);
-
-	_pathWrapSetProp.setName("PathWrapSet");
-	_propertySet.append(&_pathWrapSetProp);
-}
 
 //_____________________________________________________________________________
 /**
@@ -229,13 +186,69 @@ void GeometryPath::setup(Model& aModel) {
 	_displayer.setOwner(this);
 }
 
-void GeometryPath::initState( SimTK::State& s) const
+//_____________________________________________________________________________
+/**
+ * Create the SimTK state, dicrete and/or cache for this GeometryPath.
+ */
+ void GeometryPath::createSystem(SimTK::MultibodySystem& system) const 
 {
-	//_model->getSystem()->realize(s, SimTK::Stage::Position); should only be done by muscle/ligament?
+	ModelComponent::createSystem(system);
+    // Beyond the const Component get the index so we can access the SimTK::Force later
+	GeometryPath* mutableThis = const_cast<GeometryPath *>(this);
 
-	//compute(s);  should be lazy evaluated
+	mutableThis->_subsystemIndex = getIndexOfSubsystemForAllocations();
+
+    // allocate a slot to save the current length of the path in the cache
+	// given that the path is dependent on q's only, this variable should be valid at Position
+	mutableThis->addCacheVariable<double>("length", 0.0, SimTK::Stage::Position);
+	Array<PathPoint *> pathPrototype;
+	mutableThis->addCacheVariable<Array<PathPoint *>>("current_path", pathPrototype, SimTK::Stage::Position);
+	mutableThis->addCacheVariable<Array<PathPoint *>>("current_display_path", pathPrototype, SimTK::Stage::Position);
 }
 
+void GeometryPath::initState(SimTK::State& s) const
+{
+	// Beyond the const Component get the index so we can access the SimTK::Force later
+	GeometryPath* mutableThis = const_cast<GeometryPath *>(this);
+
+	// keep track of the length index
+	mutableThis->_lengthIndex = getCacheVariableIndex("length");
+	
+	// keep track of the path index
+	mutableThis->_currentPathIndex = getCacheVariableIndex("current_path");
+
+	// keep track of the display path index
+	mutableThis->_currentDisplayPathIndex = getCacheVariableIndex("current_display_path");
+
+}
+
+
+void GeometryPath::setLength( const SimTK::State& s, double length ) const {
+    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _lengthIndex)).upd() = length;
+}
+
+void GeometryPath::setPreScaleLength( const SimTK::State& s, double length ) {
+    _preScaleLength = length;
+}
+double GeometryPath::getPreScaleLength( const SimTK::State& s) const {
+    return( _preScaleLength);
+}
+
+//_____________________________________________________________________________
+/**
+ * Connect properties to local pointers.
+ */
+void GeometryPath::setupProperties()
+{
+	_pathPointSetProp.setName("PathPointSet");
+	_propertySet.append(&_pathPointSetProp);
+
+	_displayerProp.setName("display");
+	_propertySet.append(&_displayerProp);
+
+	_pathWrapSetProp.setName("PathWrapSet");
+	_propertySet.append(&_pathWrapSetProp);
+}
 
 //_____________________________________________________________________________
 /**
@@ -281,13 +294,14 @@ void GeometryPath::namePathPoints(int aStartingIndex)
  * 
  */
 const OpenSim::Array <PathPoint*> & GeometryPath:: 
-getCurrentPath(const SimTK::State& s)  const {
+		getCurrentPath(const SimTK::State& s)  const
+{
     compute(s);   // compute checks if path needs to be recomputed
-
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.getCacheEntry( _subsystemIndex, _currentPathIndex)).get() );
 }
+
 OpenSim::Array <PathPoint*> & GeometryPath:: 
-updCurrentPath(const SimTK::State& s) const {
+		updCurrentPath(const SimTK::State& s) const {
 
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.updCacheEntry( _subsystemIndex, _currentPathIndex)).upd() );
 }
@@ -829,12 +843,11 @@ void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void GeometryPath::compute(const SimTK::State& s) const
 {
-
 	const SimTK::Stage& sg = s.getSystemStage();
+	/*
     if (s.isCacheValueRealized(_subsystemIndex, _currentPathIndex))  {
         return;
-    } else {
-    }
+    } */
 
 	// Clear the current path.
 	Array<PathPoint*>& currentPath = updCurrentPath(s);

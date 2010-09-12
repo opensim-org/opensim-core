@@ -38,7 +38,7 @@
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <SimTKsimbody.h>

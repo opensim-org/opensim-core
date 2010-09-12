@@ -34,7 +34,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/VectorFunction.h>
-#include "CustomForce.h"
+#include "Force.h"
 
 
 //=============================================================================
@@ -53,7 +53,7 @@ namespace OpenSim {
 class Model;
 class Body;
 
-class OSIMSIMULATION_API TorsionalSpring : public CustomForce 
+class OSIMSIMULATION_API TorsionalSpring : public Force 
 {
 //=============================================================================
 // DATA

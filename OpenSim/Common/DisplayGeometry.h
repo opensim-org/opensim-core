@@ -36,7 +36,7 @@
 #include "PropertyDbl.h"
 #include "PropertyStr.h"
 #include "PropertyDblArray.h"
-#include "PropertyDblVec3.h"
+#include "PropertyDblVec.h"
 #include "PropertyTransform.h"
 #include "PropertyInt.h"
 #include "Object.h"

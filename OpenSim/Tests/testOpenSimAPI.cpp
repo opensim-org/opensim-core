@@ -259,7 +259,7 @@ int main()
 
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator
-		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
+		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-3);
 		integrator.setAbsoluteTolerance(1.0e-3);
 		

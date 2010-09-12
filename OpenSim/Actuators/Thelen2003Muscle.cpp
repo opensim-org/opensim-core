@@ -299,33 +299,39 @@ void Thelen2003Muscle::equilibrate(SimTK::State& state) const
 	// Reasonable initial activation value
 	setActivation(state, 0.01);
 	setFiberLength(state, getOptimalFiberLength());
-	_model->getSystem().realize(state, SimTK::Stage::Velocity);
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
 	// Compute isometric force to get starting value
 	// of _fiberLength.
 	computeEquilibrium(state);
 }
 
-void Thelen2003Muscle::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model) 
+void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-     Muscle::initStateCache(s, subsystemIndex, model);
-     _passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-	  _tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+	Muscle::createSystem(system);
+	Thelen2003Muscle* mutableThis = const_cast<Thelen2003Muscle *>(this);
 
+	// Cache the computed passive muscle force
+	// note the total muscle force is the tendon force and is already a cached variable of the actuator
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
+/*
+	_passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+	_tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+*/
 }
 
-void Thelen2003Muscle::setPassiveForce( const SimTK::State& s, double force ) const {
-    SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _passiveForceIndex)).upd() = force;
+void Thelen2003Muscle::setPassiveForce(const SimTK::State& s, double force ) const {
+    updCacheVariable<double>(s, "passiveForce") = force;
 }
 double Thelen2003Muscle::getPassiveForce( const SimTK::State& s) const {
-    return( SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _passiveForceIndex)).get());
+    return getCacheVariable<double>(s, "passiveForce");
 }
 
 void Thelen2003Muscle::setTendonForce(const SimTK::State& s, double force) const {
-	SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _tendonForceIndex)).upd() = force;
+	updCacheVariable<double>(s, "force") = force;
 }
 double Thelen2003Muscle::getTendonForce(const SimTK::State& s) const {
-	return SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _tendonForceIndex)).get();
+	return getCacheVariable<double>(s, "force");
 }
 
 //_____________________________________________________________________________
@@ -750,12 +756,12 @@ double Thelen2003Muscle::getPassiveFiberForce(const SimTK::State& s) const
  * @param s  system state 
  * @param index 
  */
-void Thelen2003Muscle::computeStateDerivatives(const SimTK::State& s)
+SimTK::Vector Thelen2003Muscle::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-
-    s.updZDot(_subsystemIndex)[_zIndex+STATE_ACTIVATION] = getActivationDeriv(s);
-    s.updZDot(_subsystemIndex)[_zIndex+STATE_FIBER_LENGTH] = getFiberLengthDeriv(s);
-
+	SimTK::Vector derivs(getNumStateVariables());
+	derivs[0] = getActivationDeriv(s);
+	derivs[1] = getFiberLengthDeriv(s);
+	return derivs; 
 }
 
 //_____________________________________________________________________________
@@ -1096,7 +1102,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    } else if (length < _tendonSlackLength) {
 		setPassiveForce(s, 0.0);
       setStateVariable(s, STATE_FIBER_LENGTH, muscle_width);
-      _model->getSystem().realize(s, SimTK::Stage::Velocity);
+      _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
       setForce(s, 0.0);
       setTendonForce(s, 0.0);
       return 0.0;
@@ -1214,7 +1220,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    }
 
    setPassiveForce(s, passiveForce );
-   _model->getSystem().realize(s, SimTK::Stage::Position);
+   _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 	setStateVariable(s, STATE_FIBER_LENGTH,  fiberLength);
 
 //cout << "ThelenMuscle computeIsometricForce " << getName() << "  t=" << s.getTime() << " force = " << tendon_force << endl;
@@ -1258,9 +1264,9 @@ computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aAct
 int Thelen2003Muscle::getStateVariableYIndex(int index) const
 {
 	if (index==0)
-		return _model->getSystem().getDefaultState().getZStart()+_zIndex;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex;
 	if (index ==1)
-		return _model->getSystem().getDefaultState().getZStart()+_zIndex+1;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+1;
 	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
 
 }

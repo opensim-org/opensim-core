@@ -1,5 +1,5 @@
 // ForceAdapter.cpp
-// Author: Peter Eastman
+// Author: Peter Eastman, Ajay Seth
 /*
 * Copyright (c) 2008, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -41,17 +41,7 @@ using SimTK::Vec3;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
-ForceAdapter::ForceAdapter(const CustomForce& force, const SimbodyEngine& engine) :
-    _force(&force),
-	_actuator(NULL),
-	_engine(engine)
-{
-}
-
-ForceAdapter::ForceAdapter(const CustomActuator& actuator, const SimbodyEngine& engine) :
-    _force(NULL),
-	_actuator(&actuator),
-	_engine(engine)
+ForceAdapter::ForceAdapter(const Force& force) : _force(&force)
 {
 }
 
@@ -62,16 +52,25 @@ void ForceAdapter::calcForce(const SimTK::State& state,
 	SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
 	SimTK::Vector& mobilityForces) const
 {
-    if (_actuator == NULL)
-    	_force->computeForce(state, bodyForces, mobilityForces);
-    else
-    	_actuator->computeForce(state, bodyForces, mobilityForces);
+	_force->computeForce(state, bodyForces, mobilityForces);
 }
 
 SimTK::Real ForceAdapter::calcPotentialEnergy(const SimTK::State& state) const
 {
-    if (_actuator == NULL)
-    	return _force->computePotentialEnergy(state);
-    else
-    	return _actuator->computePotentialEnergy(state);
+    return _force->computePotentialEnergy(state);
+}
+
+//-----------------------------------------------------------------------------
+// Methods to support the force as underlying SimTK component of a subsystem
+//-----------------------------------------------------------------------------
+void ForceAdapter::realizeTopology(SimTK::State& s) const
+{
+	Force* mutableForce = const_cast<Force *>(_force);
+	mutableForce->updRep()->realizeTopology(s);
+}
+
+void ForceAdapter::realizeAcceleration(const SimTK::State& s) const
+{
+	Force* mutableForce = const_cast<Force *>(_force);
+	mutableForce->updRep()->realizeAcceleration(s);
 }

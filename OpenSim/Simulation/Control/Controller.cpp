@@ -240,25 +240,25 @@ void Controller:: setup(Model& model)
 {
 	ModelComponent::setup(model);
 
-	if(IO::Uppercase(_actuatorNameList[0]) == "ALL"){
-		setActuators(model.updActuators());
-		// setup actuators to ensure actuators added by controllers are also setup properly
-		_actuatorSet.setup(*_model);
-		return;
+	if(_actuatorNameList.getSize() > 0){
+		if(IO::Uppercase(_actuatorNameList[0]) == "ALL"){
+			setActuators(model.updActuators());
+			// setup actuators to ensure actuators added by controllers are also setup properly
+			// TODO: Adopt the controls (discrete state variables) of the Actuator
+			return;
+		}
+		else{
+			Set<Actuator> actuatorsByName;
+			for(int i =0; i < _actuatorNameList.getSize(); i++){
+				if(model.updActuators().contains(_actuatorNameList[i]))
+					actuatorsByName.append(&model.updActuators().get(_actuatorNameList[i]));
+				else
+					throw Exception("Controller::setup : Actuator " + _actuatorNameList[i] + " not found.");
+			}
+			actuatorsByName.setMemoryOwner(false);
+			setActuators(actuatorsByName);
+		}
 	}
-
-	Set<Actuator> actuatorsByName;
-	for(int i =0; i < _actuatorNameList.getSize(); i++){
-		if(model.updActuators().contains(_actuatorNameList[i]))
-			actuatorsByName.append(&model.updActuators().get(_actuatorNameList[i]));
-		else
-			throw Exception("Controller::setup : Actuator " + _actuatorNameList[i] + " not found.");
-	}
-	actuatorsByName.setMemoryOwner(false);
-	setActuators(actuatorsByName);
-
-	// setup actuators to ensure actuators added by controllers are also setup properly
-	_actuatorSet.setup(*_model);
 }
 
 // makes a request for which actuators a controller will control
@@ -282,6 +282,6 @@ void Controller::addActuator(Actuator *actuator)
 }
 
 
-Set<Actuator>& Controller::updActuators() { return _actuatorSet.updActuators(); }
+Set<Actuator>& Controller::updActuators() { return _actuatorSet; }
 
-const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet.getActuators(); }
+const Set<Actuator>& Controller::getActuatorSet() const { return _actuatorSet; }

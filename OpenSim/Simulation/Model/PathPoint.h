@@ -40,7 +40,7 @@
 #include <OpenSim/Common/Geometry.h>
 #include <OpenSim/Common/VisibleObject.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyStr.h>
 
 #ifdef SWIG

@@ -39,7 +39,7 @@
 #include "PropertyStrArray.h"
 #include "PropertyObj.h"
 #include "PropertyDblArray.h"
-#include "PropertyDblVec3.h"
+#include "PropertyDblVec.h"
 #include "PropertyTransform.h"
 #include "PropertyBool.h"
 #include "Geometry.h"

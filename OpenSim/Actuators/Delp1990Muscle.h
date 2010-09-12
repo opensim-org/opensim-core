@@ -121,11 +121,6 @@ protected:
 	PropertyObjPtr<Function> _forceVelocityCurveProp;
 	Function *&_forceVelocityCurve;
 
-	// index for Forces in various components
-	SimTK::CacheEntryIndex _tendonForceIndex;
-	SimTK::CacheEntryIndex _activeForceIndex;
-	SimTK::CacheEntryIndex _passiveForceIndex;
-
 private:
 	static const int STATE_ACTIVATION;
 	static const int STATE_FIBER_LENGTH;
@@ -144,7 +139,6 @@ public:
 
 #ifndef SWIG
 	Delp1990Muscle& operator=(const Delp1990Muscle &aMuscle);
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
     virtual void equilibrate(SimTK::State& state) const;
 #endif
    void copyData(const Delp1990Muscle &aMuscle);
@@ -198,7 +192,6 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
-	virtual void computeStateDerivatives(const SimTK::State& s);
 	virtual void computeEquilibrium(SimTK::State& s) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
@@ -220,7 +213,10 @@ public:
 	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, Actuator);
 
 protected:
+	// Model Component Interface
 	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:
 	void setNull();

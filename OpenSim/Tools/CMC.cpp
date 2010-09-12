@@ -45,7 +45,6 @@
 #include <OpenSim/Simulation/Model/Muscle.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include "VectorFunctionForActuators.h"
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include <OpenSim/Simulation/Control/ControlConstant.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Common/OptimizationTarget.h>
@@ -787,7 +786,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 
     // reailize to Veclocity because some tasks (eg. CMC_Point) need to be
     // at velocity to compute errors
-    _model->getSystem().realize(s, Stage::Velocity );
+    _model->getMultibodySystem().realize(s, Stage::Velocity );
 
 	// ERRORS
 	_taskSet->computeErrors(s, tiReal);

@@ -65,12 +65,12 @@ LineActuator::~LineActuator()
  *
  */
 LineActuator::LineActuator( string aBodyNameA, string aBodyNameB) :
-	CustomActuator(),
+	Actuator(),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
 	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec3()),
-	_pointB(_propPointB.getValueDblVec3()),
+	_pointA(_propPointA.getValueDblVec()),
+	_pointB(_propPointB.getValueDblVec()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
@@ -94,12 +94,12 @@ LineActuator::LineActuator( string aBodyNameA, string aBodyNameB) :
  * @param anActuator actuator to be copied.
  */
 LineActuator::LineActuator(const LineActuator &anActuator) :
-	CustomActuator(anActuator),
+	Actuator(anActuator),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
 	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec3()),
-	_pointB(_propPointB.getValueDblVec3()),
+	_pointA(_propPointA.getValueDblVec()),
+	_pointB(_propPointB.getValueDblVec()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
@@ -134,14 +134,6 @@ setNull()
 {
 	setType("LineActuator");
 	setupProperties();
-
-	setNumStateVariables( 0);
-}
-
-void LineActuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model )
-{
-    Actuator::initStateCache(s, subsystemIndex, model);
-
 }
 
 //_____________________________________________________________________________
@@ -396,7 +388,7 @@ void LineActuator::computeForce(const SimTK::State& s,
  */
 void LineActuator::setup(Model& aModel)
 {
-	CustomActuator::setup( aModel);
+	Actuator::setup( aModel);
 
 	if (_model) {
 		_bodyA = &_model->updBodySet().get(_bodyNameA);

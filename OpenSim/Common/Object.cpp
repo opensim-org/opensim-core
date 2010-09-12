@@ -42,7 +42,7 @@
 #include "XMLParsingException.h"
 #include "Property.h"
 #include "PropertyObj.h"
-#include "PropertyDblVec3.h"
+#include "PropertyDblVec.h"
 #include "PropertyTransform.h"
 #include "IO.h"
 #include "OldVersionException.h"
@@ -409,16 +409,19 @@ operator==(const Object &aObject) const
 								theirProperty.getValueStrArray().get(j));
 				if (!equal) return false;
 				continue;
-			
+	
 			case Property::ObjArray:
 				equal = (myProperty==theirProperty);
 				if (!equal) return false;
 				continue;
-			case Property::DblVec3:
-				equal = (((const PropertyDblVec3&)myProperty).getValueDblVec3() - 
-					((const PropertyDblVec3&)theirProperty).getValueDblVec3()).norm() < 1e-8;
+			case Property::DblVec:
+				{
+				int M = myProperty.getArraySize();
+				equal = (((const PropertyDblVec_<1>&)myProperty).getValueDblVec() - 
+					((const PropertyDblVec_<1>&)theirProperty).getValueDblVec()).norm() < 1e-8;
 				if (!equal) return false;
 				continue;
+				}
 			case Property::Transform:
 				const SimTK::Transform& t1 = ((const PropertyTransform&)myProperty).getValueTransform();
 				const SimTK::Transform& t2 = ((const PropertyTransform&)theirProperty).getValueTransform();
@@ -781,7 +784,7 @@ template<class T> void UpdateXMLNodeArrayProperty(const Property *aProperty, DOM
 	XMLNode::SetValueArray<T>(elmt,value.getSize(),value.get());
 }
 
-void UpdateXMLNodeVec3(const Property *aProperty, DOMElement *aNode, const string &aName)
+void UpdateXMLNodeVec(const Property *aProperty, DOMElement *aNode, const string &aName)
 {
 	DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(aNode,aName);
 	if(!elmt && !aProperty->getUseDefault()) {
@@ -790,7 +793,7 @@ void UpdateXMLNodeVec3(const Property *aProperty, DOMElement *aNode, const strin
 		XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,aProperty->getComment());
 	}
 	// The following is a hack to reuse the code in SetValueArray<double> for Vec3
-	XMLNode::SetValueArray<double>(elmt,3,&((PropertyDblVec3*)aProperty)->getValueDblVec3()[0]);
+	XMLNode::SetValueArray<double>(elmt,3,&((PropertyDblVec3*)aProperty)->getValueDblVec()[0]);
 }
 void UpdateXMLNodeTransform(const Property *aProperty, DOMElement *aNode, const string &aName)
 {
@@ -918,7 +921,7 @@ updateFromXMLNode()
 			break;
 		// DblArray
 		case(Property::DblArray) :
-		case(Property::DblVec3) :
+		case(Property::DblVec) :
 		case(Property::Transform) :
 			UpdateFromXMLNodeArrayProperty<double>(property,_node,name);
 			break;
@@ -1223,8 +1226,8 @@ updateXMLNode(DOMElement *aParent, int aNodeIndex)
 			UpdateXMLNodeArrayProperty<double>(property,_node,name);
 			break;
 		// DblVec3
-		case(Property::DblVec3) :
-			UpdateXMLNodeVec3(property,_node,name);
+		case(Property::DblVec) :
+			UpdateXMLNodeVec(property,_node,name);
 			break;
 		// DblVec3
 		case(Property::Transform) :
@@ -1602,7 +1605,7 @@ clearXMLStructures()
 		case(Property::IntArray) :
 		case(Property::DblArray) :
 		case(Property::StrArray) :
-		case(Property::DblVec3) :
+		case(Property::DblVec) :
 		case(Property::Transform) :
 			break; // Nothing to do for the basic types
 
@@ -1661,7 +1664,7 @@ setAllPropertiesUseDefault(bool aUseDefault)
 		case(Property::IntArray) :
 		case(Property::DblArray) :
 		case(Property::StrArray) :
-		case(Property::DblVec3) :
+		case(Property::DblVec) :
 		case(Property::Transform) :
 			break; // Nothing to do for the basic types
 

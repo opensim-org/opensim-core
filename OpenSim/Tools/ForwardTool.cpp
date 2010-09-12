@@ -37,7 +37,6 @@
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
@@ -131,10 +130,10 @@ ForwardTool::ForwardTool() :
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblVec3()),
-	_bLin(_bLinProp.getValueDblVec3()),
-	_kTor(_kTorProp.getValueDblVec3()),
-	_bTor(_bTorProp.getValueDblVec3())
+	_kLin(_kLinProp.getValueDblVec()),
+	_bLin(_bLinProp.getValueDblVec()),
+	_kTor(_kTorProp.getValueDblVec()),
+	_bTor(_bTorProp.getValueDblVec())
 {
 	setType("ForwardTool");
 	setNull();
@@ -173,10 +172,10 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblVec3()),
-	_bLin(_bLinProp.getValueDblVec3()),
-	_kTor(_kTorProp.getValueDblVec3()),
-	_bTor(_bTorProp.getValueDblVec3())
+	_kLin(_kLinProp.getValueDblVec()),
+	_bLin(_bLinProp.getValueDblVec()),
+	_kTor(_kTorProp.getValueDblVec()),
+	_bTor(_bTorProp.getValueDblVec())
 {
 	setType("ForwardTool");
 	setNull();
@@ -246,10 +245,10 @@ ForwardTool(const ForwardTool &aTool) :
 	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblVec3()),
-	_bLin(_bLinProp.getValueDblVec3()),
-	_kTor(_kTorProp.getValueDblVec3()),
-	_bTor(_bTorProp.getValueDblVec3())
+	_kLin(_kLinProp.getValueDblVec()),
+	_bLin(_bLinProp.getValueDblVec()),
+	_kTor(_kTorProp.getValueDblVec()),
+	_bTor(_bTorProp.getValueDblVec())
 {
 	setType("ForwardTool");
 	setNull();
@@ -531,7 +530,7 @@ bool ForwardTool::run()
 
     // Re create the system with forces above and Realize the topology
     SimTK::State& s = _model->initSystem();
-    _model->getSystem().realize(s, Stage::Position );
+    _model->getMultibodySystem().realize(s, Stage::Position );
 
 	loadStatesStorage(_statesFileName, _yStore);
 
@@ -551,7 +550,7 @@ bool ForwardTool::run()
 
 	// SETUP SIMULATION
 	// Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
-    RungeKuttaMersonIntegrator integrator(_model->getSystem());
+    RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());
     Manager manager(*_model, integrator);
     setManager( manager );
 	manager.setSessionName(getName());

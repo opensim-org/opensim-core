@@ -100,7 +100,7 @@ public:
 	{
 		None=0,Bool, Int, Dbl, Str, Obj, ObjPtr,
 		BoolArray, IntArray, DblArray, StrArray, ObjArray,
-		DblVec3, 
+		DblVec,
 		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
 		//Station	   Point on a Body: String, Vec3 
 	};

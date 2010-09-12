@@ -39,8 +39,7 @@
 // These files contain declarations and definitions of variables and methods
 // that will be used by the Controller class.
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "OpenSim/Simulation/Model/ModelComponent.h"
-#include "OpenSim/Simulation/Model/ForceSet.h"
+#include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include "SimTKsimbody.h"
@@ -60,6 +59,8 @@ namespace OpenSim {
 class Model;
 class Manager;
 class Storage;
+class Actuator;
+class ForceSet;
 
 // A Controller is a ModelComponent
 // The interface (defined herein) is  exported by the osimSimulation dll
@@ -70,7 +71,7 @@ class OSIMSIMULATION_API Controller : public ModelComponent
 //=============================================================================
 // These are the member variables of the Controller class.  
 protected:
-     OpenSim::PropertyBool _isControllerEnabledProp;
+     PropertyBool _isControllerEnabledProp;
 	 bool _isControllerEnabled;
 
     /** number of controls this controller computes */
@@ -80,9 +81,8 @@ protected:
     PropertyStrArray _actuatorNameListProp;
     Array<std::string>& _actuatorNameList;
 
-
     /** set of actuators that the controller controls */ 
-   ForceSet _actuatorSet;
+	Set<Actuator> _actuatorSet;
 
 
 //=============================================================================

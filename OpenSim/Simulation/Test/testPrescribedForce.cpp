@@ -133,21 +133,21 @@ int testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, Op
 	// Check that serialization/deserialization is working correctly as well
 	osimModel = new Model("TestPrescribedForceModel.osim");
     SimTK::State osim_state = osimModel->initSystem();
-    osimModel->getSystem().realize(osim_state, Stage::Position );
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
 
 	const OpenSim::Body& body = osimModel->getBodySet().get("ball");
 
-    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     Manager manager(*osimModel,  integrator);
     manager.setInitialTime(0.0);
     for (unsigned int i = 0; i < times.size(); ++i)
     {
         manager.setFinalTime(times[i]);
         manager.integrate(osim_state);
-        osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 accel, angularAccel;
         osimModel->updSimbodyEngine().getAcceleration(osim_state, body, Vec3(0), accel);
         osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, body, angularAccel);
@@ -288,19 +288,19 @@ int testReadFromFile()
 	osimModel->setGravity(gravity_vec);
 
     SimTK::State osim_state = osimModel->initSystem();
-    osimModel->getSystem().realize(osim_state, Stage::Position );
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
 	/*
-    RungeKuttaMersonIntegrator integrator(osimModel->getSystem() );
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
     Manager manager(*osimModel, integrator);
     manager.setInitialTime(0.0);
     for (unsigned int i = 0; i < times.size(); ++i)
     {
         manager.setFinalTime(times[i]);
         manager.integrate(osim_state);
-        osimModel->getSystem().realize(osim_state, Stage::Acceleration);
+        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 accel, angularAccel;
         osimModel->updSimbodyEngine().getAcceleration(osim_state, ball, Vec3(0), accel);
         osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, ball, angularAccel);

@@ -121,7 +121,7 @@ int main()
 	Model& model = tool->getModel();
 
     SimTK::State& s = model.initSystem();
-    model.getSystem().realize(s, SimTK::Stage::Position );
+    model.getMultibodySystem().realize(s, SimTK::Stage::Position );
 	tool->run();
 	Storage *actualOutput = tool->getIKTrialSet()[0].getOutputStorage();
 	Storage stdStorage("std_subject_trial_ik.mot");

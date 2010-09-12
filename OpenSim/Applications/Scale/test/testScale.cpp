@@ -58,13 +58,13 @@ bool compareModel(const Model& resultModel, const std::string& stdFileName, doub
 	Model* refModel = new Model(stdFileName);
 	SimTK::State& sStd = refModel->initSystem();
 
-	SimTK::State& s = resultModel.getSystem().updDefaultState();
-	resultModel.getSystem().realize(s, SimTK::Stage::Velocity);
+	SimTK::State& s = resultModel.updMultibodySystem().updDefaultState();
+	resultModel.updMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 	ASSERT(sStd.getNQ()==s.getNQ());	
 	// put them in same configuration
 	sStd.updQ() = s.getQ();
-	refModel->getSystem().realize(sStd, SimTK::Stage::Velocity);
+	refModel->updMultibodySystem().realize(sStd, SimTK::Stage::Velocity);
 
 	ASSERT(sStd.getNU()==s.getNU());	
 	ASSERT(sStd.getNZ()==s.getNZ());	
@@ -99,8 +99,8 @@ bool scaleGait2354()
 
 	model = subject->createModel();
 
-    SimTK::State& s = model->getSystem().updDefaultState();
-    model->getSystem().realize(s, SimTK::Stage::Position );
+    SimTK::State& s = model->updMultibodySystem().updDefaultState();
+    model->updMultibodySystem().realize(s, SimTK::Stage::Position );
 
 
 	if(!model) {

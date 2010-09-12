@@ -39,7 +39,6 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CMCActuatorSubsystem.h>
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include "CMC.h"
 
 #include "SimTKsimbody.h"

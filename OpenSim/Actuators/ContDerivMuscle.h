@@ -122,11 +122,6 @@ protected:
 	PropertyDbl _flenProp;
 	double &_flen;
 
-    /** indexes for Forces in various components */
-    SimTK::CacheEntryIndex _tendonForceIndex;
-    SimTK::CacheEntryIndex _activeForceIndex;
-    SimTK::CacheEntryIndex _passiveForceIndex;
-
 
 private:
 	static const int STATE_ACTIVATION;
@@ -148,8 +143,6 @@ public:
 #endif
    void copyData(const ContDerivMuscle &aMuscle);
 	virtual void copyPropertyValues(Actuator& aActuator);
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model&model);
-
 
 	//--------------------------------------------------------------------------
 	// GET
@@ -199,7 +192,6 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computeStateDerivatives(const SimTK::State& s);
 	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
@@ -220,7 +212,10 @@ public:
 	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, Actuator);
 
 protected:
+	// Model Component Interface
 	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:
 	void setNull();

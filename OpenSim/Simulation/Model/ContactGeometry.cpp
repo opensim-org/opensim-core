@@ -37,8 +37,8 @@ namespace OpenSim {
 
 ContactGeometry::ContactGeometry() :
     _bodyName(_bodyNameProp.getValueStr()),
-    _locationInBody(_locationInBodyProp.getValueDblVec3()),
-    _orientationInBody(_orientationInBodyProp.getValueDblVec3())
+    _locationInBody(_locationInBodyProp.getValueDblVec()),
+    _orientationInBody(_orientationInBodyProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -46,8 +46,8 @@ ContactGeometry::ContactGeometry() :
 
 ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, Body& body) :
     _bodyName(_bodyNameProp.getValueStr()),
-    _locationInBody(_locationInBodyProp.getValueDblVec3()),
-    _orientationInBody(_orientationInBodyProp.getValueDblVec3())
+    _locationInBody(_locationInBodyProp.getValueDblVec()),
+    _orientationInBody(_orientationInBodyProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -59,8 +59,8 @@ ContactGeometry::ContactGeometry(const Vec3& location, const Vec3& orientation, 
 
 ContactGeometry::ContactGeometry(const ContactGeometry& geom) : ModelComponent(geom),
     _bodyName(_bodyNameProp.getValueStr()),
-    _locationInBody(_locationInBodyProp.getValueDblVec3()),
-    _orientationInBody(_orientationInBodyProp.getValueDblVec3())
+    _locationInBody(_locationInBodyProp.getValueDblVec()),
+    _orientationInBody(_orientationInBodyProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();

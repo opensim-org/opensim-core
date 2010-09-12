@@ -64,10 +64,10 @@ WeldConstraint::WeldConstraint() :
 	Constraint(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
 {
 	setNull();
 	setupProperties();
@@ -77,10 +77,10 @@ WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, Si
 							   OpenSim::Body& body2, SimTK::Vec3 locationInBody2, SimTK::Vec3 orientationInBody2) : Constraint(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
 {
 	setName(name);
 	_body1Name = body1.getName();
@@ -95,10 +95,10 @@ WeldConstraint::WeldConstraint(const std::string &name, OpenSim::Body& body1, Si
 							   OpenSim::Body& body2, SimTK::Transform transformInBody2) : Constraint(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
 {
 	setName(name);
 	_body1Name = body1.getName();
@@ -120,10 +120,10 @@ WeldConstraint::WeldConstraint(const WeldConstraint &aConstraint) :
    Constraint(aConstraint),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec3()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec3()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec3()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec3())
+	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
+	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_orientationInBody2(_orientationInBody2Prop.getValueDblVec())
 {
 	setNull();
 	setupProperties();

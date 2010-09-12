@@ -2,7 +2,7 @@
 #define __Actuator_h__
 
 // Actuator.h
-// Author: Frank C. Anderson, Peter Loan
+// Author: Frank C. Anderson, Peter Loan, Ajay Seth
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -58,7 +58,8 @@ class Coordinate;
  * muscle, ...).
  *
  * @author Frank C. Anderson
- * @version 1.0
+ * @author Ajay Seth
+ * @version 2.0
  */
 class OSIMSIMULATION_API Actuator : public Force
 {
@@ -66,16 +67,9 @@ class OSIMSIMULATION_API Actuator : public Force
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	static const double LARGE;
-
 protected:
-    /** Flag indicating whether the actuator applies a force or a torque. */
-    bool _appliesForce;
-
 	/** Name suffixes. */
 	Array<std::string> _controlSuffixes;
-	Array<std::string> _stateVariableSuffixes;
   
     SimTK::SubsystemIndex _subsystemIndex;
     int _numStateVariables;
@@ -92,15 +86,9 @@ protected:
     SimTK::CacheEntryIndex _forceIndex;
     SimTK::CacheEntryIndex _speedIndex;
 
-    // indexes into SimTK::State 
-    mutable SimTK::ZIndex _zIndex; // index of (z's) for this actuator
-    SimTK::CacheEntryIndex _stateVariableDerivIndex; // index of state derivaties (zdots) for this actuator
-
-     SimTK::DiscreteVariableIndex _isOverridenIndex;
-     SimTK::DiscreteVariableIndex _overrideForceIndex;
+	SimTK::DiscreteVariableIndex _overrideForceIndex;
  
-     StateFunction* _overrideForceFunction;
-
+	StateFunction* _overrideForceFunction;
 
 //=============================================================================
 // METHODS
@@ -116,9 +104,6 @@ public:
 	virtual void copyPropertyValues(Actuator& aActuator) { }
 	static void deleteActuator(Actuator* aActuator) { if (aActuator) delete aActuator; }
 
-   virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
-
-
 private:
 	void setNull();
 
@@ -133,11 +118,11 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 protected:
-    void setNumStateVariables( int aNumStateVariables);
-	void bindStateVariable( int aIndex,const std::string &aSuffix);
-
-
+	// ModelComponent Interface
 	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual void initState(SimTK::State& state) const;
+	virtual void setDefaultsFromState(const SimTK::State& state);
 
 public:
 
@@ -149,18 +134,7 @@ public:
 	virtual void setController(const Controller*);
     virtual const Controller& getController() const;
 	virtual double getControl( const SimTK::State& s ) const;
-	// STATES
-	virtual std::string getStateVariableName( int aIndex) const;
-	virtual int getStateVariableIndex(const std::string &aName) const;
-	virtual void setStateVariable( SimTK::State& s, int aIndex,double aValue) const ;
-	virtual void setStateVariables( SimTK::State& s, const double aY[]) const ;
-	virtual double getStateVariable( const SimTK::State& s, int aIndex) const;
-	virtual void getStateVariables( const SimTK::State& s, double rY[]) const;
-    virtual int getNumStateVariables() const;
-	virtual void setStateVariableDeriv( const SimTK::State& s, int aIndex,double aValue) const ;
-	virtual void setStateVariableDerivs( const SimTK::State& s, const double aY[]) const ;
-	virtual double getStateVariableDeriv( const SimTK::State& s, int aIndex) const;
-	virtual void getStateVariableDerivs( const SimTK::State& s, double rY[]) const;
+
 	// Visible Object Support
 	//virtual VisibleObject* getDisplayer() const { return NULL; }
 	virtual void updateDisplayer(const SimTK::State& s) { }
@@ -168,16 +142,12 @@ public:
 	OPENSIM_DECLARE_DERIVED(Actuator, Object);
 
 protected:
-	// FORCE
-	void setAppliesForce(bool aTrueFalse) { _appliesForce = aTrueFalse; }
 	// Update the geometry attached to the actuator. Use inertial frame.
 	virtual void updateGeometry();
 
 public:
-    bool getAppliesForce() const { return _appliesForce; }
 	virtual void setForce(const SimTK::State& s, double aForce) const; 
     virtual double getForce( const SimTK::State& s) const;
-    virtual double getAppliedForce( const SimTK::State& s) const;
     virtual void setSpeed( const SimTK::State& s, double aspeed) const;
     virtual double getSpeed( const SimTK::State& s) const;
 	virtual double getPower(const SimTK::State& s) const { return getForce(s)*getSpeed(s); }
@@ -189,9 +159,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void promoteControlsToStates(const SimTK::State& s, int index ) { }
 	virtual double computeActuation( const SimTK::State& s) const = 0;
-	virtual void computeStateDerivatives(const SimTK::State& s ) { }
 	virtual void computeEquilibrium(SimTK::State& s) const { }
 
 	//--------------------------------------------------------------------------

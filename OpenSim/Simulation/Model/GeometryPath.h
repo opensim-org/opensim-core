@@ -122,8 +122,6 @@ public:
 	const PathPointSet& getPathPointSet() const { return _pathPointSet; }
 	PathPointSet& updPathPointSet() const { return _pathPointSet; }
 	PathWrapSet& getWrapSet() { return _pathWrapSet; }
-	virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
-
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -175,14 +173,13 @@ public:
 	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-
-	virtual void setup(Model& aModel);
-	virtual void initState(SimTK::State& s) const;
 	virtual int getNumStateVariables() const { return 0;};
 
 protected:
 
-	virtual void createSystem(SimTK::MultibodySystem& system) const {};
+	virtual void setup(Model& aModel);
+	virtual void initState(SimTK::State& s) const;
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void setDefaultsFromState(const SimTK::State& state) {};
 
 
@@ -208,6 +205,11 @@ private:
 	void updateGeometryLocations(const SimTK::State& s);
 	void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, const OpenSim::Body& aBody);
+
+	// TODO: Need a more extensible mechanism for being able to invoke ModelComponent
+	// methods from owning object's methods
+	friend class Muscle;
+	friend class Ligament;
 
 //=============================================================================
 };	// END of class GeometryPath

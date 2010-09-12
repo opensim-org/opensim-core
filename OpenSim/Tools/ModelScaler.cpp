@@ -263,7 +263,7 @@ ModelScaler& ModelScaler::operator=(const ModelScaler &aModelScaler)
  */
 bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPathToSubject, double aSubjectMass)
 {
-    aModel->getSystem().realize(s, SimTK::Stage::Position );
+    aModel->getMultibodySystem().realize(s, SimTK::Stage::Position );
 
 	if(!getApply()) return false;
 

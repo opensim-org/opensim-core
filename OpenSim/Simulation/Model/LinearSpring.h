@@ -34,7 +34,7 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/VectorFunction.h>
-#include "CustomForce.h"
+#include "Force.h"
 
 
 //=============================================================================
@@ -51,7 +51,7 @@ namespace OpenSim {
 class Model;
 class Body;
 
-class OSIMSIMULATION_API LinearSpring : public CustomForce 
+class OSIMSIMULATION_API LinearSpring : public Force 
 {
 //=============================================================================
 // DATA
@@ -95,7 +95,7 @@ public:
 	virtual Object* copy() const {throw Exception("LinearSping::copy() not implmented."); };
 
 protected:
-	virtual void setup(Model& aModel) {CustomForce::setup(aModel);} ;
+	virtual void setup(Model& aModel) {Force::setup(aModel);} ;
 	virtual void initState(SimTK::State& state) const {};
 
 private:

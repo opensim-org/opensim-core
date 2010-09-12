@@ -76,9 +76,9 @@ CMC_Task::CMC_Task() :
 	_kp(_propKP.getValueDblArray()),
 	_kv(_propKV.getValueDblArray()),
 	_ka(_propKA.getValueDblArray()),
-	_r0(_propR0.getValueDblVec3()),
-	_r1(_propR1.getValueDblVec3()),
-	_r2(_propR2.getValueDblVec3())
+	_r0(_propR0.getValueDblVec()),
+	_r1(_propR1.getValueDblVec()),
+	_r2(_propR2.getValueDblVec())
 {
 	setNull();
 }
@@ -96,9 +96,9 @@ CMC_Task::CMC_Task(const CMC_Task &aTask) :
 	_kp(_propKP.getValueDblArray()),
 	_kv(_propKV.getValueDblArray()),
 	_ka(_propKA.getValueDblArray()),
-	_r0(_propR0.getValueDblVec3()),
-	_r1(_propR1.getValueDblVec3()),
-	_r2(_propR2.getValueDblVec3())
+	_r0(_propR0.getValueDblVec()),
+	_r1(_propR1.getValueDblVec()),
+	_r2(_propR2.getValueDblVec())
 {
 	setNull();
 	copyData(aTask);

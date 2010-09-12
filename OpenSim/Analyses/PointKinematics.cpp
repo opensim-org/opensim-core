@@ -73,7 +73,7 @@ _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
 _relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
-_point(_pointProp.getValueDblVec3()),
+_point(_pointProp.getValueDblVec()),
 _pointName(_pointNameProp.getValueStr())
 {
 	// NULL
@@ -109,7 +109,7 @@ _body(NULL),
 _relativeToBody(NULL),
 _bodyName(_bodyNameProp.getValueStr()),
 _relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
-_point(_pointProp.getValueDblVec3()),
+_point(_pointProp.getValueDblVec()),
 _pointName(_pointNameProp.getValueStr())
 {
 	setNull();
@@ -139,7 +139,7 @@ _body(aPointKinematics._body),
 _relativeToBody(aPointKinematics._relativeToBody),
 _bodyName(_bodyNameProp.getValueStr()),
 _relativeToBodyName(_relativeToBodyNameProp.getValueStr()),
-_point(_pointProp.getValueDblVec3()),
+_point(_pointProp.getValueDblVec()),
 _pointName(_pointNameProp.getValueStr())
 {
 	setNull();
@@ -597,7 +597,7 @@ record(const SimTK::State& s)
 	_vStore->append(s.getTime(),vec);
 
 	// ACCELERATIONS
-	_model->getSystem().realize(s, SimTK::Stage::Acceleration);
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
 	de.getAcceleration(s, *_body,_point,vec);
 	if(_relativeToBody){
 		de.transform(s, de.getGroundBody(), vec, *_relativeToBody, vec);

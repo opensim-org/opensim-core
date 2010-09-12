@@ -44,7 +44,7 @@ _wrapUcylDirectionName(_wrapUcylDirectionNameProp.getValueStr()),
 _wrapVcylDirectionName(_wrapVcylDirectionNameProp.getValueStr()),
 _wrapVcylHomeBodyName(_wrapVcylHomeBodyNameProp.getValueStr()),
 _xyzBodyRotationVcyl(_xyzBodyRotationVcylProp.getValueDblArray()),
-_translationVcyl(_translationVcylProp.getValueDblVec3()),
+_translationVcyl(_translationVcylProp.getValueDblVec()),
 _length(_lengthProp.getValueDbl()),
 _activeState(0)
 {
@@ -74,7 +74,7 @@ _wrapUcylDirectionName(_wrapUcylDirectionNameProp.getValueStr()),
 _wrapVcylDirectionName(_wrapVcylDirectionNameProp.getValueStr()),
 _wrapVcylHomeBodyName(_wrapVcylHomeBodyNameProp.getValueStr()),
 _xyzBodyRotationVcyl(_xyzBodyRotationVcylProp.getValueDblArray()),
-_translationVcyl(_translationVcylProp.getValueDblVec3()),
+_translationVcyl(_translationVcylProp.getValueDblVec()),
 _length(_lengthProp.getValueDbl()),
 _activeState(0)
 {

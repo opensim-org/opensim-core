@@ -461,7 +461,7 @@ record(const SimTK::State& s)
 {
 
 	// Realize to Acceleration first since we'll ask for Accelerations 
-	_model->getSystem().realize(s, SimTK::Stage::Acceleration);
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
 	// VARIABLES
 	double dirCos[3][3];
 	SimTK::Vec3 vec,angVec;

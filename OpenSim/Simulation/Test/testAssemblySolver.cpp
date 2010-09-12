@@ -109,7 +109,7 @@ int testAssembleModelWithConstraints(string modelFile)
 	// Integrate forward and init the state and update defaults to make sure
 	// assembler is not effecting anything more than the pose.
 
-    RungeKuttaMersonIntegrator integrator(model.getSystem());
+    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
     Manager manager(model, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(0.05);

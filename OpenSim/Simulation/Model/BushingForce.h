@@ -34,7 +34,7 @@
 #include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include "Force.h"
 
 namespace OpenSim {

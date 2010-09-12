@@ -37,7 +37,7 @@
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
@@ -63,7 +63,6 @@ class Muscle;
 class ContactGeometry;
 class ActuatorPerturbation;
 class ContactGeometrySet;
-class OpenSimForceSubsystem;
 class Storage;
 class ScaleSet;
 class AssemblySolver;
@@ -98,9 +97,8 @@ private:
    SimTK::MultibodySystem* _system;
    SimTK::SimbodyMatterSubsystem* _matter;
    SimTK::Force::Gravity* _gravityForce;
-   SimTK::GeneralForceSubsystem* _userForceElements;
+   SimTK::GeneralForceSubsystem* _forceSubsystem;
    SimTK::GeneralContactSubsystem* _contactSubsystem;
-   OpenSimForceSubsystem* _forceSubsystem;
 
 	/** Name of file from which the model was constructed. */
 	std::string _fileName;
@@ -292,6 +290,9 @@ public:
      */
     void invalidateSystem();
 
+	/** Check that the underlying computational system representing the model is valid. 
+	    That is, is the system ready for performing calculations. */
+	bool isValidSystem();
  	/**
 	 * create a storage (statesStorage) that has same label order as model's states
 	 * with values populated from originalStorage, 0.0 for those states unspecified
@@ -311,13 +312,12 @@ public:
      */
     void equilibrateMuscles(SimTK::State& state);
 
-    const OpenSimForceSubsystem& getForceSubsystem() const {return *_forceSubsystem; }
     const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const {return _system->getMatterSubsystem(); }
     SimTK::SimbodyMatterSubsystem& updMatterSubsystem() {return _system->updMatterSubsystem(); }
     const SimTK::Force::Gravity& getGravityForce() const {return *_gravityForce; }
 	SimTK::Force::Gravity& updGravityForce() {return *_gravityForce; }
-    const SimTK::GeneralForceSubsystem& getUserForceSubsystem() const {return *_userForceElements; }
-    SimTK::GeneralForceSubsystem& updUserForceSubsystem() {return *_userForceElements; }
+    const SimTK::GeneralForceSubsystem& getForceSubsystem() const {return *_forceSubsystem; }
+    SimTK::GeneralForceSubsystem& updForceSubsystem() {return *_forceSubsystem; }
 
 	virtual int getNumStateVariables() const;
 
@@ -437,20 +437,12 @@ public:
 	//--------------------------------------------------------------------------
 	// MultibodySystem
 	//--------------------------------------------------------------------------
-	virtual SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
+	virtual const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
+	virtual SimTK::MultibodySystem& updMultibodySystem() const {return *_system; } 
 
-	//--------------------------------------------------------------------------
-	//--------------------------------------------------------------------------
-	// PERTURBATION
-	//--------------------------------------------------------------------------
-	virtual ActuatorPerturbation& getPerturbation();
-	virtual void setPerturbation(ActuatorPerturbation* perturbationMethod);
-    virtual bool getPerturbForcesEnabled() const { return ( _perturbActuatorForces ); }
-    virtual void setPerturbForcesEnabled( bool enabled ) {  _perturbActuatorForces = enabled; }
 	//--------------------------------------------------------------------------
 	// GRAVITY
 	//--------------------------------------------------------------------------
-	
 	/**
 	 * Get the gravity vector in the gloabl frame.
 	 *
@@ -630,11 +622,7 @@ public:
 	// INITIAL TIME
 	//--------------------------------------------------------------------------
 	virtual void setInitialTime(  double ti);
-   
-	// SYSTEM
-	//--------------------------------------------------------------------------
-	SimTK::MultibodySystem& getSystem() const;
-	//--------------------------------------------------------------------------
+
    //--------------------------------------------------------------------------
    // SETS
    //--------------------------------------------------------------------------

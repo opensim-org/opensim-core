@@ -36,7 +36,7 @@
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Simulation/Model/CustomActuator.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
 #include "SimTKsimbody.h"
 
 
@@ -56,7 +56,7 @@ class Coordinate;
 class ForceSet;
 class Model;
 
-class OSIMACTUATORS_API CoordinateActuator : public CustomActuator
+class OSIMACTUATORS_API CoordinateActuator : public Actuator
 {
 //=============================================================================
 // DATA
@@ -114,8 +114,6 @@ public:
 #ifndef SWIG
 	double getStress( const SimTK::State& s ) const;
 
-    // SIMTK STATE CACHE 
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
 	//--------------------------------------------------------------------------
 	// APPLICATION
 	//--------------------------------------------------------------------------

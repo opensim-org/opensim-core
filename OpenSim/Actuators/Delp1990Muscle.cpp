@@ -284,40 +284,45 @@ void Delp1990Muscle::equilibrate(SimTK::State& state) const
 	// Reasonable initial activation value
 	setActivation(state, 0.01);
 	setFiberLength(state, getOptimalFiberLength());
-	_model->getSystem().realize(state, SimTK::Stage::Velocity);
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
 	// Compute isometric force to get starting value of fiber length.
 	computeEquilibrium(state);
 }
 
-void Delp1990Muscle:: initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model) {
-	Muscle::initStateCache(s, subsystemIndex, model);
+void Delp1990Muscle::createSystem(SimTK::MultibodySystem& system) const
+{
+	Muscle::createSystem(system);
+	Delp1990Muscle* mutableThis = const_cast<Delp1990Muscle *>(this);
 
-	_tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-	_activeForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
-	_passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
+	// Cache the computed active and passive muscle force
+	// note the total muscle force is the tendon force and is already a cached variable of the actuator
+	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Dynamics);
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
+}
+
+void Delp1990Muscle::setPassiveForce(const SimTK::State& s, double force ) const {
+    updCacheVariable<double>(s, "passiveForce") = force;
+}
+double Delp1990Muscle::getPassiveForce( const SimTK::State& s) const {
+    return getCacheVariable<double>(s, "passiveForce");
 }
 
 void Delp1990Muscle::setTendonForce(const SimTK::State& s, double force) const {
-	SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _tendonForceIndex)).upd() = force;
+	updCacheVariable<double>(s, "force") = force;
 }
 double Delp1990Muscle::getTendonForce(const SimTK::State& s) const {
-	return SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _tendonForceIndex)).get();
+	return getCacheVariable<double>(s, "force");
 }
 
-void Delp1990Muscle::setActiveForce(const SimTK::State& s, double force) const {
-	SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _activeForceIndex)).upd() = force;
-}
-double Delp1990Muscle::getActiveForce(const SimTK::State& s) const {
-	return SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _activeForceIndex)).get();
+void Delp1990Muscle::setActiveForce( const SimTK::State& s, double force ) const {
+    updCacheVariable<double>(s, "activeForce") = force;
 }
 
-void Delp1990Muscle::setPassiveForce(const SimTK::State& s, double force) const {
-	SimTK::Value<double>::downcast(s.updCacheEntry( _subsystemIndex, _passiveForceIndex)).upd() = force;
+double Delp1990Muscle::getActiveForce( const SimTK::State& s) const {
+    return getCacheVariable<double>(s, "activeForce");
 }
-double Delp1990Muscle::getPassiveForce(const SimTK::State& s) const {
-	return SimTK::Value<double>::downcast(s.getCacheEntry( _subsystemIndex, _passiveForceIndex)).get();
-}
+
 //_____________________________________________________________________________
 /**
  * Copy the property values from another actuator, which may not be
@@ -644,11 +649,13 @@ void Delp1990Muscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  *
  * @param rDYDT the state derivatives are returned here.
  */
-void Delp1990Muscle::computeStateDerivatives(const SimTK::State& s)
+SimTK::Vector Delp1990Muscle::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	s.updZDot(_subsystemIndex)[_zIndex+STATE_ACTIVATION] = getActivationDeriv(s);
-	s.updZDot(_subsystemIndex)[_zIndex+STATE_FIBER_LENGTH] = getFiberLengthDeriv(s);
-	s.updZDot(_subsystemIndex)[_zIndex+STATE_FIBER_VELOCITY] = getFiberVelocityDeriv(s);
+	SimTK::Vector derivs(getNumStateVariables());
+	derivs[0] = getActivationDeriv(s);
+	derivs[1] = getFiberLengthDeriv(s);
+	derivs[2] = getFiberVelocityDeriv(s);
+	return derivs; 
 }
 
 //_____________________________________________________________________________
@@ -1054,7 +1061,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
       }
    }
 
-   _model->getSystem().realize(s, SimTK::Stage::Position);
+   _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 
 	setPassiveForce(s, getPassiveForce(s) * _maxIsometricForce);
 	setActiveForce(s, getActiveForce(s) * _maxIsometricForce);

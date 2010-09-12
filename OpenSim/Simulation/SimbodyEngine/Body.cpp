@@ -61,7 +61,7 @@ Body::~Body()
 Body::Body() :
     ModelComponent(),
 	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec3()),
+	_massCenter(_massCenterProp.getValueDblVec()),
 	_inertiaXX(_inertiaXXProp.getValueDbl()),
 	_inertiaYY(_inertiaYYProp.getValueDbl()),
 	_inertiaZZ(_inertiaZZProp.getValueDbl()),
@@ -86,7 +86,7 @@ Body::Body() :
 Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia) :
    ModelComponent(),
 	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec3()),
+	_massCenter(_massCenterProp.getValueDblVec()),
 	_inertiaXX(_inertiaXXProp.getValueDbl()),
 	_inertiaYY(_inertiaYYProp.getValueDbl()),
 	_inertiaZZ(_inertiaZZProp.getValueDbl()),
@@ -118,7 +118,7 @@ Body::Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,
 Body::Body(const Body &aBody) :
    ModelComponent(aBody),
 	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec3()),
+	_massCenter(_massCenterProp.getValueDblVec()),
 	_inertiaXX(_inertiaXXProp.getValueDbl()),
 	_inertiaYY(_inertiaYYProp.getValueDbl()),
 	_inertiaZZ(_inertiaZZProp.getValueDbl()),
@@ -146,7 +146,7 @@ Body::Body(const Body &aBody) :
 Body::Body(const AbstractBody &aBody) :
    AbstractBody(aBody),
 	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec3()),
+	_massCenter(_massCenterProp.getValueDblVec()),
 	_inertiaXX(_inertiaXXProp.getValueDbl()),
 	_inertiaYY(_inertiaYYProp.getValueDbl()),
 	_inertiaZZ(_inertiaZZProp.getValueDbl()),

@@ -28,6 +28,7 @@
 #include "MomentArmSolver.h"
 #include "Model/PointForceDirection.h"
 #include "Model/Model.h"
+#include "Model/ForceSet.h"
 
 using namespace std;
 using namespace SimTK;

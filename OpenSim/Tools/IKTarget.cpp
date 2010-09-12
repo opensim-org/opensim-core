@@ -854,7 +854,7 @@ void IKTarget::setErrorReportingQuantities(const double& aMarkerError, const std
 void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, SimTK::Matrix &J) const
 {
 
-	const SimTK::SimbodyMatterSubsystem& matter = _model.getSystem().getMatterSubsystem();
+	const SimTK::SimbodyMatterSubsystem& matter = _model.getMultibodySystem().getMatterSubsystem();
    
 	int row = 3*_markers.getSize();
 
@@ -866,7 +866,7 @@ void IKTarget::createJacobian(SimTK::State& s, const SimTK::Vector &jointQs, Sim
 
         _unprescribedQs[i]->coord->setSpeedValue(s, 1.0);
 
-		_model.getSystem().realize(s, SimTK::Stage::Velocity);
+		_model.getMultibodySystem().realize(s, SimTK::Stage::Velocity);
 
 		for (int m=0; m<_markers.getSize(); m++){
 			// Get marker offset in local frame

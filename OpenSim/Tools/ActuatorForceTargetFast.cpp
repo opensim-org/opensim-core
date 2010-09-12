@@ -111,7 +111,12 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 	for(int i=0,j=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
 	    act.setForce( s, f[j]);
-	    _recipAreaSquared[j] = act.getStress(s);
+		Muscle* musc = dynamic_cast<Muscle *>(&act);
+		if(musc)
+			_recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();
+		else
+			_recipAreaSquared[j] = f[j]/act.getOptimalForce();
+	    
 	    _recipAreaSquared[j] *= _recipAreaSquared[j];
         j++;
 	}
@@ -161,7 +166,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 	// use tempory copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
 	// will change the muscle states
 	SimTK::State tempState = s;
-	getController()->getModel().getSystem().realize( tempState, SimTK::Stage::Dynamics );
+	getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
 	for(int i=0, index=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
 	    Muscle* mus = dynamic_cast<Muscle*>(&act);
@@ -320,7 +325,7 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
         act.overrideForce(s,true);
 
 	}
-	_controller->getModel().getSystem().realize(s, SimTK::Stage::Acceleration );
+	_controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Acceleration );
 
 	taskSet.computeAccelerations(s);
 	Array<double> &w = taskSet.getWeights();
@@ -335,8 +340,8 @@ computeConstraintVector(SimTK::State& s, const Vector &x,Vector &c) const
         act.overrideForce(s,false);
 
 	}
-    _controller->getModel().getSystem().realizeModel(s);
-    _controller->getModel().getSystem().realize(s, SimTK::Stage::Position );
+    _controller->getModel().getMultibodySystem().realizeModel(s);
+    _controller->getModel().getMultibodySystem().realize(s, SimTK::Stage::Position );
 
 }
 //______________________________________________________________________________

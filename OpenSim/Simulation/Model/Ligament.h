@@ -43,7 +43,7 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Function.h>
 #include "Model.h"
-#include "CustomForce.h"
+#include "Force.h"
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -64,7 +64,7 @@ class GeometryPath;
  *
  * @version 1.0
  */
-class OSIMSIMULATION_API Ligament : public CustomForce  
+class OSIMSIMULATION_API Ligament : public Force  
 {
 
 //=============================================================================
@@ -107,8 +107,6 @@ public:
 #endif
    void copyData(const Ligament &aLigament);
 
-	void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
-
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
@@ -144,12 +142,13 @@ public:
 	virtual VisibleObject* getDisplayer() const;
 	virtual void updateDisplayer(const SimTK::State& s);
 
-	// This macro allows the OpenSim GUI to check CustomForce
+	// This macro allows the OpenSim GUI to check Force
 	// objects to see if they are instances of this ligament class.
-	OPENSIM_DECLARE_DERIVED(Ligament, CustomForce);
+	OPENSIM_DECLARE_DERIVED(Ligament, Force);
 
 protected:
 	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;
 
 private:

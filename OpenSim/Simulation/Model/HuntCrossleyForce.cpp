@@ -68,7 +68,7 @@ void HuntCrossleyForce::createSystem(SimTK::MultibodySystem& system) const
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
     SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
     SimTK::ContactSetIndex set = contacts.createContactSet();
-    SimTK::HuntCrossleyForce force(_model->updUserForceSubsystem(), contacts, set);
+    SimTK::HuntCrossleyForce force(_model->updForceSubsystem(), contacts, set);
     force.setTransitionVelocity(_transitionVelocity);
     for (int i = 0; i < _contactParametersSet.getSize(); ++i)
     {

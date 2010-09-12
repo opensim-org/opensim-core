@@ -281,15 +281,15 @@ bool IKTool::run()
 
     // Realize the topology
 	_model->initSystem();
-	_model->getSystem().realizeTopology();
-    SimTK::State& s = _model->getSystem().updDefaultState();
+	_model->getMultibodySystem().realizeTopology();
+    SimTK::State& s = _model->updMultibodySystem().updDefaultState();
 
 	return run(s);
 }
 
 bool IKTool::run(SimTK::State& state)
 {
-	_model->getSystem().realize(state, SimTK::Stage::Position );
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Position );
 
 	/* Now perform the IK trials on the updated model. */
 	for (int i = 0; i < _IKTrialSet.getSize(); i++)

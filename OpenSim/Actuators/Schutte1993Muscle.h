@@ -114,10 +114,6 @@ protected:
 	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
 	Function *&_passiveForceLengthCurve;
 
-    // index for Forces in various components
-    SimTK::CacheEntryIndex _passiveForceIndex;
-	 SimTK::CacheEntryIndex _tendonForceIndex;
-
 protected:
 	static const int STATE_ACTIVATION;
 	static const int STATE_FIBER_LENGTH;
@@ -136,7 +132,7 @@ public:
 
 #ifndef SWIG
 	Schutte1993Muscle& operator=(const Schutte1993Muscle &aMuscle);
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
+
     virtual void equilibrate(SimTK::State& state) const;
 #endif
     void copyData(const Schutte1993Muscle &aMuscle);
@@ -185,7 +181,6 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
-	virtual void computeStateDerivatives(const SimTK::State& s );
 	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation( const SimTK::State& s ) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
@@ -194,7 +189,6 @@ public:
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 #endif
-	virtual void setup(Model& aModel);
 
 	virtual Function* getActiveForceLengthCurve() const;
 	virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);
@@ -205,6 +199,12 @@ public:
 
 	virtual int getStateVariableYIndex(int index) const;
 	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, Actuator);
+
+protected:
+	// Model Component Interface
+	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:
 	double calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const;

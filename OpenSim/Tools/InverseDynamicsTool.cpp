@@ -60,12 +60,10 @@ InverseDynamicsTool::~InverseDynamicsTool()
 /**
  * Default constructor.
  */
-InverseDynamicsTool::InverseDynamicsTool() : Tool(),
-	_modelFileName(_modelFileNameProp.getValueStr()),
+InverseDynamicsTool::InverseDynamicsTool() : DynamicsTool(),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_inDegrees(_inDegreesProp.getValueBool()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_timeRange(_timeRangeProp.getValueDblArray()),
 	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
 {
 	setType("InverseDynamicsTool");
@@ -81,12 +79,10 @@ InverseDynamicsTool::InverseDynamicsTool() : Tool(),
  * @param aFileName File name of the document.
  */
 InverseDynamicsTool::InverseDynamicsTool(const string &aFileName, bool aLoadModel) :
-	Tool(aFileName, false),
-	_modelFileName(_modelFileNameProp.getValueStr()),
+	DynamicsTool(aFileName, false),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_inDegrees(_inDegreesProp.getValueBool()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_timeRange(_timeRangeProp.getValueDblArray()),
 	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
 {
 	setType("InverseDynamicsTool");
@@ -105,12 +101,10 @@ InverseDynamicsTool::InverseDynamicsTool(const string &aFileName, bool aLoadMode
 
  */
 InverseDynamicsTool::InverseDynamicsTool(const InverseDynamicsTool &aTool) :
-	Tool(aTool),
-	_modelFileName(_modelFileNameProp.getValueStr()),
+	DynamicsTool(aTool),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_inDegrees(_inDegreesProp.getValueBool()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_timeRange(_timeRangeProp.getValueDblArray()),
 	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
 {
 	setType("InverseDynamicsTool");
@@ -163,11 +157,10 @@ void InverseDynamicsTool::setupProperties()
 	_lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
 	_propertySet.append( &_lowpassCutoffFrequencyProp );
 
-	const double defaultTimeRange[] = {-SimTK::Infinity, SimTK::Infinity};
+	SimTK::Vec2  defaultTimeRange(-SimTK::Infinity, SimTK::Infinity);
 	_timeRangeProp.setComment("Time range over which the inverse dynamics problem is solved.");
 	_timeRangeProp.setName("time_range");
-	_timeRangeProp.setValue(2, defaultTimeRange);
-	_timeRangeProp.setAllowableArraySize(2);
+	_timeRangeProp.setValue(defaultTimeRange);
 	_propertySet.append(&_timeRangeProp);
 
 	_outputGenForceFileNameProp.setComment("Name of the storage file (.sto) to which the results should be written.");
@@ -231,17 +224,11 @@ bool InverseDynamicsTool::run()
 
 		cout<<"Running tool " << getName() <<".\n"<<endl;
 
-		const Set<Actuator> &acts = _model->getActuators();
-		if (acts.getSize()>0){
-			cout<<"Model has actuators that are ignored during Inverse Dynamics. \n" << endl;
-
-			for(int i = 0; i<acts.getSize(); i++){
-				((Set<OpenSim::Force> &)_model->updForceSet()).remove(&acts[i]);
-			}
-		}
-
 		// Initialize the the model's underlying computational system and get its default state.
 		State& s = _model->initSystem();
+
+		// Exclude user-specified forces from the dynamics for this analysis
+		disableModelForces(*_model, s, _excludedForces);
 
 		const CoordinateSet &coords = _model->getCoordinateSet();
 		int nq = _model->getNumCoordinates();

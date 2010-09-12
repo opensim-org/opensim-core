@@ -10,7 +10,7 @@
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>

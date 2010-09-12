@@ -61,10 +61,10 @@ Joint::~Joint()
 Joint::Joint() :
 	ModelComponent(),
 	_parentName(_parentNameProp.getValueStr()),
-	_locationInParent(_locationInParentProp.getValueDblVec3()),
-	_orientationInParent(_orientationInParentProp.getValueDblVec3()),
-	_location(_locationProp.getValueDblVec3()),
-	_orientation(_orientationProp.getValueDblVec3()),
+	_locationInParent(_locationInParentProp.getValueDblVec()),
+	_orientationInParent(_orientationInParentProp.getValueDblVec()),
+	_location(_locationProp.getValueDblVec()),
+	_orientation(_orientationProp.getValueDblVec()),
 	_coordinateSetProp(PropertyObj("", CoordinateSet())),
 	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
 	_reverse(_reverseProp.getValueBool())
@@ -80,10 +80,10 @@ Joint::Joint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent
 			 Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse) :
 	ModelComponent(),
 	_parentName(_parentNameProp.getValueStr()),
-	_locationInParent(_locationInParentProp.getValueDblVec3()),
-	_orientationInParent(_orientationInParentProp.getValueDblVec3()),
-	_location(_locationProp.getValueDblVec3()),
-	_orientation(_orientationProp.getValueDblVec3()),
+	_locationInParent(_locationInParentProp.getValueDblVec()),
+	_orientationInParent(_orientationInParentProp.getValueDblVec()),
+	_location(_locationProp.getValueDblVec()),
+	_orientation(_orientationProp.getValueDblVec()),
 	_coordinateSetProp(PropertyObj("", CoordinateSet())),
 	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
 	_reverse(_reverseProp.getValueBool())
@@ -111,10 +111,10 @@ Joint::Joint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent
 Joint::Joint(const Joint &aJoint) :
    ModelComponent(aJoint),
 	_parentName(_parentNameProp.getValueStr()),
-	_locationInParent(_locationInParentProp.getValueDblVec3()),
-	_orientationInParent(_orientationInParentProp.getValueDblVec3()),
-	_location(_locationProp.getValueDblVec3()),
-	_orientation(_orientationProp.getValueDblVec3()),
+	_locationInParent(_locationInParentProp.getValueDblVec()),
+	_orientationInParent(_orientationInParentProp.getValueDblVec()),
+	_location(_locationProp.getValueDblVec()),
+	_orientation(_orientationProp.getValueDblVec()),
 	_coordinateSetProp(PropertyObj("", CoordinateSet())),
 	_coordinateSet((CoordinateSet&)_coordinateSetProp.getValueObj()),
 	_reverse(_reverseProp.getValueBool())

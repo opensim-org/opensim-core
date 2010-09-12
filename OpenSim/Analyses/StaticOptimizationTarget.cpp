@@ -675,13 +675,12 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
 	for(int i=0,j=0;i<fs.getSize();i++)  {
          Actuator *act = dynamic_cast<Actuator*>(&fs.get(i));
 		 if( act ) {
-             act->overrideForce(s,true);
              act->setOverrideForce(s,parameters[j]*_optimalForce[j]);
 		 }
          j++;
     }
 
-	_model->getSystem().realize(s,SimTK::Stage::Acceleration);
+	_model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);
 
 	SimTK::Vector udot = _model->getMatterSubsystem().getUDot(s);
 

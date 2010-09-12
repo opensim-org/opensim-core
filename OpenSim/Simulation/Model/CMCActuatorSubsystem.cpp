@@ -2,7 +2,6 @@
 #include "CMCActuatorSubsystem.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/OpenSimForceSubsystem.h>
 #include <math.h>
 #include <stdio.h>
 using namespace OpenSim;
@@ -104,8 +103,8 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 
   int CMCActuatorSubsystemRep::realizeSubsystemDynamicsImpl(const State& s) const  {
 
-     Vector& q = _model->getSystem().getMatterSubsystem().updQ( const_cast<SimTK::State&>(_completeState) );
-     Vector& u = _model->getSystem().getMatterSubsystem().updU( const_cast<SimTK::State&>(_completeState) );
+     Vector& q = _model->getMultibodySystem().getMatterSubsystem().updQ( const_cast<SimTK::State&>(_completeState) );
+     Vector& u = _model->getMultibodySystem().getMatterSubsystem().updU( const_cast<SimTK::State&>(_completeState) );
 
      /* set generalized coordinates and speeds from spline sets */
     int i;
@@ -135,7 +134,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
       _model->getForceSubsystem().updZ( const_cast<SimTK::State&>(_completeState)) = s.getZ();
 
 	 const_cast<SimTK::State&>(_completeState).updTime() = t;
-     _model->getSystem().realize(_completeState, SimTK::Stage::Acceleration);
+     _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 
      /* copy 1st derivatives of muscle states from complete system to actuator system */ 
      s.updZDot() = _model->getForceSubsystem().getZDot( _completeState );

@@ -388,7 +388,7 @@ record(const SimTK::State& s)
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
-    _model->getSystem().realize(s, SimTK::Stage::Dynamics );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
 
 	// NUMBER OF ACTUATORS
 	int na = _model->getActuators().getSize();

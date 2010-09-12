@@ -43,7 +43,6 @@
 #include "ForceSet.h"
 #include <OpenSim/Common/ScaleSet.h>
 #include "Analysis.h"
-#include "OpenSimForceSubsystem.h"
 #include "ForceAdapter.h"
 #include "Actuator.h"
 #include <OpenSim/Common/Storage.h>
@@ -85,7 +84,7 @@ Model::Model() :
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_forceSetProp(PropertyObj("", ForceSet())),
 	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
-    _gravity(_gravityProp.getValueDblVec3()),
+    _gravity(_gravityProp.getValueDblVec()),
     _bodySetProp(PropertyObj("", BodySet())),
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
@@ -120,7 +119,7 @@ Model::Model(const string &aFileName) :
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_forceSetProp(PropertyObj("", ForceSet())),
 	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
-    _gravity(_gravityProp.getValueDblVec3()),
+    _gravity(_gravityProp.getValueDblVec()),
     _bodySetProp(PropertyObj("", BodySet())),
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
@@ -161,7 +160,7 @@ Model::Model(const Model &aModel) :
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_forceSetProp(PropertyObj("", ForceSet())),
 	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
-    _gravity(_gravityProp.getValueDblVec3()),
+    _gravity(_gravityProp.getValueDblVec()),
     _bodySetProp(PropertyObj("", BodySet())),
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
@@ -304,8 +303,8 @@ void Model::setNull()
 
     _system = NULL;
     _matter = NULL;
+
     _forceSubsystem = NULL;
-    _userForceElements = NULL;
     _contactSubsystem = NULL;
     _gravityForce = NULL;
 
@@ -374,15 +373,16 @@ SimTK::State& Model::initSystem()
 	setup();
 	createSystem();
     getMultibodySystem().realizeTopology();
-    SimTK::State& s = getMultibodySystem().updDefaultState();
+    SimTK::State& s = updMultibodySystem().updDefaultState();
 
-	getStateNames(_stateNames);
 	// The folllowing line is commented out as it removes all forces that were
 	// added to the system during realizeTopology()
     //_matter->setUseEulerAngles(s, true);
 	//getMultibodySystem().realizeModel(s);
 
     initState(s);
+	getStateNames(_stateNames);
+
     getMultibodySystem().realize(s, Stage::Position );
 
     updControllerSet().setActuators(updActuators());
@@ -448,6 +448,16 @@ void Model::invalidateSystem()
     if (_system != NULL)
         _system->getSystemGuts().invalidateSystemTopologyCache();
 }
+
+bool Model::isValidSystem()
+{
+    if (_system != NULL)
+        return _system->systemTopologyHasBeenRealized();
+	else
+		return false;
+}
+
+
 //_____________________________________________________________________________
 /**
  * Create the multibody system.
@@ -460,7 +470,6 @@ void Model::createSystem()
         // Delete the old system.
         delete _matter;
         delete _forceSubsystem;
-        delete _userForceElements;
         delete _contactSubsystem;
         delete _gravityForce;
         delete _system;
@@ -469,13 +478,12 @@ void Model::createSystem()
     // create system
     _system = new SimTK::MultibodySystem;
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
-    _forceSubsystem = new OpenSimForceSubsystem( *_system, this );
-    _userForceElements = new SimTK::GeneralForceSubsystem(*_system);
+    _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
 	// create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
 	double magnitude = _gravity.norm();
 	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
-	_gravityForce = new SimTK::Force::Gravity(*_userForceElements, *_matter, direction, magnitude);
+	_gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
     // Let all the ModelComponents add their parts to the System.
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
@@ -1081,9 +1089,9 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	{
 		initSystem();	// This crashes now trying to delete the old matterSubsystem
     	updSimbodyEngine().setup(*this);
-	    getSystem().realizeTopology();
-		SimTK::State& newState = getSystem().updDefaultState();
-	    getSystem().realize( newState, SimTK::Stage::Velocity);
+	    getMultibodySystem().realizeTopology();
+		SimTK::State& newState = updMultibodySystem().updDefaultState();
+	    getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
 
 		for (i = 0; i < _forceSet.getSize(); i++) {
             Actuator* act = dynamic_cast<Actuator*>(&_forceSet.get(i));
@@ -1095,7 +1103,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 		// 5. Put the model back in whatever pose it was in.
 
         newState.updY() = savedConfiguration;
-		getSystem().realize( newState, SimTK::Stage::Velocity );
+		getMultibodySystem().realize( newState, SimTK::Stage::Velocity );
 	}
 
     return returnVal;
@@ -1192,17 +1200,6 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 	getStateNames(stateNames);
 	aOStream<<"\nSTATES ("<<stateNames.getSize()<<")"<<std::endl;
 	for(int i=0;i<stateNames.getSize();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
-}
-
-//____________________________________________________________________________
-/**
- * get pointer to MultibodySystem
- *
- * @param state SimTK::State
- */
-SimTK::MultibodySystem& Model::
-getSystem()  const {
-   return(*_system);
 }
 
 //--------------------------------------------------------------------------
@@ -1530,11 +1527,6 @@ void Model::disownAllComponents()
 	updAnalysisSet().setMemoryOwner(false);
 	updMarkerSet().setMemoryOwner(false);
 }
-void Model::setPerturbation(ActuatorPerturbation* perturbationMethod) {
-      _perturb = perturbationMethod;
-}
-ActuatorPerturbation& Model::getPerturbation() {return *_perturb; }
-
 
 void Model::overrideAllActuators( SimTK::State& s, bool flag) {
      Set<Actuator>& as = updActuators();

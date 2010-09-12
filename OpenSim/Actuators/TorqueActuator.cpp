@@ -65,11 +65,11 @@ TorqueActuator::~TorqueActuator()
  * Default constructor.
  */
 TorqueActuator::TorqueActuator( string aBodyNameA, string aBodyNameB) :
-	CustomActuator(),
+	Actuator(),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
 	_torqueIsGlobal(_propTorqueIsGlobal.getValueBool()),
-	_axis(_propAxis.getValueDblVec3()),
+	_axis(_propAxis.getValueDblVec()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
@@ -93,11 +93,11 @@ TorqueActuator::TorqueActuator( string aBodyNameA, string aBodyNameB) :
  * @param aForce Force to be copied.
  */
 TorqueActuator::TorqueActuator(const TorqueActuator &anActuator) :
-	CustomActuator(anActuator),
+	Actuator(anActuator),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
 	_torqueIsGlobal(_propTorqueIsGlobal.getValueBool()),
-	_axis(_propAxis.getValueDblVec3()),
+	_axis(_propAxis.getValueDblVec()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
@@ -132,14 +132,6 @@ setNull()
 {
 	setType("TorqueActuator");
 	setupProperties();
-
-	setNumStateVariables( 0);
-}
-
-void TorqueActuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model )
-{
-    Actuator::initStateCache(s, subsystemIndex, model);
-
 }
 
 //_____________________________________________________________________________
@@ -366,7 +358,7 @@ void TorqueActuator::computeForce(const SimTK::State& s,
  */
 void TorqueActuator::setup(Model& aModel)
 {
-	CustomActuator::setup( aModel);
+	Actuator::setup( aModel);
 
 	if (_model) {
 		_bodyA = &_model->updBodySet().get(_bodyNameA);

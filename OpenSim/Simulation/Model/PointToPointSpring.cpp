@@ -66,8 +66,8 @@ PointToPointSpring::~PointToPointSpring()
 PointToPointSpring::PointToPointSpring() : 	Force(),
 	_body1Name(_propBody1Name.getValueStr()),
 	_body2Name(_propBody2Name.getValueStr()),
-	_point1(_propPoint1.getValueDblVec3()),
-	_point2(_propPoint2.getValueDblVec3()),
+	_point1(_propPoint1.getValueDblVec()),
+	_point2(_propPoint2.getValueDblVec()),
 	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestlength.getValueDbl())
 {
@@ -86,8 +86,8 @@ PointToPointSpring::PointToPointSpring(string body1Name, SimTK::Vec3 point1,
 	Force(),
 	_body1Name(_propBody1Name.getValueStr()),
 	_body2Name(_propBody2Name.getValueStr()),
-	_point1(_propPoint1.getValueDblVec3()),
-	_point2(_propPoint2.getValueDblVec3()),
+	_point1(_propPoint1.getValueDblVec()),
+	_point2(_propPoint2.getValueDblVec()),
 	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestlength.getValueDbl())
 {
@@ -114,8 +114,8 @@ PointToPointSpring::PointToPointSpring(const PointToPointSpring &aForce) :
 	Force(aForce),
 	_body1Name(_propBody1Name.getValueStr()),
 	_body2Name(_propBody2Name.getValueStr()),
-	_point1(_propPoint1.getValueDblVec3()),
-	_point2(_propPoint2.getValueDblVec3()),
+	_point1(_propPoint1.getValueDblVec()),
+	_point2(_propPoint2.getValueDblVec()),
 	_stiffness(_propStiffness.getValueDbl()),
 	_restLength(_propRestlength.getValueDbl())
 {
@@ -258,7 +258,7 @@ void PointToPointSpring::createSystem(SimTK::MultibodySystem& system) const
 	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(body2.getIndex());
 
     // Now create a Simbody Force::TwoPointLinearSpring
-    SimTK::Force::TwoPointLinearSpring simtkSpring(_model->updUserForceSubsystem(), b1, _point1, b2, _point2, _stiffness, _restLength);
+    SimTK::Force::TwoPointLinearSpring simtkSpring(_model->updForceSubsystem(), b1, _point1, b2, _point2, _stiffness, _restLength);
     
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
 	PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
@@ -299,7 +299,7 @@ OpenSim::Array<double> PointToPointSpring::getRecordValues(const SimTK::State& s
 {
 	OpenSim::Array<double> values(1);
 
-	const SimTK::Force::TwoPointLinearSpring &simtkSpring = (SimTK::Force::TwoPointLinearSpring &)(_model->getUserForceSubsystem().getForce(_index));
+	const SimTK::Force::TwoPointLinearSpring &simtkSpring = (SimTK::Force::TwoPointLinearSpring &)(_model->getForceSubsystem().getForce(_index));
 
 	SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
 	SimTK::Vector_<SimTK::Vec3> particleForces(0);
