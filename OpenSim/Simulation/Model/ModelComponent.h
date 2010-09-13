@@ -107,7 +107,7 @@ public:
      *
      * @param index   the index of the state variable (0 to getNumStateVariables()-1)
      */
-	virtual std::string ModelComponent::getStateVariableName(int index) const
+	virtual std::string getStateVariableName(int index) const
 	{
 		throw Exception("This ModelComponent has no state variables");
 	}
@@ -117,7 +117,7 @@ public:
      *
      * @param index   the index of the state variable (0 to getNumStateVariables()-1)
      */
-	virtual int ModelComponent::getStateVariableYIndex(int index) const
+	virtual int getStateVariableYIndex(int index) const
 	{
 		throw Exception("This ModelComponent has no state variables");
 	}
