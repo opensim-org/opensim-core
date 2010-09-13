@@ -35,7 +35,6 @@
 #include <OpenSim/Common/StepFunction.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/BlockFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include <OpenSim/Common/MultiplierFunction.h>

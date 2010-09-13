@@ -51,8 +51,6 @@
 #include "ObjectGroup.h"
 #include "StateFunction.h"
 
-
-
 using namespace OpenSim;
 using namespace std;
 
