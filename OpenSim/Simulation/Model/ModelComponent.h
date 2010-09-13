@@ -364,7 +364,7 @@ private:
 	// Representative implementation of ModelComponent for SimTK::System level allocations
 	ModelComponentRep* _rep;
 
-	friend ModelComponentRep;
+	friend class ModelComponentRep;
 //=============================================================================
 };	// END of class ModelComponent
 //=============================================================================
