@@ -3,26 +3,26 @@
 // Force.h
 // Author: Peter Eastman, Ajay Seth
 /*
- * Copyright (c)  2009 Stanford University. All rights reserved. 
+ * Copyright (c)  2009 Stanford University. All rights reserved.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
 *     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
+* 	2. The software is not distributed or redistributed.  Software distribution is allowed
 *     only through https://simtk.org/home/opensim.
 * 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
 *      presentations, or documents describing work in which OpenSim or derivatives are used.
 * 	4. Credits to developers may not be removed from executables
 *     created from modifications of the source.
 * 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
+*     conditions and the following disclaimer.
+*
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
 *  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
+*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -51,7 +51,7 @@ class ForceAdapter;
 class OSIMSIMULATION_API Force : public ModelComponent
 {
 	protected:
-	/** Flag indicating whether the force is disabled or not.  Disabled 
+	/** Flag indicating whether the force is disabled or not.  Disabled
 	means that the force is not active in subsequent dynamics realizations. */
 	PropertyBool _isDisabledProp;
 
@@ -70,13 +70,13 @@ public:
 	 * deserialization from XML, necessary so that derived classes can (de)serialize
 	 */
 	Force(DOMElement* aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
-	
+
 #ifndef SWIG
 	Force& operator=(const Force &aForce);
 #endif
 	void copyData(const Force &aForce);
 	virtual Object* copy() const = 0;
-	/** 
+	/**
 	 * Methods to query a Force for the value actually applied during simulation
 	 * The names of the quantities (column labels) is returned by this first function
 	 * getRecordLabels()
@@ -111,7 +111,7 @@ protected:
 
 	/**
 	 * Default is to create a ForceAdapter which is a SimTK::Force
-	 * as the udnerlying computational component. Subclasses override to 
+	 * as the udnerlying computational component. Subclasses override to
 	 * employ other SimTK::Forces.
 	 */
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
@@ -122,8 +122,8 @@ protected:
 	 * and generalized speeds.
 	 * This is invoked by ForceAdapter to perform the force computation.
 	 */
-	virtual void computeForce(const SimTK::State& state, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+	virtual void computeForce(const SimTK::State& state,
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces,
 							  SimTK::Vector& generalizedForces) const {};
 	/**
 	 * Subclasses may optionally override this method to compute a contribution to the potential
@@ -142,7 +142,7 @@ protected:
 	 * @param aForce   the force to apply, specified in the inertial frame
 	 * @param bodyForces  the current set of system bodyForces this force is added to
 	 */
-	void applyForce(const SimTK::State &s, const OpenSim::Body &aBody, 
+	void applyForce(const SimTK::State &s, const OpenSim::Body &aBody,
 					const SimTK::Vec3& aForce, SimTK::Vector_<SimTK::SpatialVec> &bodyForces) const;
 	/**
 	 * Apply a force to a particular body.  Based on what point the force is applied at, this method
@@ -154,9 +154,9 @@ protected:
 	 * @param aBody    the body to apply the force to
 	 * @param aPoint   the point at which to apply the force, specifieid in the inertial frame
 	 * @param aForce   the force to apply, specified in the body's frame
-	 * @param bodyForces  the current set of system bodyForces this force is added to 
+	 * @param bodyForces  the current set of system bodyForces this force is added to
 	 */
-	void applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, 
+	void applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint,
 						   const SimTK::Vec3& aForce, SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
 	/**
 	 * Apply a torque to a particular body.
@@ -166,9 +166,9 @@ protected:
 	 *
 	 * @param aBody    the body to apply the force to
 	 * @param aTorque  the torque to apply, specified in the inertial frame
-	 * @param bodyForces  the current set of system bodyForces this force is added to 
+	 * @param bodyForces  the current set of system bodyForces this force is added to
 	 */
-	void applyTorque(const SimTK::State &s, const OpenSim::Body &aBody, 
+	void applyTorque(const SimTK::State &s, const OpenSim::Body &aBody,
 					 const SimTK::Vec3& aTorque, SimTK::Vector_<SimTK::SpatialVec> &bodyForces) const;
 	/**
 	 * Apply a generalized force.
@@ -178,9 +178,9 @@ protected:
 	 *
 	 * @param aCoord  the generalized coordinate to apply the force to
 	 * @param aForce  the force to apply
-	 * @param generalizedForces  the current set of system generalizedForces this force is added to 
+	 * @param generalizedForces  the current set of system generalizedForces this force is added to
 	 */
-	void applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord, 
+	void applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord,
 							   double aForce, SimTK::Vector &generalizedForces) const;
 
 
@@ -189,7 +189,7 @@ private:
 	void setNull();
 	void setupProperties();
 
-	friend ForceAdapter;
+	friend class ForceAdapter;
 
 //=============================================================================
 };	// END of class Force

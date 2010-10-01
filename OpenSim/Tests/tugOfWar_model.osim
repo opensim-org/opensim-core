@@ -1,39 +1,56 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="10902">
-	<Model name="osimModel">
+<OpenSimDocument Version="20101">
+	<Model name="tugOfWar">
 		<credits> Unassigned </credits>
 		<publications> Unassigned </publications>
 		<ForceSet name="">
 			<objects>
 				<Schutte1993Muscle name="muscle1">
+					<isDisabled> false </isDisabled>
 					<GeometryPath name="muscle1">
 						<PathPointSet name="">
 							<objects>
 								<PathPoint name="muscle1-point1">
 									<location>       0.00000000       0.05000000      -0.35000000 </location>
 									<VisibleObject name="">
-										<geometry_files> </geometry_files>
-										<VisibleProperties name="">
-											<display_preference> 4 </display_preference>
-											<show_normals> false </show_normals>
-											<show_axes> false </show_axes>
-											<material_name> DEFAULT </material_name>
-										</VisibleProperties>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
+										<show_axes> false </show_axes>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 									</VisibleObject>
 									<body> ground </body>
 								</PathPoint>
 								<PathPoint name="muscle1-point2">
 									<location>       0.00000000       0.00000000      -0.05000000 </location>
 									<VisibleObject name="">
-										<geometry_files> </geometry_files>
-										<VisibleProperties name="">
-											<display_preference> 4 </display_preference>
-											<show_normals> false </show_normals>
-											<show_axes> false </show_axes>
-											<material_name> DEFAULT </material_name>
-										</VisibleProperties>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
+										<show_axes> false </show_axes>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 									</VisibleObject>
 									<body> block </body>
 								</PathPoint>
@@ -41,14 +58,22 @@
 							<groups/>
 						</PathPointSet>
 						<VisibleObject name="">
-							<geometry_files> </geometry_files>
-							<VisibleProperties name="">
-								<display_preference> 4 </display_preference>
-								<show_normals> false </show_normals>
-								<show_axes> false </show_axes>
-								<material_name> DEFAULT </material_name>
-							</VisibleProperties>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
+							<show_axes> false </show_axes>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 						</VisibleObject>
 						<PathWrapSet name="">
 							<objects/>
@@ -74,7 +99,7 @@
 					    per second-->
 					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 					<!--Damping factor related to maximum contraction velocity-->
-					<damping>       0.05000000 </damping>
+					<damping>       0.10000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
 					<tendon_force_length_curve>
 						<NaturalCubicSpline name="">
@@ -96,38 +121,53 @@
 							<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.03500000       0.12000000       0.26000000       0.55000000       1.17000000       2.00000000       2.00000000       2.00000000       2.00000000 </y>
 						</NaturalCubicSpline>
 					</passive_force_length_curve>
-					<!--Function representing force-velocity behavior of muscle fibers-->
-					<force_velocity_curve/>
 				</Schutte1993Muscle>
 				<Thelen2003Muscle name="muscle2">
+					<isDisabled> false </isDisabled>
 					<GeometryPath name="muscle2">
 						<PathPointSet name="">
 							<objects>
 								<PathPoint name="muscle2-point1">
 									<location>       0.00000000       0.05000000       0.35000000 </location>
 									<VisibleObject name="">
-										<geometry_files> </geometry_files>
-										<VisibleProperties name="">
-											<display_preference> 4 </display_preference>
-											<show_normals> false </show_normals>
-											<show_axes> false </show_axes>
-											<material_name> DEFAULT </material_name>
-										</VisibleProperties>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
+										<show_axes> false </show_axes>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 									</VisibleObject>
 									<body> ground </body>
 								</PathPoint>
 								<PathPoint name="muscle2-point2">
 									<location>       0.00000000       0.00000000       0.05000000 </location>
 									<VisibleObject name="">
-										<geometry_files> </geometry_files>
-										<VisibleProperties name="">
-											<display_preference> 4 </display_preference>
-											<show_normals> false </show_normals>
-											<show_axes> false </show_axes>
-											<material_name> DEFAULT </material_name>
-										</VisibleProperties>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
+										<show_axes> false </show_axes>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 									</VisibleObject>
 									<body> block </body>
 								</PathPoint>
@@ -135,14 +175,22 @@
 							<groups/>
 						</PathPointSet>
 						<VisibleObject name="">
-							<geometry_files> </geometry_files>
-							<VisibleProperties name="">
-								<display_preference> 4 </display_preference>
-								<show_normals> false </show_normals>
-								<show_axes> false </show_axes>
-								<material_name> DEFAULT </material_name>
-							</VisibleProperties>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
+							<show_axes> false </show_axes>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 						</VisibleObject>
 						<PathWrapSet name="">
 							<objects/>
@@ -182,15 +230,16 @@
 					<!--maximum normalized lengthening force-->
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
-				<ElasticFoundationForce name="ElasticFoundationForce1">
+				<ElasticFoundationForce name="contactForce">
+					<isDisabled> false </isDisabled>
 					<ElasticFoundationForce::ContactParametersSet name="">
 						<objects>
 							<ElasticFoundationForce::ContactParameters name="">
 								<geometry> cube floor </geometry>
 								<stiffness> 100000000.00000000 </stiffness>
 								<dissipation>       0.01000000 </dissipation>
-								<static_friction>       0.00000000 </static_friction>
-								<dynamic_friction>       0.25000000 </dynamic_friction>
+								<static_friction>       0.25000000 </static_friction>
+								<dynamic_friction>       0.00000000 </dynamic_friction>
 								<viscous_friction>       0.00000000 </viscous_friction>
 							</ElasticFoundationForce::ContactParameters>
 						</objects>
@@ -198,12 +247,60 @@
 					</ElasticFoundationForce::ContactParametersSet>
 					<transition_velocity>       0.01000000 </transition_velocity>
 				</ElasticFoundationForce>
-				<PrescribedForce name="PrescribedForce1"/>
+				<PrescribedForce name="prescribedForce">
+					<isDisabled> false </isDisabled>
+					<!--Name of the body the force is applied to.-->
+					<body> block </body>
+					<!--Flag indicating whether the point (specified in pointFunctions) is in
+					    global frame-->
+					<pointIsGlobal> false </pointIsGlobal>
+					<!--Flag indicating whether the quantities (specified in
+					    force/torqueFunctions) is in global frame-->
+					<forceIsGlobal> true </forceIsGlobal>
+					<!--Three functions describing the force to be applied.-->
+					<FunctionSet name="forceFunctions">
+						<objects>
+							<PiecewiseLinearFunction name="">
+								<x>       0.00000000       0.60000000 </x>
+								<y>       0.00000000    -588.39900000 </y>
+							</PiecewiseLinearFunction>
+							<Constant name="">
+								<value>       0.00000000 </value>
+							</Constant>
+							<Constant name="">
+								<value>       0.00000000 </value>
+							</Constant>
+						</objects>
+						<groups/>
+					</FunctionSet>
+					<!--Three functions describing the location at which the force is applied-->
+					<FunctionSet name="pointFunctions">
+						<objects>
+							<PiecewiseLinearFunction name="">
+								<x>       0.00000000       0.60000000 </x>
+								<y>       0.00000000       0.10000000 </y>
+							</PiecewiseLinearFunction>
+							<Constant name="">
+								<value>       0.00000000 </value>
+							</Constant>
+							<Constant name="">
+								<value>       0.00000000 </value>
+							</Constant>
+						</objects>
+						<groups/>
+					</FunctionSet>
+					<!--Three functions describing the torque the PrescribedForce applies-->
+					<FunctionSet name="torqueFunctions">
+						<objects/>
+						<groups/>
+					</FunctionSet>
+				</PrescribedForce>
 			</objects>
 			<groups/>
+			<datafile>  </datafile>
 		</ForceSet>
-		<length_units> Unassigned </length_units>
-		<force_units> Unassigned </force_units>
+		<length_units> meters </length_units>
+		<force_units> N </force_units>
 		<!--Acceleration due to gravity.-->
 		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
 		<!--Bodies in the model.-->
@@ -221,14 +318,74 @@
 					<!--Joint that connects this body with the parent body.-->
 					<Joint/>
 					<VisibleObject name="">
-						<geometry_files> ground.vtp anchor1.vtp anchor2.vtp </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> ground.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> anchor1.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> anchor2.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 					</VisibleObject>
 					<WrapObjectSet name="">
 						<objects/>
@@ -263,7 +420,7 @@
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
 									</Coordinate>
@@ -275,7 +432,7 @@
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
 									</Coordinate>
@@ -287,7 +444,7 @@
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
 									</Coordinate>
@@ -295,11 +452,11 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> translational </motion_type>
-										<default_value>       0.05037145 </default_value>
+										<default_value>       0.05061879 </default_value>
 										<default_speed_value>       0.10000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>      -1.00000000       1.00000000 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
 									</Coordinate>
@@ -307,11 +464,11 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> translational </motion_type>
-										<default_value>       0.00029943 </default_value>
+										<default_value>       0.00030263 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>      -1.00000000       1.00000000 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
 									</Coordinate>
@@ -323,7 +480,7 @@
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
 										<range>      -1.00000000       1.00000000 </range>
-										<clamped> true </clamped>
+										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
 									</Coordinate>
@@ -336,14 +493,40 @@
 						</FreeJoint>
 					</Joint>
 					<VisibleObject name="">
-						<geometry_files> blockRemesh192.obj </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> block.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 					</VisibleObject>
 					<WrapObjectSet name="">
 						<objects/>
