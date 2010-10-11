@@ -43,13 +43,11 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include <OpenSim/Simulation/Model/Force.h>
-#include <OpenSim/Simulation/Model/CustomForce.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/CustomActuator.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
@@ -115,8 +113,6 @@
 
 #include <OpenSim/Simulation/SimbodyEngine/Constraint.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
-
-#include <OpenSim/Common/SimmPoint.h>
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
@@ -431,7 +427,6 @@ static bool trace=false;
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
 %include <OpenSim/Common/MarkerData.h>
-%include <OpenSim/Common/SimmPoint.h>
 
 // osimSimulation
 %include <OpenSim/Simulation/osimSimulationDLL.h>
@@ -443,7 +438,6 @@ static bool trace=false;
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
-%include <OpenSim/Simulation/Model/CustomForce.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
@@ -453,7 +447,6 @@ static bool trace=false;
 
 %include <OpenSim/Simulation/Model/Actuator.h>
 %template(SetActuators) OpenSim::Set<OpenSim::Actuator>;
-%include <OpenSim/Simulation/Model/CustomActuator.h>
 %template(ArrayStorage) OpenSim::ArrayPtrs<OpenSim::Storage>;
 %include <OpenSim/Simulation/Model/Analysis.h>
 %template(SetAnalysis) OpenSim::Set<OpenSim::Analysis>;

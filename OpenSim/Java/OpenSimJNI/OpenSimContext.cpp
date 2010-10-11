@@ -52,17 +52,17 @@ void OpenSimContext::getStates( double* statesBuffer) {
 
 // Transforms
 void OpenSimContext::transformPosition(const Body& body, double* offset, double* gOffset) {
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
     _model->getSimbodyEngine().transformPosition(*_configState, body, offset, gOffset );
 }
 
 SimTK::Transform OpenSimContext::getTransform(const Body& body) { // Body Should be made const
-	 _model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	 _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
      return _model->getSimbodyEngine().getTransform(*_configState, body );
 }
 
 void OpenSimContext::transform(const Body& ground, double* d, Body& body, double* dragVectorBody) {
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
     _model->getSimbodyEngine().transform(*_configState, ground, SimTK::Vec3(d), body, SimTK::Vec3::updAs(dragVectorBody) );
     return;
 } 
@@ -84,7 +84,7 @@ void OpenSimContext::setValue(const Coordinate& coord, double d, bool enforceCon
 void OpenSimContext::setClamped(const Coordinate&  coord, bool newValue) {
 	SimTK::Stage stg = _configState->getSystemStage();
 	coord.setClamped(*_configState, newValue );
- 	_model->getSystem().realize(*_configState, stg);
+ 	_model->getMultibodySystem().realize(*_configState, stg);
    return;
 }
 
@@ -97,7 +97,7 @@ void OpenSimContext::setLocked(const Coordinate& coord, bool newValue) {
 	// This invalidates state back to Model, try to restore by re-realizing
 	SimTK::Stage stg = _configState->getSystemStage();
 	coord.setLocked(*_configState, newValue );
-	_model->getSystem().realize(*_configState, stg);
+	_model->getMultibodySystem().realize(*_configState, stg);
     return;
 }
 
@@ -126,7 +126,7 @@ void OpenSimContext::updateDisplayer(Muscle& m) {
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
 	to.copy(from);
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	to.getGeometryPath().updateGeometry(*_configState);
 }
 
@@ -134,7 +134,7 @@ void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
 void OpenSimContext::setXFunction(MovingPathPoint& mmp, Function& newFunction) {
     mmp.setXFunction(*_configState, newFunction );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mmp.getPath()->updateGeometry(*_configState);
    return;
 }
@@ -142,7 +142,7 @@ void OpenSimContext::setXFunction(MovingPathPoint& mmp, Function& newFunction) {
 void OpenSimContext::setYFunction(MovingPathPoint& mmp, Function& newFunction) {
     mmp.setYFunction(*_configState, newFunction );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mmp.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -150,7 +150,7 @@ void OpenSimContext::setYFunction(MovingPathPoint& mmp, Function& newFunction) {
 void OpenSimContext::setZFunction(MovingPathPoint& mmp, Function& newFunction) {
     mmp.setZFunction(*_configState, newFunction );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mmp.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -158,7 +158,7 @@ void OpenSimContext::setZFunction(MovingPathPoint& mmp, Function& newFunction) {
 void OpenSimContext::setXCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord) {
     mmp.setXCoordinate(*_configState, newCoord );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mmp.getPath()->updateGeometry(*_configState);
 	return;
 }
@@ -166,7 +166,7 @@ void OpenSimContext::setXCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord)
 void OpenSimContext::setYCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord) {
     mmp.setYCoordinate(*_configState, newCoord );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mmp.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -174,7 +174,7 @@ void OpenSimContext::setYCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord)
 void OpenSimContext::setZCoordinate(MovingPathPoint& mmp, Coordinate&  newCoord) {
     mmp.setZCoordinate(*_configState, newCoord );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mmp.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -190,7 +190,7 @@ void OpenSimContext::setBody(PathPoint& pathPoint, Body&  newBody) {
 void OpenSimContext::setCoordinate(ConditionalPathPoint&  via, Coordinate&  newCoord) {
     via.setCoordinate(*_configState, newCoord );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	via.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -198,7 +198,7 @@ void OpenSimContext::setCoordinate(ConditionalPathPoint&  via, Coordinate&  newC
 void OpenSimContext::setRangeMin(ConditionalPathPoint&  via, double d) {
      via.setRangeMin(*_configState, d );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	via.getPath()->updateGeometry(*_configState);
      return;
 }
@@ -206,7 +206,7 @@ void OpenSimContext::setRangeMin(ConditionalPathPoint&  via, double d) {
 void OpenSimContext::setRangeMax(ConditionalPathPoint&  via, double d) {
     via.setRangeMax(*_configState, d );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	via.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -215,7 +215,7 @@ bool OpenSimContext::replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint&
      
      bool ret= p.replacePathPoint(*_configState, &mp, &newPoint );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	p.updateGeometry(*_configState);
      return ret;
 }
@@ -223,7 +223,7 @@ bool OpenSimContext::replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint&
 void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
     mp.setLocation(*_configState, i, d);
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mp.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -231,7 +231,7 @@ void OpenSimContext::setLocation(PathPoint& mp, int i, double d) {
 void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
     mw.setEndPoint(*_configState, newEndPt );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	mw.getPath()->updateGeometry(*_configState);
     return;
 }
@@ -239,7 +239,7 @@ void OpenSimContext::setEndPoint(PathWrap& mw, int newEndPt) {
 void OpenSimContext::addPathPoint(GeometryPath& p, int menuChoice, Body&  body) {
     p.addPathPoint(*_configState, menuChoice, body );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	p.updateGeometry(*_configState);
     return;
 }
@@ -247,7 +247,7 @@ void OpenSimContext::addPathPoint(GeometryPath& p, int menuChoice, Body&  body) 
 bool OpenSimContext::deletePathPoint(GeometryPath& p, int menuChoice) {
     bool ret = p.deletePathPoint(*_configState, menuChoice );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	p.updateGeometry(*_configState);
 	return ret;
 }
@@ -270,7 +270,7 @@ void OpenSimContext::addPathWrap(GeometryPath& p, WrapObject& awo) {
 void OpenSimContext::moveUpPathWrap(GeometryPath& p, int num) {
     p.moveUpPathWrap( *_configState, num );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	p.updateGeometry(*_configState);
     return;
 }
@@ -278,7 +278,7 @@ void OpenSimContext::moveUpPathWrap(GeometryPath& p, int num) {
 void OpenSimContext::moveDownPathWrap(GeometryPath& p, int num) {
     p.moveDownPathWrap( *_configState, num );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	p.updateGeometry(*_configState);
     return;
 }
@@ -286,7 +286,7 @@ void OpenSimContext::moveDownPathWrap(GeometryPath& p, int num) {
 void OpenSimContext::deletePathWrap(GeometryPath& p, int num) {
     p.deletePathWrap( *_configState, num );
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getSystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	p.updateGeometry(*_configState);
     return;
 }
@@ -333,13 +333,13 @@ bool OpenSimContext::processModelScale(ModelScaler& modelScaler,
 									   Model* aModel, 
 									   const std::string& aPathToSubject, 
 									   double aFinalMass) {
-	aModel->getSystem().realizeTopology();
-    _configState=&aModel->getSystem().updDefaultState();
+	aModel->getMultibodySystem().realizeTopology();
+    _configState=&aModel->getMultibodySystem().updDefaultState();
 	bool retValue= modelScaler.processModel(*_configState, aModel, aPathToSubject, aFinalMass);
 	// Model has changed need to recreate a valid state 
-	aModel->getSystem().realizeTopology();
-    _configState=&aModel->getSystem().updDefaultState();
-	aModel->getSystem().realize(*_configState, SimTK::Stage::Position);
+	aModel->getMultibodySystem().realizeTopology();
+    _configState=&aModel->getMultibodySystem().updDefaultState();
+	aModel->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
 	return retValue;
 }
 	
