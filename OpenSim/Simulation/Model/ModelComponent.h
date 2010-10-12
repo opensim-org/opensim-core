@@ -90,7 +90,7 @@ public:
 		the SimTK::System level component. Should query it and add to this to obtain the total
 		number of states managed by this ModelComponent */
 	int getNumStateVariablesAddedByModelComponent() const {return _namedStateVariableIndices.size();}
-
+#ifndef SWIG
 	void realizeTopology(SimTK::State &s) const;
 	void realizeModel(SimTK::State& s) const;
     void realizeInstance(const SimTK::State& s) const;
@@ -100,7 +100,7 @@ public:
     void realizeDynamics(const SimTK::State& s) const;
     void realizeAcceleration(const SimTK::State& s) const;
     void realizeReport(const SimTK::State& s) const;
-
+#endif
 	friend class ModelComponent;
 };
 //==================================
