@@ -97,6 +97,7 @@ public:
 	void setClamped(const Coordinate& coord, bool newValue);
 	bool getClamped(const Coordinate& coord);
 	void setLocked(const Coordinate& coord, bool newValue);
+	bool isConstrained(const Coordinate& coord) const;
 	// Muscles
 	double getActivation(Muscle& act);
 	double getMuscleLength(Muscle& act);

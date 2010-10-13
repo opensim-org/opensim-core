@@ -101,6 +101,10 @@ void OpenSimContext::setLocked(const Coordinate& coord, bool newValue) {
     return;
 }
 
+bool OpenSimContext::isConstrained(const Coordinate& coord) const {
+	return (coord.isConstrained(*_configState));
+}
+
 // Muscles
 double OpenSimContext::getActivation(Muscle& m) {
 	return m.getActivation(*_configState);
