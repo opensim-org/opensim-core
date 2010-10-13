@@ -216,7 +216,7 @@ int testMomentArmDefinitionForModel(string filename)
 	if(osimModel.getCoordinateSet().getSize() > 2)
 		osimModel.getCoordinateSet()[1].setValue(s, Pi/6);
 
-	((Thelen2003Muscle *)(&osimModel.getForceSet()[0]))->setActivation(s, 0.01);
+	osimModel.updMuscles()[0].setActivation(s, 0.01);
 
 	osimModel.computeEquilibriumForAuxiliaryStates(s);
 
@@ -225,8 +225,105 @@ int testMomentArmDefinitionForModel(string filename)
 	return result;
 }
 
+int testWristECUMuscle(double mass)
+{
+	// Load OpenSim model
+	Model osimModel("wrist_mass.osim");
+
+	for(int i=0; i<osimModel.updBodySet().getSize(); i++){
+		osimModel.updBodySet()[i].setMass(mass);
+	}
+
+	SimTK::State &s = osimModel.initSystem();
+
+	// wrist flexion angle starts extended
+	double q0 = -Pi/3;
+
+	Coordinate &flexion = osimModel.updCoordinateSet().get("flexion");
+
+	SimTK::MobilizedBodyIndex bi = flexion.getBodyIndex();
+
+	int flex_ix = osimModel.getMatterSubsystem().getMobilizedBody(bi).getFirstUIndex(s) + 
+			flexion.getMobilityIndex();
+
+	for(int i=0; i<osimModel.updForceSet().getSize(); i++){
+		osimModel.updForceSet()[i].setDisabled(s, true);
+	}
+	// Also disable gravity
+	osimModel.getGravityForce().disable(s);
+
+	// Consider one force, which is the muscle of interest
+	Schutte1993Muscle &muscle = *dynamic_cast<Schutte1993Muscle*>(&(osimModel.updMuscles().get("ECU_post-surgery")));
+	muscle.setDisabled(s, false);
+
+	double q = q0;
+	double dq = Pi/18;
+	int nsteps = 12;
+
+	for(int i = 0; i <=nsteps; i++){
+		flexion.setValue(s, q);
+		double angle = flexion.getValue(s);
+
+		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
+	
+		// Get all applied body forces like those from conact
+		const Vector_<SpatialVec>& appliedBodyForces = osimModel.getMultibodySystem().getRigidBodyForces(s, Stage::Dynamics);
+
+		appliedBodyForces.dump("Applied Body Force resuling from ECU muscle");
+
+		// Get current system accelerations
+		const Vector &knownUDots = s.getUDot();
+		knownUDots.dump("Acceleration due to ECU muscle:");
+
+		//Results from an inverse dynamics for the generalized forces to satisfy accelerations
+		Vector equivalentTorque, equivalentTorqueMUdot;
+
+		// Convert body forces to equivalent mobility forces (joint torques)
+		osimModel.getMultibodySystem().getMatterSubsystem().calcTreeEquivalentMobilityForces(s, appliedBodyForces, equivalentTorque);
+		// Compute joint torque resulting from inertial forces (M*Udot) 
+		osimModel.getMultibodySystem().getMatterSubsystem().calcMV(s, knownUDots, equivalentTorqueMUdot);
+
+		// These should be equal
+		///ASSERT_EQUAL(equivalentTorque[flex_ix], equivalentTorqueMUdot[flex_ix], integ_accuracy);
+
+		Vector ivdTorques;
+
+		if(s.getSystemStage() < SimTK::Stage::Dynamics)
+			osimModel.getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
+	
+		// Perform inverse dynamics
+		osimModel.getMultibodySystem().getMatterSubsystem().calcResidualForceIgnoringConstraints(s,
+			0.0*equivalentTorque, 0.0*appliedBodyForces, knownUDots, ivdTorques);
+
+
+		double force = muscle.getTendonForce(s);
+		cout << "muscle  force: " << muscle.getForce(s) << endl;
+		double ma = muscle.computeMomentArm(s, flexion);
+
+		cout << "Momement arm = " << ma << " at q = " << flexion.getValue(s)*180/Pi <<
+			"  Torque = " << ivdTorques[flex_ix] <<"::" << equivalentTorqueMUdot[flex_ix] << "  ma*force = " << ma*force << endl;
+		
+		// Verify that the definition of the moment-arm is satisfied
+		ASSERT_EQUAL(equivalentTorqueMUdot[flex_ix], ma*force, integ_accuracy);
+
+		// Increment the joint angle
+		q += dq;
+	}
+
+	return 0;
+}
+
+
+
+
 int main()
 {
+	cout << "WRIST ECU TEST with MASS  = 1.0"  << endl;
+	testWristECUMuscle(1.0);
+
+	cout << "WRIST ECU TEST with MASS  = 100.0"  << endl;
+	testWristECUMuscle(100.0);
+
 	testPointToPointMuscleAcrossPinJoint();
 	cout << "Point to point muscle across PinJoint: PASSED"  << endl;
 
