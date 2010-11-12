@@ -1,8 +1,8 @@
-#ifndef _PassiveJointTorque_h_
-#define _PassiveJointTorque_h_
-// PassiveJointTorque.h
+#ifndef _SymbolicExpressionReporter_h_
+#define _SymbolicExpressionReporter_h_
+// SymbolicExpressionReporter.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHOR: Frank C. Anderson, Kate Holzbaur
+//	AUTHOR: Ayman Habib
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -35,110 +35,109 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Actuators/CoordinateActuator.h>
+#include <map>
+#include <OpenSim.h>
+#include "osimExpPluginDLL.h"
 
 
+#ifdef SWIG
+	#ifdef OSIMEXPPLUGIN_API
+		#undef OSIMEXPPLUGIN_API
+		#define OSIMEXPPLUGIN_API
+	#endif
+#endif
 //=============================================================================
 //=============================================================================
-/**
- * An actuator that exerts passive elastic and damping forces at a
- * generalized coordinate.
- *
- * @author Frank C. Anderson, Kate Holzbaur
- * @version 1.0
- */
 namespace OpenSim { 
 
-class OSIMACTUATORS_API PassiveJointTorque : public CoordinateActuator 
+/**
+ * A class for recording the states of a model
+ * during a simulation.
+ *
+ * @author Ayman Habib
+ * @version 1.0
+ */
+class OSIMEXPPLUGIN_API SymbolicExpressionReporter : public Analysis 
 {
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-	// PROPERTIES
-	/** Passive torque parameters. */
-	PropertyDbl _propSlope1;
-	double &_slope1;
-	
-	PropertyDbl _propLimit1;
-	double &_limit1;
-	
-	PropertyDbl _propSlope2;
-	double &_slope2;
-	
-	PropertyDbl _propLimit2;
-	double &_limit2;
+private:
+	std::map<std::string, double> _variables;
 
-	PropertyDbl _propOffset;
-	double &_offset;
-	
-	/** Damping parameters. */
-	PropertyDbl _propDamping;
-	double &_damping;
+
+protected:
+	/** Expression that's a function of state variables and primitive model properties. */
+	PropertyStr _expressionStrProp;
+	std::string& _expressionStr;
+
+	/** States storage. */
+	Storage _resultStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	PassiveJointTorque(std::string aQName="");
-	PassiveJointTorque(const PassiveJointTorque &aActuator);
-	virtual ~PassiveJointTorque();
+	SymbolicExpressionReporter(Model *aModel=0);
+	SymbolicExpressionReporter(const std::string &aFileName);
+	// Copy constrctor and virtual copy 
+	SymbolicExpressionReporter(const SymbolicExpressionReporter &aObject);
 	virtual Object* copy() const;
+	virtual ~SymbolicExpressionReporter();
 private:
 	void setNull();
+	void constructDescription();
+	void constructColumnLabels();
+	void setupStorage();
 	void setupProperties();
-	void copyData(const PassiveJointTorque &aActuator);
 
 public:
-
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
-	PassiveJointTorque&
-		operator=(const PassiveJointTorque &aActuator);
-
+#ifndef SWIG
+	SymbolicExpressionReporter& operator=(const SymbolicExpressionReporter &aRporter);
+#endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	// Parameters
-	void setSlope1(double aSlope1);
-	double getSlope1() const;
-	
-	void setLimit1(double aLimit1);
-	double getLimit1() const;
-	
-	void setSlope2(double aSlope2);
-	double getSlope2() const;
-	
-	void setLimit2(double aLimit2);
-	double getLimit2() const;
-	
-	void setOffset(double aOffset);
-	double getOffset() const;
-	
-	void setDamping(double aDamping);
-	double getDamping() const;
-
+	// STORAGE
+	const Storage& getResultStorage() const
+	{
+		return _resultStore;
+	};
+	Storage& updResultStorage()
+	{
+		return _resultStore;
+	}
 	//--------------------------------------------------------------------------
-	// COMPUTATIONS
+	// ANALYSIS
 	//--------------------------------------------------------------------------
-	virtual double computeActuation( const SimTK::State& s );
-
+#ifndef SWIG
+	virtual int
+        begin(SimTK::State& s );
+    virtual int
+        step(const SimTK::State& s, int setNumber );
+    virtual int
+        end(SimTK::State& s );
+protected:
+    virtual int
+        record(const SimTK::State& s );
+#endif
 	//--------------------------------------------------------------------------
-	// XML
+	// IO
 	//--------------------------------------------------------------------------
-	//virtual void updateFromXMLNode();
-
-	OPENSIM_DECLARE_DERIVED(PassiveJointTorque,Actuator);
+public:
+	virtual int
+		printResults(const std::string &aBaseName,const std::string &aDir="",
+		double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
-};	// END of class PassiveJointTorque
+};	// END of class SymbolicExpressionReporter
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
 
-#endif // #ifndef __PassiveJointTorque_h__
+#endif // #ifndef __SymbolicExpressionReporter_h__

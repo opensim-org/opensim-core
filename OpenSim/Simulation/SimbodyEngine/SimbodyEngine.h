@@ -174,10 +174,10 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void formEulerTransform(const SimTK::State& s, const OpenSim::Body &aBody, double *rE) const;
 #endif
-	virtual void formMassMatrix(double *rI) {};
-	virtual void formJacobianTranslation(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, double *rJ, const OpenSim::Body *aRefBody=NULL) const {};
-	virtual void formJacobianOrientation(const OpenSim::Body &aBody, double *rJ0, const OpenSim::Body *aRefBody=NULL) const {};
-	virtual void formJacobianEuler(const OpenSim::Body &aBody, double *rJE, const OpenSim::Body *aRefBody=NULL) const {};
+	//unimplemented virtual void formMassMatrix(double *rI) {};
+	//unimplemented virtual void formJacobianTranslation(const OpenSim::Body &aBody, const SimTK::Vec3& aPoint, double *rJ, const OpenSim::Body *aRefBody=NULL) const {};
+	//unimplemented virtual void formJacobianOrientation(const OpenSim::Body &aBody, double *rJ0, const OpenSim::Body *aRefBody=NULL) const {};
+	//unimplemented virtual void formJacobianEuler(const OpenSim::Body &aBody, double *rJE, const OpenSim::Body *aRefBody=NULL) const {};
 
 	//--------------------------------------------------------------------------
 	// DERIVATIVES

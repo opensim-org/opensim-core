@@ -39,9 +39,7 @@
 #include "Object.h"
 #include "XMLParsingException.h"
 #include <cassert>
-
-
-
+#include <SimTKcommon.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -662,21 +660,31 @@ GetDbl(const DOMNode *aNode)
 
 	// GET VALUE
 	char *str = XMLString::transcode(textNode->getNodeValue());
-
+	XMLString::trim(str);
 	// INTERPRET AS INT
 	double value;
-	double status = sscanf(str,"%lf",&value);
+	int status = sscanf(str,"%lf",&value);
 
 	// ERROR CHECK
 	if(status!=1)  {
-		string name = XMLString::transcode(aNode->getNodeName());
-		string msg = "XMLNode.GetDbl: ERROR- failed to interpret value of ";
-		msg += name;
-		msg += " as a double.";
-		if(str!=NULL) { delete[] str; }
-		throw( Exception(msg,__FILE__,__LINE__) );
+		if (strcmp(str, "infinity")==0){
+			value = SimTK::Infinity;
+		}
+		else if (strcmp(str, "-infinity")==0){
+			value = -SimTK::Infinity;
+		}
+		else if (strcmp(str, "NaN")==0){
+			value = SimTK::NaN;
+		}
+		else {
+			string name = XMLString::transcode(aNode->getNodeName());
+			string msg = "XMLNode.GetDbl: ERROR- failed to interpret value of ";
+			msg += name;
+			msg += " as a double.";
+			if(str!=NULL) { delete[] str; }
+			throw( Exception(msg,__FILE__,__LINE__) );
+		}
 	}
-
 	// CLEANUP
 	if(str!=NULL) { delete[] str; }
 
@@ -1072,11 +1080,21 @@ SetDblArray(DOMNode *aNode,int aN,const double *aData)
 	XMLCh *data = NULL;
 	for(i=0;i<aN;i++) {
 		textNode->appendData(space);
-		sprintf(tmp,format,aData[i]);
-		data = XMLString::transcode(tmp);
-		if(data==NULL) continue;
-		textNode->appendData(data);
-		delete[] data;
+		// Speed up the most common case by handling it first
+		if (aData[i]>-SimTK::Infinity && aData[i]<SimTK::Infinity ){
+			sprintf(tmp,format,aData[i]);
+			data = XMLString::transcode(tmp);
+			if(data==NULL) continue;
+			textNode->appendData(data);
+			delete[] data;
+		} // The rest are special cases to handle Infinity, -Infinity, NaN
+		else if (SimTK::Infinity==aData[i]){
+			textNode->appendData(XMLString::transcode("infinity"));
+		} else if (-SimTK::Infinity==aData[i]){
+			textNode->appendData(XMLString::transcode("-infinity"));
+		} else if (SimTK::isNaN(aData[i])){
+			textNode->appendData(XMLString::transcode("NaN"));
+		}
 	}
 
 	// ADD A SPACE ON END

@@ -136,7 +136,7 @@ void testEMGDrivenArm() {
 
 int main() {
     try {
-		testEMGDrivenArm();
+		//testEMGDrivenArm();
 		testSingleMuscle();
 		testGait2354();
     }

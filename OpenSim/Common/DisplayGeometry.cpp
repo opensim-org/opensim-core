@@ -95,7 +95,7 @@ _displayPreference((DisplayPreference&)_propDisplayPreference.getValueInt()),
 _opacity(_propOpacity.getValueDbl())
 {
 	setNull();
-	setupProperties();
+	//setupProperties();
 	copyData(aGeometryPiece);
 
 }

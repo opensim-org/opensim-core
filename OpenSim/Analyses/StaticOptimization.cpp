@@ -373,11 +373,11 @@ record(const SimTK::State& s)
 		Actuator& act = fs.get(i);
 	    mus = dynamic_cast<Muscle*>(&fs.get(i));
 	    if(mus==NULL) {
-		    lowerBounds(j) = -1;
-		    upperBounds(j) = 1;
+			lowerBounds(j) = (act.getMinControl()==-SimTK::Infinity)?-1.0:act.getMinControl();
+		    upperBounds(j) = (act.getMaxControl()==SimTK::Infinity)?1.0:act.getMaxControl();
 	    } else {
-		    lowerBounds(j) = 0.01;
-		    upperBounds(j) = 1;
+			lowerBounds(j) = (act.getMinControl()==-SimTK::Infinity)?0.01:act.getMinControl();
+		    upperBounds(j) = (act.getMaxControl()==SimTK::Infinity)?1.0:act.getMaxControl();
 	    }
         j++;
 	}

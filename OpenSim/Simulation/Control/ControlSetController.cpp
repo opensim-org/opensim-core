@@ -262,7 +262,10 @@ void ControlSetController::setup(Model& model)
 //        std::cout<<"\n\nControlSetController::setup Loading controls from file "<<_controlsFileName<<"."<<std::endl;
 //        std::cout<<"ControlSetController::setup Found "<<_controlSet->getSize()<<" controls."<<std::endl;
         delete  _controlSet;
-        _controlSet = new ControlSet(_controlsFileName);
+		if (_controlsFileName.rfind(".sto")!=std::string::npos)
+			_controlSet = new ControlSet(Storage(_controlsFileName));
+		else
+			_controlSet = new ControlSet(_controlsFileName);
     }
 	else if (_controlSet == NULL) {
        std::cout << " ControlSetController:: no Control Set Specified" << std::endl;

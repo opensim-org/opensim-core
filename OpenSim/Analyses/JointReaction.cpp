@@ -161,7 +161,8 @@ operator=(const JointReaction &aJointReaction)
 	_jointNames = aJointReaction._jointNames;
 	_onBody = aJointReaction._onBody;
 	_inFrame = aJointReaction._inFrame;
-
+	_useForceStorage = aJointReaction._useForceStorage;
+	_storeActuation = NULL;
 	return(*this);
 }
 

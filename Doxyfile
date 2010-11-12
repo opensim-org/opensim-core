@@ -31,7 +31,7 @@ PROJECT_NAME           = OpenSim
 # This could be handy for archiving the generated documentation or 
 # if some version control system is used.
 
-PROJECT_NUMBER         = "OpenSim 2.0"
+PROJECT_NUMBER         = "OpenSim 2.2"
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) 
 # base path where the generated documentation will be put. 
@@ -584,7 +584,7 @@ WARN_LOGFILE           =
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = OpenSim/ \
+INPUT                  = OpenSim \
                          OpenSim/Analyses \
                          OpenSim/Common \
                          OpenSim/Simulation \
@@ -653,7 +653,11 @@ EXCLUDE                = OpenSim/Java \
                          OpenSim/Utilities \
                          OpenSim/Models \
                          OpenSim/Tests \
-                         OpenSim/Applications
+                         OpenSim/Applications \
+                         OpenSim/Java \
+                         test \
+                         OpenSim/Examples \
+                         API
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -674,7 +678,9 @@ EXCLUDE_PATTERNS       = *.svn* \
                          *\test* \
                          *src* \
                          *ArrayPtrs* \
-                         *Instantiator*
+                         *Instantiator* \
+                         *test* \
+                         *InducedAccelerations*
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names 
 # (namespaces, classes, functions, etc.) that should be excluded from the 

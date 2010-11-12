@@ -164,8 +164,7 @@ private:
 	double _calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr, const Array<PathPoint*>& path) const; 
 	virtual double calcLengthAfterPathComputation(const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
 public:
-	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord);
-	virtual SimTK::Vector computeMomentArms(SimTK::State& s);
+	virtual double computeMomentArm(const SimTK::State& s, const Coordinate& aCoord);
 
 	//--------------------------------------------------------------------------
 	// SCALING

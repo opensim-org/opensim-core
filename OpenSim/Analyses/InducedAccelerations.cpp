@@ -604,11 +604,11 @@ int InducedAccelerations::record(const SimTK::State& s)
 			actuator.setDisabled(s_analysis, false);
 			
 			if(_computePotentialsOnly){
-				actuator.setIsControlled(false);
-				actuator.setForce(s_analysis, 1.0);
+				actuator.overrideForce(s_analysis, true);
+				actuator.setOverrideForce(s_analysis, 1.0);
 			}
 			else{
-				actuator.setIsControlled(true);
+				actuator.overrideForce(s_analysis, false);
 			}
 
 			// Set the configuration (gen. coords and speeds) of the model.
@@ -883,7 +883,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
 			((RollingOnSurfaceConstraint *)(&_constraintSet.get(i)))->setContactPointOnSurfaceBody(s, point);
 		}
 		else{
-			// turn on the constraint
+			// turn off the constraint
 			_constraintSet.get(i).setDisabled(s, true);
 			// return the state of the constraint
 			constraintOn[i] = false;

@@ -4,13 +4,10 @@ PROJECT (ControllerExample)
 
 SET(SOURCE_FILES ControllerExample.cpp) 
 
-SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 2.1" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.2" CACHE PATH "Top-level directory of OpenSim install")
 
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
       CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
-
-SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 2.1" 
-		CACHE PATH "Top-level directory of OpenSim install")
 
 # Location of headers
 SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)

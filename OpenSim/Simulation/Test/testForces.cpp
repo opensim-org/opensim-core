@@ -27,15 +27,12 @@
 */
 
 //==========================================================================================================
-//	testJoints builds OpenSim models using the OpenSim API and builds an equivalent
-//  Simbody system using the Simbody API for each test case. A test fails if the
-//  OpenSim and Simbody final states of the simulation are not equivelent (norm-err
-//  less than 10x integration error tolerance)
 //
 //	Tests Include:
 //      1. PointToPointSpring
 //		2. BusingForce
 //		3. ElasticFoundationForce
+//		4. CoordinateLimitForce
 //		
 //     Add tests here as Forces are added to OpenSim
 //
@@ -169,7 +166,6 @@ int testSpringMass()
 
 int testBushingForce()
 {
-
 	double mass = 1;
 	double stiffness = 10;
 	double restlength = 0.0;
@@ -345,6 +341,124 @@ int testElasticFoundation()
 	return 0;
 }
 
+int testCoordinateLimitForce()
+{
+	double mass = 1;
+	double ball_radius = 0.25;
+
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	osimModel->setName("CoordinateLimitForceTest");
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+	OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
+	ball.addDisplayGeometry("sphere.vtp");
+	ball.scale(Vec3(ball_radius), false);
+
+	// Add joints
+	SliderJoint slider("", ground, Vec3(0), Vec3(0,0,Pi/2), ball, Vec3(0), Vec3(0,0,Pi/2));
+
+	double positionRange[2] = {0.1, 2};
+	// Rename coordinates for a slider joint
+	CoordinateSet &slider_coords = slider.getCoordinateSet();
+	slider_coords[0].setName("ball_h");
+	slider_coords[0].setRange(positionRange);
+	slider_coords[0].setMotionType(Coordinate::Translational);
+
+	osimModel->addBody(&ball);
+
+	osimModel->setGravity(gravity_vec);
+
+	// Define the parameters of the Coordinate Limit Force
+	double K_upper = 10.0;
+	double K_lower = 100.0;
+	double damping = 0.01;
+	double trans = 0.001;
+	CoordinateLimitForce limitForce("ball_h", positionRange[1],  K_upper, 
+			 positionRange[0], K_lower,  damping, trans);
+
+	osimModel->addForce(&limitForce);
+
+		// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->disownAllComponents();
+
+	osimModel->print("CoordinateLimitForceTest.osim");
+
+	// Check serialization and deserilaization
+	delete osimModel;
+	osimModel = new Model("CoordinateLimitForceTest.osim");
+
+	// Create the force reporter
+	ForceReporter* reporter = new ForceReporter(osimModel);
+	osimModel->addAnalysis(reporter);
+
+	SimTK::State &osim_state = osimModel->initSystem();
+
+	double dh = 0.1;
+	double start_h = positionRange[1] + dh;
+	const Coordinate &q_h = osimModel->getCoordinateSet()[0];
+	q_h.setValue(osim_state, start_h);
+
+	// initial energy of the system;
+	double energy = 0.5*K_upper*dh*dh + mass*(-gravity_vec[1])*start_h;
+
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+
+	//==========================================================================================================
+	// Compute the force and torque at the specified times.
+
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+	integrator.setAccuracy(1e-6);
+    Manager manager(*osimModel,  integrator);
+    manager.setInitialTime(0.0);
+
+	double final_t = 2.0;
+	double nsteps = 10;
+	double dt = final_t/nsteps;
+
+	for(int i = 0; i <=nsteps; i++){
+		manager.setFinalTime(dt*i);
+		manager.integrate(osim_state);
+		osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+		
+		double h = q_h.getValue(osim_state);
+		double v = q_h.getSpeedValue(osim_state);
+
+		//Now check that the force reported by spring
+		Array<double> model_force = osimModel->getForceSet()[0].getRecordValues(osim_state);
+
+		// get the forces applied to the ball by the limit force
+		double analytical_force = 0;
+		if(h > (positionRange[1]+trans)){
+			ASSERT_EQUAL(-K_upper*(h-positionRange[1])-damping*v, model_force[0], 1e-4);
+		}
+		else if( h < (positionRange[0]-trans)){
+			ASSERT_EQUAL(K_lower*(positionRange[0]-h)-damping*v, model_force[0], 1e-4);
+		}
+		else{
+			// Verify no force is being applied by limiting force when not exceeding limits 
+			ASSERT_EQUAL(0, model_force[0], 1e-5);
+			//also that the kinetic & potential energy of the system is going down due to damping at limits;
+			double e = 0.5*mass*v*v - mass*gravity_vec[1]*h;
+			
+			if (damping == 0.0){
+				ASSERT_EQUAL(e, energy, 1e-4);
+			}else{
+				ASSERT(e < energy);
+			}
+		}
+
+		manager.setInitialTime(dt*i);
+	}
+
+	manager.getStateStorage().print("coordinte_limit_force_model_states.sto");
+
+	// Save the forces
+	reporter->getForceStorage().print("limit_forces.mot");  
+
+	return 0;
+}
+
 int main()
 {
 	testSpringMass();
@@ -353,6 +467,8 @@ int main()
 	cout << "bushing passed"  << endl;
 	testElasticFoundation();
 	cout << "elastic foundation force passed"  << endl;
+
+	testCoordinateLimitForce();
 
 	return 0;
 }

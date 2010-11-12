@@ -948,7 +948,17 @@ bool CMCTool::run()
 	// Set output file names so that files are flushed regularly in case we fail
 	IO::makeDir(getResultsDir());	// Create directory for output in case it doesn't exist
 	manager.getStateStorage().setOutputFileName(getResultsDir() + "/" + getName() + "_states.sto");
-	manager.integrate(s);
+	try {
+		manager.integrate(s);
+	}
+	catch(Exception &x) {
+		// TODO: eventually might want to allow writing of partial results
+		x.print(cout);
+		IO::chDir(saveWorkingDirectory);
+		// close open files if we die prematurely (e.g. Opt fail)
+		manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
+		return false;
+	}
 	time(&finishTime);
 	cout<<"----------------------------------------------------------------\n";
 	cout<<"Finished tracking the specified kinematics\n";
@@ -1008,7 +1018,8 @@ bool CMCTool::run()
 		// TODO: eventually might want to allow writing of partial results
 		x.print(cout);
 		IO::chDir(saveWorkingDirectory);
-	
+		// close open files if we die prematurely (e.g. Opt fail)
+		
 		return false;
 	}
 

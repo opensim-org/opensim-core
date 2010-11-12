@@ -225,6 +225,9 @@ allocateStorage()
 	_storage = new Storage(1000,"Inverse Dynamics");
 	_storage->setDescription(getDescription());
 	_storage->setColumnLabels(getColumnLabels());
+	// Keep references o all storages in a list for uniform access from GUI
+	_storageList.append(_storage);
+	_storageList.setMemoryOwner(false);
 }
 
 

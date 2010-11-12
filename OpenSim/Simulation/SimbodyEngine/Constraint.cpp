@@ -250,3 +250,51 @@ void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimT
 	simConstraint.calcConstraintForcesFromMultipliers( s, simConstraint.getMultipliersAsVector(s), 
 		                                               bodyForcesInParent, mobilityForces);
 }
+
+/** 
+ * Methods to query a Constraint forces for the value actually applied during simulation
+ * The names of the quantities (column labels) is returned by this first function
+ * getRecordLabels()
+ */
+Array<std::string> Constraint::getRecordLabels() const
+{
+	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
+	const SimTK::State &ds = _model->getMultibodySystem().getDefaultState();
+
+	// number or multipliers of each stage (position, velocity, acceleration)
+	int mp, mv, ma, nlambda;
+	simConstraint.getNumConstraintEquationsInUse(ds, mp, mv, ma);
+
+	nlambda = mp + mv + ma;
+
+	Array<std::string> labels("");
+	
+	for(int i=0; i<nlambda; i++){
+		char c[2];
+		itoa(i,c,10);
+		labels.append(getName()+"_multiplier"+c);
+	}
+	
+	return labels;
+}
+
+/**
+ * Given SimTK::State object extract all the values necessary to report constraint forces, application 
+ * location frame, etc. used in conjunction with getRecordLabels and should return same size Array
+ */
+Array<double> Constraint::getRecordValues(const SimTK::State& state) const
+{
+	// EOMs are solved for accelerations (udots) and constraint multipliers (lambdas)
+	// simulataneously, so system must be realized to acceleration
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
+	SimTK::Vector multipliers = simConstraint.getMultipliersAsVector(state);
+
+	Array<double> values(0.0, multipliers.size());
+	
+	for(int i=0; i<multipliers.size(); i++){
+		values[i]=multipliers[i];
+	}
+
+	return values;
+};

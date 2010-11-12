@@ -116,7 +116,7 @@ public:
 		double taskGradient = -2 * getTaskError(s)* getWeight(0);
 		// set the entry idx in g where fSet[idx] is a substring of getName()
 		for(int i=0; i< fSet.getSize(); i++){
-			if (getName().find_first_of(fSet[i].getName())!=NULL){
+			if (getName().find(fSet[i].getName())!=std::string::npos){
 				g[i]=taskGradient;
 				break;
 			}

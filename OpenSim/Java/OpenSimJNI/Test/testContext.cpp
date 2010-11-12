@@ -54,7 +54,9 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+#define ASSERT_EQUAL(expected, found, tolerance) { \
+double tol = std::max((tolerance), std::abs((expected)*(tolerance))); \
+if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 int main()
 {
@@ -73,8 +75,20 @@ int main()
 	LoadOpenSimLibrary("osimSimulation");
 	LoadOpenSimLibrary("osimJavaJNI");
 
-	Model *model = new Model("arm26_20.osim");
+	Model *model = new Model("wrist.osim");
 	OpenSimContext* context = new OpenSimContext(&model->initSystem(), model);
+	const ForceSet& fs = model->getForceSet();
+	int n1 = fs.getNumGroups();
+	const ObjectGroup* grp = fs.getGroup("wrist");
+	assert(grp);
+	const Array<Object*>& members = grp->getMembers();
+	int sz = members.getSize();
+	ASSERT_EQUAL(sz,5,0);
+	assert(members.get(0)->getName()=="ECRB");
+	delete model;
+	delete context;
+	model = new Model("arm26_20.osim");
+	context = new OpenSimContext(&model->initSystem(), model);
 	Array<std::string> stateNames;
 	model->getStateNames(stateNames);
 	OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));

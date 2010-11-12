@@ -36,7 +36,8 @@ using namespace std;
 int main() {
 	// Create a storge from a std file "std_storage.sto"
     try {
-		MarkerData md("TRCFileWithNANs.trc");
+		//MarkerData md("TRCFileWithNANs.trc");
+        MarkerData md("TRCFileWithNANS.trc");
         //MarkerData md = MarkerData("TRCFileWithNANS.trc");
 		int rStartFrame=-1;
 		int rEndFrame=-1;
@@ -47,7 +48,7 @@ int main() {
 		ASSERT(rStartFrame==1);
 		ASSERT(rEndFrame==3);
 		// ToBeTested void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
-		ASSERT(md.getFileName()=="TRCFileWithNANs.trc");
+		ASSERT(md.getFileName()=="TRCFileWithNANS.trc");
 		Storage storage;
 		md.makeRdStorage(storage);
 		ASSERT(md.getUnits().getType()==Units(std::string("mm")).getType());
@@ -60,8 +61,8 @@ int main() {
 		ASSERT(md.getMarkerIndex("lASIS")==13);
 		ASSERT(md.getMarkerIndex("NotFound")==-1);
 		ASSERT(md.getNumFrames()==5);
-		//ASSERT(md.getStartFrameTime()==0.0);
-		//ASSERT(md.getLastFrameTime()==0.016);
+		ASSERT(md.getStartFrameTime()==0.0);
+		ASSERT(md.getLastFrameTime()==0.016);
 		ASSERT(md.getDataRate()==250.);
 		ASSERT(md.getCameraRate()==250.);
 		//ToBeTested md.convertToUnits(Units(Units::Meters));

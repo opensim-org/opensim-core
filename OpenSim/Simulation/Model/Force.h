@@ -102,6 +102,13 @@ public:
      */
 	virtual int getNumStateVariables() const { return 0;};
 
+	/** return a flag indicating whether the Force is applied along a Path
+	 *  if you override this method to return true for a specific subclass, it must
+	 * also implement the getGeometryPath() mathod
+	 */
+	virtual bool hasGeometryPath() const { return false;};
+	OPENSIM_DECLARE_DERIVED(Force, Object);
+
 protected:
 	/**
 	 * Subclasses should override these methods appropriately.

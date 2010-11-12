@@ -103,9 +103,24 @@ namespace OpenSim {
 			_propertySet.append(pInt.copy());
 
 			// Dbl
-			PropertyDbl pDbl("Test_Dbl",0.0);
-			pDbl.setComment("Comment on a Double");
-			_propertySet.append(pDbl.copy());
+			PropertyDbl pDbl1("Test_Infinity",SimTK::Infinity);
+			pDbl1.setComment("Comment on a Double Infinity");
+			_propertySet.append(pDbl1.copy());
+
+			// Dbl
+			PropertyDbl pDbl2("Test_MinusInfinity",-SimTK::Infinity);
+			pDbl2.setComment("Comment on a Double");
+			_propertySet.append(pDbl2.copy());
+
+			// Dbl
+			PropertyDbl pDbl3("Test_Dbl",1.23456);
+			pDbl3.setComment("Comment on a Double");
+			_propertySet.append(pDbl3.copy());
+
+			// Dbl
+			PropertyDbl pDbl4("Test_NaN",SimTK::NaN);
+			pDbl4.setComment("Comment on a Double");
+			_propertySet.append(pDbl4.copy());
 
 			// Str
 			PropertyStr pStr("Test_Str","ABC");

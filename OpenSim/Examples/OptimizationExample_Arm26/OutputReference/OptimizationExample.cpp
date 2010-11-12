@@ -171,7 +171,7 @@ int main()
 			OpenSim::Muscle* mus = dynamic_cast<Muscle*>(act);
 			mus->setDefaultActivation(0.5);
 			mus->setDefaultFiberLength(0.1);
-			mus->initState(si);
+			//mus->initState(si);
 		}
 	
 		// Make sure the muscles states are in equilibrium

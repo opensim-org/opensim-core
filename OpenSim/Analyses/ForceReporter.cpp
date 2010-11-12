@@ -34,21 +34,12 @@
 #include <iostream>
 #include <string>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include "ForceReporter.h"
-
-
-
 
 using namespace OpenSim;
 using namespace std;
-
-
-//=============================================================================
-// CONSTANTS
-//=============================================================================
-
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -67,9 +58,9 @@ ForceReporter::~ForceReporter()
  *
  * @param aModel Model for which the Forces are to be recorded.
  */
-ForceReporter::ForceReporter(Model *aModel) :
-	Analysis(aModel),
-	_forceStore(1000,"ModelForces")
+ForceReporter::ForceReporter(Model *aModel) : 	Analysis(aModel),
+	_forceStore(1000,"ModelForces"),
+	_includeConstraintForces(_includeConstraintForcesProp.getValueBool())
 {
 	// NULL
 	setNull();
@@ -82,10 +73,6 @@ ForceReporter::ForceReporter(Model *aModel) :
 
 	// CHECK MODEL
 	if(_model==NULL) return;
-
-	// NUMBER OF ACTUATORS
-	_na = _model->getForceSet().getSize();
-	if(_na<=0) return;
 }
 //_____________________________________________________________________________
 /**
@@ -96,9 +83,9 @@ ForceReporter::ForceReporter(Model *aModel) :
  *
  * @param aFileName File name of the document.
  */
-ForceReporter::ForceReporter(const std::string &aFileName):
-Analysis(aFileName, false),
-_forceStore(1000,"ModelForces")
+ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, false),
+	_forceStore(1000,"ModelForces"),
+	_includeConstraintForces(_includeConstraintForcesProp.getValueBool())
 {
 	setNull();
 
@@ -119,8 +106,9 @@ _forceStore(1000,"ModelForces")
  *
  */
 ForceReporter::ForceReporter(const ForceReporter &aForceReporter):
-Analysis(aForceReporter),
-_forceStore(aForceReporter._forceStore)
+	Analysis(aForceReporter),
+	_forceStore(aForceReporter._forceStore),
+	_includeConstraintForces(_includeConstraintForcesProp.getValueBool())
 {
 	setNull();
 	// COPY TYPE AND NAME
@@ -145,16 +133,20 @@ Object* ForceReporter::copy() const
 /**
  * Set NULL values for all member variables.
  */
-void ForceReporter::
-setNull()
+void ForceReporter::setNull()
 {
 	// TYPE
 	setType("ForceReporter");
 	// NAME
 	setName("ForceReporter");
 
-	_na = 0;
+	_includeConstraintForcesProp.setComment("Flag indicating whether to include forces due to constraints.");
+	_includeConstraintForcesProp.setName("include_constraint_forces");
+	_includeConstraintForcesProp.setValue(false);
+	_propertySet.append( &_includeConstraintForcesProp );
 }
+
+
 //--------------------------------------------------------------------------
 // OPERATORS
 //--------------------------------------------------------------------------
@@ -167,10 +159,7 @@ ForceReporter& ForceReporter::operator=(const ForceReporter &aForceReporter)
 	deleteStorage();
 	allocateStorage();
 
-	// CHECK MODEL
-	//if(_model!=NULL) {
-		//constructColumnLabels();
-	//}
+	_includeConstraintForces = aForceReporter._includeConstraintForces;
 
 	return (*this);
 }
@@ -182,21 +171,13 @@ void ForceReporter::setModel(Model& aModel)
 {
 	// BASE CLASS
 	Analysis::setModel(aModel);
-
-	if (_model)
-		_na = _model->getForceSet().getSize();
-	else
-		_na = 0;
-
-	if(_na<=0) return;
-
 }
+
 //_____________________________________________________________________________
 /**
  * Allocate storage for the forces.
  */
-void ForceReporter::
-allocateStorage()
+void ForceReporter::allocateStorage()
 {
 	// ACCELERATIONS
 	_forceStore.setDescription(getDescription());
@@ -212,8 +193,7 @@ allocateStorage()
 /**
  * Construct the description for the ForceReporter files.
  */
-void ForceReporter::
-constructDescription()
+void ForceReporter::constructDescription()
 {
 	char descrip[1024];
 
@@ -241,8 +221,7 @@ constructDescription()
 /**
  * Construct the column labels for the ForceReporter storage files.
  */
-void ForceReporter::
-constructColumnLabels()
+void ForceReporter::constructColumnLabels()
 {
 	if (_model)
 	{
@@ -257,6 +236,15 @@ constructColumnLabels()
 			// If prescribed force we need to record point, 
 			columnLabels.append(forceLabels);
 		}
+		if(_includeConstraintForces){
+			int nc=_model->getConstraintSet().getSize();
+			for(int i=0;i<nc;i++) {
+				// Ask constraint how many columns and their names it reports
+				Array<string> forceLabels = _model->getConstraintSet().get(i).getRecordLabels();
+				// If prescribed force we need to record point, 
+				columnLabels.append(forceLabels);
+			}
+		}
 		_forceStore.setColumnLabels(columnLabels);
 	}
 }
@@ -269,8 +257,7 @@ constructColumnLabels()
 /**
  * Delete storage objects.
  */
-void ForceReporter::
-deleteStorage()
+void ForceReporter::deleteStorage()
 {
 	//if(_forceStore!=NULL) { delete _forceStore;  _forceStore=NULL; }
 }
@@ -282,25 +269,37 @@ deleteStorage()
 /**
  * Record the ForceReporter quantities.
  */
-int ForceReporter::
-record(const SimTK::State& s)
+int ForceReporter::record(const SimTK::State& s)
 {
- 
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL ForceReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
 
-	// NUMBER OF ACTUATORS
+	StateVector nextRow = StateVector(s.getTime());
+
+	// NUMBER OF Forces
 	const ForceSet& forces = _model->getForceSet(); // This does not contain gravity
 	int nf = forces.getSize();
-	StateVector nextRow = StateVector(s.getTime());
+
 	for(int i=0;i<nf;i++) {
 		// If body force we need to record six values for torque+force
 		// If muscle we record one scalar
 		OpenSim::Force& nextForce = (OpenSim::Force&)forces[i];
 		Array<double> values = nextForce.getRecordValues(s);
 		nextRow.getData().append(values);
+	}
+
+	if(_includeConstraintForces){
+		// NUMBER OF Constraints
+		const ConstraintSet& constraints = _model->getConstraintSet(); // This does not contain gravity
+		int nc = constraints.getSize();
+
+		for(int i=0;i<nc;i++) {
+			OpenSim::Constraint& nextConstraint = (OpenSim::Constraint&)constraints[i];
+			Array<double> values = nextConstraint.getRecordValues(s);
+			nextRow.getData().append(values);
+		}
 	}
 	_forceStore.append(nextRow);
 
@@ -326,7 +325,7 @@ begin(SimTK::State& s)
 {
 	if(!proceed()) return(0);
 
-	tidyFroceNames();
+	tidyForceNames();
 	// LABELS
 	constructColumnLabels();
 	// RESET STORAGE
@@ -426,8 +425,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 }
 
 
-void ForceReporter::
-tidyFroceNames()
+void ForceReporter::tidyForceNames()
 {
 	OpenSim::Array<string> forceNames("");
 	const ForceSet& forces = _model->getForceSet(); // This does not contain gravity

@@ -151,20 +151,8 @@ void EllipsoidJoint::setupProperties()
  */
 void EllipsoidJoint::setup(Model& aModel)
 {
-	string errorMessage;
-
 	// Base class
 	Joint::setup(aModel);
-
-	// Look up the parent and child bodies by name in the
-	// dynamics engine and store pointers to them.
-    try {
-    	_parentBody = &aModel.updBodySet().get(_parentName);
-    }
-	catch (...) {
-		errorMessage += "Invalid parent body (" + _parentName + ") specified in joint " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
 }
 
 //=============================================================================

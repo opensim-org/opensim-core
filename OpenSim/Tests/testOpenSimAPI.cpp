@@ -46,8 +46,9 @@ using namespace SimTK;
 /**
  * Run a simulation of block sliding with contact on by two muscles sliding with contact 
  */
-int main()
+int main(int argc,char **argv)
 {
+	bool waitForUserInput = (argc<2);
 	try {
 		const clock_t start = clock();
 
@@ -222,9 +223,9 @@ int main()
 		Array<double> slopeAndIntercept1(0.0, 2);  // array of 2 doubles
 		Array<double> slopeAndIntercept2(0.0, 2);
 		// muscle1 control has slope of -1 starting 1 at t = 0
-		slopeAndIntercept1[0] = -1.0;  slopeAndIntercept1[1] = 1.0;
+		slopeAndIntercept1[0] = -1.0/(finalTime-initialTime);  slopeAndIntercept1[1] = 1.0;
 		// muscle2 control has slope of 1 starting 0.05 at t = 0
-		slopeAndIntercept2[0] = 1.0;  slopeAndIntercept2[1] = 0.05;
+		slopeAndIntercept2[0] = 1.0/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
 		
 		// Set the indiviudal muscle control functions for the prescribed muscle controller
 		muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
@@ -310,18 +311,18 @@ int main()
     {
         std::cout << ex.what() << std::endl;
 		std::cout << "press any key to continue..." << std::endl;
-		getchar();
+		if (waitForUserInput) getchar();
         return 1;
     }
     catch (...)
     {
         std::cout << "UNRECOGNIZED EXCEPTION" << std::endl;
  		std::cout << "press any key to continue..." << std::endl;
-		getchar();
+		if (waitForUserInput) getchar();
        return 1;
     }
 
 	std::cout << "press any key to continue..." << std::endl;
-	getchar();
+	if (waitForUserInput) getchar();
 	return 0;
 }

@@ -36,6 +36,7 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "Property.h"
+#include "PropertyDblArray.h"
 #include "SimTKcommon.h"
 
 //=============================================================================
@@ -50,7 +51,7 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PropertyTransform : public Property
+class OSIMCOMMON_API PropertyTransform : public PropertyDblArray
 {
 
 //=============================================================================
@@ -97,10 +98,12 @@ public:
 #endif
 	virtual void setValue(int aSize,const double aArray[]);
 	void getRotationsAndTranslationsAsArray6(double aArray[]) const;
+/*
+	virtual void setValue(const Array<double> &aArray) const{
+		setValue(6, &aArray[0]);
+	};*/
 	// VALUE as String
 	virtual const std::string &toString();
-	// SIZE
-	virtual int getArraySize() const { return 6; }
 
 
 //=============================================================================

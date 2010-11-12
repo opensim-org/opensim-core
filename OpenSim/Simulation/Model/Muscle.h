@@ -147,6 +147,7 @@ public:
 	virtual double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
 	virtual double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
 	virtual double getMaxIsometricForce() const;
+	virtual double getTendonForce(const SimTK::State& s) const = 0;
 	virtual double getActivation(const SimTK::State& s) const = 0;
     virtual void setActivation(SimTK::State& s, double activation) const = 0;
     virtual double getExcitation( const SimTK::State& s) const;

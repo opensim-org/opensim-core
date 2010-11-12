@@ -36,32 +36,27 @@ FOREACH(TEST_PROG ${TEST_PROGS})
     # Link with shared library
     ADD_EXECUTABLE(${TEST_ROOT} ${TEST_PROG})
     TARGET_LINK_LIBRARIES(${TEST_ROOT} ${LINK_LIBRARIES})
-##
-##  NOT ADDING IT AS A TEST SINCE WE WANT USER TO HIT A KEY TO EXIT
-#
-#    ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT})
+	ADD_TEST(${TEST_ROOT} ${EXECUTABLE_OUTPUT_PATH}/${TEST_ROOT} 1)
     SET_TARGET_PROPERTIES(${TEST_ROOT} 
 		PROPERTIES 
 		PROJECT_LABEL "Tests - ${TEST_ROOT}")
-	# MESSAGE( "Adding test "${TEST_PROG} )
 
 ENDFOREACH(TEST_PROG ${TEST_PROGS})
 
 # Also need to copy data files (.osim, .xml, .sto, .trc, .mot) to run directory
-# FILE(GLOB TEST_FILES *.osim *.obj)
+FILE(GLOB TEST_FILES *.osim *.obj *.vtp *.xml *.sto *.mot)
 #
 # Copy files to run dir
 #
-# FOREACH (dataFile ${TEST_FILES})
-#  ADD_CUSTOM_COMMAND(
-#     TARGET testOpenSimAPI
-#     COMMAND ${CMAKE_COMMAND}
-#     ARGS -E copy
-#     ${dataFile}
-#     ${OpenSim_BINARY_DIR}/OpenSim/Tests)
-# 
-#  INSTALL_FILES(/sdk/testInstall FILES ${dataFile})
-# ENDFOREACH (dataFile) 
+FOREACH (dataFile ${TEST_FILES})
+  ADD_CUSTOM_COMMAND(
+     TARGET testOpenSimAPI
+     COMMAND ${CMAKE_COMMAND}
+     ARGS -E copy
+     ${dataFile}
+     ${OpenSim_BINARY_DIR}/OpenSim/Tests)
+ 
+ENDFOREACH (dataFile) 
 
 INSTALL_TARGETS(/bin testOpenSimAPI)
 

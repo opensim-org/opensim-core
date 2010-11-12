@@ -204,6 +204,8 @@ public:
 	AbstractTool(const AbstractTool &aObject);
 	//Object* copy() const;
 
+	OPENSIM_DECLARE_DERIVED(AbstractTool, Object);
+
 private:
 	// Keep pointers to analyses being added to model so that they can be removed later
 	AnalysisSet _analysisCopies;	 

@@ -55,6 +55,8 @@ using namespace SimTK;
  * @param aNY Number of states.
  */
 Actuator::Actuator() : Force(),
+	_minControl(_propMinControl.getValueDbl()),
+	_maxControl(_propMaxControl.getValueDbl()),
 	_controlSuffixes(""),
     _subsystemIndex(SimTK::InvalidIndex),
     _numStateVariables(0),
@@ -73,6 +75,8 @@ Actuator::Actuator() : Force(),
  */
 Actuator::Actuator(const Actuator &aAct) :
 	Force(aAct),
+	_minControl(_propMinControl.getValueDbl()),
+	_maxControl(_propMaxControl.getValueDbl()),
 	_controlSuffixes(""),
     _subsystemIndex(SimTK::InvalidIndex),
     _numStateVariables(0),
@@ -107,10 +111,32 @@ setNull()
 {
 	setType("Actuator");
 	_model=NULL;
+	setupProperties();
 }
 
+/**
+ * Set up the serializable member variables.  This involves generating
+ * properties and connecting local variables to those properties.
+ */
+void Actuator::
+setupProperties()
+{
+	_propMinControl.setComment("Minimum allowed value for control signal. Used primarily when solving for control values");
+	_propMinControl.setName("min_control");
+	_propMinControl.setValue(-SimTK::Infinity);
+	_propertySet.append( &_propMinControl );
+	
+	_propMaxControl.setComment("Maximum allowed value for control signal. Used primarily when solving for control values");
+	_propMaxControl.setName("max_control");
+	_propMaxControl.setValue(SimTK::Infinity);
+	_propertySet.append( &_propMaxControl );
+	
+}
 
-
+void Actuator::updateFromXMLNode()
+{
+	Force::updateFromXMLNode();
+}
 //_____________________________________________________________________________
 /**
  * Perform set up functions after model has been deserialized or copied.
@@ -217,6 +243,9 @@ operator=(const Actuator &aAct)
 	//  this object; it is safe to  copy the suffixes, though possibly unnecessary (since they will be set in 
 	//  the object's setNull() before we copy into it).
 	_controlSuffixes = aAct._controlSuffixes;
+
+	_minControl=aAct._minControl;
+	_maxControl=aAct._maxControl;
 
 	return(*this);
 }

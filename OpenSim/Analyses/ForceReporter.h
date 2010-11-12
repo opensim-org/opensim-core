@@ -66,8 +66,11 @@ class OSIMANALYSES_API ForceReporter : public Analysis
 private:
 
 protected:
-	/** Number of actuators. */
-	int _na;
+
+	/** Include constraint forces? */
+	PropertyBool _includeConstraintForcesProp;
+	bool &_includeConstraintForces;
+
 	/** Force storage. */
 	Storage _forceStore;
 
@@ -87,7 +90,7 @@ private:
 	void constructColumnLabels();
 	void allocateStorage();
 	void deleteStorage();
-	void tidyFroceNames();
+	void tidyForceNames();
 
 public:
 	//--------------------------------------------------------------------------
@@ -115,6 +118,8 @@ public:
 	//--------------------------------------------------------------------------
 	// ANALYSIS
 	//--------------------------------------------------------------------------
+	void includeConstraintForces(bool flag) {_includeConstraintForces = flag;}
+
 #ifndef SWIG
 	virtual int
         begin(SimTK::State& s );

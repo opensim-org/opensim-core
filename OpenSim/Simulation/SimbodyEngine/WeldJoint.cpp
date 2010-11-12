@@ -143,17 +143,8 @@ void WeldJoint::setupProperties()
  */
 void WeldJoint::setup(Model& aModel)
 {
-	string errorMessage;
-
 	// Base class
 	Joint::setup(aModel);
-
-	// Look up the parent and child bodies by name in the
-	if (!aModel.updBodySet().contains(_parentName)) {
-		errorMessage += "Invalid parent body (" + _parentName + ") specified in joint " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
-	_parentBody = &aModel.updBodySet().get(_parentName);
 }
 
 //=============================================================================

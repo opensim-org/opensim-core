@@ -501,6 +501,10 @@ setPrintResultFiles(bool aToWrite)
  */
 bool AnalyzeTool::run()
 {
+	return run(false);
+}
+bool AnalyzeTool::run(bool plotting)
+{
 	//cout<<"Running analyze tool "<<getName()<<"."<<endl;
 
 	// CHECK FOR A MODEL
@@ -517,7 +521,8 @@ bool AnalyzeTool::run()
                                      *_model);
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
-	SimTK::State& s = (getToolOwnsModel())? _model->initSystem(): _model->updMultibodySystem().updDefaultState();
+	// Call initSystem except when plotting
+	SimTK::State& s = (getToolOwnsModel() || !plotting)? _model->initSystem(): _model->updMultibodySystem().updDefaultState();
     _model->getMultibodySystem().realize(s, SimTK::Stage::Position );
 //printf("after AnalyzeTool.run() initSystem \n\n");
 

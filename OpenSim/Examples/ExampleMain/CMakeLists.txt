@@ -13,7 +13,7 @@ SET(SOURCE_FILES ${TARGET}.cpp)
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
       CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
 
-SET(OPENSIM_INSTALL_DIR "C:/Program Files/OpenSim 2.1" 
+SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.2" 
 		CACHE PATH "Top-level directory of OpenSim install")
 
 # Location of headers
@@ -55,8 +55,8 @@ LINK_LIBRARIES(
 ADD_EXECUTABLE(${TARGET}  ${SOURCE_FILES}) 
 
 #IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}
-			CACHE STRING "Install path prefix." FORCE)
+#	SET(CMAKE_INSTALL_PREFIX ${EXECUTABLE_OUTPUT_PATH}
+#			CACHE STRING "Install path prefix." FORCE)
 #ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
@@ -65,5 +65,20 @@ SET_TARGET_PROPERTIES(
 	${TARGET} PROPERTIES
 	PROJECT_LABEL "Example Main")
 
-INSTALL_TARGETS(/bin ${TARGET})
+#INSTALL_TARGETS(/bin ${TARGET})
 
+
+#
+# Copy files to run dir
+#
+FILE(GLOB DATA_FILES *.vtp *.obj)
+ADD_CUSTOM_TARGET(copyRequiredFiles)
+ADD_DEPENDENCIES(${TARGET} copyRequiredFiles)
+FOREACH (dataFile ${DATA_FILES})
+ ADD_CUSTOM_COMMAND(
+    TARGET copyRequiredFiles
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy
+    ${dataFile}
+    ${OpenSimTugOfWar_BINARY_DIR})
+ ENDFOREACH (dataFile) 

@@ -756,6 +756,17 @@ public:
 	 */
 	const std::string& getValidationLog() { return _validationLog; };
 	void clearValidationLog() { _validationLog = ""; };
+
+	/**
+	 * Utility to get a reference to an Object based on its name and type
+	 * throws an exception if the object was not found.
+	 * names are case sensitive
+	 * @param typeString the type of object being looked up (Body, Force, Constraint, Coordinate, Joint, Marker, Controller)
+	 * @param nameString the name of the object being looked up
+	 * @return reference to the object if found or throws an exception.
+	 */
+	const Object& getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) SWIG_DECLARE_EXCEPTION;
+
 //=============================================================================
 };	// END of class Model
 //=============================================================================

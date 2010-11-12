@@ -579,10 +579,10 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
 	// To get the forces to be applied in the correct location, this file
 	// should be from the IK solution, not from pass 2 of rra which alters
 	// the kinematics.
-	if(aExternalLoadsModelKinematicsFileName=="") {
+	/*if(aExternalLoadsModelKinematicsFileName=="") {
 		cout<<"\n\nERROR- a external loads kinematics file was not specified.\n\n";
 		return false;
-	}
+	}*/
     return(true);
 
 }
@@ -596,43 +596,41 @@ initializeExternalLoads( SimTK::State& s,
 					     const string &aExternalLoadsModelKinematicsFileName,
 					  	 double aLowpassCutoffFrequencyForLoadKinematics)
 {
-	cout<<"\n\nLoading external loads kinematics from file "<<aExternalLoadsModelKinematicsFileName<<" ...\n";
-	Storage loadsKinStore(aExternalLoadsModelKinematicsFileName);
-
-	// Form complete storage objects for the q's and u's
-	// This means filling in unspecified generalized coordinates and
-	// setting constrained coordinates to their valid values.
+	bool externalLoadKinematicsSpecified = (aExternalLoadsModelKinematicsFileName!="");
 	Storage *qStore=NULL;
-	Storage *uStoreTmp=NULL;
-	aModel.getSimbodyEngine().formCompleteStorages(s, loadsKinStore,qStore,uStoreTmp);
-	aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
-	// Filter
-	qStore->pad(qStore->getSize()/2); 
-	if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
-		int order = 50;
-		cout<<"Low-pass filtering external load kinematics with a cutoff frequency of "
-		    <<aLowpassCutoffFrequencyForLoadKinematics<<"..."<<endl;
-		qStore->lowpassFIR(order, aLowpassCutoffFrequencyForLoadKinematics);
-	} else {
-		cout<<"Note- not filtering the external loads model kinematics."<<endl;
-	}
-	// Spline
-	GCVSplineSet qSet(3,qStore);
-	Storage *uStore = qSet.constructStorage(1);
+	Storage *uStore=NULL;
+	if (externalLoadKinematicsSpecified){
+		cout<<"\n\nLoading external loads kinematics from file "<<aExternalLoadsModelKinematicsFileName<<" ...\n";
+		Storage loadsKinStore(aExternalLoadsModelKinematicsFileName);
 
+		// Form complete storage objects for the q's and u's
+		// This means filling in unspecified generalized coordinates and
+		// setting constrained coordinates to their valid values.
+		Storage *uStoreTmp=NULL;
+		aModel.getSimbodyEngine().formCompleteStorages(s, loadsKinStore,qStore,uStoreTmp);
+		aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
+		// Filter
+		qStore->pad(qStore->getSize()/2); 
+		if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
+			int order = 50;
+			cout<<"Low-pass filtering external load kinematics with a cutoff frequency of "
+				<<aLowpassCutoffFrequencyForLoadKinematics<<"..."<<endl;
+			qStore->lowpassFIR(order, aLowpassCutoffFrequencyForLoadKinematics);
+		} else {
+			cout<<"Note- not filtering the external loads model kinematics."<<endl;
+		}
+		// Spline
+		GCVSplineSet qSet(3,qStore);
+		uStore = qSet.constructStorage(1);
+	}
 	// LOAD COP, FORCE, AND TORQUE
 	Storage kineticsStore(_externalForces.getDataFileName());
-/*
-	if (verifyUniqueComulnLabels(kineticsStore)==false){
-		throw Exception("Datafile:"
-			+_externalForces.getDataFileName()
-			+": has duplicate column headers....Aborting.");
-	}*/
+
 	int copSize = kineticsStore.getSize();
 	if(copSize<=0) return;
 	// Make sure we have data for the requested range
-	if (kineticsStore.getFirstTime() > analysisStartTime || qStore->getFirstTime() > analysisStartTime ||
-		kineticsStore.getLastTime() < analysisFinalTime || qStore->getLastTime() < analysisFinalTime){
+	if (kineticsStore.getFirstTime() > analysisStartTime || 
+		kineticsStore.getLastTime() < analysisFinalTime){
 		char durationString[100];
 		sprintf(durationString, "from t=%lf to t=%lf", analysisStartTime, analysisFinalTime);
 		string msg = "ERR- Requested simulation time  extends outside provided data." + string(durationString);
@@ -643,24 +641,25 @@ initializeExternalLoads( SimTK::State& s,
 	 * rows in qStore, in this case we need to evaluate the ForceApplier and TorqueApplier outside 
 	 * analysis[start, final]time up to the time of the row before analysisStartTime, and the row after analysisFinalTime.
 	 * Adjust analysisStartTime, analysisFinalTime to qStartTime, qFinalTime to account for that */
-	int startIndex = qStore->findIndex(analysisStartTime);
-	double qStartTime, qFinalTime;
-	qStore->getTime(startIndex, qStartTime);
-	int finalIndex = qStore->findIndex(analysisFinalTime);
-	qStore->getTime(finalIndex, qFinalTime);
-	Array<double> analysisBoundTimes;
-	if (qStartTime < analysisStartTime && startIndex >=1){
-		analysisBoundTimes.append(analysisStartTime);
-		//qStore->getTime(startIndex-1, qStartTime); 
-		qStartTime = analysisStartTime;
+	if (externalLoadKinematicsSpecified){
+		int startIndex = qStore->findIndex(analysisStartTime);
+		double qStartTime, qFinalTime;
+		qStore->getTime(startIndex, qStartTime);
+		int finalIndex = qStore->findIndex(analysisFinalTime);
+		qStore->getTime(finalIndex, qFinalTime);
+		Array<double> analysisBoundTimes;
+		if (qStartTime < analysisStartTime && startIndex >=1){
+			analysisBoundTimes.append(analysisStartTime);
+			//qStore->getTime(startIndex-1, qStartTime); 
+			qStartTime = analysisStartTime;
+		}
+		if (qFinalTime < analysisFinalTime && finalIndex < qStore->getSize()-1){
+			analysisBoundTimes.append(analysisFinalTime);
+			//qStore->getTime(finalIndex+1, qFinalTime); 
+			qFinalTime = analysisFinalTime;
+		}
+		qStore->interpolateAt(analysisBoundTimes);
 	}
-	if (qFinalTime < analysisFinalTime && finalIndex < qStore->getSize()-1){
-		analysisBoundTimes.append(analysisFinalTime);
-		//qStore->getTime(finalIndex+1, qFinalTime); 
-		qFinalTime = analysisFinalTime;
-	}
-	qStore->interpolateAt(analysisBoundTimes);
-
 	// Construt point, force and torque functions from file
 	computeFunctions(s, analysisStartTime, analysisFinalTime, kineticsStore, qStore, uStore);
 
@@ -696,15 +695,17 @@ void AbstractTool::computeFunctions(SimTK::State& s,
 	// correct frame. 
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
-	int size = aQStore->getSize();
+	int size = (aQStore!=NULL)?aQStore->getSize():0;
 	int forceSize = kineticsStore.getSize();
 	int startIndex=0;
 	int lastIndex=size;
-	if (startTime!= -SimTK::Infinity){	// Start time was actually specified.
-		startIndex = aQStore->findIndex(startTime); 
-	}
-	if (endTime!= SimTK::Infinity){	// Start time was actually specified.
-		lastIndex = aQStore->findIndex(endTime);
+	if (aQStore != NULL){
+		if (startTime!= -SimTK::Infinity){	// Start time was actually specified.
+			startIndex = aQStore->findIndex(startTime); 
+		}
+		if (endTime!= SimTK::Infinity){	// Start time was actually specified.
+			lastIndex = aQStore->findIndex(endTime);
+		}
 	}
 	// Cycle thru forces to check if xform is needed
 	for(int f=0; f <_externalForces.getSize(); f++){
@@ -743,24 +744,28 @@ void AbstractTool::computeFunctions(SimTK::State& s,
 					kineticsStore.getDataColumn(ffSet[1].getName(),y);
 					kineticsStore.getDataColumn(ffSet[2].getName(),z);
 					aGlobal = new VectorGCVSplineR1R3(3,forceSize,t,x,y,z);
-					for(int i=startIndex;i<lastIndex;i++) {
-						// Set the model state
-						aQStore->getTime(i,*(&localt[0]));
-						aQStore->getData(i,nq,&localy[0]);
-						aUStore->getData(i,nu,&localy[nq]);
-						for (int j = 0; j < nq; j++) {
-							Coordinate& coord = _model->getCoordinateSet().get(j);
-							coord.setValue(s, localy[j], j==nq-1);
-							coord.setSpeedValue(s, localy[nq+j]);
-						}
+					if (aQStore!= NULL){	// Kinematics specified
+						for(int i=startIndex;i<lastIndex;i++) {
+							// Set the model state
+							aQStore->getTime(i,*(&localt[0]));
+							aQStore->getData(i,nq,&localy[0]);
+							aUStore->getData(i,nu,&localy[nq]);
+							for (int j = 0; j < nq; j++) {
+								Coordinate& coord = _model->getCoordinateSet().get(j);
+								coord.setValue(s, localy[j], j==nq-1);
+								coord.setSpeedValue(s, localy[nq+j]);
+							}
 
-						// Position in local frame (i.e. with respect to body's origin, not center of mass)
-						_model->getSimbodyEngine().getPosition(s,pf->getBody(),origin,originGlobal);
-						aGlobal->calcValue(&localt[0],&pGlobal[0], localt.getSize());
-						pLocal=pGlobal-originGlobal; 
-						_model->getSimbodyEngine().transform(s,_model->getSimbodyEngine().getGroundBody(),&pLocal[0],pf->getBody(),&pLocal[0]);
-						pStore.append(localt[0],3,&pLocal[0]);
+							// Position in local frame (i.e. with respect to body's origin, not center of mass)
+							_model->getSimbodyEngine().getPosition(s,pf->getBody(),origin,originGlobal);
+							aGlobal->calcValue(&localt[0],&pGlobal[0], localt.getSize());
+							pLocal=pGlobal-originGlobal; 
+							_model->getSimbodyEngine().transform(s,_model->getSimbodyEngine().getGroundBody(),&pLocal[0],pf->getBody(),&pLocal[0]);
+							pStore.append(localt[0],3,&pLocal[0]);
+						}
 					}
+					else
+						pStore = kineticsStore;
 					// CREATE POSITION FUNCTION
 					double *time=NULL;
 					double *p0=0,*p1=0,*p2=0;

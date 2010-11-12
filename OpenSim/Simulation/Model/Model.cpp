@@ -942,8 +942,10 @@ void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) c
 }
 void Model::setStateValues(SimTK::State& s, double* aStateValues) const
 {
+	const SimTK::Stage& currentStage=s.getSystemStage();
 	for(int i=0; i< _stateYIndices.getSize(); i++) // initialize to NaN
 			s.updY()[_stateYIndices[i]]=aStateValues[i]; 
+	 _system->realize(s, currentStage );
 }
 //=============================================================================
 // INITIAL STATES
@@ -1031,6 +1033,7 @@ computeEquilibriumForAuxiliaryStates( SimTK::State& s)
 
     _system->realize(s, SimTK::Stage::Velocity );
 
+	//s.getY().dump("y");
 	// COMPUTE EQUILIBRIUM STATES
 	_forceSet.computeEquilibrium(s);
 
@@ -1589,4 +1592,24 @@ int Model::getNumStateVariables() const
 		numStateVariables += _modelComponents.get(i)->getNumStateVariables();
 	
 	return numStateVariables;
+}
+
+const Object& Model::getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) {
+    if (typeString=="Body") 
+        return getBodySet().get(nameString);
+    else if (typeString=="Force") 
+        return getForceSet().get(nameString);
+    else if (typeString=="Constraint")
+        return getConstraintSet().get(nameString);
+    else if (typeString=="Coordinate") 
+        return getCoordinateSet().get(nameString);
+	else if (typeString=="Marker") 
+        return getMarkerSet().get(nameString);
+	else if (typeString=="Controller") 
+        return getControllerSet().get(nameString);
+	else if (typeString=="Joint") 
+        return getJointSet().get(nameString);
+	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
+		" and name "+nameString+" was found in the model.");
+
 }

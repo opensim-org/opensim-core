@@ -129,7 +129,9 @@ double getRestLength() const { return _restLength; };
 ** then uses the difference between it's current length and rest length to determine
 ** the force magnitude, then applies the force at the application points, in the
 ** direction between them. */
-void computeForce(const SimTK::State& s) const
+void computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const
 {
 	// make sure the model and bodies are instantiated
 	if (_model==NULL) return;
@@ -173,8 +175,8 @@ void computeForce(const SimTK::State& s) const
 	SimTK::Vec3 force = forceMagnitude*direction;
 
 	// appy equal and opposite forces to the bodies
-	applyForceToPoint(*_bodyA, _pointA, force);
-	applyForceToPoint(*_bodyB, _pointB, -force);
+	applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
+	applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
 }
 
 //=============================================================================

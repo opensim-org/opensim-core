@@ -2036,6 +2036,7 @@ integrate(double aTI,double aTF) const
 void Storage::
 pad(int aPadSize)
 {
+	if (aPadSize==0) return; //Nothing to do
 	// PAD THE TIME COLUMN
 	Array<double> paddedTime;
 	int size = getTimeColumn(paddedTime);
@@ -2423,6 +2424,7 @@ setOutputFileName(const std::string& aFileName)
 	// WRITE THE HEADER
 	int n=0,nTotal=0;
 	n = writeHeader(_fp);
+	n = writeDescription(_fp);
 	// WRITE THE COLUMN LABELS
 	n = writeColumnLabels(_fp);
 }
@@ -2523,6 +2525,7 @@ print(const string &aFileName,double aDT,const string &aMode) const
 	// CHECK FOR VALID DT
 	if(aDT<=0) return(0);
 
+	if (_fp!= NULL) fclose(_fp);
 	// OPEN THE FILE
 	FILE *fp = IO::OpenFile(aFileName,aMode);
 	if(fp==NULL) return(-1);

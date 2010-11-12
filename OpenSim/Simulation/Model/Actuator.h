@@ -90,6 +90,13 @@ protected:
  
 	StateFunction* _overrideForceFunction;
 
+	 /** Bounds on control of this actuator. */
+	 PropertyDbl _propMinControl;
+	 PropertyDbl _propMaxControl;
+	// REFERENCES
+	double& _minControl;
+	double& _maxControl;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -102,7 +109,23 @@ public:
 	virtual ~Actuator();
 	virtual Object* copy() const = 0;
 	virtual void copyPropertyValues(Actuator& aActuator) { }
+	/** Override of the default implementation to account for versioning. */
+	virtual void updateFromXMLNode();
 	static void deleteActuator(Actuator* aActuator) { if (aActuator) delete aActuator; }
+
+	// manage bounds on Control
+	void setMinControl(const double& aMinControl) {
+		_minControl=aMinControl;
+	};
+	double getMinControl() const {
+		return _minControl;
+	}
+	void setMaxControl(const double& aMaxControl) {
+		_maxControl=aMaxControl;
+	};
+	double getMaxControl() const {
+		return _maxControl;
+	}
 
 private:
 	void setNull();
@@ -139,7 +162,7 @@ public:
 	//virtual VisibleObject* getDisplayer() const { return NULL; }
 	virtual void updateDisplayer(const SimTK::State& s) { }
 	virtual void replacePropertyFunction(Function* aOldFunction, Function* aNewFunction);
-	OPENSIM_DECLARE_DERIVED(Actuator, Object);
+	OPENSIM_DECLARE_DERIVED(Actuator, Force);
 
 protected:
 	// Update the geometry attached to the actuator. Use inertial frame.
@@ -238,6 +261,9 @@ public:
 
     protected:
     double computeOverrideForce(const SimTK::State& s ) const;
+
+private:
+	void setupProperties();
 //=============================================================================
 };	// END of class Actuator
 //=============================================================================

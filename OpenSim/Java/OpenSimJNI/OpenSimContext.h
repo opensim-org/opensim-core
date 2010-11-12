@@ -98,6 +98,22 @@ public:
 	bool getClamped(const Coordinate& coord);
 	void setLocked(const Coordinate& coord, bool newValue);
 	bool isConstrained(const Coordinate& coord) const;
+	// Constraints
+	bool isDisabled(const Constraint& constraint) const {
+		return  constraint.isDisabled(*_configState);
+	}
+	void setDisabled(Constraint& constraint, bool disable) const {
+		constraint.setDisabled(*_configState, disable);
+		_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+	}
+	// Forces
+	bool isDisabled(const Force& force) const {
+		return  force.isDisabled(*_configState);
+	}
+	void setDisabled(Force& force, bool disable) const {
+		force.setDisabled(*_configState, disable);
+		_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+	}
 	// Muscles
 	double getActivation(Muscle& act);
 	double getMuscleLength(Muscle& act);
@@ -161,6 +177,10 @@ public:
 	void setDefaultsFromState() {	// Sets the defaults in the model from the current state
 		_model->setDefaultsFromState(*_configState);
 	}
+
+	// Force re-realization
+	void realizePosition();
+	void realizeVelocity();
 
 }; // class OpenSimContext
 

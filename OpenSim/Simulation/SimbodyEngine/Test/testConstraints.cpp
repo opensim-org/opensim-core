@@ -43,12 +43,16 @@
 #include <iostream>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
+
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Analyses/PointKinematics.h>
+#include <OpenSim/Analyses/ForceReporter.h>
 
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
@@ -698,6 +702,9 @@ bool testCoordinateCouplerConstraint()
 	CoordinateCouplerConstraint knee_tx_constraint;
 	CoordinateCouplerConstraint knee_ty_constraint;
 
+	knee_tx_constraint.setName("knee_tx_coupler");
+	knee_ty_constraint.setName("knee_ty_coupler");
+
 	knee_tx_constraint.setIndependentCoordinateNames(indepCoords);
 	knee_ty_constraint.setIndependentCoordinateNames(indepCoords);
 
@@ -736,13 +743,22 @@ bool testCoordinateCouplerConstraint()
 	// reconstruct from the model file
 	osimModel = new Model("testCouplerConstraint.osim");
 	
+	ForceReporter *forceReport = new ForceReporter(osimModel);
+	forceReport->includeConstraintForces(true);
+	osimModel->addAnalysis(forceReport);
+
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
 	SimTK::State osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
-	return( compareSimulations(system, state, osimModel, osim_state) );
+	bool result = compareSimulations(system, state, osimModel, osim_state);
+
+	// Forces were held in storage during simulation, now write to file
+	forceReport->printResults("CouplerModelForces");
+
+	return result;
 }
 
 

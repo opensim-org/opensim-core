@@ -82,7 +82,7 @@ void OpenSimContext::setValue(const Coordinate& coord, double d, bool enforceCon
 }
 
 void OpenSimContext::setClamped(const Coordinate&  coord, bool newValue) {
-	SimTK::Stage stg = _configState->getSystemStage();
+	SimTK::Stage stg = _configState->getMultibodySystemStage();
 	coord.setClamped(*_configState, newValue );
  	_model->getMultibodySystem().realize(*_configState, stg);
    return;
@@ -95,7 +95,7 @@ bool OpenSimContext::getClamped(const Coordinate& coord) {
 
 void OpenSimContext::setLocked(const Coordinate& coord, bool newValue) {
 	// This invalidates state back to Model, try to restore by re-realizing
-	SimTK::Stage stg = _configState->getSystemStage();
+	SimTK::Stage stg = _configState->getMultibodySystemStage();
 	coord.setLocked(*_configState, newValue );
 	_model->getMultibodySystem().realize(*_configState, stg);
     return;
@@ -367,4 +367,13 @@ void OpenSimContext::replaceTransformAxisFunction(TransformAxis& aDof, OpenSim::
 	setState(newState);
 }
 
+// Force re-realization
+void OpenSimContext::realizePosition() {
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+
+}
+void OpenSimContext::realizeVelocity() {
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Velocity);
+
+}
 }	// namespace

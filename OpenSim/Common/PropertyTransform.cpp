@@ -52,9 +52,11 @@ using namespace std;
 PropertyTransform::
 PropertyTransform(const string &aName,
 	const SimTK::Transform& aTransform) :
-	Property(Property::Transform,aName),
+PropertyDblArray(aName, OpenSim::Array<double>(0., 6)),
 	_transform(aTransform)
 {
+	setType(Transform);
+	getRotationsAndTranslationsAsArray6(&_array[0]);
 }
 //_____________________________________________________________________________
 /**
@@ -63,8 +65,9 @@ PropertyTransform(const string &aName,
 PropertyTransform::
 PropertyTransform(const string &aName,
 	const Array<double> &aArray) :
-	Property(Property::Transform,aName)
+PropertyDblArray(aName, aArray)
 {
+	setType(Transform);
 	assert(aArray.getSize()==6);
 	_transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
 	_transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
@@ -75,9 +78,9 @@ PropertyTransform(const string &aName,
  */
 PropertyTransform::
 PropertyTransform() :
-	Property(Property::Transform,"TransformPropertyName")
+	PropertyDblArray("TransformPropertyName", OpenSim::Array<double>(0., 6))
 {
-
+	setType(Transform);
 }
 //_____________________________________________________________________________
 /**
@@ -86,7 +89,7 @@ PropertyTransform() :
  * @param aProperty Property to be copied.
  */
 PropertyTransform::PropertyTransform(const PropertyTransform &aProperty) :
-	Property(aProperty)
+	PropertyDblArray(aProperty)
 {
 	_transform = aProperty._transform;
 }
@@ -121,7 +124,7 @@ Property* PropertyTransform::copy() const
 PropertyTransform& PropertyTransform::
 operator=(const PropertyTransform &aProperty)
 {
-	Property::operator =(aProperty);
+	PropertyDblArray::operator =(aProperty);
 	_transform = aProperty._transform;
 	return(*this);
 }
@@ -170,11 +173,13 @@ void PropertyTransform::
 setValue(const SimTK::Transform &aTransform)
 {
 	_transform = aTransform;
+	getRotationsAndTranslationsAsArray6(&_array[0]);
 }
 void PropertyTransform::
 setValue(int aSize,const double aArray[])
 {
 	assert(aSize==6);
+	PropertyDblArray::setValue(aSize, aArray);
 	_transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
 	_transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
 }

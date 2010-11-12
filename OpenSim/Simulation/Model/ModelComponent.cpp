@@ -184,7 +184,7 @@ double ModelComponent::getStateVariable(const SimTK::State &s, int index) const
 	} 
 	else{
 		std::stringstream msg;
-		msg << "ModelComponent::setStateVariable: ERR- index not found.\n " 
+		msg << "ModelComponent::getStateVariable: ERR- index not found.\n " 
 			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 		return SimTK::NaN;

@@ -1173,11 +1173,11 @@ double GeometryPath::calcLengthAfterPathComputation(const SimTK::State& s, const
 }
 //_____________________________________________________________________________
 /**
- * Compute the path's moment arms for all generalized coordinates.
+ * Compute the path's moment arms for  specified coordinate.
  *
- * @param rMomentArms Array of moments arms
+ * @param aCoord, the coordinate
  */
-SimTK::Vector GeometryPath::computeMomentArms(SimTK::State& s)
+double GeometryPath::computeMomentArm(const SimTK::State& s, const Coordinate& aCoord)
 {
 	// Get the underlying geometry of the muscle in terms of individual point
 	// force directions
@@ -1185,28 +1185,12 @@ SimTK::Vector GeometryPath::computeMomentArms(SimTK::State& s)
 	getPointForceDirections(s, &PFDs);
 
 	MomentArmSolver maSolver(*_model);
-	SimTK::Vector mas = maSolver.solve(s, PFDs);
+	double ma = maSolver.solve(s, aCoord, PFDs);
 
 	for(int i=0; i < PFDs.getSize(); i++)
 		delete PFDs[i];
 
-	return mas;
-}
-//_____________________________________________________________________________
-/**
- * Compute the path's moment arm for a given coordinate.
- * @param aCoord Coordinate for which to compute moment arm.
- * @return Moment arm value.
- */
-double GeometryPath::computeMomentArm(SimTK::State& s, Coordinate& aCoord)
-{
-	SimTK::Vector mas = computeMomentArms(s);
-
-	int index = _model->getCoordinateSet().getIndex(&aCoord);
-	if(index < 0)
-		throw Exception("GeometryPath::computeMomentArm(): Coordinate does not exist.");
-
-	return mas[index];
+	return ma;
 }
 
 //_____________________________________________________________________________

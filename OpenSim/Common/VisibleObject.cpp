@@ -258,6 +258,8 @@ VisibleObject& VisibleObject::operator=(const VisibleObject &aObject)
 	_geometrySet = aObject._geometrySet;
 	_scaleFactors = aObject._scaleFactors;
 	_transform = aObject._transform;
+	_showAxes = aObject._showAxes;
+	_displayPreference = aObject._displayPreference;
 	return(*this);
 }
 
@@ -381,6 +383,5 @@ void VisibleObject::updateFromXMLNode()
 			}
 		}
 	}
-	else
-		Object::updateFromXMLNode();
+	Object::updateFromXMLNode();
 }

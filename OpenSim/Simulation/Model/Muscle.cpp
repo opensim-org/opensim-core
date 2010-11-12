@@ -119,6 +119,9 @@ Muscle::Muscle(const Muscle &aMuscle) : Actuator(aMuscle),
 void Muscle::copyData(const Muscle &aMuscle)
 {
 	_path = aMuscle._path;
+	// This should be moved to a base class method for future changes
+	_minControl=aMuscle._minControl;
+	_maxControl=aMuscle._maxControl;
 }
 
 //_____________________________________________________________________________
@@ -129,6 +132,8 @@ void Muscle::setNull()
 {
 	setType("Muscle");
 	_model = NULL;
+	_minControl=0.01;
+	_maxControl=1.0;
 }
 
 //_____________________________________________________________________________
@@ -172,7 +177,7 @@ void Muscle::updateFromXMLNode()
 		}
 	}
 	// Call base class now assuming _node has been corrected for current version
-	Object::updateFromXMLNode();
+	Actuator::updateFromXMLNode();
 }
 
 //_____________________________________________________________________________

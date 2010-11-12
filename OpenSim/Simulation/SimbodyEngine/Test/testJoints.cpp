@@ -377,14 +377,19 @@ bool testCustomVsUniversalPin()
 	kinAnalysis->setInDegrees(false);
 	osimModel.addAnalysis(kinAnalysis);
 
+	osimModel.disownAllComponents();
+	osimModel.print("test_joints_model.osim");
+	
+	Model testModel("test_joints_model.osim");
+
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel.initSystem();
-	osimModel.disownAllComponents();
+	SimTK::State osim_state = testModel.initSystem();
+	
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
-	return (compareSimulations(system, state, &osimModel, osim_state));
+	return (compareSimulations(system, state, &testModel, osim_state));
 
 } //end of testCustomVsUniversalPin
 

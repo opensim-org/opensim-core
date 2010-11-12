@@ -142,9 +142,9 @@ int main()
 		double maxIsometricForce = 1000.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation = 0.0001, deactivation = 1.0;
 		// Create new muscle 1 using the Shutte 1993 muscle model 
 		// Note: activation/deactivation parameters are set differently between the models.
-		Schutte1993Muscle *muscle1 = new Schutte1993Muscle("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-		muscle1->setActivation1(activation);
-		muscle1->setActivation2(deactivation);
+		Thelen2003Muscle *muscle1 = new Thelen2003Muscle("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+		muscle1->setActivationTimeConstant(activation);
+		muscle1->setDeactivationTimeConstant(deactivation);
 		// Create new muscle 2 using the Thelen 2003 muscle model
 		Thelen2003Muscle *muscle2 = new Thelen2003Muscle("muscle2",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 		muscle2->setActivationTimeConstant(activation);
@@ -215,35 +215,26 @@ int main()
 		///////////////////////////////////
 		// DEFINE CONTROLS FOR THE MODEL //
 		///////////////////////////////////
-
-		// Define the initial and final control values for the two muscles
-		double initialControl[2] = {1.0, 0.05};
-		double finalControl[2] = {0.05, 1.0};
-		// Create two new linear control signals
-		ControlLinear *control1 = new ControlLinear();
-		ControlLinear *control2 = new ControlLinear();
-		control1->setName("muscle1"); control2->setName("muscle2");
-		// Create a new control set and add the control signals to the set
-		ControlSet *muscleControls = new ControlSet();
-		muscleControls->append(control1);
-		muscleControls->append(control2);
-		// Specify control values at the initial and final times
-		muscleControls->setControlValues(initialTime, initialControl);
-		muscleControls->setControlValues(finalTime, finalControl);
-
-		muscleControls->print("ControlsForTugOfWar.xml");
-		// Create a new control set controller that applies controls from a ControlSet
-		ControlSetController *muscleController = new ControlSetController();
-		muscleController->setControlSet(muscleControls);
-
-		// Add the control set controller to the model
-		osimModel.addController(muscleController);
+		// Create a prescribed controller that simply applies controls as function of time
+		PrescribedController *muscleController = new PrescribedController();
+		muscleController->setActuators(osimModel.updActuators());
+		// Define linear functions for the control values for the two muscles
+		Array<double> slopeAndIntercept1(0.0, 2);  // array of 2 doubles
+		Array<double> slopeAndIntercept2(0.0, 2);
+		// muscle1 control has slope of -1 starting 1 at t = 0
+		slopeAndIntercept1[0] = -1.0/(finalTime-initialTime);  slopeAndIntercept1[1] = 1.0;
+		// muscle2 control has slope of 1 starting 0.05 at t = 0
+		slopeAndIntercept2[0] = 1.0/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
+		
+		// Set the indiviudal muscle control functions for the prescribed muscle controller
+		muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
+		muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
 
 
 		// Define the default states for the two muscles
 		// Activation
-		muscle1->setDefaultActivation(initialControl[0]);
-		muscle2->setDefaultActivation(initialControl[1]);
+		muscle1->setDefaultActivation(slopeAndIntercept1[1]);
+		muscle2->setDefaultActivation(slopeAndIntercept2[1]);
 		// Fiber length
 		muscle2->setDefaultFiberLength(0.1);
 		muscle1->setDefaultFiberLength(0.1);
@@ -267,8 +258,8 @@ int main()
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
-		integrator.setAccuracy(1.0e-3);
-		integrator.setAbsoluteTolerance(1.0e-3);
+		integrator.setAccuracy(1.0e-4);
+
 		// Create the force reporter
 		ForceReporter* reporter = new ForceReporter(&osimModel);
 		osimModel.addAnalysis(reporter);

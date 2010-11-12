@@ -39,7 +39,7 @@
 #include "Thelen2003Muscle.h"
 #include "Schutte1993Muscle.h"
 #include "Delp1990Muscle.h"
-#include "PassiveJointTorque.h"
+#include "CoordinateLimitForce.h"
 #include "SpringGeneralizedForce.h"
 
 using namespace OpenSim;
@@ -65,7 +65,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( Thelen2003Muscle() );
 	Object::RegisterType( Schutte1993Muscle() );
 	Object::RegisterType( Delp1990Muscle() );
-	Object::RegisterType( PassiveJointTorque() );
+	Object::RegisterType( CoordinateLimitForce() );
 	Object::RegisterType( SpringGeneralizedForce() );
 
 	// OLD Versions
