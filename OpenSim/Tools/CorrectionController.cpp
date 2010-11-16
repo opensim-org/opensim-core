@@ -326,9 +326,6 @@ void CorrectionController::setup(Model& model)
 		}
 			
 		actuator->setOptimalForce(1.0);
-		actuator->setController(this);
-		actuator->setIsControlled(true);
-		actuator->setControlIndex(i);
 		
 		_actuatorSet.append(actuator);
    }

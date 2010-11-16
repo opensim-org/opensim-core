@@ -2,7 +2,7 @@
 #define __MomentArmSolver_h__
 // MomentArmSolver.h
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -32,6 +32,7 @@
 namespace OpenSim {
 
 class PointForceDirection;
+class Coordinate;
 
 //=============================================================================
 //=============================================================================
@@ -62,10 +63,11 @@ public:
 	virtual ~MomentArmSolver() {};
 
 	MomentArmSolver(const Model &model);
-	/** Solve for the effective moment-arm on all generalized coordinates based on
-	    the geometric distribution for forces described by the list of 
+	/** Solve for the effective moment-arm about the specified coordinate based 
+	    on the geometric distribution of forces described by the list of 
 		PointForceDirections. */
-	SimTK::Vector solve(const SimTK::State &s, const Array<PointForceDirection *> &pfds);
+	double solve(const SimTK::State &s, const Coordinate &aCoord, 
+		const Array<PointForceDirection *> &pfds);
 
 private:
 

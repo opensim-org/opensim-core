@@ -274,9 +274,6 @@ void Controller::setActuators( Set<Actuator>& actuators ) {
 
 void Controller::addActuator(Actuator *actuator)
 {
-	actuator->setController(this);
-	actuator->setIsControlled(true);
-	actuator->setControlIndex(_actuatorSet.getSize());
 	_actuatorSet.append(actuator);
 	_actuatorNameList.append(actuator->getName());
 }

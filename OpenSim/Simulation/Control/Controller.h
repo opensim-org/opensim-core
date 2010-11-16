@@ -59,7 +59,6 @@ namespace OpenSim {
 class Model;
 class Manager;
 class Storage;
-class Actuator;
 class ForceSet;
 
 // A Controller is a ModelComponent

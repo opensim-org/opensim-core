@@ -205,11 +205,6 @@ private:
 	void namePathPoints(int aStartingIndex);
     void placeNewPathPoint(const SimTK::State& s, SimTK::Vec3& aOffset, int aIndex, const OpenSim::Body& aBody);
 
-	// TODO: Need a more extensible mechanism for being able to invoke ModelComponent
-	// methods from owning object's methods
-	friend class Muscle;
-	friend class Ligament;
-
 //=============================================================================
 };	// END of class GeometryPath
 //=============================================================================

@@ -388,6 +388,12 @@ int testCoordinateLimitForce()
 	delete osimModel;
 	osimModel = new Model("CoordinateLimitForceTest.osim");
 
+	// check copy
+	Model *copyModel = (Model *)osimModel->copy();
+	delete osimModel;
+
+	osimModel = copyModel;
+
 	// Create the force reporter
 	ForceReporter* reporter = new ForceReporter(osimModel);
 	osimModel->addAnalysis(reporter);
@@ -463,12 +469,15 @@ int main()
 {
 	testSpringMass();
 	cout << "spring passed"  << endl;
+	
 	testBushingForce();
 	cout << "bushing passed"  << endl;
+
 	testElasticFoundation();
 	cout << "elastic foundation force passed"  << endl;
 
 	testCoordinateLimitForce();
+	cout << "coordinate limit force passed"  << endl;
 
 	return 0;
 }

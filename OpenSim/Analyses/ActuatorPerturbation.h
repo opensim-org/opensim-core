@@ -51,7 +51,6 @@
  */
 namespace OpenSim { 
 
-class Actuator;
 class Model;
 
 class OSIMANALYSES_API ActuatorPerturbation : public Object 

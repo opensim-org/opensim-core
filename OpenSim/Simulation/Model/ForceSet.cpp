@@ -468,7 +468,6 @@ check() const
 	for(int i=0;i<size;i++) {
 		act = dynamic_cast<Actuator *>(&get(i));
 		if(!act) continue;
-		if(!act->check()) status = false;
 	}
 
 	return(status);

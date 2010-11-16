@@ -1,26 +1,26 @@
 // GeometryPath.cpp
 // Author: Peter Loan, Ajay Seth
 /*
- * Copyright (c)  2009, Stanford University. All rights reserved.
+ * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
 *     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed
+* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
 *     only through https://simtk.org/home/opensim.
 * 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
 *      presentations, or documents describing work in which OpenSim or derivatives are used.
 * 	4. Credits to developers may not be removed from executables
 *     created from modifications of the source.
 * 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer.
-*
+*     conditions and the following disclaimer. 
+* 
 *  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 *  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
 *  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
 *  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
 *  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -190,7 +190,7 @@ void GeometryPath::setup(Model& aModel) {
 /**
  * Create the SimTK state, dicrete and/or cache for this GeometryPath.
  */
- void GeometryPath::createSystem(SimTK::MultibodySystem& system) const
+ void GeometryPath::createSystem(SimTK::MultibodySystem& system) const 
 {
 	ModelComponent::createSystem(system);
     // Beyond the const Component get the index so we can access the SimTK::Force later
@@ -202,18 +202,18 @@ void GeometryPath::setup(Model& aModel) {
 	// given that the path is dependent on q's only, this variable should be valid at Position
 	mutableThis->addCacheVariable<double>("length", 0.0, SimTK::Stage::Position);
 	Array<PathPoint *> pathPrototype;
-	mutableThis->addCacheVariable<Array<PathPoint *> >("current_path", pathPrototype, SimTK::Stage::Position);
-	mutableThis->addCacheVariable<Array<PathPoint *> >("current_display_path", pathPrototype, SimTK::Stage::Position);
+	mutableThis->addCacheVariable<Array<PathPoint *>>("current_path", pathPrototype, SimTK::Stage::Position);
+	mutableThis->addCacheVariable<Array<PathPoint *>>("current_display_path", pathPrototype, SimTK::Stage::Position);
 }
 
-void GeometryPath::initState(SimTK::State& s) const
+void GeometryPath::initState( SimTK::State& s) const
 {
 	// Beyond the const Component get the index so we can access the SimTK::Force later
 	GeometryPath* mutableThis = const_cast<GeometryPath *>(this);
 
 	// keep track of the length index
 	mutableThis->_lengthIndex = getCacheVariableIndex("length");
-
+	
 	// keep track of the path index
 	mutableThis->_currentPathIndex = getCacheVariableIndex("current_path");
 
@@ -291,17 +291,18 @@ void GeometryPath::namePathPoints(int aStartingIndex)
  * get the current path of the path
  *
  * @return The array of currently active path points.
- *
+ * 
  */
-const OpenSim::Array <PathPoint*> & GeometryPath::
+const OpenSim::Array <PathPoint*> & GeometryPath:: 
 		getCurrentPath(const SimTK::State& s)  const
 {
     compute(s);   // compute checks if path needs to be recomputed
+
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.getCacheEntry( _subsystemIndex, _currentPathIndex)).get() );
 }
 
-OpenSim::Array <PathPoint*> & GeometryPath::
-		updCurrentPath(const SimTK::State& s) const {
+OpenSim::Array <PathPoint*> & GeometryPath:: 
+updCurrentPath(const SimTK::State& s) const {
 
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.updCacheEntry( _subsystemIndex, _currentPathIndex)).upd() );
 }
@@ -321,7 +322,7 @@ void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array
 	const SimbodyEngine& engine = _model->getSimbodyEngine();
 
 	rPFDs->ensureCapacity(np);
-
+	
 	for (i = 0; i < np; i++){
 		PointForceDirection *pfd = new PointForceDirection(currentPath[i]->getLocation(), currentPath[i]->getBody(), Vec3(0));
 		rPFDs->append(pfd);
@@ -345,7 +346,7 @@ void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array
 			// Form a vector from start to end, in the inertial frame.
 			direction = (posEnd - posStart).normalize();
 
-			// Get resultant direction at each point
+			// Get resultant direction at each point 
 			rPFDs->get(i)->addToDirection(direction);
 			rPFDs->get(i+1)->addToDirection(-direction);
 		}
@@ -358,16 +359,16 @@ void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array
  *
  * @return The array of currently active path points, plus points along the
  * surfaces of the wrap objects (if any).
- *
+ * 
  */
-const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimTK::State& s)
+const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimTK::State& s) 
 {
 	// update the geometry to make sure the current display path is up to date.
     updateGeometry(s);
 
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.getCacheEntry( _subsystemIndex, _currentDisplayPathIndex)).get() );
 }
-OpenSim::Array <PathPoint*> & GeometryPath::
+OpenSim::Array <PathPoint*> & GeometryPath:: 
 updCurrentDisplayPath(const SimTK::State& s) const {
 
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.updCacheEntry( _subsystemIndex, _currentDisplayPathIndex)).upd() );
@@ -377,7 +378,7 @@ updCurrentDisplayPath(const SimTK::State& s) const {
 /**
  * updateGeometrySize updates the size of the array of geometry items to be of the
  * correct size based on changes to the path.
- *
+ * 
  */
 void GeometryPath::updateGeometrySize(const SimTK::State& s)
 {
@@ -386,15 +387,15 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s)
 
 	// Track whether we're creating geometry from scratch or
 	// just updating
-	bool update = (numberOfSegements!=0);
+	bool update = (numberOfSegements!=0);  
 	int newNumberOfSegments=currentDisplayPath.getSize()-1;
 	if (newNumberOfSegments <= 0)
 		return;
 	// update geom array to have correct number of entries
-	if (!update || (update && (newNumberOfSegments != numberOfSegements))){
+	if (!update || (update && (newNumberOfSegments != numberOfSegements))){	
 		if (newNumberOfSegments > numberOfSegements){ // add entries
-			for(int segment = numberOfSegements;
-						segment < newNumberOfSegments;
+			for(int segment = numberOfSegements; 
+						segment < newNumberOfSegments; 
 						segment++){
 							Geometry *g = new LineGeometry();
 							g->setFixed(false);
@@ -404,7 +405,7 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s)
 		}
 		else {	// remove entries
 			for(int segment = numberOfSegements-1;
-						segment >= newNumberOfSegments;
+						segment >= newNumberOfSegments; 
 						segment--) // Remove back to front so no array packing is needed
 				_displayer.removeGeometry(_displayer.getGeometry(segment));
 		}
@@ -412,9 +413,9 @@ void GeometryPath::updateGeometrySize(const SimTK::State& s)
 }
 //_____________________________________________________________________________
 /**
- * updateGeometryLocations updates the locations of the array of geometry items
+ * updateGeometryLocations updates the locations of the array of geometry items 
  * to be in the right place based changes to the path.
- *
+ * 
  */
 void GeometryPath::updateGeometryLocations(const SimTK::State& s)
 {
@@ -445,7 +446,7 @@ void GeometryPath::updateGeometryLocations(const SimTK::State& s)
  * The resulting geometry is maintained at the VisibleObject layer.
  * This function should not be made public. It is called internally
  * by compute() only when the path has changed.
- *
+ * 
  */
 void GeometryPath::updateGeometry(const SimTK::State& s)
 {
@@ -454,12 +455,12 @@ void GeometryPath::updateGeometry(const SimTK::State& s)
 
     // if display path is current do not need to recompute it
     if (s.isCacheValueRealized(_subsystemIndex, _currentDisplayPathIndex)) return;
-
+   
     updateDisplayPath(s);
     updateGeometrySize(s);
     updateGeometryLocations(s);
 
-    // mark the currentDisplayPath as current
+    // mark the currentDisplayPath as current 
     s.markCacheValueRealized(_subsystemIndex, _currentDisplayPathIndex);
 }
 
@@ -543,7 +544,7 @@ PathPoint* GeometryPath::addPathPoint(const SimTK::State& s, int aIndex, OpenSim
 	return newPoint;
 }
 
-PathPoint* GeometryPath::appendNewPathPoint(const std::string& proposedName,
+PathPoint* GeometryPath::appendNewPathPoint(const std::string& proposedName, 
 								OpenSim::Body& aBody, const SimTK::Vec3& aPositionOnBody)
 {
 	PathPoint* newPoint = new PathPoint();
@@ -680,7 +681,7 @@ bool GeometryPath::deletePathPoint(const SimTK::State& s, int aIndex)
  *	@param aOldPathPoint Path point to remove.
  *	@param aNewPathPoint Path point to add.
  */
-bool GeometryPath::replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint, PathPoint* aNewPathPoint)
+bool GeometryPath::replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPoint, PathPoint* aNewPathPoint) 
 {
 	if (aOldPathPoint != NULL && aNewPathPoint != NULL) {
 		int count = 0;
@@ -843,6 +844,7 @@ void GeometryPath::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void GeometryPath::compute(const SimTK::State& s) const
 {
+
 	const SimTK::Stage& sg = s.getSystemStage();
 	/*
     if (s.isCacheValueRealized(_subsystemIndex, _currentPathIndex))  {
@@ -861,8 +863,8 @@ void GeometryPath::compute(const SimTK::State& s) const
 		currentPath.append(&_pathPointSet[i]);
 
  	}
-
-	// Use the current path so far to check for intersection
+  
+   // Use the current path so far to check for intersection
 	// with wrap objects, which may add additional points to
 	// the path.
 	applyWrapObjects(s, currentPath);
@@ -875,7 +877,7 @@ void GeometryPath::compute(const SimTK::State& s) const
 /**
  * Apply the wrap objects to the current path.
  */
-void GeometryPath::applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const
+void GeometryPath::applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path) const 
 {
 	if (_pathWrapSet.getSize() < 1)
 		return;
@@ -1078,7 +1080,7 @@ void GeometryPath::applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& pa
          }
       }
 
-		double length = calcLengthAfterPathComputation(s, path);
+		double length = calcLengthAfterPathComputation(s, path); 
 
       if (DABS(length - last_length) < 0.0005)
       {
@@ -1176,14 +1178,14 @@ double GeometryPath::calcLengthAfterPathComputation(const SimTK::State& s, const
  * Compute the path's moment arms for  specified coordinate.
  *
  * @param aCoord, the coordinate
- */
+ */   
 double GeometryPath::computeMomentArm(const SimTK::State& s, const Coordinate& aCoord)
 {
-	// Get the underlying geometry of the muscle in terms of individual point
+	// Get the underlying geometry of the muscle in terms of individual point 
 	// force directions
 	OpenSim::Array<PointForceDirection*> PFDs;
 	getPointForceDirections(s, &PFDs);
-
+	
 	MomentArmSolver maSolver(*_model);
 	double ma = maSolver.solve(s, aCoord, PFDs);
 

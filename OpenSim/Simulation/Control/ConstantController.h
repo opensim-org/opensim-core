@@ -60,7 +60,6 @@
 
 namespace OpenSim { 
 
-class Actuator;
 class ControlSet;
 class Storage;
 

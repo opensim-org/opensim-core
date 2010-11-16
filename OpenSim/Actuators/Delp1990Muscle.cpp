@@ -104,7 +104,6 @@ Delp1990Muscle::Delp1990Muscle(const Delp1990Muscle &aMuscle) :
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
-	setup(aMuscle.getModel());
 }
 
 //_____________________________________________________________________________
@@ -277,19 +276,6 @@ void Delp1990Muscle::setup(Model& aModel)
 		throw Exception("Delp1990Muscle.setup: ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 }
 
-void Delp1990Muscle::equilibrate(SimTK::State& state) const
-{
-	Muscle::equilibrate(state);
-
-	// Reasonable initial activation value
-	setActivation(state, 0.01);
-	setFiberLength(state, getOptimalFiberLength());
-	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-
-	// Compute isometric force to get starting value of fiber length.
-	computeEquilibrium(state);
-}
-
 void Delp1990Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
 	Muscle::createSystem(system);
@@ -297,8 +283,8 @@ void Delp1990Muscle::createSystem(SimTK::MultibodySystem& system) const
 
 	// Cache the computed active and passive muscle force
 	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Dynamics);
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
+	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 }
 
 void Delp1990Muscle::setPassiveForce(const SimTK::State& s, double force ) const {
@@ -401,8 +387,6 @@ Delp1990Muscle& Delp1990Muscle::operator=(const Delp1990Muscle &aMuscle)
 	Muscle::operator=(aMuscle);
 
 	copyData(aMuscle);
-
-	setup(aMuscle.getModel());
 
 	return(*this);
 }

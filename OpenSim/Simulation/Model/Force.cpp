@@ -83,7 +83,7 @@ void Force::copyData(const Force &aForce)
 {
 	//_isDisabled = aForce._isDisabled;
 	_isDisabledProp.setValue(aForce._isDisabledProp.getValueBool());
-	_model = aForce._model;
+
 	// A copy is no longer a live Force with an underlying SimTK::Force
 	// The system must be created, at which time the Force will be assigned an index
 	// corresponding to a valid system SimTK::Force.

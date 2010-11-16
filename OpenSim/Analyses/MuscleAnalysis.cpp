@@ -543,9 +543,12 @@ record(const SimTK::State& s)
 		q = _momentArmStorageArray[i]->q;
 		maStore = _momentArmStorageArray[i]->momentArmStore;
 		mStore = _momentArmStorageArray[i]->momentStore;
-        
+       
 		// Make a writable copy of the state so moment arm can be computed
 		SimTK::State tempState = s;
+
+		bool locked = q->getLocked(tempState);
+
 		_model->getMultibodySystem().realize(tempState, s.getSystemStage() );
 		// LOOP OVER MUSCLES
 		for(int j=0; j<nm; j++) {

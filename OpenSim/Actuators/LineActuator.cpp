@@ -408,8 +408,6 @@ void LineActuator::setup(Model& aModel)
  */
 bool LineActuator::check() const
 {
-	if(!Actuator::check()) return(false);
-
 	// BodyID
 	if( _bodyA != NULL) {
 		printf("LineActuator.check: ERROR- %s actuates ",

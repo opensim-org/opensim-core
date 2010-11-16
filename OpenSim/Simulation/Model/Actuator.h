@@ -2,9 +2,9 @@
 #define __Actuator_h__
 
 // Actuator.h
-// Author: Frank C. Anderson, Peter Loan, Ajay Seth
+// Author: Ajay Seth
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -30,11 +30,10 @@
  */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Function.h>
 #include "Force.h"
-#include "SimTKsimbody.h"
+
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -54,14 +53,13 @@ class Coordinate;
 //=============================================================================
 //=============================================================================
 /**
- * An abstract class for representing an actuator (e.g., a torque motor,
- * muscle, ...).
+ * Base class for an actuator (e.g., a torque motor, muscle, ...) that requires
+ * external input (controls) to generate force.
  *
- * @author Frank C. Anderson
  * @author Ajay Seth
  * @version 2.0
  */
-class OSIMSIMULATION_API Actuator : public Force
+template<int M> class OSIMSIMULATION_API Actuator_ : public Force
 {
 
 //=============================================================================
@@ -73,29 +71,15 @@ protected:
   
     SimTK::SubsystemIndex _subsystemIndex;
     int _numStateVariables;
-
-    // pointer to the controller that computes controls for this acuator and 
-    // the index the controller uses to identify the actuator
-    const Controller* _controller;
-    int _controlIndex;
-    
-    // flag used during intialization to determine if an actator has been assinged a controller yet
-    bool _isControlled;
-
+  
     // indexes in SimTK::State cache
+	SimTK::CacheEntryIndex _controlIndex;
     SimTK::CacheEntryIndex _forceIndex;
     SimTK::CacheEntryIndex _speedIndex;
 
 	SimTK::DiscreteVariableIndex _overrideForceIndex;
  
 	StateFunction* _overrideForceFunction;
-
-	 /** Bounds on control of this actuator. */
-	 PropertyDbl _propMinControl;
-	 PropertyDbl _propMaxControl;
-	// REFERENCES
-	double& _minControl;
-	double& _maxControl;
 
 //=============================================================================
 // METHODS
@@ -104,28 +88,12 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Actuator();
-	Actuator(const Actuator &aActuator);
-	virtual ~Actuator();
+	Actuator_();
+	Actuator_(const Actuator_ &aActuator);
+	virtual ~Actuator_();
 	virtual Object* copy() const = 0;
-	virtual void copyPropertyValues(Actuator& aActuator) { }
-	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
-	static void deleteActuator(Actuator* aActuator) { if (aActuator) delete aActuator; }
+	virtual void copyPropertyValues(Actuator_& aActuator) { }
 
-	// manage bounds on Control
-	void setMinControl(const double& aMinControl) {
-		_minControl=aMinControl;
-	};
-	double getMinControl() const {
-		return _minControl;
-	}
-	void setMaxControl(const double& aMaxControl) {
-		_maxControl=aMaxControl;
-	};
-	double getMaxControl() const {
-		return _maxControl;
-	}
 
 private:
 	void setNull();
@@ -135,7 +103,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Actuator& operator=(const Actuator &aActuator);
+	Actuator_& operator=(const Actuator_ &aActuator);
 #endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
@@ -147,28 +115,18 @@ protected:
 	virtual void initState(SimTK::State& state) const;
 	virtual void setDefaultsFromState(const SimTK::State& state);
 
-public:
-
-	// MODEL
-	Model& getModel() const { return *_model; }
-	// CONTROLS
-	virtual int getControlIndex() const;
-	virtual void setControlIndex(int index);
-	virtual void setController(const Controller*);
-    virtual const Controller& getController() const;
-	virtual double getControl( const SimTK::State& s ) const;
-
-	// Visible Object Support
-	//virtual VisibleObject* getDisplayer() const { return NULL; }
-	virtual void updateDisplayer(const SimTK::State& s) { }
-	virtual void replacePropertyFunction(Function* aOldFunction, Function* aNewFunction);
-	OPENSIM_DECLARE_DERIVED(Actuator, Force);
-
-protected:
 	// Update the geometry attached to the actuator. Use inertial frame.
 	virtual void updateGeometry();
 
 public:
+
+	// CONTROLS
+	virtual const SimTK::Vector& getControls( const SimTK::State& s ) const;
+	virtual double getControl( const SimTK::State& s ) const;
+	virtual void setControls(const SimTK::State &s, const SimTK::Vector& controls) const;
+	virtual void setControl(const SimTK::State &s, double control) const;
+	virtual int getNumControls() const {return M;}  
+
 	virtual void setForce(const SimTK::State& s, double aForce) const; 
     virtual double getForce( const SimTK::State& s) const;
     virtual void setSpeed( const SimTK::State& s, double aspeed) const;
@@ -176,8 +134,6 @@ public:
 	virtual double getPower(const SimTK::State& s) const { return getForce(s)*getSpeed(s); }
 	virtual double getStress(const SimTK::State& s) const;
 	virtual double getOptimalForce() const;
-    virtual void setIsControlled(bool flag) { _isControlled = flag; }
-    virtual bool isControlled() const { return _isControlled; }
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -185,10 +141,6 @@ public:
 	virtual double computeActuation( const SimTK::State& s) const = 0;
 	virtual void computeEquilibrium(SimTK::State& s) const { }
 
-	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	virtual bool check() const { return true; }
 
 	//--------------------------------------------------------------------------
 	// SCALING
@@ -196,7 +148,11 @@ public:
 	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
-    int getNumControls() { return 1; }  // all actuators can have one control
+
+	// Visible Object Support
+	virtual void updateDisplayer(const SimTK::State& s) { }
+	virtual void replacePropertyFunction(Function* aOldFunction, Function* aNewFunction);
+
 
     ///--------------------------------------------------------------------------
     /// Overriding forces
@@ -259,14 +215,71 @@ public:
     */
     void resetOverrideForceFunction();
 
-    protected:
+protected:
     double computeOverrideForce(const SimTK::State& s ) const;
 
+//=============================================================================
+};	// END of class Actuator_<M>
+//=============================================================================
+
+/**
+ * Derived class for an actuator (e.g., a torque motor, muscle, ...) that 
+ * requires excactly one external input (control) to generate force.
+ *
+ * @author Ajay Seth
+ * @version 2.0
+ */
+class OSIMSIMULATION_API Actuator : public Actuator_<1>
+{
+protected:
+	/** Bounds on control of this actuator. */
+	PropertyDbl _propMinControl;
+	PropertyDbl _propMaxControl;
+	// REFERENCES
+	double& _minControl;
+	double& _maxControl;
+
+//=============================================================================
+// METHODS
+//=============================================================================
+public:
+	//-------------------------------------------------------------------------
+	// CONSTRUCTION
+	//-------------------------------------------------------------------------
+	Actuator();
+	Actuator(const Actuator &aActuator);
+	virtual ~Actuator();
+
+	/** Assignment operator */
+	Actuator& operator=(const Actuator &aActuator);
+
+	/** Override of the default implementation to account for versioning. */
+	virtual void updateFromXMLNode();
+
+public:
+	// manage bounds on Control
+	void setMinControl(const double& aMinControl) {
+		_minControl=aMinControl;
+	}
+
+	double getMinControl() const {
+		return _minControl;
+	}
+
+	void setMaxControl(const double& aMaxControl) {
+		_maxControl=aMaxControl;
+	}
+
+	double getMaxControl() const {
+		return _maxControl;
+	}
+
 private:
+	void setNull();
 	void setupProperties();
+
 //=============================================================================
 };	// END of class Actuator
-//=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim

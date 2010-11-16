@@ -68,8 +68,8 @@ static int counter=0;
 Muscle::Muscle() : Actuator(),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
-	_defaultActivation(0),
-	_defaultFiberLength(0)
+   _defaultActivation(0),
+   _defaultFiberLength(0)
 {
 	setNull();
 	setupProperties();
@@ -98,8 +98,8 @@ Muscle::~Muscle()
 Muscle::Muscle(const Muscle &aMuscle) : Actuator(aMuscle),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
-	_defaultActivation(aMuscle._defaultActivation),
-	_defaultFiberLength(aMuscle._defaultFiberLength)
+   _defaultActivation(aMuscle._defaultActivation),
+   _defaultFiberLength(aMuscle._defaultFiberLength)
 {
 	setNull();
 	setupProperties();
@@ -120,8 +120,8 @@ void Muscle::copyData(const Muscle &aMuscle)
 {
 	_path = aMuscle._path;
 	// This should be moved to a base class method for future changes
-	_minControl=aMuscle._minControl;
-	_maxControl=aMuscle._maxControl;
+	//_minControl=aMuscle._minControl;
+	//_maxControl=aMuscle._maxControl;
 }
 
 //_____________________________________________________________________________
@@ -131,9 +131,8 @@ void Muscle::copyData(const Muscle &aMuscle)
 void Muscle::setNull()
 {
 	setType("Muscle");
-	_model = NULL;
-	_minControl=0.01;
-	_maxControl=1.0;
+	//_minControl=0.01;
+	//_maxControl=1.0;
 }
 
 //_____________________________________________________________________________
@@ -263,11 +262,6 @@ void Muscle::setupProperties()
 {
 	_pathProp.setName("GeometryPath");
 	_propertySet.append(&_pathProp);
-}
-
-
-void Muscle::equilibrate(SimTK::State& state) const
-{
 }
 
 //_____________________________________________________________________________
@@ -924,4 +918,16 @@ void Muscle::addNewPathPoint(
 	newPathPoint->setName(proposedName);
 	for (int i=0; i<3; i++)	// Use interface that does not depend on state
 		newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
+}
+
+void Muscle::equilibrate(SimTK::State& state) const
+{
+	// Reasonable initial activation value
+	setActivation(state, 0.01);
+	setFiberLength(state, getOptimalFiberLength());
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
+
+	// Compute isometric force to get starting value
+	// of _fiberLength.
+	computeEquilibrium(state);
 }

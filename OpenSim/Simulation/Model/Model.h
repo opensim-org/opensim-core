@@ -48,7 +48,6 @@
 
 namespace OpenSim {
 
-class Actuator;
 class Analysis;
 class Body;
 class BodySet;
@@ -61,7 +60,7 @@ class ForceSet;
 class MarkerSet;
 class Muscle;
 class ContactGeometry;
-class ActuatorPerturbation;
+class Actuator;
 class ContactGeometrySet;
 class Storage;
 class ScaleSet;
@@ -126,7 +125,7 @@ private:
     SimTK::Vec3 &_gravity;
 
 	// SETS OF THINGS
-	/** Actuators. */
+	/** Forces. */
 	PropertyObj _forceSetProp;
 	ForceSet& _forceSet;
 
@@ -159,9 +158,6 @@ private:
 
     /** flag indicating the model has actuators that are being perturbed  */
     bool _perturbActuatorForces; 
-
-    /** object which computes the actuator perturbation */
-    ActuatorPerturbation* _perturb;
 
     /** dynamics engine */
     SimbodyEngine _simbodyEngine;
@@ -303,8 +299,10 @@ public:
 
    /**
      * Find the kinematic state of the model that satisfies constraints and coordinate goals
+	 * If assemble is being called due to a coordinate set value, provide the option
+	 * to weight that coordinate value more heavily if specified.
      */
-	void assemble(SimTK::State& state);
+	void assemble(SimTK::State& state, const Coordinate *coord = NULL, double weight = 10);
 
 
    /**

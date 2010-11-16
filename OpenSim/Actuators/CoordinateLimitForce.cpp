@@ -195,11 +195,13 @@ void CoordinateLimitForce::setupProperties()
  */
 void CoordinateLimitForce::copyData(const CoordinateLimitForce &aForce)
 {
+	_coordName = aForce._coordName;
 	_upperStiffness = aForce._upperStiffness;
 	_upperLimit = aForce._upperLimit;
 	_lowerStiffness = aForce._lowerStiffness;
 	_lowerLimit = aForce._lowerLimit;
 	_damping = aForce._damping;
+	_transition = aForce._transition;
 }
 
 

@@ -198,11 +198,6 @@ void ControlSetController::setActuators( Set<Actuator>& as ) {
         int index = _controlSet->getIndex(act.getName() );
 		if(index == -1)
 			index = _controlSet->getIndex(act.getName()+".excitation" );
-        if( index != -1  ) { 
-             act.setController(this);
-             act.setControlIndex(index);
-             act.setIsControlled(true);
-        }
     }
 }
 

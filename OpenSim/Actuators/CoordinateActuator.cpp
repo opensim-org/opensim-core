@@ -358,8 +358,6 @@ void CoordinateActuator::setup(Model& aModel)
  */
 bool CoordinateActuator::check() const
 {
-	if(!Actuator::check()) return(false);
-
 	// CoordinateID
 	if(!isCoordinateValid()) {
 		printf("CoordinateActuator.check: ERROR- %s actuates ",

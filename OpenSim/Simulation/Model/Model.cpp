@@ -390,24 +390,28 @@ SimTK::State& Model::initSystem()
 
 	SimTK::Array_<CoordinateReference> &coordsToTrack = *new SimTK::Array_<CoordinateReference>();
 	for(int i=0; i<getNumCoordinates(); i++){
-	    Constant reference(Constant(_coordinateSet[i].getValue(s)));
-	    CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), reference);
-		coordsToTrack.push_back(*coordRef);
+		// iff a coordinate is dependent on other coordinates for its value, do not give it a reference/goal
+		if(!_coordinateSet[i].isDependent(s)){
+			Constant reference(Constant(_coordinateSet[i].getValue(s)));
+			CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), reference);
+			coordsToTrack.push_back(*coordRef);
+		}
 	}
 
 	// Have an AssemblySolver on hand, but delete any old one first
 	delete _assemblySolver;
 
-	// Use the assembler to generate the initial pose from Coordinate defualts
+	// Use the assembler to generate the initial pose from Coordinate defaults
 	// that also satisfies the constraints
 	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
 
+	// do the assembly
 	assemble(s);
 
 	return(s);
 }
 
-void Model::assemble(SimTK::State& s)
+void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 {
 	// Don't bother assembling if the model has no coupled constraints
 	// Coordinates have locks as prescribed motion constraints but do not need assemble to be resolved
@@ -417,25 +421,39 @@ void Model::assemble(SimTK::State& s)
 		return;
 	}
 
-	for(int i=0; i<getNumCoordinates(); i++){
-		_assemblySolver->updateCoordinateReference(_coordinateSet[i].getName(), _coordinateSet[i].getValue(s));
+	const Array_<CoordinateReference>& coordRefs = _assemblySolver->getCoordinateReferences();
+
+	for(unsigned int i=0; i<coordRefs.size(); i++){
+		const string &coordName = coordRefs[i].getName();
+		_assemblySolver->updateCoordinateReference(coordName, _coordinateSet.get(coordName).getValue(s));
 	}
+
+	if(coord)
+		_assemblySolver->updateCoordinateReference(coord->getName(), coord->getValue(s), weight);
+
 
 	try{
-		// Try to assemble the model satisfying the constraints exactly.
-		_assemblySolver->assemble(s);
+		// Try to track first with model satisfying the constraints exactly.
+		_assemblySolver->track(s);
 	}
 	catch (std::exception ex)    {
-		cout << "Model unable to assemble: " << ex.what() << endl;
-		cout << "Model relaxing constraints and trying again." << endl;
-
 		try{
-			// Try to satisfy with constraints as errors weighted heavily.
-			_assemblySolver->setConstraintWeight(20.0);
+			// Otherwise try to do a full-blown assemble
 			_assemblySolver->assemble(s);
 		}
 		catch (std::exception ex){
-			cout << "Model unable to assemble with relaxed constraints: " << ex.what() << endl;
+			// Constraints are probably infeasible so try again relaxing constraints
+			cout << "Model unable to assemble: " << ex.what() << endl;
+			cout << "Model relaxing constraints and trying again." << endl;
+
+			try{
+				// Try to satisfy with constraints as errors weighted heavily.
+				_assemblySolver->setConstraintWeight(20.0);
+				_assemblySolver->assemble(s);
+			}
+			catch (std::exception ex){
+				cout << "Model unable to assemble with relaxed constraints: " << ex.what() << endl;
+			}
 		}
 	}
 
@@ -1410,7 +1428,7 @@ bool Model::isControlled() const
 {
 	bool isControlled = false;
 	for(int i=0; i< getActuators().getSize() && !isControlled; i++){
-		isControlled = getActuators().get(i).isControlled();
+		//isControlled = getActuators().get(i).isControlled();
 	}
 	return isControlled;
 }

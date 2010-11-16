@@ -1099,9 +1099,6 @@ void CMC::setActuators( Set<Actuator>& actSet )  {
 	_controlSet.setSize(0);
     for(int i=0; i<actSet.getSize(); i++ ) {
         Actuator& act = actSet.get(i);
-        act.setController(this);
-        act.setControlIndex(i);
-        act.setIsControlled(true);
 
         ControlLinear *control = new ControlLinear();
         control->setName(act.getName() + ".excitation" );

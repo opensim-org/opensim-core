@@ -238,10 +238,6 @@ reset(const SimTK::State& s)
 {
 	_perturbedForceStorage->reset();
 	const Set<Actuator>& fs = _model->getActuators();
-
-	for (int i=0; i<fs.getSize(); i++)  fs.get(i).setIsControlled(true);
-    _forceStore->reset();
-
 }
 
 

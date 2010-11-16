@@ -139,7 +139,7 @@ public:
 
 #ifndef SWIG
 	Delp1990Muscle& operator=(const Delp1990Muscle &aMuscle);
-    virtual void equilibrate(SimTK::State& state) const;
+
 #endif
    void copyData(const Delp1990Muscle &aMuscle);
 	virtual void copyPropertyValues(Actuator& aActuator);

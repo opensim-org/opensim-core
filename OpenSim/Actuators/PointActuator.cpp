@@ -358,8 +358,6 @@ void PointActuator::setup(Model& aModel)
  */
 bool PointActuator::check() const
 {
-	if(!Actuator::check()) return(false);
-
 	// BodyID
 	if( _body != NULL) {
 		printf("PointActuator.check: ERROR- %s actuates ",

@@ -378,8 +378,6 @@ void TorqueActuator::setup(Model& aModel)
  */
 bool TorqueActuator::check() const
 {
-	if(!Actuator::check()) return(false);
-
 	// BodyID
 	if( _bodyA != NULL) {
 		printf("TorqueActuator.check: ERROR- %s actuates ",

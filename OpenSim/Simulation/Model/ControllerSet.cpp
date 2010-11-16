@@ -266,9 +266,7 @@ void ControllerSet::setActuators( Set<Actuator>& as)
 {
     _actuatorSet = &as;
 	for( int i = 0; i < as.getSize(); i++ ) {
-		if( ! as.get(i).isControlled() )  {
-			std::cout << "WARNING: Actuator " << as.get(i).getName() << " does not have a controller and its control value will be set to 0.0 " << std::endl;
-        }
+
     }
     constructStorage();
 }

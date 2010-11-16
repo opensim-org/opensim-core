@@ -133,7 +133,6 @@ public:
 #ifndef SWIG
 	Schutte1993Muscle& operator=(const Schutte1993Muscle &aMuscle);
 
-    virtual void equilibrate(SimTK::State& state) const;
 #endif
     void copyData(const Schutte1993Muscle &aMuscle);
     virtual void copyPropertyValues(Actuator& aActuator);

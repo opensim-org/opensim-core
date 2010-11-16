@@ -472,16 +472,17 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 		_model->updMatterSubsystem().getMobilizedBody(_bodyIndex).setOneQ(s,_mobilityIndex,aValue);
 	}
 
-	// The Q that was set might not satisfy constraints, so if enforceConstraints then project configuration.
+	// The Q that was set might not satisfy constraints, so if enforceConstraints then call model assemble.
 	// You want to do this even if the coordinate is locked and its value hasn't changed, because this may be
 	// the last setValue() call in a string of them (e.g., to set a model pose), in which case you only try to
 	// enforce constraints during the last call.
 	if (enforceConstraints) {
-		_model->getMultibodySystem().realize(s, Stage::Position);
-
 		if (_model->getConstraintSet().getSize()>0){
+			// if this coordinate is setup to be dependent on other coordinates
+			// its value should be dictated by the other coordinates and not its present value
+			double weight = isDependent(s) ? 0.0  : 10;
 			// assemble model so that states satisfy ALL constraints
-			_model->assemble(s);
+			_model->assemble(s, this, weight);
 		}
 	}
 

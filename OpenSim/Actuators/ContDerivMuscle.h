@@ -207,8 +207,6 @@ public:
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
-    virtual void equilibrate(SimTK::State& state) const;
-
 	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, Actuator);
 
 protected:

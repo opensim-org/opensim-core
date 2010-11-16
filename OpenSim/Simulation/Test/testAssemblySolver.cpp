@@ -65,6 +65,7 @@ int testAssembleModelWithConstraints(string modelFile)
 	}
 
     State state = model.initSystem();
+	model.setDefaultsFromState(state);
     Vector y1 = state.getY();
 
 	cout << "*********** Coordinates after initSystem ******************** "  << endl;

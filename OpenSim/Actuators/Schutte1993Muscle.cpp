@@ -129,7 +129,6 @@ Schutte1993Muscle::Schutte1993Muscle(const Schutte1993Muscle &aMuscle) :
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
-	setup(aMuscle.getModel());
 }
 
 //_____________________________________________________________________________
@@ -289,20 +288,6 @@ void Schutte1993Muscle::setup(Model& aModel)
 
 }
 
-void Schutte1993Muscle::equilibrate(SimTK::State& state) const
-{
-	Muscle::equilibrate(state);
-
-	// Reasonable initial activation value
-	setActivation(state, 0.01);
-	setFiberLength(state, getOptimalFiberLength());
-	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-
-	// Compute isometric force to get starting value
-	// of fiberLength.
-	computeEquilibrium(state);
-}
-
 void Schutte1993Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
 	Muscle::createSystem(system);
@@ -310,7 +295,7 @@ void Schutte1993Muscle::createSystem(SimTK::MultibodySystem& system) const
 
 	// Cache the computed passive muscle force
 	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 /*
     _passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
 	_tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
@@ -403,8 +388,6 @@ Schutte1993Muscle& Schutte1993Muscle::operator=(const Schutte1993Muscle &aMuscle
 	Muscle::operator=(aMuscle);
 
 	copyData(aMuscle);
-
-	setup(aMuscle.getModel());
 
 	return(*this);
 }

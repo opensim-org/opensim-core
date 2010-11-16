@@ -68,7 +68,7 @@ public:
     ModelComponentSet() : _model(NULL)
     {
     }
-    ModelComponentSet(Model& model) : _model(&model)
+    ModelComponentSet(Model& model) : _model(NULL)
     {
     }
     /**

@@ -192,11 +192,6 @@ setActuators( Set<Actuator>& as ) {
 
     for(i=0,j=0; i<as.getSize(); i++ ) {
         Actuator& act = as.get(i);
-        if(  act.getControlIndex() == -1 ) { // check if already controlled
-            act.setController(this);
-            act.setIsControlled(true);
-            act.setControlIndex(j++);
-         }
      }
      _numControls = j;
 }

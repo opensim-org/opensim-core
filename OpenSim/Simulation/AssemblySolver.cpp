@@ -50,7 +50,7 @@ namespace OpenSim {
 	_constraintWeight = constraintWeight;
 
 	// default accuracy
-	_accuracy = 1e-3;
+	_accuracy = 1e-4;
 
 	// Get model coordinates
 	const CoordinateSet &modelCoordSet = _model.getCoordinateSet();
@@ -102,7 +102,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 			CoordinateReference *coordRef = p;
 			const Coordinate &coord = modelCoordSet.get(coordRef->getName());
 			if(coord.getLocked(s)){
-				cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
+				//cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
 				_assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilityIndex()));
 				//No longer need the lock on
 				coord.setLocked(s, false);
@@ -118,7 +118,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 				// keep a handle to the goal so we can update
 				_coordinateAssemblyConditions.push_back(coordGoal);
 				// Add coordinate matching goal to the ik objective
-				_assembler->adoptAssemblyGoal(coordGoal);
+				SimTK::AssemblyConditionIndex acIx = _assembler->adoptAssemblyGoal(coordGoal, coordRef->getWeight(s));
 			}
 		}
 	}
@@ -154,6 +154,7 @@ void AssemblySolver::updateGoals(const SimTK::State &s)
 	for(unsigned int i=0; i<nqrefs; i++){
 		//update goal values from reference.
 		_coordinateAssemblyConditions[i]->setValue(_coordinateReferences[i].getValue(s));
+		//_assembler->setAssemblyConditionWeight(_coordinateAssemblyConditions[i]->
 	}
 }
 
@@ -176,9 +177,11 @@ void AssemblySolver::assemble(SimTK::State &state)
 	// Let assembler perform some internal setup
 	_assembler->initialize(s);
 
+	/*
 	printf("UNASSEMBLED CONFIGURATION (err=%g, cost=%g, qerr=%g)\n",
         _assembler->calcCurrentErrorNorm(), _assembler->calcCurrentGoal(), max(abs(_assembler->getInternalState().getQErr())));
 	cout << "Model numQs: " << _model.getNumCoordinates() << " Assembler num freeQs: " << _assembler->getNumFreeQs() << endl;
+	*/
 
 	try{
 		// Now do the assembly and return the updated state.
@@ -186,6 +189,7 @@ void AssemblySolver::assemble(SimTK::State &state)
 		// Update the q's in the state passed in
 		_assembler->updateFromInternalState(state);
 
+		/*
 		printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g err=%g, cost=%g, qerr=%g)\n",
 			_assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
 			_assembler->calcCurrentErrorNorm(), _assembler->calcCurrentGoal(),
@@ -195,6 +199,7 @@ void AssemblySolver::assemble(SimTK::State &state)
 		printf(" evals: goal=%d grad=%d error=%d jac=%d\n",
 			_assembler->getNumGoalEvals(), _assembler->getNumGoalGradientEvals(),
 			_assembler->getNumErrorEvals(), _assembler->getNumErrorJacobianEvals());
+		*/
 	}
 	catch (std::exception ex)
     {
@@ -210,25 +215,35 @@ void AssemblySolver::assemble(SimTK::State &state)
 	to track a desired trajectory of coordinate values. */
 void AssemblySolver::track(SimTK::State &s)
 {
-	try{
-		// move the target locations or angles, etc... just do not change number of goals
-		// and their type (constrained vs. weighted)
-		updateGoals(s);
 
+	// move the target locations or angles, etc... just do not change number of goals
+	// and their type (constrained vs. weighted)
+
+	if(_assembler && _assembler->isInitialized()){
+		updateGoals(s);
+	}
+	else{
+		throw Exception("AssemblySolver::track() failed: assemble() must be called first.");
+	}
+
+	try{
 		// Now do the assembly and return the updated state.
 		_assembler->track(s.getTime());
 
 		// update the state from the result of the assembler 
 		_assembler->updateFromInternalState(s);
 
+		/*
 		printf("Tracking: t= %f (acc=%g tol=%g err=%g, cost=%g, qerr=%g)\n", s.getTime(),
 			_assembler->getAccuracyInUse(), _assembler->getErrorToleranceInUse(), 
 			_assembler->calcCurrentErrorNorm(), _assembler->calcCurrentGoal(),
 			max(abs(_assembler->getInternalState().getQErr())));
+		*/
 	}
-	catch (std::exception ex)
+	catch (SimTK::Exception::Base ex)
     {
-		std::cout << "AssemblySolver::track() Failed: " << ex.what() << std::endl;
+		std::cout << "AssemblySolver::track() attempt Failed: " << ex.what() << std::endl;
+		throw Exception("AssemblySolver::track() attempt failed.");
     }
 }
 

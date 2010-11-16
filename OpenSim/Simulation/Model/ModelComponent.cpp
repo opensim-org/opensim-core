@@ -49,7 +49,7 @@ ModelComponent::ModelComponent(DOMElement* aNode) : Object(aNode), _model(NULL),
 {
 }
 
-ModelComponent::ModelComponent(const ModelComponent& copy) : Object(copy), _model(copy._model), _rep(NULL)
+ModelComponent::ModelComponent(const ModelComponent& copy) : Object(copy), _model(NULL), _rep(NULL)
 {
 }
 

@@ -137,7 +137,6 @@ Thelen2003Muscle::Thelen2003Muscle(const Thelen2003Muscle &aMuscle) :
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
-	setup(aMuscle.getModel());
 }
 
 //_____________________________________________________________________________
@@ -292,20 +291,6 @@ void Thelen2003Muscle::setup(Model& aModel)
 	Muscle::setup(aModel);
 }
 
-void Thelen2003Muscle::equilibrate(SimTK::State& state) const
-{
-	Muscle::equilibrate(state);
-
-	// Reasonable initial activation value
-	setActivation(state, 0.01);
-	setFiberLength(state, getOptimalFiberLength());
-	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-
-	// Compute isometric force to get starting value
-	// of _fiberLength.
-	computeEquilibrium(state);
-}
-
 void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
 	Muscle::createSystem(system);
@@ -313,7 +298,7 @@ void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 
 	// Cache the computed passive muscle force
 	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 /*
 	_passiveForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
 	_tendonForceIndex = s.allocateCacheEntry( subsystemIndex, SimTK::Stage::Topology, new SimTK::Value<double>() );
@@ -404,10 +389,7 @@ Thelen2003Muscle& Thelen2003Muscle::operator=(const Thelen2003Muscle &aMuscle)
 {
 	// BASE CLASS
 	Muscle::operator=(aMuscle);
-
 	copyData(aMuscle);
-
-	setup(aMuscle.getModel());
 
 	return(*this);
 }

@@ -55,8 +55,7 @@ using SimTK::Vec3;
 /**
  * Default constructor.
  */
-Ligament::Ligament() :
-   Force(),
+Ligament::Ligament() : Force(),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
    _restingLength(_restingLengthProp.getValueDbl()),
@@ -65,6 +64,7 @@ Ligament::Ligament() :
 {
 	setNull();
 	setupProperties();
+	includeAsSubComponent(&_path);
 }
 
 //_____________________________________________________________________________
@@ -88,8 +88,7 @@ Ligament::~Ligament()
  *
  * @param aLigament Ligament to be copied.
  */
-Ligament::Ligament(const Ligament &aLigament) :
-   Force(aLigament),
+Ligament::Ligament(const Ligament &aLigament) : Force(aLigament),
 	_pathProp(PropertyObj("", GeometryPath())),
 	_path((GeometryPath&)_pathProp.getValueObj()),
    _restingLength(_restingLengthProp.getValueDbl()),
@@ -99,6 +98,7 @@ Ligament::Ligament(const Ligament &aLigament) :
 	setNull();
 	setupProperties();
 	copyData(aLigament);
+	includeAsSubComponent(&_path);
 }
 
 //_____________________________________________________________________________
@@ -148,7 +148,7 @@ void Ligament::setNull()
  */
  void Ligament::createSystem(SimTK::MultibodySystem& system) const
 {
-	_path.createSystem(system);
+	Force::createSystem(system);
 }
 
 //_____________________________________________________________________________
@@ -207,14 +207,11 @@ void Ligament::setup(Model& aModel)
 	assert(_restingLength > 0.0);
 
 	_path.setOwner(this);
-	_path.setup(aModel);
-
 }
 
 void Ligament::initState( SimTK::State& s) const
 {
 	Force::initState(s);
-	_path.initState(s);
 }
 
 //=============================================================================

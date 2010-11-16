@@ -106,7 +106,6 @@ ContDerivMuscle::ContDerivMuscle(const ContDerivMuscle &aMuscle) :
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
-	setup(aMuscle.getModel());
 }
 
 //_____________________________________________________________________________
@@ -254,20 +253,7 @@ void ContDerivMuscle::setup(Model& aModel)
 	Muscle::setup(aModel);
 }
 
-void ContDerivMuscle::equilibrate(SimTK::State& state) const
-{
-	Muscle::equilibrate(state);
-
-	// Reasonable initial activation value
-	setActivation(state, 0.01);
-	setFiberLength(state, getOptimalFiberLength());
-	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-
-	// Compute isometric force to get starting value
-	// of _fiberLength.
-	computeEquilibrium(state);
-}
-    
+   
 void ContDerivMuscle::createSystem(SimTK::MultibodySystem& system) const
 {
 	Muscle::createSystem(system);
@@ -275,8 +261,8 @@ void ContDerivMuscle::createSystem(SimTK::MultibodySystem& system) const
 
 	// Cache the computed active and passive muscle force
 	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Dynamics);
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Dynamics);
+	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 }
 
 
@@ -378,8 +364,6 @@ ContDerivMuscle& ContDerivMuscle::operator=(const ContDerivMuscle &aMuscle)
 	Muscle::operator=(aMuscle);
 
 	copyData(aMuscle);
-
-	setup(aMuscle.getModel());
 
 	return(*this);
 }

@@ -327,9 +327,6 @@ getForceStorage()
 void ActuatorPerturbation::
 reset(const SimTK::State& s)
 {
-	if( _actuator ) {
-       _actuator->setIsControlled(true);
-	}
 	_forceStore->reset();
 }
 
