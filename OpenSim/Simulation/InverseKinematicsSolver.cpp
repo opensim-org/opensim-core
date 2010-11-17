@@ -204,7 +204,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 
 	// Setup markers goals
 	// Get lists of all markers by names and corresponding weights from the MarkersReference
-	const SimTK::Array_<std::string> &markerNames = _markersReference.getNames();
+	const SimTK::Array_<SimTK::String> &markerNames = _markersReference.getNames();
 	SimTK::Array_<double> markerWeights;  
 	_markersReference.getWeights(s, markerWeights);
 	// get markers defined by the model 
