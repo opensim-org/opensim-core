@@ -249,37 +249,6 @@ void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, F
 
 }
 
-void PrescribedForce::setFunctionsFromFile(std::string anExternalLoadsFileName)
-{
-	// LOAD COP, FORCE, AND TORQUE
-	Storage kineticsStore(anExternalLoadsFileName);
-	int forceSize = kineticsStore.getSize();
-	if(forceSize<=0) return;
-
-	double *t=0;
-
-	// Expected column labels for the file
-
-	std::string labels[9] = {"pointX", "pointY", "pointZ", "forceX", "forceY", "forceZ", "torqueX", "torqueY", "torqueZ"};
-
-	kineticsStore.getTimeColumn(t);
-	double *column=0;
-	Array<NaturalCubicSpline> splines;
-	for(int i=0;i<9;i++)
-	{
-		kineticsStore.getDataColumn(labels[i], column);
-		double value1 = column[7], value2 = column[8];
-		NaturalCubicSpline currentSpline(forceSize, t, column, labels[i]);
-		const double* values = currentSpline.getYValues();
-		splines.append(currentSpline);
-	}
-
-	setPointFunctions(&splines.get(0), &splines.get(1), &splines.get(2));
-	setForceFunctions(&splines.get(3), &splines.get(4), &splines.get(5));
-	setTorqueFunctions(&splines.get(6), &splines.get(7), &splines.get(8));
-	
-}
-
 void PrescribedForce::setTorqueFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 											 const Storage& kineticsStore)  
 {

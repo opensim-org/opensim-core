@@ -175,13 +175,6 @@ public:
 		const OpenSim::Storage& kineticsStore);
 	void clearTorqueFunctions() { _torqueFunctionSet.setSize(0); };
 	/**
-	 * Setup the functions from a specific type of storage file.  
-	 *
-	 * @param anExternalLoadsFileName	the name of a .mot or .sto file.  The file must contain 10 data
-	 * columns labeled time, torqueX, torqueY, torqueZ, forceX, forceY, forceZ, pointX, pointY, pointZ
-	 */
-	void setFunctionsFromFile(std::string anExternalLoadsFileName);
-	/**
 	 * Get whether the force and torque are specified in inertial coordinates or in the body's local coordinates.
 	 */
 	bool getForceIsInGlobalFrame() const;
