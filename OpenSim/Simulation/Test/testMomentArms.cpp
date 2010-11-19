@@ -63,6 +63,11 @@ const static Vec3 gravity_vec = Vec3(0, -9.8065, 0);
 //==========================================================================================================
 double computeMomentArmFromDefinition(const State &s, const GeometryPath &path, const Coordinate &coord)
 {
+	 // Declare dummies for the call to project().
+    const Vector yWeights(s.getNY(), 1); 
+    const Vector cWeights(s.getNMultipliers(), 1);
+    Vector yErrEst;
+
 	//Compute r = dl/dtheta
 	SimTK::State s_ma = s;
 	coord.setClamped(s_ma, false);
@@ -71,14 +76,26 @@ double computeMomentArmFromDefinition(const State &s, const GeometryPath &path, 
 	double dtheta = integ_accuracy;
 	
 	// Compute length 1 
-	coord.setValue(s_ma, theta-dtheta, true);
+	coord.setValue(s_ma, theta-dtheta, false);
+
+	// satisfy contraints using project since we are close to the solution
+	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
+    coord.getModel().getMultibodySystem().project(s_ma, 1e-8, 
+        yWeights, cWeights, yErrEst, System::ProjectOptions::PositionOnly);
+
 	double theta1 = coord.getValue(s_ma);
 	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
 
 	double len1 = path.getLength(s_ma);
 
 	// Compute length 2
-	coord.setValue(s_ma, theta+dtheta, true);
+	coord.setValue(s_ma, theta+dtheta, false);
+
+	// satisfy contraints using project since we are close to the solution
+	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
+    coord.getModel().getMultibodySystem().project(s_ma, 1e-8, 
+        yWeights, cWeights, yErrEst, System::ProjectOptions::PositionOnly);
+
 	double theta2 = coord.getValue(s_ma);
 	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
 
@@ -325,9 +342,9 @@ int main()
 {
 	int stat =0, err = 0;
 
-	//err = testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", Vec2(-2*Pi/3, Pi/18), 0.0);
-	//cout << "VASINT of BothLegs with no mass: "  << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	//stat += err;
+	err = testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", Vec2(-2*Pi/3, Pi/18), 0.0);
+	cout << "VASINT of BothLegs with no mass: "  << (err ? "FAILED" : "PASSED")  << "\n" << endl;
+	stat += err;
 
 	err = testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "hip_flexion_r", "rect_fem_r", Vec2(-Pi/3, Pi/3));
 	cout << "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: "  << (err ? "FAILED" : "PASSED")  << "\n" << endl;
