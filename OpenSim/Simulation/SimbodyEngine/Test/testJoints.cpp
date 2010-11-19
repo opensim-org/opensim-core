@@ -209,6 +209,7 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
     bool status = true;
 	
 	Vector q_err = q_osim;
+	Vector u_err = u_sb - u_osim;
 
 	int nq = q_osim.size();
 	if(q_sb.size() > nq){ // we have an unused quaternion slot in Simbody
@@ -219,7 +220,18 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
 		// And that the q's are packed as qqqq or aaa* for a ball and qqqqxyz or aaaxyz* for a free joint
 		int quat_ind = ((nq > 6) ? 6 : 3);
 		int j = 0;
-		for(int i=0; i< q_sb.size(); i++){
+		if(quat_ind > 5){ // this is a free joint
+			// OpenSim specifies Translation mobilizer first so first and second triplet of q's
+			// have to be swapped
+			for(int i=0; i<3; i++){
+					q_err[i] = q_osim[i] - q_sb[i+3];
+					q_err[i+3] = q_osim[i+3] -q_sb[i];
+					u_err[i] = u_osim[i] - u_sb[i+3];
+					u_err[i+3] = u_osim[i+3] - u_sb[i];
+			}
+			j = quat_ind;
+		}
+		for(int i=j; i< q_sb.size(); i++){
 			if(i != quat_ind){
 				q_err[j] = q_sb[i] - q_osim[j];
 				j++;
@@ -230,7 +242,9 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
 		q_err = q_sb - q_osim;
 	}
     
-	Vector u_err = u_sb - u_osim;
+	
+
+
 
 	//cout<<"\nSimbody - OpenSim:"<<endl;
 	//q_err.dump("Diff q's:");
@@ -258,19 +272,31 @@ bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osi
 
 	// Push down to OpenSim "state"
 	if(system.getMatterSubsystem().getUseEulerAngles(state)){
-		const Vector& y = state.getY();
-		Vector y_osim(2*nq, 0.0);
+		Vector& q_osim = osim_state.updQ();
+		Vector& u_osim = osim_state.updU();
+		u_osim = ui;
+
 		//This is a hack knowing the ball and free joint tests have the joint being tested, first.
 		int quat_ind = ((nq > 6) ? 6 : 3);
 		int j = 0;
-		for(int i=0; i< state.getNY(); i++){
-			if(i != quat_ind)
-				y_osim[j++] = y[i];
+		if(quat_ind > 5){ // this is a free joint
+			// OpenSim specifies Translation mobilizer first so first and second triplet of q's
+			// have to be swapped
+			for(int i=0; i<3; i++){
+					q_osim[i] = qi[i+3];
+					q_osim[i+3] = qi[i];
+					u_osim[i] = ui[i+3];
+					u_osim[i+3] = ui[i];
+			}
+			j = quat_ind;
 		}
-		osim_state.updY() = y_osim;
+		for(int i=j; i< nq_sb; i++){
+			if(i != quat_ind)
+				q_osim[j++] = qi[i];
+		}
 
-		y_osim.dump("osim:");
-		y.dump("simbody:");
+		osim_state.getY().dump("osim:");
+		state.getY().dump("simbody:");
 	}
 	else{
 		osim_state.updY() = state.getY();
@@ -1298,11 +1324,11 @@ int main()
     }
 
 	// Compare behavior of a Free hip and pin knee 
-/*	if( !testFreeJoint(true)) {
+	if( !testFreeJoint(true)) {
         status = 1;
         cout << " testFreeJoint using Euler angles FAILED" << endl; 
     }
-*/
+
 	// Compare behavior of a Free hip and pin knee 
 	if( !testCustomWithMultidimFunction()) {
         status = 1;

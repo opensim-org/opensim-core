@@ -233,10 +233,10 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 
 	// CREATE MOBILIZED BODY
 	if(_useEulerAngles){
-		MobilizedBody::Gimbal
+		MobilizedBody::Translation
 			simtkMasslessBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
 			parentTransform, SimTK::Body::Massless(), noTransform);
-		MobilizedBody::Translation
+		MobilizedBody::Gimbal
 				simtkBody(simtkMasslessBody, noTransform, SimTK::Body::Rigid(_body->getMassProperties()), childTransform);
 
 		const MobilizedBodyIndex _masslessBodyIndex = simtkMasslessBody.getMobilizedBodyIndex();
@@ -248,7 +248,8 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 			Coordinate &coord = _coordinateSet.get(i);
 			coord.setJoint(*this);
 			setCoordinateModel(&coord, _model);
-			setCoordinateMobilizedBodyIndex(&coord, ((i < 3) ? (_masslessBodyIndex) : (getMobilizedBodyIndex(_body))));
+			// Translations enabled by Translation mobilizer, first, but appear second in coordinate set
+			setCoordinateMobilizedBodyIndex(&coord, ((i > 2) ? (_masslessBodyIndex) : (getMobilizedBodyIndex(_body))));
 			// The mobility index is the same as the order in which the coordinate appears in the coordinate set.
 			setCoordinateMobilityIndex(&coord, (i < 3 ? i : i-3));
 		}
