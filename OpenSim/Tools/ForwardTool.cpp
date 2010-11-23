@@ -108,9 +108,6 @@ ForwardTool::~ForwardTool()
 ForwardTool::ForwardTool() :
 	AbstractTool(),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
 	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
 	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
@@ -150,9 +147,6 @@ ForwardTool::ForwardTool() :
 ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
 	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
 	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
@@ -223,9 +217,6 @@ ForwardTool::
 ForwardTool(const ForwardTool &aTool) :
 	AbstractTool(aTool),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
 	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
 	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
@@ -281,11 +272,6 @@ void ForwardTool::setNull()
 
 	_replaceForceSet = false;	// default should be false for Forward.
 
-	// EXTERNAL LOADS
-	_externalLoadsFileName = "";
-	_externalLoadsModelKinematicsFileName = "";
-	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
-
 	// INTERNAL WORK VARIABLES
 	_yStore = NULL;
 
@@ -330,25 +316,6 @@ void ForwardTool::setupProperties()
 	_useSpecifiedDtProp.setComment(comment);
 	_useSpecifiedDtProp.setName("use_specified_dt");
 	_propertySet.append( &_useSpecifiedDtProp );
-
-	// EXTERNAL LOADS
-	comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
-	_externalLoadsFileNameProp.setComment(comment);
-	_externalLoadsFileNameProp.setName("external_loads_file");
-	_propertySet.append( &_externalLoadsFileNameProp );
-
-	comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
-	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
-	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
-	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
-
-	comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding "
-				 "to the external loads. A negative value results in no filtering. "
-				 "The default value is -1.0, so no filtering.";
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
-	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
-
 
 	// CONTACT ON-OFF PROPERTIES
 	// Body1 Linear
@@ -482,10 +449,6 @@ operator=(const ForwardTool &aTool)
 	_statesFileName = aTool._statesFileName;
 	_useSpecifiedDt = aTool._useSpecifiedDt;
 
-	// EXTERNAL LOADS
-	_externalLoadsFileName = aTool._externalLoadsFileName;
-	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
-	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
 	_outputDetailedResults = aTool._outputDetailedResults;
 
 
@@ -523,9 +486,7 @@ bool ForwardTool::run()
 	string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 	IO::chDir(directoryOfSetupFile);
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, 
-                                              _externalLoadsModelKinematicsFileName, 
-                                     *_model);
+    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
 
     // Re create the system with forces above and Realize the topology
@@ -542,9 +503,7 @@ bool ForwardTool::run()
 
 
     if( externalLoads ) {
-	    initializeExternalLoads( s, _ti, _tf, *_model,
-                     _externalLoadsFileName, _externalLoadsModelKinematicsFileName, 
-                     _lowpassCutoffFrequencyForLoadKinematics);
+	    initializeExternalLoads( s, _ti, _tf);
      }
 
 

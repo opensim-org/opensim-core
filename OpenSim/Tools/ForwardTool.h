@@ -61,19 +61,6 @@ protected:
 	OpenSim::PropertyBool _useSpecifiedDtProp;
 	bool &_useSpecifiedDt;
 
-	// EXTERNAL LOADS
-	/** Name of the file containing the external loads applied to the model. */
-	OpenSim::PropertyStr _externalLoadsFileNameProp;
-	std::string &_externalLoadsFileName;
-	/** Name of the file containing the model kinematics corresponding to the
-	external loads. */
-	OpenSim::PropertyStr _externalLoadsModelKinematicsFileNameProp;
-	std::string &_externalLoadsModelKinematicsFileName;
-	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
-	to the external loads. A negative value results in no filtering.
-	The default value is -1.0, so no filtering. */
-	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
-	double &_lowpassCutoffFrequencyForLoadKinematics;
 	/** Flag indicating whether or not to output corrective spring loads and other
 	quantities. */
 	OpenSim::PropertyBool _outputDetailedResultsProp;
@@ -203,13 +190,6 @@ public:
 	bool getUseSpecifiedDt() const { return _useSpecifiedDt; }
 	void setUseSpecifiedDt(bool aUseSpecifiedDt) { _useSpecifiedDt = aUseSpecifiedDt; }
 
-	// External loads get/set
-	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
-	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
-	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
-	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
-	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }
 
 	//--------------------------------------------------------------------------

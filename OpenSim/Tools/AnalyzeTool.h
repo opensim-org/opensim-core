@@ -77,15 +77,6 @@ private:
 	/** Name of the file containing the external loads applied to the model. */
 	OpenSim::PropertyStr _externalLoadsFileNameProp;
 	std::string &_externalLoadsFileName;
-	/** Name of the file containing the model kinematics corresponding to the
-	external loads. */
-	OpenSim::PropertyStr _externalLoadsModelKinematicsFileNameProp;
-	std::string &_externalLoadsModelKinematicsFileName;
-	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
-	to the external loads. A negative value results in no filtering.
-	The default value is -1.0, so no filtering. */
-	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
-	double &_lowpassCutoffFrequencyForLoadKinematics;
 
 	/** Storage for the model states. */
 	Storage *_statesStore;
@@ -113,10 +104,6 @@ private:
 	void setNull();
 	void setupProperties();
 	void constructCorrectiveSprings();
-	/*std::string parseStringProperty(std::string& propertyName);
-	std::string createExternalLoadsFile(const std::string& oldFile, 
-										  const std::string& body1, 
-										  const std::string& body2);*/
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -148,10 +135,6 @@ public:
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
 	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
-	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
-	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
-	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
 	//--------------------------------------------------------------------------
 	// UTILITIES

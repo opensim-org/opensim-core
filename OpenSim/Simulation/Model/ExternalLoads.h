@@ -1,8 +1,8 @@
-#ifndef __ForceSet_h__
-#define __ForceSet_h__
+#ifndef __ExternalLoads_h__
+#define __ExternalLoads_h__
 
-// ForceSet.h
-// Author: Jack Middleton 
+// ExternalLoads.h
+// Author: Ayman Habib 
 /*
  * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Set.h>
+
 #include "Force.h"
 #include "Actuator.h"
 #include "Muscle.h"
@@ -43,31 +44,39 @@
 namespace OpenSim {
 
 class Model;
-
+class VectorGCVSplineR1R3;
+class GCVSpline;
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding and managing a set of forces for a model.
- * This class is based on ForceSet
+ * A class for holding and managing ExternalLoads to be applied to a model
  *
- * @authors Jack Middleton 
+ * @authors Ayman Habib 
  * @version 1.0
  */
 
 //=============================================================================
-class OSIMSIMULATION_API ForceSet : public ModelComponentSet<Force>
+class OSIMSIMULATION_API ExternalLoads : public ForceSet
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-
-   /** The subset of Forces that extend Actuator. */
-    Set<Actuator> _actuators;
-
-	/** The subset of Forces that extend Muscle. */
-	Set<Muscle> _muscles;
+	/** In case the Forces in the set are loaded from file, the filename goes here
+	 * and the column names go into individual functions.
+	 */
+	PropertyStr _dataFileNameProp;
+	std::string &_dataFileName;
+	/** Name of the file containing the model kinematics corresponding to the
+	external loads. */
+	OpenSim::PropertyStr _externalLoadsModelKinematicsFileNameProp;
+	std::string &_externalLoadsModelKinematicsFileName;
+	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
+	to the external loads. A negative value results in no filtering.
+	The default value is -1.0, so no filtering. */
+	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
+	double &_lowpassCutoffFrequencyForLoadKinematics;
 
 //=============================================================================
 // METHODS
@@ -76,76 +85,67 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ForceSet();
-	ForceSet(Model& model);
-	ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
-	ForceSet(const ForceSet &aForceSet);
-	virtual ~ForceSet();
+	ExternalLoads();
+	ExternalLoads(Model& model);
+	ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
+	ExternalLoads(const ExternalLoads &aExternalLoads);
+	virtual ~ExternalLoads();
 	virtual Object* copy() const;
-	void copyData(const ForceSet &aAbsForceSet);
-	/*
+	void copyData(const ExternalLoads &aAbsExternalLoads);
 	void createForcesFromFile(const std::string& datafileName,
 								Array<std::string>& startForceColumns,
 								Array<int>& columnCount, 
 								Array<std::string>& bodyNames);
-	*/
+
+	const std::string& getDataFileName() const { return _dataFileName;};
+	void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };
+	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
+	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
+	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
+	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
+
 private:
 	void setNull();
 	void setupSerializedMembers();
 	void copyForce(Force* aFrom, Force* aTo);
-    void updateActuators();
-	void updateMuscles();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ForceSet& operator=(const ForceSet &aSet);
+	ExternalLoads& operator=(const ExternalLoads &aSet);
 #endif
+     void computePointFunctions(SimTK::State& s, 
+                                double startTime,
+                                double endTime,
+                                const Body& body,
+                                const Storage& aQStore,
+                                const Storage& aUStore,
+                                VectorGCVSplineR1R3& aPGlobal,
+                                GCVSpline*& xfunc, 
+                                GCVSpline*& yfunc, 
+                                GCVSpline*& zfunc);
+	 void computeFunctions(SimTK::State& s, 
+                                double startTime,
+                                double endTime, 
+								const Storage& kineticsStore, 
+								Storage* qStore=NULL, 
+								Storage* uStore=NULL);
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
 	virtual void setup(Model& aModel);
 
-	// FORCE
-	bool remove(int aIndex);
-	bool append(Force *aForce);
-#ifndef SWIG
-	bool append(Force &aForce);
-#endif
-	bool append(ForceSet &aForceSet, bool aAllowDuplicateNames=false);
-	bool set(int aIndex, Force *aForce);
-    bool insert(int aIndex, Force *aObject);
-
-    // subsets 
-    const Set<Actuator>& getActuators() const;
-    Set<Actuator>& updActuators();
-	const Set<Muscle>& getMuscles() const;
-    Set<Muscle>& updMuscles();
-
-    // STATES
-    void getStateVariableNames(Array<std::string> &rNames) const;
-
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	void computeEquilibrium(SimTK::State& s);
-
-	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	bool check() const;
-
 //=============================================================================
-};	// END of class ForceSet
+};	// END of class ExternalLoads
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
 
-#endif // __ForceSet_h__
+#endif // __ExternalLoads_h__
 
 

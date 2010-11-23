@@ -39,6 +39,7 @@
 #include "AnalysisSet.h"
 #include "SimTKsimbody.h"
 #include "ForceSet.h"
+#include "ExternalLoads.h"
 
 class SimTK::State;
 class SimTK::System;
@@ -135,8 +136,12 @@ protected:
 	/** Whether the tool owns the model it operates on. Important for cleanup when done */
 	bool _toolOwnsModel;
 
-	/** External forces being applied. e.g. GRF */
-	ForceSet	_externalForces;
+	// EXTERNAL LOADS
+	/** Name of the file containing the external loads applied to the model. */
+	OpenSim::PropertyStr _externalLoadsFileNameProp;
+	std::string &_externalLoadsFileName;
+	/** Actual external forces being applied. e.g. GRF */
+	ExternalLoads	_externalLoads;
 
 //=============================================================================
 // METHODS
@@ -264,9 +269,13 @@ public:
 	void setReplaceForceSet(bool aReplace) { _replaceForceSet = aReplace; }
 
 	std::string getNextAvailableForceName(const std::string prefix="Force") const;
+	
+	const ExternalLoads& getExternalLoads() const { return _externalLoads; }
+	ExternalLoads& updExternalLoads() { return _externalLoads; }
 
-	const ForceSet& getExternalForceSet() const { return _externalForces; }
-	ForceSet& updExternalForceSet() { return _externalForces; }
+	// External loads get/set
+	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
+	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 
 	Array<std::string> &getForceSetFiles() { return _forceSetFiles; }
 	void setForceSetFiles(const Array<std::string> &aForceSetFiles) { _forceSetFiles = aForceSetFiles; }
@@ -369,34 +378,13 @@ public:
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     const std::string& aExternalLoadsModelKinematicsFileName,
                                      Model& aModel);
 
 #ifndef SWIG
         void initializeExternalLoads( SimTK::State& s, 
                                       const double& analysisStartTime,
-                                      const double& analysisFinalTime, 
-                                      Model &aModel,
-                                      const std::string &aExternalLoadsFileName,	//.xml file for external loads
-                                      const std::string &aExternalLoadsModelKinematicsFileName,
-                                      double aLowpassCutoffFrequencyForLoadKinematics);
+                                      const double& analysisFinalTime);
 
-     void computePointFunctions(SimTK::State& s, 
-                                double startTime,
-                                double endTime,
-                                const Body& body,
-                                const Storage& aQStore,
-                                const Storage& aUStore,
-                                VectorGCVSplineR1R3& aPGlobal,
-                                GCVSpline*& xfunc, 
-                                GCVSpline*& yfunc, 
-                                GCVSpline*& zfunc);
-	 void computeFunctions(SimTK::State& s, 
-                                double startTime,
-                                double endTime, 
-								const Storage& kineticsStore, 
-								Storage* qStore=NULL, 
-								Storage* uStore=NULL);
 #endif
 virtual void updateFromXMLNode();
 virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;

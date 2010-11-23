@@ -83,6 +83,7 @@ AbstractTool::AbstractTool():
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_toolOwnsModel(true)
 {
 	setType("AbstractTool");
@@ -115,6 +116,7 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_toolOwnsModel(true)
 {
     _analysisSet.setMemoryOwner(false);
@@ -177,6 +179,7 @@ AbstractTool::AbstractTool(const AbstractTool &aTool):
 	_analysisSet((AnalysisSet&)_analysisSetProp.getValueObj()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_toolOwnsModel(true)
 {
     _analysisSet.setMemoryOwner(false);
@@ -206,6 +209,7 @@ setNull()
 	_minDT = 1.0e-8;
 	_errorTolerance = 1.0e-3;
 	_toolOwnsModel=true;
+	_externalLoadsFileName = "";
 }
 //_____________________________________________________________________________
 /**
@@ -287,6 +291,10 @@ void AbstractTool::setupProperties()
     _controllerSetProp.setName("ControllerSet");
     _propertySet.append(&_controllerSetProp);
 
+	comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
+	_externalLoadsFileNameProp.setComment(comment);
+	_externalLoadsFileNameProp.setName("external_loads_file");
+	_propertySet.append( &_externalLoadsFileNameProp );
 }
 
 
@@ -324,6 +332,7 @@ operator=(const AbstractTool &aTool)
 	_analysisSet = aTool._analysisSet;
 	_toolOwnsModel = aTool._toolOwnsModel;
 
+	_externalLoadsFileName = aTool._externalLoadsFileName;
     // CONTROLLER
     _controllerSet = aTool._controllerSet;
     
@@ -558,7 +567,6 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 
 
 bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
-                                        const string& aExternalLoadsModelKinematicsFileName,
                                         Model& aModel) {
 
     if(aExternalLoadsFileName=="") {
@@ -568,21 +576,13 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
 
 
 	// CREATE FORCE AND TORQUE APPLIERS
-	_externalForces = ForceSet(aModel, aExternalLoadsFileName);
-	
-	for (int i=0; i<_externalForces.getSize(); i++){
-		aModel.addForce(&_externalForces.get(i));
-	}
-	_externalForces.setMemoryOwner(false);
+	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+	_externalLoads.setup(aModel);
 
-	// LOAD MODEL KINEMATICS FOR EXTERNAL LOADS
-	// To get the forces to be applied in the correct location, this file
-	// should be from the IK solution, not from pass 2 of rra which alters
-	// the kinematics.
-	/*if(aExternalLoadsModelKinematicsFileName=="") {
-		cout<<"\n\nERROR- a external loads kinematics file was not specified.\n\n";
-		return false;
-	}*/
+	for (int i=0; i<_externalLoads.getSize(); i++){
+		aModel.addForce(&_externalLoads.get(i));
+	}
+
     return(true);
 
 }
@@ -590,13 +590,14 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
 void AbstractTool::
 initializeExternalLoads( SimTK::State& s, 
                          const double& analysisStartTime, 
-                         const double& analysisFinalTime,
-						 Model& aModel, 
-                         const string &aExternalLoadsFileName,
-					     const string &aExternalLoadsModelKinematicsFileName,
-					  	 double aLowpassCutoffFrequencyForLoadKinematics)
+                         const double& analysisFinalTime
+						 )
 {
+	const string &aExternalLoadsFileName=_externalLoadsFileName;
+	const string &aExternalLoadsModelKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
+	double aLowpassCutoffFrequencyForLoadKinematics=_externalLoads.getLowpassCutoffFrequencyForLoadKinematics();
 	bool externalLoadKinematicsSpecified = (aExternalLoadsModelKinematicsFileName!="");
+	//const Model& aModel = _externalLoads.getModel();
 	Storage *qStore=NULL;
 	Storage *uStore=NULL;
 	if (externalLoadKinematicsSpecified){
@@ -607,8 +608,8 @@ initializeExternalLoads( SimTK::State& s,
 		// This means filling in unspecified generalized coordinates and
 		// setting constrained coordinates to their valid values.
 		Storage *uStoreTmp=NULL;
-		aModel.getSimbodyEngine().formCompleteStorages(s, loadsKinStore,qStore,uStoreTmp);
-		aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
+		_model->getSimbodyEngine().formCompleteStorages(s, loadsKinStore,qStore,uStoreTmp);
+		_model->getSimbodyEngine().convertDegreesToRadians(*qStore);
 		// Filter
 		qStore->pad(qStore->getSize()/2); 
 		if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
@@ -624,7 +625,7 @@ initializeExternalLoads( SimTK::State& s,
 		uStore = qSet.constructStorage(1);
 	}
 	// LOAD COP, FORCE, AND TORQUE
-	Storage kineticsStore(_externalForces.getDataFileName());
+	Storage kineticsStore(_externalLoads.getDataFileName());
 
 	int copSize = kineticsStore.getSize();
 	if(copSize<=0) return;
@@ -661,248 +662,10 @@ initializeExternalLoads( SimTK::State& s,
 		qStore->interpolateAt(analysisBoundTimes);
 	}
 	// Construt point, force and torque functions from file
-	computeFunctions(s, analysisStartTime, analysisFinalTime, kineticsStore, qStore, uStore);
+	_externalLoads.computeFunctions(s, analysisStartTime, analysisFinalTime, kineticsStore, qStore, uStore);
 
 }
-//-----------------------------------------------------------------------------
-// COMPUTE POSITION FUNCTIONS 
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Compute the position and velocity functions that set the position and
- * velocity of the point at which the linear spring applies its force.
- * This method takes the time histories of a point's
- * position and velocity in the inertial frame and converts them to the local
- * (body) frame.
- *
- * @param aQStore Storage containing the time history of generalized
- * coordinates for the model. Note that all generalized coordinates must
- * be specified and in radians and Euler parameters.
- * @param aUStore Storage containing the time history of generalized
- * speeds for the model.  Note that all generalized speeds must
- * be specified and in radians.
- * 
- * @kineticsStore Storage containing the time history for forces.
- */
-void AbstractTool::computeFunctions(SimTK::State& s, 
-                                double startTime,
-                                double endTime, 
-								const Storage& kineticsStore, 
-								Storage* aQStore, 
-								Storage* aUStore)
-{
-	// If force is global but applied to non-ground body we need to transfrom to
-	// correct frame. 
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-	int size = (aQStore!=NULL)?aQStore->getSize():0;
-	int forceSize = kineticsStore.getSize();
-	int startIndex=0;
-	int lastIndex=size;
-	if (aQStore != NULL){
-		if (startTime!= -SimTK::Infinity){	// Start time was actually specified.
-			startIndex = aQStore->findIndex(startTime); 
-		}
-		if (endTime!= SimTK::Infinity){	// Start time was actually specified.
-			lastIndex = aQStore->findIndex(endTime);
-		}
-	}
-	// Cycle thru forces to check if xform is needed
-	for(int f=0; f <_externalForces.getSize(); f++){
-		Force& nextForce = _externalForces.get(f);
-		PrescribedForce* pf = dynamic_cast<PrescribedForce*>(&nextForce);
-		if (pf){
-			// Now we have a PrescribedForce
-			// We can set ForceFunctions and TorqueFunctions directly
-			if (pf->getPointFunctions().getSize()==3){
-				if (pf->getPointIsInGlobalFrame()){
-					double *t=0,*x=0,*y=0,*z=0;
-					kineticsStore.getTimeColumn(t);
-					const FunctionSet& ffSet=pf->getPointFunctions();
-					kineticsStore.getDataColumn(ffSet[0].getName(), x);
-					kineticsStore.getDataColumn(ffSet[1].getName(), y);
-					kineticsStore.getDataColumn(ffSet[2].getName(), z);
-					GCVSpline *localrtFx, *localrtFy, *localrtFz;
-					localrtFx = new GCVSpline( 3, forceSize, t, x );
-					localrtFy = new GCVSpline( 3, forceSize, t, y );
-					localrtFz = new GCVSpline( 3, forceSize, t, z );
-					pf->setPointFunctions( localrtFx, localrtFy, localrtFz  );
-				}
-				else{ // need to xform point to proper frame utilizing
-					Array<double> localt(0.0,1);
-					Array<double> localy(0.0,nq+nu);
-					Vec3 originGlobal(0.0),origin(0.0);
-					Vec3 pGlobal(0.0, 0.0, 0.0);
-					Vec3 pLocal(0.0);
-					Vec3 vGlobal(0.0),vLocal(0.0);
-					Storage pStore,vStore;
-					const FunctionSet& ffSet=pf->getPointFunctions();
-					double *t=0,*x=0,*y=0,*z=0;
-					VectorGCVSplineR1R3 *aGlobal;
-					kineticsStore.getTimeColumn(t);
-					kineticsStore.getDataColumn(ffSet[0].getName(),x);
-					kineticsStore.getDataColumn(ffSet[1].getName(),y);
-					kineticsStore.getDataColumn(ffSet[2].getName(),z);
-					aGlobal = new VectorGCVSplineR1R3(3,forceSize,t,x,y,z);
-					if (aQStore!= NULL){	// Kinematics specified
-						for(int i=startIndex;i<lastIndex;i++) {
-							// Set the model state
-							aQStore->getTime(i,*(&localt[0]));
-							aQStore->getData(i,nq,&localy[0]);
-							aUStore->getData(i,nu,&localy[nq]);
-							for (int j = 0; j < nq; j++) {
-								Coordinate& coord = _model->getCoordinateSet().get(j);
-								coord.setValue(s, localy[j], j==nq-1);
-								coord.setSpeedValue(s, localy[nq+j]);
-							}
 
-							// Position in local frame (i.e. with respect to body's origin, not center of mass)
-							_model->getSimbodyEngine().getPosition(s,pf->getBody(),origin,originGlobal);
-							aGlobal->calcValue(&localt[0],&pGlobal[0], localt.getSize());
-							pLocal=pGlobal-originGlobal; 
-							_model->getSimbodyEngine().transform(s,_model->getSimbodyEngine().getGroundBody(),&pLocal[0],pf->getBody(),&pLocal[0]);
-							pStore.append(localt[0],3,&pLocal[0]);
-						}
-					}
-					else
-						pStore = kineticsStore;
-					// CREATE POSITION FUNCTION
-					double *time=NULL;
-					double *p0=0,*p1=0,*p2=0;
-					int padSize = size / 4;
-					if(padSize>100) padSize = 100;
-					pStore.pad(padSize);
-					size = pStore.getTimeColumn(time);
-					pStore.getDataColumn(0,p0);
-					pStore.getDataColumn(1,p1);
-					pStore.getDataColumn(2,p2);
-					GCVSpline *xFunc = new GCVSpline(3,size,time,p0);
-					GCVSpline *yFunc = new GCVSpline(3,size,time,p1);
-					GCVSpline *zFunc = new GCVSpline(3,size,time,p2);
-					pf->setPointFunctions(xFunc, yFunc, zFunc);
-					delete[] time;
-					delete[] p0;
-					delete[] p1;
-					delete[] p2;
-
-				}
-			}
-			if (pf->getForceFunctions().getSize()==3){
-				double *t=0,*x=0,*y=0,*z=0;
-				kineticsStore.getTimeColumn(t);
-				const FunctionSet& ffSet=pf->getForceFunctions();
-				kineticsStore.getDataColumn(ffSet[0].getName(), x);
-				kineticsStore.getDataColumn(ffSet[1].getName(), y);
-				kineticsStore.getDataColumn(ffSet[2].getName(), z);
-				GCVSpline *localrtFx, *localrtFy, *localrtFz;
-				localrtFx = new GCVSpline( 3, forceSize, t, x );
-				localrtFy = new GCVSpline( 3, forceSize, t, y );
-				localrtFz = new GCVSpline( 3, forceSize, t, z );
-				pf->setForceFunctions( localrtFx, localrtFy, localrtFz  );
-			}
-			if (pf->getTorqueFunctions().getSize()==3){
-				double *t=0,*x=0,*y=0,*z=0;
-				kineticsStore.getTimeColumn(t);
-				const FunctionSet& ffSet=pf->getTorqueFunctions();
-				kineticsStore.getDataColumn(ffSet[0].getName(), x);
-				kineticsStore.getDataColumn(ffSet[1].getName(), y);
-				kineticsStore.getDataColumn(ffSet[2].getName(), z);
-				GCVSpline *localrtFx, *localrtFy, *localrtFz;
-				localrtFx = new GCVSpline( 3, forceSize, t, x );
-				localrtFy = new GCVSpline( 3, forceSize, t, y );
-				localrtFz = new GCVSpline( 3, forceSize, t, z );
-				pf->setTorqueFunctions( localrtFx, localrtFy, localrtFz  );
-			}
-		}
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Compute the position and velocity functions that set the position and
- * velocity of the point at which the linear spring applies its force.
- * This method takes the time histories of a point's
- * position and velocity in the inertial frame and converts them to the local
- * (body) frame.
- *
- * @param aQStore Storage containing the time history of generalized
- * coordinates for the model. Note that all generalized coordinates must
- * be specified and in radians and Euler parameters.
- * @param aUStore Storage containing the time history of generalized
- * speeds for the model.  Note that all generalized speeds must
- * be specified and in radians.
- * @param aPStore Storage containing the time history of the position at
- * which the force is to be applied in the global frame.
- * DEPRECATED
- */
-void AbstractTool::computePointFunctions(SimTK::State& s, 
-                     double startTime,
-                     double endTime, 
-                     const OpenSim::Body& body,
-                     const Storage& aQStore,
-                     const Storage& aUStore,
-                     VectorGCVSplineR1R3& aPGlobal,
-                     GCVSpline*& xFunc, 
-                     GCVSpline*& yFunc, 
-                     GCVSpline*& zFunc)
-{
-	int i;
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-	int size = aQStore.getSize();
-	Array<double> t(0.0,1);
-	Array<double> y(0.0,nq+nu);
-	Vec3 originGlobal(0.0),origin(0.0);
-	Vec3 pGlobal(0.0, 0.0, 0.0);
-	Vec3 pLocal(0.0);
-	Vec3 vGlobal(0.0),vLocal(0.0);
-	Storage pStore,vStore;
-	int startIndex=0;
-	int lastIndex=size;
-	if (startTime!= -SimTK::Infinity){	// Start time was actually specified.
-		startIndex = aQStore.findIndex(startTime); 
-	}
-	if (endTime!= SimTK::Infinity){	// Start time was actually specified.
-		lastIndex = aQStore.findIndex(endTime);
-	}
-	for(i=startIndex;i<lastIndex;i++) {
-		// Set the model state
-		aQStore.getTime(i,*(&t[0]));
-		aQStore.getData(i,nq,&y[0]);
-		aUStore.getData(i,nu,&y[nq]);
-        for (int j = 0; j < nq; j++) {
-    		Coordinate& coord = _model->getCoordinateSet().get(j);
-            coord.setValue(s, y[j], j==nq-1);
-            coord.setSpeedValue(s, y[nq+j]);
-        }
-
-		// Position in local frame (i.e. with respect to body's origin, not center of mass)
-		_model->getSimbodyEngine().getPosition(s,body,origin,originGlobal);
-		aPGlobal.calcValue(&t[0],&pGlobal[0], t.getSize());
-		pLocal=pGlobal-originGlobal; //Mtx::Subtract(1,3,&pGlobal[0],&originGlobal[0],&pLocal[0]);
-		_model->getSimbodyEngine().transform(s,_model->getSimbodyEngine().getGroundBody(),&pLocal[0],body,&pLocal[0]);
-		pStore.append(t[0],3,&pLocal[0]);
-	}
-
-	// CREATE POSITION FUNCTION
-	double *time=NULL;
-	double *p0=0,*p1=0,*p2=0;
-	int padSize = size / 4;
-	if(padSize>100) padSize = 100;
-	pStore.pad(padSize);
-	size = pStore.getTimeColumn(time);
-	pStore.getDataColumn(0,p0);
-	pStore.getDataColumn(1,p1);
-	pStore.getDataColumn(2,p2);
-	xFunc = new GCVSpline(3,size,time,p0);
-	yFunc = new GCVSpline(3,size,time,p1);
-	zFunc = new GCVSpline(3,size,time,p2);
-	delete[] time;
-	delete[] p0;
-	delete[] p1;
-	delete[] p2;
-
-}
 //_____________________________________________________________________________
 /**
  * Override default implementation by object to intercept and fix the XML node
@@ -1051,7 +814,7 @@ std::string AbstractTool::getNextAvailableForceName(const std::string prefix) co
 			if (_model->getForceSet().contains(candidateName))
 				continue;
 		}
-		found = !(_externalForces.contains(candidateName));
+		found = !(_externalLoads.contains(candidateName));
 	};
 	return candidateName;
 }
@@ -1079,7 +842,7 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 										  const std::string& body1, 
 										  const std::string& body2)
 {
-	ForceSet& fs=_externalForces;
+	ExternalLoads& fs=_externalLoads;
 	bool oldFileValid = !(oldFile=="" || oldFile=="Unassigned");
 
 	std::string savedCwd;

@@ -61,15 +61,13 @@ ForceSet::~ForceSet()
 /**
  * Default constructor.
  */
-ForceSet::ForceSet():
-_dataFileName(_dataFileNameProp.getValueStr())
+ForceSet::ForceSet()
 {
 	setNull();
 }
 
 ForceSet::ForceSet(Model& model) : 
-ModelComponentSet<Force>(model),
-_dataFileName(_dataFileNameProp.getValueStr())
+ModelComponentSet<Force>(model)
 {
 	setNull();
 }
@@ -81,8 +79,7 @@ _dataFileName(_dataFileNameProp.getValueStr())
  * @param aFileName Name of the file.
  */
 ForceSet::ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-	ModelComponentSet<Force>(model, aFileName, false),
-	_dataFileName(_dataFileNameProp.getValueStr())
+	ModelComponentSet<Force>(model, aFileName, false)
 {
 	setNull();
 
@@ -98,8 +95,7 @@ ForceSet::ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromX
  * @param aForceSet ForceSet to be copied.
  */
 ForceSet::ForceSet(const ForceSet &aForceSet) :
-	ModelComponentSet<Force>(aForceSet),
-	_dataFileName(_dataFileNameProp.getValueStr())
+	ModelComponentSet<Force>(aForceSet)
 {
 	setNull();
 
@@ -155,7 +151,6 @@ void ForceSet::copyData(const ForceSet &aAbsForceSet)
 	_actuators.setMemoryOwner(false);
 	_muscles = aAbsForceSet._muscles;
 	_muscles.setMemoryOwner(false);
-	_dataFileName = aAbsForceSet._dataFileName;
 }
 
 //_____________________________________________________________________________
@@ -164,10 +159,6 @@ void ForceSet::copyData(const ForceSet &aAbsForceSet)
  */
 void ForceSet::setupSerializedMembers()
 {
-	_dataFileNameProp.setName("datafile");
-	_dataFileName="";
-	_propertySet.append(&_dataFileNameProp);
-
 }
 
 void ForceSet::setup(Model& aModel)
@@ -471,125 +462,4 @@ check() const
 	}
 
 	return(status);
-}
-
-//_____________________________________________________________________________
-/**
- * Create a set of prescribed forces from a file.
- * Assumptions:
- *  1. instance variable _dataFileName is set already
- *  2. Sizes of the three arrays startForceColumns, bodyNames, columnCount is identical
- *  3. columnCount is 
- *						9: Force, Point, Torque 
- *						6: Force, Point
- */
-void ForceSet::createForcesFromFile(const std::string& fileName,
-									Array<std::string>& startForceColumns, 
-									Array<int>& columnCount,
-									Array<std::string>& bodyNames)
-{
-	_dataFileName=fileName;
-	assert(_dataFileName!="");
-
-	Storage kineticsStore(_dataFileName);
-	int forceSize = kineticsStore.getSize();
-	if(forceSize<=0) return;
-
-	assert(startForceColumns.getSize()==columnCount.getSize());
-	assert(startForceColumns.getSize()==bodyNames.getSize());
-	double *t=0;
-	kineticsStore.getTimeColumn(t);
-	const Array<string>& lbls=kineticsStore.getColumnLabels();
-
-	if (startForceColumns.getSize()==0){	
-		// User didn't specify,
-		// We'll assume 9 columns for force, point, torque
-		int nColumns = lbls.getSize()-1;
-		int nForces = nColumns/9;
-		for(int i=0; i<nForces; i++){
-			startForceColumns.append(lbls[i*9+1]);
-			columnCount.append(9);
-			bodyNames.append("ground");
-		}
-	}
-	// Make sure that column names are unique, otherwise assert
-	// Sort names and then do one pass for more intelligent name finding.
-	// This need to be made more efficient using some stl sorting implementation
-	bool duplicateIsFound = false;
-	std::string duplicateName="";
-	for(int i=0; i< startForceColumns.getSize()-1 && !duplicateIsFound; i++){
-		for(int j=i+1; j< startForceColumns.getSize()-1 && !duplicateIsFound; i++){
-			duplicateIsFound = (startForceColumns.get(i)==startForceColumns.get(j));
-			if (duplicateIsFound) duplicateName = startForceColumns.get(i);
-		}
-	}
-	if (duplicateIsFound){
-		string msg = "Create forces from file "+_dataFileName+", duplicate column "
-			+duplicateName+" found.\nOperation is aborted, please have unique column names and retry.";
-		throw Exception(msg,__FILE__,__LINE__);
-	}
-	{
-		double *column1=0;
-		double *column2=0;
-		double *column3=0;
-
-		for(int i=0; i< startForceColumns.getSize(); i++){
-			std::string labelX = startForceColumns[i];
-			int storageIndex=lbls.findIndex(labelX);
-
-			kineticsStore.getDataColumn(labelX, column1);
-			std::string labelY = lbls[storageIndex+1];
-			kineticsStore.getDataColumn(labelY, column2);
-			std::string labelZ = lbls[storageIndex+2];
-			kineticsStore.getDataColumn(labelZ, column3);
-
-			PrescribedForce* pf= new PrescribedForce();
-			pf->setBodyName(bodyNames[i]);
-			// If columnCount is 3 then create the forces and we're done
-			NaturalCubicSpline* spline1= new NaturalCubicSpline(forceSize, t, column1, labelX);
-			NaturalCubicSpline* spline2= new NaturalCubicSpline(forceSize, t, column2, labelY);
-			NaturalCubicSpline* spline3= new NaturalCubicSpline(forceSize, t, column3, labelZ);
-			delete column1, column2, column3;
-			column1 = column2 = column3 = 0;
-			//
-			pf->setForceFunctions(spline1, spline2, spline3);	// Copies of these functions are made 
-
-			if (columnCount[i]>=6){
-				std::string labelX = lbls[storageIndex+3];
-				kineticsStore.getDataColumn(labelX, column1);
-				std::string labelY = lbls[storageIndex+4];
-				kineticsStore.getDataColumn(labelY, column2);
-				std::string labelZ = lbls[storageIndex+5];
-				kineticsStore.getDataColumn(labelZ, column3);
-
-				// If columnCount is 3 then create the forces and we're done
-				NaturalCubicSpline* spline1= new NaturalCubicSpline(forceSize, t, column1, labelX);
-				NaturalCubicSpline* spline2= new NaturalCubicSpline(forceSize, t, column2, labelY);
-				NaturalCubicSpline* spline3= new NaturalCubicSpline(forceSize, t, column3, labelZ);
-
-				delete column1, column2, column3;
-				column1 = column2 = column3 = 0;
-				pf->setPointFunctions(spline1, spline2, spline3); 
-			}
-			if (columnCount[i]==9){
-				std::string labelX = lbls[storageIndex+6];
-				kineticsStore.getDataColumn(labelX, column1);
-				std::string labelY = lbls[storageIndex+7];
-				kineticsStore.getDataColumn(labelY, column2);
-				std::string labelZ = lbls[storageIndex+8];
-				kineticsStore.getDataColumn(labelZ, column3);
-
-				// If columnCount is 3 then create the forces and we're done
-				NaturalCubicSpline* spline1= new NaturalCubicSpline(forceSize, t, column1, labelX);
-				NaturalCubicSpline* spline2= new NaturalCubicSpline(forceSize, t, column2, labelY);
-				NaturalCubicSpline* spline3= new NaturalCubicSpline(forceSize, t, column3, labelZ);
-
-				delete column1, column2, column3;
-				column1 = column2 = column3 = 0;
-				pf->setTorqueFunctions(spline1, spline2, spline3); 
-			}
-			append(pf);
-		}
-	}
-	print("externalForces.xml");
 }

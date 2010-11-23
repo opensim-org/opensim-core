@@ -44,9 +44,7 @@ AnalyzeTool::AnalyzeTool() :
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _loadModelAndInput(false),
 	_printResultFiles(true)
 {
@@ -68,9 +66,7 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _loadModelAndInput(aLoadModelAndInput),
 	_printResultFiles(true)
 {
@@ -99,9 +95,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _loadModelAndInput(false),
 	_printResultFiles(true)
 {
@@ -166,10 +160,8 @@ AnalyzeTool(const AnalyzeTool &aTool) :
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-    _loadModelAndInput(false),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl())
+    _loadModelAndInput(false)
 {
 	setType("AnalyzeTool");
 	setNull();
@@ -200,9 +192,7 @@ setNull()
 	_coordinatesFileName = "";
 	_speedsFileName = "";
 	_externalLoadsFileName = "";
-	_externalLoadsModelKinematicsFileName = "";
 	_lowpassCutoffFrequency = -1.0;
-	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
 
 	_statesStore = NULL;
 
@@ -248,23 +238,6 @@ void AnalyzeTool::setupProperties()
 	_lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
 	_propertySet.append( &_lowpassCutoffFrequencyProp );
 
-	comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
-	_externalLoadsFileNameProp.setComment(comment);
-	_externalLoadsFileNameProp.setName("external_loads_file");
-	_propertySet.append( &_externalLoadsFileNameProp );
-
-	comment =	"Motion file (.mot) or storage file (.sto) containing the model kinematics "
-					"corresponding to the external loads.";
-	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
-	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
-	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
-
-	comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding "
-				 "to the external loads. A negative value results in no filtering. "
-				 "The default value is -1.0, so no filtering.";
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
-	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 }
 
 
@@ -288,9 +261,7 @@ operator=(const AnalyzeTool &aTool)
 	_coordinatesFileName = aTool._coordinatesFileName;
 	_speedsFileName = aTool._speedsFileName;
 	_externalLoadsFileName = aTool._externalLoadsFileName;
-	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
 	_lowpassCutoffFrequency= aTool._lowpassCutoffFrequency;
-	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
 	_statesStore = aTool._statesStore;
 	_printResultFiles = aTool._printResultFiles;
 	return(*this);
@@ -513,12 +484,7 @@ bool AnalyzeTool::run(bool plotting)
 		cout<<endl<<msg<<endl;
 		throw(Exception(msg,__FILE__,__LINE__));
 	}
-    //PrescribedForce* body1Force;
-    //PrescribedForce* body2Force;
-    //PrescribedForce* body1Torque;
-    //PrescribedForce* body2Torque;
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, _externalLoadsModelKinematicsFileName,
-                                     *_model);
+    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
 	// Call initSystem except when plotting
@@ -549,8 +515,7 @@ bool AnalyzeTool::run(bool plotting)
 
 	// External Loads
 	if( externalLoads ) {
-	    initializeExternalLoads(s, _ti, _tf, *_model,
-        _externalLoadsFileName,_externalLoadsModelKinematicsFileName,_lowpassCutoffFrequencyForLoadKinematics);
+	    initializeExternalLoads(s, _ti, _tf);
      }
 
 	// ANALYSIS SET

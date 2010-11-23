@@ -57,6 +57,7 @@
 #include "Model/PrescribedForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/BushingForce.h"
+#include "Model/ExternalLoads.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"

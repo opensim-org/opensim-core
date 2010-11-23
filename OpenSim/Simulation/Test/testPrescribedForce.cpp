@@ -237,91 +237,12 @@ void testTorque()
     testPrescribedForce(NULL, NULL, NULL, NULL, NULL, NULL, torqueX, torqueY, torqueZ, times, accel, angularAccel);
 }
 
-int testReadFromFile()
-{
-	Model *osimModel = new Model;
-	//OpenSim bodies
-    OpenSim::Body& ground = osimModel->getGroundBody();
-	OpenSim::Body ball;
-	ball.setName("ball");
-
-	// Add joints
-	FreeJoint free("", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), false);
-
-	// Rename coordinates for a free joint
-	CoordinateSet free_coords = free.getCoordinateSet();
-	for(int i=0; i<free_coords.getSize(); i++){
-		std::stringstream coord_name;
-		coord_name << "free_q" << i;
-		free_coords.get(i).setName(coord_name.str());
-		free_coords.get(i).setMotionType(i > 2 ? Coordinate::Translational : Coordinate::Rotational);
-	}
-
-	osimModel->addBody(&ball);
-
-	// Add a PrescribedForce.
-	PrescribedForce* force = new PrescribedForce(&ball);
-	force->setFunctionsFromFile("testForceFile.mot");
-	osimModel->updForceSet().append(force);
-
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
-
-	ForceSet newForceSet;
-	std::string colNamesArray[1]={"forceX"};
-	OpenSim::Array<std::string> colNames;	colNames.append(1, colNamesArray);
-
-	std::string bodyNamesArray[1]={"ball"};
-	OpenSim::Array<std::string> bodyNames;	bodyNames.append(1, bodyNamesArray);
-
-	int colCountArray[]={9};
-	OpenSim::Array<int> colCounts;	colCounts.append(1, colCountArray);
-
-	newForceSet.createForcesFromFile(std::string("testForceFile.mot"), colNames, colCounts, bodyNames);
-	newForceSet.print("serializeTo.xml");
-
-    //Set mass
-	ball.setMass(ballMass.getMass());
-	ball.setMassCenter(ballMass.getMassCenter());
-	ball.setInertia(ballMass.getInertia());
-
-	osimModel->setGravity(gravity_vec);
-
-    SimTK::State osim_state = osimModel->initSystem();
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
-
-	//==========================================================================================================
-	// Compute the force and torque at the specified times.
-	/*
-    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-    Manager manager(*osimModel, integrator);
-    manager.setInitialTime(0.0);
-    for (unsigned int i = 0; i < times.size(); ++i)
-    {
-        manager.setFinalTime(times[i]);
-        manager.integrate(osim_state);
-        osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 accel, angularAccel;
-        osimModel->updSimbodyEngine().getAcceleration(osim_state, ball, Vec3(0), accel);
-        osimModel->updSimbodyEngine().getAngularAcceleration(osim_state, ball, angularAccel);
-        ASSERT_EQUAL(accelerations[i][0], accel[0], 1e-10);
-        ASSERT_EQUAL(accelerations[i][1], accel[1], 1e-10);
-        ASSERT_EQUAL(accelerations[i][2], accel[2], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][0], angularAccel[0], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][1], angularAccel[1], 1e-10);
-        ASSERT_EQUAL(angularAccelerations[i][2], angularAccel[2], 1e-10);
-    }
-	*/
-	return 0;
-}
-
 int main()
 {
 	testNoForce();
     testForceAtOrigin();
     testForceAtPoint();
     testTorque();
-	testReadFromFile();
 
 	return 0;
 }

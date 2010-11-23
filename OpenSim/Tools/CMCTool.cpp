@@ -288,11 +288,6 @@ void CMCTool::setupProperties()
 	_desiredKinematicsFileNameProp.setName("desired_kinematics_file");
 	_propertySet.append( &_desiredKinematicsFileNameProp );
 
-	comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
-	_externalLoadsFileNameProp.setComment(comment);
-	_externalLoadsFileNameProp.setName("external_loads_file");
-	_propertySet.append( &_externalLoadsFileNameProp );
-
 	comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
 	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
@@ -535,8 +530,7 @@ bool CMCTool::run()
 							     _adjustedCOMBodyProp.getName()+" not found",__FILE__,__LINE__);
 	}
 
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, _externalLoadsModelKinematicsFileName,
-                                     *_model);
+    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);  	 	 
     cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl; 		 
@@ -683,8 +677,7 @@ bool CMCTool::run()
 
 	// GROUND REACTION FORCES
     if( externalLoads ) {
-	   initializeExternalLoads(s, _ti, _tf, *_model,
-       _externalLoadsFileName,_externalLoadsModelKinematicsFileName,_lowpassCutoffFrequencyForLoadKinematics);
+	   initializeExternalLoads(s, _ti, _tf);
     }
 
 	// Adjust COM to reduce residuals (formerly RRA pass 1) if requested

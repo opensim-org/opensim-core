@@ -76,10 +76,8 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 
 	Object::RegisterType( ScaleTool() );
 	Object::RegisterType( IKTool() );
-	//Object::RegisterType( FIKSTool() );
 	Object::RegisterType( CMCTool() );
 	Object::RegisterType( ForwardTool() );
-	//Object::RegisterType( PerturbationTool() );
 	Object::RegisterType( AnalyzeTool() );
 
 	Object::RegisterType( GenericModelMaker() );
