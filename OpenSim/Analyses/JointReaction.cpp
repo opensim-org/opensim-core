@@ -587,9 +587,6 @@ record(const SimTK::State& s)
 			}
 			actuatorSet->get(actuatorIndex).setForce(s,forces[storageIndex]);
 		}
-		// Must invalidate the velocity stage since the change in forces will cause a change in velocities
-		s.invalidateAll(SimTK::Stage::Velocity);
-
 	}
 	// VARIABLES
 	int numBodies = _model->getNumBodies();
