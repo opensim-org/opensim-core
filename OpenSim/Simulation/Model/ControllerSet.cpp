@@ -340,8 +340,17 @@ void ControllerSet::createSystem(SimTK::MultibodySystem& system)
 {
    for(int i=0;i<getSize(); i++ ) {
        //get(i).setModel(*_model);
-       if(get(i).getIsEnabled() ) get(i).createSystem(system);
+       if(get(i).getIsEnabled() )
+		   get(i).createSystem(system);
    }
+}
+
+void ControllerSet::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
+{
+	for(int i=0;i<getSize(); i++ ) {
+		if(get(i).getIsEnabled() )
+			get(i).computeControls(s, controls);
+	}
 }
 
 //_____________________________________________________________________________

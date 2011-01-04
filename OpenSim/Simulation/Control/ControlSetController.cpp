@@ -107,13 +107,11 @@ Object* ControlSetController::copy() const
 }
 
 
-
 //_____________________________________________________________________________
 /**
  * Set NULL values for all member variables.
  */
-void ControlSetController::
-setNull()
+void ControlSetController::setNull()
 {
     setupProperties();
 	setType("ControlSetController");
@@ -186,41 +184,34 @@ operator=(const ControlSetController &aController)
 // GET AND SET
 //=============================================================================
 
-// set the pointer to the actuator's controller and the control index for 
-// the actuator. First check that this the actuator is not being controlled
-// by another contoller (likely a feedback controller )
-void ControlSetController::setActuators( Set<Actuator>& as ) {
-
-    SimTK_ASSERT( _controlSet , "ControlSetController::setActuators controlSet is NULL");
-
-    for(int i=0; i<as.getSize(); i++ ) {
-        Actuator& act = as.get(i);
-        int index = _controlSet->getIndex(act.getName() );
-		if(index == -1)
-			index = _controlSet->getIndex(act.getName()+".excitation" );
-    }
-}
-
 //=============================================================================
 // CONTROL
 //=============================================================================
 
-// compute the control value for an actuator
-double ControlSetController::computeControl(const SimTK::State& s, int index )  const{
-   
-   SimTK_ASSERT( _controlSet , "ControlSetController::computeControl controlSet is NULL");
+// compute the control value for all actuators this Controller is responsible for
+void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
+{
+	SimTK_ASSERT( _controlSet , "ControlSetController::computeControls controlSet is NULL");
 
-   SimTK_ASSERT( index < _controlSet->getSize(),
-   "ControlSetController::computeControl:  index > size of actuator set" );
+	std::string actName = "";
+	int index = -1;
 
-   SimTK_ASSERT( index >= 0,
-   "ControlSetController::computeControl:  index < 0" );
-//std::cout << "ControlSetController::computeControl " << _controlSet->get(index).getName() << "  t=" << s.getTime() << " control=" << _controlSet->get(index).getControlValue( s.getTime()) << std::endl; 
-   return(_controlSet->get(index).getControlValue( s.getTime()) ) ;
+	for(int i=0; i<_actuatorSet.getSize(); i++){
+		actName = _actuatorSet[i].getName();
+		index = _controlSet->getIndex(actName);
+		if(index < 0){
+			actName = actName + ".excitation";
+			index = _controlSet->getIndex(actName);
+		}
+
+		if(index >= 0){
+			SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
+			_actuatorSet[i].insertControls(actControls, controls);
+		}
+	}
 }
 
-double ControlSetController::
-getFirstTime() const {
+double ControlSetController::getFirstTime() const {
     Array<int> controlList;
    SimTK_ASSERT( _controlSet , "ControlSetController::getFirstTime controlSet is NULL");
 

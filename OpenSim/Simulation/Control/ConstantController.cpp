@@ -201,9 +201,12 @@ setActuators( Set<Actuator>& as ) {
 //=============================================================================
 
 // compute the control value for an actuator
-double ConstantController::computeControl(const SimTK::State& s, int index )  const{
-   
-   return(_controlConstant);
+void ConstantController::computeControls(const SimTK::State& s, SimTK::Vector& controls) const
+{
+   	for(int i=0; i<_actuatorSet.getSize(); i++){
+		SimTK::Vector actControls(1, _controlConstant);
+		_actuatorSet[i].insertControls(actControls, controls);
+	}
 }
 
 

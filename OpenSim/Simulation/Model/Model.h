@@ -92,12 +92,17 @@ class OSIMSIMULATION_API Model  : public ModelComponent
 //=============================================================================
 private:
 
-   /* Simbody  multibody system */    
-   SimTK::MultibodySystem* _system;
-   SimTK::SimbodyMatterSubsystem* _matter;
-   SimTK::Force::Gravity* _gravityForce;
-   SimTK::GeneralForceSubsystem* _forceSubsystem;
-   SimTK::GeneralContactSubsystem* _contactSubsystem;
+	/* Simbody  multibody system */    
+	SimTK::MultibodySystem* _system;
+	SimTK::SimbodyMatterSubsystem* _matter;
+	SimTK::Force::Gravity* _gravityForce;
+	SimTK::GeneralForceSubsystem* _forceSubsystem;
+	SimTK::GeneralContactSubsystem* _contactSubsystem;
+
+	/** Model controls as a shared pool (Vector) of individual Actuator controls */
+	SimTK::MeasureIndex _modelControlsIndex;
+	/** Defaul values pooled from Actuators upon system creation */ 
+	SimTK::Vector& _defaultControls;
 
 	/** Name of file from which the model was constructed. */
 	std::string _fileName;
@@ -352,7 +357,6 @@ public:
 	//--------------------------------------------------------------------------
 	// CREATE THE MULTIBODY SYSTEM
 	//--------------------------------------------------------------------------
-
 	/**
 	 * Add ModelComponents to the Model. Model takes ownership of the objects.
 	 */
@@ -367,7 +371,6 @@ public:
 	//--------------------------------------------------------------------------
 	// FILE NAME
 	//--------------------------------------------------------------------------
-
 	/** 
 	 * Get the XML file name used to construct the model. 
 	 *
@@ -417,7 +420,6 @@ public:
 	//--------------------------------------------------------------------------
 	// UNITS
 	//--------------------------------------------------------------------------
-	
 	/** 
 	 * Get the length units associated with the model. 
 	 *
@@ -457,73 +459,52 @@ public:
 	virtual bool setGravity(const SimTK::Vec3& aGrav);
 
 	//--------------------------------------------------------------------------
-	// ADD JOINT
-	//--------------------------------------------------------------------------
-	
-	/**
-	 * Add a joint and associated child body.
-	 *
-	 * @param aJoint The joint.
-	 */
-	//virtual void addJoint(OpenSim::Joint& aJoint);
-
-	//--------------------------------------------------------------------------
 	// NUMBERS
 	//--------------------------------------------------------------------------
-
 	/**
 	 * Get the number of states in the model.
-	 *
 	 * @return Number of states.
 	 */
 	virtual int getNumStates(bool includeSimTKStates=false) const;
 
 	/**
-	 * Get the number of controls in the model.
-	 *
+	 * Get the number of markers in the model.
 	 * @return Number of markers.
 	 */
     virtual int getNumMarkers() const;
 
 	/**
 	 * Get the number of ContactGeometries in the model.
-	 *
 	 * @return Number of ContactGeometries.
 	 */
     virtual int getNumContactGeometries() const;
 
-
 	/**
 	 * Get the total number of bodies in the model.
-	 *
 	 * @return Number of bodies.
 	 */
 	virtual int getNumBodies() const;
 
 	/**
 	 * Get the total number of joints in the model.
-	 *
 	 * @return Number of joints.
 	 */
 	virtual int getNumJoints() const;
 
 	/**
 	 * Get the total number of coordinates in the model.
-	 *
 	 * @return Number of coordinates.
 	 */
 	virtual int getNumCoordinates() const;
 
 	/**
 	 * Get the total number of speeds in the model.
-	 *
 	 * @return Number of speeds.
 	 */
 	virtual int getNumSpeeds() const;
 
     /**
      * Get the subset of Forces in the model which are actuators
-     *
      * @return The set of Actuators
      */
     const Set<Actuator>& getActuators() const;
@@ -531,7 +512,6 @@ public:
 
     /**
      * Get the subset of Forces in the model which are muscles
-     *
      * @return The set of Muscles
      */
     const Set<Muscle>& getMuscles() const;
@@ -539,23 +519,48 @@ public:
 
     const ForceSet& getForceSet() const { return _forceSet; };
     ForceSet& updForceSet() { return _forceSet; };
+
 	/**
 	 * Get the number of analyses in the model.
-	 *
 	 * @return The number of analyses.
 	 */
 	virtual int getNumAnalyses() const;
 
-	/**
-	 * Get the number of configurations in the model.
-	 *
-	 * @return The number of coordinates plus speeds.
-	 */
-	int getNumConfigurations() const { return getNumCoordinates() + getNumSpeeds(); }
-
     //--------------------------------------------------------------------------
     // CONTROLS
     //--------------------------------------------------------------------------
+	/**
+	 * Get the number of controls for this the model.
+	 * Only valid once underlying system for the model has been created.
+	 * Throws an exception if called before Model::initSystem()
+	 * @return number of controls corresponding to all the actuators in the model
+	 */
+	int getNumControls() const;
+
+	/** Writable access to the default values for controls. These values are used for 
+	    control value during a simulation unless updated, for example, by a Controller */
+	SimTK::Vector& updDefaultControls() const { return _defaultControls;} ;
+	const SimTK::Vector& getDefaultControls() const { return _defaultControls; };
+
+	/**
+	 * Update the controls for this the model at a given state.
+	 * Only valid once underlying system for the model has been created.
+	 * Throws an exception if called before Model::initSystem()
+	 * This call invalidates the dynamics of the model.
+	 * @return writable controls Vector
+	 */
+	SimTK::Vector& updControls(const SimTK::State &s) const;
+	/** Const access to controls does not invalidate dynamics */
+	const SimTK::Vector& getControls(const SimTK::State &s) const;
+
+	/** Compute the controls the model
+	 *  Calls down to the Controllers to make their contributions to the controls. 
+	 *
+	 * @param s system state 
+	 * @param writable model controls
+	 */
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const;
+
 	/**
 	 * Get a flag indicating if the model needs controls to operate its actuators
 	 */

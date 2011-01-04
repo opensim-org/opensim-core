@@ -130,7 +130,7 @@ public:
 	// COMPUTATION
 	//--------------------------------------------------------------------------
 
-    virtual double computeControl(const SimTK::State& s, int index) const;
+    virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 
 
 protected:

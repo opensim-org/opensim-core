@@ -1085,15 +1085,35 @@ FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 }
 
 
-double CMC::computeControl(const SimTK::State& s, int index) const {
-    SimTK_ASSERT( index < _controlSet.getSize(),
-   "CMC::computeControl:  index > size of actuator set" );
+// Controller Interface. 
+// compute the control value for all actuators this Controller is responsible for
+void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
+{
+	SimTK_ASSERT( _controlSet.getSize() == _actuatorSet.getSize() , 
+		"CMC::computeControls number of controls does not match number of actuators.");
 
-   return(_controlSet.get(index).getControlValue( s.getTime()) ) ;
+	std::string actName = "";
+	for(int i=0; i<_actuatorSet.getSize(); i++){
+		actName = _actuatorSet[i].getName();
+		int index = _controlSet.getIndex(actName);
+		if(index < 0){
+			actName = actName + ".excitation";
+			index = _controlSet.getIndex(actName);
+		}
+		if(index > -1){
+			SimTK::Vector actControls(1, _controlSet[index].getControlValue(s.getTime()));
+			_actuatorSet[i].insertControls(actControls, controls);
+		}
+		else{
+			throw Exception("CMC::computeControls "+actName+" has no controls computed.");
+		}
+	}
 }
 
-void CMC::setActuators( Set<Actuator>& actSet )  {
-
+void CMC::setActuators( Set<Actuator>& actSet ) 
+{
+	Controller::setActuators(actSet);
+	
     _controlSet.setName(_model->getName());
 
 	_controlSet.setSize(0);

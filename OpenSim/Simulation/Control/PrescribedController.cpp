@@ -162,16 +162,18 @@ PrescribedController& PrescribedController::operator=(const PrescribedController
 }
 
 // compute the control value for an actuator
-double PrescribedController::computeControl(const SimTK::State& s, int index )  const
+void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector& controls) const
 {
-   SimTK_ASSERT( index < _actuatorSet.getSize(),
-   "PrescribedController::computeControl:  index > number of actuators" );
+	std::string actName = "";
+	int index = -1;
 
-   SimTK_ASSERT( index >= 0,  "PrescribedController::computeControl:  index < 0" );
+	SimTK::Vector actControls(1, 0.0);
+	SimTK::Vector time(1, s.getTime());
 
-   double controlValue = _prescribedControlFunctions.get(index)->calcValue( SimTK::Vector(1, s.getTime()));
-   
-   return controlValue;
+	for(int i=0; i<_actuatorSet.getSize(); i++){
+		actControls[0] = _prescribedControlFunctions[i]->calcValue(time);
+		_actuatorSet[i].insertControls(actControls, controls);
+	}  
 }
 
 //=============================================================================

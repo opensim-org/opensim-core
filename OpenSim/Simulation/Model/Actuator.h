@@ -59,27 +59,21 @@ class Coordinate;
  * @author Ajay Seth
  * @version 2.0
  */
-template<int M> class OSIMSIMULATION_API Actuator_ : public Force
+ class OSIMSIMULATION_API Actuator_ : public Force
 {
-
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
+
 	/** Name suffixes. */
 	Array<std::string> _controlSuffixes;
   
+	/** Subsystem that actuator can add state and cache variables to */ 
     SimTK::SubsystemIndex _subsystemIndex;
-    int _numStateVariables;
   
-    // indexes in SimTK::State cache
-	SimTK::CacheEntryIndex _controlIndex;
-    SimTK::CacheEntryIndex _forceIndex;
-    SimTK::CacheEntryIndex _speedIndex;
-
-	SimTK::DiscreteVariableIndex _overrideForceIndex;
- 
-	StateFunction* _overrideForceFunction;
+    // index in Controls Vector shared system cache entry
+	int _controlIndex;
 
 //=============================================================================
 // METHODS
@@ -120,20 +114,21 @@ protected:
 
 public:
 
-	// CONTROLS
-	virtual const SimTK::Vector& getControls( const SimTK::State& s ) const;
-	virtual double getControl( const SimTK::State& s ) const;
-	virtual void setControls(const SimTK::State &s, const SimTK::Vector& controls) const;
-	virtual void setControl(const SimTK::State &s, double control) const;
-	virtual int getNumControls() const {return M;}  
+	//Model building
+	virtual int numControls() const = 0;
 
-	virtual void setForce(const SimTK::State& s, double aForce) const; 
-    virtual double getForce( const SimTK::State& s) const;
-    virtual void setSpeed( const SimTK::State& s, double aspeed) const;
-    virtual double getSpeed( const SimTK::State& s) const;
-	virtual double getPower(const SimTK::State& s) const { return getForce(s)*getSpeed(s); }
-	virtual double getStress(const SimTK::State& s) const;
-	virtual double getOptimalForce() const;
+	/** Actuator default controls are zero */
+	virtual const SimTK::Vector getDefaultControls() { return SimTK::Vector(numControls(), 0.0); } 
+
+	// CONTROLS
+	virtual const SimTK::VectorView_<double> getControls( const SimTK::State& s ) const;
+	/** Convenience methods for extracting, inserting and adding actuatord controls from/into 
+	    the model controls. These methods have no effect on the realization stage. */
+	virtual void extractControls(const SimTK::Vector& modelControls, SimTK::Vector& actuatorControls) const;
+	/** insert actuator controls subvector into the right slot in the system-wide model controls */
+	virtual void insertControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
+	/** add actuator controls to the values already occupying the slot in the system-wide model controls */
+	virtual void addInControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -154,16 +149,88 @@ public:
 	virtual void replacePropertyFunction(Function* aOldFunction, Function* aNewFunction);
 
 
-    ///--------------------------------------------------------------------------
+//=============================================================================
+};	// END of class Actuator_
+//=============================================================================
+
+/**
+ * Derived class for an actuator (e.g., a torque motor, muscle, ...) that 
+ * requires excactly one external input (control) to generate a scalar
+ * value force, such as a torque/force magnitude or a tension.
+ *
+ * @author Ajay Seth
+ * @version 2.0
+ */
+class OSIMSIMULATION_API Actuator : public Actuator_
+{
+protected:
+
+	int _numStateVariables;
+  
+    //additional cache indexes for scalar valued actuators
+    SimTK::CacheEntryIndex _forceIndex;
+    SimTK::CacheEntryIndex _speedIndex;
+
+	SimTK::DiscreteVariableIndex _overrideForceIndex;
+ 
+	StateFunction* _overrideForceFunction;
+
+	/** Bounds on control of this actuator. */
+	PropertyDbl _propMinControl;
+	PropertyDbl _propMaxControl;
+	// REFERENCES
+	double& _minControl;
+	double& _maxControl;
+
+//=============================================================================
+// METHODS
+//=============================================================================
+public:
+	//-------------------------------------------------------------------------
+	// CONSTRUCTION
+	//-------------------------------------------------------------------------
+	Actuator();
+	Actuator(const Actuator &aActuator);
+	virtual ~Actuator();
+
+	/** Assignment operator */
+	Actuator& operator=(const Actuator &aActuator);
+
+	/** Override of the default implementation to account for versioning. */
+	virtual void updateFromXMLNode();
+
+	/** Convenience method to set controls given scalar (double) valued control */
+	//virtual void setControl(const SimTK::State &s, double control) const;
+
+	/** Convenience method to get control given scalar (double) valued control */
+	virtual double getControl(const SimTK::State& s ) const;
+
+	//Model building
+	virtual int numControls() const {return 1;};
+
+	// Accessing force, speed, and power of a scalar valued actuator
+	virtual void setForce(const SimTK::State& s, double aForce) const; 
+    virtual double getForce( const SimTK::State& s) const;
+    virtual void setSpeed( const SimTK::State& s, double aspeed) const;
+    virtual double getSpeed( const SimTK::State& s) const;
+	virtual double getPower(const SimTK::State& s) const { return getForce(s)*getSpeed(s); }
+	virtual double getStress(const SimTK::State& s) const;
+	virtual double getOptimalForce() const;
+
+	// manage bounds on Control
+	void setMinControl(const double& aMinControl) { _minControl=aMinControl; }
+	double getMinControl() const { return _minControl; }
+	void setMaxControl(const double& aMaxControl) {	_maxControl=aMaxControl; }
+	double getMaxControl() const { return _maxControl; }
+
+	    ///--------------------------------------------------------------------------
     /// Overriding forces
     ///--------------------------------------------------------------------------
     /// The force normally produced by an Actuator can be overriden and 
     /// When the Actuator's force is overriden, the Actuator will by defualt
     /// produce a constant force which can be set with setOverrideForce(). 
     /// If the override force is not a constant, setOverrideForceFunction() 
-    /// can be used supply a function which computes the Actuator's force. 
-    ///
-    
+    /// can be used supply a function which computes the Actuator's force.    
     /**
     * enable/disable an Actuator's override force
     *  
@@ -180,7 +247,6 @@ public:
 
     /**
     * set the force value  used when  the override is true 
-    *  
     * 
     * @param s      current state
     * @param value  value of override force   
@@ -209,70 +275,19 @@ public:
     */
     StateFunction* updOverrideForceFunction( );
 
-
     /**
     * set override force function back to default (constant) 
     */
     void resetOverrideForceFunction();
 
 protected:
-    double computeOverrideForce(const SimTK::State& s ) const;
+	// ModelComponent Interface
+	virtual void setup(Model& aModel);
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual void initState(SimTK::State& state) const;
+	virtual void setDefaultsFromState(const SimTK::State& state);
 
-//=============================================================================
-};	// END of class Actuator_<M>
-//=============================================================================
-
-/**
- * Derived class for an actuator (e.g., a torque motor, muscle, ...) that 
- * requires excactly one external input (control) to generate force.
- *
- * @author Ajay Seth
- * @version 2.0
- */
-class OSIMSIMULATION_API Actuator : public Actuator_<1>
-{
-protected:
-	/** Bounds on control of this actuator. */
-	PropertyDbl _propMinControl;
-	PropertyDbl _propMaxControl;
-	// REFERENCES
-	double& _minControl;
-	double& _maxControl;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-	//-------------------------------------------------------------------------
-	// CONSTRUCTION
-	//-------------------------------------------------------------------------
-	Actuator();
-	Actuator(const Actuator &aActuator);
-	virtual ~Actuator();
-
-	/** Assignment operator */
-	Actuator& operator=(const Actuator &aActuator);
-
-	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
-
-public:
-	// manage bounds on Control
-	void setMinControl(const double& aMinControl) {
-		_minControl=aMinControl;
-	}
-
-	double getMinControl() const {
-		return _minControl;
-	}
-
-	void setMaxControl(const double& aMaxControl) {
-		_maxControl=aMaxControl;
-	}
-
-	double getMaxControl() const {
-		return _maxControl;
-	}
+	double computeOverrideForce(const SimTK::State& s ) const;
 
 private:
 	void setNull();

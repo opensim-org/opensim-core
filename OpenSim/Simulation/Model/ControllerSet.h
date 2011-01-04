@@ -45,8 +45,8 @@ class Model;
 /**
  * A class for holding and managing a set of controllers for a model.
  *
- * @authors Jack Middleton 
- * @version 1.0
+ * @authors Jack Middleton, Ajay Seth 
+ * @version 2.0
  */
 
 //=============================================================================
@@ -111,10 +111,13 @@ public:
     // post deserialize initialization
 	virtual void setup(Model& aModel);
 
-    // post system creation setup
+    // system creation 
     virtual void createSystem(SimTK::MultibodySystem& system);
 
-     virtual void printInfo() const;
+	// Controller interface
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const; 
+
+    virtual void printInfo() const;
 //=============================================================================
 };	// END of class ControllerSet
 //=============================================================================

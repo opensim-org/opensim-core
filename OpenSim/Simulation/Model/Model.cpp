@@ -99,7 +99,8 @@ Model::Model() :
     _controllerSet(ControllerSet()),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
-    _system(NULL)
+    _system(NULL),
+	_defaultControls(*new Vector(0))
 {
 	setNull();
 	setupProperties();
@@ -134,7 +135,8 @@ Model::Model(const string &aFileName) :
     _controllerSet(ControllerSet()),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
-    _system(NULL)
+    _system(NULL),
+	_defaultControls(*new Vector(0))
 {
 	setNull();
 	setupProperties();
@@ -175,7 +177,8 @@ Model::Model(const Model &aModel) :
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
     _controllerSet(ControllerSet()),
-    _system(NULL)
+    _system(NULL),
+	_defaultControls(*new Vector(0))
 {
 	//cout << "Construct copied model " <<  endl;
 	// Throw exception if something wrong happened and we don't have a dynamics engine.
@@ -498,10 +501,20 @@ void Model::createSystem()
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
     _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
+
 	// create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
 	double magnitude = _gravity.norm();
 	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
 	_gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
+
+	// Reset the vector of all controls' defaults
+	_defaultControls.resize(0);
+
+	// Create the shared cache that will hold all model controls
+	// This must be created before Actuator.createSystem() since Actuator will append 
+	// its "slots" and retain its index by accessing this cached Vector
+	Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), Stage::Velocity, Stage::Acceleration);
+	_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 
     // Let all the ModelComponents add their parts to the System.
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
@@ -685,6 +698,12 @@ void Model::setDefaultProperties()
 
 void Model::initState(SimTK::State& state) const
 {
+	// Allocate the size and default values for controls
+	// Actuators will have a const view into the cache
+	Measure_<Vector>::Result& controlsCache = static_cast<Measure_<Vector>::Result&>(_system->updDefaultSubsystem().getMeasure_<Vector>(_modelControlsIndex));
+	controlsCache.updValue(state).resize(_defaultControls.size());
+	controlsCache.updValue(state) = _defaultControls;
+
     _bodySet.initState(state);
     _constraintSet.initState(state);
     _contactGeometrySet.initState(state);
@@ -1423,6 +1442,59 @@ OpenSim::Body& Model::getGroundBody() const
 //--------------------------------------------------------------------------
 // CONTROLS
 //--------------------------------------------------------------------------
+/** Get the number of controls for this the model.
+ * Throws an exception if called before Model::initSystem()	 */
+int Model::getNumControls() const
+{
+	if(_system == NULL){
+		throw Exception("Model::getNumControls() requires an initialized Model./n" 
+			"Prior Model::initSystem() required.");
+	}
+
+	return _defaultControls.size();
+}
+
+/** Update the controls for this the model at a given state.
+ * Throws an exception if called before Model::initSystem() */
+Vector& Model::updControls(const SimTK::State &s) const
+{
+	if(_system == NULL || (int(_modelControlsIndex) == SimTK::InvalidIndex)){
+		throw Exception("Model::updControls() requires an initialized Model./n" 
+			"Prior call to Model::initSystem() is required.");
+	}
+
+	// direct the system shared cache 
+	Measure_<Vector>::Result& controlsCache = static_cast<Measure_<Vector>::Result&>(_system->updDefaultSubsystem().getMeasure_<Vector>(_modelControlsIndex));
+	return controlsCache.updValue(s);
+}
+
+/** Const access to controls does not invalidate dynamics */
+const Vector& Model::getControls(const SimTK::State &s) const
+{
+	if(_system == NULL || (int(_modelControlsIndex) == SimTK::InvalidIndex)){
+		throw Exception("Model::getControls() requires an initialized Model./n" 
+			"Prior call to Model::initSystem() is required.");
+	}
+
+	// direct the system shared cache 
+	Measure_<Vector>::Result& controlsCache = static_cast<Measure_<Vector>::Result&>(_system->updDefaultSubsystem().getMeasure_<Vector>(_modelControlsIndex));
+
+	if(!controlsCache.isValid(s)){
+		computeControls(s, controlsCache.updValue(s));
+		controlsCache.markAsValid(s);
+	}
+
+	return controlsCache.getValue(s);
+}
+
+
+/** Compute the controls the model */
+void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
+{
+	getControllerSet().computeControls(s, controls);
+}
+
+
 /** Get a flag indicating if the model needs controls to operate its actuators */
 bool Model::isControlled() const
 {

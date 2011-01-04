@@ -377,6 +377,7 @@ void ModelComponentRep::realizeTopology(SimTK::State &s) const
 		}
 	}
 
+	// Allocate Cache Entry in the State
 	if(_namedCacheVariableInfo.size()>0){
 		std::map<std::string, CacheInfo*>::iterator it;
 		for(it = (mutableThis->_namedCacheVariableInfo).begin(); it!=_namedCacheVariableInfo.end(); it++){

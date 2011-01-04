@@ -179,15 +179,14 @@ public:
 	//--------------------------------------------------------------------------
 	// CONTROL
 	//--------------------------------------------------------------------------
-
 	/**
-	 * Compute the control value for an acuator 
+	 * Compute the control values for all actuators under the control of this
+	 * Controller
 	 *
 	 * @param s system state 
-	 * @param index  the id the controller uses to determin which actuator 
-	 *   
+	 * @param model controls  
 	 */
-     virtual double computeControl(const SimTK::State& s, int index) const;
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 
     virtual void setActuators( Set<Actuator>& actuators );
 

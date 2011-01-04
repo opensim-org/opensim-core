@@ -26,16 +26,14 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson, Chand T. John, Samuel R. Hamner, Ajay Seth
+//=============================================================================
+//=============================================================================
+/**
+ * ControllerSetController that simply assigns controls from a ControlSet
+ * @author Jack Middleton, Ajay Seth 
+ * @version 1.0
  */
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-// The entire definition of the Controller class is contained inside this
-// #ifndef-#define-#endif _Controller_h_ block.  This is done to ensure that,
-// if someone were to include Controller.h more than once into a single file
-// (such as including Controller.h as well as including another file that also
-// includes Controller.h), then the Controller class will not be defined more
-// than once.  "#ifndef" means "if not defined."
+
 #ifndef _Control_Set_Controller_h_
 #define _Control_Set_Controller_h_
 
@@ -53,25 +51,12 @@
 #include "Controller.h"
 #include "SimTKsimbody.h"
 
-//=============================================================================
-//=============================================================================
-/**
- * ControllerSetController is a controller that uses a ControlSet
- * to supply controls to actuators
- * @author Jack Middleton 
- * @version 1.0
- */
+
 
 namespace OpenSim { 
 
 class ControlSet;
 
-// The entire definition of the ControlSetController class is contained inside
-// this code block.  The identifier OSIMSIMULATION_API tells C++ that
-// the Controller class will be part of the library files exported by
-// the osimSimulation project.  The terms "public Object" tell C++
-// that the ControlSetController class is a subclass (child) of the Object class
-// in OpenSim.
 class OSIMSIMULATION_API ControlSetController : public Controller
 {
 
@@ -85,8 +70,6 @@ protected:
     PropertyStr _controlsFileNameProp;
     std::string &_controlsFileName;
 
-
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -98,22 +81,16 @@ public:
 
 	/**
 	 * Constructor from an XML Document.
-	 *
 	 * @param aFileName The name of the XML file in which this Controller is
 	 * defined.
 	 * @param aUpdateFromXMLNode A flag indicating whether or not to call
-	 * updateFromXMLNode() from this constructor.  If true, the method will
-	 * be called from this class.  Typically, the flag should be true for this
-	 * class, but in the member initializer list for this constructor, this
-	 * class's parent class's constructor with the same parameters will be
-	 * called, but with aUpdateFromXMLNode set to false.
+	 * updateFromXMLNode() from this constructor.  
 	 */
 	ControlSetController(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 
 	/**
 	 * Copy constructor.  This constructor is called by any code that contains
 	 * a command of the form "Controller newController(oldController);".
-	 *
 	 * @param aController The controller to be copied.
 	 */
 	ControlSetController(const ControlSetController &aController);
@@ -172,19 +149,7 @@ public:
 #ifndef SWIG
 
 	/**
-	 * Assignment operator.  This method is called automatically whenever a
-	 * command of the form "controller1 = controller2;" is made, where both
-	 * controller1 and controller2 are both of type Controller.  Although
-	 * Controller cannot be instantiated directly, a subclass of Controller
-	 * could implement its own operator= method that calls Controller's
-	 * operator= method.  If the subclass does not implement its own operator=
-	 * method, then when a command of the form "controller1 = controller2" is
-	 * made, where both controller1 and controller2 are instants of the
-	 * subclass, the Controller class's operator= method will be called
-	 * automatically.
-	 *
-	 * @param aController The controller to be copied.
-	 * @return Reference to the altered object.
+	 * Assignment operator.  
 	 */
 	ControlSetController& operator=(const ControlSetController &aController);
 
@@ -193,17 +158,14 @@ public:
 	//--------------------------------------------------------------------------
 	// CONTROL
 	//--------------------------------------------------------------------------
-
 	/**
-	 * Compute the control value for an acuator 
+	 * Compute the control values for all actuators under the control of this
+	 * Controller
 	 *
 	 * @param s system state 
-	 * @param index  the id the controller uses to determin which actuator 
-	 *   
+	 * @param model controls  
 	 */
-     virtual double computeControl(const SimTK::State& s, int index) const;
-
-    virtual void setActuators( Set<Actuator>& actuators );
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 
     virtual void setControlSetFileName( const std::string&  controlSetFileName );
 	const std::string& getControlSetFileName() const {

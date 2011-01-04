@@ -200,7 +200,12 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
+	/**
+	 * Controller interface
+	 */
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 	virtual void computeInitialStates(SimTK::State& s, double &rTI);
+	/** CMC algroithm */
 	virtual void computeControls(SimTK::State& s, ControlSet &rX);
 
 	//--------------------------------------------------------------------------
@@ -210,7 +215,6 @@ public:
 		FilterControls(const SimTK::State& s, const ControlSet &aControlSet,double aDT,
 		OpenSim::Array<double> &rControls,bool aVerbosePrinting);
 
-    virtual double computeControl(const SimTK::State& s, int index) const;
     virtual void setActuators( Set<Actuator>& actuators );
 
 

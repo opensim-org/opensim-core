@@ -49,14 +49,12 @@ using namespace SimTK;
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Construct an actuator  of <M> controls.
+ * Construct an actuator  of  controls.
  *
  */
-template <int M> Actuator_<M>::Actuator_() : Force(),
+Actuator_::Actuator_() : Force(),
 	_controlSuffixes(""),
-    _subsystemIndex(SimTK::InvalidIndex),
-    _numStateVariables(0),
-    _overrideForceFunction(0)
+    _subsystemIndex(SimTK::InvalidIndex)
 {
 	setNull();
 }
@@ -66,12 +64,10 @@ template <int M> Actuator_<M>::Actuator_() : Force(),
  *
  * @param aActuator Actuator to copy.
  */
-template <int M> Actuator_<M>::Actuator_(const Actuator_ &aAct) :
+Actuator_::Actuator_(const Actuator_ &aAct) :
 	Force(aAct),
 	_controlSuffixes(""),
-    _subsystemIndex(SimTK::InvalidIndex),
-    _numStateVariables(0),
-    _overrideForceFunction(0)
+    _subsystemIndex(SimTK::InvalidIndex)
 {
 	setNull();
 
@@ -83,7 +79,7 @@ template <int M> Actuator_<M>::Actuator_(const Actuator_ &aAct) :
 /**
  * Destructor.
  */
-template <int M> Actuator_<M>::~Actuator_()
+Actuator_::~Actuator_()
 {
 }
 
@@ -94,7 +90,7 @@ template <int M> Actuator_<M>::~Actuator_()
 /**
  * Set the data members of this Actuator to their null values.
  */
-template <int M> void Actuator_<M>::setNull()
+void Actuator_::setNull()
 {
 	setType("Actuator_");
 }
@@ -105,14 +101,14 @@ template <int M> void Actuator_<M>::setNull()
  *
  * @param aModel model containing this actuator.
  */
-template <int M> void Actuator_<M>::setup(Model& aModel)
+void Actuator_::setup(Model& aModel)
 {
 	Force::setup(aModel);
 }
 
 // Create the underlying computational system component(s) that support the
 // Actuator model component
-template <int M> void Actuator_<M>::createSystem(SimTK::MultibodySystem& system) const
+void Actuator_::createSystem(SimTK::MultibodySystem& system) const
 {
 	Force::createSystem(system);
     // Beyond the const Component get the index so we can access the SimTK::Force later
@@ -120,60 +116,25 @@ template <int M> void Actuator_<M>::createSystem(SimTK::MultibodySystem& system)
 
 	mutableThis->_subsystemIndex = getIndexOfSubsystemForAllocations();
 
-	// Add modeling flag to compute actuation with dynamic or by-pass with override force provided
-	Array<std::string> modelingFlags;
-	modelingFlags.append("ComputeActuation");
-	modelingFlags.append("OverrideForce");
-	mutableThis->addModelingOption(modelingFlags);
-
-	// Cache the computed force and speed of the actuator
-	mutableThis->addCacheVariable<Vector>("control", Vector(M, 0.0), Stage::Velocity);
-	mutableThis->addCacheVariable<double>("force", 0.0, Stage::Velocity);
-	mutableThis->addCacheVariable<double>("speed", 0.0, Stage::Velocity);
-
-	// Discrete state variable is the override force value if in override mode
-	mutableThis->addDiscreteVariables(Array<string>("override_force",1), Stage::Time);
+	// Model is in charge of creating the shared cache for all all actuator controls
+	// but it does so based on the size and order in its _defaultControls
+	// Actuator has the opportunity here to add slots for its control and record
+	// the index into the shared cache Vector.
+	mutableThis->_controlIndex = _model->updDefaultControls().size();
+	_model->updDefaultControls().resizeKeep(_controlIndex + numControls());
+	_model->updDefaultControls()(_controlIndex, numControls()) = Vector(numControls(), 0.0);
 }
 
-template <int M> void Actuator_<M>::initState(SimTK::State& state) const
+void Actuator_::initState(SimTK::State& state) const
 {
 	Force::initState(state);
-	// Before initializing any state variable, get the current indices
-	Actuator_* mutableThis = const_cast<Actuator_ *>(this);
-
-	// keep track of the cache indices
-	mutableThis->_forceIndex = getCacheVariableIndex("force");
-	mutableThis->_speedIndex = getCacheVariableIndex("speed");
-	mutableThis->_controlIndex = getCacheVariableIndex("control");
-
-	// if in override mode, this index will be valid
-	mutableThis->_overrideForceIndex = getDiscreteVariableIndex("override_force");
 }
 
-template <int M> void Actuator_<M>::setDefaultsFromState(const SimTK::State& state)
+void Actuator_::setDefaultsFromState(const SimTK::State& state)
 {
 	Force::setDefaultsFromState(state);
 }
 
-template <int M> double Actuator_<M>::getForce(const State &s) const
-{
-    return getCacheVariable<double>(s, "force");
-}
-
-template <int M> void Actuator_<M>::setForce(const State& s, double aForce) const
-{
-    updCacheVariable<double>(s, "force") = aForce;
-}
-
-template <int M> double Actuator_<M>::getSpeed(const State& s) const
-{
-    return getCacheVariable<double>(s, "speed");
-}
-
-template <int M> void Actuator_<M>::setSpeed(const State &s, double speed) const
-{
-    updCacheVariable<double>(s, "speed") = speed;
-}
 
 //_____________________________________________________________________________
 /**
@@ -181,7 +142,7 @@ template <int M> void Actuator_<M>::setSpeed(const State &s, double speed) const
  * The resulting geometry is maintained at the VisibleObject layer
  * 
  */
-template <int M> void Actuator_<M>::updateGeometry()
+void Actuator_::updateGeometry()
 {
 }
 
@@ -194,7 +155,7 @@ template <int M> void Actuator_<M>::updateGeometry()
  *
  * @return Reference to this object.
  */
-template <int M> Actuator_<M>& Actuator_<M>::operator=(const Actuator_ &aAct)
+Actuator_& Actuator_::operator=(const Actuator_ &aAct)
 {
 	// BASE CLASS
 	Force::operator=(aAct);
@@ -211,31 +172,45 @@ template <int M> Actuator_<M>& Actuator_<M>::operator=(const Actuator_ &aAct)
  * Get the actuator's control values
  *
  * @param the current state
- * @return The value of the control.
+ * @return The value of the controls.
  */
-template <int M> const SimTK::Vector& Actuator_<M>::getControls( const SimTK::State& s ) const
+const VectorView_<Real> Actuator_::getControls( const SimTK::State& s ) const
 {
-	return getCacheVariable<Vector>(s, "control");
+	const Vector &controlsCache = _model->getControls(s);
+	return  controlsCache(_controlIndex, numControls());
 }
 
-template <int M> double Actuator_<M>::getControl(const SimTK::State& s ) const
+void Actuator_::extractControls(const Vector& modelControls, Vector& actuatorControls) const
 {
-	if (M==1)
-		return getControls(s)[0];
-	else throw Exception("Actuator: Scalar value not defined for vector valued control.");
+	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+		"Actuator_::extractControls, input modelControls size does not match model.getNumControls().\n");
+	SimTK_ASSERT(actuatorControls.size() == numControls(), 
+		"Actuator_::extractControls, output actuatorControls incompatible with actuator's numControls().\n");
+	actuatorControls = modelControls(_controlIndex, numControls());
 }
 
-template <int M> void Actuator_<M>::setControls(const State &s, const Vector& controls) const
+void Actuator_::insertControls(const Vector& actuatorControls, Vector& modelControls) const
 {
-    updCacheVariable<Vector>(s, "control") = controls;
+	SimTK_ASSERT(actuatorControls.size() == numControls(), 
+		"Actuator_::insertControls, input actuatorControls incompatible with actuator's numControls().\n");
+
+	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+	"Actuator_::insertControls, output modelControls size does not match model.getNumControls()\n");
+
+	modelControls(_controlIndex, numControls()) = actuatorControls;
 }
 
-template <int M> void Actuator_<M>::setControl(const State &s, double control) const
+void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelControls) const
 {
-	if (M==1)
-		updCacheVariable<Vector>(s, "control")[0] = control;
-	else throw Exception("Actuator: Scalar value cannot be set for vector valued control.");
+	SimTK_ASSERT(actuatorControls.size() == numControls(), 
+		"Actuator_::insertControls, input actuatorControls incompatible with actuator's numControls()\n");
+
+	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
+	"Actuator_::addInControls, output modelControls size does not match model.getNumControls().\n");
+
+	modelControls(_controlIndex, numControls()) += actuatorControls;
 }
+
 
 
 //_____________________________________________________________________________
@@ -245,7 +220,7 @@ template <int M> void Actuator_<M>::setControl(const State &s, double control) c
  * @param aOldFunction the function being replaced.
  * @param aNewFunction the new function.
  */
-template <int M> void Actuator_<M>::replacePropertyFunction(OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction)
+void Actuator_::replacePropertyFunction(OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction)
 {
 	if (aOldFunction && aNewFunction) {
 		PropertySet& propSet = getPropertySet();
@@ -261,83 +236,18 @@ template <int M> void Actuator_<M>::replacePropertyFunction(OpenSim::Function* a
 	}
 }
 
-//_____________________________________________________________________________
-/**
- * getStress needs to be overridden by derived classes to be usable
- */
-template <int M> double Actuator_<M>::getStress(const SimTK::State& s ) const
-{
-	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
-}
-//_____________________________________________________________________________
-/**
- * getOptimalForce needs to be overridden by derived classes to be usable
- */
-template <int M> double Actuator_<M>::getOptimalForce() const
-{
-	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
-}
-//_____________________________________________________________________________
-/**
- * overrideForce sets flag indicating if an actuator's force compuation is overriden
- */
-template <int M> void Actuator_<M>::overrideForce(SimTK::State& s, bool flag ) const 
-{
-    setModelingOption(s, int(flag));
-}
-template <int M> bool Actuator_<M>::isForceOverriden(const SimTK::State& s ) const 
-{
-    return (getModelingOption(s) > 0);
-}
-       
-//_____________________________________________________________________________
-/**
- * setOverrideForce sets the value used when an actuator's force compuation is orriden
- */
-template <int M> void Actuator_<M>::setOverrideForce(SimTK::State& s, double force ) const
-{
-    SimTK::Value<double>::downcast(s.updDiscreteVariable( _subsystemIndex, _overrideForceIndex)).upd() = force;
-}
-template <int M> double Actuator_<M>::getOverrideForce(const SimTK::State& s ) const
-{
-    return getDiscreteVariable(s, "override_force");
-}
-template <int M> double Actuator_<M>::computeOverrideForce( const SimTK::State& s ) const {
-      if( _overrideForceFunction ) {
-          return( _overrideForceFunction->calcValue(s ) );
-      } else {
-          return( getOverrideForce(s) );
-      }
-}
-template <int M> void Actuator_<M>::setOverrideForceFunction( StateFunction* overrideFunc ) {
-       _overrideForceFunction = overrideFunc;
-}
-template <int M> const StateFunction* Actuator_<M>::getOverrideForceFunction() const {
-       return( _overrideForceFunction); 
-}
-template <int M> StateFunction* Actuator_<M>::updOverrideForceFunction() {
-       return( _overrideForceFunction); 
-}
-template <int M> void Actuator_<M>::resetOverrideForceFunction() {
-     _overrideForceFunction = 0;
-}
-
-
-/** Common instantiations */
-
-template Actuator_<1>;
-
 
 
 //=============================================================================
-// Actuator Implementation
+// Scalar Actuator Implementation
 //=============================================================================
 //_____________________________________________________________________________
 
 /** Default constructor */
-Actuator::Actuator() : Actuator_<1>(),
+Actuator::Actuator() : Actuator_(),
 	_minControl(_propMinControl.getValueDbl()),
-	_maxControl(_propMaxControl.getValueDbl())
+	_maxControl(_propMaxControl.getValueDbl()),
+    _overrideForceFunction(0)
 {
 }
 
@@ -346,9 +256,10 @@ Actuator::Actuator() : Actuator_<1>(),
  *
  * @param aActuator Actuator to copy.
  */
-Actuator::Actuator(const Actuator &aAct) : Actuator_<1>(aAct),
+Actuator::Actuator(const Actuator &aAct) : Actuator_(aAct),
 	_minControl(_propMinControl.getValueDbl()),
-	_maxControl(_propMaxControl.getValueDbl())
+	_maxControl(_propMaxControl.getValueDbl()),
+    _overrideForceFunction(0)
 {
 }
 
@@ -398,13 +309,151 @@ void Actuator::setNull()
 Actuator& Actuator::operator=(const Actuator &aAct)
 {
 	// BASE CLASS
-	Actuator_<1>::operator=(aAct);
-
-
-	_controlSuffixes = aAct._controlSuffixes;
+	Actuator_::operator=(aAct);
 
 	_minControl=aAct._minControl;
 	_maxControl=aAct._maxControl;
 
 	return(*this);
+}
+
+// Setup the underlying computational system component(s) that implement the
+// Actuator 
+void Actuator::setup(Model& aModel)
+{
+	Actuator_::setup(aModel);
+}
+
+// Create the underlying computational system component(s) that support the
+// Actuator model component
+void Actuator::createSystem(SimTK::MultibodySystem& system) const
+{
+	Actuator_::createSystem(system);
+    // Beyond the const Component get the index so we can access the SimTK::Force later
+	Actuator* mutableThis = const_cast<Actuator *>(this);
+
+	// Add modeling flag to compute actuation with dynamic or by-pass with override force provided
+	Array<std::string> modelingFlags;
+	modelingFlags.append("ComputeActuation");
+	modelingFlags.append("OverrideForce");
+	mutableThis->addModelingOption(modelingFlags);
+
+	// Cache the computed force and speed of the scalar valued actuator
+	mutableThis->addCacheVariable<double>("force", 0.0, Stage::Velocity);
+	mutableThis->addCacheVariable<double>("speed", 0.0, Stage::Velocity);
+
+	// Discrete state variable is the override force value if in override mode
+	mutableThis->addDiscreteVariables(Array<string>("override_force",1), Stage::Time);
+}
+
+// do any state initialization
+void Actuator::initState(SimTK::State& state) const
+{
+	Actuator_::initState(state);
+	// Before initializing any state variable, get the current indices
+	Actuator* mutableThis = const_cast<Actuator *>(this);
+
+	// keep track of the cache indices
+	mutableThis->_forceIndex = getCacheVariableIndex("force");
+	mutableThis->_forceIndex = getCacheVariableIndex("speed");
+
+	// if in override mode, this index will be valid
+	mutableThis->_overrideForceIndex = getDiscreteVariableIndex("override_force");
+}
+
+void Actuator::setDefaultsFromState(const SimTK::State& state)
+{
+	Actuator_::setDefaultsFromState(state);
+}
+
+double Actuator::getControl(const SimTK::State& s ) const
+{
+	return getControls(s)[0];
+}
+
+//_____________________________________________________________________________
+/**
+ * getStress needs to be overridden by derived classes to be usable
+ */
+double Actuator::getStress(const SimTK::State& s ) const
+{
+	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
+}
+//_____________________________________________________________________________
+/**
+ * getOptimalForce needs to be overridden by derived classes to be usable
+ */
+double Actuator::getOptimalForce() const
+{
+	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
+}
+
+double Actuator::getForce(const State &s) const
+{
+    return getCacheVariable<double>(s, "force");
+}
+
+void Actuator::setForce(const State& s, double aForce) const
+{
+    updCacheVariable<double>(s, "force") = aForce;
+}
+
+double Actuator::getSpeed(const State& s) const
+{
+    return getCacheVariable<double>(s, "speed");
+}
+
+void Actuator::setSpeed(const State &s, double speed) const
+{
+    updCacheVariable<double>(s, "speed") = speed;
+}
+
+
+//_____________________________________________________________________________
+/**
+ * overrideForce sets flag indicating if an actuator's force compuation is overriden
+ */
+void Actuator::overrideForce(SimTK::State& s, bool flag ) const 
+{
+    setModelingOption(s, int(flag));
+}
+
+bool Actuator::isForceOverriden(const SimTK::State& s ) const 
+{
+    return (getModelingOption(s) > 0);
+}
+       
+//_____________________________________________________________________________
+/**
+ * setOverrideForce sets the value used when an actuator's force compuation is orriden
+ */
+void Actuator::setOverrideForce(SimTK::State& s, double force ) const
+{
+    SimTK::Value<double>::downcast(s.updDiscreteVariable( _subsystemIndex, _overrideForceIndex)).upd() = force;
+}
+double Actuator::getOverrideForce(const SimTK::State& s ) const
+{
+    return getDiscreteVariable(s, "override_force");
+}
+double Actuator::computeOverrideForce( const SimTK::State& s ) const {
+      if( _overrideForceFunction ) {
+          return( _overrideForceFunction->calcValue(s ) );
+      } else {
+          return( getOverrideForce(s) );
+      }
+}
+void Actuator::setOverrideForceFunction( StateFunction* overrideFunc ) {
+       _overrideForceFunction = overrideFunc;
+}
+
+const StateFunction* Actuator::getOverrideForceFunction() const {
+       return( _overrideForceFunction); 
+}
+
+StateFunction* Actuator::updOverrideForceFunction() {
+       return( _overrideForceFunction); 
+}
+
+void Actuator::resetOverrideForceFunction() {
+     _overrideForceFunction = 0;
 }

@@ -186,17 +186,11 @@ public:
 	//--------------------------------------------------------------------------
 
 	/**
-	 *
-	 * Note that this method is "pure virtual", which means that the Controller
-	 * class does not implement it, and that subclasses must implement it.
-	 *
-	 * @param s system state 
-	 * @param rControlSet Control set used for the simulation.  This method
-	 * alters the control set in order to control the simulation.
+	 * Controller interface
 	 */
-	virtual double computeControl(const SimTK::State& s, int index) const = 0;
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const =0;
 
-   friend class ControllerSet;
+	friend class ControllerSet;
 
 //=============================================================================
 };	// END of class Controller

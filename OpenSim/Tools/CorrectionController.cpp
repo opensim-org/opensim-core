@@ -228,8 +228,7 @@ getKv() const
  *
  * @param aKv Velocity error gain for controller will be set to aKv.
  */
-void CorrectionController::
-setKv(double aKv)
+void CorrectionController::setKv(double aKv)
 {
 	_kv = aKv;
 }
@@ -240,49 +239,51 @@ setKv(double aKv)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute the controls for a simulation.
+ * Compute the controls for Actuator's that this Controller is charge of.
  *
- * The caller should send in an initial guess.
  */
-double CorrectionController::computeControl(const SimTK::State& s, int index ) const
+void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector& controls) const
 {
-    double newControl;
-
 	// NUMBER OF MODEL COORDINATES, SPEEDS, AND ACTUATORS
 	// (ALL ARE PROBABLY EQUAL)
 	int nq = _model->getNumCoordinates();
 	int nu = _model->getNumSpeeds();
 
 	double t = s.getTime();
+	
+	// GET CURRENT DESIRED COORDINATES AND SPEEDS
+	// Note: yDesired[0..nq-1] will contain the generalized coordinates
+	// and yDesired[nq..nq+nu-1] will contain the generalized speeds.
+	Array<double> yDesired(0.0,nq+nu);
+	getDesiredStatesStorage().getDataAtTime(t, nq+nu,yDesired);
+	
+	double newControl = 0.0;
 
 
-    CoordinateActuator* act = dynamic_cast<CoordinateActuator*>(&_actuatorSet.get(index));
-    SimTK_ASSERT( act,  "CorrectionController::computeControl dynamic cast failed");
+   	for(int i=0; i<_actuatorSet.getSize(); i++){
+		CoordinateActuator* act = dynamic_cast<CoordinateActuator*>(&_actuatorSet[i]);
+		SimTK_ASSERT( act,  "CorrectionController::computeControls dynamic cast failed");
 
-    if( act->getCoordinate()->isConstrained(s) ) {
-//		std::cout << "CorrectionController::computeControl " << act->getName() << " t=" << s.getTime() << "  control= LOCKED" << std::endl;
-        newControl =  0.0;
-    } 
-	else
-	{
-	    // GET CURRENT DESIRED COORDINATES AND SPEEDS
-    	// Note: yDesired[0..nq-1] will contain the generalized coordinates
-    	// and yDesired[nq..nq+nu-1] will contain the generalized speeds.
-    	Array<double> yDesired(0.0,nq+nu);
-    	getDesiredStatesStorage().getDataAtTime(t, nq+nu,yDesired);
+		Coordinate *aCoord = act->getCoordinate();
+		if( aCoord->isConstrained(s) ) {
+			newControl =  0.0;
+		} 
+		else
+		{
+			int index = aCoord->getStateVariableYIndex(0);
 
-    	// COMPUTE EXCITATIONS
-        double oneOverFmax = 1.0 / act->getOptimalForce();
-        double pErr = s.getQ()[index] - yDesired[index];
-        double vErr = s.getU()[index] - yDesired[index+nq];
-        double pErrTerm = _kp*oneOverFmax*pErr;
-        double vErrTerm = _kv*oneOverFmax*vErr;
-        newControl = -vErrTerm - pErrTerm;
+    		// COMPUTE EXCITATIONS
+			double oneOverFmax = 1.0 / act->getOptimalForce();
+			double pErr = s.getQ()[index] - yDesired[index];
+			double vErr = s.getU()[index] - yDesired[index+nq];
+			double pErrTerm = _kp*oneOverFmax*pErr;
+			double vErrTerm = _kv*oneOverFmax*vErr;
+			newControl = -vErrTerm - pErrTerm;
+		}
 
-//std::cout << "CorrectionController  t=" << s.getTime() << "  " << act->getName() << " pErr= " << pErr << "  vErr= " << vErr << " control=" << newControl << std::endl;
-    }
-    return( newControl );
-
+		SimTK::Vector actControls(1, newControl);
+		_actuatorSet[i].insertControls(actControls, controls);
+	}
 }
 
 void CorrectionController::createSystem(SimTK::MultibodySystem& system) const

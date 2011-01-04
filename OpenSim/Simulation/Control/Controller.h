@@ -137,7 +137,7 @@ protected:
 	/** Model component interface that creates underlying computational components
 	    in the SimTK::MultibodySystem. This includes adding states, creating 
 		measures, etc... required by the controller. */
-	virtual void createSystem(SimTK::MultibodySystem& system) const {};
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
 
 	/** Model component interface to initialize states introduced by the controller */
 	virtual void initState( SimTK::State& s) const {};
@@ -192,9 +192,9 @@ public:
 	 *  and therefore must be implemented by concrete subclasses.
 	 *
 	 * @param s system state 
-	 * @param index of the actuator for which the control should be computed
+	 * @param controls writable model controls
 	 */
-	virtual double computeControl(const SimTK::State& s, int index) const = 0;
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const = 0;
 
 	/** replace the current set of actuators with the provided set */
     virtual void setActuators( Set<Actuator>& actuators );

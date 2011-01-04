@@ -77,8 +77,7 @@ public:
 	PrescribedController();
 
 	/**
-	 * Another constructor.
-	 *
+	 * Constructor to create and add to a Model.
 	 * @param aModel The model that has actuators being controlled by this Controller.
 	 */
 	PrescribedController(Model& aModel);
@@ -164,16 +163,14 @@ public:
 	//--------------------------------------------------------------------------
 	// CONTROL
 	//--------------------------------------------------------------------------
-
 	/**
-	 *
-	 * Evalate the specified functions for the control values.
+	 * Compute the control values for all actuators under the control of this
+	 * Controller
 	 *
 	 * @param s system state 
-	 * @param rControlSet Control set used for the simulation.  This method
-	 * alters the control set in order to control the simulation.
+	 * @param model controls  
 	 */
-	virtual double computeControl(const SimTK::State& s, int index) const;
+	virtual void computeControls(const SimTK::State& s, SimTK::Vector& controls) const;
 
 	/**
 	 *	Assign a prescribe control function for the desired actuator identified by its index.
