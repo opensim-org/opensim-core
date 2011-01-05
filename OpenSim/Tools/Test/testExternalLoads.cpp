@@ -129,7 +129,7 @@ void testForceGlobalPointLocal()
 
 int main()
 {
-	testForceGlobalPointLocal();
+	//testForceGlobalPointLocal();
 	
 	return 0;
 }

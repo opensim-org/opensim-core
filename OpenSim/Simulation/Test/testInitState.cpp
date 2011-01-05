@@ -49,7 +49,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include "SimTKsimbody.h"
-#include "SimTKsimbody_aux.h"
 #include "SimTKmath.h"
 
 using namespace OpenSim;
