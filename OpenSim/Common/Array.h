@@ -296,8 +296,8 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 
 	// CHECK FOR ZERO INCREMENT
 	if(_capacityIncrement == 0) {
-		printf("Array.computeNewCapacity: WARN- capacity is set");
-		printf(" not to increase (i.e., _capacityIncrement==0).\n");
+		std::cout << "Array.computeNewCapacity: WARN- capacity is set";
+		std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
 		return(false);
 	}
 
@@ -330,7 +330,7 @@ bool ensureCapacity(int aCapacity)
 	int i;
 	T *newArray = new T[aCapacity];
 	if(newArray==NULL) {
-		printf("Array.ensureCapacity: ERR- failed to increase capacity.\n");
+		std::cout << "Array.ensureCapacity: ERR- failed to increase capacity.\n";
 		return(false);
 	}
 
@@ -368,7 +368,7 @@ void trim()
 	int i;
 	T *array = new T[newCapacity];
 	if(array==NULL) {
-		printf("Array.trim: ERR- unable to allocate temporary array.\n");
+		std::cout << "Array.trim: ERR- unable to allocate temporary array.\n";
 		return;
 	}
 
@@ -565,7 +565,7 @@ int insert(int aIndex,const T &aValue)
 {
 	// NEGATIVE INDEX
 	if(aIndex<0) {
-		printf("Array.insert: ERR- aIndex was less than 0.\n");
+		std::cout << "Array.insert: ERR- aIndex was less than 0.\n";
 		return(_size);
 	}
 
@@ -618,12 +618,12 @@ int insert(int aIndex,const T &aValue)
 int remove(int aIndex)
 {
 	if(aIndex<0) {
-		printf("Array.remove: ERR- aIndex was less than 0.\n");
+		std::cout << "Array.remove: ERR- aIndex was less than 0.\n";
 		return(_size);
 	}
 	if(aIndex>=_size) {
-		printf("Array.remove: ERR- aIndex was greater than or equal the ");
-		printf("size of the array.\n");
+		std::cout << "Array.remove: ERR- aIndex was greater than or equal the ";
+		std::cout << "size of the array.\n";
 		return(_size);
 	}
 

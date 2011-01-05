@@ -202,8 +202,8 @@ void GeometryPath::setup(Model& aModel) {
 	// given that the path is dependent on q's only, this variable should be valid at Position
 	mutableThis->addCacheVariable<double>("length", 0.0, SimTK::Stage::Position);
 	Array<PathPoint *> pathPrototype;
-	mutableThis->addCacheVariable<Array<PathPoint *>>("current_path", pathPrototype, SimTK::Stage::Position);
-	mutableThis->addCacheVariable<Array<PathPoint *>>("current_display_path", pathPrototype, SimTK::Stage::Position);
+	mutableThis->addCacheVariable<Array<PathPoint *> >("current_path", pathPrototype, SimTK::Stage::Position);
+	mutableThis->addCacheVariable<Array<PathPoint *> >("current_display_path", pathPrototype, SimTK::Stage::Position);
 }
 
 void GeometryPath::initState( SimTK::State& s) const

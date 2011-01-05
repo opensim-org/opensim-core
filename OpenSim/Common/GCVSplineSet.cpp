@@ -174,7 +174,8 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
 		// CONSTRUCT SPLINE
 		//printf("%s\t",name);
 		spline = new GCVSpline(aDegree,nData,times,data,name,aErrorVariance);
-		spline->createSimTKFunction();
+		SimTK::Function* fp = spline->createSimTKFunction();
+		delete fp;  
 
 		// ADD SPLINE
 		append(spline);

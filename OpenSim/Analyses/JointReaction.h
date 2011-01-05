@@ -183,7 +183,7 @@ public:
     virtual int
         begin( SimTK::State& s );
     virtual int
-        step(const SimTK::State& s, int setNumber );
+        step( SimTK::State& s, int setNumber );
     virtual int
         end( SimTK::State& s );
 
@@ -198,7 +198,7 @@ public:
 
 protected:
 	//========================== Internal Methods =============================
-	int record(const SimTK::State& s );
+	int record(SimTK::State& s );
 	void setupReactionList();
 	void constructDescription();
 	void constructColumnLabels();

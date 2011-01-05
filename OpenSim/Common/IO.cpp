@@ -36,6 +36,7 @@
 #include <time.h>
 #include <math.h>
 #include <string>
+#include <climits>
 
 #include "IO.h"
 #if defined(__linux__) || defined(__APPLE__)

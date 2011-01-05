@@ -566,7 +566,7 @@ setModel(Model& aModel)
  * @param aY Current values of the states.
  */
 int JointReaction::
-record(const SimTK::State& s)
+record(SimTK::State& s)
 {
 	/** if a forces file is specified replace the computed actuation with the 
 	/** forces from storage.*/
@@ -699,7 +699,7 @@ begin(SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int JointReaction::
-step( const SimTK::State& s, int stepNumber)
+step( SimTK::State& s, int stepNumber)
 {
 	if(!proceed(stepNumber)) return(0);
 

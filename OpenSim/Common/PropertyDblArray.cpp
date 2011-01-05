@@ -35,6 +35,7 @@
 // INCLUDES
 //============================================================================
 #include "PropertyDblArray.h"
+#include <cstdio>
 
 
 

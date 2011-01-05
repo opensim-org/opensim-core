@@ -30,6 +30,7 @@
 
 #if defined(__cplusplus) || defined(SWIG)
 #include <string>
+#include <cstdio>
 namespace OpenSim {
 #endif
 

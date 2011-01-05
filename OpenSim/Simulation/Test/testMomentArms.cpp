@@ -151,7 +151,7 @@ Vector computeGenForceScaling(const Model &osimModel, const State &s, const Coor
 				&& (ac.getJoint().getName() != "tib_pat_r") ){
 			MobilizedBodyIndex modbodIndex = ac.getBodyIndex();
 			const MobilizedBody& mobod = osimModel.getMatterSubsystem().getMobilizedBody(modbodIndex);
-			SpatialVec Hcol = mobod.getHCol(s, MobilizerUIndex(0)); //ac.getMobilityIndex())); // get n’th column of H
+			SpatialVec Hcol = mobod.getHCol(s, SimTK::MobilizerUIndex(0)); //ac.getMobilityIndex())); // get n’th column of H
 
 			double thetaScale = Hcol[0].norm(); // magnitude of the rotational part of this column of H
 			

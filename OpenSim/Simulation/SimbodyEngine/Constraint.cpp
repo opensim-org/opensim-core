@@ -271,7 +271,8 @@ Array<std::string> Constraint::getRecordLabels() const
 	
 	for(int i=0; i<nlambda; i++){
 		char c[2];
-		itoa(i,c,10);
+//		itoa(i,c,10); not supported by g++
+		sprintf(c, "%d", i); 
 		labels.append(getName()+"_multiplier"+c);
 	}
 	

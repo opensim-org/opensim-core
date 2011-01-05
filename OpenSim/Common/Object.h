@@ -39,6 +39,7 @@
 #endif
 
 // INCLUDES
+#include <cstring>
 #include <assert.h>
 #include <map>
 #include "Observable.h"

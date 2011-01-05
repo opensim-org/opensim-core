@@ -340,8 +340,8 @@ bool computeNewCapacity(int aMinCapacity,int &rNewCapacity)
 
 	// CHECK FOR ZERO INCREMENT
 	if(_capacityIncrement == 0) {
-		printf("ArrayPtrs.computeNewCapacity: WARN- capacity is set");
-		printf(" not to increase (i.e., _capacityIncrement==0).\n");
+		std::cout << "ArrayPtrs.computeNewCapacity: WARN- capacity is set";
+		std::cout << " not to increase (i.e., _capacityIncrement==0).\n";
 		return(false);
 	}
 
@@ -374,7 +374,7 @@ bool ensureCapacity(int aCapacity)
 	int i;
 	T **newArray = new T*[aCapacity];
 	if(newArray==NULL) {
-		printf("ArrayPtrs.ensureCapacity: ERR- failed to increase capacity.\n");
+		std::cout << "ArrayPtrs.ensureCapacity: ERR- failed to increase capacity.\n";
 		return(false);
 	}
 
@@ -414,7 +414,7 @@ void trim()
 	// ALLOCATE NEW ARRAY
 	_array = new T*[newCapacity];
 	if(_array==NULL) {
-		printf("ArrayPtrs.trim: ERR- unable to allocate array.\n");
+		std::cout << "ArrayPtrs.trim: ERR- unable to allocate array.\n";
 		return;
 	}
 
@@ -661,7 +661,7 @@ bool insert(int aIndex,T *aObject)
 
 	// NEGATIVE INDEX
 	if(aIndex<0) {
-		printf("ArrayPtrs.insert: ERR- aIndex was less than 0.\n");
+		std::cout << "ArrayPtrs.insert: ERR- aIndex was less than 0.\n";
 		return(false);
 	}
 

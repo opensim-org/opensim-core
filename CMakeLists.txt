@@ -81,8 +81,6 @@ ELSE(WIN32)
 	ELSE(APPLE)
 	  MESSAGE(STATUS "gets to linux loop")
 	  SET(ARCH "Linux")
-	  # I don't believe setting the CXX flags is working in cmake.
-	  SET( CMAKE_CXX_FLAGS "-m32" )
 	  SET(ATLAS_LIB "libSimTKAtlas_Lin_generic")
 	ENDIF(APPLE)
 ENDIF(WIN32)
@@ -96,7 +94,7 @@ IF(${CMAKE_C_COMPILER} MATCHES "gcc")
     # C++
     SET(CMAKE_CXX_FLAGS_DEBUG          "-g  ${GCC_ARCH_FLAG}" 
         CACHE STRING "g++ Debug build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_RELEASE        "-DNDEBUG -O3  ${GCC_ARCH_FLAG}" 
+    SET(CMAKE_CXX_FLAGS_RELEASE        "-DNDEBUG -O3 ${GCC_ARCH_FLAG}" 
         CACHE STRING "g++ Release build compile flags" FORCE)
     SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-DNDEBUG -O3 -g  ${GCC_ARCH_FLAG}" 
         CACHE STRING "g++ RelWithDebInfo build compile flags" FORCE)

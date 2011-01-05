@@ -40,7 +40,7 @@ void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
 	int nLoads = forceStore.getColumnLabels().getSize()/9;
 	string labels[9] = {"pointX", "pointY", "pointZ", "forceX", "forceY", "forceZ", "torqueX", "torqueY", "torqueZ"};
 	char suffix[2];
-	itoa(nLoads, suffix, 10);
+	sprintf(suffix, "%d", nLoads); 
 	
 	Array<string> col_labels;
 	col_labels.append("time");
