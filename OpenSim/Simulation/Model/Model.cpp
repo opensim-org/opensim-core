@@ -1464,7 +1464,7 @@ Vector& Model::updControls(const SimTK::State &s) const
 	}
 
 	// direct the system shared cache 
-	Measure_<Vector>::Result& controlsCache = static_cast<Measure_<Vector>::Result&>(_system->updDefaultSubsystem().getMeasure_<Vector>(_modelControlsIndex));
+	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 	return controlsCache.updValue(s);
 }
 
@@ -1477,7 +1477,7 @@ const Vector& Model::getControls(const SimTK::State &s) const
 	}
 
 	// direct the system shared cache 
-	Measure_<Vector>::Result& controlsCache = static_cast<Measure_<Vector>::Result&>(_system->updDefaultSubsystem().getMeasure_<Vector>(_modelControlsIndex));
+	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 
 	if(!controlsCache.isValid(s)){
 		computeControls(s, controlsCache.updValue(s));
