@@ -222,9 +222,9 @@ ExternalLoads& ExternalLoads::operator=(const ExternalLoads &aAbsForceSet)
 /**
  * Create a set of prescribed forces from a file.
  * Assumptions:
- *  1. instance variable _dataFileName is set already
- *  2. Sizes of the three arrays startForceColumns, bodyNames, columnCount is identical
- *  3. columnCount is 
+ *  0. If instance variable _dataFileName is not set already it will be set
+ *  1. Sizes of the three arrays startForceColumns, bodyNames, columnCount is identical
+ *  2. columnCount is 
  *						9: Force, Point, Torque 
  *						6: Force, Point
  */
@@ -233,6 +233,7 @@ void ExternalLoads::createForcesFromFile(const std::string& fileName,
 									Array<int>& columnCount,
 									Array<std::string>& bodyNames)
 {
+	setDataFileName(fileName);
 	Storage kineticsStore(fileName);
 	int forceSize = kineticsStore.getSize();
 	if(forceSize<=0) return;

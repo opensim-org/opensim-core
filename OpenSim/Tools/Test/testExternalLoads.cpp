@@ -26,14 +26,7 @@
 */
 
 #include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
-#include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include "SimTKsimbody.h"
-#include "SimTKmath.h"
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -55,7 +48,7 @@ void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
 	dataRow.setTime(0);
 	double data[9];
 	for(int i = 0; i<9; i++){
-		col_labels.append(labels[i]+"_"+suffix);
+		col_labels.append(labels[i]);
 		if(i<3){
 			data[i] = force[i]; continue;
 		}
@@ -100,8 +93,38 @@ void testForceGlobalPointLocal()
 	addLoadToStorage(forceStore, Vec3(0, 1.2, 0), Vec3(0.05, 0, 0), Vec3(0, 0, 10));
 	forceStore.print("test_external_loads.sto");
 
-	ForceSet fs;
-	//fs.createForcesFromFile("test_external_loads.sto", 
+	ExternalLoads extLoads(model);
+	OpenSim::Array<std::string> forceFunctionNames("forceX", 1);
+	OpenSim::Array<int> colummnCount(9, 1);
+	OpenSim::Array<std::string> bodyNames("cylinder", 1);
+	extLoads.createForcesFromFile("test_external_loads.sto", forceFunctionNames, colummnCount, bodyNames);
+
+	for(int i=0; i<extLoads.getSize(); i++)
+		model.addForce(&extLoads[i]);
+
+	// Create the force reporter
+	ForceReporter* reporter = new ForceReporter(&model);
+	model.addAnalysis(reporter);
+
+	SimTK::State &osim_state = model.initSystem();
+    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
+	integrator.setAccuracy(1e-6);
+    Manager manager(model,  integrator);
+    manager.setInitialTime(0.0);
+
+	double final_t = 1.0;
+	double nsteps = 10;
+	double dt = final_t/nsteps;
+
+	for(int i = 1; i <=nsteps; i++){
+		manager.setFinalTime(dt*i);
+		manager.integrate(osim_state);
+		model.getMultibodySystem().realize(osim_state, Stage::Acceleration);
+		manager.setInitialTime(dt*i);
+	}
+
+
+	 
 }
 
 int main()
