@@ -700,7 +700,7 @@ void Model::initState(SimTK::State& state) const
 {
 	// Allocate the size and default values for controls
 	// Actuators will have a const view into the cache
-	Measure_<Vector>::Result& controlsCache = static_cast<Measure_<Vector>::Result&>(_system->updDefaultSubsystem().getMeasure_<Vector>(_modelControlsIndex));
+	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 	controlsCache.updValue(state).resize(_defaultControls.size());
 	controlsCache.updValue(state) = _defaultControls;
 
