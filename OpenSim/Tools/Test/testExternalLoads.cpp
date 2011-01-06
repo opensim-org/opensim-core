@@ -38,7 +38,7 @@ using namespace std;
 void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
 {
 	int nLoads = forceStore.getColumnLabels().getSize()/9;
-	string labels[9] = {"pointX", "pointY", "pointZ", "forceX", "forceY", "forceZ", "torqueX", "torqueY", "torqueZ"};
+	string labels[9] = { "forceX", "forceY", "forceZ", "pointX", "pointY", "pointZ","torqueX", "torqueY", "torqueZ"};
 	char suffix[2];
 	sprintf(suffix, "%d", nLoads); 
 	
@@ -73,63 +73,80 @@ void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
 
 	forces->setColumnLabels(col_labels);
 	forces->append(dataRow);
-	dataRow.setTime(0.5);
-	forces->append(dataRow);
 	dataRow.setTime(1.0);
+	forces->append(dataRow);
+	dataRow.setTime(2.0);
 	forces->append(dataRow);
 
 	if (nLoads > 0)
 		forces->addToRdStorage(forceStore, 0.0, 1.0);
 }
 
-void testForceGlobalPointLocal()
+void testForceGlobalPointLocal(bool forceIsGlobal=true, bool pointIsGlobal=false, bool applyTorque=false)
 {
 	Model model("Pendulum.osim");
 	State &s = model.initSystem();
 	model.updGravityForce().disable(s);
 	Storage forceStore;
-
 	// Add an external load
-	addLoadToStorage(forceStore, Vec3(0, 1.2, 0), Vec3(0.05, 0, 0), Vec3(0, 0, 10));
+	// Default is: 	_forceIsGlobal=true;
+	//				_pointIsGlobal=false;
+
+	// Simulate gravity g=-10, R=0.5 => Acc = -g/R*sin(theta)
+	addLoadToStorage(forceStore, /* force */ Vec3(0.0, -20., 0.), /* point */ Vec3(0.0, -0.5, 0), /* torque*/ Vec3(0, 0, 0));
 	forceStore.print("test_external_loads.sto");
 
-	ExternalLoads extLoads(model);
+	ExternalLoads* extLoads = new ExternalLoads(model);
 	OpenSim::Array<std::string> forceFunctionNames("forceX", 1);
-	OpenSim::Array<int> colummnCount(9, 1);
+	OpenSim::Array<int> colummnCount(applyTorque?9:6, 1);
 	OpenSim::Array<std::string> bodyNames("cylinder", 1);
-	extLoads.createForcesFromFile("test_external_loads.sto", forceFunctionNames, colummnCount, bodyNames);
+	extLoads->createForcesFromFile("test_external_loads.sto", forceFunctionNames, colummnCount, bodyNames);
 
-	for(int i=0; i<extLoads.getSize(); i++)
-		model.addForce(&extLoads[i]);
+	for(int i=0; i<extLoads->getSize(); i++)
+		model.addForce(&(*extLoads)[i]);
 
 	// Create the force reporter
 	ForceReporter* reporter = new ForceReporter(&model);
 	model.addAnalysis(reporter);
 
+	Kinematics* kin = new Kinematics(&model);
+	kin->setInDegrees(true);
+	kin->setRecordAccelerations(true);
+	model.addAnalysis(kin);
+	// set initial conditions
+	CoordinateSet& pin_coords = model.getJointSet().get(0).getCoordinateSet();
+	pin_coords[0].setValue(s, SimTK_PI/4.0);
+	
 	SimTK::State &osim_state = model.initSystem();
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
 	integrator.setAccuracy(1e-6);
     Manager manager(model,  integrator);
     manager.setInitialTime(0.0);
 
-	double final_t = 1.0;
+	double final_t = 2.0;
 	double nsteps = 10;
 	double dt = final_t/nsteps;
 
+	const OpenSim::Body& cylBody=model.getBodySet().get("cylinder");
 	for(int i = 1; i <=nsteps; i++){
 		manager.setFinalTime(dt*i);
-		manager.integrate(osim_state);
+		manager.integrate(osim_state);	
 		model.getMultibodySystem().realize(osim_state, Stage::Acceleration);
+		SimTK::Vec3 acc(0);
+		model.getSimbodyEngine().getAcceleration(osim_state, cylBody,SimTK::Vec3(0),acc);
 		manager.setInitialTime(dt*i);
 	}
-
-
+	std::string desc = "Force"+ std::string(forceIsGlobal?"Global":"Local")+
+						"Point"+std::string(pointIsGlobal?"Global":"Local")+
+						std::string(applyTorque?"With":"No")+"Torque";
+	reporter->printResults(desc);
+	kin->printResults(desc);
 	 
 }
 
 int main()
 {
-	//testForceGlobalPointLocal();
+	testForceGlobalPointLocal();
 	
 	return 0;
 }

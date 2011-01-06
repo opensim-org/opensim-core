@@ -11,7 +11,7 @@
 		<length_units> Unassigned </length_units>
 		<force_units> Unassigned </force_units>
 		<!--Acceleration due to gravity.-->
-		<gravity>       0.00000000      0.0       0.00000000 </gravity>
+		<gravity>       0.00000000       0.00000000       0.00000000 </gravity>
 		<!--Bodies in the model.-->
 		<BodySet name="">
 			<objects>
@@ -31,11 +31,13 @@
 						<VisibleProperties name="">
 							<display_preference> 4 </display_preference>
 							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
+							
 							<material_name> DEFAULT </material_name>
 						</VisibleProperties>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
-					</VisibleObject>
+					<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes></VisibleObject>
 					<WrapObjectSet name="">
 						<objects/>
 						<groups/>
@@ -86,11 +88,13 @@
 						<VisibleProperties name="">
 							<display_preference> 4 </display_preference>
 							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
+							
 							<material_name> DEFAULT </material_name>
 						</VisibleProperties>
-						<scale_factors>       0.2000000       1.00000000       0.20000000 </scale_factors>
-					</VisibleObject>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       0.20000000       1.00000000       0.20000000 </scale_factors>
+					<!--Whether to show a coordinate frame-->
+						<show_axes> true </show_axes></VisibleObject>
 					<WrapObjectSet name="">
 						<objects/>
 						<groups/>
@@ -106,7 +110,37 @@
 		</ConstraintSet>
 		<!--Markers in the model.-->
 		<MarkerSet name="">
-			<objects/>
+			<objects>
+				<Marker name="NewMarker">
+						<!--Used for displaying a marker in the visuals.-->
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000      -0.50000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+				<!--Body segment in the model on which the marker resides.-->
+					<body> cylinder </body>
+					<!--Location of a marker on the body segment.-->
+					<location>       0.00000000      -0.50000000       0.00000000 </location>
+					<!--Flag (true or false) specifying whether or not a marker should be kept
+					    fixed in the marker placement step.  i.e. If false, the marker is
+					    allowed to move.-->
+					<fixed> false </fixed>
+				</Marker>
+			</objects>
 			<groups/>
 		</MarkerSet>
 		<!--ContactGeometry objects in the model.-->
