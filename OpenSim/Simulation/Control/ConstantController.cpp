@@ -205,7 +205,7 @@ void ConstantController::computeControls(const SimTK::State& s, SimTK::Vector& c
 {
    	for(int i=0; i<_actuatorSet.getSize(); i++){
 		SimTK::Vector actControls(1, _controlConstant);
-		_actuatorSet[i].insertControls(actControls, controls);
+		_actuatorSet[i].addInControls(actControls, controls);
 	}
 }
 

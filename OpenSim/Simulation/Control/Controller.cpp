@@ -266,7 +266,6 @@ void Controller:: setup(Model& model)
  */
 void Controller::createSystem(SimTK::MultibodySystem& system) const
 {
-
 	 // Beyond the const Component get the index so we can access the SimTK::Force later
 	Controller* mutableThis = const_cast<Controller *>(this);
 

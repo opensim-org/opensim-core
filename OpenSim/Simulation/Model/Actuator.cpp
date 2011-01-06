@@ -180,22 +180,22 @@ const VectorView_<Real> Actuator_::getControls( const SimTK::State& s ) const
 	return  controlsCache(_controlIndex, numControls());
 }
 
-void Actuator_::extractControls(const Vector& modelControls, Vector& actuatorControls) const
+void Actuator_::getControls(const Vector& modelControls, Vector& actuatorControls) const
 {
 	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-		"Actuator_::extractControls, input modelControls size does not match model.getNumControls().\n");
+		"Actuator_::getControls, input modelControls size does not match model.getNumControls().\n");
 	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::extractControls, output actuatorControls incompatible with actuator's numControls().\n");
+		"Actuator_::getControls, output actuatorControls incompatible with actuator's numControls().\n");
 	actuatorControls = modelControls(_controlIndex, numControls());
 }
 
-void Actuator_::insertControls(const Vector& actuatorControls, Vector& modelControls) const
+void Actuator_::setControls(const Vector& actuatorControls, Vector& modelControls) const
 {
 	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::insertControls, input actuatorControls incompatible with actuator's numControls().\n");
+		"Actuator_::setControls, input actuatorControls incompatible with actuator's numControls().\n");
 
 	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
-	"Actuator_::insertControls, output modelControls size does not match model.getNumControls()\n");
+	"Actuator_::setControls, output modelControls size does not match model.getNumControls()\n");
 
 	modelControls(_controlIndex, numControls()) = actuatorControls;
 }
@@ -203,7 +203,7 @@ void Actuator_::insertControls(const Vector& actuatorControls, Vector& modelCont
 void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelControls) const
 {
 	SimTK_ASSERT(actuatorControls.size() == numControls(), 
-		"Actuator_::insertControls, input actuatorControls incompatible with actuator's numControls()\n");
+		"Actuator_::addInControls, input actuatorControls incompatible with actuator's numControls()\n");
 
 	SimTK_ASSERT(modelControls.size() == _model->getNumControls(), 
 	"Actuator_::addInControls, output modelControls size does not match model.getNumControls().\n");

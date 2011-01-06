@@ -760,6 +760,11 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
     if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
    
+	// We need to be at a valid stage to initialize the controls, but only when we 
+	// are integrating the complete model system, not the CMC system. This is very ugly 
+	// and a cleaner solution is required- aseth
+	if(_system == NULL)
+		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
     initialize(s, dt);  
 
 	if( fixedStep){

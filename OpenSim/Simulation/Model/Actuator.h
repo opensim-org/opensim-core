@@ -122,11 +122,11 @@ public:
 
 	// CONTROLS
 	virtual const SimTK::VectorView_<double> getControls( const SimTK::State& s ) const;
-	/** Convenience methods for extracting, inserting and adding actuatord controls from/into 
+	/** Convenience methods for getting, setting and adding to actuator controls from/into 
 	    the model controls. These methods have no effect on the realization stage. */
-	virtual void extractControls(const SimTK::Vector& modelControls, SimTK::Vector& actuatorControls) const;
-	/** insert actuator controls subvector into the right slot in the system-wide model controls */
-	virtual void insertControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
+	virtual void getControls(const SimTK::Vector& modelControls, SimTK::Vector& actuatorControls) const;
+	/** set actuator controls subvector into the right slot in the system-wide model controls */
+	virtual void setControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
 	/** add actuator controls to the values already occupying the slot in the system-wide model controls */
 	virtual void addInControls(const SimTK::Vector& actuatorControls, SimTK::Vector& modelControls) const;
 

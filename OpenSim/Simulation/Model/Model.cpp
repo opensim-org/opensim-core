@@ -1480,6 +1480,10 @@ const Vector& Model::getControls(const SimTK::State &s) const
 	Measure_<Vector>::Result controlsCache = Measure_<Vector>::Result::getAs(_system->updDefaultSubsystem().getMeasure(_modelControlsIndex));
 
 	if(!controlsCache.isValid(s)){
+		// Always reset controls to their default values before computing controls
+		// since default behavior is for controllors to "addInControls" so there should be valid
+		// values to begin with.
+		controlsCache.updValue(s) = _defaultControls;
 		computeControls(s, controlsCache.updValue(s));
 		controlsCache.markAsValid(s);
 	}
@@ -1498,10 +1502,8 @@ void Model::computeControls(const SimTK::State& s, SimTK::Vector &controls) cons
 /** Get a flag indicating if the model needs controls to operate its actuators */
 bool Model::isControlled() const
 {
-	bool isControlled = false;
-	for(int i=0; i< getActuators().getSize() && !isControlled; i++){
-		//isControlled = getActuators().get(i).isControlled();
-	}
+	bool isControlled = getActuators().getSize() > 0;
+
 	return isControlled;
 }
 

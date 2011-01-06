@@ -206,7 +206,7 @@ void ControlSetController::computeControls(const SimTK::State& s, SimTK::Vector&
 
 		if(index >= 0){
 			SimTK::Vector actControls(1, _controlSet->get(index).getControlValue(s.getTime()));
-			_actuatorSet[i].insertControls(actControls, controls);
+			_actuatorSet[i].addInControls(actControls, controls);
 		}
 	}
 }
@@ -264,7 +264,8 @@ void ControlSetController::setup(Model& model)
 		if(actName.length()>ext.length() && !(actName.compare(actName.length()-ext.length(), ext.length(), ".excitation"))){
 			actName.erase(actName.length()-ext.length(), ext.length());
 		}
-		_actuatorNameList.append(actName);
+		if(_actuatorNameList.findIndex(actName) < 0) // not already in the list of actuators for this controller
+			_actuatorNameList.append(actName);
 	}
 
     // Controller::setup calls setActuators() with actuators in the _actuatorNameList
@@ -275,9 +276,11 @@ void ControlSetController::setup(Model& model)
 // for adding any components to the model
 void ControlSetController::createSystem( SimTK::MultibodySystem& system ) const
 {
+	Controller::createSystem(system);
 }
 
 // for any intialization requiring a state or the complete system 
 void ControlSetController::initState( SimTK::State& s)  const
 {
+	Controller::initState(s);
 }
