@@ -82,7 +82,7 @@ void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
 		forces->addToRdStorage(forceStore, 0.0, 1.0);
 }
 
-void testForceGlobalPointLocal(bool forceIsGlobal=true, bool pointIsGlobal=false, bool applyTorque=false)
+void testForce(bool forceIsGlobal=true, bool pointIsGlobal=false, bool applyTorque=false)
 {
 	Model model("Pendulum.osim");
 	State &s = model.initSystem();
@@ -93,7 +93,8 @@ void testForceGlobalPointLocal(bool forceIsGlobal=true, bool pointIsGlobal=false
 	//				_pointIsGlobal=false;
 
 	// Simulate gravity g=-10, R=0.5 => Acc = -g/R*sin(theta)
-	addLoadToStorage(forceStore, /* force */ Vec3(0.0, -20., 0.), /* point */ Vec3(0.0, -0.5, 0), /* torque*/ Vec3(0, 0, 0));
+	Vec3 applicationPoint(0.0, -0.5, 0);
+	addLoadToStorage(forceStore, /* force */ Vec3(0.0, -10., 0.), /* point */ applicationPoint, /* torque*/ Vec3(0, 0, 0));
 	forceStore.print("test_external_loads.sto");
 
 	ExternalLoads* extLoads = new ExternalLoads(model);
@@ -113,6 +114,11 @@ void testForceGlobalPointLocal(bool forceIsGlobal=true, bool pointIsGlobal=false
 	kin->setInDegrees(true);
 	kin->setRecordAccelerations(true);
 	model.addAnalysis(kin);
+
+	//PointKinematics* pKin = new PointKinematics(&model);
+	//pKin->setBody(&model.updBodySet().get("cylinder"));
+	//pKin->setPoint(applicationPoint);
+	//model.addAnalysis(pKin);
 	// set initial conditions
 	CoordinateSet& pin_coords = model.getJointSet().get(0).getCoordinateSet();
 	pin_coords[0].setValue(s, SimTK_PI/4.0);
@@ -132,8 +138,6 @@ void testForceGlobalPointLocal(bool forceIsGlobal=true, bool pointIsGlobal=false
 		manager.setFinalTime(dt*i);
 		manager.integrate(osim_state);	
 		model.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-		SimTK::Vec3 acc(0);
-		model.getSimbodyEngine().getAcceleration(osim_state, cylBody,SimTK::Vec3(0),acc);
 		manager.setInitialTime(dt*i);
 	}
 	std::string desc = "Force"+ std::string(forceIsGlobal?"Global":"Local")+
@@ -146,7 +150,7 @@ void testForceGlobalPointLocal(bool forceIsGlobal=true, bool pointIsGlobal=false
 
 int main()
 {
-	testForceGlobalPointLocal();
+	testForce(true, false, false);
 	
 	return 0;
 }

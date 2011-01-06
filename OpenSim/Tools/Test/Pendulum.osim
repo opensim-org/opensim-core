@@ -46,9 +46,9 @@
 				<Body name="cylinder"> <!-- Iy = 1/2*m*r^2, Ix=Iz= 1/12*m*(3r^2+h^2)-->
 					<mass>      10.00000000 </mass>
 					<mass_center>       0.00000000       0.00000000       0.00000000 </mass_center>
-					<inertia_xx>       1.00000000 </inertia_xx>
+					<inertia_xx>       0.25000000 </inertia_xx><!--1.0-->
 					<inertia_yy>       0.25000000 </inertia_yy>
-					<inertia_zz>       1.00000000 </inertia_zz>
+					<inertia_zz>       0.25000000 </inertia_zz><!--1.0-->
 					<inertia_xy>       0.00000000 </inertia_xy>
 					<inertia_xz>       0.00000000 </inertia_xz>
 					<inertia_yz>       0.00000000 </inertia_yz>
