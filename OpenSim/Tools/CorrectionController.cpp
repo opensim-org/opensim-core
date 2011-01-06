@@ -282,7 +282,7 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 		}
 
 		SimTK::Vector actControls(1, newControl);
-		_actuatorSet[i].insertControls(actControls, controls);
+		_actuatorSet[i].addInControls(actControls, controls);
 	}
 }
 

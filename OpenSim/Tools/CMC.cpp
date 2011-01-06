@@ -1091,23 +1091,14 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 {
 	SimTK_ASSERT( _controlSet.getSize() == _actuatorSet.getSize() , 
 		"CMC::computeControls number of controls does not match number of actuators.");
-
-	std::string actName = "";
+	
+	SimTK::Vector actControls(1, 0.0);
 	for(int i=0; i<_actuatorSet.getSize(); i++){
-		actName = _actuatorSet[i].getName();
-		int index = _controlSet.getIndex(actName);
-		if(index < 0){
-			actName = actName + ".excitation";
-			index = _controlSet.getIndex(actName);
-		}
-		if(index > -1){
-			SimTK::Vector actControls(1, _controlSet[index].getControlValue(s.getTime()));
-			_actuatorSet[i].insertControls(actControls, controls);
-		}
-		else{
-			throw Exception("CMC::computeControls "+actName+" has no controls computed.");
-		}
+		actControls[0] = _controlSet[_controlSetIndices[i]].getControlValue(s.getTime());
+		_actuatorSet[i].addInControls(actControls, controls);
 	}
+
+	double val = controls[0];
 }
 
 void CMC::setActuators( Set<Actuator>& actSet ) 
@@ -1150,11 +1141,30 @@ void CMC::setup(Model& model)   {
 // for adding any components to the model
 void CMC::createSystem( SimTK::MultibodySystem& system)  const
 {
-     // add event handler for updating controls for next window 
-	 CMC* mutableThis = const_cast<CMC *>(this);
-     ComputeControlsEventHandler* computeControlsHandler = new ComputeControlsEventHandler(mutableThis);
+	// add event handler for updating controls for next window 
+	CMC* mutableThis = const_cast<CMC *>(this);
+	ComputeControlsEventHandler* computeControlsHandler = new ComputeControlsEventHandler(mutableThis);
 
-     system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
+	system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
+
+	SimTK_ASSERT( _controlSet.getSize() == _actuatorSet.getSize() , 
+		"CMC::computeControls number of controls does not match number of actuators.");
+
+	mutableThis->_controlSetIndices.setSize(_actuatorSet.getSize());
+
+	std::string actName = "";
+	for(int i=0; i<_actuatorSet.getSize(); i++){
+		actName = _actuatorSet[i].getName();
+		int index = _controlSet.getIndex(actName);
+		if(index < 0){
+			actName = actName + ".excitation";
+			index = _controlSet.getIndex(actName);
+		}
+		if(index < 0){
+			throw Exception("CMC::computeControls "+actName+" has no controls computed.");
+		}
+		mutableThis->_controlSetIndices[i] = index;
+	}
 }
 
 // for any intialization requiring a state or the complete system 

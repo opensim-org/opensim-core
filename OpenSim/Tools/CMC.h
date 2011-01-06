@@ -88,6 +88,10 @@ class OSIMTOOLS_API CMC : public TrackingController
 //=============================================================================
 // MEMBER VARIABLES	
 //=============================================================================
+private:
+	/* Corresponding index of an Actuator's controls in CMC's ControlSet */
+	Array<int> _controlSetIndices;
+
 protected:
 	/** Optimizer. */
 	SimTK::Optimizer *_optimizer;
