@@ -74,10 +74,6 @@ private:
 	PropertyDbl _lowpassCutoffFrequencyProp;
 	double &_lowpassCutoffFrequency;
 
-	/** Name of the file containing the external loads applied to the model. */
-	OpenSim::PropertyStr _externalLoadsFileNameProp;
-	std::string &_externalLoadsFileName;
-
 	/** Storage for the model states. */
 	Storage *_statesStore;
 
@@ -131,10 +127,6 @@ public:
 	void setSpeedsFileName(const std::string &aFileName) { _speedsFileName = aFileName; }
 	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
 	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
-
-	// External loads get/set
-	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
-	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 
 	//--------------------------------------------------------------------------
 	// UTILITIES

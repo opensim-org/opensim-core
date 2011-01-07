@@ -43,7 +43,6 @@ AnalyzeTool::AnalyzeTool() :
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     _loadModelAndInput(false),
 	_printResultFiles(true)
@@ -65,7 +64,6 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     _loadModelAndInput(aLoadModelAndInput),
 	_printResultFiles(true)
@@ -94,7 +92,6 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     _loadModelAndInput(false),
 	_printResultFiles(true)
@@ -159,7 +156,6 @@ AnalyzeTool(const AnalyzeTool &aTool) :
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_speedsFileName(_speedsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     _loadModelAndInput(false)
 {
@@ -191,7 +187,6 @@ setNull()
 	_statesFileName = "";
 	_coordinatesFileName = "";
 	_speedsFileName = "";
-	_externalLoadsFileName = "";
 	_lowpassCutoffFrequency = -1.0;
 
 	_statesStore = NULL;
@@ -260,7 +255,6 @@ operator=(const AnalyzeTool &aTool)
 	_statesFileName = aTool._statesFileName;
 	_coordinatesFileName = aTool._coordinatesFileName;
 	_speedsFileName = aTool._speedsFileName;
-	_externalLoadsFileName = aTool._externalLoadsFileName;
 	_lowpassCutoffFrequency= aTool._lowpassCutoffFrequency;
 	_statesStore = aTool._statesStore;
 	_printResultFiles = aTool._printResultFiles;
@@ -533,9 +527,9 @@ bool AnalyzeTool::run(bool plotting)
 	_statesStore->getTime(iFinal,tf);
 
 	// It is rediculous too start before the specified time! So check we aren't doing something stupid.
-	while(ti < _ti){
-		_statesStore->getTime(++iInitial,ti);
-	}
+	//while(ti < _ti){
+	//	_statesStore->getTime(++iInitial,ti);
+	//}
 
 	cout<<"Executing the analyses from "<<ti<<" to "<<tf<<"..."<<endl;
 	run(s, *_model, iInitial, iFinal, *_statesStore, _solveForEquilibriumForAuxiliaryStates);

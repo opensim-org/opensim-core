@@ -227,6 +227,7 @@ ExternalLoads& ExternalLoads::operator=(const ExternalLoads &aAbsForceSet)
  *  2. columnCount is 
  *						9: Force, Point, Torque 
  *						6: Force, Point
+ *	3. By default the PrescribedForce has ForceIsGlobal=true and PointIsGlobal=false
  */
 void ExternalLoads::createForcesFromFile(const std::string& fileName,
 									Array<std::string>& startForceColumns, 
@@ -427,7 +428,7 @@ void ExternalLoads::computeFunctions(SimTK::State& s,
 								coord.setValue(s, localy[j], j==nq-1);
 								coord.setSpeedValue(s, localy[nq+j]);
 							}
-
+							//cout << "State" << s.toString() << endl;
 							// Position in local frame (i.e. with respect to body's origin, not center of mass)
 							_model->getSimbodyEngine().getPosition(s,pf->getBody(),origin,originGlobal);
 							aGlobal->calcValue(&localt[0],&pGlobal[0], localt.getSize());
