@@ -484,6 +484,8 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 			// assemble model so that states satisfy ALL constraints
 			_model->assemble(s, this, weight);
 		}
+		else
+			_model->assemble(s, this, 1.0);
 	}
 
 	if (!_locked) {
