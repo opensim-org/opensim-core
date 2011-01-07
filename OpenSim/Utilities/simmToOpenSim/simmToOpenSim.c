@@ -18,6 +18,9 @@
 #if OPENSIM_BUILD
 #include <OpenSim/version.h>
 #endif
+#ifdef WIN32
+#pragma warning( disable : 4996 )
+#endif
 
 static void printUsage(char programName[]);
 ReturnCode write_opensim_model(ModelStruct* ms, char filename[], char geometryDirectory[],
