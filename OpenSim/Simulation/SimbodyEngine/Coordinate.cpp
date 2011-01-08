@@ -485,7 +485,7 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 			_model->assemble(s, this, weight);
 		}
 		else
-			_model->assemble(s, this, 1.0);
+			_model->getMultibodySystem().realize(s, Stage::Position );
 	}
 
 	if (!_locked) {
