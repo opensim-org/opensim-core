@@ -122,6 +122,8 @@ void testArm26() {
 
 void testGait2354() {
     bool failed = false;
+	//ExternalLoads ext;
+	//ext.print("ExternalLoads.xml");
 	ForwardTool forward("setup_gait2354.xml");
 	forward.run();
 	forward.print("check.xml");

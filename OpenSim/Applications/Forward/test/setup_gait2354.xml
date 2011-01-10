@@ -101,16 +101,7 @@
 	<!-- EXTERNAL LOADS -->
 	<!--Motion file (.mot) or storage file (.sto) containing the external
 	    loads applied to the model.-->
-	<external_loads_file> externalForces.xml </external_loads_file>
-	<!--Motion file (.mot) or storage file (.sto) containing the model
-	    kinematics corresponding to the external loads.-->
-	<external_loads_model_kinematics_file> subject01_walk1_ik.mot </external_loads_model_kinematics_file>
-	<!--Name of the body to which the first set of external loads should be
-	    applied (e.g., the name of the right foot).-->
-	<external_loads_body1> calcn_r </external_loads_body1>
-	<!--Name of the body to which the second set of external loads should be
-	    applied (e.g., the name of the left foot).-->
-	<external_loads_body2> calcn_l </external_loads_body2>
+	<external_loads_file> externalLoads.xml </external_loads_file>
 	<!--Low-pass cut-off frequency for filtering the model kinematics
 	    corresponding to the external loads. A negative value results in no
 	    filtering. The default value is -1.0, so no filtering.
