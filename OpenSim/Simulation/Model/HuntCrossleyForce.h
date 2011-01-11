@@ -80,6 +80,17 @@ public:
      * Set the transition velocity for switching between static and dynamic friction.
      */
     void setTransitionVelocity(double velocity);
+	//-----------------------------------------------------------------------------
+	// Reporting
+	//-----------------------------------------------------------------------------
+	/** 
+	 * Provide name(s) of the quantities (column labels) of the force value(s) to be reported
+	 */
+	virtual OpenSim::Array<std::string> getRecordLabels() const ;
+	/**
+	*  Provide the value(s) to be reported that correspond to the labels
+	*/
+	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 protected:
 

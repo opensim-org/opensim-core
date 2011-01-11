@@ -30,6 +30,7 @@
 #include "ContactGeometry.h"
 #include "ContactGeometrySet.h"
 #include "Model.h"
+#include <OpenSim/Simulation/Model/BodySet.h>
 
 namespace OpenSim {
 
@@ -104,6 +105,7 @@ void HuntCrossleyForce::setupProperties()
 void HuntCrossleyForce::copyData(const HuntCrossleyForce& copy)
 {
     _contactParametersSet = copy._contactParametersSet;
+	_transitionVelocity = copy._transitionVelocity;
 }
 
 //_____________________________________________________________________________
@@ -314,6 +316,71 @@ Object* HuntCrossleyForce::ContactParametersSet::copy() const
 {
 	ContactParametersSet *cpsSet = new ContactParametersSet(*this);
 	return(cpsSet);
+}
+
+//=============================================================================
+// Reporting
+//=============================================================================
+/** 
+ * Provide names of the quantities (column labels) of the force value(s) reported
+ * 
+ */
+OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const 
+{
+	OpenSim::Array<std::string> labels("");
+
+
+	for (int i = 0; i < _contactParametersSet.getSize(); ++i)
+    {
+        ContactParameters& params = _contactParametersSet.get(i);
+        for (int j = 0; j < params.getGeometry().getSize(); ++j)
+        {
+			ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
+			std::string bodyName = geom.getBodyName();
+			labels.append(getName()+"."+bodyName+".force.X");
+			labels.append(getName()+"."+bodyName+".force.Y");
+			labels.append(getName()+"."+bodyName+".force.Z");
+			labels.append(getName()+"."+bodyName+".torque.X");
+			labels.append(getName()+"."+bodyName+".torque.Y");
+			labels.append(getName()+"."+bodyName+".torque.Z");
+		}
+	}
+
+	return labels;
+}
+/**
+ * Provide the value(s) to be reported that correspond to the labels
+ */
+OpenSim::Array<double> HuntCrossleyForce::getRecordValues(const SimTK::State& state) const 
+{
+	OpenSim::Array<double> values(1);
+
+	const SimTK::HuntCrossleyForce &simtkForce = (SimTK::HuntCrossleyForce &)(_model->getForceSubsystem().getForce(_index));
+
+	SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
+	SimTK::Vector_<SimTK::Vec3> particleForces(0);
+	SimTK::Vector mobilityForces(0);
+
+	//get the net force added to the system contributed by the Spring
+	simtkForce.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
+
+	for (int i = 0; i < _contactParametersSet.getSize(); ++i)
+    {
+        ContactParameters& params = _contactParametersSet.get(i);
+        for (int j = 0; j < params.getGeometry().getSize(); ++j)
+        {
+			ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
+			std::string bodyName = geom.getBodyName();
+	
+			SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(bodyName).getIndex())[1];
+			SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(bodyName).getIndex())[0];
+
+			values.append(3, &forces[0]);
+			values.append(3, &torques[0]);
+		}
+	}
+
+	return values;
 }
 
 }// end of namespace OpenSim
