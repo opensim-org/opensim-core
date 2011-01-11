@@ -2,7 +2,7 @@
 # Automatically create tests using files named "test*.cpp"	// Adopted from SimTK core
 FILE(GLOB TEST_PROGS "*est*.cpp")
 
-LINK_LIBRARIES(debug osimCommon_d	optimized osimCommon
+LINK_LIBRARIES(debug osimCommon${CMAKE_DEBUG_POSTFIX}	optimized osimCommon
                ${SIMTK_ALL_LIBS}
 )
 

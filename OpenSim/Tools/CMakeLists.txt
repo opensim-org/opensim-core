@@ -32,11 +32,11 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 # SimmKinematicsEngine library only needed for SimmFileWriter...
 TARGET_LINK_LIBRARIES(osim${KIT}
-	debug osimCommon_d optimized osimCommon
-	debug osimSimulation_d optimized osimSimulation
-	debug osimAnalyses_d optimized osimAnalyses
-	debug osimActuators_d optimized osimActuators
-	debug osimAnalyses_d optimized osimAnalyses
+	debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
+	debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
 	${SIMTK_ALL_LIBS})
 
 				

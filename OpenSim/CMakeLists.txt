@@ -1,5 +1,4 @@
 #-----------------------------------------------------------------------------
-SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
 
 SUBDIRS(Common Simulation Actuators Analyses Models Utilities Tools Java Applications Examples Tests)
 

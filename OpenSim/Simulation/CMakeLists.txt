@@ -35,12 +35,12 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 IF(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
-               debug osimCommon_d optimized osimCommon pthreadVC2		     
+               debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon pthreadVC2		     
 		       ${SIMTK_ALL_LIBS}
 		       debug xerces-c_2D optimized  xerces-c_2)
 ELSE(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
-               debug osimCommon_d     optimized osimCommon		     
+               debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon		     
 		       ${SIMTK_ALL_LIBS}
   		       debug xerces-c      optimized xerces-c
 		dl)

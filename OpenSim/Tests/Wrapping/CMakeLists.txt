@@ -3,9 +3,9 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${XERCES_INCLUDE_DIR})
 
 
-LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
-		debug osimSimulation_d optimized osimSimulation
-		debug osimAnalyses_d optimized osimAnalyses)
+LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+		debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+		debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses)
 
 ADD_EXECUTABLE(testWrapping testWrapping.cpp)
 

@@ -3,7 +3,7 @@ IF(BUILD_JAVA_WRAPPING)
 # Automatically create tests using files named "test*.cpp"	// Adopted from SimTK core
 FILE(GLOB TEST_PROGS "test*.cpp")
 
-LINK_LIBRARIES(debug osimJavaJNI_d	optimized osimJavaJNI)
+LINK_LIBRARIES(debug osimJavaJNI${CMAKE_DEBUG_POSTFIX}	optimized osimJavaJNI)
 
 FOREACH(TEST_PROG ${TEST_PROGS})
     GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)

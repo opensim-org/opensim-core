@@ -11,14 +11,15 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 LINK_LIBRARIES(
-	debug osimCommon_d optimized osimCommon
-    debug osimSimulation_d optimized osimSimulation
-    debug osimAnalyses_d optimized osimAnalyses
-    debug osimActuators_d optimized osimActuators
-    debug osimTools_d optimized osimTools
-   	debug ${NameSpace}SimTKcommon_d optimized   ${NameSpace}SimTKcommon
-   	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
-   	debug ${NameSpace}SimTKsimbody_d optimized  ${NameSpace}SimTKsimbody
+	debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+        debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+        debug osimAnalyses${CMAKE_DEBUG_POSTFIX} optimized osimAnalyses
+        debug osimActuators${CMAKE_DEBUG_POSTFIX} optimized osimActuators
+        debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
+   	debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
+   	debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
+   	
+   	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
    	SimTKlapack ${THREAD_LIB})
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)

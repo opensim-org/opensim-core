@@ -8,10 +8,10 @@ ADD_EXECUTABLE(${APPNAME} ${APPNAME}.cpp)
 
 # cmake should automatically figure out what other libraries are needed
 TARGET_LINK_LIBRARIES(${APPNAME}
-          debug osimTools_d optimized osimTools
-          debug osimCommon_d optimized osimCommon
-          debug osimSimulation_d optimized osimSimulation
-          debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon)
+          debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
+          debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+          debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+          debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKcommon)
 
 
 INSTALL_TARGETS(/bin/ ${APPNAME})

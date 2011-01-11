@@ -3,9 +3,9 @@ SET(TARGETS convertControls convertStorageToControls simplifyControls storageFil
 ENDIF(BUILD_UTILITIES)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${XERCES_INCLUDE_DIR})
-LINK_LIBRARIES(debug osimCommon_d     optimized osimCommon 
-               debug osimSimulation_d optimized osimSimulation
-               debug osimActuators_d  optimized osimActuators)
+LINK_LIBRARIES(debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon 
+               debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
+               debug osimActuators${CMAKE_DEBUG_POSTFIX}  optimized osimActuators)
 IF(WIN32)
     LINK_LIBRARIES(debug xerces-c_2D      optimized xerces-c_2)
 ELSE(WIN32)

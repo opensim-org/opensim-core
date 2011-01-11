@@ -17,7 +17,7 @@ ELSE(WIN32)
 # m is math library for linux
 LINK_LIBRARIES(
 	m
-	debug acpp_d optimized acpp
+	debug acpp${CMAKE_DEBUG_POSTFIX} optimized acpp
 	)
 ENDIF(WIN32)
 

@@ -5,9 +5,9 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 						  ${XERCES_INCLUDE_DIR})
 
 # cmake should automatically figure out what other libraries are needed
-LINK_LIBRARIES(debug osimTools_d optimized osimTools
-               debug osimCommon_d optimized osimCommon
-               debug osimSimulation_d optimized osimSimulation)
+LINK_LIBRARIES(debug osimTools${CMAKE_DEBUG_POSTFIX} optimized osimTools
+               debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
+               debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation)
 
 ADD_EXECUTABLE(${APPNAME} ${APPNAME}.cpp)
 INSTALL_TARGETS(/bin/ ${APPNAME})
