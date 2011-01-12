@@ -105,7 +105,7 @@ int testBouncingBall(bool useMesh)
 		std::stringstream coord_name;
 		coord_name << "free_q" << i;
 		free_coords.get(i).setName(coord_name.str());
-		free_coords.get(i).setMotionType(i > 2 ? Coordinate::Translational : Coordinate::Rotational);
+		free_coords.get(i).setMotionType(i > 2 ? Coordinate::Rotational : Coordinate::Translational);
 	}
 
 	osimModel->addBody(&ball);
@@ -158,7 +158,7 @@ int testBouncingBall(bool useMesh)
 
     SimTK::State osim_state = osimModel->initSystem();
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
-    osim_state.updQ()[4] = 5.0;
+    osim_state.updQ()[1] = 5.0;
 
 	//==========================================================================================================
 	// Simulate it and see if it bounces correctly.
@@ -174,9 +174,8 @@ int testBouncingBall(bool useMesh)
         manager.integrate(osim_state);
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
         Vec3 pos;
-		std::string stateString = osim_state.toString();
- 		cout << "stateY=" << osim_state.getY() << std::endl;
-       osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
+
+		osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
         double y = 5.0+0.5*gravity_vec[1]*time*time;
         if (y > radius)
         {
