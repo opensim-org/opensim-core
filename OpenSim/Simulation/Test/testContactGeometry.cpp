@@ -178,7 +178,7 @@ int testBouncingBall(bool useMesh)
  		cout << "stateY=" << osim_state.getY() << std::endl;
        osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
         double y = 5.0+0.5*gravity_vec[1]*time*time;
-        /*if (y > radius)
+        if (y > radius)
         {
             ASSERT_EQUAL(y, pos[1], 1e-5);
         }
@@ -187,11 +187,11 @@ int testBouncingBall(bool useMesh)
             ASSERT(pos[1] < 5.0 && pos[1] > 0);
         }
         ASSERT_EQUAL(0.0, pos[0], 1e-3);
-        ASSERT_EQUAL(0.0, pos[2], 1e-3);*/
+        ASSERT_EQUAL(0.0, pos[2], 1e-3);
     }
     delete force;
     delete geometry;
-	std::string prefix = useMesh?string("Kinematics_Mesh"):string("Kinematics_NoMesh");
+	std::string prefix = useMesh?"Kinematics_Mesh":"Kinematics_NoMesh";
 	kin->printResults(prefix);
 	return 0;
 }
