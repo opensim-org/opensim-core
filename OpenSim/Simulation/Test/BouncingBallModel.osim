@@ -5,23 +5,22 @@
 		<publications> Unassigned </publications>
 		<ForceSet name="">
 			<objects>
-				<HuntCrossleyForce name="">
-					<isDisabled> false </isDisabled>
-					<HuntCrossleyForce::ContactParametersSet name="">
+				<ElasticFoundationForce name="contact">
+					<ElasticFoundationForce::ContactParametersSet name="">
 						<objects>
-							<HuntCrossleyForce::ContactParameters name="">
+							<ElasticFoundationForce::ContactParameters name="">
 								<geometry> ball ground </geometry>
-								<stiffness> 1000000.00000000 </stiffness>
-								<dissipation>       0.00100000 </dissipation>
-								<static_friction>       0.00000000 </static_friction>
-								<dynamic_friction>       0.00000000 </dynamic_friction>
-								<viscous_friction>       0.00000000 </viscous_friction>
-							</HuntCrossleyForce::ContactParameters>
+								<stiffness>   10000.00000000 </stiffness>
+								<dissipation>       0.750000 </dissipation>
+								<static_friction>       0.30000000 </static_friction>
+								<dynamic_friction>       0.30000000 </dynamic_friction>
+								<viscous_friction>       0.30000000 </viscous_friction>
+							</ElasticFoundationForce::ContactParameters>
 						</objects>
 						<groups/>
-					</HuntCrossleyForce::ContactParametersSet>
-					<transition_velocity>       0.01000000 </transition_velocity>
-				</HuntCrossleyForce>
+					</ElasticFoundationForce::ContactParametersSet>
+					<transition_velocity>       0.100000 </transition_velocity>
+				</ElasticFoundationForce>
 			</objects>
 			<groups/>
 		</ForceSet>
@@ -77,7 +76,7 @@
 					<inertia_yz>       0.00000000 </inertia_yz>
 					<!--Joint that connects this body with the parent body.-->
 					<Joint>
-						<FreeJoint name="">
+						<FreeJoint name="ground_ball">
 							<parent_body> ground </parent_body>
 							<location_in_parent>       0.00000000       0.00000000       0.00000000 </location_in_parent>
 							<orientation_in_parent>       0.00000000       0.00000000       0.00000000 </orientation_in_parent>
@@ -86,74 +85,74 @@
 							<!--Generalized coordinates parameterizing this joint.-->
 							<CoordinateSet name="">
 								<objects>
-									<Coordinate name="free_q0">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
+                  <Coordinate name="ball_rx">
+                    <!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
-										<motion_type> rotational </motion_type>
-										<default_value>       0.00000000 </default_value>
-										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>       0.00000000 </initial_value>
-										<range> -999999.90000000  999999.90000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
-									</Coordinate>
-									<Coordinate name="free_q1">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
+                    <motion_type> rotational </motion_type>
+                    <default_value>       0.00000000 </default_value>
+                    <default_speed_value>       0.00000000 </default_speed_value>
+                    <initial_value>       0.00000000 </initial_value>
+                    <range>      -1.57079633       1.57079633 </range>
+                    <clamped> false </clamped>
+                    <locked> false </locked>
+                    <prescribed_function/>
+                  </Coordinate>
+                  <Coordinate name="ball_ry">
+                    <!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
-										<motion_type> rotational </motion_type>
-										<default_value>       0.00000000 </default_value>
-										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>       0.00000000 </initial_value>
-										<range> -999999.90000000  999999.90000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
-									</Coordinate>
-									<Coordinate name="free_q2">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
+                    <motion_type> rotational </motion_type>
+                    <default_value>       0.00000000 </default_value>
+                    <default_speed_value>       0.00000000 </default_speed_value>
+                    <initial_value>       0.00000000 </initial_value>
+                    <range>      -1.57079633       1.57079633 </range>
+                    <clamped> false </clamped>
+                    <locked> false </locked>
+                    <prescribed_function/>
+                  </Coordinate>
+                  <Coordinate name="ball_rz">
+                    <!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
-										<motion_type> rotational </motion_type>
-										<default_value>       0.00000000 </default_value>
-										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>       0.00000000 </initial_value>
-										<range> -999999.90000000  999999.90000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
-									</Coordinate>
-									<Coordinate name="free_q3">
-										<!--Cooridnate can describe rotational, translational, or coupled values.
-										    Defaults to rotational.-->
-										<motion_type> translational </motion_type>
-										<default_value>       0.00000000 </default_value>
-										<default_speed_value>       0.00000000 </default_speed_value>
-										<initial_value>       0.00000000 </initial_value>
-										<range> -999999.90000000  999999.90000000 </range>
-										<clamped> false </clamped>
-										<locked> false </locked>
-										<prescribed_function/>
-									</Coordinate>
-									<Coordinate name="free_q4">
+                    <motion_type> rotational </motion_type>
+                    <default_value>       0.00000000 </default_value>
+                    <default_speed_value>       0.00000000 </default_speed_value>
+                    <initial_value>       0.00000000 </initial_value>
+                    <range>      -1.57079633       1.57079633 </range>
+                    <clamped> false </clamped>
+                    <locked> false </locked>
+                    <prescribed_function/>
+                  </Coordinate>
+									<Coordinate name="ball_tx">
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> translational </motion_type>
 										<default_value>       0.00000000 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
-										<range> -999999.90000000  999999.90000000 </range>
+										<range>      -5.00000000       5.00000000 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
 									</Coordinate>
-									<Coordinate name="free_q5">
+									<Coordinate name="ball_ty">
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> translational </motion_type>
 										<default_value>       0.00000000 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
-										<range> -999999.90000000  999999.90000000 </range>
+										<range>      -1.00000000       2.00000000 </range>
+										<clamped> false </clamped>
+										<locked> false </locked>
+										<prescribed_function/>
+									</Coordinate>
+									<Coordinate name="ball_tz">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> translational </motion_type>
+										<default_value>       0.00000000 </default_value>
+										<default_speed_value>       0.00000000 </default_speed_value>
+										<initial_value>       0.00000000 </initial_value>
+										<range>      -3.00000000       3.00000000 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
@@ -210,12 +209,12 @@
 					<location>       0.00000000       0.00000000       0.00000000 </location>
 					<orientation>       0.00000000       0.00000000      -1.57079633 </orientation>
 				</ContactHalfSpace>
-				<ContactSphere name="ball">
+				<ContactMesh name="ball">
 					<body_name> ball </body_name>
 					<location>       0.00000000       0.00000000       0.00000000 </location>
 					<orientation>       0.00000000       0.00000000       0.00000000 </orientation>
-					<radius>       0.50000000 </radius>
-				</ContactSphere>
+					<filename> sphere.obj </filename>
+				</ContactMesh>
 			</objects>
 			<groups/>
 		</ContactGeometrySet>

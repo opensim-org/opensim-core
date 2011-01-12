@@ -30,7 +30,7 @@
 //
 //	Tests Include:
 //      1. PointToPointSpring
-//		2. BusingForce
+//		2. BushingForce
 //		3. ElasticFoundationForce
 //		4. HuntCrossleyForce
 //		5. CoordinateLimitForce
@@ -289,7 +289,7 @@ int testElasticFoundation()
 
 	SimTK::State osim_state = osimModel->initSystem();
 
-	osimModel->getCoordinateSet()[4].setValue(osim_state, start_h);
+	osimModel->getCoordinateSet().get("ball_ty").setValue(osim_state, start_h);
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
 
 	const OpenSim::Body &ball = osimModel->getBodySet().get("ball"); 
