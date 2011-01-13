@@ -718,6 +718,55 @@ initializeExternalLoads( SimTK::State& s,
 				}
 			}
 		}
+		if (_node!=NULL && documentVersion<20201){
+			// Move ExternalLoadKinematics and Filtering into ExternalLoads object
+			// Get nodes for "external_loads_model_kinematics_file" and 
+			// "lowpass_cutoff_frequency_for_load_kinematics" and if either is not null
+			// AND "external_loads_file" is not null then move these two nodes under it
+			// and change top level object type from ForceSet to ExternalLoads
+			DOMElement* eNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_file");
+
+			if (eNode!= NULL){
+				string fileName= parseStringProperty(std::string("external_loads_file"));
+				SimTK::Xml::Document doc(fileName);
+				doc.setIndentString("\t");
+				Xml::Element root = doc.getRootElement();
+				if (root.getElementTag()=="OpenSimDocument"){
+					int curVersion = root.getRequiredAttributeValueAs<int>("Version");
+					if (curVersion < 20201){
+						root.setAttributeValue("Version", "20201");
+						//Xml::element_iterator rootIter(root.element_begin("ForceSet"));
+						//Xml::Element documentElem = *rootIter;
+						Xml::element_iterator iter(root.element_begin("ForceSet"));
+						Xml::Element extLoadsElem;
+						for (; iter != root.element_end(); ++iter){
+							const SimTK::String tag=iter->getElementTag();
+							iter->setElementTag("ExternalLoads");
+							extLoadsElem = *iter;
+							break;
+						}
+						DOMElement* kNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
+						if (kNode !=NULL){
+							string kinFileName= parseStringProperty(std::string("external_loads_model_kinematics_file"));
+							XMLNode::RemoveElementFromParent(kNode);
+							// Make sure no node already exist
+							//Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
+							//if (iter2 == extLoadsElem.element_end())
+							iter->insertNodeAfter(iter->element_end(), Xml::Element("external_loads_model_kinematics_file", kinFileName));
+						}
+						DOMElement* fNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
+						if (fNode !=NULL){
+							string filterFreq= parseStringProperty(std::string("lowpass_cutoff_frequency_for_load_kinematics"));
+							XMLNode::RemoveElementFromParent(fNode);
+							//Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
+							//if (iter2 == extLoadsElem.element_end())
+							iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", filterFreq));
+						}
+						doc.writeToFile(fileName);
+					}
+				}
+			}
+		}
 	}
 	Object::updateFromXMLNode();
 	// Create controllers and add them as needed.

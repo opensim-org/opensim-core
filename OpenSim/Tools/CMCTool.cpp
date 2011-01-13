@@ -76,13 +76,13 @@ CMCTool::CMCTool() :
 	AbstractTool(),
 	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	//_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	//_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
     _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
@@ -114,13 +114,13 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	//_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	//_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
     _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
 	_useReflexes(_useReflexesProp.getValueBool()),
@@ -186,13 +186,13 @@ CMCTool(const CMCTool &aTool) :
 	AbstractTool(aTool),
 	_desiredPointsFileName(_desiredPointsFileNameProp.getValueStr()),
 	_desiredKinematicsFileName(_desiredKinematicsFileNameProp.getValueStr()),
-	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
-	_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
+	//_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
+	//_externalLoadsModelKinematicsFileName(_externalLoadsModelKinematicsFileNameProp.getValueStr()),
     _taskSetFileName(_taskSetFileNameProp.getValueStr()),
 	_constraintsFileName(_constraintsFileNameProp.getValueStr()),
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
+	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useReflexes(_useReflexesProp.getValueBool()),
@@ -240,13 +240,13 @@ setNull()
 
 	_desiredPointsFileName = "";
 	_desiredKinematicsFileName = "";
-	_externalLoadsFileName = "";
-	_externalLoadsModelKinematicsFileName = "";
+	//_externalLoadsFileName = "";
+	//_externalLoadsModelKinematicsFileName = "";
     _taskSetFileName = "";
 	_constraintsFileName = "";
 	_rraControlsFileName = "";
 	_lowpassCutoffFrequency = -1.0;
-	_lowpassCutoffFrequencyForLoadKinematics = -1.0;
+	//_lowpassCutoffFrequencyForLoadKinematics = -1.0;
     _targetDT = 0.010;  	 	 
     _useCurvatureFilter = true; 		 
     _useFastTarget = true;
@@ -288,10 +288,10 @@ void CMCTool::setupProperties()
 	_desiredKinematicsFileNameProp.setName("desired_kinematics_file");
 	_propertySet.append( &_desiredKinematicsFileNameProp );
 
-	comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
-	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
-	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
-	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
+	//comment = "Motion file (.mot) or storage file (.sto) containing the model kinematics corresponding to the external loads.";
+	//_externalLoadsModelKinematicsFileNameProp.setComment(comment);
+	//_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
+	//_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
 	comment = "File containing the tracking tasks. Which coordinates are tracked and with what weights are specified here.";  	 	 
     _taskSetFileNameProp.setComment(comment); 		 
@@ -315,12 +315,12 @@ void CMCTool::setupProperties()
 	_lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency");
 	_propertySet.append( &_lowpassCutoffFrequencyProp );
 
-	comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding ";
-	comment += "to the external loads. A negative value results in no filtering. ";
-	comment += "The default value is -1.0, so no filtering.";
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
-	_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
-	_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
+	//comment = "Low-pass cut-off frequency for filtering the model kinematics corresponding ";
+	//comment += "to the external loads. A negative value results in no filtering. ";
+	//comment += "The default value is -1.0, so no filtering.";
+	//_lowpassCutoffFrequencyForLoadKinematicsProp.setComment(comment);
+	//_lowpassCutoffFrequencyForLoadKinematicsProp.setName("lowpass_cutoff_frequency_for_load_kinematics");
+	//_propertySet.append( &_lowpassCutoffFrequencyForLoadKinematicsProp );
 
     comment = "Time window over which the desired actuator forces are achieved. "  	 	 
                     "Muscles forces cannot change instantaneously, so a finite time window must be allowed. " 		 
@@ -457,13 +457,13 @@ operator=(const CMCTool &aTool)
 	// MEMEBER VARIABLES
 	_desiredPointsFileName = aTool._desiredPointsFileName;
 	_desiredKinematicsFileName = aTool._desiredKinematicsFileName;
-	_externalLoadsFileName = aTool._externalLoadsFileName;
-	_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
+	//_externalLoadsFileName = aTool._externalLoadsFileName;
+	//_externalLoadsModelKinematicsFileName = aTool._externalLoadsModelKinematicsFileName;
     _taskSetFileName = aTool._taskSetFileName;
 	_constraintsFileName = aTool._constraintsFileName;
 	_rraControlsFileName = aTool._rraControlsFileName;
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
-	_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
+	//_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
     _targetDT = aTool._targetDT;  	 	 
     _useCurvatureFilter = aTool._useCurvatureFilter;
 	_optimizerDX = aTool._optimizerDX;

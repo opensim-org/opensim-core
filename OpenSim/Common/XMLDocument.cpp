@@ -131,7 +131,7 @@ static const XMLCh  gNotation[] = {
     chLatin_N, chLatin_D, chLatin_A, chLatin_T, chLatin_A,
     chSpace, chDoubleQuote, chNull };
 
-const int XMLDocument::LatestVersion = 20200;	
+const int XMLDocument::LatestVersion = 20201;	
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

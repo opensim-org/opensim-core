@@ -80,12 +80,12 @@ private:
     std::string &_desiredKinematicsFileName;
 
 	/** Name of the file containing the external loads applied to the model. */
-	PropertyStr _externalLoadsFileNameProp;
-	std::string &_externalLoadsFileName;
+	//PropertyStr _externalLoadsFileNameProp;
+	//std::string &_externalLoadsFileName;
 	/** Name of the file containing the model kinematics corresponding to the
 	external loads. */
-	PropertyStr _externalLoadsModelKinematicsFileNameProp;
-	std::string &_externalLoadsModelKinematicsFileName;
+	//PropertyStr _externalLoadsModelKinematicsFileNameProp;
+	//std::string &_externalLoadsModelKinematicsFileName;
     /** Name of the file containing the tracking tasks. */  	 	 
     PropertyStr _taskSetFileNameProp; 		 
     std::string &_taskSetFileName; 		 
@@ -104,8 +104,8 @@ private:
 	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
 	to the external loads. A negative value results in no filtering.
 	The default value is -1.0, so no filtering. */
-	PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
-	double &_lowpassCutoffFrequencyForLoadKinematics;
+	/*PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
+	double &_lowpassCutoffFrequencyForLoadKinematics;*/
 
     /** Time window over which the desired actuator forces are achieved */
     PropertyDbl _targetDTProp;  	 	   
@@ -242,10 +242,10 @@ public:
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
 	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
-	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
-	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
-	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
+	//const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
+	//void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
+	//double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
+	//void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
     // Target selection
     bool getUseFastTarget() const { return _useFastTarget;};  	 	 
