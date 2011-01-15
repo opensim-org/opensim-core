@@ -16,6 +16,7 @@
 #include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/PropertySet.h>
+#include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/ObjectGroup.h>
 #include <OpenSim/Common/Geometry.h>
@@ -147,7 +148,6 @@
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
-#include <OpenSim/Tools/PerturbationTool.h>
 #include <OpenSim/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
@@ -391,6 +391,7 @@ static bool trace=false;
 %include <OpenSim/Common/Property.h>
 %include <OpenSim/Common/PropertyStr.h>
 %template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property>;
+%include <OpenSim/Common/PropertyDblArray.h>
 %include <OpenSim/Common/PropertyTransform.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
@@ -564,7 +565,6 @@ static bool trace=false;
 %include <OpenSim/Tools/ForwardTool.h>
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>
-%include <OpenSim/Tools/PerturbationTool.h>
 
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 
