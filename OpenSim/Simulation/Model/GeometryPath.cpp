@@ -454,7 +454,7 @@ void GeometryPath::updateGeometry(const SimTK::State& s)
     compute(s);
 
     // if display path is current do not need to recompute it
-    if (s.isCacheValueRealized(_subsystemIndex, _currentDisplayPathIndex)) return;
+    //if (s.isCacheValueRealized(_subsystemIndex, _currentDisplayPathIndex)) return;
    
     updateDisplayPath(s);
     updateGeometrySize(s);
