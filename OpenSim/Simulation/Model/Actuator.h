@@ -88,7 +88,6 @@ public:
 	virtual Object* copy() const = 0;
 	virtual void copyPropertyValues(Actuator_& aActuator) { }
 
-
 private:
 	void setNull();
 
@@ -119,9 +118,10 @@ public:
 
 	/** Actuator default controls are zero */
 	virtual const SimTK::Vector getDefaultControls() { return SimTK::Vector(numControls(), 0.0); } 
-
+#ifndef SWIG
 	// CONTROLS
 	virtual const SimTK::VectorView_<double> getControls( const SimTK::State& s ) const;
+#endif
 	/** Convenience methods for getting, setting and adding to actuator controls from/into 
 	    the model controls. These methods have no effect on the realization stage. */
 	virtual void getControls(const SimTK::Vector& modelControls, SimTK::Vector& actuatorControls) const;
@@ -195,6 +195,7 @@ public:
 
 	/** Assignment operator */
 	Actuator& operator=(const Actuator &aActuator);
+	virtual Object* copy() const = 0;	// Needed by operator= and to put Actuators in Arrays
 
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode();
@@ -279,6 +280,8 @@ public:
     * set override force function back to default (constant) 
     */
     void resetOverrideForceFunction();
+
+	OPENSIM_DECLARE_DERIVED(Actuator, Force);
 
 protected:
 	// ModelComponent Interface
