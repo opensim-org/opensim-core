@@ -34,7 +34,6 @@
  */
 
 
-#include <OpenSim/OpenSim.h>
 #include "PistonActuator.h"
 
 //=============================================================================
@@ -57,15 +56,13 @@ class ControllableSpring : public PistonActuator
 // DATA
 //=============================================================================
 protected:
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	// Additional Properties specific to a controllable spring need to be defined
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	/** rest length of the spring */
-	
+	PropertyDbl _propRestLength;
 
 	// REFERENCES
 	/** rest length */
-	
+	double &_restLength;
 
 //=============================================================================
 // METHODS
@@ -116,13 +113,12 @@ void setNull()
 	
 }
 
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /* since _restLength is a private member, define public methods 
 ** to get and set it */
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 public:
 // REST LENGTH
-
+void setRestLength(double aLength) { _restLength = aLength; };
+double getRestLength() const { return _restLength; };
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -133,7 +129,9 @@ public:
 ** then uses the difference between it's current length and rest length to determine
 ** the force magnitude, then applies the force at the application points, in the
 ** direction between them. */
-void computeForce(const SimTK::State& s) const
+void computeForce(const SimTK::State& s, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const
 {
 	// make sure the model and bodies are instantiated
 	if (_model==NULL) return;
@@ -164,18 +162,21 @@ void computeForce(const SimTK::State& s) const
 	// find the dirrection along which the actuator applies its force
 	SimTK::Vec3 r = pointA_inGround - pointB_inGround;
 	SimTK::UnitVec3 direction(r);
+	double length = sqrt(~r*r);
 
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	// Add ControllableSpring specific stuff here
-	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-	
+	/* find the stiffness.  computeActuation is defined in PistonActuator and just returns
+	** the product of the actuator's control and it's _optimalForce.  We're using this to mean
+	** stiffness. */
+	double stiffness = computeActuation(s);
 
+	// find the force magnitude and set it. then form the force vector
+	double forceMagnitude = (_restLength - length)*stiffness;
     setForce(s,  forceMagnitude );
 	SimTK::Vec3 force = forceMagnitude*direction;
 
 	// appy equal and opposite forces to the bodies
-	applyForceToPoint(*_bodyA, _pointA, force);
-	applyForceToPoint(*_bodyB, _pointB, -force);
+	applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
+	applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
 }
 
 //=============================================================================

@@ -35,9 +35,9 @@
 
 //==============================================================================
 //==============================================================================
-
-#include <OpenSim/OpenSim.h>
 #include "PistonActuator.h"
+#include "ControllableSpring.h"
+#include <OpenSim/OpenSim.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -119,7 +119,7 @@ int main()
 		PointOnLineConstraint *lineConstraint = new PointOnLineConstraint(ground, lineDirection, pointOnLine, *block, pointOnBlock);
 		osimModel.addConstraint(lineConstraint);
 
-		// Add LinearActuator between the first linkage and the block
+		// Add PistonActuator between the first linkage and the block
 		Vec3 pointOnBodies(0);
 		PistonActuator *piston = new PistonActuator();
 		piston->setName("piston");
@@ -131,43 +131,50 @@ int main()
 		piston->setPointsAreGlobal(false);
 
 		osimModel.addForce(piston);
-		/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		** Add ControllableSpring between the first linkage and the second block.
-		** Call it "spring".  It should attach to the origin of linkage1 and to 
-		** the center of mass of the block.  Set _optimalForce to 2000 and the 
-		** _restLength to 0.8
-		**+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+		//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		// Added ControllableSpring between the first linkage and the second block
+		//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+		ControllableSpring *spring = new ControllableSpring;
+		spring->setName("spring");
+		spring->setBodyA(block);
+		spring->setBodyB(linkage1);
+		spring->setPointA(pointOnBodies);
+		spring->setPointB(pointOnBodies);
+		spring->setOptimalForce(2000.0);
+		spring->setPointsAreGlobal(false);
+		spring->setRestLength(0.8);
 
+		osimModel.addForce(spring);
 
 		// define the simulation times
 		double t0(0.0), tf(15);
 
 		// define the acceration due to gravity
 		osimModel.setGravity(Vec3(0, -9.80665, 0));
-		
-		// defing the control values for the piston
-		double controlT0[1] = {0.982}, controlTf[1] = {0.978};
-		
-		/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		** Remove (delete or comment out) the control values for the piston above.
-		** define control values for the spring(same array format as for the piston)
-		** vith values of 1.0, 1.0, 0.25, 0.25, and 5.0
-		**+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+
+		// define the control values for the piston
+		//double controlT0[1] = {0.982}, controlTf[1] = {0.978};
+
+		// define the control values for the spring
+		double controlT0[1] = {1.0}, controlT1[1] = {1.0}, controlT2[1] = {0.25},
+			controlT3[1] = {.25}, controlT4[1] = {5};
 
 		ControlSet *controlSet = new ControlSet();
 		ControlLinear *control1 = new ControlLinear();
-		control1->setName("piston"); // change this between 'piston' and 'spring'
+		control1->setName("spring"); // change this between 'piston' and 'spring'
 		//control1->setUseSteps(true);
 		controlSet->append(control1);
-		
-		
-		/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-		** modify this section to set the control values for the spring
-		** at times 0.0, 4.0, 7.0, 10.0, and 15.0
-		**-----------------------------------------------------------*/
+
+		// set control values for the piston
+		/*controlSet->setControlValues(t0, controlT0);
+		controlSet->setControlValues(tf, controlTf);*/
+
+		// set control values for the spring
 		controlSet->setControlValues(t0, controlT0);
-		controlSet->setControlValues(tf, controlTf);
-		/*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*/
+		controlSet->setControlValues(4.0, controlT1);
+		controlSet->setControlValues(7.0, controlT2);
+		controlSet->setControlValues(10.0, controlT3);
+		controlSet->setControlValues(tf, controlT4);
 
 		ControlSetController *legController = new ControlSetController();
 		legController->setControlSet(controlSet);
@@ -177,6 +184,7 @@ int main()
 		SimTK::State& si = osimModel.initSystem();
 
 		// Add analyses to the model
+		
 		ForceReporter *forces = new ForceReporter(&osimModel);
 		
 		osimModel.updAnalysisSet().append(forces);
@@ -213,11 +221,12 @@ int main()
 		manager.integrate(si);
 
 		// Save results
+		
 		Storage statesDegrees(manager.getStateStorage());
 		osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-		statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
-		//statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
-		
+		//statesDegrees.print("PistonActuatedLeg_states_degrees.mot");
+		statesDegrees.print("SpringActuatedLeg_states_degrees.mot");
+
 		forces->getForceStorage().print("actuator_forces.mot");
 		
 	}
