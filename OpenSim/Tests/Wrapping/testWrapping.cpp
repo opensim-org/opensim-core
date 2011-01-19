@@ -28,12 +28,7 @@
 // INCLUDE
 #include <string>
 #include <iostream>
-#include <OpenSim/version.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Tools/AnalyzeTool.h>
+#include <OpenSim/OpenSim.h>
 
 
 using namespace OpenSim;
@@ -94,12 +89,75 @@ int testModel(std::string modelPrefix)
 	bool equal = equalStorage(stdStorage, currentResult, .1);
 	return (equal?0:1);
 }
+
+bool simulateModelWithSingleMuscle(const std::string &modelFile)
+{
+	bool status = true;
+
+	// Create a new OpenSim model
+	Model osimModel(modelFile);
+
+	double initialTime = 0;
+	double finalTime = 0.5;
+
+	// Define the initial and final control values
+	double control = 0.5;
+
+	// Create a prescribed controller that simply applies a function of the force
+	PrescribedController actuatorController;
+	actuatorController.setActuators(osimModel.updActuators());
+	actuatorController.prescribeControlForActuator(0, new Constant(control));
+
+	// add the controller to the model
+	osimModel.addController(&actuatorController);
+
+	// Initialize the system and get the state representing the state system
+	SimTK::State& si = osimModel.initSystem();
+	osimModel.computeEquilibriumForAuxiliaryStates(si);
+
+	// Specify zero slider joint kinematic states
+	CoordinateSet &coordinates = osimModel.updCoordinateSet();
+	coordinates[0].setValue(si, -120.0*SimTK_DEGREE_TO_RADIAN);   
+	coordinates[0].setSpeedValue(si, 0.0);			 
+
+	// Create the integrator and manager for the simulation.
+	double accuracy = 1.0e-3;
+	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+	integrator.setMaximumStepSize(1);
+	integrator.setMinimumStepSize(1.0e-6);
+	integrator.setAccuracy(accuracy);
+	integrator.setAbsoluteTolerance(1.0e-4);
+	Manager manager(osimModel, integrator);
+
+	// Integrate from initial time to final time
+	manager.setInitialTime(initialTime);
+	manager.setFinalTime(finalTime);
+	std::cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+	
+	const clock_t start = clock();
+	manager.integrate(si);
+	std::cout << "simulation time = " << (double)(clock()-start)/CLOCKS_PER_SEC << " seconds\n" << std::endl;
+
+	// Save the simulation results
+	Storage states(manager.getStateStorage());
+	states.print(osimModel.getName()+"_states.sto");
+	osimModel.updSimbodyEngine().convertRadiansToDegrees(states);
+	states.setWriteSIMMHeader(true);
+	states.print(osimModel.getName()+"_states_degrees.mot");
+
+	osimModel.disownAllComponents();
+
+	return status;
+}// end of simulateModelWithSingleMuscle()
+
+
+
 int main(int argc,char **argv)
 {
-	if (testModel("upper_limb")!=0){
-		cout << " testWrapping.test_upper_limb  FAILED " << endl;
-		return(1);
-	}
+	// Baseline perfromance without wrapping
+	simulateModelWithSingleMuscle("test_nowrap_vasint.osim");
+	// performance with wrapping
+	simulateModelWithSingleMuscle("test_wrapping_vasint.osim");
 	return(0);
 }
 
