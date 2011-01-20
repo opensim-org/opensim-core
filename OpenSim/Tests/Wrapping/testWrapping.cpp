@@ -90,7 +90,7 @@ int testModel(std::string modelPrefix)
 	return (equal?0:1);
 }
 
-bool simulateModelWithSingleMuscle(const std::string &modelFile)
+bool simulateModelWithMuscles(const std::string &modelFile)
 {
 	bool status = true;
 
@@ -101,24 +101,21 @@ bool simulateModelWithSingleMuscle(const std::string &modelFile)
 	double finalTime = 0.5;
 
 	// Define the initial and final control values
-	double control = 0.5;
+	double control = 0.2;
 
 	// Create a prescribed controller that simply applies a function of the force
 	PrescribedController actuatorController;
 	actuatorController.setActuators(osimModel.updActuators());
-	actuatorController.prescribeControlForActuator(0, new Constant(control));
+	for (int i=0; i<actuatorController.getActuatorSet().getSize(); i++){
+		actuatorController.prescribeControlForActuator(i, new Constant(control));
+	}
 
 	// add the controller to the model
 	osimModel.addController(&actuatorController);
 
 	// Initialize the system and get the state representing the state system
 	SimTK::State& si = osimModel.initSystem();
-	osimModel.computeEquilibriumForAuxiliaryStates(si);
-
-	// Specify zero slider joint kinematic states
-	CoordinateSet &coordinates = osimModel.updCoordinateSet();
-	coordinates[0].setValue(si, -120.0*SimTK_DEGREE_TO_RADIAN);   
-	coordinates[0].setSpeedValue(si, 0.0);			 
+	osimModel.computeEquilibriumForAuxiliaryStates(si); 
 
 	// Create the integrator and manager for the simulation.
 	double accuracy = 1.0e-3;
@@ -155,9 +152,17 @@ bool simulateModelWithSingleMuscle(const std::string &modelFile)
 int main(int argc,char **argv)
 {
 	// Baseline perfromance without wrapping
-	simulateModelWithSingleMuscle("test_nowrap_vasint.osim");
-	// performance with wrapping
-	simulateModelWithSingleMuscle("test_wrapping_vasint.osim");
+	simulateModelWithMuscles("test_nowrap_vasint.osim");
+	// performance with cylnder wrapping
+	simulateModelWithMuscles("test_wrapping_vasint.osim");
+	// performance with ellipsoid wrapping
+	simulateModelWithMuscles("test_wrapEllipsoid_vasint.osim");
+
+	// performance with multiple muscles and no wrapping
+	simulateModelWithMuscles("gait2392_pelvisFixed.osim");
+	// performance with multiple muscles and wrapping
+	simulateModelWithMuscles("Arnold2010_pelvisFixed.osim");
+
 	return(0);
 }
 
