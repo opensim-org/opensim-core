@@ -44,7 +44,6 @@
 #include <SimTKsimbody.h>
 #include <OpenSim/Simulation/Wrap/WrapObjectSet.h>
 
-class SimTK::MassProperties;
 namespace OpenSim {
 
 class Model;
