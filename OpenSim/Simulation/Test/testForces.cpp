@@ -281,7 +281,7 @@ int testElasticFoundation()
 	double start_h = 0.5;
 
 	// Setup OpenSim model
-	Model *osimModel = new Model("BouncingBallModel.osim");
+	Model *osimModel = new Model("BouncingBallModelEF.osim");
 	
 	// Create the force reporter
 	ForceReporter* reporter = new ForceReporter(osimModel);
