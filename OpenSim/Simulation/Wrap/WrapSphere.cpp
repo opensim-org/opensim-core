@@ -203,6 +203,17 @@ string WrapSphere::getDimensionsString() const
 	return dimensions.str();
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the radius of the sphere.
+ *
+ * @return The radius of the sphere
+ */
+double WrapSphere::getRadius() const
+{
+    return _radius;
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================

@@ -83,6 +83,7 @@ public:
    void copyData(const WrapSphere& aWrapSphere);
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
+        double getRadius() const;
 
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
 	virtual void setup(Model& aModel, OpenSim::Body& aBody);

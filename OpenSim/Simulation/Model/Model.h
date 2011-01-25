@@ -98,6 +98,7 @@ private:
 	SimTK::Force::Gravity* _gravityForce;
 	SimTK::GeneralForceSubsystem* _forceSubsystem;
 	SimTK::GeneralContactSubsystem* _contactSubsystem;
+        SimTK::DecorationSubsystem* _decorationSubsystem;
 
 	/** Model controls as a shared pool (Vector) of individual Actuator controls */
 	SimTK::MeasureIndex _modelControlsIndex;
@@ -188,6 +189,7 @@ private:
 private:
 	OpenSim::Array<std::string>	_stateNames;
 	OpenSim::Array<int>			_stateYIndices;
+    class DefaultGeometry;
 
 //=============================================================================
 // METHODS
@@ -321,6 +323,8 @@ public:
 	SimTK::Force::Gravity& updGravityForce() {return *_gravityForce; }
     const SimTK::GeneralForceSubsystem& getForceSubsystem() const {return *_forceSubsystem; }
     SimTK::GeneralForceSubsystem& updForceSubsystem() {return *_forceSubsystem; }
+    const SimTK::DecorationSubsystem& getDecorationSubsystem() const {return *_decorationSubsystem; }
+    SimTK::DecorationSubsystem& updDecorationSubsystem() {return *_decorationSubsystem; }
 
 	virtual int getNumStateVariables() const;
 
@@ -773,6 +777,15 @@ public:
 //=============================================================================
 };	// END of class Model
 //=============================================================================
+
+class Model::DefaultGeometry : public SimTK::DecorationGenerator {
+public:
+    DefaultGeometry(Model& model);
+    void generateDecorations(const SimTK::State& state, SimTK::Array_<SimTK::DecorativeGeometry>& geometry);
+private:
+    Model& _model;
+};
+
 //=============================================================================
 
 } // end of namespace OpenSim

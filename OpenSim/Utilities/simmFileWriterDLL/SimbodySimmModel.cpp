@@ -853,7 +853,7 @@ int SimbodySimmModel::addMuscleFunction(const OpenSim::Function* aFunction, Coor
 void SimbodySimmModel::writeWrapObjects(OpenSim::Body& aBody, ofstream& aStream) const
 {
 	int i;
-	WrapObjectSet& wrapObjects = aBody.getWrapObjectSet();
+	const WrapObjectSet& wrapObjects = aBody.getWrapObjectSet();
 
 	for (i = 0; i < wrapObjects.getSize(); i++) {
 		WrapObject& wo = wrapObjects.get(i);

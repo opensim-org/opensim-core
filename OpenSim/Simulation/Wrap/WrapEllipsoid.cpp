@@ -225,6 +225,17 @@ string WrapEllipsoid::getDimensionsString() const
 	return dimensions.str();
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the radii of the ellipsoid.
+ *
+ * @return A Vec3 containing the principle radii along the three axes
+ */
+SimTK::Vec3 WrapEllipsoid::getRadii() const
+{
+	return SimTK::Vec3(_dimensions[0], _dimensions[1], _dimensions[2]);
+}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================

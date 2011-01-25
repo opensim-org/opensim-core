@@ -53,6 +53,9 @@
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlLinearNode.h>
+#include <OpenSim/Simulation/Wrap/WrapCylinder.h>
+#include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
+#include <OpenSim/Simulation/Wrap/WrapSphere.h>
 #include "SimTKcommon/internal/SystemGuts.h"
 
 #include <OpenSim/Common/Constant.h>
@@ -309,6 +312,7 @@ void Model::setNull()
 
     _forceSubsystem = NULL;
     _contactSubsystem = NULL;
+    _decorationSubsystem = NULL;
     _gravityForce = NULL;
 
 	_assemblySolver = NULL;
@@ -492,6 +496,7 @@ void Model::createSystem()
         delete _matter;
         delete _forceSubsystem;
         delete _contactSubsystem;
+        delete _decorationSubsystem;
         delete _gravityForce;
         delete _system;
     }
@@ -501,6 +506,9 @@ void Model::createSystem()
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
     _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
+    _decorationSubsystem = new SimTK::DecorationSubsystem(*_system);
+    _decorationSubsystem->addDecorationGenerator(SimTK::Stage::Position, new Model::DefaultGeometry(*this));
+    _matter->setShowDefaultGeometry(false);
 
 	// create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
 	double magnitude = _gravity.norm();
@@ -1704,4 +1712,83 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
 		" and name "+nameString+" was found in the model.");
 
+}
+
+Model::DefaultGeometry::DefaultGeometry(Model& model) : _model(model) {
+}
+
+void Model::DefaultGeometry::generateDecorations(const SimTK::State& state, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) {
+    const SimTK::SimbodyMatterSubsystem& matter = _model.getMatterSubsystem();
+
+    // Display a cylinder connecting each pair of joints.
+
+    const JointSet& joints = _model.getJointSet();
+    for (int i = 0; i < joints.getSize(); i++) {
+        const Joint& joint = joints[i];
+        if (joint.getType() != "FreeJoint" && joint.getParentBody().hasJoint()) {
+            const Joint& parent = joint.getParentBody().getJoint();
+            Vec3 childLocation, parentLocation;
+            joint.getLocation(childLocation);
+            parent.getLocation(parentLocation);
+            childLocation = matter.getMobilizedBody(joint.getBody().getIndex()).getBodyTransform(state)*childLocation;
+            parentLocation = matter.getMobilizedBody(parent.getBody().getIndex()).getBodyTransform(state)*parentLocation;
+            double length = (childLocation-parentLocation).norm();
+            Vec3 center = (childLocation+parentLocation)*0.5;
+            Rotation orientation;
+            orientation.setRotationFromOneAxis(UnitVec3(childLocation-parentLocation), YAxis);
+            geometry.push_back(DecorativeCylinder(0.1*length, 0.5*length).setTransform(Transform(orientation, center)));
+        }
+    }
+
+    // Display the path of each muscle.
+
+    const Set<Muscle>& muscles = _model.getMuscles();
+    for (int i = 0; i < muscles.getSize(); i++) {
+        const Muscle& muscle = muscles[i];
+        const Array<PathPoint*>& points = muscle.getGeometryPath().getCurrentPath(state);
+        Vec3 lastPos = matter.getMobilizedBody(points[0]->getBody().getIndex()).getBodyTransform(state)*points[0]->getLocation();
+        for (int j = 1; j < points.getSize(); j++) {
+            Vec3 pos = matter.getMobilizedBody(points[j]->getBody().getIndex()).getBodyTransform(state)*points[j]->getLocation();
+            geometry.push_back(DecorativeLine(lastPos, pos).setLineThickness(2).setColor(Vec3(1, 0, 0)));
+            lastPos = pos;
+        }
+    }
+
+    // Display wrap objects.
+
+    const bool displayWrapObjects = false;
+    if (displayWrapObjects) {
+        Transform ztoy;
+        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
+        const BodySet& bodies = _model.getBodySet();
+        for (int i = 0; i < bodies.getSize(); i++) {
+            const Body& body = bodies[i];
+            const Transform& bodyTransform = matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
+            const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
+            for (int j = 0; j < wrapObjects.getSize(); j++) {
+                const string& type = wrapObjects[j].getType();
+                if (type == "WrapCylinder") {
+                    const WrapCylinder* cylinder = dynamic_cast<const WrapCylinder*>(&wrapObjects[j]);
+                    if (cylinder != NULL) {
+                        Transform transform = bodyTransform*cylinder->getTransform()*ztoy;
+                        geometry.push_back(DecorativeCylinder(cylinder->getRadius(), 0.5*cylinder->getLength()).setTransform(transform).setOpacity(0.5).setColor(Vec3(0, 1, 0)));
+                    }
+                }
+                else if (type == "WrapEllipsoid") {
+                    const WrapEllipsoid* ellipsoid = dynamic_cast<const WrapEllipsoid*>(&wrapObjects[j]);
+                    if (ellipsoid != NULL) {
+                        Transform transform = bodyTransform*ellipsoid->getTransform();
+                        geometry.push_back(DecorativeEllipsoid(ellipsoid->getRadii()).setTransform(transform).setOpacity(0.5).setColor(Vec3(0, 1, 0)));
+                    }
+                }
+                else if (type == "WrapSphere") {
+                    const WrapSphere* sphere = dynamic_cast<const WrapSphere*>(&wrapObjects[j]);
+                    if (sphere != NULL) {
+                        Transform transform = bodyTransform*sphere->getTransform();
+                        geometry.push_back(DecorativeSphere(sphere->getRadius()).setTransform(transform).setOpacity(0.5).setColor(Vec3(0, 1, 0)));
+                    }
+                }
+            }
+        }
+    }
 }

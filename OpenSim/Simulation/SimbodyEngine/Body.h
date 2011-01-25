@@ -146,7 +146,7 @@ public:
 	void getScaleFactors(SimTK::Vec3& aScaleFactors) const;
 
 	WrapObject* getWrapObject(const std::string& aName) const;
-	WrapObjectSet& getWrapObjectSet() { return _wrapObjectSet; }
+	const WrapObjectSet& getWrapObjectSet() const { return _wrapObjectSet; }
 
 	OPENSIM_DECLARE_DERIVED(Body, Object);
 

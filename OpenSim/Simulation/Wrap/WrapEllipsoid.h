@@ -91,6 +91,7 @@ public:
    void copyData(const WrapEllipsoid& aWrapEllipsoid);
 	virtual const char* getWrapTypeName() const;
 	virtual std::string getDimensionsString() const;
+        SimTK::Vec3 getRadii() const;
 
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
 	virtual void setup(Model& aModel, OpenSim::Body& aBody);

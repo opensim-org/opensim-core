@@ -146,6 +146,7 @@ public:
 	const char* getQuadrantName() const { return _quadrantName.c_str(); }
 	bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getUseDefault(); }
 	void setQuadrantName(const std::string& aName);
+        const SimTK::Transform& getTransform() const { return _pose; }
 	virtual const char* getWrapTypeName() const = 0;
 	virtual std::string getDimensionsString() const { return ""; } // TODO: total SIMM hack!
 #ifndef SWIG
