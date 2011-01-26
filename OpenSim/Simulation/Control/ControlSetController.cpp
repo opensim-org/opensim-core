@@ -59,6 +59,7 @@ using namespace OpenSim;
  */
 ControlSetController::~ControlSetController()
 {
+	delete _controlSet;
 }
 //_____________________________________________________________________________
 /**

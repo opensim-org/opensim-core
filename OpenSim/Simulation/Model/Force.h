@@ -117,7 +117,7 @@ protected:
 	virtual void initState(SimTK::State& state) const;
 
 	/**
-	 * Default is to create a ForceAdapter which is a SimTK::Force
+	 * Default is to create a ForceAdapter which is a SimTK::Force::Custom
 	 * as the udnerlying computational component. Subclasses override to
 	 * employ other SimTK::Forces.
 	 */

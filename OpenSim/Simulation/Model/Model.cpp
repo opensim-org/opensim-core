@@ -197,9 +197,13 @@ Model::Model(const Model &aModel) :
  */
 Model::~Model()
 {
-    //cout << "Deleted model " <<  getName() << endl;
-
-	//std::cout << "Model destructor has been called" << endl;
+	delete _matter;
+	delete _forceSubsystem;
+	delete _contactSubsystem;
+	delete _decorationSubsystem;
+	delete _gravityForce;
+	delete _system;
+	delete _assemblySolver;
 }
 //_____________________________________________________________________________
 /**

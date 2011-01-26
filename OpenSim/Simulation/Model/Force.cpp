@@ -116,7 +116,8 @@ void Force::setup(Model& model)
 }
 
 /**
- * Create a SimTK::Force which implements a SimTK::Force by default
+ * Create an underlying SimTK::Force to represent the OpenSim::Force in the computational
+ * system.  Create a SimTK::Force::Custom by default.
  */
 void Force::createSystem(SimTK::MultibodySystem& system) const
 {

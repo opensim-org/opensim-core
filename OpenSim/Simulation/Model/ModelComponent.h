@@ -82,7 +82,10 @@ protected:
 	// Map names of cache entries of the ModelComponent to their individual cache information
 	std::map<std::string, CacheInfo*, std::less<std::string> > _namedCacheVariableInfo;
 
+	/** Constructor */
 	ModelComponentRep(ModelComponent &mc);
+	/** Destructor */
+	~ModelComponentRep();
 
 public:
 	/** Get the number of continuous states that the ModelComponent added to the underlying

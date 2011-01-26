@@ -56,6 +56,7 @@ template class OSIMSIMULATION_API ModelComponentSet<Controller>;
  */
 ControllerSet::~ControllerSet()
 {
+	delete _controlStore;
 }
 //_____________________________________________________________________________
 /**

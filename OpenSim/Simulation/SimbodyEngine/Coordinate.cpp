@@ -258,27 +258,24 @@ void Coordinate::createSystem(SimTK::MultibodySystem& system) const
 {
 	//create lock constraint automatically
 	// The underlying SimTK constraint
-	SimTK::Constraint *lock;
-	lock = new SimTK::Constraint::PrescribedMotion( 
-			_model->updMatterSubsystem(), 
-			_lockFunction, 
-			_bodyIndex, 
-			SimTK::MobilizerQIndex(_mobilityIndex));
+	SimTK::Constraint::PrescribedMotion lock(_model->updMatterSubsystem(), 
+											 _lockFunction, 
+											 _bodyIndex, 
+											 SimTK::MobilizerQIndex(_mobilityIndex));
 
 	// Beyond the const Component get the index so we can access the SimTK::Constraint later
 	Coordinate* mutableThis = const_cast<Coordinate *>(this);
-	mutableThis->_lockedConstraintIndex = lock->getConstraintIndex();
+	mutableThis->_lockedConstraintIndex = lock.getConstraintIndex();
 	mutableThis->_model->addModelComponent(this);
 			
-	SimTK::Constraint *prescribe = NULL;
 	if(_prescribedFunction != NULL){
 		//create prescribed motion constraint automatically
-		prescribe = new SimTK::Constraint::PrescribedMotion( 
+		SimTK::Constraint::PrescribedMotion prescribe( 
 				_model->updMatterSubsystem(), 
 				_prescribedFunction->createSimTKFunction(), 
 				_bodyIndex, 
 				SimTK::MobilizerQIndex(_mobilityIndex));
-		mutableThis->_prescribedConstraintIndex = prescribe->getConstraintIndex();
+		mutableThis->_prescribedConstraintIndex = prescribe.getConstraintIndex();
 	}
 	else{
 		_isPrescribed = false;

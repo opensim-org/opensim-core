@@ -347,6 +347,14 @@ ModelComponentRep::ModelComponentRep(ModelComponent &mc): _modelComponent(mc)
 {
 }
 
+ModelComponentRep::~ModelComponentRep()
+{
+	std::map<std::string, DiscreteVariableInfo*>::iterator it;
+	for(it = _namedDiscreteVariableInfo.begin(); it!=_namedDiscreteVariableInfo.end(); it++){
+		delete it->second;
+	}
+}
+
 void ModelComponentRep::realizeTopology(SimTK::State &s) const
 {
 	SimTK::System &sys = _modelComponent.updModel().updMultibodySystem();
