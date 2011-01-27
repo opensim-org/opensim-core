@@ -120,7 +120,9 @@ private:
 	*/
 	void setNull() {
 		setupProperties();
-		_resultsDir = "./"; };
+		_resultsDir = "./"; 
+		_inputsDir = "";
+	};
 	
 	/**
 	* Connect properties to local pointers.
@@ -133,10 +135,10 @@ private:
 		_resultsDirProp.setName("results_directory");
 		_propertySet.append( &_resultsDirProp );
 
-		comment = "Directory used for writing results.";
-		_resultsDirProp.setComment(comment);
-		_resultsDirProp.setName("results_directory");
-		_propertySet.append( &_resultsDirProp );
+		comment = "Directory for input files";
+		_inputsDirProp.setComment(comment);
+		_inputsDirProp.setName("input_directory");
+		_propertySet.append( &_inputsDirProp );
 	};
 	
 
@@ -153,7 +155,10 @@ public:
 	* @return Reference to this object.
 	*/
 	Tool& operator=(const Tool &aTool) 
-		{ Object::operator=(aTool);	_resultsDir = aTool._resultsDir; return(*this);};
+		{	Object::operator=(aTool);	
+			_resultsDir = aTool._resultsDir; 
+			_inputsDir == aTool._inputsDir;
+			return(*this);};
 
 #endif
 

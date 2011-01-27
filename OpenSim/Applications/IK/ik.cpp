@@ -38,7 +38,7 @@
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Simulation/Model/Marker.h>
-#include <OpenSim/Tools/IKTool.h>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
 
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
 
@@ -62,7 +62,7 @@ int main(int argc,char **argv)
 	//----------------------
 
 	// REGISTER TYPES
-	IKTool::registerTypes();
+	InverseKinematicsTool::registerTypes();
 
 	// PARSE COMMAND LINE
 	string option = "";
@@ -89,7 +89,7 @@ int main(int argc,char **argv)
 				break;
 
 			} else if((option=="-PrintSetup")||(option=="-PS")) {
-				IKTool *tool = new IKTool();
+				InverseKinematicsTool *tool = new InverseKinematicsTool();
 				tool->setName("default");
 				Object::setSerializeAllDefaults(true);
 				tool->print("default_Setup_IK.xml");
@@ -130,12 +130,12 @@ int main(int argc,char **argv)
 
 	// CONSTRUCT
 	cout<<"Constructing tool from setup file "<<setupFileName<<".\n\n";
-	IKTool ik(setupFileName);
+	InverseKinematicsTool ik(setupFileName);
 	//ik.print("ik_setup_check.xml");
 
 	// PRINT MODEL INFORMATION
-	Model& model = ik.getModel();
-	model.printBasicInfo(cout);
+	//Model& model = ik.getModel();
+	//model.printBasicInfo(cout);
 
 	// start timing
 	std::clock_t startTime = std::clock();

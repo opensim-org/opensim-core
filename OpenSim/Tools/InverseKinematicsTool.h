@@ -124,6 +124,9 @@ public:
 
 	/* Register types to be used when reading an InverseKinematicsTool object from xml file. */
 	static void registerTypes();
+	/* Handle reading older formats/Versioning */
+	virtual void updateFromXMLNode();
+
 private:
 	void setNull();
 	void setupProperties();

@@ -36,6 +36,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
+#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h> 
@@ -189,7 +190,7 @@ InverseDynamicsTool& InverseDynamicsTool::
 operator=(const InverseDynamicsTool &aTool)
 {
 	// BASE CLASS
-	Tool::operator=(aTool);
+	DynamicsTool::operator=(aTool);
 
 	// MEMBER VARIABLES
 	_modelFileName = aTool._modelFileName;
@@ -324,4 +325,82 @@ bool InverseDynamicsTool::run()
 	delete _model;
 
 	return success;
+}
+/* Handle reading older formats/Versioning */
+void InverseDynamicsTool::updateFromXMLNode()
+{
+	int documentVersion = getDocument()->getDocumentVersion();
+	if ( documentVersion < XMLDocument::getLatestVersion()){
+		if (documentVersion <= 20202){
+			// get filename and use SimTK::Xml to parse it
+			SimTK::Xml::Document doc = SimTK::Xml::Document(getDocumentFileName());
+			Xml::Element root = doc.getRootElement();
+			SimTK::Xml::Document newDoc;
+			if (root.getElementTag()=="AnalyzeTool"){
+				// Make OpenSimDocument node and copy root underneath it
+				newDoc.getRootElement().setElementTag("OpenSimDocument");
+				newDoc.getRootElement().setAttributeValue("Version", "20201");
+				// Move all children of root to toolNode
+				newDoc.getRootElement().insertNodeAfter(newDoc.getRootElement().node_end(), root.clone());
+				//root.insertNodeAfter(root.element_end(), toolNode);
+				newDoc.writeToFile(getDocumentFileName());
+				root = newDoc.getRootElement();
+				cout << root.getElementTag() << endl;
+			}
+			if (root.getElementTag()=="OpenSimDocument"){
+				int curVersion = root.getRequiredAttributeValueAs<int>("Version");
+				if (curVersion <= 20201) root.setAttributeValue("Version", "20202");
+				Xml::element_iterator iterTool(root.element_begin("AnalyzeTool"));
+				iterTool->setElementTag("InverseDynamicsTool");
+				// Remove children <output_precision>, <initial_time>, <final_time>
+				Xml::element_iterator initTimeIter(iterTool->element_begin("initial_time"));
+				double tool_initial_time = initTimeIter->getValueAs<double>();
+				if (initTimeIter->isValid()) iterTool->eraseNode(initTimeIter);
+				Xml::element_iterator finalTimeIter(iterTool->element_begin("final_time"));
+				double tool_final_time = finalTimeIter->getValueAs<double>();
+				if (finalTimeIter->isValid()) iterTool->eraseNode(finalTimeIter);
+				Xml::element_iterator precisionIter(iterTool->element_begin("output_precision"));
+				if (precisionIter->isValid()) iterTool->eraseNode(precisionIter);
+				bool use_model_forces=false;
+				// Handle missing or uninitialized values after parsing the old InverseDynamics "Analysis"
+				// Find Analyses underneath it AnalyzeTool
+				Xml::element_iterator iterAnalysisSet(iterTool->element_begin("AnalysisSet"));
+				Xml::element_iterator iterObjects(iterAnalysisSet->element_begin("objects"));
+				Xml::element_iterator iterAnalysis(iterObjects->element_begin("InverseDynamics"));
+				if (iterAnalysis!= iterObjects->element_end()){
+					// move children to top level
+					Xml::element_iterator p = iterAnalysis->element_begin();
+					//std::vector<std::string> deprectaed({"on", "in_degrees", "step_interval"});
+					for (; p!= iterAnalysis->element_end(); ++p) {
+						// skip <on>, <step_interval>, <in_degrees>
+						if (p->getElementTag()=="on" ||
+							p->getElementTag()=="in_degrees" ||
+							p->getElementTag()=="step_interval" ||
+							p->getElementTag()=="start_time" ||
+							p->getElementTag()=="end_time")
+							continue;
+						else if (p->getElementTag()=="use_model_force_set"){
+							String use_model_forcesStr = p->getValueAs<String>();
+							use_model_forces = (use_model_forcesStr=="true");
+						}
+						else
+							iterTool->insertNodeAfter( iterTool->node_end(), p->clone());
+					}
+					// insert elements for "forces_to_exclude" & "time_range"
+					std::ostringstream stream;
+					stream << tool_initial_time << " " << tool_final_time;
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("time_range", stream.str()));
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("forces_to_exclude", use_model_forces?"":"muscles"));
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("output_gen_force_file", "_InverseDynamics"));
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("coordinates_in_degrees", "false"));
+					iterTool->eraseNode(iterAnalysisSet);
+				}
+				doc.writeToFile("_temp.xml");
+				*this=InverseDynamicsTool("_temp.xml");
+				return;
+			}
+
+		}
+	}
+	DynamicsTool::updateFromXMLNode();
 }

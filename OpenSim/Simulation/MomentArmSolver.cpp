@@ -38,8 +38,6 @@ namespace OpenSim {
 /**
  * An implementation of the MomentArmSolver 
  *
- * @param aOptimizationTarget The target that IK will minimize
- * @param aIKTrial Parameters specified in input file to control IK.
  */
 MomentArmSolver::MomentArmSolver(const Model &model) : Solver(model)
 {

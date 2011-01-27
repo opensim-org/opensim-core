@@ -42,6 +42,7 @@
 #include <OpenSim/Common/FunctionSet.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Constant.h>
+#include <OpenSim/Common/XMLDocument.h>
 
 #include <OpenSim/Analyses/Kinematics.h>
 
@@ -54,7 +55,7 @@
 
 using namespace OpenSim;
 using namespace std;
-
+using namespace SimTK;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -367,4 +368,61 @@ bool InverseKinematicsTool::run()
 	delete _model;
 
 	return success;
+}
+
+// Handle conversion from older format
+void InverseKinematicsTool::updateFromXMLNode()
+{
+	int documentVersion = getDocument()->getDocumentVersion();
+	if ( documentVersion < XMLDocument::getLatestVersion()){
+		if (documentVersion <= 20201){
+			// get filename and use SimTK::Xml to parse it
+			SimTK::Xml doc = SimTK::Xml(getDocumentFileName());
+			Xml::Element root = doc.getRootElement();
+			if (root.getElementTag()=="OpenSimDocument"){
+				int curVersion = root.getRequiredAttributeValueAs<int>("Version");
+				if (curVersion <= 20201) root.setAttributeValue("Version", "20202");
+				Xml::element_iterator iter(root.element_begin("IKTool"));
+				// need to test this path but don't know if these files were ever generated
+			}
+			else { 
+				if (root.getElementTag()=="IKTool"){
+					root.setElementTag("InverseKinemtaticsTool");
+					Xml::element_iterator toolIter(root.element_begin("IKTrialSet"));
+					// No optimizer_algorithm specification anymore
+					Xml::element_iterator optIter(root.element_begin("optimizer_algorithm"));
+					root.eraseNode(optIter);
+
+					Xml::element_iterator objIter(toolIter->element_begin("objects")); 
+					Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
+					// Move children of (*trialIter) to root
+					Xml::node_iterator p = trialIter->node_begin();
+					for (; p!= trialIter->node_end(); ++p) {
+						root.insertNodeAfter( root.node_end(), p->clone());
+					}
+					// Append constraint_weight of 100 and accuracy of 1e-5
+					root.insertNodeAfter( root.node_end(), Xml::Comment(_constraintWeightProp.getComment()));
+					root.insertNodeAfter( root.node_end(), Xml::Element("constraint_weight", "20.0"));
+					root.insertNodeAfter( root.node_end(), Xml::Comment(_accuracyProp.getComment()));
+					root.insertNodeAfter( root.node_end(), Xml::Element("accuracy", "1e-5"));
+					// erase node for IKTrialSet
+					root.eraseNode(toolIter);
+					
+					// Create an OpenSimDocument node and move root inside it
+					Xml::Document newDocument;
+					Xml::Element docElement= newDocument.getRootElement();
+					docElement.setAttributeValue("Version", "20202");
+					docElement.setElementTag("OpenSimDocument");
+					// Copy all children of root to newRoot
+					docElement.insertNodeAfter(docElement.node_end(), doc.getRootElement().clone());
+					newDocument.writeToFile("_temp.xml");
+					*this = InverseKinematicsTool("_temp.xml");
+					return;
+				}
+				else
+				;	// Somthing wrong! bail out
+			}
+		}
+	}
+	Object::updateFromXMLNode();
 }

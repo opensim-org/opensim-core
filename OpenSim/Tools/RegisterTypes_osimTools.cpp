@@ -33,19 +33,18 @@
 #include "RegisterTypes_osimTools.h"
 
 #include "ScaleTool.h"
-#include "IKTool.h"
+//#include "IKTool.h"
 //#include "FIKSTool.h"
 #include "CMCTool.h"
 #include "ForwardTool.h"
 //#include "PerturbationTool.h"
 #include "AnalyzeTool.h"
+#include "InverseKinematicsTool.h"
 
 #include "GenericModelMaker.h"
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
 #include "IKTaskSet.h"
-#include "IKTrial.h"
-#include "IKTrialSet.h"
 #include "MarkerPair.h"
 #include "MarkerPairSet.h"
 #include "MarkerPlacer.h"
@@ -75,7 +74,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	//cout<<"RegisterTypes_osimTools\n";
 
 	Object::RegisterType( ScaleTool() );
-	Object::RegisterType( IKTool() );
+	//Object::RegisterType( IKTool() );
 	Object::RegisterType( CMCTool() );
 	Object::RegisterType( ForwardTool() );
 	Object::RegisterType( AnalyzeTool() );
@@ -84,8 +83,8 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( IKCoordinateTask() );
 	Object::RegisterType( IKMarkerTask() );
 	Object::RegisterType( IKTaskSet() );
-	Object::RegisterType( IKTrial() );
-	Object::RegisterType( IKTrialSet() );
+	//Object::RegisterType( IKTrial() );
+	//Object::RegisterType( IKTrialSet() );
 	Object::RegisterType( MarkerPair() );
 	Object::RegisterType( MarkerPairSet() );
 	Object::RegisterType( MarkerPlacer() );
@@ -106,6 +105,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RenameType("rdCMC_Point", CMC_Point());
 	Object::RenameType("rdCMC_TaskSet", CMC_TaskSet());
 
+	Object::RenameType("IKTool", InverseKinematicsTool());
 
 }
 
