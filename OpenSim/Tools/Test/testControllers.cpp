@@ -117,7 +117,9 @@ bool testControlSetControllerOnBlock()
 	actuatorControls.setControlValues(finalTime, controlForce);
 	// Create a control set controller that simply applies controls from a ControlSet
 	ControlSetController actuatorController;
-	actuatorController.setControlSet(&actuatorControls);
+	// Make a copy and set it on the ControlSetController as it takes ownership of the 
+	// ControlSet passed in
+	actuatorController.setControlSet((ControlSet*)Object::SafeCopy(&actuatorControls));
 
 	// add the controller to the model
 	osimModel.addController(&actuatorController);
