@@ -231,6 +231,7 @@ void ControllerSet::constructStorage()
     Array<string> columnLabels;
 
     // CONTROLS
+	delete _controlStore;
     _controlStore = new Storage(512,"controls");
     columnLabels.append("time");
 
@@ -266,9 +267,6 @@ void ControllerSet::printControlStorage( const string& fileName)  const
 void ControllerSet::setActuators( Set<Actuator>& as) 
 {
     _actuatorSet = &as;
-	for( int i = 0; i < as.getSize(); i++ ) {
-
-    }
     constructStorage();
 }
 

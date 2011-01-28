@@ -63,7 +63,7 @@ namespace OpenSim {
 			//Find if any references that are empty and throw them away
 			if(p->getName() == "" || p->getName() == "unknown"){
 				//Get rid of the corresponding reference too
-				_coordinateReferences.erase(p);
+				p = _coordinateReferences.erase(p);
 			}
 			// Otherwise an error if the coordinate does not exist for this model
 			else if ( !modelCoordSet.contains(p->getName())){
@@ -71,6 +71,18 @@ namespace OpenSim {
 			}
 		}
 	}
+}
+
+AssemblySolver::~AssemblySolver()
+{
+	SimTK::Array_<CoordinateReference>::iterator p;
+	for(p = _coordinateReferences.begin(); p!=_coordinateReferences.end(); p++)
+	{ 
+		p = _coordinateReferences.erase(p);
+		--p;
+	}
+
+	delete _assembler;
 }
 
 /** Internal method to convert the CoordinateReferences into goals of the 

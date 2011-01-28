@@ -72,6 +72,7 @@ Model& ModelComponent::updModel()
 void ModelComponent::setup(Model& model)
 {
 	_model = &model;
+	delete _rep;
 	_rep = new ModelComponentRep(*this);
 
 	for(unsigned int i=0; i<_subComponents.size(); i++)
@@ -345,13 +346,22 @@ const SimTK::CacheEntryIndex ModelComponent::getCacheVariableIndex(const std::st
 //==============================  ModelComponentRep =========================================
 ModelComponentRep::ModelComponentRep(ModelComponent &mc): _modelComponent(mc)
 {
+	_namedDiscreteVariableInfo.clear();
+	_namedCacheVariableInfo.clear();
 }
 
 ModelComponentRep::~ModelComponentRep()
 {
 	std::map<std::string, DiscreteVariableInfo*>::iterator it;
-	for(it = _namedDiscreteVariableInfo.begin(); it!=_namedDiscreteVariableInfo.end(); it++){
+	for(it = _namedDiscreteVariableInfo.begin(); it!=_namedDiscreteVariableInfo.end();){
 		delete it->second;
+		_namedDiscreteVariableInfo.erase(it++);
+	}
+
+	std::map<std::string, CacheInfo*>::iterator ic;
+	for(ic = _namedCacheVariableInfo.begin(); ic!=_namedCacheVariableInfo.end();){
+		delete ic->second;
+		_namedCacheVariableInfo.erase(ic++);
 	}
 }
 

@@ -86,7 +86,7 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~AssemblySolver() { delete _assembler; }
+	virtual ~AssemblySolver();
 
 	/** Construct an Assembly solver with the coordinate references as the goal
 	    of the assembly and (optional)constraint weight. Defual is infitinet
