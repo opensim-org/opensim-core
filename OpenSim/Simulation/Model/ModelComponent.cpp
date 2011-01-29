@@ -59,6 +59,15 @@ ModelComponent::~ModelComponent()
 	delete _rep;
 }
 
+ModelComponent& ModelComponent::operator=(const ModelComponent &aModelComponent)
+{
+	// base class
+	Object::operator=(aModelComponent);
+	//copyData(aModelComponent);
+	return(*this);
+}
+
+
 const Model& ModelComponent::getModel() const
 {
     return *_model;

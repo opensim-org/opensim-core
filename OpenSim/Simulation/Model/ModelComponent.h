@@ -38,7 +38,7 @@ namespace OpenSim {
 
 class Model;
 class ModelComponent;
-
+#ifndef SWIG
 //=============================================================================
 // Begin class ModelComponentRep
 //=============================================================================
@@ -93,7 +93,6 @@ public:
 		the SimTK::System level component. Should query it and add to this to obtain the total
 		number of states managed by this ModelComponent */
 	int getNumStateVariablesAddedByModelComponent() const {return _namedStateVariableIndices.size();}
-#ifndef SWIG
 	void realizeTopology(SimTK::State &s) const;
 	void realizeModel(SimTK::State& s) const;
     void realizeInstance(const SimTK::State& s) const;
@@ -103,12 +102,12 @@ public:
     void realizeDynamics(const SimTK::State& s) const;
     void realizeAcceleration(const SimTK::State& s) const;
     void realizeReport(const SimTK::State& s) const;
-#endif
 	friend class ModelComponent;
 };
 //==================================
 // end class ModelComponentRep
 //==================================
+#endif
 
 
 //=============================================================================
@@ -302,6 +301,7 @@ public:
 	 */
 	void includeAsSubComponent(ModelComponent *aComponent);
 
+	ModelComponent& operator=(const ModelComponent &aModelComponent);
 protected:
     /**
      * This is called after the Model has been constructed from an XML file.
