@@ -73,7 +73,6 @@ Muscle::Muscle() : Actuator(),
 {
 	setNull();
 	setupProperties();
-	includeAsSubComponent(&_path);
 }
 
 //_____________________________________________________________________________
@@ -104,7 +103,6 @@ Muscle::Muscle(const Muscle &aMuscle) : Actuator(aMuscle),
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
-	includeAsSubComponent(&_path);
 }
 
 //=============================================================================
@@ -187,6 +185,10 @@ void Muscle::updateFromXMLNode()
  */
 void Muscle::setup(Model& aModel)
 {
+	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
+	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
+	// propogated.
+	includeAsSubComponent(&_path);
 	Actuator::setup(aModel);
 
 	// _model will be NULL when objects are being registered.

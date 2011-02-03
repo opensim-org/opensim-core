@@ -109,8 +109,6 @@ public:
 	// Copy properties from XML into member variables
 	virtual void updateFromXMLNode();
 
-	virtual void setup(Model& model);
-
 	void setBodyName(const std::string& aBodyName) { _bodyName = aBodyName; };
 	const std::string& getBodyName() const { return (_bodyName); }
 
@@ -217,6 +215,9 @@ public:
 	OPENSIM_DECLARE_DERIVED(PrescribedForce, Force);
 
 protected:
+
+	/**  ModelComponent interface */ 
+	virtual void setup(Model& model);
 	/**
 	 * Compute the force.
 	 */

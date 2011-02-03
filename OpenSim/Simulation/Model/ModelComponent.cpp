@@ -61,12 +61,9 @@ ModelComponent::~ModelComponent()
 
 ModelComponent& ModelComponent::operator=(const ModelComponent &aModelComponent)
 {
-	// base class
 	Object::operator=(aModelComponent);
-	//copyData(aModelComponent);
 	return(*this);
 }
-
 
 const Model& ModelComponent::getModel() const
 {
@@ -319,13 +316,19 @@ void ModelComponent::setDiscreteVariable(SimTK::State &s, const std::string &nam
 	}
 }
 
-/* Include another ModelComponent as a subcomponent of this one. */
+/** Include another ModelComponent as a subcomponent of this one. 
+    If already a subcomponent it is not added to the list again. */
 void ModelComponent::includeAsSubComponent(ModelComponent *aComponent)
 {
 	if(_model && _model->isValidSystem())
 		throw Exception("ModelComponent: Cannot include subcomponent after createSystem().");
 	
-	_subComponents.push_back(aComponent);
+	// Only keep if unique
+	SimTK::Array_<ModelComponent *>::iterator it = std::find(_subComponents.begin(), _subComponents.end(), aComponent);
+	if(it == _subComponents.end()) 
+		_subComponents.push_back(aComponent);
+
+
 }
 
 const SimTK::ZIndex ModelComponent::getZIndex(const std::string &name) const

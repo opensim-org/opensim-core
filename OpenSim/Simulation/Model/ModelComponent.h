@@ -142,6 +142,10 @@ public:
 	ModelComponent(DOMElement* aNode);
 	ModelComponent(const ModelComponent& copy);
     virtual ~ModelComponent();
+
+	/** Assignment operator to copy contents of an existing component */
+	ModelComponent& operator=(const ModelComponent &aModelComponent);
+
     /**
      * Get the Model this object is part of.
      */
@@ -150,7 +154,6 @@ public:
      * Get a modifiable reference to the Model this object is part of.
      */
     Model& updModel();
-
 
 	/**
      * Get the value of a ModelingOption flag for this ModelComponent.
@@ -301,7 +304,6 @@ public:
 	 */
 	void includeAsSubComponent(ModelComponent *aComponent);
 
-	ModelComponent& operator=(const ModelComponent &aModelComponent);
 protected:
     /**
      * This is called after the Model has been constructed from an XML file.

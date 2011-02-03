@@ -144,8 +144,13 @@ Object* ControllerSet::copy() const
  */
 void ControllerSet::copyData(const ControllerSet &aControllerSet)
 {
-      _actuatorSet =  aControllerSet._actuatorSet;
-      _controlStore =  NULL;//aControllerSet._controlStore;
+	_actuatorSet =  aControllerSet._actuatorSet;
+	const Storage *source = (Storage *)aControllerSet._controlStore;
+	if(source == NULL){
+		_controlStore =  NULL;
+	} else {
+		_controlStore =  new Storage(*source, true);
+	}
 }
 
 
