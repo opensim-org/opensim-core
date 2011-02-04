@@ -183,3 +183,18 @@ void DisplayGeometry::setRotationsAndTRanslations(double aArray[])
 {
 	_propTransform.setValue(6, aArray);
 }
+//=============================================================================
+// OPERATORS
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+DisplayGeometry& DisplayGeometry::operator=(const DisplayGeometry &aDisplayGeometry)
+{
+	Object::operator=(aDisplayGeometry);
+	copyData(aDisplayGeometry);
+	return(*this);
+}

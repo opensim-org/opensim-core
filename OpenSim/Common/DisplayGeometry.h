@@ -170,6 +170,8 @@ public:
 	double getOpacity() const { return _opacity; };
 	void setOpacity(const double& aOpacity) { _opacity=aOpacity; };
 
+	OPENSIM_DECLARE_DERIVED(DisplayGeometry, Object);
+
 //=============================================================================
 };	// END of class DisplayGeometry
 
