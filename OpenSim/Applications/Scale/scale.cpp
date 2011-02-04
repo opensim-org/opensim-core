@@ -151,7 +151,7 @@ int main(int argc,char **argv)
 		}
 		
 		SimTK::State& news = model->initSystem();	// old state is messed up by scaling. can't use it
-		if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply())
+		if (!subject->isDefaultMarkerPlacer())
 		{
 			MarkerPlacer& placer = subject->getMarkerPlacer();
 			if(!placer.processModel(news, model, subject->getPathToSubject())) return 1;
