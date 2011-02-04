@@ -30,12 +30,18 @@
 // INCLUDES
 //=============================================================================
 #include "MarkerPlacer.h"
-#include "IKTrial.h"
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/FunctionSet.h>
+#include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/Constant.h>
+#include <OpenSim/Simulation/InverseKinematicsSolver.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/Marker.h>
-#include <OpenSim/Common/MarkerData.h>
-#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Simulation/MarkersReference.h>
+#include <OpenSim/Simulation/CoordinateReference.h>
+#include "IKCoordinateTask.h"
 
 //=============================================================================
 // STATICS
@@ -51,19 +57,15 @@ using SimTK::Vec3;
  * Default constructor.
  */
 MarkerPlacer::MarkerPlacer() :
-	_apply(_applyProp.getValueBool()),
-   _markerFileName(_markerFileNameProp.getValueStr()),
+	_markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
-	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
 	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl()),
-	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr())
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
@@ -75,7 +77,7 @@ MarkerPlacer::MarkerPlacer() :
  */
 MarkerPlacer::~MarkerPlacer()
 {
-	delete _ikTrial;
+	//delete _ikTrial;
 }
 
 //_____________________________________________________________________________
@@ -86,19 +88,15 @@ MarkerPlacer::~MarkerPlacer()
  */
 MarkerPlacer::MarkerPlacer(const MarkerPlacer &aMarkerPlacer) :
    Object(aMarkerPlacer),
-	_apply(_applyProp.getValueBool()),
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
 	_ikTaskSet((IKTaskSet&)_ikTaskSetProp.getValueObj()),
 	_coordinateFileName(_coordinateFileNameProp.getValueStr()),
-	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
-	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputMarkerFileName(_outputMarkerFileNameProp.getValueStr()),
 	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
-	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl()),
-	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr())
+	_maxMarkerMovement(_maxMarkerMovementProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
@@ -129,18 +127,14 @@ Object* MarkerPlacer::copy() const
  */
 void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
 {
-	_apply = aMarkerPlacer._apply;
 	_markerFileName = aMarkerPlacer._markerFileName;
 	_timeRange = aMarkerPlacer._timeRange;
 	_ikTaskSet = aMarkerPlacer._ikTaskSet;
 	_coordinateFileName = aMarkerPlacer._coordinateFileName;
-	_outputJointFileName = aMarkerPlacer._outputJointFileName;
-	_outputMuscleFileName = aMarkerPlacer._outputMuscleFileName;
 	_outputModelFileName = aMarkerPlacer._outputModelFileName;
 	_outputMarkerFileName = aMarkerPlacer._outputMarkerFileName;
 	_outputMotionFileName = aMarkerPlacer._outputMotionFileName;
 	_maxMarkerMovement = aMarkerPlacer._maxMarkerMovement;
-	_optimizerAlgorithm = aMarkerPlacer._optimizerAlgorithm;
 	_printResultFiles = aMarkerPlacer._printResultFiles;
 }
 
@@ -152,13 +146,10 @@ void MarkerPlacer::setNull()
 {
 	setType("MarkerPlacer");
 
-	_apply = true;
 	_coordinateFileName = "";
-	_optimizerAlgorithm = "ipopt";
 
 	_printResultFiles = true;
 	_moveModelMarkers = true;
-	_ikTrial = NULL;
 }
 
 //_____________________________________________________________________________
@@ -167,10 +158,6 @@ void MarkerPlacer::setNull()
  */
 void MarkerPlacer::setupProperties()
 {
-	_applyProp.setComment("Whether or not to use the marker placer during scale");
-	_applyProp.setName("apply");
-	_propertySet.append(&_applyProp);
-
 	_ikTaskSetProp.setComment("Task set used to specify weights used in the IK computation of the static pose.");
 	_ikTaskSetProp.setName("IKTaskSet");
 	_propertySet.append(&_ikTaskSetProp);
@@ -202,14 +189,6 @@ void MarkerPlacer::setupProperties()
 	_timeRangeProp.setAllowableArraySize(2);
 	_propertySet.append(&_timeRangeProp);
 
-	_outputJointFileNameProp.setComment("Name of the new SIMM Joint file (.jnt) after scaling and marker placement (optional).");
-	_outputJointFileNameProp.setName("output_joint_file");
-	_propertySet.append(&_outputJointFileNameProp);
-
-	_outputMuscleFileNameProp.setComment("Name of the SIMM muscle file (.msl) after scaling and marker placement (optional).");
-	_outputMuscleFileNameProp.setName("output_muscle_file");
-	_propertySet.append(&_outputMuscleFileNameProp);
-
 	_outputMotionFileNameProp.setComment("Name of the motion file (.mot) written after marker relocation (optional).");
 	_outputMotionFileNameProp.setName("output_motion_file");
 	_propertySet.append(&_outputMotionFileNameProp);
@@ -227,11 +206,6 @@ void MarkerPlacer::setupProperties()
 	_maxMarkerMovementProp.setName("max_marker_movement");
 	_maxMarkerMovementProp.setValue(-1.0); // units of this value are the units of the marker data in the static pose (usually mm)
 	_propertySet.append(&_maxMarkerMovementProp);
-
-	_optimizerAlgorithmProp.setComment("Preferred optimizer algorithm (currently support \"ipopt\" or \"cfsqp\", "
-		"the latter requiring the osimFSQP library.");
-	_optimizerAlgorithmProp.setName("optimizer_algorithm");
-	_propertySet.append( &_optimizerAlgorithmProp );
 }
 
 //=============================================================================
@@ -271,7 +245,6 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
  */
 bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aPathToSubject)
 {
-	if(!getApply()) return false;
 
 	cout << endl << "Step 3: Placing markers on model" << endl;
 
@@ -290,18 +263,65 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	 */
 	aModel->deleteUnusedMarkers(staticPose.getMarkerNames());
 
-	delete _ikTrial;
-	_ikTrial = new IKTrial();
-	if(!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr()) _ikTrial->setCoordinateFileName(aPathToSubject + _coordinateFileName);
-	_ikTrial->setStartTime(_timeRange[0]);
-	_ikTrial->setEndTime(_timeRange[0]);
-	_ikTrial->setOptimizerAlgorithm(_optimizerAlgorithm);
-	_ikTrial->setPrintResultFiles(false); // We'll do our own printing
-//	_ikTrial->setIncludeMarkers(true);
-	if(!_ikTrial->initializeTrialCommon(s, *aModel,_ikTaskSet,staticPose)) return false;
-	if(!_ikTrial->solveTrial(s, *aModel,_ikTaskSet)) return false;
-	_ikTrial->getOutputStorage()->setName(_markerFileName);
+	//delete _ikTrial;
+	//_ikTrial = new IKTrial();
+//	if(!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr()) _ikTrial->setCoordinateFileName(aPathToSubject + _coordinateFileName);
+	
+	InverseKinematicsSolver* ikSol;
+	MarkersReference markersReference(staticPose);
+	SimTK::Array_<CoordinateReference> coordinateReferences;
 
+	// Load the coordinate data
+	// create CoordinateReferences for Coordinate Tasks
+	FunctionSet *coordFunctions = NULL;
+	bool haveCoordinateFile = false;
+	if(_coordinateFileName != "" && _coordinateFileName != "Unassigned"){
+		Storage coordinateValues(aPathToSubject + _coordinateFileName);
+		aModel->getSimbodyEngine().convertDegreesToRadians(coordinateValues);
+		haveCoordinateFile = true;
+		coordFunctions = new GCVSplineSet(5,&coordinateValues);
+	}
+	
+	int index = 0;
+	for(int i=0; i< _ikTaskSet.getSize(); i++){
+		if(IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i])){
+			CoordinateReference *coordRef = NULL;
+			if(coordTask->getValueType() == IKCoordinateTask::FromFile){
+				index = coordFunctions->getIndex(coordTask->getName(), index);
+				if(index >= 0){
+					coordRef = new CoordinateReference(coordTask->getName(),coordFunctions->get(index));
+				}
+			}
+			else if((coordTask->getValueType() == IKCoordinateTask::ManualValue)){
+				Constant reference(Constant(coordTask->getValue()));
+				coordRef = new CoordinateReference(coordTask->getName(), reference);
+			}
+			else{ // assume it should be held at its current/default value
+				double value = aModel->getCoordinateSet().get(coordTask->getName()).getValue(s);
+				Constant reference = Constant(value);
+				coordRef = new CoordinateReference(coordTask->getName(), reference);
+			}
+
+			if(coordRef == NULL)
+				throw Exception("InverseKinematicsTool: value for coordinate "+coordTask->getName()+" not found.");
+
+			coordinateReferences.push_back(*coordRef);
+		
+		}			
+	}
+	double constraintWeight = SimTK::Infinity;
+
+	ikSol = new InverseKinematicsSolver(*aModel, markersReference, coordinateReferences, constraintWeight);
+	ikSol->assemble(s);
+//	_ikTrial->setStartTime(_timeRange[0]);
+//	_ikTrial->setEndTime(_timeRange[0]);
+//	_ikTrial->setOptimizerAlgorithm(_optimizerAlgorithm);
+//	_ikTrial->setPrintResultFiles(false); // We'll do our own printing
+//	_ikTrial->setIncludeMarkers(true);
+//	if(!_ikTrial->initializeTrialCommon(s, *aModel,_ikTaskSet,staticPose)) return false;
+//	if(!_ikTrial->solveTrial(s, *aModel,_ikTaskSet)) return false;
+//	_ikTrial->getOutputStorage()->setName(_markerFileName);
+//
 	/* Now move the non-fixed markers on the model so that they are coincident
 	 * with the measured markers in the static pose. The model is already in
 	 * the proper configuration so the coordinates do not need to be changed.
@@ -310,20 +330,6 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 
 
 	if(_printResultFiles) {
-       /* Write output files, if names specified by the user. 
-	    * users can export the osim models in the GUI or using OpenSimtoSimm
-		* May enable if/when SimmFileWriterDLL is building again. -Ayman 8/09
-       SimmFileWriter *sfw = new SimmFileWriter(aModel);
-       if (sfw)
-       {
-           if (!_outputJointFileNameProp.getUseDefault())
-               sfw->writeJointFile(aPathToSubject + _outputJointFileName);
-
-           if (!_outputMuscleFileNameProp.getUseDefault())
-               sfw->writeMuscleFile(aPathToSubject + _outputMuscleFileName);
-
-           delete sfw;
-       } */
 		if (!_outputModelFileNameProp.getUseDefault())
 		{
 			aModel->copy()->print(aPathToSubject + _outputModelFileName);
@@ -338,7 +344,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 
 		if (!_outputMotionFileNameProp.getUseDefault())
 		{
-			Storage motionData(*_ikTrial->getOutputStorage());
+			Storage motionData;//*_ikTrial->getOutputStorage());
 			aModel->getSimbodyEngine().convertRadiansToDegrees(motionData);
 			motionData.setWriteSIMMHeader(true);
 			motionData.setName("static pose");
@@ -403,5 +409,5 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
 
 Storage *MarkerPlacer::getOutputStorage() 
 {
-	return _ikTrial ? _ikTrial->getOutputStorage() : NULL; 
+	return NULL;//_ikTrial ? _ikTrial->getOutputStorage() : NULL; 
 }

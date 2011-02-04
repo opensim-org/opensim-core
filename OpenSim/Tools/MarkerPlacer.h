@@ -68,10 +68,6 @@ class OSIMTOOLS_API MarkerPlacer : public Object
 private:
 
 protected:
-	// whether or not to apply marker placer
-	PropertyBool _applyProp;
-	bool &_apply;
-
 	// name of marker file that contains marker locations in the static pose
 	PropertyStr _markerFileNameProp;
 	std::string &_markerFileName;
@@ -87,14 +83,6 @@ protected:
 	// name of SIMM motion file that contains [optional] coordinates for the static pose
 	PropertyStr _coordinateFileNameProp;
 	std::string &_coordinateFileName;
-
-	// name of SIMM joint file to write when done placing markers
-	PropertyStr _outputJointFileNameProp;
-	std::string &_outputJointFileName;
-
-	// name of SIMM muscle file to write when done placing markers
-	PropertyStr _outputMuscleFileNameProp;
-	std::string &_outputMuscleFileName;
 
 	// name of XML model file to write when done placing markers
 	PropertyStr _outputModelFileNameProp;
@@ -112,16 +100,10 @@ protected:
 	PropertyDbl _maxMarkerMovementProp;
 	double &_maxMarkerMovement;
 
-	/** Preferred optimizer algorithm. */
-	PropertyStr _optimizerAlgorithmProp;
-	std::string &_optimizerAlgorithm;
-
 	// Whether or not to write write to the designated output files (GUI will set this to false)
 	bool _printResultFiles;
 	// Whether to move the model markers (set to false if you just want to preview the static pose)
 	bool _moveModelMarkers;
-
-	IKTrial *_ikTrial;
 
 //=============================================================================
 // METHODS
@@ -144,13 +126,6 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-
-	bool getApply() const { return _apply; }
-	void setApply(bool aApply) 
-	{ 
-		_apply = aApply; 
-		_applyProp.setUseDefault(false); 
-	}
 
 	const std::string &getStaticPoseFileName() const { return _markerFileName; }
 	void setStaticPoseFileName(const std::string &aFileName) 
@@ -189,20 +164,6 @@ public:
 		_outputModelFileNameProp.setUseDefault(false);
 	}
 
-	const std::string& getOutputJointFileName() const { return _outputJointFileName; }
-	void setOutputJointFileName(const std::string& outputJointFileName)
-	{
-		_outputJointFileName = outputJointFileName;
-		_outputJointFileNameProp.setUseDefault(false);
-	}
-
-	const std::string& getOutputMuscleFileName() const { return _outputMuscleFileName; }
-	void setOutputMuscleFileName(const std::string& outputMuscleFileName)
-	{
-		_outputMuscleFileName = outputMuscleFileName;
-		_outputMuscleFileNameProp.setUseDefault(false);
-	}
-
 	const std::string& getOutputMarkerFileName() const { return _outputMarkerFileName; }
 	void setOutputMarkerFileName(const std::string& outputMarkerFileName)
 	{
@@ -224,7 +185,6 @@ public:
 
 	Storage *getOutputStorage();
 
-	IKTrial *getIKTrial() { return _ikTrial; }
 
 private:
 	void setNull();
