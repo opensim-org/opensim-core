@@ -116,6 +116,8 @@ public:
 	// Convenience load markers from a file
 	MarkersReference(const std::string filename, Units modelUnits=Units(Units::Meters));
 
+	MarkersReference(MarkerData& aMarkerData);
+
 	MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
 
 	void copyData(const MarkersReference &aRef){_type = "MarkersReference";
@@ -157,6 +159,8 @@ private:
 	// utility to define object properties including their tags, comments and
 	// default values.
 	void setupProperties();
+
+	void populateFromMarkerData(MarkerData& aMarkerData);
 
 //=============================================================================
 };	// END of class MarkersReference

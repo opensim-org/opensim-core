@@ -60,6 +60,22 @@ MarkersReference::MarkersReference(const std::string markerFile, Units modelUnit
 	loadMarkersFile(markerFile, modelUnits);
 }
 
+/**
+ * Convenience constructor to be used for Marker placement. 
+ *
+ * @param aMarkerData: MarkerData, assumed to be in the correct units already
+ */
+MarkersReference::MarkersReference(MarkerData& aMarkerData) : Reference_<SimTK::Vec3>(), 
+		_markersFile(_markersFileProp.getValueStr()),
+		_markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
+		_markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
+		_defaultWeight(_defaultWeightProp.getValueDbl()),
+		_markerData(NULL)
+{
+	setType("MarkersReference");
+	populateFromMarkerData(aMarkerData);
+}
+
 /** load the marker data for this MarkersReference from markerFile  */
 void MarkersReference::loadMarkersFile(const std::string markerFile, Units modelUnits)
 {
@@ -69,7 +85,15 @@ void MarkersReference::loadMarkersFile(const std::string markerFile, Units model
 	// Convert the marker data into the model's units
 	_markerData->convertToUnits(modelUnits);
 
-	const Array<std::string> &tempNames = _markerData->getMarkerNames();
+	populateFromMarkerData(*_markerData);
+}
+
+
+/** A convenience method yo populate MarkersReference from MarkerData **/
+void MarkersReference::populateFromMarkerData(MarkerData& aMarkerData)
+{
+	_markerData = &aMarkerData;
+	const Array<std::string> &tempNames = aMarkerData.getMarkerNames();
 	int nm = tempNames.getSize();
 
 	// empty any lingering names and weights
