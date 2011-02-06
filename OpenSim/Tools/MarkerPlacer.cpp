@@ -268,7 +268,10 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 //	if(!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr()) _ikTrial->setCoordinateFileName(aPathToSubject + _coordinateFileName);
 	
 	InverseKinematicsSolver* ikSol;
-	MarkersReference markersReference(staticPose);
+	Set<MarkerWeight> markerWeightSet;
+
+	_ikTaskSet.createMarkerWeightSet(markerWeightSet);
+	MarkersReference markersReference(staticPose, &markerWeightSet);
 	SimTK::Array_<CoordinateReference> coordinateReferences;
 
 	// Load the coordinate data
@@ -342,7 +345,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 			cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
 		}
 
-		if (!_outputMotionFileNameProp.getUseDefault())
+		if (false/*!_outputMotionFileNameProp.getUseDefault()*/)
 		{
 			Storage motionData;//*_ikTrial->getOutputStorage());
 			aModel->getSimbodyEngine().convertRadiansToDegrees(motionData);

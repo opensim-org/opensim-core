@@ -65,7 +65,7 @@ MarkersReference::MarkersReference(const std::string markerFile, Units modelUnit
  *
  * @param aMarkerData: MarkerData, assumed to be in the correct units already
  */
-MarkersReference::MarkersReference(MarkerData& aMarkerData) : Reference_<SimTK::Vec3>(), 
+MarkersReference::MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet) : Reference_<SimTK::Vec3>(), 
 		_markersFile(_markersFileProp.getValueStr()),
 		_markerWeightSetProp(PropertyObj("", Set<MarkerWeight>())),
 		_markerWeightSet((Set<MarkerWeight>&)_markerWeightSetProp.getValueObj()),
@@ -73,6 +73,7 @@ MarkersReference::MarkersReference(MarkerData& aMarkerData) : Reference_<SimTK::
 		_markerData(NULL)
 {
 	setType("MarkersReference");
+	if (aMarkerWeightSet!=NULL) _markerWeightSet= *aMarkerWeightSet;
 	populateFromMarkerData(aMarkerData);
 }
 

@@ -57,6 +57,10 @@ public:
 
 	void setWeight(double weight) {_weight = weight; }
 	double getWeight() const {return _weight; };
+	virtual Object* copy() const {
+			MarkerWeight *mWeight = new MarkerWeight(*this);
+			return(mWeight);
+	}
 }; // end of MarkerWeight class
 
 
@@ -71,6 +75,8 @@ public:
  * @author Ajay Seth
  * @version 1.0
  */
+class IKTaskSet;
+
 class OSIMSIMULATION_API MarkersReference : public Reference_<SimTK::Vec3>
 {
 //=============================================================================
@@ -116,7 +122,7 @@ public:
 	// Convenience load markers from a file
 	MarkersReference(const std::string filename, Units modelUnits=Units(Units::Meters));
 
-	MarkersReference(MarkerData& aMarkerData);
+	MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet=NULL);
 
 	MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
 
