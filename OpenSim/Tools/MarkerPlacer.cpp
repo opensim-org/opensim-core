@@ -42,7 +42,7 @@
 #include <OpenSim/Simulation/MarkersReference.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 #include "IKCoordinateTask.h"
-
+#include <OpenSim/Analyses/StatesReporter.h>
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -262,14 +262,9 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	 * pose marker file.
 	 */
 	aModel->deleteUnusedMarkers(staticPose.getMarkerNames());
-
-	//delete _ikTrial;
-	//_ikTrial = new IKTrial();
-//	if(!_coordinateFileName.empty() && _coordinateFileName!=PropertyStr::getDefaultStr()) _ikTrial->setCoordinateFileName(aPathToSubject + _coordinateFileName);
 	
-	InverseKinematicsSolver* ikSol;
+	// Create references and WeightSets needed to initialize InverseKinemaicsSolver
 	Set<MarkerWeight> markerWeightSet;
-
 	_ikTaskSet.createMarkerWeightSet(markerWeightSet);
 	MarkersReference markersReference(staticPose, &markerWeightSet);
 	SimTK::Array_<CoordinateReference> coordinateReferences;
@@ -314,17 +309,10 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	}
 	double constraintWeight = SimTK::Infinity;
 
-	ikSol = new InverseKinematicsSolver(*aModel, markersReference, coordinateReferences, constraintWeight);
+	InverseKinematicsSolver* ikSol = new InverseKinematicsSolver(*aModel, markersReference, coordinateReferences, constraintWeight);
 	ikSol->assemble(s);
-//	_ikTrial->setStartTime(_timeRange[0]);
-//	_ikTrial->setEndTime(_timeRange[0]);
-//	_ikTrial->setOptimizerAlgorithm(_optimizerAlgorithm);
-//	_ikTrial->setPrintResultFiles(false); // We'll do our own printing
-//	_ikTrial->setIncludeMarkers(true);
-//	if(!_ikTrial->initializeTrialCommon(s, *aModel,_ikTaskSet,staticPose)) return false;
-//	if(!_ikTrial->solveTrial(s, *aModel,_ikTaskSet)) return false;
-//	_ikTrial->getOutputStorage()->setName(_markerFileName);
-//
+	// Call realize Position so that the transforms are updated and  markers can be moved correctly
+	aModel->getMultibodySystem().realize(s, SimTK::Stage::Position);
 	/* Now move the non-fixed markers on the model so that they are coincident
 	 * with the measured markers in the static pose. The model is already in
 	 * the proper configuration so the coordinates do not need to be changed.
@@ -345,13 +333,15 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 			cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
 		}
 
-		if (false/*!_outputMotionFileNameProp.getUseDefault()*/)
+		if (!_outputMotionFileNameProp.getUseDefault())
 		{
-			Storage motionData;//*_ikTrial->getOutputStorage());
-			aModel->getSimbodyEngine().convertRadiansToDegrees(motionData);
-			motionData.setWriteSIMMHeader(true);
-			motionData.setName("static pose");
-			motionData.print(aPathToSubject + _outputMotionFileName, 
+			Storage motionData;
+			StatesReporter statesReporter(aModel);
+			statesReporter.begin(s);
+			statesReporter.updStatesStorage().setWriteSIMMHeader(true);
+			aModel->getSimbodyEngine().convertRadiansToDegrees(statesReporter.updStatesStorage());
+			statesReporter.updStatesStorage().setName("static pose");
+			statesReporter.getStatesStorage().print(aPathToSubject + _outputMotionFileName, 
 				"w", "File generated from solving marker data for model "+aModel->getName());
 		}
 	}
