@@ -30,6 +30,8 @@
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Set.h>
 #include "IKTask.h"
+#include "IKMarkerTask.h"
+#include <OpenSim/Simulation/MarkersReference.h>
 
 namespace OpenSim {
 
@@ -47,6 +49,13 @@ public:
 	IKTaskSet() { setType("IKTaskSet"); }
 	IKTaskSet(const IKTaskSet &aIKTaskSet) : Set<IKTask>(aIKTaskSet) { }
 	IKTaskSet(const std::string &aFileName) : Set<IKTask>(aFileName) { }
+	void createMarkerWeightSet(Set<MarkerWeight>& aWeights){
+		for(int i=0; i< getSize(); i++){
+			if(IKMarkerTask *nextTask = dynamic_cast<IKMarkerTask *>(&get(i))){
+				aWeights.append(*(new MarkerWeight(nextTask->getName(), nextTask->getWeight())));
+			}
+		}
+	};
 #ifndef SWIG
 	IKTaskSet& operator=(const IKTaskSet &aIKTaskSet) { Set<IKTask>::operator=(aIKTaskSet); return *this; }
 #endif
