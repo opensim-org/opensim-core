@@ -9,78 +9,30 @@
 		<!--List of xml files used to construct an force set for the model.-->
 		<force_set_files> </force_set_files>
 		<!--Directory used for writing results.-->
-		<results_directory> CMCResultsDYNAMIC </results_directory>
+		<results_directory> block_hanging_from_muscle_ResultsCMC </results_directory>
 		<!--Output precision.  It is 20 by default.-->
 		<output_precision> 20 </output_precision>
 		<!--Initial time for the simulation.-->
-		<initial_time>       0.00000000000000000000 </initial_time>
+		<initial_time>    0.0000000000000000000 </initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>      0.50000000000000000000 </final_time>
+		<final_time>      5.0000000000000000000 </final_time>
 		<!--Maximum number of integrator steps.-->
 		<maximum_number_of_integrator_steps> 30000 </maximum_number_of_integrator_steps>
 		<!--Maximum integration step size.-->
-		<maximum_integrator_step_size>       0.001000000000000000000 </maximum_integrator_step_size>
+		<maximum_integrator_step_size>       1.000000000000000000 </maximum_integrator_step_size>
 		<!--Minimum integration step size.-->
-		<minimum_integrator_step_size>       0.0000000001000000000000 </minimum_integrator_step_size>
+		<minimum_integrator_step_size>       0.000000000100000000 </minimum_integrator_step_size>
 		<!--Integrator error tolerance. When the error is greater, the integrator
 			step size is decreased.-->
 		<integrator_error_tolerance>       1e-006 </integrator_error_tolerance>
 		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
 		 <objects>
-			<Kinematics name="Kinematics">
-				<!--Flag (true or false) specifying whether whether on. True by default.-->
-				<on> true </on>
-				<!--Specifies how often to store results during a simulation. More
-					specifically, the interval (a positive integer) specifies how many
-					successful integration steps should be taken before results are
-					recorded again.-->
-				<step_interval> 15 </step_interval>
-				<!--Flag (true or false) indicating whether the results are in degrees or
-					not.-->
-				<in_degrees> true </in_degrees>
-			</Kinematics>
-			<Actuation name="Actuation">
-				<!--Flag (true or false) specifying whether whether on. True by default.-->
-				<on> true </on>
-				<!--Specifies how often to store results during a simulation. More
-					specifically, the interval (a positive integer) specifies how many
-					successful integration steps should be taken before results are
-					recorded again.-->
-				<step_interval> 15 </step_interval>
-				<!--Flag (true or false) indicating whether the results are in degrees or
-					not.-->
-				<in_degrees> true </in_degrees>
-			</Actuation>
-			<BodyKinematics name="BodyKinematics">
-				<!--Flag (true or false) specifying whether whether on. True by default.-->
-				<on> true </on>
-				<!--Specifies how often to store results during a simulation. More
-					specifically, the interval (a positive integer) specifies how many
-					successful integration steps should be taken before results are
-					recorded again.-->
-				<step_interval> 15 </step_interval>
-				<!--Flag (true or false) indicating whether the results are in degrees or
-					not.-->
-				<in_degrees> true </in_degrees>
-			</BodyKinematics>
-			<MuscleAnalysis name="MuscleAnalysis">
-				<!--Flag (true or false) specifying whether whether on. True by default.-->
-				<on> true </on>
-				<!--Specifies how often to store results during a simulation. More
-					specifically, the interval (a positive integer) specifies how many
-					successful integration steps should be taken before results are
-					recorded again.-->
-				<step_interval> 15 </step_interval>
-				<!--Flag (true or false) indicating whether the results are in degrees or
-					not.-->
-				<in_degrees> true </in_degrees>
-			</MuscleAnalysis>
 		 </objects>
 		</AnalysisSet>
 		<!--Motion (.mot) or storage (.sto) file containing the desired kinematic
 		trajectories.-->
-		<desired_kinematics_file> block_hanging_from_muscle_Kinematics_q.mot </desired_kinematics_file>
+		<desired_kinematics_file> block_hanging_from_muscle_ForwardResults\block_hanging_from_muscle_states_degrees.mot </desired_kinematics_file>
 		<!--Low-pass cut-off frequency for filtering the desired kinematics. A
 			negative value results in no filtering. The default value is -1.0, so
 			no filtering.-->
@@ -90,11 +42,11 @@
 		<!--Perturbation size used by the optimizer to compute numerical
 			derivatives. A value between 1.0e-4 and 1.0e-8 is usually
 			approprieate.-->
-		<optimizer_derivative_dx>       1.00000000000000000000 </optimizer_derivative_dx>
+		<optimizer_derivative_dx>  1e-4 </optimizer_derivative_dx>
 		<!--Convergence criterion for the optimizer. The smaller this value, the
 			deeper the convergence. Decreasing this number can improve a solution,
 			but will also likely increase computation time.-->
-		<optimizer_convergence_criterion>       0.0010000000000000000000 </optimizer_convergence_criterion>
+		<optimizer_convergence_criterion>       0.0001000000000000000000 </optimizer_convergence_criterion>
 		<!--Maximum number of iterations for the optimizer.-->
 		<optimizer_max_iterations> 2000 </optimizer_max_iterations>
 		<!--Print level for the optimizer, 0 - 3. 0=no printing, 3=detailed
@@ -109,7 +61,7 @@
           Muscles forces cannot change instantaneously, so a finite time window
           must be allowed. The recommended time window for RRA is about 0.001
           sec, and for CMC is about 0.010 sec.-->
-        <cmc_time_window> 0.040000000 </cmc_time_window>
+        <cmc_time_window> 0.010000000 </cmc_time_window>
         <!--File containing the tracking tasks. Which coordinates are tracked and
           with what weights are specified here.-->
         <task_set_file> block_hanging_from_muscle_CMC_Tasks.xml </task_set_file>
@@ -117,7 +69,7 @@
         <!--Flag (true or false) indicating whether or not to use the curvature
                  filter. Setting this flag to true can reduce oscillations in the
                  computed muscle excitations.-->
-        <use_curvature_filter> false </use_curvature_filter>
+        <use_curvature_filter> true </use_curvature_filter>
         <!--Flag (true or false) indicating whether to use the fast CMC
             optimization target. The fast target requires the desired
             accelerations to be met. The optimizer fails if the acclerations

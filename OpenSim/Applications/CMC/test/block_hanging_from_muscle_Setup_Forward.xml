@@ -9,13 +9,13 @@
 		<!--List of xml files used to construct an actuator set for the model.-->
 		<force_set_files> </force_set_files>
 		<!--Directory used for writing results.-->
-		<results_directory> ForwardResultsDYNAMIC </results_directory>
+		<results_directory> block_hanging_from_muscle_ForwardResults </results_directory>
 		<!--Output precision.  It is 20 by default.-->
 		<output_precision> 20 </output_precision>
 		<!--Initial time for the simulation.-->
 		<initial_time>       0.00000000000000000000 </initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>      0.50000000000000000000 </final_time>
+		<final_time>      5.0000000000000000000 </final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for
 		    states other than the coordinates or speeds.  For example, equilibrium
 		    muscle fiber lengths or muscle forces.-->
@@ -23,63 +23,15 @@
 		<!--Maximum number of integrator steps.-->
 		<maximum_number_of_integrator_steps> 30000 </maximum_number_of_integrator_steps>
 		<!--Maximum integration step size.-->
-		<maximum_integrator_step_size>       0.0001000000000000000000 </maximum_integrator_step_size>
+		<maximum_integrator_step_size>       1.0000000000000000000 </maximum_integrator_step_size>
 		<!--Minimum integration step size.-->
-		<minimum_integrator_step_size>       0.0000000001000000000000 </minimum_integrator_step_size>
+		<minimum_integrator_step_size>       0.0000000001000000000 </minimum_integrator_step_size>
 		<!--Integrator error tolerance. When the error is greater, the integrator
 		    step size is decreased.-->
-		<integrator_error_tolerance>       1e-006 </integrator_error_tolerance>
+		<integrator_error_tolerance>       1e-7 </integrator_error_tolerance>
 		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
 			<objects>
-				<Kinematics name="Kinematics">
-					<!--Flag (true or false) specifying whether whether on. True by default.-->
-					<on> true </on>
-					<!--Specifies how often to store results during a simulation. More
-					    specifically, the interval (a positive integer) specifies how many
-					    successful integration steps should be taken before results are
-					    recorded again.-->
-					<step_interval> 15 </step_interval>
-					<!--Flag (true or false) indicating whether the results are in degrees or
-					    not.-->
-					<in_degrees> true </in_degrees>
-				</Kinematics>
-				<Actuation name="Actuation">
-					<!--Flag (true or false) specifying whether whether on. True by default.-->
-					<on> true </on>
-					<!--Specifies how often to store results during a simulation. More
-					    specifically, the interval (a positive integer) specifies how many
-					    successful integration steps should be taken before results are
-					    recorded again.-->
-					<step_interval> 15 </step_interval>
-					<!--Flag (true or false) indicating whether the results are in degrees or
-					    not.-->
-					<in_degrees> true </in_degrees>
-				</Actuation>
-				<BodyKinematics name="BodyKinematics">
-					<!--Flag (true or false) specifying whether whether on. True by default.-->
-					<on> true </on>
-					<!--Specifies how often to store results during a simulation. More
-					    specifically, the interval (a positive integer) specifies how many
-					    successful integration steps should be taken before results are
-					    recorded again.-->
-					<step_interval> 15 </step_interval>
-					<!--Flag (true or false) indicating whether the results are in degrees or
-					    not.-->
-					<in_degrees> true </in_degrees>
-				</BodyKinematics>
-				<MuscleAnalysis name="MuscleAnalysis">
-					<!--Flag (true or false) specifying whether whether on. True by default.-->
-					<on> true </on>
-					<!--Specifies how often to store results during a simulation. More
-					    specifically, the interval (a positive integer) specifies how many
-					    successful integration steps should be taken before results are
-					    recorded again.-->
-					<step_interval> 15 </step_interval>
-					<!--Flag (true or false) indicating whether the results are in degrees or
-					    not.-->
-					<in_degrees> true </in_degrees>
-				</MuscleAnalysis>
 			</objects>
 			<groups/>
 		</AnalysisSet>
@@ -112,7 +64,7 @@
            <objects>
              <ControlSetController name="ControlSetController">
 	 	        <!--XML file containing the controls (e.g., muscle excitations) for the forward simulation.-->
-        		<controls_file> block_hanging_from_muscle_Controls_Dynamic.xml </controls_file>
+        		<controls_file> block_hanging_from_muscle_controls.xml </controls_file>
              </ControlSetController>
           </objects>
          </ControllerSet>

@@ -11,20 +11,22 @@
 	<!--List of xml files used to construct an actuator set for the model.-->
 	<force_set_files> gait2354_CMC_Actuators.xml </force_set_files>
 	<!--Directory used for writing results.-->
-	<results_directory> ./Results </results_directory>
+	<results_directory> ./subject01_ResultsCMC </results_directory>
 	<!--Output precision.  It is 8 by default.-->
 	<output_precision> 20 </output_precision>
 	<!--Initial time for the simulation.-->
-	<initial_time> 0.80 </initial_time>
+	<initial_time> 0.76 </initial_time>
 	<!--Final time for the simulation.-->
-	<final_time> 0.94 </final_time>
+	<final_time> 1.24 </final_time>
 	<!--Maximum number of integrator steps.-->
 	<maximum_number_of_integrator_steps> 30000 </maximum_number_of_integrator_steps>
 	<!--Maximum integration step size.-->
-	<maximum_integrator_step_size> 0.00025 </maximum_integrator_step_size>
+	<maximum_integrator_step_size> 1.0 </maximum_integrator_step_size>
+  <!--Minimum integration step size.-->
+  <minimum_integrator_step_size>  1e-9 </minimum_integrator_step_size>
 	<!--Integrator error tolerance. When the error is greater, the integrator
 	    step size is decreased.-->
-	<integrator_error_tolerance> 5e-006 </integrator_error_tolerance>
+	<integrator_error_tolerance> 1e-6 </integrator_error_tolerance>
 	<!--Set of analyses to be run during the investigation.-->
 
 	<!--Motion (.mot) or storage (.sto) file containing the desired kinematic
@@ -61,9 +63,9 @@
 	<!--Convergence criterion for the optimizer. The smaller this value, the
 	    deeper the convergence. Decreasing this number can improve a solution,
 	    but will also likely increase computation time.-->
-	<optimizer_convergence_criterion> 1e-001 </optimizer_convergence_criterion>
+	<optimizer_convergence_criterion> 1e-004 </optimizer_convergence_criterion>
 	<!--Maximum number of iterations for the optimizer.-->
-	<optimizer_max_iterations> 2000 </optimizer_max_iterations>
+	<optimizer_max_iterations> 200 </optimizer_max_iterations>
 	<!--Print level for the optimizer, 0 - 3. 0=no printing, 3=detailed
 	    printing, 2=in between-->
 	<optimizer_print_level> 0 </optimizer_print_level>
@@ -75,7 +77,7 @@
 	    the average residuals, which can be useful for seeing if the solution
 	    is good.  Average residuals should be be close to 0.0.  If not, there
 	    is likely problem in the experimental data, in the model, or both.-->
-	<compute_average_residuals> true </compute_average_residuals>
+	<compute_average_residuals> false </compute_average_residuals>
 	<!--Flag (true or false) indicating whether or not to make an adjustment
 	    in the center of mass of a body to reduced DC offsets in MX and MZ. If
 	    true, a new model is writen out that has altered anthropometry.-->
@@ -103,7 +105,5 @@
              <!--File containing the tracking tasks. Which coordinates are tracked and
                 with what weights are specified here.-->
          <task_set_file> gait2354_CMC_Tasks.xml </task_set_file>
-
-	
 </CMCTool>
 

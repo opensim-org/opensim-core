@@ -27,9 +27,9 @@
 // INCLUDE
 #include <string>
 #include <iostream>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include "OpenSim/Common/PiecewiseLinearFunction.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
@@ -51,10 +51,9 @@ void testGait2354() {
 
 	CMCTool cmc("subject01_Setup_CMC.xml");
 	cmc.run();
-	cmc.print("check.xml");
 
-	Storage results("Results/subject01_walk1_Kinematics_q.sto");
-	Storage standard("subject01_walk1_CMC_Kinematics_q_standard.sto");
+	Storage results("subject01_ResultsCMC/subject01_walk1_Kinematics_q.sto");
+	Storage standard("subject01_walk1_RRA_Kinematics_initial_q.sto");
 
 	ASSERT(results.getFirstTime() >= standard.getFirstTime());
 	ASSERT(results.getLastTime() <= standard.getLastTime());
@@ -62,17 +61,18 @@ void testGait2354() {
 	// Compare the output file to the target trajectory and make sure they
 	// are sufficiently close.
 
-	double previousTime = -1.0;
 	double meanError = 0.0;
+	double maxError = 0.0;
 	int count = 0;
 	Array<double> data;
-    std::string  label;
+    string  label;
+	string max_label;
+	double maxErrTime = -1.0;
+	
 
 	for (int i = 0; i < results.getSize(); ++i) {
 		StateVector* state = results.getStateVector(i);
 		double time = state->getTime();
-		//ASSERT(time > previousTime);
-		previousTime = time;
 
 		data.setSize(state->getSize());
 		standard.getDataAtTime(time, state->getSize(), data);
@@ -82,47 +82,84 @@ void testGait2354() {
             // the optimizer is not converging in 2.0 or 1.9 if these angles are locked
             label = results.getColumnLabels()[j+1];
 
-            double diff = data[standard.getStateIndex(label)]-state->getData()[j];
-    	    meanError += std::abs(diff);
+            double diff = std::abs(data[standard.getStateIndex(label)]-state->getData()[j]);
+    	    meanError += diff;
+			if(diff > maxError){
+				maxError = diff;
+				max_label = label;
+				maxErrTime = time;
+			}
+
 			count++;
-//cout << " label:"<< label << "  index=" <<  standard.getStateIndex(label) << "  standard=" << data[standard.getStateIndex(label)] << "  computed=" << state->getData()[j] << endl;
 		}
 	}
-    printf("meanError = %f  count = %d meanError/count=%f \n", meanError, count, meanError/count);
-	ASSERT(meanError/count < 0.5);
+	meanError = meanError/count;
+    cout << "meanError = " << meanError << "   maxError = " << maxError << " for " << max_label << " at time = " << maxErrTime << endl;
+	// average error should be below 0.25 degrees
+	ASSERT(meanError < 0.25);
 }
 
 void testSingleMuscle() {
 
-	ForwardTool forward("block_hanging_from_muscle_Setup_Forward_Dynamic.xml");
+	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
 	forward.run();
-	forward.print("check.xml");
 
-	CMCTool cmc("block_hanging_from_muscle_Setup_CMC_Dynamic.xml");
+	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
 	cmc.run();
-	cmc.print("check.xml");
-	Storage results("CMCResultsDYNAMIC/block_hanging_from_muscle_controls.sto");
-	Storage input("block_hanging_from_muscle_controls.sto");
-	ASSERT(results.getFirstTime() >= input.getFirstTime());
-	ASSERT(results.getLastTime() <= input.getLastTime());
-	ASSERT(results.getSize() > 100);
+
+	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
+	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
 	// Compare the controls calculated by CMC to the input ones, and see if they
 	// are sufficiently close.
+	Array<double> t_fwd(0), u_fwd(0);
+	Array<double> t_cmc(0), u_cmc(0);
 
-	double previousTime = -1.0;
-	Array<double> data;
-	for (int i = 0; i < results.getSize(); ++i) {
-		StateVector* state = results.getStateVector(i);
-		double time = state->getTime();
-		ASSERT(time > previousTime);
-		previousTime = time;
-		data.setSize(state->getSize());
-		input.getDataAtTime(time, state->getSize(), data);
-		for (int j = 0; j < state->getSize(); ++j) {
- 
-            ASSERT_EQUAL(data[j], state->getData()[j], 0.01);
-		}
+	// Get speed of block from forward and cmc
+	fwd_result.getTimeColumn(t_fwd); fwd_result.getDataColumn("block_ty_u", u_fwd);
+	cmc_result.getTimeColumn(t_cmc); cmc_result.getDataColumn("block_ty_u", u_cmc);
+
+	// Interpolate data so we can sample uniformly to compare
+	PiecewiseLinearFunction u_fwd_function(u_fwd.getSize(), &t_fwd[0] , &u_fwd[0]);
+	//PiecewiseLinearFunction tzu_cmc_function(tz_u_cmc.getSize(), &t_cmc[0] , &tz_u_cmc[0]);
+
+	SimTK::Vector tv(1, 0.0);
+	for (int i = 0; i < t_cmc.getSize(); ++i) {
+		tv[0] = t_cmc[i];
+		cout << "time = " << t_cmc[i] << "   error = " << u_fwd_function.calcValue(tv)-u_cmc[i] << endl;
+        ASSERT_EQUAL(u_fwd_function.calcValue(tv), u_cmc[i], 0.02);
+	}
+}
+
+void testTwoMusclesOnBlock() {
+
+	ForwardTool forward("twoMusclesOnBlock_Setup_Forward.xml");
+	forward.run();
+
+	CMCTool cmc("twoMusclesOnBlock_Setup_CMC.xml");
+	cmc.run();
+
+	Storage fwd_result("twoMusclesOnBlock_ForwardResults/twoMusclesOnBlock_forward_states.sto");
+	Storage cmc_result("twoMusclesOnBlock_ResultsCMC/twoMusclesOnBlock_tugOfWar_states.sto");
+
+	// Compare the controls calculated by CMC to the input ones, and see if they
+	// are sufficiently close.
+	Array<double> t_fwd(0), u_fwd(0);
+	Array<double> t_cmc(0), u_cmc(0);
+
+	// Get speed of block from forward and cmc
+	fwd_result.getTimeColumn(t_fwd); fwd_result.getDataColumn("tz_block_u", u_fwd);
+	cmc_result.getTimeColumn(t_cmc); cmc_result.getDataColumn("tz_block_u", u_cmc);
+
+	// Interpolate data so we can sample uniformly to compare
+	PiecewiseLinearFunction u_fwd_function(u_fwd.getSize(), &t_fwd[0] , &u_fwd[0]);
+	//PiecewiseLinearFunction tzu_cmc_function(tz_u_cmc.getSize(), &t_cmc[0] , &tz_u_cmc[0]);
+
+	SimTK::Vector tv(1, 0.0);
+	for (int i = 0; i < t_cmc.getSize(); ++i) {
+		tv[0] = t_cmc[i];
+		cout << "time = " << t_cmc[i] << "   error = " << u_fwd_function.calcValue(tv)-u_cmc[i] << endl;
+        ASSERT_EQUAL(u_fwd_function.calcValue(tv), u_cmc[i], 0.02);
 	}
 }
 
@@ -137,7 +174,8 @@ void testEMGDrivenArm() {
 int main() {
     try {
 		//testEMGDrivenArm();
-		testSingleMuscle();
+		//testSingleMuscle();
+		testTwoMusclesOnBlock();
 		testGait2354();
     }
     catch(const std::exception& e) {

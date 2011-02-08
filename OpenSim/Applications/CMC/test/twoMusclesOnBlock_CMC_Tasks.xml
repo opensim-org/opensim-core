@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CMC_TaskSet name="twoMusclesOnBlock_tasks">
+	<objects>
+		<!-- tz_bloc -->
+		<CMC_Joint name="tz_block">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e-1 </weight> <!-- loose tracking (1.0e-1) works best -->
+			<kp> 100.0 </kp> <!-- lower gain (<=100.0) works best -->
+			<kv>  25.0 </kv> <!-- overdamped (1,25*2*sqrt(kp)) works best -->
+			<coordinate> tz_block </coordinate>
+		</CMC_Joint>
+    </objects>
+</CMC_TaskSet>
+
