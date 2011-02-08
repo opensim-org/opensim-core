@@ -733,7 +733,7 @@ TorsionalSpring* ForwardTool::addTorsionalCorrectiveSpring(SimTK::State &s, cons
  */
 int ForwardTool::determineInitialTimeFromStatesStorage(double &rTI)
 {
-	int index = 1;
+	int index = -1;
 	double ti;
 	if(_yStore!=NULL) {
 		index = _yStore->findIndex(rTI);
