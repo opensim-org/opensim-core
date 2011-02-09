@@ -105,6 +105,7 @@ protected:
 	// Whether to move the model markers (set to false if you just want to preview the static pose)
 	bool _moveModelMarkers;
 
+	Storage* _outputStorage;
 //=============================================================================
 // METHODS
 //=============================================================================

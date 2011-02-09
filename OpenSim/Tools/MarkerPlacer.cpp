@@ -136,6 +136,7 @@ void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
 	_outputMotionFileName = aMarkerPlacer._outputMotionFileName;
 	_maxMarkerMovement = aMarkerPlacer._maxMarkerMovement;
 	_printResultFiles = aMarkerPlacer._printResultFiles;
+	_outputStorage = NULL;
 }
 
 //_____________________________________________________________________________
@@ -150,6 +151,7 @@ void MarkerPlacer::setNull()
 
 	_printResultFiles = true;
 	_moveModelMarkers = true;
+	_outputStorage = NULL;
 }
 
 //_____________________________________________________________________________
@@ -319,6 +321,22 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	 */
 	if(_moveModelMarkers) moveModelMarkersToPose(s, *aModel, staticPose);
 
+	if (_outputStorage!= NULL){
+		delete _outputStorage;
+	}
+	// Make a storage file containing the solved states and markers for display in GUI.
+	Storage motionData;
+	StatesReporter statesReporter(aModel);
+	statesReporter.begin(s);
+	
+	_outputStorage = new Storage(statesReporter.updStatesStorage());
+	_outputStorage->setName("static pose");
+	//_outputStorage->print("statesReporterOutput.sto");
+	Storage markerStorage;
+	staticPose.makeRdStorage(*_outputStorage);
+	_outputStorage->getStateVector(0)->setTime(s.getTime());
+	statesReporter.updStatesStorage().addToRdStorage(*_outputStorage, s.getTime(), s.getTime());
+	//_outputStorage->print("statesReporterOutputWithMarkers.sto");
 
 	if(_printResultFiles) {
 		if (!_outputModelFileNameProp.getUseDefault())
@@ -332,16 +350,10 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 			aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
 			cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
 		}
-
+		
 		if (!_outputMotionFileNameProp.getUseDefault())
 		{
-			Storage motionData;
-			StatesReporter statesReporter(aModel);
-			statesReporter.begin(s);
-			statesReporter.updStatesStorage().setWriteSIMMHeader(true);
-			aModel->getSimbodyEngine().convertRadiansToDegrees(statesReporter.updStatesStorage());
-			statesReporter.updStatesStorage().setName("static pose");
-			statesReporter.getStatesStorage().print(aPathToSubject + _outputMotionFileName, 
+			_outputStorage->print(aPathToSubject + _outputMotionFileName, 
 				"w", "File generated from solving marker data for model "+aModel->getName());
 		}
 	}
@@ -402,5 +414,5 @@ void MarkerPlacer::moveModelMarkersToPose(SimTK::State& s, Model& aModel, Marker
 
 Storage *MarkerPlacer::getOutputStorage() 
 {
-	return NULL;//_ikTrial ? _ikTrial->getOutputStorage() : NULL; 
+	return _outputStorage; ;
 }
