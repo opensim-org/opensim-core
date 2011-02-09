@@ -174,7 +174,7 @@ void testEMGDrivenArm() {
 int main() {
     try {
 		//testEMGDrivenArm();
-		//testSingleMuscle();
+		testSingleMuscle();
 		testTwoMusclesOnBlock();
 		testGait2354();
     }

@@ -171,7 +171,7 @@
 		<!--List of xml files used to construct an force set for the model.-->
 		<force_set_files> </force_set_files>
 		<!--Directory used for writing results.-->
-		<results_directory> E:\aseth\Development\OpenSim\OpenSim\Applications\CMC\test\twoMusclesOnBlock_ResultsCMC </results_directory>
+		<results_directory> twoMusclesOnBlock_ResultsCMC </results_directory>
 		<!--Output precision.  It is 20 by default.-->
 		<output_precision> 20 </output_precision>
 		<!--Initial time for the simulation.-->
