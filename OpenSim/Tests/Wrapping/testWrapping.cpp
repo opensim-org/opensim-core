@@ -1,5 +1,5 @@
 // testWrapping.cpp
-// Author: Jack Middleton
+// Author: Ajay Seth
 /*
 * Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -90,7 +90,7 @@ int testModel(std::string modelPrefix)
 	return (equal?0:1);
 }
 
-bool simulateModelWithMuscles(const std::string &modelFile)
+bool simulateModelWithMuscles(const std::string &modelFile, double finalTime=0.5)
 {
 	bool status = true;
 
@@ -98,7 +98,6 @@ bool simulateModelWithMuscles(const std::string &modelFile)
 	Model osimModel(modelFile);
 
 	double initialTime = 0;
-	double finalTime = 0.5;
 
 	// Define the initial and final control values
 	double control = 0.2;
@@ -115,15 +114,22 @@ bool simulateModelWithMuscles(const std::string &modelFile)
 
 	// Initialize the system and get the state representing the state system
 	SimTK::State& si = osimModel.initSystem();
+
+	const Set<Muscle>& muscles = osimModel.getMuscles();
+	for (int i=0; i<muscles.getSize(); i++){
+		muscles[i].setActivation(si, 0.05); //setDisabled(si, true);
+	}
 	osimModel.computeEquilibriumForAuxiliaryStates(si); 
 
+	osimModel.printBasicInfo(cout);
+
 	// Create the integrator and manager for the simulation.
-	double accuracy = 1.0e-3;
+	double accuracy = 1.0e-4;
 	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 	integrator.setMaximumStepSize(1);
-	integrator.setMinimumStepSize(1.0e-6);
+	integrator.setMinimumStepSize(1.0e-9);
 	integrator.setAccuracy(accuracy);
-	integrator.setAbsoluteTolerance(1.0e-4);
+	integrator.setAbsoluteTolerance(1.0e-5);
 	Manager manager(osimModel, integrator);
 
 	// Integrate from initial time to final time
@@ -151,17 +157,20 @@ bool simulateModelWithMuscles(const std::string &modelFile)
 
 int main(int argc,char **argv)
 {
+
 	// Baseline perfromance without wrapping
 	simulateModelWithMuscles("test_nowrap_vasint.osim");
 	// performance with cylnder wrapping
 	simulateModelWithMuscles("test_wrapping_vasint.osim");
 	// performance with ellipsoid wrapping
 	simulateModelWithMuscles("test_wrapEllipsoid_vasint.osim");
-
 	// performance with multiple muscles and no wrapping
-	simulateModelWithMuscles("gait2392_pelvisFixed.osim");
+	simulateModelWithMuscles("gait2392_pelvisFixed.osim", 0.2);
 	// performance with multiple muscles and wrapping
-	simulateModelWithMuscles("Arnold2010_pelvisFixed.osim");
+	simulateModelWithMuscles("Arnold2010_pelvisFixed.osim", 0.2);
+
+	// performance with multiple muscles and wrapping in upper-exremity
+	simulateModelWithMuscles("TestShoulderModel.osim", 0.1);
 
 	return(0);
 }
