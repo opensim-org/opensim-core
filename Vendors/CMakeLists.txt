@@ -1,2 +1,2 @@
 #-----------------------------------------------------------------------------
-SUBDIRS(CFSQP MotionAnalysis ${XERCES_DIR_NAME})
+SUBDIRS(CFSQP MotionAnalysis ${XERCES_DIR_NAME} SimTK)
