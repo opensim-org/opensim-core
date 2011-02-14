@@ -20,7 +20,7 @@ LINK_LIBRARIES(
    	debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
    	
    	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
-   	SimTKlapack ${THREAD_LIB})
+   	${MATH_LIBS_TO_USE})
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR})
