@@ -383,8 +383,9 @@ SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB}
 					${SIMTK_SIMBODY_LIB} 
 					${MATH_LIBS_TO_USE})
 FILE(GLOB THIRDPARTY_DYNLIB_FILES 
-							${SIMTK_BIN_DIR}/*.*
-							${SIMTK_LIB_DIR}/*.*
+							${SIMTK_BIN_DIR}/*.dll
+							${SIMTK_BIN_DIR}/*.exe
+							${SIMTK_LIB_DIR}/*.lib
 							${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/xerces-c_2_8.dll)
 
 ELSE(WIN32)
