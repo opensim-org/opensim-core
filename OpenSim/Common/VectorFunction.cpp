@@ -67,8 +67,8 @@ VectorFunction::VectorFunction() :
  * Default constructor.
  */
 VectorFunction::VectorFunction(int aNX, int aNY) :
-	_minX(-SimTK::Infinity ),
-	_maxX( SimTK::Infinity )
+	_minX(-std::numeric_limits<SimTK::Real>::infinity() ),
+	_maxX( std::numeric_limits<SimTK::Real>::infinity() )
 {
 	setNull();
 	setNX(aNX);

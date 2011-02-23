@@ -158,7 +158,7 @@ void InverseDynamicsTool::setupProperties()
 	_lowpassCutoffFrequencyProp.setName("lowpass_cutoff_frequency_for_coordinates");
 	_propertySet.append( &_lowpassCutoffFrequencyProp );
 
-	SimTK::Vec2  defaultTimeRange(-SimTK::Infinity, SimTK::Infinity);
+	SimTK::Vec2  defaultTimeRange(-std::numeric_limits<SimTK::Real>::infinity(), std::numeric_limits<SimTK::Real>::infinity());
 	_timeRangeProp.setComment("Time range over which the inverse dynamics problem is solved.");
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(defaultTimeRange);
