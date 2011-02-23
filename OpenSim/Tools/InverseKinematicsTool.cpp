@@ -173,7 +173,7 @@ void InverseKinematicsTool::setupProperties()
 	_constraintWeightProp.setComment("A positive scalar that is used to weight the importance of satisfying constraints."
 		"A weighting of 'Infinity' or if it is unassigned results in the constraints being strictly enforced.");
 	_constraintWeightProp.setName("constraint_weight");
-	_constraintWeightProp.setValue(SimTK::Infinity);
+	_constraintWeightProp.setValue(std::numeric_limits<SimTK::Real>::infinity());
 	_propertySet.append( &_constraintWeightProp );
 
 	_accuracyProp.setComment("The accuracy of the solution in absolute terms. I.e. the number of significant"
@@ -195,7 +195,7 @@ void InverseKinematicsTool::setupProperties()
 	_coordinateFileNameProp.setName("coordinate_file");
 	_propertySet.append(&_coordinateFileNameProp);
 
-	const double defaultTimeRange[] = {-SimTK::Infinity, SimTK::Infinity};
+	const double defaultTimeRange[] = {-std::numeric_limits<SimTK::Real>::infinity(), std::numeric_limits<SimTK::Real>::infinity()};
 	_timeRangeProp.setComment("Time range over which the inverse kinematics problem is solved.");
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
