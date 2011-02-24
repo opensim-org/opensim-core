@@ -273,7 +273,7 @@ ENDIF(${CMAKE_C_COMPILER} MATCHES "gcc")
 # Build using the simtk headers and libraries checked in the repository. 
 # Currently this only works on windows VC8 since these are the only libraries checked in
 
-SET(USE_LIBRARIES_FROM_REPOSITORY OFF CACHE BOOL "Use stock SimTK libraries based on SimtkCore 2.2")
+SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries based on SimtkCore 2.2")
 
 IF(WIN32)
 	SET(CMAKE_INSTALL_PREFIX "${PROGFILEDIR}/OpenSimDev" CACHE PATH "Install location to place headers and libraries")
@@ -364,7 +364,11 @@ ELSE(WIN32 AND USE_LIBRARIES_FROM_REPOSITORY)
 ENDIF(WIN32 AND USE_LIBRARIES_FROM_REPOSITORY)
 
 IF(WIN32)
-	LINK_DIRECTORIES(${SIMTK_LIB_DIR}/${VCVERSION} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION})
+	IF(USE_LIBRARIES_FROM_REPOSITORY)
+		LINK_DIRECTORIES(${SIMTK_LIB_DIR}/${VCVERSION} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION})
+	ELSE (USE_LIBRARIES_FROM_REPOSITORY)
+		LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION})
+	ENDIF(USE_LIBRARIES_FROM_REPOSITORY)
 ELSE(WIN32)
 	IF(APPLE)
 		LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib${LIB64}/${Platform})
