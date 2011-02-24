@@ -39,8 +39,6 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-#include <OpenSim/Tools/IKSolverImpl.h>
-#include <OpenSim/Tools/IKTarget.h>
 
 using namespace std;
 using namespace OpenSim;

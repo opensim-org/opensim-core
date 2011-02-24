@@ -31,9 +31,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Tools/IKTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
-#include <OpenSim/Tools/IKTrialSet.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -108,14 +106,14 @@ int main()
 {
 	if(!testInverseKinematicsGait2354()){
 		cout << "testInverseKinematicsGait2354 Failed." << endl;
-		//return 1;
+		return 1;
 	}
 
 	if(!testInverseKinematicsUWDynamic()){
 		cout << "testInverseKinematicsUWDynamic Failed." << endl;
 		return 1;
 	}
-
+/*
 	// Construct model and read parameters file
 	IKTool* tool = new IKTool("subject01_Setup_IK.xml");
 	Model& model = tool->getModel();
@@ -128,6 +126,7 @@ int main()
 	bool equal = equalStorage(stdStorage, *actualOutput, 5e-2);
 	std::cout << (equal?"Success":"Failure") << endl;
 	delete tool;
-	return (equal?0:1);
+	*/
+	return (0);
 }
 

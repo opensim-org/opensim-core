@@ -123,16 +123,12 @@
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
 #include <OpenSim/Actuators/Delp1990Muscle.h>
 
-#include <OpenSim/Tools/IKTrial.h>
-#include <OpenSim/Tools/IKTrialSet.h>
-
 #include <OpenSim/Tools/IKTask.h>
 #include <OpenSim/Tools/IKMarkerTask.h>
 #include <OpenSim/Tools/IKCoordinateTask.h>
 #include <OpenSim/Tools/IKTaskSet.h>
 #include <OpenSim/Common/MarkerData.h>
 
-#include <OpenSim/Tools/IKSolverInterface.h>
 #include <OpenSim/Tools/MarkerPair.h>
 #include <OpenSim/Tools/MarkerPairSet.h>
 #include <OpenSim/Tools/Measurement.h>
@@ -141,13 +137,19 @@
 #include <OpenSim/Tools/GenericModelMaker.h>
 #include <OpenSim/Tools/ModelScaler.h>
 #include <OpenSim/Tools/MarkerPlacer.h>
+#include <OpenSim/Tools/Tool.h>
 
-#include <OpenSim/Tools/IKTool.h>
-#include <OpenSim/Tools/IKSolverImpl.h>
+#include <OpenSim/Simulation/Solver.h>
+#include <OpenSim/Simulation/AssemblySolver.h>
+#include <OpenSim/Simulation/InverseKinematicsSolver.h>
+#include <OpenSim/Tools/DynamicsTool.h>
+#include <OpenSim/Tools/InverseDynamicsTool.h>
 
 #include <OpenSim/Tools/CMCTool.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
+
 #include <OpenSim/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
 
 #include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
@@ -227,6 +229,12 @@ static bool trace=false;
       return originalModelPath + java.io.File.separator;
     else return "";
   }
+%}
+
+%typemap(javacode) OpenSim::Property %{
+  public void setValueDbl(Double dbl) {
+	setValue(dbl.doubleValue());
+  };
 %}
 
 %typemap(javacode) OpenSim::Array<std::string> %{
@@ -541,15 +549,11 @@ static bool trace=false;
 
 //osimTools
 %include <OpenSim/Tools/osimToolsDLL.h>
-%include <OpenSim/Tools/IKTrial.h>
-%template(SetIKTrial) OpenSim::Set<OpenSim::IKTrial>;
-%include <OpenSim/Tools/IKTrialSet.h>
 %include <OpenSim/Tools/IKTask.h>
 %template(SetIKTasks) OpenSim::Set<OpenSim::IKTask>;
 %include <OpenSim/Tools/IKMarkerTask.h>
 %include <OpenSim/Tools/IKCoordinateTask.h>
 %include <OpenSim/Tools/IKTaskSet.h>
-%include <OpenSim/Tools/IKSolverInterface.h>
 %include <OpenSim/Tools/MarkerPair.h>
 %template(SetMarkerPairs) OpenSim::Set<OpenSim::MarkerPair>;
 %include <OpenSim/Tools/MarkerPairSet.h>
@@ -559,12 +563,17 @@ static bool trace=false;
 %include <OpenSim/Tools/GenericModelMaker.h>
 %include <OpenSim/Tools/ModelScaler.h>
 %include <OpenSim/Tools/MarkerPlacer.h>
-%include <OpenSim/Tools/IKSolverImpl.h>
 %include <OpenSim/Tools/ScaleTool.h>
-%include <OpenSim/Tools/IKTool.h>
+%include <OpenSim/Simulation/Solver.h>
+%include <OpenSim/Simulation/AssemblySolver.h>
+%include <OpenSim/Simulation/InverseKinematicsSolver.h>
+%include <OpenSim/Tools/Tool.h>
+%include <OpenSim/Tools/DynamicsTool.h>
+%include <OpenSim/Tools/InverseDynamicsTool.h>
 %include <OpenSim/Tools/ForwardTool.h>
 %include <OpenSim/Tools/CMCTool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>
+%include <OpenSim/Tools/InverseKinematicsTool.h>
 
 %include <OpenSim/Utilities/simmFileWriterDLL/SimmFileWriter.h>
 

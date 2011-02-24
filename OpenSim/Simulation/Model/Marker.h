@@ -122,7 +122,7 @@ public:
 	virtual bool getFixed() const { return _fixed; }
 	virtual bool setFixed(bool aFixed);
 	virtual bool getFixedUseDefault() const { return _fixedProp.getUseDefault(); }
-	virtual const std::string* getBodyName() const;
+	virtual const std::string& getBodyName() const;
 	virtual bool setBodyName(const std::string& aName);
 	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getUseDefault(); }
 	virtual bool setBodyNameUseDefault(bool aValue);

@@ -34,7 +34,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/Array.h>
 #include "SimTKsimbody.h"
-#include <OpenSim/Tools/IKTool.h>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
 
 namespace OpenSim {
 
@@ -150,8 +150,9 @@ public:
 	// Analyses
 	int step(Analysis& analysis);
 	// Tools
-	bool initializeTrial(IKTool& ikTool, int i);
-	bool solveTrial( IKTool& ikTool, int i);
+	//bool initializeTrial(IKTool& ikTool, int i);
+	//bool solveTrial( IKTool& ikTool, int i);
+	bool solveInverseKinematics( InverseKinematicsTool& ikTool);
 	void setStatesFromMotion(AnalyzeTool& analyzeTool, const Storage &aMotion, bool aInDegrees);
 	void loadStatesFromFile(AnalyzeTool& analyzeTool);
 	bool processModelScale(ModelScaler& modelScaler, 

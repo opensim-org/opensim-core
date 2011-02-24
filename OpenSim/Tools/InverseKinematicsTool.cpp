@@ -264,9 +264,14 @@ operator=(const InverseKinematicsTool &aTool)
 bool InverseKinematicsTool::run()
 {
 	bool success = false;
+	bool modelFromFile=true;
 	try{
 		//Load and create the indicated model
-		_model = new Model(_modelFileName);
+		if (!_model) 
+			_model = new Model(_modelFileName);
+		else
+			modelFromFile = false;
+
 		_model->printBasicInfo(cout);
 
 		// Define reporter for output
@@ -277,7 +282,7 @@ bool InverseKinematicsTool::run()
 		cout<<"Running tool "<<getName()<<".\n";
 
 		// Initialize the the model's underlying computational system and get its default state.
-		SimTK::State& s = _model->initSystem();
+		SimTK::State& s = modelFromFile?_model->initSystem(): _model->updMultibodySystem().updDefaultState();
 
 		//Convert old Tasks to references for assembly and tracking
 		MarkersReference markersReference;
@@ -349,10 +354,13 @@ bool InverseKinematicsTool::run()
 		const clock_t start = clock();
 		double dt = 1.0/markersReference.getSamplingFrequency();
 		int Nframes = int((final_time-start_time)/dt)+1;
+		AnalysisSet& analysisSet = _model->updAnalysisSet();
+		
 		for (int i = 1; i < Nframes; i++) {
 			s.updTime() = start_time + i*dt;
 			ikSolver.track(s);
 			kinematicsReporter.step(s, i);
+			analysisSet.step(s, i);
 		}
 
 		kinematicsReporter.printResults(_outputMotionFileName);
@@ -365,7 +373,7 @@ bool InverseKinematicsTool::run()
 		std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
 	}
 
-	delete _model;
+	if (modelFromFile) delete _model;
 
 	return success;
 }
@@ -415,8 +423,8 @@ void InverseKinematicsTool::updateFromXMLNode()
 					docElement.setElementTag("OpenSimDocument");
 					// Copy all children of root to newRoot
 					docElement.insertNodeAfter(docElement.node_end(), doc.getRootElement().clone());
-					newDocument.writeToFile("_temp.xml");
-					*this = InverseKinematicsTool("_temp.xml");
+					newDocument.writeToFile(getDocumentFileName());
+					*this = InverseKinematicsTool(getDocumentFileName());
 					return;
 				}
 				else

@@ -159,13 +159,13 @@ void MarkerSet::scale(const ScaleSet& scaleSet)
 	for (int i = 0; i < getSize(); i++)
 	{
 		Marker& nextMarker = get(i);
-		const string* refBodyName = nextMarker.getBodyName();
-		assert(refBodyName);
+		const string& refBodyName = nextMarker.getBodyName();
+		//assert(refBodyName);
 		bool found = false;
 		for (int j = 0; j < scaleSet.getSize() && !found; j++)
 		{
 			Scale& nextScale = scaleSet.get(j);
-			if (nextScale.getSegmentName() == *refBodyName)
+			if (nextScale.getSegmentName() == refBodyName)
 			{
 				found = true;
 				nextScale.getScaleFactors(scaleFactors);

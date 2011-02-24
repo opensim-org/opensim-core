@@ -48,7 +48,7 @@ namespace OpenSim {
 
 class Model;
 class IKTaskSet;
-
+class Storage;
 //=============================================================================
 //=============================================================================
 /**
@@ -127,6 +127,21 @@ public:
 	/* Handle reading older formats/Versioning */
 	virtual void updateFromXMLNode();
 
+	//---- Setters and getters for various attributes
+	void setModel(Model& aModel) { _model = &aModel; };
+	void setStartTime(double d) { _timeRange[0] = d; };
+	double getStartTime() const {return  _timeRange[0]; };
+
+	void setEndTime(double d) { _timeRange[1] = d; };
+	double getEndTime() const {return  _timeRange[1]; };
+
+	void setMarkerDataFileName(const std::string& markerDataFileName) { _markerFileName=markerDataFileName;};
+	const std::string& getMarkerDataFileName() const { return  _markerFileName;};
+
+	void setCoordinateFileName(const std::string& coordDataFileName) { _coordinateFileName=coordDataFileName;};
+	const std::string& getCoordinateFileName() const { return  _coordinateFileName;};
+    
+	//const OpenSim::Storage& getOutputStorage() const;
 private:
 	void setNull();
 	void setupProperties();

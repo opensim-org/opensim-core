@@ -17,7 +17,7 @@
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Tools/IKTool.h>
+#include <OpenSim/Tools/InverseKinematicsTool.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/ModelScaler.h>
 #include <OpenSim/Tools/Measurement.h>
@@ -316,13 +316,13 @@ int OpenSimContext::step(Analysis& analysis)
 }
 
 // Tools
+/*
 bool OpenSimContext::initializeTrial(IKTool& ikTool, int i) {	
 	return ikTool.initializeTrial(*_configState, i);
 }
-
-bool OpenSimContext::solveTrial( IKTool& ikTool, int i) {
-	return ikTool.solveTrial(*_configState, i);
-
+*/
+bool OpenSimContext::solveInverseKinematics( InverseKinematicsTool& ikTool) {
+	return ikTool.run();
 }
 
 void OpenSimContext::setStatesFromMotion(AnalyzeTool& analyzeTool, const Storage &aMotion, bool aInDegrees) {

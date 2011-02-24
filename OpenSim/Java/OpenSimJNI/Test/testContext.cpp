@@ -42,7 +42,6 @@
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Tools/IKTool.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/ModelScaler.h>
 #include <OpenSim/Tools/Measurement.h>

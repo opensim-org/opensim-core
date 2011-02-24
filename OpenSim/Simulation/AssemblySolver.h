@@ -107,7 +107,6 @@ public:
 	
 	/** Specify which coordinates to match, each with a desired value and a
 	    relative weighting. */
-	void setCoordinateReferences(Array<CoordinateReference> &coordinateReferences);
 	const SimTK::Array_<CoordinateReference>& getCoordinateReferences() const {return _coordinateReferences; };
 	/** Once a set of coordinates has been specified its reference value and weight
 		can be updated directly */

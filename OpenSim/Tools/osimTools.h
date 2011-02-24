@@ -31,7 +31,6 @@
 */
 
 #include "ScaleTool.h"
-#include "IKTool.h"
 #include "CMCTool.h"
 #include "ForwardTool.h"
 #include "AnalyzeTool.h"
@@ -43,8 +42,6 @@
 #include "IKCoordinateTask.h"
 #include "IKMarkerTask.h"
 #include "IKTaskSet.h"
-#include "IKTrial.h"
-#include "IKTrialSet.h"
 #include "MarkerPair.h"
 #include "MarkerPairSet.h"
 #include "MarkerPlacer.h"

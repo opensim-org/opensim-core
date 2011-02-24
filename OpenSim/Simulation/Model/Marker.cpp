@@ -270,7 +270,7 @@ void Marker::updateFromMarker(const Marker &aMarker)
 
 	if (!aMarker.getBodyNameUseDefault())
 	{	
-		_bodyName = *aMarker.getBodyName();
+		_bodyName = aMarker.getBodyName();
 		_bodyNameProp.setUseDefault(false);
 	}
 }
@@ -367,12 +367,12 @@ bool Marker::setBodyName(const string& aName)
  *
  * @return Pointer to the body name.
  */
-const string* Marker::getBodyName() const
+const string& Marker::getBodyName() const
 {
-	if (_bodyNameProp.getUseDefault())
-		return NULL;
+	//if (_bodyNameProp.getUseDefault())
+	//	return NULL;
 
-	return &_bodyName;
+	return _bodyName;
 }
 
 //_____________________________________________________________________________

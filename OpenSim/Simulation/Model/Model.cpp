@@ -1316,10 +1316,10 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 	{
 		// Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
 		Marker* marker = (Marker*)aMarkerSet.get(i).copy();
-		const string* bodyName = marker->getBodyName();
-		if (getBodySet().contains(*bodyName))
+		const string& bodyName = marker->getBodyName();
+		if (getBodySet().contains(bodyName))
 		{
-    		OpenSim::Body& body = updBodySet().get(*bodyName);
+    		OpenSim::Body& body = updBodySet().get(bodyName);
 			marker->changeBody(body);
 			_markerSet.append(marker);
 			numAdded++;
@@ -1344,7 +1344,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 	for (int i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		Marker& updatingMarker = aMarkerSet.get(i);
-		const string* updatingBodyName = updatingMarker.getBodyName();
+		const string& updatingBodyName = updatingMarker.getBodyName();
 
 		/* If there is already a marker in the model with that name,
 		 * update it with the parameters from the updating marker,
@@ -1357,8 +1357,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			 * marker from the model and add the updating one (as long as
 			 * the updating marker's body exists in the model).
 			 */
-			if (updatingBodyName &&
-				 modelMarker.getBody().getName() != *updatingBodyName)
+			if (modelMarker.getBody().getName() != updatingBodyName)
 			{
 				_markerSet.remove(&modelMarker);
 				// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
@@ -1375,7 +1374,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			 * a body by that name, add the updating marker to the markerset.
 			 */
 			// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-			if (updatingBodyName && getBodySet().contains(*updatingBodyName))
+			if (getBodySet().contains(updatingBodyName))
 				_markerSet.append((Marker*)updatingMarker.copy());
 		}
 	}
