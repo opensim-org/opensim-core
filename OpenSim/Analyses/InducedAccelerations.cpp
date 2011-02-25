@@ -64,6 +64,7 @@ InducedAccelerations::~InducedAccelerations()
 {
 	delete &_coordSet;
 	delete &_bodySet;
+	delete _storeConstraintReactions;
 }
 //_____________________________________________________________________________
 /*
@@ -79,6 +80,7 @@ InducedAccelerations::InducedAccelerations(Model *aModel) :
 	_constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_computePotentialsOnly(_computePotentialsOnlyProp.getValueBool()),
+	_reportConstraintReactions(_reportConstraintReactionsProp.getValueBool()),
 	_bodySet(*new BodySet()),
 	_coordSet(*new CoordinateSet())
 {
@@ -106,6 +108,7 @@ InducedAccelerations::InducedAccelerations(const std::string &aFileName):
 	_constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_computePotentialsOnly(_computePotentialsOnlyProp.getValueBool()),
+	_reportConstraintReactions(_reportConstraintReactionsProp.getValueBool()),
 	_bodySet(*new BodySet()),
 	_coordSet(*new CoordinateSet())
 {
@@ -129,6 +132,7 @@ InducedAccelerations::InducedAccelerations(const InducedAccelerations &aInducedA
 	_constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
 	_forceThreshold(_forceThresholdProp.getValueDbl()),
 	_computePotentialsOnly(_computePotentialsOnlyProp.getValueBool()),
+	_reportConstraintReactions(_reportConstraintReactionsProp.getValueBool()),
 	_bodySet(*new BodySet()),
 	_coordSet(*new CoordinateSet())
 {
@@ -171,6 +175,7 @@ operator=(const InducedAccelerations &aInducedAccelerations)
 	_constraintSet = aInducedAccelerations._constraintSet;
 	_forceThreshold = aInducedAccelerations._forceThreshold;
 	_computePotentialsOnly = aInducedAccelerations._computePotentialsOnly;
+	_reportConstraintReactions = aInducedAccelerations._reportConstraintReactions;
 	_includeCOM = aInducedAccelerations._includeCOM;
 	return(*this);
 }
@@ -189,9 +194,12 @@ void InducedAccelerations::setNull()
 	_bodyNames.setSize(1);
 	_bodyNames[0] = CENTER_OF_MASS_NAME;
 	_computePotentialsOnly = false;
+	_reportConstraintReactions = false;
 	// Analysis does not own contents of these sets
 	_coordSet.setMemoryOwner(false);
 	_bodySet.setMemoryOwner(false);
+
+	_storeConstraintReactions = NULL;
 }
 //_____________________________________________________________________________
 /*
@@ -228,8 +236,12 @@ void InducedAccelerations::setupProperties()
 	_propertySet.append(&_forceThresholdProp);
 
 	_computePotentialsOnlyProp.setName("compute_potentials_only");
-	_computePotentialsOnlyProp.setComment("Only compute the potential (accelertion/force) of a muscle to accelerate the model.");
+	_computePotentialsOnlyProp.setComment("Only compute the potential (acceleration/force) of a muscle to accelerate the model.");
 	_propertySet.append(&_computePotentialsOnlyProp);
+
+	_reportConstraintReactionsProp.setName("report_constraint_reactions");
+	_reportConstraintReactionsProp.setComment("Report individual contributions to constraint reactions in addition to accelerations.");
+	_propertySet.append(&_reportConstraintReactionsProp);
 }
 
 //=============================================================================
@@ -342,6 +354,35 @@ Array<string> InducedAccelerations:: constructColumnLabelsForCOM()
 	return labels;
 }
 
+/**
+ * Construct column labels for constraint reaction forces that correspond
+ * to the induced accelerations for each contributor.
+ *
+ * For analyses that run during a simulation, the first column is 
+ * always time.  For the purpose of example, the code below adds labels
+ * appropriate for recording the translation and orientation of the 
+ * desired body.
+ *
+ * This method needs to be called as necessary to update the column labels.
+ */
+Array<string> InducedAccelerations:: constructColumnLabelsForConstraintReactions()
+{
+	// Get the main headings for all the contributors
+	Array<string> contributors = constructColumnLabelsForCoordinate();
+	Array<string> labels;
+
+	// first label is time not a contributor
+	labels.append(contributors[0]);
+	for(int i=1; i<contributors.getSize(); i++) {
+		for(int j=0; j<_constraintSet.getSize(); j++){
+			Array<std::string> constraint_reaction_labels = _constraintSet[j].getRecordLabels();
+			for(int k=0; k<constraint_reaction_labels.getSize(); k++){
+				labels.append(contributors[i] + "_" + constraint_reaction_labels[k]);
+			}
+		}
+	}
+	return labels;
+}
 
 //_____________________________________________________________________________
 /**
@@ -429,6 +470,15 @@ void InducedAccelerations::setupStorage()
 		_storeInducedAccelerations[nc+nb]->setColumnLabels(comAccLabels);
 	}
 
+	delete _storeConstraintReactions;
+	if(_reportConstraintReactions){
+		Array<string> constReactionLabels = constructColumnLabelsForConstraintReactions();
+		_constraintReactions.setSize(0);
+		_storeConstraintReactions = new Storage(1000, "induced_constraint_reactions");
+		_storeConstraintReactions->setDescription(getDescription());
+		_storeConstraintReactions->setColumnLabels(constReactionLabels);
+	}
+
 	_coordSet.setMemoryOwner(false);
 	_bodySet.setMemoryOwner(false);
 }
@@ -490,6 +540,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 	// Reset Accelerations for system center of mass at this time step
 	_comIndAccs.setSize(0);
+	_constraintReactions.setSize(0);
 
 	SimTK::State s_analysis = _model->updMultibodySystem().updDefaultState();
 	_model->initStateWithoutRecreatingSystem(s_analysis);
@@ -680,6 +731,14 @@ int InducedAccelerations::record(const SimTK::State& s)
 			// FILL KINEMATICS ARRAY
 			_comIndAccs.append(3, &vec[0]);
 		}
+
+		// Get induced constraint reactions for contributor
+		if(_reportConstraintReactions){
+			for(int j=0; j<_constraintSet.getSize(); j++){
+				_constraintReactions.append(_constraintSet[j].getRecordValues(s_analysis));
+			}
+		}
+
 	} // End cycling through contributors at this time step
 
 	// Set the accelerations of coordinates into their storages
@@ -696,6 +755,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 	// Set the accelerations of system center of mass into a storage
 	_storeInducedAccelerations[nc+nb]->append(aT, _comIndAccs.getSize(), &_comIndAccs[0]);
+	_storeConstraintReactions->append(aT, _constraintReactions.getSize(), &_constraintReactions[0]);
 
 	return(0);
 }
@@ -715,7 +775,6 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 	double time = s_copy.getTime();
 
 	_externalForces.setSize(0);
-	_constraints.setSize(0);
 
 	//Only add constraint set if constraint type for the analysis is Roll
 	for(int i=0; i<_constraintSet.getSize(); i++){
@@ -847,6 +906,9 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 		Storage::printResult(_storeInducedAccelerations[i],aBaseName+"_"
 			                   +getName()+"_"+_storeInducedAccelerations[i]->getName(),aDir,aDT,aExtension);
 	}
+
+	Storage::printResult(_storeConstraintReactions, aBaseName+"_"
+			                   +getName()+"_"+_storeConstraintReactions->getName(),aDir,aDT,aExtension);
 	
 	return(0);
 }

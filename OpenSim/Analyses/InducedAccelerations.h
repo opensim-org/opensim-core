@@ -97,12 +97,17 @@ protected:
 	PropertyDbl _forceThresholdProp;
 	double &_forceThreshold;
 
-	/** Specify the type of constraint used to replace ground contact: weld, ball, roll are currently available */
+	/** Flag to only compute the potential (acceleration/force) of a muscle to accelerate the model. */
 	PropertyBool _computePotentialsOnlyProp;
 	bool &_computePotentialsOnly;
 
+	/** Flag to report the constraint reaction forces (Lagrange multipliers). */
+	PropertyBool _reportConstraintReactionsProp;
+	bool &_reportConstraintReactions;
+
 	/** Storages for recording induced accelerations for specified coordinates and/or bodies. */
 	Array<Storage *> _storeInducedAccelerations;
+	Storage* _storeConstraintReactions;
 
 	/** List of all the contributors to the model acceleration */
 	Array<std::string> _contributors;
@@ -113,12 +118,10 @@ protected:
 	Array<Array<double> *> _coordIndAccs;
 	Array<Array<double> *> _bodyIndAccs;
 	Array<double> _comIndAccs;
+	Array<double> _constraintReactions;
 
 	// Array to hold external forces (appliers) we want to replace
 	Array<PrescribedForce *> _externalForces;
-
-	// Array to hold constraints in Simbody we want to creaste and have access to
-	Array<SimTK::Constraint *> _constraints;
 
 	// Hold the actual model gravity since we will be changing it back and forth from 0
 	SimTK::Vec3 _gravity;
@@ -214,6 +217,7 @@ protected:
 	Array<std::string> constructColumnLabelsForCoordinate();
 	Array<std::string> constructColumnLabelsForBody();
 	Array<std::string> constructColumnLabelsForCOM();
+	Array<std::string> constructColumnLabelsForConstraintReactions();
 	void setupStorage();
 
 	Array<bool> applyConstraintsAccordingToExternalForces(SimTK::State &s);
