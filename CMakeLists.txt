@@ -69,9 +69,11 @@ IF(WIN32)
 	SET(Platform "Windows")
     SET(NATIVE_COPY_CMD copy)
 ELSEIF(APPLE)
+    SET(Platform Mac)
     SET(PLATFORM_NAME Mac)
     SET(NATIVE_COPY_CMD cp)
 ELSE()
+    SET(Platform Linux)
     SET(PLATFORM_NAME Linux)
     SET(NATIVE_COPY_CMD cp)
 ENDIF()
@@ -226,14 +228,12 @@ IF(WIN32)
 ELSE(WIN32)
 	SET(NameSpace "")	## No renamed SimTK libraries except on Windows
 	IF(APPLE)
-	   SET(Platform "Mac")
 	   IF(ARCH64) 
 		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4" )
 	   ELSE (ARCH64)
 		   SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
 	   ENDIF (ARCH64)
 	ELSE (APPLE)
-	   SET(Platform "Linux")
 	   IF(ARCH64) 
 	   ELSE (ARCH64)
 		  # I don't believe setting the CXX flags is working in cmake.
@@ -241,33 +241,6 @@ ELSE(WIN32)
 	   ENDIF(ARCH64)
 	ENDIF (APPLE)
 ENDIF(WIN32)
-
-## When building in any of the Release modes, tell gcc to use full optimization and
-## to generate SSE2 floating point instructions. Here we are specifying *all* of the
-## Release flags, overriding CMake's defaults.
-
-IF(${CMAKE_C_COMPILER} MATCHES "gcc")
-    # C++
-    SET(CMAKE_CXX_FLAGS_DEBUG          "-g  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "g++ Debug build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_RELEASE        "-DNDEBUG -O3  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "g++ Release build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-DNDEBUG -O3 -g  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "g++ RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_CXX_FLAGS_MINSIZEREL     "-DNDEBUG -Os  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "g++ MinSizeRel build compile flags" FORCE)
-
-    # C
-    SET(CMAKE_C_FLAGS_DEBUG            "-g  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "gcc Debug build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_RELEASE          "-DNDEBUG -O3  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "gcc Release build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_RELWITHDEBINFO   "-DNDEBUG -O3 -g  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "gcc RelWithDebInfo build compile flags" FORCE)
-    SET(CMAKE_C_FLAGS_MINSIZEREL       "-DNDEBUG -Os  ${GCC_ARCH_FLAG}" 
-        CACHE STRING "gcc MinSizeRel build compile flags" FORCE)
-
-ENDIF(${CMAKE_C_COMPILER} MATCHES "gcc")
 
 
 # Build using the simtk headers and libraries checked in the repository. 
@@ -311,9 +284,14 @@ ENDIF(${CMAKE_C_COMPILER} MATCHES "gcc")
 
 # If using prebuilt libraries reset SIMTK_DIR to relative path in source tree
 IF(USE_LIBRARIES_FROM_REPOSITORY)
-	SET(SIMTK_INCLUDE_DIR ${OpenSim_SOURCE_DIR}/Vendors/SimTK/include ${OpenSim_SOURCE_DIR}/Vendors/SimTK/${Platform}/include)
+	IF (WIN32)
+		SET(SIMTK_INCLUDE_DIR ${OpenSim_SOURCE_DIR}/Vendors/SimTK/include ${OpenSim_SOURCE_DIR}/Vendors/SimTK/${Platform}/include)
+	ELSE(WIN32)
+		SET(SIMTK_INCLUDE_DIR ${OpenSim_SOURCE_DIR}/Vendors/SimTK/include)
+	ENDIF(WIN32)
 	SET(SIMTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/SimTK/${Platform})
 	SET(SIMTK_BIN_DIR ${SIMTK_LIB_DIR})
+	MESSAGE("SIMTK_LIB_DIR="${SIMTK_LIB_DIR})
 ELSE(USE_LIBRARIES_FROM_REPOSITORY)
 	SET(SIMTK_INCLUDE_DIR ${SIMTK_DIR}/include)
 	SET(SIMTK_LIB_DIR ${SIMTK_DIR}/lib)	
@@ -322,10 +300,6 @@ ENDIF(USE_LIBRARIES_FROM_REPOSITORY)
 
 INSTALL(DIRECTORY ${SIMTK_INCLUDE_DIR} DESTINATION sdk/include/SimTK 
 			PATTERN ".svn" EXCLUDE)
-
-IF(WIN32 AND USE_LIBRARIES_FROM_REPOSITORY)
-
-ENDIF(WIN32 AND USE_LIBRARIES_FROM_REPOSITORY)
 
 SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on simtk.org)")
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
@@ -349,10 +323,10 @@ SET(OpenSim_EXECUTABLE_DIR ${EXECUTABLE_OUTPUT_PATH})
 IF(WIN32)
 SET(CMAKE_DEBUG_POSTFIX "_d" CACHE INTERNAL "" FORCE)
 ELSE(WIN32)
-SET(CMAKE_DEBUG_POSTFIX "" CACHE STRING "Suffix for debug libraries")
+SET(CMAKE_DEBUG_POSTFIX "_d" CACHE STRING "Suffix for debug libraries")
 ENDIF(WIN32)
 
-# SET(CMAKE_INSTALL_PREFIX ${SIMTK_OPENSIM_INSTALL_DIR})
+#
 
 SET(XERCES_DIR_NAME xerces-c_2_8_0)
 SET(XERCES_INCLUDE_DIR ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/include)
@@ -373,7 +347,7 @@ ELSE(WIN32)
 	IF(APPLE)
 		LINK_DIRECTORIES(${SIMTK_LIB_DIR} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib${LIB64}/${Platform})
 	ELSE(APPLE) # Linux?
-		LINK_DIRECTORIES(${SIMTK_DIR}/lib${LIB64} ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib${LIB64}/${Platform})
+		LINK_DIRECTORIES(${SIMTK_LIB_DIR}/ ${OpenSim_LIBRARY_DIR} ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform})
 	ENDIF(APPLE)
 ENDIF(WIN32)
 
@@ -382,38 +356,39 @@ SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized $
 SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKsimbody)
 
 IF(WIN32)
-SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
+	SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
 					${SIMTK_MATH_LIB} 
 					${SIMTK_SIMBODY_LIB} 
 					${MATH_LIBS_TO_USE})
-FILE(GLOB THIRDPARTY_DYNLIB_FILES 
-							${SIMTK_BIN_DIR}/*.dll
-							${SIMTK_BIN_DIR}/*.exe
-							${SIMTK_LIB_DIR}/*.lib
-							${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/xerces-c_2_8.dll)
+	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
+					${SIMTK_BIN_DIR}/*.dll
+					${SIMTK_BIN_DIR}/*.exe
+					${SIMTK_LIB_DIR}/*.lib
+					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/xerces-c_2_8.dll)
 
 ELSE(WIN32)
-SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
+	SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
 					${SIMTK_MATH_LIB} 
 					${SIMTK_SIMBODY_LIB} 
-					${MATH_LIBS_TO_USE}
-					)
-SET(THIRDPARTY_DYNLIB_FILES	${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcommon${SHARED_LIB_EXT} 
-						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKmath${SHARED_LIB_EXT} 
-						${SIMTK_LIB_DIR}/lib${NameSpace}SimTKsimbody${SHARED_LIB_EXT}
-						${SIMTK_LIB_DIR}/libSimTKlapack${SHARED_LIB_EXT}
-						${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib${LIB64}/${Platform}/libxerces-c${SHARED_LIB_EXT})					
+					${MATH_LIBS_TO_USE})
+	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
+					${SIMTK_LIB_DIR}/*.so
+					${SIMTK_LIB_DIR}/*.a
+					${SIMTK_LIB_DIR}/*.dylib
+					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/lib*.*)
+	# MESSAGE("3rd_Party" ${THIRDPARTY_DYNLIB_FILES})
+					
 ENDIF(WIN32)
 
-# We don't really want to copy the version of lapack we're using because that may be specific to our machine, so we take the generic lapack version (i.e. generic pentium 32 bit single proc)
+## These INSTALL commands should go into proper subdirectories
 IF(WIN32)
-INSTALL_FILES(/bin/ FILES ${THIRDPARTY_DYNLIB_FILES})
-INSTALL_FILES(/sdk/lib/ FILES ${THIRDPARTY_EXPORTLIB_FILES})
+	INSTALL_FILES(/bin/ FILES ${THIRDPARTY_DYNLIB_FILES})
+	INSTALL_FILES(/sdk/lib/ FILES ${THIRDPARTY_EXPORTLIB_FILES})
 
 	IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-	# Install windows runtime libraries to support prebuilt libraries and redistributable
-	INSTALL_FILES(/bin/ FILES 
-					${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
+		# Install windows runtime libraries to support prebuilt libraries and redistributable
+		INSTALL_FILES(/bin/ FILES 
+			${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
 		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll
 		            ${SIMTK_LIB_DIR}/msvcr80.dll
 		            ${SIMTK_LIB_DIR}/msvcp80.dll
@@ -421,22 +396,9 @@ INSTALL_FILES(/sdk/lib/ FILES ${THIRDPARTY_EXPORTLIB_FILES})
 	ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 ELSE(WIN32)
-		FILE(GLOB XERCES_LIBS ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/libx*.*)
-	IF(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		INSTALL_FILES(/bin/ FILES ${SIMTK_BIN_DIR}/lib${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX}${SHARED_LIB_EXT} 
-									${SIMTK_BIN_DIR}/lib${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX}${SHARED_LIB_EXT} 
-									${SIMTK_BIN_DIR}/libSimTKlapack${CMAKE_DEBUG_POSTFIX}${SHARED_LIB_EXT}
-									${SIMTK_BIN_DIR}/lib${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX}${SHARED_LIB_EXT}
-									${XERCES_LIBS}
-									${SIMTK_BIN_DIR}/${ATLAS_LIB}${SHARED_LIB_EXT})
-	ELSE(CMAKE_BUILD_TYPE STREQUAL "Debug")
-		INSTALL_FILES(/sdk/lib/ FILES ${SIMTK_LIB_DIR}/lib${NameSpace}SimTKcommon${SHARED_LIB_EXT} 
-									${SIMTK_LIB_DIR}/lib${NameSpace}SimTKmath${SHARED_LIB_EXT} 
-									${SIMTK_LIB_DIR}/libSimTKlapack${SHARED_LIB_EXT}
-									${SIMTK_LIB_DIR}/lib${NameSpace}SimTKsimbody${SHARED_LIB_EXT}
-									${XERCES_LIBS}
-									${SIMTK_LIB_DIR}/${ATLAS_LIB}${SHARED_LIB_EXT})
-	ENDIF(CMAKE_BUILD_TYPE STREQUAL "Debug")
+	FILE(GLOB XERCES_LIBS ${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/*.*)
+	INSTALL_FILES(/bin/ FILES ${THIRDPARTY_DYNLIB_FILES})
+	INSTALL_FILES(/bin/ FILES ${XERCES_LIBS})
 ENDIF(WIN32)
 
 
