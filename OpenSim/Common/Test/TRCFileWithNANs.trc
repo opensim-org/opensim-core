@@ -1,4 +1,4 @@
-PathFileType	4	(X/Y/Z)	F:\NASA\Evaluations and Projects\ISS Evals\Treadmill Evaluation\data\SquatT2.trc
+PathFileType	4	(X/Y/Z)	SquatT2.trc
 DataRate	CameraRate	NumFrames	NumMarkers	Units	OrigDataRate	OrigDataStartFrame	OrigNumFrames
 250.00	250.00	5	14	mm	250.00	1	5
 Frame#	Time	toe			footS			heel			latAnkle			medAnkle			tibia			latKnee			medKnee			thigh			hip			rASIS			rPSIS			lPSIS			lASIS			
