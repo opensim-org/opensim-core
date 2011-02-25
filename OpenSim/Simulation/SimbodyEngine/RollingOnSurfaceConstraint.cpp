@@ -509,3 +509,55 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
 		mobilityForces += mfs;
 	}
 }
+
+/** 
+ * Methods to query a Constraint forces for the value actually applied during simulation
+ * The names of the quantities (column labels) is returned by this first function
+ * getRecordLabels()
+ */
+Array<std::string> RollingOnSurfaceConstraint::getRecordLabels() const
+{
+	Array<std::string> labels("");
+	// Lagrange multipliers that enforce the constraints
+	//SimTK::Constraint&contactY = _model->updMatterSubsystem().updConstraint(_indices[0]);
+	//SimTK::Constraint&contactTorqueAboutY = _model->updMatterSubsystem().updConstraint( _indices[1]);
+	//SimTK::Constraint&contactPointXdir = _model->updMatterSubsystem().updConstraint(_indices[2]);
+	//SimTK::Constraint&contactPointZdir = _model->updMatterSubsystem().updConstraint(_indices[3]);
+	labels.append(getName()+"_Fx");
+	labels.append(getName()+"_Fy");
+	labels.append(getName()+"_Fz");
+	labels.append(getName()+"_My");
+
+	return labels;
+}
+
+/**
+ * Given SimTK::State object extract all the values necessary to report constraint forces, application 
+ * location frame, etc. used in conjunction with getRecordLabels and should return same size Array
+ */
+Array<double> RollingOnSurfaceConstraint::getRecordValues(const SimTK::State& state) const
+{
+	// EOMs are solved for accelerations (udots) and constraint multipliers (lambdas)
+	// simulataneously, so system must be realized to acceleration
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+
+	Array<double> values(0.0, _indices.size());
+
+	// the individual underlying constraints
+	//SimTK::Constraint&contactY = _model->updMatterSubsystem().updConstraint(_indices[0]);
+	//SimTK::Constraint&contactTorqueAboutY = _model->updMatterSubsystem().updConstraint( _indices[1]);
+	//SimTK::Constraint&contactPointXdir = _model->updMatterSubsystem().updConstraint(_indices[2]);
+	//SimTK::Constraint&contactPointZdir = _model->updMatterSubsystem().updConstraint(_indices[3]);
+
+	int order[4] = {2, 0, 3, 1};
+	for(unsigned int i=0; i<_indices.size(); ++i){
+		SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[order[i]]);
+		SimTK::Vector multipliers = simConstraint.getMultipliersAsVector(state);
+		
+		if(multipliers.size()){
+			values[i] = multipliers[0];
+		}
+	}
+
+	return values;
+};

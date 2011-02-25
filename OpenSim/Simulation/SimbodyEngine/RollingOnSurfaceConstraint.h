@@ -156,6 +156,19 @@ public:
 	virtual void calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
 									  SimTK::Vector& mobilityForces);
 
+	/** 
+	 * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
+	 * The names of the quantities (column labels) is returned by this first function
+	 * getRecordLabels()
+	 */
+	virtual Array<std::string> getRecordLabels() const;
+	/**
+	 * Given SimTK::State object extract all the values necessary to report constraint forces (multipliers)
+	 * Subclasses can override to report force, application location frame, etc. used in conjunction
+	 * with getRecordLabels and should return same size Array
+	 */
+	virtual Array<double> getRecordValues(const SimTK::State& state) const;
+
 private:
 
 	void setNull();
