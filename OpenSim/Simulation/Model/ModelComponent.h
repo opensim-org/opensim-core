@@ -59,6 +59,7 @@ protected:
 		SimTK::AbstractValue *prototype;
 		SimTK::Stage lowestValidStage;
 		CacheInfo(): index(SimTK::InvalidIndex), prototype(NULL), lowestValidStage(SimTK::Stage::Empty) {};
+		~CacheInfo() {delete prototype; prototype=NULL;}
     };
 
 	// Underlying subsystem containing the allocated variables, defaults to
