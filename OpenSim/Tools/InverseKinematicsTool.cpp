@@ -307,6 +307,9 @@ bool InverseKinematicsTool::run()
 			if(IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i])){
 				CoordinateReference *coordRef = NULL;
 				if(coordTask->getValueType() == IKCoordinateTask::FromFile){
+					 if (!coordFunctions)
+						throw Exception("InverseKinematicsTool: value for coordinate "+coordTask->getName()+" not found.");
+
 					 index = coordFunctions->getIndex(coordTask->getName(), index);
 					 if(index >= 0){
 						 coordRef = new CoordinateReference(coordTask->getName(),coordFunctions->get(index));

@@ -119,6 +119,16 @@ public:
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
+	void setStartTime(double d) { _timeRange[0] = d; };
+	double getStartTime() const {return  _timeRange[0]; };
+
+	void setEndTime(double d) { _timeRange[1] = d; };
+	double getEndTime() const {return  _timeRange[1]; };
+	void setModel(Model& aModel) { _model = &aModel; };
+
+	void setExcludedForces(const Array<std::string> &aExcluded) {
+		_excludedForces = aExcluded;
+	}
 	virtual bool run() SWIG_DECLARE_EXCEPTION=0;
 
 

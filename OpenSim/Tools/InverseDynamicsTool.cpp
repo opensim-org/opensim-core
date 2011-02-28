@@ -218,15 +218,19 @@ operator=(const InverseDynamicsTool &aTool)
 bool InverseDynamicsTool::run()
 {
 	bool success = false;
+	bool modelFromFile=true;
 	try{
 		//Load and create the indicated model
-		_model = new Model(_modelFileName);
+		if (!_model) 
+			_model = new Model(_modelFileName);
+		else
+			modelFromFile = false;
 		_model->printBasicInfo(cout);
 
 		cout<<"Running tool " << getName() <<".\n"<<endl;
 
 		// Initialize the the model's underlying computational system and get its default state.
-		State& s = _model->initSystem();
+		SimTK::State& s = modelFromFile?_model->initSystem(): _model->updMultibodySystem().updDefaultState();
 
 		// Exclude user-specified forces from the dynamics for this analysis
 		disableModelForces(*_model, s, _excludedForces);

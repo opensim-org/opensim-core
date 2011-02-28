@@ -123,6 +123,10 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	std::string getOutputGenForceFileName() { return _outputGenForceFileName;}
+	const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
+	void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
+		_coordinatesFileName=aCoordinateFile;
+	};
 
 	//--------------------------------------------------------------------------
 	// INTERFACE

@@ -59,6 +59,8 @@
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Model/Marker.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
@@ -447,6 +449,7 @@ static bool trace=false;
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
+%include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 
 %include <OpenSim/Simulation/Model/ContactGeometry.h>
