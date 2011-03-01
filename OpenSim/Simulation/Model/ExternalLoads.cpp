@@ -173,6 +173,7 @@ void ExternalLoads::setupSerializedMembers()
 	_dataFileNameProp.setComment(comment);
 	_propertySet.append(&_dataFileNameProp);
 
+	_externalLoadsModelKinematicsFileName="";
 	comment =	"Motion file (.mot) or storage file (.sto) containing the model kinematics "
 					"corresponding to the external loads.";
 	_externalLoadsModelKinematicsFileNameProp.setComment(comment);
