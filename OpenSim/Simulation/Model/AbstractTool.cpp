@@ -733,37 +733,33 @@ initializeExternalLoads( SimTK::State& s,
 				Xml::Element root = doc.getRootElement();
 				if (root.getElementTag()=="OpenSimDocument"){
 					int curVersion = root.getRequiredAttributeValueAs<int>("Version");
-					if (curVersion < 20201){
-						root.setAttributeValue("Version", "20201");
-						//Xml::element_iterator rootIter(root.element_begin("ForceSet"));
-						//Xml::Element documentElem = *rootIter;
-						Xml::element_iterator iter(root.element_begin("ForceSet"));
-						Xml::Element extLoadsElem;
-						for (; iter != root.element_end(); ++iter){
-							const SimTK::String tag=iter->getElementTag();
-							iter->setElementTag("ExternalLoads");
-							extLoadsElem = *iter;
-							break;
-						}
-						DOMElement* kNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
-						if (kNode !=NULL){
-							string kinFileName= parseStringProperty(std::string("external_loads_model_kinematics_file"));
-							XMLNode::RemoveElementFromParent(kNode);
-							// Make sure no node already exist
-							//Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
-							//if (iter2 == extLoadsElem.element_end())
+					//Xml::element_iterator rootIter(root.element_begin("ForceSet"));
+					//Xml::Element documentElem = *rootIter;
+					Xml::element_iterator iter(root.element_begin("ExternalLoads"));
+					Xml::Element extLoadsElem = *iter;
+					
+					DOMElement* kNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
+					if (kNode !=NULL){
+						string kinFileName= parseStringProperty(std::string("external_loads_model_kinematics_file"));
+						XMLNode::RemoveElementFromParent(kNode);
+						// Make sure no node already exist
+						Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
+						if (iter2 == extLoadsElem.element_end())
 							iter->insertNodeAfter(iter->element_end(), Xml::Element("external_loads_model_kinematics_file", kinFileName));
-						}
-						DOMElement* fNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
-						if (fNode !=NULL){
-							string filterFreq= parseStringProperty(std::string("lowpass_cutoff_frequency_for_load_kinematics"));
-							XMLNode::RemoveElementFromParent(fNode);
-							//Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
-							//if (iter2 == extLoadsElem.element_end())
-							iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", filterFreq));
-						}
-						doc.writeToFile(fileName);
+						else
+							iter2->setValue(kinFileName);
 					}
+					DOMElement* fNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
+					if (fNode !=NULL){
+						string filterFreq= parseStringProperty(std::string("lowpass_cutoff_frequency_for_load_kinematics"));
+						XMLNode::RemoveElementFromParent(fNode);
+						Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
+						if (iter2 == extLoadsElem.element_end())
+							iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", filterFreq));
+						else
+							iter2->setValue(filterFreq);
+					}
+					doc.writeToFile(fileName);
 				}
 			}
 		}
