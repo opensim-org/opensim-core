@@ -304,6 +304,7 @@ bool InverseKinematicsTool::run()
 		// For coordinates, create the functions for coordinate reference values
 		int index = 0;
 		for(int i=0; i < _ikTaskSet.getSize(); i++){
+			if (!_ikTaskSet[i].getApply()) continue;
 			if(IKCoordinateTask *coordTask = dynamic_cast<IKCoordinateTask *>(&_ikTaskSet[i])){
 				CoordinateReference *coordRef = NULL;
 				if(coordTask->getValueType() == IKCoordinateTask::FromFile){
