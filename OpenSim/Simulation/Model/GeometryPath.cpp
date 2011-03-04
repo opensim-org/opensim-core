@@ -364,7 +364,7 @@ void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array
 const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimTK::State& s) 
 {
 	// update the geometry to make sure the current display path is up to date.
-    updateGeometry(s);
+    //OpenSim23 updateGeometry(s);
 
 	return( SimTK::Value<Array<PathPoint*> >::downcast(s.getCacheEntry( _subsystemIndex, _currentDisplayPathIndex)).get() );
 }
