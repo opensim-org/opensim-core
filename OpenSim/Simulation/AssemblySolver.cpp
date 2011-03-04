@@ -117,7 +117,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 				//cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
 				_assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilityIndex()));
 				//No longer need the lock on
-				coord.setLocked(s, false);
+				//coord.setLocked(s, false);
 				
 				//Get rid of the corresponding reference too
 				_coordinateReferences.erase(p);
@@ -215,7 +215,9 @@ void AssemblySolver::assemble(SimTK::State &state)
 	}
 	catch (std::exception ex)
     {
-		std::cout << "AssemblySolver::assemble() Failed: " << ex.what() << std::endl;
+		std::string msg = "AssemblySolver::assemble() Failed: ";
+		msg += ex.what();
+		throw Exception(msg);
     }
 }
 

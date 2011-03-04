@@ -37,6 +37,8 @@
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
@@ -64,12 +66,10 @@ int testAssembleModelWithConstraints(string modelFile)
 	}
 
     State state = model.initSystem();
-	model.setDefaultsFromState(state);
-    Vector y1 = state.getY();
 
 	cout << "*********** Coordinates after initSystem ******************** "  << endl;
 	for(int i=0; i< coords.getSize(); i++) {
-		cout << "Coordinate " << coords[i].getName() << " default value = " << coords[i].getDefaultValue() << endl;
+		cout << "Coordinate " << coords[i].getName() << " get value = " << coords[i].getValue(state) << endl;
 	}
 
 	// Verify that the reaction forces at the constraints are not rediculously large
@@ -113,11 +113,20 @@ int testAssembleModelWithConstraints(string modelFile)
     Manager manager(model, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(0.05);
+
+	model.equilibrateMuscles(state);
+	Vector y1 = state.getY();
+ 
+	// defaults should capture an accurate snapshot of the model
+	model.setDefaultsFromState(state);
     manager.integrate(state);
     Vector y2 = state.getY();
+
+	// recreate system with states from defaults
     State state2 = model.initSystem();
     Vector y3 = state2.getY();
-    model.setDefaultsFromState(state);
+
+	model.setDefaultsFromState(state);
     state2 = model.initSystem();
     Vector y4 = state2.getY();
     for (int i = 0; i < y1.size(); i++) 
@@ -131,6 +140,7 @@ int testAssembleModelWithConstraints(string modelFile)
 
 int main()
 {
+	LoadOpenSimLibrary("osimActuators");
 	int status = 0;
 
     status = testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");

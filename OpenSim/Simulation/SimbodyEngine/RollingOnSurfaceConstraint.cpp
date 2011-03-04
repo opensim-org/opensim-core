@@ -482,31 +482,31 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
 		int ncb = simConstraint.getNumConstrainedBodies();
 		int mp, mv, ma;
 
-		simConstraint.getNumConstraintEquationsInUse(state, mp, mv, ma);
+		if(!simConstraint.isDisabled(state)){
+			simConstraint.getNumConstraintEquationsInUse(state, mp, mv, ma);
+			simConstraint.calcConstraintForcesFromMultipliers(state, simConstraint.getMultipliersAsVector(state), bfs, mfs);
+			
+			int sbi = -1;
+			int rbi = -1;
+			int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
+			
+			for(int j=0; j< ncb; j++){
+				if(_surfaceBody->getIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
+					sbi = j;
+				if(_rollingBody->getIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
+					rbi = j;
+			}
 
-		simConstraint.calcConstraintForcesFromMultipliers(state, simConstraint.getMultipliersAsVector(state), bfs, mfs);
-		
-
-		int sbi = -1;
-		int rbi = -1;
-		int anc = simConstraint.getAncestorMobilizedBody().getMobilizedBodyIndex();
-		
-		for(int j=0; j< ncb; j++){
-			if(_surfaceBody->getIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
-				sbi = j;
-			if(_rollingBody->getIndex() == simConstraint.getMobilizedBodyFromConstrainedBody(ConstrainedBodyIndex(j)).getMobilizedBodyIndex())
-				rbi = j;
+			/*
+			cout << "Constraint " << i << "  forces:" << endl;
+			cout << " Surf body index: " << sbi << " Expressed in: " << anc << endl;
+			cout << " Roll body index: " << rbi << " Expressed in: " << anc << endl;
+			bfs.dump(" Constrint body forces:");
+			*/
+			bodyForcesInParent[0] += bfs[sbi];
+			bodyForcesInParent[1] += bfs[rbi];
+			mobilityForces += mfs;
 		}
-
-		/*
-		cout << "Constraint " << i << "  forces:" << endl;
-		cout << " Surf body index: " << sbi << " Expressed in: " << anc << endl;
-		cout << " Roll body index: " << rbi << " Expressed in: " << anc << endl;
-		bfs.dump(" Constrint body forces:");
-		*/
-		bodyForcesInParent[0] += bfs[sbi];
-		bodyForcesInParent[1] += bfs[rbi];
-		mobilityForces += mfs;
 	}
 }
 
