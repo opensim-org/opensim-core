@@ -372,7 +372,7 @@ std::vector<bool> RollingOnSurfaceConstraint::unilateralConditionsSatisfied(cons
 
 			// If we are not slipping then constraint will not allow rotation of roller about normal
 			// as long the required torque does not exceed the torque capacity of the tangential force.
-			if( normalTorque <= _surfaceContactRadius*tangentialForce )
+			if( normalTorque <= _surfaceContactRadius*_coulombFrictionCoefficient*normalForce )
 				conditionsSatisfied[1] = true;
 		}
 	}
