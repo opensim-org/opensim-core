@@ -136,9 +136,11 @@ void InverseDynamicsSolver::solve(State &s, const FunctionSet &Qs, const Array_<
 	//Preallocate if not done already
 	genForceTrajectory.resize(nt, Vector(nq));
 	
+	AnalysisSet& analysisSet = const_cast<AnalysisSet&>(_model.getAnalysisSet());
 	//fill in results for each time
-	for(int i=0; i<nt; i++){
+	for(int i=0; i<nt; i++){ 
 		genForceTrajectory[i] = solve(s, Qs, times[i]);
+		analysisSet.step(s, i);
 	}
 }
 
