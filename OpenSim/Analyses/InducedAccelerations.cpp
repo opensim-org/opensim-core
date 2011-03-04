@@ -543,6 +543,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 	_constraintReactions.setSize(0);
 
 	SimTK::State s_analysis = _model->updMultibodySystem().updDefaultState();
+
 	_model->initStateWithoutRecreatingSystem(s_analysis);
 	// Just need to set current time and position to determine state of constraints
 	s_analysis.setTime(aT);
@@ -582,7 +583,54 @@ int InducedAccelerations::record(const SimTK::State& s)
 			}
 
 			// Get to  the point where we can evaluate unilateral constraint conditions
-			_model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Acceleration);
+			 _model->getMultibodySystem().realize(s_analysis, SimTK::Stage::Acceleration);
+
+		    /* *********************************** ERROR CHECKING *******************************
+			SimTK::Vec3 pcom =_model->getMultibodySystem().getMatterSubsystem().calcSystemMassCenterLocationInGround(s_analysis);
+			SimTK::Vec3 vcom =_model->getMultibodySystem().getMatterSubsystem().calcSystemMassCenterVelocityInGround(s_analysis);
+			SimTK::Vec3 acom =_model->getMultibodySystem().getMatterSubsystem().calcSystemMassCenterAccelerationInGround(s_analysis);
+
+			SimTK::Matrix M;
+			_model->getMultibodySystem().getMatterSubsystem().calcM(s_analysis, M);
+			cout << "mass matrix: " << M << endl;
+
+			SimTK::Inertia sysInertia = _model->getMultibodySystem().getMatterSubsystem().calcSystemCentralInertiaInGround(s_analysis);
+			cout << "system inertia: " << sysInertia << endl;
+
+			SimTK::SpatialVec sysMomentum =_model->getMultibodySystem().getMatterSubsystem().calcSystemMomentumAboutGroundOrigin(s_analysis);
+			cout << "system momentum: " << sysMomentum << endl;
+
+			const SimTK::Vector &appliedMobilityForces = _model->getMultibodySystem().getMobilityForces(s_analysis, SimTK::Stage::Dynamics);
+			appliedMobilityForces.dump("All Applied Mobility Forces");
+		
+			// Get all applied body forces like those from conact
+			const SimTK::Vector_<SimTK::SpatialVec>& appliedBodyForces = _model->getMultibodySystem().getRigidBodyForces(s_analysis, SimTK::Stage::Dynamics);
+			appliedBodyForces.dump("All Applied Body Forces");
+
+			SimTK::Vector ucUdot;
+			SimTK::Vector_<SimTK::SpatialVec> ucA_GB;
+			_model->getMultibodySystem().getMatterSubsystem().calcAccelerationIgnoringConstraints(s_analysis, appliedMobilityForces, appliedBodyForces, ucUdot, ucA_GB) ;
+			ucUdot.dump("Udots Ignoring Constraints");
+			ucA_GB.dump("Body Accelerations");
+
+			SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces(_constraintSet.getSize(), SimTK::SpatialVec(SimTK::Vec3(0)));
+			SimTK::Vector constraintMobilityForces(0);
+
+			int nc = _model->getMultibodySystem().getMatterSubsystem().getNumConstraints();
+			for (SimTK::ConstraintIndex cx(0); cx < nc; ++cx) {
+				if (!_model->getMultibodySystem().getMatterSubsystem().isConstraintDisabled(s_analysis, cx)){
+					cout << "Constraint " << cx << " enabled!" << endl;
+				}
+			}
+			//int nMults = _model->getMultibodySystem().getMatterSubsystem().getTotalMultAlloc();
+
+			for(int i=0; i<constraintOn.getSize(); i++) {
+				if(constraintOn[i])
+					_constraintSet[i].calcConstraintForces(s_analysis, constraintBodyForces, constraintMobilityForces);
+			}
+			constraintBodyForces.dump("Constraint Body Forces");
+			constraintMobilityForces.dump("Constraint Mobility Forces");
+			// ******************************* end ERROR CHECKING *******************************/
 	
 			for(int i=0; i<constraintOn.getSize(); i++) {
 				_constraintSet.get(i).setDisabled(s_analysis, !constraintOn[i]);
@@ -653,13 +701,13 @@ int InducedAccelerations::record(const SimTK::State& s)
 			
 			Actuator &actuator = _model->getActuators().get(ai);
 			actuator.setDisabled(s_analysis, false);
-			
-			if(_computePotentialsOnly){
-				actuator.overrideForce(s_analysis, true);
-				actuator.setOverrideForce(s_analysis, 1.0);
-			}
-			else{
-				actuator.overrideForce(s_analysis, false);
+			actuator.overrideForce(s_analysis, false);
+			Muscle *muscle = dynamic_cast<Muscle *>(&actuator);
+			if(muscle){
+				if(_computePotentialsOnly){
+					muscle->overrideForce(s_analysis, true);
+					muscle->setOverrideForce(s_analysis, 1.0);
+				}
 			}
 
 			// Set the configuration (gen. coords and speeds) of the model.
@@ -754,8 +802,12 @@ int InducedAccelerations::record(const SimTK::State& s)
 	}
 
 	// Set the accelerations of system center of mass into a storage
-	_storeInducedAccelerations[nc+nb]->append(aT, _comIndAccs.getSize(), &_comIndAccs[0]);
-	_storeConstraintReactions->append(aT, _constraintReactions.getSize(), &_constraintReactions[0]);
+	if(_includeCOM){
+		_storeInducedAccelerations[nc+nb]->append(aT, _comIndAccs.getSize(), &_comIndAccs[0]);
+	}
+	if(_reportConstraintReactions){
+		_storeConstraintReactions->append(aT, _constraintReactions.getSize(), &_constraintReactions[0]);
+	}
 
 	return(0);
 }
@@ -907,9 +959,10 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 			                   +getName()+"_"+_storeInducedAccelerations[i]->getName(),aDir,aDT,aExtension);
 	}
 
-	Storage::printResult(_storeConstraintReactions, aBaseName+"_"
+	if(_reportConstraintReactions){
+		Storage::printResult(_storeConstraintReactions, aBaseName+"_"
 			                   +getName()+"_"+_storeConstraintReactions->getName(),aDir,aDT,aExtension);
-	
+	}
 	return(0);
 }
 
