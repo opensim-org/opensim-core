@@ -326,7 +326,7 @@ bool InverseDynamicsTool::run()
 		std::cout << "InverseDynamicsTool Failed: " << ex.what() << std::endl;
 	}
 
-	delete _model;
+	if (modelFromFile) delete _model;
 
 	return success;
 }
@@ -399,8 +399,8 @@ void InverseDynamicsTool::updateFromXMLNode()
 					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("coordinates_in_degrees", "false"));
 					iterTool->eraseNode(iterAnalysisSet);
 				}
-				doc.writeToFile("_temp.xml");
-				*this=InverseDynamicsTool("_temp.xml");
+				doc.writeToFile(getDocumentFileName());
+				*this=InverseDynamicsTool(getDocumentFileName(), false);
 				return;
 			}
 
