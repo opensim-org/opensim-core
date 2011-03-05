@@ -307,6 +307,16 @@ void RollingOnSurfaceConstraint::setContactPointOnSurfaceBody(const SimTK::State
 	// And the point in the follower (roller) frame
 	contactY.setDefaultFollowerPoint(point);
 
+	// Assume that torsion constraint is always normal to surface so find corresponding vector
+	// in the rolling body
+	Vec3 normalInRoller(0);
+	Vec3 baseAxisInRoller(0);
+	UnitVec3 surfaceBase = contactTorqueAboutY.getDefaultBaseAxis();
+	_model->getSimbodyEngine().transform(s, *_surfaceBody, _surfaceNormal, *_rollingBody, normalInRoller);
+	_model->getSimbodyEngine().transform(s, *_surfaceBody, surfaceBase, *_rollingBody, baseAxisInRoller);
+
+	contactTorqueAboutY.setDefaultFollowerAxis(UnitVec3(baseAxisInRoller%normalInRoller));
+
 	// Set the point of no slip for this instant
 	contactPointXdir.setDefaultContactPoint(spoint);
 	contactPointZdir.setDefaultContactPoint(spoint);
