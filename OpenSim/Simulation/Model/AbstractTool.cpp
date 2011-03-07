@@ -355,7 +355,7 @@ void AbstractTool::
 setModel(Model& aModel)
 {
 	_model = &aModel;
-	_toolOwnsModel=false;
+	//_toolOwnsModel=false;
     if(_model) {
        addAnalysisSetToModel();
        addControllerSetToModel();
@@ -412,15 +412,9 @@ loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
 			IO::chDir(saveWorkingDirectory);
 			throw;
 		}
-
+		_model = model;
 		IO::chDir(saveWorkingDirectory);
 
-		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
-		updateModelForces(*model, aToolSetupFileName, rOriginalForceSet);
-
-		setModel(*model);	
-
-		setToolOwnsModel(true);
 	}
 }
 
@@ -578,9 +572,9 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
 	// CREATE FORCE AND TORQUE APPLIERS
 	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
 	_externalLoads.setup(aModel);
-
+	_externalLoads.setMemoryOwner(false);
 	for (int i=0; i<_externalLoads.getSize(); i++){
-		aModel.addForce(&_externalLoads.get(i));
+		aModel.updForceSet().append(&_externalLoads.get(i)); // Call this instead of addForce to avoid calling setup repeatedly
 	}
 
     return(true);

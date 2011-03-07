@@ -175,7 +175,13 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
 	setNull();
 
 	if(aUpdateFromXMLNode) updateFromXMLNode();
-	if(aLoadModel) { loadModel(aFileName); setToolOwnsModel(true); }
+	if(aLoadModel) { 
+		loadModel(aFileName); 
+		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
+		updateModelForces(*_model, aFileName);
+		setModel(*_model);	
+		setToolOwnsModel(true); 
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -872,6 +878,11 @@ const Manager& ForwardTool::getManager() const {
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	bool neededSprings=false;
+	std::string savedCwd;
+	if(_document) {
+		savedCwd = IO::getCwd();
+		IO::chDir(IO::getParentDirectory(_document->getFileName()));
+	}	
 	if ( documentVersion < XMLDocument::getLatestVersion()){
 			// Now check if we need to create a correction controller to replace springs
 		if (_node!=NULL && documentVersion<10904){
@@ -902,4 +913,6 @@ const Manager& ForwardTool::getManager() const {
 	}
 	else
 		AbstractTool::updateFromXMLNode();
+	if(_document) IO::chDir(savedCwd);
+
 }

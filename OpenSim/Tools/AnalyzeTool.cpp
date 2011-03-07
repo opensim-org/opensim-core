@@ -74,6 +74,11 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
 
 	if(aLoadModelAndInput) {
 		loadModel(aFileName);
+		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
+		updateModelForces(*_model, aFileName);
+		setModel(*_model);	
+		setToolOwnsModel(true);
+
 	}
 }
 //_____________________________________________________________________________

@@ -142,7 +142,13 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	setType("CMCTool");
 	setNull();
 	updateFromXMLNode();
-	if(aLoadModel) loadModel(aFileName, &_originalForceSet);
+	if(aLoadModel){
+		loadModel(aFileName, &_originalForceSet);
+		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
+		updateModelForces(*_model, aFileName);
+		setModel(*_model);	
+		setToolOwnsModel(true);
+	}
 }
 
 //_____________________________________________________________________________
