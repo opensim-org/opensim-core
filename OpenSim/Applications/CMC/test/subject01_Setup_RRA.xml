@@ -2,13 +2,13 @@
 <CMCTool name="subject01_walk1_RRA">
 	<defaults/>
 	<!--Name of the .osim file used to construct a model.-->
-	<model_file> subject01_RRA.osim </model_file>
+	<model_file> subject01_simbody.osim </model_file>
 	<!--Replace the model's force set with sets specified in
 	    <force_set_files>? If false, the force set is appended to.-->
 	<replace_force_set> true </replace_force_set>
 	<!--List of xml files used to construct an force set for the model.-->
 	<force_set_files> gait2354_RRA_Actuators.xml </force_set_files>
-<use_verbose_printing> false </use_verbose_printing>
+  <use_verbose_printing> false </use_verbose_printing>
 	<!--Directory used for writing results.-->
 	<results_directory> ResultsRRA/ </results_directory>
 	<!--Output precision.  It is 8 by default.-->
