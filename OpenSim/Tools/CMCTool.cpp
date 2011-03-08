@@ -787,6 +787,7 @@ bool CMCTool::run()
 		cout<<"Using the generalized coordinates specified as zeros ";
 		cout<<" to set the initial configuration.\n";
 	}
+
 	for(int i=0;i<nq;i++) s.updQ()[i] = q[i];
 	for(int i=0;i<nu;i++) s.updU()[i] = u[i];
 
@@ -1049,6 +1050,10 @@ writeAdjustedModel()
 	// NOTE: use operator= so actuator groups are properly copied over
 	_model->updForceSet() = _originalForceSet;
 
+	// CMC was added as a model controller, now remove before printing out
+	int c = _model->updControllerSet().getIndex("CMC");
+	_model->updControllerSet().remove(c);
+
 	_model->print(_outputModelFile);
 }
 //_____________________________________________________________________________
@@ -1126,16 +1131,15 @@ adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage
     restoreStates = s.getY();
 
 	adjustCOMToReduceResiduals(FAve,MAve);
-    s = _model->initSystem();
+	SimTK::State &si = _model->initSystem();
 
-    s.updY() = restoreStates;
-    _model->getMultibodySystem().realize(s, Stage::Position );
+    si.updY() = restoreStates;
+    _model->getMultibodySystem().realize(si, Stage::Position );
     
-	computeAverageResiduals(s, *_model, ti, tf, *statesStore, FAve, MAve);
+	computeAverageResiduals(si, *_model, ti, tf, *statesStore, FAve, MAve);
 	cout<<"Average residuals after adjusting "<<_adjustedCOMBody<<" COM:"<<endl;
 	cout<<"FX="<<FAve[0]<<" FY="<<FAve[1]<<" FZ="<<FAve[2]<<endl;
 	cout<<"MX="<<MAve[0]<<" MY="<<MAve[1]<<" MZ="<<MAve[2]<<endl<<endl;
-
 
 	delete statesStore;
 }
