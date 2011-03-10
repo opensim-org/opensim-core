@@ -121,6 +121,9 @@ public:
 	virtual Object* copy() const;
 	virtual ~Storage();
 
+	/** Assignment operator to copy contents of an existing storage */
+	Storage& operator=(const Storage &aStorage);
+
 	const std::string& getName() const { return _name; };
 	const std::string& getDescription() const { return _description; };
 	void setName(const std::string& aName) { _name = aName; };

@@ -793,7 +793,7 @@ void UpdateXMLNodeVec(const Property *aProperty, DOMElement *aNode, const string
 		XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,aProperty->getComment());
 	}
 	// The following is a hack to reuse the code in SetValueArray<double> for Vec3
-	XMLNode::SetValueArray<double>(elmt,3,&((PropertyDblVec3*)aProperty)->getValueDblVec()[0]);
+	XMLNode::SetValueArray<double>(elmt, aProperty->getArraySize(), &(aProperty->getValueDblArray()[0]));
 }
 void UpdateXMLNodeTransform(const Property *aProperty, DOMElement *aNode, const string &aName)
 {

@@ -56,6 +56,11 @@ public:
 	virtual Object* copy() const=0;
 	virtual ~StorageInterface(){};
 
+	StorageInterface& operator=(const StorageInterface &aStorageInterface)
+	{
+		Object::operator=(aStorageInterface);
+		return(*this);
+	}
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------

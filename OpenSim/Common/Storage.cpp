@@ -257,6 +257,21 @@ copy() const
 	return(store);
 }
 
+/**
+ * Assignment operator.
+ *
+ * @return Reference to this object.
+ */
+Storage& Storage::operator=(const Storage &aStorage)
+{
+	// BASE CLASS
+	StorageInterface::operator=(aStorage);
+
+	// Copy Members
+	copyData(aStorage);
+	return(*this);
+}
+
 
 //=============================================================================
 // CONSTRUCTION METHODS

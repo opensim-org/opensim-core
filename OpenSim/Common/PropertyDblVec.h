@@ -60,6 +60,9 @@ private:
 	/** Vector of doubles. */
 	SimTK::Vec<M> _vec;
 
+	/** Array representation for serialization */
+	mutable Array<double> _array;
+
 	char _typeAsString[7];
 
 //=============================================================================
@@ -70,14 +73,15 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	/** Default constructor */
-	PropertyDblVec_():Property(Property::DblVec, "DblVec_PropertyName") 
-		{ sprintf(_typeAsString, "DblVec%i", M); 
-		  setAllowableArraySize(M);
+	PropertyDblVec_():Property(Property::DblVec, "DblVec_PropertyName")
+		{ sprintf(_typeAsString, "DblVec%i", M);
+		  setAllowableArraySize(M);	  
 		};
 	/** Construct from name and value */
-	PropertyDblVec_(const std::string &aName, const SimTK::Vec<M>& aVec):Property(Property::DblVec, aName), _vec(aVec) 
-		{ sprintf(_typeAsString, "DblVec%i", M); 
+	PropertyDblVec_(const std::string &aName, const SimTK::Vec<M>& aVec):Property(Property::DblVec, aName) 
+		{ sprintf(_typeAsString, "DblVec%i", M);  setValue(aVec);
 		  setAllowableArraySize(M);
+
 		};
 	/** Construct from name and value as an Array<double> */
 	PropertyDblVec_(const std::string &aName, const Array<double> &anArray):Property(Property::DblVec, aName)
@@ -86,7 +90,7 @@ public:
 		};
 	/** Copy constructor */
 	PropertyDblVec_(const PropertyDblVec_ &aProperty):Property(aProperty)
-		{ _vec = aProperty._vec; };
+		{ setValue(aProperty._vec);};
 	/* Return a copy of this property */
 	virtual Property* copy() const {
 		Property *property = new PropertyDblVec_<M>(*this);
@@ -116,12 +120,15 @@ public:
 
 	// VALUE
 	/** set value of property from an equivalently sized Vec */
-	virtual void setValue(const SimTK::Vec<M> &aVec) { assert(aVec.size()==M); _vec=aVec; };
+	virtual void setValue(const SimTK::Vec<M> &aVec) { 
+		assert(aVec.size()==M); _vec=aVec; 
+	};
 	/** set value of this property from an array of doubles of equal or greater length */
 	virtual void setValue(const Array<double> &anArray){
 		assert(anArray.getSize() >= M);
 		for(int i=0;i<M; i++)
 			_vec[i] = anArray[i];
+		_array = anArray;
 	};
 	/** get writable reference to the value */
 	virtual SimTK::Vec<M>& getValueDblVec() {return _vec; };
@@ -131,7 +138,14 @@ public:
 	virtual void setValue(int aSize, const double aArray[]){ // to be used by the serialization code
 		assert(aSize == M);
 		setValue(SimTK::Vec<M>::getAs(aArray));
-	};	
+	};
+	/** get value as double array */
+	virtual const Array<double>& getValueDblArray() const {
+		_array.setSize(M);
+		for(int i=0;i<M; i++)
+			_array[i] = _vec[i];
+		return _array;
+	;}
 	/** Get a constant String represeting the value of this property. */
 	virtual const std::string &toString(){
 		std::string str = "(";
