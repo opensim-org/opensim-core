@@ -112,22 +112,21 @@ void testSingleMuscle() {
 
 	// Compare the controls calculated by CMC to the input ones, and see if they
 	// are sufficiently close.
-	Array<double> t_fwd(0), u_fwd(0);
-	Array<double> t_cmc(0), u_cmc(0);
+	Array<double> t_fwd(0), y_fwd(0);
+	Array<double> t_cmc(0), y_cmc(0);
 
 	// Get speed of block from forward and cmc
-	fwd_result.getTimeColumn(t_fwd); fwd_result.getDataColumn("block_ty_u", u_fwd);
-	cmc_result.getTimeColumn(t_cmc); cmc_result.getDataColumn("block_ty_u", u_cmc);
+	fwd_result.getTimeColumn(t_fwd); fwd_result.getDataColumn("block_ty", y_fwd);
+	cmc_result.getTimeColumn(t_cmc); cmc_result.getDataColumn("block_ty", y_cmc);
 
 	// Interpolate data so we can sample uniformly to compare
-	PiecewiseLinearFunction u_fwd_function(u_fwd.getSize(), &t_fwd[0] , &u_fwd[0]);
-	//PiecewiseLinearFunction tzu_cmc_function(tz_u_cmc.getSize(), &t_cmc[0] , &tz_u_cmc[0]);
+	PiecewiseLinearFunction y_fwd_function(y_fwd.getSize(), &t_fwd[0] , &y_fwd[0]);
 
 	SimTK::Vector tv(1, 0.0);
 	for (int i = 0; i < t_cmc.getSize(); ++i) {
 		tv[0] = t_cmc[i];
-		cout << "time = " << t_cmc[i] << "   error = " << u_fwd_function.calcValue(tv)-u_cmc[i] << endl;
-        ASSERT_EQUAL(u_fwd_function.calcValue(tv), u_cmc[i], 0.02);
+		cout << "time = " << t_cmc[i] << "   error = " << y_fwd_function.calcValue(tv)-y_cmc[i] << endl;
+        ASSERT_EQUAL(y_fwd_function.calcValue(tv), y_cmc[i], 0.003);
 	}
 }
 
@@ -144,22 +143,22 @@ void testTwoMusclesOnBlock() {
 
 	// Compare the controls calculated by CMC to the input ones, and see if they
 	// are sufficiently close.
-	Array<double> t_fwd(0), u_fwd(0);
-	Array<double> t_cmc(0), u_cmc(0);
+	Array<double> t_fwd(0), y_fwd(0);
+	Array<double> t_cmc(0), y_cmc(0);
 
 	// Get speed of block from forward and cmc
-	fwd_result.getTimeColumn(t_fwd); fwd_result.getDataColumn("tz_block_u", u_fwd);
-	cmc_result.getTimeColumn(t_cmc); cmc_result.getDataColumn("tz_block_u", u_cmc);
+	fwd_result.getTimeColumn(t_fwd); fwd_result.getDataColumn("tz_block", y_fwd);
+	cmc_result.getTimeColumn(t_cmc); cmc_result.getDataColumn("tz_block", y_cmc);
 
 	// Interpolate data so we can sample uniformly to compare
-	PiecewiseLinearFunction u_fwd_function(u_fwd.getSize(), &t_fwd[0] , &u_fwd[0]);
+	PiecewiseLinearFunction y_fwd_function(y_fwd.getSize(), &t_fwd[0] , &y_fwd[0]);
 	//PiecewiseLinearFunction tzu_cmc_function(tz_u_cmc.getSize(), &t_cmc[0] , &tz_u_cmc[0]);
 
 	SimTK::Vector tv(1, 0.0);
 	for (int i = 0; i < t_cmc.getSize(); ++i) {
 		tv[0] = t_cmc[i];
-		cout << "time = " << t_cmc[i] << "   error = " << u_fwd_function.calcValue(tv)-u_cmc[i] << endl;
-        ASSERT_EQUAL(u_fwd_function.calcValue(tv), u_cmc[i], 0.02);
+		cout << "time = " << t_cmc[i] << "   error = " << y_fwd_function.calcValue(tv)-y_cmc[i] << endl;
+        ASSERT_EQUAL(y_fwd_function.calcValue(tv), y_cmc[i], 0.003);
 	}
 }
 
@@ -168,15 +167,14 @@ void testEMGDrivenArm() {
 	CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
 	cmc.run();
 	cmc.print("check.xml");
-
 }
 
 int main() {
     try {
-		//testEMGDrivenArm();
 		testSingleMuscle();
 		testTwoMusclesOnBlock();
 		testGait2354();
+		testEMGDrivenArm();
     }
     catch(const std::exception& e) {
         cout << "exception: " << e.what() << endl;
