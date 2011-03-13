@@ -124,6 +124,9 @@ public:
 	void setBody2ByName(std::string aBodyName);
 	void setBody2BushingLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
 
+	/** Potential energy is determine by the elastic energy storage of the bushing. */
+	virtual double computePotentialEnergy(const SimTK::State& s) const;
+
 	//-----------------------------------------------------------------------------
 	// Reporting
 	//-----------------------------------------------------------------------------

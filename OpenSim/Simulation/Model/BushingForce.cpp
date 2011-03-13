@@ -321,6 +321,11 @@ void BushingForce::setBody2BushingLocation(Vec3 location, Vec3 orientation)
 	_orientationInBody2 = orientation;
 }
 
+/* Potential energy is computed by underlying SimTK::Force. */
+double BushingForce::computePotentialEnergy(const SimTK::State& s) const
+{
+	return _model->getForceSubsystem().getForce(_index).calcPotentialEnergyContribution(s);
+}
 
 //=============================================================================
 // Reporting
