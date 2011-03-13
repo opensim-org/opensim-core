@@ -234,11 +234,41 @@ void PointConstraint::setBody2ByName(std::string aBodyName)
 void PointConstraint::setBody1PointLocation(Vec3 location)
 {
 	_locationInBody1 = location;
-	//if(_index 
+	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
+	if(int(_index) != SimTK::InvalidIndex){
+		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
+		simConstraint.setDefaultPointOnBody1(_locationInBody1);
+	}
 }
 
 /** Set the location for point on body 2*/
 void PointConstraint::setBody2PointLocation(Vec3 location)
 {
 	_locationInBody2 = location;
+	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
+	if(int(_index) != SimTK::InvalidIndex){
+		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
+		simConstraint.setDefaultPointOnBody2(_locationInBody2);
+	}
 }
+
+/** Set the point locations */
+void PointConstraint::setContactPointForInducedAccelerations(const SimTK::State &s, Vec3 point)
+{
+	// The contact point coordinates in the surface body frame 
+	Vec3 spoint;
+
+	// make sure we are at the position stage
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+
+	// For external forces we assume point position vector is defined wrt foot (i.e., _body2)
+	// because we are passing it in from a prescribed force.
+	// We must also get that point position vector wrt ground (i.e., _body1)
+	
+	cout<<"Body 1 is" << _body1->getName() <<endl;
+	cout<<"Body 2 is" << _body2->getName() <<endl;
+	_model->getSimbodyEngine().transformPosition(s, *_body2, point, *_body1, spoint);
+	setBody1PointLocation(spoint);
+	setBody2PointLocation(point);
+}
+

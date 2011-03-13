@@ -97,10 +97,15 @@ public:
 	void setBody1PointLocation(SimTK::Vec3 location);
 	void setBody2ByName(std::string aBodyName);
 	void setBody2PointLocation(SimTK::Vec3 location);
+
+	/** Method to set point location of contact during an induced acceleration analysis */
+	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+
+
 protected:
 	virtual void setup(Model& aModel);
 	/**
-	 * Create a SimTK::Constraint::Weld which implements this Weld.
+	 * Create a SimTK::Constraint::Ball which implements this Point constraint.
 	 */
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 

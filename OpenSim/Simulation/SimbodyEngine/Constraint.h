@@ -89,8 +89,8 @@ public:
 	virtual bool isDisabled(const SimTK::State& s) const;
 	virtual bool setDisabled(SimTK::State& s, bool isDisabled);
 
-	virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
-									  SimTK::Vector& mobilityForces);
+	virtual void calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+									  SimTK::Vector& mobilityForces) const;
 
 	/** 
 	 * Methods to query a Constraint forces (defaults to the Lagrange mulipliers) applied
@@ -106,6 +106,14 @@ public:
 	virtual Array<double> getRecordValues(const SimTK::State& state) const;
 
 	virtual void scale(const ScaleSet& aScaleSet) {};
+
+	/**
+	* This method specifies the interface that a constraint must implement
+	* in order to be used by the Induced Accelerations Analysis
+	*/
+	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point){
+		throw Exception("This constraint does not implement setContactPointForInducedAccelerations");
+	}
 
 	OPENSIM_DECLARE_DERIVED(Constraint, Object);
 

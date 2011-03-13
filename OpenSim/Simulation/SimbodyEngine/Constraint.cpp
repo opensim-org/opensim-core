@@ -31,6 +31,7 @@
 //=============================================================================
 #include "Constraint.h"
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/BodySet.h>
 
 //=============================================================================
 // STATICS
@@ -239,16 +240,18 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
  *			mobilityForces acting along constrained mobilities	
  *
  * @param state State of model
- * @param bodyForcesInParent is a Vector of SpatialVecs contain constraint forces
+ * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint forces
  * @param mobilityForces is a Vector of forces that act along the constrained
  *         mobilitities associated with this constraint
  */
-void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
-									  SimTK::Vector& mobilityForces)
+void Constraint::calcConstraintForces(const SimTK::State& s, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+									  SimTK::Vector& mobilityForces) const
 {
 	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
-	simConstraint.calcConstraintForcesFromMultipliers( s, simConstraint.getMultipliersAsVector(s), 
-		                                               bodyForcesInParent, mobilityForces);
+	if(!simConstraint.isDisabled(s)){
+		SimTK::Vector multipliers = simConstraint.getMultipliersAsVector(s);
+		simConstraint.calcConstraintForcesFromMultipliers(s, multipliers, bodyForcesInAncestor, mobilityForces);
+	}
 }
 
 /** 
@@ -261,18 +264,41 @@ Array<std::string> Constraint::getRecordLabels() const
 	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
 	const SimTK::State &ds = _model->getMultibodySystem().getDefaultState();
 
-	// number or multipliers of each stage (position, velocity, acceleration)
-	int mp, mv, ma, nlambda;
-	simConstraint.getNumConstraintEquationsInUse(ds, mp, mv, ma);
+	// number of bodies being directly constrained
+	int ncb = simConstraint.getNumConstrainedBodies();
+	// number of mobilities being directly constrained
+	int ncm = simConstraint.getNumConstrainedU(ds);
 
-	nlambda = mp + mv + ma;
-
-	Array<std::string> labels("");
+	const BodySet &bodies = _model->getBodySet();
 	
-	for(int i=0; i<nlambda; i++){
-		char c[2];
-		sprintf(c, "%d", i); 
-		labels.append(getName()+"_multiplier"+c);
+	Array<std::string> labels("");
+
+	for(int i=0; i<ncb; ++i){
+		const SimTK::MobilizedBody &b = simConstraint.getMobilizedBodyFromConstrainedBody(SimTK::ConstrainedBodyIndex(i));
+		const SimTK::MobilizedBodyIndex &bx =  b.getMobilizedBodyIndex();
+		Body *bod = NULL;
+		for(int j=0; j<bodies.getSize(); ++j ){
+			if(bodies[j].getIndex() == bx){
+				bod = &bodies[j];
+				break;
+			}
+		}
+		if(bod == NULL){
+			throw Exception("Constraint "+getName()+" does not have an idenitfiable body index.");
+		}
+		string prefix = getName()+"_"+bod->getName();
+		labels.append(prefix+"_Fx");
+		labels.append(prefix+"_Fy");
+		labels.append(prefix+"_Fz");
+		labels.append(prefix+"_Mx");
+		labels.append(prefix+"_My");
+		labels.append(prefix+"_Mz");
+	}
+
+    char c[2] = "";
+	for(int i=0; i<ncm; ++i){
+		sprintf(c, "%d", i);
+		labels.append(getName()+"_mobility_F"+c);
 	}
 	
 	return labels;
@@ -288,12 +314,30 @@ Array<double> Constraint::getRecordValues(const SimTK::State& state) const
 	// simulataneously, so system must be realized to acceleration
 	_model->getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
 	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
-	SimTK::Vector multipliers = simConstraint.getMultipliersAsVector(state);
 
-	Array<double> values(0.0, multipliers.size());
+	// number of bodies being directly constrained
+	int ncb = simConstraint.getNumConstrainedBodies();
+	// number of mobilities being directly constrained
+	int ncm = simConstraint.getNumConstrainedU(state);
+
+	SimTK::Vector_<SimTK::SpatialVec> bodyForcesInAncestor(ncb);
+	bodyForcesInAncestor.setToZero();
+	SimTK::Vector mobilityForces(ncm, 0.0);
+
+	Array<double> values(0.0,6*ncb+ncm);
+
+	calcConstraintForces(state, bodyForcesInAncestor, mobilityForces);
 	
-	for(int i=0; i<multipliers.size(); i++){
-		values[i]=multipliers[i];
+	for(int i=0; i<ncb; ++i){
+		for(int j=0; j<3; ++j){
+			// Simbody constraints have reaction moments first and OpenSim reports forces first
+			// so swap them here
+			values[i*6+j] = (bodyForcesInAncestor(i)[1])[j]; // moments on constrained body i
+			values[i*6+3+j] = (bodyForcesInAncestor(i)[0])[j]; // forces on constrained body i
+		}
+	}
+	for(int i=0; i<ncm; ++i){
+		values[6*ncb+i] = mobilityForces[i];
 	}
 
 	return values;

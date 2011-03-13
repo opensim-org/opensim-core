@@ -114,6 +114,9 @@ public:
 	void setBody2ByName(std::string aBodyName);
 	void setBody2WeldLocation(SimTK::Vec3 location, SimTK::Vec3 orientation=SimTK::Vec3(0));
 
+	// Method to set point locations for induced acceleration analysis
+	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+
 protected:
 	virtual void setup(Model& aModel);
 	/**

@@ -224,6 +224,12 @@ void RollingOnSurfaceConstraint::createSystem(SimTK::MultibodySystem& system) co
 	mutableThis->_indices.push_back(contactPointZdir.getConstraintIndex());
 
 	mutableThis->_numConstraintEquations = _indices.size();
+
+	// For compound constraints, the bodies and/or mobilities involved must be characterized by
+	// the first "master" constraint, which dictates the behavior of the other constraints
+	// For example, enabling and disabling. This enables a compound constraint to be treated
+	// like a single constraint for the purpose of enabling/disabling and getting output
+	mutableThis->_index = _indices[0];
 }
 
 void RollingOnSurfaceConstraint::initState(SimTK::State& state) const
@@ -284,7 +290,7 @@ void RollingOnSurfaceConstraint::setSurfaceBodyByName(std::string aBodyName)
 }
 
 /** Set the point of contact on the rolling body that will be in contact with the surface */
-void RollingOnSurfaceConstraint::setContactPointOnSurfaceBody(const SimTK::State &s, Vec3 point)
+void RollingOnSurfaceConstraint::setContactPointForInducedAccelerations(const SimTK::State &s, Vec3 point)
 {
 	// Get the individual underlying constraints
 	SimTK::Constraint::PointInPlane &contactY = (SimTK::Constraint::PointInPlane &)_model->updMatterSubsystem().updConstraint(_indices[0]);
@@ -476,12 +482,12 @@ bool RollingOnSurfaceConstraint::setDisabled(SimTK::State& state, bool isDisable
  *			mobilityForces acting along constrained mobilities	
  *
  * @param state State of model
- * @param bodyForcesInParent is a Vector of SpatialVecs contain constraint forces
+ * @param bodyForcesInAncestor is a Vector of SpatialVecs contain constraint forces
  * @param mobilityForces is a Vector of forces that act along the constrained
  *         mobilitities associated with this constraint
  */
-void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInParent, 
-									  SimTK::Vector& mobilityForces)
+void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state, SimTK::Vector_<SimTK::SpatialVec>& bodyForcesInAncestor, 
+									  SimTK::Vector& mobilityForces) const
 {
 	SimTK::Vector_<SimTK::SpatialVec> bfs;
 	SimTK::Vector mfs;
@@ -494,7 +500,8 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
 
 		if(!simConstraint.isDisabled(state)){
 			simConstraint.getNumConstraintEquationsInUse(state, mp, mv, ma);
-			simConstraint.calcConstraintForcesFromMultipliers(state, simConstraint.getMultipliersAsVector(state), bfs, mfs);
+			SimTK::Vector multipliers = simConstraint.getMultipliersAsVector(state);
+			simConstraint.calcConstraintForcesFromMultipliers(state, multipliers, bfs, mfs);
 			
 			int sbi = -1;
 			int rbi = -1;
@@ -513,8 +520,8 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
 			cout << " Roll body index: " << rbi << " Expressed in: " << anc << endl;
 			bfs.dump(" Constrint body forces:");
 			*/
-			bodyForcesInParent[0] += bfs[sbi];
-			bodyForcesInParent[1] += bfs[rbi];
+			bodyForcesInAncestor[0] += bfs[sbi];
+			bodyForcesInAncestor[1] += bfs[rbi];
 			mobilityForces += mfs;
 		}
 	}
@@ -525,6 +532,7 @@ void RollingOnSurfaceConstraint::calcConstraintForces(const SimTK::State& state,
  * The names of the quantities (column labels) is returned by this first function
  * getRecordLabels()
  */
+/*
 Array<std::string> RollingOnSurfaceConstraint::getRecordLabels() const
 {
 	Array<std::string> labels("");
@@ -540,11 +548,13 @@ Array<std::string> RollingOnSurfaceConstraint::getRecordLabels() const
 
 	return labels;
 }
+*/
 
 /**
  * Given SimTK::State object extract all the values necessary to report constraint forces, application 
  * location frame, etc. used in conjunction with getRecordLabels and should return same size Array
  */
+/*
 Array<double> RollingOnSurfaceConstraint::getRecordValues(const SimTK::State& state) const
 {
 	// EOMs are solved for accelerations (udots) and constraint multipliers (lambdas)
@@ -571,3 +581,4 @@ Array<double> RollingOnSurfaceConstraint::getRecordValues(const SimTK::State& st
 
 	return values;
 };
+*/

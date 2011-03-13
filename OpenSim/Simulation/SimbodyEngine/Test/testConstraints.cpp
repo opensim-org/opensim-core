@@ -309,8 +309,8 @@ bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osi
 	// Get the state at the end of the integration from OpenSim.
 	Vector& qf = osim_state.updQ();
 	Vector& uf = osim_state.updU();
-	//cout<<"\nOpenSim Final q's:\n "<<qf<<endl;
-	//cout<<"\nOpenSim Final u's:\n "<<uf<<endl;
+	cout<<"\nOpenSim Final q's:\n "<<qf<<endl;
+	cout<<"\nOpenSim Final u's:\n "<<uf<<endl;
 
 	//==========================================================================================================
 	// Compare Simulation Results
@@ -500,7 +500,7 @@ bool testWeldConstraint()
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
 	return (compareSimulations(system, state, osimModel, osim_state));
-} // end testPointOnLineConstraint
+} 
 
 
 
@@ -761,10 +761,70 @@ bool testCoordinateCouplerConstraint()
 	return result;
 }
 
+bool testRollingOnSurfaceConstraint()
+{
+	cout << endl;
+	cout << "=================================================================" << endl;
+	cout << " OpenSim RollingOnSurfaceConstraint Simulation " << endl;
+	cout << "=================================================================" << endl;
+
+	UnitVec3 surfaceNormal(0,1,0);
+	double planeHeight = 0.1;
+	Vec3 pointOnFollower(0.2,0.1,0.3);
+
+	// Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+	MassProperties rodMass(10, Vec3(0,0,0), Inertia(Vec3(1.0, 0.2, 1.0)));
+
+	// Create a free joint between the rod and ground
+	MobilizedBody::Free rod(matter.Ground(), SimTK::Transform(Vec3(0)), 
+		SimTK::Body::Rigid(rodMass), SimTK::Transform(Vec3(0, -0.5, 0)));
+	
+	// Constrain foot to line on ground
+	SimTK::Constraint::PointInPlane contactY(matter.Ground(), surfaceNormal, planeHeight, rod, pointOnFollower);
+
+	// Simbody model state setup
+	system.realizeTopology();
+	State state = system.getDefaultState();
+	matter.setUseEulerAngles(state, false);
+    system.realizeModel(state);
+
+	state.updQ()[2] = Pi/3;
+	state.updU()[0] = 1;
+
+	system.realize(state, Stage::Acceleration);
+	state.getUDot().dump("Accelerations");
+
+	// The contact point coordinates in the surface body frame 
+	contactY.setDefaultPlaneNormal(surfaceNormal);
+	contactY.setDefaultPlaneHeight(planeHeight);
+	// And the point in the follower (roller) frame
+	contactY.setDefaultFollowerPoint(pointOnFollower);
+
+	state = system.realizeTopology();
+	state.updQ()[2] = Pi/3;
+	state.updU()[0] = 1;
+
+	system.realize(state, Stage::Acceleration);
+	state.getUDot().dump("Accelerations");
+
+	Vec3 pcom = system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
+	Vec3 vcom = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
+	Vec3 acom = system.getMatterSubsystem().calcSystemMassCenterAccelerationInGround(state);
+
+	return true;
+}
 
 int main()
 {
     int  status = 0;
+
+
+	testRollingOnSurfaceConstraint();
 
 	if(  !testCoordinateLocking()) {
         status = 1;

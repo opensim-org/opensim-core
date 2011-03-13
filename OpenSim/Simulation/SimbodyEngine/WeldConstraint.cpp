@@ -294,6 +294,15 @@ void WeldConstraint::setBody1WeldLocation(Vec3 location, Vec3 orientation)
 {
 	_locationInBody1 = location;
 	_orientationInBody1 = orientation;
+
+	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
+	if(int(_index) != SimTK::InvalidIndex){
+		SimTK::Constraint::Weld &simConstraint = (SimTK::Constraint::Weld &)_model->updMatterSubsystem().updConstraint(_index);
+		// Build the transforms
+		SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
+		SimTK::Transform inb1(r1, _locationInBody1);
+		simConstraint.setDefaultFrameOnBody1(inb1);
+	}
 }
 
 /** Set the location and orientation (optional) for weld on body 2*/
@@ -301,4 +310,30 @@ void WeldConstraint::setBody2WeldLocation(Vec3 location, Vec3 orientation)
 {
 	_locationInBody2 = location;
 	_orientationInBody2 = orientation;
+
+	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
+	if(int(_index) != SimTK::InvalidIndex){
+		SimTK::Constraint::Weld &simConstraint = (SimTK::Constraint::Weld &)_model->updMatterSubsystem().updConstraint(_index);
+		// Build the transforms
+		SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
+		SimTK::Transform inb2(r2, _locationInBody2);
+		simConstraint.setDefaultFrameOnBody2(inb2);
+	}
+}
+
+void WeldConstraint::setContactPointForInducedAccelerations(const SimTK::State &s, Vec3 point)
+{
+	// The contact point coordinates in the surface body frame 
+	Vec3 spoint;
+
+	// make sure we are at the position stage
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+	
+	// For external forces we assume point position vector is defined wrt foot (i.e., _body2)
+	// because we are passing it in from a prescribed force.
+	// We must also get that point position vector wrt ground (i.e., _body1)
+	_model->getSimbodyEngine().transformPosition(s, *_body2, point, *_body1, spoint);
+	
+	setBody1WeldLocation(spoint, _model->getSimbodyEngine().getTransform(s, *_body1).R().convertRotationToBodyFixedXYZ());
+	setBody2WeldLocation(point, _model->getSimbodyEngine().getTransform(s, *_body2).R().convertRotationToBodyFixedXYZ());	
 }
