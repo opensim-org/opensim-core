@@ -367,17 +367,22 @@ Array<string> InducedAccelerations:: constructColumnLabelsForCOM()
  */
 Array<string> InducedAccelerations:: constructColumnLabelsForConstraintReactions()
 {
+	int nc = _constraintSet.getSize();
 	// Get the main headings for all the contributors
 	Array<string> contributors = constructColumnLabelsForCoordinate();
 	Array<string> labels;
+	Array<Array<std::string>> constraint_reaction_labels;
+
+	for(int j=0; j<nc; j++){
+		constraint_reaction_labels.append(_constraintSet[j].getRecordLabels());
+	}
 
 	// first label is time not a contributor
 	labels.append(contributors[0]);
 	for(int i=1; i<contributors.getSize(); i++) {
-		for(int j=0; j<_constraintSet.getSize(); j++){
-			Array<std::string> constraint_reaction_labels = _constraintSet[j].getRecordLabels();
-			for(int k=0; k<constraint_reaction_labels.getSize(); k++){
-				labels.append(contributors[i] + "_" + constraint_reaction_labels[k]);
+		for(int j=0; j<nc; j++){
+			for(int k=0; k<constraint_reaction_labels[j].getSize(); k++){
+				labels.append(contributors[i] + "_" + (constraint_reaction_labels[j])[k]);
 			}
 		}
 	}
@@ -455,7 +460,7 @@ void InducedAccelerations::setupStorage()
 	Array<string> bodyAccLabels = constructColumnLabelsForBody();
 	for(int i=0; i<nb; i++){
 		_storeInducedAccelerations.append(new Storage(1000));
-		cout << "Body " << i << " in _bodySet: " << _bodySet.get(i).getName() << endl;
+		// cout << "Body " << i << " in _bodySet: " << _bodySet.get(i).getName() << endl;
 		_storeInducedAccelerations[nc+i]->setName(_bodySet.get(i).getName());
 		_storeInducedAccelerations[nc+i]->setDescription(getDescription());
 		_storeInducedAccelerations[nc+i]->setColumnLabels(bodyAccLabels);
@@ -716,8 +721,8 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 		}// End of if to select contributor 
 
-		//cout << "Constraint 0 should be  " << constraintOn[0] << " and is " <<  (_constraintSet[0].isDisabled(s_analysis) ? "off" : "on") << endl;
-		//cout << "Constraint 1 should be  " << constraintOn[1] << " and is " <<  (_constraintSet[1].isDisabled(s_analysis) ? "off" : "on") << endl;
+		// cout << "Constraint 0 is of "<< _constraintSet[0].getType() << " and should be " << constraintOn[0] << " and is actually " <<  (_constraintSet[0].isDisabled(s_analysis) ? "off" : "on") << endl;
+		// cout << "Constraint 1 is of "<< _constraintSet[1].getType() << " and should be " << constraintOn[1] << " and is actually " <<  (_constraintSet[1].isDisabled(s_analysis) ? "off" : "on") << endl;
 
 		// After setting the state of the model and applying forces
 		// Compute the derivative of the multibody system (speeds and accelerations)
@@ -748,12 +753,12 @@ int InducedAccelerations::record(const SimTK::State& s)
 			_coordIndAccs[i]->append(1, &acc);
 		}
 
-		//cout << "Input Body Names: "<< _bodyNames << endl;
+		// cout << "Input Body Names: "<< _bodyNames << endl;
 
 		// Get Accelerations for kinematics of bodies
 		for(int i=0;i<_bodySet.getSize();i++) {
 			Body &body = _bodySet.get(i);
-			//cout << "Body Name: "<< body->getName() << endl;
+			// cout << "Body Name: "<< body->getName() << endl;
 			SimTK::Vec3 com(0);
 			// Get the center of mass location for this body
 			body.getMassCenter(com);
@@ -819,7 +824,7 @@ int InducedAccelerations::record(const SimTK::State& s)
  * @param s SimTK:State
  */
 void InducedAccelerations::initialize(const SimTK::State& s)
-{
+{	
 	// Go forward with a copy of the model so Analysis can add to model if necessary
 	_model = dynamic_cast<Model*>(_model->copy());
 
@@ -975,7 +980,6 @@ void InducedAccelerations::addContactConstraintFromExternalForce(PrescribedForce
 Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForces(SimTK::State &s)
 {
 	Array<bool> constraintOn(false, _constraintSet.getSize());
-	//int nc = 0;
 	double t = s.getTime();
 
 	for(int i=0; i<_externalForces.getSize(); i++){
@@ -993,9 +997,8 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
 
 			// get the point of contact from applied external force
 			point = exf->getPointAtTime(t);
+			_constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
 
-			// set the point on the constraint
-			((RollingOnSurfaceConstraint *)(&_constraintSet.get(i)))->setContactPointOnSurfaceBody(s, point);
 		}
 		else{
 			// turn off the constraint

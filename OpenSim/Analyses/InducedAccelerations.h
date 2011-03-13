@@ -48,6 +48,9 @@
 // Header to define analysis (DLL) interface
 #include "osimAnalysesDLL.h"
 #include <SimTKsimbody.h>
+#include <map>
+#include <string>
+// #include <iostream.h>
 
 
 //=============================================================================
@@ -125,6 +128,11 @@ protected:
 
 	// Hold the actual model gravity since we will be changing it back and forth from 0
 	SimTK::Vec3 _gravity;
+
+	// Mapping of constraint type for switch case handling! *Added by Sam Hamner 07-Mar-2011
+	// enum constraintValue { ROLL, POINT, PIN, WELD };
+	// std::map <std::string, constraintValue> constraintMap;
+	
 
 //=============================================================================
 // METHODS
