@@ -172,7 +172,6 @@ copyData(const Controller &aController)
 {
 	_model = aController._model;
 	_isControllerEnabled = aController._isControllerEnabled;
-    _actuatorSet = aController._actuatorSet;
     _actuatorNameList = aController._actuatorNameList;
 }
 

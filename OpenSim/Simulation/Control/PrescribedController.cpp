@@ -64,7 +64,9 @@ using namespace std;
  * Default constructor.
  */
 PrescribedController::PrescribedController() :
-	Controller()
+	Controller(),
+	_prescribedControlFunctionsProp(PropertyObj("ControlFunctions", FunctionSet())),
+    _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
 {
 	setNull();
 }
@@ -74,7 +76,9 @@ PrescribedController::PrescribedController() :
  * Constructor.
  */
 PrescribedController::PrescribedController(Model& aModel) :
-	Controller(aModel)
+	Controller(aModel),
+	_prescribedControlFunctionsProp(PropertyObj("ControlFunctions", FunctionSet())),
+    _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
 {
 	setNull();
 }
@@ -83,7 +87,9 @@ PrescribedController::PrescribedController(Model& aModel) :
  * Constructor from an XML Document
   */
   PrescribedController::PrescribedController(const std::string &aFileName, bool aUpdateFromXMLNode) :
-      Controller(aFileName, aUpdateFromXMLNode)
+	Controller(aFileName, aUpdateFromXMLNode),
+	_prescribedControlFunctionsProp(PropertyObj("ControlFunctions", FunctionSet())),
+    _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
 {
       setNull();
       if(aUpdateFromXMLNode) updateFromXMLNode();
@@ -94,7 +100,9 @@ PrescribedController::PrescribedController(Model& aModel) :
  * Copy constructor.
  */
 PrescribedController::PrescribedController(const PrescribedController &aPrescribedController) :
-	Controller(aPrescribedController)
+	Controller(aPrescribedController),
+	_prescribedControlFunctionsProp(PropertyObj("ControlFunctions", FunctionSet())),
+    _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
 {
 	setNull();
 	copyData(aPrescribedController);
@@ -108,6 +116,19 @@ PrescribedController::~PrescribedController()
 
 }
 
+//_____________________________________________________________________________
+/**
+ * Copy this PrescribedController and return a pointer to the copy.
+ * The copy constructor for this class is used.  This method is called
+ * when a description of this controller is read in from an XML file.
+ *
+ * @return Pointer to a copy of this PrescribedController.
+ */
+Object* PrescribedController::copy() const
+{
+      PrescribedController *object = new PrescribedController(*this);
+      return object;
+}
 
 //=============================================================================
 // CONSTRUCTION
@@ -128,6 +149,13 @@ void PrescribedController::setNull()
  */
 void PrescribedController::setupProperties()
 {
+	string comment = "Functions (one per control) describing the controls for actuators"
+		"specified for this controller.";
+	_prescribedControlFunctionsProp.setComment(comment);
+	_prescribedControlFunctionsProp.setName("ControlFunctions");
+	_prescribedControlFunctions.setName("ControlFunctions");
+	_prescribedControlFunctionsProp.setMatchName(true);
+	_propertySet.append(&_prescribedControlFunctionsProp);
 }
 //_____________________________________________________________________________
 /**
@@ -168,7 +196,7 @@ void PrescribedController::computeControls(const SimTK::State& s, SimTK::Vector&
 	SimTK::Vector time(1, s.getTime());
 
 	for(int i=0; i<_actuatorSet.getSize(); i++){
-		actControls[0] = _prescribedControlFunctions[i]->calcValue(time);
+		actControls[0] = _prescribedControlFunctions[i].calcValue(time);
 		_actuatorSet[i].addInControls(actControls, controls);
 	}  
 }

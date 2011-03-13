@@ -36,6 +36,8 @@
 // INCLUDE
 //============================================================================
 #include "Controller.h"
+#include "OpenSim/Common/PropertyObj.h"
+#include "OpenSim/Common/FunctionSet.h"
 
 //=============================================================================
 //=============================================================================
@@ -62,7 +64,8 @@ protected:
 	/*
 	 * Functions of controls associated with each actuator
 	 */
-	Array<OpenSim::Function *> _prescribedControlFunctions;
+	PropertyObj _prescribedControlFunctionsProp;
+	FunctionSet &_prescribedControlFunctions;
 
 //=============================================================================
 // METHODS
@@ -104,6 +107,10 @@ public:
 	 * instance of the subclass is deleted from memory.
 	 */
 	virtual ~PrescribedController();
+
+    virtual Object* copy() const;
+
+	OPENSIM_DECLARE_DERIVED(PrescribedController, Controller);
 
 private:
 	/**
