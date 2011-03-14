@@ -551,7 +551,7 @@ bool CMCTool::run()
     controller->setCheckTargetTime(true);
 
 	//Make sure system is uptodate with model (i.e. added actuators, etc...)
-	SimTK::State &s = _model->initSystem();
+	SimTK::State s = _model->initSystem();
     _model->getMultibodySystem().realize(s, Stage::Position );
      taskSet.setModel(*_model);
     _model->equilibrateMuscles(s);
@@ -780,12 +780,12 @@ bool CMCTool::run()
 	Array<double> u(0.0,nu);
 	if(desiredKinFlag) {
 		cout<<"Using the generalized coordinates specified in "<<_desiredKinematicsFileName;
-		cout<<" to set the initial configuration.\n";
+		cout<<" to set the initial configuration.\n" << endl;
 		qSet->evaluate(q,0,_ti);
 		uSet->evaluate(u,0,_ti);
 	} else {
 		cout<<"Using the generalized coordinates specified as zeros ";
-		cout<<" to set the initial configuration.\n";
+		cout<<" to set the initial configuration.\n" << endl;
 	}
 
 	for(int i=0;i<nq;i++) s.updQ()[i] = q[i];
