@@ -686,8 +686,11 @@ bool Coordinate::isConstrained(const SimTK::State& s) const
  */
 bool Coordinate::setLocked(SimTK::State& s, bool aLocked) const
 {
-	// Do nothing if the same
-	if(aLocked == getLocked(s)) return true;
+	// Do nothing if the same, but make sure _locked is also up-to-date
+	if(aLocked == getLocked(s)){
+		_locked = aLocked;
+		return true;
+	}
 	
 	_lockedWarningGiven=false;	// reset flag in case needed later
 	SimTK::Constraint *lock = NULL;

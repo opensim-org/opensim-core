@@ -65,6 +65,8 @@
 #include "Control/ControlSetController.h"
 #include "Control/ControlConstant.h"
 #include "Control/ControlLinear.h"
+#include "Control/PrescribedController.h"
+
 #include "Wrap/PathWrap.h"
 #include "Wrap/PathWrapSet.h"
 #include "Wrap/WrapCylinder.h"
@@ -181,6 +183,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( BushingForce() );
 
     Object::RegisterType( ControlSetController() );
+	Object::RegisterType( PrescribedController() );
 
 	Object::RegisterType( BushingForce() );
 

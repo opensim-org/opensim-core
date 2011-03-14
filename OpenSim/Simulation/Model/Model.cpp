@@ -415,6 +415,8 @@ SimTK::State& Model::initSystem()
 	// Use the assembler to generate the initial pose from Coordinate defaults
 	// that also satisfies the constraints
 	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
+	_assemblySolver->setConstraintWeight(50.0);
+
 
 	// do the assembly
 	assemble(s);

@@ -117,7 +117,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 				//cout << "AssemblySolver: coordinate " << coord.getName() << " is locked/prescribed and will be excluded." << endl;
 				_assembler->lockQ(coord.getBodyIndex(), SimTK::MobilizerQIndex(coord.getMobilityIndex()));
 				//No longer need the lock on
-				//coord.setLocked(s, false);
+				coord.setLocked(s, false);
 				
 				//Get rid of the corresponding reference too
 				_coordinateReferences.erase(p);
@@ -199,7 +199,18 @@ void AssemblySolver::assemble(SimTK::State &state)
 		// Now do the assembly and return the updated state.
 		_assembler->assemble();
 		// Update the q's in the state passed in
-		_assembler->updateFromInternalState(state);
+		_assembler->updateFromInternalState(s);
+		state.updQ() = s.getQ();
+		state.updU() = s.getU();
+
+		// Get model coordinates
+		const CoordinateSet &modelCoordSet = _model.getCoordinateSet();
+		// Make sure the locks in orignal state are restored
+		for(int i=0; i< modelCoordSet.getSize(); ++i){
+			bool isLocked = modelCoordSet[i].getLocked(state);
+			if(isLocked)
+				modelCoordSet[i].setLocked(state, isLocked);
+		}
 
 		/*
 		printf("ASSEMBLED CONFIGURATION (acc=%g tol=%g err=%g, cost=%g, qerr=%g)\n",
