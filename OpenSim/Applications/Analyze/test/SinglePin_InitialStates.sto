@@ -1,0 +1,6 @@
+S26pre_CMC_states																
+nRows=1																
+nColumns=3																
+endheader																
+time	r1_z		r1_z_u
+0	1	0

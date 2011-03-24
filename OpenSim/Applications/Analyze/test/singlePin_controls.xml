@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="10600">
+	<ControlSet name="Control Set">
+		
+		<objects>
+		<!--
+			<ControlLinear name="TRIlong">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<default_min>       0.00000000 </default_min>
+				<default_max>       1.00000000 </default_max>
+				<filter_on> false </filter_on>
+				<use_steps> false </use_steps>
+				<x_nodes>
+					<ControlLinearNode name="">
+						<t>      -0.00000002 </t>
+						<value>       0 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>      -5 </t>
+						<value>      0 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>      10.5 </t>
+						<value>       0 </value>
+					</ControlLinearNode>
+				</x_nodes>
+				<min_nodes/>
+				<max_nodes/>
+				<kp>     100.00000000 </kp>
+				<kv>      20.00000000 </kv>
+			</ControlLinear>
+			-->
+		</objects>
+		<groups/>
+	</ControlSet>
+</OpenSimDocument>
+

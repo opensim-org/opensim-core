@@ -1,0 +1,440 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20300">
+	<ForwardTool name="DoublePendulum3D">
+		<defaults>
+			<ControlLinear name="default">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<default_min>       0.02000000000000000000 </default_min>
+				<default_max>       1.00000000000000000000 </default_max>
+				<filter_on> false </filter_on>
+				<use_steps> true </use_steps>
+				<x_nodes/>
+				<min_nodes/>
+				<max_nodes/>
+				<kp>     100.00000000000000000000 </kp>
+				<kv>      20.00000000000000000000 </kv>
+			</ControlLinear>
+			<CoordinateActuator name="default">
+				<isDisabled> false </isDisabled>
+				<coordinate> Unassigned </coordinate>
+				<optimal_force>     300.00000000000000000000 </optimal_force>
+			</CoordinateActuator>
+			<PointActuator name="default">
+				<isDisabled> false </isDisabled>
+				<body>  </body>
+				<point>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </point>
+				<point_is_global> false </point_is_global>
+				<direction>      -1.00000000000000000000      -0.00000000000000000000      -0.00000000000000000000 </direction>
+				<force_is_global> true </force_is_global>
+				<optimal_force>    1000.00000000000000000000 </optimal_force>
+			</PointActuator>
+			<TorqueActuator name="default">
+				<isDisabled> false </isDisabled>
+				<bodyA>  </bodyA>
+				<bodyB>  </bodyB>
+				<torque_is_global> true </torque_is_global>
+				<axis>      -1.00000000000000000000      -0.00000000000000000000      -0.00000000000000000000 </axis>
+				<optimal_force>       1.00000000000000000000 </optimal_force>
+			</TorqueActuator>
+			<Thelen2003Muscle name="default">
+				<isDisabled> false </isDisabled>
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000000000000000       0.00000000000000000000      -0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--maximum isometric force of the muscle fibers-->
+				<max_isometric_force>     546.00000000000000000000 </max_isometric_force>
+				<!--optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.05349999999999999900 </optimal_fiber_length>
+				<!--resting length of the tendon-->
+				<tendon_slack_length>       0.07800000000000000000 </tendon_slack_length>
+				<!--angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.00000000000000000000 </pennation_angle>
+				<!--time constant for ramping up of muscle activation-->
+				<activation_time_constant>       0.01000000000000000000 </activation_time_constant>
+				<!--time constant for ramping down of muscle activation-->
+				<deactivation_time_constant>       0.04000000000000000100 </deactivation_time_constant>
+				<!--maximum contraction velocity at full activation in fiber lengths per
+				    second-->
+				<Vmax>      10.00000000000000000000 </Vmax>
+				<!--maximum contraction velocity at low activation in fiber lengths per
+				    second-->
+				<Vmax0>       5.00000000000000000000 </Vmax0>
+				<!--tendon strain due to maximum isometric muscle force-->
+				<FmaxTendonStrain>       0.03300000000000000200 </FmaxTendonStrain>
+				<!--passive muscle strain due to maximum isometric muscle force-->
+				<FmaxMuscleStrain>       0.59999999999999998000 </FmaxMuscleStrain>
+				<!--shape factor for Gaussian active muscle force-length relationship-->
+				<KshapeActive>       0.50000000000000000000 </KshapeActive>
+				<!--exponential shape factor for passive force-length relationship-->
+				<KshapePassive>       4.00000000000000000000 </KshapePassive>
+				<!--passive damping in the force-velocity relationship-->
+				<damping>       0.05000000000000000300 </damping>
+				<!--force-velocity shape factor-->
+				<Af>       0.29999999999999999000 </Af>
+				<!--maximum normalized lengthening force-->
+				<Flen>       1.80000000000000000000 </Flen>
+			</Thelen2003Muscle>
+			<Schutte1993Muscle name="default">
+				<isDisabled> false </isDisabled>
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000000000000000       0.00000000000000000000      -0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--Scale factor for normalizing time-->
+				<time_scale>       0.10000000000000001000 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>       0.00000000000000000000 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>       0.00000000000000000000 </activation2>
+				<!--Maximum isometric force that the fibers can generate-->
+				<max_isometric_force>       0.00000000000000000000 </max_isometric_force>
+				<!--Optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.00000000000000000000 </optimal_fiber_length>
+				<!--Resting length of the tendon-->
+				<tendon_slack_length>       0.00000000000000000000 </tendon_slack_length>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.00000000000000000000 </pennation_angle>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>      10.00000000000000000000 </max_contraction_velocity>
+				<!--Damping factor related to maximum contraction velocity-->
+				<damping>       0.05000000000000000300 </damping>
+				<!--Function representing force-length behavior of tendon-->
+				<tendon_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -10.00000000000000000000      -0.00200000000000000000      -0.00100000000000000000       0.00000000000000000000       0.00131000000000000000       0.00281000000000000000       0.00430999999999999960       0.00581000000000000010       0.00730999999999999970       0.00881000000000000010       0.01030000000000000000       0.01180000000000000000       0.01230000000000000000       9.19999999999999930000       9.20100000000000050000       9.20200000000000000000      20.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.01080000000000000100       0.02570000000000000100       0.04349999999999999700       0.06519999999999999400       0.09149999999999999800       0.12300000000000000000       0.16100000000000000000       0.20799999999999999000       0.22700000000000001000     345.00000000000000000000     345.00000000000000000000     345.00000000000000000000     345.00000000000000000000 </y>
+					</NaturalCubicSpline>
+				</tendon_force_length_curve>
+				<!--Function representing active force-length behavior of muscle fibers-->
+				<active_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>      -5.30769200000000030000      -4.30769200000000030000      -1.92307699999999990000      -0.88461500000000004000      -0.26923100000000000000       0.23076900000000000000       0.46153800000000000000       0.52725000000000000000       0.62875000000000003000       0.71875000000000000000       0.86124999999999996000       1.04499999999999990000       1.21750000000000000000       1.43875000000000000000       1.50000000000000000000       1.61538500000000010000       2.00000000000000000000       2.96153800000000000000       3.69230800000000010000       5.46153800000000000000       9.90190199999999980000 </x>
+						<y>       0.01218799999999999900       0.02189899999999999800       0.03646599999999999800       0.05249299999999999800       0.07531200000000000400       0.11415800000000000000       0.15785900000000000000       0.22666700000000001000       0.63666699999999998000       0.85666699999999996000       0.94999999999999996000       0.99333300000000002000       0.77000000000000002000       0.24666700000000000000       0.19382099999999999000       0.13325200000000001000       0.07268299999999999800       0.04441699999999999800       0.03634099999999999800       0.02189899999999999800       0.00733200000000000000 </y>
+					</NaturalCubicSpline>
+				</active_force_length_curve>
+				<!--Function representing passive force-length behavior of muscle fibers-->
+				<passive_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>      -5.00000000000000000000       0.99800000000000000000       0.99900000000000000000       1.00000000000000000000       1.10000000000000010000       1.20000000000000000000       1.30000000000000000000       1.39999999999999990000       1.50000000000000000000       1.60000000000000010000       1.60100000000000000000       1.60200000000000010000       5.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.03500000000000000300       0.12000000000000000000       0.26000000000000001000       0.55000000000000004000       1.16999999999999990000       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000 </y>
+					</NaturalCubicSpline>
+				</passive_force_length_curve>
+			</Schutte1993Muscle>
+			<Delp1990Muscle name="default">
+				<isDisabled> false </isDisabled>
+				<GeometryPath name="">
+					<PathPointSet name="">
+						<objects/>
+						<groups/>
+					</PathPointSet>
+					<VisibleObject name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000000000000000       0.00000000000000000000      -0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
+					</VisibleObject>
+					<PathWrapSet name="">
+						<objects/>
+						<groups/>
+					</PathWrapSet>
+				</GeometryPath>
+				<!--Scale factor for normalizing time-->
+				<time_scale>       0.00000000000000000000 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>       0.00000000000000000000 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>       0.00000000000000000000 </activation2>
+				<!--Maximum isometric force that the fibers can generate-->
+				<max_isometric_force>     546.00000000000000000000 </max_isometric_force>
+				<!--Optimal length of the muscle fibers-->
+				<optimal_fiber_length>       0.05349999999999999900 </optimal_fiber_length>
+				<!--Resting length of the tendon-->
+				<tendon_slack_length>       0.07800000000000000000 </tendon_slack_length>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle>       0.13962633999999999000 </pennation_angle>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>       0.00000000000000000000 </max_contraction_velocity>
+				<!--Normalized mass of the muscle between the tendon and muscle fibers-->
+				<mass>       0.00000000000000000000 </mass>
+				<!--Function representing force-length behavior of tendon-->
+				<tendon_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -10.00000000000000000000      -0.00200000000000000000      -0.00100000000000000000       0.00000000000000000000       0.00131000000000000000       0.00281000000000000000       0.00430999999999999960       0.00581000000000000010       0.00730999999999999970       0.00881000000000000010       0.01030000000000000000       0.01180000000000000000       0.01230000000000000000       9.19999999999999930000       9.20100000000000050000       9.20200000000000000000      20.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.01080000000000000100       0.02570000000000000100       0.04349999999999999700       0.06519999999999999400       0.09149999999999999800       0.12300000000000000000       0.16100000000000000000       0.20799999999999999000       0.22700000000000001000     345.00000000000000000000     345.00000000000000000000     345.00000000000000000000     345.00000000000000000000 </y>
+					</NaturalCubicSpline>
+				</tendon_force_length_curve>
+				<!--Function representing active force-length behavior of muscle fibers-->
+				<active_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -35.00000000000000000000       0.00000000000000000000       0.40100000000000002000       0.40200000000000002000       0.40350000000000003000       0.52725000000000000000       0.62875000000000003000       0.71875000000000000000       0.86124999999999996000       1.04499999999999990000       1.21750000000000000000       1.43875000000000000000       1.61874999999999990000       1.62000000000000010000       1.62100000000000000000       2.20000000000000020000      35.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.22666700000000001000       0.63666699999999998000       0.85666699999999996000       0.94999999999999996000       0.99333300000000002000       0.77000000000000002000       0.24666700000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </y>
+					</NaturalCubicSpline>
+				</active_force_length_curve>
+				<!--Function representing passive force-length behavior of muscle fibers-->
+				<passive_force_length_curve>
+					<NaturalCubicSpline name="">
+						<x>     -35.00000000000000000000       0.99800000000000000000       0.99900000000000000000       1.14999999999999990000       1.25000000000000000000       1.35000000000000010000       1.45000000000000000000       1.55000000000000000000       1.64999999999999990000       1.75000000000000000000       1.75010000000000000000       1.75020000000000000000      35.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000       0.03500000000000000300       0.12000000000000000000       0.26000000000000001000       0.55000000000000004000       1.16999999999999990000       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000       2.00000000000000000000 </y>
+					</NaturalCubicSpline>
+				</passive_force_length_curve>
+				<!--Function representing force-velocity behavior of muscle fibers-->
+				<force_velocity_curve>
+					<NaturalCubicSpline name="">
+						<x>      -1.00099999999999990000      -1.00000000000000000000      -0.94999999999999996000      -0.90000000000000002000      -0.84999999999999998000      -0.80000000000000004000      -0.75000000000000000000      -0.69999999999999996000      -0.65000000000000002000      -0.59999999999999998000      -0.55000000000000004000      -0.50000000000000000000      -0.45000000000000001000      -0.40000000000000002000      -0.34999999999999998000      -0.29999999999999999000      -0.25000000000000000000      -0.20000000000000001000      -0.14999999999999999000      -0.10000000000000001000      -0.05000000000000000300       0.00000000000000000000       0.05000000000000000300       0.10000000000000001000       0.14999999999999999000       0.20000000000000001000       0.25000000000000000000       0.29999999999999999000       0.34999999999999998000       0.40000000000000002000       0.45000000000000001000       0.50000000000000000000       0.55000000000000004000       0.59999999999999998000       0.65000000000000002000       0.69999999999999996000       0.75000000000000000000       0.80000000000000004000       0.84999999999999998000       0.90000000000000002000       0.94999999999999996000       1.00000000000000000000 </x>
+						<y>       0.00000000000000000000       0.00000000000000000000       0.01041699999999999900       0.02173900000000000100       0.03409100000000000300       0.04761900000000000200       0.06250000000000000000       0.07894700000000000300       0.09722200000000000300       0.11764700000000000000       0.14062500000000000000       0.16666700000000001000       0.19642899999999999000       0.23076900000000000000       0.27083299999999999000       0.31818200000000002000       0.37500000000000000000       0.44444400000000001000       0.53125000000000000000       0.64285700000000001000       0.79166700000000001000       1.00000000000000000000       1.48201399999999990000       1.60157100000000010000       1.65579100000000000000       1.68673900000000000000       1.70675099999999990000       1.72075300000000000000       1.73109899999999990000       1.73905500000000000000       1.74536500000000010000       1.75049000000000010000       1.75473600000000010000       1.75831200000000010000       1.76136399999999990000       1.76399900000000010000       1.76629799999999990000       1.76832100000000000000       1.77011500000000010000       1.77171700000000000000       1.77315500000000000000       1.77445499999999990000 </y>
+					</NaturalCubicSpline>
+				</force_velocity_curve>
+			</Delp1990Muscle>
+			<CMC_Joint name="default">
+				<!--Flag (true or false) indicating whether or not a task is on.-->
+				<on> false </on>
+				<!--Weight with which a task is tracked relative to other tasks. To track
+				    a task more tightly, make the weight larger.-->
+				<weight>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </weight>
+				<!--Name of body frame with respect to which a tracking objective is
+				    specified. The special name 'center_of_mass' refers to the system
+				    center of mass. This property is not used for tracking joint angles.-->
+				<wrt_body> -1 </wrt_body>
+				<!--Name of body frame in which the tracking objectives are expressed.
+				    This property is not used for tracking joint angles.-->
+				<express_body> -1 </express_body>
+				<!--Array of 3 flags (each true or false) specifying whether a component
+				    of a task is active.  For example, tracking the trajectory of a point
+				    in space could have three components (x,y,z).  This allows each of
+				    those to be made active (true) or inactive (false).  A task for
+				    tracking a joint coordinate only has one component.-->
+				<active> false false false </active>
+				<!--Position error feedback gain (stiffness). To achieve critical damping
+				    of errors, choose kv = 2*sqrt(kp).-->
+				<kp>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </kp>
+				<!--Velocity error feedback gain (damping). To achieve critical damping of
+				    errors, choose kv = 2*sqrt(kp).-->
+				<kv>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </kv>
+				<!--Feedforward acceleration gain.  This is normally set to 1.0, so no
+				    gain.-->
+				<ka>       1.00000000000000000000       1.00000000000000000000       1.00000000000000000000 </ka>
+				<!--Direction vector[3] for component 0 of a task. Joint tasks do not use
+				    this propery.-->
+				<r0>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </r0>
+				<!--Direction vector[3] for component 1 of a task. Joint tasks do not use
+				    this property.-->
+				<r1>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </r1>
+				<!--Direction vector[3] for component 2 of a task. Joint tasks do not use
+				    this property.-->
+				<r2>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </r2>
+				<!--Name of the coordinate to be tracked.-->
+				<coordinate>  </coordinate>
+				<!--Error limit on the tracking accuracy for this coordinate. If the
+				    tracking errors approach this limit, the weighting for this coordinate
+				    is increased.-->
+				<limit>       0.00000000000000000000 </limit>
+			</CMC_Joint>
+		</defaults>
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file>  </model_file>
+		<!--Replace the model's force set with sets specified in
+		    <force_set_files>? If false, the force set is appended to.-->
+		<replace_force_set> false </replace_force_set>
+		<!--List of xml files used to construct an force set for the model.-->
+		<force_set_files> </force_set_files>
+		<!--Directory used for writing results.-->
+		<results_directory> . </results_directory>
+		<!--Output precision.  It is 20 by default.-->
+		<output_precision> 20 </output_precision>
+		<!--Initial time for the simulation.-->
+		<initial_time>       0.00000000000000000000 </initial_time>
+		<!--Final time for the simulation.-->
+		<final_time>       3.00000000000000000000 </final_time>
+		<!--Flag indicating whether or not to compute equilibrium values for
+		    states other than the coordinates or speeds.  For example, equilibrium
+		    muscle fiber lengths or muscle forces.-->
+		<solve_for_equilibrium_for_auxiliary_states> false </solve_for_equilibrium_for_auxiliary_states>
+		<!--Maximum number of integrator steps.-->
+		<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
+		<!--Maximum integration step size.-->
+		<maximum_integrator_step_size>       0.01000000000000000000 </maximum_integrator_step_size>
+		<!--Minimum integration step size.-->
+		<minimum_integrator_step_size>       0.00000001000000000000 </minimum_integrator_step_size>
+		<!--Integrator error tolerance. When the error is greater, the integrator
+		    step size is decreased.-->
+		<integrator_error_tolerance>       0.00100000000000000000 </integrator_error_tolerance>
+		<!--Set of analyses to be run during the investigation.-->
+		<AnalysisSet name="Analyses">
+			<objects/>
+			<groups/>
+		</AnalysisSet>
+		<!--Controller objects in the model.-->
+		<ControllerSet name="Controllers">
+			<objects>
+				<ControlSetController name="">
+					<!--A list of actuators that this controller will control.The keyword ALL
+					    indicates the controller will controll all the acuators in the model-->
+					<actuator_list> </actuator_list>
+					<!--Flag (true or false) indicating whether or not the controller is
+					    enabled (ON) should-->
+					<enable_controller> false </enable_controller>
+					<!--XML file containing the controls for the controlSet.-->
+					<controls_file> DoublePendulum_controls.xml </controls_file>
+				</ControlSetController>
+			</objects>
+			<groups/>
+		</ControllerSet>
+		<!--XML file (.xml) containing the external loads applied to the model as
+		    a set of PrescribedForce(s).-->
+		<external_loads_file>  </external_loads_file>
+		<!--Storage file (.sto) containing the initial states for the forward
+		    simulation. This file often contains multiple rows of data, each row
+		    being a time-stamped array of states. The first column contains the
+		    time.  The rest of the columns contain the states in the order
+		    appropriate for the model. In a storage file, unlike a motion file
+		    (.mot), non-uniform time spacing is allowed.  If the user-specified
+		    initial time for a simulation does not correspond exactly to one of
+		    the time stamps in this file, inerpolation is NOT used because it is
+		    usually necessary to being a simulation from an exact set of states.
+		    Instead, the closest earlier set of states is used. Having a states
+		    file that contains the entire trajectory of a simulations allows for
+		    corrective springs for perturbation analysis to be added.-->
+		<states_file> DoublePendulum3D_InitialStates.sto </states_file>
+		<!--Flag (true or false) indicating whether or not the integrator should
+		    use a particular time stepping.  If true, the time stepping is
+		    extracted from the initial states file.  In this situation, therefore,
+		    the initial states file must contain all the time steps in a
+		    simulation and be written out to high precision (usually 20 decimal
+		    places).  Setting this flag to true can be useful when reproducing a
+		    previous forward simulation with as little drift as possible.  If this
+		    flag is false, the integrator is left to determine its own time
+		    stepping.-->
+		<use_specified_dt> false </use_specified_dt>
+		<!--True-false flag indicating whether or not to turn on a linear
+		    corrective spring for external load body 1.-->
+		<body1_linear_corrective_spring_active> false </body1_linear_corrective_spring_active>
+		<!--True-false flag indicating whether or not to turn on a torsional
+		    corrective spring for external load body 1.-->
+		<body1_torsional_corrective_spring_active> false </body1_torsional_corrective_spring_active>
+		<!--Time at which the torsional spring comes on for body1 (if it is
+		    active). By default, this time is 0.0.-->
+		<body1_torsional_corrective_spring_time_on>       0.00000000000000000000 </body1_torsional_corrective_spring_time_on>
+		<!--Time at which the torsional spring turns off for body1 (if it is
+		    active). By default, this time is 0.0.-->
+		<body1_torsional_corrective_spring_time_off>       0.00000000000000000000 </body1_torsional_corrective_spring_time_off>
+		<!--True-false flag indicating whether or not to turn on a linear
+		    corrective spring for external load body 2.-->
+		<body2_linear_corrective_spring_active> false </body2_linear_corrective_spring_active>
+		<!--True-false flag indicating whether or not to turn on a torsional
+		    corrective spring for external load body 2.-->
+		<body2_torsional_corrective_spring_active> false </body2_torsional_corrective_spring_active>
+		<!--Time at which the torsional spring comes on for body2 (if it is
+		    active). By default, this time is 0.0.-->
+		<body2_torsional_corrective_spring_time_on>       0.00000000000000000000 </body2_torsional_corrective_spring_time_on>
+		<!--Time at which the torsional spring turns off for body2 (if it is
+		    active). By default, this time is 0.0.-->
+		<body2_torsional_corrective_spring_time_off>       0.00000000000000000000 </body2_torsional_corrective_spring_time_off>
+		<!--Force magnitude at which linear springs start to transition in.-->
+		<linear_spring_transition_start_force>       0.00000000000000000000 </linear_spring_transition_start_force>
+		<!--Force magnitude past which linear springs are fully activated.-->
+		<linear_spring_transition_end_force>       0.00000000000000000000 </linear_spring_transition_end_force>
+		<!--Rise time for scaling functions for the torsional corrective springs.
+		    This parameter determines how fast a torsional corrective spring is
+		    scaled on and off.-->
+		<torsional_spring_scaling_rise_time>       0.00000000000000000000 </torsional_spring_scaling_rise_time>
+		<!--Override scaling rise time for the on transition of the body1
+		    torsional corrective spring.-->
+		<body1_scaling_rise_time_on>       0.00000000000000000000 </body1_scaling_rise_time_on>
+		<!--Override scaling rise time for the off transition out of the body1
+		    torsional corrective spring.-->
+		<body1_scaling_rise_time_off>       0.00000000000000000000 </body1_scaling_rise_time_off>
+		<!--Override scaling rise time for the on transition of the body2
+		    torsional corrective spring.-->
+		<body2_scaling_rise_time_on>       0.00000000000000000000 </body2_scaling_rise_time_on>
+		<!--Override scaling rise time for the off transition of the body2
+		    torsional corrective spring.-->
+		<body2_scaling_rise_time_off>       0.00000000000000000000 </body2_scaling_rise_time_off>
+		<!--Force magnitude below which the linear corrective springs exert no
+		    force. Setting this parameter to a small positive number will make it
+		    possible to open-loop simulation for a longer period of time with less
+		    drift.-->
+		<spring_force_threshold>       0.00000000000000000000 </spring_force_threshold>
+		<!--Torque magnitude below which the torsional corrective springs exert no
+		    force. Setting this parameter to a small positive number will make it
+		    possible to open-loop simulation for a longer period of time with less
+		    drift.-->
+		<spring_torque_threshold>       0.00000000000000000000 </spring_torque_threshold>
+		<!--Stiffness for linear (translational) corrective springs-->
+		<corrective_spring_linear_stiffness>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </corrective_spring_linear_stiffness>
+		<!--Damping for linear (translational) corrective springs-->
+		<corrective_spring_linear_damping>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </corrective_spring_linear_damping>
+		<!--Stiffness for torsional corrective springs-->
+		<corrective_spring_torsional_stiffness>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </corrective_spring_torsional_stiffness>
+		<!--Damping for torsional corrective springs-->
+		<corrective_spring_torsional_damping>       0.00000000000000000000       0.00000000000000000000       0.00000000000000000000 </corrective_spring_torsional_damping>
+		<!--Record and output corrective spring forces, amoung other quantities.-->
+		<output_detailed_results> false </output_detailed_results>
+	</ForwardTool>
+</OpenSimDocument>
+

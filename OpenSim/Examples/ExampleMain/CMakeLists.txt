@@ -13,7 +13,7 @@ SET(SOURCE_FILES ${TARGET}.cpp)
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
       CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
 
-SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.2" 
+SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.3" 
 		CACHE PATH "Top-level directory of OpenSim install")
 
 # Location of headers
@@ -47,7 +47,6 @@ LINK_LIBRARIES(
 	debug osimTools_d optimized osimTools
 	debug ${NameSpace}SimTKcommon_d optimized ${NameSpace}SimTKcommon
 	debug ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKcpodes_d optimized ${NameSpace}SimTKcpodes
 	debug ${NameSpace}SimTKsimbody_d optimized ${NameSpace}SimTKsimbody
 	SimTKlapack
 	${PLATFORM_LIBS})

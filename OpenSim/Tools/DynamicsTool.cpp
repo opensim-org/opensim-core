@@ -37,6 +37,7 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/GCVSplineSet.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -60,7 +61,8 @@ DynamicsTool::~DynamicsTool()
 DynamicsTool::DynamicsTool() : Tool(),
 	_modelFileName(_modelFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblVec()),
-	_excludedForces(_excludedForcesProp.getValueStrArray())
+	_excludedForces(_excludedForcesProp.getValueStrArray()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
 	setType("DynamicsTool");
 	setNull();
@@ -78,7 +80,8 @@ DynamicsTool::DynamicsTool(const string &aFileName, bool aLoadModel) :
 	Tool(aFileName, false),
 	_modelFileName(_modelFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblVec()),
-	_excludedForces(_excludedForcesProp.getValueStrArray())
+	_excludedForces(_excludedForcesProp.getValueStrArray()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
 	setType("DynamicsTool");
 	setNull();
@@ -98,7 +101,8 @@ DynamicsTool::DynamicsTool(const string &aFileName, bool aLoadModel) :
 DynamicsTool::DynamicsTool(const DynamicsTool &aTool) : Tool(aTool),
 	_modelFileName(_modelFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblVec()),
-	_excludedForces(_excludedForcesProp.getValueStrArray())
+	_excludedForces(_excludedForcesProp.getValueStrArray()),
+	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
 	setType("DynamicsTool");
 	setNull();
@@ -134,6 +138,12 @@ void DynamicsTool::setupProperties()
 		" to be excluded when computing model dynamics.");
 	_excludedForcesProp.setName("forces_to_exclude");
 	_propertySet.append(&_excludedForcesProp);
+
+	string comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
+	_externalLoadsFileNameProp.setComment(comment);
+	_externalLoadsFileNameProp.setName("external_loads_file");
+	_propertySet.append( &_externalLoadsFileNameProp );
+
 }
 
 //=============================================================================
@@ -154,7 +164,7 @@ DynamicsTool& DynamicsTool::operator=(const DynamicsTool &aTool)
 	_modelFileName = aTool._modelFileName;
 	_timeRange = aTool._timeRange;
 	_excludedForces = aTool._excludedForces;
-
+	_externalLoadsFileName = aTool._externalLoadsFileName;
 
 	return(*this);
 }
@@ -215,4 +225,104 @@ void DynamicsTool::disableModelForces(Model &model, SimTK::State &s, const Array
 			cout << "\nWARNING: Tool could not find force or group named '" << forcesByNameOrGroup[i] << "' to be excluded." << endl;
 
 	}
+}
+
+bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName,
+                                        Model& aModel) {
+
+    if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
+        cout<<"No external loads will be applied (external loads file not specified)."<<endl;
+        return false;
+    }
+
+
+	// CREATE FORCE AND TORQUE APPLIERS
+	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+	_externalLoads.setup(aModel);
+	_externalLoads.setMemoryOwner(false);
+	for (int i=0; i<_externalLoads.getSize(); i++){
+		aModel.updForceSet().append(&_externalLoads.get(i)); // Call this instead of addForce to avoid calling setup repeatedly
+	}
+
+    return(true);
+
+}
+
+void DynamicsTool::
+initializeExternalLoads( SimTK::State& s, 
+                         const double& analysisStartTime, 
+                         const double& analysisFinalTime
+						 )
+{
+	const string &aExternalLoadsFileName=_externalLoadsFileName;
+	const string &aExternalLoadsModelKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
+	double aLowpassCutoffFrequencyForLoadKinematics=_externalLoads.getLowpassCutoffFrequencyForLoadKinematics();
+	bool externalLoadKinematicsSpecified = (aExternalLoadsModelKinematicsFileName!="");
+	//const Model& aModel = _externalLoads.getModel();
+	Storage *qStore=NULL;
+	Storage *uStore=NULL;
+	if (externalLoadKinematicsSpecified){
+		cout<<"\n\nLoading external loads kinematics from file "<<aExternalLoadsModelKinematicsFileName<<" ...\n";
+		Storage loadsKinStore(aExternalLoadsModelKinematicsFileName);
+
+		// Form complete storage objects for the q's and u's
+		// This means filling in unspecified generalized coordinates and
+		// setting constrained coordinates to their valid values.
+		Storage *uStoreTmp=NULL;
+		_model->getSimbodyEngine().formCompleteStorages(s, loadsKinStore,qStore,uStoreTmp);
+		_model->getSimbodyEngine().convertDegreesToRadians(*qStore);
+		// Filter
+		qStore->pad(qStore->getSize()/2); 
+		if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
+			int order = 50;
+			cout<<"Low-pass filtering external load kinematics with a cutoff frequency of "
+				<<aLowpassCutoffFrequencyForLoadKinematics<<"..."<<endl;
+			qStore->lowpassFIR(order, aLowpassCutoffFrequencyForLoadKinematics);
+		} else {
+			cout<<"Note- not filtering the external loads model kinematics."<<endl;
+		}
+		// Spline
+		GCVSplineSet qSet(3,qStore);
+		uStore = qSet.constructStorage(1);
+	}
+	// LOAD COP, FORCE, AND TORQUE
+	Storage kineticsStore(_externalLoads.getDataFileName());
+
+	int copSize = kineticsStore.getSize();
+	if(copSize<=0) return;
+	// Make sure we have data for the requested range
+	if (kineticsStore.getFirstTime() > analysisStartTime || 
+		kineticsStore.getLastTime() < analysisFinalTime){
+		char durationString[100];
+		sprintf(durationString, "from t=%lf to t=%lf", analysisStartTime, analysisFinalTime);
+		string msg = "ERR- Requested simulation time  extends outside provided data." + string(durationString);
+		throw Exception(msg,__FILE__,__LINE__);
+	}
+	
+	/* Due to earlier resampling and in general analysisStartTime, analysisFinalTime may not coincide with actual
+	 * rows in qStore, in this case we need to evaluate the ForceApplier and TorqueApplier outside 
+	 * analysis[start, final]time up to the time of the row before analysisStartTime, and the row after analysisFinalTime.
+	 * Adjust analysisStartTime, analysisFinalTime to qStartTime, qFinalTime to account for that */
+	if (externalLoadKinematicsSpecified){
+		int startIndex = qStore->findIndex(analysisStartTime);
+		double qStartTime, qFinalTime;
+		qStore->getTime(startIndex, qStartTime);
+		int finalIndex = qStore->findIndex(analysisFinalTime);
+		qStore->getTime(finalIndex, qFinalTime);
+		Array<double> analysisBoundTimes;
+		if (qStartTime < analysisStartTime && startIndex >=1){
+			analysisBoundTimes.append(analysisStartTime);
+			//qStore->getTime(startIndex-1, qStartTime); 
+			qStartTime = analysisStartTime;
+		}
+		if (qFinalTime < analysisFinalTime && finalIndex < qStore->getSize()-1){
+			analysisBoundTimes.append(analysisFinalTime);
+			//qStore->getTime(finalIndex+1, qFinalTime); 
+			qFinalTime = analysisFinalTime;
+		}
+		qStore->interpolateAt(analysisBoundTimes);
+	}
+	// Construt point, force and torque functions from file
+	_externalLoads.computeFunctions(s, analysisStartTime, analysisFinalTime, kineticsStore, qStore, uStore);
+
 }

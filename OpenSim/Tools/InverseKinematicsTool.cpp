@@ -367,7 +367,13 @@ bool InverseKinematicsTool::run()
 			analysisSet.step(s, i);
 		}
 
-		kinematicsReporter.printResults(_outputMotionFileName);
+		// Do the maneuver to change then restore working directory 
+		// so that output files are saved to same folder as setup file.
+		string saveWorkingDirectory = IO::getCwd();
+		if (_document)	// When the tool is created live from GUI it has no file/document association
+			IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+		kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
+		IO::chDir(saveWorkingDirectory);
 
 		success = true;
 
@@ -375,6 +381,7 @@ bool InverseKinematicsTool::run()
 	}
 	catch (std::exception ex) {
 		std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
+		throw (Exception("InverseDynamicsTool Failed, please see messages window for details..."));
 	}
 
 	if (modelFromFile) delete _model;
@@ -393,7 +400,7 @@ void InverseKinematicsTool::updateFromXMLNode()
 			Xml::Element root = doc.getRootElement();
 			if (root.getElementTag()=="OpenSimDocument"){
 				int curVersion = root.getRequiredAttributeValueAs<int>("Version");
-				if (curVersion <= 20201) root.setAttributeValue("Version", "20202");
+				if (curVersion <= 20201) root.setAttributeValue("Version", "20300");
 				Xml::element_iterator iter(root.element_begin("IKTool"));
 				// need to test this path but don't know if these files were ever generated
 			}
@@ -423,13 +430,13 @@ void InverseKinematicsTool::updateFromXMLNode()
 					// Create an OpenSimDocument node and move root inside it
 					Xml::Document newDocument;
 					Xml::Element docElement= newDocument.getRootElement();
-					docElement.setAttributeValue("Version", "20202");
+					docElement.setAttributeValue("Version", "20300");
 					docElement.setElementTag("OpenSimDocument");
 					// Copy all children of root to newRoot
 					docElement.insertNodeAfter(docElement.node_end(), doc.getRootElement().clone());
 					newDocument.writeToFile(getDocumentFileName());
-					*this = InverseKinematicsTool(getDocumentFileName());
-					return;
+					_document = new XMLDocument(getDocumentFileName());
+					_node = _document->getRootDataElement();
 				}
 				else
 				;	// Somthing wrong! bail out

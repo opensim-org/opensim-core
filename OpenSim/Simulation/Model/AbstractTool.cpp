@@ -722,38 +722,51 @@ initializeExternalLoads( SimTK::State& s,
 
 			if (eNode!= NULL){
 				string fileName= parseStringProperty(std::string("external_loads_file"));
-				SimTK::Xml::Document doc(fileName);
-				doc.setIndentString("\t");
-				Xml::Element root = doc.getRootElement();
-				if (root.getElementTag()=="OpenSimDocument"){
-					int curVersion = root.getRequiredAttributeValueAs<int>("Version");
-					//Xml::element_iterator rootIter(root.element_begin("ForceSet"));
-					//Xml::Element documentElem = *rootIter;
-					Xml::element_iterator iter(root.element_begin("ExternalLoads"));
-					Xml::Element extLoadsElem = *iter;
-					
-					DOMElement* kNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
-					if (kNode !=NULL){
-						string kinFileName= parseStringProperty(std::string("external_loads_model_kinematics_file"));
-						XMLNode::RemoveElementFromParent(kNode);
-						// Make sure no node already exist
-						Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
-						if (iter2 == extLoadsElem.element_end())
-							iter->insertNodeAfter(iter->element_end(), Xml::Element("external_loads_model_kinematics_file", kinFileName));
-						else
-							iter2->setValue(kinFileName);
+				if (fileName!="" && fileName != "Unassigned"){
+					string saveWorkingDirectory = IO::getCwd();
+					string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+					IO::chDir(directoryOfSetupFile);
+					bool extLoadsFile=false;
+					try {
+						SimTK::Xml::Document doc(fileName);
+						doc.setIndentString("\t");
+						Xml::Element root = doc.getRootElement();
+						if (root.getElementTag()=="OpenSimDocument"){
+							int curVersion = root.getRequiredAttributeValueAs<int>("Version");
+							Xml::element_iterator rootIter(root.element_begin("ForceSet"));
+							if (rootIter!=root.element_end()){
+								rootIter->setElementTag("ExternalLoads");
+							}
+							Xml::element_iterator iter(root.element_begin("ExternalLoads"));
+							Xml::Element extLoadsElem = *iter;
+
+							DOMElement* kNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
+							if (kNode !=NULL){
+								string kinFileName= parseStringProperty(std::string("external_loads_model_kinematics_file"));
+								XMLNode::RemoveElementFromParent(kNode);
+								// Make sure no node already exist
+								Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
+								if (iter2 == extLoadsElem.element_end())
+									iter->insertNodeAfter(iter->element_end(), Xml::Element("external_loads_model_kinematics_file", kinFileName));
+								else
+									iter2->setValue(kinFileName);
+							}
+							DOMElement* fNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
+							if (fNode !=NULL){
+								string filterFreq= parseStringProperty(std::string("lowpass_cutoff_frequency_for_load_kinematics"));
+								XMLNode::RemoveElementFromParent(fNode);
+								Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
+								if (iter2 == extLoadsElem.element_end())
+									iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", filterFreq));
+								else
+									iter2->setValue(filterFreq);
+							}
+							doc.writeToFile(fileName);
+						}
 					}
-					DOMElement* fNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
-					if (fNode !=NULL){
-						string filterFreq= parseStringProperty(std::string("lowpass_cutoff_frequency_for_load_kinematics"));
-						XMLNode::RemoveElementFromParent(fNode);
-						Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
-						if (iter2 == extLoadsElem.element_end())
-							iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", filterFreq));
-						else
-							iter2->setValue(filterFreq);
+					catch(...){
+						IO::chDir(saveWorkingDirectory);
 					}
-					doc.writeToFile(fileName);
 				}
 			}
 		}

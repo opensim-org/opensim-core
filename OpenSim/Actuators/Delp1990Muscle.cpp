@@ -1086,3 +1086,11 @@ computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aAct
 
 	return isometricForce * normalizedForceVelocity;
 }
+
+int Delp1990Muscle::getStateVariableYIndex(int index) const
+{
+	if (index<=2)
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+index;
+	throw Exception("Trying to get State variable YIndex for Muscle "+getName()+" at undefined index"); 
+
+}

@@ -229,8 +229,18 @@ bool InverseDynamicsTool::run()
 
 		cout<<"Running tool " << getName() <<".\n"<<endl;
 
+		// Do the maneuver to change then restore working directory 
+		// so that the parsing code behaves properly if called from a different directory.
+		string saveWorkingDirectory = IO::getCwd();
+		string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+		IO::chDir(directoryOfSetupFile);
+
+		bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 		// Initialize the the model's underlying computational system and get its default state.
 		SimTK::State& s = modelFromFile?_model->initSystem(): _model->updMultibodySystem().updDefaultState();
+		if( externalLoads ) {
+			initializeExternalLoads( s, _timeRange[0], _timeRange[1]);
+		 }
 
 		// Exclude user-specified forces from the dynamics for this analysis
 		disableModelForces(*_model, s, _excludedForces);
@@ -269,7 +279,9 @@ bool InverseDynamicsTool::run()
 			}
 		}
 		else{
+			IO::chDir(saveWorkingDirectory);
 			throw Exception("InverseDynamicsTool: no coordinate file found.");
+
 		}
 
 		double first_time = coordinateValues->getFirstTime();
@@ -320,14 +332,15 @@ bool InverseDynamicsTool::run()
 		ivdResults.setName("Inverse Dynamics");
 		//ivdResults.print(_outputGenForceFileName);
 		IO::makeDir(getResultsDir());
-		Storage::printResult(&ivdResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
+		Storage::printResult(&ivdResults, _outputGenForceFileName, getResultsDir(), -1, "");
+		IO::chDir(saveWorkingDirectory);
 	}
 	catch (std::exception ex) {
 		std::cout << "InverseDynamicsTool Failed: " << ex.what() << std::endl;
+		throw (Exception("InverseDynamicsTool Failed, please see messages window for details..."));
 	}
 
 	if (modelFromFile) delete _model;
-
 	return success;
 }
 /* Handle reading older formats/Versioning */
@@ -335,25 +348,24 @@ void InverseDynamicsTool::updateFromXMLNode()
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	if ( documentVersion < XMLDocument::getLatestVersion()){
-		if (documentVersion <= 20202){
+		if (documentVersion < 20202){
 			// get filename and use SimTK::Xml to parse it
 			SimTK::Xml::Document doc = SimTK::Xml::Document(getDocumentFileName());
-			Xml::Element root = doc.getRootElement();
+			Xml::Element oldRoot = doc.getRootElement();
 			SimTK::Xml::Document newDoc;
-			if (root.getElementTag()=="AnalyzeTool"){
+			if (oldRoot.getElementTag()=="AnalyzeTool"){
 				// Make OpenSimDocument node and copy root underneath it
 				newDoc.getRootElement().setElementTag("OpenSimDocument");
 				newDoc.getRootElement().setAttributeValue("Version", "20201");
 				// Move all children of root to toolNode
-				newDoc.getRootElement().insertNodeAfter(newDoc.getRootElement().node_end(), root.clone());
-				//root.insertNodeAfter(root.element_end(), toolNode);
-				newDoc.writeToFile(getDocumentFileName());
-				root = newDoc.getRootElement();
-				cout << root.getElementTag() << endl;
+				newDoc.getRootElement().insertNodeAfter(newDoc.getRootElement().node_end(), oldRoot.clone());
 			}
+			else
+				newDoc = doc;
+			Xml::Element root = newDoc.getRootElement();
 			if (root.getElementTag()=="OpenSimDocument"){
 				int curVersion = root.getRequiredAttributeValueAs<int>("Version");
-				if (curVersion <= 20201) root.setAttributeValue("Version", "20202");
+				if (curVersion <= 20201) root.setAttributeValue("Version", "20300");
 				Xml::element_iterator iterTool(root.element_begin("AnalyzeTool"));
 				iterTool->setElementTag("InverseDynamicsTool");
 				// Remove children <output_precision>, <initial_time>, <final_time>
@@ -394,17 +406,17 @@ void InverseDynamicsTool::updateFromXMLNode()
 					std::ostringstream stream;
 					stream << tool_initial_time << " " << tool_final_time;
 					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("time_range", stream.str()));
-					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("forces_to_exclude", use_model_forces?"":"muscles"));
-					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("output_gen_force_file", "_InverseDynamics"));
-					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("coordinates_in_degrees", "false"));
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("forces_to_exclude", use_model_forces?"":"Muscles"));
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("output_gen_force_file", "InverseDynamicsOutput.sto"));
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("coordinates_in_degrees", "true"));
 					iterTool->eraseNode(iterAnalysisSet);
 				}
-				doc.writeToFile(getDocumentFileName());
-				*this=InverseDynamicsTool(getDocumentFileName(), false);
-				return;
+				newDoc.writeToFile(getDocumentFileName());
+				_document = new XMLDocument(getDocumentFileName());
+				_node = _document->getRootDataElement();
 			}
 
 		}
 	}
-	DynamicsTool::updateFromXMLNode();
+	Object::updateFromXMLNode();
 }

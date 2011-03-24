@@ -1,0 +1,7 @@
+"arm26_controls"						
+"Nrows=2"						
+"nColumns=7"						
+"endheader"						
+"time"	"TRIlong.excitation"	"TRIlat.excitation"	"TRImed.excitation"	"BIClong.excitation"	"BICshort.excitation"	"BRA.excitation"
+0	0	0	0	0	0	0
+10	0	0	0	0	0	0

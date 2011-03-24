@@ -67,6 +67,8 @@ int main(int argc,char **argv)
 		PrintUsage(argv[0], cout);
 		return(-1);
 	}
+	// Load libraries first
+	LoadOpenSimLibraries(argc,argv);
 	for(i=1;i<argc;i++) {
 		option = argv[i];
 

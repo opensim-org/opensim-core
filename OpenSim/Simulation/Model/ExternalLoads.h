@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/Set.h>
+#include <OpenSim/Common/Storage.h>
 
 #include "Force.h"
 #include "Actuator.h"
@@ -137,6 +138,17 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	virtual void setup(Model& aModel);
+    const Model& getModel() const
+    {
+        return *_model;
+    };
+    const bool hasModel()
+    {
+        return (_model!= 0);
+    };
+	void setModel(Model& aModel){
+		_model = &aModel;
+	};
 
 //=============================================================================
 };	// END of class ExternalLoads

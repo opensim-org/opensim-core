@@ -36,7 +36,6 @@ LINK_LIBRARIES(
 	debug osimTools_d optimized osimTools
 	debug  ${NameSpace}SimTKcommon_d optimized   ${NameSpace}SimTKcommon
 	debug  ${NameSpace}SimTKmath_d optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKcpodes_d optimized  ${NameSpace}SimTKcpodes
 	debug ${NameSpace}SimTKsimbody_d optimized  ${NameSpace}SimTKsimbody
 	debug osimLepton_d optimized osimLepton
 	SimTKlapack pthreadVC2

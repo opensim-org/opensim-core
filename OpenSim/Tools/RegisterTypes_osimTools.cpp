@@ -40,6 +40,7 @@
 //#include "PerturbationTool.h"
 #include "AnalyzeTool.h"
 #include "InverseKinematicsTool.h"
+#include "InverseDynamicsTool.h"
 
 #include "GenericModelMaker.h"
 #include "IKCoordinateTask.h"
@@ -100,6 +101,8 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( CMC_TaskSet() );
 
 	Object::RegisterType( SMC_Joint() );
+	Object::RegisterType( InverseKinematicsTool() );
+	Object::RegisterType( InverseDynamicsTool() );
 	// Old versions
 	Object::RenameType("rdCMC_Joint", CMC_Joint());
 	Object::RenameType("rdCMC_Point", CMC_Point());

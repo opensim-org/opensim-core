@@ -92,10 +92,11 @@ int main(int argc,char **argv)
 		cout << " testInverseDynamics.testArm  FAILED " << endl;
 		return(1);
 	}
-	//if (testModel("subject")!=0){
-	//	cout << " testInverseDynamics.testGait  FAILED " << endl;
-	//	return(1);
-	//}
+	/* disable until ExternalLoads are refactored
+	if (testModel("subject01")!=0){
+		cout << " testInverseDynamics.testGait  FAILED " << endl;
+		return(1);
+	}*/
 	return(0);
 }
 

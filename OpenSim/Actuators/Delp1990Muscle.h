@@ -210,6 +210,7 @@ public:
 	virtual Function* getForceVelocityCurve() const;
 	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
+	virtual int getStateVariableYIndex(int index) const;
 	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, Actuator);
 
 protected:

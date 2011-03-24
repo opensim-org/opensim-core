@@ -34,6 +34,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -368,6 +369,9 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
 
               delete sfw;
             }*/
+			std::string savedCwd = IO::getCwd();
+			IO::chDir(aPathToSubject);
+
 			if (!_outputModelFileNameProp.getUseDefault())
 			{
 				if (aModel->print(_outputModelFileName))
@@ -379,6 +383,7 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
 				if (theScaleSet.print(_outputScaleFileName))
 					cout << "Wrote scale file " << _outputScaleFileName << " for model " << aModel->getName() << endl;
 			}
+			IO::chDir(savedCwd);
 		}
 
 

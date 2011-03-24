@@ -35,6 +35,8 @@
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblArray.h>
+#include  <OpenSim/Simulation/Model/ForceSet.h>
+#include  <OpenSim/Simulation/Model/ExternalLoads.h>
 #include "Tool.h"
 
 #ifdef SWIG
@@ -83,8 +85,11 @@ protected:
 
 	/** External loads object that manages loading and applying external forces */
 	// to the model
-	//PropertyObjectPtr _externalLoadsObjectPtrProp;
-	//ExternalLoads *&_externalLoads;
+	/** Name of the file containing the external loads applied to the model. */
+	OpenSim::PropertyStr _externalLoadsFileNameProp;
+	std::string &_externalLoadsFileName;
+	/** Actual external forces being applied. e.g. GRF */
+	ExternalLoads	_externalLoads;
 
 
 //=============================================================================
@@ -102,6 +107,13 @@ public:
 
 	/** Modify model to exclude specified forces by disabling those identified by name or group */
 	void disableModelForces(Model &model, SimTK::State &s, const Array<std::string> &forcesByNameOrGroup);
+	
+	const ExternalLoads& getExternalLoads() const { return _externalLoads; }
+	ExternalLoads& updExternalLoads() { return _externalLoads; }
+
+	// External loads get/set
+	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
+	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
 
 private:
 	void setNull();
@@ -129,6 +141,14 @@ public:
 	void setExcludedForces(const Array<std::string> &aExcluded) {
 		_excludedForces = aExcluded;
 	}
+    bool createExternalLoads( const std::string &aExternalLoadsFileName,
+                                     Model& aModel);
+#ifndef SWIG
+        void initializeExternalLoads( SimTK::State& s, 
+                                      const double& analysisStartTime,
+                                      const double& analysisFinalTime);
+
+#endif
 	virtual bool run() SWIG_DECLARE_EXCEPTION=0;
 
 

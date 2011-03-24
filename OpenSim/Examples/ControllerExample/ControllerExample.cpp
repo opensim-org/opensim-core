@@ -109,19 +109,19 @@ public:
 	 * This function is called at every time step for every actuator.
 	 *
 	 * @param s Current state of the system
-	 * @param index Index of the current actuator whose control is being calculated
-	 * @return Control value to be assigned to the current actuator at the current time
+	 * @param controls Controls being calculated
 	 */
-	virtual double computeControl( const SimTK::State& s, int index )
+	virtual void computeControls( const SimTK::State& s, SimTK::Vector &controls )
 	const {
 
 		// Get the current time in the simulation.
 		double t = s.getTime();
 
-		// Get a pointer to the current muscle whose control is being
-		// calculated.
-		Muscle* act = dynamic_cast<Muscle*>
-			( &_actuatorSet.get( index ) );
+		// Get pointers to each of the muscles in the model.
+		Muscle* leftMuscle = dynamic_cast<Muscle*>
+			( &_actuatorSet.get(0) );
+		Muscle* rightMuscle = dynamic_cast<Muscle*>
+			( &_actuatorSet.get(1) );
 
 		// Compute the desired position of the block in the tug-of-war
 		// model.
@@ -180,31 +180,35 @@ public:
 		// block times the total desired acceleration of the block.
 		double desFrc = desAcc * blockMass;
 
-		// Get the maximum isometric force of the current muscle.
-		double Fopt = act->getMaxIsometricForce();
+		// Get the maximum isometric force for the left muscle.
+		double FoptL = leftMuscle->getMaxIsometricForce();
 
-		// Now, compute the control value for the current muscle.
-		double newControl;
+		// Get the maximum isometric force for the right muscle.
+		double FoptR = rightMuscle->getMaxIsometricForce();
 
-		// If desired force is in direction of current muscle's pull
-		// direction, then set the muscle's control based on desired
-		// force.  Otherwise, set the current muscle's control to
-		// zero.
-		if( desFrc < 0 && index == 0 || // index 0: left muscle
-			desFrc > 0 && index == 1 )  // index 1: right muscle
-			newControl = abs( desFrc ) / Fopt;
-		else
-			newControl = 0.0;
+		// If desired force is in direction of one muscle's pull
+		// direction, then set that muscle's control based on desired
+		// force.  Otherwise, set the muscle's control to zero.
+		if( desFrc < 0 ) {
+			controls[0] = abs( desFrc ) / FoptL;
+			controls[1] = 0.0;
+		}
+		else if( desFrc > 0 ) {
+			controls[0] = 0.0;
+			controls[1] = abs( desFrc ) / FoptR;
+		}
+		else {
+			controls[0] = 0.0;
+			controls[1] = 0.0;
+		}
 
-		// Don't allow the control value to be less than zero.
-		if( newControl < 0.0 ) newControl = 0.0;
+		// Don't allow any control value to be less than zero.
+		if( controls[0] < 0.0 ) controls[0] = 0.0;
+		if( controls[1] < 0.0 ) controls[1] = 0.0;
 
-		// Don't allow the control value to be greater than one.
-		if( newControl > 1.0 ) newControl = 1.0;
-
-		// Return the final computed control value for the current
-		// muscle.
-		return newControl;
+		// Don't allow any control value to be greater than one.
+		if( controls[0] > 1.0 ) controls[0] = 1.0;
+		if( controls[1] > 1.0 ) controls[1] = 1.0;
 	}
 
 // This section contains the member variables of this controller class.
@@ -272,6 +276,10 @@ int main()
 		TugOfWarController *controller = new
 			TugOfWarController( osimModel, kp );
 
+		// Give the controller the Model's actuators so it knows
+		// to control those actuators.
+		controller->setActuators( osimModel.updActuators() );
+
 		// Add the controller to the Model.
 		osimModel.addController( controller );
 
@@ -299,9 +307,8 @@ int main()
 		muscle2->setActivation(si, 0.01 ); // muscle2 activation
 		muscle2->setFiberLength(si, 0.2 ); // muscle2 fiber length
 
-
         // Compute initial conditions for muscles.
-		//osimModel.equilibrateMuscles( si );
+		//osimModel.computeEquilibriumForAuxiliaryStates(si);
 
 		// Create the integrator and manager for the simulation.
 		SimTK::RungeKuttaMersonIntegrator
