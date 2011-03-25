@@ -371,7 +371,7 @@ Array<string> InducedAccelerations:: constructColumnLabelsForConstraintReactions
 	// Get the main headings for all the contributors
 	Array<string> contributors = constructColumnLabelsForCoordinate();
 	Array<string> labels;
-	Array<Array<std::string>> constraint_reaction_labels;
+	Array< Array<std::string> > constraint_reaction_labels;
 
 	for(int j=0; j<nc; j++){
 		constraint_reaction_labels.append(_constraintSet[j].getRecordLabels());
