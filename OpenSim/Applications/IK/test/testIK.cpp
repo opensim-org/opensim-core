@@ -80,6 +80,32 @@ bool testInverseKinematicsGait2354()
 	return true;
 }
 
+bool testInverseKinematicsGait2354_GUI()
+{
+	InverseKinematicsTool* tool = new InverseKinematicsTool("subject01_Setup_InverseKinematics_NoModel.xml");
+	Model mdl("subject01_simbody.osim");
+	mdl.initSystem();
+	tool->setModel(mdl);
+	try {
+		tool->run();
+		Storage actualOutput(tool->getOutputMotionFileName());
+		Storage stdStorage("std_subject01_walk1_ik.mot");
+
+		// Check that we can match the input kinematics to within a fifth of a degree
+		bool equal = equalStorage(stdStorage, actualOutput, 0.2);
+		std::cout << (equal?"Success":"Failure") << endl;
+		
+		return equal;
+	}
+	catch(const std::exception& e) {
+        cout << "exception: " << e.what() << endl;
+        return false;
+    }
+
+	return true;
+
+
+}
 bool testInverseKinematicsUWDynamic()
 {
 	// read setup file and construct model
@@ -108,25 +134,23 @@ int main()
 		cout << "testInverseKinematicsGait2354 Failed." << endl;
 		return 1;
 	}
+	cout << "testInverseKinematicsGait2354 Passed." << endl;
 
 	if(!testInverseKinematicsUWDynamic()){
 		cout << "testInverseKinematicsUWDynamic Failed." << endl;
 		return 1;
 	}
-/*
-	// Construct model and read parameters file
-	IKTool* tool = new IKTool("subject01_Setup_IK.xml");
-	Model& model = tool->getModel();
+	cout << "testInverseKinematicsUWDynamic Passed." << endl;
 
-    SimTK::State& s = model.initSystem();
-    model.getMultibodySystem().realize(s, SimTK::Stage::Position );
-	tool->run();
-	Storage *actualOutput = tool->getIKTrialSet()[0].getOutputStorage();
-	Storage stdStorage("std_subject_trial_ik.mot");
-	bool equal = equalStorage(stdStorage, *actualOutput, 5e-2);
-	std::cout << (equal?"Success":"Failure") << endl;
-	delete tool;
-	*/
+	// run using GUI work flow
+	if(!testInverseKinematicsGait2354_GUI()){
+		cout << "testInverseKinematicsGait2354 GUI workflow Failed." << endl;
+		return 1;
+	}
+	cout << "testInverseKinematicsGait2354 GUI workflow Passed." << endl;
+
+
+	
 	return (0);
 }
 

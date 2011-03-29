@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<InverseKinemtaticsTool name="subject01">
+	<!--Name of the .osim file used to construct a model.-->
+	<model_file> </model_file>
+	<!--Task set used to specify IK weights.-->
+	<IKTaskSet file="gait2354_IK_Tasks_uniform.xml"/>
+	<!--TRC file (.trc) containing the time history of experimental marker
+	    positions.-->
+	<marker_file>subject01_synthetic_marker_data.trc </marker_file>
+	<!--Name of file containing the joint angles used to set the initial
+	    configuration of the model for the purpose of placing the markers.
+	    These coordinate values can also be included in the optimization
+	    problem used to place the markers. Before the model markers are
+	    placed, a single frame of an inverse kinematics (IK) problem is
+	    solved. The IK problem can be solved simply by matching marker
+	    positions, but if the model markers are not in the correct locations,
+	    the IK solution will not be very good and neither will marker
+	    placement. Alternatively, coordinate values (specified in this file)
+	    can be specified and used to influence the IK solution. This is
+	    valuable particularly if you have high confidence in the coordinate
+	    values. For example, you know for the static trial the subject was
+	    standing will all joint angles close to zero. If the coordinate set
+	    (see the CoordinateSet property) contains non-zero weights for
+	    coordinates, the IK solution will try to match not only the marker
+	    positions, but also the coordinates in this file. Least-squared error
+	    is used to solve the IK problem.-->
+	<coordinate_file> </coordinate_file>
+	<!--Time range over which the IK problem is solved.-->
+	<time_range> 0.4 1.6 </time_range>
+	<!--Name of the motion file (.mot) to which the results should be written.-->
+	<output_motion_file> subject01_walk1_ik_test.mot </output_motion_file>
+  <!-- A positive scalar that is used to weight the importance of satisfying constraints."
+		  A weighting of 'Infinity' or if it is unassigned results in the constraints being strictly enforced-->
+  <constraint_weight> 100.0 </constraint_weight>
+  <accuracy>1e-5</accuracy>
+</InverseKinemtaticsTool>
+

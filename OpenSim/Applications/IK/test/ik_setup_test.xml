@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20101">
+<OpenSimDocument Version="20300">
 	<InverseKinematicsTool name="">
 		<defaults>
 			<Thelen2003Muscle name="default">
@@ -139,7 +139,9 @@
 			</Schutte1993Muscle>
 		</defaults>
 		<!--Directory used for writing results.-->
-		<results_directory> Unassigned </results_directory>
+		<results_directory> ./ </results_directory>
+		<!--Directory for input files-->
+		<input_directory>  </input_directory>
 		<!--Name of the .osim file used to construct a model.-->
 		<model_file> uwdynamic_ikOnly.osim </model_file>
 		<!--A positive scalar that is used to weight the importance of satisfying
@@ -499,7 +501,7 @@
 		    a corresponding coordinate task.-->
 		<coordinate_file> Unassigned </coordinate_file>
 		<!--Time range over which the inverse kinematics problem is solved.-->
-		<time_range>      -1.#INF0000       1.#INF0000 </time_range>
+		<time_range> -infinity infinity </time_range>
 		<!--Flag (true or false) indicating whether or not to report marker and
 		    coordinate errors from the inverse kinematics solution.-->
 		<report_errors> false </report_errors>
