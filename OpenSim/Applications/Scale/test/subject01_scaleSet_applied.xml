@@ -1,22 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="10905">
+<OpenSimDocument Version="20300">
 	<ScaleSet name="ScaleSet">
 		<defaults>
 			<Thelen2003Muscle name="default">
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
 						<groups/>
 					</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>   1.00000000   1.00000000   1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>  -0.00000000   0.00000000  -0.00000000   0.00000000   0.00000000   0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 					</VisibleObject>
 					<PathWrapSet name="">
 						<objects/>
@@ -57,20 +66,29 @@
 				<Flen>   1.80000000 </Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
+				<isDisabled> false </isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
 						<groups/>
 					</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>   1.00000000   1.00000000   1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>  -0.00000000   0.00000000  -0.00000000   0.00000000   0.00000000   0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 					</VisibleObject>
 					<PathWrapSet name="">
 						<objects/>
@@ -118,8 +136,6 @@
 						<y>   0.00000000   0.00000000   0.00000000   0.00000000   0.03500000   0.12000000   0.26000000   0.55000000   1.17000000   2.00000000   2.00000000   2.00000000   2.00000000 </y>
 					</NaturalCubicSpline>
 				</passive_force_length_curve>
-				<!--Function representing force-velocity behavior of muscle fibers-->
-				<force_velocity_curve/>
 			</Schutte1993Muscle>
 		</defaults>
 		<objects>

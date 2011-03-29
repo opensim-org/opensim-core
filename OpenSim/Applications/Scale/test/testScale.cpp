@@ -133,14 +133,63 @@ bool scaleGait2354()
 	if(!(computedScaleSet == stdScaleSet)) 
 		return(false);
     
-	//bool success=compareModel(*model, std::string("stdScaled.osim"), 1e-5);
-
-	// 
-
 	delete model;
 	delete subject;
     return(true);
 }
+
+bool scaleGait2354_GUI(bool useMarkerPlacement)
+{
+	// SET OUTPUT FORMATTING
+	IO::SetDigitsPad(4);
+
+	// Construct model and read parameters file
+	ScaleTool* subject = new ScaleTool("subject01_Setup_Scale_GUI.xml");
+	std::string setupFilePath=subject->getPathToSubject();
+
+	// Remove old results if any
+	FILE* file2Remove = IO::OpenFile(setupFilePath+"subject01_scaleSet_applied_GUI.xml", "w");
+	fclose(file2Remove);
+	file2Remove = IO::OpenFile(setupFilePath+"subject01_scaledOnly_GUI.osim", "w");
+	fclose(file2Remove);
+
+	Model guiModel("gait2354_simbody.osim");
+	
+	// Keep track of the folder containing setup file, wil be used to locate results to comapre against
+	guiModel.initSystem();
+	MarkerSet *markerSet = new MarkerSet(setupFilePath + subject->getGenericModelMaker().getMarkerSetFileName());
+	guiModel.updateMarkerSet(*markerSet);
+
+	// processedModelContext.processModelScale(scaleTool.getModelScaler(), processedModel, "", scaleTool.getSubjectMass())
+	guiModel.getMultibodySystem().realizeTopology();
+	SimTK::State* configState=&guiModel.updMultibodySystem().updDefaultState();
+	bool retValue= subject->getModelScaler().processModel(*configState, &guiModel, setupFilePath, subject->getSubjectMass());
+	// Model has changed need to recreate a valid state 
+	guiModel.getMultibodySystem().realizeTopology();
+    configState=&guiModel.updMultibodySystem().updDefaultState();
+	guiModel.getMultibodySystem().realize(*configState, SimTK::Stage::Position);
+
+	/*
+	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
+		MarkerPlacer& placer = subject->getMarkerPlacer();
+	    if( false == placer.processModel(s, model, subject->getPathToSubject())) return(false);
+	}
+	else {
+        return(1);
+	}
+	*/
+	// Compare ScaleSet
+	ScaleSet stdScaleSet = ScaleSet(setupFilePath+"std_subject01_scaleSet_applied.xml");
+
+	const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied_GUI.xml");
+
+	if(!(computedScaleSet == stdScaleSet)) 
+		return(false);
+
+	delete subject;
+    return(true);
+}
+
 
 
 int main()
@@ -151,6 +200,14 @@ int main()
             std::cout << "FAILED" << std::endl;
             return(1);
         }
+		if (false == scaleGait2354_GUI(false) ) {	// GUI workflow without marker placement
+            std::cout << "FAILED GUI workflow without marker placement" << std::endl;
+            return(1);
+		}
+		/*if (false == scaleGait2354_GUI(true) ) { // GUI workflow with marker placement
+            std::cout << "FAILED GUI workflow with marker placement" << std::endl;
+            return(1);
+		}*/
 
     }
     catch(const std::exception& e) {
