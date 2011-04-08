@@ -355,16 +355,18 @@ SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimiz
 SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKmath)
 SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKsimbody)
 
-IF(WIN32)
+IF(WIN32)	
 	SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
 					${SIMTK_MATH_LIB} 
 					${SIMTK_SIMBODY_LIB} 
 					${MATH_LIBS_TO_USE})
 	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
-					${SIMTK_BIN_DIR}/*.dll
-					${SIMTK_BIN_DIR}/*.exe
-					${SIMTK_LIB_DIR}/*.lib
-					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/xerces-c_2_8.dll)
+					${SIMTK_BIN_DIR}/${VCVERSION}/*.dll
+					${SIMTK_BIN_DIR}/${VCVERSION}/*.exe
+					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION}/xerces-c_2_8.dll)
+	FILE(GLOB THIRDPARTY_EXPORTLIB_FILES 
+					${SIMTK_LIB_DIR}/${VCVERSION}/*.lib
+					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION}/xerces-c_2_8.lib)
 
 ELSE(WIN32)
 	SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
