@@ -16,7 +16,8 @@ FILE(GLOB INCLUDE_FILES *.h)
 
 SET(EXPORT_MACRO OSIMEXPPLUGIN_EXPORTS)
 
-##SET(OPENSIM_INSTALL_DIR "G:/OpenSim22/" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.2.1" 
+		CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimExpressionReporter")
 

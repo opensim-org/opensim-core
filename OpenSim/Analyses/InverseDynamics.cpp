@@ -126,8 +126,9 @@ operator=(const InverseDynamics &aInverseDynamics)
 	Analysis::operator=(aInverseDynamics);
 
 	_useModelForceSet = aInverseDynamics._useModelForceSet;
-	_modelWorkingCopy = aInverseDynamics._modelWorkingCopy;
+	_modelWorkingCopy = 0;
 	_numCoordinateActuators = aInverseDynamics._numCoordinateActuators;
+	_forceSet = 0;
 	return(*this);
 }
 

@@ -208,6 +208,7 @@ void MuscleAnalysis::
 allocateStorageObjects()
 {
 	if(_model==NULL) return;
+	if (!getOn()) return;
 
 	// CLEAR EXISTING WORK ARRAYS
 	_storageList.setMemoryOwner(true);
@@ -294,6 +295,7 @@ void MuscleAnalysis::
 updateStorageObjects()
 {
 	if(_model==NULL) return;
+	if (!getOn()) return;
 
 	// POPULATE MUSCLE LIST FOR "all"
 	ForceSet& fSet = _model->updForceSet();
@@ -484,6 +486,7 @@ int MuscleAnalysis::
 record(const SimTK::State& s)
 {
 	if(_model==NULL) return(-1);
+	if (!getOn()) return(-1);
 
 	// MAKE SURE ALL ACTUATION QUANTITIES ARE VALID
 	// COMPUTE DERIVATIVES

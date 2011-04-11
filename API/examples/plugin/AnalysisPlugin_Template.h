@@ -239,7 +239,7 @@ public:
 	virtual int
 		begin(SimTK::State& s);
 	virtual int
-		step(const SimTK::State& s);
+		step(const SimTK::State& s, int stepNumber);
 	virtual int
 		end(SimTK::State& s);
 

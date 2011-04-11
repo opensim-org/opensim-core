@@ -541,7 +541,7 @@ setModel(Model& aModel)
 	setupReactionList();
 	constructDescription();
 	constructColumnLabels();
-	setupStorage();
+	//setupStorage();
 	_dydt.setSize(_model->getNumStates());
 	int numJoints = _reactionList.getSize();
 	// work out how to set firgure out desired truncated loads size
@@ -680,6 +680,8 @@ int JointReaction::
 begin(SimTK::State& s)
 {
 	if(!proceed()) return(0);
+	// Read forces file here rather than during initialization
+	setupStorage();
 
 	// RESET STORAGE
 	_storeReactionLoads.reset(s.getTime());

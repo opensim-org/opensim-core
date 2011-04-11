@@ -1929,7 +1929,10 @@ getRegisteredTypenames(Array<std::string>& rTypeNames)
 {
 	stringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.begin();
 	while (find_Iter != _mapTypesToDefaultObjects.end()){
-		rTypeNames.append(find_Iter->first);
+		std::string nextTypeName = find_Iter->first;
+		if (_deprecatedTypes.findIndex(nextTypeName)==-1)
+			rTypeNames.append(nextTypeName);
+		find_Iter++;
 	}
 }
 

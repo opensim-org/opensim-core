@@ -52,6 +52,7 @@
 using namespace OpenSim;
 using namespace std;
 
+bool showBounds = true;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -368,19 +369,16 @@ record(const SimTK::State& s)
 
 	// Parameter bounds
 	SimTK::Vector lowerBounds(na), upperBounds(na);
-	Muscle *mus;
 	for(int i=0,j=0;i<fs.getSize();i++) {
 		Actuator& act = fs.get(i);
-	    mus = dynamic_cast<Muscle*>(&fs.get(i));
-	    if(mus==NULL) {
-			lowerBounds(j) = (act.getMinControl()==-SimTK::Infinity)?-1.0:act.getMinControl();
-		    upperBounds(j) = (act.getMaxControl()==SimTK::Infinity)?1.0:act.getMaxControl();
-	    } else {
-			lowerBounds(j) = (act.getMinControl()==-SimTK::Infinity)?0.01:act.getMinControl();
-		    upperBounds(j) = (act.getMaxControl()==SimTK::Infinity)?1.0:act.getMaxControl();
-	    }
+		lowerBounds(j) = act.getMinControl();
+	    upperBounds(j) = act.getMaxControl();
+		if (showBounds){
+			cout << "Bounds" << act.getName() << ": " << lowerBounds(j)<< " to "<< upperBounds(j) << endl;
+		}
         j++;
 	}
+	showBounds = false;
 	target.setParameterLimits(lowerBounds, upperBounds);
 
 	_parameters = 0; // Set initial guess to zeros

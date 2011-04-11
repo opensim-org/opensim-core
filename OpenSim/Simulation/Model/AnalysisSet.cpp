@@ -223,7 +223,7 @@ begin(SimTK::State& s )
 	int i;
 	for(i=0;i<getSize();i++) {
 		Analysis& analysis = get(i);
-		analysis.begin(s);
+		if (analysis.getOn()) analysis.begin(s);
 	}
 }
 //_____________________________________________________________________________
@@ -240,7 +240,7 @@ step( const SimTK::State& s, int stepNumber )
 	int i;
 	for(i=0;i<getSize();i++) {
 		Analysis& analysis = get(i);
-		analysis.step(s, stepNumber);
+		if (analysis.getOn()) analysis.step(s, stepNumber);
 	}
 }
 //_____________________________________________________________________________
@@ -257,7 +257,7 @@ end(SimTK::State& s)
 	int i;
 	for(i=0;i<getSize();i++) {
 		Analysis& analysis = get(i);
-		analysis.end(s);
+		if (analysis.getOn()) analysis.end(s);
 	}
 }
 
@@ -281,7 +281,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	int size = getSize();
 	for(i=0;i<size;i++) {
 		Analysis& analysis = get(i);
-		if(analysis.getPrintResultFiles()) analysis.printResults(aBaseName,aDir,aDT,aExtension);
+		if(analysis.getOn() && analysis.getPrintResultFiles()) analysis.printResults(aBaseName,aDir,aDT,aExtension);
 	}
 }
 //=============================================================================

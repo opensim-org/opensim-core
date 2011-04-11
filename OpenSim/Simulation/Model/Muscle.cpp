@@ -73,6 +73,9 @@ Muscle::Muscle() : Actuator(),
 {
 	setNull();
 	setupProperties();
+	// override the value of default _minControl, _maxControl
+	_minControl=0.0;
+	_maxControl=1.0;
 }
 
 //_____________________________________________________________________________

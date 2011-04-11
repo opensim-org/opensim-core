@@ -485,9 +485,9 @@ begin(SimTK::State& s)
  * @return -1 on error, 0 otherwise.
  */
 int AnalysisPlugin_Template::
-step(const SimTK::State& s)
+step(const SimTK::State& s, int stepNumber)
 {
-	if(!proceed(_model->getStep(s))) return(0);
+	if(!proceed(stepNumber)) return(0);
 
 	record(s);
 
