@@ -262,6 +262,7 @@ Actuator::Actuator(const Actuator &aAct) : Actuator_(aAct),
 	_maxControl(_propMaxControl.getValueDbl()),
     _overrideForceFunction(0)
 {
+	setNull();
 	_minControl = aAct._minControl;
 	_maxControl = aAct._maxControl;
 }
