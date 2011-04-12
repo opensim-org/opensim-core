@@ -76,10 +76,6 @@ int testModel(std::string modelPrefix)
 
 	// RUN
 	analyze.run();
-
-	// Now run again but without using no muscle physiology
-	StaticOptimization& an = (StaticOptimization&) model.updAnalysisSet().get("StaticOptimization");
-	an.setUseMusclePhysiology(false);
 	
 	// also change output file names/path
 	//----------------------------
@@ -102,8 +98,12 @@ int testModel(std::string modelPrefix)
 }
 int main(int argc,char **argv)
 {
-	if (testModel("arm26")!=0){
+	if (testModel("arm26")!=0){	// Arm26 with no bounds (0 to 1.0)
 		cout << " testStaticOptimization.testArm  FAILED " << endl;
+		return (1);
+	}
+	if (testModel("arm26_bounds")!=0){	// Arm26 with bounds 0.01 to 1.0 same as versions prior to 2.2.1
+		cout << " testStaticOptimization.testArm  with bounds FAILED " << endl;
 		return (1);
 	}
 	return(0);

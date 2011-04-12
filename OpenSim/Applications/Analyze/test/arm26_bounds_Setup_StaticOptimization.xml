@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<AnalyzeTool name="arm26">
+<AnalyzeTool name="arm26_bounds">
 	<!--Name of the .osim file used to construct a model.-->
 	<model_file> arm26_bounds.osim </model_file>
   <!--Replace the model's actuator set with sets specified in

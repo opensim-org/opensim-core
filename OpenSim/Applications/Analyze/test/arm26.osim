@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="20300">
-	<Model name="arm26">
+	<Model name="arm26_01">
 		<defaults>
 			<ControlLinear name="default">
 				<is_model_control> true </is_model_control>
@@ -180,12 +180,6 @@
 			<objects>
 				<Thelen2003Muscle name="TRIlong">
 					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.010000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>
@@ -378,10 +372,6 @@
 					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<min_control>       0.010000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>
@@ -564,10 +554,6 @@
 					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<min_control>       0.010000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>
@@ -750,10 +736,6 @@
 					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<min_control>       0.010000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>
@@ -1024,10 +1006,6 @@
 					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<min_control>       0.010000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>
@@ -1224,12 +1202,6 @@
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BRA">
 					<isDisabled> false </isDisabled>
-					<!--Minimum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<min_control>       0.010000000 </min_control>
-					<!--Maximum allowed value for control signal. Used primarily when solving
-					    for control values-->
-					<max_control>       1.00000000 </max_control>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>
