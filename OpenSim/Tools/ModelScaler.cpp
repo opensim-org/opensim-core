@@ -63,8 +63,6 @@ ModelScaler::ModelScaler() :
 	_markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_preserveMassDist(_preserveMassDistProp.getValueBool()),
-	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
-	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputScaleFileName(_outputScaleFileNameProp.getValueStr())
 {
@@ -97,8 +95,6 @@ ModelScaler::ModelScaler(const ModelScaler &aModelScaler) :
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_preserveMassDist(_preserveMassDistProp.getValueBool()),
-	_outputJointFileName(_outputJointFileNameProp.getValueStr()),
-	_outputMuscleFileName(_outputMuscleFileNameProp.getValueStr()),
 	_outputModelFileName(_outputModelFileNameProp.getValueStr()),
 	_outputScaleFileName(_outputScaleFileNameProp.getValueStr())
 {
@@ -138,8 +134,6 @@ void ModelScaler::copyData(const ModelScaler &aModelScaler)
 	_markerFileName = aModelScaler._markerFileName;
 	_timeRange = aModelScaler._timeRange;
 	_preserveMassDist = aModelScaler._preserveMassDist;
-	_outputJointFileName = aModelScaler._outputJointFileName;
-	_outputMuscleFileName = aModelScaler._outputMuscleFileName;
 	_outputModelFileName = aModelScaler._outputModelFileName;
 	_outputScaleFileName = aModelScaler._outputScaleFileName;
 	_printResultFiles = aModelScaler._printResultFiles;
@@ -200,16 +194,6 @@ void ModelScaler::setupProperties()
 	_preserveMassDistProp.setComment("Flag (true or false) indicating whether or not to preserve relative mass between segments.");
 	_preserveMassDistProp.setName("preserve_mass_distribution");
 	_propertySet.append(&_preserveMassDistProp);
-
-	_outputJointFileNameProp.setComment("Name of SIMM joint file to write when done scaling. "
-		"If not specified, a file will not be written.");
-	_outputJointFileNameProp.setName("output_joint_file");
-	_propertySet.append(&_outputJointFileNameProp);
-
-	_outputMuscleFileNameProp.setComment("Name of SIMM muscle file to write when done scaling. "
-		"If not specified, a file will not be written.");
-	_outputMuscleFileNameProp.setName("output_muscle_file");
-	_propertySet.append(&_outputMuscleFileNameProp);
 
 	_outputModelFileNameProp.setComment("Name of OpenSim model file (.osim) to write when done scaling.");
 	_outputModelFileNameProp.setName("output_model_file");
@@ -356,19 +340,6 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
 
 
 		if(_printResultFiles) {
-			/* Write output files, if names specified by the user. 
-				* users can export the osim models in the GUI or using OpenSimtoSimm
-				* May enable if/when SimmFileWriterDLL is building again. -Ayman 8/09
-            SimmFileWriter *sfw = new SimmFileWriter(aModel);
-            if (sfw) {
-               if (!_outputJointFileNameProp.getUseDefault())
-                   sfw->writeJointFile(aPathToSubject + _outputJointFileName);
-
-               if (!_outputMuscleFileNameProp.getUseDefault())
-                   sfw->writeMuscleFile(aPathToSubject + _outputMuscleFileName);
-
-              delete sfw;
-            }*/
 			std::string savedCwd = IO::getCwd();
 			IO::chDir(aPathToSubject);
 

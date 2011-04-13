@@ -97,14 +97,6 @@ protected:
 	PropertyBool _preserveMassDistProp;
 	bool &_preserveMassDist;
 
-	// name of SIMM joint file to write when done scaling
-	PropertyStr _outputJointFileNameProp;
-	std::string &_outputJointFileName;
-
-	// name of SIMM muscle file to write when done scaling
-	PropertyStr _outputMuscleFileNameProp;
-	std::string &_outputMuscleFileName;
-
 	// name of XML model file to write when done scaling
 	PropertyStr _outputModelFileNameProp;
 	std::string &_outputModelFileName;
@@ -193,18 +185,6 @@ public:
 	void setMarkerFileName(const std::string& aMarkerFileName) {
 		_markerFileName = aMarkerFileName;
 		_markerFileNameProp.setUseDefault(false);
-	}
-
-	const std::string& getOutputJointFileName() const { return _outputJointFileName; }
-	void setOutputJointFileName(const std::string& outputJointFileName) {
-		_outputJointFileName = outputJointFileName;
-		_outputJointFileNameProp.setUseDefault(false);
-	}
-
-	const std::string& getOutputMuscleFileName() const { return _outputMuscleFileName; } 
-	void setOutputMuscleFileName(const std::string& aOutputMuscleFileName) {
-		_outputMuscleFileName = aOutputMuscleFileName;
-		_outputMuscleFileNameProp.setUseDefault(false);
 	}
 
 	const std::string& getOutputModelFileName() const { return _outputModelFileName; }
