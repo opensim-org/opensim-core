@@ -66,6 +66,18 @@ int main() {
 		ASSERT(md.getDataRate()==250.);
 		ASSERT(md.getCameraRate()==250.);
 		//ToBeTested md.convertToUnits(Units(Units::Meters));
+
+		MarkerData md2("Run_500 02.trc");
+		double expectedData[] = {1006.513977, 1014.924316,-195.748917};
+		const MarkerFrame& frame2 = md2.getFrame(1);
+		ASSERT(frame2.getFrameTime()==.01);
+		const SimTK::Array_<SimTK::Vec3>& markers =frame2.getMarkers();
+		const SimTK::Vec3& m1 = markers[0];
+		ASSERT(SimTK::isNaN(m1[0]));
+		ASSERT(SimTK::isNaN(m1[1]));
+		ASSERT(SimTK::isNaN(m1[2]));
+		SimTK::Vec3 diff = (markers[1]-SimTK::Vec3(expectedData[0], expectedData[1], expectedData[2]));
+		ASSERT(diff.norm()<1e-7);
     }
     catch (...) {
         cout << "Failed" << endl;

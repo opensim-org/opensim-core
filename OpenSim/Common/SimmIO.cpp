@@ -269,7 +269,8 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowN
 
    if (aString.empty())
       return false;
-
+   // Remove leading spaces
+	while(aString[0]==' ') aString.erase(0, 1);
    /* remove any characters before the number */
    i = aString.find_first_of("0123456789-.", 0);
    if (i != 0){
