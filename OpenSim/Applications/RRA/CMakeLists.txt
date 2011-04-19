@@ -1,4 +1,4 @@
-SET(APPNAME cmc)
+SET(APPNAME rra)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 						  ${OpenSim_SOURCE_DIR}/Vendors

@@ -34,7 +34,7 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/LoadModel.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Tools/CMCTool.h>
+#include <OpenSim/Tools/RRATool.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/Actuation.h>
@@ -49,8 +49,8 @@ using namespace std;
 
 void testGait2354() {
 
-	CMCTool cmc("subject01_Setup_RRA.xml");
-	cmc.run();
+	RRATool rra("subject01_Setup_RRA.xml");
+	rra.run();
 
     SimTK::Vec3 com; 
     

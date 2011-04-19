@@ -89,14 +89,56 @@ int testModel(std::string modelPrefix)
 	bool equal = equalStorage(stdStorage, currentResult, 1e-2);
 	return (equal?0:1);
 }
+
+int testModel_GUI(std::string modelPrefix)
+{
+	try {
+
+	// CONSTRUCT
+	AnalyzeTool analyze(modelPrefix+"_Setup_InverseDynamics_GUI.xml");
+
+	// PRINT MODEL INFORMATION
+	Model model(modelPrefix+".osim");
+	model.initSystem();
+	analyze.setModel(model);
+	cout<<"-----------------------------------------------------------------------\n";
+	cout<<"Loaded library\n";
+	cout<<"-----------------------------------------------------------------------\n";
+	cout<<"-----------------------------------------------------------------------\n\n";
+
+	// RUN
+	analyze.run();
+
+	//----------------------------
+	// Catch any thrown exceptions
+	//----------------------------
+	} catch(Exception x) {
+		x.print(cout);
+		return(-1);
+	}
+	// Compare results to a standard 
+	Storage currentResult("Results/"+modelPrefix+"_InverseDynamics.sto");
+	Storage stdStorage("std_"+modelPrefix+"_InverseDynamics.sto");
+	bool equal = equalStorage(stdStorage, currentResult, 1e-2);
+	return (equal?0:1);
+}
+
 int main(int argc,char **argv)
 {
 	if (testModel("arm26")!=0){
 		cout << " testInverseDynamics.testArm  FAILED " << endl;
 		return(1);
 	}
-	if (testModel("subject")!=0){
+	if (testModel_GUI("arm26")!=0){
+		cout << " testInverseDynamics.testArm  GUI Workflow FAILED " << endl;
+		return(1);
+	}
+	if (testModel("subject01")!=0){
 		cout << " testInverseDynamics.testGait  FAILED " << endl;
+		return(1);
+	}
+	if (testModel_GUI("subject01")!=0){
+		cout << " testInverseDynamics.testGait  GUI Workflow FAILED " << endl;
 		return(1);
 	}
 	return(0);

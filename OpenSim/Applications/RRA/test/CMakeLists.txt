@@ -9,7 +9,7 @@ LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
    		debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
    		debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath)
 
-ADD_EXECUTABLE(testCMC testCMC.cpp)
+ADD_EXECUTABLE(testRRA testRRA.cpp)
 
 FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
@@ -22,7 +22,7 @@ FOREACH (dataFile ${TEST_FILES})
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
-    ${OpenSim_BINARY_DIR}/OpenSim/Applications/CMC/test)
+    ${OpenSim_BINARY_DIR}/OpenSim/Applications/RRA/test)
  ENDFOREACH (dataFile) 
 
 #
@@ -42,6 +42,6 @@ ELSE (EXECUTABLE_OUTPUT_PATH)
   SET (TEST_PATH .)
 ENDIF (EXECUTABLE_OUTPUT_PATH)
 
-ADD_TEST(testCMC ${TEST_PATH}/testCMC)
+ADD_TEST(testRRA ${TEST_PATH}/testRRA)
 
 SET_TARGET_PROPERTIES(testCMC PROPERTIES ${EXCLUDE_IF_MINIMAL_BUILD} PROJECT_LABEL "Tests - testCMC")

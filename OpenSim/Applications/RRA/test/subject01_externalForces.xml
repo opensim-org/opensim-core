@@ -16,34 +16,24 @@
 				<kv>20.00000000000000000000</kv>
 			</ControlLinear>
 			<CoordinateActuator name="default">
-				<isDisabled>false</isDisabled>
 				<coordinate>Unassigned</coordinate>
 				<optimal_force>300.00000000000000000000</optimal_force>
 			</CoordinateActuator>
 			<Thelen2003Muscle name="default">
-				<isDisabled>false</isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects />
 						<groups />
 					</PathPointSet>
 					<VisibleObject name="">
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-						    .obj-->
-						<GeometrySet name="">
-							<objects />
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<geometry_files />
+						<VisibleProperties name="">
+							<display_preference>4</display_preference>
+							<show_normals>false</show_normals>
+							<show_axes>false</show_axes>
+							<material_name>DEFAULT</material_name>
+						</VisibleProperties>
 						<scale_factors>1.00000000000000000000 1.00000000000000000000 1.00000000000000000000</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by
-						    3 translations rX rY rZ tx ty tz-->
-						<transform>-0.00000000000000000000 0.00000000000000000000 -0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-						    individual geometries-->
-						<display_preference>4</display_preference>
 					</VisibleObject>
 					<PathWrapSet name="">
 						<objects />
@@ -51,11 +41,11 @@
 					</PathWrapSet>
 				</GeometryPath>
 				<!--maximum isometric force of the muscle fibers-->
-				<max_isometric_force>0.00000000000000000000</max_isometric_force>
+				<max_isometric_force>546.00000000000000000000</max_isometric_force>
 				<!--optimal length of the muscle fibers-->
-				<optimal_fiber_length>0.00000000000000000000</optimal_fiber_length>
+				<optimal_fiber_length>0.05349999999999999900</optimal_fiber_length>
 				<!--resting length of the tendon-->
-				<tendon_slack_length>0.00000000000000000000</tendon_slack_length>
+				<tendon_slack_length>0.07800000000000000000</tendon_slack_length>
 				<!--angle between tendon and fibers at optimal fiber length-->
 				<pennation_angle>0.00000000000000000000</pennation_angle>
 				<!--time constant for ramping up of muscle activation-->
@@ -84,29 +74,20 @@
 				<Flen>1.80000000000000000000</Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
-				<isDisabled>false</isDisabled>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects />
 						<groups />
 					</PathPointSet>
 					<VisibleObject name="">
-						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
-						    .obj-->
-						<GeometrySet name="">
-							<objects />
-							<groups />
-						</GeometrySet>
-						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<geometry_files />
+						<VisibleProperties name="">
+							<display_preference>4</display_preference>
+							<show_normals>false</show_normals>
+							<show_axes>false</show_axes>
+							<material_name>DEFAULT</material_name>
+						</VisibleProperties>
 						<scale_factors>1.00000000000000000000 1.00000000000000000000 1.00000000000000000000</scale_factors>
-						<!--transform relative to owner specified as 3 rotations (rad) followed by
-						    3 translations rX rY rZ tx ty tz-->
-						<transform>-0.00000000000000000000 0.00000000000000000000 -0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000</transform>
-						<!--Whether to show a coordinate frame-->
-						<show_axes>false</show_axes>
-						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
-						    individual geometries-->
-						<display_preference>4</display_preference>
 					</VisibleObject>
 					<PathWrapSet name="">
 						<objects />
@@ -143,17 +124,19 @@
 				<!--Function representing active force-length behavior of muscle fibers-->
 				<active_force_length_curve>
 					<NaturalCubicSpline name="">
-						<x>-35.00000000000000000000 0.00000000000000000000 0.40100000000000002000 0.40200000000000002000 0.40350000000000003000 0.52725000000000000000 0.62875000000000003000 0.71875000000000000000 0.86124999999999996000 1.04499999999999990000 1.21750000000000000000 1.43875000000000000000 1.61874999999999990000 1.62000000000000010000 1.62100000000000000000 2.20000000000000020000 35.00000000000000000000</x>
-						<y>0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.22666700000000001000 0.63666699999999998000 0.85666699999999996000 0.94999999999999996000 0.99333300000000002000 0.77000000000000002000 0.24666700000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000</y>
+						<x>-5.30769200000000030000 -4.30769200000000030000 -1.92307699999999990000 -0.88461500000000004000 -0.26923100000000000000 0.23076900000000000000 0.46153800000000000000 0.52725000000000000000 0.62875000000000003000 0.71875000000000000000 0.86124999999999996000 1.04499999999999990000 1.21750000000000000000 1.43875000000000000000 1.50000000000000000000 1.61538500000000010000 2.00000000000000000000 2.96153800000000000000 3.69230800000000010000 5.46153800000000000000 9.90190199999999980000</x>
+						<y>0.01218799999999999900 0.02189899999999999800 0.03646599999999999800 0.05249299999999999800 0.07531200000000000400 0.11415800000000000000 0.15785900000000000000 0.22666700000000001000 0.63666699999999998000 0.85666699999999996000 0.94999999999999996000 0.99333300000000002000 0.77000000000000002000 0.24666700000000000000 0.19382099999999999000 0.13325200000000001000 0.07268299999999999800 0.04441699999999999800 0.03634099999999999800 0.02189899999999999800 0.00733200000000000000</y>
 					</NaturalCubicSpline>
 				</active_force_length_curve>
 				<!--Function representing passive force-length behavior of muscle fibers-->
 				<passive_force_length_curve>
 					<NaturalCubicSpline name="">
-						<x>-35.00000000000000000000 0.99800000000000000000 0.99900000000000000000 1.14999999999999990000 1.25000000000000000000 1.35000000000000010000 1.45000000000000000000 1.55000000000000000000 1.64999999999999990000 1.75000000000000000000 1.75010000000000000000 1.75020000000000000000 35.00000000000000000000</x>
+						<x>-5.00000000000000000000 0.99800000000000000000 0.99900000000000000000 1.00000000000000000000 1.10000000000000010000 1.20000000000000000000 1.30000000000000000000 1.39999999999999990000 1.50000000000000000000 1.60000000000000010000 1.60100000000000000000 1.60200000000000010000 5.00000000000000000000</x>
 						<y>0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.00000000000000000000 0.03500000000000000300 0.12000000000000000000 0.26000000000000001000 0.55000000000000004000 1.16999999999999990000 2.00000000000000000000 2.00000000000000000000 2.00000000000000000000 2.00000000000000000000</y>
 					</NaturalCubicSpline>
 				</passive_force_length_curve>
+				<!--Function representing force-velocity behavior of muscle fibers-->
+				<force_velocity_curve />
 			</Schutte1993Muscle>
 		</defaults>
 		<objects>
@@ -232,15 +215,9 @@
 				</FunctionSet>
 			</PrescribedForce>
 		</objects>
-		<!--Storage file (.sto) containing the Forces, Torques and locations of
-		    the external loads.-->
+		<groups />
 		<datafile>subject01_walk1_grf.mot</datafile>
-		<!--Motion file (.mot) or storage file (.sto) containing the model
-		    kinematics corresponding to the external loads.-->
 		<external_loads_model_kinematics_file>subject01_walk1_ik.mot</external_loads_model_kinematics_file>
-		<!--Low-pass cut-off frequency for filtering the model kinematics
-		    corresponding to the external loads. A negative value results in no
-		    filtering. The default value is -1.0, so no filtering.-->
-		<lowpass_cutoff_frequency_for_load_kinematics>6</lowpass_cutoff_frequency_for_load_kinematics>
+		<lowpass_cutoff_frequency_for_load_kinematics>-1</lowpass_cutoff_frequency_for_load_kinematics>
 	</ExternalLoads>
 </OpenSimDocument>
