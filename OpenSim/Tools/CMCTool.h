@@ -79,13 +79,6 @@ private:
     PropertyStr _desiredKinematicsFileNameProp; 		 
     std::string &_desiredKinematicsFileName;
 
-	/** Name of the file containing the external loads applied to the model. */
-	//PropertyStr _externalLoadsFileNameProp;
-	//std::string &_externalLoadsFileName;
-	/** Name of the file containing the model kinematics corresponding to the
-	external loads. */
-	//PropertyStr _externalLoadsModelKinematicsFileNameProp;
-	//std::string &_externalLoadsModelKinematicsFileName;
     /** Name of the file containing the tracking tasks. */  	 	 
     PropertyStr _taskSetFileNameProp; 		 
     std::string &_taskSetFileName; 		 
@@ -101,11 +94,6 @@ private:
 	value results in no filtering.  The default value is -1.0, so no filtering. */
 	PropertyDbl _lowpassCutoffFrequencyProp;
 	double &_lowpassCutoffFrequency;
-	/** Low-pass cut-off frequency for filtering the model kinematics corresponding
-	to the external loads. A negative value results in no filtering.
-	The default value is -1.0, so no filtering. */
-	/*PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
-	double &_lowpassCutoffFrequencyForLoadKinematics;*/
 
     /** Time window over which the desired actuator forces are achieved */
     PropertyDbl _targetDTProp;  	 	   
@@ -146,27 +134,6 @@ private:
 	0 = no printing, ..., 3 = detailed printing. */
 	PropertyInt _printLevelProp;
 	int &_printLevel;
-	/** Flag indicating whether or not to compute average residuals. */
-	PropertyBool _computeAverageResidualsProp;
-	bool &_computeAverageResiduals;
-	/** Flag indicating whether or not to make an adjustment in the center of
-	mass of a body to reduced DC offsets in MX and MZ. */
-	PropertyBool _adjustCOMToReduceResidualsProp;
-	bool &_adjustCOMToReduceResiduals;
-	/** Initial time for computing average residuals used to adjust COM. */
-	PropertyDbl _initialTimeForCOMAdjustmentProp;
-	double &_initialTimeForCOMAdjustment;
-	/** Final time for computing average residuals used to adjust COM. */
-	PropertyDbl _finalTimeForCOMAdjustmentProp;
-	double &_finalTimeForCOMAdjustment;
-	/** Name of the body whose center of mass is adjusted. */
-	PropertyStr _adjustedCOMBodyProp;
-	std::string &_adjustedCOMBody;
-	/** Name of the output model file containing adjustments to anthropometry
-	made to reduce average residuals. This file is written if the property
-	adjust_com_to_reduce_residuals is set to true. */
-	PropertyStr _outputModelFileProp;
-	std::string &_outputModelFile;
 	/** Flag indicating whether or not to adjust the kinematics in order to reduce residuals. */
 	PropertyBool _adjustKinematicsToReduceResidualsProp;
 	bool &_adjustKinematicsToReduceResiduals;
@@ -221,15 +188,6 @@ public:
 	const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
 	void setRRAControlsFileName(const std::string &aFileName) { _rraControlsFileName = aFileName; }
 
-	const std::string &getOutputModelFileName() { return _outputModelFile; }
-	void setOutputModelFileName(const std::string &aFileName) { _outputModelFile = aFileName; }
-
-	bool getAdjustCOMToReduceResiduals() { return _adjustCOMToReduceResiduals; }
-	void setAdjustCOMToReduceResiduals(bool aAdjust) { _adjustCOMToReduceResiduals = aAdjust; }
-
-	const std::string &getAdjustedCOMBody() { return _adjustedCOMBody; }
-	void setAdjustedCOMBody(const std::string &aBody) { _adjustedCOMBody = aBody; }
-
 	bool getAdjustKinematicsToReduceResiduals() { return _adjustKinematicsToReduceResiduals; }
 	void setAdjustKinematicsToReduceResiduals(bool aAdjust) { _adjustKinematicsToReduceResiduals = aAdjust; }
 
@@ -267,13 +225,8 @@ public:
 #ifndef SWIG
 	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
 	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );
-	void adjustCOMToReduceResiduals(SimTK::State& s, const Storage &qStore, const Storage &uStore);
-	void adjustCOMToReduceResiduals(const OpenSim::Array<double> &aFAve,const OpenSim::Array<double> &aMAve);
 	void addNecessaryAnalyses();
-	void writeAdjustedModel();
 
-	static void computeAverageResiduals(const Storage &aForceStore,OpenSim::Array<double> &rFAve,OpenSim::Array<double> &rMAve);
-	static void computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,const Storage &aStatesStore,OpenSim::Array<double>& rFAve,OpenSim::Array<double>& rMAve);
 #endif
 //=============================================================================
 };	// END of class CMCTool
