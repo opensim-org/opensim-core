@@ -57,10 +57,18 @@ bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
 	return equal;
 }
 
-bool testInverseKinematicsGait2354()
+bool testInverseKinematicsGait2354(bool oldVersion=false)
 {
 	// read setup file and construct model
-	InverseKinematicsTool* tool = new InverseKinematicsTool("subject01_Setup_InverseKinematics.xml");
+	InverseKinematicsTool* tool = 0;
+	if (oldVersion){
+		// old file gets overwritten while conversion, keep backup
+		SimTK::Xml::Document doc("subjectOld_Setup_InverseKinematics.xml");
+		doc.writeToFile("save_subjectOld_Setup_InverseKinematics.xml");
+		tool = new InverseKinematicsTool("subjectOld_Setup_InverseKinematics.xml");
+	}
+	else
+		tool = new InverseKinematicsTool("subject01_Setup_InverseKinematics.xml");
 	try {
 		tool->run();
 		Storage actualOutput(tool->getOutputMotionFileName());
@@ -70,13 +78,17 @@ bool testInverseKinematicsGait2354()
 		bool equal = equalStorage(stdStorage, actualOutput, 0.2);
 		std::cout << (equal?"Success":"Failure") << endl;
 		
+		if (oldVersion){
+			// restore setup file from backup
+			SimTK::Xml::Document doc("save_subjectOld_Setup_InverseKinematics.xml");
+			doc.writeToFile("subjectOld_Setup_InverseKinematics.xml");
+		}
 		return equal;
 	}
 	catch(const std::exception& e) {
         cout << "exception: " << e.what() << endl;
         return false;
     }
-
 	return true;
 }
 
@@ -141,15 +153,18 @@ int main()
 		return 1;
 	}
 	cout << "testInverseKinematicsUWDynamic Passed." << endl;
-
 	// run using GUI work flow
 	if(!testInverseKinematicsGait2354_GUI()){
 		cout << "testInverseKinematicsGait2354 GUI workflow Failed." << endl;
 		return 1;
 	}
 	cout << "testInverseKinematicsGait2354 GUI workflow Passed." << endl;
-
-
+	// Earlier version setup files
+	if(!testInverseKinematicsGait2354(true)){
+		cout << "testInverseKinematicsGait2354 Old setup Failed." << endl;
+		return 1;
+	}
+	cout << "testInverseKinematicsGait2354 Old setup Passed." << endl;
 	
 	return (0);
 }
