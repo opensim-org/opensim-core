@@ -41,6 +41,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h> 
 #include <OpenSim/Common/GCVSplineSet.h>
+#include "AnalyzeTool.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -348,6 +349,10 @@ void InverseDynamicsTool::updateFromXMLNode()
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	if ( documentVersion < XMLDocument::getLatestVersion()){
+		if (documentVersion < 20201) {
+			AnalyzeTool updateAnalyzeTool(getDocumentFileName(), false);
+			updateAnalyzeTool.print(getDocumentFileName());
+		}
 		if (documentVersion < 20202){
 			// get filename and use SimTK::Xml to parse it
 			SimTK::Xml::Document doc = SimTK::Xml::Document(getDocumentFileName());
