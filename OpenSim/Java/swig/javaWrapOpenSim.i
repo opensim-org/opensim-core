@@ -148,6 +148,7 @@
 #include <OpenSim/Tools/InverseDynamicsTool.h>
 
 #include <OpenSim/Tools/CMCTool.h>
+#include <OpenSim/Tools/RRATool.h>
 #include <OpenSim/Tools/ScaleTool.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
@@ -575,6 +576,7 @@ static bool trace=false;
 %include <OpenSim/Tools/InverseDynamicsTool.h>
 %include <OpenSim/Tools/ForwardTool.h>
 %include <OpenSim/Tools/CMCTool.h>
+%include <OpenSim/Tools/RRATool.h>
 %include <OpenSim/Tools/AnalyzeTool.h>
 %include <OpenSim/Tools/InverseKinematicsTool.h>
 
