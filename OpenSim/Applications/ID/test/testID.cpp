@@ -97,11 +97,16 @@ int main(int argc,char **argv)
 		return(1);
 	}
 	// old format setup file
-	if (testModel("subjectOld")!=0){
-		cout << " testInverseDynamics.subjectOld old setup  FAILED " << endl;
+	// keep backup of old setup file as it gets overwritten
+	SimTK::Xml::Document doc("subject221_Setup_InverseDynamics.xml");
+	doc.writeToFile("save_subject221_Setup_InverseDynamics.xml");
+	if (testModel("subject221")!=0){
+		cout << " testInverseDynamics.subject 221 old setup  FAILED " << endl;
 		return(1);
 	}
-
+	SimTK::Xml::Document doc2("save_subject221_Setup_InverseDynamics.xml");
+	doc2.writeToFile("subject221_Setup_InverseDynamics.xml");
+	
 	return(0);
 }
 

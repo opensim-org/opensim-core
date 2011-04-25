@@ -358,10 +358,12 @@ void InverseDynamicsTool::updateFromXMLNode()
 			SimTK::Xml::Document doc = SimTK::Xml::Document(getDocumentFileName());
 			Xml::Element oldRoot = doc.getRootElement();
 			SimTK::Xml::Document newDoc;
+			string prefix = "";
 			if (oldRoot.getElementTag()=="AnalyzeTool"){
 				// Make OpenSimDocument node and copy root underneath it
 				newDoc.getRootElement().setElementTag("OpenSimDocument");
 				newDoc.getRootElement().setAttributeValue("Version", "20201");
+				prefix = oldRoot.getRequiredAttributeValueAs<string>("name");
 				// Move all children of root to toolNode
 				newDoc.getRootElement().insertNodeAfter(newDoc.getRootElement().node_end(), oldRoot.clone());
 			}
@@ -373,6 +375,7 @@ void InverseDynamicsTool::updateFromXMLNode()
 				if (curVersion <= 20201) root.setAttributeValue("Version", "20300");
 				Xml::element_iterator iterTool(root.element_begin("AnalyzeTool"));
 				iterTool->setElementTag("InverseDynamicsTool");
+				prefix = iterTool->getRequiredAttributeValueAs<string>("name");
 				// Remove children <output_precision>, <initial_time>, <final_time>
 				Xml::element_iterator initTimeIter(iterTool->element_begin("initial_time"));
 				double tool_initial_time = initTimeIter->getValueAs<double>();
@@ -412,7 +415,7 @@ void InverseDynamicsTool::updateFromXMLNode()
 					stream << tool_initial_time << " " << tool_final_time;
 					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("time_range", stream.str()));
 					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("forces_to_exclude", use_model_forces?"":"Muscles"));
-					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("output_gen_force_file", "InverseDynamicsOutput.sto"));
+					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("output_gen_force_file", prefix+"_InverseDynamics.sto"));
 					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("coordinates_in_degrees", "true"));
 					iterTool->eraseNode(iterAnalysisSet);
 				}
