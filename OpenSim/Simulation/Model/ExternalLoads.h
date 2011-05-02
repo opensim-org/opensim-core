@@ -2,7 +2,7 @@
 #define __ExternalLoads_h__
 
 // ExternalLoads.h
-// Author: Ayman Habib 
+// Author: Ajay Seth, Ayman Habib 
 /*
  * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -31,42 +31,47 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
-#include <OpenSim/Common/Storage.h>
-
-#include "Force.h"
-#include "Actuator.h"
-#include "Muscle.h"
 #include "ModelComponentSet.h"
-#include "SimTKsimbody.h"
+#include "ExternalForce.h"
+#include "OpenSim/Common/PropertyDbl.h"
 
 namespace OpenSim {
 
 class Model;
-class VectorGCVSplineR1R3;
-class GCVSpline;
+
 //=============================================================================
 //=============================================================================
 /**
- * A class for holding and managing ExternalLoads to be applied to a model
+ * A convenience class for managing ExternaForce(s) to be applied to a model.
+ * This includes creating instances and manipulating the data source
+ * of inividual ExternalForces so that they satsify conditions imposed
+ * by particular Tools. For example, ForwardTool, CMC/RRA, achieve better
+ * tracking (slower divergence) if the ground reaction forces are applied
+ * to a point that is expressed in the foot frame according to "ideal"
+ * kinematics. ExternalLoads provides convenience methdods to perform this
+ * "mapping" which is beyong the scope of an individual ExternalForce, but is
+ * too much detail to have each Tool implement.
  *
- * @authors Ayman Habib 
+ * An indiviudal ExternalForce has a property for its data source name, but 
+ * under the management of ExternalLoads, the data source identified by
+ * ExternalLoads is used to set the data source on each ExternalForce. 
+ * If multiple data sources are required for different groups of external forces
+ * then use multiple ExternalLoads.
+ *
+ * @authors Ajay Seth, Ayman Habib 
  * @version 1.0
  */
 
 //=============================================================================
-class OSIMSIMULATION_API ExternalLoads : public ForceSet
+class OSIMSIMULATION_API ExternalLoads : public ModelComponentSet<ExternalForce>
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	/** In case the Forces in the set are loaded from file, the filename goes here
-	 * and the column names go into individual functions.
-	 */
+	/** Data source for all forces in this ExternalLoads, where individual 
+	 *  external forces identify which subsets of the data they will acceess.*/
 	PropertyStr _dataFileNameProp;
 	std::string &_dataFileName;
 	/** Name of the file containing the model kinematics corresponding to the
@@ -78,6 +83,12 @@ protected:
 	The default value is -1.0, so no filtering. */
 	OpenSim::PropertyDbl _lowpassCutoffFrequencyForLoadKinematicsProp;
 	double &_lowpassCutoffFrequencyForLoadKinematics;
+
+private:
+	/* If point of applications for external forces must be re-expressed
+	   then build new storages to be assigned to the individual ExternalForces
+	   with the transformed point data. Hang-on to them so we can delete them. */
+	SimTK::Array_<Storage *> _storages;
 
 //=============================================================================
 // METHODS
@@ -92,63 +103,37 @@ public:
 	ExternalLoads(const ExternalLoads &aExternalLoads);
 	virtual ~ExternalLoads();
 	virtual Object* copy() const;
-	void copyData(const ExternalLoads &aAbsExternalLoads);
-	void createForcesFromFile(const std::string& datafileName,
-								Array<std::string>& startForceColumns,
-								Array<int>& columnCount, 
-								Array<std::string>& bodyNames);
+	void copyData(const ExternalLoads &otherExternalLoads);
+
+	/** Override of the default implementation to account for versioning. */
+	virtual void updateFromXMLNode();
+
+	// setup all ExternalForces inside this ExternalLoads collection 
+	virtual void setup(Model& aModel);
 
 	const std::string& getDataFileName() const { return _dataFileName;};
 	void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };
+
 	const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
 	void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
 	double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
 	void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
+	void transformPointsExpressedInGroundToAppliedBodies(const Storage &kinematics, double startTime = -SimTK::Infinity, double endTime = SimTK::Infinity);
+	ExternalForce* transformPointExpressedInGroundToAppliedBody(const ExternalForce &exForce, const Storage &kinematics, double startTime, double endTime);
+
 private:
 	void setNull();
 	void setupSerializedMembers();
-	void copyForce(Force* aFrom, Force* aTo);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	ExternalLoads& operator=(const ExternalLoads &aSet);
+	ExternalLoads& operator=(const ExternalLoads &otherExternalLoads);
 #endif
-     void computePointFunctions(SimTK::State& s, 
-                                double startTime,
-                                double endTime,
-                                const Body& body,
-                                const Storage& aQStore,
-                                const Storage& aUStore,
-                                VectorGCVSplineR1R3& aPGlobal,
-                                GCVSpline*& xfunc, 
-                                GCVSpline*& yfunc, 
-                                GCVSpline*& zfunc);
-	 void computeFunctions(SimTK::State& s, 
-                                double startTime,
-                                double endTime, 
-								const Storage& kineticsStore, 
-								Storage* qStore=NULL, 
-								Storage* uStore=NULL);
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-public:
-	virtual void setup(Model& aModel);
-    const Model& getModel() const
-    {
-        return *_model;
-    };
-    const bool hasModel()
-    {
-        return (_model!= 0);
-    };
-	void setModel(Model& aModel){
-		_model = &aModel;
-	};
+
 
 //=============================================================================
 };	// END of class ExternalLoads

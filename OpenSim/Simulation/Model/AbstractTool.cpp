@@ -571,7 +571,6 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
 
 	// CREATE FORCE AND TORQUE APPLIERS
 	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
-	_externalLoads.setup(aModel);
 	_externalLoads.setMemoryOwner(false);
 	for (int i=0; i<_externalLoads.getSize(); i++){
 		aModel.updForceSet().append(&_externalLoads.get(i)); // Call this instead of addForce to avoid calling setup repeatedly
@@ -655,8 +654,9 @@ initializeExternalLoads( SimTK::State& s,
 		}
 		qStore->interpolateAt(analysisBoundTimes);
 	}
-	// Construt point, force and torque functions from file
-	_externalLoads.computeFunctions(s, analysisStartTime, analysisFinalTime, kineticsStore, qStore, uStore);
+	// transform point of application expressed in ground to the body the force is being applied to.
+	// This is intended to improve the ability of CMC, RRA, etc...  to track experimental data
+	_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, analysisStartTime, analysisFinalTime);
 
 }
 
@@ -894,7 +894,6 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 										  const std::string& body1, 
 										  const std::string& body2)
 {
-	ExternalLoads& fs=_externalLoads;
 	bool oldFileValid = !(oldFile=="" || oldFile=="Unassigned");
 
 	std::string savedCwd;
@@ -937,30 +936,17 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 			}
 		}
 		for(int f=0; f<2; f++){
-			PrescribedForce* pf = new PrescribedForce();
-			pf->setBodyName((f==0)?body1:body2);
+			ExternalForce* xf = new ExternalForce();
+			xf->setAppliedToBodyName((f==0)?body1:body2);
 			char pad[3];
 			sprintf(pad,"%d", f+1);
 			std::string suffix = "ExternalForce_"+string(pad);
-			pf->setName(suffix);
-			// Create 9 new dummy GCVSplines and assign names
-			GCVSpline** splines= new GCVSpline *[9];
-			for(int func=0; func<9; func++){
-				splines[func] = new GCVSpline();
-				char columnNumber[5];
-				sprintf(columnNumber, "#%d", indices[func][f]);
-				splines[func]->setName(columnNumber);
-			}
-			pf->setForceFunctions(splines[0], splines[1], splines[2]);
-			pf->setPointFunctions(splines[3], splines[4], splines[5]);
-			pf->setTorqueFunctions(splines[6], splines[7], splines[8]);
-			pf->setPointIsInGlobalFrame(false);
-			pf->setForceIsInGlobalFrame(true);
-			fs.append(pf);
+			xf->setName(suffix);
+			_externalLoads.append(xf);
 		}
-		fs.setDataFileName(oldFile);
+		_externalLoads.setDataFileName(oldFile);
 		std::string newName=oldFile.substr(0, oldFile.length()-4)+".xml";
-		fs.print(newName);
+		_externalLoads.print(newName);
 		if(_document) IO::chDir(savedCwd);
 		cout<<"\n\n- Created ForceSet file " << newName << "to apply forces from " << oldFile << ".\n\n";
 		return newName;

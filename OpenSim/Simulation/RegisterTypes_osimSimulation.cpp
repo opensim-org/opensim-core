@@ -57,6 +57,7 @@
 #include "Model/MovingPathPoint.h"
 #include "Model/GeometryPath.h"
 #include "Model/PrescribedForce.h"
+#include "Model/ExternalForce.h"
 #include "Model/PointToPointSpring.h"
 #include "Model/BushingForce.h"
 #include "Model/ExternalLoads.h"
@@ -179,6 +180,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( RollingOnSurfaceConstraint() );
 	Object::RegisterType( Ligament() );
 	Object::RegisterType( PrescribedForce() );
+	Object::RegisterType( ExternalForce() );
 	Object::RegisterType( PointToPointSpring() );
 	Object::RegisterType( BushingForce() );
 

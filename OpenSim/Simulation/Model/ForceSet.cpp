@@ -1,7 +1,7 @@
 // ForceSet.cpp
-// Authors: Frank C. Anderson, Peter Loan
+// Authors: Ajay Seth, Jack Middleton
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -35,9 +35,7 @@
 #include "ForceSet.h"
 #include "Model.h"
 #include "Muscle.h"
-#include <OpenSim/Simulation/Control/Controller.h>
 #include "SimTKsimbody.h"
-#include <OpenSim/Simulation/Model/PrescribedForce.h>
 
 using namespace std;
 using namespace OpenSim;

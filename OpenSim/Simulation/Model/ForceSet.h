@@ -2,7 +2,7 @@
 #define __ForceSet_h__
 
 // ForceSet.h
-// Author: Jack Middleton 
+// Author: Ajay Seth, Jack Middleton 
 /*
  * Copyright (c)  2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -31,26 +31,23 @@
 
 
 // INCLUDES
-#include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Set.h>
 #include "Force.h"
-#include "Actuator.h"
 #include "Muscle.h"
 #include "ModelComponentSet.h"
-#include "SimTKsimbody.h"
 
 namespace OpenSim {
 
 class Model;
+class Actuator;
+class Muscle;
 
 //=============================================================================
 //=============================================================================
 /**
  * A class for holding and managing a set of forces for a model.
- * This class is based on ForceSet
+ * This class is based on ModelComponentSet
  *
- * @authors Jack Middleton 
+ * @authors Ajay Seth, Jack Middleton 
  * @version 1.0
  */
 
@@ -63,10 +60,10 @@ class OSIMSIMULATION_API ForceSet : public ModelComponentSet<Force>
 //=============================================================================
 protected:
 
-   /** The subset of Forces that extend Actuator. */
+   /** The subset of Forces that are Actuators. */
     Set<Actuator> _actuators;
 
-	/** The subset of Forces that extend Muscle. */
+	/** The subset of Forces that are Muscles. */
 	Set<Muscle> _muscles;
 
 //=============================================================================
@@ -83,16 +80,10 @@ public:
 	virtual ~ForceSet();
 	virtual Object* copy() const;
 	void copyData(const ForceSet &aAbsForceSet);
-	/*
-	void createForcesFromFile(const std::string& datafileName,
-								Array<std::string>& startForceColumns,
-								Array<int>& columnCount, 
-								Array<std::string>& bodyNames);
-	*/
+
 private:
 	void setNull();
 	void setupSerializedMembers();
-	void copyForce(Force* aFrom, Force* aTo);
     void updateActuators();
 	void updateMuscles();
 
