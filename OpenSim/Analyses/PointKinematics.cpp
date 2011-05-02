@@ -487,9 +487,9 @@ getPoint(SimTK::Vec3& rPoint)
  * @param aName Name for the point.
  */
 void PointKinematics::
-setPointName(const char *aName)
+setPointName(const string &aName)
 {
-	_pointName = string(aName);
+	_pointName = aName;
 	constructColumnLabels();
 	if(_aStore!=NULL) _aStore->setColumnLabels(getColumnLabels());
 	if(_vStore!=NULL) _vStore->setColumnLabels(getColumnLabels());

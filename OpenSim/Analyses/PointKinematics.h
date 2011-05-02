@@ -140,7 +140,7 @@ public:
 	void setPoint(const SimTK::Vec3& aPoint);
 	void getPoint(SimTK::Vec3& rPoint);
 	// POINT NAME
-	void setPointName(const char *aName);
+	void setPointName(const std::string &aName);
 	const std::string &getPointName();
 	// MODEL
 	virtual void setModel(Model& aModel);
