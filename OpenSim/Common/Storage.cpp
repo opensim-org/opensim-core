@@ -1098,6 +1098,44 @@ getDataColumn(const std::string& aColumnName,double *&rData) const
 		return getDataColumn(getStateIndex(aColumnName), rData);
 }
 
+/** It is desirable to access the block as a single entity provided an identifier that is common 
+    to all components (such as prefix in the column label).
+	 @param identifier	string identifying a single block of data 
+	 @param rData		Array<Array<double>> of data belonging to the identifier */
+void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<double>>& rData, double startTime) const
+{
+	int lid = identifier.length();
+
+	if(lid < 1) // an empty identifier should not expect data back
+		return;
+
+	int startIndex = 0;
+	int size = _columnLabels.getSize();
+	Array<int> found;
+	for(int i=startIndex;i<size;++i){
+		if(_columnLabels[i].compare(0,lid, identifier)==0)
+			found.append(i);
+	}
+
+	if(found.getSize() == 0){
+		cout << "WARNING: Storage "+getName()+" could not locate data for identifier "+identifier+"." << endl;
+		return;
+	}
+
+	/* a row of "data" can be shorter than number of columns if time is the first column, since 
+	   that is not considered a state by storage. Need to fix this! -aseth */
+	int nd = getLastStateVector()->getSize();
+	int off = size-nd;
+
+
+	for(int i=0; i<found.getSize(); ++i){
+		Array<double> data = *new Array<double>;
+		getDataColumn(found[i]-off, data);
+		rData.append(data);
+	}
+}
+
+
 //=============================================================================
 // RESET
 //=============================================================================
