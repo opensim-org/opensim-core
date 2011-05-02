@@ -84,12 +84,6 @@ protected:
 	PropertyStr _outputGenForceFileNameProp;
 	std::string &_outputGenForceFileName;
 
-	// External loads object that manages loading and applying external forces
-	// to the model
-	//PropertyObjectPtr _externalLoadsObjectPtrProp;
-	//ExternalLoads *&_externalLoads;
-
-
 //=============================================================================
 // METHODS
 //=============================================================================

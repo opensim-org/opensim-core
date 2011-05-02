@@ -11,7 +11,7 @@
 		<length_units> Unassigned </length_units>
 		<force_units> Unassigned </force_units>
 		<!--Acceleration due to gravity.-->
-		<gravity>       0.00000000       0.00000000       0.00000000 </gravity>
+		<gravity>       0.00000000       -9.806550000       0.00000000 </gravity>
 		<!--Bodies in the model.-->
 		<BodySet name="">
 			<objects>

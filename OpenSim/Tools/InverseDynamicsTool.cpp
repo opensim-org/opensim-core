@@ -236,15 +236,6 @@ bool InverseDynamicsTool::run()
 		string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 		IO::chDir(directoryOfSetupFile);
 
-		bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
-		// Initialize the the model's underlying computational system and get its default state.
-		SimTK::State& s = modelFromFile?_model->initSystem(): _model->updMultibodySystem().updDefaultState();
-		if( externalLoads ) {
-			initializeExternalLoads( s, _timeRange[0], _timeRange[1]);
-		 }
-
-		// Exclude user-specified forces from the dynamics for this analysis
-		disableModelForces(*_model, s, _excludedForces);
 
 		const CoordinateSet &coords = _model->getCoordinateSet();
 		int nq = _model->getNumCoordinates();
@@ -254,10 +245,12 @@ bool InverseDynamicsTool::run()
 
 		if(_coordinatesFileName != "" && _coordinatesFileName != "Unassigned"){
 			coordinateValues = new Storage(_coordinatesFileName);
+			coordinateValues->setName(_coordinatesFileName);
 			if(_lowpassCutoffFrequency>=0) {
 				cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
 				coordinateValues->pad(coordinateValues->getSize()/2);
 				coordinateValues->lowpassIIR(_lowpassCutoffFrequency);
+				coordinateValues->print("coordinateDataFiltered.sto");
 			}
 			// Convert degrees to radian if indicated
 			if(_inDegrees){
@@ -284,6 +277,13 @@ bool InverseDynamicsTool::run()
 			throw Exception("InverseDynamicsTool: no coordinate file found.");
 
 		}
+
+		bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model, coordinateValues);
+		// Initialize the the model's underlying computational system and get its default state.
+		SimTK::State& s = modelFromFile?_model->initSystem(): _model->updMultibodySystem().updDefaultState();
+
+		// Exclude user-specified forces from the dynamics for this analysis
+		disableModelForces(*_model, s, _excludedForces);
 
 		double first_time = coordinateValues->getFirstTime();
 		double last_time = coordinateValues->getLastTime();
@@ -333,7 +333,7 @@ bool InverseDynamicsTool::run()
 		ivdResults.setName("Inverse Dynamics");
 		//ivdResults.print(_outputGenForceFileName);
 		IO::makeDir(getResultsDir());
-		Storage::printResult(&ivdResults, _outputGenForceFileName, getResultsDir(), -1, "");
+		Storage::printResult(&ivdResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
 		IO::chDir(saveWorkingDirectory);
 	}
 	catch (std::exception ex) {

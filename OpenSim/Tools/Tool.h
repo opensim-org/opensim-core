@@ -43,7 +43,7 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A Tool is an OpenSim abstraction that encasulates an analysis or series of
+ * A Tool is an OpenSim abstraction that encapsulates an analysis or series of
  * modeling and analysis steps. Its primary duty is to provide an interface
  * for use by the GUI or as a standalone command line executable. It includes
  * common methods for invoking the tool and performing routine I/O.

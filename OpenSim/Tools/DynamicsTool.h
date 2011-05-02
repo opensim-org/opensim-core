@@ -83,12 +83,11 @@ protected:
 	PropertyStrArray _excludedForcesProp;
 	Array<std::string> &_excludedForces;
 
-	/** External loads object that manages loading and applying external forces */
-	// to the model
 	/** Name of the file containing the external loads applied to the model. */
 	OpenSim::PropertyStr _externalLoadsFileNameProp;
 	std::string &_externalLoadsFileName;
-	/** Actual external forces being applied. e.g. GRF */
+	/** External loads object that manages loading and applying external forces
+	    to the model, including transformations required by the Tool */
 	ExternalLoads	_externalLoads;
 
 
@@ -142,13 +141,8 @@ public:
 		_excludedForces = aExcluded;
 	}
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     Model& aModel);
-#ifndef SWIG
-        void initializeExternalLoads( SimTK::State& s, 
-                                      const double& analysisStartTime,
-                                      const double& analysisFinalTime);
+                                     Model& aModel, const Storage *loadKinematics=NULL);
 
-#endif
 	virtual bool run() SWIG_DECLARE_EXCEPTION=0;
 
 

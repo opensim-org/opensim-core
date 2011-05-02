@@ -82,26 +82,59 @@ void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
 		forces->addToRdStorage(forceStore, 0.0, 1.0);
 }
 
-void testForce(bool forceIsGlobal=true, bool pointIsGlobal=false, bool applyTorque=false)
+void testExternalLoad()
 {
 	Model model("Pendulum.osim");
 	State &s = model.initSystem();
-	model.updGravityForce().disable(s);
-	Storage forceStore;
-	// Add an external load
-	// Default is: 	_forceIsGlobal=true;
-	//				_pointIsGlobal=false;
 
-	// Simulate gravity g=-10, R=0.5 => Acc = -g/R*sin(theta)
-	Vec3 applicationPoint(0.0, -0.5, 0);
-	addLoadToStorage(forceStore, /* force */ Vec3(0.0, -10., 0.), /* point */ applicationPoint, /* torque*/ Vec3(0, 0, 0));
+	// Simulate gravity 
+	double init_t =-1e-8;
+	double final_t = 2.0;
+	int nsteps = 10;
+	double dt = final_t/nsteps;
+
+	//initial state
+	double q_init = Pi/4;
+	model.updCoordinateSet()[0].setValue(s, q_init);
+
+	Vector_<double> q_grav(nsteps+1);
+
+	// Integrator and integration manager
+	double integ_accuracy = 1e-6;
+	RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
+	integrator.setAccuracy(integ_accuracy);
+	Manager manager(model,  integrator);
+	manager.setInitialTime(init_t);
+
+	for(int i = 0; i < nsteps+1; i++){
+		manager.setFinalTime(dt*i);
+		manager.integrate(s);
+		q_grav[i] = model.updCoordinateSet()[0].getValue(s);
+		manager.setInitialTime(dt*i);
+	}
+
+	//q_grav.dump("Coords due to gravity.");
+
+	/***************************** CASE 1 ************************************/
+	// Simulate the same system without gravity but with an equivalent external load
+	OpenSim::Body &pendulum = model.getBodySet().get(model.getNumBodies()-1);
+	string pendBodyName = pendulum.getName();
+	Vec3 comInB;
+	pendulum.getMassCenter(comInB);
+
+	Storage forceStore;
 	forceStore.print("test_external_loads.sto");
+	addLoadToStorage(forceStore,  pendulum.getMass()*model.getGravity(),  comInB, Vec3(0, 0, 0));
+
+	// Apply external force with force in ground, point in body, zero torque
+	ExternalForce xf(forceStore, "force", "point", "torque", pendBodyName, "ground", pendBodyName);
+	xf.setName("grav");
 
 	ExternalLoads* extLoads = new ExternalLoads(model);
-	OpenSim::Array<std::string> forceFunctionNames("forceX", 1);
-	OpenSim::Array<int> colummnCount(applyTorque?9:6, 1);
-	OpenSim::Array<std::string> bodyNames("cylinder", 1);
-	extLoads->createForcesFromFile("test_external_loads.sto", forceFunctionNames, colummnCount, bodyNames);
+	extLoads->setDataFileName("test_external_loads.sto");
+	extLoads->append(&xf);
+
+	extLoads->print("ExternalLoads_test.xml");
 
 	for(int i=0; i<extLoads->getSize(); i++)
 		model.addForce(&(*extLoads)[i]);
@@ -111,46 +144,122 @@ void testForce(bool forceIsGlobal=true, bool pointIsGlobal=false, bool applyTorq
 	model.addAnalysis(reporter);
 
 	Kinematics* kin = new Kinematics(&model);
-	kin->setInDegrees(true);
-	kin->setRecordAccelerations(true);
+	kin->setInDegrees(false);
 	model.addAnalysis(kin);
 
-	//PointKinematics* pKin = new PointKinematics(&model);
-	//pKin->setBody(&model.updBodySet().get("cylinder"));
-	//pKin->setPoint(applicationPoint);
-	//model.addAnalysis(pKin);
-	// set initial conditions
-	CoordinateSet& pin_coords = model.getJointSet().get(0).getCoordinateSet();
-	pin_coords[0].setValue(s, SimTK_PI/4.0);
+	PointKinematics* pKin = new PointKinematics(&model);
+	pKin->setBody(&pendulum);
+	pKin->setPoint(comInB);
+	pKin->setPointName(pendulum.getName()+"_comp");
+	model.addAnalysis(pKin);
 	
-	SimTK::State &osim_state = model.initSystem();
-    RungeKuttaMersonIntegrator integrator(model.getMultibodySystem() );
-	integrator.setAccuracy(1e-6);
-    Manager manager(model,  integrator);
-    manager.setInitialTime(0.0);
+	SimTK::State &s2 = model.initSystem();
 
-	double final_t = 2.0;
-	double nsteps = 10;
-	double dt = final_t/nsteps;
+	// Turn-off gravity in the model
+	model.updGravityForce().disable(s2);
 
-	const OpenSim::Body& cylBody=model.getBodySet().get("cylinder");
-	for(int i = 1; i <=nsteps; i++){
-		manager.setFinalTime(dt*i);
-		manager.integrate(osim_state);	
-		model.getMultibodySystem().realize(osim_state, Stage::Acceleration);
-		manager.setInitialTime(dt*i);
+	// initial position
+	model.updCoordinateSet()[0].setValue(s2, q_init);
+
+    RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem() );
+	integrator2.setAccuracy(integ_accuracy);
+    Manager manager2(model,  integrator2);
+    manager2.setInitialTime(init_t);
+
+	// Simulate with the external force applied instead of gravity
+	Vector_<double> q_xf(nsteps+1);
+	Vector_<Vec3> pcom_xf(nsteps+1);
+
+	for(int i = 0; i < nsteps+1; i++){
+		manager2.setFinalTime(dt*i);
+		manager2.integrate(s2);
+		q_xf[i] = model.updCoordinateSet()[0].getValue(s2);
+		manager2.setInitialTime(dt*i);
 	}
-	std::string desc = "Force"+ std::string(forceIsGlobal?"Global":"Local")+
-						"Point"+std::string(pointIsGlobal?"Global":"Local")+
-						std::string(applyTorque?"With":"No")+"Torque";
-	reporter->printResults(desc);
-	kin->printResults(desc);
-	 
+
+	//q_xf.dump("Coords due to external force point expressed in pendulum.");
+
+	Vector err = q_xf-q_grav;
+	double norm_err = err.norm();
+
+	// kinematics should match to within integ accuracy
+	ASSERT_EQUAL(0.0, norm_err, integ_accuracy);
+
+	/***************************** CASE 2 ************************************/
+	// Simulate the same system without gravity but with an equivalent external
+	// force but this time with the point expressed in  ground and using
+	// previous kinematics to transform point to pendulum.
+
+	// Construct a new Storage for ExternalForce data source with point 
+	// described in ground
+	Storage forceStore2 = reporter->getForceStorage();
+	forceStore2.print("ForcesTest.sto");
+	Storage *pStore = pKin->getPositionStorage();
+	pStore->print("PointInGroundTest.sto");
+	pStore->addToRdStorage(forceStore2, init_t, final_t);
+	forceStore2.print("ExternalForcePointInGround.sto");
+
+	Storage *qStore = kin->getPositionStorage();
+
+	string id_base = pendBodyName+"_"+xf.getName();
+	string point_id = pKin->getPointName();
+
+	ExternalForce xf2(forceStore2, id_base+"_F", point_id, id_base+"_T", pendBodyName, "ground", "ground");
+	xf2.setName("xf_pInG");
+	// Empty out existing external forces
+	extLoads->setMemoryOwner(false);
+	extLoads->setSize(0);
+	extLoads->append(&xf2);
+
+	//Ask external loads to transform point expressed in ground to the applied body
+	extLoads->setDataFileName(forceStore.getName());
+	extLoads->setup(model);
+	extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
+
+	// remove previous external force from the model too
+	model.disownAllComponents();
+	model.updForceSet().setSize(0);
+
+	// after external loads has transformed the point of the force, then add it the model
+	for(int i=0; i<extLoads->getSize(); i++)
+		model.addForce(&(*extLoads)[i]);
+
+	// recreate dynamical system to reflect new force
+	SimTK::State &s3 = model.initSystem();
+
+	// Turn-off gravity in the model
+	model.updGravityForce().disable(s3);
+
+	// initial position
+	model.updCoordinateSet()[0].setValue(s3, q_init);
+
+    RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem() );
+	integrator3.setAccuracy(integ_accuracy);
+    Manager manager3(model,  integrator3);
+    manager3.setInitialTime(init_t);
+
+	// Simulate with the external force applied instead of gravity
+	Vector_<double> q_xf2(nsteps+1);
+
+	for(int i = 0; i < nsteps+1; i++){
+		manager3.setFinalTime(dt*i);
+		manager3.integrate(s3);
+		q_xf2[i] = model.updCoordinateSet()[0].getValue(s3);
+		manager3.setInitialTime(dt*i);
+	}
+
+	//q_xf2.dump("Coords due to external force point expressed in ground.");
+	err = q_xf2-q_grav;
+	//err.dump("Coordinate error after transforming point.");
+	norm_err = err.norm();
+
+	// kinematics should match to within integ accuracy
+	ASSERT_EQUAL(0.0, norm_err, integ_accuracy);
 }
 
 int main()
 {
-	testForce(true, false, false);
+	testExternalLoad();
 	
 	return 0;
 }
