@@ -10,6 +10,8 @@ LINK_LIBRARIES(debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulati
                ${SIMTK_ALL_LIBS}
 )
 
+IF(BUILD_TESTING)
+
 FOREACH(TEST_PROG ${TEST_PROGS})
     GET_FILENAME_COMPONENT(TEST_ROOT ${TEST_PROG} NAME_WE)
 
@@ -39,3 +41,5 @@ FOREACH (dataFile ${TEST_FILES})
     ${OpenSim_BINARY_DIR}/OpenSim/Simulation/SimbodyEngine/Test)
     # MESSAGE( "IN file "${dataFile} )
  ENDFOREACH (dataFile) 
+
+ENDIF(BUILD_TESTING)

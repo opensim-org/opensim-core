@@ -45,14 +45,14 @@ FORCE)
 SET(SimTKCOMMON_LIBRARY_NAME ${NameSpace}SimTKcommon CACHE STRING
 "Base name of the library being built; can't be changed here; see BUILD_USING_NAMESPACE variable."
 FORCE)
+MARK_AS_ADVANCED( SimTKSIMBODY_LIBRARY_NAME )
+MARK_AS_ADVANCED( SimTKMATH_LIBRARY_NAME )
+MARK_AS_ADVANCED( SimTKCOMMON_LIBRARY_NAME )
 
 
 SET(SimTKCOMMON_SHARED_LIBRARY ${SimTKCOMMON_LIBRARY_NAME})
-SET(SimTKCOMMON_STATIC_LIBRARY ${SimTKCOMMON_LIBRARY_NAME}_static)
 SET(SimTKMATH_SHARED_LIBRARY ${SimTKMATH_LIBRARY_NAME})
-SET(SimTKMATH_STATIC_LIBRARY ${SimTKMATH_LIBRARY_NAME}_static)
 SET(SimTKSIMBODY_SHARED_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME})
-SET(SimTKSIMBODY_STATIC_LIBRARY ${SimTKSIMBODY_LIBRARY_NAME}_static)
 
 #
 ## Platform
@@ -246,16 +246,16 @@ ENDIF(WIN32)
 # Build using the simtk headers and libraries checked in the repository. 
 # Currently this only works on windows VC8 since these are the only libraries checked in
 
-SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use stock SimTK libraries based on SimtkCore 2.2")
+SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use prebuilt SimTK libraries from the OpenSim repository. SIMTK_DIR will not be used.")
 
 IF(WIN32)
 	SET(CMAKE_INSTALL_PREFIX "${PROGFILEDIR}/OpenSimDev" CACHE PATH "Install location to place headers and libraries")
-	SET(SIMTK_DIR "${PROGFILEDIR}/SimTK/" CACHE PATH "Top-level directory of SimTK install")
+	SET(SIMTK_DIR "${PROGFILEDIR}/SimTK/" CACHE PATH "Top-level directory of SimTK install if using your own.")
 ELSE(WIN32)
 	IF(NOT CMAKE_INSTALL_PREFIX)
 		SET(CMAKE_INSTALL_PREFIX "/usr/local/OpenSim")
 	ENDIF(NOT CMAKE_INSTALL_PREFIX)
-	SET(SIMTK_DIR "/usr/local/SimTK" CACHE PATH "Top-level directory of SimTK install")
+	SET(SIMTK_DIR "/usr/local/SimTK" CACHE PATH "Top-level directory of SimTK install. Set only if using your own build of SimTK/Simbody ")
 ENDIF(WIN32)
 
 # Determine which math libraries to use for this platform.
