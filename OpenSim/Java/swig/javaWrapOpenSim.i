@@ -45,6 +45,7 @@
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 
@@ -237,6 +238,9 @@ static bool trace=false;
 %typemap(javacode) OpenSim::Property %{
   public void setValueDbl(Double dbl) {
 	setValue(dbl.doubleValue());
+  };
+  public void setValue(Boolean bool) {
+	setValue(bool.booleanValue());
   };
 %}
 
@@ -450,6 +454,7 @@ static bool trace=false;
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
+%include <OpenSim/Simulation/Model/ExternalForce.h>
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 
@@ -584,5 +589,4 @@ static bool trace=false;
 
 %include <OpenSim/Java/OpenSimJNI/OpenSimContext.h>
 
-//OpenSim20%include <OpenSim/Java/OpenSimJNI/Hooks/SimtkAnimationCallback.h>
 %include <OpenSim/Java/OpenSimJNI/Hooks/SimtkLogCallback.h>
