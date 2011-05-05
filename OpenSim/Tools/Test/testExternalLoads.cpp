@@ -123,15 +123,15 @@ void testExternalLoad()
 	pendulum.getMassCenter(comInB);
 
 	Storage forceStore;
-	forceStore.print("test_external_loads.sto");
 	addLoadToStorage(forceStore,  pendulum.getMass()*model.getGravity(),  comInB, Vec3(0, 0, 0));
+	forceStore.setName("test_external_loads.sto");
+	forceStore.print(forceStore.getName());
 
 	// Apply external force with force in ground, point in body, zero torque
 	ExternalForce xf(forceStore, "force", "point", "torque", pendBodyName, "ground", pendBodyName);
 	xf.setName("grav");
 
 	ExternalLoads* extLoads = new ExternalLoads(model);
-	extLoads->setDataFileName("test_external_loads.sto");
 	extLoads->append(&xf);
 
 	extLoads->print("ExternalLoads_test.xml");
@@ -150,7 +150,7 @@ void testExternalLoad()
 	PointKinematics* pKin = new PointKinematics(&model);
 	pKin->setBody(&pendulum);
 	pKin->setPoint(comInB);
-	pKin->setPointName(pendulum.getName()+"_comp");
+	pKin->setPointName(pendulum.getName()+"_com_p");
 	model.addAnalysis(pKin);
 	
 	SimTK::State &s2 = model.initSystem();
@@ -197,9 +197,12 @@ void testExternalLoad()
 	Storage *pStore = pKin->getPositionStorage();
 	pStore->print("PointInGroundTest.sto");
 	pStore->addToRdStorage(forceStore2, init_t, final_t);
-	forceStore2.print("ExternalForcePointInGround.sto");
+
+	forceStore2.setName("ExternalForcePointInGround.sto");
+	forceStore2.print(forceStore2.getName());
 
 	Storage *qStore = kin->getPositionStorage();
+	qStore->print("LoadKinematics.sto");
 
 	string id_base = pendBodyName+"_"+xf.getName();
 	string point_id = pKin->getPointName();
@@ -212,7 +215,7 @@ void testExternalLoad()
 	extLoads->append(&xf2);
 
 	//Ask external loads to transform point expressed in ground to the applied body
-	extLoads->setDataFileName(forceStore.getName());
+	extLoads->setDataFileName(forceStore2.getName());
 	extLoads->setup(model);
 	extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
 
