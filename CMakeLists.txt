@@ -82,11 +82,11 @@ ENDIF()
 # Interface (ABI) we're building for. Currently that is either x86, meaning
 # 32 bit Intel instruction set, or x64 for 64 bit Intel instruction set.
 
-IF(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-    SET(PLATFORM_ABI x64)
-ELSE()
+#IF(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+#    SET(PLATFORM_ABI x64)
+#ELSE()
     SET(PLATFORM_ABI x86)
-ENDIF()
+#ENDIF()
 
 SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
     "This is the platform and ABI we're building for. Not changeable here; use a different CMake generator instead."
@@ -291,17 +291,20 @@ IF(USE_LIBRARIES_FROM_REPOSITORY)
 	ENDIF(WIN32)
 	SET(SIMTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/SimTK/${Platform})
 	SET(SIMTK_BIN_DIR ${SIMTK_LIB_DIR})
-	MESSAGE("SIMTK_LIB_DIR="${SIMTK_LIB_DIR})
+	# MESSAGE("SIMTK_LIB_DIR="${SIMTK_LIB_DIR})
 ELSE(USE_LIBRARIES_FROM_REPOSITORY)
 	SET(SIMTK_INCLUDE_DIR ${SIMTK_DIR}/include)
 	SET(SIMTK_LIB_DIR ${SIMTK_DIR}/lib)	
 	SET(SIMTK_BIN_DIR ${SIMTK_DIR}/bin)	
+	# MESSAGE("SIMTK_BIN_DIR="${SIMTK_BIN_DIR})
+	# MESSAGE("SIMTK_LIB_DIR="${SIMTK_LIB_DIR})
 ENDIF(USE_LIBRARIES_FROM_REPOSITORY)
 
 INSTALL(DIRECTORY ${SIMTK_INCLUDE_DIR} DESTINATION sdk/include/SimTK 
 			PATTERN ".svn" EXCLUDE)
 
 SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on simtk.org)")
+MARK_AS_ADVANCED(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(WIN32)
 	SET(NETBEANS_INSTALL_DIR "C:/Program Files/netbeans-5.5/" CACHE PATH "Netbeans install directory")
@@ -360,14 +363,18 @@ IF(WIN32)
 					${SIMTK_MATH_LIB} 
 					${SIMTK_SIMBODY_LIB} 
 					${MATH_LIBS_TO_USE})
+	# MESSAGE("SIMTK_BIN_DIR="${SIMTK_BIN_DIR})
+	# MESSAGE("SIMTK_LIB_DIR="${SIMTK_LIB_DIR})
 	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
+					${SIMTK_BIN_DIR}/*.dll	# non repository layout
 					${SIMTK_BIN_DIR}/${VCVERSION}/*.dll
 					${SIMTK_BIN_DIR}/${VCVERSION}/*.exe
-					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION}/xerces-c_2_8.dll)
+					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION}/*.dll)
 	FILE(GLOB THIRDPARTY_EXPORTLIB_FILES 
+					${SIMTK_LIB_DIR}/*.lib	# non repository layout
 					${SIMTK_LIB_DIR}/${VCVERSION}/*.lib
-					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION}/xerces-c_2_8.lib)
-
+					${OpenSim_SOURCE_DIR}/Vendors/${XERCES_DIR_NAME}/lib/${Platform}/${VCVERSION}/*.lib)
+	# MESSAGE("THIRDPARTY_DYNLIB_FILES:" ${THIRDPARTY_DYNLIB_FILES})
 ELSE(WIN32)
 	SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
 					${SIMTK_MATH_LIB} 
@@ -412,6 +419,7 @@ SET(INSTALL_DOC OFF CACHE BOOL "Install Doxygen generated files into distributio
 ##IF(INSTALL_DOC)
 ##	INCLUDE(ApiDoxygen.cmake)
 ##ENDIF(INSTALL_DOC)
+MARK_AS_ADVANCED(INSTALL_DOC)
 
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
