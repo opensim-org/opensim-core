@@ -274,7 +274,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	int nt = kinematics.getSize();
 
 	int startIndex=0;
-	int lastIndex=nt;
+	int lastIndex=nt-1;
 
 	if (nt > 0){
 		if (startTime!= -SimTK::Infinity){	// Start time was actually specified.
