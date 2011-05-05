@@ -48,17 +48,17 @@ bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
 		double dMax = -SimTK::Infinity;
 		int worst=-1;
 		for (int j=0; j<dData.getSize(); j++){
-		    cout << stdStorage.getColumnLabels().get(j) << " diff="<< dData[j] << endl;
 			if (fabs(dData[j]) > dMax) worst = j;
-			dMax = std::max(dMax, fabs(dData[j]));
+				dMax = std::max(dMax, fabs(dData[j]));
 		}
 		equal = (dMax <= tol);
-		cout << "i, col, colname, diff" << i << ", worst:" << worst <<", name:"<< stdStorage.getColumnLabels().get(worst) << ", max="<<dMax << endl;
+		//if(!equal)
+			cout << "row= " << i << ", worst name: "<< stdStorage.getColumnLabels().get(worst+1) << ", max diff= "<<dMax << endl;
 	}
 	return equal;
 }
 
-int testModel(std::string modelPrefix)
+int testModel(std::string modelPrefix, double tol)
 {
 	try {
 
@@ -83,24 +83,27 @@ int testModel(std::string modelPrefix)
 	// Compare results to a standard 
 	Storage currentResult("Results/"+modelPrefix+"_InverseDynamics.sto");
 	Storage stdStorage("std_"+modelPrefix+"_InverseDynamics.sto");
-	bool equal = equalStorage(stdStorage, currentResult, 1e-2);
+
+	
+	bool equal = equalStorage(stdStorage, currentResult, tol);
 	return (equal?0:1);
 }
 int main(int argc,char **argv)
 {
-	if (testModel("arm26")!=0){
+	if (testModel("arm26", 1e-2)!=0){
 		cout << " testInverseDynamics.testArm  FAILED " << endl;
 		return(1);
 	}
-	if (testModel("subject01")!=0){
+	if (testModel("subject01", 2.0)!=0){
 		cout << " testInverseDynamics.testGait  FAILED " << endl;
 		return(1);
 	}
+	
 	// old format setup file
 	// keep backup of old setup file as it gets overwritten
 	SimTK::Xml::Document doc("subject221_Setup_InverseDynamics.xml");
 	doc.writeToFile("save_subject221_Setup_InverseDynamics.xml");
-	if (testModel("subject221")!=0){
+	if (testModel("subject221", 2.0)!=0){
 		cout << " testInverseDynamics.subject 221 old setup  FAILED " << endl;
 		return(1);
 	}
