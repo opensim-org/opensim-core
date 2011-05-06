@@ -2662,7 +2662,7 @@ printResult(const Storage *aStorage,const std::string &aName,
 {
 	if(!aStorage) return;
 	std::string path = (aDir=="") ? "." : aDir;
-	std::string name = path + "/" + aName + aExtension;
+	std::string name = (aName.rfind(aExtension)==string::npos)? (path + "/" + aName + aExtension) :  (path + "/" + aName);
 	if(aDT<=0.0) aStorage->print(name);
 	else aStorage->print(name,aDT);
 }
