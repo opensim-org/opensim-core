@@ -71,8 +71,6 @@ ForceReporter::ForceReporter(Model *aModel) : 	Analysis(aModel),
 	// STORAGE
 	allocateStorage();
 
-	// CHECK MODEL
-	if(_model==NULL) return;
 }
 //_____________________________________________________________________________
 /**
