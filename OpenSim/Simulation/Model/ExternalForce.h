@@ -171,6 +171,18 @@ public:
 	const std::string& getPointExpressedInBodyName() const { return (_pointExpressedInBodyName); }
 
 	/**
+	 *  Specify or obtain the body in which the force is expressed
+	 */
+	void setForceExpressedInBodyName(const std::string &forceInBodyName) const { _forceExpressedInBodyName =forceInBodyName; }
+	const std::string& getForceExpressedInBodyName() const { return (_forceExpressedInBodyName); }
+
+	/**
+	 * Identifiers
+	 */
+	void setForceIdentifier(const std::string aForceIdentifier) { _forceIdentifier = aForceIdentifier; }
+	void setPointIdentifier(const std::string aPointIdentifier) { _pointIdentifier = aPointIdentifier; }
+	void setTorqueIdentifier(const std::string aTorqueIdentifier) { _torqueIdentifier = aTorqueIdentifier; }
+	/**
 	 * Convenience methods to access external forces at a given time
 	 */
 	SimTK::Vec3 getForceAtTime(double aTime) const;

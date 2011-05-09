@@ -131,7 +131,8 @@ static const XMLCh  gNotation[] = {
     chLatin_N, chLatin_D, chLatin_A, chLatin_T, chLatin_A,
     chSpace, chDoubleQuote, chNull };
 
-const int XMLDocument::LatestVersion = 20300;	
+// up version to 20301 for separation of RRATool, CMCTool
+const int XMLDocument::LatestVersion = 20301;	
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================

@@ -35,6 +35,7 @@
 #include "BodySet.h"
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/XMLNode.h>
+#include <OpenSim/Simulation/Model/PrescribedForce.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -386,25 +387,80 @@ void ExternalLoads::updateFromXMLNode()
 		DOMDocument* document = _node->getOwnerDocument();
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating ExternalLoad object to latest format..." << endl;
+		_dataFileName="";
 		if (_node!=NULL){
-			string objectName = XMLNode::TranscodeAndTrim(_node->getTagName());
-			DOMElement* listOfForces = XMLNode::GetFirstChildElementByTagName(_node,"objects");
-			string listName = XMLNode::TranscodeAndTrim(listOfForces->getTagName());
-			DOMNodeList *list = listOfForces->getChildNodes();
-			unsigned int listLength = list->getLength();
-			DOMElement *objElmt = (DOMElement*) list->item(4);
-			string elmtName = XMLNode::TranscodeAndTrim(objElmt->getTagName());
-			DOMElement* pf = XMLNode::GetFirstChildElementByTagName(objElmt, "PrescribedForce");
-			if (pf) {
-				DOMElement* appliedToBody = XMLNode::GetFirstChildElementByTagName(pf, "body");
-				// update the properties of a PrescribeForce to match an ExternalForce
-				renameChildNode("body", "applied_to_body", pf);
-				// ...
+			DOMElement* dataFileNode = XMLNode::GetFirstChildElementByTagName(_node,"datafile");
+			if (dataFileNode != 0){
+				DOMText* txtNode=NULL;
+				if(txtNode=XMLNode::GetTextNode(dataFileNode)) {
+					// Could still be empty or whiteSpace
+					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
+					if (transcoded.length()>0)
+						_dataFileName = XMLNode::GetValue<std::string>(txtNode);
+				}
 			}
-			renameChildNode("PrescribedForce", "ExternalForce", pf);
-			
+			DOMElement* kinFilterNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
+			if (kinFilterNode != 0){
+				DOMText* txtNode=NULL;
+				if(txtNode=XMLNode::GetTextNode(kinFilterNode)) {
+					// Could still be empty or whiteSpace
+					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
+					if (transcoded.length()>0)
+						_lowpassCutoffFrequencyForLoadKinematics = XMLNode::GetValue<double>(txtNode);
+				}
+			}
+			if (_dataFileName==""){
+				// Assert and break (may need to call base class updateFromXMLNode() regardless.
+			}
+			Storage* dataSource = new Storage(_dataFileName);
+			const Array<string> &labels = dataSource->getColumnLabels();
+			// Populate data file and other things that haven't changed
+			string objectName = XMLNode::TranscodeAndTrim(_node->getTagName());
+			// Create a ForceSet out of this XML node, this will create a set of PrescribedForces then we can reassign at a higher level to ExternalForces
+			ModelComponentSet<PrescribedForce> oldForces(*_model, getDocument()->getFileName(), true);
+			for(int i=0; i< oldForces.getSize(); i++){
+				PrescribedForce& oldPrescribedForce = oldForces.get(i);
+				ExternalForce* newExternalForce = new ExternalForce();
+				newExternalForce->setName(oldPrescribedForce.getName());
+				newExternalForce->setAppliedToBodyName(oldPrescribedForce.getBodyName());
+				newExternalForce->setPointExpressedInBodyName("ground");
+				newExternalForce->setForceExpressedInBodyName("ground");
+				// Reconstruct function names and use these to extract the identifier(s)
+				OpenSim::Array<std::string> aFunctionNames;
+				oldPrescribedForce.getForceFunctionNames(aFunctionNames);
+				// Get names from force functions
+				newExternalForce->setForceIdentifier(createIdentifier(aFunctionNames, labels));
+				aFunctionNames.setSize(0);
+				oldPrescribedForce.getPointFunctionNames(aFunctionNames);
+				newExternalForce->setPointIdentifier(createIdentifier(aFunctionNames, labels));
+				aFunctionNames.setSize(0);
+				// Now the torques
+				oldPrescribedForce.getTorqueFunctionNames(aFunctionNames);
+				newExternalForce->setTorqueIdentifier(createIdentifier(aFunctionNames, labels));
+				//newExternalForce->setDataSourceName("");
+				append(newExternalForce);
+			}
+			delete dataSource;
 		}
 	}
-	// Call base class now assuming _node has been corrected for current version
-	ModelComponentSet<ExternalForce>::updateFromXMLNode();
+	else
+		// Call base class now assuming _node has been corrected for current version
+		ModelComponentSet<ExternalForce>::updateFromXMLNode();
+}
+/**
+ * Helper function to recover Identifier based on the conventions used in earlier versions before identifiers were introduced
+ */
+std::string ExternalLoads::createIdentifier(OpenSim::Array<std::string>&oldFunctionNames, const Array<std::string>& labels)
+{
+	if (oldFunctionNames.getSize()==0) return "";
+	// There was at least one function that could be specified by name or #
+	std::string firstFuncName = oldFunctionNames[0];
+	string fullIdentifier=firstFuncName;
+	if (firstFuncName.c_str()[0]=='#'){ // it's really a number, may imply the storage has duplicate labels
+		int columnOrder=-1;
+		sscanf(firstFuncName.c_str(), "#%d", &columnOrder);
+		fullIdentifier = labels[columnOrder];
+	}
+	return fullIdentifier.substr(0, fullIdentifier.length()-1);
+	
 }

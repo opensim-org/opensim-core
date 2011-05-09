@@ -125,6 +125,7 @@ public:
 private:
 	void setNull();
 	void setupSerializedMembers();
+	std::string createIdentifier(OpenSim::Array<std::string>&oldFunctionNames, const Array<std::string>& labels);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
