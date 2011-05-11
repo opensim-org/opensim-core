@@ -455,6 +455,9 @@ static bool trace=false;
 %template(ModelComponentSetForces) OpenSim::ModelComponentSet<OpenSim::Force>;
 %include <OpenSim/Simulation/Model/ForceSet.h>
 %include <OpenSim/Simulation/Model/ExternalForce.h>
+%template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
+
+%template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
 %include <OpenSim/Simulation/Model/PrescribedForce.h>
 
