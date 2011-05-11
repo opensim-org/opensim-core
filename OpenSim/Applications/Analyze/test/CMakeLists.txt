@@ -27,10 +27,10 @@ FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 #
 # Copy files to run dir
 #
-#ADD_DEPENDENCIES(${TEST_ROOT} copyTestFiles)
+ADD_DEPENDENCIES(${TEST_ROOT} copyTestFiles)
 FOREACH (dataFile ${TEST_FILES})
  ADD_CUSTOM_COMMAND(
-    TARGET testInverseDynamics
+    TARGET testJointReactions
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
