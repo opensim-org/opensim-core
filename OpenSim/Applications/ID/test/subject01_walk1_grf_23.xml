@@ -49,7 +49,7 @@
 		<datafile>subject01_walk1_grf.mot</datafile>
 		<!--Motion file (.mot) or storage file (.sto) containing the model
 		    kinematics corresponding to the external loads.-->
-		<!--<external_loads_model_kinematics_file>subject01_walk1_ik.mot</external_loads_model_kinematics_file>-->
+		<external_loads_model_kinematics_file>subject01_walk1_ik.mot</external_loads_model_kinematics_file>
 		<!--Low-pass cut-off frequency for filtering the model kinematics
 		    corresponding to the external loads. A negative value results in no
 		    filtering. The default value is -1.0, so no filtering.-->
