@@ -354,15 +354,6 @@ void Actuator::createSystem(SimTK::MultibodySystem& system) const
 void Actuator::initState(SimTK::State& state) const
 {
 	Actuator_::initState(state);
-	// Before initializing any state variable, get the current indices
-	Actuator* mutableThis = const_cast<Actuator *>(this);
-
-	// keep track of the cache indices
-	mutableThis->_forceIndex = getCacheVariableIndex("force");
-	mutableThis->_forceIndex = getCacheVariableIndex("speed");
-
-	// if in override mode, this index will be valid
-	mutableThis->_overrideForceIndex = getDiscreteVariableIndex("override_force");
 }
 
 void Actuator::setDefaultsFromState(const SimTK::State& state)
@@ -399,7 +390,7 @@ double Actuator::getForce(const State &s) const
 
 void Actuator::setForce(const State& s, double aForce) const
 {
-    updCacheVariable<double>(s, "force") = aForce;
+    setCacheVariable<double>(s, "force", aForce);
 }
 
 double Actuator::getSpeed(const State& s) const
@@ -409,7 +400,7 @@ double Actuator::getSpeed(const State& s) const
 
 void Actuator::setSpeed(const State &s, double speed) const
 {
-    updCacheVariable<double>(s, "speed") = speed;
+    setCacheVariable<double>(s, "speed", speed);
 }
 
 
@@ -433,8 +424,9 @@ bool Actuator::isForceOverriden(const SimTK::State& s ) const
  */
 void Actuator::setOverrideForce(SimTK::State& s, double force ) const
 {
-    SimTK::Value<double>::downcast(s.updDiscreteVariable( _subsystemIndex, _overrideForceIndex)).upd() = force;
+     setDiscreteVariable(s, "override_force", force);;
 }
+
 double Actuator::getOverrideForce(const SimTK::State& s ) const
 {
     return getDiscreteVariable(s, "override_force");

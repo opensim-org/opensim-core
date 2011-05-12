@@ -81,7 +81,6 @@ protected:
 
 	//Starting index of the Muscle's states in its subsystem 
 	SimTK::ZIndex _zIndex;
-	SimTK::CacheEntryIndex _stateVariableDerivIndex;
 
 	static const int STATE_ACTIVATION;
 	static const int STATE_FIBER_LENGTH;
@@ -139,7 +138,7 @@ public:
     virtual void setFiberLength(SimTK::State& s, double fiberLength) const = 0;
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const = 0;
 	virtual double getFiberLengthAlongTendon(const SimTK::State& s) const;
-	virtual double getShorteningSpeed(const SimTK::State& s) const;
+	virtual double getLengtheningSpeed(const SimTK::State& s) const;
 	virtual double getFiberForce(const SimTK::State& s) const;
 	virtual double getActiveFiberForce(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const = 0;
@@ -157,7 +156,7 @@ public:
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s ) const = 0;
 	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord) const;
-	virtual double computeLengtheningSpeed(const SimTK::State& s) const; 
+
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
 	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) = 0;
 	virtual double

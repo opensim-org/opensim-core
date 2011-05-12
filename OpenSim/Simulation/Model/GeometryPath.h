@@ -83,20 +83,8 @@ protected:
 	PropertyObj _pathWrapSetProp;
 	PathWrapSet &_pathWrapSet;
 
-	SimTK::SubsystemIndex _subsystemIndex;
-
-	// current length of the path
-	SimTK::CacheEntryIndex _lengthIndex;
-
 	// used for scaling tendon and fiber lengths
 	double _preScaleLength;
-
-	// current path = ordered array of currently active path points (fixed + via + moving + wrap)
-	SimTK::CacheEntryIndex _currentPathIndex;
-
-	// current display path = ordered array of currently active path points (fixed + via + wrap),
-	// including points along the surfaces of wrap objects, spaced about every 2 mm.
-    SimTK::CacheEntryIndex _currentDisplayPathIndex;
 
 	// object that owns this GeometryPath object
 	Object* _owner;
@@ -148,18 +136,21 @@ public:
 	virtual double getPreScaleLength( const SimTK::State& s) const;
 	virtual void setPreScaleLength( const SimTK::State& s, double preScaleLength);
 	virtual const Array<PathPoint*>& getCurrentPath( const SimTK::State& s) const;
-	virtual Array<PathPoint*>& updCurrentPath( const SimTK::State& s) const;
+
 	virtual const Array<PathPoint*>& getCurrentDisplayPath(const SimTK::State& s) ;
-	virtual Array<PathPoint*>& updCurrentDisplayPath(const SimTK::State& s) const;
+	
 	/** get the the path as PointForceDirections directions */
 	void getPointForceDirections(const SimTK::State& s, OpenSim::Array<PointForceDirection*> *rPFDs) const;
 
+	virtual double getLengtheningSpeed(const SimTK::State& s) const;
+	virtual void setLengtheningSpeed( const SimTK::State& s, double speed ) const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 private:
-	void compute(const SimTK::State& s ) const;
+	void computePath(const SimTK::State& s ) const;
+	void computeLengtheningSpeed(const SimTK::State& s) const;
 	void applyWrapObjects(const SimTK::State& s, Array<PathPoint*>& path ) const;
 	double _calc_path_length_change(const SimTK::State& s, WrapObject& wo, WrapResult& wr, const Array<PathPoint*>& path) const; 
 	virtual double calcLengthAfterPathComputation(const SimTK::State& s, const Array<PathPoint*>& currentPath) const;
@@ -180,8 +171,6 @@ protected:
 	virtual void initState(SimTK::State& s) const;
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void setDefaultsFromState(const SimTK::State& state) {};
-
-
 
 public:
 	//--------------------------------------------------------------------------

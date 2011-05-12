@@ -412,7 +412,7 @@ void ModelComponentRep::realizeTopology(SimTK::State &s) const
 		std::map<std::string, CacheInfo*>::iterator it;
 		for(it = (mutableThis->_namedCacheVariableInfo).begin(); it!=_namedCacheVariableInfo.end(); it++){
 			CacheInfo *ci = it->second;
-			ci->index = subSys.allocateCacheEntry(s, ci->lowestValidStage, ci->prototype->clone());
+			ci->index = subSys.allocateLazyCacheEntry(s, ci->lowestValidStage, ci->prototype->clone());
 		}
 	}
 

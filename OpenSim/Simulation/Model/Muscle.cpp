@@ -218,7 +218,7 @@ void Muscle::setup(Model& aModel)
 
 	mutableThis->setNumStateVariables(_stateVariableSuffixes.getSize());
 	mutableThis->addStateVariables(_stateVariableSuffixes);
-	mutableThis->addCacheVariable<SimTK::Vector>("stateDerivs", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Position);
+	mutableThis->addCacheVariable<SimTK::Vector>("state_derivatives", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Dynamics);
 
 	mutableThis->_model->addModelComponent(this);
  }
@@ -231,9 +231,6 @@ void Muscle::setup(Model& aModel)
 
 	// keep track of the index for the first state variable derivatives in the cache 
 	mutableThis->_zIndex = getZIndex(_stateVariableSuffixes[0]);
-
-	// keep track of the index for state variable derivatives in the cache 
-	mutableThis->_stateVariableDerivIndex = getCacheVariableIndex("stateDerivs");
 
 	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);
@@ -331,7 +328,7 @@ int Muscle::getNumStateVariables() const
  */
 void Muscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const {
 
-	SimTK::Vector& stateDeriv =  SimTK::Value<SimTK::Vector>::downcast(s.updCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).upd();
+	SimTK::Vector& stateDeriv =  updCacheVariable<SimTK::Vector>(s, "state_derivatives");
 	if(0<=aIndex && aIndex<_numStateVariables) {
 		stateDeriv[aIndex] = aValue;
 	} else {
@@ -340,6 +337,7 @@ void Muscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aVa
 			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 	}
+	markCacheVariableValid(s, "state_derivatives");
 }
 
 //_____________________________________________________________________________
@@ -351,7 +349,7 @@ void Muscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aVa
  */
 double Muscle::getStateVariableDeriv(const SimTK::State& s, int aIndex) const
 {
-	const SimTK::Vector& stateDeriv = SimTK::Value<SimTK::Vector>::downcast(s.getCacheEntry( _subsystemIndex, _stateVariableDerivIndex)).get();
+	const SimTK::Vector& stateDeriv = getCacheVariable<SimTK::Vector>(s, "state_derivatives");
 	if(0<=aIndex && aIndex<_numStateVariables) {
         return( stateDeriv[aIndex] );
 	} else {
@@ -571,67 +569,9 @@ double Muscle::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
 }
 
 
-//_____________________________________________________________________________
-/**
- * Compute values needed for calculating the muscle's actuation.
- * Right now this is only speed (contraction velocity; all other calculations
- * are handled by the derived classes).
- */
-double Muscle::computeLengtheningSpeed(const SimTK::State& s) const
+double Muscle::getLengtheningSpeed(const SimTK::State& s) const 
 {
-	SimTK::Vec3 posRelative, velRelative;
-	SimTK::Vec3 posStartInertial, posEndInertial, velStartInertial, velEndInertial;
-	SimTK::Vec3 velStartLocal, velEndLocal, velStartMoving, velEndMoving;
-	PathPoint *start, *end;
-    const Array<PathPoint*>& currentPath = _path.getCurrentPath(s);
-
-	double speed = 0.0;
-
-	const SimbodyEngine& engine = _model->getSimbodyEngine();
-
-	int i;
-	for (i = 0; i < currentPath.getSize() - 1; i++) {
-		start = currentPath[i];
-		end = currentPath[i+1];
-
-		// Find the positions and velocities in the inertial frame.
-		engine.getPosition(s, start->getBody(), start->getLocation(), posStartInertial);
-		engine.getPosition(s, end->getBody(), end->getLocation(), posEndInertial);
-		engine.getVelocity(s, start->getBody(), start->getLocation(), velStartInertial);
-		engine.getVelocity(s, end->getBody(), end->getLocation(), velEndInertial);
-
-		// The points might be moving in their local bodies' reference frames
-		// (MovingPathPoints and possibly PathWrapPoints) so find their
-		// local velocities and transform them to the inertial frame.
-		start->getVelocity(s, velStartLocal);
-		end->getVelocity(s, velEndLocal);
-		engine.transform(s, start->getBody(), velStartLocal, engine.getGroundBody(), velStartMoving);
-		engine.transform(s, end->getBody(), velEndLocal, engine.getGroundBody(), velEndMoving);
-
-		// Calculate the relative positions and velocities.
-		posRelative = posEndInertial - posStartInertial;
-		velRelative = (velEndInertial + velEndMoving) - (velStartInertial + velStartMoving);
-
-		// Normalize the vector from start to end.
-		posRelative = posRelative.normalize();// Mtx::Normalize(3, posRelative, posRelative);
-
-		// Dot the relative velocity with the unit vector from start to end,
-		// and add this speed to the running total.
-		speed += (velRelative[0] * posRelative[0] +
-			        velRelative[1] * posRelative[1] +
-			        velRelative[2] * posRelative[2]);
-	}
-
-	//Cache the constraction speed to access later at higher realization stages without recomputing
-    setSpeed(s,speed);
-
-	return(speed);
-}
-
-
-double Muscle::getShorteningSpeed(const SimTK::State& s) const 
-{
-	return (getSpeed(s) );
+	return _path.getLengtheningSpeed(s);
 }
 
 //_____________________________________________________________________________
@@ -676,8 +616,15 @@ void Muscle::computeForce(const SimTK::State& s,
 {
 	double muscleForce = 0;
 
-    if( isForceOverriden(s) ) {
-       muscleForce = computeOverrideForce(s);
+	if( isForceOverriden(s) ) {
+		muscleForce = computeOverrideForce(s);
+		// Also define the state derivatives, since realize acceleration will
+		// ask for muscle derivatives, which will be integrated
+		// in the case the force is being overridden, the states aren't being used
+		// but a valid derivative cache entry is still required 
+		SimTK::Vector& stateDerivs =  updCacheVariable<SimTK::Vector>(s, "state_derivatives");
+		stateDerivs = 0.0;
+		markCacheVariableValid(s, "state_derivatives");
     } else {
        muscleForce = computeActuation(s);
     }

@@ -166,12 +166,6 @@ class OSIMSIMULATION_API Actuator : public Actuator_
 protected:
 
 	int _numStateVariables;
-  
-    //additional cache indexes for scalar valued actuators
-    SimTK::CacheEntryIndex _forceIndex;
-    SimTK::CacheEntryIndex _speedIndex;
-
-	SimTK::DiscreteVariableIndex _overrideForceIndex;
  
 	StateFunction* _overrideForceFunction;
 

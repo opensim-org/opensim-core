@@ -73,7 +73,7 @@ double computeMomentArmFromDefinition(const State &s, const GeometryPath &path, 
 	coord.setClamped(s_ma, false);
 	coord.setLocked(s_ma, false);
 	double theta = coord.getValue(s);
-	double dtheta = integ_accuracy;
+	double dtheta = 0.1*integ_accuracy;
 	
 	// Compute length 1 
 	coord.setValue(s_ma, theta-dtheta, false);

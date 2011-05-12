@@ -274,6 +274,9 @@ public:
 	}
 	/**
      * Obtain a writable cache variable value allocated by this ModelComponent by name.
+	 * Do not forget to mark the cache value as valid after updating, otherwise it will
+	 * force a reevaluation if the evaluation method is monitoring the validity of the
+	 * cache value.
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
@@ -290,10 +293,89 @@ public:
 		}
 		else{
 			std::stringstream msg;
-			msg << "ModelComponent::setCacheVariable: ERR- name not found.\n "
+			msg << "ModelComponent::updCacheVariable: ERR- name not found.\n "
 				<< "for component '"<< getName() << "' of type " << getType();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}
+	}
+
+	/**
+     * After updating a cache variable value allocated by this ModelComponent, you can
+	 * mark its value as valid, which will not change until the realization stage falls
+	 * below the minimum set at the time the cache variable was created. If not marked
+     * as valid, the evaluation method monitoring this flag will force a re-evaluation
+	 * rather that just reading the value from the cache.
+	 *
+     * @param state  the State for which to set the value
+     * @param name   the name of the state variable
+     */
+	void markCacheVariableValid(const SimTK::State& state, const std::string &name) const
+	{
+		std::map<std::string, ModelComponentRep::CacheInfo*>::const_iterator it;
+		it = _rep->_namedCacheVariableInfo.find(name);
+
+		if(it != _rep->_namedCacheVariableInfo.end()) {
+			SimTK::CacheEntryIndex ceIndex = it->second->index;
+			state.markCacheValueRealized(getIndexOfSubsystemForAllocations(), ceIndex);
+		}
+		else{
+			std::stringstream msg;
+			msg << "ModelComponent::markCacheVariableValid: ERR- name not found.\n "
+				<< "for component '"<< getName() << "' of type " << getType();
+			throw( Exception(msg.str(),__FILE__,__LINE__) );
+		}
+	}
+
+	/**
+     * Enable the component performing a costly evaluation method to monitor the validity
+	 * of the cache variable value and to use this flag to  force a re-evaluation only
+	 * when necessary.
+	 *
+     * @param state  the State for which to set the value
+     * @param name   the name of the state variable
+     */
+	bool isCacheVariableValid(const SimTK::State& state, const std::string &name) const
+	{
+		std::map<std::string, ModelComponentRep::CacheInfo*>::const_iterator it;
+		it = _rep->_namedCacheVariableInfo.find(name);
+
+		if(it != _rep->_namedCacheVariableInfo.end()) {
+			SimTK::CacheEntryIndex ceIndex = it->second->index;
+			return state.isCacheValueRealized(getIndexOfSubsystemForAllocations(), ceIndex);
+		}
+		else{
+			std::stringstream msg;
+			msg << "ModelComponent::isCacheVariableValid: ERR- name not found.\n "
+				<< "for component '"<< getName() << "' of type " << getType();
+			throw( Exception(msg.str(),__FILE__,__LINE__) );
+		}
+	}
+
+	/**
+     *  Set cache variable value allocated by this ModelComponent by name.
+	 *  All cache entries are lazily evaluated (on a need basis) so a set
+	 *  also marks the cache as valid.
+     *
+     * @param state  the State for which to set the value
+     * @param name   the name of the state variable
+     * @return value  the variable's cache value to update
+     */
+	template<typename T> void setCacheVariable(const SimTK::State& state, const std::string &name, T &value) const
+	{
+		std::map<std::string, ModelComponentRep::CacheInfo*>::const_iterator it;
+		it = _rep->_namedCacheVariableInfo.find(name);
+
+		if(it != _rep->_namedCacheVariableInfo.end()) {
+			SimTK::CacheEntryIndex ceIndex = it->second->index;
+			SimTK::Value<T>::downcast(state.updCacheEntry( getIndexOfSubsystemForAllocations(), ceIndex)).upd() = value;
+			state.markCacheValueRealized(getIndexOfSubsystemForAllocations(), ceIndex);
+		}
+		else{
+			std::stringstream msg;
+			msg << "ModelComponent::setCacheVariable: ERR- name not found.\n "
+				<< "for component '"<< getName() << "' of type " << getType();
+			throw( Exception(msg.str(),__FILE__,__LINE__) );
+		}	
 	}
 
 	/**

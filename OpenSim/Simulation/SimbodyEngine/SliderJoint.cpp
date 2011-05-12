@@ -124,6 +124,7 @@ void SliderJoint::setNull()
 {
 	setType("SliderJoint");
 	constructCoordinates();
+	_coordinateSet[0].setMotionType(Coordinate::Translational);
 }
 
 //_____________________________________________________________________________
