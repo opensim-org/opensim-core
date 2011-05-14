@@ -330,6 +330,16 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	const Body &ground = _model->getGroundBody();
 	const Body &appliedToBody = _model->getBodySet().get(exForce.getAppliedToBodyName());
 
+	/*std::map<int, int>      coordinatesToColumns;
+	// create a map entry for each coordinate 0 to nq-1, the contents of which would be -1 if not found in the file otherwise Q index
+	for (int qi=0; qi < nq; qi++) coordinatesToColumns[qi] = -1;
+	const Array<string>& kinLabels = kinematics.getColumnLabels();
+
+	for (int qj = 0; qj < nq; qj++) {
+		Coordinate& coord = _model->getCoordinateSet().get(qj);
+		int idx = kinLabels.findIndex(coord.getName());
+		if (idx!= -1) coordinatesToColumns[qj] = idx-1;	// Since time is not accounted for
+	}*/
 	for(int i=startIndex; i<=lastIndex; ++i) {
 		// transform data on an instant-by-instant basis
 		kinematics.getTime(i, time);
@@ -339,6 +349,8 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 		for (int j = 0; j < nq; j++) {
 			Coordinate& coord = _model->getCoordinateSet().get(j);
 			coord.setValue(s, Q[j], j==nq-1);
+			/*if (coordinatesToColumns[j]!=-1)
+				coord.setValue(s, Q[coordinatesToColumns[j]], j==nq-1);*/
 		}
 
 		// get forcce data
@@ -397,6 +409,16 @@ void ExternalLoads::updateFromXMLNode()
 					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
 					if (transcoded.length()>0)
 						_dataFileName = XMLNode::GetValue<std::string>(txtNode);
+				}
+			}
+			DOMElement* kinFileNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
+			if (kinFileNode != 0){
+				DOMText* txtNode=NULL;
+				if(txtNode=XMLNode::GetTextNode(kinFileNode)) {
+					// Could still be empty or whiteSpace
+					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
+					if (transcoded.length()>0)
+						_externalLoadsModelKinematicsFileName = XMLNode::GetValue<std::string>(txtNode);
 				}
 			}
 			DOMElement* kinFilterNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");

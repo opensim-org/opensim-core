@@ -336,7 +336,7 @@
             </CMC_Joint>
         </defaults>
         <!--Name of the .osim file used to construct a model.-->
-        <model_file>subject221.osim</model_file>
+        <model_file>subject01.osim</model_file>
         <!--Replace the model's force set with sets specified in
 		    <force_set_files>? If false, the force set is appended to.-->
         <replace_force_set>true</replace_force_set>
@@ -345,9 +345,9 @@
         <!--Directory used for writing results.-->
         <results_directory>Results</results_directory>
         <!--Output precision.  It is 20 by default.-->
-        <output_precision>20</output_precision>
+        <output_precision>8</output_precision>
         <!--Initial time for the simulation.-->
-        <initial_time>0.40000000</initial_time>
+        <initial_time>0.50000000</initial_time>
         <!--Final time for the simulation.-->
         <final_time>1.60000000</final_time>
         <!--Flag indicating whether or not to compute equilibrium values for
@@ -370,7 +370,7 @@
                     <!--Flag (true or false) specifying whether whether on. True by default.-->
                     <on>true</on>
                     <!--Start time.-->
-                    <start_time>0.40000000</start_time>
+                    <start_time>0.50000000</start_time>
                     <!--End time.-->
                     <end_time>1.60000000</end_time>
                     <!--Specifies how often to store results during a simulation. More
@@ -408,7 +408,7 @@
         <!--Motion file (.mot) or storage file (.sto) containing the time history
 		    of the generalized coordinates for the model. These can be specified
 		    in place of the states file.-->
-        <coordinates_file>subject221_walk1_ik.mot</coordinates_file>
+        <coordinates_file>subject01_walk1_ik.mot</coordinates_file>
         <!--Storage file (.sto) containing the time history of the generalized
 		    speeds for the model. If coordinates_file is used in place of
 		    states_file, these can be optionally set as well to give the speeds.
@@ -425,7 +425,7 @@
         <external_loads_file>subject221_walk1_grf.xml</external_loads_file>
         <!--Motion file (.mot) or storage file (.sto) containing the model
 		    kinematics corresponding to the external loads.-->
-        <external_loads_model_kinematics_file>subject221_walk1_ik.mot</external_loads_model_kinematics_file>
+        <external_loads_model_kinematics_file>subject01_walk1_ik.mot</external_loads_model_kinematics_file>
         <!--Low-pass cut-off frequency for filtering the model kinematics
 		    corresponding to the external loads. A negative value results in no
 		    filtering. The default value is -1.0, so no filtering.-->

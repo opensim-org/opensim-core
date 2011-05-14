@@ -243,7 +243,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	const Storage *loadKinematicsForPointTransformation = NULL;
 	
 	//If the the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
-	if(loadKinematics->getName() == loadKinematicsFileName){
+	if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
 		loadKinematicsForPointTransformation = loadKinematics;
 	}
 	else{

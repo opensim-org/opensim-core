@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20300">
+<OpenSimDocument Version="20301">
   <InverseDynamicsTool name="subject01">
     <!--Name of the .osim file used to construct a model.-->
     <model_file> subject01.osim </model_file>

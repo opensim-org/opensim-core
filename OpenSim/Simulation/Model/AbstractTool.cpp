@@ -571,6 +571,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
 
 	// CREATE FORCE AND TORQUE APPLIERS
 	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+	_externalLoads.setup(aModel);
 	_externalLoads.setMemoryOwner(false);
 	for (int i=0; i<_externalLoads.getSize(); i++){
 		aModel.updForceSet().append(&_externalLoads.get(i)); // Call this instead of addForce to avoid calling setup repeatedly
