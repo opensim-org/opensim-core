@@ -1,8 +1,8 @@
-#ifndef __Muscle_h__
-#define __Muscle_h__
+#ifndef __ActivationFiberLengthMuscle_h__
+#define __ActivationFiberLengthMuscle_h__
 
-// Muscle.h
-// Author: Peter Loan, Frank C. Anderson, Ajay Seth
+// ActivationFiberLengthMuscle.h
+// Author: Ajay Seth
 /*
  * Copyright (c)  2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -31,7 +31,7 @@
 
 
 // INCLUDE
-#include "PathActuator.h"
+#include "Muscle.h"
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -56,15 +56,45 @@ class Coordinate;
  * @author Peter Loan
  * @author Frank C. Anderson
  * @author Ajay Seth
- * @version 2.0
+ * @version 1.0
  */
-class OSIMSIMULATION_API Muscle : public PathActuator  
+class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle  
 {
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 
+	/** Optimal length of the muscle fibers */
+	PropertyDbl _optimalFiberLengthProp;
+	double &_optimalFiberLength;
+
+	/** Maximum isometric force that the fibers can generate */
+	PropertyDbl _maxIsometricForceProp;
+	double &_maxIsometricForce;
+
+	/** Resting length of the tendon */
+	PropertyDbl _tendonSlackLengthProp;
+	double &_tendonSlackLength;
+
+	/** Angle between tendon and fibers at optimal fiber length */
+	PropertyDbl _pennationAngleProp;
+	double &_pennationAngle;
+
+	/** Maximum contraction velocity of the fibers, in optimal fiberlengths per second */
+	PropertyDbl _maxContractionVelocityProp;
+	double &_maxContractionVelocity;
+
+	Array<std::string> _stateVariableSuffixes;
+    // Defaults for state variables.
+    double _defaultActivation;
+    double _defaultFiberLength;
+
+	//Starting index of the ActivationFiberLengthMuscle's states in its subsystem 
+	SimTK::ZIndex _zIndex;
+
+	static const int STATE_ACTIVATION;
+	static const int STATE_FIBER_LENGTH;
 
 //=============================================================================
 // METHODS
@@ -73,19 +103,34 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Muscle();
-	Muscle(const Muscle &aMuscle);
-	virtual ~Muscle();
+	ActivationFiberLengthMuscle();
+	ActivationFiberLengthMuscle(const ActivationFiberLengthMuscle &aMuscle);
+	virtual ~ActivationFiberLengthMuscle();
 	virtual Object* copy() const = 0;
 
 	void setName(const std::string &aName);
 #ifndef SWIG
-	Muscle& operator=(const Muscle &aMuscle);
+	ActivationFiberLengthMuscle& operator=(const ActivationFiberLengthMuscle &aMuscle);
 #endif
-   void copyData(const Muscle &aMuscle);
+   void copyData(const ActivationFiberLengthMuscle &aMuscle);
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode();
 
+    virtual void equilibrate(SimTK::State& state) const;
+
+    //--------------------------------------------------------------------------
+    // GET
+    //--------------------------------------------------------------------------
+    virtual int getNumStateVariables() const;
+    // Properties
+	 virtual double getPennationAngleAtOptimalFiberLength() const = 0;
+
+    // Defaults
+    virtual double getDefaultActivation() const;
+    virtual void setDefaultActivation(double activation);
+    virtual double getDefaultFiberLength() const;
+    virtual void setDefaultFiberLength(double length);
+	virtual double getOptimalFiberLength() const = 0;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -105,6 +150,7 @@ public:
 	virtual double getTendonForce(const SimTK::State& s) const = 0;
 	virtual double getActivation(const SimTK::State& s) const = 0;
     virtual void setActivation(SimTK::State& s, double activation) const = 0;
+    virtual double getExcitation( const SimTK::State& s) const;
 
 
 	//--------------------------------------------------------------------------
@@ -113,18 +159,14 @@ public:
 	virtual double computeActuation( const SimTK::State& s ) const = 0;
 
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
+	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
 
-	virtual double evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity) const;
 	virtual double calcPennation( double aFiberLength, double aOptimalFiberLength, double aInitialPennationAngle) const;
-
-	virtual void equilibrate(SimTK::State& s) const = 0;
-    
+   
 	//--------------------------------------------------------------------------
 	// SCALING
 	//--------------------------------------------------------------------------
 protected:
-	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
 	//--------------------------------------------------------------------------
@@ -145,24 +187,30 @@ public:
 		return values;
 	};
 
-	OPENSIM_DECLARE_DERIVED(Muscle, PathActuator);
+	OPENSIM_DECLARE_DERIVED(ActivationFiberLengthMuscle, Muscle);
 
 private:
 	void setNull();
 	void setupProperties();
 
 protected:
-	// Update the geometry attached to the muscle (location of muscle points and connecting segments
-	//  all in global/interial frame)
-	virtual void updateGeometry(const SimTK::State& s) const;
-
 	virtual void setup(Model& aModel);
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
 
+	
+    virtual void setNumStateVariables( int aNumStateVariables);
+	virtual std::string getStateVariableName(int aIndex) const;
+
+	virtual void setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const;
+	virtual double getStateVariableDeriv(const SimTK::State& s, int aIndex) const;
+
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State) 
+	{ return SimTK::Vector(getNumStateVariables(), 0.0); };
+
 //=============================================================================
-};	// END of class Muscle
+};	// END of class ActivationFiberLengthMuscle
 //=============================================================================
 //=============================================================================
 

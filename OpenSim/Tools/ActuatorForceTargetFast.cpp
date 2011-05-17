@@ -38,7 +38,7 @@
 #include <OpenSim/Common/Exception.h>
 
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
 #include "ActuatorForceTargetFast.h"
 #include "CMC_TaskSet.h"
@@ -169,7 +169,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 	getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
 	for(int i=0, index=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-	    Muscle* mus = dynamic_cast<Muscle*>(&act);
+	    ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&act);
 		if(mus==NULL) {
 			fOpt = 1.0e-4;
 		} else {

@@ -31,16 +31,9 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -59,7 +52,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Schutte1993Muscle : public Muscle  
+class OSIMACTUATORS_API Schutte1993Muscle : public ActivationFiberLengthMuscle  
 {
 
 //=============================================================================
@@ -77,26 +70,6 @@ protected:
 	/** Parameter used in time constant of ramping up and ramping down of muscle force */
 	PropertyDbl _activation2Prop;
 	double &_activation2;
-
-	/** Maximum isometric force that the fibers can generate */
-	PropertyDbl _maxIsometricForceProp;
-	double &_maxIsometricForce;
-
-	/** Optimal length of the muscle fibers */
-	PropertyDbl _optimalFiberLengthProp;
-	double &_optimalFiberLength;
-
-	/** Resting length of the tendon */
-	PropertyDbl _tendonSlackLengthProp;
-	double &_tendonSlackLength;
-
-	/** Angle between tendon and fibers at optimal fiber length */
-	PropertyDbl _pennationAngleProp;
-	double &_pennationAngle;
-
-	/** Maximum contraction velocity of the fibers, in optimal fiberlengths per second */
-	PropertyDbl _maxContractionVelocityProp;
-	double &_maxContractionVelocity;
 
 	/** Damping factor related to maximum contraction velocity */
 	PropertyDbl _dampingProp;
@@ -183,10 +156,7 @@ public:
 	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation( const SimTK::State& s ) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation);
 
-	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 #endif
 
 	virtual Function* getActiveForceLengthCurve() const;
@@ -197,7 +167,7 @@ public:
 	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
 
 	virtual int getStateVariableYIndex(int index) const;
-	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, Actuator);
+	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, ActivationFiberLengthMuscle);
 
 protected:
 	// Model Component Interface

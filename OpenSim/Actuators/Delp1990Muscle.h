@@ -31,16 +31,9 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -62,7 +55,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Delp1990Muscle : public Muscle  
+class OSIMACTUATORS_API Delp1990Muscle : public ActivationFiberLengthMuscle  
 {
 
 //=============================================================================
@@ -133,6 +126,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	Delp1990Muscle();
+	Delp1990Muscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	Delp1990Muscle(const Delp1990Muscle &aMuscle);
 	virtual ~Delp1990Muscle();
 	virtual Object* copy() const;
@@ -195,10 +189,7 @@ public:
 	virtual void computeEquilibrium(SimTK::State& s) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation);
 
-	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
 #endif
 
 	virtual Function* getActiveForceLengthCurve() const;
@@ -211,7 +202,7 @@ public:
 	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
 	virtual int getStateVariableYIndex(int index) const;
-	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, Actuator);
+	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, ActivationFiberLengthMuscle);
 
 protected:
 	// Model Component Interface

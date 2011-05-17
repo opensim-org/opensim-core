@@ -52,7 +52,7 @@ const int Delp1990Muscle::STATE_FIBER_VELOCITY = 2;
  * Default constructor.
  */
 Delp1990Muscle::Delp1990Muscle() :
-   Muscle(),
+   ActivationFiberLengthMuscle(),
 	_timeScale(_timeScaleProp.getValueDbl()),
 	_activation1(_activation1Prop.getValueDbl()),
 	_activation2(_activation2Prop.getValueDbl()),
@@ -73,6 +73,35 @@ Delp1990Muscle::Delp1990Muscle() :
 
 //_____________________________________________________________________________
 /**
+ * Constructor.
+ */
+Delp1990Muscle::Delp1990Muscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle) :
+   ActivationFiberLengthMuscle(),
+	_timeScale(_timeScaleProp.getValueDbl()),
+	_activation1(_activation1Prop.getValueDbl()),
+	_activation2(_activation2Prop.getValueDbl()),
+	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
+	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
+	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
+	_pennationAngle(_pennationAngleProp.getValueDbl()),
+	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
+	_mass(_massProp.getValueDbl()),
+	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
+	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
+	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
+	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
+{
+	setNull();
+	setupProperties();
+	setName(aName);
+	setMaxIsometricForce(aMaxIsometricForce);
+	setOptimalFiberLength(aOptimalFiberLength);
+	setTendonSlackLength(aTendonSlackLength);
+	setPennationAngle(aPennationAngle);
+}
+
+//_____________________________________________________________________________
+/**
  * Destructor.
  */
 Delp1990Muscle::~Delp1990Muscle()
@@ -86,7 +115,7 @@ Delp1990Muscle::~Delp1990Muscle()
  * @param aMuscle Delp1990Muscle to be copied.
  */
 Delp1990Muscle::Delp1990Muscle(const Delp1990Muscle &aMuscle) :
-   Muscle(aMuscle),
+   ActivationFiberLengthMuscle(aMuscle),
 	_timeScale(_timeScaleProp.getValueDbl()),
 	_activation1(_activation1Prop.getValueDbl()),
 	_activation2(_activation2Prop.getValueDbl()),
@@ -133,11 +162,6 @@ void Delp1990Muscle::copyData(const Delp1990Muscle &aMuscle)
 	_timeScale = aMuscle._timeScale;
 	_activation1 = aMuscle._activation1;
 	_activation2 = aMuscle._activation2;
-	_maxIsometricForce = aMuscle._maxIsometricForce;
-	_optimalFiberLength = aMuscle._optimalFiberLength;
-	_tendonSlackLength = aMuscle._tendonSlackLength;
-	_pennationAngle = aMuscle._pennationAngle;
-	_maxContractionVelocity = aMuscle._maxContractionVelocity;
 	_mass = aMuscle._mass;
 	_tendonForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._tendonForceLengthCurve);
 	_activeForceLengthCurve = (Function*)Object::SafeCopy(aMuscle._activeForceLengthCurve);
@@ -260,7 +284,11 @@ void Delp1990Muscle::setupProperties()
 void Delp1990Muscle::setup(Model& aModel)
 {
 	// Base class
-	Muscle::setup(aModel);
+	ActivationFiberLengthMuscle::setup(aModel);
+
+	// Adjust number of states to include the velocity state
+	setNumStateVariables(3);
+	_stateVariableSuffixes[STATE_FIBER_VELOCITY]="fiber_velocity";
 
 	// aModel will be NULL when objects are being registered.
 	if (_model == NULL)
@@ -278,7 +306,7 @@ void Delp1990Muscle::setup(Model& aModel)
 
 void Delp1990Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	Muscle::createSystem(system);
+	ActivationFiberLengthMuscle::createSystem(system);
 	Delp1990Muscle* mutableThis = const_cast<Delp1990Muscle *>(this);
 
 	// Cache the computed active and passive muscle force
@@ -288,21 +316,21 @@ void Delp1990Muscle::createSystem(SimTK::MultibodySystem& system) const
 }
 
 void Delp1990Muscle::setPassiveForce(const SimTK::State& s, double force ) const {
-    updCacheVariable<double>(s, "passiveForce") = force;
+    setCacheVariable<double>(s, "passiveForce", force);
 }
 double Delp1990Muscle::getPassiveForce( const SimTK::State& s) const {
     return getCacheVariable<double>(s, "passiveForce");
 }
 
 void Delp1990Muscle::setTendonForce(const SimTK::State& s, double force) const {
-	updCacheVariable<double>(s, "force") = force;
+	setForce(s, force);
 }
 double Delp1990Muscle::getTendonForce(const SimTK::State& s) const {
-	return getCacheVariable<double>(s, "force");
+	return getForce(s);
 }
 
 void Delp1990Muscle::setActiveForce( const SimTK::State& s, double force ) const {
-    updCacheVariable<double>(s, "activeForce") = force;
+    setCacheVariable<double>(s, "activeForce", force);
 }
 
 double Delp1990Muscle::getActiveForce( const SimTK::State& s) const {
@@ -318,7 +346,7 @@ double Delp1990Muscle::getActiveForce( const SimTK::State& s) const {
  */
 void Delp1990Muscle::copyPropertyValues(Actuator& aActuator)
 {
-	Muscle::copyPropertyValues(aActuator);
+	ActivationFiberLengthMuscle::copyPropertyValues(aActuator);
 
 	const Property* prop = aActuator.getPropertySet().contains("time_scale");
 	if (prop) _timeScaleProp.setValue(prop->getValueDbl());
@@ -384,7 +412,7 @@ void Delp1990Muscle::copyPropertyValues(Actuator& aActuator)
 Delp1990Muscle& Delp1990Muscle::operator=(const Delp1990Muscle &aMuscle)
 {
 	// BASE CLASS
-	Muscle::operator=(aMuscle);
+	ActivationFiberLengthMuscle::operator=(aMuscle);
 
 	copyData(aMuscle);
 
@@ -584,48 +612,7 @@ double Delp1990Muscle::getPassiveFiberForce(const SimTK::State& s) const
 
 
 
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Scale the muscle.
- *
- * @param aScaleSet XYZ scale factors for the bodies
- * @return Whether or not the muscle was scaled successfully
- */
-void Delp1990Muscle::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-	Muscle::scale(s, aScaleSet);
 
-	// some force-generating parameters are scaled in postScale(),
-	// so as of now there is nothing else to do here...
-}
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails comparing the musculotendon length
- * before and after scaling, and scaling some of the force-generating
- * properties a proportional amount.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void Delp1990Muscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-	Muscle::postScale(s, aScaleSet);
-
-	if (_path.getPreScaleLength(s) > 0.0)
-	{
-		double scaleFactor = getLength(s) / _path.getPreScaleLength(s);
-
-		_optimalFiberLength *= scaleFactor;
-		_tendonSlackLength *= scaleFactor;
-		//_maxIsometricForce *= scaleFactor;
-
-		_path.setPreScaleLength(s, 0.0);
-	}
-}
 
 //_____________________________________________________________________________
 /**
@@ -663,9 +650,6 @@ void Delp1990Muscle::computeEquilibrium(SimTK::State& s) const
 double Delp1990Muscle::computeActuation(const SimTK::State& s) const
 {
 	double tendonForce;
-
-	// Base Class (to calculate speed)
-	Muscle::computeLengtheningSpeed(s);
 
    double normState[3], normStateDeriv[3], norm_tendon_length, ca, ta;
    double norm_muscle_tendon_length, pennation_angle;
@@ -1053,44 +1037,9 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
    return tendon_force;
 }
 
-//_____________________________________________________________________________
-/**
- * Find the force produced by muscle under isokinetic conditions assuming
- * an infinitely stiff tendon.  That is, all the shortening velocity of the
- * actuator (the musculotendon unit) is assumed to be due to the shortening
- * of the muscle fibers alone.  This methods calls
- * computeIsometricForce and so alters the internal member variables of this
- * muscle.
- *
- *
- * Note that the current implementation approximates the effect of the
- * force-velocity curve.  It does not account for the shortening velocity
- * when it is solving for the equilibrium length of the muscle fibers.  And,
- * a generic representation of the force-velocity curve is used (as opposed
- * to the implicit force-velocity curve assumed by this model.
- *
- *
- * @param aActivation Activation of the muscle.
- * @return Isokinetic force generated by the actuator.
- * @todo Reimplement this methods with more accurate representation of the
- * force-velocity curve.
- */
-double Delp1990Muscle::
-computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation)
-{
-	double isometricForce = computeIsometricForce(s, aActivation);
-
-	double normalizedLength = getFiberLength(s) / _optimalFiberLength;
-	double normalizedVelocity = cos(_pennationAngle) * getSpeed(s) / (_maxContractionVelocity * _optimalFiberLength);
-	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,normalizedLength,normalizedVelocity);
-
-	return isometricForce * normalizedForceVelocity;
-}
-
 int Delp1990Muscle::getStateVariableYIndex(int index) const
 {
 	if (index<=2)
 		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+index;
 	throw Exception("Trying to get State variable YIndex for Muscle "+getName()+" at undefined index"); 
-
 }

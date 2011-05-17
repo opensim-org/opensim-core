@@ -37,7 +37,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include "StaticOptimizationTarget.h"
@@ -110,7 +110,7 @@ prepareToOptimize(SimTK::State& s, double *x)
  		 Actuator* act = dynamic_cast<Actuator*>(&fSet.get(i));
          if( act ) {
              double fOpt;
-             Muscle *mus = dynamic_cast<Muscle*>(&fSet.get(i));
+             ActivationFiberLengthMuscle *mus = dynamic_cast<ActivationFiberLengthMuscle*>(&fSet.get(i));
              if( mus ) {
     		 	  if(_useMusclePhysiology) {
 					_model->setAllControllersEnabled(true);
@@ -668,7 +668,7 @@ computeAcceleration(SimTK::State& s, const SimTK::Vector &parameters,SimTK::Vect
 
 	// SimTK requires that time be >= 0 when setting Discreate variables (overrideForce)
 	// JACKM: Need to talk to sherm if this restriction can be removed
-	if( s.getTime() < 0.0 ) s.updTime() = 0;
+	double time = s.getTime();
 	
 
 	const ForceSet& fs = _model->getForceSet();

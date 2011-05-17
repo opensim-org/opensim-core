@@ -31,12 +31,7 @@
 
 // INCLUDE
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Common/ScaleSet.h>
-#include <OpenSim/Common/Function.h>
-#include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -55,28 +50,13 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API ContDerivMuscle : public Muscle  
+class OSIMACTUATORS_API ContDerivMuscle : public ActivationFiberLengthMuscle  
 {
 
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	/** Maximum isometric force that the fibers can generate */
-	PropertyDbl _maxIsometricForceProp;
-	double &_maxIsometricForce;
-
-	/** Optimal length of the muscle fibers */
-	PropertyDbl _optimalFiberLengthProp;
-	double &_optimalFiberLength;
-
-	/** Resting length of the tendon */
-	PropertyDbl _tendonSlackLengthProp;
-	double &_tendonSlackLength;
-
-	/** Angle between tendon and fibers at optimal fiber length */
-	PropertyDbl _pennationAngleProp;
-	double &_pennationAngle;
 
 	/** Activation time constant */  
 	PropertyDbl _activationTimeConstantProp;
@@ -199,15 +179,8 @@ public:
 	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation);
 
-	//--------------------------------------------------------------------------
-	// SCALE
-	//--------------------------------------------------------------------------
-	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-
-	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, Actuator);
+	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, ActivationFiberLengthMuscle);
 
 protected:
 	// Model Component Interface

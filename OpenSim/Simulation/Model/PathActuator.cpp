@@ -1,7 +1,7 @@
-// PointActuator.cpp
+// PathActuator.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2009, Stanford University. All rights reserved. 
+* Copyright (c)  2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -34,11 +34,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
-#include "PointActuator.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/BodySet.h>
+#include "PathActuator.h"
+#include "Model.h"
+#include "PointForceDirection.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -56,32 +54,20 @@ using namespace std;
 /**
  * Destructor.
  */
-PointActuator::~PointActuator()
+PathActuator::~PathActuator()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-PointActuator::PointActuator( string aBodyName) :
-	Actuator(),
-	_bodyName(_propBodyName.getValueStr()),
-	_point(_propPoint.getValueDblVec()),
-	_pointIsGlobal(_propPointIsGlobal.getValueBool()),
-	_direction(_propDirection.getValueDblVec()),
-	_forceIsGlobal(_propForceIsGlobal.getValueBool()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
-	_body(NULL)
+PathActuator::PathActuator() :	Actuator(),
+	_pathProp(PropertyObj("", GeometryPath())),
+	_path((GeometryPath&)_pathProp.getValueObj()),
+	_optimalForce(_propOptimalForce.getValueDbl())
 {
 	// NULL
 	setNull();
-
-	// MEMBER VARIABLES
-	_bodyName = aBodyName;
-
-	if (_model) {
-		_body = &_model->updBodySet().get(_bodyName);
-	} 
 }
 //_____________________________________________________________________________
 /**
@@ -89,18 +75,14 @@ PointActuator::PointActuator( string aBodyName) :
  *
  * @param aForce Force to be copied.
  */
-PointActuator::PointActuator(const PointActuator &anActuator) :
-	Actuator(anActuator),
-	_bodyName(_propBodyName.getValueStr()),
-	_point(_propPoint.getValueDblVec()),
-	_pointIsGlobal(_propPointIsGlobal.getValueBool()),
-	_direction(_propDirection.getValueDblVec()),
-	_forceIsGlobal(_propForceIsGlobal.getValueBool()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
-	_body(NULL)
+PathActuator::PathActuator(const PathActuator &aPathActuator) :
+	Actuator(aPathActuator),
+	_pathProp(PropertyObj("", GeometryPath())),
+	_path((GeometryPath&)_pathProp.getValueObj()),
+	_optimalForce(_propOptimalForce.getValueDbl())
 {
 	setNull();
-	copyData(anActuator);
+	copyData(aPathActuator);
 }
 //_____________________________________________________________________________
 /**
@@ -109,10 +91,10 @@ PointActuator::PointActuator(const PointActuator &anActuator) :
  *
  * @return Pointer to a copy of this actuator.
  */
-Object* PointActuator::
+Object* PathActuator::
 copy() const
 {
-	PointActuator *force = new PointActuator(*this);
+	PathActuator *force = new PathActuator(*this);
 	return force;
 }
 
@@ -124,10 +106,9 @@ copy() const
 /**
  * Set the data members of this actuator to their null values.
  */
-void PointActuator::
-setNull()
+void PathActuator::setNull()
 {
-	setType("PointActuator");
+	setType("PathActuator");
 	setupProperties();
 }
 
@@ -135,29 +116,10 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void PointActuator::
-setupProperties()
+void PathActuator::setupProperties()
 {
-	SimTK::Vec3 origin(0.0);
-
-	_propBodyName.setName("body");
-	_propertySet.append( &_propBodyName );
-
-	_propPoint.setName("point");
-	_propPoint.setValue(origin);
-	_propertySet.append( &_propPoint );
-
-	_propPointIsGlobal.setName("point_is_global");
-	_propPointIsGlobal.setValue(false);
-	_propertySet.append( &_propPointIsGlobal );
-
-	_propDirection.setName("direction");
-	_propDirection.setValue(origin);
-	_propertySet.append( &_propDirection );
-
-	_propForceIsGlobal.setName("force_is_global");
-	_propForceIsGlobal.setValue(false);
-	_propertySet.append( &_propForceIsGlobal );
+	_pathProp.setName("GeometryPath");
+	_propertySet.append(&_pathProp);
 
 	_propOptimalForce.setName("optimal_force");
 	_propOptimalForce.setValue(1.0);
@@ -168,18 +130,11 @@ setupProperties()
 /**
  * Copy the member data of the specified actuator.
  */
-void PointActuator::
-copyData(const PointActuator &aPointActuator)
+void PathActuator::copyData(const PathActuator &aPathActuator)
 {
 	// MEMBER VARIABLES
-	_bodyName = aPointActuator._bodyName;
-	_point = aPointActuator._point; 
-	_pointIsGlobal = aPointActuator._pointIsGlobal;
-	_direction = aPointActuator._direction;
-	_forceIsGlobal = aPointActuator._forceIsGlobal;
-
-	setOptimalForce(aPointActuator.getOptimalForce());
-	setBody(aPointActuator.getBody());
+	_path = aPathActuator._path;
+	setOptimalForce(aPathActuator.getOptimalForce());
 }
 
 
@@ -193,15 +148,14 @@ copyData(const PointActuator &aPointActuator)
 /**
  * Assignment operator.
  *
- * @return  aBodyID ID (or number, or index) of the generalized Body.
+ * @return  aCoordinateID ID (or number, or index) of the generalized coordinate.
  */
-PointActuator& PointActuator::
-operator=(const PointActuator &aPointActuator)
+PathActuator& PathActuator::operator=(const PathActuator &aPathActuator)
 {
 	// BASE CLASS
-	Actuator::operator =(aPointActuator);
+	Actuator::operator =(aPathActuator);
 
-	copyData(aPointActuator);
+	copyData(aPathActuator);
 
 	return(*this);
 }
@@ -211,33 +165,6 @@ operator=(const PointActuator &aPointActuator)
 // GET AND SET
 //=============================================================================
 //-----------------------------------------------------------------------------
-// BodyID
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the generalized Body to which the Body actuator is applied.
- *
- * @param aBody Pointer to the generalized Body.
- */
-void PointActuator::setBody(Body* aBody)
-{
-	_body = aBody;
-	if(aBody)
-		_bodyName = aBody->getName();
-}
-//_____________________________________________________________________________
-/**
- * Get the generalized Body to which the Body actuator
- * is applied.
- *
- * @return Pointer to the Body
- */
-Body* PointActuator::getBody() const
-{
-	return(_body);
-}
-
-//-----------------------------------------------------------------------------
 // OPTIMAL FORCE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
@@ -246,19 +173,45 @@ Body* PointActuator::getBody() const
  *
  * @param aOptimalForce Optimal force.
  */
-void PointActuator::setOptimalForce(double aOptimalForce)
+void PathActuator::setOptimalForce(double aOptimalForce)
 {
 	_optimalForce = aOptimalForce;
 }
+
 //_____________________________________________________________________________
 /**
  * Get the optimal force of the force.
  *
  * @return Optimal force.
  */
-double PointActuator::getOptimalForce() const
+double PathActuator::getOptimalForce() const
 {
 	return(_optimalForce);
+}
+
+//-----------------------------------------------------------------------------
+// LENGTH
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the length of the path actuator. This is a convenience function that 
+ * calls the underlying path object for its length.
+ *
+ * @return Current length of the actuator's path.
+ */
+double PathActuator::getLength(const SimTK::State& s) const
+{
+	return _path.getLength(s);
+}
+//_____________________________________________________________________________
+/**
+ * Get the speed of actuator along its path.
+ *
+ * @return path lengthening speed.
+ */
+double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
+{
+	return(_path.getLengtheningSpeed(s));
 }
 //_____________________________________________________________________________
 /**
@@ -266,11 +219,29 @@ double PointActuator::getOptimalForce() const
  *
  * @return Stress.
  */
-double PointActuator::getStress( const SimTK::State& s) const
+double PathActuator::getStress( const SimTK::State& s) const
 {
 	return fabs(getForce(s)/_optimalForce); 
 }
 
+
+//_____________________________________________________________________________
+/**
+ * Add a Path point to the _path of the actuator. The new point is appended 
+ * to the end of the current path
+ *
+ */
+void PathActuator::addNewPathPoint(
+		 const std::string& proposedName, 
+		 OpenSim::Body& aBody, 
+		 const SimTK::Vec3& aPositionOnBody) {
+	// Create new PathPoint
+	PathPoint* newPathPoint =_path.appendNewPathPoint(proposedName, aBody, aPositionOnBody);
+	// Set offset/position on owner body
+	newPathPoint->setName(proposedName);
+	for (int i=0; i<3; i++)	// Use interface that does not depend on state
+		newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
+}
 
 //=============================================================================
 // COMPUTATIONS
@@ -280,14 +251,17 @@ double PointActuator::getStress( const SimTK::State& s) const
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double  PointActuator::computeActuation( const SimTK::State& s ) const
+double PathActuator::computeActuation( const SimTK::State& s ) const
 {
-	if(_model==NULL) return 0;
+	if(_model==NULL)
+		return 0.0;
+
+	// compute path's lengthening speed if necessary
+	_path.getLengtheningSpeed(s);
 
 	// FORCE
-	return( getControl(s) * _optimalForce) ;
+	return( getControl(s) * _optimalForce );
 }
-
 
 
 //=============================================================================
@@ -295,77 +269,67 @@ double  PointActuator::computeActuation( const SimTK::State& s ) const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Apply the actuator force to BodyA and BodyB.
+ * Apply the actuator force along path wrapping over and connecting rigid bodies
  */
-void PointActuator::computeForce(const SimTK::State& s, 
-							     SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							     SimTK::Vector& generalizedForces) const
+void PathActuator::computeForce( const SimTK::State& s, 
+							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							   SimTK::Vector& mobilityForces) const
 {
-	const SimbodyEngine& engine = getModel().getSimbodyEngine();
+	if(_model==NULL) return;
 
-	if(_model==NULL || _body == NULL) return;
+	double force = computeActuation(s);
 
-    double force;
-
-    if( isForceOverriden(s) ) {
-       force = computeOverrideForce(s);
-    } else {
-       force = computeActuation(s);
-    }
     setForce(s,  force );
 
+	OpenSim::Array<PointForceDirection*> PFDs;
+	_path.getPointForceDirections(s, &PFDs);
 
-//std::cout << "PointActuator::computeForce t=" << s.getTime() << "  " << getName() <<   " force= " << force << std::endl;
-
-	
-	SimTK::Vec3 forceVec = force*SimTK::UnitVec3(_direction);
-	SimTK::Vec3 lpoint = _point;
-	if (!_forceIsGlobal)
-		engine.transform(s, *_body, forceVec, engine.getGroundBody(), forceVec);
-	if (_pointIsGlobal)
-			engine.transformPosition(s, engine.getGroundBody(), lpoint, *_body, lpoint);
-	applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
+	for (int i=0; i < PFDs.getSize(); i++) {
+		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), force*PFDs[i]->direction(), bodyForces);
+	}
+	for(int i=0; i < PFDs.getSize(); i++)
+		delete PFDs[i];
 }
+
+/**
+ * Compute the moment-arm of this muscle about a coordinate.
+ */
+double PathActuator::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
+{
+	return _path.computeMomentArm(s, aCoord);
+}
+
 //_____________________________________________________________________________
 /**
- * setup sets the actual Body reference _body
+ * Perform some setup functions that happen after the
+ * object has been deserialized or copied.
+ *
+ * @param aModel OpenSim model containing this PathActuator.
  */
-void PointActuator::setup(Model& aModel)
+void PathActuator::setup(Model& aModel)
 {
-	string errorMessage;
+	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
+	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
+	// propogated.
+	includeAsSubComponent(&_path);
 	Actuator::setup(aModel);
 
-	if (!aModel.updBodySet().contains(_bodyName)) {
-		errorMessage = "PointActuator: Unknown body (" + _bodyName + ") specified in Actuator " + getName();
-		throw (Exception(errorMessage.c_str()));
-	}
+	// _model will be NULL when objects are being registered.
+	if (_model == NULL)
+		return;
 
-	if (_model) {
-		_body = &_model->updBodySet().get(_bodyName);
-	}
+	_path.setOwner(this);
 }
 
-
-//=============================================================================
-// CHECK
-//=============================================================================
 //_____________________________________________________________________________
 /**
- * Check that this point actuator actuator is valid.
- *
- * @return True if valid, false if invalid.
+ *  Create underlying SimTK::Force
  */
-bool PointActuator::check() const
-{
-	// BodyID
-	if( _body != NULL) {
-		printf("PointActuator.check: ERROR- %s actuates ",
-			getName().c_str());
-		printf("an invalid Body (%s).\n", _bodyName.c_str());
-		return(false);
-	}
-	return(true);
+ void  PathActuator::createSystem(SimTK::MultibodySystem& system) const {
+
+     Actuator::createSystem( system );
 }
+
 
 //=============================================================================
 // XML
@@ -381,25 +345,9 @@ bool PointActuator::check() const
  * a few methods in this class to ensure that variable members have been
  * set in a consistent manner.
  */
-void PointActuator::
-updateFromXMLNode()
+void PathActuator::updateFromXMLNode()
 {
-	int documentVersion = getDocument()->getDocumentVersion();
-	bool converting=false;
-	if ( documentVersion < XMLDocument::getLatestVersion()){
-			// Now check if we need to create a correction controller to replace springs
-		if (_node!=NULL && documentVersion<10905){
-			// This used to be called "Force" back then
-			renameChildNode("body_B", "body"); // body_B -> body
-			renameChildNode("point_B", "point"); // point_B -> point
-			renameChildNode("direction_A", "direction"); // direction_A -> direction
-			_forceIsGlobal = true;
-			converting = true;
-		}
-	}
 	Actuator::updateFromXMLNode();
-	if (converting) _direction *= -1.0;
-	setBody(_body);
 	setOptimalForce(_optimalForce);
 }	
 
@@ -408,7 +356,7 @@ updateFromXMLNode()
  * The names of the quantities (column labels) is returned by this first function
  * getRecordLabels()
  */
-OpenSim::Array<std::string> PointActuator::getRecordLabels() const {
+OpenSim::Array<std::string> PathActuator::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 	labels.append(getName());
 	return labels;
@@ -417,8 +365,26 @@ OpenSim::Array<std::string> PointActuator::getRecordLabels() const {
  * Given SimTK::State object extract all the values necessary to report forces, application location
  * frame, etc. used in conjunction with getRecordLabels and should return same size Array
  */
-OpenSim::Array<double> PointActuator::getRecordValues(const SimTK::State& state) const {
+OpenSim::Array<double> PathActuator::getRecordValues(const SimTK::State& state) const {
 	OpenSim::Array<double> values(1);
 	values.append(getForce(state));
 	return values;
 };
+
+//_____________________________________________________________________________
+/**
+ * Get the visible object used to represent the muscle.
+ */
+VisibleObject* PathActuator::getDisplayer() const
+{ 
+	return getGeometryPath().getDisplayer(); 
+}
+
+//_____________________________________________________________________________
+/**
+ * Update the visible object used to represent the muscle.
+ */
+void PathActuator::updateDisplayer(const SimTK::State& s)
+{
+	_path.updateDisplayer(s);
+}

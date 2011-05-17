@@ -54,9 +54,6 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-const int Muscle::STATE_ACTIVATION = 0;
-const int Muscle::STATE_FIBER_LENGTH = 1;
-
 static int counter=0;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -65,11 +62,7 @@ static int counter=0;
 /**
  * Default constructor.
  */
-Muscle::Muscle() : Actuator(),
-	_pathProp(PropertyObj("", GeometryPath())),
-	_path((GeometryPath&)_pathProp.getValueObj()),
-   _defaultActivation(0),
-   _defaultFiberLength(0)
+Muscle::Muscle() : PathActuator()
 {
 	setNull();
 	setupProperties();
@@ -97,11 +90,7 @@ Muscle::~Muscle()
  *
  * @param aMuscle Muscle to be copied.
  */
-Muscle::Muscle(const Muscle &aMuscle) : Actuator(aMuscle),
-	_pathProp(PropertyObj("", GeometryPath())),
-	_path((GeometryPath&)_pathProp.getValueObj()),
-   _defaultActivation(aMuscle._defaultActivation),
-   _defaultFiberLength(aMuscle._defaultFiberLength)
+Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle)
 {
 	setNull();
 	setupProperties();
@@ -119,10 +108,6 @@ Muscle::Muscle(const Muscle &aMuscle) : Actuator(aMuscle),
  */
 void Muscle::copyData(const Muscle &aMuscle)
 {
-	_path = aMuscle._path;
-	// This should be moved to a base class method for future changes
-	//_minControl=aMuscle._minControl;
-	//_maxControl=aMuscle._maxControl;
 }
 
 //_____________________________________________________________________________
@@ -132,8 +117,6 @@ void Muscle::copyData(const Muscle &aMuscle)
 void Muscle::setNull()
 {
 	setType("Muscle");
-	//_minControl=0.01;
-	//_maxControl=1.0;
 }
 
 //_____________________________________________________________________________
@@ -188,22 +171,11 @@ void Muscle::updateFromXMLNode()
  */
 void Muscle::setup(Model& aModel)
 {
-	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
-	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
-	// propogated.
-	includeAsSubComponent(&_path);
-	Actuator::setup(aModel);
+	PathActuator::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)
 		return;
-
-    setNumStateVariables(2);
-
-	_stateVariableSuffixes[STATE_ACTIVATION]="activation";
-	_stateVariableSuffixes[STATE_FIBER_LENGTH]="fiber_length";
-
-	_path.setOwner(this);
 }
 
 //_____________________________________________________________________________
@@ -212,49 +184,20 @@ void Muscle::setup(Model& aModel)
  */
  void Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	Actuator::createSystem(system);
+	PathActuator::createSystem(system);
 
-	Muscle* mutableThis = const_cast<Muscle *>(this);
-
-	mutableThis->setNumStateVariables(_stateVariableSuffixes.getSize());
-	mutableThis->addStateVariables(_stateVariableSuffixes);
-	mutableThis->addCacheVariable<SimTK::Vector>("state_derivatives", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Dynamics);
-
-	mutableThis->_model->addModelComponent(this);
  }
 
  void Muscle::initState( SimTK::State& s) const
 {
-    Actuator::initState(s);
-
-	Muscle* mutableThis = const_cast<Muscle *>(this);
-
-	// keep track of the index for the first state variable derivatives in the cache 
-	mutableThis->_zIndex = getZIndex(_stateVariableSuffixes[0]);
-
-	setActivation(s, _defaultActivation);
-	setFiberLength(s, _defaultFiberLength);
+    PathActuator::initState(s);
 }
 
 void Muscle::setDefaultsFromState(const SimTK::State& state)
 {
-	Actuator::setDefaultsFromState(state);
-    _defaultActivation = getActivation(state);
-    _defaultFiberLength = getFiberLength(state);
+	PathActuator::setDefaultsFromState(state);
 }
 
-double Muscle::getDefaultActivation() const {
-    return _defaultActivation;
-}
-void Muscle::setDefaultActivation(double activation) {
-    _defaultActivation = activation;
-}
-double Muscle::getDefaultFiberLength() const {
-    return _defaultFiberLength;
-}
-void Muscle::setDefaultFiberLength(double length) {
-    _defaultFiberLength = length;
-}
 
 //_____________________________________________________________________________
 /**
@@ -262,8 +205,6 @@ void Muscle::setDefaultFiberLength(double length) {
  */
 void Muscle::setupProperties()
 {
-	_pathProp.setName("GeometryPath");
-	_propertySet.append(&_pathProp);
 }
 
 //_____________________________________________________________________________
@@ -276,91 +217,8 @@ void Muscle::setupProperties()
 void Muscle::setName(const string &aName)
 {
 	// base class
-	Actuator::setName(aName);
-
-	// Give the path the same name as the muscle so that print statements can use
-	// it and so the path points can be named appropriately.
-	_path.setName(aName);
+	PathActuator::setName(aName);
 }
-
-
-//_____________________________________________________________________________
-/**
- */
-void Muscle::setNumStateVariables( int aNumStateVariables)
-{
-	_numStateVariables = aNumStateVariables;
-	_stateVariableSuffixes.setSize(aNumStateVariables);
-}
-
-//_____________________________________________________________________________
-/**
- * Get the name of a state variable, given its index.
- *
- * @param aIndex The index of the state variable to get.
- * @return The name of the state variable.
- */
-string Muscle::getStateVariableName(int aIndex) const
-{
-	if(0<=aIndex && aIndex<_numStateVariables)
-		return getName() + "." + _stateVariableSuffixes[aIndex];
-	else {
-		std::stringstream msg;
-		msg << "Actuator::getStateVariableName: ERR- index out of bounds.\nActuator " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " state variables.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-// STATES
-int Muscle::getNumStateVariables() const
-{
-	Muscle* mutableThis = const_cast<Muscle *>(this);
-    return mutableThis->updRep()->getNumStateVariablesAddedByModelComponent(); //+ numStatesOfUnderlyingComponent
-}
-
-//_____________________________________________________________________________
-/**
- * Set the derivative of an actuator state, specified by index
- *
- * @param aIndex The index of the state to set.
- * @param aValue The value to set the state to.
- */
-void Muscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const {
-
-	SimTK::Vector& stateDeriv =  updCacheVariable<SimTK::Vector>(s, "state_derivatives");
-	if(0<=aIndex && aIndex<_numStateVariables) {
-		stateDeriv[aIndex] = aValue;
-	} else {
-		std::stringstream msg;
-		msg << "Muscle::setStateVariableDeriv: ERR- index out of bounds.\nActuator " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-	markCacheVariableValid(s, "state_derivatives");
-}
-
-//_____________________________________________________________________________
-/**
- * Get the derivative of an actuator state, by index.
- *
- * @param aIndex the index of the state to get.
- * @return The value of the state.
- */
-double Muscle::getStateVariableDeriv(const SimTK::State& s, int aIndex) const
-{
-	const SimTK::Vector& stateDeriv = getCacheVariable<SimTK::Vector>(s, "state_derivatives");
-	if(0<=aIndex && aIndex<_numStateVariables) {
-        return( stateDeriv[aIndex] );
-	} else {
-		std::stringstream msg;
-		msg << "MusclegetStateVariableDeriv: ERR- index out of bounds.\nActuator " 
-		    << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-
 
 
 //=============================================================================
@@ -376,7 +234,7 @@ double Muscle::getStateVariableDeriv(const SimTK::State& s, int aIndex) const
 Muscle& Muscle::operator=(const Muscle &aMuscle)
 {
 	// base class
-	Actuator::operator=(aMuscle);
+	PathActuator::operator=(aMuscle);
 
 	copyData(aMuscle);
 
@@ -405,8 +263,7 @@ Muscle& Muscle::operator=(const Muscle &aMuscle)
  * the optimal fiber length.  Vnorm = V / (Vmax*Lo).
  * @return Force normalized by the optimal force.
  */
-double Muscle::
-evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity)
+double Muscle::evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity) const
 {
 	// force-length
 	double fLength = exp(-17.33 * fabs(pow(aNormalizedLength-1.0,3)));
@@ -421,21 +278,6 @@ evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, d
 //=============================================================================
 // GET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// LENGTH
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the length of the muscle. This is a convenience function that passes
- * the request on to the muscle path.
- *
- * @return Current length of the muscle path.
- */
-double Muscle::getLength(const SimTK::State& s) const
-{
-	return _path.getLength(s);
-}
-
 //_____________________________________________________________________________
 /**
  * Get the length of the tendon.
@@ -560,19 +402,6 @@ void Muscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 //--------------------------------------------------------------------------
 // COMPUTATIONS
 //--------------------------------------------------------------------------
-/**
- * Compute the moment-arm of this muscle about a coordinate.
- */
-double Muscle::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
-{
-	return _path.computeMomentArm(s, aCoord);
-}
-
-
-double Muscle::getLengtheningSpeed(const SimTK::State& s) const 
-{
-	return _path.getLengtheningSpeed(s);
-}
 
 //_____________________________________________________________________________
 /**
@@ -649,23 +478,6 @@ void Muscle::computeForce(const SimTK::State& s,
 
 //_____________________________________________________________________________
 /**
- * Get the visible object used to represent the muscle.
- */
-VisibleObject* Muscle::getDisplayer() const
-{ 
-	return getGeometryPath().getDisplayer(); 
-}
-
-//_____________________________________________________________________________
-/**
- * Update the visible object used to represent the muscle.
- */
-void Muscle::updateDisplayer(const SimTK::State& s)
-{
-	_path.updateDisplayer(s);
-}
-//_____________________________________________________________________________
-/**
  * getMaxIsometricForce needs to be overridden by derived classes to be usable
  */
 double Muscle::getMaxIsometricForce() const
@@ -674,212 +486,7 @@ double Muscle::getMaxIsometricForce() const
 }
 
 
-/**
- * Estimate an new activation level given an initial activation level,
- * an excitation level, and a time interval.
- * The assumptions are that the excitation is constant over the interval and
- * that activation dynamics is represented as a pure exponential.
- * The equation for activation is
- *
- * 	at = x - (x-a0)*exp[-dt/tau]
- *
- * @param aTRise Activation rise time constant.
- * @param aTFall Activation fall time constant.
- * @param aA0 Starting value of activation.
- * @param aX Excitation value.
- * @param aDT Time interval over which activation is to change.
- * @return Estimated activation level.
- */
-double Muscle::
-EstimateActivation(double aTRise,double aTFall,double aA0,double aX,double aDT)
-{
-	// ERROR
-	if(aDT<=0) {
-		return(aA0);
-	}
-
-	// CHECK at==aA0
-	if(aX==aA0) return(aA0);
-
-	// DETERMINE TIME CONSTANT
-	double tau;
-	if(aX>=aA0) {
-		tau = aTRise;
-	} else {
-		tau = aTFall;
-	}
-
-	// CHECK FOR ZERO TAU
-	if(tau<=0) {
-		printf("Muscle.EstimateActivation: ERROR- tau<=0.0\n");
-		return(aA0);
-	}
-
-	// EXPONENTIAL
-	double T = exp(-aDT/tau);
-
-	// COMPUTE EXCITATION
-	double a = aX - (aX-aA0)*T;
-
-	return(a);
-}
-//_____________________________________________________________________________
-/**
- * Invert the equation for activation dynamics in order to compute an
- * excitation value which will produce a given change in activation
- * over a given time interval.
- * The assumptions are that the excitation is constant over the interval and
- * that activation dynamics is represented as a pure exponential.
- * The equation which is inverted is
- *
- * 	at = x - (x-a0)*exp[-dt/tau]
- *
- * Parameters:
- * @param aTRise The rise time constant.
- * @param aTFall The fall time constant.
- * @param aA0 The starting value of activation
- * @param aA The final desired value of activation.
- * @param aDT The time interval over which a is to change.
- * @return Excitation that will achieve the desired activation.
- */
-double Muscle::
-InvertActivation(double aTRise,double aTFall,double aA0,double aA,double aDT)
-{
-	// ERROR
-	if(aDT<=0) {
-		printf("Muscle.invertActivation: ERROR- aDT<=0.0\n");
-		return(aA);
-	}
-
-	// CHECK at==aA0
-	if(aA==aA0) return(aA);
-
-	// DETERMINE TIME CONSTANT
-	double tau;
-	if(aA>=aA0) {
-		tau = aTRise;
-	} else {
-		tau = aTFall;
-	}
-
-	// CHECK FOR ZERO TAU
-	if(tau<=0) {
-		printf("Muscle.invertActivation: ERROR- tau<=0.0\n");
-		return(aA);
-	}
-
-	// EXPONENTIAL
-	double T = exp(-aDT/tau);
-
-	// COMPUTE EXCITATION
-	double x = (aA - aA0*T)/(1.0-T);
-
-	return(x);
-}
-//_____________________________________________________________________________
-/**
- * Compute the time derivative of an activation level given its excitation
- * signal, a rise-time, and a fall-time.
- * This method represents the rise or fall using a simple 1st order
- * differential equation which is linear in x and a.  The time constant is
- * chosen based on whether x is greater than or less than a.
- * 
- */
-double Muscle::
-DADT(double aTRise,double aTFall,double aX,double aA)
-{
-	// DETERMINE TIME CONSTANT
-	double tau;
-	if(aX>=aA) {
-		tau = aTRise;
-	} else {
-		tau = aTFall;
-	}
-
-	// CHECK FOR ZERO TAU
-	if(tau<=0) {
-		printf("Muscle.dadt: ERROR- tau<=0.0\n");
-		return(aX-aA);
-	}
-
-	// COMPUTE DERIVATIVE
-	double dadt = (aX-aA)/tau;
-
-	return(dadt);
-}
-//_____________________________________________________________________________
-/**
- * Compute the time derivative of an activation level given its excitation
- * signal, a rise-time, and a fall-time.
- * This method represents the rise and fall using a 1st order differential
- * equation which is non-linear in x.  The advantange of this method is that
- * a single equation is used.  However, the equation is only valid if tFall
- * is mutch greater than tRise.
- */
-double Muscle::
-DADTNonlinear(double aTRise,double aTFall,double aX,double aA)
-{
-	double dadt = (aX*aX-aX*aA)/aTRise  + (aX-aA)/aTFall;
-	return(dadt);
-}
-
-
-
-
-//=============================================================================
-// MUSCLE MECHANICS AND DYNAMICS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Compute the force in an actuator given its maximum force and activation
- * state.
- */
-double Muscle::
-f(double aFMax,double aA)
-{
-	double f = aA*aFMax;
-	return(f);
-}
-
 void Muscle::updateGeometry(const SimTK::State& s) const
 {
 	_path.updateGeometry(s);
-}
-
-//_____________________________________________________________________________
-//**
-// * get the excitation value for this Muscle 
-// */
-double Muscle::
-getExcitation( const SimTK::State& s) const {
-    return( getControl(s) );
-}
-//_____________________________________________________________________________
-/**
- * Add a Muscle point to the _path of the muscle. The new point is appended 
- * to the end of the current path
- *
- */
-void Muscle::addNewPathPoint(
-		 const std::string& proposedName, 
-		 OpenSim::Body& aBody, 
-		 const SimTK::Vec3& aPositionOnBody) {
-	// Create new PathPoint
-	PathPoint* newPathPoint =_path.appendNewPathPoint(proposedName, aBody, aPositionOnBody);
-	// Set offset/position on owner body
-	newPathPoint->setName(proposedName);
-	for (int i=0; i<3; i++)	// Use interface that does not depend on state
-		newPathPoint->setLocationCoord(i, aPositionOnBody[i]);
-}
-
-void Muscle::equilibrate(SimTK::State& state) const
-{
-	// Reasonable initial activation value
-	setActivation(state, 0.01);
-	setFiberLength(state, getOptimalFiberLength());
-	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
-
-	// Compute isometric force to get starting value
-	// of _fiberLength.
-	computeEquilibrium(state);
 }

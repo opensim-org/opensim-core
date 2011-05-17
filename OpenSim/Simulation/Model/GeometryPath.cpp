@@ -327,7 +327,7 @@ void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array
  * surfaces of the wrap objects (if any).
  * 
  */
-const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimTK::State& s) 
+const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimTK::State& s) const
 {
 	// update the geometry to make sure the current display path is up to date.
     //updateGeometry(s);

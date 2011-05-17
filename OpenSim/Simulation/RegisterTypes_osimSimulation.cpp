@@ -61,6 +61,7 @@
 #include "Model/PointToPointSpring.h"
 #include "Model/BushingForce.h"
 #include "Model/ExternalLoads.h"
+#include "Model/PathActuator.h"
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -188,6 +189,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( PrescribedController() );
 
 	Object::RegisterType( BushingForce() );
+	Object::RegisterType( PathActuator() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

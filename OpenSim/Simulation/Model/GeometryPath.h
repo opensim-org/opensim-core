@@ -109,7 +109,7 @@ public:
 	void copyData(const GeometryPath &aPath);
 	const PathPointSet& getPathPointSet() const { return _pathPointSet; }
 	PathPointSet& updPathPointSet() const { return _pathPointSet; }
-	PathWrapSet& getWrapSet() { return _pathWrapSet; }
+	PathWrapSet& getWrapSet() const { return _pathWrapSet; }
 
 	//--------------------------------------------------------------------------
 	// UTILITY
@@ -137,7 +137,7 @@ public:
 	virtual void setPreScaleLength( const SimTK::State& s, double preScaleLength);
 	virtual const Array<PathPoint*>& getCurrentPath( const SimTK::State& s) const;
 
-	virtual const Array<PathPoint*>& getCurrentDisplayPath(const SimTK::State& s) ;
+	virtual const Array<PathPoint*>& getCurrentDisplayPath(const SimTK::State& s) const;
 	
 	/** get the the path as PointForceDirections directions */
 	void getPointForceDirections(const SimTK::State& s, OpenSim::Array<PointForceDirection*> *rPFDs) const;
