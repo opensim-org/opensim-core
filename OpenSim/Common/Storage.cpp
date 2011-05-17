@@ -1102,7 +1102,7 @@ getDataColumn(const std::string& aColumnName,double *&rData) const
     to all components (such as prefix in the column label).
 	 @param identifier	string identifying a single block of data 
 	 @param rData		Array<Array<double>> of data belonging to the identifier */
-void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<double>>& rData, double startTime) const
+void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<double> >& rData, double startTime) const
 {
 	int lid = identifier.length();
 
