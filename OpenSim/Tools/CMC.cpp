@@ -63,6 +63,7 @@ using SimTK::Vector;
 using namespace OpenSim;
 using namespace SimTK;
 
+#define MAX_CONTROLS_FOR_RRA 10000
 
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
@@ -854,8 +855,18 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 		// For controls whose constraints are constant min/max values we'll just specify
 		// it using the default parameter min/max rather than creating a control curve
 		// (using nodes) in the xml.  So we catch this case here.
-        if(SimTK::isNaN(xmin[i])) xmin[i] = x.getDefaultParameterMin();
-	    if(SimTK::isNaN(xmax[i])) xmax[i] = x.getDefaultParameterMax();
+		std::string controlName = x.getName();
+		std::string acuatorName = controlName.substr(0, controlName.rfind('.'));
+		if(SimTK::isNaN(xmin[i])){
+			xmin[i] = _actuatorSet.get(acuatorName).getMinControl();
+			if (xmin[i]==-SimTK::Infinity) xmin[i]=-MAX_CONTROLS_FOR_RRA;
+			//xmin[i] = x.getDefaultParameterMin();
+		}
+		if(SimTK::isNaN(xmax[i])){
+			xmax[i] =  _actuatorSet.get(acuatorName).getMaxControl();
+			if (xmax[i]==SimTK::Infinity) xmax[i]=MAX_CONTROLS_FOR_RRA;
+			//xmax[i] = _actuatorSet.get(acuatorName).getMaxControl();
+		}
 	}
 	
 	if(_verbose) {
