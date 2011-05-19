@@ -330,7 +330,7 @@ void GeometryPath::getPointForceDirections(const SimTK::State& s, OpenSim::Array
 const OpenSim::Array<PathPoint*>& GeometryPath::getCurrentDisplayPath(const SimTK::State& s) const
 {
 	// update the geometry to make sure the current display path is up to date.
-    //updateGeometry(s);
+    // updateGeometry(s);
 	return( getCacheVariable<Array <PathPoint*> >(s, "current_display_path" ) );
 }
 
@@ -414,14 +414,13 @@ void GeometryPath::updateGeometry(const SimTK::State& s)
     computePath(s);
 
     // if display path is current do not need to recompute it
-    //if (isCacheVariableValid(s, "current_display_path")) return;
+    if (isCacheVariableValid(s, "current_display_path"))
+		return;
    
+	// updating the display path will also validate the current_display_path cache variable
     updateDisplayPath(s);
     updateGeometrySize(s);
     updateGeometryLocations(s);
-
-    // mark the currentDisplayPath as valid 
-	markCacheVariableValid(s, "current_display_path");
 }
 
 //=============================================================================
