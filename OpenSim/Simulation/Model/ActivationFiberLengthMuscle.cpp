@@ -578,8 +578,8 @@ double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStif
 	double isometricForce = computeIsometricForce(s, aActivation);
 
 	double normalizedLength = getFiberLength(s) / _optimalFiberLength;
-	double normalizedVelocity = cos(_pennationAngle) * getLengtheningSpeed(s) / (_maxContractionVelocity * _optimalFiberLength);
-	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,normalizedLength,normalizedVelocity);
+	double normalizedVelocity = -cos(_pennationAngle) * getLengtheningSpeed(s) / (_maxContractionVelocity * _optimalFiberLength);
+	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 
 	return isometricForce * normalizedForceVelocity;
 }
