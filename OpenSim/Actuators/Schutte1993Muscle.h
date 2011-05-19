@@ -131,8 +131,8 @@ public:
 	virtual bool setMaxContractionVelocity(double aMaxContractionVelocity);
 	virtual bool setDamping(double aDamping);
 	virtual double getDamping() { return _damping; }
-	// Computed quantities
 #ifndef SWIG
+	// Computed quantities
 	virtual double getPennationAngle(const SimTK::State& s) const;
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const;

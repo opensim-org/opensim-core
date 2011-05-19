@@ -120,7 +120,10 @@
 
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/Muscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
 #include <OpenSim/Actuators/Schutte1993Muscle.h>
@@ -542,7 +545,9 @@ static bool trace=false;
 %include <OpenSim/Simulation/Model/PathPointSet.h>
 %include <OpenSim/Simulation/Model/GeometryPath.h>
 %include <OpenSim/Simulation/Model/Ligament.h>
+%include <OpenSim/Simulation/Model/PathActuator.h>
 %include <OpenSim/Simulation/Model/Muscle.h>
+%include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
 //osimAnalyses
 %include <OpenSim/Analyses/osimAnalysesDLL.h>

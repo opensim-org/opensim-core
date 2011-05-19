@@ -119,7 +119,7 @@ const Array<PathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
 }
 
 const Array<PathPoint*>& OpenSimContext::getCurrentDisplayPath(Muscle& m) {
-	m.getGeometryPath().updateGeometry(*_configState);
+	m.updGeometryPath().updateGeometry(*_configState);
 	return m.getGeometryPath().getCurrentDisplayPath(*_configState);
 }
 
@@ -131,7 +131,7 @@ void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
 	to.copy(from);
 	_configState->invalidateAll(SimTK::Stage::Position);
 	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
-	to.getGeometryPath().updateGeometry(*_configState);
+	to.updGeometryPath().updateGeometry(*_configState);
 }
 
 // Muscle Points
