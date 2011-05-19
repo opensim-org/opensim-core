@@ -74,6 +74,9 @@ string Storage::simmReservedKeys[] = {
 								  "calc_derivatives"};
 int numSimmReservedKeys=10;	// Keep this number in sync with above array size
 
+// up version to 20301 for separation of RRATool, CMCTool
+const int Storage::LatestVersion = 1;	
+
 //=============================================================================
 // DESTRUCTOR
 //=============================================================================
@@ -130,8 +133,9 @@ Storage::Storage(const string &aFileName) :
 	int nr=0,nc=0;
 	if (!parseHeaders(*fp, nr, nc)) throw Exception("Storage: ERROR- failed to parse headers of file " + aFileName, __FILE__,__LINE__);
 	cout << "Storage: file=" << aFileName << " (nr=" << nr << " nc=" << nc << ")" << endl;
-
-
+	// Motion files from SIMM are in degrees
+	if (_fileVersion < 1 && (0 == aFileName.compare (aFileName.length() - 4, 4, ".mot"))) _inDegrees = true;
+	if (_fileVersion < 1) cout << ".. assuming rotations in " << (_inDegrees?"Degrees.":"Radians.") << endl;
 	// IGNORE blank lines after header -- treat \r and \n as end of line chars
 	while(fp->good()) {
 		int c = fp->peek();
@@ -193,7 +197,7 @@ Storage::Storage(const Storage &aStorage,bool aCopyData) :
 	setHeaderToken(aStorage.getHeaderToken());
 	setColumnLabels(aStorage.getColumnLabels());
 	setStepInterval(aStorage.getStepInterval());
-
+	setInDegrees(aStorage.isInDegrees());
 	// COPY STORED DATA
 	if(aCopyData) copyData(aStorage);
 }
@@ -225,7 +229,7 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
 	setDescription(aStorage.getDescription());
 	setHeaderToken(aStorage.getHeaderToken());
 	setStepInterval(aStorage.getStepInterval());
-
+	setInDegrees(aStorage.isInDegrees());
 	// ERROR CHECK
 	if(aStateIndex<0) return;
 	if(aN<=0) return;
@@ -293,6 +297,7 @@ setNull()
 	_stepInterval = 1;
 	_lastI = 0;
 	_fp = 0;
+	_inDegrees = false;
 }
 //_____________________________________________________________________________
 /**
@@ -309,6 +314,8 @@ void Storage::
 copyData(const Storage &aStorage)
 {
 	_units = aStorage._units;
+	setInDegrees(aStorage.isInDegrees());
+
 	// ENSURE CAPACITY
 	_storage.ensureCapacity(aStorage._storage.getCapacity());
 
@@ -339,6 +346,7 @@ void Storage::
 setWriteSIMMHeader(bool aTrueFalse)
 {
 	_writeSIMMHeader = aTrueFalse;
+	if (_writeSIMMHeader) setInDegrees(true);
 }
 //_____________________________________________________________________________
 /**
@@ -2359,7 +2367,7 @@ resample(double aDT, int aDegree)
 	_storage.setSize(0);
 	// For every column, collect data and fit spline to originalTimes, dataColumn.
 	Storage *newStorage = splineSet->constructStorage(0,aDT);
-
+	newStorage->setInDegrees(isInDegrees());
 	copyData(*newStorage);
 
 	setColumnLabels(saveLabels);
@@ -2689,8 +2697,10 @@ writeHeader(FILE *rFP,double aDT) const
 
 	// ATTRIBUTES
 	fprintf(rFP,"%s\n",getName().c_str());
+	fprintf(rFP,"version=%d\n",LatestVersion);
 	fprintf(rFP,"nRows=%d\n",nr);
 	fprintf(rFP,"nColumns=%d\n",nc);
+	fprintf(rFP,"inDegrees=%s\n",(_inDegrees?"yes":"no"));
 
 	return(0);
 }
@@ -2909,6 +2919,7 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 {
 	bool done=false;
 	bool firstLine=true;
+	_fileVersion = 0;
 	// Parse until the end of header
 	while(!done){
 		// NAME
@@ -2948,7 +2959,15 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 		} 
 		else if (key== "units") {
 				_units = Units(rest);
-		} 
+		}
+		else if (key=="version") {
+			_fileVersion = atoi(rest.c_str());
+		}
+		else if (key=="inDegrees") {
+			string lower = IO::Lowercase(rest);
+			bool inDegrees = (lower=="yes" || lower=="y");
+			setInDegrees(inDegrees);
+		}
 		else if(key== DEFAULT_HEADER_TOKEN){				
 			break;			
 		}
@@ -2961,11 +2980,16 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 		cout << "Storage: ERROR- failed to parse header of storage file." << endl;
 		return false;
 	}
+	if (_fileVersion < LatestVersion) {
+		if (_fileVersion < 1){
+			cout << "Old version storage/motion file encountered" << endl;
+		}
+	}
 	return true;
 }
 //_____________________________________________________________________________
 /**
- * This function exchanges the time column (including the label) with the column
+ * This function exchanges the time column (including the label) with the column	
  * at the passed in aColumnIndex. The index is zero based relative to the Data
  */
 void Storage::

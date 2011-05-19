@@ -34,6 +34,7 @@
 #include <math.h>
 #include <float.h>
 #include <time.h>
+#include <assert.h>
 #include <SimTKcommon/internal/Exception.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Storage.h>
@@ -935,6 +936,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 	Array<double> data(0.0);
 	Array<double> q(0.0,nq);
 	Storage *qStore = new Storage();
+	qStore->setInDegrees(true);
 	qStore->setName("GeneralizedCoordinates");
 	qStore->setColumnLabels(columnLabels);
 	int size = aQIn.getSize();
@@ -1039,7 +1041,9 @@ void SimbodyEngine::scaleRotationalDofColumns(Storage &rStorage, double factor) 
  */
 void SimbodyEngine::convertDegreesToRadians(Storage &rStorage) const
 {
+	assert(rStorage.isInDegrees());
 	scaleRotationalDofColumns(rStorage, SimTK_DEGREE_TO_RADIAN);
+	rStorage.setInDegrees(false);
 }
 //_____________________________________________________________________________
 /**
@@ -1051,7 +1055,9 @@ void SimbodyEngine::convertDegreesToRadians(Storage &rStorage) const
  */
 void SimbodyEngine::convertRadiansToDegrees(Storage &rStorage) const
 {
+	assert(!rStorage.isInDegrees());
 	scaleRotationalDofColumns(rStorage, SimTK_RADIAN_TO_DEGREE);
+	rStorage.setInDegrees(true);
 }
 //_____________________________________________________________________________
 /**

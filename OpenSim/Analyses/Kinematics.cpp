@@ -330,12 +330,18 @@ constructColumnLabels()
 	}
 
 	setColumnLabels(labels);
-	if (_pStore)
+	if (_pStore){
 		_pStore->setColumnLabels(getColumnLabels());
-	if (_vStore)
+		if (getInDegrees()) _pStore->setInDegrees(true);
+	}
+	if (_vStore) {
 		_vStore->setColumnLabels(getColumnLabels());
-	if (_aStore)
+		if (getInDegrees()) _vStore->setInDegrees(true);
+	}
+	if (_aStore) {
 		_aStore->setColumnLabels(getColumnLabels());
+		if (getInDegrees()) _aStore->setInDegrees(true);
+	}
 }
 
 

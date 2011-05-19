@@ -97,6 +97,8 @@ protected:
 	bool _writeSIMMHeader;
 	/** Units in which the data is represented. */
 	Units _units;
+	/** Are angles, if any, specified in radians or degrees? */
+	bool _inDegrees;
 	/** Map between keys in file header and values */
 	MapKeysToValues	_keyValueMap;
 	/** Cache for fileName and file pointer when the file is opened so we can flush and write intermediate files if needed */
@@ -106,6 +108,9 @@ protected:
 	std::string _name;
 	std::string _description;
 
+	/** Storage file version as written to the file */
+	int _fileVersion;
+	static const int LatestVersion;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -128,6 +133,11 @@ public:
 	const std::string& getDescription() const { return _description; };
 	void setName(const std::string& aName) { _name = aName; };
 	void setDescription(const std::string& aDescription) { _description = aDescription; };
+	//--------------------------------------------------------------------------
+	// VERSIONING /BACKWARD COMPATIBILITY SUPPORT
+	//--------------------------------------------------------------------------	
+	static const int& getLatestVersion() { return LatestVersion; };
+	const int& getFileVersion() const { return _fileVersion; };
 private:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION METHODS
@@ -163,6 +173,8 @@ public:
 	void addKeyValuePair(const std::string& aKey, const std::string& aValue);
 	void getValueForKey(const std::string& aKey, std::string& rValue) const;
 	bool hasKey(const std::string& aKey) const;
+	const bool isInDegrees() const { return _inDegrees; };
+	void setInDegrees(const bool isInDegrees) { _inDegrees = isInDegrees; };
 	// DATA
 	int getData(int aTimeIndex,int aStateIndex,double &rValue) const;
 	int getData(int aTimeIndex,int aStateIndex,int aN,double **rData) const;

@@ -253,7 +253,7 @@ bool InverseDynamicsTool::run()
 				coordinateValues->print("coordinateDataFiltered.sto");
 			}
 			// Convert degrees to radian if indicated
-			if(_inDegrees){
+			if(coordinateValues->isInDegrees()){
 				_model->getSimbodyEngine().convertDegreesToRadians(*coordinateValues);
 			}
 			// Create differentiable splines of the coordinate data
