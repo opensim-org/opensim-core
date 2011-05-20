@@ -314,9 +314,6 @@ void PointActuator::computeForce(const SimTK::State& s,
     }
     setForce(s,  force );
 
-
-//std::cout << "PointActuator::computeForce t=" << s.getTime() << "  " << getName() <<   " force= " << force << std::endl;
-
 	
 	SimTK::Vec3 forceVec = force*SimTK::UnitVec3(_direction);
 	SimTK::Vec3 lpoint = _point;
@@ -325,6 +322,13 @@ void PointActuator::computeForce(const SimTK::State& s,
 	if (_pointIsGlobal)
 			engine.transformPosition(s, engine.getGroundBody(), lpoint, *_body, lpoint);
 	applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
+
+	// get the velocity of the actuator in ground
+	SimTK::Vec3 velocity(0);
+	engine.getVelocity(s, *_body, lpoint, velocity);
+
+	// the speed of the point is the "speed" of the actuator used to compute power
+	setSpeed(s, velocity.norm());
 }
 //_____________________________________________________________________________
 /**
@@ -387,7 +391,6 @@ updateFromXMLNode()
 	int documentVersion = getDocument()->getDocumentVersion();
 	bool converting=false;
 	if ( documentVersion < XMLDocument::getLatestVersion()){
-			// Now check if we need to create a correction controller to replace springs
 		if (_node!=NULL && documentVersion<10905){
 			// This used to be called "Force" back then
 			renameChildNode("body_B", "body"); // body_B -> body

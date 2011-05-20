@@ -518,10 +518,9 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
-	double muscleForce = 0;
+	Muscle::computeForce(s, bodyForces, generalizedForces);
 
 	if( isForceOverriden(s) ) {
-		muscleForce = computeOverrideForce(s);
 		// Also define the state derivatives, since realize acceleration will
 		// ask for muscle derivatives, which will be integrated
 		// in the case the force is being overridden, the states aren't being used
@@ -529,26 +528,8 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 		SimTK::Vector& stateDerivs =  updCacheVariable<SimTK::Vector>(s, "state_derivatives");
 		stateDerivs = 0.0;
 		markCacheVariableValid(s, "state_derivatives");
-    } else {
-       muscleForce = computeActuation(s);
-    }
-    setForce(s, muscleForce);
+    } 
 
-	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
-	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
-	if (fabs( muscleForce ) < SimTK::SqrtEps) {
-		//std::cout << "ActivationFiberLengthMuscle::computeForce muscleForce < SimTK::SqrtEps" << getName() << std::endl;
-		return;
-    }
-
-	OpenSim::Array<PointForceDirection*> PFDs;
-	_path.getPointForceDirections(s, &PFDs);
-
-	for (int i=0; i < PFDs.getSize(); i++) {
-		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), muscleForce*PFDs[i]->direction(), bodyForces);
-	}
-	for(int i=0; i < PFDs.getSize(); i++)
-		delete PFDs[i];
 }
 
 //_____________________________________________________________________________

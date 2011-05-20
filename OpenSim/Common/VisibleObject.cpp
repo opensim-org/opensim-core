@@ -344,7 +344,6 @@ void VisibleObject::updateFromXMLNode()
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	if ( documentVersion < XMLDocument::getLatestVersion()){
-		// Now check if we need to create a correction controller to replace springs
 		if (_node!=NULL && documentVersion<20101){
 			// Get geometry files and Preferences if any and set them into 
 			DOMElement*visiblePropertiesNode = XMLNode::GetFirstChildElementByTagName(_node, "VisibleProperties");

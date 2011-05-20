@@ -337,9 +337,7 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 
 	if(_bodyA ==NULL)
 		return;
-	// if bodyB is not specified, use the ground body by default
-	if(_bodyB == NULL)
-		*_bodyB = getModel().getGroundBody();
+	
 
     setForce(s, force );
 	SimTK::Vec3 torque = force*SimTK::UnitVec3(_axis);
@@ -349,8 +347,15 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 	
 	applyTorque(s, *_bodyA, torque, bodyForces);
 
+	// if bodyB is not specified, use the ground body by default
 	if(_bodyB !=NULL)
 		applyTorque(s, *_bodyB, -torque, bodyForces);
+
+	// get the angular velocity of the body in ground
+	SimTK::Vec3 omega(0);
+	engine.getAngularVelocity(s, *_bodyA, omega);
+	// the speed of the body about the axis the torque is applied is the "speed" of the actuator used to compute power
+	setSpeed(s, ~omega*_axis);
 }
 //_____________________________________________________________________________
 /**
@@ -408,7 +413,6 @@ updateFromXMLNode()
 	int documentVersion = getDocument()->getDocumentVersion();
 	bool converting=false;
 	if ( documentVersion < XMLDocument::getLatestVersion()){
-		// Now check if we need to create a correction controller to replace springs
 		if (_node!=NULL && documentVersion<10905){
 			// This used to be called "Force" back then
 			renameChildNode("body_A", "bodyB"); // body_B -> body

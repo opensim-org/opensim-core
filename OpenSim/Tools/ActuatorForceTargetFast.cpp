@@ -110,7 +110,6 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 	const Set<Actuator>& fSet = _controller->getModel().getActuators();
 	for(int i=0,j=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-	    act.setForce( s, f[j]);
 		Muscle* musc = dynamic_cast<Muscle *>(&act);
 		if(musc)
 			_recipAreaSquared[j] = f[j]/musc->getMaxIsometricForce();

@@ -256,9 +256,6 @@ double PathActuator::computeActuation( const SimTK::State& s ) const
 	if(_model==NULL)
 		return 0.0;
 
-	// compute path's lengthening speed if necessary
-	_path.getLengtheningSpeed(s);
-
 	// FORCE
 	return( getControl(s) * _optimalForce );
 }
@@ -277,8 +274,15 @@ void PathActuator::computeForce( const SimTK::State& s,
 {
 	if(_model==NULL) return;
 
+	// compute path's lengthening speed if necessary
+	double speed = _path.getLengtheningSpeed(s);
+
+	// the lengthening speed of this actutor is the "speed" of the actuator used to compute power
+	setSpeed(s, speed);
+
 	double force = computeActuation(s);
 
+	// the force of this actutor used to compute power
     setForce(s,  force );
 
 	OpenSim::Array<PointForceDirection*> PFDs;

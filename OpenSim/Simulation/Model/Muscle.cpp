@@ -445,15 +445,14 @@ void Muscle::computeForce(const SimTK::State& s,
 {
 	double muscleForce = 0;
 
+		// compute path's lengthening speed if necessary
+	double speed = _path.getLengtheningSpeed(s);
+
+	// the lengthening speed of this actutor is the "speed" of the actuator used to compute power
+	setSpeed(s, speed);
+
 	if( isForceOverriden(s) ) {
 		muscleForce = computeOverrideForce(s);
-		// Also define the state derivatives, since realize acceleration will
-		// ask for muscle derivatives, which will be integrated
-		// in the case the force is being overridden, the states aren't being used
-		// but a valid derivative cache entry is still required 
-		SimTK::Vector& stateDerivs =  updCacheVariable<SimTK::Vector>(s, "state_derivatives");
-		stateDerivs = 0.0;
-		markCacheVariableValid(s, "state_derivatives");
     } else {
        muscleForce = computeActuation(s);
     }

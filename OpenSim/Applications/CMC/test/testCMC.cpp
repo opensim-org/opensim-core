@@ -126,7 +126,7 @@ void testSingleMuscle() {
 	for (int i = 0; i < t_cmc.getSize(); ++i) {
 		tv[0] = t_cmc[i];
 		cout << "time = " << t_cmc[i] << "   error = " << y_fwd_function.calcValue(tv)-y_cmc[i] << endl;
-        ASSERT_EQUAL(y_fwd_function.calcValue(tv), y_cmc[i], 0.003);
+        ASSERT_EQUAL(y_fwd_function.calcValue(tv), y_cmc[i], 0.005);
 	}
 }
 

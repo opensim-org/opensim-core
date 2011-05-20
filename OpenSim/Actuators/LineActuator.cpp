@@ -346,19 +346,21 @@ void LineActuator::computeForce(const SimTK::State& s,
 	** alread in the body frame, transform _pointA and _pointB into their
 	** respective body frames. */
 
-	SimTK::Vec3 pointA_inGround, pointB_inGround;
+	SimTK::Vec3 pointA_inGround, pointB_inGround, pointA_inBodyA, pointB_inBodyB;
 
 	if (_pointsAreGlobal)
 	{
 		pointA_inGround = _pointA;
 		pointB_inGround = _pointB;
-		engine.transformPosition(s, engine.getGroundBody(), _pointA, *_bodyA, _pointA);
-		engine.transformPosition(s, engine.getGroundBody(), _pointB, *_bodyB, _pointB);
+		engine.transformPosition(s, engine.getGroundBody(), pointA_inGround, *_bodyA, pointA_inBodyA);
+		engine.transformPosition(s, engine.getGroundBody(), pointB_inGround, *_bodyB, pointB_inBodyB);
 	}
 	else
 	{
-		engine.transformPosition(s, *_bodyA, _pointA, engine.getGroundBody(), pointA_inGround);
-		engine.transformPosition(s, *_bodyB, _pointB, engine.getGroundBody(), pointB_inGround);
+		pointA_inBodyA = _pointA;
+		pointB_inBodyB = _pointB;
+		engine.transformPosition(s, *_bodyA, pointA_inBodyA, engine.getGroundBody(), pointA_inGround);
+		engine.transformPosition(s, *_bodyB, pointB_inBodyB, engine.getGroundBody(), pointB_inGround);
 	}
 
 	// find the dirrection along which the actuator applies its force
@@ -379,8 +381,16 @@ void LineActuator::computeForce(const SimTK::State& s,
 	SimTK::Vec3 force = forceMagnitude*direction;
 
 	// appy equal and opposite forces to the bodies
-	applyForceToPoint(s, *_bodyA, _pointA, force, bodyForces);
-	applyForceToPoint(s, *_bodyB, _pointB, -force, bodyForces);
+	applyForceToPoint(s, *_bodyA, pointA_inBodyA, force, bodyForces);
+	applyForceToPoint(s, *_bodyB, pointB_inBodyB, -force, bodyForces);
+
+	// get the velocity of the actuator in ground
+	SimTK::Vec3 velA_G(0), velB_G(0), velAB_G(0);
+	engine.getVelocity(s, *_bodyA, pointA_inBodyA, velA_G);
+	engine.getVelocity(s, *_bodyB, pointB_inBodyB, velB_G);
+	velAB_G = velA_G-velB_G;
+	// speed used to comput power is the speed along the line connecting the two bodies
+	setSpeed(s, ~velAB_G*direction);
 }
 //_____________________________________________________________________________
 /**

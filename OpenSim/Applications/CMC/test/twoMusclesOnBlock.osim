@@ -9,10 +9,10 @@
 					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<min_control> -infinity </min_control>
+					<min_control> 0.0 </min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<max_control> infinity </max_control>
+					<max_control> 1.0 </max_control>
 					<GeometryPath name="muscle1">
 						<PathPointSet name="">
 							<objects>
@@ -123,10 +123,10 @@
 					<isDisabled> false </isDisabled>
 					<!--Minimum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<min_control> -infinity </min_control>
+					<min_control> 0.0 </min_control>
 					<!--Maximum allowed value for control signal. Used primarily when solving
 					    for control values-->
-					<max_control> infinity </max_control>
+					<max_control> 1.0 </max_control>
 					<GeometryPath name="muscle2">
 						<PathPointSet name="">
 							<objects>
