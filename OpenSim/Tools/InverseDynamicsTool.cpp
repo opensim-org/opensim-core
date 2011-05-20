@@ -280,7 +280,7 @@ bool InverseDynamicsTool::run()
 
 		bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model, coordinateValues);
 		// Initialize the the model's underlying computational system and get its default state.
-		SimTK::State& s = modelFromFile?_model->initSystem(): _model->updMultibodySystem().updDefaultState();
+		SimTK::State& s = _model->initSystem();
 
 		// Exclude user-specified forces from the dynamics for this analysis
 		disableModelForces(*_model, s, _excludedForces);

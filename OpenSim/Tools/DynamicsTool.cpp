@@ -233,6 +233,10 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
         return false;
     }
 
+	// This is required so that the references to other files inside ExternalLoads file are interpretted 
+	// as relative paths
+	std::string savedCwd = IO::getCwd();
+	IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
 	// Create external forces
 	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
 	_externalLoads.setMemoryOwner(false);
@@ -252,13 +256,15 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 		// fine if there are no kinematics as long as it was not assigned
 		if(!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")){
 			temp = new Storage(loadKinematicsFileName);
-			if(!temp)
+			if(!temp){
+				IO::chDir(savedCwd);
 				throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
+			}
 		}
 		// if loading the data, do whatever filtering operations are also specified
 		if(temp && _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
 			cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
-			temp->pad(loadKinematicsForPointTransformation->getSize()/2);
+			temp->pad(temp->getSize()/2);
 			temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
 		}
 		loadKinematicsForPointTransformation = temp;
@@ -267,8 +273,19 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	// if load kinematics for performing re-expressing the point of application is provided
 	// then perform the transformations
 	if(loadKinematicsForPointTransformation){
-		aModel.initSystem();
-		_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*loadKinematicsForPointTransformation, _timeRange[0], _timeRange[1]);
+		SimTK::State& s = aModel.initSystem();
+		
+		// Form complete storage so that the kinematics match the state labels/ordering
+		Storage *qStore=NULL;
+		Storage *uStore=NULL;
+		aModel.getSimbodyEngine().formCompleteStorages(s, *loadKinematicsForPointTransformation,qStore,uStore);
+		// qStore should be in radians
+		if (qStore->isInDegrees()){
+			aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
+		}
+		_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _timeRange[0], _timeRange[1]);
+		delete qStore;
+		delete uStore;
 	}
 	
 	// Add external loads to the set of all model forces
@@ -279,5 +296,6 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	if(!loadKinematics)
 		delete loadKinematics;
 
+	IO::chDir(savedCwd);
     return(true);
 }
