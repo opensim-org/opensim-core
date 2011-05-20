@@ -206,6 +206,7 @@ public:
 
 	void setOriginalForceSet(const ForceSet &aForceSet);
 
+	virtual void updateFromXMLNode();
 #ifndef SWIG
 	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
 	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );

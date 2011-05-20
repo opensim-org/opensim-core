@@ -33,6 +33,8 @@
 #include <time.h>
 #include "RRATool.h"
 #include "AnalyzeTool.h"
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Common/XMLNode.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -1337,4 +1339,54 @@ Storage& RRATool::getForceStorage(){
 
 void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
 	_originalForceSet = aForceSet;
+}
+
+//_____________________________________________________________________________
+/**
+ * Override default implementation by object to intercept and fix the XML node
+ * underneath the tool to match current version, issue warning for unexpected inputs
+ */
+/*virtual*/ void RRATool::updateFromXMLNode()
+{
+	int documentVersion = getDocument()->getDocumentVersion();
+	std::string controlsFileName ="";
+	if ( documentVersion < XMLDocument::getLatestVersion()){
+		// Replace names of properties
+		if (_node!=NULL && documentVersion<20301){
+			// Check that no unexpected settings are used for RRA that was really CMC, we'll do this by checking that
+			// replace_force_set is true
+			// cmc_time_window is .001
+			// solve_for_equilibrium_for_auxiliary_states is off
+			// ControllerSet is empty
+			SimTK::Xml::Document doc = SimTK::Xml::Document(getDocumentFileName());
+			Xml::Element oldRoot = doc.getRootElement();
+			Xml::Element toolNode;
+			bool isCMCTool = true;
+			if (oldRoot.getElementTag()=="OpenSimDocument"){
+				Xml::element_iterator iterTool(oldRoot.element_begin("CMCTool"));
+				if (iterTool==oldRoot.element_end()){
+					isCMCTool = false;
+				}
+				else
+					toolNode = *iterTool;
+			}
+			else { // older document that had no OpenSimDocument tag
+				toolNode = oldRoot;
+				isCMCTool = (oldRoot.getElementTag()=="CMCTool");
+			}
+			if (isCMCTool){
+				Xml::element_iterator replace_force_setIter(toolNode.element_begin("replace_force_set"));
+				if (replace_force_setIter != toolNode.element_end()){
+					String replace_forcesStr = replace_force_setIter->getValueAs<String>();
+					if (replace_forcesStr.toLower()!= "true") cout << "Warn: old RRA setup file has replace_force_set set to false, will be ignored" << endl;
+				}
+				Xml::element_iterator timeWindowIter(toolNode.element_begin("cmc_time_window"));
+				if (timeWindowIter != toolNode.element_end()){
+					double timeWindow = timeWindowIter->getValueAs<double>();
+					if (timeWindow!= .001) cout << "Warn: old setup file has cmc_time_window set to " << timeWindow << ", will be ignored and .001 used instead" << endl;
+				}
+			}
+		}
+	}
+	AbstractTool::updateFromXMLNode();
 }
