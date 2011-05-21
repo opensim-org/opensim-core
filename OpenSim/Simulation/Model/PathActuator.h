@@ -127,7 +127,6 @@ public:
 	virtual double computeActuation( const SimTK::State& s) const;
 	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord) const;
 
-
 	/** 
 	 * Methods to query a Force for the value actually applied during simulation
 	 * The names of the quantities (column labels) is returned by this first function
@@ -146,6 +145,13 @@ public:
 	virtual void updateFromXMLNode();
 
 	//--------------------------------------------------------------------------
+	// SCALING
+	//--------------------------------------------------------------------------
+	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
+	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
+
+	//--------------------------------------------------------------------------
 	// Visible Object Support
 	//--------------------------------------------------------------------------
 	virtual VisibleObject* getDisplayer() const;
@@ -157,6 +163,8 @@ protected:
 	// Setup method to initialize coordinate reference
 	virtual void setup(Model &aModel);
 	virtual void createSystem( SimTK::MultibodySystem& system) const ;
+
+
 
 //=============================================================================
 };	// END of class PathActuator

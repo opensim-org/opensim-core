@@ -1123,7 +1123,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	//    fiber length.
 	for (i = 0; i < _forceSet.getSize(); i++)
 	{
-        Actuator* act = dynamic_cast<Actuator*>(&_forceSet.get(i));
+        PathActuator* act = dynamic_cast<PathActuator*>(&_forceSet.get(i));
         if( act ) {
  		    act->preScale(s, aScaleSet);
 		    act->scale(s, aScaleSet);
@@ -1148,7 +1148,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	    getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
 
 		for (i = 0; i < _forceSet.getSize(); i++) {
-            Actuator* act = dynamic_cast<Actuator*>(&_forceSet.get(i));
+            PathActuator* act = dynamic_cast<PathActuator*>(&_forceSet.get(i));
             if( act ) {
 	 		    act->postScale(newState, aScaleSet);
             }

@@ -56,11 +56,6 @@ Delp1990Muscle::Delp1990Muscle() :
 	_timeScale(_timeScaleProp.getValueDbl()),
 	_activation1(_activation1Prop.getValueDbl()),
 	_activation2(_activation2Prop.getValueDbl()),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngle(_pennationAngleProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_mass(_massProp.getValueDbl()),
 	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
 	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
@@ -80,11 +75,6 @@ Delp1990Muscle::Delp1990Muscle(const std::string &aName,double aMaxIsometricForc
 	_timeScale(_timeScaleProp.getValueDbl()),
 	_activation1(_activation1Prop.getValueDbl()),
 	_activation2(_activation2Prop.getValueDbl()),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngle(_pennationAngleProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_mass(_massProp.getValueDbl()),
 	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
 	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
@@ -97,7 +87,7 @@ Delp1990Muscle::Delp1990Muscle(const std::string &aName,double aMaxIsometricForc
 	setMaxIsometricForce(aMaxIsometricForce);
 	setOptimalFiberLength(aOptimalFiberLength);
 	setTendonSlackLength(aTendonSlackLength);
-	setPennationAngle(aPennationAngle);
+	setPennationAngleAtOptimalFiberLength(aPennationAngle);
 }
 
 //_____________________________________________________________________________
@@ -119,11 +109,6 @@ Delp1990Muscle::Delp1990Muscle(const Delp1990Muscle &aMuscle) :
 	_timeScale(_timeScaleProp.getValueDbl()),
 	_activation1(_activation1Prop.getValueDbl()),
 	_activation2(_activation2Prop.getValueDbl()),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngle(_pennationAngleProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl()),
 	_mass(_massProp.getValueDbl()),
 	_tendonForceLengthCurve(_tendonForceLengthCurveProp.getValueObjPtrRef()),
 	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
@@ -204,31 +189,6 @@ void Delp1990Muscle::setupProperties()
 	_activation2Prop.setComment("Parameter used in time constant of ramping up and ramping down of muscle force");
 	_activation2Prop.setValue(1.459854);
 	_propertySet.append(&_activation2Prop, "Parameters");
-
-	_maxIsometricForceProp.setName("max_isometric_force");
-	_maxIsometricForceProp.setComment("Maximum isometric force that the fibers can generate");
-	_maxIsometricForceProp.setValue(1000.0);
-	_propertySet.append(&_maxIsometricForceProp, "Parameters");
-
-	_optimalFiberLengthProp.setName("optimal_fiber_length");
-	_optimalFiberLengthProp.setComment("Optimal length of the muscle fibers");
-	_optimalFiberLengthProp.setValue(0.1);
-	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
-
-	_tendonSlackLengthProp.setName("tendon_slack_length");
-	_tendonSlackLengthProp.setComment("Resting length of the tendon");
-	_tendonSlackLengthProp.setValue(0.2);
-	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
-
-	_pennationAngleProp.setName("pennation_angle");
-	_pennationAngleProp.setComment("Angle between tendon and fibers at optimal fiber length");
-	_pennationAngleProp.setValue(0.0);
-	_propertySet.append(&_pennationAngleProp, "Parameters");
-
-	_maxContractionVelocityProp.setName("max_contraction_velocity");
-	_maxContractionVelocityProp.setComment("Maximum contraction velocity of the fibers, in optimal fiberlengths per second");
-	_maxContractionVelocityProp.setValue(10.0);
-	_propertySet.append(&_maxContractionVelocityProp, "Parameters");
 
 	_massProp.setName("mass");
 	_massProp.setComment("Normalized mass of the muscle between the tendon and muscle fibers");
@@ -337,68 +297,6 @@ double Delp1990Muscle::getActiveForce( const SimTK::State& s) const {
     return getCacheVariable<double>(s, "activeForce");
 }
 
-//_____________________________________________________________________________
-/**
- * Copy the property values from another actuator, which may not be
- * a Delp1990Muscle.
- *
- * @param aActuator Actuator to copy property values from.
- */
-void Delp1990Muscle::copyPropertyValues(Actuator& aActuator)
-{
-	ActivationFiberLengthMuscle::copyPropertyValues(aActuator);
-
-	const Property* prop = aActuator.getPropertySet().contains("time_scale");
-	if (prop) _timeScaleProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("activation1");
-	if (prop) _activation1Prop.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("activation2");
-	if (prop) _activation2Prop.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("max_isometric_force");
-	if (prop) _maxIsometricForceProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("optimal_fiber_length");
-	if (prop) _optimalFiberLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("tendon_slack_length");
-	if (prop) _tendonSlackLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("pennation_angle");
-	if (prop) _pennationAngleProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("max_contraction_velocity");
-	if (prop) _maxContractionVelocityProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("mass");
-	if (prop) _massProp.setValue(prop->getValueDbl());
-
-	Property* prop2 = aActuator.getPropertySet().contains("tendon_force_length_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _tendonForceLengthCurveProp.setValue(obj);
-	}
-
-	prop2 = aActuator.getPropertySet().contains("active_force_length_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _activeForceLengthCurveProp.setValue(obj);
-	}
-
-	prop2 = aActuator.getPropertySet().contains("passive_force_length_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _passiveForceLengthCurveProp.setValue(obj);
-	}
-
-	prop2 = aActuator.getPropertySet().contains("force_velocity_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _forceVelocityCurveProp.setValue(obj);
-	}
-}
 
 //=============================================================================
 // OPERATORS
@@ -471,85 +369,6 @@ bool Delp1990Muscle::setActivation2(double aActivation2)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-// MAXIMUM ISOMETRIC FORCE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the maximum isometric force that the fibers can generate.
- *
- * @param aMaxIsometricForce The maximum isometric force that the fibers can generate.
- * @return Whether the maximum isometric force was successfully changed.
- */
-bool Delp1990Muscle::setMaxIsometricForce(double aMaxIsometricForce)
-{
-	_maxIsometricForce = aMaxIsometricForce;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// OPTIMAL FIBER LENGTH
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the optimal length of the muscle fibers.
- *
- * @param aOptimalFiberLength The optimal length of the muscle fibers.
- * @return Whether the optimal length was successfully changed.
- */
-bool Delp1990Muscle::setOptimalFiberLength(double aOptimalFiberLength)
-{
-	_optimalFiberLength = aOptimalFiberLength;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// TENDON SLACK LENGTH
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the resting length of the tendon.
- *
- * @param aTendonSlackLength The resting length of the tendon.
- * @return Whether the resting length was successfully changed.
- */
-bool Delp1990Muscle::setTendonSlackLength(double aTendonSlackLength)
-{
-	_tendonSlackLength = aTendonSlackLength;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// PENNATION ANGLE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the angle between tendon and fibers at optimal fiber length.
- *
- * @param aPennationAngle The angle between tendon and fibers at optimal fiber length.
- * @return Whether the angle was successfully changed.
- */
-bool Delp1990Muscle::setPennationAngle(double aPennationAngle)
-{
-	_pennationAngle = aPennationAngle;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// MAX CONTRACTION VELOCITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the maximum contraction velocity of the fibers, in optimal fiber lengths per second.
- *
- * @param aMaxContractionVelocity The maximum contraction velocity of the fibers, in optimal fiber lengths per second.
- * @return Whether the maximum contraction velocity was successfully changed.
- */
-bool Delp1990Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
-{
-	_maxContractionVelocity = aMaxContractionVelocity;
-	return true;
-}
 
 //-----------------------------------------------------------------------------
 // MASS
@@ -567,20 +386,6 @@ bool Delp1990Muscle::setMass(double aMass)
 	return true;
 }
 
-
-//-----------------------------------------------------------------------------
-// PENNATION ANGLE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the current pennation angle of the muscle fiber(s).
- *
- * @param Pennation angle.
- */
-double Delp1990Muscle::getPennationAngle(const SimTK::State& s) const
-{
-	return calcPennation(getFiberLength(s),_optimalFiberLength,_pennationAngle);
-}
 
 //-----------------------------------------------------------------------------
 // LENGTH
@@ -666,7 +471,7 @@ double Delp1990Muscle::computeActuation(const SimTK::State& s) const
       normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) * _activation2;
    normStateDeriv[STATE_FIBER_LENGTH] = normState[STATE_FIBER_VELOCITY];
 
-	pennation_angle = calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngle);
+	pennation_angle = calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngleAtOptimal);
    ca = cos(pennation_angle);
    ta = tan(pennation_angle);
    norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
@@ -889,7 +694,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
    // If the resting tendon length is zero, then set the fiber length equal to
    // the muscle tendon length / cosine_factor, and find its force directly.
 
-   double muscle_width = _optimalFiberLength * sin(_pennationAngle);
+   double muscle_width = _optimalFiberLength * sin(_pennationAngleAtOptimal);
 
    if (_tendonSlackLength < ROUNDOFF_ERROR) {
       tendon_length = 0.0;
@@ -915,7 +720,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 		setForce(s, 0.0);
       return 0.0;
    } else {
-      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngle));  
+      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));  
       tendon_length = length - getFiberLength(s) * cos_factor;
 
       /* Check to make sure tendon is not shorter than its slack length. If it
@@ -1017,7 +822,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 
       }
 
-      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngle));
+      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));
       tendon_length = length - getFiberLength(s) * cos_factor;
 
       // Check to make sure tendon is not shorter than its slack length. If it is,

@@ -47,8 +47,8 @@ class Coordinate;
 //=============================================================================
 //=============================================================================
 /**
- * A base class representing a muscle-tendon actuator. It adds data and methods
- * to Actuator, but does not implement all of the necessary methods,
+ * A base class representing a muscle-tendon actuator. It adds states to the 
+ * Muscle class, but does not implement all of the necessary methods,
  * so it is abstract too. The path information for a muscle is contained
  * in this class, and the force-generating behavior should be defined in
  * the derived classes.
@@ -56,7 +56,7 @@ class Coordinate;
  * @author Peter Loan
  * @author Frank C. Anderson
  * @author Ajay Seth
- * @version 1.0
+ * @version 2.0
  */
 class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle  
 {
@@ -64,26 +64,6 @@ class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle
 // DATA
 //=============================================================================
 protected:
-
-	/** Optimal length of the muscle fibers */
-	PropertyDbl _optimalFiberLengthProp;
-	double &_optimalFiberLength;
-
-	/** Maximum isometric force that the fibers can generate */
-	PropertyDbl _maxIsometricForceProp;
-	double &_maxIsometricForce;
-
-	/** Resting length of the tendon */
-	PropertyDbl _tendonSlackLengthProp;
-	double &_tendonSlackLength;
-
-	/** Angle between tendon and fibers at optimal fiber length */
-	PropertyDbl _pennationAngleProp;
-	double &_pennationAngle;
-
-	/** Maximum contraction velocity of the fibers, in optimal fiberlengths per second */
-	PropertyDbl _maxContractionVelocityProp;
-	double &_maxContractionVelocity;
 
 	Array<std::string> _stateVariableSuffixes;
     // Defaults for state variables.
@@ -122,20 +102,16 @@ public:
     // GET
     //--------------------------------------------------------------------------
     virtual int getNumStateVariables() const;
-    // Properties
-	 virtual double getPennationAngleAtOptimalFiberLength() const = 0;
 
     // Defaults
     virtual double getDefaultActivation() const;
     virtual void setDefaultActivation(double activation);
     virtual double getDefaultFiberLength() const;
     virtual void setDefaultFiberLength(double length);
-	virtual double getOptimalFiberLength() const = 0;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double getPennationAngle(const SimTK::State& s) const = 0;
 	virtual double getTendonLength(const SimTK::State& s) const;
 	virtual double getFiberLength(const SimTK::State& s) const = 0;
     virtual void setFiberLength(SimTK::State& s, double fiberLength) const = 0;
@@ -146,7 +122,6 @@ public:
 	virtual double getPassiveFiberForce(const SimTK::State& s) const = 0;
 	virtual double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
 	virtual double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
-	virtual double getMaxIsometricForce() const;
 	virtual double getTendonForce(const SimTK::State& s) const = 0;
 	virtual double getActivation(const SimTK::State& s) const = 0;
     virtual void setActivation(SimTK::State& s, double activation) const = 0;
@@ -157,11 +132,8 @@ public:
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s ) const = 0;
-
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
 	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
-
-	virtual double calcPennation( double aFiberLength, double aOptimalFiberLength, double aInitialPennationAngle) const;
    
 	//--------------------------------------------------------------------------
 	// SCALING
@@ -198,7 +170,6 @@ protected:
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
-
 	
     virtual void setNumStateVariables( int aNumStateVariables);
 	virtual std::string getStateVariableName(int aIndex) const;

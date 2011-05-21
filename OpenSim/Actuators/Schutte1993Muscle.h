@@ -108,32 +108,21 @@ public:
 
 #endif
     void copyData(const Schutte1993Muscle &aMuscle);
-    virtual void copyPropertyValues(Actuator& aActuator);
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
-	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngle; }
-	virtual double getMaxContractionVelocity() const { return _maxContractionVelocity; }
 	virtual double getTimeScale() const { return _timeScale; }
 	virtual double getDamping() const { return _damping; }
 	virtual bool setTimeScale(double aTimeScale);
 	virtual bool setActivation1(double aActivation1);
 	virtual bool setActivation2(double aActivation2);
-	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
-	virtual bool setOptimalFiberLength(double aOptimalFiberLength);
-	virtual bool setTendonSlackLength(double aTendonSlackLength);
-	virtual bool setPennationAngle(double aPennationAngle);
-	virtual bool setMaxContractionVelocity(double aMaxContractionVelocity);
+
 	virtual bool setDamping(double aDamping);
 	virtual double getDamping() { return _damping; }
 #ifndef SWIG
 	// Computed quantities
-	virtual double getPennationAngle(const SimTK::State& s) const;
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const;
 	double getStress(const SimTK::State& s) const;

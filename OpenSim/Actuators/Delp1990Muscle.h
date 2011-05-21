@@ -74,26 +74,6 @@ protected:
 	PropertyDbl _activation2Prop;
 	double &_activation2;
 
-	/** Maximum isometric force that the fibers can generate */
-	PropertyDbl _maxIsometricForceProp;
-	double &_maxIsometricForce;
-
-	/** Optimal length of the muscle fibers */
-	PropertyDbl _optimalFiberLengthProp;
-	double &_optimalFiberLength;
-
-	/** Resting length of the tendon */
-	PropertyDbl _tendonSlackLengthProp;
-	double &_tendonSlackLength;
-
-	/** Angle between tendon and fibers at optimal fiber length */
-	PropertyDbl _pennationAngleProp;
-	double &_pennationAngle;
-
-	/** Maximum contraction velocity of the fibers, in optimal fiberlengths per second */
-	PropertyDbl _maxContractionVelocityProp;
-	double &_maxContractionVelocity;
-
 	/** Mass between the tendon and muscle fibers */
 	PropertyDbl _massProp;
 	double &_mass;
@@ -135,32 +115,20 @@ public:
 	Delp1990Muscle& operator=(const Delp1990Muscle &aMuscle);
 
 #endif
-   void copyData(const Delp1990Muscle &aMuscle);
-	virtual void copyPropertyValues(Actuator& aActuator);
+	void copyData(const Delp1990Muscle &aMuscle);
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
-	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngle; }
-	virtual double getMaxContractionVelocity() const { return _maxContractionVelocity; }
 	virtual double getTimeScale() const { return _timeScale; }
 	virtual double getMass() const { return _mass; }
 	virtual bool setTimeScale(double aTimeScale);
 	virtual bool setActivation1(double aActivation1);
 	virtual bool setActivation2(double aActivation2);
-	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
-	virtual bool setOptimalFiberLength(double aOptimalFiberLength);
-	virtual bool setTendonSlackLength(double aTendonSlackLength);
-	virtual bool setPennationAngle(double aPennationAngle);
-	virtual bool setMaxContractionVelocity(double aMaxContractionVelocity);
 	virtual bool setMass(double aMass);
 	// Computed quantities
 #ifndef SWIG
-	virtual double getPennationAngle(const SimTK::State &) const;
 	virtual double getNormalizedFiberLength(const SimTK::State &) const;
 	virtual double getPassiveFiberForce(const SimTK::State &) const;
 	double getStress(const SimTK::State& s) const;

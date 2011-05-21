@@ -392,3 +392,45 @@ void PathActuator::updateDisplayer(const SimTK::State& s)
 {
 	_path.updateDisplayer(s);
 }
+
+//=============================================================================
+// SCALING
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Perform computations that need to happen before the muscle is scaled.
+ * For this object, that entails calculating and storing the muscle-tendon
+ * length in the current body position.
+ *
+ * @param aScaleSet XYZ scale factors for the bodies.
+ */
+void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+{
+	_path.preScale(s, aScaleSet);
+}
+
+//_____________________________________________________________________________
+/**
+ * Scale the muscle based on XYZ scale factors for each body.
+ *
+ * @param aScaleSet XYZ scale factors for the bodies.
+ * @return Whether muscle was successfully scaled or not.
+ */
+void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
+{
+	_path.scale(s, aScaleSet);
+}
+
+//_____________________________________________________________________________
+/**
+ * Perform computations that need to happen after the muscle is scaled.
+ * For this object, that entails updating the muscle path. Derived classes
+ * should probably also scale or update some of the force-generating
+ * properties.
+ *
+ * @param aScaleSet XYZ scale factors for the bodies.
+ */
+void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+{
+	_path.postScale(s, aScaleSet);
+}

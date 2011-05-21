@@ -91,7 +91,7 @@ Thelen2003Muscle::Thelen2003Muscle(const std::string &aName,double aMaxIsometric
 	setMaxIsometricForce(aMaxIsometricForce);
 	setOptimalFiberLength(aOptimalFiberLength);
 	setTendonSlackLength(aTendonSlackLength);
-	setPennationAngle(aPennationAngle);
+	setPennationAngleAtOptimalFiberLength(aPennationAngle);
 }
 
 //_____________________________________________________________________________
@@ -279,63 +279,6 @@ double Thelen2003Muscle::getTendonForce(const SimTK::State& s) const {
 	return getForce(s);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy the property values from another actuator, which may not be
- * a Thelen2003Muscle.
- *
- * @param aActuator Actuator to copy property values from.
- */
-void Thelen2003Muscle::copyPropertyValues(Actuator& aActuator)
-{
-	ActivationFiberLengthMuscle::copyPropertyValues(aActuator);
-
-	const Property* prop = aActuator.getPropertySet().contains("max_isometric_force");
-	if (prop) _maxIsometricForceProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("optimal_fiber_length");
-	if (prop) _optimalFiberLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("tendon_slack_length");
-	if (prop) _tendonSlackLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("pennation_angle");
-	if (prop) _pennationAngleProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("activation_time_constant");
-	if (prop) _activationTimeConstantProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("deactivation_time_constant");
-	if (prop) _deactivationTimeConstantProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Vmax");
-	if (prop) _vmaxProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Vmax0");
-	if (prop) _vmax0Prop.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("FmaxTendonStrain");
-	if (prop) _fmaxTendonStrainProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("FmaxMuscleStrain");
-	if (prop) _fmaxMuscleStrainProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("KshapeActive");
-	if (prop) _kShapeActiveProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("KshapePassive");
-	if (prop) _kShapePassiveProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("damping");
-	if (prop) _dampingProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Af");
-	if (prop) _afProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Flen");
-	if (prop) _flenProp.setValue(prop->getValueDbl());
-}
-
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -353,7 +296,6 @@ Thelen2003Muscle& Thelen2003Muscle::operator=(const Thelen2003Muscle &aMuscle)
 
 	return(*this);
 }
-
 
 
 //=============================================================================
@@ -392,69 +334,6 @@ bool Thelen2003Muscle::setDeactivationTimeConstant(double aDeactivationTimeConst
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-// MAXIMUM ISOMETRIC FORCE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the maximum isometric force that the fibers can generate.
- *
- * @param aMaxIsometricForce The maximum isometric force that the fibers can generate.
- * @return Whether the maximum isometric force was successfully changed.
- */
-bool Thelen2003Muscle::setMaxIsometricForce(double aMaxIsometricForce)
-{
-	_maxIsometricForce = aMaxIsometricForce;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// OPTIMAL FIBER LENGTH
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the optimal length of the muscle fibers.
- *
- * @param aOptimalFiberLength The optimal length of the muscle fibers.
- * @return Whether the optimal length was successfully changed.
- */
-bool Thelen2003Muscle::setOptimalFiberLength(double aOptimalFiberLength)
-{
-	_optimalFiberLength = aOptimalFiberLength;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// TENDON SLACK LENGTH
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the resting length of the tendon.
- *
- * @param aTendonSlackLength The resting length of the tendon.
- * @return Whether the resting length was successfully changed.
- */
-bool Thelen2003Muscle::setTendonSlackLength(double aTendonSlackLength)
-{
-	_tendonSlackLength = aTendonSlackLength;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// PENNATION ANGLE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the angle between tendon and fibers at optimal fiber length.
- *
- * @param aPennationAngle The angle between tendon and fibers at optimal fiber length.
- * @return Whether the angle was successfully changed.
- */
-bool Thelen2003Muscle::setPennationAngle(double aPennationAngle)
-{
-	_pennationAngle = aPennationAngle;
-	return true;
-}
 
 //-----------------------------------------------------------------------------
 // MAX CONTRACTION VELOCITY
@@ -600,19 +479,7 @@ bool Thelen2003Muscle::setFlen(double aFlen)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-// PENNATION ANGLE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the current pennation angle of the muscle fiber(s).
- *
- * @param Pennation angle.
- */
-double Thelen2003Muscle::getPennationAngle(const SimTK::State& s) const
-{
-	return calcPennation( getFiberLength(s),_optimalFiberLength,_pennationAngle );
-}
+
 
 //-----------------------------------------------------------------------------
 // LENGTH
@@ -709,7 +576,7 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 	  activationDeriv = (excitation - activation) / _deactivationTimeConstant;
 	}
 
-	pennation_angle = ActivationFiberLengthMuscle::calcPennation( normFiberLength, 1.0, _pennationAngle);
+	pennation_angle = calcPennation( normFiberLength, 1.0, _pennationAngleAtOptimal);
 	ca = cos(pennation_angle);
 
 	norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
@@ -733,9 +600,9 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
 			// ms->fiber_velocity = 0.0;
 	  } else {
 		 double h = norm_muscle_tendon_length - _tendonSlackLength;
-		 double w = _optimalFiberLength * sin(_pennationAngle);
+		 double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
 		 double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-			double new_pennation_angle = ActivationFiberLengthMuscle::calcPennation( new_fiber_length, 1.0, _pennationAngle);
+			double new_pennation_angle = ActivationFiberLengthMuscle::calcPennation( new_fiber_length, 1.0, _pennationAngleAtOptimal);
 		 double new_ca = cos(new_pennation_angle);
 		 fiberLengthDeriv = getLengtheningSpeed(s) / (Vmax * new_ca);
 		}
@@ -975,7 +842,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    // If the resting tendon length is zero, then set the fiber length equal to
    // the muscle tendon length / cosine_factor, and find its force directly.
 
-   double muscle_width = _optimalFiberLength * sin(_pennationAngle);
+   double muscle_width = _optimalFiberLength * sin(_pennationAngleAtOptimal);
 
 	if (_tendonSlackLength < ROUNDOFF_ERROR) {
 		tendon_length = 0.0;
@@ -1003,7 +870,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
       return 0.0;
    } else {
       fiberLength = _optimalFiberLength;
-      cos_factor = cos(calcPennation( fiberLength, _optimalFiberLength,  _pennationAngle ));  
+      cos_factor = cos(calcPennation( fiberLength, _optimalFiberLength,  _pennationAngleAtOptimal ));  
       tendon_length = length - fiberLength * cos_factor;
 
       /* Check to make sure tendon is not shorter than its slack length. If it
@@ -1102,7 +969,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
 
       }
-      cos_factor = cos(calcPennation(fiberLength, _optimalFiberLength, _pennationAngle ));
+      cos_factor = cos(calcPennation(fiberLength, _optimalFiberLength, _pennationAngleAtOptimal ));
       tendon_length = length - fiberLength * cos_factor;
 
       // Check to make sure tendon is not shorter than its slack length. If it is,

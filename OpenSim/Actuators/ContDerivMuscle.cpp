@@ -259,64 +259,6 @@ double ContDerivMuscle::getActiveForce( const SimTK::State& s) const {
 }
 
 
-
-//_____________________________________________________________________________
-/**
- * Copy the property values from another actuator, which may not be
- * a ContDerivMuscle.
- *
- * @param aActuator Actuator to copy property values from.
- */
-void ContDerivMuscle::copyPropertyValues(Actuator& aActuator)
-{
-	ActivationFiberLengthMuscle::copyPropertyValues(aActuator);
-
-	const Property* prop = aActuator.getPropertySet().contains("max_isometric_force");
-	if (prop) _maxIsometricForceProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("optimal_fiber_length");
-	if (prop) _optimalFiberLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("tendon_slack_length");
-	if (prop) _tendonSlackLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("pennation_angle");
-	if (prop) _pennationAngleProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("activation_time_constant");
-	if (prop) _activationTimeConstantProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("deactivation_time_constant");
-	if (prop) _deactivationTimeConstantProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Vmax");
-	if (prop) _vmaxProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Vmax0");
-	if (prop) _vmax0Prop.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("FmaxTendonStrain");
-	if (prop) _fmaxTendonStrainProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("FmaxMuscleStrain");
-	if (prop) _fmaxMuscleStrainProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("KshapeActive");
-	if (prop) _kShapeActiveProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("KshapePassive");
-	if (prop) _kShapePassiveProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("damping");
-	if (prop) _dampingProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Af");
-	if (prop) _afProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("Flen");
-	if (prop) _flenProp.setValue(prop->getValueDbl());
-}
-
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -334,24 +276,6 @@ ContDerivMuscle& ContDerivMuscle::operator=(const ContDerivMuscle &aMuscle)
 	copyData(aMuscle);
 
 	return(*this);
-}
-
-
-//=============================================================================
-// GET
-//=============================================================================
-//-----------------------------------------------------------------------------
-// PENNATION ANGLE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the current pennation angle of the muscle fiber(s).
- *
- * @param Pennation angle.
- */
-double ContDerivMuscle::getPennationAngle(const SimTK::State& s) const
-{
-	return calcPennation(getFiberLength(s),_optimalFiberLength,_pennationAngle);
 }
 
 //-----------------------------------------------------------------------------
@@ -446,7 +370,7 @@ double ContDerivMuscle::computeActuation(const SimTK::State& s) const
    else
       normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _deactivationTimeConstant;
 
-	pennation_angle = ActivationFiberLengthMuscle::calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngle);
+	pennation_angle = ActivationFiberLengthMuscle::calcPennation(normState[STATE_FIBER_LENGTH], 1.0, _pennationAngleAtOptimal);
 	ca = cos(pennation_angle);
 
 	norm_muscle_tendon_length = getLength(s) / _optimalFiberLength; //REMEMBER - NORMALIZED IN OPTIMAL FIBER LENGTH UNITS
@@ -476,9 +400,9 @@ double ContDerivMuscle::computeActuation(const SimTK::State& s) const
 	  else 
 	  {
          double h = norm_muscle_tendon_length - _tendonSlackLength;
-         double w = _optimalFiberLength * sin(_pennationAngle);
+         double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
          double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-		 double new_pennation_angle = ActivationFiberLengthMuscle::calcPennation(new_fiber_length, 1.0, _pennationAngle);
+		 double new_pennation_angle = ActivationFiberLengthMuscle::calcPennation(new_fiber_length, 1.0, _pennationAngleAtOptimal);
          double new_ca = cos(new_pennation_angle);
          normStateDeriv[STATE_FIBER_LENGTH] = getLengtheningSpeed(s) / (Vmax * new_ca);
 	  }
@@ -712,7 +636,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
    // If the resting tendon length is zero, then set the fiber length equal to
    // the muscle tendon length / cosine_factor, and find its force directly.
 
-   double muscle_width = _optimalFiberLength * sin(_pennationAngle);
+   double muscle_width = _optimalFiberLength * sin(_pennationAngleAtOptimal);
 
    if (_tendonSlackLength < ROUNDOFF_ERROR) {
 		tendon_length = 0.0;
@@ -741,7 +665,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
       return 0.0;
    } else {
       setStateVariable(s, STATE_FIBER_LENGTH,  _optimalFiberLength);
-      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngle));  
+      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));  
       tendon_length = length - getFiberLength(s) * cos_factor;
 
       /* Check to make sure tendon is not shorter than its slack length. If it
@@ -843,7 +767,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
              setStateVariable(s, STATE_FIBER_LENGTH,  getFiberLength(s) - length_change);
       }
 
-      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngle));
+      cos_factor = cos(calcPennation(getFiberLength(s), _optimalFiberLength, _pennationAngleAtOptimal));
       tendon_length = length - getFiberLength(s) * cos_factor;
 
       // Check to make sure tendon is not shorter than its slack length. If it is,

@@ -121,17 +121,12 @@ public:
 #ifndef SWIG
 	ContDerivMuscle& operator=(const ContDerivMuscle &aMuscle);
 #endif
-   void copyData(const ContDerivMuscle &aMuscle);
-	virtual void copyPropertyValues(Actuator& aActuator);
+	void copyData(const ContDerivMuscle &aMuscle);
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
-	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngle; }
 	virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
 	virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
 	virtual double getVmax() const { return _vmax; }
@@ -144,7 +139,6 @@ public:
 	virtual double getAf() const { return _af; }
 	virtual double getFlen() const { return _flen; }
 	// Computed quantities
-	virtual double getPennationAngle(const SimTK::State& s) const;
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const;
 	virtual double getStress(const SimTK::State& s) const;

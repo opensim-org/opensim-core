@@ -52,9 +52,7 @@ using namespace SimTK;
  * Construct an actuator  of  controls.
  *
  */
-Actuator_::Actuator_() : Force(),
-	_controlSuffixes(""),
-    _subsystemIndex(SimTK::InvalidIndex)
+Actuator_::Actuator_() : Force()
 {
 	setNull();
 }
@@ -64,10 +62,7 @@ Actuator_::Actuator_() : Force(),
  *
  * @param aActuator Actuator to copy.
  */
-Actuator_::Actuator_(const Actuator_ &aAct) :
-	Force(aAct),
-	_controlSuffixes(""),
-    _subsystemIndex(SimTK::InvalidIndex)
+Actuator_::Actuator_(const Actuator_ &aAct) : Force(aAct)
 {
 	setNull();
 
@@ -114,8 +109,6 @@ void Actuator_::createSystem(SimTK::MultibodySystem& system) const
     // Beyond the const Component get the index so we can access the SimTK::Force later
 	Actuator_* mutableThis = const_cast<Actuator_ *>(this);
 
-	mutableThis->_subsystemIndex = getIndexOfSubsystemForAllocations();
-
 	// Model is in charge of creating the shared cache for all all actuator controls
 	// but it does so based on the size and order in its _defaultControls
 	// Actuator has the opportunity here to add slots for its control and record
@@ -159,11 +152,6 @@ Actuator_& Actuator_::operator=(const Actuator_ &aAct)
 {
 	// BASE CLASS
 	Force::operator=(aAct);
-
-	// Define the label associated with the control(s) by appending these suffixes
-	// to the actuator name.
-	_controlSuffixes = aAct._controlSuffixes;
-
 	return(*this);
 }
 // CONTROLS
@@ -211,30 +199,6 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 	modelControls(_controlIndex, numControls()) += actuatorControls;
 }
 
-
-
-//_____________________________________________________________________________
-/**
- * Replace one of the actuator's functions in the property array.
- *
- * @param aOldFunction the function being replaced.
- * @param aNewFunction the new function.
- */
-void Actuator_::replacePropertyFunction(OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction)
-{
-	if (aOldFunction && aNewFunction) {
-		PropertySet& propSet = getPropertySet();
-
-		for (int i=0; i <propSet.getSize(); i++) {
-			Property* prop = propSet.get(i);
-			if (prop->getType() == Property::ObjPtr) {
-				if (prop->getValueObjPtr() == aOldFunction) {
-					prop->setValue(aNewFunction);
-				}
-			}
-		}
-	}
-}
 
 
 

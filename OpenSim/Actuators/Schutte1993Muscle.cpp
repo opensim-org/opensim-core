@@ -84,7 +84,7 @@ Schutte1993Muscle::Schutte1993Muscle(const std::string &aName,double aMaxIsometr
 	setMaxIsometricForce(aMaxIsometricForce);
 	setOptimalFiberLength(aOptimalFiberLength);
 	setTendonSlackLength(aTendonSlackLength);
-	setPennationAngle(aPennationAngle);
+	setPennationAngleAtOptimalFiberLength(aPennationAngle);
 }
 
 //_____________________________________________________________________________
@@ -267,62 +267,6 @@ double Schutte1993Muscle::getTendonForce(const SimTK::State& s) const {
 	return getForce(s);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy the property values from another actuator, which may not be
- * a Schutte1993Muscle.
- *
- * @param aActuator Actuator to copy property values from.
- */
-void Schutte1993Muscle::copyPropertyValues(Actuator& aActuator)
-{
-	ActivationFiberLengthMuscle::copyPropertyValues(aActuator);
-
-	const Property* prop = aActuator.getPropertySet().contains("time_scale");
-	if (prop) _timeScaleProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("activation1");
-	if (prop) _activation1Prop.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("activation2");
-	if (prop) _activation2Prop.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("max_isometric_force");
-	if (prop) _maxIsometricForceProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("optimal_fiber_length");
-	if (prop) _optimalFiberLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("tendon_slack_length");
-	if (prop) _tendonSlackLengthProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("pennation_angle");
-	if (prop) _pennationAngleProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("max_contraction_velocity");
-	if (prop) _maxContractionVelocityProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("damping");
-	if (prop) _dampingProp.setValue(prop->getValueDbl());
-
-	Property* prop2 = aActuator.getPropertySet().contains("tendon_force_length_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _tendonForceLengthCurveProp.setValue(obj);
-	}
-
-	prop2 = aActuator.getPropertySet().contains("active_force_length_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _activeForceLengthCurveProp.setValue(obj);
-	}
-
-	prop2 = aActuator.getPropertySet().contains("passive_force_length_curve");
-	if (prop2) {
-	   Object* obj = prop2->getValueObjPtr();
-		if (obj) _passiveForceLengthCurveProp.setValue(obj);
-	}
-}
 
 //=============================================================================
 // OPERATORS
@@ -395,85 +339,7 @@ bool Schutte1993Muscle::setActivation2(double aActivation2)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-// MAXIMUM ISOMETRIC FORCE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the maximum isometric force that the fibers can generate.
- *
- * @param aMaxIsometricForce The maximum isometric force that the fibers can generate.
- * @return Whether the maximum isometric force was successfully changed.
- */
-bool Schutte1993Muscle::setMaxIsometricForce(double aMaxIsometricForce)
-{
-	_maxIsometricForce = aMaxIsometricForce;
-	return true;
-}
 
-//-----------------------------------------------------------------------------
-// OPTIMAL FIBER LENGTH
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the optimal length of the muscle fibers.
- *
- * @param aOptimalFiberLength The optimal length of the muscle fibers.
- * @return Whether the optimal length was successfully changed.
- */
-bool Schutte1993Muscle::setOptimalFiberLength(double aOptimalFiberLength)
-{
-	_optimalFiberLength = aOptimalFiberLength;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// TENDON SLACK LENGTH
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the resting length of the tendon.
- *
- * @param aTendonSlackLength The resting length of the tendon.
- * @return Whether the resting length was successfully changed.
- */
-bool Schutte1993Muscle::setTendonSlackLength(double aTendonSlackLength)
-{
-	_tendonSlackLength = aTendonSlackLength;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// PENNATION ANGLE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the angle between tendon and fibers at optimal fiber length.
- *
- * @param aPennationAngle The angle between tendon and fibers at optimal fiber length.
- * @return Whether the angle was successfully changed.
- */
-bool Schutte1993Muscle::setPennationAngle(double aPennationAngle)
-{
-	_pennationAngle = aPennationAngle;
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-// MAX CONTRACTION VELOCITY
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the maximum contraction velocity of the fibers, in optimal fiber lengths per second.
- *
- * @param aMaxContractionVelocity The maximum contraction velocity of the fibers, in optimal fiber lengths per second.
- * @return Whether the maximum contraction velocity was successfully changed.
- */
-bool Schutte1993Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
-{
-	_maxContractionVelocity = aMaxContractionVelocity;
-	return true;
-}
 
 //-----------------------------------------------------------------------------
 // DAMPING
@@ -489,21 +355,6 @@ bool Schutte1993Muscle::setDamping(double aDamping)
 {
 	_damping = aDamping;
 	return true;
-}
-
-
-//-----------------------------------------------------------------------------
-// PENNATION ANGLE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the current pennation angle of the muscle fiber(s).
- *
- * @param Pennation angle.
- */
-double Schutte1993Muscle::getPennationAngle(const SimTK::State& s) const
-{
-	return calcPennation(getFiberLength(s),_optimalFiberLength,_pennationAngle);
 }
 
 //-----------------------------------------------------------------------------
@@ -592,7 +443,7 @@ double Schutte1993Muscle::computeActuation(const SimTK::State& s) const
    else
       activationDeriv = (excitation - activation) * _activation2;
 
-	pennation_angle = calcPennation(normFiberLength, 1.0, _pennationAngle);
+	pennation_angle = calcPennation(normFiberLength, 1.0, _pennationAngleAtOptimal);
    ca = cos(pennation_angle);
    norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
    norm_tendon_length = norm_muscle_tendon_length - normFiberLength * ca;
@@ -612,9 +463,9 @@ double Schutte1993Muscle::computeActuation(const SimTK::State& s) const
          fiberLengthDeriv = 0.0;;
       } else {
          double h = norm_muscle_tendon_length - _tendonSlackLength;
-         double w = _optimalFiberLength * sin(_pennationAngle);
+         double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
          double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-         double new_pennation_angle = calcPennation(new_fiber_length, 1.0, _pennationAngle);
+         double new_pennation_angle = calcPennation(new_fiber_length, 1.0, _pennationAngleAtOptimal);
          double new_ca = cos(new_pennation_angle);
          fiberLengthDeriv = getLengtheningSpeed(s) * _timeScale / _optimalFiberLength * new_ca;
       }
@@ -851,7 +702,7 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
    // If the resting tendon length is zero, then set the fiber length equal to
    // the muscle tendon length / cosine_factor, and find its force directly.
 
-   double muscle_width = _optimalFiberLength * sin(_pennationAngle);
+   double muscle_width = _optimalFiberLength * sin(_pennationAngleAtOptimal);
 
    if (_tendonSlackLength < ROUNDOFF_ERROR) {
       tendon_length = 0.0;
@@ -877,7 +728,7 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
       return 0.0;
    } else {
       fiberLength = _optimalFiberLength;
-      cos_factor = cos(calcPennation(fiberLength, _optimalFiberLength, _pennationAngle));  
+      cos_factor = cos(calcPennation(fiberLength, _optimalFiberLength, _pennationAngleAtOptimal));  
       tendon_length = length - fiberLength * cos_factor;
 
       /* Check to make sure tendon is not shorter than its slack length. If it
@@ -979,7 +830,7 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
 
       }
 
-      cos_factor = cos(calcPennation(fiberLength, _optimalFiberLength, _pennationAngle));
+      cos_factor = cos(calcPennation(fiberLength, _optimalFiberLength, _pennationAngleAtOptimal));
       tendon_length = length - fiberLength * cos_factor;
 
       // Check to make sure tendon is not shorter than its slack length. If it is,

@@ -48,15 +48,25 @@ class Coordinate;
 //=============================================================================
 /**
  * A base class representing a muscle-tendon actuator. It adds data and methods
- * to Actuator, but does not implement all of the necessary methods,
- * so it is abstract too. The path information for a muscle is contained
- * in this class, and the force-generating behavior should be defined in
+ * to PathActuator, but does not implement all of the necessary methods,
+ * and remains an abstract class. The path information for a muscle is contained
+ * in PathActuator, and the force-generating behavior should be defined in
  * the derived classes.
  *
+ * This class defines a subset of muscle models that include an active fiber
+ * (contractile element) in series with a tendon. This class defines common 
+ * data members and handles the geometry of a unipennate fiber in connection
+ * with a tendon. No states are assumed, but concrete classes are free to
+ * add whatever states are necessary to describe the specific behavior of a
+ * muscle.
+ *
+ * @version 2.0
+ * @author Ajay Seth
+ *
+ * @version 1.0
  * @author Peter Loan
  * @author Frank C. Anderson
- * @author Ajay Seth
- * @version 2.0
+ * 
  */
 class OSIMSIMULATION_API Muscle : public PathActuator  
 {
@@ -65,6 +75,25 @@ class OSIMSIMULATION_API Muscle : public PathActuator
 //=============================================================================
 protected:
 
+	/** Optimal length of the muscle fibers */
+	PropertyDbl _optimalFiberLengthProp;
+	double &_optimalFiberLength;
+
+	/** Maximum isometric force that the fibers can generate */
+	PropertyDbl _maxIsometricForceProp;
+	double &_maxIsometricForce;
+
+	/** Resting length of the tendon */
+	PropertyDbl _tendonSlackLengthProp;
+	double &_tendonSlackLength;
+
+	/** Angle between tendon and fibers at optimal fiber length */
+	PropertyDbl _pennationAngleAtOptimalProp;
+	double &_pennationAngleAtOptimal;
+
+	/** Maximum contraction velocity of the fibers, in optimal fiberlengths per second */
+	PropertyDbl _maxContractionVelocityProp;
+	double &_maxContractionVelocity;
 
 //=============================================================================
 // METHODS
@@ -82,18 +111,33 @@ public:
 #ifndef SWIG
 	Muscle& operator=(const Muscle &aMuscle);
 #endif
-   void copyData(const Muscle &aMuscle);
+	void copyData(const Muscle &aMuscle);
+
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode();
 
 
 	//--------------------------------------------------------------------------
-	// COMPUTATIONS
+	// MUSCLE PARAMETERS
 	//--------------------------------------------------------------------------
-	virtual double getPennationAngle(const SimTK::State& s) const = 0;
+	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
+	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
+	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
+	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngleAtOptimal; }
+	virtual double getMaxContractionVelocity() const { return _maxContractionVelocity; }
+
+	virtual void setMaxIsometricForce(double aMaxIsometricForce) { _maxIsometricForce = aMaxIsometricForce;}
+	virtual void setOptimalFiberLength(double aOptimalFiberLength) { _optimalFiberLength = aOptimalFiberLength;}
+	virtual void setTendonSlackLength(double aTendonSlackLength) { _tendonSlackLength = aTendonSlackLength;}
+	virtual void setPennationAngleAtOptimalFiberLength(double aPennationAngle) {_pennationAngleAtOptimal = aPennationAngle;}
+	virtual void setMaxContractionVelocity(double aMaxContractionVelocity) {_maxContractionVelocity = aMaxContractionVelocity;}
+
+	//--------------------------------------------------------------------------
+	// PROBE MUSCLE FOR INFO
+	//--------------------------------------------------------------------------
+	virtual double getPennationAngle(const SimTK::State& s) const;
 	virtual double getTendonLength(const SimTK::State& s) const;
 	virtual double getFiberLength(const SimTK::State& s) const = 0;
-    virtual void setFiberLength(SimTK::State& s, double fiberLength) const = 0;
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const = 0;
 	virtual double getFiberLengthAlongTendon(const SimTK::State& s) const;
 	virtual double getFiberForce(const SimTK::State& s) const;
@@ -101,31 +145,23 @@ public:
 	virtual double getPassiveFiberForce(const SimTK::State& s) const = 0;
 	virtual double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
 	virtual double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
-	virtual double getMaxIsometricForce() const;
 	virtual double getTendonForce(const SimTK::State& s) const = 0;
 	virtual double getActivation(const SimTK::State& s) const = 0;
-    virtual void setActivation(SimTK::State& s, double activation) const = 0;
+
+	virtual void setActivation(SimTK::State& s, double activation) const = 0;
 
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s ) const = 0;
-
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
-
 	virtual double evaluateForceLengthVelocityCurve(double aActivation, double aNormalizedLength, double aNormalizedVelocity) const;
 	virtual double calcPennation( double aFiberLength, double aOptimalFiberLength, double aInitialPennationAngle) const;
-
-	virtual void equilibrate(SimTK::State& s) const = 0;
     
-	//--------------------------------------------------------------------------
-	// SCALING
-	//--------------------------------------------------------------------------
+	virtual void equilibrate(SimTK::State& state) const =0;
+
 protected:
-	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet);
-	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet);
 
 	//--------------------------------------------------------------------------
 	// FORCE APPLICATION

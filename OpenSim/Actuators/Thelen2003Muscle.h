@@ -121,8 +121,8 @@ public:
 #ifndef SWIG
 	Thelen2003Muscle& operator=(const Thelen2003Muscle &aMuscle);
 #endif
-    void copyData(const Thelen2003Muscle &aMuscle);
-	virtual void copyPropertyValues(Actuator& aActuator);
+	void copyData(const Thelen2003Muscle &aMuscle);
+
 #ifndef SWIG
 
 #endif
@@ -131,10 +131,6 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
-	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngle; }
 	virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
 	virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
 	virtual double getVmax() const { return _vmax; }
@@ -148,10 +144,6 @@ public:
 	virtual double getFlen() const { return _flen; }
 	virtual bool setActivationTimeConstant(double aActivationTimeConstant);
 	virtual bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
-	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
-	virtual bool setOptimalFiberLength(double aOptimalFiberLength);
-	virtual bool setTendonSlackLength(double aTendonSlackLength);
-	virtual bool setPennationAngle(double aPennationAngle);
 	virtual bool setVmax(double aVmax);
 	virtual bool setVmax0(double aVmax0);
 	virtual bool setFmaxTendonStrain(double aFmaxTendonStrain);
@@ -164,7 +156,6 @@ public:
 
 	// Computed quantities
 #ifndef SWIG
-	virtual double getPennationAngle(const SimTK::State& s) const;
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const;
 	virtual double getStress(const SimTK::State& s) const;

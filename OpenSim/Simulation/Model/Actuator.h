@@ -30,7 +30,6 @@
  */
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Common/Function.h>
 #include "Force.h"
 
@@ -65,13 +64,7 @@ class Coordinate;
 // DATA
 //=============================================================================
 protected:
-
-	/** Name suffixes. */
-	Array<std::string> _controlSuffixes;
-  
-	/** Subsystem that actuator can add state and cache variables to */ 
-    SimTK::SubsystemIndex _subsystemIndex;
-  
+ 
     // index in Controls Vector shared system cache entry
 	int _controlIndex;
 
@@ -86,7 +79,6 @@ public:
 	Actuator_(const Actuator_ &aActuator);
 	virtual ~Actuator_();
 	virtual Object* copy() const = 0;
-	virtual void copyPropertyValues(Actuator_& aActuator) { }
 
 private:
 	void setNull();
@@ -135,18 +127,6 @@ public:
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s) const = 0;
 	virtual void computeEquilibrium(SimTK::State& s) const { }
-
-
-	//--------------------------------------------------------------------------
-	// SCALING
-	//--------------------------------------------------------------------------
-	virtual void preScale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
-	virtual void scale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
-	virtual void postScale(const SimTK::State& s, const ScaleSet& aScaleSet) { }
-
-	// Visible Object Support
-	virtual void updateDisplayer(const SimTK::State& s) { }
-	virtual void replacePropertyFunction(Function* aOldFunction, Function* aNewFunction);
 
 
 //=============================================================================
@@ -218,7 +198,7 @@ public:
 	void setMaxControl(const double& aMaxControl) {	_maxControl=aMaxControl; }
 	double getMaxControl() const { return _maxControl; }
 
-	    ///--------------------------------------------------------------------------
+    ///--------------------------------------------------------------------------
     /// Overriding forces
     ///--------------------------------------------------------------------------
     /// The force normally produced by an Actuator can be overriden and 

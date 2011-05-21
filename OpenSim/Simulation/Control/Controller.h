@@ -42,7 +42,7 @@
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
-#include "SimTKsimbody.h"
+#include <OpenSim/Common/Set.h>
 
 //=============================================================================
 //=============================================================================

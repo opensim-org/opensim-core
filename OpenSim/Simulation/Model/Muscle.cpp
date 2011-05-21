@@ -1,7 +1,7 @@
 // Muscle.cpp
-// Author: Peter Loan, Jeff Reinbolt
+// Author: Peter Loan, Ajay Seth
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -29,23 +29,19 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "Muscle.h"
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
+
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include "ConditionalPathPoint.h"
 #include "PointForceDirection.h"
 #include "GeometryPath.h"
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
+
 #include "Model.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Common/DebugUtilities.h>
-#include "SimTKsimbody.h"
+
+
+#include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Common/XMLNode.h>
 
 //=============================================================================
 // STATICS
@@ -62,7 +58,12 @@ static int counter=0;
 /**
  * Default constructor.
  */
-Muscle::Muscle() : PathActuator()
+Muscle::Muscle() : PathActuator(),
+	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
+	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
+	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
+	_pennationAngleAtOptimal(_pennationAngleAtOptimalProp.getValueDbl()),
+	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
@@ -90,7 +91,12 @@ Muscle::~Muscle()
  *
  * @param aMuscle Muscle to be copied.
  */
-Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle)
+Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle),
+	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
+	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
+	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
+	_pennationAngleAtOptimal(_pennationAngleAtOptimalProp.getValueDbl()),
+	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
@@ -108,6 +114,11 @@ Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle)
  */
 void Muscle::copyData(const Muscle &aMuscle)
 {
+	_maxIsometricForce = aMuscle._maxIsometricForce;
+	_optimalFiberLength = aMuscle._optimalFiberLength;
+	_tendonSlackLength = aMuscle._tendonSlackLength;
+	_pennationAngleAtOptimal = aMuscle._pennationAngleAtOptimal;
+	_maxContractionVelocity = aMuscle._maxContractionVelocity;
 }
 
 //_____________________________________________________________________________
@@ -205,6 +216,30 @@ void Muscle::setDefaultsFromState(const SimTK::State& state)
  */
 void Muscle::setupProperties()
 {
+	_maxIsometricForceProp.setName("max_isometric_force");
+	_maxIsometricForceProp.setComment("Maximum isometric force that the fibers can generate");
+	_maxIsometricForceProp.setValue(1000.0);
+	_propertySet.append(&_maxIsometricForceProp, "Parameters");
+
+	_optimalFiberLengthProp.setName("optimal_fiber_length");
+	_optimalFiberLengthProp.setComment("Optimal length of the muscle fibers");
+	_optimalFiberLengthProp.setValue(0.1);
+	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
+
+	_tendonSlackLengthProp.setName("tendon_slack_length");
+	_tendonSlackLengthProp.setComment("Resting length of the tendon");
+	_tendonSlackLengthProp.setValue(0.2);
+	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
+
+	_pennationAngleAtOptimalProp.setName("pennation_angle_at_optimal");
+	_pennationAngleAtOptimalProp.setComment("Angle between tendon and fibers at optimal fiber length");
+	_pennationAngleAtOptimalProp.setValue(0.0);
+	_propertySet.append(&_pennationAngleAtOptimalProp, "Parameters");
+
+	_maxContractionVelocityProp.setName("max_contraction_velocity");
+	_maxContractionVelocityProp.setComment("Maximum contraction velocity of the fibers, in optimal fiberlengths per second");
+	_maxContractionVelocityProp.setValue(10.0);
+	_propertySet.append(&_maxContractionVelocityProp, "Parameters");
 }
 
 //_____________________________________________________________________________
@@ -278,6 +313,19 @@ double Muscle::evaluateForceLengthVelocityCurve(double aActivation, double aNorm
 //=============================================================================
 // GET
 //=============================================================================
+//-----------------------------------------------------------------------------
+// PENNATION ANGLE
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Get the current pennation angle of the muscle fiber(s).
+ *
+ * @param Pennation angle.
+ */
+double Muscle::getPennationAngle(const SimTK::State& s) const
+{
+	return calcPennation( getFiberLength(s),_optimalFiberLength,_pennationAngleAtOptimal );
+}
 //_____________________________________________________________________________
 /**
  * Get the length of the tendon.
@@ -300,6 +348,10 @@ double Muscle::getFiberLengthAlongTendon(const SimTK::State& s) const
 {
 	return getFiberLength(s) * cos(getPennationAngle(s));
 }
+
+
+
+
 
 //-----------------------------------------------------------------------------
 // FORCE
@@ -357,47 +409,6 @@ double Muscle::getPassiveFiberForceAlongTendon(const SimTK::State& s) const
 	return getPassiveFiberForce(s) * cos(getPennationAngle(s));
 }
 
-//=============================================================================
-// SCALING
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen before the muscle is scaled.
- * For this object, that entails calculating and storing the muscle-tendon
- * length in the current body position.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void Muscle::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-	_path.preScale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Scale the muscle based on XYZ scale factors for each body.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- * @return Whether muscle was successfully scaled or not.
- */
-void Muscle::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-	_path.scale(s, aScaleSet);
-}
-
-//_____________________________________________________________________________
-/**
- * Perform computations that need to happen after the muscle is scaled.
- * For this object, that entails updating the muscle path. Derived classes
- * should probably also scale or update some of the force-generating
- * properties.
- *
- * @param aScaleSet XYZ scale factors for the bodies.
- */
-void Muscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
-{
-	_path.postScale(s, aScaleSet);
-}
 
 //--------------------------------------------------------------------------
 // COMPUTATIONS
@@ -474,16 +485,6 @@ void Muscle::computeForce(const SimTK::State& s,
 	for(int i=0; i < PFDs.getSize(); i++)
 		delete PFDs[i];
 }
-
-//_____________________________________________________________________________
-/**
- * getMaxIsometricForce needs to be overridden by derived classes to be usable
- */
-double Muscle::getMaxIsometricForce() const
-{
-	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
-}
-
 
 void Muscle::updateGeometry(const SimTK::State& s) const
 {

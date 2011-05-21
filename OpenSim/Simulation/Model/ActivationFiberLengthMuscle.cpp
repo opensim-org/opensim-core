@@ -67,12 +67,7 @@ static int counter=0;
  */
 ActivationFiberLengthMuscle::ActivationFiberLengthMuscle() : Muscle(),
 	_defaultActivation(0),
-	_defaultFiberLength(0),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngle(_pennationAngleProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl())
+	_defaultFiberLength(0)
 {
 	setNull();
 	setupProperties();
@@ -99,12 +94,7 @@ ActivationFiberLengthMuscle::~ActivationFiberLengthMuscle()
  */
 ActivationFiberLengthMuscle::ActivationFiberLengthMuscle(const ActivationFiberLengthMuscle &aMuscle) : Muscle(aMuscle),
 	_defaultActivation(aMuscle._defaultActivation),
-	_defaultFiberLength(aMuscle._defaultFiberLength),
-   	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngle(_pennationAngleProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl())
+	_defaultFiberLength(aMuscle._defaultFiberLength)
 {
 	setNull();
 	setupProperties();
@@ -122,11 +112,7 @@ ActivationFiberLengthMuscle::ActivationFiberLengthMuscle(const ActivationFiberLe
  */
 void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aMuscle)
 {
-	_maxIsometricForce = aMuscle._maxIsometricForce;
-	_optimalFiberLength = aMuscle._optimalFiberLength;
-	_tendonSlackLength = aMuscle._tendonSlackLength;
-	_pennationAngle = aMuscle._pennationAngle;
-	_maxContractionVelocity = aMuscle._maxContractionVelocity;
+	Muscle::copyData(aMuscle);
 }
 
 //_____________________________________________________________________________
@@ -225,30 +211,6 @@ void ActivationFiberLengthMuscle::setDefaultFiberLength(double length) {
  */
 void ActivationFiberLengthMuscle::setupProperties()
 {
-	_maxIsometricForceProp.setName("max_isometric_force");
-	_maxIsometricForceProp.setComment("Maximum isometric force that the fibers can generate");
-	_maxIsometricForceProp.setValue(1000.0);
-	_propertySet.append(&_maxIsometricForceProp, "Parameters");
-
-	_optimalFiberLengthProp.setName("optimal_fiber_length");
-	_optimalFiberLengthProp.setComment("Optimal length of the muscle fibers");
-	_optimalFiberLengthProp.setValue(0.1);
-	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
-
-	_tendonSlackLengthProp.setName("tendon_slack_length");
-	_tendonSlackLengthProp.setComment("Resting length of the tendon");
-	_tendonSlackLengthProp.setValue(0.2);
-	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
-
-	_pennationAngleProp.setName("pennation_angle");
-	_pennationAngleProp.setComment("Angle between tendon and fibers at optimal fiber length");
-	_pennationAngleProp.setValue(0.0);
-	_propertySet.append(&_pennationAngleProp, "Parameters");
-
-	_maxContractionVelocityProp.setName("max_contraction_velocity");
-	_maxContractionVelocityProp.setComment("Maximum contraction velocity of the fibers, in optimal fiberlengths per second");
-	_maxContractionVelocityProp.setValue(10.0);
-	_propertySet.append(&_maxContractionVelocityProp, "Parameters");
 }
 
 //_____________________________________________________________________________
@@ -477,36 +439,6 @@ void ActivationFiberLengthMuscle::postScale(const SimTK::State& s, const ScaleSe
 // COMPUTATIONS
 //--------------------------------------------------------------------------
 
-
-//_____________________________________________________________________________
-/**
- * Utility function to calculate the current pennation angle in a
- * muscle. Pennation angle increases as muscle fibers shorten. The implicit
- * modeling assumption is that muscles have constant width.
- *
- * @param aFiberLength Current fiber length of muscle.
- * @param aOptimalFiberLength Optimal fiber length of muscle.
- * @param aInitialPennationAngle Pennation angle at optimal fiber length (in radians).
- * @return Current pennation angle (in radians).
- */
-double ActivationFiberLengthMuscle::calcPennation( double aFiberLength, double aOptimalFiberLength,
-											    double aInitialPennationAngle) const
-{
-	if (aFiberLength < SimTK::Eps)
-		return 0.0;
-
-   double value = aOptimalFiberLength * sin(aInitialPennationAngle) / aFiberLength;
-
-   if ( isnan(value)  ) 
-       return 0.0;
-   else if (value <= 0.0 )
-      return 0.0;
-   else if (value >= 1.0)
-		return SimTK_PI/2.0;
-   else
-      return asin(value);
-}
-
 //=============================================================================
 // FORCE APPLICATION
 //=============================================================================
@@ -559,28 +491,17 @@ double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStif
 	double isometricForce = computeIsometricForce(s, aActivation);
 
 	double normalizedLength = getFiberLength(s) / _optimalFiberLength;
-	double normalizedVelocity = -cos(_pennationAngle) * getLengtheningSpeed(s) / (_maxContractionVelocity * _optimalFiberLength);
+	double normalizedVelocity = -cos(_pennationAngleAtOptimal) * getLengtheningSpeed(s) / (_maxContractionVelocity * _optimalFiberLength);
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 
 	return isometricForce * normalizedForceVelocity;
-}
-
-
-//_____________________________________________________________________________
-/**
- * getMaxIsometricForce needs to be overridden by derived classes to be usable
- */
-double ActivationFiberLengthMuscle::getMaxIsometricForce() const
-{
-	OPENSIM_ERROR_IF_NOT_OVERRIDDEN();
 }
 
 //_____________________________________________________________________________
 //**
 // * get the excitation value for this ActivationFiberLengthMuscle 
 // */
-double ActivationFiberLengthMuscle::
-getExcitation( const SimTK::State& s) const {
+double ActivationFiberLengthMuscle::getExcitation( const SimTK::State& s) const {
     return( getControl(s) );
 }
 
