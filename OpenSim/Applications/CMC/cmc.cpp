@@ -115,7 +115,7 @@ int main(int argc,char **argv)
 	}
 
 	// CONSTRUCT
-	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n\n";
+	cout<<"Constructing investigation from setup file "<<setupFileName<<".\n"<<endl;
 	CMCTool cmcgait(setupFileName);
 
 	// PRINT MODEL INFORMATION
