@@ -454,36 +454,15 @@ void Muscle::computeForce(const SimTK::State& s,
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
-	double muscleForce = 0;
-
-		// compute path's lengthening speed if necessary
-	double speed = _path.getLengtheningSpeed(s);
-
-	// the lengthening speed of this actutor is the "speed" of the actuator used to compute power
-	setSpeed(s, speed);
-
-	if( isForceOverriden(s) ) {
-		muscleForce = computeOverrideForce(s);
-    } else {
-       muscleForce = computeActuation(s);
-    }
-    setForce(s, muscleForce);
+	PathActuator::computeForce(s, bodyForces, generalizedForces);
 
 	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
-	if (fabs( muscleForce ) < SimTK::SqrtEps) {
-		//std::cout << "Muscle::computeForce muscleForce < SimTK::SqrtEps" << getName() << std::endl;
-		return;
+	if (getForce(s) < -SimTK::SqrtEps) {
+		string msg = getType()+"::computeForce, muscle force < 0 for muscle '" + getName() +"' ";
+		//cout << msg << " at time = " << s.getTime() << endl;
+		//throw Exception(msg);
     }
-
-	OpenSim::Array<PointForceDirection*> PFDs;
-	_path.getPointForceDirections(s, &PFDs);
-
-	for (int i=0; i < PFDs.getSize(); i++) {
-		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), muscleForce*PFDs[i]->direction(), bodyForces);
-	}
-	for(int i=0; i < PFDs.getSize(); i++)
-		delete PFDs[i];
 }
 
 void Muscle::updateGeometry(const SimTK::State& s) const

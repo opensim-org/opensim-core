@@ -280,9 +280,14 @@ void PathActuator::computeForce( const SimTK::State& s,
 	// the lengthening speed of this actutor is the "speed" of the actuator used to compute power
 	setSpeed(s, speed);
 
-	double force = computeActuation(s);
+	double force =0;
+	if( isForceOverriden(s) ) {
+		force = computeOverrideForce(s);
+	} else {
+		force = computeActuation(s);
+	}
 
-	// the force of this actutor used to compute power
+	// the force of this actuator used to compute power
     setForce(s,  force );
 
 	OpenSim::Array<PointForceDirection*> PFDs;

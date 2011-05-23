@@ -396,11 +396,14 @@ double Actuator::getOverrideForce(const SimTK::State& s ) const
     return getDiscreteVariable(s, "override_force");
 }
 double Actuator::computeOverrideForce( const SimTK::State& s ) const {
+	double appliedForce = 0;
       if( _overrideForceFunction ) {
-          return( _overrideForceFunction->calcValue(s ) );
+          appliedForce = _overrideForceFunction->calcValue(s);
       } else {
-          return( getOverrideForce(s) );
+          appliedForce = getOverrideForce(s);
       }
+	  setForce(s, appliedForce);
+	  return appliedForce;
 }
 void Actuator::setOverrideForceFunction( StateFunction* overrideFunc ) {
        _overrideForceFunction = overrideFunc;
