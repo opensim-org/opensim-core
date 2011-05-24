@@ -111,6 +111,11 @@ public:
 	// setup all ExternalForces inside this ExternalLoads collection 
 	virtual void setup(Model& aModel);
 
+	const Model& getModel() const	// get around wrapping issue where exposing the method in ModelComponentSet is problematic
+    {
+        return	*_model;
+    }
+
 	const std::string& getDataFileName() const { return _dataFileName;};
 	void setDataFileName(const std::string& aNewFile) { _dataFileName = aNewFile; };
 
