@@ -265,9 +265,9 @@ void ExternalForce::setup(Model& model)
 {
 	Force::setup(model);
 
-	_appliesForce = !((_forceIdentifier.find_first_not_of(" \t")==string::npos) || (_forceIdentifier == "Unassigned"));
-	_specifiesPoint = !((_pointIdentifier.find_first_not_of(" \t")==string::npos) || (_pointIdentifier == "Unassigned"));
-	_appliesTorque = !((_torqueIdentifier.find_first_not_of(" \t")==string::npos) || (_torqueIdentifier == "Unassigned"));
+	_appliesForce = appliesForce();
+	_specifiesPoint = specifiesPoint();
+	_appliesTorque = appliesTorque();
 
 	// hook up body pointers from names
 	if (_model){

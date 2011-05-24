@@ -182,6 +182,10 @@ public:
 	void setForceIdentifier(const std::string aForceIdentifier) { _forceIdentifier = aForceIdentifier; }
 	void setPointIdentifier(const std::string aPointIdentifier) { _pointIdentifier = aPointIdentifier; }
 	void setTorqueIdentifier(const std::string aTorqueIdentifier) { _torqueIdentifier = aTorqueIdentifier; }
+
+	const std::string& getForceIdentifier() const { return _forceIdentifier; }
+	const std::string& getPointIdentifier() const { return _pointIdentifier; }
+	const std::string& getTorqueIdentifier() const { return _torqueIdentifier; }
 	/**
 	 * Convenience methods to access external forces at a given time
 	 */
@@ -199,6 +203,12 @@ public:
 	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
 	 */
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
+	/**
+	 * Methods to query the force properties to find out if it's a body vs. point force and/or if it applies a torque 
+	 */
+	bool appliesForce() const { return !((_forceIdentifier.find_first_not_of(" \t")==std::string::npos) || (_forceIdentifier == "Unassigned"));};
+	bool specifiesPoint() const { return !((_pointIdentifier.find_first_not_of(" \t")==std::string::npos) || (_pointIdentifier == "Unassigned"));};
+	bool appliesTorque() const { return !((_torqueIdentifier.find_first_not_of(" \t")==std::string::npos) || (_torqueIdentifier == "Unassigned"));};
 
 #ifndef SWIG
 	ExternalForce& operator=(const ExternalForce &aForce);
