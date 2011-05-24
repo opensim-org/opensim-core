@@ -55,8 +55,8 @@ bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
 			dMax = std::max(dMax, fabs(dData[j]));
 		}
 		equal = (dMax <= tol);
-		if(!equal)
-			cout << "time: " << actualStorage.getStateVector(i)->getTime() << ", colname: " << stdStorage.getColumnLabels().get(worst) << ", diff: " << dMax << endl;
+		if(!equal) // worst index is for data excluding time, so +1 get the correct column label
+			cout << "time: " << actualStorage.getStateVector(i)->getTime() << ", colname: " << stdStorage.getColumnLabels().get(worst+1) << ", diff: " << dMax << endl;
 	}
 	return equal;
 }
@@ -89,7 +89,7 @@ int testModel(std::string modelPrefix)
 	// Compare results to a standard (with muscle physiology)
 	Storage currentResult("Results/"+modelPrefix+"_StaticOptimization_activation.sto");
 	Storage stdStorage("std_"+modelPrefix+"_StaticOptimization_activation.sto");
-	bool equal = equalStorage(stdStorage, currentResult, 1e-3);
+	bool equal = equalStorage(stdStorage, currentResult, 2e-3);
 	if (equal){
 		currentResult = Storage("Results/"+modelPrefix+"_StaticOptimization_force.sto");
 		stdStorage = Storage("std_"+modelPrefix+"_StaticOptimization_force.sto");
