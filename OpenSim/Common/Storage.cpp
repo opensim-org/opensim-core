@@ -119,7 +119,7 @@ Storage::Storage(int aCapacity,const string &aName) :
  * @param aFileName Name of the file from which the Storage is to be
  * constructed.
  */
-Storage::Storage(const string &aFileName) :
+Storage::Storage(const string &aFileName, bool readHeadersOnly) :
 	StorageInterface(aFileName),
 	_storage(StateVector())
 {
@@ -157,6 +157,9 @@ Storage::Storage(const string &aFileName) :
 	// CAPACITY
 	_storage.ensureCapacity(nr);
 	_storage.setCapacityIncrement(-1);
+
+	// There are situations where we don't want to read the whole file in advance just header
+	if (readHeadersOnly) return;
 
 	// DATA
 	int ny = nc-1;
@@ -1112,28 +1115,17 @@ getDataColumn(const std::string& aColumnName,double *&rData) const
 	 @param rData		Array<Array<double>> of data belonging to the identifier */
 void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<double> >& rData, double startTime) const
 {
-	int lid = identifier.length();
 
-	if(lid < 1) // an empty identifier should not expect data back
-		return;
-
-	int startIndex = 0;
-	int size = _columnLabels.getSize();
-	Array<int> found;
-	for(int i=startIndex;i<size;++i){
-		if(_columnLabels[i].compare(0,lid, identifier)==0)
-			found.append(i);
-	}
+	Array<int> found = getColumnIndicesForIdentifier(identifier);
 
 	if(found.getSize() == 0){
 		cout << "WARNING: Storage "+getName()+" could not locate data for identifier "+identifier+"." << endl;
 		return;
 	}
-
 	/* a row of "data" can be shorter than number of columns if time is the first column, since 
 	   that is not considered a state by storage. Need to fix this! -aseth */
 	int nd = getLastStateVector()->getSize();
-	int off = size-nd;
+	int off = _columnLabels.getSize()-nd;
 
 
 	for(int i=0; i<found.getSize(); ++i){
@@ -1142,8 +1134,26 @@ void Storage::getDataForIdentifier(const std::string& identifier, Array<Array<do
 		rData.append(data);
 	}
 }
+/**
+ * Get the list of indices of columns corresponding to passed in identifier
+ * Normally you provide a prefix and all column numbers that share this suffix in their header are passed back
+ */
+OpenSim::Array<int>  Storage::getColumnIndicesForIdentifier(const std::string& identifier) const
+{
+	Array<int> found;
+	int lid = identifier.length();
 
+	if(lid < 1) // an empty identifier should not expect data back
+		return found;
 
+	int startIndex = 0;
+	int size = _columnLabels.getSize();
+	for(int i=startIndex;i<size;++i){
+		if(_columnLabels[i].compare(0,lid, identifier)==0)
+			found.append(i);
+	}
+	return found;
+}
 //=============================================================================
 // RESET
 //=============================================================================

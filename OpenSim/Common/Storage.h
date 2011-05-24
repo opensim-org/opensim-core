@@ -118,7 +118,7 @@ public:
 	// make this constructor explicit so you don't get implicit casting of int to Storage
 	explicit Storage(int aCapacity=Storage_DEFAULT_CAPACITY,
 		const std::string &aName="UNKNOWN");
-	Storage(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
+	Storage(const std::string &aFileName, bool readHeadersOnly=false) SWIG_DECLARE_EXCEPTION;
 	Storage(const Storage &aStorage,bool aCopyData=true);
 	Storage(const Storage &aStorage,int aStateIndex,int aN,
 		const char *aDelimiter="\t");
@@ -196,6 +196,11 @@ public:
 	 @param identifier	string identifying a single block of data 
 	 @param rData		Array<Array<double>> of data belonging to the identifier */
 	void getDataForIdentifier(const std::string& identifier, Array< Array<double> >& rData, double startTime=0.0) const;
+
+	/**
+	 * Get indices of columns corresponding to identifier, empty array if identifier is not found in labels
+	 */
+	OpenSim::Array<int>  getColumnIndicesForIdentifier(const std::string& identifier) const;
 
 	// STEP INTERVAL
 	void setStepInterval(int aStepInterval);
