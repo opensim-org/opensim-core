@@ -957,7 +957,8 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 	}
 
 	// Convert to radians
-	convertDegreesToRadians(*qStore);
+	if (aQIn.isInDegrees())
+		convertDegreesToRadians(*qStore);
 
 
 	// Compute generalized speeds
