@@ -1623,7 +1623,8 @@ void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
 	qNames.insert(0, "time");
 
 	qStorage.setColumnLabels(qNames);
-
+	// Since we're copying data from a Storage file, keep the inDegrees flag consistent
+	qStorage.setInDegrees(originalStorage.isInDegrees());
 }
 void Model::disownAllComponents()
 {
