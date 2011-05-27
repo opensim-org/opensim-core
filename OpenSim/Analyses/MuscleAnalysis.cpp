@@ -606,7 +606,7 @@ begin(SimTK::State& s )
 				throw(Exception("Coordinate: "+q->getName()+" is locked and can't be varied. Aborting.")); 
 		}
 	}
-	if(_storageList.get(0)->getSize() <= 0) status = record(s);
+	if(_storageList.getSize()> 0 && _storageList.get(0)->getSize() <= 0) status = record(s);
 
 	return(status);
 }
