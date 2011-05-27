@@ -97,6 +97,7 @@ public:
 	    *retObj = *this;
 	    return retObj;
     }
+#ifndef SWIG
     /**
      * Get this Model this set is part of.
      */
@@ -111,6 +112,7 @@ public:
     {
         return *this->_model;
     }
+#endif
     /**
      * Adding an object to the set causes its Model field to be set.
      */
