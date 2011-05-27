@@ -246,12 +246,12 @@ void Actuator::setupProperties()
 {
 	_propMinControl.setComment("Minimum allowed value for control signal. Used primarily when solving for control values");
 	_propMinControl.setName("min_control");
-	_propMinControl.setValue(-SimTK::Infinity);
+        _propMinControl.setValue(-std::numeric_limits<SimTK::Real>::infinity());
 	_propertySet.append( &_propMinControl );
 	
 	_propMaxControl.setComment("Maximum allowed value for control signal. Used primarily when solving for control values");
 	_propMaxControl.setName("max_control");
-	_propMaxControl.setValue(SimTK::Infinity);
+        _propMaxControl.setValue(std::numeric_limits<SimTK::Real>::infinity());
 	_propertySet.append( &_propMaxControl );	
 }
 
