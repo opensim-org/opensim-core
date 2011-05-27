@@ -434,7 +434,7 @@ void ExternalLoads::updateFromXMLNode()
 			if (_dataFileName==""){
 				// Assert and break (may need to call base class updateFromXMLNode() regardless.
 			}
-			Storage* dataSource = new Storage(_dataFileName);
+			Storage* dataSource = new Storage(_dataFileName, true);
 			const Array<string> &labels = dataSource->getColumnLabels();
 			// Populate data file and other things that haven't changed
 			string objectName = XMLNode::TranscodeAndTrim(_node->getTagName());
