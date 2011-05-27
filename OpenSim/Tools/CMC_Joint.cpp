@@ -86,7 +86,7 @@ CMC_Joint::CMC_Joint(const CMC_Joint &aTask) :
 	_limit(_propLimit.getValueDbl())
 {
 	setNull();
-	copyData(aTask);
+	*this = aTask;
 }
 
 
