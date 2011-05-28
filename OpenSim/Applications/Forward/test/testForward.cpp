@@ -53,10 +53,10 @@ using namespace std;
 
 */
 #define ASSERT_EQUAL_STATE(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) {  \
-			printf(" ASSERT_EQUAL FAILED t=%f state# %d %s std=%f  computed=%f \n", time, j, standard->getColumnLabels()[j+1].c_str(), data[j], state->getData()[j] ) ; \
+			cout << "ASSERT_EQUAL FAILED t="<< time <<" state# "<<j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j]  << endl ; \
             failed = true;  \
  } else { \
-			printf(" ASSERT_EQUAL PASSED t=%f state# %d %s std=%f  computed=%f \n", time, j, standard->getColumnLabels()[j+1].c_str(), data[j], state->getData()[j] ) ; \
+			cout << "ASSERT_EQUAL PASSED t="<< time <<" state# "<<j << " " << standard->getColumnLabels()[j+1] << " std=" << data[j] <<"  computed=" << state->getData()[j]  << endl ; \
 } }
 
 
