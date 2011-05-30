@@ -395,7 +395,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 void ExternalLoads::updateFromXMLNode()
 {
 	int documentVersion = getDocument()->getDocumentVersion();
-	if ( documentVersion < XMLDocument::getLatestVersion()){
+	if ( documentVersion < 20301){
 		DOMDocument* document = _node->getOwnerDocument();
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating ExternalLoad object to latest format..." << endl;
