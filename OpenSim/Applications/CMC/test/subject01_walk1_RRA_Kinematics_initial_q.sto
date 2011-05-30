@@ -1,6 +1,8 @@
 Coordinates
+version=1
 nRows=500
 nColumns=24
+inDegrees=yes
 
 # SIMM Motion File Header:
 name Coordinates
