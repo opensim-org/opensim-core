@@ -132,7 +132,8 @@ static const XMLCh  gNotation[] = {
     chSpace, chDoubleQuote, chNull };
 
 // up version to 20301 for separation of RRATool, CMCTool
-const int XMLDocument::LatestVersion = 20301;	
+// up version to 20302 for Muscle's pennation_angle -> pennation_angle_at_optimal
+const int XMLDocument::LatestVersion = 20302;	
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTOR(S)
 //=============================================================================
@@ -757,3 +758,8 @@ getRootDataElement()
 	return (DOMElement*)immediateChildren->item(nodeIndexForObject);	
 
 }
+/*
+void XMLDocument::addTypeToDocument(const std::string &aNewype)
+{
+	_typesWithDefaultInDocument.push_back(aNewype);
+} */

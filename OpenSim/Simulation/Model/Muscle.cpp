@@ -143,32 +143,34 @@ void Muscle::updateFromXMLNode()
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating Muscle object to latest format..." << endl;
 		// Version has to be 1.6 or later, otherwise assert
-		if (_node!=NULL){
-			DOMElement* pathNode = XMLNode::GetFirstChildElementByTagName(_node, "GeometryPath");
-			if (pathNode) {
-				// Do nothing for now.
-			} else {
-				pathNode = XMLNode::CreateDOMElement(document, "GeometryPath");
-				DOMElement* attachmentsNode = XMLNode::GetFirstChildElementByTagName(_node, "MusclePointSet");
-				if (attachmentsNode != 0) {
-					pathNode->appendChild(attachmentsNode->cloneNode(true));
-					_node->insertBefore(pathNode, attachmentsNode);
-					_node->removeChild(attachmentsNode);
+		if (documentVersion <= 20301){
+			if (_node!=NULL){
+				DOMElement* pathNode = XMLNode::GetFirstChildElementByTagName(_node, "GeometryPath");
+				if (pathNode==NULL) {
+					pathNode = XMLNode::CreateDOMElement(document, "GeometryPath");
+					DOMElement* attachmentsNode = XMLNode::GetFirstChildElementByTagName(_node, "MusclePointSet");
+					if (attachmentsNode != 0) {
+						pathNode->appendChild(attachmentsNode->cloneNode(true));
+						_node->insertBefore(pathNode, attachmentsNode);
+						_node->removeChild(attachmentsNode);
+					}
+					DOMElement* displayerNode = XMLNode::GetFirstChildElementByTagName(_node, "display");
+					if (displayerNode != 0) {
+						pathNode->appendChild(displayerNode->cloneNode(true));
+						_node->removeChild(displayerNode);
+					}
+					DOMElement* wrapNode = XMLNode::GetFirstChildElementByTagName(_node, "MuscleWrapSet");
+					if (wrapNode != 0) {
+						pathNode->appendChild(wrapNode->cloneNode(true));
+						_node->removeChild(wrapNode);
+					}
 				}
-				DOMElement* displayerNode = XMLNode::GetFirstChildElementByTagName(_node, "display");
-				if (displayerNode != 0) {
-					pathNode->appendChild(displayerNode->cloneNode(true));
-					_node->removeChild(displayerNode);
-				}
-				DOMElement* wrapNode = XMLNode::GetFirstChildElementByTagName(_node, "MuscleWrapSet");
-				if (wrapNode != 0) {
-					pathNode->appendChild(wrapNode->cloneNode(true));
-					_node->removeChild(wrapNode);
-				}
+				renameChildNode("MusclePointSet", "PathPointSet", pathNode);
+				renameChildNode("MuscleWrapSet", "PathWrapSet", pathNode);
 			}
-			renameChildNode("MusclePointSet", "PathPointSet", pathNode);
-			renameChildNode("MuscleWrapSet", "PathWrapSet", pathNode);
+			renameChildNode("pennation_angle", "pennation_angle_at_optimal", _node);
 		}
+
 	}
 	// Call base class now assuming _node has been corrected for current version
 	Actuator::updateFromXMLNode();
