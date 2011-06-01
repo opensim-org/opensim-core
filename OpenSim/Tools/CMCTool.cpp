@@ -244,7 +244,7 @@ setNull()
 	_convergenceCriterion = 1.0e-6;
 	_maxIterations = 100;
 	_printLevel = 0;
-	_adjustKinematicsToReduceResiduals = true;
+	_adjustKinematicsToReduceResiduals = false;
 	_verbose = false;
 
     _replaceForceSet = false;   // default should be false for Forward.
