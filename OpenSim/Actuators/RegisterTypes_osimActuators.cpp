@@ -42,6 +42,8 @@
 #include "CoordinateLimitForce.h"
 #include "SpringGeneralizedForce.h"
 
+#include "RigidTendonMuscle.h"
+
 using namespace OpenSim;
 using namespace std;
 
@@ -67,6 +69,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( Delp1990Muscle() );
 	Object::RegisterType( CoordinateLimitForce() );
 	Object::RegisterType( SpringGeneralizedForce() );
+	Object::RegisterType( RigidTendonMuscle() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

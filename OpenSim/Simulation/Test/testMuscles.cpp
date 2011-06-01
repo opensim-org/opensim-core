@@ -34,7 +34,8 @@
 //      1. Thelen2003Muscle
 //		2. Schutte1993Muscle
 //		3. Delp1990Muscle
-//		4. PathActuator (Muscle 0)
+//		4. PathActuator 
+//		5. RigidTendonMuscle 
 //		
 //     Add more test cases to address specific problems with muscle models
 //
@@ -43,6 +44,7 @@
 #include "SimTKsimbody.h"
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Actuators/ContDerivMuscle.h>
+#include <OpenSim/Actuators/RigidTendonMuscle.h>
 
 
 using namespace OpenSim;
@@ -266,9 +268,33 @@ int testPathActuator()
 }
 
 
+int testRigidTendonMuscle()
+{
+	double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation = 0.01, deactivation = 0.4;
+
+	RigidTendonMuscle muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+
+	double x0 = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
+	double act0 = 0.2;
+	double loadX = 50;
+
+	Constant control(0.5);
+
+	return simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+}
+
+
 int main()
 {
 	int stat =0, err = 0;
+
+	err = testPathActuator();
+	cout << "PathActuator Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
+	stat += err;
+
+	err = testRigidTendonMuscle();
+	cout << "RigidTendonMuscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
+	stat += err;
 
 	err = testThelen2003Muscle();
 	cout << "Thelen2003Muscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
@@ -286,9 +312,7 @@ int main()
 	cout << "Delp1990Muscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
 	stat += err;
 
-	err = testPathActuator();
-	cout << "PathActuator Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
+
 
 	return stat;
 }
