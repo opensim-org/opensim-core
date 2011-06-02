@@ -309,7 +309,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 		
 		}			
 	}
-	double constraintWeight = SimTK::Infinity;
+	double constraintWeight = std::numeric_limits<SimTK::Real>::infinity();
 
 	InverseKinematicsSolver* ikSol = new InverseKinematicsSolver(*aModel, markersReference, coordinateReferences, constraintWeight);
 	ikSol->assemble(s);

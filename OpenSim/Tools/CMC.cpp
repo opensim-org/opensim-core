@@ -85,7 +85,7 @@ public:
         if( _controller->getCheckTargetTime() ) {
             return( _controller->getTargetTime() );
         } else {
-            return( SimTK::Infinity );
+            return( std::numeric_limits<SimTK::Real>::infinity() );
         }
     }
    CMC* _controller;

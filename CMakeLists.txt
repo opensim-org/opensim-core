@@ -14,6 +14,7 @@ if(COMMAND cmake_policy)
         cmake_policy(SET CMP0005 NEW)
 endif(COMMAND cmake_policy)
 
+
 SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
     CACHE PATH 
     "The OpenSim build (not the install) puts all the libraries and executables together here (with /Release, etc. appended on some platforms).")
@@ -82,11 +83,12 @@ ENDIF()
 # Interface (ABI) we're building for. Currently that is either x86, meaning
 # 32 bit Intel instruction set, or x64 for 64 bit Intel instruction set.
 
-#IF(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
-#    SET(PLATFORM_ABI x64)
-#ELSE()
+IF(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+    SET(PLATFORM_ABI x64)
+	SET(ARCH64 ON) 
+ELSE()
     SET(PLATFORM_ABI x86)
-#ENDIF()
+ENDIF()
 
 SET(BUILD_PLATFORM "${PLATFORM_NAME}:${PLATFORM_ABI}" CACHE STRING
     "This is the platform and ABI we're building for. Not changeable here; use a different CMake generator instead."

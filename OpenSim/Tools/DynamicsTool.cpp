@@ -127,7 +127,7 @@ void DynamicsTool::setupProperties()
 	_modelFileNameProp.setName("model_file");
 	_propertySet.append( &_modelFileNameProp );
 
-	SimTK::Vec2  defaultTimeRange(-SimTK::Infinity, SimTK::Infinity);
+	SimTK::Vec2  defaultTimeRange(-std::numeric_limits<SimTK::Real>::infinity(), std::numeric_limits<SimTK::Real>::infinity());
 	_timeRangeProp.setComment("Time range over which the inverse dynamics problem is solved.");
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(defaultTimeRange);
