@@ -72,10 +72,6 @@ protected:
 	PropertyStr _coordinatesFileNameProp;
 	std::string &_coordinatesFileName;
 
-	/** Whether input coordinates have angles in degrees. */
-	PropertyBool _inDegreesProp;
-	bool &_inDegrees;
-
 	/** Low-pass cut-off frequency for filtering the coordinates (does not apply to states). */
 	PropertyDbl _lowpassCutoffFrequencyProp;
 	double &_lowpassCutoffFrequency;

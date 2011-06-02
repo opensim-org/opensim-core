@@ -64,7 +64,6 @@ InverseDynamicsTool::~InverseDynamicsTool()
  */
 InverseDynamicsTool::InverseDynamicsTool() : DynamicsTool(),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
-	_inDegrees(_inDegreesProp.getValueBool()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
 {
@@ -83,7 +82,6 @@ InverseDynamicsTool::InverseDynamicsTool() : DynamicsTool(),
 InverseDynamicsTool::InverseDynamicsTool(const string &aFileName, bool aLoadModel) :
 	DynamicsTool(aFileName, false),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
-	_inDegrees(_inDegreesProp.getValueBool()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
 {
@@ -105,7 +103,6 @@ InverseDynamicsTool::InverseDynamicsTool(const string &aFileName, bool aLoadMode
 InverseDynamicsTool::InverseDynamicsTool(const InverseDynamicsTool &aTool) :
 	DynamicsTool(aTool),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
-	_inDegrees(_inDegreesProp.getValueBool()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
 {
@@ -147,11 +144,6 @@ void InverseDynamicsTool::setupProperties()
 	_coordinatesFileNameProp.setComment("The name of the file containing coordinate data. Can be a motion (.mot) or a states (.sto) file.");
 	_coordinatesFileNameProp.setName("coordinates_file");
 	_propertySet.append(&_coordinatesFileNameProp);
-
-	_inDegreesProp.setComment("Flag (true or false) indicating whether coordinates are in degrees or not.");
-	_inDegreesProp.setName("coordinates_in_degrees");
-	_inDegreesProp.setValue(true);
-	_propertySet.append( &_inDegreesProp );
 
 	string comment = "Low-pass cut-off frequency for filtering the coordinates_file data (currently does not apply to states_file or speeds_file). "
 				 "A negative value results in no filtering. The default value is -1.0, so no filtering.";
@@ -196,7 +188,6 @@ operator=(const InverseDynamicsTool &aTool)
 	// MEMBER VARIABLES
 	_modelFileName = aTool._modelFileName;
 	_coordinatesFileName = aTool._coordinatesFileName;
-	_inDegrees = aTool._inDegrees;
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
 	_outputGenForceFileName = aTool._outputGenForceFileName;
 
@@ -349,13 +340,20 @@ void InverseDynamicsTool::updateFromXMLNode()
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	if ( documentVersion < XMLDocument::getLatestVersion()){
+		std::string newFileName = getDocumentFileName();
+		if (documentVersion < 20300){
+			std::string origFilename = getDocumentFileName();
+			newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
+			SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
+			doc.writeToFile(newFileName);
+		}
 		if (documentVersion < 20201) {
-			AnalyzeTool updateAnalyzeTool(getDocumentFileName(), false);
-			updateAnalyzeTool.print(getDocumentFileName());
+			AnalyzeTool updateAnalyzeTool(newFileName, false);
+			updateAnalyzeTool.print(newFileName);
 		}
 		if (documentVersion < 20202){
 			// get filename and use SimTK::Xml to parse it
-			SimTK::Xml::Document doc = SimTK::Xml::Document(getDocumentFileName());
+			SimTK::Xml::Document doc = SimTK::Xml::Document(newFileName);
 			Xml::Element oldRoot = doc.getRootElement();
 			SimTK::Xml::Document newDoc;
 			string prefix = "";
@@ -419,8 +417,8 @@ void InverseDynamicsTool::updateFromXMLNode()
 					iterTool->insertNodeAfter( iterTool->node_end(), Xml::Element("coordinates_in_degrees", "true"));
 					iterTool->eraseNode(iterAnalysisSet);
 				}
-				newDoc.writeToFile(getDocumentFileName());
-				_document = new XMLDocument(getDocumentFileName());
+				newDoc.writeToFile(newFileName);
+				_document = new XMLDocument(newFileName);
 				_node = _document->getRootDataElement();
 			}
 
