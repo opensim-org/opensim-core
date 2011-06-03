@@ -83,7 +83,7 @@ ENDIF()
 # Interface (ABI) we're building for. Currently that is either x86, meaning
 # 32 bit Intel instruction set, or x64 for 64 bit Intel instruction set.
 
-IF(${CMAKE_SIZEOF_VOID_P} EQUAL 8)
+IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
     SET(PLATFORM_ABI x64)
 	SET(ARCH64 ON) 
 ELSE()
