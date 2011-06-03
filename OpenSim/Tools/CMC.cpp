@@ -63,7 +63,7 @@ using SimTK::Vector;
 using namespace OpenSim;
 using namespace SimTK;
 
-
+#define MAX_CONTROLS_FOR_RRA 10000
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
 class ComputeControlsEventHandler : public PeriodicEventHandler {
@@ -852,12 +852,29 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 		xmin[i] = x.getControlValueMin(tiReal);
 		xmax[i] = x.getControlValueMax(tiReal);
 		// For controls whose constraints are constant min/max values we'll just specify
-		// it using the default parameter min/max rather than creating a control curve
+		// it using the default parameter min/max rather than creating a control cur
 		// (using nodes) in the xml.  So we catch this case here.
-        if(SimTK::isNaN(xmin[i])) xmin[i] = x.getDefaultParameterMin();
-	    if(SimTK::isNaN(xmax[i])) xmax[i] = x.getDefaultParameterMax();
-	}
+		std::string controlName = x.getName();
+		std::string acuatorName = controlName.substr(0, controlName.rfind('.'));
+		Actuator& act= _actuatorSet.get(acuatorName);
+		Muscle* msc =  dynamic_cast<Muscle*>(&act);
+		// if Muscle don't allow min to go below .02
 	
+	
+		if(SimTK::isNaN(xmin[i])){
+			xmin[i] = act.getMinControl();
+			if (msc && xmin[i] < .02) xmin[i]=.02;
+			else if (xmin[i]==-SimTK::Infinity) xmin[i]=-MAX_CONTROLS_FOR_RRA;
+			//xmin[i] = x.getDefaultParameterMin();
+		}
+		if(SimTK::isNaN(xmax[i])){
+			xmax[i] =  act.getMaxControl();
+			if (msc && xmax[i] > 1.0) xmax[i]=1.0;
+			else if (xmax[i]==SimTK::Infinity) xmax[i]=MAX_CONTROLS_FOR_RRA;
+			//xmax[i] = _actuatorSet.get(acuatorName).getMaxControl();
+		}	
+	}
+
 	if(_verbose) {
 		cout<<"\nxmin:\n"<<xmin<<endl;
 		cout<<"\nxmax:\n"<<xmax<<endl;
