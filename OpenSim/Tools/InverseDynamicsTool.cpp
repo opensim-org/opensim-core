@@ -159,6 +159,7 @@ void InverseDynamicsTool::setupProperties()
 
 	_outputGenForceFileNameProp.setComment("Name of the storage file (.sto) to which the results should be written.");
 	_outputGenForceFileNameProp.setName("output_gen_force_file");
+	_outputGenForceFileNameProp.setValue("inverse_dynamics.sto");
 	_propertySet.append(&_outputGenForceFileNameProp);
 }
 

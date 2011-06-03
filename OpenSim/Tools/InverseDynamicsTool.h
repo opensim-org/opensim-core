@@ -109,7 +109,7 @@ public:
 	InverseDynamicsTool& operator=(const InverseDynamicsTool &aInverseDynamicsTool);
 #endif
 
-	//--------------------------------------------------------------------------
+	//--------------------------------------------------------------------------	
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	std::string getOutputGenForceFileName() { return _outputGenForceFileName;}
@@ -117,7 +117,12 @@ public:
 	void setCoordinatesFileName(const std::string& aCoordinateFile)  { 
 		_coordinatesFileName=aCoordinateFile;
 	};
-
+	const double getLowpassCutoffFrequency() const {
+		return _lowpassCutoffFrequency;
+	};
+	void setLowpassCutoffFrequency(double aFrequency) {
+		_lowpassCutoffFrequency = aFrequency;
+	}
 	//--------------------------------------------------------------------------
 	// INTERFACE
 	//--------------------------------------------------------------------------
