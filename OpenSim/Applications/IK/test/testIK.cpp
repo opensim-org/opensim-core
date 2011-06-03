@@ -62,9 +62,6 @@ bool testInverseKinematicsGait2354(bool oldVersion=false)
 	// read setup file and construct model
 	InverseKinematicsTool* tool = 0;
 	if (oldVersion){
-		// old file gets overwritten while conversion, keep backup
-		SimTK::Xml::Document doc("subjectOld_Setup_InverseKinematics.xml");
-		doc.writeToFile("save_subjectOld_Setup_InverseKinematics.xml");
 		tool = new InverseKinematicsTool("subjectOld_Setup_InverseKinematics.xml");
 	}
 	else
@@ -78,11 +75,6 @@ bool testInverseKinematicsGait2354(bool oldVersion=false)
 		bool equal = equalStorage(stdStorage, actualOutput, 0.2);
 		std::cout << (equal?"Success":"Failure") << endl;
 		
-		if (oldVersion){
-			// restore setup file from backup
-			SimTK::Xml::Document doc("save_subjectOld_Setup_InverseKinematics.xml");
-			doc.writeToFile("subjectOld_Setup_InverseKinematics.xml");
-		}
 		return equal;
 	}
 	catch(const std::exception& e) {

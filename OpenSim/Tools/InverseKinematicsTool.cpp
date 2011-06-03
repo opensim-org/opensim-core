@@ -394,9 +394,16 @@ void InverseKinematicsTool::updateFromXMLNode()
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	if ( documentVersion < XMLDocument::getLatestVersion()){
+		std::string newFileName = getDocumentFileName();
+		if (documentVersion < 20300){
+			std::string origFilename = getDocumentFileName();
+			newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
+			SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
+			doc.writeToFile(newFileName);
+		}
 		if (documentVersion <= 20201){
 			// get filename and use SimTK::Xml to parse it
-			SimTK::Xml doc = SimTK::Xml(getDocumentFileName());
+			SimTK::Xml doc = SimTK::Xml(newFileName);
 			Xml::Element root = doc.getRootElement();
 			if (root.getElementTag()=="OpenSimDocument"){
 				int curVersion = root.getRequiredAttributeValueAs<int>("Version");
@@ -434,8 +441,8 @@ void InverseKinematicsTool::updateFromXMLNode()
 					docElement.setElementTag("OpenSimDocument");
 					// Copy all children of root to newRoot
 					docElement.insertNodeAfter(docElement.node_end(), doc.getRootElement().clone());
-					newDocument.writeToFile(getDocumentFileName());
-					_document = new XMLDocument(getDocumentFileName());
+					newDocument.writeToFile(newFileName);
+					_document = new XMLDocument(newFileName);
 					_node = _document->getRootDataElement();
 				}
 				else
