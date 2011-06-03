@@ -112,20 +112,28 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double getTendonLength(const SimTK::State& s) const;
-	virtual double getFiberLength(const SimTK::State& s) const = 0;
-    virtual void setFiberLength(SimTK::State& s, double fiberLength) const = 0;
-	virtual double getNormalizedFiberLength(const SimTK::State& s) const = 0;
+	virtual double getFiberLength(const SimTK::State& s) const;
+    virtual void setFiberLength(SimTK::State& s, double fiberLength) const;
+	virtual double getFiberLengthDeriv(const SimTK::State& s) const;
+	virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const;
+	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getFiberLengthAlongTendon(const SimTK::State& s) const;
+	virtual double getTendonLength(const SimTK::State& s) const;
 	virtual double getFiberForce(const SimTK::State& s) const;
 	virtual double getActiveFiberForce(const SimTK::State& s) const;
-	virtual double getPassiveFiberForce(const SimTK::State& s) const = 0;
+	virtual double getPassiveFiberForce(const SimTK::State& s) const;
 	virtual double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
 	virtual double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
-	virtual double getTendonForce(const SimTK::State& s) const = 0;
-	virtual double getActivation(const SimTK::State& s) const = 0;
-    virtual void setActivation(SimTK::State& s, double activation) const = 0;
+	virtual double getPassiveForce( const SimTK::State& s) const;
+	virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
+	virtual double getTendonForce(const SimTK::State& s) const;
+	virtual void setTendonForce(const SimTK::State& s, double aForce) const;
+	virtual double getActivation(const SimTK::State& s) const;
+    virtual void setActivation(SimTK::State& s, double activation) const;
+	virtual double getActivationDeriv(const SimTK::State& s) const;
+	virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const;
     virtual double getExcitation( const SimTK::State& s) const;
+	virtual double getStress(const SimTK::State& s) const;
 
 
 	//--------------------------------------------------------------------------

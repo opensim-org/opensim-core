@@ -129,27 +129,12 @@ public:
 	virtual bool setMass(double aMass);
 	// Computed quantities
 #ifndef SWIG
-	virtual double getNormalizedFiberLength(const SimTK::State &) const;
-	virtual double getPassiveFiberForce(const SimTK::State &) const;
-	double getStress(const SimTK::State& s) const;
-	virtual double getActivation(const SimTK::State& s) const { return getStateVariable(s, STATE_ACTIVATION); }
-	virtual void setActivation(SimTK::State& s, double activation) const { setStateVariable(s, STATE_ACTIVATION, activation); }
-	virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVATION); }
-	virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, STATE_ACTIVATION, activationDeriv); }
-	virtual double getFiberLength(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_LENGTH); }
-	virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariable(s, STATE_FIBER_LENGTH, fiberLength); }
-	virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_LENGTH); }
-	virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH, fiberLengthDeriv); }
 	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_VELOCITY); }
 	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, STATE_FIBER_VELOCITY, fiberVelocity); }
 	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_VELOCITY); }
 	virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, STATE_FIBER_VELOCITY, fiberVelocityDeriv); }
-	virtual void setTendonForce(const SimTK::State& s, double aForce) const;
-	virtual double getTendonForce(const SimTK::State& s) const;
 	virtual void setActiveForce(const SimTK::State& s, double aForce) const;
 	virtual double getActiveForce(const SimTK::State& s) const;
-	virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
-	virtual double getPassiveForce(const SimTK::State& s) const;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
