@@ -80,7 +80,7 @@ int testModel(std::string modelPrefix)
 	// Catch any thrown exceptions
 	//----------------------------
 	} catch(Exception x) {
-		x.print(cout);
+		x.print(cerr);
 		return(-1);
 	}
 	// Compare results to a standard 

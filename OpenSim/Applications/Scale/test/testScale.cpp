@@ -103,7 +103,7 @@ bool scaleGait2354()
 
 	if(!model) {
 //       throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
-        printf("scale: ERROR- No model specified.");
+        cout << "scale: ERROR- No model specified.";
     }
 
 

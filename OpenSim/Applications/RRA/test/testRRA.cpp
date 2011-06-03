@@ -90,7 +90,7 @@ void testGait2354() {
 			count++;
 		}
 	}
-    printf("meanError = %f  count = %d meanError/count=%f \n", meanError, count, meanError/count);
+	cout << "meanError = " << meanError << "  count = " << count << " meanError/count=" << meanError/count << " \n";
 	ASSERT(meanError/count < 0.5);
 }
 int main() {
@@ -98,7 +98,7 @@ int main() {
 		testGait2354();
     }
     catch(const std::exception& e) {
-        cout << "exception: " << e.what() << endl;
+        cerr << "exception: " << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
