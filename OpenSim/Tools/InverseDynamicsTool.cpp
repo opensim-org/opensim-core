@@ -328,7 +328,7 @@ bool InverseDynamicsTool::run()
 		Storage::printResult(&ivdResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
 		IO::chDir(saveWorkingDirectory);
 	}
-	catch (std::exception ex) {
+	catch (OpenSim::Exception& ex) {
 		std::cout << "InverseDynamicsTool Failed: " << ex.what() << std::endl;
 		throw (Exception("InverseDynamicsTool Failed, please see messages window for details..."));
 	}
