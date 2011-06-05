@@ -309,25 +309,31 @@ void ExternalForce::setup(Model& model)
 
 	// have to apply either a force or a torque
 	if(!_appliesForce && !_appliesTorque)
-		throw(Exception("ExternalForce: No force or torque identified.")); 
+		throw(Exception("ExternalForce:"+getName()+" does not apply neither a force nor a torque.")); 
 
 	// if a force is not being applied then specifying a point makes no sense
 	if(!_appliesForce && _specifiesPoint)
-		throw(Exception("ExternalForce: Point is specified for no applied force.")); 
+		throw(Exception("ExternalForce:"+getName()+" Point is specified for no applied force.")); 
 
 	_dataSource->getDataForIdentifier(_forceIdentifier, force);
 	if(_appliesForce && (force.getSize() != 3)) // if applying force MUST have 3 components
-		throw(Exception("ExternalForce: 3 unique force components could not be identified."));
+		throw(Exception("ExternalForce: 3 unique force components could not be found, for force identifier: "
+		+_forceIdentifier+
+		"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 
 	if(_specifiesPoint){
 		_dataSource->getDataForIdentifier(_pointIdentifier, point);
 		if(point.getSize() != 3) // if specifying a point of application, it MUST have 3 components
-			throw(Exception("ExternalForce: 3 unique point components could not be identified."));
+			throw(Exception("ExternalForce: 3 unique point components could not be found, for point identifier: "
+			+_pointIdentifier+
+			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 	}
 
 	_dataSource->getDataForIdentifier(_torqueIdentifier, torque);
 	if(_appliesTorque && (torque.getSize() != 3)) // if specifying a point of application, it MUST have 3 components
-		throw(Exception("ExternalForce: 3 unique torque components could not be identified."));
+		throw(Exception("ExternalForce: 3 unique torque components could not be identified for torque identifier: "
+			+_torqueIdentifier+
+			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 
 	// clear out functions from previous data source
 	_forceFunctions.clear();

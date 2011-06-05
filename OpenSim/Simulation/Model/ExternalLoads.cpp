@@ -30,6 +30,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+#include <fstream>
 #include "ExternalLoads.h"
 #include "Model.h"
 #include "BodySet.h"
@@ -383,7 +384,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 
 	_storages.push_back(newDataSource);
 
-	newDataSource->print("NewDataSource_TransformedP.sto");
+	//newDataSource->print("NewDataSource_TransformedP.sto");
 
 	return exF_transformedPoint;
 }
@@ -434,6 +435,13 @@ void ExternalLoads::updateFromXMLNode()
 			if (_dataFileName==""){
 				// Assert and break (may need to call base class updateFromXMLNode() regardless.
 			}
+
+			// Change to directory of Document
+			if(!ifstream(_dataFileName.c_str(), ios_base::in).good()) {
+			string msg =
+				"Object: ERR- Could not open file " + _dataFileName+ ". It may not exist or you don't have permission to read it.";
+			throw Exception(msg,__FILE__,__LINE__);
+			}	
 			Storage* dataSource = new Storage(_dataFileName, true);
 			const Array<string> &labels = dataSource->getColumnLabels();
 			// Populate data file and other things that haven't changed
