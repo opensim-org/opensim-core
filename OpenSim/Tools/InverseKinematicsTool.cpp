@@ -243,6 +243,8 @@ operator=(const InverseKinematicsTool &aTool)
 	_accuracy = aTool._accuracy;
 	_ikTaskSet = aTool._ikTaskSet;
 	_markerFileName = aTool._markerFileName;
+	_timeRange = aTool._timeRange;
+	_reportErrors = aTool._reportErrors; 
 	_coordinateFileName = aTool._coordinateFileName;
 	_outputMotionFileName = aTool._outputMotionFileName;
 
