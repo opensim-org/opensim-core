@@ -36,6 +36,7 @@
 //#include "IKTool.h"
 //#include "FIKSTool.h"
 #include "CMCTool.h"
+#include "RRATool.h"
 #include "ForwardTool.h"
 //#include "PerturbationTool.h"
 #include "AnalyzeTool.h"
@@ -77,6 +78,7 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 	Object::RegisterType( ScaleTool() );
 	//Object::RegisterType( IKTool() );
 	Object::RegisterType( CMCTool() );
+	Object::RegisterType( RRATool() );
 	Object::RegisterType( ForwardTool() );
 	Object::RegisterType( AnalyzeTool() );
 
