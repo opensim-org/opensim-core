@@ -400,6 +400,7 @@ void InverseKinematicsTool::updateFromXMLNode()
 		if (documentVersion < 20300){
 			std::string origFilename = getDocumentFileName();
 			newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
+			cout << "Old version setup file encountered. Converting to new file "<< newFileName << endl;
 			SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
 			doc.writeToFile(newFileName);
 		}
@@ -446,7 +447,7 @@ void InverseKinematicsTool::updateFromXMLNode()
 				if (root.getElementTag()=="IKTool"){
 					root.setElementTag("InverseKinemtaticsTool");
 					Xml::element_iterator toolIter(root.element_begin("IKTrialSet"));
-					if (toolIter!= root.element_end())
+					if (toolIter== root.element_end())
 						throw (Exception("Old IKTool setup file doesn't have required IKTrialSet element.. Aborting"));
 					// No optimizer_algorithm specification anymore
 					Xml::element_iterator optIter(root.element_begin("optimizer_algorithm"));
