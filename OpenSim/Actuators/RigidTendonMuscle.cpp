@@ -142,6 +142,8 @@ void RigidTendonMuscle::setNull()
  */
 void RigidTendonMuscle::updateFromXMLNode()
 {
+	// Call base class now assuming _node has been corrected for current version
+	Muscle::updateFromXMLNode();
 }
 
 //_____________________________________________________________________________
@@ -278,6 +280,7 @@ double RigidTendonMuscle::getFiberForce(const SimTK::State& s) const
 	double activeForceLength = _activeForceLengthCurve->calcValue(SimTK::Vector(1, aNormFiberLength));
 	double passiveForceLength = _passiveForceLengthCurve->calcValue(SimTK::Vector(1, aNormFiberLength));
 	double activeForceVelocity = _forceVelocityCurve->calcValue(SimTK::Vector(1, aNormFiberVelocity));
+
 
 	return _maxIsometricForce*(getActivation(s) * activeForceLength * activeForceVelocity + passiveForceLength);
 }
