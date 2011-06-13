@@ -3123,7 +3123,7 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
 	return theDiff;
 }
 /**
- * Force column labels for a Storage object to become unique. This is done by appenging the string (n)
+ * Force column labels for a Storage object to become unique. This is done by prepending the string (n_)
  * as needed where n=1, 2, ...
  *
  * @returns true if labels were changed false otherwise.

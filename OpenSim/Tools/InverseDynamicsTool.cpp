@@ -57,6 +57,9 @@ using namespace SimTK;
  */
 InverseDynamicsTool::~InverseDynamicsTool()
 {
+	if (_coordinateValues) {
+		delete _coordinateValues; _coordinateValues=NULL; 
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -130,6 +133,7 @@ void InverseDynamicsTool::setNull()
 	setupProperties();
 	_model = NULL;
 	_lowpassCutoffFrequency = -1.0;
+	_coordinateValues = NULL;
 }
 //_____________________________________________________________________________
 /**
@@ -191,7 +195,7 @@ operator=(const InverseDynamicsTool &aTool)
 	_coordinatesFileName = aTool._coordinatesFileName;
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
 	_outputGenForceFileName = aTool._outputGenForceFileName;
-
+	_coordinateValues = NULL;
 
 	return(*this);
 }
@@ -200,7 +204,10 @@ operator=(const InverseDynamicsTool &aTool)
 // GET AND SET
 //=============================================================================
 
-
+void InverseDynamicsTool::setCoordinateValues(const OpenSim::Storage& aStorage){
+	if (_coordinateValues) delete _coordinateValues;
+	_coordinateValues = new Storage(aStorage);
+}
 //=============================================================================
 // RUN
 //=============================================================================
@@ -228,28 +235,25 @@ bool InverseDynamicsTool::run()
 		string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 		IO::chDir(directoryOfSetupFile);
 
-
 		const CoordinateSet &coords = _model->getCoordinateSet();
 		int nq = _model->getNumCoordinates();
 
 		FunctionSet *coordFunctions = NULL;
-		Storage *coordinateValues = NULL;
+		//Storage *coordinateValues = NULL;
 
-		if(_coordinatesFileName != "" && _coordinatesFileName != "Unassigned"){
-			coordinateValues = new Storage(_coordinatesFileName);
-			coordinateValues->setName(_coordinatesFileName);
+		if(hasCoordinateValues()){
 			if(_lowpassCutoffFrequency>=0) {
 				cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_lowpassCutoffFrequency<<"..."<<endl<<endl;
-				coordinateValues->pad(coordinateValues->getSize()/2);
-				coordinateValues->lowpassIIR(_lowpassCutoffFrequency);
-				coordinateValues->print("coordinateDataFiltered.sto");
+				_coordinateValues->pad(_coordinateValues->getSize()/2);
+				_coordinateValues->lowpassIIR(_lowpassCutoffFrequency);
+				if (getVerboseLevel()==Debug) _coordinateValues->print("coordinateDataFiltered.sto");
 			}
 			// Convert degrees to radian if indicated
-			if(coordinateValues->isInDegrees()){
-				_model->getSimbodyEngine().convertDegreesToRadians(*coordinateValues);
+			if(_coordinateValues->isInDegrees()){
+				_model->getSimbodyEngine().convertDegreesToRadians(*_coordinateValues);
 			}
 			// Create differentiable splines of the coordinate data
-			coordFunctions = new GCVSplineSet(5, coordinateValues);
+			coordFunctions = new GCVSplineSet(5, _coordinateValues);
 
 			//Functions must correspond to model coordinates and their order for the solver
 			for(int i=0; i<nq; i++){
@@ -270,21 +274,21 @@ bool InverseDynamicsTool::run()
 
 		}
 
-		bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model, coordinateValues);
+		bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model, _coordinateValues);
 		// Initialize the the model's underlying computational system and get its default state.
 		SimTK::State& s = _model->initSystem();
 
 		// Exclude user-specified forces from the dynamics for this analysis
 		disableModelForces(*_model, s, _excludedForces);
 
-		double first_time = coordinateValues->getFirstTime();
-		double last_time = coordinateValues->getLastTime();
+		double first_time = _coordinateValues->getFirstTime();
+		double last_time = _coordinateValues->getLastTime();
 
 		// Determine the starting and final time for the Tool by comparing to what data is available
 		double start_time = ( first_time > _timeRange[0]) ? first_time : _timeRange[0];
 		double final_time = ( last_time < _timeRange[1]) ? last_time : _timeRange[1];
-		int start_index = coordinateValues->findIndex(start_time);
-		int final_index = coordinateValues->findIndex(final_time);
+		int start_index = _coordinateValues->findIndex(start_time);
+		int final_index = _coordinateValues->findIndex(final_time);
 
 		// create the solver given the input data
 		InverseDynamicsSolver ivdSolver(*_model);
@@ -295,7 +299,7 @@ bool InverseDynamicsTool::run()
 		
 		Array_<double> times(nt, 0.0);
 		for(int i=0; i<nt; i++){
-			times[i]=coordinateValues->getStateVector(start_index+i)->getTime();
+			times[i]=_coordinateValues->getStateVector(start_index+i)->getTime();
 		}
 
 		// Preallocate results
@@ -336,6 +340,19 @@ bool InverseDynamicsTool::run()
 	if (modelFromFile) delete _model;
 	return success;
 }
+
+bool InverseDynamicsTool::hasCoordinateValues()
+{
+	if (_coordinateValues!= NULL) // Coordinates has been set from GUI
+		return true;
+	// Try constructing cooridnates from specified file
+	if(_coordinatesFileName != "" && _coordinatesFileName != "Unassigned"){
+			_coordinateValues = new Storage(_coordinatesFileName);
+			_coordinateValues->setName(_coordinatesFileName);
+			return true;
+	}
+	return false;
+}
 /* Handle reading older formats/Versioning */
 void InverseDynamicsTool::updateFromXMLNode()
 {
@@ -345,6 +362,7 @@ void InverseDynamicsTool::updateFromXMLNode()
 		if (documentVersion < 20300){
 			std::string origFilename = getDocumentFileName();
 			newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
+			cout << "Old version setup file encountered. Converting to new file "<< newFileName << endl;
 			SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
 			doc.writeToFile(newFileName);
 		}

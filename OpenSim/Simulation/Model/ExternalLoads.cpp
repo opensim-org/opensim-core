@@ -443,6 +443,12 @@ void ExternalLoads::updateFromXMLNode()
 			throw Exception(msg,__FILE__,__LINE__);
 			}	
 			Storage* dataSource = new Storage(_dataFileName, true);
+			if (!dataSource->makeStorageLabelsUnique()){
+				cout << "Making labels unique in storage file "<< _dataFileName << endl;
+				dataSource = new Storage(_dataFileName);
+				dataSource->makeStorageLabelsUnique();
+				dataSource->print(_dataFileName);
+			}
 			const Array<string> &labels = dataSource->getColumnLabels();
 			// Populate data file and other things that haven't changed
 			string objectName = XMLNode::TranscodeAndTrim(_node->getTagName());
