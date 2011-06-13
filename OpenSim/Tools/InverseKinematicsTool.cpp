@@ -179,7 +179,7 @@ void InverseKinematicsTool::setupProperties()
 	_accuracyProp.setComment("The accuracy of the solution in absolute terms. I.e. the number of significant"
 	    "digits to which the solution can be trusted.");
 	_accuracyProp.setName("accuracy");
-	_accuracyProp.setValue(1e-3);
+	_accuracyProp.setValue(1e-5);
 	_propertySet.append( &_accuracyProp );
 
 	_ikTaskSetProp.setComment("Markers and coordinates to be considered (tasks) and their weightings.");
