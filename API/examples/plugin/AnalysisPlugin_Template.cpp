@@ -547,7 +547,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 				 const string &aExtension)
 {
 	// POSITIONS
-	_storePos.scaleTime(_model->getTimeNormConstant());
+	//_storePos.scaleTime(_model->getTimeNormConstant());
 	Storage::printResult(&_storePos,aBaseName+"_"+getName()+"_pos",aDir,aDT,aExtension);
 
 	// VELOCITIES
