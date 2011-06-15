@@ -1,6 +1,8 @@
 UNKNOWN
+version=1
 nRows=193
 nColumns=24
+inDegrees=yes
 endheader
 time	pelvis_tilt	pelvis_list	pelvis_rotation	pelvis_tx	pelvis_ty	pelvis_tz	hip_flexion_r	hip_adduction_r	hip_rotation_r	knee_angle_r	ankle_angle_r	subtalar_angle_r	mtp_angle_r	hip_flexion_l	hip_adduction_l	hip_rotation_l	knee_angle_l	ankle_angle_l	subtalar_angle_l	mtp_angle_l	lumbar_extension	lumbar_bending	lumbar_rotation
      -0.60000000	      4.60704488	     -2.40477333	      2.60996679	      0.60191474	      1.07027126	     -0.06659372	     50.25763339	     -3.54616865	    -10.42213232	    -63.89938649	      8.30062543	     -0.00086849	     -0.00000034	    -28.49901660	      3.37192353	      2.23213981	      5.93288491	     12.42223614	      0.00015369	     -0.00000212	    -18.27154550	      2.40046235	    -11.70233646

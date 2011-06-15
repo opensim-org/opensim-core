@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20300">
+<OpenSimDocument Version="20302">
 	<Model name="subject01">
 		<defaults>
 			<ControlLinear name="default">
@@ -91,14 +91,18 @@
 						<groups/>
 					</PathWrapSet>
 				</GeometryPath>
-				<!--maximum isometric force of the muscle fibers-->
+				<optimal_force>       1.00000000 </optimal_force>
+				<!--Maximum isometric force that the fibers can generate-->
 				<max_isometric_force>     546.00000000 </max_isometric_force>
-				<!--optimal length of the muscle fibers-->
+				<!--Optimal length of the muscle fibers-->
 				<optimal_fiber_length>       0.05350000 </optimal_fiber_length>
-				<!--resting length of the tendon-->
+				<!--Resting length of the tendon-->
 				<tendon_slack_length>       0.07800000 </tendon_slack_length>
-				<!--angle between tendon and fibers at optimal fiber length-->
-				<pennation_angle>       0.00000000 </pennation_angle>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 				<!--time constant for ramping up of muscle activation-->
 				<activation_time_constant>       0.01000000 </activation_time_constant>
 				<!--time constant for ramping down of muscle activation-->
@@ -160,13 +164,7 @@
 						<groups/>
 					</PathWrapSet>
 				</GeometryPath>
-				<!--Scale factor for normalizing time-->
-				<time_scale>       0.10000000 </time_scale>
-				<!--Parameter used in time constant of ramping up of muscle force-->
-				<activation1>       0.00000000 </activation1>
-				<!--Parameter used in time constant of ramping up and ramping down of
-				    muscle force-->
-				<activation2>       0.00000000 </activation2>
+				<optimal_force>       1.00000000 </optimal_force>
 				<!--Maximum isometric force that the fibers can generate-->
 				<max_isometric_force>       0.00000000 </max_isometric_force>
 				<!--Optimal length of the muscle fibers-->
@@ -174,10 +172,17 @@
 				<!--Resting length of the tendon-->
 				<tendon_slack_length>       0.00000000 </tendon_slack_length>
 				<!--Angle between tendon and fibers at optimal fiber length-->
-				<pennation_angle>       0.00000000 </pennation_angle>
+				<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
 				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
 				    per second-->
 				<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
+				<!--Scale factor for normalizing time-->
+				<time_scale>       0.10000000 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>       0.00000000 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>       0.00000000 </activation2>
 				<!--Damping factor related to maximum contraction velocity-->
 				<damping>       0.05000000 </damping>
 				<!--Function representing force-length behavior of tendon-->
@@ -318,9 +323,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.07965649 </default_value>
-										<default_speed_value>      -0.10307046 </default_speed_value>
-										<initial_value>       0.07965649 </initial_value>
+										<default_value>       0.07883579 </default_value>
+										<default_speed_value>       0.08355219 </default_speed_value>
+										<initial_value>       0.07883579 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -330,9 +335,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.01982600 </default_value>
-										<default_speed_value>      -0.47390835 </default_speed_value>
-										<initial_value>       0.01982600 </initial_value>
+										<default_value>       0.01171763 </default_value>
+										<default_speed_value>      -0.33625147 </default_speed_value>
+										<initial_value>       0.01171763 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -342,9 +347,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.06098982 </default_value>
-										<default_speed_value>       0.13425843 </default_speed_value>
-										<initial_value>       0.06098982 </initial_value>
+										<default_value>       0.06216861 </default_value>
+										<default_speed_value>       0.25676239 </default_speed_value>
+										<initial_value>       0.06216861 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -354,9 +359,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> translational </motion_type>
-										<default_value>       0.60509861 </default_value>
-										<default_speed_value>       0.06781384 </default_speed_value>
-										<initial_value>       0.60509861 </initial_value>
+										<default_value>       0.60556850 </default_value>
+										<default_speed_value>      -0.00019854 </default_speed_value>
+										<initial_value>       0.60556850 </initial_value>
 										<range>      -5.00000000       5.00000000 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -366,9 +371,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> translational </motion_type>
-										<default_value>       1.01440363 </default_value>
-										<default_speed_value>       0.10741055 </default_speed_value>
-										<initial_value>       1.01440363 </initial_value>
+										<default_value>       1.01585098 </default_value>
+										<default_speed_value>       0.03365600 </default_speed_value>
+										<initial_value>       1.01585098 </initial_value>
 										<range>      -1.00000000       2.00000000 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -378,9 +383,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> translational </motion_type>
-										<default_value>       0.01027069 </default_value>
-										<default_speed_value>       0.19739924 </default_speed_value>
-										<initial_value>       0.01027069 </initial_value>
+										<default_value>       0.01311526 </default_value>
+										<default_speed_value>      -0.06419042 </default_speed_value>
+										<initial_value>       0.01311526 </initial_value>
 										<range>      -3.00000000       3.00000000 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -564,9 +569,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.33791572 </default_value>
-										<default_speed_value>      -0.95326276 </default_speed_value>
-										<initial_value>       0.33791572 </initial_value>
+										<default_value>       0.32317523 </default_value>
+										<default_speed_value>       0.93780599 </default_speed_value>
+										<initial_value>       0.32317523 </initial_value>
 										<range>      -2.09439510       2.09439510 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -576,9 +581,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.05194258 </default_value>
-										<default_speed_value>       0.67935883 </default_speed_value>
-										<initial_value>      -0.05194258 </initial_value>
+										<default_value>      -0.04024860 </default_value>
+										<default_speed_value>       0.62702598 </default_speed_value>
+										<initial_value>      -0.04024860 </initial_value>
 										<range>      -2.09439510       2.09439510 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -588,9 +593,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.11672786 </default_value>
-										<default_speed_value>      -0.30731253 </default_speed_value>
-										<initial_value>      -0.11672786 </initial_value>
+										<default_value>      -0.12104610 </default_value>
+										<default_speed_value>      -0.12417633 </default_speed_value>
+										<initial_value>      -0.12104610 </initial_value>
 										<range>      -2.09439510       2.09439510 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -740,9 +745,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.41182133 </default_value>
-										<default_speed_value>      -0.63535617 </default_speed_value>
-										<initial_value>      -0.41182133 </initial_value>
+										<default_value>      -0.41588686 </default_value>
+										<default_speed_value>       3.30610580 </default_speed_value>
+										<initial_value>      -0.41588686 </initial_value>
 										<range>      -2.09439510       0.17453293 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -911,9 +916,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.00968380 </default_value>
-										<default_speed_value>       1.02356919 </default_speed_value>
-										<initial_value>       0.00968380 </initial_value>
+										<default_value>       0.02264509 </default_value>
+										<default_speed_value>       0.20288102 </default_speed_value>
+										<initial_value>       0.02264509 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1063,9 +1068,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.00000426 </default_value>
-										<default_speed_value>       0.00002837 </default_speed_value>
-										<initial_value>      -0.00000426 </initial_value>
+										<default_value>      -0.00000390 </default_value>
+										<default_speed_value>       0.00002133 </default_speed_value>
+										<initial_value>      -0.00000390 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1195,8 +1200,8 @@
 					<mass>       0.20920965 </mass>
 					<mass_center>       0.03553713       0.00616251      -0.01797398 </mass_center>
 					<inertia_xx>       0.00010189 </inertia_xx>
-					<inertia_yy>       0.00010189 </inertia_yy>
-					<inertia_zz>       0.00010189 </inertia_zz>
+					<inertia_yy>       0.00020378 </inertia_yy>
+					<inertia_zz>       0.00101891 </inertia_zz>
 					<inertia_xy>       0.00000000 </inertia_xy>
 					<inertia_xz>       0.00000000 </inertia_xz>
 					<inertia_yz>       0.00000000 </inertia_yz>
@@ -1215,9 +1220,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.00000001 </default_value>
-										<default_speed_value>      -0.00000245 </default_speed_value>
-										<initial_value>       0.00000001 </initial_value>
+										<default_value>      -0.00000001 </default_value>
+										<default_speed_value>      -0.00000201 </default_speed_value>
+										<initial_value>      -0.00000001 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1367,9 +1372,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.22925245 </default_value>
-										<default_speed_value>       3.63950257 </default_speed_value>
-										<initial_value>      -0.22925245 </initial_value>
+										<default_value>      -0.18067784 </default_value>
+										<default_speed_value>      -2.02735814 </default_speed_value>
+										<initial_value>      -0.18067784 </initial_value>
 										<range>      -2.09439510       2.09439510 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1379,9 +1384,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.00715105 </default_value>
-										<default_speed_value>      -1.09533887 </default_speed_value>
-										<initial_value>       0.00715105 </initial_value>
+										<default_value>      -0.01118594 </default_value>
+										<default_speed_value>      -0.31702470 </default_speed_value>
+										<initial_value>      -0.01118594 </initial_value>
 										<range>      -2.09439510       2.09439510 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1391,9 +1396,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.05472501 </default_value>
-										<default_speed_value>      -1.73038433 </default_speed_value>
-										<initial_value>       0.05472501 </initial_value>
+										<default_value>       0.03006113 </default_value>
+										<default_speed_value>       0.34490420 </default_speed_value>
+										<initial_value>       0.03006113 </initial_value>
 										<range>      -2.09439510       2.09439510 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1543,9 +1548,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.67736401 </default_value>
-										<default_speed_value>      -7.18826932 </default_speed_value>
-										<initial_value>      -0.67736401 </initial_value>
+										<default_value>      -0.76961586 </default_value>
+										<default_speed_value>       1.62885101 </default_speed_value>
+										<initial_value>      -0.76961586 </initial_value>
 										<range>      -2.09439510       0.17453293 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1714,9 +1719,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.03275728 </default_value>
-										<default_speed_value>      -4.13871078 </default_speed_value>
-										<initial_value>       0.03275728 </initial_value>
+										<default_value>      -0.02250022 </default_value>
+										<default_speed_value>       0.25469427 </default_speed_value>
+										<initial_value>      -0.02250022 </initial_value>
 										<range>      -1.04719755       1.04719755 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1866,9 +1871,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.00001251 </default_value>
-										<default_speed_value>       0.00004421 </default_speed_value>
-										<initial_value>       0.00001251 </initial_value>
+										<default_value>       0.00001230 </default_value>
+										<default_speed_value>       0.00000749 </default_speed_value>
+										<initial_value>       0.00001230 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -1998,8 +2003,8 @@
 					<mass>       0.20920965 </mass>
 					<mass_center>       0.03553713       0.00616251       0.01797398 </mass_center>
 					<inertia_xx>       0.00010189 </inertia_xx>
-					<inertia_yy>       0.00010189 </inertia_yy>
-					<inertia_zz>       0.00010189 </inertia_zz>
+					<inertia_yy>       0.00020378 </inertia_yy>
+					<inertia_zz>       0.00101891 </inertia_zz>
 					<inertia_xy>       0.00000000 </inertia_xy>
 					<inertia_xz>       0.00000000 </inertia_xz>
 					<inertia_yz>       0.00000000 </inertia_yz>
@@ -2018,9 +2023,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.00000001 </default_value>
-										<default_speed_value>       0.00000185 </default_speed_value>
-										<initial_value>       0.00000001 </initial_value>
+										<default_value>       0.00000003 </default_value>
+										<default_speed_value>      -0.00000204 </default_speed_value>
+										<initial_value>       0.00000003 </initial_value>
 										<range>      -1.04719755       1.04719755 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -2148,7 +2153,7 @@
 				</Body>
 				<Body name="torso">
 					<mass>      33.06845457 </mass>
-					<mass_center>       0.00597351       0.34551037       0.10000000 </mass_center>
+					<mass_center>       0.00599443       0.34551037       0.10000000 </mass_center>
 					<inertia_xx>       1.66031408 </inertia_xx>
 					<inertia_yy>       0.85070688 </inertia_yy>
 					<inertia_zz>       1.61178269 </inertia_zz>
@@ -2170,9 +2175,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.26958618 </default_value>
-										<default_speed_value>       0.22896940 </default_speed_value>
-										<initial_value>      -0.26958618 </initial_value>
+										<default_value>      -0.26747448 </default_value>
+										<default_speed_value>      -0.08336603 </default_speed_value>
+										<initial_value>      -0.26747448 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -2182,9 +2187,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>       0.03354816 </default_value>
-										<default_speed_value>       0.71300424 </default_speed_value>
-										<initial_value>       0.03354816 </initial_value>
+										<default_value>       0.04391806 </default_value>
+										<default_speed_value>       0.59862970 </default_speed_value>
+										<initial_value>       0.04391806 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>
@@ -2194,9 +2199,9 @@
 										<!--Cooridnate can describe rotational, translational, or coupled values.
 										    Defaults to rotational.-->
 										<motion_type> rotational </motion_type>
-										<default_value>      -0.12485658 </default_value>
-										<default_speed_value>       0.40486962 </default_speed_value>
-										<initial_value>      -0.12485658 </initial_value>
+										<default_value>      -0.11921964 </default_value>
+										<default_speed_value>      -0.05934334 </default_speed_value>
+										<initial_value>      -0.11921964 </initial_value>
 										<range>      -1.57079633       1.57079633 </range>
 										<clamped> false </clamped>
 										<locked> false </locked>

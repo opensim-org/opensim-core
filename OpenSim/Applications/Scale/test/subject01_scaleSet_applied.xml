@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="20300">
+<OpenSimDocument Version="20302">
 	<ScaleSet name="ScaleSet">
 		<defaults>
 			<Thelen2003Muscle name="default">
 				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control>   0.00000000 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control>   1.00000000 </max_control>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
@@ -32,14 +38,18 @@
 						<groups/>
 					</PathWrapSet>
 				</GeometryPath>
-				<!--maximum isometric force of the muscle fibers-->
+				<optimal_force>   1.00000000 </optimal_force>
+				<!--Maximum isometric force that the fibers can generate-->
 				<max_isometric_force> 546.00000000 </max_isometric_force>
-				<!--optimal length of the muscle fibers-->
+				<!--Optimal length of the muscle fibers-->
 				<optimal_fiber_length>   0.05350000 </optimal_fiber_length>
-				<!--resting length of the tendon-->
+				<!--Resting length of the tendon-->
 				<tendon_slack_length>   0.07800000 </tendon_slack_length>
-				<!--angle between tendon and fibers at optimal fiber length-->
-				<pennation_angle>   0.00000000 </pennation_angle>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle_at_optimal>   0.00000000 </pennation_angle_at_optimal>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>  10.00000000 </max_contraction_velocity>
 				<!--time constant for ramping up of muscle activation-->
 				<activation_time_constant>   0.01000000 </activation_time_constant>
 				<!--time constant for ramping down of muscle activation-->
@@ -67,6 +77,12 @@
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
 				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control>   0.00000000 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control>   1.00000000 </max_control>
 				<GeometryPath name="">
 					<PathPointSet name="">
 						<objects/>
@@ -95,13 +111,7 @@
 						<groups/>
 					</PathWrapSet>
 				</GeometryPath>
-				<!--Scale factor for normalizing time-->
-				<time_scale>   0.10000000 </time_scale>
-				<!--Parameter used in time constant of ramping up of muscle force-->
-				<activation1>   0.00000000 </activation1>
-				<!--Parameter used in time constant of ramping up and ramping down of
-				    muscle force-->
-				<activation2>   0.00000000 </activation2>
+				<optimal_force>   1.00000000 </optimal_force>
 				<!--Maximum isometric force that the fibers can generate-->
 				<max_isometric_force>   0.00000000 </max_isometric_force>
 				<!--Optimal length of the muscle fibers-->
@@ -109,10 +119,17 @@
 				<!--Resting length of the tendon-->
 				<tendon_slack_length>   0.00000000 </tendon_slack_length>
 				<!--Angle between tendon and fibers at optimal fiber length-->
-				<pennation_angle>   0.00000000 </pennation_angle>
+				<pennation_angle_at_optimal>   0.00000000 </pennation_angle_at_optimal>
 				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
 				    per second-->
 				<max_contraction_velocity>  10.00000000 </max_contraction_velocity>
+				<!--Scale factor for normalizing time-->
+				<time_scale>   0.10000000 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>   0.00000000 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>   0.00000000 </activation2>
 				<!--Damping factor related to maximum contraction velocity-->
 				<damping>   0.05000000 </damping>
 				<!--Function representing force-length behavior of tendon-->

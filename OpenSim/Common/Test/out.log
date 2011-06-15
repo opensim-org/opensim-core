@@ -1,6 +1,7 @@
--------------------------------------------------------
-This program includes software developed by the
-Apache Software Foundation (http://www.apache.org/).
--------------------------------------------------------
-
-Loaded marker file TRCFileWithNANs.trc (14 markers, 5 frames)
+Old version storage/motion file encountered
+Storage: file=test.sto (nr=2 nc=3)
+.. assuming rotations in Radians.
+Old version storage/motion file encountered
+Storage: file=testDiff.sto (nr=2 nc=3)
+.. assuming rotations in Radians.
+Done
