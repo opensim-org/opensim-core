@@ -271,36 +271,7 @@ bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osi
 	int nq = osim_state.getNQ();
 
 	// Push down to OpenSim "state"
-	if(system.getMatterSubsystem().getUseEulerAngles(state)){
-		Vector& q_osim = osim_state.updQ();
-		Vector& u_osim = osim_state.updU();
-		u_osim = ui;
-
-		//This is a hack knowing the ball and free joint tests have the joint being tested, first.
-		int quat_ind = ((nq > 6) ? 6 : 3);
-		int j = 0;
-		if(quat_ind > 5){ // this is a free joint
-			// OpenSim specifies Translation mobilizer first so first and second triplet of q's
-			// have to be swapped
-			for(int i=0; i<3; i++){
-					q_osim[i] = qi[i+3];
-					q_osim[i+3] = qi[i];
-					u_osim[i] = ui[i+3];
-					u_osim[i+3] = ui[i];
-			}
-			j = quat_ind;
-		}
-		for(int i=j; i< nq_sb; i++){
-			if(i != quat_ind)
-				q_osim[j++] = qi[i];
-		}
-
-		osim_state.getY().dump("osim:");
-		state.getY().dump("simbody:");
-	}
-	else{
-		osim_state.updY() = state.getY();
-	}
+	osim_state.updY() = state.getY();
 
 	//==========================================================================================================
 	// Integrate Simbody system
@@ -354,7 +325,7 @@ bool testCustomVsUniversalPin()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -495,7 +466,7 @@ bool testCustomJointVsFunctionBased()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -601,7 +572,7 @@ bool testEllipsoidJoint()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -699,7 +670,7 @@ bool testWeldJoint(bool randomizeBodyOrder)
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -819,7 +790,7 @@ bool testFreeJoint(bool useEulerAngles)
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, useEulerAngles);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -993,7 +964,7 @@ bool testPinJoint()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -1078,7 +1049,7 @@ bool testSliderJoint()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -1194,7 +1165,7 @@ bool testCustomWithMultidimFunction()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -1306,10 +1277,14 @@ int main()
 	}
 
 	// Compare behavior of a double pendulum with an OpenSim Ball hip and custom pin knee 
+	// OpenSim, system restricted to using euelr angles exclusively to support EllipsoidJoint
+	// and teh fact that coordinates cannot map to/from quaternions
+	/*
 	if( !testBallJoint(false)) {
         status = 1;
         cout << " testBallJoint using quaternions FAILED " << endl;
     }
+	*/
 
 	//  Compare behavior of a double pendulum with an OpenSim Ball hip and custom pin knee 
 	if( !testBallJoint(true)) {
@@ -1318,10 +1293,14 @@ int main()
 	}
 
 	// Compare behavior of a Free hip and pin knee 
+	// OpenSim, system restricted to using euelr angles exclusively to support EllipsoidJoint
+	// and teh fact that coordinates cannot map to/from quaternions
+	/*
 	if( !testFreeJoint(false)) {
         status = 1;
         cout << " testFreeJoint using quaternions FAILED" << endl; 
     }
+	*/
 
 	// Compare behavior of a Free hip and pin knee 
 	if( !testFreeJoint(true)) {

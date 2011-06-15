@@ -265,22 +265,6 @@ bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osi
 	int nq = osim_state.getNQ();
 
 	// Push down to OpenSim "state"
-	if(system.getMatterSubsystem().getUseEulerAngles(state)){
-		const Vector& y = state.getY();
-		Vector y_osim(2*nq, 0.0);
-		//This is a hack knowing the ball and free joint tests have the joint being tested, first.
-		int quat_ind = ((nq > 6) ? 6 : 3);
-		int j = 0;
-		for(int i=0; i< state.getNY(); i++){
-			if(i != quat_ind)
-				y_osim[j++] = y[i];
-		}
-		osim_state.updY() = y_osim;
-
-		y_osim.dump("osim:");
-		y.dump("simbody:");
-	}
-	else{
 		if(nq == 2*nq_sb){ //more coordinates because OpenSim model is constrained
 			osim_state.updY()[0] = state.getY()[0];
 			osim_state.updY()[1] = state.getY()[1];
@@ -289,7 +273,7 @@ bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osi
 		}
 		else	
 			osim_state.updY() = state.getY();
-	}
+	
 
 	//==========================================================================================================
 	// Integrate Simbody system
@@ -442,7 +426,7 @@ bool testWeldConstraint()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -533,7 +517,7 @@ bool testPointOnLineConstraint()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -651,7 +635,7 @@ bool testCoordinateCouplerConstraint()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	//==========================================================================================================
@@ -790,7 +774,7 @@ bool testRollingOnSurfaceConstraint()
 	// Simbody model state setup
 	system.realizeTopology();
 	State state = system.getDefaultState();
-	matter.setUseEulerAngles(state, false);
+	matter.setUseEulerAngles(state, true);
     system.realizeModel(state);
 
 	state.updQ()[2] = Pi/3;
@@ -835,7 +819,6 @@ int main()
         status = 1;
         cout << " testWeldConstraint FAILED " << endl;
     }	
-	
 
 	// Compare behavior of PointOnLineConstraint between the foot and ground 
 	if(  !testPointOnLineConstraint()) {
