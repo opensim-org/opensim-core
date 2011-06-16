@@ -621,7 +621,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	// an .mot file so the motion can be viewed in SIMM -- Eran.
 	bool writeSIMMHeader=_pStore->getWriteSIMMHeader();
 	_pStore->setWriteSIMMHeader(true);
-	Storage::printResult(_pStore,aBaseName,aDir,aDT,"");
+	Storage::printResult(_pStore,aBaseName,aDir,aDT,".mot");
 	_pStore->setWriteSIMMHeader(writeSIMMHeader);
 
 	return(0);
