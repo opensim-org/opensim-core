@@ -57,6 +57,7 @@ using SimTK::Vec3;
  * Default constructor.
  */
 MarkerPlacer::MarkerPlacer() :
+	_apply(_applyProp.getValueBool()),
 	_markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
@@ -88,6 +89,7 @@ MarkerPlacer::~MarkerPlacer()
  */
 MarkerPlacer::MarkerPlacer(const MarkerPlacer &aMarkerPlacer) :
    Object(aMarkerPlacer),
+	_apply(_applyProp.getValueBool()),
    _markerFileName(_markerFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_ikTaskSetProp(PropertyObj("", IKTaskSet())),
@@ -127,6 +129,7 @@ Object* MarkerPlacer::copy() const
  */
 void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
 {
+	_apply = aMarkerPlacer._apply;
 	_markerFileName = aMarkerPlacer._markerFileName;
 	_timeRange = aMarkerPlacer._timeRange;
 	_ikTaskSet = aMarkerPlacer._ikTaskSet;
@@ -147,6 +150,7 @@ void MarkerPlacer::setNull()
 {
 	setType("MarkerPlacer");
 
+	_apply = true;
 	_coordinateFileName = "";
 
 	_printResultFiles = true;
@@ -160,6 +164,10 @@ void MarkerPlacer::setNull()
  */
 void MarkerPlacer::setupProperties()
 {
+	_applyProp.setComment("Whether or not to use the marker placer during scale");
+	_applyProp.setName("apply");
+	_propertySet.append(&_applyProp);
+
 	_ikTaskSetProp.setComment("Task set used to specify weights used in the IK computation of the static pose.");
 	_ikTaskSetProp.setName("IKTaskSet");
 	_propertySet.append(&_ikTaskSetProp);
@@ -247,6 +255,7 @@ MarkerPlacer& MarkerPlacer::operator=(const MarkerPlacer &aMarkerPlacer)
  */
 bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aPathToSubject)
 {
+	if(!getApply()) return false;
 
 	cout << endl << "Step 3: Placing markers on model" << endl;
 
