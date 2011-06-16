@@ -108,6 +108,7 @@ Storage::Storage(int aCapacity,const string &aName) :
 	_storage.ensureCapacity(aCapacity);
 	_storage.setCapacityIncrement(-1);
 
+	_fileVersion = Storage::LatestVersion;
 	// SET THE STATES
 	setName(aName);
 }
@@ -201,6 +202,7 @@ Storage::Storage(const Storage &aStorage,bool aCopyData) :
 	setColumnLabels(aStorage.getColumnLabels());
 	setStepInterval(aStorage.getStepInterval());
 	setInDegrees(aStorage.isInDegrees());
+	_fileVersion = aStorage._fileVersion;
 	// COPY STORED DATA
 	if(aCopyData) copyData(aStorage);
 }
@@ -233,6 +235,7 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
 	setHeaderToken(aStorage.getHeaderToken());
 	setStepInterval(aStorage.getStepInterval());
 	setInDegrees(aStorage.isInDegrees());
+	_fileVersion = aStorage._fileVersion;
 	// ERROR CHECK
 	if(aStateIndex<0) return;
 	if(aN<=0) return;
