@@ -205,7 +205,7 @@ void InverseKinematicsTool::setupProperties()
 	_reportErrorsProp.setComment("Flag (true or false) indicating whether or not to report marker "
 		"and coordinate errors from the inverse kinematics solution.");
 	_reportErrorsProp.setName("report_errors");
-	_reportErrorsProp.setValue(false);
+	_reportErrorsProp.setValue(true);
 	_propertySet.append(&_reportErrorsProp);
 
 	_outputMotionFileNameProp.setComment("Name of the motion file (.mot) to which the results should be written.");
