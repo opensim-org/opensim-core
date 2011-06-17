@@ -361,7 +361,7 @@ bool InverseKinematicsTool::run()
 		double dt = 1.0/markersReference.getSamplingFrequency();
 		int Nframes = int((final_time-start_time)/dt)+1;
 		AnalysisSet& analysisSet = _model->updAnalysisSet();
-		
+		analysisSet.begin(s);
 		for (int i = 1; i < Nframes; i++) {
 			s.updTime() = start_time + i*dt;
 			ikSolver.track(s);
@@ -371,12 +371,13 @@ bool InverseKinematicsTool::run()
 
 		// Do the maneuver to change then restore working directory 
 		// so that output files are saved to same folder as setup file.
-		string saveWorkingDirectory = IO::getCwd();
-		if (_document)	// When the tool is created live from GUI it has no file/document association
-			IO::chDir(IO::getParentDirectory(getDocumentFileName()));
-		kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
-		IO::chDir(saveWorkingDirectory);
-
+		if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
+			string saveWorkingDirectory = IO::getCwd();
+			if (_document)	// When the tool is created live from GUI it has no file/document association
+				IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+			kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
+			IO::chDir(saveWorkingDirectory);
+		}
 		success = true;
 
 		cout << "InverseKinematicsTool: " << Nframes-1 << " frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
