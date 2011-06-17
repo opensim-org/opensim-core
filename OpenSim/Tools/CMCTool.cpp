@@ -85,7 +85,6 @@ CMCTool::CMCTool() :
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useReflexes(_useReflexesProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
@@ -117,7 +116,6 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useReflexes(_useReflexesProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
@@ -189,7 +187,6 @@ CMCTool(const CMCTool &aTool) :
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-    _useReflexes(_useReflexesProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
@@ -239,7 +236,6 @@ setNull()
     _useCurvatureFilter = true; 		 
     _useFastTarget = true;
 	_optimizerAlgorithm = "ipopt";
-	_useReflexes = false;
 	_optimizerDX = 1.0e-4;
 	_convergenceCriterion = 1.0e-6;
 	_maxIterations = 100;
@@ -248,7 +244,7 @@ setNull()
 	_verbose = false;
 
     _replaceForceSet = false;   // default should be false for Forward.
-
+	_solveForEquilibriumForAuxiliaryStates = true;
 
 }
 //_____________________________________________________________________________
@@ -316,12 +312,6 @@ void CMCTool::setupProperties()
     _useCurvatureFilterProp.setComment(comment); 		 
     _useCurvatureFilterProp.setName("use_curvature_filter"); 		 
     _propertySet.append( &_useCurvatureFilterProp );
-	comment = "Flag (true or false) indicating whether or not to use reflexes.  This is a hook ";
-	comment += "for users wanting to modify controls based on additonal information.";
-
-	_useReflexesProp.setComment(comment);
-	_useReflexesProp.setName("use_reflexes");
-	_propertySet.append( &_useReflexesProp );
 
     comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";  	 	 
     comment += "The fast target requires the desired accelerations to be met. "; 		 
@@ -407,7 +397,6 @@ operator=(const CMCTool &aTool)
 	_convergenceCriterion = aTool._convergenceCriterion;
     _useFastTarget = aTool._useFastTarget;
 	_optimizerAlgorithm = aTool._optimizerAlgorithm;
-	_useReflexes = aTool._useReflexes;
 	_maxIterations = aTool._maxIterations;
 	_printLevel = aTool._printLevel;
 	_adjustKinematicsToReduceResiduals = aTool._adjustKinematicsToReduceResiduals;

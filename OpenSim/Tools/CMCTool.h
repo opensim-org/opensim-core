@@ -103,11 +103,6 @@ private:
     PropertyBool _useCurvatureFilterProp;  	 	 
     bool &_useCurvatureFilter;
 
-
-	/** Set whether or not to use reflexes. */
-	PropertyBool _useReflexesProp;
-	bool &_useReflexes;
-
     /** Flag indicating whether to use the fast CMC optimization
     target.  The fast target requires the desired accelerations to  	 	 
     be met within the tolerance set by the convergence criterion. 		 
