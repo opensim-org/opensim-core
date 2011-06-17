@@ -246,6 +246,7 @@ operator=(const InverseKinematicsTool &aTool)
 	_timeRange = aTool._timeRange;
 	_reportErrors = aTool._reportErrors; 
 	_coordinateFileName = aTool._coordinateFileName;
+	_reportErrors = aTool._reportErrors;
 	_outputMotionFileName = aTool._outputMotionFileName;
 
 	return(*this);
@@ -343,6 +344,8 @@ bool InverseKinematicsTool::run()
 		markersReference.setMarkerWeightSet(markerWeights);
 		//Load the makers
 		markersReference.loadMarkersFile(_markerFileName);
+		// marker names
+		const SimTK::Array_<std::string>& markerNames =  markersReference.getNames();
 
 		// Determine the start time, if the provided time range is not specified then use time from marker reference
 		// also adjust the time range for the tool if the provided range exceed that of the marker data
@@ -362,9 +365,34 @@ bool InverseKinematicsTool::run()
 		int Nframes = int((final_time-start_time)/dt)+1;
 		AnalysisSet& analysisSet = _model->updAnalysisSet();
 		analysisSet.begin(s);
+		// number of markers
+		int nm = markerWeights.getSize();
+		SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
+		
 		for (int i = 1; i < Nframes; i++) {
 			s.updTime() = start_time + i*dt;
 			ikSolver.track(s);
+			
+			if(_reportErrors){
+				double totalSquaredMarkerError = 0.0;
+				double maxSquaredMarkerError = 0.0;
+				int worst = -1;
+
+				ikSolver.computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
+				for(int j=0; j<nm; ++j){
+					totalSquaredMarkerError += squaredMarkerErrors[j];
+					if(squaredMarkerErrors[j] > maxSquaredMarkerError){
+						maxSquaredMarkerError = squaredMarkerErrors[j];
+						worst = j;
+					}
+				}
+				cout << "Frame " << i << " (t=" << s.getTime() << "):\t";
+				cout << "total squared error = " << totalSquaredMarkerError;
+				cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
+				cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << markerNames[worst] << ")" << endl;
+
+				 
+			}
 			kinematicsReporter.step(s, i);
 			analysisSet.step(s, i);
 		}
@@ -372,11 +400,11 @@ bool InverseKinematicsTool::run()
 		// Do the maneuver to change then restore working directory 
 		// so that output files are saved to same folder as setup file.
 		if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
-			string saveWorkingDirectory = IO::getCwd();
-			if (_document)	// When the tool is created live from GUI it has no file/document association
-				IO::chDir(IO::getParentDirectory(getDocumentFileName()));
-			kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
-			IO::chDir(saveWorkingDirectory);
+		string saveWorkingDirectory = IO::getCwd();
+		if (_document)	// When the tool is created live from GUI it has no file/document association
+			IO::chDir(IO::getParentDirectory(getDocumentFileName()));
+		kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
+		IO::chDir(saveWorkingDirectory);
 		}
 		success = true;
 
