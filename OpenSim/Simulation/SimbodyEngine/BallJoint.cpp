@@ -56,8 +56,8 @@ BallJoint::~BallJoint()
  * Default constructor.
  */
 BallJoint::BallJoint() :
-	Joint(),
-	_useEulerAngles(_useEulerAnglesProp.getValueBool())
+	Joint()
+	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
 	setupProperties();
@@ -67,14 +67,14 @@ BallJoint::BallJoint() :
  * Convenience Constructor.
  */
 BallJoint::BallJoint(const std::string &name, OpenSim::Body& parent, Vec3 locationInParent, Vec3 orientationInParent,
-					 OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, bool useEulerAngles, bool reverse) :
+					 OpenSim::Body& body, Vec3 locationInBody, Vec3 orientationInBody, /*bool useEulerAngles,*/ bool reverse) :
 	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody, reverse),
-	_useEulerAngles(_useEulerAnglesProp.getValueBool())
+			body, locationInBody, orientationInBody, reverse)
+	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
 	setupProperties();
-	_useEulerAngles = useEulerAngles;
+	//_useEulerAngles = useEulerAngles;
 	_body->setJoint(*this);
 }
 
@@ -85,8 +85,8 @@ BallJoint::BallJoint(const std::string &name, OpenSim::Body& parent, Vec3 locati
  * @param aJoint BallJoint to be copied.
  */
 BallJoint::BallJoint(const BallJoint &aJoint) :
-   Joint(aJoint),
-	_useEulerAngles(_useEulerAnglesProp.getValueBool())
+   Joint(aJoint)
+   //_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
 	setupProperties();
@@ -117,7 +117,7 @@ Object* BallJoint::copy() const
 void BallJoint::copyData(const BallJoint &aJoint)
 {
 	Joint::copyData(aJoint);
-	_useEulerAngles = aJoint._useEulerAngles;
+	//_useEulerAngles = aJoint._useEulerAngles;
 }
 
 //_____________________________________________________________________________
@@ -136,10 +136,10 @@ void BallJoint::setNull()
  */
 void BallJoint::setupProperties()
 {
-	_useEulerAnglesProp.setName("use_euler_angles");
-	_useEulerAnglesProp.setComment("Set flag to true to use Euler angles to parameterize rotations.");
-	_useEulerAnglesProp.setValue(true);
-	_propertySet.append(&_useEulerAnglesProp);
+	//_useEulerAnglesProp.setName("use_euler_angles");
+	//_useEulerAnglesProp.setComment("Set flag to true to use Euler angles to parameterize rotations.");
+	//_useEulerAnglesProp.setValue(true);
+	//_propertySet.append(&_useEulerAnglesProp);
 }
 
 //_____________________________________________________________________________
@@ -206,20 +206,20 @@ void BallJoint::createSystem(SimTK::MultibodySystem& system) const
 	SimTK::Transform parentTransform(parentRotation, _locationInParent);
 
 	// CREATE MOBILIZED BODY
-	if(_useEulerAngles){
+	/*if(_useEulerAngles){
 		MobilizedBody::Gimbal
 			simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
 				parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
 				childTransform);
 		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 	}
-	else{
+	else{*/
 		MobilizedBody::Ball
 			simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
 				parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
 				childTransform);
 		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
-	}
+	//}
 
     // Let the superclass do its construction.
     Joint::createSystem(system);

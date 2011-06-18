@@ -59,8 +59,8 @@ class OSIMSIMULATION_API FreeJoint : public Joint
 protected:
 
 	/** Flag to use Euler angles to parameterize rotation of the body  */
-	PropertyBool _useEulerAnglesProp;
-	bool &_useEulerAngles;
+	//PropertyBool _useEulerAnglesProp;
+	//bool &_useEulerAngles;
 
 //=============================================================================
 // METHODS
@@ -71,7 +71,7 @@ public:
 	// Convenience Constructor
 	FreeJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 		  Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
-		  bool useEulerAngles=true, bool reverse=false);
+		  /*bool useEulerAngles=true,*/ bool reverse=false);
 
 	FreeJoint(const FreeJoint &aJoint);
 	virtual ~FreeJoint();

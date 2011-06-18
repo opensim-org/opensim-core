@@ -1,7 +1,7 @@
 // ActivationFiberLengthMuscle.cpp
-// Author: Peter Loan, Jeff Reinbolt
+// Author: Peter Loan, Ajay Seth
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -29,23 +29,9 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "ActivationFiberLengthMuscle.h"
-#include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
-#include "ConditionalPathPoint.h"
-#include "PointForceDirection.h"
-#include "GeometryPath.h"
-#include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
-#include <OpenSim/Simulation/Wrap/WrapResult.h>
-#include <OpenSim/Simulation/Wrap/PathWrap.h>
-#include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "Model.h"
-#include <OpenSim/Simulation/SimbodyEngine/Body.h>
-#include <OpenSim/Common/DebugUtilities.h>
-#include "SimTKsimbody.h"
+
 
 //=============================================================================
 // STATICS

@@ -56,8 +56,8 @@ FreeJoint::~FreeJoint()
  * Default constructor.
  */
 FreeJoint::FreeJoint() :
-	Joint(),
-	_useEulerAngles(_useEulerAnglesProp.getValueBool())
+	Joint()
+	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
 	setupProperties();
@@ -69,14 +69,14 @@ FreeJoint::FreeJoint() :
  */
 	FreeJoint::FreeJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-					bool useEulerAngles, bool reverse) :
+					/*bool useEulerAngles,*/ bool reverse) :
 	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody, reverse),
-	_useEulerAngles(_useEulerAnglesProp.getValueBool())
+			body, locationInBody, orientationInBody, reverse)
+	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
 	setupProperties();
-	_useEulerAngles = useEulerAngles;
+	//_useEulerAngles = useEulerAngles;
 	_body->setJoint(*this);
 	setName(name);
 }
@@ -88,8 +88,8 @@ FreeJoint::FreeJoint() :
  * @param aJoint FreeJoint to be copied.
  */
 FreeJoint::FreeJoint(const FreeJoint &aJoint) :
-   Joint(aJoint),
-	_useEulerAngles(_useEulerAnglesProp.getValueBool())
+   Joint(aJoint)
+	//_useEulerAngles(_useEulerAnglesProp.getValueBool())
 {
 	setNull();
 	setupProperties();
@@ -120,7 +120,7 @@ Object* FreeJoint::copy() const
 void FreeJoint::copyData(const FreeJoint &aJoint)
 {
 	Joint::copyData(aJoint);
-	_useEulerAngles = aJoint._useEulerAngles;
+	//_useEulerAngles = aJoint._useEulerAngles;
 }
 
 //_____________________________________________________________________________
@@ -161,10 +161,10 @@ void FreeJoint::setNull()
  */
 void FreeJoint::setupProperties()
 {
-	_useEulerAnglesProp.setName("use_euler_angles");
-	_useEulerAnglesProp.setComment("Set flag to true to use Euler angles to parameterize rotations.");
-	_useEulerAnglesProp.setValue(true);
-	_propertySet.append(&_useEulerAnglesProp);
+	//_useEulerAnglesProp.setName("use_euler_angles");
+	//_useEulerAnglesProp.setComment("Set flag to true to use Euler angles to parameterize rotations.");
+	//_useEulerAnglesProp.setValue(true);
+	//_propertySet.append(&_useEulerAnglesProp);
 }
 
 //_____________________________________________________________________________
@@ -232,7 +232,7 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 	SimTK::Transform noTransform(Rotation(), Vec3(0));
 
 	// CREATE MOBILIZED BODY
-	if(_useEulerAngles){
+	/*if(_useEulerAngles){
 		MobilizedBody::Translation
 			simtkMasslessBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
 			parentTransform, SimTK::Body::Massless(), noTransform);
@@ -254,7 +254,7 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 			setCoordinateMobilityIndex(&coord, (i < 3 ? i : i-3));
 		}
 	}
-	else {
+	else {*/
 		MobilizedBody::Free
 			simtkBody(_model->updMatterSubsystem().updMobilizedBody(getMobilizedBodyIndex(_parentBody)),
 			parentTransform, SimTK::Body::Rigid(_body->getMassProperties()), childTransform);
@@ -263,7 +263,7 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 
 		// Let the superclass do its creation of coordinates.
 		Joint::createSystem(system);
-	}
+	//}
 }
 
 void FreeJoint::initState(SimTK::State& s) const

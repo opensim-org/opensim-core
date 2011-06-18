@@ -149,7 +149,7 @@ int testBouncingBall(bool useMesh)
 
 	osimModel->setGravity(gravity_vec);
 
-	osimModel->copy()->print("BouncingBallModel.osim");
+	osimModel->copy()->print("TestContactGeomtery_Ball.osim");
 	//osimModel->setup();
 	//delete osimModel;
 	//osimModel = new Model("BouncingBallModel.osim");
@@ -158,7 +158,7 @@ int testBouncingBall(bool useMesh)
 
     SimTK::State osim_state = osimModel->initSystem();
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
-    osim_state.updQ()[1] = 5.0;
+    osim_state.updQ()[4] = 5.0;
 
 	//==========================================================================================================
 	// Simulate it and see if it bounces correctly.

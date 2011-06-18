@@ -388,8 +388,8 @@ SimTK::State& Model::initSystem()
 
 	// The folllowing line is commented out as it removes all forces that were
 	// added to the system during realizeTopology()
-    //_matter->setUseEulerAngles(s, true);
-	//getMultibodySystem().realizeModel(s);
+    _matter->setUseEulerAngles(s, true);
+	getMultibodySystem().realizeModel(s);
 
     initState(s);
 	getStateNames(_stateNames);
