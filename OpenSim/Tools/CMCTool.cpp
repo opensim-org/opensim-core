@@ -91,7 +91,6 @@ CMCTool::CMCTool() :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -122,7 +121,6 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -193,7 +191,6 @@ CMCTool(const CMCTool &aTool) :
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -240,7 +237,6 @@ setNull()
 	_convergenceCriterion = 1.0e-6;
 	_maxIterations = 100;
 	_printLevel = 0;
-	_adjustKinematicsToReduceResiduals = false;
 	_verbose = false;
 
     _replaceForceSet = false;   // default should be false for Forward.
@@ -351,13 +347,6 @@ void CMCTool::setupProperties()
 	_printLevelProp.setName("optimizer_print_level");
 	_propertySet.append( &_printLevelProp );
 
-	comment = "Flag (true or false) indicating whether or not to adjust the kinematics "
-			    "in order to reduce residuals.  Set this flag to false in order to only adjust the "
-				 "model's center of mass without adjusting kinematics";
-	_adjustKinematicsToReduceResidualsProp.setComment(comment);
-	_adjustKinematicsToReduceResidualsProp.setName("adjust_kinematics_to_reduce_residuals");
-	_propertySet.append( &_adjustKinematicsToReduceResidualsProp );
-
 	comment = "True-false flag indicating whether or not to turn on verbose printing for cmc.";
 	_verboseProp.setComment(comment);
 	_verboseProp.setName("use_verbose_printing");
@@ -399,7 +388,6 @@ operator=(const CMCTool &aTool)
 	_optimizerAlgorithm = aTool._optimizerAlgorithm;
 	_maxIterations = aTool._maxIterations;
 	_printLevel = aTool._printLevel;
-	_adjustKinematicsToReduceResiduals = aTool._adjustKinematicsToReduceResiduals;
 	_verbose = aTool._verbose;
 
 	return(*this);
