@@ -62,6 +62,25 @@ int main(int argc,char **argv)
 		PrintUsage(argv[0], cout);
 		return(-1);
 	}
+	
+	string::size_type extSep = inputFileName.rfind(".");
+
+	if (extSep == string::npos) {
+		cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. File extension must be specified.\n";
+		PrintUsage(argv[0], cout);
+		return 1;// if '_fileName' contains path information...
+	}
+	std::string extension  = inputFileName.substr(extSep);
+	if (extension == ".sto"){
+		Storage stg(inputFileName);
+		stg.print(outputFileName);
+		return (0);
+	}
+	if (extension != ".xml" && extension != ".osim") {
+		cout<<"\n\versionUpdate.exe: ERROR- Unknown file type encontered. Only .xml, .osim and .sto files are supported.\n";
+		PrintUsage(argv[0], cout);
+		return 1;// if '_fileName' contains path information...
+	}
 
 	Object* newObject = Object::makeObjectFromFile(inputFileName);
 
