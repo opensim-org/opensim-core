@@ -208,7 +208,7 @@ void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const
 	setFiberLength(state, getOptimalFiberLength());
 	setActiveMotorUnits(state, 0.0);
 	setFatiguedMotorUnits(state, 0.0);
-	_model->getSystem().realize(state, SimTK::Stage::Velocity);
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
 	// Compute isometric force to get starting value of _fiberLength.
 	computeEquilibrium(state);
@@ -476,7 +476,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 int LiuThelen2003Muscle::getStateVariableYIndex(int index) const
 {
 	if (index<4 && index >=0)
-		return _model->getSystem().getDefaultState().getZStart()+_zIndex+index;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+index;
 	throw Exception("Trying to get State variable YIndex for LiuThelen2003Muscle "+getName()+" at undefined index"); 
 
 }

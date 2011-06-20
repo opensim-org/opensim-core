@@ -59,7 +59,7 @@ namespace OpenSim {
 class Body;
 class Model;
 
-class PistonActuator : public CustomActuator
+class PistonActuator : public Actuator
 {
 //=============================================================================
 // DATA
@@ -154,9 +154,6 @@ public:
 	// STRESS
 #ifndef SWIG
 	double getStress( const SimTK::State& s ) const;
-
-    // SIMTK STATE CACHE 
-    virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
 	//--------------------------------------------------------------------------
 	// APPLICATION
 	//--------------------------------------------------------------------------
@@ -171,11 +168,6 @@ public:
 	virtual double  computeActuation( const SimTK::State& s) const;
 
 #endif
-	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	virtual bool check() const;
-
 	// Setup method to initialize Body reference
 	void setup(Model& aModel);
 	/** 
