@@ -657,7 +657,8 @@ initializeExternalLoads( SimTK::State& s,
 	}
 	// transform point of application expressed in ground to the body the force is being applied to.
 	// This is intended to improve the ability of CMC, RRA, etc...  to track experimental data
-	_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, analysisStartTime, analysisFinalTime);
+	if (externalLoadKinematicsSpecified)
+		_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, analysisStartTime, analysisFinalTime);
 
 }
 
