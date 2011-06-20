@@ -207,7 +207,7 @@ setNull()
 	_maxSteps = 20000;
 	_maxDT = 1.0;
 	_minDT = 1.0e-8;
-	_errorTolerance = 1.0e-3;
+	_errorTolerance = 1.0e-5;
 	_toolOwnsModel=true;
 	_externalLoadsFileName = "";
 }
