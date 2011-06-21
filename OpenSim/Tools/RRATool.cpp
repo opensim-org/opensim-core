@@ -1037,11 +1037,16 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
 	InverseDynamics* inverseDynamics = new InverseDynamics(&aModel);
 	aModel.addAnalysis(inverseDynamics);
     inverseDynamics->setModel(aModel);
-
+	
+	Array<double> bounds;
+	bounds.append(aTi);
+	bounds.append(aTf);
+	const_cast<Storage &>(aStatesStore).interpolateAt(bounds);
 	int iInitial = aStatesStore.findIndex(aTi);
 	int iFinal = aStatesStore.findIndex(aTf);
 	aStatesStore.getTime(iInitial,aTi);
 	aStatesStore.getTime(iFinal,aTf);
+
     
     aModel.getMultibodySystem().realize(s, Stage::Position );
 
