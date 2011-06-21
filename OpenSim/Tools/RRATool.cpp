@@ -867,11 +867,6 @@ bool RRATool::run()
 	_model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
 	manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
 
-	Storage statesDegrees(manager.getStateStorage());
-	_model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-	statesDegrees.setWriteSIMMHeader(true);
-	statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
-
 	controller->getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
     if(_model->getAnalysisSet().getIndex("Actuation") != -1) {
@@ -1162,6 +1157,7 @@ addNecessaryAnalyses()
 		act->setStepInterval(stepInterval);
 		_model->addAnalysis(act);
 	}
+	/*
 	// Add Kinematics if necessary
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
@@ -1177,6 +1173,7 @@ addNecessaryAnalyses()
 	} else {
 		kin->getPositionStorage()->setWriteSIMMHeader(true);
 	}
+	*/
 }
 
 //_____________________________________________________________________________
