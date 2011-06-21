@@ -563,7 +563,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
                                         Model& aModel) {
 
-    if(aExternalLoadsFileName=="") {
+    if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
         cout<<"No external loads will be applied (external loads file not specified)."<<endl;
         return false;
     }
