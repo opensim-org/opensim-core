@@ -1,6 +1,8 @@
 osimModel_states
+version=1
 nRows=454
 nColumns=17
+inDegrees=no
 endheader
 time	blockToGround_xTranslation	blockToGround_yTranslation	blockToGround_zTranslation	blockToGround_xRotation	blockToGround_yRotation	blockToGround_zRotation	blockToGround_xTranslation_u	blockToGround_yTranslation_u	blockToGround_zTranslation_u	blockToGround_xRotation_u	blockToGround_yRotation_u	blockToGround_zRotation_u	muscle1.activation	muscle1.fiber_length	muscle2.activation	muscle2.fiber_length
       0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.00000000	      0.47123890	      0.00000000	      0.00000000	      0.00000000	      0.01000000	      0.20000000	      0.01000000	      0.20000000

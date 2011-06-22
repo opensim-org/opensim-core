@@ -1,6 +1,8 @@
 arm26_states
+version=1
 nRows=187
 nColumns=17
+inDegrees=no
 endheader
 time	r_shoulder_elev	r_elbow_flex	r_shoulder_elev_u	r_elbow_flex_u	TRIlong.activation	TRIlong.fiber_length	TRIlat.activation	TRIlat.fiber_length	TRImed.activation	TRImed.fiber_length	BIClong.activation	BIClong.fiber_length	BICshort.activation	BICshort.fiber_length	BRA.activation	BRA.fiber_length
       0.00000000	    -90.00000018	      0.00000000	      0.00000000	      0.00000000	      0.01000000	      0.11386884	      0.01000000	      0.07065120	      0.01000000	      0.06569679	      0.01000000	      0.16007086	      0.01000000	      0.18930429	      0.01000000	      0.08682129
