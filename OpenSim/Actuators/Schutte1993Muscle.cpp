@@ -560,12 +560,16 @@ double Schutte1993Muscle::calcTendonForce(const SimTK::State& s, double aNormTen
  */
 double Schutte1993Muscle::calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const
 {
-   double flcomponent = exp(8.0*(aNormFiberLength - 1.0)) / exp(4.0);
-
+ 
+   double flcomponent =   0.0;
+   if (_passiveForceLengthCurveProp.getUseDefault())
+	   flcomponent = exp(8.0*(aNormFiberLength - 1.0)) / exp(4.0);
+   else
+	   flcomponent = getPassiveForceLengthCurve()->calcValue(SimTK::Vector(1, aNormFiberLength) );
    return flcomponent + _damping * aNormFiberVelocity;
 }
 
-//_____________________________________________________________________________
+//_________ ____________________________________________________________________
 /**
  * calcFiberVelocity: written by Chris Raasch and Lisa Schutte.
  * This function calculates the fiber velocity using an inverse
