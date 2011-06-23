@@ -1037,11 +1037,11 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
 	InverseDynamics* inverseDynamics = new InverseDynamics(&aModel);
 	aModel.addAnalysis(inverseDynamics);
     inverseDynamics->setModel(aModel);
-	
+	/* undo interpolation at bounds for now as it changes results a little. Could fix evaluation at bounds issue
 	Array<double> bounds;
 	bounds.append(aTi);
 	bounds.append(aTf);
-	const_cast<Storage &>(aStatesStore).interpolateAt(bounds);
+	const_cast<Storage &>(aStatesStore).interpolateAt(bounds);*/
 	int iInitial = aStatesStore.findIndex(aTi);
 	int iFinal = aStatesStore.findIndex(aTf);
 	aStatesStore.getTime(iInitial,aTi);
