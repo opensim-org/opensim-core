@@ -9,7 +9,8 @@ endif(COMMAND cmake_policy)
 SET(KIT plugin)
 SET(UKIT PLUGIN)
 
-SET(NameSpace "OpenSim_")
+SET(NameSpace "OpenSim_"
+		CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Leave empty to use stock SimTK libraries.")
 
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
