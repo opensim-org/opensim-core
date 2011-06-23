@@ -122,9 +122,9 @@ setNull()
 	_model = NULL;
 	_wrtBodyName = "";
 	_expressBodyName = "";
-	_on = true;
+	//_on = true;
 	_active[0] = _active[1] = _active[2] = false;
-	_w[0] = _w[1] = _w[2] = 1.0;
+	//_w[0] = _w[1] = _w[2] = 1.0;
 	_kp[0] = _kp[1] = _kp[2] = 1.0;
 	_kv[0] = _kv[1] = _kv[2] = 0.5;
 	_ka[0] = _ka[1] = _ka[2] = 1.0;
@@ -148,11 +148,6 @@ setNull()
 void CMC_Task::
 setupProperties()
 {
-	_propOn.setComment("Flag (true or false) indicating whether or not a task is on.");
-	_propOn.setName("on");
-	_propOn.setValue(true);
-	_propertySet.append(&_propOn);
-
 	_propWRTBodyName.setComment("Name of body frame with respect to which a tracking objective is specified. "
 		"The special name '"+CENTER_OF_MASS_NAME+"' refers to the system center of mass. "
 		"This property is not used for tracking joint angles.");
@@ -175,13 +170,6 @@ setupProperties()
 	_propActive.setName("active");
 	_propActive.setValue(active);
 	_propertySet.append(&_propActive);
-
-	Array<double> weight(1.0,3);
-	_propW.setComment("Weight with which a task is tracked relative to other tasks. "
-		"To track a task more tightly, make the weight larger.");
-	_propW.setName("weight");
-	_propW.setValue(weight);
-	_propertySet.append(&_propW);
 
 	Array<double> kp(1.0,3);
 	_propKP.setComment("Position error feedback gain (stiffness). "
@@ -237,7 +225,7 @@ copyData(const CMC_Task &aTask)
 	_model = aTask.getModel();
 	setWRTBodyName(aTask.getWRTBodyName());
 	setExpressBodyName(aTask.getExpressBodyName());
-	setOn(aTask.getOn());
+	//setOn(aTask.getOn());
 	for(i=0;i<3;i++) _active[i] = aTask.getActive(i);
 	for(i=0;i<3;i++) _kp[i] = aTask.getKP(i);
 	for(i=0;i<3;i++) _kv[i] = aTask.getKV(i);
@@ -281,7 +269,7 @@ CMC_Task& CMC_Task::
 operator=(const CMC_Task &aTask)
 {
 	// BASE CLASS
-	Object::operator =(aTask);
+	TrackingTask::operator =(aTask);
 
 	// DATA
 	copyData(aTask);
@@ -960,13 +948,13 @@ computeEffectiveMassMatrix()
 void CMC_Task::
 updateFromXMLNode()
 {
-	Object::updateFromXMLNode();
+	TrackingTask::updateFromXMLNode();
 
 	setWRTBodyName(_wrtBodyName);
 	setExpressBodyName(_expressBodyName);
-	setOn(_on);
+	//setOn(_on);
 	setActive(_active[0],_active[1],_active[2]);
-	setWeight(_w[0],_w[1],_w[2]);
+	//setWeight(_w[0],_w[1],_w[2]);
 	setKP(_kp[0],_kp[1],_kp[2]);
 	setKV(_kv[0],_kv[1],_kv[2]);
 	setKA(_ka[0],_ka[1],_ka[2]);

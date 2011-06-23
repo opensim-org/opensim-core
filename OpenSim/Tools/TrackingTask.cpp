@@ -138,7 +138,7 @@ copyData(const TrackingTask &aTask)
 {
 	_model = aTask.getModel();
 	setOn(aTask.getOn());
-
+	_w = aTask._w;
 }
 
 
