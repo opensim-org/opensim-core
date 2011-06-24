@@ -996,7 +996,7 @@ void Model::setStateValues(SimTK::State& s, double* aStateValues) const
 	const SimTK::Stage& currentStage=s.getSystemStage();
 	for(int i=0; i< _stateYIndices.getSize(); i++) // initialize to NaN
 			s.updY()[_stateYIndices[i]]=aStateValues[i]; 
-	 _system->realize(s, currentStage );
+	 _system->realize(s, SimTK::Stage::Velocity );
 }
 //=============================================================================
 // INITIAL STATES
