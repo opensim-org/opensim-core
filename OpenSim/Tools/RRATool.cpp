@@ -865,7 +865,7 @@ bool RRATool::run()
 	printResults(getName(),getResultsDir(),dt); // this will create results directory if necessary
     controller->updControlSet().print(getResultsDir() + "/" + getName() + "_controls.xml");
 	_model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
-	manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
+	//manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
 
 	controller->getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
@@ -1162,7 +1162,7 @@ addNecessaryAnalyses()
 		act->setStepInterval(stepInterval);
 		_model->addAnalysis(act);
 	}
-	/*
+	
 	// Add Kinematics if necessary
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
@@ -1178,7 +1178,7 @@ addNecessaryAnalyses()
 	} else {
 		kin->getPositionStorage()->setWriteSIMMHeader(true);
 	}
-	*/
+	
 }
 
 //_____________________________________________________________________________
