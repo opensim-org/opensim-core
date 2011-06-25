@@ -257,7 +257,7 @@ int main()
 
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator
-		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
+		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-4);
 
 		// Create the force reporter
@@ -318,5 +318,6 @@ int main()
     std::cout << "main() routine time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
 
     std::cout << "OpenSim example completed successfully.\n";
+	std::cin.get();
 	return 0;
 }
