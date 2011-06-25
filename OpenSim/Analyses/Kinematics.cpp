@@ -616,6 +616,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	// POSITIONS
 	Storage::printResult(_pStore,aBaseName+"_"+getName()+"_q",aDir,aDT,aExtension);
 
+	/*
 	// POSITIONS (.mot file)
 	// For now (until we resolve the .sto vs .mot issue) also write
 	// an .mot file so the motion can be viewed in SIMM -- Eran.
@@ -623,6 +624,6 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	_pStore->setWriteSIMMHeader(true);
 	Storage::printResult(_pStore,aBaseName,aDir,aDT,".mot");
 	_pStore->setWriteSIMMHeader(writeSIMMHeader);
-
+	*/
 	return(0);
 }

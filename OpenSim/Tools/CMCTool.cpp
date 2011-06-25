@@ -854,12 +854,12 @@ bool CMCTool::run()
     controller->updControlSet().print(getResultsDir() + "/" + getName() + "_controls.xml");
 	_model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
 	manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
-
+	/*
 	Storage statesDegrees(manager.getStateStorage());
 	_model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 	statesDegrees.setWriteSIMMHeader(true);
 	statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
-
+	*/
 	controller->getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
 	//_model->removeController(controller); // So that if this model is from GUI it doesn't double-delete it.
@@ -902,6 +902,7 @@ addNecessaryAnalyses()
 		act->setStepInterval(stepInterval);
 		_model->addAnalysis(act);
 	}
+	
 	// Add Kinematics if necessary
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
@@ -912,10 +913,12 @@ addNecessaryAnalyses()
 		kin = new Kinematics(_model);
         kin->setModel(*_model );
 		kin->setStepInterval(stepInterval);
-		kin->getPositionStorage()->setWriteSIMMHeader(true);
+		//kin->getPositionStorage()->setWriteSIMMHeader(true);
+		kin->setInDegrees(true);
 		_model->addAnalysis(kin);
 	} else {
-		kin->getPositionStorage()->setWriteSIMMHeader(true);
+		kin->setInDegrees(true);
+		//kin->getPositionStorage()->setWriteSIMMHeader(true);
 	}
 }
 
