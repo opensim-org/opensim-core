@@ -200,7 +200,7 @@ setNull()
 	_modelFile = "";
 	_replaceForceSet = true;
 	_resultsDir = "./";
-	_outputPrecision = 20;
+	_outputPrecision = 8;
 	_ti = 0.0;
 	_tf = 1.0;
 	_solveForEquilibriumForAuxiliaryStates = false;
@@ -241,7 +241,7 @@ void AbstractTool::setupProperties()
 	_resultsDirProp.setName("results_directory");
 	_propertySet.append( &_resultsDirProp );
 
-	comment = "Output precision.  It is 20 by default.";
+	comment = "Output precision.  It is 8 by default.";
 	_outputPrecisionProp.setComment(comment);
 	_outputPrecisionProp.setName("output_precision");
 	_propertySet.append( &_outputPrecisionProp );
