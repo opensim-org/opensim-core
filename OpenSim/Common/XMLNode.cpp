@@ -568,6 +568,9 @@ GetBool(const DOMNode *aNode)
 
 	// INTERPRET
 	bool value;
+	for (int i=0; str[i]!=NULL; ++i)
+        str[i] = tolower(str[i]);
+
 	char *ptr = strstr(str,"true");
 	if(ptr!=NULL) {
 		value = true;
