@@ -408,6 +408,8 @@ loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
 
 		try {
 			model = new Model(_modelFile);
+			if (rOriginalForceSet!=NULL)
+				*rOriginalForceSet = model->getForceSet();
 		} catch(...) { // Properly restore current directory if an exception is thrown
 			IO::chDir(saveWorkingDirectory);
 			throw;

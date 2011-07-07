@@ -925,8 +925,15 @@ writeAdjustedModel()
 		cerr<<"Warning: A name for the output model was not set.\n";
 		cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
 		cerr<<" in the setup file.\n";
-		cerr<<"Writing to adjusted_model.osim ...\n\n";
-		_outputModelFile = "adjusted_model.osim";
+		if (_document!=NULL){
+			string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+			_outputModelFile = directoryOfSetupFile+"adjusted_model.osim";
+		}
+		else{
+			cerr<<"Writing to adjusted_model.osim ...\n\n";
+			_outputModelFile = "adjusted_model.osim";
+		}
+		cerr<<"Writing to " <<_outputModelFile << " ...\n\n";
 	}
 
 	// Set the model's actuator set back to the original set.  e.g. in RRA1
