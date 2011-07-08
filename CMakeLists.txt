@@ -67,6 +67,9 @@ IF(WIN32)
 	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
 		SET(VCVERSION VC9)
 	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 9")
+	IF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
+		SET(VCVERSION VC10)
+	ENDIF(CMAKE_GENERATOR MATCHES  "Visual Studio 10")
 	SET(Platform "Windows")
     SET(NATIVE_COPY_CMD copy)
 ELSEIF(APPLE)
@@ -110,7 +113,7 @@ ENDIF (UNIX AND NOT CMAKE_BUILD_TYPE)
 
 ## Choose the maximum level of x86 instruction set that the compiler is 
 ## allowed to use. SSE2 is ubiquitous enough now that we don't mind
-## abandoning machines that can't handle those instructions. SSE3 migh
+## abandoning machines that can't handle those instructions. SSE3 might
 ## also be reasonable by now (April 2009) so this default should be
 ## revisited soon. This can be set to a different value by the person
 ## running CMake.

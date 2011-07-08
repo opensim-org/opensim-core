@@ -71,7 +71,7 @@ void testGait2354() {
 	// Compare the output file to the target trajectory and make sure they
 	// are sufficiently close.
 
-	double meanError = 0.0;
+	double totalError = 0.0;
 	int count = 0;
 	Array<double> data;
     std::string  label;
@@ -86,12 +86,12 @@ void testGait2354() {
             label = results.getColumnLabels()[j+1];
 
             double diff = data[standard.getStateIndex(label)]-state->getData()[j];
-    	    meanError += std::abs(diff);
+    	    totalError += std::abs(diff);
 			count++;
 		}
 	}
-	cout << "meanError = " << meanError << "  count = " << count << " meanError/count=" << meanError/count << " \n";
-	ASSERT(meanError/count < 0.5);
+	cout << "totalError = " << totalError << "  count = " << count << " meanError=" << totalError/count << " \n";
+	ASSERT(totalError/count < 0.5);
 }
 int main() {
     try {
@@ -102,5 +102,5 @@ int main() {
         return 1;
     }
     cout << "Done" << endl;
-    return 0;
+    return 1;
 }
