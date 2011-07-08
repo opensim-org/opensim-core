@@ -124,8 +124,10 @@ const Array<PathPoint*>& OpenSimContext::getCurrentDisplayPath(Muscle& m) {
 	return m.getGeometryPath().getCurrentDisplayPath(*_configState);
 }
 
-void OpenSimContext::updateDisplayer(Muscle& m) {
-	return m.updateDisplayer(*_configState);
+void OpenSimContext::updateDisplayer(Force& f) {
+	// If muscle or force acting along a path then call respective updateDisplayer otherwise do nothing for now
+	if (dynamic_cast<Muscle&>(f)!= NULL)
+		return f.updateDisplayer(*_configState);
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
