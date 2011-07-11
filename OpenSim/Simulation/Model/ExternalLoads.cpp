@@ -179,6 +179,7 @@ void ExternalLoads::setupSerializedMembers()
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
+	_lowpassCutoffFrequencyForLoadKinematics=-1.0;
 	comment = "Optional low-pass cut-off frequency for filtering the model kinematics corresponding "
 			  "used to transform the point of application. A negative value results in no filtering. "
 			  "The default value is -1.0, so no filtering.";
