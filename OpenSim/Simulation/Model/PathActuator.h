@@ -97,6 +97,8 @@ public:
 	// Path
 	GeometryPath& updGeometryPath() const { return _path; }
 	const GeometryPath& getGeometryPath() const { return _path; }
+	virtual bool hasGeometryPath() const { return true;};
+
 	// OPTIMAL FORCE
 	void setOptimalForce(double aOptimalForce);
 	double getOptimalForce() const;
