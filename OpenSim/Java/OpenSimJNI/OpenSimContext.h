@@ -118,7 +118,7 @@ public:
 	double getActivation(Muscle& act);
 	double getMuscleLength(Muscle& act);
 	const Array<PathPoint*>& getCurrentPath(Muscle& act);
-	const Array<PathPoint*>& getCurrentDisplayPath(Muscle& act);
+	const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
 	void updateDisplayer(Force& f);
     void copyMuscle(Muscle& from, Muscle& to);
 	// Muscle Points
