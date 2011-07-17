@@ -323,7 +323,12 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 	SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(_parentBody);
 	if (!parentIndex.isValid())
 		throw(Exception("CustomJoint " + getName() + " has invalid parent body "+_parentBody->getName()));
-
+	int nu = numMobilities;
+	assert(nu > 0);
+    assert(nu <= 6);
+    assert(functions.size() == 6);
+    assert(coordinateIndices.size() == 6);
+    assert(axes.size() == 6);
 	// CREATE MOBILIZED BODY
 	MobilizedBody::FunctionBased
 		simtkBody(system.updMatterSubsystem().updMobilizedBody(parentIndex),
