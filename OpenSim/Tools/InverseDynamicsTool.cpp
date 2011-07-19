@@ -41,6 +41,7 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/FunctionSet.h> 
 #include <OpenSim/Common/GCVSplineSet.h>
+#include <OpenSim/Common/Constant.h>
 #include "AnalyzeTool.h"
 
 using namespace OpenSim;
@@ -261,7 +262,8 @@ bool InverseDynamicsTool::run()
 					coordFunctions->insert(i,coordFunctions->get(coords[i].getName()));
 				}
 				else{
-					throw Exception("InverseDynamicsTool: coordinate file does not contain coordinate " + coords[i].getName());
+					coordFunctions->insert(i,new Constant(coords[i].getDefaultValue()));
+					std::cout << "InverseDynamicsTool: coordinate file does not contain coordinate " << coords[i].getName() << " assuming default value" << std::endl;
 				}
 			}
 			if(coordFunctions->getSize() > nq){
