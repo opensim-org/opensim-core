@@ -535,7 +535,7 @@ bool CMCTool::run()
 
 	if(desiredKinFlag) {
 		desiredKinStore->pad(60);
-		desiredKinStore->print("desiredKinematics_padded.sto");
+		if (_verbose) desiredKinStore->print("desiredKinematics_padded.sto");
 		if(_lowpassCutoffFrequency>=0) {
 			int order = 50;
 			cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
@@ -606,9 +606,11 @@ bool CMCTool::run()
 		delete uStore; uStore=NULL;
 
 		// Print dudt for debugging
-		Storage *dudtStore = qSet->constructStorage(2);
-		dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
-		delete dudtStore; dudtStore=NULL;
+		if (_verbose) {
+			Storage *dudtStore = qSet->constructStorage(2);
+			dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
+			delete dudtStore; dudtStore=NULL;
+		}
 	}
 
 	// ANALYSES
