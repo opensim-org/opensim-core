@@ -85,14 +85,12 @@ CMCTool::CMCTool() :
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useReflexes(_useReflexesProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -117,14 +115,12 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-	_useReflexes(_useReflexesProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -189,14 +185,12 @@ CMCTool(const CMCTool &aTool) :
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
-    _useReflexes(_useReflexesProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_optimizerDX(_optimizerDXProp.getValueDbl()),
 	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
-	_adjustKinematicsToReduceResiduals(_adjustKinematicsToReduceResidualsProp.getValueBool()),
 	_verbose(_verboseProp.getValueBool())
 {
 	setType("CMCTool");
@@ -239,16 +233,14 @@ setNull()
     _useCurvatureFilter = true; 		 
     _useFastTarget = true;
 	_optimizerAlgorithm = "ipopt";
-	_useReflexes = false;
 	_optimizerDX = 1.0e-4;
 	_convergenceCriterion = 1.0e-6;
 	_maxIterations = 100;
 	_printLevel = 0;
-	_adjustKinematicsToReduceResiduals = false;
 	_verbose = false;
 
     _replaceForceSet = false;   // default should be false for Forward.
-
+	_solveForEquilibriumForAuxiliaryStates = true;
 
 }
 //_____________________________________________________________________________
@@ -316,12 +308,6 @@ void CMCTool::setupProperties()
     _useCurvatureFilterProp.setComment(comment); 		 
     _useCurvatureFilterProp.setName("use_curvature_filter"); 		 
     _propertySet.append( &_useCurvatureFilterProp );
-	comment = "Flag (true or false) indicating whether or not to use reflexes.  This is a hook ";
-	comment += "for users wanting to modify controls based on additonal information.";
-
-	_useReflexesProp.setComment(comment);
-	_useReflexesProp.setName("use_reflexes");
-	_propertySet.append( &_useReflexesProp );
 
     comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";  	 	 
     comment += "The fast target requires the desired accelerations to be met. "; 		 
@@ -360,13 +346,6 @@ void CMCTool::setupProperties()
 	_printLevelProp.setComment(comment);
 	_printLevelProp.setName("optimizer_print_level");
 	_propertySet.append( &_printLevelProp );
-
-	comment = "Flag (true or false) indicating whether or not to adjust the kinematics "
-			    "in order to reduce residuals.  Set this flag to false in order to only adjust the "
-				 "model's center of mass without adjusting kinematics";
-	_adjustKinematicsToReduceResidualsProp.setComment(comment);
-	_adjustKinematicsToReduceResidualsProp.setName("adjust_kinematics_to_reduce_residuals");
-	_propertySet.append( &_adjustKinematicsToReduceResidualsProp );
 
 	comment = "True-false flag indicating whether or not to turn on verbose printing for cmc.";
 	_verboseProp.setComment(comment);
@@ -407,10 +386,8 @@ operator=(const CMCTool &aTool)
 	_convergenceCriterion = aTool._convergenceCriterion;
     _useFastTarget = aTool._useFastTarget;
 	_optimizerAlgorithm = aTool._optimizerAlgorithm;
-	_useReflexes = aTool._useReflexes;
 	_maxIterations = aTool._maxIterations;
 	_printLevel = aTool._printLevel;
-	_adjustKinematicsToReduceResiduals = aTool._adjustKinematicsToReduceResiduals;
 	_verbose = aTool._verbose;
 
 	return(*this);
@@ -877,12 +854,12 @@ bool CMCTool::run()
     controller->updControlSet().print(getResultsDir() + "/" + getName() + "_controls.xml");
 	_model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
 	manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
-
+	/*
 	Storage statesDegrees(manager.getStateStorage());
 	_model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 	statesDegrees.setWriteSIMMHeader(true);
 	statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
-
+	*/
 	controller->getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
 	//_model->removeController(controller); // So that if this model is from GUI it doesn't double-delete it.
@@ -925,6 +902,7 @@ addNecessaryAnalyses()
 		act->setStepInterval(stepInterval);
 		_model->addAnalysis(act);
 	}
+	
 	// Add Kinematics if necessary
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
@@ -935,10 +913,12 @@ addNecessaryAnalyses()
 		kin = new Kinematics(_model);
         kin->setModel(*_model );
 		kin->setStepInterval(stepInterval);
-		kin->getPositionStorage()->setWriteSIMMHeader(true);
+		//kin->getPositionStorage()->setWriteSIMMHeader(true);
+		kin->setInDegrees(true);
 		_model->addAnalysis(kin);
 	} else {
-		kin->getPositionStorage()->setWriteSIMMHeader(true);
+		kin->setInDegrees(true);
+		//kin->getPositionStorage()->setWriteSIMMHeader(true);
 	}
 }
 

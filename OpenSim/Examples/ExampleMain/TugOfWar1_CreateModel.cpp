@@ -68,5 +68,6 @@ int main()
     }
 
     std::cout << "OpenSim example completed successfully.\n";
+	std::cin.get();
 	return 0;
 }

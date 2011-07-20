@@ -179,7 +179,7 @@ void InverseKinematicsTool::setupProperties()
 	_accuracyProp.setComment("The accuracy of the solution in absolute terms. I.e. the number of significant"
 	    "digits to which the solution can be trusted.");
 	_accuracyProp.setName("accuracy");
-	_accuracyProp.setValue(1e-3);
+	_accuracyProp.setValue(1e-5);
 	_propertySet.append( &_accuracyProp );
 
 	_ikTaskSetProp.setComment("Markers and coordinates to be considered (tasks) and their weightings.");
@@ -205,7 +205,7 @@ void InverseKinematicsTool::setupProperties()
 	_reportErrorsProp.setComment("Flag (true or false) indicating whether or not to report marker "
 		"and coordinate errors from the inverse kinematics solution.");
 	_reportErrorsProp.setName("report_errors");
-	_reportErrorsProp.setValue(false);
+	_reportErrorsProp.setValue(true);
 	_propertySet.append(&_reportErrorsProp);
 
 	_outputMotionFileNameProp.setComment("Name of the motion file (.mot) to which the results should be written.");
@@ -243,6 +243,8 @@ operator=(const InverseKinematicsTool &aTool)
 	_accuracy = aTool._accuracy;
 	_ikTaskSet = aTool._ikTaskSet;
 	_markerFileName = aTool._markerFileName;
+	_timeRange = aTool._timeRange;
+	_reportErrors = aTool._reportErrors; 
 	_coordinateFileName = aTool._coordinateFileName;
 	_reportErrors = aTool._reportErrors;
 	_outputMotionFileName = aTool._outputMotionFileName;
@@ -362,7 +364,7 @@ bool InverseKinematicsTool::run()
 		double dt = 1.0/markersReference.getSamplingFrequency();
 		int Nframes = int((final_time-start_time)/dt)+1;
 		AnalysisSet& analysisSet = _model->updAnalysisSet();
-
+		analysisSet.begin(s);
 		// number of markers
 		int nm = markerWeights.getSize();
 		SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
@@ -397,12 +399,13 @@ bool InverseKinematicsTool::run()
 
 		// Do the maneuver to change then restore working directory 
 		// so that output files are saved to same folder as setup file.
+		if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
 		string saveWorkingDirectory = IO::getCwd();
 		if (_document)	// When the tool is created live from GUI it has no file/document association
 			IO::chDir(IO::getParentDirectory(getDocumentFileName()));
 		kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
 		IO::chDir(saveWorkingDirectory);
-
+		}
 		success = true;
 
 		cout << "InverseKinematicsTool: " << Nframes-1 << " frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
@@ -426,6 +429,7 @@ void InverseKinematicsTool::updateFromXMLNode()
 		if (documentVersion < 20300){
 			std::string origFilename = getDocumentFileName();
 			newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
+			cout << "Old version setup file encountered. Converting to new file "<< newFileName << endl;
 			SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
 			doc.writeToFile(newFileName);
 		}
@@ -437,14 +441,46 @@ void InverseKinematicsTool::updateFromXMLNode()
 				int curVersion = root.getRequiredAttributeValueAs<int>("Version");
 				if (curVersion <= 20201) root.setAttributeValue("Version", "20300");
 				Xml::element_iterator iter(root.element_begin("IKTool"));
-				// need to test this path but don't know if these files were ever generated
+				iter->setElementTag("InverseKinemtaticsTool");
+				Xml::element_iterator toolIter(iter->element_begin("IKTrialSet"));
+				// No optimizer_algorithm specification anymore
+				Xml::element_iterator optIter(iter->element_begin("optimizer_algorithm"));
+				if (optIter!= iter->element_end())
+					iter->eraseNode(optIter);
+
+				Xml::element_iterator objIter(toolIter->element_begin("objects")); 
+				Xml::element_iterator trialIter(objIter->element_begin("IKTrial")); 
+				// Move children of (*trialIter) to root
+				Xml::node_iterator p = trialIter->node_begin();
+				for (; p!= trialIter->node_end(); ++p) {
+					iter->insertNodeAfter( iter->node_end(), p->clone());
+			}
+				// Append constraint_weight of 100 and accuracy of 1e-5
+				iter->insertNodeAfter( iter->node_end(), Xml::Comment(_constraintWeightProp.getComment()));
+				iter->insertNodeAfter( iter->node_end(), Xml::Element("constraint_weight", "20.0"));
+				iter->insertNodeAfter( iter->node_end(), Xml::Comment(_accuracyProp.getComment()));
+				iter->insertNodeAfter( iter->node_end(), Xml::Element("accuracy", "1e-5"));
+				// erase node for IKTrialSet
+				iter->eraseNode(toolIter);	
+				Xml::Document newDocument;
+				Xml::Element docElement= newDocument.getRootElement();
+				docElement.setAttributeValue("Version", "20300");
+				docElement.setElementTag("OpenSimDocument");
+				// Copy all children of root to newRoot
+				docElement.insertNodeAfter(docElement.node_end(), iter->clone());
+				newDocument.writeToFile(newFileName);
+				_document = new XMLDocument(newFileName);
+				_node = _document->getRootDataElement();
 			}
 			else { 
 				if (root.getElementTag()=="IKTool"){
 					root.setElementTag("InverseKinemtaticsTool");
 					Xml::element_iterator toolIter(root.element_begin("IKTrialSet"));
+					if (toolIter== root.element_end())
+						throw (Exception("Old IKTool setup file doesn't have required IKTrialSet element.. Aborting"));
 					// No optimizer_algorithm specification anymore
 					Xml::element_iterator optIter(root.element_begin("optimizer_algorithm"));
+					if (optIter!= root.element_end())
 					root.eraseNode(optIter);
 
 					Xml::element_iterator objIter(toolIter->element_begin("objects")); 

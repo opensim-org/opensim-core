@@ -94,8 +94,11 @@ void JointSet::createSystem(SimTK::MultibodySystem& system) const
         const Joint& joint = static_cast<const Joint&>(get(i));
         bodyMap[&joint.getBody()] = i;
     }
-    for (int i = 0; i < getSize(); i++)
+	for (int i = 0; i < getSize(); i++){
+		if (getDebugLevel()>=2) cout << "Calling createSystem for Joint " << get(i).getName() << " ..." << endl;
         createSystemForOneJoint(system, i, bodyMap, hasProcessed);
+
+	}
 }
 
 void JointSet::createSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const map<Body*, int>& bodyMap, vector<bool>& hasProcessed) const

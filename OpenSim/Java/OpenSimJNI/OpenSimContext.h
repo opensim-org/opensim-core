@@ -118,8 +118,8 @@ public:
 	double getActivation(Muscle& act);
 	double getMuscleLength(Muscle& act);
 	const Array<PathPoint*>& getCurrentPath(Muscle& act);
-	const Array<PathPoint*>& getCurrentDisplayPath(Muscle& act);
-	void updateDisplayer(Muscle& m);
+	const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
+	void updateDisplayer(Force& f);
     void copyMuscle(Muscle& from, Muscle& to);
 	// Muscle Points
 	void setXFunction(MovingPathPoint& mmp, Function& newFunction);
@@ -147,6 +147,11 @@ public:
 	// Markers
 	void setBody(Marker& currentMarker, Body& newBody, bool  b);
 	int replaceMarkerSet(Model& model, MarkerSet& aMarkerSet);
+
+	void getCenterOfMassInGround(double com[3]) const {
+		SimTK::Vec3 comV = _model->getMatterSubsystem().calcSystemMassCenterLocationInGround(*_configState);
+		for(int i=0; i<3; i++) com[i] = comV[i];
+	}
 	// Analyses
 	int step(Analysis& analysis);
 	// Tools

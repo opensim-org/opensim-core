@@ -54,6 +54,9 @@ namespace OpenSim {
  */
 class OSIMTOOLS_API Tool: public Object
 {
+public:
+	/** Perturbation types. See setPerturbation(). */
+	enum VerboseLevel {Quiet=0, Progress=1, DetailedProgress=2, Debug=3};
 //=============================================================================
 // DATA
 //=============================================================================
@@ -67,6 +70,8 @@ protected:
 	PropertyStr _resultsDirProp;
 	std::string &_resultsDir;
 	
+	/** How much details to put out while running. */
+	VerboseLevel _verboseLevel;
 	
 //=============================================================================
 // METHODS
@@ -122,6 +127,7 @@ private:
 		setupProperties();
 		_resultsDir = "./"; 
 		_inputsDir = "";
+		_verboseLevel = Progress;
 	};
 	
 	/**
@@ -158,6 +164,7 @@ public:
 		{	Object::operator=(aTool);	
 			_resultsDir = aTool._resultsDir; 
 			_inputsDir == aTool._inputsDir;
+			_verboseLevel = aTool._verboseLevel;
 			return(*this);};
 
 #endif
@@ -190,6 +197,11 @@ public:
 	const std::string& getResultsDir() const { return _resultsDir; }
 	void setResultsDir(const std::string& aString) { _resultsDir = aString; }
 
+	/**
+	 * Get/Set verbose level
+	 */
+	const VerboseLevel getVerboseLevel() const { return _verboseLevel; };
+	void setVerboseLevel(const VerboseLevel aVerboseLevel) { _verboseLevel = aVerboseLevel; };
 //=============================================================================
 };	// END of class Tool
 

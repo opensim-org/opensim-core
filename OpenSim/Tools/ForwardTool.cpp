@@ -49,45 +49,6 @@ using namespace SimTK;
 using namespace OpenSim;
 
 
-void extractConfiguration(int nq, int nu, const Storage &aYStore,Storage &rQStore,Storage &rUStore)
-{
-	int nqnu = nq+nu;
-
-	// CONFIGURE
-	// Names
-	rQStore.setName("Coordinates");
-	rUStore.setName("Speeds");
-	// Description
-	rQStore.setDescription(aYStore.getDescription());
-	rUStore.setDescription(aYStore.getDescription());
-	// Column labels
-	OpenSim::Array<string> qLabels("",nq),uLabels("",nu);
-	OpenSim::Array<string> labels = aYStore.getColumnLabels();
-	for(int i=0;i<nq;i++) qLabels[i] = labels[i];
-	for(int i=0;i<nu;i++) uLabels[i] = labels[nq+i];
-	rQStore.setColumnLabels(qLabels);
-	rUStore.setColumnLabels(uLabels);
-	// Purge
-	rQStore.purge();
-	rUStore.purge();
-
-	// LOOP THROUGH STATES
-	int size = aYStore.getSize();
-	StateVector *vector;
-	double time;
-	OpenSim::Array<double> data(0.0);
-	OpenSim::Array<double> q(0.0,nq);
-	for(int i=0;i<size;i++) {
-		vector = aYStore.getStateVector(i);
-		if(vector->getSize()<nqnu) continue;
-		time = vector->getTime();
-		data = vector->getData();
-		rQStore.append(time,nq,&data[0]);
-		rUStore.append(time,nu,&data[nq]);
-	}
-}
-
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -108,29 +69,7 @@ ForwardTool::~ForwardTool()
 ForwardTool::ForwardTool() :
 	AbstractTool(),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
-	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
-	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
-	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
-	_body2TorSpringActive(_body2TorSpringActiveProp.getValueBool()),
-	_body1TorSpringTimeOn(_body1TorSpringTimeOnProp.getValueDbl()),
-	_body1TorSpringTimeOff(_body1TorSpringTimeOffProp.getValueDbl()),
-	_body2TorSpringTimeOn(_body2TorSpringTimeOnProp.getValueDbl()),
-	_body2TorSpringTimeOff(_body2TorSpringTimeOffProp.getValueDbl()),
-	_tau(_tauProp.getValueDbl()),
-	_tauBody1On(_tauBody1OnProp.getValueDbl()),
-	_tauBody1Off(_tauBody1OffProp.getValueDbl()),
-	_tauBody2On(_tauBody2OnProp.getValueDbl()),
-	_tauBody2Off(_tauBody2OffProp.getValueDbl()),
-	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
-	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
-	_forceThreshold(_forceThresholdProp.getValueDbl()),
-	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblVec()),
-	_bLin(_bLinProp.getValueDblVec()),
-	_kTor(_kTorProp.getValueDblVec()),
-	_bTor(_bTorProp.getValueDblVec())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
 	setType("ForwardTool");
 	setNull();
@@ -147,29 +86,7 @@ ForwardTool::ForwardTool() :
 ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aLoadModel) :
 	AbstractTool(aFileName, false),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
-	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
-	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
-	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
-	_body2TorSpringActive(_body2TorSpringActiveProp.getValueBool()),
-	_body1TorSpringTimeOn(_body1TorSpringTimeOnProp.getValueDbl()),
-	_body1TorSpringTimeOff(_body1TorSpringTimeOffProp.getValueDbl()),
-	_body2TorSpringTimeOn(_body2TorSpringTimeOnProp.getValueDbl()),
-	_body2TorSpringTimeOff(_body2TorSpringTimeOffProp.getValueDbl()),
-	_tau(_tauProp.getValueDbl()),
-	_tauBody1On(_tauBody1OnProp.getValueDbl()),
-	_tauBody1Off(_tauBody1OffProp.getValueDbl()),
-	_tauBody2On(_tauBody2OnProp.getValueDbl()),
-	_tauBody2Off(_tauBody2OffProp.getValueDbl()),
-	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
-	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
-	_forceThreshold(_forceThresholdProp.getValueDbl()),
-	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblVec()),
-	_bLin(_bLinProp.getValueDblVec()),
-	_kTor(_kTorProp.getValueDblVec()),
-	_bTor(_bTorProp.getValueDblVec())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
 	setType("ForwardTool");
 	setNull();
@@ -223,29 +140,7 @@ ForwardTool::
 ForwardTool(const ForwardTool &aTool) :
 	AbstractTool(aTool),
 	_statesFileName(_statesFileNameProp.getValueStr()),
-	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool()),
-	_outputDetailedResults(_outputDetailedResultsProp.getValueBool()),
-	_body1LinSpringActive(_body1LinSpringActiveProp.getValueBool()),
-	_body1TorSpringActive(_body1TorSpringActiveProp.getValueBool()),
-	_body2LinSpringActive(_body2LinSpringActiveProp.getValueBool()),
-	_body2TorSpringActive(_body2TorSpringActiveProp.getValueBool()),
-	_body1TorSpringTimeOn(_body1TorSpringTimeOnProp.getValueDbl()),
-	_body1TorSpringTimeOff(_body1TorSpringTimeOffProp.getValueDbl()),
-	_body2TorSpringTimeOn(_body2TorSpringTimeOnProp.getValueDbl()),
-	_body2TorSpringTimeOff(_body2TorSpringTimeOffProp.getValueDbl()),
-	_tau(_tauProp.getValueDbl()),
-	_tauBody1On(_tauBody1OnProp.getValueDbl()),
-	_tauBody1Off(_tauBody1OffProp.getValueDbl()),
-	_tauBody2On(_tauBody2OnProp.getValueDbl()),
-	_tauBody2Off(_tauBody2OffProp.getValueDbl()),
-	_springTransitionStartForce(_springTransitionStartForceProp.getValueDbl()),
-	_springTransitionEndForce(_springTransitionEndForceProp.getValueDbl()),
-	_forceThreshold(_forceThresholdProp.getValueDbl()),
-	_torqueThreshold(_torqueThresholdProp.getValueDbl()),
-	_kLin(_kLinProp.getValueDblVec()),
-	_bLin(_bLinProp.getValueDblVec()),
-	_kTor(_kTorProp.getValueDblVec()),
-	_bTor(_bTorProp.getValueDblVec())
+	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
 	setType("ForwardTool");
 	setNull();
@@ -283,10 +178,6 @@ void ForwardTool::setNull()
 
 	// Start parsing log as empty. 
 	_parsingLog="";
-    _body1Lin = 0;
-    _body2Lin = 0;
-    _body1Tor = 0;
-    _body2Tor = 0;
 }
 //_____________________________________________________________________________
 /**
@@ -323,114 +214,6 @@ void ForwardTool::setupProperties()
 	_useSpecifiedDtProp.setName("use_specified_dt");
 	_propertySet.append( &_useSpecifiedDtProp );
 
-	// CONTACT ON-OFF PROPERTIES
-	// Body1 Linear
-	_body1LinSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a linear corrective spring for external load body 1.");
-	_body1LinSpringActiveProp.setName("body1_linear_corrective_spring_active");
-	_propertySet.append(&_body1LinSpringActiveProp);
-
-	// Body1 Torsional
-	_body1TorSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a torsional corrective spring for external load body 1.");
-	_body1TorSpringActiveProp.setName("body1_torsional_corrective_spring_active");
-	_propertySet.append(&_body1TorSpringActiveProp);
-
-	_body1TorSpringTimeOnProp.setComment("Time at which the torsional spring comes on for body1 (if it is active). By default, this time is 0.0.");
-	_body1TorSpringTimeOnProp.setName("body1_torsional_corrective_spring_time_on");
-	_propertySet.append( &_body1TorSpringTimeOnProp );
-
-	_body1TorSpringTimeOffProp.setComment("Time at which the torsional spring turns off for body1 (if it is active). By default, this time is 0.0.");
-	_body1TorSpringTimeOffProp.setName("body1_torsional_corrective_spring_time_off");
-	_propertySet.append( &_body1TorSpringTimeOffProp );
-
-	// Body2 Linear
-	_body2LinSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a linear corrective spring for external load body 2.");
-	_body2LinSpringActiveProp.setName("body2_linear_corrective_spring_active");
-	_propertySet.append(&_body2LinSpringActiveProp);
-
-	// Body2 Torsional
-	_body2TorSpringActiveProp.setComment("True-false flag indicating whether or not to turn on a torsional corrective spring for external load body 2.");
-	_body2TorSpringActiveProp.setName("body2_torsional_corrective_spring_active");
-	_propertySet.append(&_body2TorSpringActiveProp);
-
-	_body2TorSpringTimeOnProp.setComment("Time at which the torsional spring comes on for body2 (if it is active). By default, this time is 0.0.");
-	_body2TorSpringTimeOnProp.setName("body2_torsional_corrective_spring_time_on");
-	_propertySet.append( &_body2TorSpringTimeOnProp );
-
-	_body2TorSpringTimeOffProp.setComment("Time at which the torsional spring turns off for body2 (if it is active). By default, this time is 0.0.");
-	_body2TorSpringTimeOffProp.setName("body2_torsional_corrective_spring_time_off");
-	_propertySet.append( &_body2TorSpringTimeOffProp );
-
-		// CORRECTIVE SPRING PARAMETERS
-	comment = "Force magnitude at which linear springs start to transition in.";
-	_springTransitionStartForceProp.setComment(comment);
-	_springTransitionStartForceProp.setName("linear_spring_transition_start_force");
-	_propertySet.append( &_springTransitionStartForceProp );
-
-	comment = "Force magnitude past which linear springs are fully activated.";
-	_springTransitionEndForceProp.setComment(comment);
-	_springTransitionEndForceProp.setName("linear_spring_transition_end_force");
-	_propertySet.append( &_springTransitionEndForceProp );
-
-	comment = "Rise time for scaling functions for the torsional corrective springs. "
-				 "This parameter determines how fast a torsional corrective spring is scaled on and off.";
-	_tauProp.setComment(comment);
-	_tauProp.setName("torsional_spring_scaling_rise_time");
-	_propertySet.append( &_tauProp );
-
-	comment = "Override scaling rise time for the on transition of the body1 torsional corrective spring.";
-	_tauBody1OnProp.setComment(comment);
-	_tauBody1OnProp.setName("body1_scaling_rise_time_on");
-	_propertySet.append( &_tauBody1OnProp );
-
-	comment = "Override scaling rise time for the off transition out of the body1 torsional corrective spring.";
-	_tauBody1OffProp.setComment(comment);
-	_tauBody1OffProp.setName("body1_scaling_rise_time_off");
-	_propertySet.append( &_tauBody1OffProp );
-
-	comment = "Override scaling rise time for the on transition of the body2 torsional corrective spring.";
-	_tauBody2OnProp.setComment(comment);
-	_tauBody2OnProp.setName("body2_scaling_rise_time_on");
-	_propertySet.append( &_tauBody2OnProp );
-
-	comment = "Override scaling rise time for the off transition of the body2 torsional corrective spring.";
-	_tauBody2OffProp.setComment(comment);
-	_tauBody2OffProp.setName("body2_scaling_rise_time_off");
-	_propertySet.append( &_tauBody2OffProp );
-
-	comment ="Force magnitude below which the linear corrective springs exert no force. "
-				"Setting this parameter to a small positive number will make it possible to "
-				"open-loop simulation for a longer period of time with less drift.";
-	_forceThresholdProp.setComment(comment);
-	_forceThresholdProp.setName("spring_force_threshold");
-	_propertySet.append( &_forceThresholdProp );
-
-	comment ="Torque magnitude below which the torsional corrective springs exert no force. "
-				"Setting this parameter to a small positive number will make it possible to "
-				"open-loop simulation for a longer period of time with less drift.";
-	_torqueThresholdProp.setComment(comment);
-	_torqueThresholdProp.setName("spring_torque_threshold");
-	_propertySet.append( &_torqueThresholdProp );
-
-	_kLinProp.setComment("Stiffness for linear (translational) corrective springs");
-	_kLinProp.setName("corrective_spring_linear_stiffness");
-	_propertySet.append( &_kLinProp );
-
-	_bLinProp.setComment("Damping for linear (translational) corrective springs");
-	_bLinProp.setName("corrective_spring_linear_damping");
-	_propertySet.append( &_bLinProp );
-
-	_kTorProp.setComment("Stiffness for torsional corrective springs");
-	_kTorProp.setName("corrective_spring_torsional_stiffness");
-	_propertySet.append( &_kTorProp );
-
-	_bTorProp.setComment("Damping for torsional corrective springs");
-	_bTorProp.setName("corrective_spring_torsional_damping");
-	_propertySet.append( &_bTorProp );
-
-	comment = "Record and output corrective spring forces, amoung other quantities.";
-	_outputDetailedResultsProp.setComment(comment);
-	_outputDetailedResultsProp.setName("output_detailed_results");
-	_propertySet.append( &_outputDetailedResultsProp );
 
 }
 
@@ -454,9 +237,6 @@ operator=(const ForwardTool &aTool)
 	// BASIC INPUT
 	_statesFileName = aTool._statesFileName;
 	_useSpecifiedDt = aTool._useSpecifiedDt;
-
-	_outputDetailedResults = aTool._outputDetailedResults;
-
 
 	return(*this);
 }
@@ -605,138 +385,6 @@ void ForwardTool::printResults()
 //=============================================================================
 // UTILITY
 //=============================================================================
-/**
- * Add corrective springs.
- */
-// TODO: Remove unused input storage
-void ForwardTool::addCorrectiveSprings(SimTK::State &s, const Storage* aUnused, const PrescribedForce *aBody1Force,const PrescribedForce *aBody2Force)
-{
-       if(_yStore!=NULL) {
-             Storage qStore,uStore;
-             extractConfiguration(_model->getNumCoordinates(), _model->getNumSpeeds(), *_yStore, qStore, uStore);
-             Body *body1 = &_model->updBodySet().get(aBody1Force->getBodyName());
-             Body *body2 = &_model->updBodySet().get(aBody2Force->getBodyName());
-
-             // Body1 Linear
-             if(_body1LinSpringActive) {
-                  _body1Lin = addLinearCorrectiveSpring(s, qStore,uStore,*aBody1Force);
-             }
-             // Body1 Torsional
-             if(_body1TorSpringActive) {
-                  double tauOn = _tauBody1OnProp.getUseDefault() ? _tau : _tauBody1On;
-                  double tauOff = _tauBody1OffProp.getUseDefault() ? _tau : _tauBody1Off;
-                  _body1Tor = addTorsionalCorrectiveSpring(s, qStore,uStore,body1,tauOn,_body1TorSpringTimeOn,tauOff,_body1TorSpringTimeOff);
-             }
-
-             // Body2 Linear
-             if(_body2LinSpringActive) {
-                  _body2Lin = addLinearCorrectiveSpring(s, qStore,uStore,*aBody2Force);
-             }
-             // Body2 Torsional
-             if(_body2TorSpringActive) {
-                  double tauOn = _tauBody2OnProp.getUseDefault() ? _tau : _tauBody2On;
-                  double tauOff = _tauBody2OffProp.getUseDefault() ? _tau : _tauBody2Off;
-                  _body2Tor = addTorsionalCorrectiveSpring(s, qStore,uStore,body2,tauOn,_body2TorSpringTimeOn,tauOff,_body2TorSpringTimeOff);
-             }
-       }
-}
-//_____________________________________________________________________________
-/**
- * Add a linear corrective spring.
- */
-LinearSpring* ForwardTool::addLinearCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore,const PrescribedForce &aAppliedForce)
-{
-	double dtScale=0.001;
-	double tiScale = aQStore.getFirstTime();
-	double tfScale = aQStore.getLastTime();
-	Array<double> timeScale(0.0);
-	Array<double> linearScale(0.0);
-
-	cout<<"Linear corrective spring parameters:"<<endl;
-	cout<<"\tSpring transition forces: "<<_springTransitionStartForce<<" "<<_springTransitionEndForce<<endl;
-
-	// Create scale function
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		if (tScale > _tf)
-			break;
-		timeScale.append(tScale);
-		Vec3 force = aAppliedForce.getForceAtTime(tScale);
-		linearScale.append(Step(force.norm(),_springTransitionStartForce,_springTransitionEndForce));
-	}
-	GCVSpline *scaleSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&linearScale[0]);
-	scaleSpline->setName("ScaleForLinearCorrectiveSpring");
-
-	// Create linear spring
-	LinearSpring *spring = new LinearSpring(aAppliedForce.getBody(), tiScale, tfScale);
-
-	//Gymnastics to get the PrescribedForce point functions (3) into a VectorFunction for the spring
-	Function *px=NULL, *py=NULL, *pz=NULL;
-	const FunctionSet& pointFunctions=aAppliedForce.getPointFunctions();
-	VectorGCVSplineR1R3 *pFunc = new VectorGCVSplineR1R3();
-	pFunc->setSplineY0((GCVSpline *)&pointFunctions[0]); 
-	pFunc->setSplineY1((GCVSpline *)&pointFunctions[1]);
-	pFunc->setSplineY2((GCVSpline *)&pointFunctions[2]);
-	
-	spring->setPointFunction((VectorFunction*)pFunc);
-	spring->computeTargetFunctions(s, aQStore,aUStore);
-	spring->setKValue(_kLin);
-	spring->setBValue(_bLin);
-	spring->setThreshold(_forceThreshold);
-	spring->setScaleFunction(scaleSpline);
-	//if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
-	_model->addForce(spring);
-
-	return(spring);
-}
-//_____________________________________________________________________________
-/**
- * Add a torsional corrective spring.
- */
-TorsionalSpring* ForwardTool::addTorsionalCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore, 
-														   OpenSim::Body *aBody,double aTauOn,double aTimeOn,double aTauOff,double aTimeOff)
-{
-	// SCALING FUNCTIONS FOR SPRINGS
-	double dtScale=0.001;
-	double tiScale = aQStore.getFirstTime();
-	double tfScale = aQStore.getLastTime();
-	Array<double> timeScale(0.0);
-	Array<double> torsionalScale(0.0);
-
-	cout<<"Torsional corrective spring parameters:" << endl;
-	cout<<"\tTau values: on="<<aTauOn<<", off="<<aTauOff<<endl;
-
-	// Create scaling functions
-	for(double tScale=tiScale;tScale<=tfScale;tScale+=dtScale) {
-		timeScale.append(tScale);
-		double value1 = SigmaUp(aTauOn,aTimeOn,tScale);
-		double value2 = SigmaDn(aTauOff,aTimeOff,tScale);
-		torsionalScale.append(value1+value2-1.0);
-	}
-	GCVSpline *scaleSpline = new GCVSpline(3,timeScale.getSize(),&timeScale[0],&torsionalScale[0]);
-	scaleSpline->setName("ScaleForTorsionalCorrectiveSpring");
-
-	TorsionalSpring *spring = new TorsionalSpring(*aBody, tiScale, tfScale);
-	spring->computeTargetFunctions(s, aQStore, aUStore);
-	spring->setKValue(_kTor);
-	spring->setBValue(_bTor);
-	spring->setThreshold(_torqueThreshold);
-	spring->setScaleFunction(scaleSpline);
-	//if(_outputDetailedResults) spring->setRecordAppliedLoads(true);
-	_model->addForce(spring);
-
-	return(spring);
-}
-
-/**
- * Determine initial time for a simulation and find the index into the
- * states storage for that time.
- *
- * @param rTI Requested initial time for the simulation.  If the time does not
- * match a time in the states storage exactly, the initial time is altered so
- * that there is an exact match.
- * @return Index into the states storage corresponding to the initial states
- * for the simulation.  A return of -1 indicates no valid states.
- */
 int ForwardTool::determineInitialTimeFromStatesStorage(double &rTI)
 {
 	int index = -1;

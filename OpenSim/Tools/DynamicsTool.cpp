@@ -238,7 +238,17 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	std::string savedCwd = IO::getCwd();
 	IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
 	// Create external forces
+	try {
 	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+	}
+	 catch (const Exception &ex) {
+		// Important to catch exceptions here so we can restore current working directory...
+		// And then we can rethrow the exception
+		 cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
+			 << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
+		if(_document) IO::chDir(savedCwd);
+		throw(ex);
+	}
 	_externalLoads.setMemoryOwner(false);
 	_externalLoads.setup(aModel);
 

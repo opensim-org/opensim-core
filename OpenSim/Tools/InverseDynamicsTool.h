@@ -66,6 +66,7 @@ class OSIMTOOLS_API InverseDynamicsTool: public DynamicsTool
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
+	Storage* _coordinateValues;
 protected:
 	
 	/** name of storage file that contains coordinate values for inverse dynamics solving */
@@ -112,6 +113,9 @@ public:
 	//--------------------------------------------------------------------------	
 	// GET AND SET
 	//--------------------------------------------------------------------------
+	void setCoordinateValues(const OpenSim::Storage& aStorage);
+	bool hasCoordinateValues();
+
 	std::string getOutputGenForceFileName() { return _outputGenForceFileName;}
 	const std::string& getCoordinatesFileName() const { return _coordinatesFileName;};
 	void setCoordinatesFileName(const std::string& aCoordinateFile)  { 

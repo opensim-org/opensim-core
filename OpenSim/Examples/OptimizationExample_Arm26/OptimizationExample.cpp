@@ -64,7 +64,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		((ControlSetController *)(&osimModel.updControllerSet()[0]))->updControlSet()->setControlValues(finalTime, &newControls[0]);
         
 		// Create the integrator for the simulation.
-		RungeKuttaMersonIntegrator integrator(osimModel.getSystem());
+		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-5);
 
 		// Create a manager to run the simulation
@@ -73,7 +73,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
-		osimModel.getSystem().realize(s, Stage::Acceleration);
+		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 		manager.integrate(s);
 
 		/* Calculate the scalar quantity we want to minimize or maximize. 
@@ -84,7 +84,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 		Vec3 massCenter;
 		Vec3 velocity;
 		osimModel.getBodySet().get("r_ulna_radius_hand").getMassCenter(massCenter);
-		osimModel.getSystem().realize(s, Stage::Acceleration);
+		osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 		osimModel.getSimbodyEngine().getVelocity(s, osimModel.getBodySet().get("r_ulna_radius_hand"), massCenter, velocity);
 		
 		f = -velocity[0];
@@ -167,7 +167,7 @@ int main()
 		const OpenSim::Set<OpenSim::Actuator> &muscleSet = osimModel.getActuators();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
 			Actuator* act = &muscleSet.get(i);
-			OpenSim::Muscle* mus = dynamic_cast<Muscle*>(act);
+			OpenSim::ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(act);
 			mus->setDefaultActivation(0.5);
 			mus->setDefaultFiberLength(0.1);
 			// mus->initState(si);

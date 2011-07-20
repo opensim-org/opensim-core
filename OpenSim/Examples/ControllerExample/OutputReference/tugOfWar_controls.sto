@@ -1,6 +1,8 @@
 controls
+version=1
 nRows=454
 nColumns=3
+inDegrees=no
 endheader
 time	muscle1	muscle2
       0.00000000	      0.00000000	      0.00000000

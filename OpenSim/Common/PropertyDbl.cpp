@@ -36,7 +36,7 @@
 //============================================================================
 #include "PropertyDbl.h"
 #include <cstdio>
-
+#include "SimTKmath.h"
 
 
 
@@ -179,7 +179,13 @@ const string &PropertyDbl::
 toString()
 {
 	char dbl[256];
+	if (_value==SimTK::Infinity)
+		_valueString= "infinity";
+	else if (_value==-SimTK::Infinity)
+		_valueString= "-infinity";
+	else {
 	sprintf(dbl, "%g", _value);
 	_valueString = string(dbl);
+	}
 	return (_valueString);
 }

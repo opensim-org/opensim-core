@@ -178,6 +178,6 @@ getValueBool() const
 const string &PropertyBool::
 toString()
 {
-	_valueString = _value? "True" : "False";
+	_valueString = _value? "true" : "false";
 	return (_valueString);
 }

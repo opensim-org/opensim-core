@@ -532,8 +532,9 @@ void Model::createSystem()
 
     // Let all the ModelComponents add their parts to the System.
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
-
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Bodies..." << endl;
 	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Joints..." << endl;
 	for(int i=0;i<getBodySet().getSize();i++) {
 		OpenSim::Body& body = getBodySet().get(i);
 		MobilizedBodyIndex idx(body.getIndex());
@@ -542,17 +543,21 @@ void Model::createSystem()
 	}
 
     static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Constraints..." << endl;
     static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Contact Geometry..." << endl;
 
 
     // Add extra constraints for coordinates.
 	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).createSystem(*_system);
-
+	if (getDebugLevel()>=2) cout << "Finished adding constraints for coordinates.." << endl;
 
     static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for forces.." << endl;
 
 	// controllers add their parts to the System.
     static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for controllers.." << endl;
 }
 
 //_____________________________________________________________________________
@@ -996,7 +1001,7 @@ void Model::setStateValues(SimTK::State& s, double* aStateValues) const
 	const SimTK::Stage& currentStage=s.getSystemStage();
 	for(int i=0; i< _stateYIndices.getSize(); i++) // initialize to NaN
 			s.updY()[_stateYIndices[i]]=aStateValues[i]; 
-	 _system->realize(s, currentStage );
+	 _system->realize(s, SimTK::Stage::Velocity );
 }
 //=============================================================================
 // INITIAL STATES

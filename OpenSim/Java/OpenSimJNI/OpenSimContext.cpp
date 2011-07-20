@@ -102,7 +102,7 @@ void OpenSimContext::setLocked(const Coordinate& coord, bool newValue) {
 }
 
 bool OpenSimContext::isConstrained(const Coordinate& coord) const {
-	return (coord.isConstrained(*_configState));
+	return (coord.isPrescribed(*_configState) ||  coord.isDependent(*_configState));
 }
 
 // Muscles
@@ -118,19 +118,26 @@ const Array<PathPoint*>& OpenSimContext::getCurrentPath(Muscle& m) {
 	return m.getGeometryPath().getCurrentPath(*_configState);
 }
 
-const Array<PathPoint*>& OpenSimContext::getCurrentDisplayPath(Muscle& m) {
-	m.updGeometryPath().updateGeometry(*_configState);
-	return m.getGeometryPath().getCurrentDisplayPath(*_configState);
+const Array<PathPoint*>& OpenSimContext::getCurrentDisplayPath(GeometryPath& g) {
+	g.updateGeometry(*_configState);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Velocity);
+	return g.getCurrentDisplayPath(*_configState);
 }
 
-void OpenSimContext::updateDisplayer(Muscle& m) {
-	return m.updateDisplayer(*_configState);
+void OpenSimContext::updateDisplayer(Force& f) {
+	// If muscle or force acting along a path then call respective updateDisplayer otherwise do nothing for now
+	if (dynamic_cast<Muscle*>(&f)!= NULL)
+		return dynamic_cast<Muscle*>(&f)->updateDisplayer(*_configState);
+	if (f.hasGeometryPath()){
+		Object& pathObj = f.getPropertySet().get("GeometryPath")->getValueObj();
+		dynamic_cast<GeometryPath*>(&pathObj)->updateDisplayer(*_configState);
+	}
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
 	to.copy(from);
 	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Velocity);
 	to.updGeometryPath().updateGeometry(*_configState);
 }
 

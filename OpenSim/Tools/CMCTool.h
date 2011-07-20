@@ -103,11 +103,6 @@ private:
     PropertyBool _useCurvatureFilterProp;  	 	 
     bool &_useCurvatureFilter;
 
-
-	/** Set whether or not to use reflexes. */
-	PropertyBool _useReflexesProp;
-	bool &_useReflexes;
-
     /** Flag indicating whether to use the fast CMC optimization
     target.  The fast target requires the desired accelerations to  	 	 
     be met within the tolerance set by the convergence criterion. 		 
@@ -134,9 +129,6 @@ private:
 	0 = no printing, ..., 3 = detailed printing. */
 	PropertyInt _printLevelProp;
 	int &_printLevel;
-	/** Flag indicating whether or not to adjust the kinematics in order to reduce residuals. */
-	PropertyBool _adjustKinematicsToReduceResidualsProp;
-	bool &_adjustKinematicsToReduceResiduals;
 	/** Flag for turning on and off verbose printing. */
 	PropertyBool _verboseProp;
 	bool &_verbose;
@@ -188,9 +180,6 @@ public:
 	const std::string &getRRAControlsFileName() { return _rraControlsFileName; }
 	void setRRAControlsFileName(const std::string &aFileName) { _rraControlsFileName = aFileName; }
 
-	bool getAdjustKinematicsToReduceResiduals() { return _adjustKinematicsToReduceResiduals; }
-	void setAdjustKinematicsToReduceResiduals(bool aAdjust) { _adjustKinematicsToReduceResiduals = aAdjust; }
-
 	double getLowpassCutoffFrequency() const { return _lowpassCutoffFrequency; }
 	void setLowpassCutoffFrequency(double aLowpassCutoffFrequency) { _lowpassCutoffFrequency = aLowpassCutoffFrequency; }
 
@@ -200,10 +189,6 @@ public:
 	// External loads get/set
 	const std::string &getExternalLoadsFileName() const { return _externalLoadsFileName; }
 	void setExternalLoadsFileName(const std::string &aFileName) { _externalLoadsFileName = aFileName; }
-	//const std::string &getExternalLoadsModelKinematicsFileName() const { return _externalLoadsModelKinematicsFileName; }
-	//void setExternalLoadsModelKinematicsFileName(const std::string &aFileName) { _externalLoadsModelKinematicsFileName = aFileName; }
-	//double getLowpassCutoffFrequencyForLoadKinematics() const { return _lowpassCutoffFrequencyForLoadKinematics; }
-	//void setLowpassCutoffFrequencyForLoadKinematics(double aLowpassCutoffFrequency) { _lowpassCutoffFrequencyForLoadKinematics = aLowpassCutoffFrequency; }
 
     // Target selection
     bool getUseFastTarget() const { return _useFastTarget;};  	 	 

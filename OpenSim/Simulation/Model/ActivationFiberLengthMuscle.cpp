@@ -315,7 +315,7 @@ double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s,
 ActivationFiberLengthMuscle& ActivationFiberLengthMuscle::operator=(const ActivationFiberLengthMuscle &aMuscle)
 {
 	// base class
-	Actuator::operator=(aMuscle);
+	Muscle::operator=(aMuscle);
 
 	copyData(aMuscle);
 

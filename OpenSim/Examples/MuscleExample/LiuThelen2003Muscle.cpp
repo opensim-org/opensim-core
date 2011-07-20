@@ -118,7 +118,6 @@ LiuThelen2003Muscle::LiuThelen2003Muscle(const LiuThelen2003Muscle &aMuscle) :
 	setNull();
 	setupProperties();
 	copyData(aMuscle);
-	setup(aMuscle.getModel());
 }
 
 //_____________________________________________________________________________
@@ -199,6 +198,9 @@ void LiuThelen2003Muscle::setup(Model& aModel)
 {
 	// Base class
 	Thelen2003Muscle::setup(aModel);
+
+	_stateVariableSuffixes.append("fatigue_factor");
+	_stateVariableSuffixes.append("recovery_factor");
 }
 
 void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const
@@ -208,36 +210,10 @@ void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const
 	setFiberLength(state, getOptimalFiberLength());
 	setActiveMotorUnits(state, 0.0);
 	setFatiguedMotorUnits(state, 0.0);
-	_model->getSystem().realize(state, SimTK::Stage::Velocity);
+	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 
 	// Compute isometric force to get starting value of _fiberLength.
 	computeEquilibrium(state);
-}
-
-void LiuThelen2003Muscle::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model) 
-{
-	Thelen2003Muscle::initStateCache(s, subsystemIndex, model);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy the property values from another actuator, which may not be
- * a LiuThelen2003Muscle. This method is most commonly used when
- * switching the type of a muscle in the OpenSim GUI. Because the
- * types of the two muscles are different, this method looks for
- * properties by name in the muscle to be copied.
- *
- * @param aActuator Actuator to copy property values from.
- */
-void LiuThelen2003Muscle::copyPropertyValues(Actuator& aActuator)
-{
-	Thelen2003Muscle::copyPropertyValues(aActuator);
-
-	const Property* prop = aActuator.getPropertySet().contains("fatigue_factor");
-	if (prop) _fatigueFactorProp.setValue(prop->getValueDbl());
-
-	prop = aActuator.getPropertySet().contains("recovery_factor");
-	if (prop) _recoveryFactorProp.setValue(prop->getValueDbl());
 }
 
 //=============================================================================
@@ -255,8 +231,6 @@ LiuThelen2003Muscle& LiuThelen2003Muscle::operator=(const LiuThelen2003Muscle &a
 	Muscle::operator=(aMuscle);
 
 	copyData(aMuscle);
-
-	setup(aMuscle.getModel());
 
 	return(*this);
 }
@@ -327,12 +301,13 @@ void LiuThelen2003Muscle::setDefaultFatiguedMotorUnits(double fatiguedMotorUnits
  * @param s  system state 
  * @param index 
  */
-void LiuThelen2003Muscle::computeStateDerivatives(const SimTK::State& s)
+SimTK::Vector LiuThelen2003Muscle::computeStateDerivatives(const SimTK::State& s)
 {
-	Thelen2003Muscle::computeStateDerivatives(s);
-
-	s.updZDot(_subsystemIndex)[_zIndex+STATE_ACTIVE_MOTOR_UNITS] = getActiveMotorUnitsDeriv(s);
-	s.updZDot(_subsystemIndex)[_zIndex+STATE_FATIGUED_MOTOR_UNITS] = getFatiguedMotorUnitsDeriv(s);
+	SimTK::Vector derivs(getNumStateVariables());
+	derivs.resize(4);
+	derivs[2] = getActiveMotorUnitsDeriv(s);
+	derivs[3] = getFatiguedMotorUnitsDeriv(s);
+	return derivs;
 }
 
 //_____________________________________________________________________________
@@ -342,7 +317,7 @@ void LiuThelen2003Muscle::computeStateDerivatives(const SimTK::State& s)
  */
 void LiuThelen2003Muscle::computeEquilibrium(SimTK::State& s) const
 {
-	double force = computeIsometricForce(s, getActivation(s));
+	computeIsometricForce(s, getActivation(s));
 }
 
 //_____________________________________________________________________________
@@ -355,9 +330,6 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
    double tendonForce;
    double normState[4], normStateDeriv[4], norm_tendon_length, ca;
    double norm_muscle_tendon_length, pennation_angle;
-
-	// Base Class (to calculate speed)
-	Muscle::computeLengtheningSpeed(s);
 
 	// Normalize the muscle states.
    normState[STATE_ACTIVATION] = getActivation(s);
@@ -377,7 +349,7 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
    else
       normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _deactivationTimeConstant;
 
-	pennation_angle = Muscle::calcPennation( normState[STATE_FIBER_LENGTH], 1.0, _pennationAngle);
+	pennation_angle = Muscle::calcPennation( normState[STATE_FIBER_LENGTH], 1.0, _pennationAngleAtOptimal);
    ca = cos(pennation_angle);
 
    norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
@@ -400,9 +372,9 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 		else 
 		{
          double h = norm_muscle_tendon_length - _tendonSlackLength;
-         double w = _optimalFiberLength * sin(_pennationAngle);
+         double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
          double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-			double new_pennation_angle = Muscle::calcPennation( new_fiber_length, 1.0, _pennationAngle);
+			double new_pennation_angle = Muscle::calcPennation( new_fiber_length, 1.0, _pennationAngleAtOptimal);
          double new_ca = cos(new_pennation_angle);
          normStateDeriv[STATE_FIBER_LENGTH] = getSpeed(s) / (Vmax * new_ca);
 		}
@@ -476,7 +448,7 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 int LiuThelen2003Muscle::getStateVariableYIndex(int index) const
 {
 	if (index<4 && index >=0)
-		return _model->getSystem().getDefaultState().getZStart()+_zIndex+index;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+index;
 	throw Exception("Trying to get State variable YIndex for LiuThelen2003Muscle "+getName()+" at undefined index"); 
 
 }

@@ -109,8 +109,6 @@ void setNull()
 {
 	setType("ControllableSpring");
 	setupProperties();
-	setNumStateVariables(0);
-	
 }
 
 /* since _restLength is a private member, define public methods 

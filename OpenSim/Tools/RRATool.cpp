@@ -866,12 +866,12 @@ bool RRATool::run()
     controller->updControlSet().print(getResultsDir() + "/" + getName() + "_controls.xml");
 	_model->printControlStorage(getResultsDir() + "/" + getName() + "_controls.sto");
 	manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
-
+	/*
 	Storage statesDegrees(manager.getStateStorage());
 	_model->getSimbodyEngine().convertRadiansToDegrees(statesDegrees);
 	statesDegrees.setWriteSIMMHeader(true);
 	statesDegrees.print(getResultsDir() + "/" + getName() + "_states_degrees.mot");
-
+	*/
 	controller->getPositionErrorStorage()->print(getResultsDir() + "/" + getName() + "_pErr.sto");
 
     if(_model->getAnalysisSet().getIndex("Actuation") != -1) {
@@ -925,8 +925,15 @@ writeAdjustedModel()
 		cerr<<"Warning: A name for the output model was not set.\n";
 		cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
 		cerr<<" in the setup file.\n";
+		if (_document!=NULL){
+			string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+			_outputModelFile = directoryOfSetupFile+"adjusted_model.osim";
+		}
+		else{
 		cerr<<"Writing to adjusted_model.osim ...\n\n";
 		_outputModelFile = "adjusted_model.osim";
+	}
+		cerr<<"Writing to " <<_outputModelFile << " ...\n\n";
 	}
 
 	// Set the model's actuator set back to the original set.  e.g. in RRA1
@@ -1042,11 +1049,16 @@ computeAverageResiduals(SimTK::State& s, Model &aModel,double aTi,double aTf,con
 	InverseDynamics* inverseDynamics = new InverseDynamics(&aModel);
 	aModel.addAnalysis(inverseDynamics);
     inverseDynamics->setModel(aModel);
-
+	/* undo interpolation at bounds for now as it changes results a little. Could fix evaluation at bounds issue
+	Array<double> bounds;
+	bounds.append(aTi);
+	bounds.append(aTf);
+	const_cast<Storage &>(aStatesStore).interpolateAt(bounds);*/
 	int iInitial = aStatesStore.findIndex(aTi);
 	int iFinal = aStatesStore.findIndex(aTf);
 	aStatesStore.getTime(iInitial,aTi);
 	aStatesStore.getTime(iFinal,aTf);
+
     
     aModel.getMultibodySystem().realize(s, Stage::Position );
 
@@ -1162,6 +1174,7 @@ addNecessaryAnalyses()
 		act->setStepInterval(stepInterval);
 		_model->addAnalysis(act);
 	}
+	
 	// Add Kinematics if necessary
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
@@ -1172,11 +1185,14 @@ addNecessaryAnalyses()
 		kin = new Kinematics(_model);
         kin->setModel(*_model );
 		kin->setStepInterval(stepInterval);
-		kin->getPositionStorage()->setWriteSIMMHeader(true);
+		//kin->getPositionStorage()->setWriteSIMMHeader(true);
+		kin->setInDegrees(true);
 		_model->addAnalysis(kin);
 	} else {
-		kin->getPositionStorage()->setWriteSIMMHeader(true);
+		kin->setInDegrees(true);
+		//kin->getPositionStorage()->setWriteSIMMHeader(true);
 	}
+	
 }
 
 //_____________________________________________________________________________

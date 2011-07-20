@@ -61,86 +61,6 @@ protected:
 	OpenSim::PropertyBool _useSpecifiedDtProp;
 	bool &_useSpecifiedDt;
 
-	/** Flag indicating whether or not to output corrective spring loads and other
-	quantities. */
-	OpenSim::PropertyBool _outputDetailedResultsProp;
-	bool &_outputDetailedResults;
-
-		// FOOT CONTACT EVENT TIMES
-	/** Flag indicating whether or not to turn on a linear corrective spring for the right foot. */
-	OpenSim::PropertyBool _body1LinSpringActiveProp;
-	bool &_body1LinSpringActive;
-	/** Flag indicating whether or not to turn on a torsional corrective spring for the right foot. */
-	OpenSim::PropertyBool _body1TorSpringActiveProp;
-	bool &_body1TorSpringActive;
-	/** Flag indicating whether or not to turn on a linear corrective spring for the left foot. */
-	OpenSim::PropertyBool _body2LinSpringActiveProp;
-	bool &_body2LinSpringActive;
-	/** Flag indicating whether or not to turn on a torsional corrective spring for the left foot. */
-	OpenSim::PropertyBool _body2TorSpringActiveProp;
-	bool &_body2TorSpringActive;
-	/** Time at which the torsional spring comes on for body1 (if the spring is active). */
-	PropertyDbl _body1TorSpringTimeOnProp;
-	double &_body1TorSpringTimeOn;
-	/** Time at which the torsional spring turns off for body1 (if the spring is active). */
-	PropertyDbl _body1TorSpringTimeOffProp;
-	double &_body1TorSpringTimeOff;
-	/** Time at which the torsional spring turns on for body2 (if the spring is active). */
-	PropertyDbl _body2TorSpringTimeOnProp;
-	double &_body2TorSpringTimeOn;
-	/** Time at which the torsional spring turns off for body2 (if the spring is active). */
-	PropertyDbl _body2TorSpringTimeOffProp;
-	double &_body2TorSpringTimeOff;
-
-	// CORRECTIVE SPRING PARAMETERS
-	/** Rise time for scaling functions for the torsional corrective springs. */
-	PropertyDbl _tauProp;
-	double &_tau;
-	/** Scaling rise-time for the body1 torsional spring turning on. */
-	PropertyDbl _tauBody1OnProp;
-	double &_tauBody1On;
-	/** Scaling rise-time for the body1 torsional spring turning off. */
-	PropertyDbl _tauBody1OffProp;
-	double &_tauBody1Off;
-	/** Scaling rise-time for the body2 torsional spring turning on. */
-	PropertyDbl _tauBody2OnProp;
-	double &_tauBody2On;
-	/** Scaling rise-time for the body2 torsional spring turning off. */
-	PropertyDbl _tauBody2OffProp;
-	double &_tauBody2Off;
-	/** Force magnitude above which the linear springs start to scale in to effect. */
-	PropertyDbl _springTransitionStartForceProp;
-	double &_springTransitionStartForce;
-	/** Force magnitude below which the linear springs start to scale out of effect. */
-	PropertyDbl _springTransitionEndForceProp;
-	double &_springTransitionEndForce;
-	/** Force magnitude below which no corrective linear spring forces are applied.
-	This allows an unperturbed forward integration to execute with minimal drift. */
-	PropertyDbl _forceThresholdProp;
-	double &_forceThreshold;
-	/** Torque mangnitude below which no corrective torsional spring foreces are applied.
-	This allows an unperturbed forward integration to execute with minimal drift. */
-	PropertyDbl _torqueThresholdProp;
-	double &_torqueThreshold;
-	/** Stiffness for linear corrective springs. */
-	PropertyDblVec3 _kLinProp;
-	SimTK::Vec3 &_kLin;
-	/** Damping for linear corrective springs. */
-	PropertyDblVec3 _bLinProp;
-	SimTK::Vec3 &_bLin;
-	/** Stiffness for torsional corrective springs. */
-	PropertyDblVec3 _kTorProp;
-	SimTK::Vec3 &_kTor;
-	/** Damping for torsional corrective springs. */
-	PropertyDblVec3 _bTorProp;
-	SimTK::Vec3 &_bTor;
-
-	/** Pointer to the linear and torsional corrective springs. */
-	LinearSpring *_body1Lin, *_body2Lin;
-	TorsionalSpring *_body1Tor, *_body2Tor;
-
-	// INTERNAL WORK ARRAYS
-
 	/** Storage for the input states. */
 	Storage *_yStore;
 	/** Flag indicating whether or not to write to the results (GUI will set this to false). */
@@ -211,10 +131,6 @@ protected:
 	void setDesiredStatesForControllers(Storage& rYStore);
 	int determineInitialTimeFromStatesStorage(double &rTI);
 	void InitializeSpecifiedTimeStepping(Storage *aYStore, Manager& aManager);
-	void addCorrectiveSprings(SimTK::State &s, const Storage *aYStore, const PrescribedForce *aBody1Force,const PrescribedForce *aBody2Force);
-	LinearSpring* addLinearCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore,const PrescribedForce &aAppliedForce);
-	TorsionalSpring* addTorsionalCorrectiveSpring(SimTK::State &s, const Storage &aQStore,const Storage &aUStore, Body *aBody,
-		double aTauOn,double aTimeOn,double aTauOff,double aTimeOff);
 private:
 
 //=============================================================================

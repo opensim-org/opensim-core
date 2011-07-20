@@ -200,14 +200,14 @@ setNull()
 	_modelFile = "";
 	_replaceForceSet = true;
 	_resultsDir = "./";
-	_outputPrecision = 20;
+	_outputPrecision = 8;
 	_ti = 0.0;
 	_tf = 1.0;
 	_solveForEquilibriumForAuxiliaryStates = false;
 	_maxSteps = 20000;
 	_maxDT = 1.0;
 	_minDT = 1.0e-8;
-	_errorTolerance = 1.0e-3;
+	_errorTolerance = 1.0e-5;
 	_toolOwnsModel=true;
 	_externalLoadsFileName = "";
 }
@@ -241,7 +241,7 @@ void AbstractTool::setupProperties()
 	_resultsDirProp.setName("results_directory");
 	_propertySet.append( &_resultsDirProp );
 
-	comment = "Output precision.  It is 20 by default.";
+	comment = "Output precision.  It is 8 by default.";
 	_outputPrecisionProp.setComment(comment);
 	_outputPrecisionProp.setName("output_precision");
 	_propertySet.append( &_outputPrecisionProp );
@@ -408,6 +408,8 @@ loadModel(const string &aToolSetupFileName, ForceSet *rOriginalForceSet )
 
 		try {
 			model = new Model(_modelFile);
+			if (rOriginalForceSet!=NULL)
+				*rOriginalForceSet = model->getForceSet();
 		} catch(...) { // Properly restore current directory if an exception is thrown
 			IO::chDir(saveWorkingDirectory);
 			throw;
@@ -563,7 +565,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
                                         Model& aModel) {
 
-    if(aExternalLoadsFileName=="") {
+    if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
         cout<<"No external loads will be applied (external loads file not specified)."<<endl;
         return false;
     }
@@ -657,6 +659,7 @@ initializeExternalLoads( SimTK::State& s,
 	}
 	// transform point of application expressed in ground to the body the force is being applied to.
 	// This is intended to improve the ability of CMC, RRA, etc...  to track experimental data
+	if (externalLoadKinematicsSpecified)
 	_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, analysisStartTime, analysisFinalTime);
 
 }

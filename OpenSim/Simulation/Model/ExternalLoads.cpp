@@ -37,6 +37,7 @@
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/XMLNode.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Common/IO.h>
 
 using namespace std;
 using namespace OpenSim;
@@ -178,6 +179,7 @@ void ExternalLoads::setupSerializedMembers()
 	_externalLoadsModelKinematicsFileNameProp.setName("external_loads_model_kinematics_file");
 	_propertySet.append( &_externalLoadsModelKinematicsFileNameProp );
 
+	_lowpassCutoffFrequencyForLoadKinematics=-1.0;
 	comment = "Optional low-pass cut-off frequency for filtering the model kinematics corresponding "
 			  "used to transform the point of application. A negative value results in no filtering. "
 			  "The default value is -1.0, so no filtering.";
@@ -435,14 +437,33 @@ void ExternalLoads::updateFromXMLNode()
 			if (_dataFileName==""){
 				// Assert and break (may need to call base class updateFromXMLNode() regardless.
 			}
-
+			bool changeWorkingDir = false;
+			std::string savedCwd;
 			// Change to directory of Document
 			if(!ifstream(_dataFileName.c_str(), ios_base::in).good()) {
 			string msg =
-				"Object: ERR- Could not open file " + _dataFileName+ ". It may not exist or you don't have permission to read it.";
+					"Object: ERR- Could not open file " + _dataFileName+ "IO. It may not exist or you don't have permission to read it.";
+				cout << msg;
+				// Try switching to directory of setup file before aborting
+				if(_document) {
+					savedCwd = IO::getCwd();
+					IO::chDir(IO::getParentDirectory(_document->getFileName()));
+					changeWorkingDir=true;
+				}
+				if(!ifstream(_dataFileName.c_str(), ios_base::in).good()) {
+					if(changeWorkingDir) IO::chDir(savedCwd);
 			throw Exception(msg,__FILE__,__LINE__);
-			}	
+				}
+			}
 			Storage* dataSource = new Storage(_dataFileName, true);
+			if (!dataSource->makeStorageLabelsUnique()){
+				cout << "Making labels unique in storage file "<< _dataFileName << endl;
+				dataSource = new Storage(_dataFileName);
+				dataSource->makeStorageLabelsUnique();
+				dataSource->print(_dataFileName);
+			}
+			if(changeWorkingDir) IO::chDir(savedCwd);
+			
 			const Array<string> &labels = dataSource->getColumnLabels();
 			// Populate data file and other things that haven't changed
 			string objectName = XMLNode::TranscodeAndTrim(_node->getTagName());

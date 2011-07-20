@@ -112,6 +112,7 @@ public:
 	//--------------------------------------------------------------------------
 	// Properties
 	GeometryPath& getGeometryPath() const { return _path; }
+	virtual bool hasGeometryPath() const { return true;};
 	virtual double getLength(const SimTK::State& s) const;
 	virtual double getRestingLength() const { return _restingLength; }
 	virtual bool setRestingLength(double aRestingLength);

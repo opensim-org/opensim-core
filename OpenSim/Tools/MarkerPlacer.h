@@ -68,6 +68,10 @@ class OSIMTOOLS_API MarkerPlacer : public Object
 private:
 
 protected:
+	// whether or not to apply marker placer
+	PropertyBool _applyProp;
+	bool &_apply;
+
 	// name of marker file that contains marker locations in the static pose
 	PropertyStr _markerFileNameProp;
 	std::string &_markerFileName;
@@ -127,6 +131,13 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+
+	bool getApply() const { return _apply; }
+	void setApply(bool aApply) 
+	{ 
+		_apply = aApply; 
+		_applyProp.setUseDefault(false); 
+	}
 
 	const std::string &getStaticPoseFileName() const { return _markerFileName; }
 	void setStaticPoseFileName(const std::string &aFileName) 

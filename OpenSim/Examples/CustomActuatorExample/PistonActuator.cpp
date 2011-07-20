@@ -69,12 +69,12 @@ PistonActuator::~PistonActuator()
  *
  */
 PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
-	CustomActuator(),
+	Actuator(),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
 	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec3()),
-	_pointB(_propPointB.getValueDblVec3()),
+	_pointA(_propPointA.getValueDblVec()),
+	_pointB(_propPointB.getValueDblVec()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
@@ -98,12 +98,12 @@ PistonActuator::PistonActuator( string aBodyNameA, string aBodyNameB) :
  * @param anActuator actuator to be copied.
  */
 PistonActuator::PistonActuator(const PistonActuator &anActuator) :
-	CustomActuator(anActuator),
+	Actuator(anActuator),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
 	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec3()),
-	_pointB(_propPointB.getValueDblVec3()),
+	_pointA(_propPointA.getValueDblVec()),
+	_pointB(_propPointB.getValueDblVec()),
 	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
@@ -138,14 +138,6 @@ setNull()
 {
 	setType("PistonActuator");
 	setupProperties();
-
-	setNumStateVariables( 0);
-}
-
-void PistonActuator::initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model )
-{
-    Actuator::initStateCache(s, subsystemIndex, model);
-
 }
 
 //_____________________________________________________________________________
@@ -400,30 +392,6 @@ setup(Model& aModel)
 		_bodyA = &_model->updBodySet().get(_bodyNameA);
 		_bodyB = &_model->updBodySet().get(_bodyNameB);
 	}
-}
-
-
-//=============================================================================
-// CHECK
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Check that this point actuator actuator is valid.
- *
- * @return True if valid, false if invalid.
- */
-bool PistonActuator::check() const
-{
-	if(!Actuator::check()) return(false);
-
-	// BodyID
-	if( _bodyA != NULL) {
-		printf("PistonActuator.check: ERROR- %s actuates ",
-			getName().c_str());
-		printf("an invalid Body (%s).\n", _bodyNameA.c_str());
-		return(false);
-	}
-	return(true);
 }
 
 //=============================================================================

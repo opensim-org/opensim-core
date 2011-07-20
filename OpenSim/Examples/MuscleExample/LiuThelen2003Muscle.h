@@ -130,10 +130,6 @@ public:
 	LiuThelen2003Muscle& operator=(const LiuThelen2003Muscle &aMuscle);
 #endif
 	void copyData(const LiuThelen2003Muscle &aMuscle);
-	virtual void copyPropertyValues(Actuator& aActuator);
-#ifndef SWIG
-	virtual void initStateCache(SimTK::State& s, SimTK::SubsystemIndex subsystemIndex, Model& model);
-#endif
 
 	//--------------------------------------------------------------------------
 	// GET
@@ -159,7 +155,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computeStateDerivatives(const SimTK::State& s);
+	virtual SimTK::Vector computeStateDerivatives(const SimTK::State& s);
 	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;

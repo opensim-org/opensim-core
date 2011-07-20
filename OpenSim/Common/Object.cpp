@@ -83,6 +83,8 @@ Object::~Object()
     	delete _observable;
 	if(_node) XMLNode::RemoveElementFromParent(_node);
 	//delete _document;
+	if (_debugLevel==4)
+		std::cout << "deleting object of type:" << getType() << " named:" << getName() << endl;
 }
 
 //_____________________________________________________________________________
