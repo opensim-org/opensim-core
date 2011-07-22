@@ -275,7 +275,7 @@ static bool trace=false;
 
 %pragma(java) jniclassclassmodifiers="public class"
 
-%pragma(java) jniclassimports="import org.opensim.utils.TheApp;"
+%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
 
 %pragma(java) jniclasscode=%{
   static {
@@ -283,7 +283,8 @@ static bool trace=false;
         System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
       }
       catch(UnsatisfiedLinkError e){
-           TheApp.exitApp("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e);
+           new JOptionPane("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e, 
+				JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
       }
   }
 %}
@@ -398,6 +399,12 @@ static bool trace=false;
     }
 };
 
+%extend OpenSim::Body {
+	void getCenterOfMass(double dCom[3]) {
+		self->getMassCenter(SimTK::Vec3::updAs(dCom));
+	};
+
+};
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 // osimCommon Library
