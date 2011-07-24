@@ -36,72 +36,30 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Analyses/JointReaction.h>
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
-{
-	actualStorage.subtract(&stdStorage);
-	bool equal = true;
-	Array<double> dData(-SimTK::Infinity);
-	for (int i=0; i <actualStorage.getSize() && equal; i++){
-		dData = actualStorage.getStateVector(i)->getData();
-		double dMax = -SimTK::Infinity;
-		int worst=-1;
-		for (int j=0; j<dData.getSize(); j++){
-			if (fabs(dData[j]) > dMax) worst = j;
-			dMax = std::max(dMax, fabs(dData[j]));
-		}
-		equal = (dMax <= tol);
-		//cout << "i, col, colname, diff" << i << worst << stdStorage.getColumnLabels().get(worst) << dMax << endl;
-	}
-	return equal;
-}
-
-int testModel(std::string modelPrefix)
+int main()
 {
 	try {
+		AnalyzeTool analyze("SinglePin_Setup_JointReaction.xml");
+		analyze.getModel();
+		analyze.run();
+		checkResultFiles("SinglePin_JointReaction_ReactionLoads.sto", "std_SinglePin_JointReaction_ReactionLoads.sto", Array<double>(1e-5, 24), __FILE__, __LINE__, "SinglePin failed");
+		cout << "SinglePin passed";
 
-	// CONSTRUCT
-	AnalyzeTool analyze(modelPrefix+"_Setup_JointReaction.xml");
-
-	// PRINT MODEL INFORMATION
-	Model& model = analyze.getModel();
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"Loaded library\n";
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"-----------------------------------------------------------------------\n\n";
-
-	// RUN
-	analyze.run();
-	
-	//----------------------------
-	// Catch any thrown exceptions
-	//----------------------------
-	} catch(Exception x) {
-		x.print(cout);
-		return(-1);
+		AnalyzeTool analyze2("DoublePendulum3D_Setup_JointReaction.xml");
+		analyze2.getModel();
+		analyze2.run();
+		checkResultFiles("DoublePendulum3D_JointReaction_ReactionLoads.sto", "std_DoublePendulum3D_JointReaction_ReactionLoads.sto", Array<double>(1e-5, 24), __FILE__, __LINE__, "DoublePendulum3D failed");
+		cout << "DoublePendulum3D passed";
 	}
-	// Compare results to a standard (with muscle physiology)
-	Storage currentResult(modelPrefix+"_JointReaction_ReactionLoads.sto");
-	Storage stdStorage("std_"+modelPrefix+"_JointReaction_ReactionLoads.sto");
-	bool equal = equalStorage(stdStorage, currentResult, 1e-5);
-	return (equal?0:1);
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }
-int main(int argc,char **argv)
-{
-	if (testModel("SinglePin")!=0){
-		cout << " testJointReactions.SinglePin  FAILED " << endl;
-		return (1);
-	}
-	cout << " testJointReactions.SinglePin  PASSED " << endl;
-	if (testModel("DoublePendulum3D")!=0){
-		cout << " testJointReactions.DoublePendulum3D  FAILED " << endl;
-		return (1);
-	}
-	cout << " testJointReactions.DoublePendulum3D  PASSED " << endl;
-	return(0);
-}
-

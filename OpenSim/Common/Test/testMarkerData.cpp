@@ -24,14 +24,13 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "OpenSim/Common/Storage.h"
-#include "OpenSim/Common/MarkerData.h"
 #include <fstream>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/MarkerData.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
-
-#define ASSERT(cond) {if (!(cond)) throw exception();}
 
 int main() {
 	// Create a storge from a std file "std_storage.sto"
@@ -51,36 +50,36 @@ int main() {
 		ASSERT(md.getFileName()=="TRCFileWithNANS.trc");
 		Storage storage;
 		md.makeRdStorage(storage);
-		ASSERT(md.getUnits().getType()==Units(std::string("mm")).getType());
-                //std::string mm("mm");
-                Units lengthUnit = Units::Millimeters;
-                ASSERT(md.getUnits().getType()==lengthUnit.getType())
+		ASSERT(md.getUnits().getType()==Units(string("mm")).getType(), __FILE__, __LINE__);
+		//std::string mm("mm");
+		Units lengthUnit = Units::Millimeters;
+		ASSERT(md.getUnits().getType()==lengthUnit.getType(), __FILE__, __LINE__);
 		const Array<std::string>& markerNames = md.getMarkerNames();
-		ASSERT(markerNames.getSize()==14);
-		ASSERT(md.getMarkerIndex("toe")==0);
-		ASSERT(md.getMarkerIndex("lASIS")==13);
-		ASSERT(md.getMarkerIndex("NotFound")==-1);
-		ASSERT(md.getNumFrames()==5);
-		ASSERT(md.getStartFrameTime()==0.0);
-		ASSERT(md.getLastFrameTime()==0.016);
-		ASSERT(md.getDataRate()==250.);
-		ASSERT(md.getCameraRate()==250.);
+		ASSERT(markerNames.getSize()==14, __FILE__, __LINE__);
+		ASSERT(md.getMarkerIndex("toe")==0, __FILE__, __LINE__);
+		ASSERT(md.getMarkerIndex("lASIS")==13, __FILE__, __LINE__);
+		ASSERT(md.getMarkerIndex("NotFound")==-1, __FILE__, __LINE__);
+		ASSERT(md.getNumFrames()==5, __FILE__, __LINE__);
+		ASSERT(md.getStartFrameTime()==0.0, __FILE__, __LINE__);
+		ASSERT(md.getLastFrameTime()==0.016, __FILE__, __LINE__);
+		ASSERT(md.getDataRate()==250., __FILE__, __LINE__);
+		ASSERT(md.getCameraRate()==250., __FILE__, __LINE__);
 		//ToBeTested md.convertToUnits(Units(Units::Meters));
 
 		MarkerData md2("Run_500 02.trc");
 		double expectedData[] = {1006.513977, 1014.924316,-195.748917};
 		const MarkerFrame& frame2 = md2.getFrame(1);
-		ASSERT(frame2.getFrameTime()==.01);
-		const SimTK::Array_<SimTK::Vec3>& markers =frame2.getMarkers();
+		ASSERT(frame2.getFrameTime()==.01, __FILE__, __LINE__);
+		const SimTK::Array_<SimTK::Vec3>& markers = frame2.getMarkers();
 		const SimTK::Vec3& m1 = markers[0];
-		ASSERT(SimTK::isNaN(m1[0]));
-		ASSERT(SimTK::isNaN(m1[1]));
-		ASSERT(SimTK::isNaN(m1[2]));
+		ASSERT(SimTK::isNaN(m1[0]), __FILE__, __LINE__);
+		ASSERT(SimTK::isNaN(m1[1]), __FILE__, __LINE__);
+		ASSERT(SimTK::isNaN(m1[2]), __FILE__, __LINE__);
 		SimTK::Vec3 diff = (markers[1]-SimTK::Vec3(expectedData[0], expectedData[1], expectedData[2]));
-		ASSERT(diff.norm()<1e-7);
+		ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
     }
-    catch (...) {
-        cout << "Failed" << endl;
+    catch(const Exception& e) {
+        e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;

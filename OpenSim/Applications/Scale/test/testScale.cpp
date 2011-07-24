@@ -39,20 +39,34 @@
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Analysis.h>
-
-
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
+void scaleGait2354();
+void scaleGait2354_GUI(bool useMarkerPlacement);
 
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
-
-bool compareModel(const Model& resultModel, const std::string& stdFileName, double tol)
+int main()
 {
-	bool ret=true;// Load std model and realize it to Velocity just in case
+    try {
+ 
+		scaleGait2354();
+		scaleGait2354_GUI(false);
+		//scaleGait2354_GUI(true);
+
+    }
+    catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
+
+void compareModel(const Model& resultModel, const std::string& stdFileName, double tol)
+{
+	// Load std model and realize it to Velocity just in case
 	Model* refModel = new Model(stdFileName);
 	SimTK::State& sStd = refModel->initSystem();
 
@@ -70,11 +84,9 @@ bool compareModel(const Model& resultModel, const std::string& stdFileName, doub
 	// Now cycle thru ModelComponents recursively
 
 	delete refModel;
-
-	return ret;
 }
 
-bool scaleGait2354()
+void scaleGait2354()
 {
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);
@@ -100,22 +112,15 @@ bool scaleGait2354()
     SimTK::State& s = model->updMultibodySystem().updDefaultState();
     model->updMultibodySystem().realize(s, SimTK::Stage::Position );
 
-
 	if(!model) {
-//       throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
-        cout << "scale: ERROR- No model specified.";
+		//throw Exception("scale: ERROR- No model specified.",__FILE__,__LINE__);
+		cout << "scale: ERROR- No model specified.";
     }
 
+	ASSERT(!subject->isDefaultModelScaler() && subject->getModelScaler().getApply());
+	ModelScaler& scaler = subject->getModelScaler();
+	ASSERT(scaler.processModel(s, model, subject->getPathToSubject(), subject->getSubjectMass()));
 
-	if (!subject->isDefaultModelScaler() && subject->getModelScaler().getApply()) {
-		ModelScaler& scaler = subject->getModelScaler();
-	   if( false == scaler.processModel(s, model, subject->getPathToSubject(), subject->getSubjectMass())) {
-           return(false);
-       }
-	}
-	else {
-        return(false);
-	}
 	/*
 	if (!subject->isDefaultMarkerPlacer() && subject->getMarkerPlacer().getApply()) {
 		MarkerPlacer& placer = subject->getMarkerPlacer();
@@ -130,15 +135,13 @@ bool scaleGait2354()
 
 	const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied.xml");
 
-	if(!(computedScaleSet == stdScaleSet)) 
-		return(false);
+	ASSERT(computedScaleSet == stdScaleSet);
     
 	delete model;
 	delete subject;
-    return(true);
 }
 
-bool scaleGait2354_GUI(bool useMarkerPlacement)
+void scaleGait2354_GUI(bool useMarkerPlacement)
 {
 	// SET OUTPUT FORMATTING
 	IO::SetDigitsPad(4);
@@ -183,38 +186,7 @@ bool scaleGait2354_GUI(bool useMarkerPlacement)
 
 	const ScaleSet& computedScaleSet = ScaleSet(setupFilePath+"subject01_scaleSet_applied_GUI.xml");
 
-	if(!(computedScaleSet == stdScaleSet)) 
-		return(false);
+	ASSERT(computedScaleSet == stdScaleSet);
 
 	delete subject;
-    return(true);
 }
-
-
-
-int main()
-{
-    try {
- 
-		if( false == scaleGait2354() ) {
-            std::cout << "FAILED" << std::endl;
-            return(1);
-        }
-		if (false == scaleGait2354_GUI(false) ) {	// GUI workflow without marker placement
-            std::cout << "FAILED GUI workflow without marker placement" << std::endl;
-            return(1);
-		}
-		/*if (false == scaleGait2354_GUI(true) ) { // GUI workflow with marker placement
-            std::cout << "FAILED GUI workflow with marker placement" << std::endl;
-            return(1);
-		}*/
-
-    }
-    catch(const std::exception& e) {
-        cout << "exception: " << e.what() << endl;
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
-}
-

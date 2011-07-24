@@ -56,33 +56,54 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
-
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.0;
-const static Vec3 gravity_vec = Vec3(0, -9.8065, 0);
+const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 
-MassProperties ballMass = MassProperties(8.806, Vec3(0), Inertia(Vec3(0.1268, 0.0332, 0.1337)));
+SimTK::MassProperties ballMass = SimTK::MassProperties(8.806, SimTK::Vec3(0), SimTK::Inertia(SimTK::Vec3(0.1268, 0.0332, 0.1337)));
 //==========================================================================================================
 static int counter=0;
+
+void testNoForce();
+void testForceAtOrigin();
+void testForceAtPoint();
+void testTorque();
+
+int main()
+{
+	try {
+		testNoForce();
+		testForceAtOrigin();
+		testForceAtPoint();
+		testTorque();
+	}
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+	return 0;
+}
+
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
-int testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, OpenSim::Function* forceZ,
+void testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, OpenSim::Function* forceZ,
                  OpenSim::Function* pointX, OpenSim::Function* pointY, OpenSim::Function* pointZ,
                  OpenSim::Function* torqueX, OpenSim::Function* torqueY, OpenSim::Function* torqueZ,
-                 vector<Real>& times, vector<Vec3>& accelerations, vector<Vec3>& angularAccelerations)
+                 vector<SimTK::Real>& times, vector<SimTK::Vec3>& accelerations, vector<SimTK::Vec3>& angularAccelerations)
 {
+	using namespace SimTK;
+
 	//==========================================================================================================
 	// Setup OpenSim model
 	Model *osimModel = new Model;
@@ -157,11 +178,12 @@ int testPrescribedForce(OpenSim::Function* forceX, OpenSim::Function* forceY, Op
         ASSERT_EQUAL(angularAccelerations[i][1], angularAccel[1], 1e-10);
         ASSERT_EQUAL(angularAccelerations[i][2], angularAccel[2], 1e-10);
     }
-	return 0;
 }
 
 void testNoForce()
 {
+	using namespace SimTK;
+
     vector<Real> times;
     vector<Vec3> accel;
     vector<Vec3> angularAccel;
@@ -179,6 +201,8 @@ void testNoForce()
 
 void testForceAtOrigin()
 {
+	using namespace SimTK;
+
     vector<Real> times;
     vector<Vec3> accel;
     vector<Vec3> angularAccel;
@@ -202,6 +226,8 @@ void testForceAtOrigin()
 
 void testForceAtPoint()
 {
+	using namespace SimTK;
+
     Mat33 invInertia = ballMass.getInertia().toMat33().invert();
     vector<Real> times;
     vector<Vec3> accel;
@@ -222,6 +248,8 @@ void testForceAtPoint()
 
 void testTorque()
 {
+	using namespace SimTK;
+
     Mat33 invInertia = ballMass.getInertia().toMat33().invert();
     vector<Real> times;
     vector<Vec3> accel;
@@ -234,14 +262,4 @@ void testTorque()
     torqueY->addPoint(0, 0.5);
     torqueZ->addPoint(0, 0);
     testPrescribedForce(NULL, NULL, NULL, NULL, NULL, NULL, torqueX, torqueY, torqueZ, times, accel, angularAccel);
-}
-
-int main()
-{
-	testNoForce();
-    testForceAtOrigin();
-    testForceAtPoint();
-    testTorque();
-
-	return 0;
 }

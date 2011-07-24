@@ -41,19 +41,23 @@
 //
 //==========================================================================================================
 #include <iostream>
+#include <sstream>
+#include <OpenSim/Analyses/Kinematics.h>
+#include <OpenSim/Analyses/PointKinematics.h>
+#include <OpenSim/Analyses/PointKinematics.h>
+#include <OpenSim/Analyses/ForceReporter.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
-
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Common/LinearFunction.h>
+#include <OpenSim/Common/FunctionAdapter.h>
+#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/ForceReporter.h>
-
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
@@ -62,55 +66,44 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PointOnLineConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
-
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Common/LinearFunction.h>
-#include <OpenSim/Common/FunctionAdapter.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
-#include <OpenSim/Common/FunctionAdapter.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.00;
-const static Vec3 gravity_vec = Vec3(0, -9.8065, 0);
-
+const static SimTK::Vec3 gravity_vec(0, -9.8065, 0);
 //Thigh
 const static double femurMass = 8.806;
-const static Vec3 femurCOM(0, 0.5, 0);
-const static Inertia femurInertiaAboutCOM(Vec3(0.1268, 0.0332, 0.1337));
+const static SimTK::Vec3 femurCOM(0, 0.5, 0);
+const static SimTK::Inertia femurInertiaAboutCOM(SimTK::Vec3(0.1268, 0.0332, 0.1337));
 //Shank
-const static MassProperties tibiaMass(3.510, Vec3(0), Inertia(Vec3(0.0477, 0.0048, 0.0484)));
+const static SimTK::MassProperties tibiaMass(3.510, SimTK::Vec3(0), SimTK::Inertia(SimTK::Vec3(0.0477, 0.0048, 0.0484)));
 //Foot
-const static MassProperties footMass(1.20, Vec3(0), Inertia(Vec3(0.001361, 0.003709, 0.003916)));
+const static SimTK::MassProperties footMass(1.20, SimTK::Vec3(0), SimTK::Inertia(SimTK::Vec3(0.001361, 0.003709, 0.003916)));
 //Toes
-const static MassProperties toesMass(0.205126, Vec3(0), Inertia(Vec3(0.000117, 0.000179, 0.000119)));
-
+const static SimTK::MassProperties toesMass(0.205126, SimTK::Vec3(0), SimTK::Inertia(SimTK::Vec3(0.000117, 0.000179, 0.000119)));
 // Joint locations
-const static Vec3 hipInGround(0, 0.7, 0);
-const static Vec3 hipInFemur(0.0020, 0.1715, 0);
-const static Vec3 kneeInFemur(0.0033, -0.2294, 0);
-const static Vec3 kneeInTibia(0.0, 0.1862, 0.0);
-const Vec3 ankleInTibia(0.0, -0.243800, 0);
-const Vec3 ankleInFoot(-0.035902, 0.051347, 0);
-const Vec3 mtpInFoot(0.098032, -0.038000, 0);
-const Vec3 mtpInToes(-0.035902, 0.051347, 0);
+const static SimTK::Vec3 hipInGround(0, 0.7, 0);
+const static SimTK::Vec3 hipInFemur(0.0020, 0.1715, 0);
+const static SimTK::Vec3 kneeInFemur(0.0033, -0.2294, 0);
+const static SimTK::Vec3 kneeInTibia(0.0, 0.1862, 0.0);
+const SimTK::Vec3 ankleInTibia(0.0, -0.243800, 0);
+const SimTK::Vec3 ankleInFoot(-0.035902, 0.051347, 0);
+const SimTK::Vec3 mtpInFoot(0.098032, -0.038000, 0);
+const SimTK::Vec3 mtpInToes(-0.035902, 0.051347, 0);
 //==========================================================================================================
 
 class MultidimensionalFunction : public OpenSim::Function
 {
 public:
 	MultidimensionalFunction() {};
-
 	virtual ~MultidimensionalFunction() {};
-
 	virtual Object* copy() const { return new MultidimensionalFunction; }
-
 	virtual double calcValue(const SimTK::Vector& x) const
 	{
 		return 2*x[0]*x[0] + x[1];
@@ -120,7 +113,6 @@ public:
 	   int nd = derivComponents.size();
 	   if (nd < 1)
 		   return SimTK::NaN;
-	
 	   if (derivComponents[0] == 0){
 			if (nd == 1)
 				return 4*x[0];
@@ -133,23 +125,46 @@ public:
 	   }
 	   return 0;
 	}
-
 	virtual int getArgumentSize() const {return 2;}
 	virtual int getMaxDerivativeOrder() const { return 2;}
-
 	virtual SimTK::Function* createSimTKFunction() const
 	{
 		return new FunctionAdapter(*this);
 	}
 }; // End of MultidimensionalFunction
 
+void testRollingOnSurfaceConstraint();
+void testCoordinateLocking();
+void testWeldConstraint();
+void testPointOnLineConstraint();
+void testCoordinateCouplerConstraint();
 
+int main()
+{
+    try {
+		testRollingOnSurfaceConstraint();
+		testCoordinateLocking();
+		testWeldConstraint();
+		// Compare behavior of PointOnLineConstraint between the foot and ground
+		testPointOnLineConstraint();
+		// Compare behavior of CoordinateCouplerConstraint as a custom knee
+		testCoordinateCouplerConstraint();
+	}
+	catch(const OpenSim::Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 //==========================================================================================================
 // Common Functions 
 //==========================================================================================================
-int initTestStates(Vector &qi, Vector &ui)
+int initTestStates(SimTK::Vector &qi, SimTK::Vector &ui)
 {
+	using namespace SimTK;
+
 	Random::Uniform randomAngle(-Pi/4, Pi/4);
 	Random::Uniform randomSpeed(-1.0, 1.0);
 
@@ -163,8 +178,10 @@ int initTestStates(Vector &qi, Vector &ui)
 	return qi.size();
 }
 
-void integrateSimbodySystem(MultibodySystem &system, SimTK::State &state)
+void integrateSimbodySystem(SimTK::MultibodySystem &system, SimTK::State &state)
 {
+	using namespace SimTK;
+
 	// realize simbody system to velocity stage
 	system.realize(state, Stage::Velocity);
 
@@ -180,6 +197,8 @@ void integrateSimbodySystem(MultibodySystem &system, SimTK::State &state)
 
 void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 {
+	using namespace SimTK;
+
 	// SETUP OpenSim SIMULATION Manager
 	osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
@@ -196,17 +215,17 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 
 	// Integrate
     const SimbodyMatterSubsystem& matter2 = osimModel->getMultibodySystem().getMatterSubsystem();
- //   for (int i = 0; i < matter2.getNumConstraints(); i++)
- //       printf("%d: %d\n", i, matter2.isConstraintDisabled(osim_state, SimTK::ConstraintIndex(i)));
- //   cout << osim_state.getQ()<<endl;
+    //for (int i = 0; i < matter2.getNumConstraints(); i++)
+    //    printf("%d: %d\n", i, matter2.isConstraintDisabled(osim_state, SimTK::ConstraintIndex(i)));
+    //cout << osim_state.getQ()<<endl;
 	//cout << "\n\nOpenSim Integration 0.0 to " << duration << endl;
 
 	manager.integrate(osim_state);
 }
 
-bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_osim)
+void compareSimulationStates(SimTK::Vector q_sb, SimTK::Vector u_sb, SimTK::Vector q_osim, SimTK::Vector u_osim, string errorMessagePrefix = "")
 {
-    bool status = true;
+	using namespace SimTK;
 	
 	Vector q_err = q_sb;
 	Vector u_err = u_sb;
@@ -244,20 +263,17 @@ bool compareSimulationStates(Vector q_sb, Vector u_sb, Vector q_osim, Vector u_o
 	//q_err.dump("Diff q's:");
 	//u_err.dump("Diff u's:");
 
-	if(q_err.norm() > 10*integ_accuracy) {
-         cout<<"testConstraints compareSimulationStates failed q_err.norm = "<< q_err.norm() << endl;
-         status = false;
-     }
-	if(u_err.norm() > 20*integ_accuracy) {
-         cout<<"testConstraints compareSimulationStates failed u_err.norm = "<< u_err.norm() << endl;
-         status = false;
-    }
-
-    return(status);
+	stringstream errorMessage1, errorMessage2;
+	errorMessage1 << "testConstraints compareSimulationStates failed q_err.norm = " << q_err.norm();
+	errorMessage2 << "testConstraints compareSimulationStates failed u_err.norm = " << u_err.norm();
+	ASSERT(q_err.norm() <= 10*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage1.str());
+	ASSERT(u_err.norm() <= 20*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage2.str());
 }
 
-bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osimModel, SimTK::State &osim_state)
+void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Model *osimModel, SimTK::State &osim_state, string errorMessagePrefix = "")
 {
+	using namespace SimTK;
+
 	// Set the initial states for both Simbody system and OpenSim model
 	Vector& qi = state.updQ();
 	Vector& ui = state.updU();
@@ -298,17 +314,18 @@ bool compareSimulations(MultibodySystem &system, SimTK::State &state, Model *osi
 
 	//==========================================================================================================
 	// Compare Simulation Results
-	return( compareSimulationStates(qi, ui, qf, uf) );
+	compareSimulationStates(qi, ui, qf, uf, errorMessagePrefix);
 }
 //==========================================================================================================
 
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
-bool testCoordinateLocking()
+void testCoordinateLocking()
 {
-	double fixedKneeAngle = SimTK::Pi/2;
-	bool status = true;
+	using namespace SimTK;
+
+	double fixedKneeAngle = Pi/2;
 
 	// Setup OpenSim model
 	Model *osimModel = new Model;
@@ -331,7 +348,7 @@ bool testCoordinateLocking()
 	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
 
 	// create pin knee joint
-	PinJoint knee("",osim_thigh, kneeInFemur, Vec3(0), osim_shank, Vec3(0), Vec3(0));
+	PinJoint knee("", osim_thigh, kneeInFemur, Vec3(0), osim_shank, Vec3(0), Vec3(0));
 	knee.getCoordinateSet()[0].setName("knee_q");
 
 	// Add the shank body which now also contains the knee joint to the model
@@ -343,7 +360,7 @@ bool testCoordinateLocking()
 	osimModel->setGravity(gravity_vec);
 
 	// Initialize the state of the model based on the defaults of ModelComponents.
-	SimTK::State si = osimModel->initSystem();
+	State si = osimModel->initSystem();
 
 	// Model joint states
 	CoordinateSet &coordinates = osimModel->updCoordinateSet();
@@ -365,7 +382,7 @@ bool testCoordinateLocking()
 	osimModel->getMultibodySystem().realize(si, Stage::Velocity );
  
 	// Create the integrator and manager for the simulation.
-	SimTK::RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
+	RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem());
 	integrator.setMaximumStepSize(1.0e-3);
 	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(integ_accuracy);
@@ -380,7 +397,7 @@ bool testCoordinateLocking()
 	// Integrate from initial time to final time
 	manager.setInitialTime(0.0);
 	manager.setFinalTime(duration);
-	std::cout<<"\n\nIntegrating from "<<manager.getInitialTime()<<" to "<<manager.getFinalTime()<<std::endl;
+	cout<<"\n\nIntegrating from "<<manager.getInitialTime()<<" to "<<manager.getFinalTime()<<std::endl;
 	manager.integrate(si);
 
 	// Print out the final position and velocity states
@@ -388,16 +405,15 @@ bool testCoordinateLocking()
 	qf.dump("Final q's"); // pendulum positions
 	si.getU().dump("Final u's"); // pendulum velocities
 
-	if (fabs(qf[1]-fixedKneeAngle) > integ_accuracy){
-		cout<<"testCoordinateLocking: q_err = "<< qf[1]-qi[1] << endl;
-         status = false;
-     }
-
-	return status;
+	stringstream errorMessage;
+	errorMessage << "testCoordinateLocking FAILED\ntestCoordinateLocking: q_err = " << qf[1]-qi[1];
+	ASSERT(fabs(qf[1]-fixedKneeAngle) <= integ_accuracy, __FILE__, __LINE__, errorMessage.str());
 }
 
-bool testWeldConstraint()
+void testWeldConstraint()
 {
+	using namespace SimTK;
+
 	cout << endl;
 	cout << "==================================================================" << endl;
 	cout << " OpenSim WeldConstraint vs. Simbody Constraint::Weld " << endl;
@@ -415,13 +431,13 @@ bool testWeldConstraint()
 
 	// Thigh connected by hip
 	MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInGround), 
-		SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), SimTK::Transform(hipInFemur));
+		SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), Transform(hipInFemur));
 	// Pin knee connects shank
-	MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
+	MobilizedBody::Pin shank(thigh, Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), Transform(kneeInTibia));
 	// Pin ankle connects foot
-	MobilizedBody::Pin foot(shank, SimTK::Transform(ankleInTibia), SimTK::Body::Rigid(footMass), SimTK::Transform(ankleInFoot));
+	MobilizedBody::Pin foot(shank, Transform(ankleInTibia), SimTK::Body::Rigid(footMass), Transform(ankleInFoot));
 
-	SimTK::Constraint::Weld weld(matter.Ground(), SimTK::Transform(weldInGround), foot, SimTK::Transform(weldInFoot));
+	SimTK::Constraint::Weld weld(matter.Ground(), Transform(weldInGround), foot, Transform(weldInFoot));
 
 	// Simbody model state setup
 	system.realizeTopology();
@@ -479,17 +495,17 @@ bool testWeldConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	State osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
-	return (compareSimulations(system, state, osimModel, osim_state));
-} 
+	compareSimulations(system, state, osimModel, osim_state, "testWeldConstraint FAILED\n");
+}
 
-
-
-bool testPointOnLineConstraint()
+void testPointOnLineConstraint()
 {
+	using namespace SimTK;
+
 	cout << endl;
 	cout << "==================================================================" << endl;
 	cout << " OpenSim PointOnLineConstraint vs. Simbody Constraint::PointOnLine " << endl;
@@ -497,7 +513,7 @@ bool testPointOnLineConstraint()
 
 	Random::Uniform randomDirection(-1, 1);
 	Vec3 lineDirection(randomDirection.getValue(), randomDirection.getValue(), randomDirection.getValue());
-	SimTK::UnitVec3 normLineDirection(lineDirection.normalize());
+	UnitVec3 normLineDirection(lineDirection.normalize());
 	Vec3 pointOnLine(0,0,0);
 	Vec3 pointOnFollower(0,0,0);
 
@@ -508,8 +524,8 @@ bool testPointOnLineConstraint()
 	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
 
 	// Create a free joint between the foot and ground
-	MobilizedBody::Free foot(matter.Ground(), SimTK::Transform(Vec3(0)), 
-		SimTK::Body::Rigid(footMass), SimTK::Transform(Vec3(0)));
+	MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)), 
+		SimTK::Body::Rigid(footMass), Transform(Vec3(0)));
 	
 	// Constrain foot to line on ground
 	SimTK::Constraint::PointOnLine simtkPointOnLine(matter.Ground(), normLineDirection, pointOnLine, foot, pointOnFollower);
@@ -552,16 +568,17 @@ bool testPointOnLineConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	State osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
-	return (compareSimulations(system, state, osimModel, osim_state));
+	compareSimulations(system, state, osimModel, osim_state, "testPointOnLineConstraint FAILED\n");
 } // end testPointOnLineConstraint
 
-
-bool testCoordinateCouplerConstraint()
+void testCoordinateCouplerConstraint()
 {
+	using namespace SimTK;
+
 	cout << endl;
 	cout << "=================================================================" << endl;
 	cout << " OpenSim CoordinateCouplerConstraint vs. FunctionBasedMobilizer  " << endl;
@@ -626,10 +643,10 @@ bool testCoordinateCouplerConstraint()
 	//system.updDefaultSubsystem().addEventReporter(new VTKEventReporter(system, 0.01));
 
 	// Thigh connected by hip
-	MobilizedBody::Pin thigh(matter.Ground(), SimTK::Transform(hipInGround), 
-		SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), SimTK::Transform(hipInFemur));
+	MobilizedBody::Pin thigh(matter.Ground(), Transform(hipInGround), 
+		SimTK::Body::Rigid(MassProperties(femurMass, femurCOM, femurInertiaAboutCOM.shiftFromMassCenter(femurCOM, femurMass))), Transform(hipInFemur));
 	//Function-based knee connects shank
-	MobilizedBody::FunctionBased shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia), nm, functions, coordIndices);
+	MobilizedBody::FunctionBased shank(thigh, Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), Transform(kneeInTibia), nm, functions, coordIndices);
 	//MobilizedBody::Pin shank(thigh, SimTK::Transform(kneeInFemur), SimTK::Body::Rigid(tibiaMass), SimTK::Transform(kneeInTibia));
 
 	// Simbody model state setup
@@ -733,20 +750,20 @@ bool testCoordinateCouplerConstraint()
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
-	SimTK::State osim_state = osimModel->initSystem();
+	State osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
-	bool result = compareSimulations(system, state, osimModel, osim_state);
+	compareSimulations(system, state, osimModel, osim_state, "testCoordinateCouplerConstraint FAILED\n");
 
 	// Forces were held in storage during simulation, now write to file
 	forceReport->printResults("CouplerModelForces");
-
-	return result;
 }
 
-bool testRollingOnSurfaceConstraint()
+void testRollingOnSurfaceConstraint()
 {
+	using namespace SimTK;
+
 	cout << endl;
 	cout << "=================================================================" << endl;
 	cout << " OpenSim RollingOnSurfaceConstraint Simulation " << endl;
@@ -765,8 +782,8 @@ bool testRollingOnSurfaceConstraint()
 	MassProperties rodMass(10, Vec3(0,0,0), Inertia(Vec3(1.0, 0.2, 1.0)));
 
 	// Create a free joint between the rod and ground
-	MobilizedBody::Free rod(matter.Ground(), SimTK::Transform(Vec3(0)), 
-		SimTK::Body::Rigid(rodMass), SimTK::Transform(Vec3(0, -0.5, 0)));
+	MobilizedBody::Free rod(matter.Ground(), Transform(Vec3(0)), 
+		SimTK::Body::Rigid(rodMass), Transform(Vec3(0, -0.5, 0)));
 	
 	// Constrain foot to line on ground
 	SimTK::Constraint::PointInPlane contactY(matter.Ground(), surfaceNormal, planeHeight, rod, pointOnFollower);
@@ -799,38 +816,4 @@ bool testRollingOnSurfaceConstraint()
 	Vec3 pcom = system.getMatterSubsystem().calcSystemMassCenterLocationInGround(state);
 	Vec3 vcom = system.getMatterSubsystem().calcSystemMassCenterVelocityInGround(state);
 	Vec3 acom = system.getMatterSubsystem().calcSystemMassCenterAccelerationInGround(state);
-
-	return true;
-}
-
-int main()
-{
-    int  status = 0;
-
-
-	testRollingOnSurfaceConstraint();
-
-	if(  !testCoordinateLocking()) {
-        status = 1;
-        cout << " testCoordinateLocking FAILED " << endl;
-    }	
-
-	if(  !testWeldConstraint()) {
-        status = 1;
-        cout << " testWeldConstraint FAILED " << endl;
-    }	
-
-	// Compare behavior of PointOnLineConstraint between the foot and ground 
-	if(  !testPointOnLineConstraint()) {
-        status = 1;
-        cout << " testPointOnLineConstraint FAILED " << endl;
-    }	
-
-	// Compare behavior of CoordinateCouplerConstraint as a custom knee 
-	if(  !testCoordinateCouplerConstraint()) {
-        status = 1;
-        cout << " testCoordinateCouplerConstraint FAILED " << endl;
-    }	
-
-	return status;
 }

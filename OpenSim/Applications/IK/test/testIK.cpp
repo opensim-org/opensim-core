@@ -32,132 +32,40 @@
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Tools/InverseKinematicsTool.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
-using namespace std;
 using namespace OpenSim;
+using namespace std;
 
-bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
-{
-	double dMax = -SimTK::Infinity;
-
-	const Array<std::string> &col_names = actualStorage.getColumnLabels();
-	
-	bool equal = false;
-	double error = 0;
-	double max_error = 0;
-
-
-	for(int i=1; i<col_names.getSize(); i++){
-		error = actualStorage.compareColumn(stdStorage, col_names[i], actualStorage.getFirstTime());
-		max_error = error > max_error ? error : max_error;
-	}
-
-	equal = (max_error <= tol);
-		
-	return equal;
-}
-
-bool testInverseKinematicsGait2354(bool oldVersion=false)
-{
-	// read setup file and construct model
-	InverseKinematicsTool* tool = 0;
-	if (oldVersion){
-		tool = new InverseKinematicsTool("subjectOld_Setup_InverseKinematics.xml");
-	}
-	else
-		tool = new InverseKinematicsTool("subject01_Setup_InverseKinematics.xml");
-	try {
-		tool->run();
-		Storage actualOutput(tool->getOutputMotionFileName());
-		Storage stdStorage("std_subject01_walk1_ik.mot");
-
-		// Check that we can match the input kinematics to within a fifth of a degree
-		bool equal = equalStorage(stdStorage, actualOutput, 0.2);
-		std::cout << (equal?"Success":"Failure") << endl;
-		
-		return equal;
-	}
-	catch(const std::exception& e) {
-        cout << "exception: " << e.what() << endl;
-        return false;
-    }
-	return true;
-}
-
-bool testInverseKinematicsGait2354_GUI()
-{
-	InverseKinematicsTool* tool = new InverseKinematicsTool("subject01_Setup_InverseKinematics_NoModel.xml");
-	Model mdl("subject01_simbody.osim");
-	mdl.initSystem();
-	tool->setModel(mdl);
-	try {
-		tool->run();
-		Storage actualOutput(tool->getOutputMotionFileName());
-		Storage stdStorage("std_subject01_walk1_ik.mot");
-
-		// Check that we can match the input kinematics to within a fifth of a degree
-		bool equal = equalStorage(stdStorage, actualOutput, 0.2);
-		std::cout << (equal?"Success":"Failure") << endl;
-		
-		return equal;
-	}
-	catch(const std::exception& e) {
-        cout << "exception: " << e.what() << endl;
-        return false;
-    }
-
-	return true;
-
-
-}
-bool testInverseKinematicsUWDynamic()
-{
-	// read setup file and construct model
-	InverseKinematicsTool* tool = new InverseKinematicsTool("uwdynamic_setup_ik.xml");
-	try {
-		tool->run();
-	}
-	catch(const std::exception& e) {
-        cout << "exception: " << e.what() << endl;
-        return false;
-    }
-
-	tool->print("ik_setup_test.xml");
-
-	return true;
-}
-
-//______________________________________________________________________________
-/**
-* Test program to read test IK.
-*
-*/
 int main()
 {
-	if(!testInverseKinematicsGait2354()){
-		cout << "testInverseKinematicsGait2354 Failed." << endl;
-		return 1;
-	}
-	cout << "testInverseKinematicsGait2354 Passed." << endl;
+	try {
+		InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
+		ik1.run();
+		checkResultFiles(ik1.getOutputMotionFileName(), "std_subject01_walk1_ik.mot", Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
+		cout << "testInverseKinematicsGait2354 passed" << endl;
 
-	if(!testInverseKinematicsUWDynamic()){
-		cout << "testInverseKinematicsUWDynamic Failed." << endl;
-		return 1;
+		InverseKinematicsTool ik2("subject01_Setup_InverseKinematics_NoModel.xml");
+		Model mdl("subject01_simbody.osim");
+		mdl.initSystem();
+		ik2.setModel(mdl);
+		ik2.run();
+		checkResultFiles(ik2.getOutputMotionFileName(), "std_subject01_walk1_ik.mot", Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
+		cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
+
+		InverseKinematicsTool ik3("subjectOld_Setup_InverseKinematics.xml");
+		ik3.run();
+		checkResultFiles(ik3.getOutputMotionFileName(), "std_subject01_walk1_ik.mot", Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 Old setup failed");
+		cout << "testInverseKinematicsGait2354 Old setup passed" << endl;
+
+		InverseKinematicsTool ik4("uwdynamic_setup_ik.xml");
+		ik4.run();
+		cout << "testInverseKinematicsUWDynamic passed" << endl;
 	}
-	cout << "testInverseKinematicsUWDynamic Passed." << endl;
-	// run using GUI work flow
-	if(!testInverseKinematicsGait2354_GUI()){
-		cout << "testInverseKinematicsGait2354 GUI workflow Failed." << endl;
-		return 1;
-	}
-	cout << "testInverseKinematicsGait2354 GUI workflow Passed." << endl;
-	// Earlier version setup files
-	if(!testInverseKinematicsGait2354(true)){
-		cout << "testInverseKinematicsGait2354 Old setup Failed." << endl;
-		return 1;
-	}
-	cout << "testInverseKinematicsGait2354 Old setup Passed." << endl;
-	
-	return (0);
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }
-

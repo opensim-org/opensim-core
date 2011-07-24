@@ -37,36 +37,16 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "rdSerializableObject.h"
 #include "rdSerializableObject2.h"
 #include "SimTKcommon.h"
 
-
-
-
-
 using namespace OpenSim;
 using namespace std;
 
-
-// DECLARATIONS
-int TestSerialization();
-//_____________________________________________________________________________
-/**
- * Test the osimCommon library.
- */
-int main(int argc, char* argv[])
+int main()
 {
-	return(TestSerialization());
-}
-
-//_____________________________________________________________________________
-/**
- * Test the serialization of an object.
- */
-int TestSerialization()
-{
-	bool success = false;
 	try {
 		// TYPE REGISTRATION
 		Object::RegisterType(rdSerializableObject());
@@ -85,32 +65,22 @@ int TestSerialization()
 
 		// Now compare object properties to make sure we're not reading and writing the file as just text!
 		int numProperties1 = obj1.getPropertySet().getSize();
-		success = (numProperties1 == obj2.getPropertySet().getSize());
-		if (!success) {
-			throw Exception("num properties",__FILE__,__LINE__);
-		}
+		ASSERT(numProperties1 == obj2.getPropertySet().getSize(), __FILE__, __LINE__, "num properties");
+
 		PropertySet &propSet1 = obj1.getPropertySet();
 		PropertySet &propSet2 = obj2.getPropertySet();
-		for (int i=0; i < numProperties1 && success; i++){
+		for (int i=0; i < numProperties1; i++){
 			Property *prop1 = propSet1.get(i);
 			Property *prop2 = propSet2.get(i);
-			success = (prop1->getName() == prop2->getName());
+			ASSERT(prop1->getName() == prop2->getName(), __FILE__, __LINE__, "property names");
 		}
-		if (!success) {
-			throw Exception("property names",__FILE__,__LINE__);
-		}
-		success = (((PropertyBool*) propSet1.get(0))->getValueBool() == ((PropertyBool*) propSet2.get(0))->getValueBool());
-		if (!success) {
-			throw Exception("bool property",__FILE__,__LINE__);
-		}
-		success = (((PropertyInt*) propSet1.get(1))->getValueInt() == ((PropertyInt*) propSet2.get(1))->getValueInt());
-		if (!success) {
-			throw Exception("int property",__FILE__,__LINE__);
-		}
-		success = (((PropertyDbl*) propSet1.get(2))->getValueDbl() == ((PropertyDbl*) propSet2.get(2))->getValueDbl());
-		if (!success) {
-			throw Exception("double property",__FILE__,__LINE__);
-		}
+
+		ASSERT(((PropertyBool*) propSet1.get(0))->getValueBool() == ((PropertyBool*) propSet2.get(0))->getValueBool(), __FILE__, __LINE__, "bool property");
+
+		ASSERT(((PropertyInt*) propSet1.get(1))->getValueInt() == ((PropertyInt*) propSet2.get(1))->getValueInt(), __FILE__, __LINE__, "int property");
+		
+		ASSERT(((PropertyDbl*) propSet1.get(2))->getValueDbl() == ((PropertyDbl*) propSet2.get(2))->getValueDbl(), __FILE__, __LINE__, "double property");
+		
 		/* The following actually fails due to extra spaces when we read back from file!.
 		string& str1 = ((PropertyStr*) propSet1.get(3))->getValueStr();
 		string& str2 = ((PropertyStr*) propSet2.get(3))->getValueStr();
@@ -120,10 +90,10 @@ int TestSerialization()
 		}
 		*/
 	}
-	catch(Exception x) {
-		x.print(cout);
-
-	}
-	return (success?0:1);
+    catch(const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }
-

@@ -33,79 +33,34 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Tools/InverseDynamicsTool.h>
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
-{
-	actualStorage.subtract(&stdStorage);
-	bool equal = true;
-	Array<double> dData(-SimTK::Infinity);
-	for (int i=0; i <actualStorage.getSize() && equal; i++){
-		dData = actualStorage.getStateVector(i)->getData();
-		double dMax = -SimTK::Infinity;
-		int worst=-1;
-		for (int j=0; j<dData.getSize(); j++){
-			if (fabs(dData[j]) > dMax) worst = j;
-				dMax = std::max(dMax, fabs(dData[j]));
-		}
-		equal = (dMax <= tol);
-		//if(!equal)
-			cout << "row= " << i << ", worst name: "<< stdStorage.getColumnLabels().get(worst+1) << ", max diff= "<<dMax << endl;
-	}
-	return equal;
-}
-
-int testModel(std::string modelPrefix, double tol)
+int main()
 {
 	try {
+		InverseDynamicsTool id1("arm26_Setup_InverseDynamics.xml");
+		id1.run();
+		checkResultFiles("Results/arm26_InverseDynamics.sto", "std_arm26_InverseDynamics.sto", Array<double>(1e-2, 23), __FILE__, __LINE__, "testArm failed");
+		cout << "testArm passed";
 
-	// CONSTRUCT
-	InverseDynamicsTool id(modelPrefix+"_Setup_InverseDynamics.xml");
+		InverseDynamicsTool id2("subject01_Setup_InverseDynamics.xml");
+		id2.run();
+		checkResultFiles("Results/subject01_InverseDynamics.sto", "std_subject01_InverseDynamics.sto", Array<double>(2.0, 23), __FILE__, __LINE__, "testGait failed");
+		cout << "testGait passed";
 
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"Starting inverse dynamics\n";
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"-----------------------------------------------------------------------\n\n";
-
-	// RUN
-	id.run();
-
-	//----------------------------
-	// Catch any thrown exceptions
-	//----------------------------
-	} catch(Exception x) {
-		x.print(cout);
-		return(-1);
+		InverseDynamicsTool id3("subject221_Setup_InverseDynamics.xml");
+		id3.run();
+		checkResultFiles("Results/subject221_InverseDynamics.sto", "std_subject221_InverseDynamics.sto", Array<double>(2.0, 23), __FILE__, __LINE__, "subject 221 old setup failed");
+		cout << "subject 221 old setup passed";
 	}
-	// Compare results to a standard 
-	Storage currentResult("Results/"+modelPrefix+"_InverseDynamics.sto");
-	Storage stdStorage("std_"+modelPrefix+"_InverseDynamics.sto");
-
-	
-	bool equal = equalStorage(stdStorage, currentResult, tol);
-	return (equal?0:1);
-}
-int main(int argc,char **argv)
-{
-	if (testModel("arm26", 1e-2)!=0){
-		cout << " testInverseDynamics.testArm  FAILED " << endl;
-		return(1);
-	}
-	if (testModel("subject01", 2.0)!=0){
-		cout << " testInverseDynamics.testGait  FAILED " << endl;
-		return(1);
-	}
-	
-	// old format setup file
-
-	if (testModel("subject221", 2.0)!=0){
-		cout << " testInverseDynamics.subject 221 old setup  FAILED " << endl;
-		return(1);
-	}
-	
-	return(0);
+    catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }
 

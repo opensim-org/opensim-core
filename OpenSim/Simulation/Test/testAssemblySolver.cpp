@@ -38,22 +38,38 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+void testAssembleModelWithConstraints(string modelFile);
+
+int main()
+{
+	try {
+		LoadOpenSimLibrary("osimActuators");
+		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
+		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
+		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
+	}
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
-int testAssembleModelWithConstraints(string modelFile)
+void testAssembleModelWithConstraints(string modelFile)
 {
+	using namespace SimTK;
+
 	//==========================================================================================================
 	// Setup OpenSim model
 	Model model(modelFile);
@@ -66,6 +82,7 @@ int testAssembleModelWithConstraints(string modelFile)
 	}
 
     State state = model.initSystem();
+	model.equilibrateMuscles(state);
 
 	cout << "*********** Coordinates after initSystem ******************** "  << endl;
 	for(int i=0; i< coords.getSize(); i++) {
@@ -95,7 +112,6 @@ int testAssembleModelWithConstraints(string modelFile)
 	double bw = -model.getSimbodyEngine().getMass()*(model.getGravity()[1]);
 
 	ASSERT_EQUAL(totalYforce, bw, 1.0);
-
 
 	//const CoordinateSet &coords = model.getCoordinateSet();
 	double q_error = 0;
@@ -135,19 +151,4 @@ int testAssembleModelWithConstraints(string modelFile)
         ASSERT_EQUAL(y2[i], y4[i], 1e-5);
     }
     ASSERT(max(abs(y1-y2)) > 1e-4);
-    return 0;
-}
-
-int main()
-{
-	LoadOpenSimLibrary("osimActuators");
-	int status = 0;
-
-    status = testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
-
-	status = testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
-
-	status = testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
-
-	return status;
 }

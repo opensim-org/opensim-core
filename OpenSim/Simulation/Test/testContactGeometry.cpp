@@ -64,29 +64,45 @@
 #include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
-
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.0;
-const static Vec3 gravity_vec = Vec3(0, -9.8065, 0);
+const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 const static double radius = 0.5;
 //==========================================================================================================
+
+int testBouncingBall(bool useMesh);
+
+int main()
+{
+    try
+    {
+    	testBouncingBall(false);
+    	testBouncingBall(true);
+    }
+    catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
 int testBouncingBall(bool useMesh)
 {
+	using namespace SimTK;
+
 	//==========================================================================================================
 	// Setup OpenSim model
 	Model *osimModel = new Model;
@@ -192,21 +208,5 @@ int testBouncingBall(bool useMesh)
     delete geometry;
 	std::string prefix = useMesh?"Kinematics_Mesh":"Kinematics_NoMesh";
 	kin->printResults(prefix);
-	return 0;
-}
-
-int main()
-{
-    try
-    {
-    	testBouncingBall(false);
-    	testBouncingBall(true);
-    }
-    catch (std::exception ex)
-    {
-        std::cout << ex.what() << std::endl;
-        return 1;
-    }
-
 	return 0;
 }

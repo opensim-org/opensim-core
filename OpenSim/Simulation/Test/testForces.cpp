@@ -39,32 +39,65 @@
 //     Add tests here as Forces are added to OpenSim
 //
 //==========================================================================================================
-#include <OpenSim/OpenSim.h>
 #include <ctime>  // clock(), clock_t, CLOCKS_PER_SEC
-
+#include <OpenSim/OpenSim.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
-
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-4;
 const static double duration = 1.0;
-const static Vec3 gravity_vec = Vec3(0, -9.8065, 0);
-
-//==========================================================================================================
+const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 static int counter=0;
+//==========================================================================================================
+
+void testExternalForce();
+void testSpringMass();
+void testBushingForce();
+void testElasticFoundation();
+void testHuntCrossleyForce();
+void testCoordinateLimitForce();
+
+int main()
+{
+	try {
+		testExternalForce();
+		cout << "external force passed" << endl;
+
+		testSpringMass();
+		cout << "spring passed" << endl;
+	
+		testBushingForce();
+		cout << "bushing passed" << endl;
+
+		testElasticFoundation();
+		cout << "elastic foundation force passed" << endl;
+
+		testHuntCrossleyForce();
+		cout << "Hunt-Crossley force passed" << endl;
+
+		testCoordinateLimitForce();
+		cout << "coordinate limit force passed" << endl;
+	}
+    catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
+
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
 
-int testSpringMass()
+void testSpringMass()
 {
+	using namespace SimTK;
 
 	double mass = 1;
 	double stiffness = 10;
@@ -162,14 +195,13 @@ int testSpringMass()
 	// Before exiting lets see if copying the spring works
 	PointToPointSpring *copyOfSpring = (PointToPointSpring *)spring.copy();
 
-	bool isEqual = (*copyOfSpring == spring);
-	ASSERT(isEqual);
-
-	return 0;
+	ASSERT(*copyOfSpring == spring);
 }
 
-int testBushingForce()
+void testBushingForce()
 {
+	using namespace SimTK;
+
 	double mass = 1;
 	double stiffness = 10;
 	double restlength = 0.0;
@@ -186,7 +218,7 @@ int testBushingForce()
 	osimModel->setName("BushingTest");
 	//OpenSim bodies
     OpenSim::Body& ground = osimModel->getGroundBody();
-	OpenSim::Body ball("ball", mass ,Vec3(0),  mass*SimTK::Inertia::sphere(0.1));
+	OpenSim::Body ball("ball", mass, Vec3(0), mass*SimTK::Inertia::sphere(0.1));
 	ball.addDisplayGeometry("sphere.vtp");
 	ball.scale(Vec3(ball_radius), false);
 
@@ -255,7 +287,7 @@ int testBushingForce()
 		// get the forces applied to the ground and ball
 		double analytical_force = -stiffness*height;
 		// analytical force corresponds in direction to the force on the ball Y index = 7
-		ASSERT_EQUAL(analytical_force, model_force[7], 1e-4);
+		ASSERT_EQUAL(analytical_force, model_force[7], 2e-4);
 
 		manager.setInitialTime(dt*i);
 	}
@@ -268,18 +300,17 @@ int testBushingForce()
 	// Before exiting lets see if copying the spring works
 	BushingForce *copyOfSpring = (BushingForce *)spring.copy();
 
-	bool isEqual = (*copyOfSpring == spring);
-	ASSERT(isEqual);
-
-	return 0;
+	ASSERT(*copyOfSpring == spring);
 }
 
 
 // Test our wraapping of elastic foundation in OpenSim
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
-int testElasticFoundation()
+void testElasticFoundation()
 {
+	using namespace SimTK;
+
 	double start_h = 0.5;
 
 	// Setup OpenSim model
@@ -332,7 +363,7 @@ int testElasticFoundation()
 
 	Array<double> contact_force = contact.getRecordValues(osim_state);
 	ASSERT_EQUAL(contact_force[0], 0.0, 1e-4); // no horizontal force on the ball
-	ASSERT_EQUAL(contact_force[1], -ball.getMass()*gravity_vec[1], 1e-3); // vertical is weight
+	ASSERT_EQUAL(contact_force[1], -ball.getMass()*gravity_vec[1], 2e-3); // vertical is weight
 	ASSERT_EQUAL(contact_force[2], 0.0, 1e-4); // no horizontal force on the ball
 	ASSERT_EQUAL(contact_force[3], 0.0, 1e-4); // no torque on the ball
 	ASSERT_EQUAL(contact_force[4], 0.0, 1e-4); // no torque on the ball
@@ -349,15 +380,15 @@ int testElasticFoundation()
 	}
 
 	ASSERT(isEqual);
-
-	return 0;
 }
 
 // Test our wraapping of Hunt-Crossley force in OpenSim
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
-int testHuntCrossleyForce()
+void testHuntCrossleyForce()
 {
+	using namespace SimTK;
+
 	double start_h = 0.5;
 
 	// Setup OpenSim model
@@ -427,13 +458,13 @@ int testHuntCrossleyForce()
 	}
 
 	ASSERT(isEqual);
-
-	return 0;
 }
 
 
-int testCoordinateLimitForce()
+void testCoordinateLimitForce()
 {
+	using namespace SimTK;
+
 	double mass = 1;
 	double ball_radius = 0.25;
 
@@ -534,7 +565,7 @@ int testCoordinateLimitForce()
 		}
 		else{
 			// Verify no force is being applied by limiting force when not exceeding limits 
-			ASSERT_EQUAL(0, model_force[0], 1e-5);
+			ASSERT_EQUAL(0., model_force[0], 1e-5);
 			//also that the kinetic & potential energy of the system is going down due to damping at limits;
 			double e = 0.5*mass*v*v - mass*gravity_vec[1]*h;
 			
@@ -551,13 +582,13 @@ int testCoordinateLimitForce()
 	manager.getStateStorage().print("coordinte_limit_force_model_states.sto");
 
 	// Save the forces
-	reporter->getForceStorage().print("limit_forces.mot");  
-
-	return 0;
+	reporter->getForceStorage().print("limit_forces.mot");
 }
 
-int testExternalForce()
+void testExternalForce()
 {
+	using namespace SimTK;
+
 	//define a new model properties
 	double mass = 1;
 	double angRange[2] = {-Pi, Pi};
@@ -568,7 +599,7 @@ int testExternalForce()
 	model.setName("ExternalForceTest");
 	//OpenSim bodies
     OpenSim::Body& ground = model.getGroundBody();
-	OpenSim::Body tower("tower", mass ,Vec3(0),  mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
+	OpenSim::Body tower("tower", mass, Vec3(0), mass*SimTK::Inertia::brick(0.1, 1.0, 0.2));
 	tower.addDisplayGeometry("box.vtp");
 	tower.scale(Vec3(0.1, 1.0, 0.2));
 
@@ -750,33 +781,4 @@ int testExternalForce()
 		if(i !=3)
 			ASSERT_EQUAL(def, val, 10*accuracy);
 	}
-
-	return 0;
-}
-
-
-
-
-
-
-int main()
-{
-	testExternalForce();
-	cout << "external force passed"  << endl;
-
-	testSpringMass();
-	cout << "spring passed"  << endl;
-	
-	testBushingForce();
-	cout << "bushing passed"  << endl;
-
-	testElasticFoundation();
-	cout << "elastic foundation force passed"  << endl;
-	testHuntCrossleyForce();
-	cout << "Hunt-Crossley force passed"  << endl;
-
-	testCoordinateLimitForce();
-	cout << "coordinate limit force passed"  << endl;
-
-	return 0;
 }

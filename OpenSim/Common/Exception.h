@@ -86,7 +86,7 @@ public:
 	const char* getMessage() const;
 
 	// PRINT
-	virtual void print(std::ostream &aOut);
+	virtual void print(std::ostream &aOut) const;
     // override virtual function from std::exception
     const char* what() const throw() {return getMessage();}
 

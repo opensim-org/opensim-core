@@ -24,21 +24,20 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "OpenSim/Common/Storage.h"
 #include <fstream>
+#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw exception();}
-
 int main() {
-	// Create a storge from a std file "std_storage.sto"
+    try {
+		// Create a storge from a std file "std_storage.sto"
 		//ofstream checkRunDirFile("rundir.txt");
 		//checkRunDirFile << "Run from here:\n\n";
 		//checkRunDirFile.close();
-   std::string stdLabels[] = {"time", "v1", "v2"};
-    try {
+		string stdLabels[] = {"time", "v1", "v2"};
 		Storage* st = new Storage("test.sto");
 		// time[\t]v1[\t]v2
 		// 1.[\t]	10.0[Space]20
@@ -78,8 +77,8 @@ int main() {
 
 		delete st;
     }
-    catch (...) {
-        cout << "Failed" << endl;
+    catch (const Exception& e) {
+        e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;

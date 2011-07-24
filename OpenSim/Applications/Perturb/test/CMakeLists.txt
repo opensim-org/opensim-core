@@ -9,6 +9,8 @@ LINK_LIBRARIES( debug osimCommon_d optimized osimCommon
 
 ADD_EXECUTABLE(testPerturb testPerturb.cpp)
 
+TARGET_LINK_LIBRARIES(testPerturb auxiliaryTestFunctions)
+
 FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #

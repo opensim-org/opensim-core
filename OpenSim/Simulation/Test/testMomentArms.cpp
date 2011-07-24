@@ -42,27 +42,89 @@
 #include <iostream>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/MomentArmSolver.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKmath.h"
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
-
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs(double (expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
 const static double integ_accuracy = 1.0e-3;
 const static double duration = 1.2;
-const static Vec3 gravity_vec = Vec3(0, -9.8065, 0);
+const static SimTK::Vec3 gravity_vec(0, -9.8065, 0);
 
+void testMomentArmDefinitionForModel(const string &filename, const string &coordName = "", 
+									const string &muscleName = "", SimTK::Vec2 rom = SimTK::Vec2(-SimTK::Pi/2,0),
+									double mass = -1.0, string errorMessage = "");
+
+int main()
+{
+	try {
+		testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), 0.0, "VASINT of BothLegs with no mass: FAILED");
+		cout << "VASINT of BothLegs with no mass: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "hip_flexion_r", "rect_fem_r", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), -1.0, "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: FAILED");
+		cout << "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "knee_angle_r", "rect_fem_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: FAILED");
+		cout << "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella defined w.r.t Femur: FAILED");
+		cout << "Knee with Vasti attachment on patella defined w.r.t Femur: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("gait2354_patellae.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with Vasti attachment on patella w.r.t Tibia: FAILED");
+		cout << "Knee with Vasti attachment on patella w.r.t Tibia: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("gait2354_simbody.osim", "knee_angle_r", "vas_int_r", SimTK::Vec2(-2*SimTK::Pi/3, SimTK::Pi/18), -1.0, "Knee with moving muscle point (no patella): FAILED");
+		cout << "Knee with moving muscle point (no patella): PASSED\n" << endl;
+
+		//massless should not break moment-arm solver
+		testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 0.0, "WRIST ECU TEST with MASSLESS BODIES: FAILED");
+		cout << "WRIST ECU TEST with MASSLESS BODIES: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 1.0, "WRIST ECU TEST with MASS  = 1.0 : FAILED");
+		cout << "WRIST ECU TEST with MASS  = 1.0 : PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", SimTK::Vec2(-SimTK::Pi/3, SimTK::Pi/3), 100.0, "WRIST ECU TEST with MASS  = 100.0 : FAILED");
+		cout << "WRIST ECU TEST with MASS  = 100.0 : PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("P2PBallJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Point to point muscle across BallJoint: FAILED");
+		cout << "Point to point muscle across BallJoint: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("P2PBallCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Point to point muscle across a ball implemented by CustomJoint: FAILED");
+		cout << "Point to point muscle across a ball implemented by CustomJoint: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("MovingPathPointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Moving path point across PinJoint: FAILED");
+		cout << "Moving path point across PinJoint: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("P2PCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Point to point muscle across CustomJoint: FAILED");
+		cout << "Point to point muscle across CustomJoint: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("MovingPointCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Moving path point across CustomJoint: FAILED");
+		cout << "Moving path point across CustomJoint: PASSED\n" << endl;
+
+		testMomentArmDefinitionForModel("WrapPathCustomJointMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Path with wrapping across CustomJoint: FAILED");
+		cout << "Path with wrapping across CustomJoint: PASSED\n" << endl;
+		
+		testMomentArmDefinitionForModel("PathOnConstrainedBodyMomentArmTest.osim", "", "", SimTK::Vec2(-SimTK::Pi/2,0), -1.0, "Path on constrained body across CustomJoint: FAILED");
+		cout << "Path on constrained body across CustomJoint: PASSED\n" << endl;
+	}
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 //==========================================================================================================
 // moment_arm = dl/dtheta, definition using inexact peturbation technique
 //==========================================================================================================
-double computeMomentArmFromDefinition(const State &s, const GeometryPath &path, const Coordinate &coord)
+double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath &path, const Coordinate &coord)
 {
+	using namespace SimTK;
+
 	 // Declare dummies for the call to project().
     const Vector yWeights(s.getNY(), 1); 
     const Vector cWeights(s.getNMultipliers(), 1);
@@ -105,9 +167,11 @@ double computeMomentArmFromDefinition(const State &s, const GeometryPath &path, 
 }
 
 
-Vector computeGenForceScaling(const Model &osimModel, const State &s, const Coordinate &coord, 
+SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State &s, const Coordinate &coord, 
 							  const Array<string> &coupledCoords)
 {
+	using namespace SimTK;
+
 	//Local modifiable copy of the state
 	State s_ma = s;
 
@@ -168,10 +232,12 @@ Vector computeGenForceScaling(const Model &osimModel, const State &s, const Coor
 //==========================================================================================================
 // Main test driver can be used on any model so test cases should be very easy to add
 //==========================================================================================================
-int testMomentArmDefinitionForModel(const string &filename, const string &coordName ="", 
-									const string &muscleName = "", Vec2 rom = Vec2(-Pi/2,0),
-									double mass = -1.0)
+void testMomentArmDefinitionForModel(const string &filename, const string &coordName, 
+									const string &muscleName, SimTK::Vec2 rom,
+									double mass, string errorMessage)
 {
+	using namespace SimTK;
+
 	bool passesDefinition = true;
 	bool passesDynamicConsistency = true;
 
@@ -248,17 +314,16 @@ int testMomentArmDefinitionForModel(const string &filename, const string &coordN
 
 		cout << "r's = " << ma << "::" << ma_dldtheta <<"  at q = " << coord.getValue(s)*180/Pi; 
 
-		try{
+		try {
 			// Verify that the definition of the moment-arm is satisfied
 			ASSERT_EQUAL(ma, ma_dldtheta, integ_accuracy);
 		}
-		catch(...){
-			cout << endl;
+		catch (const OpenSim::Exception& e) {
 			passesDefinition = false;
 		}
 
 		// Verify that the moment-arm calculated is dynamically consistent with moment generated
-		if(mass!=0 ){
+		if (mass!=0 ) {
 			osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
 			double force = muscle.getTendonForce(s);
@@ -307,16 +372,16 @@ int testMomentArmDefinitionForModel(const string &filename, const string &coordN
 				 << "  r*fm = " << ma*force <<"::" << ma_dldtheta*force << endl;
 
 
-			try{	
+			try {	
 				// Resulting torque from ID (no constraints) + constraints = equivalent applied torque 
 				ASSERT_EQUAL(equivalentIvdMuscleTorque, equivalentMuscleTorque, integ_accuracy);
 				// verify that equivalent torque is in fact moment-arm*force
 				ASSERT_EQUAL(equivalentIvdMuscleTorque, ma*force, integ_accuracy);
 			}
-			catch(...){
+			catch (const OpenSim::Exception& e) {
 				passesDynamicConsistency = false;
 			}
-		}else{
+		} else {
 			cout << endl;
 		}
 
@@ -331,81 +396,5 @@ int testMomentArmDefinitionForModel(const string &filename, const string &coordN
 
 	// Minimum requirement to pass is that calculated moment-arm satifies either
 	// dL/dTheta definition or is at least dynamically consistent, in which dL/dTheta is not
-	int err = (passesDefinition || passesDynamicConsistency) ? 0 : 1;
-	return err;
-}
-
-
-
-
-int main()
-{
-	int stat =0, err = 0;
-
-	err = testMomentArmDefinitionForModel("BothLegs22.osim", "r_knee_angle", "VASINT", Vec2(-2*Pi/3, Pi/18), 0.0);
-	cout << "VASINT of BothLegs with no mass: "  << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "hip_flexion_r", "rect_fem_r", Vec2(-Pi/3, Pi/3));
-	cout << "Rectus Femoris at hip with muscle attachment on patella defined w.r.t Femur: "  << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "knee_angle_r", "rect_fem_r", Vec2(-2*Pi/3, Pi/18));
-	cout << "Rectus Femoris with muscle attachment on patella defined w.r.t Femur: "  << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("gait23_PatellaInFemur.osim", "knee_angle_r", "vas_int_r", Vec2(-2*Pi/3, Pi/18));
-	cout << "Knee with Vasti attachment on patella defined w.r.t Femur: "  << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("gait2354_patellae.osim", "knee_angle_r", "vas_int_r", Vec2(-2*Pi/3, Pi/18));
-	cout << "Knee with Vasti attachment on patella w.r.t Tibia: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("gait2354_simbody.osim", "knee_angle_r", "vas_int_r", Vec2(-2*Pi/3, Pi/18));
-	cout << "Knee with moving muscle point (no patella): " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	//massless should not break moment-arm solver
-	cout << ""  << endl;
-	err = testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", Vec2(-Pi/3, Pi/3), 0.0);
-	cout << "WRIST ECU TEST with MASSLESS BODIES: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", Vec2(-Pi/3, Pi/3), 1.0);
-	cout << "WRIST ECU TEST with MASS  = 1.0 : " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("wrist_mass.osim", "flexion", "ECU_post-surgery", Vec2(-Pi/3, Pi/3), 100.0);
-	cout << "WRIST ECU TEST with MASS  = 100.0 : " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("P2PBallJointMomentArmTest.osim");
-	cout << "Point to point muscle across BallJoint: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-
-	err = testMomentArmDefinitionForModel("P2PBallCustomJointMomentArmTest.osim");
-	cout << "Point to point muscle across a ball implemented by CustomJoint: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("MovingPathPointMomentArmTest.osim");
-	cout << "Moving path point across PinJoint: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("P2PCustomJointMomentArmTest.osim");
-	cout << "Point to point muscle across CustomJoint: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("MovingPointCustomJointMomentArmTest.osim");
-	cout << "Moving path point across CustomJoint: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testMomentArmDefinitionForModel("WrapPathCustomJointMomentArmTest.osim");
-	cout << "Path with wrapping across CustomJoint: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-	
-	err = testMomentArmDefinitionForModel("PathOnConstrainedBodyMomentArmTest.osim");
-	cout << "Path on constrained body across CustomJoint: " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	return stat;
+	ASSERT(passesDefinition || passesDynamicConsistency, __FILE__, __LINE__, errorMessage);
 }

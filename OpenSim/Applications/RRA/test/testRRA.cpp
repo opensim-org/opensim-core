@@ -40,67 +40,22 @@
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-
-
-void testGait2354() {
-
-	RRATool rra("subject01_Setup_RRA.xml");
-	rra.run();
-
-    SimTK::Vec3 com; 
-    
-    // compare the adjusted center of mass to OpenSim 1.9.1 values
-    Model adjusted_model("subject01_RRA_adjusted.osim");
-    const BodySet& bodies = adjusted_model.getBodySet();
-    const Body& torso = bodies.get(bodies.getIndex("torso"));
-    torso.getMassCenter(com);
-    cout << "Center of Mass = " << com << endl;
-    cout << "Center of Mass 19= -0.00598028440188985017, 0.0, 0.1" <<  endl;
-	ASSERT(std::abs(com[0]-0.00598028440188985017) < .0001 );
-	ASSERT(std::abs(com[2]-0.1) < .0001 );
-    cout << "torso com =" << com << endl;
-    
-	Storage results("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto");
-	Storage standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
-
-	// Compare the output file to the target trajectory and make sure they
-	// are sufficiently close.
-
-	double totalError = 0.0;
-	int count = 0;
-	Array<double> data;
-    std::string  label;
-
-	for (int i = 0; i < results.getSize(); ++i) {
-		StateVector* state = results.getStateVector(i);
-		double time = state->getTime();
-
-		data.setSize(state->getSize());
-		standard.getDataAtTime(time, state->getSize(), data);
-		for (int j = 0; j < state->getSize(); ++j) {
-            label = results.getColumnLabels()[j+1];
-
-            double diff = data[standard.getStateIndex(label)]-state->getData()[j];
-    	    totalError += std::abs(diff);
-			count++;
-		}
-	}
-	cout << "totalError = " << totalError << "  count = " << count << " meanError=" << totalError/count << " \n";
-	ASSERT(totalError/count < 0.5);
-}
 int main() {
     try {
-		testGait2354();
+		RRATool rra("subject01_Setup_RRA.xml");
+		rra.run();
+		checkCOM("subject01_RRA_adjusted.osim", "torso", SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1), Array<double>(1e-4, 3));
+		checkResultFiles("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto", "subject01_walk1_RRA_Kinematics_q_standard.sto", Array<double>(0.5, 24));
     }
-    catch(const std::exception& e) {
-        cerr << "exception: " << e.what() << endl;
+    catch (const Exception& e) {
+        e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;
-    return 1;
+    return 0;
 }

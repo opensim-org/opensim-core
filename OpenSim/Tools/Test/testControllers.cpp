@@ -56,18 +56,36 @@
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Control/PrescribedController.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
+void testControlSetControllerOnBlock();
+void testPrescribedControllerOnBlock();
+void testCorrectionControllerOnBlock();
+
+int main()
+{
+    try {
+		testControlSetControllerOnBlock();
+		testPrescribedControllerOnBlock();
+		testCorrectionControllerOnBlock();
+    }	
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 //==========================================================================================================
-bool testControlSetControllerOnBlock()
+void testControlSetControllerOnBlock()
 {
-	bool status = true;
+	using namespace SimTK;
 
-		// Create a new OpenSim model
+	// Create a new OpenSim model
 	Model osimModel;
 	osimModel.setName("osimModel");
 
@@ -149,27 +167,22 @@ bool testControlSetControllerOnBlock()
 
 	si.getQ().dump("Final position:");
 	double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce[0]/blockMass)*finalTime*finalTime);
-	if (x_err > accuracy){
-		cout << "ControlSetControllerOnBlock failed to produce the expected motion." << endl;
-		status = false;
-	}
+	ASSERT(x_err <= accuracy, __FILE__, __LINE__, "ControlSetControllerOnBlock failed to produce the expected motion.");
 
 	// Save the simulation results
 	Storage states(manager.getStateStorage());
 	states.print("block_push.sto");
 
 	osimModel.disownAllComponents();
-
-	return status;
 }// end of testControlSetControllerOnBlock()
 
 
 //==========================================================================================================
-bool testPrescribedControllerOnBlock()
+void testPrescribedControllerOnBlock()
 {
-	bool status = true;
+	using namespace SimTK;
 
-		// Create a new OpenSim model
+	// Create a new OpenSim model
 	Model osimModel;
 	osimModel.setName("osimModel");
 
@@ -242,27 +255,22 @@ bool testPrescribedControllerOnBlock()
 
 	si.getQ().dump("Final position:");
 	double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce/blockMass)*finalTime*finalTime);
-	if (x_err > accuracy){
-		cout << "PrescribedController failed to produce the expected motion of block." << endl;
-		status = false;
-	}
+	ASSERT(x_err <= accuracy, __FILE__, __LINE__, "PrescribedController failed to produce the expected motion of block.");
 
 	// Save the simulation results
 	Storage states(manager.getStateStorage());
 	states.print("block_push.sto");
 
 	osimModel.disownAllComponents();
-
-	return status;
 }// end of testPrescribedControllerOnBlock()
 
 
 //==========================================================================================================
-bool testCorrectionControllerOnBlock()
+void testCorrectionControllerOnBlock()
 {
-	bool status = true;
+	using namespace SimTK;
 
-		// Create a new OpenSim model
+	// Create a new OpenSim model
 	Model osimModel;
 	osimModel.setName("osimModel");
 
@@ -309,29 +317,4 @@ bool testCorrectionControllerOnBlock()
 	Manager manager(osimModel, integrator);
 
 	osimModel.disownAllComponents();
-
-	return status;
 }// end of testCorrectionControllerOnBlock()
-
-int main()
-{
-    int  status = 0;
-
-	if(  !testControlSetControllerOnBlock()) {
-        status = 1;
-        cout << " testControlSetControllerOnBlock FAILED " << endl;
-    }
-
-	if(! testPrescribedControllerOnBlock()) {
-        status = 1;
-        cout << " testPrescribedControllerOnBlock FAILED " << endl;
-    }
-
-	if(  !testCorrectionControllerOnBlock()) {
-        status = 1;
-        cout << " testCorrectiveControllerOnBlock FAILED " << endl;
-    }	
-
-
-	return status;
-}

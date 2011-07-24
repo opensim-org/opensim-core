@@ -39,13 +39,30 @@
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
+void testSingleMuscle();
+void testTwoMusclesOnBlock();
+void testGait2354();
+void testEMGDrivenArm();
 
-#define ASSERT_EQUAL(expected, found, tol) {if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+int main() {
+    try {
+		testSingleMuscle();
+		testTwoMusclesOnBlock();
+		testGait2354();
+		testEMGDrivenArm();
+    }
+    catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 void testGait2354() {
 
@@ -167,19 +184,4 @@ void testEMGDrivenArm() {
 	CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
 	cmc.run();
 	cmc.print("check.xml");
-}
-
-int main() {
-    try {
-		testSingleMuscle();
-		testTwoMusclesOnBlock();
-		testGait2354();
-		testEMGDrivenArm();
-    }
-    catch(const std::exception& e) {
-        cout << "exception: " << e.what() << endl;
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
 }

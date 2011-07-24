@@ -42,9 +42,10 @@
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Control/ControlLinear.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
-using namespace SimTK;
+using namespace std;
 
 int main()
 {
@@ -53,18 +54,12 @@ int main()
 		Model osimModel;
 		osimModel.setName("osimModel");
 		
-		
 		// Get the ground body
 		OpenSim::Body& ground = osimModel.getGroundBody();
 		//ground.addDisplayGeometry("ground.vtp");
-
-		
-	
-		
 	}
-    catch (std::exception ex)
-    {
-        std::cout << ex.what() << std::endl;
+    catch (const Exception& e) {
+        e.print(cerr);
         return 1;
     }
 
@@ -75,6 +70,6 @@ int main()
 //#endif
 //	osimModel.disownAllComponents();
 
-	std::cout << "Exiting" << std::endl;
+	cout << "Done" << endl;
 	return 0;
 }

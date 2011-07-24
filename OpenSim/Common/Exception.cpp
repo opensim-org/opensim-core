@@ -130,7 +130,7 @@ getMessage() const
  * @param aOut Output stream
  */
 void Exception::
-print(ostream &aOut)
+print(ostream &aOut) const
 {
 	// HEADER
 	aOut << "\nException:\n";

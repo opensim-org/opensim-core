@@ -36,77 +36,32 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Tools/AnalyzeTool.h>
 #include <OpenSim/Analyses/StaticOptimization.h>
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
-{
-	actualStorage.subtract(&stdStorage);
-	bool equal = true;
-	Array<double> dData(-SimTK::Infinity);
-	for (int i=0; i <actualStorage.getSize() && equal; i++){
-		dData = actualStorage.getStateVector(i)->getData();
-		double dMax = -SimTK::Infinity;
-		int worst=-1;
-		for (int j=0; j<dData.getSize(); j++){
-			if (fabs(dData[j]) > dMax) worst = j;
-			dMax = std::max(dMax, fabs(dData[j]));
-		}
-		equal = (dMax <= tol);
-		if(!equal) // worst index is for data excluding time, so +1 get the correct column label
-			cout << "time: " << actualStorage.getStateVector(i)->getTime() << ", colname: " << stdStorage.getColumnLabels().get(worst+1) << ", diff: " << dMax << endl;
-	}
-	return equal;
-}
-
-int testModel(std::string modelPrefix)
+int main()
 {
 	try {
+		AnalyzeTool analyze1("arm26_Setup_StaticOptimization.xml");
+		analyze1.getModel();
+		analyze1.run();
+		checkResultFiles("Results/arm26_StaticOptimization_activation.sto", "std_arm26_StaticOptimization_activation.sto", Array<double>(2e-3, 24), __FILE__, __LINE__, "testArm failed");
+		checkResultFiles("Results/arm26_StaticOptimization_force.sto", "std_arm26_StaticOptimization_force.sto", Array<double>(1e-2, 24), __FILE__, __LINE__, "testArm failed");
+		cout << "testArm passed" << endl;
 
-	// CONSTRUCT
-	AnalyzeTool analyze(modelPrefix+"_Setup_StaticOptimization.xml");
-
-	// PRINT MODEL INFORMATION
-	Model& model = analyze.getModel();
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"Loaded library\n";
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"-----------------------------------------------------------------------\n\n";
-
-	// RUN
-	analyze.run();
-	
-	// also change output file names/path
-	//----------------------------
-	// Catch any thrown exceptions
-	//----------------------------
-	} catch(Exception x) {
-		x.print(cout);
-		return(-1);
+		AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
+		analyze2.getModel();
+		analyze2.run();
+		checkResultFiles("Results/arm26_bounds_StaticOptimization_activation.sto", "std_arm26_bounds_StaticOptimization_activation.sto", Array<double>(2e-3, 24), __FILE__, __LINE__, "testArm with bounds failed");
+		checkResultFiles("Results/arm26_bounds_StaticOptimization_force.sto", "std_arm26_bounds_StaticOptimization_force.sto", Array<double>(1e-2, 24), __FILE__, __LINE__, "testArm with bounds failed");
+		cout << "testArm with bounds passed" << endl;
 	}
-	// Compare results to a standard (with muscle physiology)
-	Storage currentResult("Results/"+modelPrefix+"_StaticOptimization_activation.sto");
-	Storage stdStorage("std_"+modelPrefix+"_StaticOptimization_activation.sto");
-	bool equal = equalStorage(stdStorage, currentResult, 2e-3);
-	if (equal){
-		currentResult = Storage("Results/"+modelPrefix+"_StaticOptimization_force.sto");
-		stdStorage = Storage("std_"+modelPrefix+"_StaticOptimization_force.sto");
-		bool equal = equalStorage(stdStorage, currentResult, 1e-2);
-	}
-	return (equal?0:1);
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }
-int main(int argc,char **argv)
-{
-	if (testModel("arm26")!=0){	// Arm26 with no bounds (0 to 1.0)
-		cout << " testStaticOptimization.testArm  FAILED " << endl;
-		return (1);
-	}
-	if (testModel("arm26_bounds")!=0){	// Arm26 with bounds 0.01 to 1.0 same as versions prior to 2.2.1
-		cout << " testStaticOptimization.testArm  with bounds FAILED " << endl;
-		return (1);
-	}
-	return(0);
-}
-

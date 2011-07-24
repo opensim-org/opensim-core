@@ -24,13 +24,11 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "OpenSim/Common/GCVSpline.h"
+#include <OpenSim/Common/GCVSpline.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
-using SimTK::Vector;
-
-#define ASSERT(cond) {if (!(cond)) throw exception();}
 
 int main() {
     try {
@@ -42,11 +40,11 @@ int main() {
         }
         GCVSpline spline(5, size, x, y);
         for (int i = 0; i < 10*(size-1); ++i) {
-            ASSERT(abs(sin(0.01*i)-spline.calcValue(Vector(1, 0.01*i))) < 1e-4);
+            ASSERT_EQUAL(sin(0.01*i), spline.calcValue(SimTK::Vector(1, 0.01*i)), 1e-4, __FILE__, __LINE__);
         }
     }
-    catch (...) {
-        cout << "Failed" << endl;
+    catch(const Exception& e) {
+        e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;

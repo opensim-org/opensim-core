@@ -30,24 +30,39 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+void testCopyModel(string fileName);
 
-void testCopyModel(std::string fileName)
+int main()
+{
+	try {
+		LoadOpenSimLibrary("osimActuators");
+		testCopyModel("arm26.osim");
+		testCopyModel("snowboard.osim");
+		testCopyModel("Neck3dof_point_constraint.osim");
+	}
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+	return 0;
+}
+
+void testCopyModel(string fileName)
 {
 	Model *model = new Model(fileName);
 	SimTK::State defaultState = model->initSystem();
 	Model *modelCopy = new Model(*model);
 	// At this point properties should all match. assert that
-	ASSERT(*model==*modelCopy)
+	ASSERT(*model==*modelCopy);
 	delete model;
 	SimTK::State& defaultStateOfCopy = modelCopy->initSystem();
 	// Compare state
@@ -65,14 +80,4 @@ void testCopyModel(std::string fileName)
 	ASSERT ((defaultState.getY()-defaultStateOfCopy2.getY()).norm() < 1e-7);
 	ASSERT ((defaultState.getZ()-defaultStateOfCopy2.getZ()).norm() < 1e-7);
 	delete newModel;
-	return;
-}
-
-int main()
-{
-	LoadOpenSimLibrary("osimActuators");
-	testCopyModel("arm26.osim");
-	testCopyModel("snowboard.osim");
-	testCopyModel("Neck3dof_point_constraint.osim");
-	return 0;
 }

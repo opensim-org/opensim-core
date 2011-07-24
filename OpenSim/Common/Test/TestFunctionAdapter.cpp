@@ -24,35 +24,32 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "OpenSim/Common/PiecewiseLinearFunction.h"
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
-
-#define ASSERT(cond) {if (!(cond)) throw exception();}
-#define ASSERT_EQUAL(expected, found, tol) {if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 int main() {
     try {
         double x[] = {0.0, 1.0, 2.0, 2.5, 5.0, 10.0};
         double y[] = {0.5, 0.7, 2.0, -1.0, 0.5, 0.1};
-        PiecewiseLinearFunction function(6, x, y);
-        FunctionAdapter adapter(function);
-        const SimTK::Function& f2 = *function.createSimTKFunction();
+        PiecewiseLinearFunction f1(6, x, y);
+        FunctionAdapter adapter(f1);
+        const SimTK::Function& f2 = *f1.createSimTKFunction();
         SimTK::Vector xvec(1);
-        vector<int> deriv(1);
-        deriv[0] = 0;
+        vector<int> deriv(1, 0);
         for (int i = 0; i < 100; ++i) {
             xvec[0] = i*0.01;
-            ASSERT_EQUAL( function.calcValue(xvec), adapter.calcValue(xvec), 1e-10);
-            ASSERT_EQUAL( function.calcDerivative(deriv,xvec), adapter.calcDerivative(deriv,xvec), 1e-10);
-            ASSERT_EQUAL( function.calcValue(xvec), f2.calcValue(xvec),  1e-10);
-            ASSERT_EQUAL( function.calcDerivative(deriv,xvec), f2.calcDerivative(deriv,xvec), 1e-10);
+            ASSERT_EQUAL(f1.calcValue(xvec), adapter.calcValue(xvec), 1e-10, __FILE__, __LINE__);
+            ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), adapter.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
+            ASSERT_EQUAL(f1.calcValue(xvec), f2.calcValue(xvec),  1e-10, __FILE__, __LINE__);
+            ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), f2.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
         }
-        ASSERT(adapter.getArgumentSize() == 1);
+        ASSERT(adapter.getArgumentSize() == 1, __FILE__, __LINE__);
     }
-    catch (...) {
-        cout << "Failed" << endl;
+    catch (const Exception& e) {
+        e.print(cerr);
         return 1;
     }
     cout << "Done" << endl;

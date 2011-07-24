@@ -48,21 +48,36 @@
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+void testStates();
+
+int main()
+{
+	try {
+	    LoadOpenSimLibrary("osimActuators");
+		testStates();
+	}
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
-int testStates()
+void testStates()
 {
+	using namespace SimTK;
+
 	//==========================================================================================================
 	// Setup OpenSim model
 	Model model("arm26.osim");
@@ -94,12 +109,4 @@ int testStates()
         ASSERT_EQUAL(y2[i], y4[i], 1e-5);
     }
     ASSERT(max(abs(y1-y2)) > 1e-4);
-    return 0;
-}
-
-int main()
-{
-    LoadOpenSimLibrary("osimActuators");
-    testStates();
-	return 0;
 }

@@ -45,24 +45,58 @@
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Actuators/ContDerivMuscle.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
-using SimTK::Vec3;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs(double (expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
-
 //==========================================================================================================
-
 static const double accuracy = 1e-5;
+
+void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double load, Function &control, const double accuracy);
+void testPathActuator();
+void testRigidTendonMuscle();
+void testThelen2003Muscle();
+//void testContDerivMuscle();
+void testSchutte1993Muscle();
+void testDelp1990Muscle();
+
+int main()
+{
+	try {
+		testPathActuator();
+		cout << "PathActuator Test passed" << endl;
+
+		testRigidTendonMuscle();
+		cout << "RigidTendonMuscle Test passed" << endl;
+		
+		testThelen2003Muscle();
+		cout << "Thelen2003Muscle Test passed" << endl;
+		
+		//testContDerivMuscle();
+		//cout << "ContDerivMuscle Test passed" << endl;
+		
+		testSchutte1993Muscle();
+		cout << "Schutte1993Muscle Test passed" << endl;
+		
+		testDelp1990Muscle();
+		cout << "Delp1990Muscle Test passed" << endl;
+	}
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
 
 //==========================================================================================================
 // Main test driver to be used on any muscle model (derived from Muscle) so new cases should be easy to add
 //==========================================================================================================
-int simulateMuscle(PathActuator &aMuscle, double startX, double act0, double load, Function &control, const double accuracy)
+void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double load, Function &control, const double accuracy)
 {
+	using SimTK::Vec3;
+
 	// Define the initial and final simulation times
 	double initialTime = 0.0;
 	double finalTime = 1.0;
@@ -160,7 +194,7 @@ int simulateMuscle(PathActuator &aMuscle, double startX, double act0, double loa
 	// Integrate from initial time to final time
 	manager.setInitialTime(initialTime);
 	manager.setFinalTime(finalTime);
-	std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+	cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
 
 	// Start timing the simulation
 	const clock_t start = clock();
@@ -175,12 +209,11 @@ int simulateMuscle(PathActuator &aMuscle, double startX, double act0, double loa
 	states.print(actuatorType+"_states.sto");
 
 	// Minimum requirement to pass is simulation of single muscle on slider is real-time
-	int err = (comp_time <= (finalTime-initialTime)) ? 0 : 1;
+	ASSERT(comp_time <= (finalTime-initialTime));
 	cout << actuatorType << " simulation in " << comp_time << "s, for " << accuracy << " accuracy." << endl;
-	return err;
 }
 
-int testThelen2003Muscle()
+void testThelen2003Muscle()
 {
 	double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation = 0.01, deactivation = 0.4;
 
@@ -194,11 +227,11 @@ int testThelen2003Muscle()
 
 	Constant control(0.5);
 
-	return simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
 }
 
 /*
-int testContDerivMuscle()
+void testContDerivMuscle()
 {
 	double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation = 0.01, deactivation = 0.4;
 
@@ -212,11 +245,11 @@ int testContDerivMuscle()
 
 	Constant control(0.5);
 
-	return simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
 }
 */
 
-int testSchutte1993Muscle()
+void testSchutte1993Muscle()
 {
 	double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation1 = 7.6, activation2 = 2.5;
 
@@ -230,11 +263,11 @@ int testSchutte1993Muscle()
 
 	Constant control(0.5);
 
-	return simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
 }
 
 
-int testDelp1990Muscle()
+void testDelp1990Muscle()
 {
 	double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation1 = 7.6, activation2 = 2.5;
 
@@ -249,10 +282,10 @@ int testDelp1990Muscle()
 
 	Constant control(0.5);
 
-	return simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
 }
 
-int testPathActuator()
+void testPathActuator()
 {
 	double optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0;
 
@@ -264,11 +297,11 @@ int testPathActuator()
 
 	Constant control(0.5);
 
-	return simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
 }
 
 
-int testRigidTendonMuscle()
+void testRigidTendonMuscle()
 {
 	double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation = 0.01, deactivation = 0.4;
 
@@ -280,39 +313,5 @@ int testRigidTendonMuscle()
 
 	Constant control(0.5);
 
-	return simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
-}
-
-
-int main()
-{
-	int stat =0, err = 0;
-
-	err = testPathActuator();
-	cout << "PathActuator Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testRigidTendonMuscle();
-	cout << "RigidTendonMuscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testThelen2003Muscle();
-	cout << "Thelen2003Muscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	//err = testContDerivMuscle();
-	//cout << "ContDerivMuscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	//stat += err;
-
-	err = testSchutte1993Muscle();
-	cout << "Schutte1993Muscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-	err = testDelp1990Muscle();
-	cout << "Delp1990Muscle Test " << (err ? "FAILED" : "PASSED")  << "\n" << endl;
-	stat += err;
-
-
-
-	return stat;
+	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
 }
