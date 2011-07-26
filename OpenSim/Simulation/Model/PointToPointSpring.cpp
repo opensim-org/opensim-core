@@ -72,6 +72,11 @@ PointToPointSpring::PointToPointSpring() : 	Force(),
 	_restLength(_propRestlength.getValueDbl())
 {
 	setNull();
+	if (_displayer.countGeometry()==0){
+		Geometry *g = new LineGeometry();
+		g->setFixed(false);
+		_displayer.addGeometry(g);
+	}
 }
 //_____________________________________________________________________________
 /**
@@ -121,6 +126,12 @@ PointToPointSpring::PointToPointSpring(const PointToPointSpring &aForce) :
 {
 	setNull();
 	copyData(aForce);
+		if (_displayer.countGeometry()==0){
+		Geometry *g = new LineGeometry();
+		g->setFixed(false);
+		_displayer.addGeometry(g);
+	}
+
 }
 //_____________________________________________________________________________
 /**
@@ -198,6 +209,34 @@ void PointToPointSpring::copyData(const PointToPointSpring &aPointToPointSpring)
 	setRestlength(aPointToPointSpring.getRestlength());
 }
 
+//_____________________________________________________________________________
+/**
+ * Get the visible object used to represent the spring.
+ */
+VisibleObject* PointToPointSpring::getDisplayer() const
+{ 
+	return const_cast<VisibleObject*>(&_displayer); 
+}
+void PointToPointSpring::updateDisplayer(const SimTK::State& s)
+{
+	SimTK::Vec3 globalLocation1, globalLocation2;
+	const OpenSim::Body& body1 = _model->getBodySet().get(_body1Name);
+	const OpenSim::Body& body2 = _model->getBodySet().get(_body2Name);
+	_model->getSimbodyEngine().transformPosition(s, body1, _point1, globalLocation1);
+	_model->getSimbodyEngine().transformPosition(s, body2, _point2, globalLocation2);
+	((LineGeometry *)_displayer.getGeometry(0))->setPoints(globalLocation1, globalLocation2);
+}
+void PointToPointSpring::updateGeometry(const SimTK::State& s)
+{
+	int x=0;
+	if (_displayer.countGeometry()==0){
+		Geometry *g = new LineGeometry();
+		g->setFixed(false);
+		_displayer.addGeometry(g);
+	}
+	updateDisplayer(s);
+}
+
 
 //=============================================================================
 // OPERATORS
@@ -263,6 +302,7 @@ void PointToPointSpring::createSystem(SimTK::MultibodySystem& system) const
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
 	PointToPointSpring* mutableThis = const_cast<PointToPointSpring *>(this);
 	mutableThis->_index = simtkSpring.getForceIndex();
+
 }
 
 

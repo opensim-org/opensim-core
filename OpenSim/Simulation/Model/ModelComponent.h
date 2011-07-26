@@ -157,6 +157,13 @@ public:
     Model& updModel();
 
 	/**
+	 * In case the ModelCompoenent has a visual representation, override this method to update 
+	 * the representation, typically this's done by recomputing anchor points and positions based 
+	 * on transforms obtained from current state
+	 */
+	virtual void updateDisplayer(const SimTK::State& s) {};
+
+	/**
      * Get the value of a ModelingOption flag for this ModelComponent.
      *
      * @param state  the State for which to set the value
