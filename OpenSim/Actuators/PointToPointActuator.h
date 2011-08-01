@@ -1,6 +1,6 @@
-#ifndef _LineActuator_h_
-#define _LineActuator_h_
-// LineActuator.h
+#ifndef _PointToPointActuator_h_
+#define _PointToPointActuator_h_
+// PointToPointActuator.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2009, Stanford University. All rights reserved. 
@@ -56,7 +56,7 @@ namespace OpenSim {
 class Body;
 class Model;
 
-class LineActuator : public Actuator
+class OSIMACTUATORS_API PointToPointActuator : public Actuator
 {
 //=============================================================================
 // DATA
@@ -108,11 +108,11 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	LineActuator( std::string aBodyNameA="", std::string abodyNameB="");
-	LineActuator( const LineActuator &aLineActuator);
-	virtual ~LineActuator();
+	PointToPointActuator( std::string aBodyNameA="", std::string abodyNameB="");
+	PointToPointActuator( const PointToPointActuator &aPointToPointActuator);
+	virtual ~PointToPointActuator();
 	virtual Object* copy() const;
-	void copyData(const LineActuator &aLineActuator);
+	void copyData(const PointToPointActuator &aPointToPointActuator);
 private:
 	void setNull();
 	void setupProperties();
@@ -123,7 +123,7 @@ private:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	LineActuator& operator=(const LineActuator &aGenForce);
+	PointToPointActuator& operator=(const PointToPointActuator &aGenForce);
 #endif
 
 	//--------------------------------------------------------------------------
@@ -190,15 +190,15 @@ public:
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode();
 
-	OPENSIM_DECLARE_DERIVED(LineActuator, Actuator);
+	OPENSIM_DECLARE_DERIVED(PointToPointActuator, Actuator);
 
 //=============================================================================
-};	// END of class LineActuator
+};	// END of class PointToPointActuator
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif // __LineActuator_h__
+#endif // __PointToPointActuator_h__
 
 

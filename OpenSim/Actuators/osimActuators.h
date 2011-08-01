@@ -33,7 +33,7 @@
 #include "CoordinateActuator.h"
 #include "PointActuator.h"
 #include "TorqueActuator.h"
-#include "LineActuator.h"
+#include "PointToPointActuator.h"
 #include "Thelen2003Muscle.h"
 #include "Schutte1993Muscle.h"
 #include "Delp1990Muscle.h"

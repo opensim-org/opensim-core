@@ -35,7 +35,7 @@
 #include "CoordinateActuator.h"
 #include "PointActuator.h"
 #include "TorqueActuator.h"
-#include "LineActuator.h"
+#include "PointToPointActuator.h"
 #include "Thelen2003Muscle.h"
 #include "Schutte1993Muscle.h"
 #include "Delp1990Muscle.h"
@@ -62,7 +62,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( CoordinateActuator() );
 	Object::RegisterType( PointActuator() );
 	Object::RegisterType( TorqueActuator() );
-	Object::RegisterType( LineActuator() );
+	Object::RegisterType( PointToPointActuator() );
 
 	Object::RegisterType( Thelen2003Muscle() );
 	Object::RegisterType( Schutte1993Muscle() );
