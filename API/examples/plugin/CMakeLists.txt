@@ -39,7 +39,6 @@ LINK_LIBRARIES(
 	debug osimActuators_d optimized osimActuators
 	debug  ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
 	debug  ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKcpodes${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKcpodes
 	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
 	SimTKlapack pthreadVC2
 )
