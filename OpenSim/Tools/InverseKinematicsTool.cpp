@@ -331,6 +331,8 @@ bool InverseKinematicsTool::run()
 
 				if(coordRef == NULL)
 					throw Exception("InverseKinematicsTool: value for coordinate "+coordTask->getName()+" not found.");
+				else
+					coordRef->setWeight(coordTask->getWeight());
 
 				coordinateReferences.push_back(*coordRef);
 			}
