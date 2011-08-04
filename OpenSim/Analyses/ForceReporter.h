@@ -87,7 +87,7 @@ public:
 private:
 	void setNull();
 	void constructDescription();
-	void constructColumnLabels();
+	void constructColumnLabels(const SimTK::State& s);
 	void allocateStorage();
 	void deleteStorage();
 	void tidyForceNames();

@@ -219,7 +219,7 @@ void ForceReporter::constructDescription()
 /**
  * Construct the column labels for the ForceReporter storage files.
  */
-void ForceReporter::constructColumnLabels()
+void ForceReporter::constructColumnLabels(const SimTK::State& s)
 {
 	if (_model)
 	{
@@ -230,13 +230,18 @@ void ForceReporter::constructColumnLabels()
 		for(int i=0;i<nf;i++) {
 			// If body force we need to record six values for torque+force
 			// If muscle we record one scalar
-			Array<string> forceLabels = _model->getForceSet().get(i).getRecordLabels();
+			Force& f = _model->getForceSet().get(i);
+			if (f.isDisabled(s)) continue; // Skip over disabled forces
+			Array<string> forceLabels = f.getRecordLabels();
 			// If prescribed force we need to record point, 
 			columnLabels.append(forceLabels);
 		}
 		if(_includeConstraintForces){
 			int nc=_model->getConstraintSet().getSize();
 			for(int i=0;i<nc;i++) {
+				Constraint& c = _model->getConstraintSet().get(i);
+				if (c.isDisabled(s)) continue; // Skip over disabled constraints
+
 				// Ask constraint how many columns and their names it reports
 				Array<string> forceLabels = _model->getConstraintSet().get(i).getRecordLabels();
 				// If prescribed force we need to record point, 
@@ -284,6 +289,7 @@ int ForceReporter::record(const SimTK::State& s)
 		// If body force we need to record six values for torque+force
 		// If muscle we record one scalar
 		OpenSim::Force& nextForce = (OpenSim::Force&)forces[i];
+		if (nextForce.isDisabled(s)) continue;
 		Array<double> values = nextForce.getRecordValues(s);
 		nextRow.getData().append(values);
 	}
@@ -295,6 +301,7 @@ int ForceReporter::record(const SimTK::State& s)
 
 		for(int i=0;i<nc;i++) {
 			OpenSim::Constraint& nextConstraint = (OpenSim::Constraint&)constraints[i];
+			if (nextConstraint.isDisabled(s)) continue;
 			Array<double> values = nextConstraint.getRecordValues(s);
 			nextRow.getData().append(values);
 		}
@@ -325,7 +332,7 @@ begin(SimTK::State& s)
 
 	tidyForceNames();
 	// LABELS
-	constructColumnLabels();
+	constructColumnLabels(s);
 	// RESET STORAGE
 	_forceStore.reset(s.getTime());
 
