@@ -37,6 +37,7 @@ LINK_LIBRARIES(
 	debug osimSimulation_d optimized osimSimulation
 	debug osimAnalyses_d optimized osimAnalyses
 	debug osimActuators_d optimized osimActuators
+	debug osimTools_d optimized osimTools
 	debug  ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
 	debug  ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
 	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
