@@ -405,6 +405,14 @@ static bool trace=false;
 	};
 
 };
+
+%extend OpenSim::Array<double> {
+	void setValues(double dValues[], int size) {
+		self->setSize(size);
+		for(int i=0; i< size; i++)
+		 self->set(i, dValues[i]);
+	};
+};
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 // osimCommon Library
