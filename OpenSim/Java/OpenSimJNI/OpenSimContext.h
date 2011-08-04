@@ -86,6 +86,7 @@ public:
 	void setStates( double statesBuffer[]);
 	void computeConstrainedCoordinates( double statesBuffer[]);
 	void getStates( double statesBuffer[]);
+	void getStates( Array<double>&  rStates);
 	// Transforms
     void transformPosition(const Body& body, double offset[], double gOffset[]);
     Transform getTransform(const Body& body);

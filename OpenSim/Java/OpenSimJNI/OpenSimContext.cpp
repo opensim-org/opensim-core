@@ -50,6 +50,9 @@ void OpenSimContext::getStates( double* statesBuffer) {
         for(int i=0;i<_model->getNumStates();i++ ) *(statesBuffer+i) = rStateValues[i];
 }
 
+void OpenSimContext::getStates( Array<double>&  rStates) {
+		_model->getStateValues(*_configState, rStates);
+}
 // Transforms
 void OpenSimContext::transformPosition(const Body& body, double* offset, double* gOffset) {
 	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
