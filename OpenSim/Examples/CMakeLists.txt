@@ -1,4 +1,4 @@
-SUBDIRS(Gait2354_Simbody Gait2392_Simbody Tutorials Arm26)
+SUBDIRS(Gait2354_Simbody Gait2392_Simbody Tutorials Arm26 Leg6Dof9Musc)
 # Don't install README.txt for now... it's out of date
 #INSTALL_FILES(/examples/ FILES README.txt)
 SET(BUILD_APIEXAMPLES ON CACHE BOOL "Build examples that are used for the OpenSimAPIExamples distribution")
@@ -13,4 +13,5 @@ INSTALL(DIRECTORY MuscleExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLU
 INSTALL(DIRECTORY CustomActuatorExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY OptimizationExample_Arm26 DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY testEnvironment DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
+INSTALL(DIRECTORY ForcePluginExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 ENDIF (BUILD_APIEXAMPLES)
