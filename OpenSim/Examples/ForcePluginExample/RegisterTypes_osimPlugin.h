@@ -1,7 +1,5 @@
-#ifndef _osimActuators_h_
-#define _osimActuators_h_
-// osimActuators.h
-// author: Ayman Habib
+#ifndef _RegisterTypes_OsimPlugin_h_
+#define _RegisterTypes_OsimPlugin_h_
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -30,14 +28,24 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CoordinateActuator.h"
-#include "PointActuator.h"
-#include "TorqueActuator.h"
-#include "PointToPointActuator.h"
-#include "Thelen2003Muscle.h"
-#include "Schutte1993Muscle.h"
-#include "Delp1990Muscle.h"
-#include "CoordinateLimitForce.h"
-#include "SpringGeneralizedForce.h"
-#include "RegisterTypes_osimActuators.h"	// to expose RegisterTypes_osimActuators
-#endif _osimActuators_h_
+#include "osimPluginDLL.h"
+
+
+extern "C" {
+
+OSIMPLUGIN_API void RegisterTypes_osimPlugin(); 
+
+}
+
+class dllObjectInstantiator 
+{ 
+public: 
+        dllObjectInstantiator(); 
+private: 
+        void registerDllClasses(); 
+}; 
+    
+
+#endif // _RegisterTypes_OsimPlugin_h_
+
+

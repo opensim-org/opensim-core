@@ -1,8 +1,5 @@
-#ifndef _osimActuators_h_
-#define _osimActuators_h_
-// osimActuators.h
-// author: Ayman Habib
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#ifndef _osimPluginDLL_h_
+#define _osimPluginDLL_h_
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -30,14 +27,24 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include "CoordinateActuator.h"
-#include "PointActuator.h"
-#include "TorqueActuator.h"
-#include "PointToPointActuator.h"
-#include "Thelen2003Muscle.h"
-#include "Schutte1993Muscle.h"
-#include "Delp1990Muscle.h"
-#include "CoordinateLimitForce.h"
-#include "SpringGeneralizedForce.h"
-#include "RegisterTypes_osimActuators.h"	// to expose RegisterTypes_osimActuators
-#endif _osimActuators_h_
+// UNIX PLATFORM
+#ifndef WIN32
+
+#define OSIMPLUGIN_API
+
+// WINDOWS PLATFORM
+#else
+
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#include <windows.h>
+#ifdef OSIMPLUGIN_EXPORTS
+#define OSIMPLUGIN_API __declspec(dllexport)
+#else
+#define OSIMPLUGIN_API __declspec(dllimport)
+#endif
+
+#endif // PLATFORM
+
+
+#endif // __osimPluginDLL_h__

@@ -1,8 +1,6 @@
-// RegisterTypes.cpp
-// author: Frank C. Anderson
+// RegisterTypes_osimPlugin.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/*
-* Copyright (c)  2005, Stanford University, All rights reserved. 
+/* Copyright (c)  2006 Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -25,66 +23,36 @@
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 
 #include <string>
 #include <iostream>
 #include <OpenSim/Common/Object.h>
-#include "RegisterTypes_osimActuators.h"
+#include "RegisterTypes_osimPlugin.h"
 
-#include "CoordinateActuator.h"
-#include "PointActuator.h"
-#include "TorqueActuator.h"
-#include "PointToPointActuator.h"
-#include "Thelen2003Muscle.h"
-#include "Schutte1993Muscle.h"
-#include "Delp1990Muscle.h"
-#include "CoordinateLimitForce.h"
-#include "SpringGeneralizedForce.h"
-
-#include "RigidTendonMuscle.h"
+#include "CoupledBushingForce.h"
 
 using namespace OpenSim;
 using namespace std;
 
-static osimActuatorsInstantiator instantiator;
-
-
+static dllObjectInstantiator instantiator; 
+     
 //_____________________________________________________________________________
 /**
  * The purpose of this routine is to register all class types exported by
- * the rdSimulation library.
+ * the Plugin library.
  */
-OSIMACTUATORS_API void RegisterTypes_osimActuators()
+OSIMPLUGIN_API void RegisterTypes_osimPlugin()
 {
-	//cout<<"RegisterTypes_osimActuators\n";
-
-	Object::RegisterType( CoordinateActuator() );
-	Object::RegisterType( PointActuator() );
-	Object::RegisterType( TorqueActuator() );
-	Object::RegisterType( PointToPointActuator() );
-
-	Object::RegisterType( Thelen2003Muscle() );
-	Object::RegisterType( Schutte1993Muscle() );
-	Object::RegisterType( Delp1990Muscle() );
-	Object::RegisterType( CoordinateLimitForce() );
-	Object::RegisterType( SpringGeneralizedForce() );
-	Object::RegisterType( RigidTendonMuscle() );
-
-	// OLD Versions
-	//Associate an instance with old name to help deserialization
-	// This has to be done after the new Type is registered
-	Object::RenameType("GeneralizedForce", CoordinateActuator());
-	Object::RenameType("Force", PointActuator());
-	Object::RenameType("Torque", TorqueActuator());
+	Object::RegisterType( CoupledBushingForce() );
 }
 
-osimActuatorsInstantiator::osimActuatorsInstantiator()
-{
-       registerDllClasses();
-}
-
-void osimActuatorsInstantiator::registerDllClasses()
-{
-       RegisterTypes_osimActuators();
-}
+dllObjectInstantiator::dllObjectInstantiator() 
+{ 
+        registerDllClasses(); 
+} 
+    
+void dllObjectInstantiator::registerDllClasses() 
+{ 
+        RegisterTypes_osimPlugin(); 
+} 

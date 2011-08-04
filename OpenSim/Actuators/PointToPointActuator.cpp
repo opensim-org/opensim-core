@@ -1,4 +1,4 @@
-// LineActuator.cpp
+// PointToPointActuator.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2009, Stanford University. All rights reserved. 
@@ -34,7 +34,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "LineActuator.h"
+#include "PointToPointActuator.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 
@@ -54,7 +54,7 @@ using namespace std;
 /**
  * Destructor.
  */
-LineActuator::~LineActuator()
+PointToPointActuator::~PointToPointActuator()
 {
 }
 //_____________________________________________________________________________
@@ -64,7 +64,7 @@ LineActuator::~LineActuator()
  * @param aBodyNameB name of the second body to which the force is applied
  *
  */
-LineActuator::LineActuator( string aBodyNameA, string aBodyNameB) :
+PointToPointActuator::PointToPointActuator( string aBodyNameA, string aBodyNameB) :
 	Actuator(),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
@@ -93,7 +93,7 @@ LineActuator::LineActuator( string aBodyNameA, string aBodyNameB) :
  *
  * @param anActuator actuator to be copied.
  */
-LineActuator::LineActuator(const LineActuator &anActuator) :
+PointToPointActuator::PointToPointActuator(const PointToPointActuator &anActuator) :
 	Actuator(anActuator),
 	_bodyNameA(_propBodyNameA.getValueStr()),
 	_bodyNameB(_propBodyNameB.getValueStr()),
@@ -114,10 +114,10 @@ LineActuator::LineActuator(const LineActuator &anActuator) :
  *
  * @return Pointer to a copy of this actuator.
  */
-Object* LineActuator::
+Object* PointToPointActuator::
 copy() const
 {
-	LineActuator *force = new LineActuator(*this);
+	PointToPointActuator *force = new PointToPointActuator(*this);
 	return force;
 }
 
@@ -129,10 +129,10 @@ copy() const
 /**
  * Set the data members of this actuator to their null values.
  */
-void LineActuator::
+void PointToPointActuator::
 setNull()
 {
-	setType("LineActuator");
+	setType("PointToPointActuator");
 	setupProperties();
 }
 
@@ -140,7 +140,7 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void LineActuator::
+void PointToPointActuator::
 setupProperties()
 {
 	SimTK::Vec3 x(0.0, 0.0, 0.0);
@@ -171,21 +171,21 @@ setupProperties()
 //_____________________________________________________________________________
 /**
  * Copy the member data of the specified actuator.
- * @param aLineActuator LineActuator providing the data to be copied
+ * @param aPointToPointActuator PointToPointActuator providing the data to be copied
  */
-void LineActuator::
-copyData(const LineActuator &aLineActuator)
+void PointToPointActuator::
+copyData(const PointToPointActuator &aPointToPointActuator)
 {
 	// MEMBER VARIABLES
-	_bodyNameA = aLineActuator._bodyNameA;
-	_bodyNameB = aLineActuator._bodyNameB;
-	_pointsAreGlobal = aLineActuator._pointsAreGlobal;
-	_pointA = aLineActuator._pointA;
-	_pointB = aLineActuator._pointB;
+	_bodyNameA = aPointToPointActuator._bodyNameA;
+	_bodyNameB = aPointToPointActuator._bodyNameB;
+	_pointsAreGlobal = aPointToPointActuator._pointsAreGlobal;
+	_pointA = aPointToPointActuator._pointA;
+	_pointB = aPointToPointActuator._pointB;
 
-	setOptimalForce(aLineActuator.getOptimalForce());
-	setBodyA(aLineActuator.getBodyA());
-	setBodyB(aLineActuator.getBodyB());
+	setOptimalForce(aPointToPointActuator.getOptimalForce());
+	setBodyA(aPointToPointActuator.getBodyA());
+	setBodyB(aPointToPointActuator.getBodyB());
 }
 
 
@@ -201,13 +201,13 @@ copyData(const LineActuator &aLineActuator)
  *
  * @return  aBodyID ID (or number, or index) of the generalized Body.
  */
-LineActuator& LineActuator::
-operator=(const LineActuator &aLineActuator)
+PointToPointActuator& PointToPointActuator::
+operator=(const PointToPointActuator &aPointToPointActuator)
 {
 	// BASE CLASS
-	Actuator::operator =(aLineActuator);
+	Actuator::operator =(aPointToPointActuator);
 
-	copyData(aLineActuator);
+	copyData(aPointToPointActuator);
 
 	return(*this);
 }
@@ -225,7 +225,7 @@ operator=(const LineActuator &aLineActuator)
  *
  * @param aBody Pointer to the generalized Body.
  */
-void LineActuator::setBodyA(Body* aBody)
+void PointToPointActuator::setBodyA(Body* aBody)
 {
 	_bodyA = aBody;
 	if(aBody)
@@ -238,7 +238,7 @@ void LineActuator::setBodyA(Body* aBody)
  *
  * @param aBody Pointer to the generalized Body.
  */
-void LineActuator::setBodyB(Body* aBody)
+void PointToPointActuator::setBodyB(Body* aBody)
 {
 	_bodyB = aBody;
 	if(aBody)
@@ -251,7 +251,7 @@ void LineActuator::setBodyB(Body* aBody)
  *
  * @return Pointer to the Body
  */
-Body* LineActuator::getBodyA() const
+Body* PointToPointActuator::getBodyA() const
 {
 	return(_bodyA);
 }
@@ -262,7 +262,7 @@ Body* LineActuator::getBodyA() const
  *
  * @return Pointer to the Body
  */
-Body* LineActuator::getBodyB() const
+Body* PointToPointActuator::getBodyB() const
 {
 	return(_bodyB);
 }
@@ -276,7 +276,7 @@ Body* LineActuator::getBodyB() const
  *
  * @param aOptimalForce Optimal force.
  */
-void LineActuator::setOptimalForce(double aOptimalForce)
+void PointToPointActuator::setOptimalForce(double aOptimalForce)
 {
 	_optimalForce = aOptimalForce;
 }
@@ -286,7 +286,7 @@ void LineActuator::setOptimalForce(double aOptimalForce)
  *
  * @return Optimal force.
  */
-double LineActuator::getOptimalForce() const
+double PointToPointActuator::getOptimalForce() const
 {
 	return(_optimalForce);
 }
@@ -296,7 +296,7 @@ double LineActuator::getOptimalForce() const
  *
  * @return Stress.
  */
-double LineActuator::getStress( const SimTK::State& s) const
+double PointToPointActuator::getStress( const SimTK::State& s) const
 {
 	return fabs(getForce(s)/_optimalForce); 
 }
@@ -313,7 +313,7 @@ double LineActuator::getStress( const SimTK::State& s) const
  * @param s current SimTK::State 
  */
 
-double LineActuator::computeActuation( const SimTK::State& s ) const
+double PointToPointActuator::computeActuation( const SimTK::State& s ) const
 {
 	if(_model==NULL) return 0;
 
@@ -332,7 +332,7 @@ double LineActuator::computeActuation( const SimTK::State& s ) const
  *
  * @param s current SimTK::State
  */
-void LineActuator::computeForce(const SimTK::State& s, 
+void PointToPointActuator::computeForce(const SimTK::State& s, 
 							    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							    SimTK::Vector& generalizedForces) const
 {
@@ -396,7 +396,7 @@ void LineActuator::computeForce(const SimTK::State& s,
 /**
  * setup sets the actual Body references _bodyA and _bodyB
  */
-void LineActuator::setup(Model& aModel)
+void PointToPointActuator::setup(Model& aModel)
 {
 	Actuator::setup( aModel);
 
@@ -416,11 +416,11 @@ void LineActuator::setup(Model& aModel)
  *
  * @return True if valid, false if invalid.
  */
-bool LineActuator::check() const
+bool PointToPointActuator::check() const
 {
 	// BodyID
 	if( _bodyA != NULL) {
-		printf("LineActuator.check: ERROR- %s actuates ",
+		printf("PointToPointActuator.check: ERROR- %s actuates ",
 			getName().c_str());
 		printf("an invalid Body (%s).\n", _bodyNameA.c_str());
 		return(false);
@@ -442,7 +442,7 @@ bool LineActuator::check() const
  * a few methods in this class to ensure that variable members have been
  * set in a consistent manner.
  */
-void LineActuator::
+void PointToPointActuator::
 updateFromXMLNode()
 {
 	Actuator::updateFromXMLNode();
@@ -456,7 +456,7 @@ updateFromXMLNode()
  * The names of the quantities (column labels) is returned by this first function
  * getRecordLabels()
  */
-OpenSim::Array<std::string> LineActuator::getRecordLabels() const {
+OpenSim::Array<std::string> PointToPointActuator::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 	labels.append(getName());
 	return labels;
@@ -465,7 +465,7 @@ OpenSim::Array<std::string> LineActuator::getRecordLabels() const {
  * Given SimTK::State object extract all the values necessary to report forces, application location
  * frame, etc. used in conjunction with getRecordLabels and should return same size Array
  */
-OpenSim::Array<double> LineActuator::getRecordValues(const SimTK::State& state) const {
+OpenSim::Array<double> PointToPointActuator::getRecordValues(const SimTK::State& state) const {
 	OpenSim::Array<double> values(1);
 	values.append(getForce(state));
 	return values;
