@@ -403,7 +403,21 @@ static bool trace=false;
 	void getCenterOfMass(double dCom[3]) {
 		self->getMassCenter(SimTK::Vec3::updAs(dCom));
 	};
+	void getInertia(Array<double>& rInertia) {
+		SimTK::Mat33 inertia;
+		self->getInertia(inertia);
+		rInertia[0]=inertia[0][0];
+		rInertia[1]=inertia[1][1];
+		rInertia[2]=inertia[2][2];
+		rInertia[3]=inertia[0][1];
+		rInertia[4]=inertia[0][2];
+		rInertia[5]=inertia[1][2];
 
+	};
+	void setInertia(Array<double>& aInertia) {
+		self->setInertia(SimTK::Inertia(aInertia[0], 
+		aInertia[1], aInertia[2], aInertia[3], aInertia[4], aInertia[5]));
+	}
 };
 
 %extend OpenSim::Array<double> {
@@ -467,6 +481,8 @@ static bool trace=false;
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
 %template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
+//%template(ArrayPtrsModelComponent) OpenSim::ArrayPtrs<OpenSim::ModelComponent>;
+
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
 %template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
