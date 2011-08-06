@@ -372,6 +372,7 @@ void JointLoadOptimization::constructJointForceColumnLabels()
 	labels.append("time");
 	if(_model) 
 		for (int i=0; i < _jointTaskSet.getSize(); i++) {
+			
 			std::string jointName = _jointTaskSet.get(i).getName();
 			labels.append(jointName + "_px");
 			labels.append(jointName + "_py");
@@ -382,7 +383,7 @@ void JointLoadOptimization::constructJointForceColumnLabels()
 			labels.append(jointName + "_tx");
 			labels.append(jointName + "_ty");
 			labels.append(jointName + "_tz");
-
+			
 		}
 	_jointForceLabels = labels;
 }
@@ -534,8 +535,8 @@ record(const SimTK::State& s)
 	target.setStatesSplineSet(_statesSplineSet);
 	target.setActivationExponent(_activationExponent);
 	target.setDX(_optimizerDX);
-	//target.setJointReferences(_jointTaskSet);
-	//target.setJointIndices(_optimizedJointsIndices);
+	target.setObjectiveScaleFactor(_objectiveScaleFactor);
+	target.setJointTermScaleFactor(_jointTermScale);
 	
 
 	// Pick optimizer algorithm (default is ipopt)

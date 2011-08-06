@@ -110,6 +110,15 @@ JointLoadOptimizationTarget(const SimTK::State& s, Model *aModel,int aNP,int aNC
 bool JointLoadOptimizationTarget::
 prepareToOptimize(SimTK::State& s, double *x)
 {
+
+	// for each joint reference, determine the child body index, the index 
+	// of the body receiving the joint load (parent or child of joint) and the 
+	// index of the body whoes reference frame will be used to express the joint load
+	// vectors.  Compute and cache these in a vector now so that the optimizer
+	// doesn't wast time doing it for each objective function evaluation
+	buildLoadDescriptionIndices();
+
+
 	// COMPUTE MAX ISOMETRIC FORCE
 	const ForceSet& fSet = _model->getForceSet();
     
@@ -760,13 +769,13 @@ void JointLoadOptimizationTarget::
 computeJointLoadsCost(SimTK::State& s, const SimTK::Vector &parameters, double &aCost) const
 {
 	int numBodies = _model->getNumBodies();
-	SimTK::Vector_<SimTK::Vec3> forces(numBodies);
-	SimTK::Vector_<SimTK::Vec3> moments(numBodies);
+	SimTK::Vector_<SimTK::Vec3> allForces(numBodies);
+	SimTK::Vector_<SimTK::Vec3> allMoments(numBodies);
 
-	computeJointLoads(*_currentState, parameters, forces, moments);
+	computeJointLoads(*_currentState, parameters, allForces, allMoments);
 	//Start Debuging lines
 	
-	SimTK::Vec3 zero(0.0,0.0,0.0);
+	//SimTK::Vec3 zero(0.0,0.0,0.0);
 	//load1 = zero;
 	//load2 = zero;
 	//std::cout << "Load 1: " << load1 << endl;
@@ -775,19 +784,27 @@ computeJointLoadsCost(SimTK::State& s, const SimTK::Vector &parameters, double &
 	//End Debuging lines
 	double jointTerm = 0;
 	int numReferenceJoints = _jointReferenceSet.getSize();
+	SimTK::Vec3 force;
+	SimTK::Vec3 moment;
+	SimTK::Vec3 position;
+	SimTK::Vec3 forceWeights;
+	SimTK::Vec3 momentWeights;
+
 	for(int i=0; i<numReferenceJoints; i++) {
 		//for each joint load we're interested in
-		double childIndex = _jointChildIndices[i];
-		// get the weights to multiply to the force and moment term
-		SimTK::Vec3 forceWeights;
-		SimTK::Vec3 momentWeights;
-		_jointReferenceSet.get(i).getWeights(*_currentState, momentWeights, forceWeights);
+		if(_jointReferenceSet[i].getIsOn()) {
+			//get the correctly transformed force, moment, and position
+			getRequestedLoad(_jointReferenceSet[i], allForces, allMoments, force, moment, position);
+			// get the weights to multiply to the force and moment term
+		
+			_jointReferenceSet.get(i).getWeights(*_currentState, momentWeights, forceWeights);
 
-		for(int j=0; j<3; j++) {
-			// add the weighted square of the force and moment component
-			// to the jointTerm of the cost function
-			jointTerm += pow(forces[childIndex][j], 2)*forceWeights[j];
-			jointTerm += pow(moments[childIndex][j], 2)*forceWeights[j];
+			for(int j=0; j<3; j++) {
+				// add the weighted square of the force and moment component
+				// to the jointTerm of the cost function
+				jointTerm += pow(force[j], 2)*forceWeights[j];
+				jointTerm += pow(moment[j], 2)*momentWeights[j];
+			}
 		}
 
 	}
@@ -872,21 +889,164 @@ getJointLoadsToPrint(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Ve
 	int numBodies = _model->getNumBodies();
 	
 
-	SimTK::Vector_<SimTK::Vec3> forces(numBodies);
-	SimTK::Vector_<SimTK::Vec3> moments(numBodies);
-	computeJointLoads(s, parameters, forces, moments);
+	SimTK::Vector_<SimTK::Vec3> allForces(numBodies);
+	SimTK::Vector_<SimTK::Vec3> allMoments(numBodies);
+	computeJointLoads(s, parameters, allForces, allMoments);
 
 	int numReferenceJoints = _jointReferenceSet.getSize();
 	// now need to compute the position of each applied joint load.  For now, get in global
+	SimTK::Vec3 force;
+	SimTK::Vec3 moment;
+	SimTK::Vec3 position;
 
 	for(int i=0; i<numReferenceJoints; i++){
-		int childIndex = _jointChildIndices[i];
+
+		getRequestedLoad(_jointReferenceSet[i], allForces, allMoments, force, moment, position);
 		for(int j=0; j<3 ; j++){
 
-			jointLoads[9*i + j ] = 0.0; //not calculating position yet.  fill with zero for now
-			jointLoads[9*i + j + 3] = forces[childIndex][j];
-			jointLoads[9*i + j + 6] = moments[childIndex][j];
+			jointLoads[9*i + j ] = position[j]; //not calculating position yet.  fill with zero for now
+			jointLoads[9*i + j + 3] = force[j];
+			jointLoads[9*i + j + 6] = moment[j];
 		}
+
+	}
+
+}
+
+void JointLoadOptimizationTarget::buildLoadDescriptionIndices() {
+
+	// Each joinReactionReference gets an associated set of 3 indices.
+	// The first index the is the SimTK bodyset index of the joint's child body needed 
+	// to access the loads from the computeReactions results.  The second index identifies
+	// which joint load to consider (on child or on parent) and holds that body's index.  
+	// The third index identifies the body whoes frame will be used to express the minimized
+	// joint loads. This frame matters because each vector component can be weighted independently.
+	const JointSet& jointSet = _model->getJointSet();
+	const BodySet& bodySet = _model->getBodySet();
+	int numReferences = _jointReferenceSet.getSize();
+	_loadDescriptionIndices.resize(numReferences);
+
+	for(int i=0; i<numReferences; i++){
+		int simbodyIndex = -1;
+		int onBodyIndex = -1;
+		int frameIndex = -1;
+		
+
+		if(jointSet.contains(_jointReferenceSet.get(i).getName()) ) {
+			//simbodyIndex = bodySet.getIndex(jointSet.get(jointName).getBody().getName());
+			// get the joint and find it's child body.  This body's index in the bodyset is the correct
+			// index for extracting joint loads from computeReactions.
+			const Joint& joint = jointSet.get(_jointReferenceSet.get(i).getName());
+			simbodyIndex = joint.getBody().getIndex();
+
+			// Check if the load should be reported on the child or parent
+			if(_jointReferenceSet.get(i).getReceivingBody() == "child"){ onBodyIndex = simbodyIndex; }
+			else { onBodyIndex = joint.getParentBody().getIndex(); }
+
+			// Check which body frame the load should be expressed in (child, parent, ground)
+			if(_jointReferenceSet.get(i).getReferenceBodyFrame() == "child") { frameIndex = simbodyIndex; }
+			else if(_jointReferenceSet.get(i).getReferenceBodyFrame() == "parent") { frameIndex = joint.getParentBody().getIndex(); }
+			else { frameIndex = _model->getGroundBody().getIndex(); }
+
+		}
+		else {
+			std::cout << "Couldn't find a joint called " << _jointReferenceSet.get(i).getName() << " in the model." << std::endl;
+		}
+
+		_loadDescriptionIndices[i][0] = simbodyIndex;
+		_loadDescriptionIndices[i][1] = onBodyIndex;
+		_loadDescriptionIndices[i][2] = frameIndex;
+	}
+
+}
+
+void JointLoadOptimizationTarget::
+getRequestedLoad(const JointReactionReference &aRef, const SimTK::Vector_<SimTK::Vec3> &allForces, const SimTK::Vector_<SimTK::Vec3> &allMoments, 
+	SimTK::Vec3 &force, SimTK::Vec3 &moment, SimTK::Vec3 &position) const 
+{
+
+	const JointSet& jointSet = _model->getJointSet();
+
+	
+	int simbodyIndex = -1;
+	int onBodyIndex = -1;
+	int frameIndex = -1;
+		
+
+	if(jointSet.contains(aRef.getName()) ) {
+		//simbodyIndex = bodySet.getIndex(jointSet.get(jointName).getBody().getName());
+		// get the joint and find it's child body.  This body's index in the bodyset is the correct
+		// index for extracting joint loads from computeReactions.
+		const Joint& joint = jointSet.get(aRef.getName());
+		simbodyIndex = joint.getBody().getIndex();
+		force = allForces[simbodyIndex];
+		moment = allMoments[simbodyIndex]; // raw force and moment are expressed in ground frame
+		// get position on child in child frame
+		SimTK::Vec3 childLocation(0,0,0);
+		joint.getLocation(childLocation);
+		// and find it's current location in the ground reference frame
+		SimTK::Vec3 childLocationInGlobal(0,0,0);
+		_model->getSimbodyEngine().getPosition(*_currentState, joint.getBody(), childLocation,childLocationInGlobal);
+
+
+		// Check if the load should be reported on the child or parent
+		if(aRef.getReceivingBody() == "parent"){ 
+			// if it should be applied to parent, find equivalent load on parent
+			// at the location in parent
+			/*Take reaction load from child and apply on parent*/
+			force = -force;
+			moment = -moment;
+			SimTK::Vec3 parentLocation(0,0,0);
+			
+			joint.getLocationInParent(parentLocation);
+			SimTK::Vec3 parentLocationInGlobal(0,0,0);
+			//_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
+			_model->getSimbodyEngine().getPosition(*_currentState, joint.getParentBody(), parentLocation, parentLocationInGlobal);
+
+			// define vector from the mobilizer location on the child to the location on the parent
+			SimTK::Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
+			// find equivalent moment if the load is shifted to the parent loaction
+			moment -= translation % force;
+
+			// reset the point of application to the joint location in the parent expressed in ground
+			position = parentLocationInGlobal;
+		}
+		else{
+			// set the point of application to the joint laction in the child expressed in ground
+			position = childLocationInGlobal;
+		}
+			
+
+		// Check which body frame the load should be expressed in (child, parent, ground)
+		Body* expressedInBody=NULL;
+		if(aRef.getReferenceBodyFrame() == "child") 
+		{ 
+			expressedInBody = &joint.getBody(); 
+		}
+		else if(aRef.getReferenceBodyFrame() == "parent") 
+		{ 
+			expressedInBody = &joint.getParentBody(); 
+		}
+		else 
+		{
+			expressedInBody = &_model->getGroundBody();
+		}
+		
+		// if the user hasn't selected the loads and position to be expressed in ground, rotate all forces and transform position
+		if(expressedInBody->getName() != _model->getGroundBody().getName()) {
+			Body& ground = _model->getGroundBody();
+			_model->getSimbodyEngine().transform(*_currentState,ground,force,*expressedInBody,force);
+			_model->getSimbodyEngine().transform(*_currentState,ground,moment,*expressedInBody,moment);
+			_model->getSimbodyEngine().transformPosition(*_currentState,ground,position,*expressedInBody,position);
+		}
+		// done transforming forces, moments, and position
+
+	}
+	else {
+		std::cout << "Couldn't find a joint called " <<aRef.getName() << " in the model." << std::endl;
+		force.setToZero();
+		moment.setToZero();
+		position.setToZero();
 	}
 
 }

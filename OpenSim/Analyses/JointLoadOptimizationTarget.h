@@ -97,7 +97,8 @@ protected:
 	Set<JointReactionReference> &_jointReferenceSet;
 	double _objectiveScaleFactor;
 	double _jointTermScaleFactor;
-	Array<int> _jointChildIndices;
+	//Array<int> _jointChildIndices;
+	SimTK::Vector_<SimTK::Vec3> _loadDescriptionIndices; //SimTK joint set index, on body index, body frame index
 
 //=============================================================================
 // METHODS
@@ -155,6 +156,8 @@ private:
 	void computeJointLoads(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Vector_<SimTK::Vec3> &forces, SimTK::Vector_<SimTK::Vec3> &moments) const;
 	void cumulativeTime(double &aTime, double aIncrement);
 	void computeJointLoadsCost(SimTK::State& s, const SimTK::Vector &parameters, double &aCost) const;
+	void buildLoadDescriptionIndices();
+	void getRequestedLoad(const JointReactionReference &aRef, const SimTK::Vector_<SimTK::Vec3> &allForces, const SimTK::Vector_<SimTK::Vec3> &allMoments, SimTK::Vec3 &force, SimTK::Vec3 &moment, SimTK::Vec3 &position) const;
 };
 
 }; //namespace
