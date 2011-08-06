@@ -36,13 +36,8 @@ void ASSERT_EQUAL(T expected, T found, T tolerance, std::string file="", int lin
 	if (found < expected - tolerance || found > expected + tolerance)
 		throw OpenSim::Exception(message, file, line);
 }
-void ASSERT(bool cond, std::string file="", int line=-1, std::string message="Exception");
-
-void checkResultFiles(std::string resultsFile, std::string standardFile, OpenSim::Array<double> &tolerances, std::string file = "", int line = -1, std::string message = "Exception");
-void checkCOM(std::string resultsFile, std::string body, SimTK::Vec3 &standardCOM, OpenSim::Array<double> &tolerances);
-
-int compareResultFiles(std::string resultsFile, std::string standardFile, OpenSim::Array<std::string> &columnLabels, OpenSim::Array<double> &comparisons);
+inline void ASSERT(bool cond, std::string file="", int line=-1, std::string message="Exception") {
+	if (!cond) throw OpenSim::Exception(message, file, line);
+}
 
 #endif // __auxiliaryTestFunctions_h__
-
-

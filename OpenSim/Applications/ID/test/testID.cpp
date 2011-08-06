@@ -43,17 +43,20 @@ int main()
 	try {
 		InverseDynamicsTool id1("arm26_Setup_InverseDynamics.xml");
 		id1.run();
-		checkResultFiles("Results/arm26_InverseDynamics.sto", "std_arm26_InverseDynamics.sto", Array<double>(1e-2, 23), __FILE__, __LINE__, "testArm failed");
+		Storage result1("Results/arm26_InverseDynamics.sto"), standard1("std_arm26_InverseDynamics.sto");
+		result1.checkAgainstStandard(standard1, Array<double>(1e-2, 23), __FILE__, __LINE__, "testArm failed");
 		cout << "testArm passed";
 
 		InverseDynamicsTool id2("subject01_Setup_InverseDynamics.xml");
 		id2.run();
-		checkResultFiles("Results/subject01_InverseDynamics.sto", "std_subject01_InverseDynamics.sto", Array<double>(2.0, 23), __FILE__, __LINE__, "testGait failed");
+		Storage result2("Results/subject01_InverseDynamics.sto"), standard2("std_subject01_InverseDynamics.sto");
+		result2.checkAgainstStandard(standard2, Array<double>(2.0, 23), __FILE__, __LINE__, "testGait failed");
 		cout << "testGait passed";
 
 		InverseDynamicsTool id3("subject221_Setup_InverseDynamics.xml");
 		id3.run();
-		checkResultFiles("Results/subject221_InverseDynamics.sto", "std_subject221_InverseDynamics.sto", Array<double>(2.0, 23), __FILE__, __LINE__, "subject 221 old setup failed");
+		Storage result3("Results/subject221_InverseDynamics.sto"), standard3("std_subject221_InverseDynamics.sto");
+		result3.checkAgainstStandard(standard3, Array<double>(2.0, 23), __FILE__, __LINE__, "subject 221 old setup failed");
 		cout << "subject 221 old setup passed";
 	}
     catch (const Exception& e) {
@@ -63,4 +66,3 @@ int main()
     cout << "Done" << endl;
     return 0;
 }
-

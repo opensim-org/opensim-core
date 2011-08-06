@@ -45,12 +45,15 @@
 using namespace OpenSim;
 using namespace std;
 
+void checkCOM(string resultsFile, string body, SimTK::Vec3 &standardCOM, Array<double> &tolerances);
+
 int main() {
     try {
 		RRATool rra("subject01_Setup_RRA.xml");
 		rra.run();
 		checkCOM("subject01_RRA_adjusted.osim", "torso", SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1), Array<double>(1e-4, 3));
-		checkResultFiles("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto", "subject01_walk1_RRA_Kinematics_q_standard.sto", Array<double>(0.5, 24));
+		Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"), standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
+		result.checkAgainstStandard(standard, Array<double>(0.5, 24));
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -58,4 +61,20 @@ int main() {
     }
     cout << "Done" << endl;
     return 0;
+}
+
+void checkCOM(string resultsFile, string body, SimTK::Vec3 &standardCOM, Array<double> &tolerances) {
+
+	// compare the adjusted center of mass to OpenSim 1.9.1 values
+	Model adjusted_model(resultsFile);
+	const BodySet& bodies = adjusted_model.getBodySet();
+	const Body& torso = bodies.get(bodies.getIndex(body));
+	SimTK::Vec3 com;
+	torso.getMassCenter(com);
+	cout << "body:           " << body << endl;
+	cout << "center of mass: (" << com[0] << ", " << com[1] << ", " << com[2] << ")\n";
+	cout << "standard COM:   (" << standardCOM[0] << ", " << standardCOM[1] << ", " << standardCOM[2] << ")\n";
+	cout << "tolerances:     (" << tolerances[0] << ", " << tolerances[1] << ", " << tolerances[2] << ")\n" << endl;
+	for (int i = 0; i < 3; ++i)
+		ASSERT_EQUAL(standardCOM[i], com[i], tolerances[i]);
 }

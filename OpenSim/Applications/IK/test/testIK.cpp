@@ -42,7 +42,8 @@ int main()
 	try {
 		InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
 		ik1.run();
-		checkResultFiles(ik1.getOutputMotionFileName(), "std_subject01_walk1_ik.mot", Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
+		Storage result1(ik1.getOutputMotionFileName()), standard("std_subject01_walk1_ik.mot");
+		result1.checkAgainstStandard(standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
 		cout << "testInverseKinematicsGait2354 passed" << endl;
 
 		InverseKinematicsTool ik2("subject01_Setup_InverseKinematics_NoModel.xml");
@@ -50,12 +51,14 @@ int main()
 		mdl.initSystem();
 		ik2.setModel(mdl);
 		ik2.run();
-		checkResultFiles(ik2.getOutputMotionFileName(), "std_subject01_walk1_ik.mot", Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
+		Storage result2(ik2.getOutputMotionFileName());
+		result2.checkAgainstStandard(standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
 		cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
 
 		InverseKinematicsTool ik3("subjectOld_Setup_InverseKinematics.xml");
 		ik3.run();
-		checkResultFiles(ik3.getOutputMotionFileName(), "std_subject01_walk1_ik.mot", Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 Old setup failed");
+		Storage result3(ik3.getOutputMotionFileName());
+		result3.checkAgainstStandard(standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 Old setup failed");
 		cout << "testInverseKinematicsGait2354 Old setup passed" << endl;
 
 		InverseKinematicsTool ik4("uwdynamic_setup_ik.xml");
