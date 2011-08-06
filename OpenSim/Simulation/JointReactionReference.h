@@ -190,9 +190,11 @@ public:
 	/** Chose which body of the joint pair (parent or child) the reference load 
 	* should be associated with.*/
 	void setReceivingBody(std::string aChildOrParent);
+	std::string getReceivingBody() const { return _receivingBody; };
 	/** Chose which bodies reference frame (parent, child, or ground) should be used
 	* to express the components of the reference load.*/
 	void setReferenceBodyFrame(std::string aChildParentOrGround);
+	std::string getReferenceBodyFrame() const { return _referenceBodyFrame; };
 	/* get the name of the reference components*/
 	const SimTK::Array_<std::string>& getNames() const;
 	void setNames(SimTK::Array_<std::string>& aNames);
