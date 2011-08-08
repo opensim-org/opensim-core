@@ -178,7 +178,8 @@ private:
 	Body *_groundBody;
 
 	/** Model controllers */
-	ControllerSet _controllerSet;
+    PropertyObj _controllerSetProp;
+    ControllerSet& _controllerSet;
 
 	/*** Private place to save some deserializtion/error checking info in case needed later */
 	std::string _validationLog;
@@ -327,7 +328,7 @@ public:
     SimTK::DecorationSubsystem& updDecorationSubsystem() {return *_decorationSubsystem; }
 
 	virtual int getNumStateVariables() const;
-
+	//void getModelComponents(ArrayPtrs<const OpenSim::ModelComponent>& comps) const { comps=_modelComponents; }
 protected:
 #ifndef SWIG
 	/**
