@@ -179,10 +179,10 @@
 				<!--Scale factor for normalizing time-->
 				<time_scale>       0.10000000 </time_scale>
 				<!--Parameter used in time constant of ramping up of muscle force-->
-				<activation1>       0.01000000 </activation1>
+				<activation1>       7.667</activation1>
 				<!--Parameter used in time constant of ramping up and ramping down of
 				    muscle force-->
-				<activation2>       0.04000000 </activation2>
+				<activation2>       1.459854 </activation2>
 				<!--Damping factor related to maximum contraction velocity-->
 				<damping>       0.05000000 </damping>
 				<!--Function representing force-length behavior of tendon-->
@@ -494,10 +494,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>       1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -714,10 +714,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -948,10 +948,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -1248,10 +1248,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -1528,10 +1528,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -1718,10 +1718,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -1932,10 +1932,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -2240,10 +2240,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -2548,10 +2548,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -2856,10 +2856,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -3164,10 +3164,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -3450,10 +3450,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -3736,10 +3736,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -4022,10 +4022,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -4308,10 +4308,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -4614,10 +4614,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -4896,10 +4896,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -5178,10 +5178,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -5484,10 +5484,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -5788,10 +5788,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -6070,10 +6070,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -6372,10 +6372,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -6672,10 +6672,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -6884,10 +6884,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
@@ -7054,10 +7054,10 @@
 					<!--Scale factor for normalizing time-->
 					<time_scale>       0.10000000 </time_scale>
 					<!--Parameter used in time constant of ramping up of muscle force-->
-					<activation1>       0.01000000 </activation1>
+					<activation1>       7.667 </activation1>
 					<!--Parameter used in time constant of ramping up and ramping down of
 					    muscle force-->
-					<activation2>       0.04000000 </activation2>
+					<activation2>      1.459854 </activation2>
 					<!--Damping factor related to maximum contraction velocity-->
 					<damping>       0.05000000 </damping>
 					<!--Function representing force-length behavior of tendon-->
