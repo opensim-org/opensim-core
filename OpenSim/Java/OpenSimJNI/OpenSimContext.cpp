@@ -230,8 +230,9 @@ void OpenSimContext::setRangeMax(ConditionalPathPoint&  via, double d) {
 bool OpenSimContext::replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint) {
      
      bool ret= p.replacePathPoint(*_configState, &mp, &newPoint );
-	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+	_model->setDefaultsFromState(*_configState);
+	SimTK::State* newState = &_model->initSystem();
+	setState(newState);
 	p.updateGeometry(*_configState);
      return ret;
 }
