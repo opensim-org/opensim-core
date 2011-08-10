@@ -122,6 +122,8 @@ public:
 	const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
 	void updateDisplayer(Force& f);
     void copyMuscle(Muscle& from, Muscle& to);
+	void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
+
 	// Muscle Points
 	void setXFunction(MovingPathPoint& mmp, Function& newFunction);
     void setYFunction(MovingPathPoint& mmp, Function& newFunction);

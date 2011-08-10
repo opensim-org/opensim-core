@@ -273,6 +273,29 @@ bool OpenSimContext::isActivePathPoint(PathPoint& mp) {
 	return mp.isActive(*_configState); 
 };
 
+//_____________________________________________________________________________
+/**
+ * Replace one of the actuator's functions in the property array.
+ *
+ * @param aOldFunction the function being replaced.
+ * @param aNewFunction the new function.
+ */
+void OpenSimContext::replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction)
+{
+	if (aOldFunction && aNewFunction) {
+		PropertySet& propSet = obj.getPropertySet();
+
+		for (int i=0; i <propSet.getSize(); i++) {
+			Property* prop = propSet.get(i);
+			if (prop->getType() == Property::ObjPtr) {
+				if (prop->getValueObjPtr() == aOldFunction) {
+					prop->setValue(aNewFunction);
+				}
+			}
+		}
+	}
+}
+
 // Muscle Wrapping
 void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {
      mw.setStartPoint(*_configState, newStartPt );
