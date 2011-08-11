@@ -414,7 +414,7 @@ bool InverseKinematicsTool::run()
 	}
 	catch (std::exception ex) {
 		std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
-		throw (Exception("InverseDynamicsTool Failed, please see messages window for details..."));
+		throw (Exception("InverseKinematicsTool Failed, please see messages window for details..."));
 	}
 
 	if (modelFromFile) delete _model;
