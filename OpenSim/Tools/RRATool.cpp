@@ -849,6 +849,13 @@ bool RRATool::run()
 		manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
 		return false;
 	}
+	catch(...) {
+		// TODO: eventually might want to allow writing of partial results
+		IO::chDir(saveWorkingDirectory);
+		// close open files if we die prematurely (e.g. Opt fail)
+		manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
+		return false;
+	}
 	time(&finishTime);
 	cout<<"----------------------------------------------------------------\n";
 	cout<<"Finished tracking the specified kinematics\n";
