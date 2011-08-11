@@ -782,7 +782,7 @@ computeJointLoadsCost(SimTK::State& s, const SimTK::Vector &parameters, double &
 	//std::cout << "Load 2: " << load2 << endl;
 	
 	//End Debuging lines
-	double jointTerm = 0;
+
 	int numReferenceJoints = _jointReferenceSet.getSize();
 	SimTK::Vec3 force;
 	SimTK::Vec3 moment;
@@ -802,8 +802,8 @@ computeJointLoadsCost(SimTK::State& s, const SimTK::Vector &parameters, double &
 			for(int j=0; j<3; j++) {
 				// add the weighted square of the force and moment component
 				// to the jointTerm of the cost function
-				jointTerm += pow(force[j], 2)*forceWeights[j];
-				jointTerm += pow(moment[j], 2)*momentWeights[j];
+				aCost += pow(force[j], 2)*forceWeights[j];
+				aCost += pow(moment[j], 2)*momentWeights[j];
 			}
 		}
 
@@ -899,14 +899,18 @@ getJointLoadsToPrint(SimTK::State& s, const SimTK::Vector &parameters, SimTK::Ve
 	SimTK::Vec3 moment;
 	SimTK::Vec3 position;
 
+	const JointSet& jointSet = _model->getJointSet();
+
 	for(int i=0; i<numReferenceJoints; i++){
+		if(jointSet.contains(_jointReferenceSet[i].getName()) )
+		{
+			getRequestedLoad(_jointReferenceSet[i], allForces, allMoments, force, moment, position);
+			for(int j=0; j<3 ; j++){
 
-		getRequestedLoad(_jointReferenceSet[i], allForces, allMoments, force, moment, position);
-		for(int j=0; j<3 ; j++){
-
-			jointLoads[9*i + j ] = position[j]; //not calculating position yet.  fill with zero for now
-			jointLoads[9*i + j + 3] = force[j];
-			jointLoads[9*i + j + 6] = moment[j];
+				jointLoads[9*i + j ] = position[j]; //not calculating position yet.  fill with zero for now
+				jointLoads[9*i + j + 3] = force[j];
+				jointLoads[9*i + j + 6] = moment[j];
+			}
 		}
 
 	}

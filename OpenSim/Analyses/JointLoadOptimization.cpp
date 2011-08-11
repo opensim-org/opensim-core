@@ -371,20 +371,51 @@ void JointLoadOptimization::constructJointForceColumnLabels()
 	Array<string> labels;
 	labels.append("time");
 	if(_model) 
+	{
+		const JointSet& jointSet = _model->getJointSet();
 		for (int i=0; i < _jointTaskSet.getSize(); i++) {
-			
-			std::string jointName = _jointTaskSet.get(i).getName();
-			labels.append(jointName + "_px");
-			labels.append(jointName + "_py");
-			labels.append(jointName + "_pz");
-			labels.append(jointName + "_fx");
-			labels.append(jointName + "_fy");
-			labels.append(jointName + "_fz");
-			labels.append(jointName + "_tx");
-			labels.append(jointName + "_ty");
-			labels.append(jointName + "_tz");
+			if (jointSet.contains(_jointTaskSet[i].getName() ) )
+			{
+				std::string jointName = _jointTaskSet.get(i).getName();
+				std::string onBodyName = "";
+				if(_jointTaskSet[i].getReceivingBody() == "child")
+				{
+					onBodyName = jointSet.get(jointName).getBody().getName();
+				}
+				else if (_jointTaskSet[i].getReceivingBody() == "parent")
+				{
+					onBodyName = jointSet.get(jointName).getParentBody().getName();
+				}
+				
+				std::string inFrameName = "";
+
+				if(_jointTaskSet[i].getReferenceBodyFrame() == "child")
+				{
+					inFrameName = jointSet.get(jointName).getBody().getName();
+				}
+				else if (_jointTaskSet[i].getReferenceBodyFrame() == "parent")
+				{
+					inFrameName = jointSet.get(jointName).getParentBody().getName();
+				}
+				else 
+				{
+					inFrameName = _model->getGroundBody().getName();
+				}
+
+				std::string labelRoot = jointName + "_on_" + onBodyName + "_in_" + inFrameName;
+				labels.append(labelRoot + "_px");
+				labels.append(labelRoot + "_py");
+				labels.append(labelRoot + "_pz");
+				labels.append(labelRoot + "_fx");
+				labels.append(labelRoot + "_fy");
+				labels.append(labelRoot + "_fz");
+				labels.append(labelRoot + "_tx");
+				labels.append(labelRoot + "_ty");
+				labels.append(labelRoot + "_tz");
+			}
 			
 		}
+	}
 	_jointForceLabels = labels;
 }
 //_____________________________________________________________________________
