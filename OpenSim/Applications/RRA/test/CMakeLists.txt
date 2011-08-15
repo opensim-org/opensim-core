@@ -11,8 +11,6 @@ LINK_LIBRARIES( debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon
 
 ADD_EXECUTABLE(testRRA testRRA.cpp)
 
-TARGET_LINK_LIBRARIES(testRRA auxiliaryTestFunctions)
-
 FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 
 #
