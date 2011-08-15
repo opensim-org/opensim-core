@@ -161,12 +161,6 @@ void Delp1990Muscle::copyData(const Delp1990Muscle &aMuscle)
 void Delp1990Muscle::setNull()
 {
 	setType("Delp1990Muscle");
-
-	setNumStateVariables(3);
-
-	_stateVariableSuffixes[STATE_ACTIVATION] = "activation";
-	_stateVariableSuffixes[STATE_FIBER_LENGTH] = "fiber_length";
-	_stateVariableSuffixes[STATE_FIBER_VELOCITY] = "fiber_velocity";
 }
 
 //_____________________________________________________________________________
@@ -246,10 +240,6 @@ void Delp1990Muscle::setup(Model& aModel)
 	// Base class
 	ActivationFiberLengthMuscle::setup(aModel);
 
-	// Adjust number of states to include the velocity state
-	setNumStateVariables(3);
-	_stateVariableSuffixes[STATE_FIBER_VELOCITY]="fiber_velocity";
-
 	// aModel will be NULL when objects are being registered.
 	if (_model == NULL)
 		return;
@@ -267,12 +257,29 @@ void Delp1990Muscle::setup(Model& aModel)
 void Delp1990Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
 	ActivationFiberLengthMuscle::createSystem(system);
+
 	Delp1990Muscle* mutableThis = const_cast<Delp1990Muscle *>(this);
 
-	// Cache the computed active and passive muscle force
-	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
+	Array<string> stateVariables;
+	stateVariables.setSize(1);
+	stateVariables[0] = "fiber_velocity";
+	mutableThis->addStateVariables(stateVariables);
+	mutableThis->addCacheVariable<SimTK::Vector>("state_derivatives", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Dynamics);
+ }
+
+ //_____________________________________________________________________________
+/**
+ * Get the name of a state variable, given its index.
+ *
+ * @param aIndex The index of the state variable to get.
+ * @return The name of the state variable.
+ */
+string Delp1990Muscle::getStateVariableName(int aIndex) const
+{
+	if(aIndex == 2)
+		return getName() + ".fiber_velocity";
+	else
+		return ActivationFiberLengthMuscle::getStateVariableName(aIndex);
 }
 
 void Delp1990Muscle::setActiveForce( const SimTK::State& s, double force ) const {
@@ -389,19 +396,6 @@ SimTK::Vector Delp1990Muscle::computeStateVariableDerivatives(const SimTK::State
 	derivs[1] = getFiberLengthDeriv(s);
 	derivs[2] = getFiberVelocityDeriv(s);
 	return derivs; 
-}
-
-//_____________________________________________________________________________
-/**
- * Compute the equilibrium states.  This method computes a fiber length
- * for the muscle that is consistent with the muscle's activation level.
- */
-void Delp1990Muscle::computeEquilibrium(SimTK::State& s) const
-{
-	double force = computeIsometricForce(s, getActivation(s));
-
-	//cout<<getName()<<": isometric force = "<<force<<endl;
-	//cout<<getName()<<": fiber length = "<<getFiberLength(s)<<endl;
 }
 
 //_____________________________________________________________________________

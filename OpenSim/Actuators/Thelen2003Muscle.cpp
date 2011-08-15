@@ -171,13 +171,6 @@ void Thelen2003Muscle::copyData(const Thelen2003Muscle &aMuscle)
 void Thelen2003Muscle::setNull()
 {
 	setType("Thelen2003Muscle");
-
-	 setNumStateVariables(2);
-
-	 _stateVariableSuffixes[STATE_ACTIVATION]="activation";
-	 _stateVariableSuffixes[STATE_FIBER_LENGTH]="fiber_length";
-   
-
 }
 
 //_____________________________________________________________________________
@@ -240,29 +233,6 @@ void Thelen2003Muscle::setupProperties()
 	_flenProp.setValue(1.8);
 	_flenProp.setComment("maximum normalized lengthening force");
 	_propertySet.append(&_flenProp, "Parameters");
-}
-
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel model containing this Thelen2003Muscle.
- */
-void Thelen2003Muscle::setup(Model& aModel)
-{
-	// Base class
-	ActivationFiberLengthMuscle::setup(aModel);
-}
-
-void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
-{
-	ActivationFiberLengthMuscle::createSystem(system);
-	Thelen2003Muscle* mutableThis = const_cast<Thelen2003Muscle *>(this);
-
-	// Cache the computed passive muscle force
-	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 }
 
 //=============================================================================
@@ -483,17 +453,6 @@ SimTK::Vector Thelen2003Muscle::computeStateVariableDerivatives(const SimTK::Sta
 	derivs[0] = getActivationDeriv(s);
 	derivs[1] = getFiberLengthDeriv(s);
 	return derivs; 
-}
-
-//_____________________________________________________________________________
-/**
- * Compute the equilibrium states.  This method computes a fiber length
- * for the muscle that is consistent with the muscle's activation level.
- */
-void Thelen2003Muscle::computeEquilibrium(SimTK::State& s) const
-{
-	computeIsometricForce(s, getActivation(s));
-
 }
 
 //_____________________________________________________________________________

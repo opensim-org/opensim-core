@@ -170,6 +170,11 @@ void ModelComponent::setModelingOption(SimTK::State& s, int flag) const
 }
 
 
+int ModelComponent::getNumStateVariables() const
+{
+	return _rep->getNumStateVariablesAddedByModelComponent(); //+ numStatesOfUnderlyingComponent
+}
+
 /* Get the value of a state variable allocated by this ModelComponent by index.
  * TODO: This should be deprecated to use name only to avoid any confusion.
  *

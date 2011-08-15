@@ -139,7 +139,6 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
-	virtual void computeEquilibrium(SimTK::State& s) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
@@ -161,6 +160,7 @@ protected:
 	// Model Component Interface
 	virtual void setup(Model& aModel);
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual std::string Delp1990Muscle::getStateVariableName(int aIndex) const;
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:

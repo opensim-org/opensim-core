@@ -96,11 +96,6 @@ public:
 	virtual bool isDisabled(const SimTK::State &s) const;
 	/** Set the Force as disabled (true) or not (false)*/
 	virtual void setDisabled(SimTK::State &s, bool disabled);
-    /**
-     * Get the number of state variables allocated by this force.  The default implementation
-     * returns 0.  Subclasses that allocate state variables must override it.
-     */
-	virtual int getNumStateVariables() const { return 0;};
 
 	/** return a flag indicating whether the Force is applied along a Path
 	 *  if you override this method to return true for a specific subclass, it must

@@ -49,14 +49,14 @@ int main()
 		analyze.run();
 		Storage result1("SinglePin_JointReaction_ReactionLoads.sto"), standard1("std_SinglePin_JointReaction_ReactionLoads.sto");
 		result1.checkAgainstStandard(standard1, Array<double>(1e-5, 24), __FILE__, __LINE__, "SinglePin failed");
-		cout << "SinglePin passed";
+		cout << "SinglePin passed\n";
 
 		AnalyzeTool analyze2("DoublePendulum3D_Setup_JointReaction.xml");
 		analyze2.getModel();
 		analyze2.run();
 		Storage result2("DoublePendulum3D_JointReaction_ReactionLoads.sto"), standard2("std_DoublePendulum3D_JointReaction_ReactionLoads.sto");
 		result2.checkAgainstStandard(standard2, Array<double>(1e-5, 24), __FILE__, __LINE__, "DoublePendulum3D failed");
-		cout << "DoublePendulum3D passed";
+		cout << "DoublePendulum3D passed\n";
 	}
 	catch (const Exception& e) {
         e.print(cerr);

@@ -145,8 +145,6 @@ class OSIMSIMULATION_API Actuator : public Actuator_
 {
 protected:
 
-	int _numStateVariables;
- 
 	StateFunction* _overrideForceFunction;
 
 	/** Bounds on control of this actuator. */

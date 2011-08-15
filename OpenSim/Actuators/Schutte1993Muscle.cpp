@@ -156,12 +156,6 @@ void Schutte1993Muscle::copyData(const Schutte1993Muscle &aMuscle)
 void Schutte1993Muscle::setNull()
 {
 	setType("Schutte1993Muscle");
-
-	setNumStateVariables(2);
-
-	_stateVariableSuffixes[STATE_ACTIVATION]="activation";
-	_stateVariableSuffixes[STATE_FIBER_LENGTH]="fiber_length";
-
 }
 
 //_____________________________________________________________________________
@@ -241,16 +235,6 @@ void Schutte1993Muscle::setup(Model& aModel)
 	else if(!getTendonForceLengthCurve())
 		throw Exception("Schutte1993Muscle.setup: ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 
-}
-
-void Schutte1993Muscle::createSystem(SimTK::MultibodySystem& system) const
-{
-	ActivationFiberLengthMuscle::createSystem(system);
-	Schutte1993Muscle* mutableThis = const_cast<Schutte1993Muscle *>(this);
-
-	// Cache the computed passive muscle force
-	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 }
 
 
@@ -359,19 +343,6 @@ SimTK::Vector Schutte1993Muscle::computeStateVariableDerivatives(const SimTK::St
 	derivs[0] = getActivationDeriv(s);
 	derivs[1] = getFiberLengthDeriv(s);
 	return derivs; 
-}
-
-//_____________________________________________________________________________
-/**
- * Compute the equilibrium states.  This method computes a fiber length
- * for the muscle that is consistent with the muscle's activation level.
- */
-void Schutte1993Muscle::computeEquilibrium(SimTK::State& s ) const
-{
-	double force = computeIsometricForce( s, getActivation(s));
-
-	//cout<<getName()<<": isometric force = "<<force<<endl;
-	//cout<<getName()<<": fiber length = "<<_fiberLength<<endl;
 }
 
 //_____________________________________________________________________________

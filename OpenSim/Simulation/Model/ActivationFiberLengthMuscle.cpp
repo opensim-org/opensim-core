@@ -154,26 +154,6 @@ void ActivationFiberLengthMuscle::equilibrate(SimTK::State& state) const
 
 //_____________________________________________________________________________
 /**
- * Perform set up functions after model has been deserialized or copied.
- *
- * @param aModel The model containing this muscle.
- */
-void ActivationFiberLengthMuscle::setup(Model& aModel)
-{
-	Muscle::setup(aModel);
-
-	// _model will be NULL when objects are being registered.
-	if (_model == NULL)
-		return;
-
-    setNumStateVariables(2);
-
-	_stateVariableSuffixes[STATE_ACTIVATION]="activation";
-	_stateVariableSuffixes[STATE_FIBER_LENGTH]="fiber_length";
-}
-
-//_____________________________________________________________________________
-/**
  * allocate and initialize the SimTK state for this acuator.
  */
  void ActivationFiberLengthMuscle::createSystem(SimTK::MultibodySystem& system) const
@@ -182,9 +162,17 @@ void ActivationFiberLengthMuscle::setup(Model& aModel)
 
 	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
 
-	mutableThis->setNumStateVariables(_stateVariableSuffixes.getSize());
-	mutableThis->addStateVariables(_stateVariableSuffixes);
+	Array<string> stateVariables;
+	stateVariables.setSize(2);
+	stateVariables[0] = "activation";
+	stateVariables[1] = "fiber_length";
+	mutableThis->addStateVariables(stateVariables);
 	mutableThis->addCacheVariable<SimTK::Vector>("state_derivatives", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Dynamics);
+	
+	// Cache the computed active and passive muscle force
+	// note the total muscle force is the tendon force and is already a cached variable of the actuator
+	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
+	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 
 	mutableThis->_model->addModelComponent(this);
  }
@@ -196,7 +184,7 @@ void ActivationFiberLengthMuscle::setup(Model& aModel)
 	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
 
 	// keep track of the index for the first state variable derivatives in the cache 
-	mutableThis->_zIndex = getZIndex(_stateVariableSuffixes[0]);
+	mutableThis->_zIndex = getZIndex("activation");
 
 	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);
@@ -222,16 +210,6 @@ void ActivationFiberLengthMuscle::setDefaultFiberLength(double length) {
     _defaultFiberLength = length;
 }
 
-
-//_____________________________________________________________________________
-/**
- */
-void ActivationFiberLengthMuscle::setNumStateVariables( int aNumStateVariables)
-{
-	_numStateVariables = aNumStateVariables;
-	_stateVariableSuffixes.setSize(aNumStateVariables);
-}
-
 //_____________________________________________________________________________
 /**
  * Get the name of a state variable, given its index.
@@ -241,8 +219,10 @@ void ActivationFiberLengthMuscle::setNumStateVariables( int aNumStateVariables)
  */
 string ActivationFiberLengthMuscle::getStateVariableName(int aIndex) const
 {
-	if(0<=aIndex && aIndex<_numStateVariables)
-		return getName() + "." + _stateVariableSuffixes[aIndex];
+	if(aIndex == 0)
+		return getName() + ".activation";
+	else if (aIndex == 1)
+		return getName() + ".fiber_length";
 	else {
 		std::stringstream msg;
 		msg << "Actuator::getStateVariableName: ERR- index out of bounds.\nActuator " 
@@ -252,12 +232,6 @@ string ActivationFiberLengthMuscle::getStateVariableName(int aIndex) const
 }
 
 // STATES
-int ActivationFiberLengthMuscle::getNumStateVariables() const
-{
-	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
-    return mutableThis->updRep()->getNumStateVariablesAddedByModelComponent(); //+ numStatesOfUnderlyingComponent
-}
-
 //_____________________________________________________________________________
 /**
  * Set the derivative of an actuator state, specified by index
@@ -267,8 +241,8 @@ int ActivationFiberLengthMuscle::getNumStateVariables() const
  */
 void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const {
 
-	SimTK::Vector& stateDeriv =  updCacheVariable<SimTK::Vector>(s, "state_derivatives");
-	if(0<=aIndex && aIndex<_numStateVariables) {
+	SimTK::Vector& stateDeriv = updCacheVariable<SimTK::Vector>(s, "state_derivatives");
+	if(0<=aIndex && aIndex<getNumStateVariables()) {
 		stateDeriv[aIndex] = aValue;
 	} else {
 		std::stringstream msg;
@@ -289,7 +263,7 @@ void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, i
 double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s, int aIndex) const
 {
 	const SimTK::Vector& stateDeriv = getCacheVariable<SimTK::Vector>(s, "state_derivatives");
-	if(0<=aIndex && aIndex<_numStateVariables) {
+	if(0<=aIndex && aIndex<getNumStateVariables()) {
         return( stateDeriv[aIndex] );
 	} else {
 		std::stringstream msg;
@@ -330,10 +304,10 @@ ActivationFiberLengthMuscle& ActivationFiberLengthMuscle::operator=(const Activa
 // LENGTH
 //-----------------------------------------------------------------------------
 double ActivationFiberLengthMuscle::getFiberLength(const SimTK::State& s) const {
-	return getStateVariable(s, STATE_FIBER_LENGTH);
+	return getStateVariable(s, "fiber_length");
 }
 void ActivationFiberLengthMuscle::setFiberLength(SimTK::State& s, double fiberLength) const {
-	setStateVariable(s, STATE_FIBER_LENGTH, fiberLength);
+	setStateVariable(s, "fiber_length", fiberLength);
 }
 double ActivationFiberLengthMuscle::getFiberLengthDeriv(const SimTK::State& s) const {
 	return getStateVariableDeriv(s, STATE_FIBER_LENGTH);
@@ -454,10 +428,10 @@ void ActivationFiberLengthMuscle::setTendonForce(const SimTK::State& s, double f
 	setForce(s, force);
 }
 double ActivationFiberLengthMuscle::getActivation(const SimTK::State& s) const {
-	return getStateVariable(s, STATE_ACTIVATION);
+	return getStateVariable(s, "activation");
 }
 void ActivationFiberLengthMuscle::setActivation(SimTK::State& s, double activation) const {
-	setStateVariable(s, STATE_ACTIVATION, activation);
+	setStateVariable(s, "activation", activation);
 }
 double ActivationFiberLengthMuscle::getActivationDeriv(const SimTK::State& s) const {
 	return getStateVariableDeriv(s, STATE_ACTIVATION);
@@ -535,6 +509,19 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 		markCacheVariableValid(s, "state_derivatives");
     } 
 
+}
+
+//_____________________________________________________________________________
+/**
+ * Compute the equilibrium states.  This method computes a fiber length
+ * for the muscle that is consistent with the muscle's activation level.
+ */
+void ActivationFiberLengthMuscle::computeEquilibrium(SimTK::State& s) const
+{
+	double force = computeIsometricForce(s, getActivation(s));
+
+	//cout<<getName()<<": isometric force = "<<force<<endl;
+	//cout<<getName()<<": fiber length = "<<getFiberLength(s)<<endl;
 }
 
 //_____________________________________________________________________________

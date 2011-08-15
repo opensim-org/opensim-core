@@ -164,7 +164,6 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
 	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
@@ -179,8 +178,6 @@ public:
 
 protected:
 	// Model Component Interface
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:

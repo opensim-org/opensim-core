@@ -63,8 +63,7 @@ class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle
 //=============================================================================
 protected:
 
-	Array<std::string> _stateVariableSuffixes;
-    // Defaults for state variables.
+	// Defaults for state variables.
     double _defaultActivation;
     double _defaultFiberLength;
 
@@ -99,8 +98,6 @@ public:
     //--------------------------------------------------------------------------
     // GET
     //--------------------------------------------------------------------------
-    virtual int getNumStateVariables() const;
-
     // Defaults
     virtual double getDefaultActivation() const;
     virtual void setDefaultActivation(double activation);
@@ -137,6 +134,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
+	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation( const SimTK::State& s ) const = 0;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
 	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
@@ -172,13 +170,11 @@ private:
 	void setupProperties();
 
 protected:
-	virtual void setup(Model& aModel);
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
 	
-    virtual void setNumStateVariables( int aNumStateVariables);
-	virtual std::string getStateVariableName(int aIndex) const;
+    virtual std::string getStateVariableName(int aIndex) const;
 
 	virtual void setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const;
 	virtual double getStateVariableDeriv(const SimTK::State& s, int aIndex) const;

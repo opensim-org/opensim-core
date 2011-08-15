@@ -175,7 +175,7 @@ public:
      * Gets the number of "Continuous" state variables maintained by the ModelComponent
      * If the ModelComponent defines any that are of interest to the user, names should also be given
 	 */
-    virtual int getNumStateVariables() const = 0;
+    virtual int getNumStateVariables() const;
 
     /**
      * Get the name of a state variable allocated by this ModelComponent.  The default implementation
