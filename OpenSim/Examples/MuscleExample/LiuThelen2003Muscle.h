@@ -155,20 +155,23 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual SimTK::Vector computeStateDerivatives(const SimTK::State& s);
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 	virtual void computeEquilibrium(SimTK::State& s ) const;
 	virtual double computeActuation(const SimTK::State& s) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 	virtual void equilibrate(SimTK::State& state) const;
 
 #endif
-	virtual void setup(Model& aModel);
 
 	// This macro allows the OpenSim GUI to check Actuator
 	// objects to see if they are instances of this muscle class.
 	OPENSIM_DECLARE_DERIVED(LiuThelen2003Muscle, Actuator);
 	
 	virtual int getStateVariableYIndex(int index) const;
+
+protected:
+	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	virtual std::string LiuThelen2003Muscle::getStateVariableName(int aIndex) const;
 
 private:
 	void setNull();

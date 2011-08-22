@@ -1,3 +1,65 @@
+###########################################
+## For building with the rest of OpenSim ##
+###########################################
+IF(BUILD_API_EXAMPLES)
+
+SET(EXAMPLE_MUSCLE exampleMuscle)
+
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
+		    ${OpenSim_SOURCE_DIR}/Vendors 		  
+		    ${XERCES_INCLUDE_DIR})
+
+ADD_EXECUTABLE(${EXAMPLE_MUSCLE} LiuThelen2003Muscle.cpp mainFatigue.cpp LiuThelen2003Muscle.h)
+TARGET_LINK_LIBRARIES(${EXAMPLE_MUSCLE}
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	${SIMTK_ALL_LIBS}
+)
+SET_TARGET_PROPERTIES(${EXAMPLE_MUSCLE}
+	PROPERTIES
+	PROJECT_LABEL "Examples - ${EXAMPLE_MUSCLE}"
+)
+
+FILE(GLOB DATA_FILES *.osim *.xml *.sto *.mot *.vtp *.obj)
+FOREACH (DATA_FILE ${DATA_FILES})
+ ADD_CUSTOM_COMMAND(
+	TARGET ${EXAMPLE_MUSCLE}
+	COMMAND ${CMAKE_COMMAND}
+	ARGS -E copy
+	${DATA_FILE}
+	${OpenSim_BINARY_DIR}/OpenSim/Examples/MuscleExample
+  )
+ENDFOREACH (DATA_FILE)
+
+IF(BUILD_TESTING)
+  SET(TEST_EXAMPLE_MUSCLE testExampleMuscle)
+
+  ADD_EXECUTABLE(${TEST_EXAMPLE_MUSCLE}Output testMuscleExample.cpp)
+  TARGET_LINK_LIBRARIES(${TEST_EXAMPLE_MUSCLE}Output
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	${SIMTK_ALL_LIBS}
+  )
+  SET_TARGET_PROPERTIES(${TEST_EXAMPLE_MUSCLE}Output
+	PROPERTIES 
+	PROJECT_LABEL "Tests - ${TEST_EXAMPLE_MUSCLE}Output"
+  )
+
+  ADD_TEST(${TEST_EXAMPLE_MUSCLE}Runs ${EXECUTABLE_OUTPUT_PATH}/${EXAMPLE_MUSCLE})
+  ADD_TEST(${TEST_EXAMPLE_MUSCLE}Output ${EXECUTABLE_OUTPUT_PATH}/${TEST_EXAMPLE_MUSCLE}Output)
+ENDIF(BUILD_TESTING)
+
+################################################
+## For building with existing OpenSim install ##
+################################################
+ELSE(BUILD_API_EXAMPLES)
+
 cmake_minimum_required(VERSION 2.6)
 
 PROJECT (MuscleExample)
@@ -79,3 +141,5 @@ ENDFOREACH (dataFile)
 
 
 ADD_DEPENDENCIES(main copyDataFiles)
+
+ENDIF(BUILD_API_EXAMPLES)

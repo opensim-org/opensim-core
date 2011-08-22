@@ -1,3 +1,35 @@
+###########################################
+## For building with the rest of OpenSim ##
+###########################################
+IF(BUILD_API_EXAMPLES)
+
+SET(EXAMPLE_FORCE_PLUGIN exampleForcePlugin)
+
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
+		    ${OpenSim_SOURCE_DIR}/Vendors	  
+		    ${XERCES_INCLUDE_DIR})
+
+ADD_LIBRARY(${EXAMPLE_FORCE_PLUGIN} SHARED CoupledBushingForce.cpp RegisterTypes_osimPlugin.cpp CoupledBushingForce.h osimPluginDLL.h RegisterTypes_osimPlugin.h)
+TARGET_LINK_LIBRARIES(${EXAMPLE_FORCE_PLUGIN}
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	${SIMTK_ALL_LIBS}
+)
+SET_TARGET_PROPERTIES(${EXAMPLE_FORCE_PLUGIN}
+	PROPERTIES
+	DEFINE_SYMBOL OSIMPLUGIN_EXPORTS
+	PROJECT_LABEL "Examples - ${EXAMPLE_FORCE_PLUGIN}"
+	RUNTIME_OUTPUT_DIRECTORY ${OpenSim_BINARY_DIR}/OpenSim/Examples/ForcePluginExample
+)
+
+################################################
+## For building with existing OpenSim install ##
+################################################
+ELSE(BUILD_API_EXAMPLES)
+
 Project(CoupledBushingForcePlugin)
 
 cmake_minimum_required(VERSION 2.6)
@@ -60,3 +92,4 @@ SET_TARGET_PROPERTIES(
 
 INSTALL_TARGETS(/plugins RUNTIME_DIRECTORY /plugins  ${PLUGIN_NAME})
 
+ENDIF(BUILD_API_EXAMPLES)

@@ -155,11 +155,6 @@ void LiuThelen2003Muscle::copyData(const LiuThelen2003Muscle &aMuscle)
 void LiuThelen2003Muscle::setNull()
 {
 	setType("LiuThelen2003Muscle");
-
-	setNumStateVariables(4);
-
-	_stateVariableSuffixes[STATE_ACTIVE_MOTOR_UNITS]="active_motor_units";
-	_stateVariableSuffixes[STATE_FATIGUED_MOTOR_UNITS]="fatigued_motor_units";
 }
 
 //_____________________________________________________________________________
@@ -188,19 +183,34 @@ void LiuThelen2003Muscle::setupProperties()
 }
 
 //_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel model containing this LiuThelen2003Muscle.
- */
-void LiuThelen2003Muscle::setup(Model& aModel)
+void LiuThelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	// Base class
-	Thelen2003Muscle::setup(aModel);
+	Thelen2003Muscle::createSystem(system);
 
-	_stateVariableSuffixes.append("fatigue_factor");
-	_stateVariableSuffixes.append("recovery_factor");
+	LiuThelen2003Muscle* mutableThis = const_cast<LiuThelen2003Muscle *>(this);
+
+	Array<string> stateVariables;
+	stateVariables.setSize(2);
+	stateVariables[0] = "active_motor_units";
+	stateVariables[1] = "fatigued_motor_units";
+	mutableThis->addStateVariables(stateVariables);
+	mutableThis->addCacheVariable<SimTK::Vector>("state_derivatives", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Dynamics);
+}
+
+/**
+ * Get the name of a state variable, given its index.
+ *
+ * @param aIndex The index of the state variable to get.
+ * @return The name of the state variable.
+ */
+string LiuThelen2003Muscle::getStateVariableName(int aIndex) const
+{
+	if(aIndex == 2)
+		return getName() + ".active_motor_units";
+	else if (aIndex == 3)
+		return getName() + ".fatigued_motor_units";
+	else
+		return Thelen2003Muscle::getStateVariableName(aIndex);
 }
 
 void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const
@@ -298,12 +308,11 @@ void LiuThelen2003Muscle::setDefaultFatiguedMotorUnits(double fatiguedMotorUnits
 /**
  * Compute the derivatives of the muscle states.
  *
- * @param s  system state 
- * @param index 
+ * @param s  system state
  */
-SimTK::Vector LiuThelen2003Muscle::computeStateDerivatives(const SimTK::State& s)
+SimTK::Vector LiuThelen2003Muscle::computeStateVariableDerivatives(const SimTK::State& s) const
 {
-	SimTK::Vector derivs(getNumStateVariables());
+	SimTK::Vector derivs = Thelen2003Muscle::computeStateVariableDerivatives(s);
 	derivs.resize(4);
 	derivs[2] = getActiveMotorUnitsDeriv(s);
 	derivs[3] = getFatiguedMotorUnitsDeriv(s);
@@ -327,13 +336,13 @@ void LiuThelen2003Muscle::computeEquilibrium(SimTK::State& s) const
  */
 double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
-   double tendonForce;
-   double normState[4], normStateDeriv[4], norm_tendon_length, ca;
-   double norm_muscle_tendon_length, pennation_angle;
+	double tendonForce;
+	double normState[4], normStateDeriv[4], norm_tendon_length, ca;
+	double norm_muscle_tendon_length, pennation_angle;
 
 	// Normalize the muscle states.
-   normState[STATE_ACTIVATION] = getActivation(s);
-   normState[STATE_FIBER_LENGTH] = getFiberLength(s) / _optimalFiberLength;
+	normState[STATE_ACTIVATION] = getActivation(s);
+	normState[STATE_FIBER_LENGTH] = getFiberLength(s) / _optimalFiberLength;
 	normState[STATE_ACTIVE_MOTOR_UNITS] = getActiveMotorUnits(s);
 	normState[STATE_FATIGUED_MOTOR_UNITS] = getFatiguedMotorUnits(s);
 
@@ -343,28 +352,28 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 		Vmax = _vmax0 + normState[STATE_ACTIVATION]*(Vmax-_vmax0);
 	Vmax = Vmax*_optimalFiberLength;
 
-   // Compute normalized muscle state derivatives.
-   if (getExcitation(s) >= normState[STATE_ACTIVATION])
+	// Compute normalized muscle state derivatives.
+	if (getExcitation(s) >= normState[STATE_ACTIVATION])
       normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _activationTimeConstant;
-   else
+	else
       normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _deactivationTimeConstant;
 
 	pennation_angle = Muscle::calcPennation( normState[STATE_FIBER_LENGTH], 1.0, _pennationAngleAtOptimal);
-   ca = cos(pennation_angle);
+	ca = cos(pennation_angle);
 
-   norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
-   norm_tendon_length = norm_muscle_tendon_length - normState[STATE_FIBER_LENGTH] * ca;
+	norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
+	norm_tendon_length = norm_muscle_tendon_length - normState[STATE_FIBER_LENGTH] * ca;
 
-   tendonForce = calcTendonForce(s,norm_tendon_length);
-   setPassiveForce(s, calcPassiveForce(s,normState[STATE_FIBER_LENGTH]) );
-   double activeForce = calcActiveForce(s,normState[STATE_FIBER_LENGTH]);
+	tendonForce = calcTendonForce(s,norm_tendon_length);
+	setPassiveForce(s, calcPassiveForce(s,normState[STATE_FIBER_LENGTH]));
+	double activeForce = calcActiveForce(s,normState[STATE_FIBER_LENGTH]);
 	
-   // If pennation equals 90 degrees, fiber length equals muscle width and fiber
-   // velocity goes to zero.  Pennation will stay at 90 until tendon starts to
-   // pull, then "stiff tendon" approximation is used to calculate approximate
-   // fiber velocity.
-   if (EQUAL_WITHIN_ERROR(ca, 0.0))
-   {
+	// If pennation equals 90 degrees, fiber length equals muscle width and fiber
+	// velocity goes to zero.  Pennation will stay at 90 until tendon starts to
+	// pull, then "stiff tendon" approximation is used to calculate approximate
+	// fiber velocity.
+	if (EQUAL_WITHIN_ERROR(ca, 0.0))
+	{
       if (EQUAL_WITHIN_ERROR(tendonForce, 0.0))
       {
          normStateDeriv[STATE_FIBER_LENGTH] = 0.0;
@@ -379,20 +388,20 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
          normStateDeriv[STATE_FIBER_LENGTH] = getSpeed(s) / (Vmax * new_ca);
 		}
 	}
-   else
-   {
+	else
+	{
       double velocity_dependent_force = tendonForce / ca - getPassiveForce(s);
       normStateDeriv[STATE_FIBER_LENGTH] = calcFiberVelocity(s, getActiveMotorUnits(s), activeForce, velocity_dependent_force);
-   }
+	}
 
 	normStateDeriv[STATE_ACTIVE_MOTOR_UNITS] = normStateDeriv[STATE_ACTIVATION] - getFatigueFactor() * getActiveMotorUnits(s) + getRecoveryFactor() * getFatiguedMotorUnits(s);
 	normStateDeriv[STATE_FATIGUED_MOTOR_UNITS]  = getFatigueFactor() * getActiveMotorUnits(s) - getRecoveryFactor() * getFatiguedMotorUnits(s);
 
-   // Un-normalize the muscle state derivatives and forces.
-   // Note: Do not need to Un-Normalize activation dynamics equation since activation, deactivation parameters
-   // specified in muscle file are now independent of time scale
-   setActivationDeriv(s, normStateDeriv[STATE_ACTIVATION]) ;
-   setFiberLengthDeriv(s, normStateDeriv[STATE_FIBER_LENGTH] * Vmax );
+	// Un-normalize the muscle state derivatives and forces.
+	// Note: Do not need to Un-Normalize activation dynamics equation since activation, deactivation parameters
+	// specified in muscle file are now independent of time scale
+	setActivationDeriv(s, normStateDeriv[STATE_ACTIVATION]) ;
+	setFiberLengthDeriv(s, normStateDeriv[STATE_FIBER_LENGTH] * Vmax );
 	setActiveMotorUnitsDeriv(s, normStateDeriv[STATE_ACTIVE_MOTOR_UNITS]);
 	setFatiguedMotorUnitsDeriv(s, normStateDeriv[STATE_FATIGUED_MOTOR_UNITS]);
 
@@ -447,8 +456,9 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 
 int LiuThelen2003Muscle::getStateVariableYIndex(int index) const
 {
-	if (index<4 && index >=0)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+index;
-	throw Exception("Trying to get State variable YIndex for LiuThelen2003Muscle "+getName()+" at undefined index"); 
-
+	if (index == 2)
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+2;
+	if (index == 3)
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+3;
+	return Thelen2003Muscle::getStateVariableYIndex(index);
 }

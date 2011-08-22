@@ -1,3 +1,65 @@
+###########################################
+## For building with the rest of OpenSim ##
+###########################################
+IF(BUILD_API_EXAMPLES)
+
+SET(EXAMPLE_CONTROLLER exampleController)
+
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
+		    ${OpenSim_SOURCE_DIR}/Vendors	  
+		    ${XERCES_INCLUDE_DIR})
+
+ADD_EXECUTABLE(${EXAMPLE_CONTROLLER} ControllerExample.cpp)
+TARGET_LINK_LIBRARIES(${EXAMPLE_CONTROLLER}
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	${SIMTK_ALL_LIBS}
+)
+SET_TARGET_PROPERTIES(${EXAMPLE_CONTROLLER}
+	PROPERTIES
+	PROJECT_LABEL "Examples - ${EXAMPLE_CONTROLLER}"
+)
+
+FILE(GLOB DATA_FILES *.osim *.xml *.sto *.mot *.vtp *.obj)
+FOREACH (DATA_FILE ${DATA_FILES})
+ ADD_CUSTOM_COMMAND(
+	TARGET ${EXAMPLE_CONTROLLER}
+	COMMAND ${CMAKE_COMMAND}
+	ARGS -E copy
+	${DATA_FILE}
+	${OpenSim_BINARY_DIR}/OpenSim/Examples/ControllerExample
+  )
+ENDFOREACH (DATA_FILE)
+
+IF(BUILD_TESTING)
+  SET(TEST_EXAMPLE_CONTROLLER testExampleController)
+
+  ADD_EXECUTABLE(${TEST_EXAMPLE_CONTROLLER}Output testControllerExample.cpp)
+  TARGET_LINK_LIBRARIES(${TEST_EXAMPLE_CONTROLLER}Output
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	${SIMTK_ALL_LIBS}
+  )
+  SET_TARGET_PROPERTIES(${TEST_EXAMPLE_CONTROLLER}Output
+	PROPERTIES 
+	PROJECT_LABEL "Tests - ${TEST_EXAMPLE_CONTROLLER}Output"
+  )
+
+  ADD_TEST(${TEST_EXAMPLE_CONTROLLER}Runs ${EXECUTABLE_OUTPUT_PATH}/${EXAMPLE_CONTROLLER})
+  ADD_TEST(${TEST_EXAMPLE_CONTROLLER}Output ${EXECUTABLE_OUTPUT_PATH}/${TEST_EXAMPLE_CONTROLLER}Output)
+ENDIF(BUILD_TESTING)
+
+################################################
+## For building with existing OpenSim install ##
+################################################
+ELSE(BUILD_API_EXAMPLES)
+
 cmake_minimum_required(VERSION 2.6)
 
 PROJECT (ControllerExample)
@@ -69,3 +131,5 @@ ENDFOREACH (dataFile)
 
 
 ADD_DEPENDENCIES(main copyDataFiles)
+
+ENDIF(BUILD_API_EXAMPLES)

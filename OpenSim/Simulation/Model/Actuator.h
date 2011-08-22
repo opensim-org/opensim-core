@@ -95,10 +95,7 @@ public:
 	//--------------------------------------------------------------------------
 protected:
 	// ModelComponent Interface
-	virtual void setup(Model& aModel);
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void initState(SimTK::State& state) const;
-	virtual void setDefaultsFromState(const SimTK::State& state);
 
 	// Update the geometry attached to the actuator. Use inertial frame.
 	virtual void updateGeometry();
@@ -168,9 +165,6 @@ public:
 	/** Assignment operator */
 	Actuator& operator=(const Actuator &aActuator);
 	virtual Object* copy() const = 0;	// Needed by operator= and to put Actuators in Arrays
-
-	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
 
 	/** Convenience method to set controls given scalar (double) valued control */
 	//virtual void setControl(const SimTK::State &s, double control) const;
@@ -257,10 +251,7 @@ public:
 
 protected:
 	// ModelComponent Interface
-	virtual void setup(Model& aModel);
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void initState(SimTK::State& state) const;
-	virtual void setDefaultsFromState(const SimTK::State& state);
 
 	double computeOverrideForce(const SimTK::State& s ) const;
 

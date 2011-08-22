@@ -106,8 +106,6 @@ public:
 	Muscle(const Muscle &aMuscle);
 	virtual ~Muscle();
 	virtual Object* copy() const = 0;
-
-	void setName(const std::string &aName);
 #ifndef SWIG
 	Muscle& operator=(const Muscle &aMuscle);
 #endif
@@ -191,11 +189,6 @@ protected:
 	// Update the geometry attached to the muscle (location of muscle points and connecting segments
 	//  all in global/interial frame)
 	virtual void updateGeometry(const SimTK::State& s) const;
-
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void initState(SimTK::State& s) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
 
 //=============================================================================
 };	// END of class Muscle

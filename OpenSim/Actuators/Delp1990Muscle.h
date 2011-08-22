@@ -95,8 +95,6 @@ protected:
 	Function *&_forceVelocityCurve;
 
 private:
-	static const int STATE_ACTIVATION;
-	static const int STATE_FIBER_LENGTH;
 	static const int STATE_FIBER_VELOCITY;
 //=============================================================================
 // METHODS

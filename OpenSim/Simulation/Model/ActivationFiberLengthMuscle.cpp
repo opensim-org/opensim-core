@@ -89,28 +89,7 @@ ActivationFiberLengthMuscle::~ActivationFiberLengthMuscle()
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the name of the muscle. This method overrides the one in Object
- * so that the path points can be [re]named accordingly.
- *
- * @param aName The new name of the muscle.
- */
-void ActivationFiberLengthMuscle::setName(const string &aName)
-{
-	// base class
-	Muscle::setName(aName);
-}
 //_____________________________________________________________________________
-/**
- * Copy data members from one ActivationFiberLengthMuscle to another.
- *
- * @param aMuscle ActivationFiberLengthMuscle to be copied.
- */
-void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aMuscle)
-{
-	Muscle::copyData(aMuscle);
-}
-
 //_____________________________________________________________________________
 /**
  * Set the data members of this ActivationFiberLengthMuscle to their null values.
@@ -126,17 +105,6 @@ void ActivationFiberLengthMuscle::setNull()
  */
 void ActivationFiberLengthMuscle::setupProperties()
 {
-}
-
-//_____________________________________________________________________________
-/**
- * Override default implementation by object to intercept and fix the XML node
- * underneath the model to match current version
- */
-void ActivationFiberLengthMuscle::updateFromXMLNode()
-{
-	// Call base class now assuming _node has been corrected for current version
-	Muscle::updateFromXMLNode();
 }
 
 
@@ -219,9 +187,9 @@ void ActivationFiberLengthMuscle::setDefaultFiberLength(double length) {
  */
 string ActivationFiberLengthMuscle::getStateVariableName(int aIndex) const
 {
-	if(aIndex == 0)
+	if(aIndex == STATE_ACTIVATION)
 		return getName() + ".activation";
-	else if (aIndex == 1)
+	else if (aIndex == STATE_FIBER_LENGTH)
 		return getName() + ".fiber_length";
 	else {
 		std::stringstream msg;
@@ -273,7 +241,19 @@ double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s,
 	}
 }
 
-
+//_____________________________________________________________________________
+/**
+ * Compute the derivatives of the muscle states.
+ *
+ * @param s  system state
+ */
+SimTK::Vector ActivationFiberLengthMuscle::computeStateVariableDerivatives(const SimTK::State &s) const
+{
+	SimTK::Vector derivs(getNumStateVariables());
+	derivs[0] = getActivationDeriv(s);
+	derivs[1] = getFiberLengthDeriv(s);
+	return derivs;
+}
 
 
 //=============================================================================
@@ -555,4 +535,13 @@ double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStif
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 
 	return isometricForce * normalizedForceVelocity;
+}
+
+int ActivationFiberLengthMuscle::getStateVariableYIndex(int index) const
+{
+	if (index == 0)
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex;
+	if (index == 1)
+		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+1;
+	throw Exception("Trying to get Coordinate State variable YIndex for Coordinate "+getName()+" at undefined index"); 
 }

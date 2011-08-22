@@ -240,7 +240,7 @@ record(const SimTK::State& s)
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL QUANTITIES ARE VALID
-    _model->getSystem().realize(s, SimTK::Stage::Velocity );
+    _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 	// Get state variable names and values in same order and use that to update map
 	Array<std::string> stateNames;
 	_model->getStateNames(stateNames);

@@ -164,7 +164,6 @@ public:
 protected:
 	// Setup method to initialize coordinate reference
 	virtual void setup(Model &aModel);
-	virtual void createSystem( SimTK::MultibodySystem& system) const ;
 
 
 

@@ -39,9 +39,6 @@
 using namespace std;
 using namespace OpenSim;
 
-const int Thelen2003Muscle::STATE_ACTIVATION = 0;
-const int Thelen2003Muscle::STATE_FIBER_LENGTH = 1;
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -442,21 +439,6 @@ bool Thelen2003Muscle::setFlen(double aFlen)
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Compute the derivatives of the muscle states.
- *
- * @param s  system state 
- * @param index 
- */
-SimTK::Vector Thelen2003Muscle::computeStateVariableDerivatives(const SimTK::State &s) const
-{
-	SimTK::Vector derivs(getNumStateVariables());
-	derivs[0] = getActivationDeriv(s);
-	derivs[1] = getFiberLengthDeriv(s);
-	return derivs; 
-}
-
-//_____________________________________________________________________________
-/**
  * Compute the actuation for the muscle. This function assumes
  * that computeDerivatives has already been called.
  *
@@ -561,8 +543,8 @@ double  Thelen2003Muscle::computeActuation(const SimTK::State& s) const
  */
 double Thelen2003Muscle::calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
 {
-   double norm_resting_length = _tendonSlackLength / _optimalFiberLength;
-   double tendon_strain =  (aNormTendonLength - norm_resting_length) / norm_resting_length;
+	double norm_resting_length = _tendonSlackLength / _optimalFiberLength;
+	double tendon_strain =  (aNormTendonLength - norm_resting_length) / norm_resting_length;
 
 	double KToe = 3;
 	double ToeStrain = 0.609*_fmaxTendonStrain;
@@ -580,7 +562,7 @@ double Thelen2003Muscle::calcTendonForce(const SimTK::State& s, double aNormTend
 	// Add on a small stiffness so that tendon never truly goes slack for non-zero tendon lengths
 	tendon_force+=0.001*(1.+tendon_strain);
 
-   return tendon_force;
+	return tendon_force;
 }
 
 //_____________________________________________________________________________
@@ -885,23 +867,13 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
          cos_factor = cos(atan(muscle_width / (length - tendon_length)));
          fiberLength = (length - tendon_length) / cos_factor ;
       }
-   }
+	}
 
-   setPassiveForce(s, passiveForce );
-   _model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+	setPassiveForce(s, passiveForce );
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
 	setStateVariable(s, STATE_FIBER_LENGTH,  fiberLength);
 
 //cout << "ThelenMuscle computeIsometricForce " << getName() << "  t=" << s.getTime() << " force = " << tendon_force << endl;
 
    return tendon_force;
-}
-
-int Thelen2003Muscle::getStateVariableYIndex(int index) const
-{
-	if (index==0)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex;
-	if (index ==1)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+1;
-	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
-
 }

@@ -40,9 +40,6 @@
 using namespace std;
 using namespace OpenSim;
 
-const int Schutte1993Muscle::STATE_ACTIVATION = 0;
-const int Schutte1993Muscle::STATE_FIBER_LENGTH = 1;
-
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -333,20 +330,6 @@ bool Schutte1993Muscle::setDamping(double aDamping)
 
 //_____________________________________________________________________________
 /**
- * Compute the derivatives of the muscle states.
- *
- * @param rDYDT the state derivatives are returned here.
- */
-SimTK::Vector Schutte1993Muscle::computeStateVariableDerivatives(const SimTK::State &s) const
-{
-	SimTK::Vector derivs(getNumStateVariables());
-	derivs[0] = getActivationDeriv(s);
-	derivs[1] = getFiberLengthDeriv(s);
-	return derivs; 
-}
-
-//_____________________________________________________________________________
-/**
  * Compute the actuation for the muscle. This function assumes
  * that computeDerivatives has already been called.
  */
@@ -358,28 +341,28 @@ double Schutte1993Muscle::computeActuation(const SimTK::State& s) const
     double activationDeriv;
     double fiberLengthDeriv;
 
-   double norm_tendon_length, ca;
-   double norm_muscle_tendon_length, pennation_angle;
-   double excitation = getExcitation(s);
+	double norm_tendon_length, ca;
+	double norm_muscle_tendon_length, pennation_angle;
+	double excitation = getExcitation(s);
 
-   /* Normalize the muscle states */
-   double activation = getActivation(s);
-   double normFiberLength = getFiberLength(s) / _optimalFiberLength;
+	/* Normalize the muscle states */
+	double activation = getActivation(s);
+	double normFiberLength = getFiberLength(s) / _optimalFiberLength;
 
-   /* Compute normalized muscle state derivatives */
-   if (excitation >= activation) 
+	/* Compute normalized muscle state derivatives */
+	if (excitation >= activation) 
        activationDeriv = (excitation - activation) * (_activation1 * excitation + _activation2);
-   else
+	else
       activationDeriv = (excitation - activation) * _activation2;
 
 	pennation_angle = calcPennation(normFiberLength, 1.0, _pennationAngleAtOptimal);
-   ca = cos(pennation_angle);
-   norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
-   norm_tendon_length = norm_muscle_tendon_length - normFiberLength * ca;
+	ca = cos(pennation_angle);
+	norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
+	norm_tendon_length = norm_muscle_tendon_length - normFiberLength * ca;
 
-   tendonForce = calcTendonForce(s,norm_tendon_length);
-   passiveForce =  calcNonzeroPassiveForce(s,normFiberLength, 0.0);
-   activeForce = getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, normFiberLength) );
+	tendonForce = calcTendonForce(s,norm_tendon_length);
+	passiveForce =  calcNonzeroPassiveForce(s,normFiberLength, 0.0);
+	activeForce = getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, normFiberLength) );
 	if (activeForce < 0.0) activeForce = 0.0;
 
    /* If pennation equals 90 degrees, fiber length equals muscle width and fiber
@@ -387,7 +370,7 @@ double Schutte1993Muscle::computeActuation(const SimTK::State& s) const
     * pull, then "stiff tendon" approximation is used to calculate approximate
     * fiber velocity.
     */
-   if (EQUAL_WITHIN_ERROR(ca, 0.0)) {
+	if (EQUAL_WITHIN_ERROR(ca, 0.0)) {
       if (EQUAL_WITHIN_ERROR(tendonForce, 0.0)) {
          fiberLengthDeriv = 0.0;;
       } else {
@@ -398,23 +381,22 @@ double Schutte1993Muscle::computeActuation(const SimTK::State& s) const
          double new_ca = cos(new_pennation_angle);
          fiberLengthDeriv = getLengtheningSpeed(s) * _timeScale / _optimalFiberLength * new_ca;
       }
-   } else {
+	} else {
       double velocity_dependent_force = tendonForce / ca - passiveForce;
 	  if (velocity_dependent_force < 0.0) velocity_dependent_force = 0.0;
       fiberLengthDeriv  = calcFiberVelocity(s,activation, activeForce, velocity_dependent_force);
-   }
+	}
 
-   /* Un-normalize the muscle state derivatives and forces. */
-   setActivationDeriv(s,  activationDeriv / _timeScale);
-   setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / _timeScale);
+	/* Un-normalize the muscle state derivatives and forces. */
+	setActivationDeriv(s,  activationDeriv / _timeScale);
+	setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / _timeScale);
 
 	tendonForce = tendonForce * _maxIsometricForce;
 	setForce(s, tendonForce);
 	setTendonForce(s, tendonForce);
 	setPassiveForce(s, passiveForce * _maxIsometricForce);
 
-
-    return( tendonForce );
+	return( tendonForce );
 }
 
 //=============================================================================
@@ -771,16 +753,4 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
    setPassiveForce(s, passiveForce * _maxIsometricForce);
 
 	return tendon_force;
-}
-
-
-
-int Schutte1993Muscle::getStateVariableYIndex(int index) const
-{
-	if (index==0)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex;
-	if (index ==1)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+1;
-	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
-
 }

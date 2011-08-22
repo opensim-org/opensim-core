@@ -90,17 +90,6 @@ void Actuator_::setNull()
 	setType("Actuator_");
 }
 
-//_____________________________________________________________________________
-/**
- * Perform set up functions after model has been deserialized or copied.
- *
- * @param aModel model containing this actuator.
- */
-void Actuator_::setup(Model& aModel)
-{
-	Force::setup(aModel);
-}
-
 // Create the underlying computational system component(s) that support the
 // Actuator model component
 void Actuator_::createSystem(SimTK::MultibodySystem& system) const
@@ -116,16 +105,6 @@ void Actuator_::createSystem(SimTK::MultibodySystem& system) const
 	mutableThis->_controlIndex = _model->updDefaultControls().size();
 	_model->updDefaultControls().resizeKeep(_controlIndex + numControls());
 	_model->updDefaultControls()(_controlIndex, numControls()) = Vector(numControls(), 0.0);
-}
-
-void Actuator_::initState(SimTK::State& state) const
-{
-	Force::initState(state);
-}
-
-void Actuator_::setDefaultsFromState(const SimTK::State& state)
-{
-	Force::setDefaultsFromState(state);
 }
 
 
@@ -214,6 +193,7 @@ Actuator::Actuator() : Actuator_(),
     _overrideForceFunction(0)
 {
 	setNull();
+	setupProperties();
 }
 
 /**
@@ -227,6 +207,7 @@ Actuator::Actuator(const Actuator &aAct) : Actuator_(aAct),
     _overrideForceFunction(0)
 {
 	setNull();
+	setupProperties();
 	_minControl = aAct._minControl;
 	_maxControl = aAct._maxControl;
 }
@@ -255,18 +236,12 @@ void Actuator::setupProperties()
 	_propertySet.append( &_propMaxControl );	
 }
 
-void Actuator::updateFromXMLNode()
-{
-	Force::updateFromXMLNode();
-}
-
 /**
  * Set the data members of this Actuator to their null values.
  */
 void Actuator::setNull()
 {
 	setType("Actuator");
-	setupProperties();
 }
 
 /**
@@ -283,13 +258,6 @@ Actuator& Actuator::operator=(const Actuator &aAct)
 	_maxControl=aAct._maxControl;
 
 	return(*this);
-}
-
-// Setup the underlying computational system component(s) that implement the
-// Actuator 
-void Actuator::setup(Model& aModel)
-{
-	Actuator_::setup(aModel);
 }
 
 // Create the underlying computational system component(s) that support the
@@ -312,17 +280,6 @@ void Actuator::createSystem(SimTK::MultibodySystem& system) const
 
 	// Discrete state variable is the override force value if in override mode
 	mutableThis->addDiscreteVariables(Array<string>("override_force",1), Stage::Time);
-}
-
-// do any state initialization
-void Actuator::initState(SimTK::State& state) const
-{
-	Actuator_::initState(state);
-}
-
-void Actuator::setDefaultsFromState(const SimTK::State& state)
-{
-	Actuator_::setDefaultsFromState(state);
 }
 
 double Actuator::getControl(const SimTK::State& s ) const

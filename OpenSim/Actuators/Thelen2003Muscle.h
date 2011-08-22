@@ -101,10 +101,6 @@ protected:
 	/** Maximum normalized lengthening force */
 	PropertyDbl _flenProp;
 	double &_flen;
-
-protected:
-	static const int STATE_ACTIVATION;
-	static const int STATE_FIBER_LENGTH;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -172,13 +168,7 @@ public:
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
 #endif
-	virtual int getStateVariableYIndex(int index) const;
-
 	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle, ActivationFiberLengthMuscle);
-
-protected:
-	// Model Component Interface
-	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:
 	void setNull();
@@ -191,5 +181,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // __Thelen2003Muscle_h__
-
-

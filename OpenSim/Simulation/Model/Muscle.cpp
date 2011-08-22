@@ -176,41 +176,6 @@ void Muscle::updateFromXMLNode()
 	Actuator::updateFromXMLNode();
 }
 
-//_____________________________________________________________________________
-/**
- * Perform set up functions after model has been deserialized or copied.
- *
- * @param aModel The model containing this muscle.
- */
-void Muscle::setup(Model& aModel)
-{
-	PathActuator::setup(aModel);
-
-	// _model will be NULL when objects are being registered.
-	if (_model == NULL)
-		return;
-}
-
-//_____________________________________________________________________________
-/**
- * allocate and initialize the SimTK state for this acuator.
- */
- void Muscle::createSystem(SimTK::MultibodySystem& system) const
-{
-	PathActuator::createSystem(system);
-
- }
-
- void Muscle::initState( SimTK::State& s) const
-{
-    PathActuator::initState(s);
-}
-
-void Muscle::setDefaultsFromState(const SimTK::State& state)
-{
-	PathActuator::setDefaultsFromState(state);
-}
-
 
 //_____________________________________________________________________________
 /**
@@ -242,19 +207,6 @@ void Muscle::setupProperties()
 	_maxContractionVelocityProp.setComment("Maximum contraction velocity of the fibers, in optimal fiberlengths per second");
 	_maxContractionVelocityProp.setValue(10.0);
 	_propertySet.append(&_maxContractionVelocityProp, "Parameters");
-}
-
-//_____________________________________________________________________________
-/**
- * Set the name of the muscle. This method overrides the one in Object
- * so that the path points can be [re]named accordingly.
- *
- * @param aName The new name of the muscle.
- */
-void Muscle::setName(const string &aName)
-{
-	// base class
-	PathActuator::setName(aName);
 }
 
 

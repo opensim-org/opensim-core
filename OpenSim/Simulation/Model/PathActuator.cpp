@@ -330,15 +330,6 @@ void PathActuator::setup(Model& aModel)
 	_path.setOwner(this);
 }
 
-//_____________________________________________________________________________
-/**
- *  Create underlying SimTK::Force
- */
- void  PathActuator::createSystem(SimTK::MultibodySystem& system) const {
-
-     Actuator::createSystem( system );
-}
-
 
 //=============================================================================
 // XML

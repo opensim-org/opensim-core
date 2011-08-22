@@ -85,15 +85,10 @@ public:
 	virtual ~ActivationFiberLengthMuscle();
 	virtual Object* copy() const = 0;
 
-	void setName(const std::string &aName);
 #ifndef SWIG
 	ActivationFiberLengthMuscle& operator=(const ActivationFiberLengthMuscle &aMuscle);
 #endif
-   void copyData(const ActivationFiberLengthMuscle &aMuscle);
-	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
-
-    virtual void equilibrate(SimTK::State& state) const;
+	virtual void equilibrate(SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
     // GET
@@ -163,6 +158,8 @@ public:
 		return values;
 	};
 
+	virtual int getStateVariableYIndex(int index) const;
+
 	OPENSIM_DECLARE_DERIVED(ActivationFiberLengthMuscle, Muscle);
 
 private:
@@ -179,8 +176,7 @@ protected:
 	virtual void setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const;
 	virtual double getStateVariableDeriv(const SimTK::State& s, int aIndex) const;
 
-	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State) 
-	{ return SimTK::Vector(getNumStateVariables(), 0.0); };
+	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 
 //=============================================================================
 };	// END of class ActivationFiberLengthMuscle

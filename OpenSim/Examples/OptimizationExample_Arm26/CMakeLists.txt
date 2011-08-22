@@ -1,3 +1,65 @@
+###########################################
+## For building with the rest of OpenSim ##
+###########################################
+IF(BUILD_API_EXAMPLES)
+
+SET(EXAMPLE_OPTIMIZATION exampleOptimization)
+
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
+		    ${OpenSim_SOURCE_DIR}/Vendors 		  
+		    ${XERCES_INCLUDE_DIR})
+
+ADD_EXECUTABLE(${EXAMPLE_OPTIMIZATION} OptimizationExample.cpp)
+TARGET_LINK_LIBRARIES(${EXAMPLE_OPTIMIZATION}
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	${SIMTK_ALL_LIBS}
+)
+SET_TARGET_PROPERTIES(${EXAMPLE_OPTIMIZATION}
+	PROPERTIES
+	PROJECT_LABEL "Examples - ${EXAMPLE_OPTIMIZATION}"
+)
+
+FILE(GLOB DATA_FILES *.osim *.xml *.sto *.mot *.vtp *.obj)
+FOREACH (DATA_FILE ${DATA_FILES})
+ ADD_CUSTOM_COMMAND(
+	TARGET ${EXAMPLE_OPTIMIZATION}
+	COMMAND ${CMAKE_COMMAND}
+	ARGS -E copy
+	${DATA_FILE}
+	${OpenSim_BINARY_DIR}/OpenSim/Examples/OptimizationExample_Arm26
+  )
+ENDFOREACH (DATA_FILE)
+
+IF(BUILD_TESTING)
+  SET(TEST_EXAMPLE_OPTIMIZATION testExampleOptimization)
+
+  ADD_EXECUTABLE(${TEST_EXAMPLE_OPTIMIZATION}Output testOptimizationExample.cpp)
+  TARGET_LINK_LIBRARIES(${TEST_EXAMPLE_OPTIMIZATION}Output
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	${SIMTK_ALL_LIBS}
+  )
+  SET_TARGET_PROPERTIES(${TEST_EXAMPLE_OPTIMIZATION}Output
+	PROPERTIES 
+	PROJECT_LABEL "Tests - ${TEST_EXAMPLE_OPTIMIZATION}Output"
+  )
+
+  ADD_TEST(${TEST_EXAMPLE_OPTIMIZATION}Runs ${EXECUTABLE_OUTPUT_PATH}/${EXAMPLE_OPTIMIZATION})
+  ADD_TEST(${TEST_EXAMPLE_OPTIMIZATION}Output ${EXECUTABLE_OUTPUT_PATH}/${TEST_EXAMPLE_OPTIMIZATION}Output)
+ENDIF(BUILD_TESTING)
+
+################################################
+## For building with existing OpenSim install ##
+################################################
+ELSE(BUILD_API_EXAMPLES)
+
 cmake_minimum_required(VERSION 2.6)
 
 PROJECT (OptimizerMain_Arm26)
@@ -98,3 +160,5 @@ ENDFOREACH (dataFile)
 
 
 ADD_DEPENDENCIES(optimizerExample_Arm26 copyDataFiles)
+
+ENDIF(BUILD_API_EXAMPLES)

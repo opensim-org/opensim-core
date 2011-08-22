@@ -1,10 +1,10 @@
-SUBDIRS(Gait2354_Simbody Gait2392_Simbody Tutorials Arm26)
+SUBDIRS(Arm26 Gait2354_Simbody Gait2392_Simbody Tutorials)
 # Don't install README.txt for now... it's out of date
 #INSTALL_FILES(/examples/ FILES README.txt)
-SET(BUILD_APIEXAMPLES ON CACHE BOOL "Build examples that are used for the OpenSimAPIExamples distribution")
-MARK_AS_ADVANCED(BUILD_APIEXAMPLES)
+SET(BUILD_API_EXAMPLES ON CACHE BOOL "Build examples that are used for the OpenSimAPIExamples distribution")
+MARK_AS_ADVANCED(BUILD_API_EXAMPLES)
 
-IF (BUILD_APIEXAMPLES)
+IF (BUILD_API_EXAMPLES)
 ## ExampleMain ControllerExample MuscleExample CustomActuatorExample OptimizationExample_Arm26 TestEnvironment
 ##	INSTALL_FILES(/examples/ FILES README.txt
 INSTALL(DIRECTORY ExampleMain DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
@@ -13,4 +13,13 @@ INSTALL(DIRECTORY MuscleExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLU
 INSTALL(DIRECTORY CustomActuatorExample DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY OptimizationExample_Arm26 DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
 INSTALL(DIRECTORY testEnvironment DESTINATION sdk/APIExamples PATTERN ".svn" EXCLUDE)
-ENDIF (BUILD_APIEXAMPLES)
+
+ADD_SUBDIRECTORY(ControllerExample)
+ADD_SUBDIRECTORY(CustomActuatorExample)
+ADD_SUBDIRECTORY(ExampleMain)
+ADD_SUBDIRECTORY(ForcePluginExample)
+ADD_SUBDIRECTORY(MuscleExample)
+ADD_SUBDIRECTORY(OptimizationExample_Arm26)
+ADD_SUBDIRECTORY(SymbolicExpressionReporter)
+ADD_SUBDIRECTORY(testEnvironment)
+ENDIF (BUILD_API_EXAMPLES)

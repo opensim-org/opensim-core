@@ -87,9 +87,6 @@ protected:
 	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
 	Function *&_passiveForceLengthCurve;
 
-protected:
-	static const int STATE_ACTIVATION;
-	static const int STATE_FIBER_LENGTH;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -138,13 +135,11 @@ public:
 	virtual Function* getTendonForceLengthCurve() const;
 	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
 
-	virtual int getStateVariableYIndex(int index) const;
 	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle, ActivationFiberLengthMuscle);
 
 protected:
 	// Model Component Interface
 	virtual void setup(Model& aModel);
-	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:
 	double calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const;
@@ -161,5 +156,3 @@ private:
 } // end of namespace OpenSim
 
 #endif // __Schutte1993Muscle_h__
-
-

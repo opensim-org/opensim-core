@@ -1,3 +1,39 @@
+###########################################
+## For building with the rest of OpenSim ##
+###########################################
+IF(BUILD_API_EXAMPLES)
+
+SET(EXAMPLE_EXPRESSION_REPORTER_PLUGIN exampleExpressionReporterPlugin)
+
+INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
+		    ${OpenSim_SOURCE_DIR}/OpenSim
+		    ${OpenSim_SOURCE_DIR}/Vendors
+		    ${OpenSim_SOURCE_DIR}/Vendors/lepton/include
+		    ${XERCES_INCLUDE_DIR}
+		    ${SIMTK_HEADERS_DIR})
+
+ADD_LIBRARY(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED osimExpPluginDLL.cpp RegisterTypes_osimExpPlugin.cpp SymbolicExpressionReporter.cpp osimExpPluginDLL.h RegisterTypes_osimExpPlugin.h SymbolicExpressionReporter.h)
+TARGET_LINK_LIBRARIES(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
+	debug osimSimulation${CMAKE_DEBUG_POSTFIX}	optimized osimSimulation
+	debug osimActuators${CMAKE_DEBUG_POSTFIX}	optimized osimActuators
+	debug osimCommon${CMAKE_DEBUG_POSTFIX}		optimized osimCommon
+	debug osimAnalyses${CMAKE_DEBUG_POSTFIX}	optimized osimAnalyses
+	debug osimTools${CMAKE_DEBUG_POSTFIX}		optimized osimTools
+	debug osimLepton${CMAKE_DEBUG_POSTFIX}		optimized osimLepton
+	${SIMTK_ALL_LIBS}
+)
+SET_TARGET_PROPERTIES(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}
+	PROPERTIES
+	DEFINE_SYMBOL OSIMEXPPLUGIN_EXPORTS
+	PROJECT_LABEL "Examples - ${EXAMPLE_EXPRESSION_REPORTER_PLUGIN}"
+	RUNTIME_OUTPUT_DIRECTORY ${OpenSim_BINARY_DIR}/OpenSim/Examples/SymbolicExpressionReporter
+)
+
+################################################
+## For building with existing OpenSim install ##
+################################################
+ELSE(BUILD_API_EXAMPLES)
+
 Project(ExpressionReporterPlugin)
 
 cmake_minimum_required(VERSION 2.6)
@@ -64,3 +100,4 @@ ELSE(WIN32)
 	INSTALL_TARGETS(/bin/ RUNTIME_DIRECTORY /bin ${PLUGIN_NAME})
 ENDIF(WIN32)
 
+ENDIF(BUILD_API_EXAMPLES)
