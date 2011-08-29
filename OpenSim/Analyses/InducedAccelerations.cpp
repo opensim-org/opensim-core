@@ -38,7 +38,7 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/PrescribedForce.h>
+#include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/RollingOnSurfaceConstraint.h>
 #include "InducedAccelerations.h"
@@ -841,9 +841,9 @@ void InducedAccelerations::initialize(const SimTK::State& s)
 	}
 
 	// Create a set of constraints used to model contact with the ground
-	// based on external forces (PrescribedForces) applied to the model
+	// based on external forces (ExternalForces) applied to the model
 	for(int i=0; i < _model->getForceSet().getSize(); i++){
-		PrescribedForce *exf = dynamic_cast<PrescribedForce *>(&_model->getForceSet().get(i));
+		ExternalForce *exf = dynamic_cast<ExternalForce *>(&_model->getForceSet().get(i));
 		if(exf){
 			addContactConstraintFromExternalForce(exf);
 			exf->setDisabled(s_copy, true);
@@ -972,7 +972,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 }
 
 
-void InducedAccelerations::addContactConstraintFromExternalForce(PrescribedForce *externalForce)
+void InducedAccelerations::addContactConstraintFromExternalForce(ExternalForce *externalForce)
 {
 	_externalForces.append(externalForce);
 }
@@ -983,7 +983,7 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
 	double t = s.getTime();
 
 	for(int i=0; i<_externalForces.getSize(); i++){
-		PrescribedForce *exf = _externalForces[i];
+		ExternalForce *exf = _externalForces[i];
 		SimTK::Vec3 point, force, gpoint;
 
 		force = exf->getForceAtTime(t);
