@@ -112,7 +112,7 @@ int main(int argc, char **argv)
 
 		// Define the initial and final simulation times
 		double initialTime = 0.0;
-		double finalTime = 0.6;
+		double finalTime = 4.0;
 
 		/////////////////////////////////////////////
 		// DEFINE CONSTRAINTS IMPOSED ON THE MODEL //
@@ -258,6 +258,10 @@ int main(int argc, char **argv)
 
 		// Compute initial conditions for muscles
 		osimModel.computeEquilibriumForAuxiliaryStates(si);
+
+		//osimModel.updMultibodySystem().updMatterSubsystem().setShowDefaultGeometry(false);
+		//Visualizer viz(osimModel.getMultibodySystem());
+		//osimModel.updMultibodySystem().addEventReporter(new Visualizer::Reporter(viz, 0.1));
 
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator
