@@ -483,7 +483,9 @@ bool AnalyzeTool::run(bool plotting)
 		cout<<endl<<msg<<endl;
 		throw(Exception(msg,__FILE__,__LINE__));
 	}
-    bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
+
+	// Use the Dynamics Tool API to handle external loads instead of outdated AbstractTool
+	bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
 //printf("\nbefore AnalyzeTool.run() initSystem \n");
 	// Call initSystem except when plotting
@@ -511,11 +513,6 @@ bool AnalyzeTool::run(bool plotting)
 
 	// SET OUTPUT PRECISION
 	IO::SetPrecision(_outputPrecision);
-
-	// External Loads
-	if( externalLoads ) {
-	    initializeExternalLoads(s, _ti, _tf);
-     }
 
 	// ANALYSIS SET
 	AnalysisSet& analysisSet = _model->updAnalysisSet();

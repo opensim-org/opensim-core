@@ -562,107 +562,92 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 }
 
 
-bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName,
-                                        Model& aModel) {
-
+bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Model& aModel, const Storage *loadKinematics)
+{
     if(aExternalLoadsFileName==""||aExternalLoadsFileName=="Unassigned") {
         cout<<"No external loads will be applied (external loads file not specified)."<<endl;
         return false;
     }
 
-
-	// CREATE FORCE AND TORQUE APPLIERS
-	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
-	_externalLoads.setup(aModel);
+	// This is required so that the references to other files inside ExternalLoads file are interpretted 
+	// as relative paths
+	std::string savedCwd = IO::getCwd();
+	IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
+	// Create external forces
+	try {
+		_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+	}
+	 catch (const Exception &ex) {
+		// Important to catch exceptions here so we can restore current working directory...
+		// And then we can rethrow the exception
+		 cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
+			 << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
+		if(_document) IO::chDir(savedCwd);
+		throw(ex);
+	}
 	_externalLoads.setMemoryOwner(false);
-	for (int i=0; i<_externalLoads.getSize(); i++){
-		aModel.updForceSet().append(&_externalLoads.get(i)); // Call this instead of addForce to avoid calling setup repeatedly
+	_externalLoads.setup(aModel);
+
+	string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
+	
+	const Storage *loadKinematicsForPointTransformation = NULL;
+	
+	//If the the Tool is already loading the storage allow it to pass it in for use rather than reloading and processing
+	if(loadKinematics && loadKinematics->getName() == loadKinematicsFileName){
+		loadKinematicsForPointTransformation = loadKinematics;
 	}
-
-    return(true);
-
-}
-
-void AbstractTool::
-initializeExternalLoads( SimTK::State& s, 
-                         const double& analysisStartTime, 
-                         const double& analysisFinalTime
-						 )
-{
-	const string &aExternalLoadsFileName=_externalLoadsFileName;
-	const string &aExternalLoadsModelKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
-	double aLowpassCutoffFrequencyForLoadKinematics=_externalLoads.getLowpassCutoffFrequencyForLoadKinematics();
-	bool externalLoadKinematicsSpecified = (aExternalLoadsModelKinematicsFileName!="");
-	//const Model& aModel = _externalLoads.getModel();
-	Storage *qStore=NULL;
-	Storage *uStore=NULL;
-	if (externalLoadKinematicsSpecified){
-		cout<<"\n\nLoading external loads kinematics from file "<<aExternalLoadsModelKinematicsFileName<<" ...\n";
-		Storage loadsKinStore(aExternalLoadsModelKinematicsFileName);
-
-		// Form complete storage objects for the q's and u's
-		// This means filling in unspecified generalized coordinates and
-		// setting constrained coordinates to their valid values.
-		Storage *uStoreTmp=NULL;
-		_model->getSimbodyEngine().formCompleteStorages(s, loadsKinStore,qStore,uStoreTmp);
-		_model->getSimbodyEngine().convertDegreesToRadians(*qStore);
-		// Filter
-		qStore->pad(qStore->getSize()/2); 
-		if(aLowpassCutoffFrequencyForLoadKinematics>=0) {
-			int order = 50;
-			cout<<"Low-pass filtering external load kinematics with a cutoff frequency of "
-				<<aLowpassCutoffFrequencyForLoadKinematics<<"..."<<endl;
-			qStore->lowpassFIR(order, aLowpassCutoffFrequencyForLoadKinematics);
-		} else {
-			cout<<"Note- not filtering the external loads model kinematics."<<endl;
+	else{
+		IO::TrimLeadingWhitespace(loadKinematicsFileName);
+		Storage *temp = NULL;
+		// fine if there are no kinematics as long as it was not assigned
+		if(!(loadKinematicsFileName == "") && !(loadKinematicsFileName == "Unassigned")){
+			temp = new Storage(loadKinematicsFileName);
+			if(!temp){
+				IO::chDir(savedCwd);
+				throw Exception("DynamicsTool: could not find external loads kinematics file '"+loadKinematicsFileName+"'."); 
+			}
 		}
-		// Spline
-		GCVSplineSet qSet(3,qStore);
-		uStore = qSet.constructStorage(1);
-	}
-	// LOAD COP, FORCE, AND TORQUE
-	Storage kineticsStore(_externalLoads.getDataFileName());
-
-	int copSize = kineticsStore.getSize();
-	if(copSize<=0) return;
-	// Make sure we have data for the requested range
-	if (kineticsStore.getFirstTime() > analysisStartTime || 
-		kineticsStore.getLastTime() < analysisFinalTime){
-		char durationString[100];
-		sprintf(durationString, "from t=%lf to t=%lf", analysisStartTime, analysisFinalTime);
-		string msg = "ERR- Requested simulation time  extends outside provided data." + string(durationString);
-		throw Exception(msg,__FILE__,__LINE__);
+		// if loading the data, do whatever filtering operations are also specified
+		if(temp && _externalLoads.getLowpassCutoffFrequencyForLoadKinematics() >= 0) {
+			cout<<"\n\nLow-pass filtering coordinates data with a cutoff frequency of "<<_externalLoads.getLowpassCutoffFrequencyForLoadKinematics()<<"."<<endl;
+			temp->pad(temp->getSize()/2);
+			temp->lowpassIIR(_externalLoads.getLowpassCutoffFrequencyForLoadKinematics());
+		}
+		loadKinematicsForPointTransformation = temp;
 	}
 	
-	/* Due to earlier resampling and in general analysisStartTime, analysisFinalTime may not coincide with actual
-	 * rows in qStore, in this case we need to evaluate the ForceApplier and TorqueApplier outside 
-	 * analysis[start, final]time up to the time of the row before analysisStartTime, and the row after analysisFinalTime.
-	 * Adjust analysisStartTime, analysisFinalTime to qStartTime, qFinalTime to account for that */
-	if (externalLoadKinematicsSpecified){
-		int startIndex = qStore->findIndex(analysisStartTime);
-		double qStartTime, qFinalTime;
-		qStore->getTime(startIndex, qStartTime);
-		int finalIndex = qStore->findIndex(analysisFinalTime);
-		qStore->getTime(finalIndex, qFinalTime);
-		Array<double> analysisBoundTimes;
-		if (qStartTime < analysisStartTime && startIndex >=1){
-			analysisBoundTimes.append(analysisStartTime);
-			//qStore->getTime(startIndex-1, qStartTime); 
-			qStartTime = analysisStartTime;
+	// if load kinematics for performing re-expressing the point of application is provided
+	// then perform the transformations
+	if(loadKinematicsForPointTransformation){
+		SimTK::State& s = aModel.initSystem();
+		
+		// Form complete storage so that the kinematics match the state labels/ordering
+		Storage *qStore=NULL;
+		Storage *uStore=NULL;
+		aModel.getSimbodyEngine().formCompleteStorages(s, *loadKinematicsForPointTransformation,qStore,uStore);
+		// qStore should be in radians
+		if (qStore->isInDegrees()){
+			aModel.getSimbodyEngine().convertDegreesToRadians(*qStore);
 		}
-		if (qFinalTime < analysisFinalTime && finalIndex < qStore->getSize()-1){
-			analysisBoundTimes.append(analysisFinalTime);
-			//qStore->getTime(finalIndex+1, qFinalTime); 
-			qFinalTime = analysisFinalTime;
-		}
-		qStore->interpolateAt(analysisBoundTimes);
-	}
-	// transform point of application expressed in ground to the body the force is being applied to.
-	// This is intended to improve the ability of CMC, RRA, etc...  to track experimental data
-	if (externalLoadKinematicsSpecified)
-	_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, analysisStartTime, analysisFinalTime);
+		_externalLoads.transformPointsExpressedInGroundToAppliedBodies(*qStore, _ti, _tf);
+		delete qStore;
+		delete uStore;
 
+		aModel.invalidateSystem();
+	}
+	
+	// Add external loads to the set of all model forces
+	for(int i=0; i<_externalLoads.getSize(); ++i){
+		aModel.updForceSet().append(_externalLoads[i]);
+	}
+
+	if(!loadKinematics)
+		delete loadKinematics;
+
+	IO::chDir(savedCwd);
+    return(true);
 }
+
 
 //_____________________________________________________________________________
 /**

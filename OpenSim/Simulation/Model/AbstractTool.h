@@ -378,14 +378,8 @@ public:
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
-                                     Model& aModel);
+                                     Model& aModel, const Storage *loadKinematics=NULL);
 
-#ifndef SWIG
-        void initializeExternalLoads( SimTK::State& s, 
-                                      const double& analysisStartTime,
-                                      const double& analysisFinalTime);
-
-#endif
 virtual void updateFromXMLNode();
 virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;
 //=============================================================================

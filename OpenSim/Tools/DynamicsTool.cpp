@@ -239,7 +239,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	IO::chDir(IO::getParentDirectory(aExternalLoadsFileName));
 	// Create external forces
 	try {
-	_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
+		_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
 	}
 	 catch (const Exception &ex) {
 		// Important to catch exceptions here so we can restore current working directory...

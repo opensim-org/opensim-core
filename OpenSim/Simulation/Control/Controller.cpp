@@ -154,7 +154,7 @@ setupProperties()
     _actuatorNameListProp.setName("actuator_list");
     _propertySet.append(&_actuatorNameListProp);
 
-    comment = "Flag (true or false) indicating whether or not the controller is enabled (ON) should ";
+    comment = "Flag (true or false) indicating whether or not the controller is active or not.";
     _isControllerEnabledProp.setComment(comment);
     _isControllerEnabledProp.setName("enable_controller");
     _propertySet.append( &_isControllerEnabledProp );

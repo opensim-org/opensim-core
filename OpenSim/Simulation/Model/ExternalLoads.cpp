@@ -273,19 +273,23 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 		return NULL;
 	}
 
-
 	int nq = _model->getNumCoordinates();
 	int nt = kinematics.getSize();
 
 	int startIndex=0;
 	int lastIndex=nt-1;
+	int findex =0;
 
 	if (nt > 0){
 		if (startTime!= -SimTK::Infinity){	// Start time was actually specified.
-			startIndex = kinematics.findIndex(startTime); 
+			// since splining relevant data, make sure we don't truncate user specified time by starting one index back
+			findex = kinematics.findIndex(startTime)-1; 
+			startIndex = findex >= 0 ? findex : 0;
 		}
-		if (endTime!= SimTK::Infinity){	// Start time was actually specified.
-			lastIndex = kinematics.findIndex(endTime);
+		if (endTime!= SimTK::Infinity){	// Final time was actually specified.
+			// don't truncate user specified time range by ending one index later
+			findex = kinematics.findIndex(endTime) + 1;
+			lastIndex = findex <= lastIndex ? findex : lastIndex;
 		}
 	}
 	else{
