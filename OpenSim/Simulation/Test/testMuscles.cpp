@@ -53,7 +53,7 @@ using namespace std;
 //==========================================================================================================
 static const double accuracy = 1e-5;
 
-void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double load, Function &control, const double accuracy);
+void simulateMuscle(PathActuator &aMuscle, double startX, double act0, const Function &motion, const Function &control, const double accuracy);
 void testPathActuator();
 void testRigidTendonMuscle();
 void testThelen2003Muscle();
@@ -93,7 +93,7 @@ int main()
 //==========================================================================================================
 // Main test driver to be used on any muscle model (derived from Muscle) so new cases should be easy to add
 //==========================================================================================================
-void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double load, Function &control, const double accuracy)
+void simulateMuscle(PathActuator &aMuscle, double startX, double act0, const Function &motion, const Function &control, const double accuracy)
 {
 	using SimTK::Vec3;
 
@@ -123,9 +123,11 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 	jointCoordinateSet[0].setName("tx");
 	jointCoordinateSet[0].setDefaultValue(1.0);
 	jointCoordinateSet[0].setRangeMin(0); jointCoordinateSet[0].setRangeMax(1.0);
+	jointCoordinateSet[0].setPrescribedFunction(motion);
 	// add ball to model
 	model.addBody(&ball);
 
+	/*
 	// Create a load function
 	Constant loadX(load);
 	Constant loadY(0);
@@ -137,6 +139,7 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 	// By default force is applied at CoM if point not specified
 	forceOnBall.setForceFunctions(&loadX, &loadY, &loadZ);
 	model.addForce(&forceOnBall);
+	*/
 
 	//Attach the muscle
 	const string &actuatorType = aMuscle.getType();
@@ -181,6 +184,7 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 	ASSERT_EQUAL(trueLength, length, 0.01*accuracy);
 
 	// Define visualizer
+	//model.updMultibodySystem().updMatterSubsystem().setShowDefaultGeometry(true);
 	//SimTK::Visualizer viz(model.getMultibodySystem());
 	//model.getMultibodySystem().addEventReporter(new SimTK::Visualizer::Reporter(viz, 0.02));
 
@@ -227,7 +231,9 @@ void testThelen2003Muscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, motion, control, accuracy);
 }
 
 /*
@@ -263,7 +269,9 @@ void testSchutte1993Muscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, motion, control, accuracy);
 }
 
 
@@ -282,7 +290,9 @@ void testDelp1990Muscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, motion, control, accuracy);
 }
 
 void testPathActuator()
@@ -297,7 +307,9 @@ void testPathActuator()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, motion, control, accuracy);
 }
 
 
@@ -313,5 +325,7 @@ void testRigidTendonMuscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, motion, control, accuracy);
 }

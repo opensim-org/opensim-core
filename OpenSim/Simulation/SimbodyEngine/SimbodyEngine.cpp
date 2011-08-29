@@ -936,7 +936,7 @@ formCompleteStorages( const SimTK::State& s, const OpenSim::Storage &aQIn,
 	Array<double> data(0.0);
 	Array<double> q(0.0,nq);
 	Storage *qStore = new Storage();
-	qStore->setInDegrees(true);
+	qStore->setInDegrees(aQIn.isInDegrees());
 	qStore->setName("GeneralizedCoordinates");
 	qStore->setColumnLabels(columnLabels);
 	int size = aQIn.getSize();

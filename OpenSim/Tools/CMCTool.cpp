@@ -572,11 +572,6 @@ bool CMCTool::run()
 		_model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 	}
 
-	// GROUND REACTION FORCES
-    if( externalLoads ) {
-	   initializeExternalLoads(s, _ti, _tf);
-    }
-
 	// Spline
 	GCVSplineSet *posSet=NULL;
 	if(desiredPointsFlag) {
