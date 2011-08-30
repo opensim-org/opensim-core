@@ -2981,6 +2981,12 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 			bool inDegrees = (lower=="yes" || lower=="y");
 			setInDegrees(inDegrees);
 		}
+		else if (key=="Angles" && _fileVersion==0){
+			if (line == "Angles are in degrees.")
+				setInDegrees(true);
+			else if (line == "Angles are in radians.")
+				setInDegrees(false);
+		}
 		else if(key== DEFAULT_HEADER_TOKEN){				
 			break;			
 		}
