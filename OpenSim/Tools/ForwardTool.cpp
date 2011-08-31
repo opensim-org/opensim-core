@@ -287,12 +287,6 @@ bool ForwardTool::run()
 	// INITIAL AND FINAL TIMES AND STATES INDEX
 	int startIndexForYStore = determineInitialTimeFromStatesStorage(_ti);
 
-
-    if( externalLoads ) {
-	    initializeExternalLoads( s, _ti, _tf);
-     }
-
-
 	// SETUP SIMULATION
 	// Manager (now allocated on the heap so that getManager doesn't return stale pointer on stack
     RungeKuttaMersonIntegrator integrator(_model->getMultibodySystem());

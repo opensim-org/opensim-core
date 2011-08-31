@@ -655,6 +655,7 @@ int testExternalForce()
 	// set the starting location of the tower to be offset as to counter-balance the torque
 	// point is 0.1, by moving fwd to 0.3, force has -0.2m moment-arm to generate -2Nm
 	freeCoords[3].setValue(s2, 0.3);
+	model.setDefaultsFromState(s2);
 
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
 	integrator2.setAccuracy(accuracy);
@@ -691,6 +692,7 @@ int testExternalForce()
 
 	// only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
 	freeCoords[3].setValue(s3, 0.4); // yield -3Nm for force only
+	model.setDefaultsFromState(s3);
 
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
 	integrator3.setAccuracy(accuracy);
@@ -736,6 +738,7 @@ int testExternalForce()
 
 	// only xf4 is should be affected and set it to offset Tz+px*Fy = 2+0.1*10 = 3.
 	freeCoords[3].setValue(s4, 0);
+	model.setDefaultsFromState(s4);
 
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
 	integrator4.setAccuracy(accuracy);

@@ -566,11 +566,6 @@ bool RRATool::run()
 		_model->getSimbodyEngine().convertDegreesToRadians(*uStore);
 	}
 
-	// GROUND REACTION FORCES
-    if( externalLoads ) {
-	   initializeExternalLoads(s, _ti, _tf);
-    }
-
 	// Adjust COM to reduce residuals (formerly RRA pass 1) if requested
 	if(desiredKinFlag) {
 		if(_adjustCOMToReduceResiduals) {

@@ -486,10 +486,8 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 	}
 
 	if (!_locked) {
-		_defaultValue = getValue(s);
-
 		//Update the value that the coordinate is locked at.
-		dynamic_cast<ModifiableConstant<Real>*>(_lockFunction)->setValue(_defaultValue);
+		dynamic_cast<ModifiableConstant<Real>*>(_lockFunction)->setValue(aValue);
 	}
 
 	return true;
@@ -504,7 +502,6 @@ double Coordinate::getSpeedValue(const SimTK::State& s) const
 bool Coordinate::setSpeedValue(SimTK::State& s, double aValue) const
 {
 	_model->updMatterSubsystem().getMobilizedBody(_bodyIndex).setOneU(s,_mobilityIndex,aValue);
-	_defaultSpeedValue = aValue;
 
 	return true;
 }

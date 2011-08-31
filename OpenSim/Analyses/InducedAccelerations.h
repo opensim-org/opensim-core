@@ -68,7 +68,7 @@ class Model;
 class BodySet;
 class CoordinateSet;
 class ConstraintSet;
-class PrescribedForce;
+class ExternalForce;
 
 class OSIMANALYSES_API InducedAccelerations : public Analysis 
 {
@@ -124,7 +124,7 @@ protected:
 	Array<double> _constraintReactions;
 
 	// Array to hold external forces (appliers) we want to replace
-	Array<PrescribedForce *> _externalForces;
+	Array<ExternalForce *> _externalForces;
 
 	// Hold the actual model gravity since we will be changing it back and forth from 0
 	SimTK::Vec3 _gravity;
@@ -214,7 +214,7 @@ public:
 		double aDT=-1.0,const std::string &aExtension=".sto");
 
 
-	void addContactConstraintFromExternalForce(PrescribedForce *externalForce);
+	void addContactConstraintFromExternalForce(ExternalForce *externalForce);
 	Array<bool> applyContactConstraintAccordingToExternalForces(SimTK::State &s);
 
 protected:
