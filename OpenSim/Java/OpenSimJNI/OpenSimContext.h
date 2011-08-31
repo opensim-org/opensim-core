@@ -103,9 +103,11 @@ public:
 	bool isDisabled(const Constraint& constraint) const {
 		return  constraint.isDisabled(*_configState);
 	}
-	void setDisabled(Constraint& constraint, bool disable) const {
+	void setDisabled(Constraint& constraint, bool disable) {
 		constraint.setDisabled(*_configState, disable);
-		_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+		_model->setDefaultsFromState(*_configState);
+		SimTK::State* newState = &_model->initSystem();
+		setState(newState);
 	}
 	// Forces
 	bool isDisabled(const Force& force) const {
