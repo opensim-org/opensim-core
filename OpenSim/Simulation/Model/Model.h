@@ -304,7 +304,8 @@ public:
 	 */
 	void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
     void formQStorage(const Storage& originalStorage, Storage& qStorage);
-
+	
+	void clearAssemblySolver() ;
    /**
      * Find the kinematic state of the model that satisfies constraints and coordinate goals
 	 * If assemble is being called due to a coordinate set value, provide the option
@@ -358,6 +359,7 @@ private:
 	 */
 	void validateMassProperties(bool fixMassProperties=true);
 
+	void createAssemblySolver(const SimTK::State& s);
 public:
 	//--------------------------------------------------------------------------
 	// CREATE THE MULTIBODY SYSTEM
@@ -675,8 +677,6 @@ public:
     virtual void writeMarkerFile(const std::string& aFileName) const;
     virtual void updateMarkerSet(MarkerSet& aMarkerSet);
     virtual int deleteUnusedMarkers(const Array<std::string>& aMarkerNames);
-
-
  
 	/**
 	 * Add an analysis to the model.

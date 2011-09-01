@@ -105,9 +105,7 @@ public:
 	}
 	void setDisabled(Constraint& constraint, bool disable) {
 		constraint.setDisabled(*_configState, disable);
-		_model->setDefaultsFromState(*_configState);
-		SimTK::State* newState = &_model->initSystem();
-		setState(newState);
+		_model->assemble(*_configState);
 	}
 	// Forces
 	bool isDisabled(const Force& force) const {
