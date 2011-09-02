@@ -305,7 +305,10 @@ public:
 	void formStateStorage(const Storage& originalStorage, Storage& statesStorage);
     void formQStorage(const Storage& originalStorage, Storage& qStorage);
 	
-	void clearAssemblySolver() ;
+	/**
+	 * Update the AssemblySolver to the latest coordinate locking/constraints
+	 */
+	void updateAssemblyConditions(SimTK::State& s);
    /**
      * Find the kinematic state of the model that satisfies constraints and coordinate goals
 	 * If assemble is being called due to a coordinate set value, provide the option

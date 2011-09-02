@@ -1279,11 +1279,6 @@ void Model::applyDefaultConfiguration(SimTK::State& s)
 	assemble(s);
 }
 
-void Model::clearAssemblySolver() { 
-	delete _assemblySolver; 
-	_assemblySolver = NULL; 
-};
-
 //_____________________________________________________________________________
 /**
  * createAssemblySolver anew, old solver is deleted first. This should be invoked whenever changes in locks and/or constraint status
@@ -1310,6 +1305,11 @@ void Model::createAssemblySolver(const SimTK::State& s)
 	_assemblySolver->setConstraintWeight(50.0);
 }
 
+void Model::updateAssemblyConditions(SimTK::State& s)
+{
+	createAssemblySolver(s);
+	
+}
 //--------------------------------------------------------------------------
 // MARKERS
 //--------------------------------------------------------------------------
