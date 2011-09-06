@@ -81,7 +81,8 @@ InverseKinematicsTool::InverseKinematicsTool() : Tool(),
 	_coordinateFileName(_coordinateFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_reportErrors(_reportErrorsProp.getValueBool()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr())
+	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
+	_reportMarkerLocations(_reportMarkerLocationsProp.getValueBool())
 {
 	setType("InverseKinematicsTool");
 	setNull();
@@ -106,7 +107,8 @@ InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoad
 	_coordinateFileName(_coordinateFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_reportErrors(_reportErrorsProp.getValueBool()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr())
+	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
+	_reportMarkerLocations(_reportMarkerLocationsProp.getValueBool())
 {
 	setType("InverseKinematicsTool");
 	setNull();
@@ -134,7 +136,8 @@ InverseKinematicsTool::InverseKinematicsTool(const InverseKinematicsTool &aTool)
 	_coordinateFileName(_coordinateFileNameProp.getValueStr()),
 	_timeRange(_timeRangeProp.getValueDblArray()),
 	_reportErrors(_reportErrorsProp.getValueBool()),
-	_outputMotionFileName(_outputMotionFileNameProp.getValueStr())
+	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
+	_reportMarkerLocations(_reportMarkerLocationsProp.getValueBool())
 {
 	setType("InverseKinematicsTool");
 	setNull();
@@ -203,7 +206,7 @@ void InverseKinematicsTool::setupProperties()
 	_propertySet.append(&_timeRangeProp);
 
 	_reportErrorsProp.setComment("Flag (true or false) indicating whether or not to report marker "
-		"and coordinate errors from the inverse kinematics solution.");
+		"errors from the inverse kinematics solution.");
 	_reportErrorsProp.setName("report_errors");
 	_reportErrorsProp.setValue(true);
 	_propertySet.append(&_reportErrorsProp);
@@ -211,6 +214,11 @@ void InverseKinematicsTool::setupProperties()
 	_outputMotionFileNameProp.setComment("Name of the motion file (.mot) to which the results should be written.");
 	_outputMotionFileNameProp.setName("output_motion_file");
 	_propertySet.append(&_outputMotionFileNameProp);
+
+	_reportMarkerLocationsProp.setComment("Flag indicating whether or not to report model marker locations in ground.");
+	_reportMarkerLocationsProp.setName("report_marker_locations");
+	_reportMarkerLocationsProp.setValue(false);
+	_propertySet.append(&_reportMarkerLocationsProp);
 
 }
 
@@ -248,6 +256,7 @@ operator=(const InverseKinematicsTool &aTool)
 	_coordinateFileName = aTool._coordinateFileName;
 	_reportErrors = aTool._reportErrors;
 	_outputMotionFileName = aTool._outputMotionFileName;
+	_reportMarkerLocations = aTool._reportMarkerLocations;
 
 	return(*this);
 }
@@ -276,6 +285,13 @@ bool InverseKinematicsTool::run()
 			modelFromFile = false;
 
 		_model->printBasicInfo(cout);
+
+
+		// Do the maneuver to change then restore working directory 
+		// so that the parsing code behaves properly if called from a different directory.
+		string saveWorkingDirectory = IO::getCwd();
+		string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
+		IO::chDir(directoryOfSetupFile);
 
 		// Define reporter for output
 		Kinematics kinematicsReporter(_model);
@@ -350,7 +366,7 @@ bool InverseKinematicsTool::run()
 		const SimTK::Array_<std::string>& markerNames =  markersReference.getNames();
 
 		// Determine the start time, if the provided time range is not specified then use time from marker reference
-		// also adjust the time range for the tool if the provided range exceed that of the marker data
+		// also adjust the time range for the tool if the provided range exceeds that of the marker data
 		SimTK::Vec2 markersValidTimRange = markersReference.getValidTimeRange();
 		double start_time = (markersValidTimRange[0] > _timeRange[0]) ? markersValidTimRange[0] : _timeRange[0];
 		double final_time = (markersValidTimRange[1] < _timeRange[1]) ? markersValidTimRange[1] : _timeRange[1];
@@ -370,7 +386,10 @@ bool InverseKinematicsTool::run()
 		// number of markers
 		int nm = markerWeights.getSize();
 		SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
+		SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
 		
+		Storage *modelMarkerLocations = _reportMarkerLocations ? new Storage(Nframes, "ModelMarkerLocations") : NULL;
+
 		for (int i = 1; i < Nframes; i++) {
 			s.updTime() = start_time + i*dt;
 			ikSolver.track(s);
@@ -392,9 +411,20 @@ bool InverseKinematicsTool::run()
 				cout << "total squared error = " << totalSquaredMarkerError;
 				cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
 				cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << markerNames[worst] << ")" << endl;
-
-				 
 			}
+
+			if(_reportMarkerLocations){
+				ikSolver.computeCurrentMarkerLocations(markerLocations);
+				Array<double> locations(0.0, 3*nm);
+				for(int j=0; j<nm; ++j){
+					for(int k=0; k<3; ++k)
+						locations.set(3*j+k, markerLocations[j][k]);
+				}
+
+				modelMarkerLocations->append(s.getTime(), 3*nm, &locations[0]);
+
+			}
+
 			kinematicsReporter.step(s, i);
 			analysisSet.step(s, i);
 		}
@@ -402,19 +432,37 @@ bool InverseKinematicsTool::run()
 		// Do the maneuver to change then restore working directory 
 		// so that output files are saved to same folder as setup file.
 		if (_outputMotionFileName!= "" && _outputMotionFileName!="Unassigned"){
-		string saveWorkingDirectory = IO::getCwd();
-		if (_document)	// When the tool is created live from GUI it has no file/document association
-			IO::chDir(IO::getParentDirectory(getDocumentFileName()));
-		kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
-		IO::chDir(saveWorkingDirectory);
+			kinematicsReporter.getPositionStorage()->print(_outputMotionFileName);
 		}
+
+		if(modelMarkerLocations){
+			Array<string> labels("", 3*nm+1);
+			labels[0] = "time";
+			Array<string> XYZ("", 3*nm);
+			XYZ[0] = "_tx"; XYZ[1] = "_ty"; XYZ[2] = "_tz";
+
+			for(int j=0; j<nm; ++j){
+				for(int k=0; k<3; ++k)
+					labels.set(3*j+k+1, markerNames[j]+XYZ[k]);
+			}
+			modelMarkerLocations->setColumnLabels(labels);
+			modelMarkerLocations->setName("Model Marker Locations from IK");
+	
+			IO::makeDir(getResultsDir());
+			Storage::printResult(modelMarkerLocations, "ik_model_marker_locations", getResultsDir(), -1, ".sto");
+
+			delete modelMarkerLocations;
+		}
+
+		IO::chDir(saveWorkingDirectory);
+
 		success = true;
 
-		cout << "InverseKinematicsTool: " << Nframes-1 << " frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
+		cout << "InverseKinematicsTool completed " << Nframes-1 << " frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
 	}
 	catch (std::exception ex) {
 		std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
-		throw (Exception("InverseDynamicsTool Failed, please see messages window for details..."));
+		throw (Exception("InverseKinematicsTool Failed, please see messages window for details..."));
 	}
 
 	if (modelFromFile) delete _model;
@@ -461,7 +509,7 @@ void InverseKinematicsTool::updateFromXMLNode()
 				iter->insertNodeAfter( iter->node_end(), Xml::Comment(_constraintWeightProp.getComment()));
 				iter->insertNodeAfter( iter->node_end(), Xml::Element("constraint_weight", "20.0"));
 				iter->insertNodeAfter( iter->node_end(), Xml::Comment(_accuracyProp.getComment()));
-				iter->insertNodeAfter( iter->node_end(), Xml::Element("accuracy", "1e-5"));
+				iter->insertNodeAfter( iter->node_end(), Xml::Element("accuracy", "1e-4"));
 				// erase node for IKTrialSet
 				iter->eraseNode(toolIter);	
 				Xml::Document newDocument;
