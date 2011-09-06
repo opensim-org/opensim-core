@@ -1,6 +1,6 @@
 // testIK.cpp
-// Author: Ayman Habib based on Peter Loan's version
-/* Copyright (c)  2005, Stanford University and Peter Loan.
+// Author: Ayman Habib, Ajay Seth, Cassidy Kelly
+/* Copyright (c)  2011, Stanford University and Peter Loan.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -43,7 +43,7 @@ int main()
 		InverseKinematicsTool ik1("subject01_Setup_InverseKinematics.xml");
 		ik1.run();
 		Storage result1(ik1.getOutputMotionFileName()), standard("std_subject01_walk1_ik.mot");
-		result1.checkAgainstStandard(standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
+		result1.checkAgainstStandard(standard, Array<double>(0.1, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 failed");
 		cout << "testInverseKinematicsGait2354 passed" << endl;
 
 		InverseKinematicsTool ik2("subject01_Setup_InverseKinematics_NoModel.xml");
@@ -52,13 +52,13 @@ int main()
 		ik2.setModel(mdl);
 		ik2.run();
 		Storage result2(ik2.getOutputMotionFileName());
-		result2.checkAgainstStandard(standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
+		result2.checkAgainstStandard(standard, Array<double>(0.1, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
 		cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
 
 		InverseKinematicsTool ik3("subjectOld_Setup_InverseKinematics.xml");
 		ik3.run();
 		Storage result3(ik3.getOutputMotionFileName());
-		result3.checkAgainstStandard(standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 Old setup failed");
+		result3.checkAgainstStandard(standard, Array<double>(0.1, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 Old setup failed");
 		cout << "testInverseKinematicsGait2354 Old setup passed" << endl;
 
 		InverseKinematicsTool ik4("uwdynamic_setup_ik.xml");
