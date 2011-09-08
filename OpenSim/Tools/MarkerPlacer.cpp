@@ -342,7 +342,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 			worst = j;
 		}
 	}
-	cout << "Frame " << i << " (t=" << s.getTime() << "):\t";
+	cout << "Frame at (t=" << s.getTime() << "):\t";
 	cout << "total squared error = " << totalSquaredMarkerError;
 	cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
 	cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << markerWeightSet[worst].getName() << ")" << endl;
