@@ -101,13 +101,17 @@ private:
 	PropertyDblArray _timeRangeProp;
 	Array<double> &_timeRange;
 
-	// flag if inverse kinematics should report errors for tasks
+	// flag if inverse kinematics should report marker errors
 	PropertyBool _reportErrorsProp;
 	bool &_reportErrors;
 
-	// name of motion file (containing solved static pose) when done placing markers
+	// name of motion file with inverse kinematics solution
 	PropertyStr _outputMotionFileNameProp;
 	std::string &_outputMotionFileName;
+
+	// flag indicating whether or not to resulting marker locations
+	PropertyBool _reportMarkerLocationsProp;
+	bool &_reportMarkerLocations;
 
 //=============================================================================
 // METHODS

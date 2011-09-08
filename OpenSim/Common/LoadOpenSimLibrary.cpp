@@ -160,7 +160,7 @@ OSIMCOMMON_API void
 OpenSim::LoadOpenSimLibraries(int argc,char **argv)
 {
 	int i;
-	string option,value;
+	string option;
 	OPENSIM_PORTABLE_HINSTANCE library;
 	for(i=0;i<argc;i++) {
 		if(argv[i][0]!='-') continue;
@@ -170,7 +170,7 @@ OpenSim::LoadOpenSimLibraries(int argc,char **argv)
 			string libraryName = argv[i+1];
 			library = LoadOpenSimLibrary(libraryName.c_str(), true);
 			if(library==NULL) {
-				cout<<"ERROR- library "<<value<<" could not be loaded.\n\n";
+				cout<<"ERROR- library "<<libraryName<<" could not be loaded.\n" << endl;
 			} else {
 				i++;
 			}

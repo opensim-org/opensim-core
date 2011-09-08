@@ -13,7 +13,7 @@
             <IKTrial name="first trial">
                 <!--TRC file (.trc) containing the time history of experimental marker
 				    positions.-->
-                <marker_file>subject01_walk1.trc</marker_file>
+                <marker_file>subject01_synthetic_marker_data.trc</marker_file>
                 <!--Name of file containing the joint angles used to set the initial
 				    configuration of the model for the purpose of placing the markers.
 				    These coordinate values can also be included in the optimization
@@ -33,7 +33,7 @@
 				    is used to solve the IK problem.-->
                 <coordinate_file>subject01_walk1.mot</coordinate_file>
                 <!--Time range over which the IK problem is solved.-->
-                <time_range>0.0 0.02</time_range>
+                <time_range>0.4 1.6 </time_range>
                 <!--Name of the motion file (.mot) to which the results should be written.-->
                 <output_motion_file>subject01_walk1_ik.mot</output_motion_file>
             </IKTrial>

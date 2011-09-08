@@ -13,35 +13,35 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>       0.50000000 </weight>
+			<weight>       0.750000000 </weight>
 		</IKMarkerTask>
 		<IKMarkerTask name="L.Acromium">
 			<!--Whether or not this task will be used during inverse kinematics solve.-->
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>       0.50000000 </weight>
+			<weight>       0.750000000 </weight>
 		</IKMarkerTask>
 		<IKMarkerTask name="Top.Head">
 			<!--Whether or not this task will be used during inverse kinematics solve.-->
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>       0.10000000 </weight>
+			<weight>       0.50000000 </weight>
 		</IKMarkerTask>
 		<IKMarkerTask name="R.ASIS">
 			<!--Whether or not this task will be used during inverse kinematics solve.-->
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>      10.00000000 </weight>
+			<weight>      2.00000000 </weight>
 		</IKMarkerTask>
 		<IKMarkerTask name="L.ASIS">
 			<!--Whether or not this task will be used during inverse kinematics solve.-->
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>      10.00000000 </weight>
+			<weight>      2.00000000 </weight>
 		</IKMarkerTask>
 		<IKMarkerTask name="V.Sacral">
 			<!--Whether or not this task will be used during inverse kinematics solve.-->
@@ -97,7 +97,7 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>      10.00000000 </weight>
+			<weight>      2.00000000 </weight>
 		</IKMarkerTask>
 		<IKMarkerTask name="R.Midfoot.Sup">
 			<!--Whether or not this task will be used during inverse kinematics solve.-->
@@ -181,7 +181,7 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>      10.00000000 </weight>
+			<weight>      2.00000000 </weight>
 		</IKMarkerTask>
 		<IKMarkerTask name="L.Midfoot.Sup">
 			<!--Whether or not this task will be used during inverse kinematics solve.-->
@@ -223,7 +223,7 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>    1000.00000000 </weight>
+			<weight>    10.00000000 </weight>
 			<!--Indicates the source of the coordinate value for this task.  Possible
 			    values are default_value (use default value of coordinate, as
 			    specified in the model file, as the fixed target value), manual_value
@@ -240,7 +240,7 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>    1000.00000000 </weight>
+			<weight>    10.00000000 </weight>
 			<!--Indicates the source of the coordinate value for this task.  Possible
 			    values are default_value (use default value of coordinate, as
 			    specified in the model file, as the fixed target value), manual_value
@@ -257,7 +257,7 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>    1000.00000000 </weight>
+			<weight>    10.00000000 </weight>
 			<!--Indicates the source of the coordinate value for this task.  Possible
 			    values are default_value (use default value of coordinate, as
 			    specified in the model file, as the fixed target value), manual_value
@@ -274,7 +274,7 @@
 			<apply> true </apply>
 			<!--Weight given to a marker or coordinate for solving inverse kinematics
 			    problems.-->
-			<weight>    1000.00000000 </weight>
+			<weight>    10.00000000 </weight>
 			<!--Indicates the source of the coordinate value for this task.  Possible
 			    values are default_value (use default value of coordinate, as
 			    specified in the model file, as the fixed target value), manual_value
