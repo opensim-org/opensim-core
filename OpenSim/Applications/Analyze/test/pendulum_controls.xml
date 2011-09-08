@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<ControlSet name="Control Set">
+		<objects>
+			<ControlLinear name="Torq1">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<x_nodes>
+					<ControlLinearNode name="">
+						<t>       0.00000000 </t>
+						<value>       0.75000000 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       2.00000000 </t>
+						<value>       0.75000000 </value>
+					</ControlLinearNode>
+				</x_nodes>
+			</ControlLinear>
+			<ControlLinear name="Torq2">
+				<is_model_control> true </is_model_control>
+				<extrapolate> true </extrapolate>
+				<x_nodes>
+					<ControlLinearNode name="">
+						<t>       0.00000000 </t>
+						<value>       0.50000000 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       0.00159690 </t>
+						<value>       0.50000000 </value>
+					</ControlLinearNode>
+					<ControlLinearNode name="">
+						<t>       2.00000000 </t>
+						<value>       0.50000000 </value>
+					</ControlLinearNode>
+				</x_nodes>
+			</ControlLinear>
+		</objects>
+		<groups/>
+	</ControlSet>
+</OpenSimDocument>
+

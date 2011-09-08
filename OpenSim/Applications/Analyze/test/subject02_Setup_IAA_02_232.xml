@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<AnalyzeTool name="subject02_running_arms">
+		<defaults/>
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file> subject02_running_RRA_cycle02_sim02_07_v232.osim </model_file>
+		<!--Replace the model's force set with sets specified in
+		    <force_set_files>? If false, the force set is appended to.-->
+		<replace_force_set> false </replace_force_set>
+		<!--List of xml files used to construct an force set for the model.-->
+		<force_set_files> gait2392_CMC_Actuators_232.xml </force_set_files>
+		<!--Directory used for writing results.-->
+		<results_directory> ResultsInducedAccelerations </results_directory>
+		<!--Output precision.  It is 8 by default.-->
+		<output_precision> 8 </output_precision>
+		<!--Initial time for the simulation.-->
+		<initial_time>       0.74000000 </initial_time>
+		<!--Final time for the simulation.-->
+		<final_time>       1.02000000 </final_time>
+		<!--Set of analyses to be run during the investigation.-->
+		<AnalysisSet name="Analyses">
+			<objects>
+				<InducedAccelerations name="InducedAccelerations">
+					<!--Flag (true or false) specifying whether whether on. True by default.-->
+					<on> true </on>
+					<!--Start time.-->
+					<start_time> -infinity </start_time>
+					<!--End time.-->
+					<end_time> infinity </end_time>
+					<!--Specifies how often to store results during a simulation. More
+					    specifically, the interval (a positive integer) specifies how many
+					    successful integration steps should be taken before results are
+					    recorded again.-->
+					<step_interval> 40 </step_interval>
+					<!--Flag (true or false) indicating whether the results are in degrees or
+					    not.-->
+					<in_degrees> true </in_degrees>
+					<!--Names of the coordinates for which to compute induced
+					    accelerations.The key word 'All' indicates that the analysis should be
+					    performed for all coordinates.-->
+					<coordinate_names> </coordinate_names>
+					<!--Names of the bodies for which to compute induced accelerations.The key
+					    word 'All' indicates that the analysis should be performed for all
+					    bodies.Use 'center_of_mass' to indicate the induced accelerations of
+					    the system center of mass.-->
+					<body_names> center_of_mass </body_names>
+					<!--Specify the constraints used to replace ground contact.Currently,
+					    RollingOnSurfaceConstraints are supported-->
+					<ConstraintSet name="">
+						<objects>
+							<RollingOnSurfaceConstraint name="right_foot_contact">
+								<isDisabled> true </isDisabled>
+								<rolling_body> calcn_r </rolling_body>
+								<surface_body> ground </surface_body>
+								<surface_normal>       0.00000000       1.00000000       0.00000000 </surface_normal>
+								<friction_coefficient>       0.65000000 </friction_coefficient>
+								<contact_radius>       0.01000000 </contact_radius>
+							</RollingOnSurfaceConstraint>
+							<RollingOnSurfaceConstraint name="left_foot_contact">
+								<isDisabled> true </isDisabled>
+								<rolling_body> calcn_l </rolling_body>
+								<surface_body> ground </surface_body>
+								<surface_normal>       0.00000000       1.00000000       0.00000000 </surface_normal>
+								<friction_coefficient>       0.65000000 </friction_coefficient>
+								<contact_radius>       0.01000000 </contact_radius>
+							</RollingOnSurfaceConstraint>
+						</objects>
+						<groups/>
+					</ConstraintSet>
+					<!--The minimum amount of contact force (N) that is sufficient to be
+					    replaced with a constraint.-->
+					<force_threshold>      15.00000000 </force_threshold>
+					<!--Only compute the potential (acceleration/force) of a muscle to
+					    accelerate the model.-->
+					<compute_potentials_only> false </compute_potentials_only>
+					<!--Report individual contributions to constraint reactions in addition to
+					    accelerations.-->
+					<report_constraint_reactions> false </report_constraint_reactions>
+				</InducedAccelerations>
+			</objects>
+			<groups/>
+		</AnalysisSet>
+		<!--Controller objects in the model.-->
+		<ControllerSet name="Controllers">
+			<objects>
+				<ControlSetController name="">
+					<!--A list of actuators that this controller will control.The keyword ALL
+					    indicates the controller will controll all the acuators in the model-->
+					<actuator_list> </actuator_list>
+					<!--Flag (true or false) indicating whether or not the controller is
+					    enabled (ON) should-->
+					<enable_controller> true </enable_controller>
+					<!--XML file containing the controls for the controlSet.-->
+					<controls_file> subject02_running_CMC_controls.xml </controls_file>
+				</ControlSetController>
+			</objects>
+			<groups/>
+		</ControllerSet>
+		<!--XML file (.xml) containing the forces applied to the model as
+		    ExternalLoads.-->
+		<external_loads_file> subject02_grf_HiFreq.xml </external_loads_file>
+		<!--Storage file (.sto) containing the time history of states for the
+		    model. This file often contains multiple rows of data, each row being
+		    a time-stamped array of states. The first column contains the time.
+		    The rest of the columns contain the states in the order appropriate
+		    for the model. In a storage file, unlike a motion file (.mot),
+		    non-uniform time spacing is allowed.  If the user-specified initial
+		    time for a simulation does not correspond exactly to one of the time
+		    stamps in this file, inerpolation is NOT used because it is sometimes
+		    necessary to an exact set of states for analyses.  Instead, the
+		    closest earlier set of states is used.-->
+		<states_file> subject02_running_CMC_states.sto </states_file>
+		<!--Motion file (.mot) or storage file (.sto) containing the time history
+		    of the generalized coordinates for the model. These can be specified
+		    in place of the states file.-->
+		<lowpass_cutoff_frequency_for_coordinates>      -1.00000000 </lowpass_cutoff_frequency_for_coordinates>
+	</AnalyzeTool>
+</OpenSimDocument>
+
