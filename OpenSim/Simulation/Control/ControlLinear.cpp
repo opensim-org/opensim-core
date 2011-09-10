@@ -826,7 +826,7 @@ setControlValueMin(double aT,double aMin)
  *
  * @param aT Time at which to get the control.
  * @return Minimum allowed control value.  If the value of the curve is not defined,
- * SimTK::NaN is returned.  If the control is set to extrapolate,
+ * _defaultMin is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the
@@ -835,7 +835,10 @@ setControlValueMin(double aT,double aMin)
 double ControlLinear::
 getControlValueMin(double aT)
 {
-	return getControlValue(_minNodes,aT);
+	if(_minNodes.getSize()==0)
+		return _defaultMin;
+	else
+		return getControlValue(_minNodes,aT);
 }
 //_____________________________________________________________________________
 /**
@@ -894,7 +897,7 @@ setControlValueMax(double aT,double aMax)
  *
  * @param aT Time at which to get the control.
  * @return Maximum allowed control value.  If the value of the curve is not defined,
- * SimTK::NaN is returned.  If the control is set to extrapolate,
+ * _defaultMax is returned.  If the control is set to extrapolate,
  * getExtraplate, and the time is before the first node or
  * after the last node, then an extrapolation is performed to determin
  * the value of the control curve.  Otherwise, the value of either the
@@ -903,7 +906,10 @@ setControlValueMax(double aT,double aMax)
 double ControlLinear::
 getControlValueMax(double aT)
 {
-	return getControlValue(_maxNodes,aT);
+	if(_minNodes.getSize()==0)
+		return _defaultMax;
+	else
+		return getControlValue(_maxNodes,aT);
 }
 //_____________________________________________________________________________
 /**

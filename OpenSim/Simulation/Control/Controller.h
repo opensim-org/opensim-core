@@ -57,9 +57,6 @@ namespace OpenSim {
 
 // Forward declarations of classes that are used by the controller implementation
 class Model;
-class Manager;
-class Storage;
-class ForceSet;
 
 // A Controller is a ModelComponent
 // The interface (defined herein) is  exported by the osimSimulation dll

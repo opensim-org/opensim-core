@@ -851,28 +851,6 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 		Control& x = controlSet.get(i);
 		xmin[i] = x.getControlValueMin(tiReal);
 		xmax[i] = x.getControlValueMax(tiReal);
-		// For controls whose constraints are constant min/max values we'll just specify
-		// it using the default parameter min/max rather than creating a control cur
-		// (using nodes) in the xml.  So we catch this case here.
-		std::string controlName = x.getName();
-		std::string acuatorName = controlName.substr(0, controlName.rfind('.'));
-		Actuator& act= _actuatorSet.get(acuatorName);
-		Muscle* msc =  dynamic_cast<Muscle*>(&act);
-		// if Muscle don't allow min to go below .02
-	
-	
-		if(SimTK::isNaN(xmin[i])){
-			xmin[i] = act.getMinControl();
-			if (msc && xmin[i] < .02) xmin[i]=.02;
-			else if (xmin[i]==-SimTK::Infinity) xmin[i]=-MAX_CONTROLS_FOR_RRA;
-			//xmin[i] = x.getDefaultParameterMin();
-		}
-		if(SimTK::isNaN(xmax[i])){
-			xmax[i] =  act.getMaxControl();
-			if (msc && xmax[i] > 1.0) xmax[i]=1.0;
-			else if (xmax[i]==SimTK::Infinity) xmax[i]=MAX_CONTROLS_FOR_RRA;
-			//xmax[i] = _actuatorSet.get(acuatorName).getMaxControl();
-		}	
 	}
 
 	if(_verbose) {
@@ -1123,18 +1101,51 @@ void CMC::setActuators( Set<Actuator>& actSet )
 	Controller::setActuators(actSet);
 	
     _controlSet.setName(_model->getName());
-
 	_controlSet.setSize(0);
+
+	// Define the control set used to specify control bounds and to hold 
+	// the computed control values from the CMC algorithm
+	double xmin =0, xmax=0;
     for(int i=0; i<actSet.getSize(); i++ ) {
         Actuator& act = actSet.get(i);
 
         ControlLinear *control = new ControlLinear();
         control->setName(act.getName() + ".excitation" );
-        _controlSet.append(control);
-    }
-    _numControls = _controlSet.getSize();
 
+		xmin = act.getMinControl();
+		if (xmin ==-SimTK::Infinity)
+			xmin =-MAX_CONTROLS_FOR_RRA;
+		
+		xmax =  act.getMaxControl();
+		if (xmax ==SimTK::Infinity)
+			xmax =MAX_CONTROLS_FOR_RRA;
+
+		Muscle *musc = dynamic_cast<Muscle *>(&act);
+		// if controlling muscles, CMC requires that the control be constant (i.e. piecewise constant or use steps)
+		// since it uses this assumption to rootsolve for the required controls over the CMC time-window.
+		if(musc){
+			control->setUseSteps(true);
+			if(xmin < 0.01){
+				cout << "CMC::Warning: CMC cannot compute controls for muscles with muscle controls < 0.02.\n" <<
+					"The minumum control limit for muscle '" << musc->getName() << "' has been reset to 0.02." << endl;
+				xmin = 0.02;
+			}
+			if(xmax < 1.00){
+				cout << "CMC::Warning: CMC cannot compute controls for muscles with muscle controls > 1.0.\n" <<
+					"The maximum control limit for muscle '" << musc->getName() << "' has been reset to 1.0." << endl;
+				xmax =1.00;
+			}
+		}
+
+		control->setDefaultParameterMin(xmin);
+		control->setDefaultParameterMax(xmax);
+
+		_controlSet.append(control);
+	}
+
+    _numControls = _controlSet.getSize();
 }
+
 // for any post XML deserialization intialization
 void CMC::setup(Model& model)   {
 
@@ -1165,7 +1176,7 @@ void CMC::createSystem( SimTK::MultibodySystem& system)  const
 	system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
 	SimTK_ASSERT( _controlSet.getSize() == _actuatorSet.getSize() , 
-		"CMC::computeControls number of controls does not match number of actuators.");
+		"CMC::createSystem number of controls does not match number of actuators.");
 
 	mutableThis->_controlSetIndices.setSize(_actuatorSet.getSize());
 
@@ -1178,7 +1189,7 @@ void CMC::createSystem( SimTK::MultibodySystem& system)  const
 			index = _controlSet.getIndex(actName);
 		}
 		if(index < 0){
-			throw Exception("CMC::computeControls "+actName+" has no controls computed.");
+			throw Exception("CMC::createSystem "+actName+" has no controls computed.");
 		}
 		mutableThis->_controlSetIndices[i] = index;
 	}
