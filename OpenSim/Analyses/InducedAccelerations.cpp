@@ -49,7 +49,7 @@ using namespace std;
 //=============================================================================
 // CONSTANTS
 //=============================================================================
-#define CENTER_OF_MASS_NAME string("CENTER_OF_MASS")
+#define CENTER_OF_MASS_NAME string("center_of_mass")
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
@@ -444,7 +444,7 @@ void InducedAccelerations::setupStorage()
 	}
 	else{
 		for(int i=0; i<nb; i++){
-			if(IO::Uppercase(_bodyNames.get(i)) == CENTER_OF_MASS_NAME)
+			if(IO::Lowercase(_bodyNames.get(i)) == CENTER_OF_MASS_NAME)
 				_includeCOM = true;
 			else{
 				int bi =  modelBodySet.getIndex(_bodyNames[i]);
