@@ -41,6 +41,7 @@
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
@@ -62,6 +63,7 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -428,6 +430,12 @@ static bool trace=false;
 		 self->set(i, dValues[i]);
 	};
 };
+
+%extend OpenSim::Model {
+	static void LoadOpenSimLibrary(std::string libraryName){
+		LoadOpenSimLibrary(libraryName);
+	}
+}
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 // osimCommon Library
@@ -495,6 +503,11 @@ static bool trace=false;
 %include <OpenSim/Simulation/Model/ForceSet.h>
 %include <OpenSim/Simulation/Model/ExternalForce.h>
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
+
+%include <OpenSim/Simulation/Control/Controller.h>
+%template(SetControllers) OpenSim::Set<OpenSim::Controller>;
+%template(ModelComponentSetControllers) OpenSim::ModelComponentSet<OpenSim::Controller>;
+%include <OpenSim/Simulation/Model/ControllerSet.h>
 
 %template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
