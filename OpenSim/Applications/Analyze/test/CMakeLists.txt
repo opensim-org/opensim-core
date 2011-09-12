@@ -30,7 +30,7 @@ FILE(GLOB TEST_FILES *.osim *.xml *.sto *.mot)
 ADD_DEPENDENCIES(${TEST_ROOT} copyTestFiles)
 FOREACH (dataFile ${TEST_FILES})
  ADD_CUSTOM_COMMAND(
-    TARGET testJointReactions
+    TARGET testInducedAccelerations
     COMMAND ${CMAKE_COMMAND}
     ARGS -E copy
     ${dataFile}
