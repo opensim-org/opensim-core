@@ -46,6 +46,7 @@ using namespace std;
 
 void testSingleMuscle();
 void testTwoMusclesOnBlock();
+void testArm26();
 void testGait2354();
 void testEMGDrivenArm();
 
@@ -53,6 +54,7 @@ int main() {
     try {
 		testSingleMuscle();
 		testTwoMusclesOnBlock();
+		testArm26();
 		testGait2354();
 		testEMGDrivenArm();
     }
@@ -114,6 +116,24 @@ void testGait2354() {
     cout << "meanError = " << meanError << "   maxError = " << maxError << " for " << max_label << " at time = " << maxErrTime << endl;
 	// average error should be below 0.25 degrees
 	ASSERT(meanError < 0.25);
+}
+
+void testArm26() {
+
+	CMCTool cmc("arm26_Setup_CMC.xml");
+	cmc.run();
+	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");
+	results.checkAgainstStandard(standard, Array<double>(6.0e-3, 16), __FILE__, __LINE__, "testArm failed");
+
+	Storage trackingError("Results_Arm26/arm26_pErr.sto");
+
+	for (int i = 0; i < trackingError.getSize(); ++i) {
+		StateVector* state = trackingError.getStateVector(i);
+		double time = state->getTime();
+		ASSERT_EQUAL(state->getData()[0], 0.0 , 1e-3);
+	}
+
+	cout << "\ntestArm26 passed\n" << endl;
 }
 
 void testSingleMuscle() {
