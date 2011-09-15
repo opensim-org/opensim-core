@@ -1,5 +1,5 @@
 // testContactGeometry.cpp
-// Author:  Peter Eastman
+// Author:  Peter Eastman, Ajay Seth
 /*
 * Copyright (c) 2005-2009, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -33,25 +33,20 @@
 //  less than 10x integration error tolerance)
 //
 //	Tests Include:
-//      1. CustomJoint against Simbody built-in Pin and Universal joints
-//      2. CustomJoint versus Simbody FunctionBased with spline based functions
-//		3. WeldJoint versus Weld Mobilizer by welding bodies to those in test 1.
-//		4. Randomized order of bodies in the BodySet (in 3.) to test connectBodies()
-//		
-//		TODO random branching toplogy.
-//     Add tests here as new joint types are added to OpenSim
+//      1. Analytical contact sphere-plane geometry 
+//      2. Mesh-based sphere on analytical plane geometry
+//		3. 
 //
 //==========================================================================================================
 #include <iostream>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
-#include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
+
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/Actuation.h>
+#include <OpenSim/Analyses/ForceReporter.h>
+
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Model/ContactHalfSpace.h>
 #include <OpenSim/Simulation/Model/ContactMesh.h>
@@ -59,27 +54,28 @@
 #include <OpenSim/Simulation/Model/ElasticFoundationForce.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/HuntCrossleyForce.h>
-#include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/WeldJoint.h>
-#include <OpenSim/Simulation/SimbodyEngine/TransformAxis.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
-#include "SimTKmath.h"
 
 using namespace OpenSim;
+using namespace SimTK;
 using namespace std;
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
-const static double integ_accuracy = 1.0e-4;
+const static double integ_accuracy = 1.0e-6;
 const static double duration = 1.0;
+const static double interval = 0.01;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
-const static double radius = 0.5;
+const static double mass = 1.0;
+const static double radius = 0.105;
+const static double height = 1.0;
+
 //==========================================================================================================
 
 int testBouncingBall(bool useMesh);
+int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2);
 
 int main()
 {
@@ -87,8 +83,13 @@ int main()
     {
     	testBouncingBall(false);
     	testBouncingBall(true);
+		testBallToBallContact(false, false, false);
+		testBallToBallContact(true, false, false);
+		testBallToBallContact(true, true, false);
+		testBallToBallContact(true, false, true);
+		testBallToBallContact(true, true, true);
     }
-    catch (const Exception& e) {
+    catch (const OpenSim::Exception& e) {
         e.print(cerr);
         return 1;
     }
@@ -101,112 +102,218 @@ int main()
 //==========================================================================================================
 int testBouncingBall(bool useMesh)
 {
-	using namespace SimTK;
-
-	//==========================================================================================================
 	// Setup OpenSim model
 	Model *osimModel = new Model;
-	SimbodyEngine engine;
+
 	//OpenSim bodies
     OpenSim::Body& ground = osimModel->getGroundBody();
 	OpenSim::Body ball;
 	ball.setName("ball");
+	ball.setMass(mass);
+	ball.setMassCenter(Vec3(0));
+	ball.setInertia(Inertia(1.0));
 
 	// Add joints
-	FreeJoint free("", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0), true);
-
-	// Rename coordinates for a free joint
-	CoordinateSet &free_coords = free.getCoordinateSet();
-	for(int i=0; i<free_coords.getSize(); i++){
-		std::stringstream coord_name;
-		coord_name << "free_q" << i;
-		free_coords.get(i).setName(coord_name.str());
-		free_coords.get(i).setMotionType(i > 2 ? Coordinate::Rotational : Coordinate::Translational);
-	}
-
+	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
 	osimModel->addBody(&ball);
+	// BAD: have to set memoryOwner to false or model will try to delete
+	osimModel->updBodySet().setMemoryOwner(false);
 
     // Create ContactGeometry.
-    ContactHalfSpace floor(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "ground");
-    osimModel->updContactGeometrySet().append(&floor);
+    ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "ground");
+    osimModel->addContactGeometry(floor);
     OpenSim::ContactGeometry* geometry;
     if (useMesh)
-        geometry = new ContactMesh("cube.obj", Vec3(0), Vec3(0), ball, "ball");
+        geometry = new ContactMesh("10_5_cm_sphere_47700.obj", Vec3(0), Vec3(0), ball, "ball");
     else
         geometry = new ContactSphere(radius, Vec3(0), ball, "ball");
-    osimModel->updContactGeometrySet().append(geometry);
+    osimModel->addContactGeometry(geometry);
 
     OpenSim::Force* force;
     if (useMesh)
     {
 	    // Add an ElasticFoundationForce.
-        OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6, 0.001, 0.0, 0.0, 0.0);
+        OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6/radius, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("ground");
         force = new OpenSim::ElasticFoundationForce(contactParams);
-	    osimModel->updForceSet().append(force);
+	    osimModel->addForce(force);
     }
     else
     {
 	    // Add a HuntCrossleyForce.
-        OpenSim::HuntCrossleyForce::ContactParameters* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(1.0e6, 0.001, 0.0, 0.0, 0.0);
+        OpenSim::HuntCrossleyForce::ContactParameters* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(1.0e6, 1e-5, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball");
         contactParams->addGeometry("ground");
         force = new OpenSim::HuntCrossleyForce(contactParams);
-	    osimModel->updForceSet().append(force);
+	    osimModel->addForce(force);
     }
-
-	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
-	osimModel->updBodySet().setMemoryOwner(false);
-
-	ball.setMass(1.0);
-	ball.setMassCenter(Vec3(0));
-	ball.setInertia(Inertia(1.0));
 
 	osimModel->setGravity(gravity_vec);
 
+	osimModel->setName("TestContactGeomtery_Ball");
 	osimModel->copy()->print("TestContactGeomtery_Ball.osim");
-	//osimModel->setup();
-	//delete osimModel;
-	//osimModel = new Model("BouncingBallModel.osim");
+
 	Kinematics* kin = new Kinematics(osimModel);
 	osimModel->addAnalysis(kin);
 
     SimTK::State osim_state = osimModel->initSystem();
+	osim_state.updQ()[4] = height;
     osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
-    osim_state.updQ()[4] = 5.0;
+
+	//Initial system energy is all potential
+	double Etot_orig = mass*(-gravity_vec[1])*height;
 
 	//==========================================================================================================
 	// Simulate it and see if it bounces correctly.
  	cout << "stateY=" << osim_state.getY() << std::endl;
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+	integrator.setAccuracy(integ_accuracy);
     Manager manager(*osimModel, integrator);
-    manager.setInitialTime(0.0);
-    manager.setFinalTime(0.1);
-    for (unsigned int i = 0; i < 100; ++i)
+
+    for (unsigned int i = 0; i < duration/interval; ++i)
     {
-        double time = 0.1*(i+1);
+        manager.setInitialTime(i*interval);
+		manager.setFinalTime((i+1)*interval);
         manager.integrate(osim_state);
+		double time = osim_state.getTime();
+
         osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
-        Vec3 pos;
+        Vec3 pos, vel;
 
 		osimModel->updSimbodyEngine().getPosition(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), pos);
-        double y = 5.0+0.5*gravity_vec[1]*time*time;
-        if (y > radius)
+		osimModel->updSimbodyEngine().getVelocity(osim_state, osimModel->getBodySet().get("ball"), Vec3(0), vel);
+
+		double Etot = mass*((-gravity_vec[1])*pos[1] + 0.5*vel[1]*vel[1]);
+
+		//cout << "starting system energy = " << Etot_orig << " versus current energy = " << Etot << endl;
+		// contact absorbs and returns energy so make sure not in contact
+        if (pos[1] > 2*radius)
         {
-            ASSERT_EQUAL(y, pos[1], 1e-5);
+            ASSERT_EQUAL(Etot_orig, Etot, 1e-2, __FILE__, __LINE__, "Bouncing ball on plane Failed: energy was not conserved.");
         }
         else
         {
+			cout << "In contact at time = " << time << endl; 
             ASSERT(pos[1] < 5.0 && pos[1] > 0);
         }
-        ASSERT_EQUAL(0.0, pos[0], 1e-3);
-        ASSERT_EQUAL(0.0, pos[2], 1e-3);
+        ASSERT_EQUAL(0.0, pos[0], 1e-4);
+        ASSERT_EQUAL(0.0, pos[2], 1e-4);
+		ASSERT_EQUAL(0.0, vel[0], 1e-3);
+        ASSERT_EQUAL(0.0, vel[2], 1e-3);
     }
-    delete force;
-    delete geometry;
+
 	std::string prefix = useMesh?"Kinematics_Mesh":"Kinematics_NoMesh";
 	kin->printResults(prefix);
+
+	// model takes ownership of components unless container set is told otherwise
+	delete osimModel;
+
+	return 0;
+}
+
+
+// test sphere to sphere contact using elastic foundation with and without 
+// meshes and their combination
+int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2)
+{
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+	OpenSim::Body ball;
+	ball.setName("ball");
+	ball.setMass(mass);
+	ball.setMassCenter(Vec3(0));
+	ball.setInertia(Inertia(1.0));
+
+	// Add joints
+	FreeJoint free("free", ground, Vec3(0), Vec3(0), ball, Vec3(0), Vec3(0));
+
+	osimModel->addBody(&ball);
+	// BAD: have to set memoryOwner to false or model will try to delete
+	osimModel->updBodySet().setMemoryOwner(false);
+
+    // Create ContactGeometry.
+    OpenSim::ContactGeometry *ball1, *ball2;
+
+	if (useElasticFoundation && useMesh1)
+        ball1 = new ContactMesh("10_5_cm_sphere_47700.obj", Vec3(0), Vec3(0), ground, "ball1");
+    else
+        ball1 = new ContactSphere(radius, Vec3(0), ground, "ball1");
+
+    if (useElasticFoundation && useMesh2)
+        ball2 = new ContactMesh("10_5_cm_sphere_47700.obj", Vec3(0), Vec3(0), ball, "ball2");
+    else
+        ball2 = new ContactSphere(radius, Vec3(0), ball, "ball2");
+    
+	osimModel->addContactGeometry(ball1);
+	osimModel->addContactGeometry(ball2);
+
+    OpenSim::Force* force;
+    if (useElasticFoundation)
+    {
+	    // Add an ElasticFoundationForce.
+        OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6, 0.001, 0.0, 0.0, 0.0);
+        contactParams->addGeometry("ball1");
+        contactParams->addGeometry("ball2");
+        force = new OpenSim::ElasticFoundationForce(contactParams);
+	    osimModel->addForce(force);
+    }
+    else
+    {
+	    // Add a Hertz HuntCrossleyForce.
+        OpenSim::HuntCrossleyForce::ContactParameters* contactParams = new OpenSim::HuntCrossleyForce::ContactParameters(1.0e6, 0.001, 0.0, 0.0, 0.0);
+        contactParams->addGeometry("ball1");
+        contactParams->addGeometry("ball2");
+        force = new OpenSim::HuntCrossleyForce(contactParams);
+	    osimModel->addForce(force);
+    }
+
+	osimModel->setGravity(gravity_vec);
+
+	osimModel->setName("TestContactGeomtery_BallToBall");
+	osimModel->copy()->print("TestContactGeomtery_BallToBall.osim");
+
+	Kinematics* kin = new Kinematics(osimModel);
+	osimModel->addAnalysis(kin);
+
+	ForceReporter* reporter = new ForceReporter(osimModel);
+	osimModel->addAnalysis(reporter);
+
+    SimTK::State osim_state = osimModel->initSystem();
+	osim_state.updQ()[4] = height;
+    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+
+	//==========================================================================================================
+	// Simulate it and see if it bounces correctly.
+ 	cout << "stateY=" << osim_state.getY() << std::endl;
+
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+	integrator.setAccuracy(integ_accuracy);
+	integrator.setMaximumStepSize(0.01);
+    Manager manager(*osimModel, integrator);
+    manager.setInitialTime(0.0);
+    manager.setFinalTime(duration);
+    manager.integrate(osim_state);
+	
+	std::string prefix;
+	if (useElasticFoundation){
+		prefix = "ElasticFoundation_";
+		prefix += useMesh1 ?"Mesh":"noMesh";
+		prefix += useMesh2 ? "_to_Mesh":"_to_noMesh";
+	}
+	else{
+		prefix = "Hertz";
+	}
+
+	kin->printResults(prefix);
+	reporter->printResults(prefix);
+
+	// model takes ownership of components unless container set is told otherwise
+	delete osimModel;
+
 	return 0;
 }

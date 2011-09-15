@@ -304,7 +304,7 @@ void testBushingForce()
 }
 
 
-// Test our wraapping of elastic foundation in OpenSim
+// Test our wrapping of elastic foundation in OpenSim
 // Simple simulation of bouncing ball with dissipation should generate contact
 // forces that settle to ball weight.
 void testElasticFoundation()
