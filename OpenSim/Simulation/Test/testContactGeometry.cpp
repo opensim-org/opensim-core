@@ -1,7 +1,7 @@
 // testContactGeometry.cpp
 // Author:  Peter Eastman, Ajay Seth
 /*
-* Copyright (c) 2005-2009, Stanford University. All rights reserved. 
+* Copyright (c) 2005-2010, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -64,13 +64,14 @@ using namespace std;
 
 //==========================================================================================================
 // Common Parameters for the simulations are just global.
-const static double integ_accuracy = 1.0e-6;
+const static double integ_accuracy = 1.0e-5;
 const static double duration = 1.0;
 const static double interval = 0.01;
 const static SimTK::Vec3 gravity_vec = SimTK::Vec3(0, -9.8065, 0);
 const static double mass = 1.0;
-const static double radius = 0.105;
+const static double radius = 0.10;
 const static double height = 1.0;
+const static string mesh_file = "sphere_10cm_radius.obj"; //"10_5_cm_sphere_47700.obj";
 
 //==========================================================================================================
 
@@ -84,7 +85,6 @@ int main()
     	testBouncingBall(false);
     	testBouncingBall(true);
 		testBallToBallContact(false, false, false);
-		testBallToBallContact(true, false, false);
 		testBallToBallContact(true, true, false);
 		testBallToBallContact(true, false, true);
 		testBallToBallContact(true, true, true);
@@ -124,7 +124,7 @@ int testBouncingBall(bool useMesh)
     osimModel->addContactGeometry(floor);
     OpenSim::ContactGeometry* geometry;
     if (useMesh)
-        geometry = new ContactMesh("10_5_cm_sphere_47700.obj", Vec3(0), Vec3(0), ball, "ball");
+        geometry = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ball, "ball");
     else
         geometry = new ContactSphere(radius, Vec3(0), ball, "ball");
     osimModel->addContactGeometry(geometry);
@@ -240,12 +240,12 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     OpenSim::ContactGeometry *ball1, *ball2;
 
 	if (useElasticFoundation && useMesh1)
-        ball1 = new ContactMesh("10_5_cm_sphere_47700.obj", Vec3(0), Vec3(0), ground, "ball1");
+        ball1 = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ground, "ball1");
     else
         ball1 = new ContactSphere(radius, Vec3(0), ground, "ball1");
 
     if (useElasticFoundation && useMesh2)
-        ball2 = new ContactMesh("10_5_cm_sphere_47700.obj", Vec3(0), Vec3(0), ball, "ball2");
+        ball2 = new ContactMesh(mesh_file, Vec3(0), Vec3(0), ball, "ball2");
     else
         ball2 = new ContactSphere(radius, Vec3(0), ball, "ball2");
     
@@ -253,14 +253,25 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 	osimModel->addContactGeometry(ball2);
 
     OpenSim::Force* force;
+
+	std::string prefix;
+	if (useElasticFoundation){
+		
+	}
+	else{
+		
+	}
     if (useElasticFoundation)
     {
 	    // Add an ElasticFoundationForce.
-        OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6, 0.001, 0.0, 0.0, 0.0);
+        OpenSim::ElasticFoundationForce::ContactParameters* contactParams = new OpenSim::ElasticFoundationForce::ContactParameters(1.0e6/(2*radius), 0.001, 0.0, 0.0, 0.0);
         contactParams->addGeometry("ball1");
         contactParams->addGeometry("ball2");
         force = new OpenSim::ElasticFoundationForce(contactParams);
-	    osimModel->addForce(force);
+		prefix = "EF_";
+		prefix += useMesh1 ?"Mesh":"noMesh";
+		prefix += useMesh2 ? "_to_Mesh":"_to_noMesh";
+		
     }
     else
     {
@@ -269,13 +280,16 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
         contactParams->addGeometry("ball1");
         contactParams->addGeometry("ball2");
         force = new OpenSim::HuntCrossleyForce(contactParams);
-	    osimModel->addForce(force);
+		prefix = "Hertz";
+	    
     }
 
+	force->setName(prefix);
+	osimModel->addForce(force);
 	osimModel->setGravity(gravity_vec);
 
-	osimModel->setName("TestContactGeomtery_BallToBall");
-	osimModel->copy()->print("TestContactGeomtery_BallToBall.osim");
+	osimModel->setName(prefix);
+	osimModel->copy()->print(prefix+".osim");
 
 	Kinematics* kin = new Kinematics(osimModel);
 	osimModel->addAnalysis(kin);
@@ -293,21 +307,13 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(integ_accuracy);
-	integrator.setMaximumStepSize(0.01);
+	integrator.setMaximumStepSize(100*integ_accuracy);
     Manager manager(*osimModel, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(duration);
     manager.integrate(osim_state);
 	
-	std::string prefix;
-	if (useElasticFoundation){
-		prefix = "ElasticFoundation_";
-		prefix += useMesh1 ?"Mesh":"noMesh";
-		prefix += useMesh2 ? "_to_Mesh":"_to_noMesh";
-	}
-	else{
-		prefix = "Hertz";
-	}
+
 
 	kin->printResults(prefix);
 	reporter->printResults(prefix);
