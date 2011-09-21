@@ -103,7 +103,6 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// STORAGE
-	void setStorageCapacityIncrements(int aIncrement);
 	const Storage& getForceStorage() const
 	{
 		return _forceStore;
