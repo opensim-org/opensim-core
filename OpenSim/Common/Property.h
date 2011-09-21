@@ -83,6 +83,8 @@ class Object;
  */
 #ifdef WIN32
 #pragma warning( disable : 4290 )	// VC++ non-ANSI Exception handling
+#pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
+
 #endif
 
 #define Property_PROPERTY_TYPE_MISMATCH() \
