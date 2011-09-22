@@ -256,11 +256,13 @@ void ControlSetController::setup(Model& model)
     }
 	else if (_controlSet == NULL) {
        std::cout << " ControlSetController:: no Control Set Specified" << std::endl;
+	   setDisabled(true); 
+	   return;  // no more wiring is needed
     }
 
 	// Make sure that we are controlling all the actuators that the control set specifies
 	std::string ext = ".excitation";
-	for(int i =0; i<_controlSet->getSize(); i++){
+	for(int i =0; _controlSet != NULL && i<_controlSet->getSize(); i++){
 		std::string actName = _controlSet->get(i).getName();
 		if(actName.length()>ext.length() && !(actName.compare(actName.length()-ext.length(), ext.length(), ".excitation"))){
 			actName.erase(actName.length()-ext.length(), ext.length());

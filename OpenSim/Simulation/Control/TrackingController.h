@@ -57,6 +57,7 @@
 namespace OpenSim { 
 
 class TrackingTask;
+class Storage;
 
 class OSIMSIMULATION_API TrackingController : public Controller
 {

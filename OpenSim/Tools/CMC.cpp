@@ -63,6 +63,9 @@ using SimTK::Vector;
 using namespace OpenSim;
 using namespace SimTK;
 
+#define MIN_CMC_CONTROL_VALUE 0.02
+#define MAX_CMC_CONTROL_VALUE 1.00
+
 #define MAX_CONTROLS_FOR_RRA 10000
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
@@ -851,29 +854,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 		Control& x = controlSet.get(i);
 		xmin[i] = x.getControlValueMin(tiReal);
 		xmax[i] = x.getControlValueMax(tiReal);
-		// For controls whose constraints are constant min/max values we'll just specify
-		// it using the default parameter min/max rather than creating a control cur
-		// (using nodes) in the xml.  So we catch this case here.
-		std::string controlName = x.getName();
-		std::string acuatorName = controlName.substr(0, controlName.rfind('.'));
-		Actuator& act= _actuatorSet.get(acuatorName);
-		Muscle* msc =  dynamic_cast<Muscle*>(&act);
-		// if Muscle don't allow min to go below .02
-	
-	
-		if(SimTK::isNaN(xmin[i])){
-			xmin[i] = act.getMinControl();
-			if (msc && xmin[i] < .02) xmin[i]=.02;
-			else if (xmin[i]==-SimTK::Infinity) xmin[i]=-MAX_CONTROLS_FOR_RRA;
-			//xmin[i] = x.getDefaultParameterMin();
 		}
-		if(SimTK::isNaN(xmax[i])){
-			xmax[i] =  act.getMaxControl();
-			if (msc && xmax[i] > 1.0) xmax[i]=1.0;
-			else if (xmax[i]==SimTK::Infinity) xmax[i]=MAX_CONTROLS_FOR_RRA;
-			//xmax[i] = _actuatorSet.get(acuatorName).getMaxControl();
-		}	
-	}
 
 	if(_verbose) {
 		cout<<"\nxmin:\n"<<xmin<<endl;
@@ -1121,20 +1102,8 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 void CMC::setActuators( Set<Actuator>& actSet ) 
 {
 	Controller::setActuators(actSet);
-	
-    _controlSet.setName(_model->getName());
-
-	_controlSet.setSize(0);
-    for(int i=0; i<actSet.getSize(); i++ ) {
-        Actuator& act = actSet.get(i);
-
-        ControlLinear *control = new ControlLinear();
-        control->setName(act.getName() + ".excitation" );
-        _controlSet.append(control);
-    }
-    _numControls = _controlSet.getSize();
-
 }
+
 // for any post XML deserialization intialization
 void CMC::setup(Model& model)   {
 
@@ -1164,24 +1133,61 @@ void CMC::createSystem( SimTK::MultibodySystem& system)  const
 
 	system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
-	SimTK_ASSERT( _controlSet.getSize() == _actuatorSet.getSize() , 
-		"CMC::computeControls number of controls does not match number of actuators.");
+	int nActs = _actuatorSet.getSize();
 
-	mutableThis->_controlSetIndices.setSize(_actuatorSet.getSize());
+	mutableThis->_controlSetIndices.setSize(nActs);
+
+	// Create the control set that will hold the controls computed by CMC
+	mutableThis->_controlSet.setName(_model->getName());
+	mutableThis->_controlSet.setSize(0);
+
+	// Define the control set used to specify control bounds and to hold 
+	// the computed control values from the CMC algorithm
+	double xmin =0, xmax=0;
 
 	std::string actName = "";
-	for(int i=0; i<_actuatorSet.getSize(); i++){
-		actName = _actuatorSet[i].getName();
-		int index = _controlSet.getIndex(actName);
-		if(index < 0){
-			actName = actName + ".excitation";
-			index = _controlSet.getIndex(actName);
+	for(int i=0; i < nActs; ++i ) {
+        Actuator& act = _actuatorSet.get(i);
+
+        ControlLinear *control = new ControlLinear();
+        control->setName(act.getName() + ".excitation" );
+
+		xmin = act.getMinControl();
+		if (xmin ==-SimTK::Infinity)
+			xmin =-MAX_CONTROLS_FOR_RRA;
+		
+		xmax =  act.getMaxControl();
+		if (xmax ==SimTK::Infinity)
+			xmax =MAX_CONTROLS_FOR_RRA;
+
+		Muscle *musc = dynamic_cast<Muscle *>(&act);
+		// if controlling muscles, CMC requires that the control be constant (i.e. piecewise constant or use steps)
+		// since it uses this assumption to rootsolve for the required controls over the CMC time-window.
+		if(musc){
+			control->setUseSteps(true);
+			if(xmin < MIN_CMC_CONTROL_VALUE){
+				cout << "CMC::Warning: CMC cannot compute controls for muscles with muscle controls < " << MIN_CMC_CONTROL_VALUE <<".\n" <<
+					"The minumum control limit for muscle '" << musc->getName() << "' has been reset to " << MIN_CMC_CONTROL_VALUE <<"." <<endl;
+				xmin = MIN_CMC_CONTROL_VALUE;
 		}
-		if(index < 0){
-			throw Exception("CMC::computeControls "+actName+" has no controls computed.");
+			if(xmax < MAX_CMC_CONTROL_VALUE){
+				cout << "CMC::Warning: CMC cannot compute controls for muscles with muscle controls > " << MAX_CMC_CONTROL_VALUE <<".\n" <<
+					"The maximum control limit for muscle '" << musc->getName() << "' has been reset to " << MAX_CMC_CONTROL_VALUE << "." << endl;
+				xmax = MAX_CMC_CONTROL_VALUE;
 		}
-		mutableThis->_controlSetIndices[i] = index;
 	}
+
+		control->setDefaultParameterMin(xmin);
+		control->setDefaultParameterMax(xmax);
+
+		mutableThis->_controlSet.append(control);
+		mutableThis->_controlSetIndices.set(i, i);
+	}
+
+    mutableThis->_numControls = _controlSet.getSize();
+
+	Controller::createSystem(system);
+
 }
 
 // for any intialization requiring a state or the complete system 

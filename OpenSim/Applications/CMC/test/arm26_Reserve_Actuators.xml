@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ActuatorSet name="arm26">
-	<defaults>
-		 <GeneralizedForce name="default">
-			<max_force> 10000.0 </max_force>
-			<min_force> -10000.0 </min_force>
-			<optimal_force> 1000.0 </optimal_force>
-			<coordinate> </coordinate>
-		 </GeneralizedForce>
-	</defaults>
+	<defaults/>
 	<objects>
 		<!-- Shoulder -->
 		<CoordinateActuator name="r_shoulder_elev_reserve">
