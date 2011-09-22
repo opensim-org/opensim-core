@@ -298,15 +298,6 @@ void CorrectionController::setup(Model& model)
 	_actuatorSet.setSize(0);
 	_actuatorSet.setMemoryOwner(false);
 	
-	std::cout << "\n CorrectionController::setup begin num Forces=" <<  _model->getForceSet().getSize() << std::endl;
-	for(int i=0; i< _model->getForceSet().getSize(); i++) {
-        std::cout << "Force " << i << " = "<< _model->getForceSet().get(i).getName() << std::endl;
-	}
-	std::cout << "\n CorrectionController::setup begin num Actuators=" <<  _model->getActuators().getSize() << std::endl;
-	for(int i=0; i< _model->getActuators().getSize(); i++) {
-        std::cout << "Actuator " << i << " = "<< _model->getActuators().get(i).getName() << std::endl;
-	}
-
 	std::cout << std::endl;
 
 	// create an actuator for each generalized coordinate in the model 

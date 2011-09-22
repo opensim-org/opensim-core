@@ -178,7 +178,8 @@ private:
 	Body *_groundBody;
 
 	/** Model controllers */
-	ControllerSet _controllerSet;
+    PropertyObj _controllerSetProp;
+    ControllerSet& _controllerSet;
 
 	/*** Private place to save some deserializtion/error checking info in case needed later */
 	std::string _validationLog;

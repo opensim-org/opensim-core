@@ -66,8 +66,7 @@ using namespace std;
  */
 Controller::Controller() :
 	ModelComponent(),
-    _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
-    _isControllerEnabled(_isControllerEnabledProp.getValueBool())
+    _actuatorNameList(_actuatorNameListProp.getValueStrArray())
 {
 	setNull();
 }
@@ -77,8 +76,7 @@ Controller::Controller() :
  */
 Controller::Controller(Model& aModel) :
 	ModelComponent(),
-   _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
-    _isControllerEnabled(_isControllerEnabledProp.getValueBool())
+   _actuatorNameList(_actuatorNameListProp.getValueStrArray())
 {
 	setNull();
 	_model = &aModel;
@@ -89,8 +87,7 @@ Controller::Controller(Model& aModel) :
   */
   Controller::Controller(const std::string &aFileName, bool aUpdateFromXMLNode) :
       ModelComponent(aFileName, false),
-      _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
-      _isControllerEnabled(_isControllerEnabledProp.getValueBool())
+      _actuatorNameList(_actuatorNameListProp.getValueStrArray())
 {
       setNull();
       if(aUpdateFromXMLNode) updateFromXMLNode();
@@ -102,8 +99,7 @@ Controller::Controller(Model& aModel) :
  */
 Controller::Controller(const Controller &aController) :
 	ModelComponent(aController),
-    _actuatorNameList(_actuatorNameListProp.getValueStrArray()),
-    _isControllerEnabled(aController._isControllerEnabled)
+    _actuatorNameList(_actuatorNameListProp.getValueStrArray())
 {
 	setNull();
 	copyData(aController);
@@ -125,26 +121,20 @@ Controller::~Controller()
 /**
  * Set NULL values for all member variables.
  */
-void Controller::
-setNull()
+void Controller::setNull()
 {
 	setupProperties();
 	setType("Controller");
     _actuatorSet.setMemoryOwner(false);
 
-
 	// MODEL
 	_model = NULL;
-
-	_isControllerEnabled = true;
-
 }
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void Controller::
-setupProperties()
+void Controller::setupProperties()
 {
      string comment;
 
@@ -154,24 +144,19 @@ setupProperties()
     _actuatorNameListProp.setName("actuator_list");
     _propertySet.append(&_actuatorNameListProp);
 
-    comment = "Flag (true or false) indicating whether or not the controller is active or not.";
-    _isControllerEnabledProp.setComment(comment);
-    _isControllerEnabledProp.setName("enable_controller");
-    _propertySet.append( &_isControllerEnabledProp );
-
-
-
-
+    comment = "Flag (true or false) indicating whether or not the controller is disabled.";
+    _isDisabledProp.setComment(comment);
+    _isDisabledProp.setName("isDisabled");
+	_isDisabledProp.setValue(false);
+    _propertySet.append( &_isDisabledProp );
 }
 //_____________________________________________________________________________
 /**
  * Copy the member variables of the specified controller.
  */
-void Controller::
-copyData(const Controller &aController)
+void Controller::copyData(const Controller &aController)
 {
-	_model = aController._model;
-	_isControllerEnabled = aController._isControllerEnabled;
+	_isDisabledProp.setValue(aController._isDisabledProp.getValueBool());
     _actuatorNameList = aController._actuatorNameList;
 }
 
@@ -208,23 +193,23 @@ operator=(const Controller &aController)
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Get whether or not this controller is on.
+ * Get whether or not this controller is disabled.
  */
-bool Controller::getIsEnabled() const
+bool Controller::isDisabled() const
 {
     if( _model->getAllControllersEnabled() ) {
-	   return(_isControllerEnabled);
+	   return( _isDisabledProp.getValueBool() );
     } else {
-       return( false );
+       return( true );
     }
 }
 //_____________________________________________________________________________
 /**
  * Turn this controller on or off.
  */
-void Controller::setIsEnabled(bool aTrueFalse)
+void Controller::setDisabled(bool aTrueFalse)
 {
-	_isControllerEnabled = aTrueFalse;
+	_isDisabledProp.setValue(aTrueFalse);
 }
 
 double Controller::getFirstTime() const {

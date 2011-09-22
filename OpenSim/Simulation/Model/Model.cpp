@@ -99,7 +99,8 @@ Model::Model() :
     _jointSet(JointSet()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
-    _controllerSet(ControllerSet()),
+    _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
+    _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
@@ -135,7 +136,8 @@ Model::Model(const string &aFileName) :
     _jointSet(JointSet()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
-    _controllerSet(ControllerSet()),
+    _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
+    _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
@@ -179,7 +181,8 @@ Model::Model(const Model &aModel) :
     _jointSet(JointSet()),
     _analysisSet(AnalysisSet()),
     _coordinateSet(CoordinateSet()),
-    _controllerSet(ControllerSet()),
+    _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
+    _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
     _system(NULL),
 	_defaultControls(*new Vector(0))
 {
@@ -368,6 +371,9 @@ void Model::setupProperties()
 
     _contactGeometrySetProp.setComment("ContactGeometry objects in the model.");
     _propertySet.append(&_contactGeometrySetProp);
+
+    _controllerSetProp.setComment("Controller objects in the model.");
+    _propertySet.append(&_controllerSetProp);
 }
 
 SimTK::State& Model::initSystem()

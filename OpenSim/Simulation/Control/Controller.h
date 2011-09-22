@@ -67,8 +67,9 @@ class OSIMSIMULATION_API Controller : public ModelComponent
 //=============================================================================
 // These are the member variables of the Controller class.  
 protected:
-     PropertyBool _isControllerEnabledProp;
-	 bool _isControllerEnabled;
+     /** Flag indicating whether the Controller is disabled or not.  Disabled 
+	means that the controller is not present in subsequent dynamics realizations. */
+	PropertyBool _isDisabledProp;
 
     /** number of controls this controller computes */
     int _numControls;
@@ -172,17 +173,17 @@ public:
 	//--------------------------------------------------------------------------
 	// Controller Interface
 	//--------------------------------------------------------------------------
-	/** Get whether or not this controller is on.
+	/** Get whether or not this controller is disabled.
 	 *
 	 * @return true if on, false if off.
 	 */
-	bool getIsEnabled() const;
+	virtual bool isDisabled() const;
 
-	/** Turn this controller on or off.
+	/** Disable this controller.
 	 *
-	 * @param aTrueFalse Turns controller on if "true" and off if "false".
+	 * @param aTrueFalse Disable if true.
 	 */
-	void setIsEnabled(bool aTrueFalse);
+	virtual void setDisabled(bool aTrueFalse);
 
 	/** Compute the control for actuator
 	 *  This method defines the behavior for any concrete controller 

@@ -436,7 +436,7 @@ bool CMCTool::run()
     controller->setName( "CMC" );
 	controller->setActuators(_model->updActuators());
     _model->addController(controller );
-    controller->setIsEnabled(true);
+    controller->setDisabled(false);
     controller->setUseCurvatureFilter(_useCurvatureFilter);
     controller->setTargetDT(_targetDT);
     controller->setCheckTargetTime(true);

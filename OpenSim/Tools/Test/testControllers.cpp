@@ -62,14 +62,18 @@ using namespace OpenSim;
 using namespace std;
 
 void testControlSetControllerOnBlock();
-void testPrescribedControllerOnBlock();
+void testPrescribedControllerOnBlock(bool disabled);
 void testCorrectionControllerOnBlock();
 
 int main()
 {
     try {
+		cout << "Testing ControlSetController" << endl; 
 		testControlSetControllerOnBlock();
-		testPrescribedControllerOnBlock();
+		cout << "Testing PrescribedController" << endl; 
+		testPrescribedControllerOnBlock(false);
+		testPrescribedControllerOnBlock(true);
+		cout << "Testing CorrectionController" << endl; 
 		testCorrectionControllerOnBlock();
     }	
 	catch (const Exception& e) {
@@ -153,10 +157,7 @@ void testControlSetControllerOnBlock()
 	// Create the integrator and manager for the simulation.
 	double accuracy = 1.0e-3;
 	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-	integrator.setMaximumStepSize(100);
-	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(accuracy);
-	integrator.setAbsoluteTolerance(1.0e-4);
 	Manager manager(osimModel, integrator);
 
 	// Integrate from initial time to final time
@@ -178,7 +179,7 @@ void testControlSetControllerOnBlock()
 
 
 //==========================================================================================================
-void testPrescribedControllerOnBlock()
+void testPrescribedControllerOnBlock(bool disabled)
 {
 	using namespace SimTK;
 
@@ -224,11 +225,19 @@ void testPrescribedControllerOnBlock()
 
 	// Create a prescribed controller that simply applies a function of the force
 	PrescribedController actuatorController;
+	actuatorController.setName("testPrescribedController");
 	actuatorController.setActuators(osimModel.updActuators());
 	actuatorController.prescribeControlForActuator(0, new Constant(controlForce));
+	actuatorController.setDisabled(disabled);
 
 	// add the controller to the model
 	osimModel.addController(&actuatorController);
+
+	osimModel.print("blockWithPrescribedController.osim");
+	Model modelfileFromFile("blockWithPrescribedController.osim");
+
+	// Verify that serialization and then deserialization of the disable flag is correct
+	ASSERT(modelfileFromFile.getControllerSet().get("testPrescribedController").isDisabled() == disabled);
 
 	// Initialize the system and get the state representing the state system
 	SimTK::State& si = osimModel.initSystem();
@@ -241,10 +250,7 @@ void testPrescribedControllerOnBlock()
 	// Create the integrator and manager for the simulation.
 	double accuracy = 1.0e-3;
 	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-	integrator.setMaximumStepSize(100);
-	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(accuracy);
-	integrator.setAbsoluteTolerance(1.0e-4);
 	Manager manager(osimModel, integrator);
 
 	// Integrate from initial time to final time
@@ -254,8 +260,9 @@ void testPrescribedControllerOnBlock()
 	manager.integrate(si);
 
 	si.getQ().dump("Final position:");
-	double x_err = fabs(coordinates[0].getValue(si) - 0.5*(controlForce/blockMass)*finalTime*finalTime);
-	ASSERT(x_err <= accuracy, __FILE__, __LINE__, "PrescribedController failed to produce the expected motion of block.");
+
+	double expected = disabled ? 0 : 0.5*(controlForce/blockMass)*finalTime*finalTime;
+	ASSERT_EQUAL(expected, coordinates[0].getValue(si), accuracy, __FILE__, __LINE__, "PrescribedController failed to produce the expected motion of block.");
 
 	// Save the simulation results
 	Storage states(manager.getStateStorage());
@@ -310,10 +317,7 @@ void testCorrectionControllerOnBlock()
 
 	// Create the integrator and manager for the simulation.
 	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-	integrator.setMaximumStepSize(1.0e-3);
-	integrator.setMinimumStepSize(1.0e-6);
-	integrator.setAccuracy(1.0e-3);
-	integrator.setAbsoluteTolerance(1.0e-4);
+	integrator.setAccuracy(1.0e-4);
 	Manager manager(osimModel, integrator);
 
 	osimModel.disownAllComponents();

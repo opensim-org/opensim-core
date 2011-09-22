@@ -280,7 +280,7 @@ double ControllerSet::getFirstTime() const
 {
     double ti = get(0).getFirstTime();
     for (int i=1;i<getSize();i++ ) {
-        if(get(i).getIsEnabled() ) { 
+        if(!get(i).isDisabled() ) { 
             if( ti < get(i).getFirstTime() ) ti = get(i).getFirstTime();
         }
     }
@@ -292,7 +292,7 @@ double ControllerSet::getLastTime() const
 {
     double tf = get(0).getLastTime();
     for (int i=1;i<getSize();i++ ) {
-        if(get(i).getIsEnabled() ) { 
+        if(!get(i).isDisabled() ) { 
            if( tf > get(i).getLastTime() ) tf = get(i).getLastTime();
         }
     }
@@ -302,7 +302,7 @@ double ControllerSet::getLastTime() const
 void ControllerSet::setDesiredStates( Storage* yStore)
 {
    for(int i=0;i<getSize();i++ ) {
-       if( get(i).getIsEnabled() ) {
+       if( !get(i).isDisabled() ) {
 		   TrackingController *controller = dynamic_cast<TrackingController *>(&get(i));
 		   if(controller != NULL)
 				controller->setDesiredStatesStorage( yStore );
@@ -324,7 +324,7 @@ void ControllerSet::printInfo() const
 
     for(int i=0;i<getSize(); i++ ) {
       Controller& c = get(i);
-      if( c.getIsEnabled() ) {
+      if( !c.isDisabled() ) {
           printf(" controller %d =%x %s model=%x \n", i+1, (void*)&c, c.getName().c_str(), (void*)&c.getModel() );
 
           const Set<Actuator>& actSet = c.getActuatorSet();
@@ -344,7 +344,7 @@ void ControllerSet::createSystem(SimTK::MultibodySystem& system)
 {
    for(int i=0;i<getSize(); i++ ) {
        //get(i).setModel(*_model);
-       if(get(i).getIsEnabled() )
+       if(!get(i).isDisabled() )
 		   get(i).createSystem(system);
    }
 }
@@ -352,7 +352,7 @@ void ControllerSet::createSystem(SimTK::MultibodySystem& system)
 void ControllerSet::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {
 	for(int i=0;i<getSize(); i++ ) {
-		if(get(i).getIsEnabled() )
+		if(!get(i).isDisabled() )
 			get(i).computeControls(s, controls);
 	}
 }
