@@ -27,15 +27,28 @@
 
 #include <iostream>
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
-using namespace SimTK;
 using namespace std;
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
+void testExternalLoad();
 
-void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
+int main()
+{
+	try {
+		testExternalLoad();
+	}
+    catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
+}
+
+
+void addLoadToStorage(Storage &forceStore, SimTK::Vec3 force, SimTK::Vec3 point, SimTK::Vec3 torque)
 {
 	int nLoads = forceStore.getColumnLabels().getSize()/9;
 	string labels[9] = { "forceX", "forceY", "forceZ", "pointX", "pointY", "pointZ","torqueX", "torqueY", "torqueZ"};
@@ -84,6 +97,8 @@ void addLoadToStorage(Storage &forceStore, Vec3 force, Vec3 point, Vec3 torque)
 
 void testExternalLoad()
 {
+	using namespace SimTK;
+
 	Model model("Pendulum.osim");
 	State &s = model.initSystem();
 
@@ -258,11 +273,4 @@ void testExternalLoad()
 
 	// kinematics should match to within integ accuracy
 	ASSERT_EQUAL(0.0, norm_err, integ_accuracy);
-}
-
-int main()
-{
-	testExternalLoad();
-	
-	return 0;
 }

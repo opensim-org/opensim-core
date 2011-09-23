@@ -24,8 +24,7 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <fstream>
-#include <OpenSim/Common/Storage.h>
+#include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
@@ -33,49 +32,21 @@ using namespace std;
 
 int main() {
     try {
-	// Create a storge from a std file "std_storage.sto"
-		//ofstream checkRunDirFile("rundir.txt");
-		//checkRunDirFile << "Run from here:\n\n";
-		//checkRunDirFile.close();
-		string stdLabels[] = {"time", "v1", "v2"};
-		Storage* st = new Storage("test.sto");
-		// time[\t]v1[\t]v2
-		// 1.[\t]	10.0[Space]20
-		// 2.[\t\t] 20.0[\t]40
-		ASSERT(st->getSize()==2);
-		const Array<std::string> &lbls = st->getColumnLabels();
-		ASSERT(lbls.getSize()==3);
-		int i=0;
-		for(i=0; i<lbls.getSize(); i++){
-			ASSERT(lbls[i]==stdLabels[i]);
-		}
-		double val;
-		for(i=0; i<st->getSize(); i++){
-			StateVector& row = (*st->getStateVector(i));
-			ASSERT(row.getTime()==i+1);
-			ASSERT(row.getData()[0]==row.getTime()*10.0);
-			row.getDataValue(0, val);
-			ASSERT(val==row.getTime()*10.0);
-			ASSERT(row.getData()[0]==row.getTime()*10.0);
-			ASSERT(row.getData()[1]==row.getTime()*20.0);
-		}
-		int ncol = st->getSmallestNumberOfStates();
-		ASSERT(ncol==2);
-		Array<double> col(SimTK::CNT<SimTK::Real>::getNaN(),4);
-		st->getDataColumn(1, col);
-		ASSERT(col[0]==20.);
-		ASSERT(col[1]==40.0);
-	
-		ASSERT(st->getStateIndex("v2")==1);
-
-		Storage st2("testDiff.sto");
-		// Test Comparison
-		double diff = st->compareColumn(st2, stdLabels[1], 0.);
-		ASSERT(fabs(diff) < 1E-7);
-		diff = st->compareColumn(st2, stdLabels[2], 0.);
-		ASSERT(fabs(diff) < 1E-7);
-
-		delete st;
+        double x[] = {0.0, 1.0, 2.0, 2.5, 5.0, 10.0};
+        double y[] = {0.5, 0.7, 2.0, -1.0, 0.5, 0.1};
+        PiecewiseLinearFunction f1(6, x, y);
+        FunctionAdapter adapter(f1);
+        const SimTK::Function& f2 = *f1.createSimTKFunction();
+        SimTK::Vector xvec(1);
+        vector<int> deriv(1, 0);
+        for (int i = 0; i < 100; ++i) {
+            xvec[0] = i*0.01;
+            ASSERT_EQUAL(f1.calcValue(xvec), adapter.calcValue(xvec), 1e-10, __FILE__, __LINE__);
+            ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), adapter.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
+            ASSERT_EQUAL(f1.calcValue(xvec), f2.calcValue(xvec),  1e-10, __FILE__, __LINE__);
+            ASSERT_EQUAL(f1.calcDerivative(deriv,xvec), f2.calcDerivative(deriv,xvec), 1e-10, __FILE__, __LINE__);
+        }
+        ASSERT(adapter.getArgumentSize() == 1, __FILE__, __LINE__);
     }
     catch (const Exception& e) {
         e.print(cerr);

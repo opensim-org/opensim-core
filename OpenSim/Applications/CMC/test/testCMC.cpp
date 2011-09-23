@@ -39,6 +39,7 @@
 #include <OpenSim/Analyses/Actuation.h>
 #include <OpenSim/Analyses/PointKinematics.h>
 #include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -97,6 +98,24 @@ void testGait2354() {
     cout << "meanError = " << meanError << "   maxError = " << maxError << " for " << max_label << " at time = " << maxErrTime << endl;
 	// average error should be below 0.25 degrees
 	ASSERT(meanError < 0.25);
+}
+
+void testArm26() {
+
+	CMCTool cmc("arm26_Setup_CMC.xml");
+	cmc.run();
+	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");
+	CHECK_STORAGE_AGAINST_STANDARD(results, standard, Array<double>(6.0e-3, 16), __FILE__, __LINE__, "testArm failed");
+
+	Storage trackingError("Results_Arm26/arm26_pErr.sto");
+
+	for (int i = 0; i < trackingError.getSize(); ++i) {
+		StateVector* state = trackingError.getStateVector(i);
+		double time = state->getTime();
+		ASSERT_EQUAL(state->getData()[0], 0.0 , 1e-3);
+	}
+
+	cout << "\ntestArm26 passed\n" << endl;
 }
 
 void testSingleMuscle() {

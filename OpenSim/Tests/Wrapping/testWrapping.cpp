@@ -29,71 +29,39 @@
 #include <string>
 #include <iostream>
 #include <OpenSim/OpenSim.h>
-
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-bool equalStorage(Storage& stdStorage, Storage& actualStorage, double tol)
-{
-    Storage diffStorage(actualStorage);
-	diffStorage.subtract(&stdStorage);
-	bool equal = true;
-	Array<double> dData(-SimTK::Infinity);
-	Array<double> sData(-SimTK::Infinity);
-	Array<double> aData(-SimTK::Infinity);
-	for (int i=0; i <diffStorage.getSize() && equal; i++){
-		dData = diffStorage.getStateVector(i)->getData();
-		sData = actualStorage.getStateVector(i)->getData();
-		aData = stdStorage.getStateVector(i)->getData();
-		double dMax = -SimTK::Infinity;
-		int worst=-1;
-		for (int j=0; j<dData.getSize(); j++){
-		    cout << stdStorage.getColumnLabels().get(j+1) << " diff="<< dData[j] << "  std=" <<  sData[j] << "  result=" << aData[j] << endl;
-			if (fabs(dData[j]) > dMax) worst = j;
-			dMax = std::max(dMax, fabs(dData[j]));
-		}
-		equal = (dMax <= tol);
-		cout << "i, col, colname, diff" << i << ", worst:" << worst <<", name:"<< stdStorage.getColumnLabels().get(worst+1) << ", max="<<dMax << "  tol=" << tol << "   equal=" << equal << endl;
-	}
-	return equal;
-}
+void simulateModelWithMuscles(const string &modelFile, double finalTime=0.5);
 
-int testModel(std::string modelPrefix)
+int main()
 {
 	try {
-
-	// CONSTRUCT
-	AnalyzeTool analyze(modelPrefix+"_Setup.xml");
-
-	// PRINT MODEL INFORMATION
-	Model& model = analyze.getModel();
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"Loaded library\n";
-	cout<<"-----------------------------------------------------------------------\n";
-	cout<<"-----------------------------------------------------------------------\n\n";
-
-	// RUN
-	analyze.run();
-
-	//----------------------------
-	// Catch any thrown exceptions
-	//----------------------------
-	} catch(Exception x) {
-		x.print(cerr);
-		return(-1);
+		// Baseline perfromance without wrapping
+		simulateModelWithMuscles("test_nowrap_vasint.osim");
+		// performance with cylnder wrapping
+		simulateModelWithMuscles("test_wrapping_vasint.osim");
+		// performance with ellipsoid wrapping
+		simulateModelWithMuscles("test_wrapEllipsoid_vasint.osim");
+		// performance with multiple muscles and no wrapping
+		simulateModelWithMuscles("gait2392_pelvisFixed.osim", 0.2);
+		// performance with multiple muscles and wrapping
+		simulateModelWithMuscles("Arnold2010_pelvisFixed.osim", 0.2);
+		// performance with multiple muscles and wrapping in upper-exremity
+		simulateModelWithMuscles("TestShoulderModel.osim", 0.1);
 	}
-	// Compare results to a standard 
-	Storage currentResult("Results/"+modelPrefix+"_Actuation_force.sto");
-	Storage stdStorage("std_"+modelPrefix+"_Actuation_force.sto");
-	bool equal = equalStorage(stdStorage, currentResult, .1);
-	return (equal?0:1);
+	catch (const Exception& e) {
+        e.print(cerr);
+        return 1;
+    }
+    cout << "Done" << endl;
+    return 0;
 }
 
-bool simulateModelWithMuscles(const std::string &modelFile, double finalTime=0.5)
+void simulateModelWithMuscles(const string &modelFile, double finalTime)
 {
-	bool status = true;
-
 	// Create a new OpenSim model
 	Model osimModel(modelFile);
 
@@ -105,7 +73,7 @@ bool simulateModelWithMuscles(const std::string &modelFile, double finalTime=0.5
 	// Create a prescribed controller that simply applies a function of the force
 	PrescribedController actuatorController;
 	actuatorController.setActuators(osimModel.updActuators());
-	for (int i=0; i<actuatorController.getActuatorSet().getSize(); i++){
+	for (int i=0; i<actuatorController.getActuatorSet().getSize(); i++) {
 		actuatorController.prescribeControlForActuator(i, new Constant(control));
 	}
 
@@ -135,11 +103,11 @@ bool simulateModelWithMuscles(const std::string &modelFile, double finalTime=0.5
 	// Integrate from initial time to final time
 	manager.setInitialTime(initialTime);
 	manager.setFinalTime(finalTime);
-	std::cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+	cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 	
 	const clock_t start = clock();
 	manager.integrate(si);
-	std::cout << "simulation time = " << (double)(clock()-start)/CLOCKS_PER_SEC << " seconds\n" << std::endl;
+	cout << "simulation time = " << (double)(clock()-start)/CLOCKS_PER_SEC << " seconds\n" << endl;
 
 	// Save the simulation results
 	Storage states(manager.getStateStorage());
@@ -149,29 +117,4 @@ bool simulateModelWithMuscles(const std::string &modelFile, double finalTime=0.5
 	states.print(osimModel.getName()+"_states_degrees.mot");
 
 	osimModel.disownAllComponents();
-
-	return status;
 }// end of simulateModelWithSingleMuscle()
-
-
-
-int main(int argc,char **argv)
-{
-
-	// Baseline perfromance without wrapping
-	simulateModelWithMuscles("test_nowrap_vasint.osim");
-	// performance with cylnder wrapping
-	simulateModelWithMuscles("test_wrapping_vasint.osim");
-	// performance with ellipsoid wrapping
-	simulateModelWithMuscles("test_wrapEllipsoid_vasint.osim");
-	// performance with multiple muscles and no wrapping
-	simulateModelWithMuscles("gait2392_pelvisFixed.osim", 0.2);
-	// performance with multiple muscles and wrapping
-	simulateModelWithMuscles("Arnold2010_pelvisFixed.osim", 0.2);
-
-	// performance with multiple muscles and wrapping in upper-exremity
-	simulateModelWithMuscles("TestShoulderModel.osim", 0.1);
-
-	return(0);
-}
-

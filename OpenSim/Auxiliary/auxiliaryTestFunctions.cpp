@@ -27,40 +27,31 @@
 // INCLUDE
 #include <string>
 #include <iostream>
-#include <OpenSim/Common/Mtx.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Simulation/Model/Model.h>
+#include <exception>
+#include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Simulation/Model/LoadModel.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
-#include <OpenSim/Tools/RRATool.h>
-#include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/BodyKinematics.h>
+#include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
 
-void checkCOM(string resultsFile, string body, SimTK::Vec3 &standardCOM, Array<double> &tolerances);
+void ASSERT(bool cond, string file, int line, string message) {
+	if (!cond) throw Exception(message, file, line);
+}
 
-int main() {
-    try {
-		RRATool rra("subject01_Setup_RRA.xml");
-		rra.run();
-		checkCOM("subject01_RRA_adjusted.osim", "torso", SimTK::Vec3(0.00598028440188985017, 0.34551, 0.1), Array<double>(1e-4, 3));
-		Storage result("ResultsRRA/subject01_walk1_RRA_Kinematics_q.sto"), standard("subject01_walk1_RRA_Kinematics_q_standard.sto");
-		//CHECK_STORAGE_AGAINST_STANDARD(result, standard, Array<double>(0.5, 24));
-    }
-    catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
+void checkResultFiles(string resultsFile, string standardFile, Array<double> &tolerances, string file, int line, string message) {
+
+	Array<string> columnLabels;
+	Array<double> comparisons;
+	int columns = compareResultFiles(resultsFile, standardFile, columnLabels, comparisons);
+
+	for (int i = 1; i < columns; ++i) {
+		cout << "column:    " << columnLabels[i] << endl;
+		cout << "RMS error: " << comparisons[i] << endl;
+		cout << "tolerance: " << tolerances[i] << endl << endl;
+		ASSERT(comparisons[i] < tolerances[i], file, line, message);
+	}
 }
 
 void checkCOM(string resultsFile, string body, SimTK::Vec3 &standardCOM, Array<double> &tolerances) {
@@ -77,4 +68,19 @@ void checkCOM(string resultsFile, string body, SimTK::Vec3 &standardCOM, Array<d
 	cout << "tolerances:     (" << tolerances[0] << ", " << tolerances[1] << ", " << tolerances[2] << ")\n" << endl;
 	for (int i = 0; i < 3; ++i)
 		ASSERT_EQUAL(standardCOM[i], com[i], tolerances[i]);
+}
+
+int compareResultFiles(string resultsFile, string standardFile, Array<string> &columnLabels, Array<double> &comparisons) {
+
+	Storage results(resultsFile);
+	Storage standard(standardFile);
+
+	columnLabels = results.getColumnLabels();
+	comparisons.ensureCapacity(columnLabels.getSize());
+
+	int i;
+	for (i = 1; i < columnLabels.getSize(); ++i)
+		comparisons[i] = results.compareColumnRMS(standard, columnLabels[i], 0.);
+
+	return i;
 }

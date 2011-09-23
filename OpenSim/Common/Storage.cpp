@@ -42,7 +42,7 @@
 #include "SimmIO.h"
 #include "SimmMacros.h"
 #include "SimTKcommon.h"
-
+//#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -3130,6 +3130,76 @@ double Storage::compareColumn(Storage& aOtherStorage, const std::string& aColumn
 		theDiff = std::max(theDiff, fabs(thisData[i]-otherData[startIndexOther+i-startIndex]));
 	}
 	return theDiff;
+}
+/**
+ * Compare column named "aColumnName" in two storage objects
+ * If endTime is not specified the comparison goes to the end of the file
+ * @returns the root mean square, using a spline to calculate values where the times do not match up.
+ */
+double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aColumnName, double startTime, double endTime)
+{
+	//Subtract one since, the data does not include the time column anymore.
+	int thisColumnIndex=_columnLabels.findIndex(aColumnName)-1;
+	int otherColumnIndex = aOtherStorage._columnLabels.findIndex(aColumnName)-1;
+
+	if ((thisColumnIndex==-2)||(otherColumnIndex==-2))// not found is now -2 since we subtracted 1 already
+		return SimTK::NaN;
+
+	// Now we have two columnNumbers. get the data and compare
+	Array<double> thisData, otherData;
+	Array<double> thisTime, otherTime;
+	getDataColumn(thisColumnIndex, thisData);
+	getTimeColumn(thisTime);
+	aOtherStorage.getDataColumn(otherColumnIndex, otherData);
+	aOtherStorage.getTimeColumn(otherTime);
+
+	// get start and end indices
+	if (SimTK::isNaN(startTime))
+		startTime = max(thisTime[0], otherTime[0]);
+	int startIndex = findIndex(startTime);
+	if (thisTime[startIndex] < startTime)
+		++startIndex;
+	if (SimTK::isNaN(endTime))
+		endTime = min(thisTime.getLast(), otherTime.getLast());
+	int endIndex = findIndex(endTime);
+	
+	// create spline in case time values do not match up
+	GCVSpline spline(3, otherTime.getSize(), &otherTime[0], &otherData[0]);
+
+	double rms = 0.;
+
+	for(int i = startIndex; i <= endIndex; i++) {
+		SimTK::Vector inputTime(1, thisTime[i]);
+		double diff = thisData[i] - spline.calcValue(inputTime);
+		rms += diff * diff;
+	}
+
+	rms = sqrt(rms/(endIndex - startIndex));
+
+	return rms;
+}
+/**
+ * Compare this storage object with a standard storage object. Find RMS
+ * errors for columns occurring in both storage objects, and record the
+ * values and column names in the comparisons and columnsUsed Arrays.
+ */
+void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed, Array<double> &comparisons)
+{
+	int maxColumns = _columnLabels.getSize();
+	columnsUsed.ensureCapacity(maxColumns);
+	comparisons.ensureCapacity(maxColumns);
+
+	int columns = 0;
+	for (int i = 1; i < maxColumns; ++i) {
+		double comparison = compareColumnRMS(standard, _columnLabels[i]);
+		if (!SimTK::isNaN(comparison)) {
+			comparisons[columns] = comparison;
+			columnsUsed[columns++] = _columnLabels[i];
+		}
+	}
+
+	columnsUsed.setSize(columns);
+	comparisons.setSize(columns);
 }
 /**
  * Force column labels for a Storage object to become unique. This is done by prepending the string (n_)

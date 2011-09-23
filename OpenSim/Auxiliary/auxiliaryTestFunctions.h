@@ -1,7 +1,9 @@
-// testTools.cpp
-// Author:  Frank C. Anderson
+#ifndef __auxiliaryTestFunctions_h__
+#define __auxiliaryTestFunctions_h__
+
+// ContDerivMuscle.h
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+ * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -24,61 +26,37 @@
 *  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-#include <iostream>
-#include <string>
-#include <math.h>
+ */
+
 #include <OpenSim/Common/Exception.h>
-#include <OpenSim/Common/Signal.h>
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Common/PropertyInt.h>
-#include <OpenSim/Common/PropertyIntArray.h>
-#include <OpenSim/Common/PropertyDbl.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyStrArray.h>
-#include <OpenSim/Common/PropertySet.h>
-#include <OpenSim/Common/RootSolver.h>
-#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "ExampleVectorFunctionUncoupledNxN.h"
 
-using namespace OpenSim;
-using namespace std;
-
-int main()
-{
-	try {
-	// CONSTRUCT THE UNCOUPLED VECTOR FUNCTION
-	int N = 101;
-	ExampleVectorFunctionUncoupledNxN function(N);
-
-	// EVALUATE THE FUNCTION
-	cout<<"\n\nEvaluate the function:\n";
-		Array<double> x(0.0, N), y(0.0, N);
-		function.calcValue(&x[0], &y[0], N);
-		cout << "x:\n" << x << endl;
-		cout << "y:\n" << y << endl;
-
-	// ROOT SOLVE
-		Array<double> a(-1.0,N), b(1.0,N), tol(1.0e-6,N);
-	Array<double> roots(0.0,N);
-	RootSolver solver(&function);
-		//roots = solver.solve(a,b,tol);  NOTE: JACKM need to pass in state or change CMC 
-	cout<<endl<<endl<<"-------------"<<endl;
-	cout<<"roots:\n";
-	cout<<roots<<endl<<endl;
-		for (int i=0; i <= 100; i++){
-			//ASSERT_EQUAL(i*0.01, roots[i], 1e-6);
-	}
-	}
-	catch (const Exception& e) {
-        e.print(cerr);
-        return 1;
-    }
-    cout << "Done" << endl;
-    return 0;
+template <typename T>
+void ASSERT_EQUAL(T expected, T found, T tolerance, std::string file="", int line=-1, std::string message="") {
+	if (found < expected - tolerance || found > expected + tolerance)
+		throw OpenSim::Exception(message, file, line);
 }
+inline void ASSERT(bool cond, std::string file="", int line=-1, std::string message="Exception") {
+	if (!cond) throw OpenSim::Exception(message, file, line);
+}
+/**
+ * Check this storage object against a standard storage object using the
+ * specified tolerances. If RMS error for any column is outside the
+ * tolerance, throw an Exception.
+ */
+void CHECK_STORAGE_AGAINST_STANDARD(OpenSim::Storage& result, OpenSim::Storage& standard, OpenSim::Array<double> &tolerances, std::string testFile, int testFileLine, std::string errorMessage)
+{
+	OpenSim::Array<std::string> columnsUsed;
+	OpenSim::Array<double> comparisons;
+	result.compareWithStandard(standard, columnsUsed, comparisons);
+
+	int columns = columnsUsed.getSize();
+	for (int i = 0; i < columns; ++i) {
+		std::cout << "column:    " << columnsUsed[i] << std::endl;
+		std::cout << "RMS error: " << comparisons[i] << std::endl;
+		std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
+		ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine, errorMessage);
+	}
+}
+
+#endif // __auxiliaryTestFunctions_h__

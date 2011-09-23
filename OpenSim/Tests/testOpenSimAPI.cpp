@@ -36,18 +36,19 @@
 //==============================================================================
 //==============================================================================
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
-using namespace SimTK;
-
-#define ASSERT_EQUAL(expected, found, tolerance) {double tol = std::max((tolerance), std::abs((expected)*(tolerance))); if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(std::exception());}
+using namespace std;
 
 //______________________________________________________________________________
 /**
  * Run a simulation of block sliding with contact on by two muscles sliding with contact 
  */
-int main(int argc,char **argv)
+int main(int argc, char **argv)
 {
+	using namespace SimTK;
+
 	bool waitForUserInput = (argc<2);
 	try {
 		const clock_t start = clock();
@@ -93,7 +94,7 @@ int main(int argc,char **argv)
 		CoordinateSet& jointCoordinateSet = blockToGround->getCoordinateSet();
 
 		// Set the angle and position ranges for the coordinate set
-		double angleRange[2] = {-SimTK::Pi/2, SimTK::Pi/2};
+		double angleRange[2] = {-Pi/2, Pi/2};
 		double positionRange[2] = {-1, 1};
 		jointCoordinateSet[0].setRange(angleRange);
 		jointCoordinateSet[1].setRange(angleRange);
@@ -165,9 +166,9 @@ int main(int argc,char **argv)
 
 		// Define contact geometry
 		// Create new floor contact halfspace
-		ContactHalfSpace *floor = new ContactHalfSpace(SimTK::Vec3(0), SimTK::Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
+		ContactHalfSpace *floor = new ContactHalfSpace(Vec3(0), Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
 		// Create new cube contact mesh
-		OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockRemesh192.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block, "cube");
+		OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockRemesh192.obj", Vec3(0), Vec3(0), *block, "cube");
 
 		// Add contact geometry to the model
 		osimModel.addContactGeometry(floor);
@@ -247,7 +248,7 @@ int main(int argc,char **argv)
 		muscle1->setDefaultFiberLength(0.1);
 
 		// Initialize the system and get the default state
-		SimTK::State& si = osimModel.initSystem();
+		State& si = osimModel.initSystem();
 
 		// Define non-zero (defaults are 0) states for the free joint
 		CoordinateSet& modelCoordinateSet = osimModel.updCoordinateSet();
@@ -260,7 +261,7 @@ int main(int argc,char **argv)
 
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator
-		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-3);
 		integrator.setAbsoluteTolerance(1.0e-3);
 		
@@ -273,17 +274,17 @@ int main(int argc,char **argv)
 
 
 		// Print out details of the model
-		osimModel.printDetailedInfo(si, std::cout);
+		osimModel.printDetailedInfo(si, cout);
 
 		// Print out the initial position and velocity states
 		si.getQ().dump("Initial q's"); // block positions
 		si.getU().dump("Initial u's"); // block velocities
-		std::cout << "Initial time: " << si.getTime() << std::endl;
+		cout << "Initial time: " << si.getTime() << endl;
 
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
-		std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+		cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
 		manager.integrate(si);
 
 		//////////////////////////////
@@ -304,25 +305,25 @@ int main(int argc,char **argv)
 		osimModel.print("tugOfWar_model.osim");
 
 
-		std::cout << "OpenSim Installation verified.\n" << std::endl;
-		std::cout << "main() routine time = " << (double)(clock()-start)/CLOCKS_PER_SEC << " seconds" << std::endl;
+		cout << "OpenSim Installation verified.\n" << endl;
+		cout << "main() routine time = " << (double)(clock()-start)/CLOCKS_PER_SEC << " seconds" << endl;
 	}
-    catch (std::exception ex)
+    catch (exception ex)
     {
-        std::cout << ex.what() << std::endl;
-		std::cout << "press any key to continue..." << std::endl;
+        cout << ex.what() << endl;
+		cout << "press any key to continue..." << endl;
 		if (waitForUserInput) getchar();
         return 1;
     }
     catch (...)
     {
-        std::cout << "UNRECOGNIZED EXCEPTION" << std::endl;
- 		std::cout << "press any key to continue..." << std::endl;
+        cout << "UNRECOGNIZED EXCEPTION" << endl;
+ 		cout << "press any key to continue..." << endl;
 		if (waitForUserInput) getchar();
        return 1;
     }
 
-	std::cout << "press any key to continue..." << std::endl;
+	cout << "press any key to continue..." << endl;
 	if (waitForUserInput) getchar();
 	return 0;
 }

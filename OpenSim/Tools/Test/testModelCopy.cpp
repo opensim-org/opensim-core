@@ -74,5 +74,6 @@ int main()
 	testCopyModel("arm26.osim");
 	testCopyModel("snowboard.osim");
 	testCopyModel("Neck3dof_point_constraint.osim");
+	testCopyModel("leg6dof9musc.osim");
 	return 0;
 }

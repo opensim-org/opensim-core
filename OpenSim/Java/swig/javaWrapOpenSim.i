@@ -79,6 +79,7 @@
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/InverseDynamics.h>
 #include <OpenSim/Analyses/StaticOptimization.h>
+#include <OpenSim/Analyses/ForceReporter.h>
 
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
@@ -605,7 +606,7 @@ static bool trace=false;
 %include <OpenSim/Analyses/MuscleAnalysis.h>
 %include <OpenSim/Analyses/InverseDynamics.h>
 %include <OpenSim/Analyses/StaticOptimization.h>
-
+%include <OpenSim/Analyses/ForceReporter.h>
 //osimActuators
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
 %include <OpenSim/Actuators/CoordinateActuator.h>
