@@ -33,7 +33,7 @@
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/StepFunction.h>
-#include <OpenSim/Common/MultiStepFunction.h>
+#include <OpenSim/Common/PiecewiseStepFunction.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
@@ -72,7 +72,7 @@ public:
 	{
 		typeConstant,
 		typeStepFunction,
-		typeMultiStepFunction,
+		typePiecewiseStepFunction,
 		typePiecewiseLinearFunction,
 		typeLinearFunction,
 		typeNatCubicSpline,
@@ -93,7 +93,7 @@ private:
 	LinearFunction* _linearFunction;
 	NaturalCubicSpline* _natCubicSpline;
 	GCVSpline* _gcvSpline;
-	MultiStepFunction* _mStepFunction;
+	PiecewiseStepFunction* _mStepFunction;
 
 	double _scaleFactor;  // = 1.0 unless function is a MultiplierFunction
 
@@ -117,7 +117,7 @@ public:
 	// Utility methods for getting the function as each of the supported types
 	Constant* getConstant() const { return _constant; }
 	StepFunction* getStepFunction() const { return _stepFunction; }
-	MultiStepFunction* getMultiStepFunction() const { return _mStepFunction; }
+	PiecewiseStepFunction* getMultiStepFunction() const { return _mStepFunction; }
 	PiecewiseLinearFunction* getPiecewiseLinearFunction() const { return _piecewiseLinearFunction; }
 	LinearFunction* getLinearFunction() const { return _linearFunction; }
 	NaturalCubicSpline* getNaturalCubicSpline() const { return _natCubicSpline; }

@@ -1,4 +1,4 @@
-// MultiStepFunction.cpp
+// PiecewiseStepFunction.cpp
 // Author: Peter Loan
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -28,7 +28,7 @@
 
 
 // C++ INCLUDES
-#include "MultiStepFunction.h"
+#include "PiecewiseStepFunction.h"
 #include "Constant.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
@@ -52,14 +52,14 @@ using SimTK::Vector;
 /**
  * Destructor.
  */
-MultiStepFunction::~MultiStepFunction()
+PiecewiseStepFunction::~PiecewiseStepFunction()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-MultiStepFunction::MultiStepFunction() :
+PiecewiseStepFunction::PiecewiseStepFunction() :
        _x(_propX.getValueDblArray()),
        _y(_propY.getValueDblArray())
 {
@@ -68,7 +68,7 @@ MultiStepFunction::MultiStepFunction() :
 //_____________________________________________________________________________
 /**
  */
-MultiStepFunction::MultiStepFunction(int aN,const double *aX,const double *aY,
+PiecewiseStepFunction::PiecewiseStepFunction(int aN,const double *aX,const double *aY,
        const string &aName) :
        _x(_propX.getValueDblArray()),
        _y(_propY.getValueDblArray())
@@ -81,14 +81,14 @@ MultiStepFunction::MultiStepFunction(int aN,const double *aX,const double *aY,
        // NUMBER OF DATA POINTS
        if(aN < 2)
        {
-             printf("MultiStepFunction: ERROR- there must be 2 or more data points.\n");
+             printf("PiecewiseStepFunction: ERROR- there must be 2 or more data points.\n");
              return;
        }
 
        // CHECK DATA
        if((aX==NULL)||(aY==NULL))
        {
-             printf("MultiStepFunction: ERROR- NULL arrays for data points encountered.\n");
+             printf("PiecewiseStepFunction: ERROR- NULL arrays for data points encountered.\n");
              return;
        }
 
@@ -104,9 +104,9 @@ MultiStepFunction::MultiStepFunction(int aN,const double *aX,const double *aY,
  * Copy constructor.
  * All data members of the specified function are copied.
  *
- * @param aFunction MultiStepFunction object to be copied.
+ * @param aFunction PiecewiseStepFunction object to be copied.
  */
-MultiStepFunction::MultiStepFunction(const MultiStepFunction &aFunction) :
+PiecewiseStepFunction::PiecewiseStepFunction(const PiecewiseStepFunction &aFunction) :
        Function(aFunction),
        _x(_propX.getValueDblArray()),
        _y(_propY.getValueDblArray())
@@ -119,9 +119,9 @@ MultiStepFunction::MultiStepFunction(const MultiStepFunction &aFunction) :
  *
  * @return Pointer to a copy of this object.
  */
-Object* MultiStepFunction::copy() const
+Object* PiecewiseStepFunction::copy() const
 {
-       MultiStepFunction *function = new MultiStepFunction(*this);
+       PiecewiseStepFunction *function = new PiecewiseStepFunction(*this);
        return(function);
 }
 
@@ -133,9 +133,9 @@ Object* MultiStepFunction::copy() const
 /**
  * Set all member variables to their NULL or default values.
  */
-void MultiStepFunction::setNull()
+void PiecewiseStepFunction::setNull()
 {
-       setType("MultiStepFunction");
+       setType("PiecewiseStepFunction");
        setupProperties();
 }
 //_____________________________________________________________________________
@@ -144,7 +144,7 @@ void MultiStepFunction::setNull()
  * the properties and connecting them to the local pointers used to access
  * the serialized member variables.
  */
-void MultiStepFunction::setupProperties()
+void PiecewiseStepFunction::setupProperties()
 {
        // X- INDEPENDENT VARIABLES
        _propX.setName("x");
@@ -165,7 +165,7 @@ void MultiStepFunction::setupProperties()
  * members defined in this class.  It does not, for example, make any changes
  * to data members of base classes.
  */
-void MultiStepFunction::setEqual(const MultiStepFunction &aFunction)
+void PiecewiseStepFunction::setEqual(const PiecewiseStepFunction &aFunction)
 {
        setNull();
 
@@ -184,18 +184,18 @@ void MultiStepFunction::setEqual(const MultiStepFunction &aFunction)
  * @param aXValues the X values
  * @param aYValues the Y values
  */
-void MultiStepFunction::init(Function* aFunction)
+void PiecewiseStepFunction::init(Function* aFunction)
 {
        if (aFunction == NULL)
              return;
 
-       MultiStepFunction* sf = dynamic_cast<MultiStepFunction*>(aFunction);
+       PiecewiseStepFunction* sf = dynamic_cast<PiecewiseStepFunction*>(aFunction);
        if (sf != NULL) {
              setEqual(*sf);
        } else {
              XYFunctionInterface xyFunc(aFunction);
              if (xyFunc.getNumberOfPoints() == 0) {
-                  // A MultiStepFunction must have at least 2 data points.
+                  // A PiecewiseStepFunction must have at least 2 data points.
                   // If aFunction is a Constant, use its Y value for both data points.
                   // If it is not, make up two data points.
                   double x[2] = {0.0, 1.0}, y[2];
@@ -205,15 +205,15 @@ void MultiStepFunction::init(Function* aFunction)
                   } else {
                       y[0] = y[1] = 1.0;
                   }
-                  *this = MultiStepFunction(2, x, y);
+                  *this = PiecewiseStepFunction(2, x, y);
              } else if (xyFunc.getNumberOfPoints() == 1) {
                   double x[2], y[2];
                   x[0] = xyFunc.getXValues()[0];
                   x[1] = x[0] + 1.0;
                   y[0] = y[1] = xyFunc.getYValues()[0];
-                  *this = MultiStepFunction(2, x, y);
+                  *this = PiecewiseStepFunction(2, x, y);
              } else {
-                  *this = MultiStepFunction(xyFunc.getNumberOfPoints(),
+                  *this = PiecewiseStepFunction(xyFunc.getNumberOfPoints(),
                       xyFunc.getXValues(), xyFunc.getYValues());
              }
        }
@@ -229,7 +229,7 @@ void MultiStepFunction::init(Function* aFunction)
  *
  * @return Reference to this object.
  */
-MultiStepFunction& MultiStepFunction::operator=(const MultiStepFunction &aFunction)
+PiecewiseStepFunction& PiecewiseStepFunction::operator=(const PiecewiseStepFunction &aFunction)
 {
        // BASE CLASS
        Function::operator=(aFunction);
@@ -254,7 +254,7 @@ MultiStepFunction& MultiStepFunction::operator=(const MultiStepFunction &aFuncti
  *
  * @return Number of data points (or number of coefficients).
  */
-int MultiStepFunction::getSize() const
+int PiecewiseStepFunction::getSize() const
 {
        return(_x.getSize());
 }
@@ -270,7 +270,7 @@ int MultiStepFunction::getSize() const
  * @return Pointer to the independent variable data points.
  * @see getN();
  */
-const Array<double>& MultiStepFunction::getX() const
+const Array<double>& PiecewiseStepFunction::getX() const
 {
        return(_x);
 }
@@ -282,7 +282,7 @@ const Array<double>& MultiStepFunction::getX() const
  * @return Pointer to the coefficients.
  * @see getCoefficients();
  */
-const Array<double>& MultiStepFunction::getY() const
+const Array<double>& PiecewiseStepFunction::getY() const
 {
        return(_y);
 }
@@ -294,7 +294,7 @@ const Array<double>& MultiStepFunction::getY() const
  * @return Pointer to the independent variable data points.
  * @see getN();
  */
-const double* MultiStepFunction::getXValues() const
+const double* PiecewiseStepFunction::getXValues() const
 {
        return(&_x[0]);
 }
@@ -304,7 +304,7 @@ const double* MultiStepFunction::getXValues() const
  *
  * @return Pointer to the dependent variable data points.
  */
-const double* MultiStepFunction::getYValues() const
+const double* PiecewiseStepFunction::getYValues() const
 {
        return(&_y[0]);
 }
@@ -317,7 +317,7 @@ const double* MultiStepFunction::getYValues() const
 /**
  * Update this object based on its XML node.
  */
-void MultiStepFunction::updateFromXMLNode()
+void PiecewiseStepFunction::updateFromXMLNode()
 {
        Function::updateFromXMLNode();
 }      
@@ -328,7 +328,7 @@ void MultiStepFunction::updateFromXMLNode()
 /**
  * Evaluates total first derivative
  */
-double MultiStepFunction::
+double PiecewiseStepFunction::
 evaluateTotalFirstDerivative(double aX,double aDxdt) const
 {
        return 0.0;
@@ -337,51 +337,51 @@ evaluateTotalFirstDerivative(double aX,double aDxdt) const
 /**
  * Evaluates total second derivative
  */
-double MultiStepFunction::
+double PiecewiseStepFunction::
 evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const
 {
        return 0.0;
 }
 
-double MultiStepFunction::getX(int aIndex) const
+double PiecewiseStepFunction::getX(int aIndex) const
 {
        if (aIndex >= 0 && aIndex < _x.getSize())
              return _x.get(aIndex);
        else {
-             throw Exception("MultiStepFunction::getX(): index out of bounds.");
+             throw Exception("PiecewiseStepFunction::getX(): index out of bounds.");
              return 0.0;
        }
 }
 
-double MultiStepFunction::getY(int aIndex) const
+double PiecewiseStepFunction::getY(int aIndex) const
 {
        if (aIndex >= 0 && aIndex < _y.getSize())
              return _y.get(aIndex);
        else {
-             throw Exception("MultiStepFunction::getY(): index out of bounds.");
+             throw Exception("PiecewiseStepFunction::getY(): index out of bounds.");
              return 0.0;
        }
 }
 
-void MultiStepFunction::setX(int aIndex, double aValue)
+void PiecewiseStepFunction::setX(int aIndex, double aValue)
 {
        if (aIndex >= 0 && aIndex < _x.getSize()) {
              _x[aIndex] = aValue;
        } else {
-             throw Exception("MultiStepFunction::setX(): index out of bounds.");
+             throw Exception("PiecewiseStepFunction::setX(): index out of bounds.");
        }
 }
 
-void MultiStepFunction::setY(int aIndex, double aValue)
+void PiecewiseStepFunction::setY(int aIndex, double aValue)
 {
        if (aIndex >= 0 && aIndex < _y.getSize()) {
              _y[aIndex] = aValue;
        } else {
-             throw Exception("MultiStepFunction::setY(): index out of bounds.");
+             throw Exception("PiecewiseStepFunction::setY(): index out of bounds.");
        }
 }
 
-bool MultiStepFunction::deletePoint(int aIndex)
+bool PiecewiseStepFunction::deletePoint(int aIndex)
 {
        if (_x.getSize() > 1 && _y.getSize() > 1 &&
               aIndex < _x.getSize() && aIndex < _y.getSize()) {
@@ -393,7 +393,7 @@ bool MultiStepFunction::deletePoint(int aIndex)
        return false;
 }
 
-bool MultiStepFunction::deletePoints(const Array<int>& indices)
+bool PiecewiseStepFunction::deletePoints(const Array<int>& indices)
 {
        bool pointsDeleted = false;
        int numPointsLeft = _x.getSize() - indices.getSize();
@@ -413,7 +413,7 @@ bool MultiStepFunction::deletePoints(const Array<int>& indices)
    return pointsDeleted;
 }
 
-int MultiStepFunction::addPoint(double aX, double aY)
+int PiecewiseStepFunction::addPoint(double aX, double aY)
 {
        int i=0;
        for (i=0; i<_x.getSize(); i++)
@@ -426,7 +426,7 @@ int MultiStepFunction::addPoint(double aX, double aY)
        return i;
 }
 
-double MultiStepFunction::calcValue(const Vector& x) const
+double PiecewiseStepFunction::calcValue(const Vector& x) const
 {
     int n = _x.getSize();
     double aX = x[0];
@@ -453,22 +453,22 @@ double MultiStepFunction::calcValue(const Vector& x) const
     return _y[k];
 }
 
-double MultiStepFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
+double PiecewiseStepFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
 {
     return 0.0;
 }
 
-int MultiStepFunction::getArgumentSize() const
+int PiecewiseStepFunction::getArgumentSize() const
 {
     return 1;
 }
 
-int MultiStepFunction::getMaxDerivativeOrder() const
+int PiecewiseStepFunction::getMaxDerivativeOrder() const
 {
     return std::numeric_limits<int>::max();
 }
 
-SimTK::Function* MultiStepFunction::createSimTKFunction() const {
+SimTK::Function* PiecewiseStepFunction::createSimTKFunction() const {
     return new FunctionAdapter(*this);
 }
 

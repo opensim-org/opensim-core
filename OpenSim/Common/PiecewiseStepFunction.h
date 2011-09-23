@@ -1,7 +1,7 @@
-#ifndef _MultiStepFunction_h_
-#define _MultiStepFunction_h_
+#ifndef _PiecewiseStepFunction_h_
+#define _PiecewiseStepFunction_h_
 
-// MultiStepFunction.h
+// PiecewiseStepFunction.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2007, Stanford University. All rights reserved. 
@@ -55,7 +55,7 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API MultiStepFunction : public Function
+class OSIMCOMMON_API PiecewiseStepFunction : public Function
 {
 //=============================================================================
 // MEMBER VARIABLES
@@ -78,25 +78,25 @@ public:
        //--------------------------------------------------------------------------
        // CONSTRUCTION
        //--------------------------------------------------------------------------
-       MultiStepFunction();
-       MultiStepFunction(int aN,const double *aTimes,const double *aValues,
+       PiecewiseStepFunction();
+       PiecewiseStepFunction(int aN,const double *aTimes,const double *aValues,
              const std::string &aName="");
-       MultiStepFunction(const MultiStepFunction &aFunction);
-       virtual ~MultiStepFunction();
+       PiecewiseStepFunction(const PiecewiseStepFunction &aFunction);
+       virtual ~PiecewiseStepFunction();
        virtual Object* copy() const;
        virtual void init(Function* aFunction);
 
 private:
        void setNull();
        void setupProperties();
-       void setEqual(const MultiStepFunction &aFunction);
+       void setEqual(const PiecewiseStepFunction &aFunction);
 
        //--------------------------------------------------------------------------
        // OPERATORS
        //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-       MultiStepFunction& operator=(const MultiStepFunction &aFunction);
+       PiecewiseStepFunction& operator=(const PiecewiseStepFunction &aFunction);
 #endif
        //--------------------------------------------------------------------------
        // SET AND GET
@@ -130,14 +130,14 @@ public:
 
        virtual void updateFromXMLNode();
 
-       OPENSIM_DECLARE_DERIVED(MultiStepFunction, Function)
+       OPENSIM_DECLARE_DERIVED(PiecewiseStepFunction, Function)
 
 //=============================================================================
-};     // END class MultiStepFunction
+};     // END class PiecewiseStepFunction
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif  // __MultiStepFunction_h__
+#endif  // __PiecewiseStepFunction_h__
 

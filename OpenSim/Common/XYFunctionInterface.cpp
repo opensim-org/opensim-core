@@ -47,7 +47,7 @@ bool XYFunctionInterface::isXYFunction(Function* f)
 		dynamic_cast<LinearFunction*>(func) ||
 		dynamic_cast<NaturalCubicSpline*>(func) ||
 		dynamic_cast<GCVSpline*>(func)||
-		dynamic_cast<MultiStepFunction*>(func))
+		dynamic_cast<PiecewiseStepFunction*>(func))
 		return true;
 
 	return false;
@@ -82,9 +82,9 @@ XYFunctionInterface::XYFunctionInterface(Function* f) :
 		_functionType = typeStepFunction;
 		return;
 	}
-	_mStepFunction = dynamic_cast<MultiStepFunction*>(func);
+	_mStepFunction = dynamic_cast<PiecewiseStepFunction*>(func);
 	if (_mStepFunction) {
-		_functionType = typeMultiStepFunction;
+		_functionType = typePiecewiseStepFunction;
 		return;
 	}
 	_piecewiseLinearFunction = dynamic_cast<PiecewiseLinearFunction*>(func);
@@ -117,7 +117,7 @@ int XYFunctionInterface::getNumberOfPoints() const
 	{
 		case typeConstant:
 			return 0;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 			return _mStepFunction->getNumberOfPoints();
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getNumberOfPoints();
@@ -140,7 +140,7 @@ const double* XYFunctionInterface::getXValues() const
 			return NULL;
 	   case typeStepFunction:
 			return NULL;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 		    return _mStepFunction->getXValues();
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getXValues();
@@ -173,7 +173,7 @@ const double* XYFunctionInterface::getYValues() const
 	   case typeStepFunction:
 			return NULL;;
 			break;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 			yValues = _mStepFunction->getYValues();
 			break;
 	   case typePiecewiseLinearFunction:
@@ -214,7 +214,7 @@ double XYFunctionInterface::getX(int aIndex) const
 			return 0; //_constant->getX(aIndex);
 	   case typeStepFunction:
 			return 0; //_stepFunction->getX(aIndex);
-		case typeMultiStepFunction:
+		case typePiecewiseStepFunction:
 			return _mStepFunction->getX(aIndex);
 		case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getX(aIndex);
@@ -242,7 +242,7 @@ double XYFunctionInterface::getY(int aIndex) const
 			return _constant->getValue() * _scaleFactor;
 	   case typeStepFunction:
 		   return SimTK::NaN;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 		   return _mStepFunction->getY(aIndex) * _scaleFactor;
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->getY(aIndex) * _scaleFactor;
@@ -268,7 +268,7 @@ void XYFunctionInterface::setX(int aIndex, double aValue)
 	{
 		case typeConstant:
 			break;
-		case typeMultiStepFunction:
+		case typePiecewiseStepFunction:
 		   _mStepFunction->setX(aIndex, aValue);
 		   break;
 	   case typePiecewiseLinearFunction:
@@ -293,7 +293,7 @@ void XYFunctionInterface::setY(int aIndex, double aValue)
 	{
 		case typeConstant:
 			break;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 		   _mStepFunction->setY(aIndex, aValue);
 		   break;
 	   case typePiecewiseLinearFunction:
@@ -318,7 +318,7 @@ bool XYFunctionInterface::deletePoint(int aIndex)
 			return true;
 	   case typeStepFunction:
 		   return false;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 		   return _mStepFunction->deletePoint(aIndex);
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->deletePoint(aIndex);
@@ -341,7 +341,7 @@ bool XYFunctionInterface::deletePoints(const Array<int>& indices)
 			return true;
 	   case typeStepFunction:
 		   return false;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 		   return _mStepFunction->deletePoints(indices);
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->deletePoints(indices);
@@ -366,7 +366,7 @@ int XYFunctionInterface::addPoint(double aX, double aY)
 			return 1;
 	   case typeStepFunction:
 		   return 0;
-	   case typeMultiStepFunction:
+	   case typePiecewiseStepFunction:
 		   return _mStepFunction->addPoint(aX, aY);
 	   case typePiecewiseLinearFunction:
 		   return _piecewiseLinearFunction->addPoint(aX, aY);
