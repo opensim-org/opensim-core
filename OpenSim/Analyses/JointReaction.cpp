@@ -208,7 +208,7 @@ setupProperties()
 	_forcesFileNameProp.setName("forces_file");
 	_forcesFileNameProp.setComment("The name of a file containing forces storage."
 		"If a file name is provided, the applied forces for all actuators will be constructed "
-		"from the actuation_file instead of from the states.  This option should be used "
+		"from the forces_file instead of from the states.  This option should be used "
 		"to calculated joint loads from static optimization results.");
 	_propertySet.append(&_forcesFileNameProp);
 
@@ -218,8 +218,8 @@ setupProperties()
 	_propertySet.append(&_jointNamesProp);
 
 	_onBodyProp.setName("apply_on_bodies");
-	_onBodyProp.setComment("Choice of body (parent or child) on which the calculated "
-		"reactions are applied.  Child body is default.  If the array has one entry only, "
+	_onBodyProp.setComment("Choice of body (parent or child) for which the reaction "
+		"loads are calculated.  Child body is default.  If the array has one entry only, "
 		"that selection is applied to all chosen joints.");
 	_propertySet.append(&_onBodyProp);
 
@@ -425,12 +425,15 @@ constructColumnLabels()
 		std::string onBodyName = bodySet.get(_reactionList.get(i).onBodyIndex).getName();
 		std::string inFrameName = bodySet.get(_reactionList.get(i).inFrameIndex).getName();
 		std::string labelRoot = jointName + "_on_" + onBodyName + "_in_" + inFrameName;
-		labels.append(labelRoot + "_FX");
-		labels.append(labelRoot + "_FY");
-		labels.append(labelRoot + "_FZ");
-		labels.append(labelRoot + "_MX");
-		labels.append(labelRoot + "_MY");
-		labels.append(labelRoot + "_MZ");
+		labels.append(labelRoot + "_fx");
+		labels.append(labelRoot + "_fy");
+		labels.append(labelRoot + "_fz");
+		labels.append(labelRoot + "_mx");
+		labels.append(labelRoot + "_my");
+		labels.append(labelRoot + "_mz");
+		labels.append(labelRoot + "_px");
+		labels.append(labelRoot + "_py");
+		labels.append(labelRoot + "_pz");
 	}
 
 	setColumnLabels(labels);
@@ -544,8 +547,9 @@ setModel(Model& aModel)
 	//setupStorage();
 	_dydt.setSize(_model->getNumStates());
 	int numJoints = _reactionList.getSize();
-	// work out how to set firgure out desired truncated loads size
-	_Loads.setSize(6*numJoints);
+	// set size of working array of loads.  Each load has 3 components each
+	// for force, moment, and point of application
+	_Loads.setSize(9*numJoints);
 }
 
 
@@ -617,46 +621,65 @@ record(const SimTK::State& s)
 	/* retrieved desired joint reactions, convert to desired bodies, and convert
 	*  to desired reference frames*/
 	int numOutputJoints = _reactionList.getSize();
-	Vector_<Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints);
+	Vector_<Vec3> forcesVec(numOutputJoints), momentsVec(numOutputJoints), pointsVec(numOutputJoints);
 	for(int i=0; i<numOutputJoints; i++) {
 		JointReactionKey currentKey = _reactionList[i];
 		const Joint& joint = jointSet.get(currentKey.jointName);
 		Vec3 force = allForcesVec[currentKey.reactionIndex];
 		Vec3 moment = allMomentsVec[currentKey.reactionIndex];
 		Body& expressedInBody = bodySet.get(currentKey.inFrameIndex);
+		// find the point of application of the joint load on the child
+		Vec3 childLocation(0,0,0);
+		joint.getLocation(childLocation);
+		// and find it's current location in the ground reference frame
+		Vec3 childLocationInGlobal(0,0,0);
+		_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
+		// set the point of application to the joint location in the child body
+		Vec3 pointOfApplication(0,0,0);
+		
 		// check if the load on the child needs to be converted to an equivalent
 		// load on the parent body.
 		if(currentKey.onBodyIndex != currentKey.reactionIndex){
 			/*Take reaction load from child and apply on parent*/
 			force = -force;
 			moment = -moment;
-			Vec3 childLocation(0,0,0), parentLocation(0,0,0);
-			joint.getLocation(childLocation);
+			Vec3 parentLocation(0,0,0);
+			
 			joint.getLocationInParent(parentLocation);
-			Vec3 childLocationInGlobal(0,0,0), parentLocationInGlobal(0,0,0);
-			_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
+			Vec3 parentLocationInGlobal(0,0,0);
+			//_model->getSimbodyEngine().getPosition(s_analysis, joint.getBody(), childLocation,childLocationInGlobal);
 			_model->getSimbodyEngine().getPosition(s_analysis,joint.getParentBody(), parentLocation, parentLocationInGlobal);
 
 			// define vector from the mobilizer location on the child to the location on the parent
 			Vec3 translation = parentLocationInGlobal - childLocationInGlobal;
 			// find equivalent moment if the load is shifted to the parent loaction
 			moment -= translation % force;
+
+			// reset the point of application to the joint location in the parent expressed in ground
+			pointOfApplication = parentLocationInGlobal;
+		}
+		else{
+			// set the point of application to the joint laction in the child expressed in ground
+			pointOfApplication = childLocationInGlobal;
 		}
 		/* express loads in the desired reference frame*/
 		_model->getSimbodyEngine().transform(s_analysis,ground,force,expressedInBody,force);
 		_model->getSimbodyEngine().transform(s_analysis,ground,moment,expressedInBody,moment);
+		_model->getSimbodyEngine().transformPosition(s_analysis,ground,pointOfApplication,expressedInBody,pointOfApplication);
 
 		/* place results in the truncated loads vectors*/
 		forcesVec[i] = force;
 		momentsVec[i] = moment;
+		pointsVec[i] = pointOfApplication;
 	}
 
 	/* fill out row construction array*/
 	for(int i=0;i<numOutputJoints;i++) {
-		int I = 6*i;
+		int I = 9*i;
 		for(int j=0;j<3;j++) {
 			_Loads[I+j] = forcesVec[i][j];
 			_Loads[I+j+3] = momentsVec[i][j];
+			_Loads[I+j+6] = pointsVec[i][j];
 		}
 	}
 	/* Write the reaction data to storage*/
