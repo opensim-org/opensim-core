@@ -1,7 +1,7 @@
-#ifndef _PiecewiseStepFunction_h_
-#define _PiecewiseStepFunction_h_
+#ifndef _PiecewiseConstantFunction_h_
+#define _PiecewiseConstantFunction_h_
 
-// PiecewiseStepFunction.h
+// PiecewiseConstantFunction.h
 // Author: Peter Loan
 /*
  * Copyright (c) 2007, Stanford University. All rights reserved. 
@@ -55,7 +55,7 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PiecewiseStepFunction : public Function
+class OSIMCOMMON_API PiecewiseConstantFunction : public Function
 {
 //=============================================================================
 // MEMBER VARIABLES
@@ -78,25 +78,25 @@ public:
        //--------------------------------------------------------------------------
        // CONSTRUCTION
        //--------------------------------------------------------------------------
-       PiecewiseStepFunction();
-       PiecewiseStepFunction(int aN,const double *aTimes,const double *aValues,
+       PiecewiseConstantFunction();
+       PiecewiseConstantFunction(int aN,const double *aTimes,const double *aValues,
              const std::string &aName="");
-       PiecewiseStepFunction(const PiecewiseStepFunction &aFunction);
-       virtual ~PiecewiseStepFunction();
+       PiecewiseConstantFunction(const PiecewiseConstantFunction &aFunction);
+       virtual ~PiecewiseConstantFunction();
        virtual Object* copy() const;
        virtual void init(Function* aFunction);
 
 private:
        void setNull();
        void setupProperties();
-       void setEqual(const PiecewiseStepFunction &aFunction);
+       void setEqual(const PiecewiseConstantFunction &aFunction);
 
        //--------------------------------------------------------------------------
        // OPERATORS
        //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-       PiecewiseStepFunction& operator=(const PiecewiseStepFunction &aFunction);
+       PiecewiseConstantFunction& operator=(const PiecewiseConstantFunction &aFunction);
 #endif
        //--------------------------------------------------------------------------
        // SET AND GET
@@ -130,14 +130,14 @@ public:
 
        virtual void updateFromXMLNode();
 
-       OPENSIM_DECLARE_DERIVED(PiecewiseStepFunction, Function)
+       OPENSIM_DECLARE_DERIVED(PiecewiseConstantFunction, Function)
 
 //=============================================================================
-};     // END class PiecewiseStepFunction
+};     // END class PiecewiseConstantFunction
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif  // __PiecewiseStepFunction_h__
+#endif  // __PiecewiseConstantFunction_h__
 

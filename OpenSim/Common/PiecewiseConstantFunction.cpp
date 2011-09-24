@@ -1,4 +1,4 @@
-// PiecewiseStepFunction.cpp
+// PiecewiseConstantFunction.cpp
 // Author: Peter Loan
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -28,7 +28,7 @@
 
 
 // C++ INCLUDES
-#include "PiecewiseStepFunction.h"
+#include "PiecewiseConstantFunction.h"
 #include "Constant.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
@@ -52,14 +52,14 @@ using SimTK::Vector;
 /**
  * Destructor.
  */
-PiecewiseStepFunction::~PiecewiseStepFunction()
+PiecewiseConstantFunction::~PiecewiseConstantFunction()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-PiecewiseStepFunction::PiecewiseStepFunction() :
+PiecewiseConstantFunction::PiecewiseConstantFunction() :
        _x(_propX.getValueDblArray()),
        _y(_propY.getValueDblArray())
 {
@@ -68,7 +68,7 @@ PiecewiseStepFunction::PiecewiseStepFunction() :
 //_____________________________________________________________________________
 /**
  */
-PiecewiseStepFunction::PiecewiseStepFunction(int aN,const double *aX,const double *aY,
+PiecewiseConstantFunction::PiecewiseConstantFunction(int aN,const double *aX,const double *aY,
        const string &aName) :
        _x(_propX.getValueDblArray()),
        _y(_propY.getValueDblArray())
@@ -81,14 +81,14 @@ PiecewiseStepFunction::PiecewiseStepFunction(int aN,const double *aX,const doubl
        // NUMBER OF DATA POINTS
        if(aN < 2)
        {
-             printf("PiecewiseStepFunction: ERROR- there must be 2 or more data points.\n");
+             printf("PiecewiseConstantFunction: ERROR- there must be 2 or more data points.\n");
              return;
        }
 
        // CHECK DATA
        if((aX==NULL)||(aY==NULL))
        {
-             printf("PiecewiseStepFunction: ERROR- NULL arrays for data points encountered.\n");
+             printf("PiecewiseConstantFunction: ERROR- NULL arrays for data points encountered.\n");
              return;
        }
 
@@ -104,9 +104,9 @@ PiecewiseStepFunction::PiecewiseStepFunction(int aN,const double *aX,const doubl
  * Copy constructor.
  * All data members of the specified function are copied.
  *
- * @param aFunction PiecewiseStepFunction object to be copied.
+ * @param aFunction PiecewiseConstantFunction object to be copied.
  */
-PiecewiseStepFunction::PiecewiseStepFunction(const PiecewiseStepFunction &aFunction) :
+PiecewiseConstantFunction::PiecewiseConstantFunction(const PiecewiseConstantFunction &aFunction) :
        Function(aFunction),
        _x(_propX.getValueDblArray()),
        _y(_propY.getValueDblArray())
@@ -119,9 +119,9 @@ PiecewiseStepFunction::PiecewiseStepFunction(const PiecewiseStepFunction &aFunct
  *
  * @return Pointer to a copy of this object.
  */
-Object* PiecewiseStepFunction::copy() const
+Object* PiecewiseConstantFunction::copy() const
 {
-       PiecewiseStepFunction *function = new PiecewiseStepFunction(*this);
+       PiecewiseConstantFunction *function = new PiecewiseConstantFunction(*this);
        return(function);
 }
 
@@ -133,9 +133,9 @@ Object* PiecewiseStepFunction::copy() const
 /**
  * Set all member variables to their NULL or default values.
  */
-void PiecewiseStepFunction::setNull()
+void PiecewiseConstantFunction::setNull()
 {
-       setType("PiecewiseStepFunction");
+       setType("PiecewiseConstantFunction");
        setupProperties();
 }
 //_____________________________________________________________________________
@@ -144,7 +144,7 @@ void PiecewiseStepFunction::setNull()
  * the properties and connecting them to the local pointers used to access
  * the serialized member variables.
  */
-void PiecewiseStepFunction::setupProperties()
+void PiecewiseConstantFunction::setupProperties()
 {
        // X- INDEPENDENT VARIABLES
        _propX.setName("x");
@@ -165,7 +165,7 @@ void PiecewiseStepFunction::setupProperties()
  * members defined in this class.  It does not, for example, make any changes
  * to data members of base classes.
  */
-void PiecewiseStepFunction::setEqual(const PiecewiseStepFunction &aFunction)
+void PiecewiseConstantFunction::setEqual(const PiecewiseConstantFunction &aFunction)
 {
        setNull();
 
@@ -184,18 +184,18 @@ void PiecewiseStepFunction::setEqual(const PiecewiseStepFunction &aFunction)
  * @param aXValues the X values
  * @param aYValues the Y values
  */
-void PiecewiseStepFunction::init(Function* aFunction)
+void PiecewiseConstantFunction::init(Function* aFunction)
 {
        if (aFunction == NULL)
              return;
 
-       PiecewiseStepFunction* sf = dynamic_cast<PiecewiseStepFunction*>(aFunction);
+       PiecewiseConstantFunction* sf = dynamic_cast<PiecewiseConstantFunction*>(aFunction);
        if (sf != NULL) {
              setEqual(*sf);
        } else {
              XYFunctionInterface xyFunc(aFunction);
              if (xyFunc.getNumberOfPoints() == 0) {
-                  // A PiecewiseStepFunction must have at least 2 data points.
+                  // A PiecewiseConstantFunction must have at least 2 data points.
                   // If aFunction is a Constant, use its Y value for both data points.
                   // If it is not, make up two data points.
                   double x[2] = {0.0, 1.0}, y[2];
@@ -205,15 +205,15 @@ void PiecewiseStepFunction::init(Function* aFunction)
                   } else {
                       y[0] = y[1] = 1.0;
                   }
-                  *this = PiecewiseStepFunction(2, x, y);
+                  *this = PiecewiseConstantFunction(2, x, y);
              } else if (xyFunc.getNumberOfPoints() == 1) {
                   double x[2], y[2];
                   x[0] = xyFunc.getXValues()[0];
                   x[1] = x[0] + 1.0;
                   y[0] = y[1] = xyFunc.getYValues()[0];
-                  *this = PiecewiseStepFunction(2, x, y);
+                  *this = PiecewiseConstantFunction(2, x, y);
              } else {
-                  *this = PiecewiseStepFunction(xyFunc.getNumberOfPoints(),
+                  *this = PiecewiseConstantFunction(xyFunc.getNumberOfPoints(),
                       xyFunc.getXValues(), xyFunc.getYValues());
              }
        }
@@ -229,7 +229,7 @@ void PiecewiseStepFunction::init(Function* aFunction)
  *
  * @return Reference to this object.
  */
-PiecewiseStepFunction& PiecewiseStepFunction::operator=(const PiecewiseStepFunction &aFunction)
+PiecewiseConstantFunction& PiecewiseConstantFunction::operator=(const PiecewiseConstantFunction &aFunction)
 {
        // BASE CLASS
        Function::operator=(aFunction);
@@ -254,7 +254,7 @@ PiecewiseStepFunction& PiecewiseStepFunction::operator=(const PiecewiseStepFunct
  *
  * @return Number of data points (or number of coefficients).
  */
-int PiecewiseStepFunction::getSize() const
+int PiecewiseConstantFunction::getSize() const
 {
        return(_x.getSize());
 }
@@ -270,7 +270,7 @@ int PiecewiseStepFunction::getSize() const
  * @return Pointer to the independent variable data points.
  * @see getN();
  */
-const Array<double>& PiecewiseStepFunction::getX() const
+const Array<double>& PiecewiseConstantFunction::getX() const
 {
        return(_x);
 }
@@ -282,7 +282,7 @@ const Array<double>& PiecewiseStepFunction::getX() const
  * @return Pointer to the coefficients.
  * @see getCoefficients();
  */
-const Array<double>& PiecewiseStepFunction::getY() const
+const Array<double>& PiecewiseConstantFunction::getY() const
 {
        return(_y);
 }
@@ -294,7 +294,7 @@ const Array<double>& PiecewiseStepFunction::getY() const
  * @return Pointer to the independent variable data points.
  * @see getN();
  */
-const double* PiecewiseStepFunction::getXValues() const
+const double* PiecewiseConstantFunction::getXValues() const
 {
        return(&_x[0]);
 }
@@ -304,7 +304,7 @@ const double* PiecewiseStepFunction::getXValues() const
  *
  * @return Pointer to the dependent variable data points.
  */
-const double* PiecewiseStepFunction::getYValues() const
+const double* PiecewiseConstantFunction::getYValues() const
 {
        return(&_y[0]);
 }
@@ -317,7 +317,7 @@ const double* PiecewiseStepFunction::getYValues() const
 /**
  * Update this object based on its XML node.
  */
-void PiecewiseStepFunction::updateFromXMLNode()
+void PiecewiseConstantFunction::updateFromXMLNode()
 {
        Function::updateFromXMLNode();
 }      
@@ -328,7 +328,7 @@ void PiecewiseStepFunction::updateFromXMLNode()
 /**
  * Evaluates total first derivative
  */
-double PiecewiseStepFunction::
+double PiecewiseConstantFunction::
 evaluateTotalFirstDerivative(double aX,double aDxdt) const
 {
        return 0.0;
@@ -337,51 +337,51 @@ evaluateTotalFirstDerivative(double aX,double aDxdt) const
 /**
  * Evaluates total second derivative
  */
-double PiecewiseStepFunction::
+double PiecewiseConstantFunction::
 evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const
 {
        return 0.0;
 }
 
-double PiecewiseStepFunction::getX(int aIndex) const
+double PiecewiseConstantFunction::getX(int aIndex) const
 {
        if (aIndex >= 0 && aIndex < _x.getSize())
              return _x.get(aIndex);
        else {
-             throw Exception("PiecewiseStepFunction::getX(): index out of bounds.");
+             throw Exception("PiecewiseConstantFunction::getX(): index out of bounds.");
              return 0.0;
        }
 }
 
-double PiecewiseStepFunction::getY(int aIndex) const
+double PiecewiseConstantFunction::getY(int aIndex) const
 {
        if (aIndex >= 0 && aIndex < _y.getSize())
              return _y.get(aIndex);
        else {
-             throw Exception("PiecewiseStepFunction::getY(): index out of bounds.");
+             throw Exception("PiecewiseConstantFunction::getY(): index out of bounds.");
              return 0.0;
        }
 }
 
-void PiecewiseStepFunction::setX(int aIndex, double aValue)
+void PiecewiseConstantFunction::setX(int aIndex, double aValue)
 {
        if (aIndex >= 0 && aIndex < _x.getSize()) {
              _x[aIndex] = aValue;
        } else {
-             throw Exception("PiecewiseStepFunction::setX(): index out of bounds.");
+             throw Exception("PiecewiseConstantFunction::setX(): index out of bounds.");
        }
 }
 
-void PiecewiseStepFunction::setY(int aIndex, double aValue)
+void PiecewiseConstantFunction::setY(int aIndex, double aValue)
 {
        if (aIndex >= 0 && aIndex < _y.getSize()) {
              _y[aIndex] = aValue;
        } else {
-             throw Exception("PiecewiseStepFunction::setY(): index out of bounds.");
+             throw Exception("PiecewiseConstantFunction::setY(): index out of bounds.");
        }
 }
 
-bool PiecewiseStepFunction::deletePoint(int aIndex)
+bool PiecewiseConstantFunction::deletePoint(int aIndex)
 {
        if (_x.getSize() > 1 && _y.getSize() > 1 &&
               aIndex < _x.getSize() && aIndex < _y.getSize()) {
@@ -393,7 +393,7 @@ bool PiecewiseStepFunction::deletePoint(int aIndex)
        return false;
 }
 
-bool PiecewiseStepFunction::deletePoints(const Array<int>& indices)
+bool PiecewiseConstantFunction::deletePoints(const Array<int>& indices)
 {
        bool pointsDeleted = false;
        int numPointsLeft = _x.getSize() - indices.getSize();
@@ -413,7 +413,7 @@ bool PiecewiseStepFunction::deletePoints(const Array<int>& indices)
    return pointsDeleted;
 }
 
-int PiecewiseStepFunction::addPoint(double aX, double aY)
+int PiecewiseConstantFunction::addPoint(double aX, double aY)
 {
        int i=0;
        for (i=0; i<_x.getSize(); i++)
@@ -426,7 +426,7 @@ int PiecewiseStepFunction::addPoint(double aX, double aY)
        return i;
 }
 
-double PiecewiseStepFunction::calcValue(const Vector& x) const
+double PiecewiseConstantFunction::calcValue(const Vector& x) const
 {
     int n = _x.getSize();
     double aX = x[0];
@@ -453,22 +453,22 @@ double PiecewiseStepFunction::calcValue(const Vector& x) const
     return _y[k];
 }
 
-double PiecewiseStepFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
+double PiecewiseConstantFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
 {
     return 0.0;
 }
 
-int PiecewiseStepFunction::getArgumentSize() const
+int PiecewiseConstantFunction::getArgumentSize() const
 {
     return 1;
 }
 
-int PiecewiseStepFunction::getMaxDerivativeOrder() const
+int PiecewiseConstantFunction::getMaxDerivativeOrder() const
 {
     return std::numeric_limits<int>::max();
 }
 
-SimTK::Function* PiecewiseStepFunction::createSimTKFunction() const {
+SimTK::Function* PiecewiseConstantFunction::createSimTKFunction() const {
     return new FunctionAdapter(*this);
 }
 
