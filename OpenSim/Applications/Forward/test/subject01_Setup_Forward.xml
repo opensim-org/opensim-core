@@ -10,13 +10,13 @@
 		<!--List of xml files used to construct an force set for the model.-->
 		<force_set_files> gait2354_CMC_Actuators.xml </force_set_files>
 		<!--Directory used for writing results.-->
-		<results_directory> ResultsCorrectionController </results_directory>
+		<results_directory> Results </results_directory>
 		<!--Output precision.  It is 8 by default.-->
-		<output_precision> 8 </output_precision>
+		<output_precision> 20 </output_precision>
 		<!--Initial time for the simulation.-->
-		<initial_time>       0.83000000 </initial_time>
+		<initial_time>       0.80000000 </initial_time>
 		<!--Final time for the simulation.-->
-		<final_time>       1.00000000 </final_time>
+		<final_time>       0.95000000 </final_time>
 		<!--Flag indicating whether or not to compute equilibrium values for
 		    states other than the coordinates or speeds.  For example, equilibrium
 		    muscle fiber lengths or muscle forces.-->
@@ -24,7 +24,7 @@
 		<!--Maximum number of integrator steps.-->
 		<maximum_number_of_integrator_steps> 30000 </maximum_number_of_integrator_steps>
 		<!--Maximum integration step size.-->
-		<maximum_integrator_step_size>  1.0 </maximum_integrator_step_size>
+		<maximum_integrator_step_size>       1.00000000 </maximum_integrator_step_size>
 		<!--Minimum integration step size.-->
 		<minimum_integrator_step_size>       0.00000001 </minimum_integrator_step_size>
 		<!--Integrator error tolerance. When the error is greater, the integrator
@@ -32,51 +32,22 @@
 		<integrator_error_tolerance>       0.000010000 </integrator_error_tolerance>
 		<!--Set of analyses to be run during the investigation.-->
 		<AnalysisSet name="Analyses">
-			<objects>
-				<Actuation name="Actuation">
-					<!--Flag (true or false) specifying whether whether on. True by default.-->
-					<on> true </on>
-					<!--Start time.-->
-					<start_time> -infinity </start_time>
-					<!--End time.-->
-					<end_time> infinity </end_time>
-					<!--Specifies how often to store results during a simulation. More
-					    specifically, the interval (a positive integer) specifies how many
-					    successful integration steps should be taken before results are
-					    recorded again.-->
-					<step_interval> 10 </step_interval>
-					<!--Flag (true or false) indicating whether the results are in degrees or
-					    not.-->
-					<in_degrees> true </in_degrees>
-				</Actuation>
-			</objects>
+			<objects/>
 			<groups/>
 		</AnalysisSet>
 		<!--Controller objects in the model.-->
 		<ControllerSet name="">
 			<objects>
-				<ControlSetController name="Control_Set_Controller">
+				<ControlSetController name="ControlSetController">
 					<!--A list of actuators that this controller will control.The keyword ALL
 					    indicates the controller will controll all the acuators in the model-->
 					<actuator_list> </actuator_list>
 					<!--Flag (true or false) indicating whether or not the controller is
 					    enabled (ON) should-->
-					<enable_controller> true </enable_controller>
+					<enable_controller> false </enable_controller>
 					<!--XML file containing the controls for the controlSet.-->
 					<controls_file> subject01_walk1_controls.xml </controls_file>
 				</ControlSetController>
-				<CorrectionController name="Correction_Controller">
-					<!--A list of actuators that this controller will control.The keyword ALL
-					    indicates the controller will controll all the acuators in the model-->
-					<actuator_list> </actuator_list>
-					<!--Flag (true or false) indicating whether or not the controller is
-					    enabled (ON) should-->
-					<enable_controller> true </enable_controller>
-					<!--Gain for position errors-->
-					<kp>     25.00000000 </kp>
-					<!--Gain for velocity errors-->
-					<kv>      10.00000000 </kv>
-				</CorrectionController>
 			</objects>
 			<groups/>
 		</ControllerSet>

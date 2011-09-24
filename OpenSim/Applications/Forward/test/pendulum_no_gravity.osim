@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <OpenSimDocument Version="20302">
-	<Model name="pendulum">
+	<Model name="pendulum_no_gravity">
 		<credits> Model authors names.. </credits>
 		<publications> List of publications related to model... </publications>
 		<ForceSet name="">
@@ -10,7 +10,7 @@
 		<length_units> m </length_units>
 		<force_units> N </force_units>
 		<!--Acceleration due to gravity.-->
-		<gravity>       0.00000000      -9.80665000       0.00000000 </gravity>
+		<gravity>       0.00000000      0.00000000       0.00000000 </gravity>
 		<!--Bodies in the model.-->
 		<BodySet name="">
 			<objects>
