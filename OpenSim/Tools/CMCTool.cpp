@@ -87,8 +87,8 @@ CMCTool::CMCTool() :
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
-	_optimizerDX(_optimizerDXProp.getValueDbl()),
-	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+	_optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
 	_verbose(_verboseProp.getValueBool())
@@ -117,8 +117,8 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
-	_optimizerDX(_optimizerDXProp.getValueDbl()),
-	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+	_optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
 	_verbose(_verboseProp.getValueBool())
@@ -187,8 +187,8 @@ CMCTool(const CMCTool &aTool) :
     _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
-	_optimizerDX(_optimizerDXProp.getValueDbl()),
-	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+	_optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
 	_maxIterations(_maxIterationsProp.getValueInt()),
 	_printLevel(_printLevelProp.getValueInt()),
 	_verbose(_verboseProp.getValueBool())
@@ -233,9 +233,9 @@ setNull()
     _useCurvatureFilter = true; 		 
     _useFastTarget = true;
 	_optimizerAlgorithm = "ipopt";
-	_optimizerDX = 1.0e-4;
-	_convergenceCriterion = 1.0e-6;
-	_maxIterations = 100;
+	_numericalDerivativeStepSize = 1.0e-4;
+	_optimizationConvergenceTolerance = 1.0e-5;
+	_maxIterations = 1000;
 	_printLevel = 0;
 	_verbose = false;
 
@@ -325,17 +325,17 @@ void CMCTool::setupProperties()
 	_optimizerAlgorithmProp.setName("optimizer_algorithm");
 	_propertySet.append( &_optimizerAlgorithmProp );
 
-	comment = "Perturbation size used by the optimizer to compute numerical derivatives. "
-				 "A value between 1.0e-4 and 1.0e-8 is usually approprieate.";
-	_optimizerDXProp.setComment(comment);
-	_optimizerDXProp.setName("optimizer_derivative_dx");
-	_propertySet.append( &_optimizerDXProp );
+	comment = "Step size used by the optimizer to compute numerical derivatives. "
+				 "A value between 1.0e-4 and 1.0e-8 is usually appropriate.";
+	_numericalDerivativeStepSizeProp.setComment(comment);
+	_numericalDerivativeStepSizeProp.setName("numerical_derivative_step_size");
+	_propertySet.append( &_numericalDerivativeStepSizeProp );
 
 	comment = "Convergence criterion for the optimizer. The smaller this value, the deeper the convergence. "
 				 "Decreasing this number can improve a solution, but will also likely increase computation time.";
-	_convergenceCriterionProp.setComment(comment);
-	_convergenceCriterionProp.setName("optimizer_convergence_criterion");
-	_propertySet.append( &_convergenceCriterionProp );
+	_optimizationConvergenceToleranceProp.setComment(comment);
+	_optimizationConvergenceToleranceProp.setName("optimization_convergence_tolerance");
+	_propertySet.append( &_optimizationConvergenceToleranceProp );
 
 	comment = "Maximum number of iterations for the optimizer.";
 	_maxIterationsProp.setComment(comment);
@@ -382,8 +382,8 @@ operator=(const CMCTool &aTool)
 	//_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
     _targetDT = aTool._targetDT;  	 	 
     _useCurvatureFilter = aTool._useCurvatureFilter;
-	_optimizerDX = aTool._optimizerDX;
-	_convergenceCriterion = aTool._convergenceCriterion;
+	_numericalDerivativeStepSize = aTool._numericalDerivativeStepSize;
+	_optimizationConvergenceTolerance = aTool._optimizationConvergenceTolerance;
     _useFastTarget = aTool._useFastTarget;
 	_optimizerAlgorithm = aTool._optimizerAlgorithm;
 	_maxIterations = aTool._maxIterations;
@@ -693,7 +693,7 @@ bool CMCTool::run()
 	} else {
 		target = new ActuatorForceTarget(na,controller);
 	}
-	target->setDX(_optimizerDX);
+	target->setDX(_numericalDerivativeStepSize);
 
 	// Pick optimizer algorithm
 	SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
@@ -717,8 +717,8 @@ bool CMCTool::run()
 
 	cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
 	optimizer->setDiagnosticsLevel(_printLevel);
-	cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
-	optimizer->setConvergenceTolerance(_convergenceCriterion);
+	cout<<"Setting optimizer convergence criterion to "<<_optimizationConvergenceTolerance<<".\n";
+	optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
 	cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
 	optimizer->setMaxIterations(_maxIterations);
 	optimizer->useNumericalGradient(false); // Use our own central difference approximations

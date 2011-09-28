@@ -83,8 +83,8 @@ RRATool::RRATool() :
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
-	_optimizerDX(_optimizerDXProp.getValueDbl()),
-	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+	_optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
 	_initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
 	_finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
@@ -112,8 +112,8 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
-	_optimizerDX(_optimizerDXProp.getValueDbl()),
-	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+	_optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
 	_initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
 	_finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
@@ -179,8 +179,8 @@ RRATool(const RRATool &aTool) :
 	_rraControlsFileName(_rraControlsFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
-	_optimizerDX(_optimizerDXProp.getValueDbl()),
-	_convergenceCriterion(_convergenceCriterionProp.getValueDbl()),
+	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
+	_optimizationConvergenceTolerance(_optimizationConvergenceToleranceProp.getValueDbl()),
 	_adjustCOMToReduceResiduals(_adjustCOMToReduceResidualsProp.getValueBool()),
 	_initialTimeForCOMAdjustment(_initialTimeForCOMAdjustmentProp.getValueDbl()),
 	_finalTimeForCOMAdjustment(_finalTimeForCOMAdjustmentProp.getValueDbl()),
@@ -223,8 +223,8 @@ setNull()
 	_lowpassCutoffFrequency = -1.0;
 	//_lowpassCutoffFrequencyForLoadKinematics = -1.0;
  	_optimizerAlgorithm = "ipopt";
-	_optimizerDX = 1.0e-4;
-	_convergenceCriterion = 1.0e-6;
+	_numericalDerivativeStepSize = 1.0e-4;
+	_optimizationConvergenceTolerance = 1.0e-5;
 	_adjustedCOMBody = "";
 	_adjustCOMToReduceResiduals = false;
 	_initialTimeForCOMAdjustment = -1;
@@ -285,17 +285,17 @@ void RRATool::setupProperties()
 	_optimizerAlgorithmProp.setName("optimizer_algorithm");
 	_propertySet.append( &_optimizerAlgorithmProp );
 
-	comment = "Perturbation size used by the optimizer to compute numerical derivatives. "
-				 "A value between 1.0e-4 and 1.0e-8 is usually approprieate.";
-	_optimizerDXProp.setComment(comment);
-	_optimizerDXProp.setName("optimizer_derivative_dx");
-	_propertySet.append( &_optimizerDXProp );
+	comment = "Step size used by the optimizer to compute numerical derivatives. "
+				 "A value between 1.0e-4 and 1.0e-8 is usually appropriate.";
+	_numericalDerivativeStepSizeProp.setComment(comment);
+	_numericalDerivativeStepSizeProp.setName("numerical_derivative_step_size");
+	_propertySet.append( &_numericalDerivativeStepSizeProp );
 
 	comment = "Convergence criterion for the optimizer. The smaller this value, the deeper the convergence. "
 				 "Decreasing this number can improve a solution, but will also likely increase computation time.";
-	_convergenceCriterionProp.setComment(comment);
-	_convergenceCriterionProp.setName("optimizer_convergence_criterion");
-	_propertySet.append( &_convergenceCriterionProp );
+	_optimizationConvergenceToleranceProp.setComment(comment);
+	_optimizationConvergenceToleranceProp.setName("optimization_convergence_tolerance");
+	_propertySet.append( &_optimizationConvergenceToleranceProp );
 
 	comment = "Flag (true or false) indicating whether or not to make an adjustment "
 				 "in the center of mass of a body to reduced DC offsets in MX and MZ. "
@@ -363,8 +363,8 @@ operator=(const RRATool &aTool)
 	_rraControlsFileName = aTool._rraControlsFileName;
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
     _targetDT = aTool._targetDT;  	 	 
-	_optimizerDX = aTool._optimizerDX;
-	_convergenceCriterion = aTool._convergenceCriterion;
+	_numericalDerivativeStepSize = aTool._numericalDerivativeStepSize;
+	_optimizationConvergenceTolerance = aTool._optimizationConvergenceTolerance;
 	_optimizerAlgorithm = aTool._optimizerAlgorithm;
 	_adjustedCOMBody = aTool._adjustedCOMBody;
 	_outputModelFile = aTool._outputModelFile;
@@ -705,7 +705,7 @@ bool RRATool::run()
 	} else {
 		target = new ActuatorForceTarget(na,controller);
 	}
-	target->setDX(_optimizerDX);
+	target->setDX(_numericalDerivativeStepSize);
 
 	// Pick optimizer algorithm
 	SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
@@ -729,8 +729,8 @@ bool RRATool::run()
 
 	cout<<"\nSetting optimizer print level to "<< (_verbose?4:0) <<".\n";
 	optimizer->setDiagnosticsLevel(_verbose?4:0);
-	cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
-	optimizer->setConvergenceTolerance(_convergenceCriterion);
+	cout<<"Setting optimizer convergence criterion to "<<_optimizationConvergenceTolerance<<".\n";
+	optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
 	cout<<"Setting optimizer maximum iterations to "<<2000<<".\n";
 	optimizer->setMaxIterations(2000);
 	optimizer->useNumericalGradient(false); // Use our own central difference approximations
