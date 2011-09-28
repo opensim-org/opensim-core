@@ -101,11 +101,11 @@ private:
 	PropertyStr _optimizerAlgorithmProp;
 	std::string &_optimizerAlgorithm;
 	/** Perturbation size used by the optimizer to compute numerical derivatives. */
-	PropertyDbl _optimizerDXProp;
-	double &_optimizerDX;
+	PropertyDbl _numericalDerivativeStepSizeProp;
+	double &_numericalDerivativeStepSize;
 	/** Convergence criterion for the optimizer. */
-	PropertyDbl _convergenceCriterionProp;
-	double &_convergenceCriterion;
+	PropertyDbl _optimizationConvergenceToleranceProp;
+	double &_optimizationConvergenceTolerance;
 
 	/** Flag indicating whether or not to make an adjustment in the center of
 	mass of a body to reduced DC offsets in MX and MZ. */
