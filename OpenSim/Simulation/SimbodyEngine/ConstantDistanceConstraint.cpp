@@ -1,5 +1,5 @@
-// PointConstraint.cpp
-// Author: Ajay Seth
+// ConstantDistanceConstraint.cpp
+// Author: Matt DeMers
 /*
  * Copyright (c)  2008, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -36,7 +36,7 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-#include "PointConstraint.h"
+#include "ConstantDistanceConstraint.h"
 #include "SimbodyEngine.h"
 
 //=============================================================================
@@ -53,54 +53,72 @@ using namespace OpenSim;
 /**
  * Destructor.
  */
-PointConstraint::~PointConstraint()
+ConstantDistanceConstraint::~ConstantDistanceConstraint()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-PointConstraint::PointConstraint() :
+ConstantDistanceConstraint::ConstantDistanceConstraint() :
 	Constraint(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
 	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec())
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_constantDistance(_constantDistanceProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
 }
+
+
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  *
- * @param aConstraint PointConstraint to be copied.
+ * @param aConstraint ConstantDistanceConstraint to be copied.
  */
-PointConstraint::PointConstraint(const PointConstraint &aConstraint) :
+ConstantDistanceConstraint::ConstantDistanceConstraint(const ConstantDistanceConstraint &aConstraint) :
    Constraint(aConstraint),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
 	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec())
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_constantDistance(_constantDistanceProp.getValueDbl())
 {
 	setNull();
 	setupProperties();
 	copyData(aConstraint);
 }
 
-PointConstraint::PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2) :
+
+//_____________________________________________________________________________
+/**
+ * Convenience Constructor.
+ *
+ * @param body1: First body connected with the ConstantDistanceConstraint
+ * @param locationBody1: point fixed on body1 where the contraint is applied
+ * @param body2: Second body connected with the ConstantDistanceConstraint
+ * @param locationBody2: point fixed on body2 where the constraint is applied
+ * @param distance: fixed distance that the constraint will maintain between locationBody1 and locationBody2
+ */
+ConstantDistanceConstraint::ConstantDistanceConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2, double& distance) :
 	Constraint(),
 	_body1Name(_body1NameProp.getValueStr()),
 	_body2Name(_body2NameProp.getValueStr()),
 	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec())
+	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
+	_constantDistance(_constantDistanceProp.getValueDbl())
 {
+
 	setNull();
 	setupProperties();
 	_body1Name = body1.getName();
 	_locationInBody1 = locationBody1;
 	_body2Name = body2.getName();
 	_locationInBody2 = locationBody2;
+	_constantDistance = distance;
 
 }
 //=============================================================================
@@ -113,41 +131,42 @@ PointConstraint::PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody
  *
  * @return Pointer to a copy of this OpenSim::Body.
  */
-Object* PointConstraint::copy() const
+Object* ConstantDistanceConstraint::copy() const
 {
-	PointConstraint *constraint = new PointConstraint(*this);
+	ConstantDistanceConstraint *constraint = new ConstantDistanceConstraint(*this);
 	return(constraint);
 }
 //_____________________________________________________________________________
 /**
- * Copy data members from one PointConstraint to another.
+ * Copy data members from one ConstantDistanceConstraint to another.
  *
- * @param aConstraint PointConstraint to be copied.
+ * @param aConstraint ConstantDistanceConstraint to be copied.
  */
-void PointConstraint::copyData(const PointConstraint &aConstraint)
+void ConstantDistanceConstraint::copyData(const ConstantDistanceConstraint &aConstraint)
 {
 	Constraint::copyData(aConstraint);
 	_body1Name = aConstraint._body1Name;
 	_body2Name = aConstraint._body2Name;
 	_locationInBody1 = aConstraint._locationInBody1;
 	_locationInBody2 = aConstraint._locationInBody2;
+	_constantDistance = aConstraint._constantDistance;
 
 }
 
 //_____________________________________________________________________________
 /**
- * Set the data members of this PointConstraint to their null values.
+ * Set the data members of this ConstantDistanceConstraint to their null values.
  */
-void PointConstraint::setNull()
+void ConstantDistanceConstraint::setNull()
 {
-	setType("PointConstraint");
+	setType("ConstantDistanceConstraint");
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void PointConstraint::setupProperties()
+void ConstantDistanceConstraint::setupProperties()
 {
 	// Body 1 name
 	_body1NameProp.setName("body_1");
@@ -169,6 +188,11 @@ void PointConstraint::setupProperties()
 	_locationInBody2Prop.setName("location_body_2");
 	_locationInBody2Prop.setValue(origin);
 	_propertySet.append(&_locationInBody2Prop);
+
+	// Constant distance between points
+	_constantDistanceProp.setName("constant_distance");
+	_constantDistanceProp.setValue(1.0);
+	_propertySet.append(&_constantDistanceProp);
 }
 
 //_____________________________________________________________________________
@@ -176,9 +200,9 @@ void PointConstraint::setupProperties()
  * Perform some set up functions that happen after the
  * object has been deserialized or copied.
  *
- * @param aModel OpenSim model containing this PointConstraint.
+ * @param aModel OpenSim model containing this ConstantDistanceConstraint.
  */
-void PointConstraint::setup(Model& aModel)
+void ConstantDistanceConstraint::setup(Model& aModel)
 {
 	string errorMessage;
 
@@ -199,18 +223,21 @@ void PointConstraint::setup(Model& aModel)
 	_body2 = &aModel.updBodySet().get(_body2Name);
 }
 
-void PointConstraint::createSystem(SimTK::MultibodySystem& system) const
+void ConstantDistanceConstraint::createSystem(SimTK::MultibodySystem& system) const
 {
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getIndex());
 	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getIndex());
 
     // Now create a Simbody Constraint::Point
-    SimTK::Constraint::Ball simtkPoint(b1, _locationInBody1, b2, _locationInBody2);
+    //SimTK::Constraint::Ball simtkPoint(b1, _locationInBody1, b2, _locationInBody2);
+
+	// Now create a Simbody Constraint::Rod
+	SimTK::Constraint::Rod simtkRod(b1, _locationInBody1, b2, _locationInBody2, _constantDistance);
     
     // Beyond the const Component get the index so we can access the SimTK::Constraint later
-	PointConstraint* mutableThis = const_cast<PointConstraint *>(this);
-	mutableThis->_index  = simtkPoint.getConstraintIndex();
+	ConstantDistanceConstraint* mutableThis = const_cast<ConstantDistanceConstraint *>(this);
+	mutableThis->_index  = simtkRod.getConstraintIndex();
 }
 
 //=============================================================================
@@ -222,7 +249,7 @@ void PointConstraint::createSystem(SimTK::MultibodySystem& system) const
  *
  * @return Reference to this object.
  */
-PointConstraint& PointConstraint::operator=(const PointConstraint &aConstraint)
+ConstantDistanceConstraint& ConstantDistanceConstraint::operator=(const ConstantDistanceConstraint &aConstraint)
 {
 	Constraint::operator=(aConstraint);
 	copyData(aConstraint);
@@ -235,55 +262,47 @@ PointConstraint& PointConstraint::operator=(const PointConstraint &aConstraint)
 //_____________________________________________________________________________
 /**
  * Following methods set attributes of the point constraint */
-void PointConstraint::setBody1ByName(std::string aBodyName)
+void ConstantDistanceConstraint::setBody1ByName(std::string aBodyName)
 {
 	_body1Name = aBodyName;
 }
 
-void PointConstraint::setBody2ByName(std::string aBodyName)
+void ConstantDistanceConstraint::setBody2ByName(std::string aBodyName)
 {
 	_body2Name = aBodyName;
 }
 
 /** Set the location for point on body 1*/
-void PointConstraint::setBody1PointLocation(Vec3 location)
+void ConstantDistanceConstraint::setBody1PointLocation(Vec3 location)
 {
 	_locationInBody1 = location;
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
 	if(int(_index) != SimTK::InvalidIndex){
-		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
+		SimTK::Constraint::Rod &simConstraint = (SimTK::Constraint::Rod &)_model->updMatterSubsystem().updConstraint(_index);
 		simConstraint.setDefaultPointOnBody1(_locationInBody1);
 	}
 }
 
 /** Set the location for point on body 2*/
-void PointConstraint::setBody2PointLocation(Vec3 location)
+void ConstantDistanceConstraint::setBody2PointLocation(Vec3 location)
 {
 	_locationInBody2 = location;
 	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
 	if(int(_index) != SimTK::InvalidIndex){
-		SimTK::Constraint::Ball &simConstraint = (SimTK::Constraint::Ball &)_model->updMatterSubsystem().updConstraint(_index);
+		SimTK::Constraint::Rod &simConstraint = (SimTK::Constraint::Rod &)_model->updMatterSubsystem().updConstraint(_index);
 		simConstraint.setDefaultPointOnBody2(_locationInBody2);
 	}
 }
 
-/** Set the point locations */
-void PointConstraint::setContactPointForInducedAccelerations(const SimTK::State &s, Vec3 point)
+/** Set the constant distance between the two points*/
+void ConstantDistanceConstraint::setConstantDistance(double distance)
 {
-	// The contact point coordinates in the surface body frame 
-	Vec3 spoint;
 
-	// make sure we are at the position stage
-	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
-
-	// For external forces we assume point position vector is defined wrt foot (i.e., _body2)
-	// because we are passing it in from a prescribed force.
-	// We must also get that point position vector wrt ground (i.e., _body1)
-	
-	cout<<"Body 1 is" << _body1->getName() <<endl;
-	cout<<"Body 2 is" << _body2->getName() <<endl;
-	_model->getSimbodyEngine().transformPosition(s, *_body2, point, *_body1, spoint);
-	setBody1PointLocation(spoint);
-	setBody2PointLocation(point);
+	_constantDistance = distance;
+	//if there is a live SimTK::system, we need to push this change down to the underlying constraint.
+	if(int(_index) != SimTK::InvalidIndex){
+		SimTK::Constraint::Rod &simConstraint = (SimTK::Constraint::Rod &)_model->updMatterSubsystem().updConstraint(_index);
+		simConstraint.setDefaultRodLength(_constantDistance);
+	}
 }
 

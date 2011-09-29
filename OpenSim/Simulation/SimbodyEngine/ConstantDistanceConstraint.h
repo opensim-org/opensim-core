@@ -1,8 +1,8 @@
-#ifndef __PointConstraint_h__
-#define __PointConstraint_h__
+#ifndef __ConstantDistanceConstraint_h__
+#define __ConstantDistanceConstraint_h__
 
-// PointConstraint.h
-// Author: Ajay Seth
+// ConstantDistanceConstraint.h
+// Author: Matt DeMers
 /*
  * Copyright (c) 2008, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -36,6 +36,7 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
+#include <OpenSim/Common/PropertyDbl.h>
 #include "Constraint.h"
 #include "Body.h"
 
@@ -44,13 +45,14 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a Point Constraint.  The underlying Constraint in Simbody
- * is a Constraint::Point
+ * A class implementing a constraint that maintains a constant distance between
+ * between two points.  The underlying Constraint in Simbody
+ * is a Constraint::Rod
  *
- * @author Ajay Seth
+ * @author Matt DeMers
  * @version 1.0
  */
-class OSIMSIMULATION_API PointConstraint : public Constraint  
+class OSIMSIMULATION_API ConstantDistanceConstraint : public Constraint  
 {
 
 //=============================================================================
@@ -73,6 +75,10 @@ protected:
 	PropertyDblVec3 _locationInBody2Prop;
 	SimTK::Vec3& _locationInBody2;
 
+	/** constant distance to be rigidly maintained between the two points fixed on each body.*/
+	PropertyDbl _constantDistanceProp;
+	double& _constantDistance;
+
 
 	/** First body point constraint joins. */
 	Body *_body1;
@@ -85,22 +91,23 @@ protected:
 //=============================================================================
 public:
 	// CONSTRUCTION
-	PointConstraint();
-	PointConstraint(const PointConstraint &aConstraint);
-	PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2);
-	virtual ~PointConstraint();
+	ConstantDistanceConstraint();
+	ConstantDistanceConstraint(const ConstantDistanceConstraint &aConstraint);
+	ConstantDistanceConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2, double& distance);
+	virtual ~ConstantDistanceConstraint();
 	virtual Object* copy() const;
-	PointConstraint& operator=(const PointConstraint &aConstraint);
-	void copyData(const PointConstraint &aConstraint);
+	ConstantDistanceConstraint& operator=(const ConstantDistanceConstraint &aConstraint);
+	void copyData(const ConstantDistanceConstraint &aConstraint);
 
 	//SET 
 	void setBody1ByName(std::string aBodyName);
 	void setBody1PointLocation(SimTK::Vec3 location);
 	void setBody2ByName(std::string aBodyName);
 	void setBody2PointLocation(SimTK::Vec3 location);
+	void setConstantDistance(double distance);
 
 	/** Method to set point location of contact during an induced acceleration analysis */
-	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
+	//virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point);
 
 
 protected:
@@ -115,12 +122,12 @@ private:
 	void setupProperties();
 
 //=============================================================================
-};	// END of class PointConstraint
+};	// END of class ConstantDistanceConstraint
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __PointConstraint_h__
+#endif // __ConstantDistanceConstraint_h__
 
 

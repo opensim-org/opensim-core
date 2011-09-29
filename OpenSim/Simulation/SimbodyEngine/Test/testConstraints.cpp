@@ -59,6 +59,8 @@
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
+#include <OpenSim/Simulation/SimbodyEngine/PointConstraint.h>
+#include <OpenSim/Simulation/SimbodyEngine/ConstantDistanceConstraint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
@@ -138,10 +140,14 @@ void testCoordinateLocking();
 void testWeldConstraint();
 void testPointOnLineConstraint();
 void testCoordinateCouplerConstraint();
+void testPointConstraint();
+void testConstantDistanceConstraint();
 
 int main()
 {
     try {
+		testPointConstraint();
+		testConstantDistanceConstraint();
 		testRollingOnSurfaceConstraint();
 		testCoordinateLocking();
 		testWeldConstraint();
@@ -321,6 +327,155 @@ void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Mod
 //==========================================================================================================
 // Test Cases
 //==========================================================================================================
+
+void testPointConstraint()
+{
+	using namespace SimTK;
+
+	cout << endl;
+	cout << "==================================================================" << endl;
+	cout << " OpenSim PointConstraint vs. Simbody Constraint::Ball " << endl;
+	cout << "==================================================================" << endl;
+
+	Random::Uniform randomLocation(-1, 1);
+	Vec3 pointOnFoot(randomLocation.getValue(), randomLocation.getValue(), randomLocation.getValue());
+	Vec3 pointOnGround(0,0,0);
+
+	// Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+	// Create a free joint between the foot and ground
+	MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)), 
+		SimTK::Body::Rigid(footMass), Transform(Vec3(0)));
+	
+	// Constrain foot to point on ground
+	SimTK::Constraint::Ball simtkBall(matter.Ground(), pointOnGround, foot, pointOnFoot);
+
+	// Simbody model state setup
+	system.realizeTopology();
+	State state = system.getDefaultState();
+	matter.setUseEulerAngles(state, true);
+    system.realizeModel(state);
+
+	//==========================================================================================================
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+
+	//OpenSim foot
+	OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
+
+	// create foot as a free joint
+	FreeJoint footJoint("", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
+	
+	// Add the thigh body which now also contains the hip joint to the model
+	osimModel->updBodySet().append(&osim_foot);
+
+	// add a point constraint
+	PointConstraint ballConstraint(ground, pointOnGround, osim_foot, pointOnFoot);
+	osimModel->updConstraintSet().append(&ballConstraint);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->updBodySet().setMemoryOwner(false);
+
+	osimModel->setGravity(gravity_vec);
+
+    //Add analyses before setting up the model for simulation
+	Kinematics *kinAnalysis = new Kinematics(osimModel);
+	kinAnalysis->setInDegrees(false);
+	osimModel->addAnalysis(kinAnalysis);
+
+	// Need to setup model before adding an analysis since it creates the AnalysisSet
+	// for the model if it does not exist.
+	State osim_state = osimModel->initSystem();
+
+	//==========================================================================================================
+	// Compare Simbody system and OpenSim model simulations
+	compareSimulations(system, state, osimModel, osim_state, "testPointConstraint FAILED\n");
+}
+
+void testConstantDistanceConstraint()
+{
+	using namespace SimTK;
+
+	cout << endl;
+	cout << "==================================================================" << endl;
+	cout << " OpenSim ConstantDistanceConstraint vs. Simbody Constraint::Rod " << endl;
+	cout << "==================================================================" << endl;
+
+	Random::Uniform randomLocation(-1, 1);
+	Vec3 pointOnFoot(randomLocation.getValue(), randomLocation.getValue(), randomLocation.getValue());
+	Vec3 pointOnGround(0,0,0);
+	/** for some reason, adding another Random::Uniform causes testWeldConstraint to fail.  
+	Why doesn't it cause this test to fail???? */
+	//Random::Uniform randomLength(0.01, 0.2);
+	//randomLength.setSeed(1024);
+	//double rodLength = randomLength.getValue(); 
+	double rodLength = 0.05;
+
+	//std::cout << "Random Length = " << rodLength2 << ", used length = " << rodLength << std::endl;
+
+	// Define the Simbody system
+    MultibodySystem system;
+    SimbodyMatterSubsystem matter(system);
+    GeneralForceSubsystem forces(system);
+	SimTK::Force::UniformGravity gravity(forces, matter, gravity_vec);
+
+	// Create a free joint between the foot and ground
+	MobilizedBody::Free foot(matter.Ground(), Transform(Vec3(0)), 
+		SimTK::Body::Rigid(footMass), Transform(Vec3(0)));
+	
+	// Constrain foot to point on ground
+	SimTK::Constraint::Rod simtkRod(matter.Ground(), pointOnGround, foot, pointOnFoot, rodLength);
+
+
+	// Simbody model state setup
+	system.realizeTopology();
+	State state = system.getDefaultState();
+	matter.setUseEulerAngles(state, true);
+    system.realizeModel(state);
+
+	//==========================================================================================================
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+
+	//OpenSim foot
+	OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
+
+	// create foot as a free joint
+	FreeJoint footJoint("", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
+	
+	// Add the thigh body which now also contains the hip joint to the model
+	osimModel->updBodySet().append(&osim_foot);
+
+	// add a constant distance constraint
+	ConstantDistanceConstraint rodConstraint(ground, pointOnGround, osim_foot, pointOnFoot,rodLength);
+	osimModel->updConstraintSet().append(&rodConstraint);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->updBodySet().setMemoryOwner(false);
+
+	osimModel->setGravity(gravity_vec);
+
+    //Add analyses before setting up the model for simulation
+	Kinematics *kinAnalysis = new Kinematics(osimModel);
+	kinAnalysis->setInDegrees(false);
+	osimModel->addAnalysis(kinAnalysis);
+
+	// Need to setup model before adding an analysis since it creates the AnalysisSet
+	// for the model if it does not exist.
+	State osim_state = osimModel->initSystem();
+
+	//==========================================================================================================
+	// Compare Simbody system and OpenSim model simulations
+	compareSimulations(system, state, osimModel, osim_state, "testConstantDistanceConstraint FAILED\n");
+}
 void testCoordinateLocking()
 {
 	using namespace SimTK;

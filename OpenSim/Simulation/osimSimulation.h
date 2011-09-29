@@ -80,6 +80,7 @@
 #include "SimbodyEngine/Constraint.h"
 #include "SimbodyEngine/WeldConstraint.h"
 #include "SimbodyEngine/PointConstraint.h"
+#include "SimbodyEngine/ConstantDistanceConstraint.h"
 #include "SimbodyEngine/CoordinateCouplerConstraint.h"
 #include "SimbodyEngine/PointOnLineConstraint.h"
 #include "SimbodyEngine/EllipsoidJoint.h"

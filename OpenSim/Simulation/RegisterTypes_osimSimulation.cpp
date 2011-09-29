@@ -85,6 +85,7 @@
 #include "SimbodyEngine/Constraint.h"
 #include "SimbodyEngine/WeldConstraint.h"
 #include "SimbodyEngine/PointConstraint.h"
+#include "SimbodyEngine/ConstantDistanceConstraint.h"
 #include "SimbodyEngine/CoordinateCouplerConstraint.h"
 #include "SimbodyEngine/PointOnLineConstraint.h"
 #include "SimbodyEngine/RollingOnSurfaceConstraint.h"
@@ -155,6 +156,7 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 	Object::RegisterType( OpenSim::Body() );
 	Object::RegisterType( WeldConstraint() );
 	Object::RegisterType( PointConstraint() );
+	Object::RegisterType( ConstantDistanceConstraint() );
 	Object::RegisterType( CoordinateCouplerConstraint() );
 	Object::RegisterType( CustomJoint() );
 	Object::RegisterType( WeldJoint() );
