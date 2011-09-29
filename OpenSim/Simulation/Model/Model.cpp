@@ -405,24 +405,7 @@ SimTK::State& Model::initSystem()
     updControllerSet().setActuators(updActuators());
     //updControllerSet().constructStorage();
 
-	SimTK::Array_<CoordinateReference> &coordsToTrack = *new SimTK::Array_<CoordinateReference>();
-	for(int i=0; i<getNumCoordinates(); i++){
-		// iff a coordinate is dependent on other coordinates for its value, do not give it a reference/goal
-		if(!_coordinateSet[i].isDependent(s)){
-			Constant reference(Constant(_coordinateSet[i].getValue(s)));
-			CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), reference);
-			coordsToTrack.push_back(*coordRef);
-		}
-	}
-
-	// Have an AssemblySolver on hand, but delete any old one first
-	delete _assemblySolver;
-
-	// Use the assembler to generate the initial pose from Coordinate defaults
-	// that also satisfies the constraints
-	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
-	_assemblySolver->setConstraintWeight(50.0);
-
+	createAssemblySolver(s);
 
 	// do the assembly
 	assemble(s);
@@ -440,6 +423,9 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 		return;
 	}
 
+	if (_assemblySolver == NULL){
+		createAssemblySolver(s);
+	}
 	const Array_<CoordinateReference>& coordRefs = _assemblySolver->getCoordinateReferences();
 
 	for(unsigned int i=0; i<coordRefs.size(); i++){
@@ -1293,8 +1279,37 @@ void Model::applyDefaultConfiguration(SimTK::State& s)
 	assemble(s);
 }
 
+//_____________________________________________________________________________
+/**
+ * createAssemblySolver anew, old solver is deleted first. This should be invoked whenever changes in locks and/or constraint status
+ * that has the potential to affect model assembly.
+ */
+void Model::createAssemblySolver(const SimTK::State& s)
+{
+	SimTK::Array_<CoordinateReference> &coordsToTrack = *new SimTK::Array_<CoordinateReference>();
+	for(int i=0; i<getNumCoordinates(); i++){
+		// iff a coordinate is dependent on other coordinates for its value, do not give it a reference/goal
+		if(!_coordinateSet[i].isDependent(s)){
+			Constant reference(Constant(_coordinateSet[i].getValue(s)));
+			CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), reference);
+			coordsToTrack.push_back(*coordRef);
+		}
+	}
 
+	// Have an AssemblySolver on hand, but delete any old one first
+	delete _assemblySolver;
 
+	// Use the assembler to generate the initial pose from Coordinate defaults
+	// that also satisfies the constraints
+	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
+	_assemblySolver->setConstraintWeight(50.0);
+}
+
+void Model::updateAssemblyConditions(SimTK::State& s)
+{
+	createAssemblySolver(s);
+	
+}
 //--------------------------------------------------------------------------
 // MARKERS
 //--------------------------------------------------------------------------

@@ -39,5 +39,24 @@ void ASSERT_EQUAL(T expected, T found, T tolerance, std::string file="", int lin
 inline void ASSERT(bool cond, std::string file="", int line=-1, std::string message="Exception") {
 	if (!cond) throw OpenSim::Exception(message, file, line);
 }
+/**
+ * Check this storage object against a standard storage object using the
+ * specified tolerances. If RMS error for any column is outside the
+ * tolerance, throw an Exception.
+ */
+void CHECK_STORAGE_AGAINST_STANDARD(OpenSim::Storage& result, OpenSim::Storage& standard, OpenSim::Array<double> tolerances, std::string testFile, int testFileLine, std::string errorMessage)
+{
+	OpenSim::Array<std::string> columnsUsed;
+	OpenSim::Array<double> comparisons;
+	result.compareWithStandard(standard, columnsUsed, comparisons);
+
+	int columns = columnsUsed.getSize();
+	for (int i = 0; i < columns; ++i) {
+		std::cout << "column:    " << columnsUsed[i] << std::endl;
+		std::cout << "RMS error: " << comparisons[i] << std::endl;
+		std::cout << "tolerance: " << tolerances[i] << std::endl << std::endl;
+		ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine, errorMessage);
+	}
+}
 
 #endif // __auxiliaryTestFunctions_h__

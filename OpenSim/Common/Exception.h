@@ -38,6 +38,9 @@
 #include <string>
 
 //using namespace std;
+#ifdef WIN32
+#pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
+#endif
 
 
 //=============================================================================

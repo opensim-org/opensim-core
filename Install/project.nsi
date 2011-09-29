@@ -3,9 +3,9 @@
 ;--------------------------------
 ; You must define these values
 
-  !define VERSION "2.2.0"
+  !define VERSION "2.4.0"
   !define PATCH  "0"
-  !define INST_DIR "C:/Projects/OpenSim22Build/_CPack_Packages/win32/NSIS/OpenSim-2.2.0-win32"
+  !define INST_DIR "E:/Projects/TrunkBuild/_CPack_Packages/win32/NSIS/OpenSim-2.4.0-win32"
 
 ;--------------------------------
 ;Variables
@@ -18,76 +18,142 @@
   Var ADD_TO_PATH_ALL_USERS
   Var ADD_TO_PATH_CURRENT_USER
   Var INSTALL_DESKTOP
-
+  Var IS_DEFAULT_INSTALLDIR
 ;--------------------------------
 ;Include Modern UI
 
   !include "MUI.nsh"
 
   ;Default installation folder
-  InstallDir "C:\OpenSim2.2"  
+  InstallDir "C:\OpenSim2.4.0"  
 
 ;--------------------------------
 ;General
 
   ;Name and file
-  Name "OpenSim 2.2"
-  OutFile "C:/Projects/OpenSim22Build/_CPack_Packages/win32/NSIS/OpenSim-2.2.0-win32.exe"
+  Name "OpenSim 2.4 "
+  OutFile "E:/Projects/TrunkBuild/_CPack_Packages/win32/NSIS/OpenSim-2.4.0-win32.exe"
 
   ;Set compression
   SetCompressor lzma
 
-;--------------------------------
-; determine admin versus local install
-; Is install for "AllUsers" or "JustMe"?
-; Default to "JustMe" - set to "AllUsers" if admin or on Win9x
-; This function is used for the very first "custom page" of the installer.
-; This custom page does not show up visibly, but it executes prior to the
-; first visible page and sets up $INSTDIR properly...
-; Choose different default installation folder based on SV_ALLUSERS...
-; "Program Files" for AllUsers, "My Documents" for JustMe...
+   
 
-Function .onInit
-  StrCpy $SV_ALLUSERS "JustMe"
-  StrCpy $INSTDIR "C:\OpenSim2.2"
+  !include Sections.nsh
 
+;--- Component support macros: ---
+; The code for the add/remove functionality is from:
+;   http://nsis.sourceforge.net/Add/Remove_Functionality
+; It has been modified slightly and extended to provide
+; inter-component dependencies.
+Var AR_SecFlags
+Var AR_RegFlags
+
+
+; Loads the "selected" flag for the section named SecName into the
+; variable VarName.
+!macro LoadSectionSelectedIntoVar SecName VarName
+ SectionGetFlags ${${SecName}} $${VarName}
+ IntOp $${VarName} $${VarName} & ${SF_SELECTED}  ;Turn off all other bits
+!macroend
+
+; Loads the value of a variable... can we get around this?
+!macro LoadVar VarName
+  IntOp $R0 0 + $${VarName}
+!macroend
+
+; Sets the value of a variable
+!macro StoreVar VarName IntValue
+  IntOp $${VarName} 0 + ${IntValue}
+!macroend
+
+!macro InitSection SecName
+  ;  This macro reads component installed flag from the registry and
+  ;changes checked state of the section on the components page.
+  ;Input: section index constant name specified in Section command.
+   
   ClearErrors
-  UserInfo::GetName
-  IfErrors noLM
-  Pop $0
-  UserInfo::GetAccountType
-  Pop $1
-  StrCmp $1 "Admin" 0 +3
-    SetShellVarContext all
-    ;MessageBox MB_OK 'User "$0" is in the Admin group'
-    StrCpy $SV_ALLUSERS "AllUsers"
-    Goto done
-  StrCmp $1 "Power" 0 +3
-    SetShellVarContext all
-    ;MessageBox MB_OK 'User "$0" is in the Power Users group'
-    StrCpy $SV_ALLUSERS "AllUsers"
-    Goto done
-    
-  noLM:
-    StrCpy $SV_ALLUSERS "AllUsers"
-    ;Get installation folder from registry if available
+  ;Reading component status from registry
+  ReadRegDWORD $AR_RegFlags HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim\Components\${SecName}" "Installed"
+  IfErrors "default_${SecName}"
+    ;Status will stay default if registry value not found
+    ;(component was never installed)
+  IntOp $AR_RegFlags $AR_RegFlags & ${SF_SELECTED} ;Turn off all other bits
+  SectionGetFlags ${${SecName}} $AR_SecFlags  ;Reading default section flags
+  IntOp $AR_SecFlags $AR_SecFlags & 0xFFFE  ;Turn lowest (enabled) bit off
+  IntOp $AR_SecFlags $AR_RegFlags | $AR_SecFlags      ;Change lowest bit
 
-  done:
-  StrCmp $SV_ALLUSERS "AllUsers" 0 +2
-    StrCpy $INSTDIR C:\OpenSim2.2
+  ; Note whether this component was installed before
+  !insertmacro StoreVar ${SecName}_was_installed $AR_RegFlags
+  IntOp $R0 $AR_RegFlags & $AR_RegFlags
+  
+  ;Writing modified flags
+  SectionSetFlags ${${SecName}} $AR_SecFlags
+  
+ "default_${SecName}:"
+ !insertmacro LoadSectionSelectedIntoVar ${SecName} ${SecName}_selected
+!macroend
+ 
+!macro FinishSection SecName
+  ;  This macro reads section flag set by user and removes the section
+  ;if it is not selected.
+  ;Then it writes component installed flag to registry
+  ;Input: section index constant name specified in Section command.
+ 
+  SectionGetFlags ${${SecName}} $AR_SecFlags  ;Reading section flags
+  ;Checking lowest bit:
+  IntOp $AR_SecFlags $AR_SecFlags & ${SF_SELECTED}
+  IntCmp $AR_SecFlags 1 "leave_${SecName}"
+    ;Section is not selected:
+    ;Calling Section uninstall macro and writing zero installed flag
+    !insertmacro "Remove_${${SecName}}"
+    WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim\Components\${SecName}" \
+  "Installed" 0
+    Goto "exit_${SecName}"
+ 
+ "leave_${SecName}:"
+    ;Section is selected:
+    WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim\Components\${SecName}" \
+  "Installed" 1
+ 
+ "exit_${SecName}:"
+!macroend
+ 
+!macro RemoveSection SecName
+  ;  This macro is used to call section's Remove_... macro
+  ;from the uninstaller.
+  ;Input: section index constant name specified in Section command.
+ 
+  !insertmacro "Remove_${${SecName}}"
+!macroend
 
-  StrCmp "ON" "ON" 0 noOptionsPage
-    !insertmacro MUI_INSTALLOPTIONS_EXTRACT "NSIS.InstallOptions.ini"
-
-  noOptionsPage:
-FunctionEnd
+; Determine whether the selection of SecName changed
+!macro MaybeSelectionChanged SecName
+  !insertmacro LoadVar ${SecName}_selected
+  SectionGetFlags ${${SecName}} $R1
+  IntOp $R1 $R1 & ${SF_SELECTED} ;Turn off all other bits
+  
+  ; See if the status has changed:
+  IntCmp $R0 $R1 "${SecName}_unchanged"
+  !insertmacro LoadSectionSelectedIntoVar ${SecName} ${SecName}_selected
+  
+  IntCmp $R1 ${SF_SELECTED} "${SecName}_was_selected"
+  !insertmacro "Deselect_required_by_${SecName}"
+  goto "${SecName}_unchanged"
+  
+  "${SecName}_was_selected:"
+  !insertmacro "Select_${SecName}_depends"
+  
+  "${SecName}_unchanged:"
+!macroend
+;--- End of Add/Remove macros ---
 
 ;--------------------------------
 ;Interface Settings
 
   !define MUI_HEADERIMAGE
   !define MUI_ABORTWARNING
-
+    
 ;--------------------------------
 ; path functions
 
@@ -147,8 +213,17 @@ Function AddToPath
   IfFileExists "$0\*.*" "" AddToPath_done
  
   ReadEnvStr $1 PATH
-  Push "$0;"
+  ; if the path is too long for a NSIS variable NSIS will return a 0 
+  ; length string.  If we find that, then warn and skip any path
+  ; modification as it will trash the existing path.
+  StrLen $2 $1
+  IntCmp $2 0 CheckPathLength_ShowPathWarning CheckPathLength_Done CheckPathLength_Done
+    CheckPathLength_ShowPathWarning:
+    Messagebox MB_OK|MB_ICONEXCLAMATION "Warning! PATH too long installer unable to modify PATH!"
+    Goto AddToPath_done
+  CheckPathLength_Done:
   Push "$1;"
+  Push "$0;"
   Call StrStr
   Pop $2
   StrCmp $2 "" "" AddToPath_done
@@ -185,14 +260,24 @@ Function AddToPath
     Goto AddToPath_done
  
   AddToPath_NT:
-    ReadRegStr $1 ${WriteEnvStr_RegKey} "PATH"
+    StrCmp $ADD_TO_PATH_ALL_USERS "1" ReadAllKey
+      ReadRegStr $1 ${NT_current_env} "PATH"
+      Goto DoTrim
+    ReadAllKey:
+      ReadRegStr $1 ${NT_all_env} "PATH"
+    DoTrim:
     StrCmp $1 "" AddToPath_NTdoIt
       Push $1
       Call Trim
       Pop $1
       StrCpy $0 "$0;$1"
     AddToPath_NTdoIt:
-      WriteRegExpandStr ${WriteEnvStr_RegKey} "PATH" $0
+      StrCmp $ADD_TO_PATH_ALL_USERS "1" WriteAllKey
+        WriteRegExpandStr ${NT_current_env} "PATH" $0
+        Goto DoSend
+      WriteAllKey:
+        WriteRegExpandStr ${NT_all_env} "PATH" $0
+      DoSend:
       SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
  
   AddToPath_done:
@@ -254,7 +339,12 @@ Function un.RemoveFromPath
       Goto unRemoveFromPath_done
  
   unRemoveFromPath_NT:
-    ReadRegStr $1 ${WriteEnvStr_RegKey} "PATH"
+    StrCmp $ADD_TO_PATH_ALL_USERS "1" unReadAllKey
+      ReadRegStr $1 ${NT_current_env} "PATH"
+      Goto unDoTrim
+    unReadAllKey:
+      ReadRegStr $1 ${NT_all_env} "PATH"
+    unDoTrim:
     StrCpy $5 $1 1 -1 # copy last char
     StrCmp $5 ";" +2 # if last char != ;
       StrCpy $1 "$1;" # append ;
@@ -276,7 +366,12 @@ Function un.RemoveFromPath
       StrCmp $5 ";" 0 +2 # if last char == ;
         StrCpy $3 $3 -1 # remove last char
  
-      WriteRegExpandStr ${WriteEnvStr_RegKey} "PATH" $3
+      StrCmp $ADD_TO_PATH_ALL_USERS "1" unWriteAllKey
+        WriteRegExpandStr ${NT_current_env} "PATH" $3
+        Goto unDoSend
+      unWriteAllKey:
+        WriteRegExpandStr ${NT_all_env} "PATH" $3
+      unDoSend:
       SendMessage ${HWND_BROADCAST} ${WM_WININICHANGE} 0 "STR:Environment" /TIMEOUT=5000
  
   unRemoveFromPath_done:
@@ -289,7 +384,6 @@ Function un.RemoveFromPath
     Pop $0
 FunctionEnd
  
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Uninstall sutff
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -399,7 +493,7 @@ Function ConditionalAddToRegisty
   Pop $0
   Pop $1
   StrCmp "$0" "" ConditionalAddToRegisty_EmptyString
-    WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim 2.2" \
+    WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim" \
     "$1" "$0"
     ;MessageBox MB_OK "Set Registry: '$1' to '$0'"
     DetailPrint "Set install registry entry: '$1' to '$0'"
@@ -407,35 +501,124 @@ Function ConditionalAddToRegisty
 FunctionEnd
 
 ;--------------------------------
+
+!ifdef CPACK_USES_DOWNLOAD
+Function DownloadFile
+    IfFileExists $INSTDIR\* +2
+    CreateDirectory $INSTDIR
+    Pop $0
+
+    ; Skip if already downloaded
+    IfFileExists $INSTDIR\$0 0 +2
+    Return
+
+    StrCpy $1 ""
+
+  try_again:
+    NSISdl::download "$1/$0" "$INSTDIR\$0"
+    
+    Pop $1
+    StrCmp $1 "success" success
+    StrCmp $1 "Cancelled" cancel
+    MessageBox MB_OK "Download failed: $1"
+  cancel:
+    Return
+  success:
+FunctionEnd
+!endif
+
+;--------------------------------
+; Installation types
+
+
+;--------------------------------
+; Component sections
+
+
+;--------------------------------
 ; Define some macro setting for the gui
 
-!define MUI_HEADERIMAGE_BITMAP "C:/Projects/OpenSim22/opensim\Install\OpenSimInstallerIcon.bmp"
+!define MUI_HEADERIMAGE_BITMAP "E:/Projects/Trunk\Install\OpenSimInstallerIcon.bmp"
+
 
 
 ;--------------------------------
 ;Pages
   !insertmacro MUI_PAGE_WELCOME
 
-  !insertmacro MUI_PAGE_LICENSE "C:/Projects/OpenSim22/opensim/Copyright.txt"
+  !insertmacro MUI_PAGE_LICENSE "E:/Projects/Trunk/Copyright.txt"
   Page custom InstallOptionsPage
   !insertmacro MUI_PAGE_DIRECTORY
   
   ;Start Menu Folder Page Configuration
   !define MUI_STARTMENUPAGE_REGISTRY_ROOT "SHCTX" 
-  !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.2.0" 
+  !define MUI_STARTMENUPAGE_REGISTRY_KEY "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.4.0" 
   !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME "Start Menu Folder"
   !insertmacro MUI_PAGE_STARTMENU Application $STARTMENU_FOLDER
+
+  
 
   !insertmacro MUI_PAGE_INSTFILES
   !insertmacro MUI_PAGE_FINISH
 
   !insertmacro MUI_UNPAGE_CONFIRM
   !insertmacro MUI_UNPAGE_INSTFILES
-  
+
 ;--------------------------------
 ;Languages
- 
-  !insertmacro MUI_LANGUAGE "English"
+
+  !insertmacro MUI_LANGUAGE "English" ;first language is the default language
+  !insertmacro MUI_LANGUAGE "Albanian"
+  !insertmacro MUI_LANGUAGE "Arabic"
+  !insertmacro MUI_LANGUAGE "Basque"
+  !insertmacro MUI_LANGUAGE "Belarusian"
+  !insertmacro MUI_LANGUAGE "Bosnian"
+  !insertmacro MUI_LANGUAGE "Breton"
+  !insertmacro MUI_LANGUAGE "Bulgarian"
+  !insertmacro MUI_LANGUAGE "Croatian"
+  !insertmacro MUI_LANGUAGE "Czech"
+  !insertmacro MUI_LANGUAGE "Danish"
+  !insertmacro MUI_LANGUAGE "Dutch"
+  !insertmacro MUI_LANGUAGE "Estonian"
+  !insertmacro MUI_LANGUAGE "Farsi"
+  !insertmacro MUI_LANGUAGE "Finnish"
+  !insertmacro MUI_LANGUAGE "French"
+  !insertmacro MUI_LANGUAGE "German"
+  !insertmacro MUI_LANGUAGE "Greek"
+  !insertmacro MUI_LANGUAGE "Hebrew"
+  !insertmacro MUI_LANGUAGE "Hungarian"
+  !insertmacro MUI_LANGUAGE "Icelandic"
+  !insertmacro MUI_LANGUAGE "Indonesian"
+  !insertmacro MUI_LANGUAGE "Irish"
+  !insertmacro MUI_LANGUAGE "Italian"
+  !insertmacro MUI_LANGUAGE "Japanese"
+  !insertmacro MUI_LANGUAGE "Korean"
+  !insertmacro MUI_LANGUAGE "Kurdish"
+  !insertmacro MUI_LANGUAGE "Latvian"
+  !insertmacro MUI_LANGUAGE "Lithuanian"
+  !insertmacro MUI_LANGUAGE "Luxembourgish"
+  !insertmacro MUI_LANGUAGE "Macedonian"
+  !insertmacro MUI_LANGUAGE "Malay"
+  !insertmacro MUI_LANGUAGE "Mongolian"
+  !insertmacro MUI_LANGUAGE "Norwegian"
+  !insertmacro MUI_LANGUAGE "Polish"
+  !insertmacro MUI_LANGUAGE "Portuguese"
+  !insertmacro MUI_LANGUAGE "PortugueseBR"
+  !insertmacro MUI_LANGUAGE "Romanian"
+  !insertmacro MUI_LANGUAGE "Russian"
+  !insertmacro MUI_LANGUAGE "Serbian"
+  !insertmacro MUI_LANGUAGE "SerbianLatin"
+  !insertmacro MUI_LANGUAGE "SimpChinese"
+  !insertmacro MUI_LANGUAGE "Slovak"
+  !insertmacro MUI_LANGUAGE "Slovenian"
+  !insertmacro MUI_LANGUAGE "Spanish"
+  !insertmacro MUI_LANGUAGE "Swedish"
+  !insertmacro MUI_LANGUAGE "Thai"
+  !insertmacro MUI_LANGUAGE "TradChinese"
+  !insertmacro MUI_LANGUAGE "Turkish"
+  !insertmacro MUI_LANGUAGE "Ukrainian"
+  !insertmacro MUI_LANGUAGE "Welsh"
+
 
 ;--------------------------------
 ;Reserve Files
@@ -447,27 +630,25 @@ FunctionEnd
   ReserveFile "NSIS.InstallOptions.ini"
   !insertmacro MUI_RESERVEFILE_INSTALLOPTIONS
 
-
 ;--------------------------------
 ;Installer Sections
 
-Section "Installer Section" InstSection
-
+Section "-Core installation"
   ;Use the entire tree produced by the INSTALL target.  Keep the
   ;list of directories here in sync with the RMDir commands below.
   SetOutPath "$INSTDIR"
   File /r "${INST_DIR}\*.*"
-
+  
   ;Store installation folder
-  WriteRegStr SHCTX "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.2.0" "" $INSTDIR
+  WriteRegStr SHCTX "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.4.0" "" $INSTDIR
   
   ;Create uninstaller
   WriteUninstaller "$INSTDIR\Uninstall.exe"
   Push "DisplayName"
-  Push "OpenSim 2.2 "
+  Push "OpenSim 2.4 "
   Call ConditionalAddToRegisty
   Push "DisplayVersion"
-  Push "2.2.0"
+  Push "2.4.0"
   Call ConditionalAddToRegisty
   Push "Publisher"
   Push "Stanford University, National Center of Biomedical Computation"
@@ -475,7 +656,21 @@ Section "Installer Section" InstSection
   Push "UninstallString"
   Push "$INSTDIR\Uninstall.exe"
   Call ConditionalAddToRegisty
-
+  Push "NoRepair"
+  Push "1"
+  Call ConditionalAddToRegisty
+  
+  !ifdef CPACK_NSIS_ADD_REMOVE
+  ;Create add/remove functionality
+  Push "ModifyPath"
+  Push "$INSTDIR\AddRemove.exe"
+  Call ConditionalAddToRegisty
+  !else
+  Push "NoModify"
+  Push "1"
+  Call ConditionalAddToRegisty
+  !endif
+  
   ; Optional registration
   Push "DisplayIcon"
   Push "$INSTDIR\"
@@ -496,8 +691,13 @@ Section "Installer Section" InstSection
   CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\OpenSim.lnk" "$INSTDIR\start_opensim.bat"
 
-  CreateShortCut "$DESKTOP\opensim 2.2.0.lnk" "$INSTDIR\start_opensim.bat" ""
+  CreateShortCut "$DESKTOP\opensim 2.4.0.lnk" "$INSTDIR\start_opensim.bat" ""
   CreateShortCut "$SMPROGRAMS\$STARTMENU_FOLDER\Uninstall.lnk" "$INSTDIR\Uninstall.exe"
+
+  ;Read a value from an InstallOptions INI file
+  !insertmacro MUI_INSTALLOPTIONS_READ $DO_NOT_ADD_TO_PATH "NSIS.InstallOptions.ini" "Field 2" "State"
+  !insertmacro MUI_INSTALLOPTIONS_READ $ADD_TO_PATH_ALL_USERS "NSIS.InstallOptions.ini" "Field 3" "State"
+  !insertmacro MUI_INSTALLOPTIONS_READ $ADD_TO_PATH_CURRENT_USER "NSIS.InstallOptions.ini" "Field 4" "State"
 
   ; Write special uninstall registry entries
   Push "StartMenu"
@@ -516,28 +716,24 @@ Section "Installer Section" InstSection
   Push "$INSTALL_DESKTOP"
   Call ConditionalAddToRegisty
 
-ExecWait '"$INSTDIR\bin\vcredist_x86.exe"'
-  
   !insertmacro MUI_STARTMENU_WRITE_END
+
+ExecWait '"$INSTDIR\bin\vcredist_x86.exe"'
 
 SectionEnd
 
-Section "Add to path"
+Section "-Add to path"
   Push $INSTDIR\bin
-  ;Read a value from an InstallOptions INI file
-  !insertmacro MUI_INSTALLOPTIONS_READ $DO_NOT_ADD_TO_PATH "NSIS.InstallOptions.ini" "Field 2" "State"
-  !insertmacro MUI_INSTALLOPTIONS_READ $ADD_TO_PATH_ALL_USERS "NSIS.InstallOptions.ini" "Field 3" "State"
-  !insertmacro MUI_INSTALLOPTIONS_READ $ADD_TO_PATH_CURRENT_USER "NSIS.InstallOptions.ini" "Field 4" "State"
-  StrCmp $DO_NOT_ADD_TO_PATH "1" doNotAddToPath 0
+  StrCmp "ON" "ON" 0 doNotAddToPath
+  StrCmp $DO_NOT_ADD_TO_PATH "1" doNotAddToPath 0  
     Call AddToPath
   doNotAddToPath:
 SectionEnd
 
-
 ;--------------------------------
 ; Create custom pages
 Function InstallOptionsPage
-  !insertmacro MUI_HEADER_TEXT "Install Options" "Chose options for installing OpenSim 2.2"
+  !insertmacro MUI_HEADER_TEXT "Install Options" "Choose options for installing OpenSim 2.4 "
   !insertmacro MUI_INSTALLOPTIONS_DISPLAY "NSIS.InstallOptions.ini"
 
 FunctionEnd
@@ -565,6 +761,43 @@ Function un.onInit
     ;Get installation folder from registry if available
 
   done:
+    
+FunctionEnd
+
+;--- Add/Remove callback functions: ---
+!macro SectionList MacroName
+  ;This macro used to perform operation on multiple sections.
+  ;List all of your components in following manner here.
+
+!macroend
+ 
+Section -FinishComponents
+  ;Removes unselected components and writes component status to registry
+  !insertmacro SectionList "FinishSection"
+  
+!ifdef CPACK_NSIS_ADD_REMOVE  
+  ; Get the name of the installer executable
+  System::Call 'kernel32::GetModuleFileNameA(i 0, t .R0, i 1024) i r1'
+  StrCpy $R3 $R0
+  
+  ; Strip off the last 13 characters, to see if we have AddRemove.exe
+  StrLen $R1 $R0
+  IntOp $R1 $R0 - 13
+  StrCpy $R2 $R0 13 $R1
+  StrCmp $R2 "AddRemove.exe" addremove_installed
+  
+  ; We're not running AddRemove.exe, so install it
+  CopyFiles $R3 $INSTDIR\AddRemove.exe
+  
+  addremove_installed:
+!endif
+SectionEnd
+;--- End of Add/Remove callback functions ---
+
+;--------------------------------
+; Component dependencies
+Function .onSelChange
+  !insertmacro SectionList MaybeSelectionChanged
 FunctionEnd
 
 ;--------------------------------
@@ -572,27 +805,28 @@ FunctionEnd
 
 Section "Uninstall"
   ReadRegStr $START_MENU SHCTX \
-   "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim 2.2" "StartMenu"
+   "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim" "StartMenu"
   ;MessageBox MB_OK "Start menu is in: $START_MENU"
   ReadRegStr $DO_NOT_ADD_TO_PATH SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim 2.2" "DoNotAddToPath"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim" "DoNotAddToPath"
   ReadRegStr $ADD_TO_PATH_ALL_USERS SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim 2.2" "AddToPathAllUsers"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim" "AddToPathAllUsers"
   ReadRegStr $ADD_TO_PATH_CURRENT_USER SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim 2.2" "AddToPathCurrentUser"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim" "AddToPathCurrentUser"
   ;MessageBox MB_OK "Add to path: $DO_NOT_ADD_TO_PATH all users: $ADD_TO_PATH_ALL_USERS"
   ReadRegStr $INSTALL_DESKTOP SHCTX \
-    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim 2.2" "InstallToDesktop"
+    "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim" "InstallToDesktop"
   ;MessageBox MB_OK "Install to desktop: $INSTALL_DESKTOP "
 
 
 
   ;Remove files we installed.
   ;Keep the list of directories here in sync with the File commands above.
-  Delete "$INSTDIR\bin\addComments.exe"
   Delete "$INSTDIR\bin\analyze.exe"
   Delete "$INSTDIR\bin\cmc.exe"
   Delete "$INSTDIR\bin\forward.exe"
+  Delete "$INSTDIR\bin\glut32.dll"
+  Delete "$INSTDIR\bin\id.exe"
   Delete "$INSTDIR\bin\ik.exe"
   Delete "$INSTDIR\bin\migrate15to18.exe"
   Delete "$INSTDIR\bin\msvcp71.dll"
@@ -603,7 +837,7 @@ Section "Uninstall"
   Delete "$INSTDIR\bin\OpenSimApplicationIcon.ico"
   Delete "$INSTDIR\bin\OpenSimInstallerIcon.bmp"
   Delete "$INSTDIR\bin\OpenSim_SimTKcommon.dll"
-  Delete "$INSTDIR\bin\OpenSim_SimTKcpodes.dll"
+ 
   Delete "$INSTDIR\bin\OpenSim_SimTKmath.dll"
   Delete "$INSTDIR\bin\OpenSim_SimTKsimbody.dll"
   Delete "$INSTDIR\bin\opensim_w.exe"
@@ -615,11 +849,13 @@ Section "Uninstall"
   Delete "$INSTDIR\bin\osimSimulation.dll"
   Delete "$INSTDIR\bin\osimTools.dll"
   Delete "$INSTDIR\bin\pthreadVC2.dll"
+  Delete "$INSTDIR\bin\rra.exe"
   Delete "$INSTDIR\bin\scale.exe"
-  Delete "$INSTDIR\bin\simmToOpenSim.exe"
   Delete "$INSTDIR\bin\SimTKlapack.dll"
   Delete "$INSTDIR\bin\testOpenSimAPI.exe"
   Delete "$INSTDIR\bin\vcredist_x86.exe"
+  Delete "$INSTDIR\bin\versionUpdate.exe"
+  Delete "$INSTDIR\bin\VisualizerGUI.exe"
   Delete "$INSTDIR\bin\vtkCommon.dll"
   Delete "$INSTDIR\bin\vtkCommonJava.dll"
   Delete "$INSTDIR\bin\vtkDICOMParser.dll"
@@ -660,8 +896,6 @@ Section "Uninstall"
   Delete "$INSTDIR\doc\OpenSimTutorial3.pdf"
   Delete "$INSTDIR\etc\opensim.clusters"
   Delete "$INSTDIR\etc\opensim.conf"
-  Delete "$INSTDIR\examples\Arm26\arm26.jnt"
-  Delete "$INSTDIR\examples\Arm26\arm26.msl"
   Delete "$INSTDIR\examples\Arm26\arm26.osim"
   Delete "$INSTDIR\examples\Arm26\ComputedMuscleControl\arm26.osim"
   Delete "$INSTDIR\examples\Arm26\ComputedMuscleControl\arm26_ComputedMuscleControl_ControlConstraints.xml"
@@ -862,7 +1096,6 @@ Section "Uninstall"
   Delete "$INSTDIR\examples\Gait2354_Simbody\subject01_Setup_Forward.xml"
   Delete "$INSTDIR\examples\Gait2354_Simbody\subject01_Setup_IK.xml"
   Delete "$INSTDIR\examples\Gait2354_Simbody\subject01_Setup_InverseDynamics.xml"
-  Delete "$INSTDIR\examples\Gait2354_Simbody\subject01_Setup_Perturb.xml"
   Delete "$INSTDIR\examples\Gait2354_Simbody\subject01_Setup_RRA.xml"
   Delete "$INSTDIR\examples\Gait2354_Simbody\subject01_Setup_Scale.xml"
   Delete "$INSTDIR\examples\Gait2354_Simbody\subject01_static.trc"
@@ -891,6 +1124,50 @@ Section "Uninstall"
   Delete "$INSTDIR\examples\Gait2392_Simbody\subject01_walk1.mot"
   Delete "$INSTDIR\examples\Gait2392_Simbody\subject01_walk1.trc"
   Delete "$INSTDIR\examples\Gait2392_Simbody\subject01_walk1_grf.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\leg6dof9musc.osim"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\leg69_IK_stance.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\leg69_muscles_residuals_motor_control_limits.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\leg69_residuals_motors_control_limits.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\leg69_RRA_residuals_motors.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\leg69_stance_grf.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_Actuation_force.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_Actuation_power.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_Actuation_speed.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_controls.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_controls.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_Kinematics_dudt.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_Kinematics_q.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_Kinematics_u.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_pErr.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_states.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC\leg6dof9musc_added_mass_states_degrees.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\leg69_CMC_residuals_motors.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\leg69_muscles_residuals_motor_control_limits.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\leg69_right_grf.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\leg69_Setup_CMC.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\leg69_Setup_RRA.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\leg69_Tracking_Tasks.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\leg6dof9musc_adjustedMass.osim"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\desiredKinematics_padded.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\desiredKinematics_splinefit_accelerations.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_Actuation_force.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_Actuation_power.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_Actuation_speed.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_adjusted.osim"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_avgResiduals.txt"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_controls.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_controls.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_Kinematics_dudt.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_Kinematics_q.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_Kinematics_u.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_pErr.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_states.sto"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA\leg6dof9musc_states_degrees.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Swing\leg69_CMC_Swing_Tracking_Tasks.xml"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Swing\leg69_IK_swing.mot"
+  Delete "$INSTDIR\examples\Leg6Dof9Musc\Swing\leg69_muscles_control_limits.xml"
   Delete "$INSTDIR\examples\SeparateLegs\crouch1.mot"
   Delete "$INSTDIR\examples\SeparateLegs\crouch2.mot"
   Delete "$INSTDIR\examples\SeparateLegs\crouch3.mot"
@@ -954,6 +1231,7 @@ Section "Uninstall"
   Delete "$INSTDIR\Geometry\clavicle_lvsm.vtp"
   Delete "$INSTDIR\Geometry\clavicle_rv.vtp"
   Delete "$INSTDIR\Geometry\clavicle_rvsm.vtp"
+  Delete "$INSTDIR\Geometry\com.vtp"
   Delete "$INSTDIR\Geometry\cone.vtp"
   Delete "$INSTDIR\Geometry\Cube.vtp"
   Delete "$INSTDIR\Geometry\cuboid_lv.vtp"
@@ -1007,6 +1285,7 @@ Section "Uninstall"
   Delete "$INSTDIR\Geometry\hamate_rvs.vtp"
   Delete "$INSTDIR\Geometry\hat_jaw.vtp"
   Delete "$INSTDIR\Geometry\hat_ribs.vtp"
+  Delete "$INSTDIR\Geometry\hat_ribs_scap.vtp"
   Delete "$INSTDIR\Geometry\hat_skull.vtp"
   Delete "$INSTDIR\Geometry\hat_spine.vtp"
   Delete "$INSTDIR\Geometry\humerus.vtp"
@@ -1755,391 +2034,12 @@ Section "Uninstall"
   Delete "$INSTDIR\jdk\jre\README.txt"
   Delete "$INSTDIR\jdk\jre\THIRDPARTYLICENSEREADME.txt"
   Delete "$INSTDIR\jdk\jre\Welcome.html"
-  Delete "$INSTDIR\labs\Climbing\ClimbingGRFs.mot"
-  Delete "$INSTDIR\labs\Climbing\ClimbingGRFs_scaled.mot"
-  Delete "$INSTDIR\labs\Climbing\ClimbingMotion.mot"
-  Delete "$INSTDIR\labs\Curling\ArmCurlingFullBody.osim"
-  Delete "$INSTDIR\labs\Curling\ArmCurlingFullBody_BicepsOnly.osim"
-  Delete "$INSTDIR\labs\Curling\ArmCurlingFullBody_BrachialisOnly.osim"
-  Delete "$INSTDIR\labs\Curling\ArmCurlingFullBody_StatOpt.osim"
-  Delete "$INSTDIR\labs\Curling\ArmCurlingStaticArmBent.mot"
-  Delete "$INSTDIR\labs\Curling\ArmCurlingStaticElbow90.mot"
-  Delete "$INSTDIR\labs\Curling\ArmCurlingStaticShoulder90.mot"
-  Delete "$INSTDIR\labs\Curling\ArmCurling_ArmBent_InvDyn.xml"
-  Delete "$INSTDIR\labs\Curling\ArmCurling_ArmBent_StatOpt.xml"
-  Delete "$INSTDIR\labs\Curling\ArmCurling_ElbowFlex90_InvDyn.xml"
-  Delete "$INSTDIR\labs\Curling\ArmCurling_ElbowFlex90_StatOpt.xml"
-  Delete "$INSTDIR\labs\Curling\ArmCurling_ShoulderFlex90_InvDyn.xml"
-  Delete "$INSTDIR\labs\Curling\Geometry\15lb_6.8kg_Dumbbell.STL"
-  Delete "$INSTDIR\labs\Curling\Geometry\1mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\1mc_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2distph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2mc_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2midph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\2proxph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3distph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3mc_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3midph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\3proxph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4distph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4mc_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4midph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\4proxph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5distph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5mc_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5midph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\5proxph_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_1mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_2distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_2mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_2midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_2proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_3distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_3mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_3midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_3proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_4distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_4mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_4midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_4proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_5distph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_5mc.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_5midph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_5proxph.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_capitate.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_hamate.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_humerus.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_lunate.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_pisiform.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_radius.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_scaphoid.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_thumbdist.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_thumbprox.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_trapezium.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_trapezoid.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_triquetrum.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\arm_r_ulna.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\bofoot_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\bofoot_r.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\capitate.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\capitate_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\clavicle.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\clavicle2.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\clavicle_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\femur_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\femur_r.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\fibula_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\fibula_r.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\foot_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\foot_r.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\hamate.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\hamate_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\hat_jaw.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\hat_skull.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\hat_spine.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\humerus.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\humerus_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\lunate.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\lunate_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\pelvis_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\pelvis_r.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\pisiform.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\pisiform_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\radius.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\radius_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\sacrum.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\scaphoid.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\scaphoid_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\scapula.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\scapula_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\Staircase_Ramp.STL"
-  Delete "$INSTDIR\labs\Curling\Geometry\talus_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\talus_r.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\thorax.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\thumbdist.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\thumbdist_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\thumbprox.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\thumbprox_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\tibia_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\tibia_r.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\trapezium.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\trapezium_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\trapezoid.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\trapezoid_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\treadmill.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\triquetrum.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\triquetrum_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\ulna.vtp"
-  Delete "$INSTDIR\labs\Curling\Geometry\ulna_l.vtp"
-  Delete "$INSTDIR\labs\Curling\Images\Curling_OpenSimLab_Body.jpg"
-  Delete "$INSTDIR\labs\Curling\Images\Curling_OpenSimLab_FullWindow.jpg"
-  Delete "$INSTDIR\labs\Curling\Images\Curling_OpenSimLab_FullWindow_StatOpt.jpg"
-  Delete "$INSTDIR\labs\Curling\instructions.html"
-  Delete "$INSTDIR\labs\Curling\instructions_statOpt.html"
-  Delete "$INSTDIR\labs\Curling\Results\ArmCurling_InverseDynamics.sto"
-  Delete "$INSTDIR\labs\Curling_ID01.oscript"
-  Delete "$INSTDIR\labs\Curling_ID02.oscript"
-  Delete "$INSTDIR\labs\Curling_InverseDynamics.oscript"
-  Delete "$INSTDIR\labs\Curling_StaticOptimization.oscript"
-  Delete "$INSTDIR\labs\labNu.oscript"
-  Delete "$INSTDIR\labs\labTugOfWar1.oscript"
-  Delete "$INSTDIR\labs\lab_Curling.oscript"
-  Delete "$INSTDIR\labs\lab_IK\arm26.osim"
-  Delete "$INSTDIR\labs\lab_IK\arm26_elbow_flex.trc"
-  Delete "$INSTDIR\labs\lab_IK\arm26_InverseKinematics.mot"
-  Delete "$INSTDIR\labs\lab_IK\arm26_InverseKinematics_Tasks.xml"
-  Delete "$INSTDIR\labs\lab_IK\arm26_Setup_InverseKinematics.xml"
-  Delete "$INSTDIR\labs\lab_IK\arm26_with_bucket.osim"
-  Delete "$INSTDIR\labs\lab_IK\instructions.html"
-  Delete "$INSTDIR\labs\lab_IK\markers_coords_ik.sto"
-  Delete "$INSTDIR\labs\lab_IK.oscript"
-  Delete "$INSTDIR\labs\lab_IK_full.oscript"
-  Delete "$INSTDIR\labs\Models\ArmCurling.osim"
-  Delete "$INSTDIR\labs\Models\ArmCurling_StatOpt.osim"
-  Delete "$INSTDIR\labs\Models\Climbing.osim"
-  Delete "$INSTDIR\labs\Models\Geometry\15lb_6.8kg_Dumbbell.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\1mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\1mc_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2distph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2mc_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2midph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\2proxph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3distph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3mc_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3midph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\3proxph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4distph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4mc_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4midph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\4proxph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5distph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5mc_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5midph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\5proxph_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_1mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_2distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_2mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_2midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_2proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_3distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_3mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_3midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_3proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_4distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_4mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_4midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_4proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_5distph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_5mc.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_5midph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_5proxph.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_capitate.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_hamate.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_humerus.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_lunate.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_pisiform.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_radius.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_scaphoid.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_thumbdist.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_thumbprox.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_trapezium.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_trapezoid.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_triquetrum.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\arm_r_ulna.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\BackWall.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Baseball_bat.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bball_core.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bball_outside.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bike_frame.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bike_handles.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bike_pedalL.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bike_pedalR.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bike_screen.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bike_seat.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Bike_wheels.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\block.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\bofoot_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\bofoot_r.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Cane.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\capitate.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\capitate_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Chair1.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Chair2.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Chair3.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\clavicle.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\clavicle2.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\clavicle_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\ClimbingWallFloor.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\ClimbingWall_wall.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Crutch1.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Crutch2.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\femur_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\femur_r.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\fibula_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\fibula_r.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Final_black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Final_grey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Floor.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Football.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\foot_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\foot_r.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Force_Plate1.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Force_Plate2.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Force_Plate3.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Force_Plate4.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Golf_handle.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Golf_head.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Golf_stick.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\GymFloor.jpg"
-  Delete "$INSTDIR\labs\Models\Geometry\GymWall.jpg"
-  Delete "$INSTDIR\labs\Models\Geometry\hamate.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\hamate_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Hardwood.jpg"
-  Delete "$INSTDIR\labs\Models\Geometry\hat_jaw.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\hat_skull.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\hat_spine.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold1.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold10.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold11.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold2.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold3.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold4.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold5.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold6.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold7.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold8.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hold9.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hoop_black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hoop_red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Hoop_white.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\humerus.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\humerus_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Katana_black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Katana_gold.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Katana_grey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Kettlebell_darkgrey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Kettlebell_lightgrey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Kettlebell_offwhite.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Lacrosse_base.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Lacrosse_head.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Lacrosse_stick.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\LeftWall.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\lunate.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\lunate_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\MainWall.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Mat.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\NASA_SolarSystem.jpg"
-  Delete "$INSTDIR\labs\Models\Geometry\Opensim5T.jpg"
-  Delete "$INSTDIR\labs\Models\Geometry\pelvis_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\pelvis_r.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\pisiform.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\pisiform_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo12Black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo12Red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo12_red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo18Black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo18Red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo18_red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo24Black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo24Red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo24_red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo30Black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo30Red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo30_red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo6Black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo6Red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Plyo6_red.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\radius.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\radius_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Ramp_black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Ramp_grey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\RightWall.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\sacrum.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\scaphoid.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\scaphoid_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\scapula.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\scapula_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\SideWall.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\sphere1cm.obj"
-  Delete "$INSTDIR\labs\Models\Geometry\Staircase_Ramp.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Suitcase_base.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Suitcase_grip.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Suitcase_handle.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Suitcase_main.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Table1.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Table2.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\talus_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\talus_r.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Tennis.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\thorax.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\thumbdist.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\thumbdist_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\thumbprox.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\thumbprox_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\tibia_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\tibia_r.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\trapezium.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\trapezium_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\trapezoid.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\trapezoid_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\treadmill.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Treadmill_darkgrey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\triquetrum.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\triquetrum_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\ulna.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\ulna_l.vtp"
-  Delete "$INSTDIR\labs\Models\Geometry\Walker_black.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Walker_darkgrey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Walker_grey.STL"
-  Delete "$INSTDIR\labs\Models\Geometry\Walker_lightgrey.STL"
-  Delete "$INSTDIR\labs\Models\PushUp.osim"
-  Delete "$INSTDIR\labs\Models\Standing.osim"
-  Delete "$INSTDIR\labs\PushUps\FD_EmptyControls.xml"
-  Delete "$INSTDIR\labs\PushUps\FD_Setup.xml"
-  Delete "$INSTDIR\labs\PushUps\instructions.html"
-  Delete "$INSTDIR\labs\PushUps\PushUp_IntialStates.sto"
-  Delete "$INSTDIR\labs\testIVD.oscript"
-  Delete "$INSTDIR\labs\testIVD2.oscript"
-  Delete "$INSTDIR\labs\WeightMassGravity.oscript"
   Delete "$INSTDIR\Models\Internal\_openSimlab.osim"
   Delete "$INSTDIR\opensim\config\Modules\org-apache-xmlgraphics-ps.xml"
   Delete "$INSTDIR\opensim\config\Modules\org-jfree-data.xml"
   Delete "$INSTDIR\opensim\config\Modules\org-jfree.xml"
   Delete "$INSTDIR\opensim\config\Modules\org-opensim-coordinateviewer.xml"
-  Delete "$INSTDIR\opensim\config\Modules\org-opensim-k12.xml"
-  Delete "$INSTDIR\opensim\config\Modules\org-opensim-k12utils.xml"
+  Delete "$INSTDIR\opensim\config\Modules\org-opensim-helputils.xml"
   Delete "$INSTDIR\opensim\config\Modules\org-opensim-logger.xml"
   Delete "$INSTDIR\opensim\config\Modules\org-opensim-modeling.xml"
   Delete "$INSTDIR\opensim\config\Modules\org-opensim-plotter.xml"
@@ -2161,8 +2061,7 @@ Section "Uninstall"
   Delete "$INSTDIR\opensim\modules\org-jfree-data.jar"
   Delete "$INSTDIR\opensim\modules\org-jfree.jar"
   Delete "$INSTDIR\opensim\modules\org-opensim-coordinateviewer.jar"
-  Delete "$INSTDIR\opensim\modules\org-opensim-k12.jar"
-  Delete "$INSTDIR\opensim\modules\org-opensim-k12utils.jar"
+  Delete "$INSTDIR\opensim\modules\org-opensim-helputils.jar"
   Delete "$INSTDIR\opensim\modules\org-opensim-logger.jar"
   Delete "$INSTDIR\opensim\modules\org-opensim-modeling.jar"
   Delete "$INSTDIR\opensim\modules\org-opensim-plotter.jar"
@@ -2174,8 +2073,7 @@ Section "Uninstall"
   Delete "$INSTDIR\opensim\update_tracking\org-jfree-data.xml"
   Delete "$INSTDIR\opensim\update_tracking\org-jfree.xml"
   Delete "$INSTDIR\opensim\update_tracking\org-opensim-coordinateviewer.xml"
-  Delete "$INSTDIR\opensim\update_tracking\org-opensim-k12.xml"
-  Delete "$INSTDIR\opensim\update_tracking\org-opensim-k12utils.xml"
+  Delete "$INSTDIR\opensim\update_tracking\org-opensim-helputils.xml"
   Delete "$INSTDIR\opensim\update_tracking\org-opensim-logger.xml"
   Delete "$INSTDIR\opensim\update_tracking\org-opensim-modeling.xml"
   Delete "$INSTDIR\opensim\update_tracking\org-opensim-plotter.xml"
@@ -2407,6 +2305,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\APIExamples\ControllerExample\blockRemesh192.obj"
   Delete "$INSTDIR\sdk\APIExamples\ControllerExample\CMakeLists.txt"
   Delete "$INSTDIR\sdk\APIExamples\ControllerExample\ControllerExample.cpp"
+  Delete "$INSTDIR\sdk\APIExamples\ControllerExample\CONTROLLER_EXAMPLE_QUICK_GUIDE.txt"
   Delete "$INSTDIR\sdk\APIExamples\ControllerExample\ground.vtp"
   Delete "$INSTDIR\sdk\APIExamples\ControllerExample\OutputReference\ControllerExample_Solution.cpp"
   Delete "$INSTDIR\sdk\APIExamples\ControllerExample\OutputReference\tugOfWar_controls.sto"
@@ -2443,14 +2342,14 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\APIExamples\ExampleMain\ground.vtp"
   Delete "$INSTDIR\sdk\APIExamples\ExampleMain\tugOfWar.osim"
   Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar1_CreateModel.cpp"
-  Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar2_AddGround.cpp"
-  Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar3_AddBlockBody.cpp"
-  Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar4_FallingBlock.cpp"
-  Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar5_AddMuscles.cpp"
-  Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar6_AddContact.cpp"
-  Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar7_AddPrescribedForce.cpp"
   Delete "$INSTDIR\sdk\APIExamples\ExampleMain\TugOfWar_Complete.cpp"
   Delete "$INSTDIR\sdk\APIExamples\ExampleMain\tugOfWar_states_degrees.mot"
+  Delete "$INSTDIR\sdk\APIExamples\ForcePluginExample\CMakeLists.txt"
+  Delete "$INSTDIR\sdk\APIExamples\ForcePluginExample\CoupledBushingForce.cpp"
+  Delete "$INSTDIR\sdk\APIExamples\ForcePluginExample\CoupledBushingForce.h"
+  Delete "$INSTDIR\sdk\APIExamples\ForcePluginExample\osimPluginDLL.h"
+  Delete "$INSTDIR\sdk\APIExamples\ForcePluginExample\RegisterTypes_osimPlugin.cpp"
+  Delete "$INSTDIR\sdk\APIExamples\ForcePluginExample\RegisterTypes_osimPlugin.h"
   Delete "$INSTDIR\sdk\APIExamples\MuscleExample\anchor1.vtp"
   Delete "$INSTDIR\sdk\APIExamples\MuscleExample\anchor2.vtp"
   Delete "$INSTDIR\sdk\APIExamples\MuscleExample\block.vtp"
@@ -2472,10 +2371,6 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\APIExamples\OptimizationExample_Arm26\OutputReference\OptimizationExample.cpp"
   Delete "$INSTDIR\sdk\APIExamples\testEnvironment\CMakeLists.txt"
   Delete "$INSTDIR\sdk\APIExamples\testEnvironment\test.cpp"
-  Delete "$INSTDIR\sdk\bin\convertControls.exe"
-  Delete "$INSTDIR\sdk\bin\convertStorageToControls.exe"
-  Delete "$INSTDIR\sdk\bin\simplifyControls.exe"
-  Delete "$INSTDIR\sdk\bin\storageFilter.exe"
   Delete "$INSTDIR\sdk\doc\BuildOpenSimPluginSteps.pdf"
   Delete "$INSTDIR\sdk\doc\html\annotated.html"
   Delete "$INSTDIR\sdk\doc\html\classCustomController-members.html"
@@ -2494,6 +2389,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1AbstractTool.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1AbstractTool.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1AbstractTool.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ActivationFiberLengthMuscle-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ActivationFiberLengthMuscle.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ActivationFiberLengthMuscle.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Actuation-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Actuation.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Actuation.html"
@@ -2516,6 +2414,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ActuatorPerturbationIndependent-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ActuatorPerturbationIndependent.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ActuatorPerturbationIndependent.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Actuator__-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Actuator__.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Actuator__.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Analysis-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Analysis.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Analysis.html"
@@ -2548,6 +2449,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ArrowGeometry-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ArrowGeometry.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ArrowGeometry.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1AssemblySolver-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1AssemblySolver.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1AssemblySolver.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1BallJoint-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1BallJoint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1BallJoint.html"
@@ -2691,6 +2595,12 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateCouplerConstraint-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateCouplerConstraint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateCouplerConstraint.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateLimitForce-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateLimitForce.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateLimitForce.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateReference-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateReference.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateReference.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateSet-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateSet.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1CoordinateSet.html"
@@ -2718,6 +2628,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1DisplayGeometry-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1DisplayGeometry.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1DisplayGeometry.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1DynamicsTool-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1DynamicsTool.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1DynamicsTool.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ElasticFoundationForce-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ElasticFoundationForce.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ElasticFoundationForce.html"
@@ -2734,6 +2647,12 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Exception-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Exception.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Exception.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ExternalForce-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ExternalForce.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ExternalForce.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ExternalLoads-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ExternalLoads.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ExternalLoads.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Force-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Force.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Force.html"
@@ -2841,16 +2760,36 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamics.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamics.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamics.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamicsSolver-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamicsSolver.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamicsSolver.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamicsTool-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamicsTool.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseDynamicsTool.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseKinematicsSolver-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseKinematicsSolver.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseKinematicsSolver.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseKinematicsTool-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseKinematicsTool.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1InverseKinematicsTool.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1IO-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1IO.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Joint-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Joint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Joint.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Joint.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointLoadOptimization-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointLoadOptimization.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointLoadOptimization.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointLoadOptimizationTarget-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointLoadOptimizationTarget.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointReaction-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointReaction.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointReaction.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointReaction.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointReactionReference-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointReactionReference.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointReactionReference.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointSet-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointSet.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1JointSet.html"
@@ -2912,6 +2851,12 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkerSet.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkerSet.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkerSet.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkersReference-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkersReference.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkersReference.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkerWeight-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkerWeight.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MarkerWeight.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Material-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Material.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Material.html"
@@ -2932,6 +2877,8 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponent.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponent.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponent.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponentRep-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponentRep.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponentSet-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponentSet.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelComponentSet.html"
@@ -2940,6 +2887,8 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelScaler.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelScaler.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1ModelScaler.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Model_1_1DefaultGeometry-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Model_1_1DefaultGeometry.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MomentArmSolver-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MomentArmSolver.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1MomentArmSolver.html"
@@ -2982,6 +2931,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PassiveJointTorque-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PassiveJointTorque.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PassiveJointTorque.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PathActuator-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PathActuator.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PathActuator.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PathPoint-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PathPoint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PathPoint.html"
@@ -3033,6 +2985,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointOnLineConstraint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointOnLineConstraint.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointOnLineConstraint.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointToPointActuator-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointToPointActuator.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointToPointActuator.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointToPointSpring-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointToPointSpring.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PointToPointSpring.html"
@@ -3065,6 +3020,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyDblVec3-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyDblVec3.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyDblVec3.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyDblVec__-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyDblVec__.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyDblVec__.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyGroup-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyGroup.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1PropertyInt-members.html"
@@ -3102,12 +3060,21 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1rdSerializableObject2-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1rdSerializableObject2.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1rdSerializableObject2.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Reference__-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Reference__.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Reference__.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RigidTendonMuscle-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RigidTendonMuscle.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RigidTendonMuscle.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RollingOnSurfaceConstraint-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RollingOnSurfaceConstraint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RollingOnSurfaceConstraint.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RollingOnSurfaceConstraint.png"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RootSolver-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RootSolver.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RRATool-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RRATool.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1RRATool.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Scale-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Scale.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Scale.html"
@@ -3144,6 +3111,8 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SimmPoint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SimmPoint.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SimmPoint.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SIMMTransform-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SIMMTransform.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SliderJoint-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SliderJoint.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1SliderJoint.html"
@@ -3198,6 +3167,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Thelen2003Muscle.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Thelen2003Muscle.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Thelen2003Muscle.png"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Tool-members.html"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Tool.gif"
+  Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1Tool.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1TorqueActuator-members.html"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1TorqueActuator.gif"
   Delete "$INSTDIR\sdk\doc\html\classOpenSim_1_1TorqueActuator.html"
@@ -3414,9 +3386,11 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x64.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x65.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x66.html"
+  Delete "$INSTDIR\sdk\doc\html\functions_vars_0x69.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x6c.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x6d.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x6e.html"
+  Delete "$INSTDIR\sdk\doc\html\functions_vars_0x70.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x71.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x72.html"
   Delete "$INSTDIR\sdk\doc\html\functions_vars_0x73.html"
@@ -3466,10 +3440,12 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\index.html"
   Delete "$INSTDIR\sdk\doc\html\installdox"
   Delete "$INSTDIR\sdk\doc\html\main.html"
+  Delete "$INSTDIR\sdk\doc\html\main_b.html"
   Delete "$INSTDIR\sdk\doc\html\namespacemembers.html"
   Delete "$INSTDIR\sdk\doc\html\namespacemembers_func.html"
   Delete "$INSTDIR\sdk\doc\html\namespaceOpenSim.html"
   Delete "$INSTDIR\sdk\doc\html\namespaces.html"
+  Delete "$INSTDIR\sdk\doc\html\orig_main.html"
   Delete "$INSTDIR\sdk\doc\html\pages.html"
   Delete "$INSTDIR\sdk\doc\html\search\all_5f.html"
   Delete "$INSTDIR\sdk\doc\html\search\all_61.html"
@@ -3543,11 +3519,13 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_6e.html"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_6f.html"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_70.html"
+  Delete "$INSTDIR\sdk\doc\html\search\enumvalues_71.html"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_72.html"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_73.html"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_74.html"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_75.html"
   Delete "$INSTDIR\sdk\doc\html\search\enumvalues_77.html"
+  Delete "$INSTDIR\sdk\doc\html\search\functions_5f.html"
   Delete "$INSTDIR\sdk\doc\html\search\functions_61.html"
   Delete "$INSTDIR\sdk\doc\html\search\functions_62.html"
   Delete "$INSTDIR\sdk\doc\html\search\functions_63.html"
@@ -3577,6 +3555,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\search\nomatches.html"
   Delete "$INSTDIR\sdk\doc\html\search\related_62.html"
   Delete "$INSTDIR\sdk\doc\html\search\related_63.html"
+  Delete "$INSTDIR\sdk\doc\html\search\related_65.html"
   Delete "$INSTDIR\sdk\doc\html\search\related_66.html"
   Delete "$INSTDIR\sdk\doc\html\search\related_6a.html"
   Delete "$INSTDIR\sdk\doc\html\search\related_6d.html"
@@ -3592,15 +3571,21 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\search\variables_64.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_65.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_66.html"
+  Delete "$INSTDIR\sdk\doc\html\search\variables_69.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_6c.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_6d.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_6e.html"
+  Delete "$INSTDIR\sdk\doc\html\search\variables_70.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_71.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_72.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_73.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_75.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_76.html"
   Delete "$INSTDIR\sdk\doc\html\search\variables_77.html"
+  Delete "$INSTDIR\sdk\doc\html\structOpenSim_1_1ModelComponentRep_1_1CacheInfo-members.html"
+  Delete "$INSTDIR\sdk\doc\html\structOpenSim_1_1ModelComponentRep_1_1CacheInfo.html"
+  Delete "$INSTDIR\sdk\doc\html\structOpenSim_1_1ModelComponentRep_1_1DiscreteVariableInfo-members.html"
+  Delete "$INSTDIR\sdk\doc\html\structOpenSim_1_1ModelComponentRep_1_1DiscreteVariableInfo.html"
   Delete "$INSTDIR\sdk\doc\html\structOpenSim_1_1MuscleAnalysis_1_1private-members.html"
   Delete "$INSTDIR\sdk\doc\html\structOpenSim_1_1MuscleAnalysis_1_1private.html"
   Delete "$INSTDIR\sdk\doc\html\tabs.css"
@@ -3610,9 +3595,6 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\doc\html\todo.html"
   Delete "$INSTDIR\sdk\doc\html\tree.html"
   Delete "$INSTDIR\sdk\doc\index.html"
-  Delete "$INSTDIR\sdk\examples\main\block.osim"
-  Delete "$INSTDIR\sdk\examples\main\CMakeLists.txt"
-  Delete "$INSTDIR\sdk\examples\main\main.cpp"
   Delete "$INSTDIR\sdk\examples\plugin\AnalysisPlugin_Template.cpp"
   Delete "$INSTDIR\sdk\examples\plugin\AnalysisPlugin_Template.h"
   Delete "$INSTDIR\sdk\examples\plugin\CMakeLists.txt"
@@ -3621,16 +3603,16 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\examples\plugin\RegisterTypes_osimPlugin.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\ContDerivMuscle.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\CoordinateActuator.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Actuators\CoordinateLimitForce.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\Delp1990Muscle.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Actuators\LineActuator.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\osimActuators.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\osimActuatorsDLL.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Actuators\PassiveJointTorque.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\PointActuator.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Actuators\PointToPointActuator.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\RegisterTypes_osimActuators.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Actuators\RigidTendonMuscle.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\Schutte1993Muscle.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\SpringGeneralizedForce.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Actuators\Springs.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\Thelen2003Muscle.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Actuators\TorqueActuator.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Analyses\Actuation.h"
@@ -3641,6 +3623,8 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Analyses\ForceReporter.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Analyses\InducedAccelerations.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Analyses\InverseDynamics.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Analyses\JointLoadOptimization.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Analyses\JointLoadOptimizationTarget.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Analyses\JointReaction.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Analyses\Kinematics.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Analyses\MuscleAnalysis.h"
@@ -3680,6 +3664,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\Material.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\Mtx.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\MultiplierFunction.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Common\MultiStepFunction.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\NaturalCubicSpline.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\Object.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\ObjectGroup.h"
@@ -3695,7 +3680,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyBoolArray.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyDbl.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyDblArray.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyDblVec3.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyDblVec.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyGroup.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyInt.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\PropertyIntArray.h"
@@ -3717,8 +3702,6 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\SimmMacros.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\SimmMotionData.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\SimmMotionEvent.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Common\SimmPoint.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Common\SIMMUtilities.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\Spline.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\StateFunction.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\StateVector.h"
@@ -3737,6 +3720,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\XMLParsingException.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Common\XYFunctionInterface.h"
   Delete "$INSTDIR\sdk\include\OpenSim\OpenSim.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\AssemblySolver.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Control\ConstantController.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Control\Control.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Control\ControlConstant.h"
@@ -3747,8 +3731,14 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Control\ControlSetController.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Control\PrescribedController.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Control\TrackingController.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\CoordinateReference.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\InverseDynamicsSolver.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\InverseKinematicsSolver.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\JointReactionReference.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Manager\Manager.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\MarkersReference.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\AbstractTool.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ActivationFiberLengthMuscle.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\Actuator.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\Analysis.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\AnalysisSet.h"
@@ -3767,9 +3757,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ContactSphere.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ControllerSet.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\CoordinateSet.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\CustomActuator.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\CustomForce.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ElasticFoundationForce.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ExternalForce.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ExternalLoads.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\Force.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ForceAdapter.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ForceSet.h"
@@ -3787,7 +3777,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\ModelComponentSet.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\MovingPathPoint.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\Muscle.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\OpenSimForceSubsystem.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\PathActuator.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\PathPoint.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\PathPointSet.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Model\PointForceDirection.h"
@@ -3797,6 +3787,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\MomentArmSolver.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\osimSimulation.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\osimSimulationDLL.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Simulation\Reference.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\RegisterTypes_osimSimulation.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\SimbodyEngine\BallJoint.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Simulation\SimbodyEngine\Body.h"
@@ -3844,18 +3835,15 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\CMC_Task.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\CMC_TaskSet.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\CorrectionController.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Tools\DynamicsTool.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\ForwardTool.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\GenericModelMaker.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKCoordinateTask.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKMarkerTask.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKSolverImpl.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKSolverInterface.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKTarget.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKTask.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKTaskSet.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKTool.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKTrial.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Tools\IKTrialSet.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Tools\InverseDynamicsTool.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Tools\InverseKinematicsTool.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\MarkerPair.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\MarkerPairSet.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\MarkerPlacer.h"
@@ -3865,14 +3853,14 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\MuscleStateTrackingTask.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\osimTools.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\osimToolsDLL.h"
-  Delete "$INSTDIR\sdk\include\OpenSim\Tools\PerturbationTool.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\RegisterTypes_osimTools.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Tools\RRATool.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\ScaleTool.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\SMC_Joint.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\StateTrackingTask.h"
+  Delete "$INSTDIR\sdk\include\OpenSim\Tools\Tool.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\TrackingTask.h"
   Delete "$INSTDIR\sdk\include\OpenSim\Tools\VectorFunctionForActuators.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\lapack\SimTKlapack.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\pthread.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\sched.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\semaphore.h"
@@ -3888,6 +3876,7 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\ContactImpl.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\ContactSurface.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\ContactTrackerSubsystem.h"
+  Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\DecorationGenerator.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\DecorationSubsystem.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\ElasticFoundationForce.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\Force.h"
@@ -3904,21 +3893,21 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\MobilizedBody.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\Motion.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\MultibodySystem.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\NumericalMethods.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\ObservedPointFitter.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\OrientedBoundingBox.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\SimbodyMatterSubsystem.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\SimbodyMatterSubtree.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\TextDataEventReporter.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\VTKEventReporter.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\VTKVisualizer.h"
+  Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\Visualizer.h"
+  Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\Visualizer_InputListener.h"
+  Delete "$INSTDIR\sdk\include\SimTK\include\simbody\internal\Visualizer_Reporter.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\CPodesIntegrator.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\Differentiator.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\ExplicitEulerIntegrator.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\Integrator.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\internal\common.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\simmath\internal\Function.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\internal\GCVSPLUtil.h"
+  Delete "$INSTDIR\sdk\include\SimTK\include\simmath\internal\SimTKcpodes.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\internal\Spline.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\internal\SplineFitter.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\simmath\LinearAlgebra.h"
@@ -3948,18 +3937,17 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\ExceptionMacros.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Fortran.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Function.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\List.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\MassProperties.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Mat.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\MatrixCharacteristics.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\MatrixHelper.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Measure.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\MeasureGuts.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\MeasureImplementation.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\negator.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\NTraits.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Parallel2DExecutor.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\ParallelExecutor.h"
+  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\ParallelWorkQueue.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Plugin.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\PolygonalMesh.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\PolynomialRootFinder.h"
@@ -3985,9 +3973,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\System.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\SystemGuts.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\ThreadLocal.h"
+  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Timing.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Transform.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\UnitVec.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\UserFunction.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Value.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\Vec.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal\VectorMath.h"
@@ -4000,72 +3988,9 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\TemplatizedLapack.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\Testing.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcommon.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_band.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_bandpre.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_bbdpre.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_dense.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_direct.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_lapack.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_lapack_exports.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_spbcgs.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_spgmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_spils.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes\cpodes_sptfqmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_band.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_bandpre.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_bbdpre.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_dense.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_diag.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_direct.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_lapack.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_spbcgs.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_spgmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_spils.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes\cvodes_sptfqmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_band.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_bbdpre.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_dense.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_direct.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_lapack.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_spbcgs.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_spgmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_spils.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida\ida_sptfqmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\internal\nvector_SimTK.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_band.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_bbdpre.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_dense.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_direct.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_lapack.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_spbcgs.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_spgmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_spils.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol\kinsol_sptfqmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\nvector\nvector_parallel.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\nvector\nvector_serial.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_band.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_config.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_dense.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_direct.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_fnvector.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_iterative.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_lapack.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_math.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_nvector.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_spbcgs.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_spgmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_sptfqmr.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials\sundials_types.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKlapack.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKmath.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKmolmodel.h"
   Delete "$INSTDIR\sdk\include\SimTK\include\SimTKsimbody.h"
-  Delete "$INSTDIR\sdk\include\SimTK\include\SimTKsimbody_aux.h"
   Delete "$INSTDIR\sdk\include\xercesc\dom\deprecated\ChildNode.hpp"
   Delete "$INSTDIR\sdk\include\xercesc\dom\deprecated\DOM.hpp"
   Delete "$INSTDIR\sdk\include\xercesc\dom\deprecated\DomMemDebug.hpp"
@@ -4599,9 +4524,8 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\include\xercesc\validators\schema\XSDErrorReporter.hpp"
   Delete "$INSTDIR\sdk\include\xercesc\validators\schema\XSDLocator.hpp"
   Delete "$INSTDIR\sdk\include\xercesc\validators\schema\XUtil.hpp"
-  Delete "$INSTDIR\sdk\lib\acpp.lib"
   Delete "$INSTDIR\sdk\lib\OpenSim_SimTKcommon.lib"
-  Delete "$INSTDIR\sdk\lib\OpenSim_SimTKcpodes.lib"
+
   Delete "$INSTDIR\sdk\lib\OpenSim_SimTKmath.lib"
   Delete "$INSTDIR\sdk\lib\OpenSim_SimTKsimbody.lib"
   Delete "$INSTDIR\sdk\lib\osimActuators.lib"
@@ -4616,16 +4540,6 @@ Section "Uninstall"
   Delete "$INSTDIR\sdk\lib\xerces-c_2.lib"
   Delete "$INSTDIR\sdk\lib\xerces-c_2D.lib"
   Delete "$INSTDIR\sdk\readme.txt"
-  Delete "$INSTDIR\sdk\templates\AnalysisPlugin_Template.cpp"
-  Delete "$INSTDIR\sdk\templates\AnalysisPlugin_Template.h"
-  Delete "$INSTDIR\sdk\templates\AnalysisTemplate.cpp"
-  Delete "$INSTDIR\sdk\templates\AnalysisTemplate.h"
-  Delete "$INSTDIR\sdk\templates\FeedbackControllerTemplate.cpp"
-  Delete "$INSTDIR\sdk\templates\FeedbackControllerTemplate.h"
-  Delete "$INSTDIR\sdk\templates\MuscleTemplate.cpp"
-  Delete "$INSTDIR\sdk\templates\MuscleTemplate.h"
-  Delete "$INSTDIR\sdk\templates\RegisterTypes_osimPlugin.cpp"
-  Delete "$INSTDIR\sdk\templates\RegisterTypes_osimPlugin.h"
   Delete "$INSTDIR\start_opensim.bat"
 
   RMDir "$INSTDIR\bin"
@@ -4666,6 +4580,12 @@ Section "Uninstall"
   RMDir "$INSTDIR\examples\Gait2354_Simbody\OutputReference"
   RMDir "$INSTDIR\examples\Gait2354_Simbody"
   RMDir "$INSTDIR\examples\Gait2392_Simbody"
+  RMDir "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\CMC"
+  RMDir "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference\RRA"
+  RMDir "$INSTDIR\examples\Leg6Dof9Musc\Stance\Reference"
+  RMDir "$INSTDIR\examples\Leg6Dof9Musc\Stance"
+  RMDir "$INSTDIR\examples\Leg6Dof9Musc\Swing"
+  RMDir "$INSTDIR\examples\Leg6Dof9Musc"
   RMDir "$INSTDIR\examples\SeparateLegs"
   RMDir "$INSTDIR\examples\WristModel"
   RMDir "$INSTDIR\examples"
@@ -4769,17 +4689,16 @@ Section "Uninstall"
   RMDir "$INSTDIR\sdk\APIExamples\CustomActuatorExample\OutputReference"
   RMDir "$INSTDIR\sdk\APIExamples\CustomActuatorExample"
   RMDir "$INSTDIR\sdk\APIExamples\ExampleMain"
+  RMDir "$INSTDIR\sdk\APIExamples\ForcePluginExample"
   RMDir "$INSTDIR\sdk\APIExamples\MuscleExample"
   RMDir "$INSTDIR\sdk\APIExamples\OptimizationExample_Arm26\OutputReference"
   RMDir "$INSTDIR\sdk\APIExamples\OptimizationExample_Arm26"
   RMDir "$INSTDIR\sdk\APIExamples\testEnvironment"
   RMDir "$INSTDIR\sdk\APIExamples"
-  RMDir "$INSTDIR\sdk\bin"
   RMDir "$INSTDIR\sdk\doc\html\images"
   RMDir "$INSTDIR\sdk\doc\html\search"
   RMDir "$INSTDIR\sdk\doc\html"
   RMDir "$INSTDIR\sdk\doc"
-  RMDir "$INSTDIR\sdk\examples\main"
   RMDir "$INSTDIR\sdk\examples\plugin"
   RMDir "$INSTDIR\sdk\examples"
   RMDir "$INSTDIR\sdk\include\OpenSim\Actuators"
@@ -4793,21 +4712,12 @@ Section "Uninstall"
   RMDir "$INSTDIR\sdk\include\OpenSim\Simulation"
   RMDir "$INSTDIR\sdk\include\OpenSim\Tools"
   RMDir "$INSTDIR\sdk\include\OpenSim"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\lapack"
   RMDir "$INSTDIR\sdk\include\SimTK\include\simbody\internal"
   RMDir "$INSTDIR\sdk\include\SimTK\include\simbody"
   RMDir "$INSTDIR\sdk\include\SimTK\include\simmath\internal"
   RMDir "$INSTDIR\sdk\include\SimTK\include\simmath"
   RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcommon\internal"
   RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcommon"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cpodes"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\cvodes"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\ida"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\internal"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\kinsol"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\nvector"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes\sundials"
-  RMDir "$INSTDIR\sdk\include\SimTK\include\SimTKcpodes"
   RMDir "$INSTDIR\sdk\include\SimTK\include"
   RMDir "$INSTDIR\sdk\include\SimTK"
   RMDir "$INSTDIR\sdk\include\xercesc\dom\deprecated"
@@ -4875,20 +4785,27 @@ Section "Uninstall"
   RMDir "$INSTDIR\sdk\include\xercesc"
   RMDir "$INSTDIR\sdk\include"
   RMDir "$INSTDIR\sdk\lib"
-  RMDir "$INSTDIR\sdk\templates"
   RMDir "$INSTDIR\sdk"
 
 
+!ifdef CPACK_NSIS_ADD_REMOVE  
+  ;Remove the add/remove program
+  Delete "$INSTDIR\AddRemove.exe"
+!endif
+
   ;Remove the uninstaller itself.
   Delete "$INSTDIR\Uninstall.exe"
-  DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim 2.2"
+  DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\OpenSim"
 
   ;Remove the installation directory if it is empty.
   RMDir "$INSTDIR"
 
   ; Remove the registry entries.
-  DeleteRegKey SHCTX "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.2.0"
+  DeleteRegKey SHCTX "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.4.0"
 
+  ; Removes all optional components
+  !insertmacro SectionList "RemoveSection"
+  
   !insertmacro MUI_STARTMENU_GETFOLDER Application $MUI_TEMP
     
   Delete "$SMPROGRAMS\$MUI_TEMP\Uninstall.lnk"
@@ -4928,7 +4845,7 @@ Section "Uninstall"
     StrCmp "$MUI_TEMP" "$SMPROGRAMS" secondStartMenuDeleteLoopDone secondStartMenuDeleteLoop
   secondStartMenuDeleteLoopDone:
 
-  DeleteRegKey /ifempty SHCTX "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.2.0"
+  DeleteRegKey /ifempty SHCTX "Software\Stanford University, National Center of Biomedical Computation\OpenSim 2.4.0"
 
   Push $INSTDIR\bin
   StrCmp $DO_NOT_ADD_TO_PATH_ "1" doNotRemoveFromPath 0
@@ -4936,4 +4853,62 @@ Section "Uninstall"
   doNotRemoveFromPath:
 SectionEnd
 
+;--------------------------------
+; determine admin versus local install
+; Is install for "AllUsers" or "JustMe"?
+; Default to "JustMe" - set to "AllUsers" if admin or on Win9x
+; This function is used for the very first "custom page" of the installer.
+; This custom page does not show up visibly, but it executes prior to the
+; first visible page and sets up $INSTDIR properly...
+; Choose different default installation folder based on SV_ALLUSERS...
+; "Program Files" for AllUsers, "My Documents" for JustMe...
 
+Function .onInit
+  ; Reads components status for registry
+  !insertmacro SectionList "InitSection"
+
+  ; check to see if /D has been used to change 
+  ; the install directory by comparing it to the 
+  ; install directory that is expected to be the
+  ; default
+  StrCpy $IS_DEFAULT_INSTALLDIR 0
+  StrCmp "$INSTDIR" "C:\OpenSim2.4.0" 0 +2
+    StrCpy $IS_DEFAULT_INSTALLDIR 1
+  
+  StrCpy $SV_ALLUSERS "JustMe"
+  ; if default install dir then change the default
+  ; if it is installed for JustMe
+  StrCmp "$IS_DEFAULT_INSTALLDIR" "1" 0 +2
+    StrCpy $INSTDIR "$DOCUMENTS\OpenSim 2.4"
+
+  ClearErrors
+  UserInfo::GetName
+  IfErrors noLM
+  Pop $0
+  UserInfo::GetAccountType
+  Pop $1
+  StrCmp $1 "Admin" 0 +3
+    SetShellVarContext all
+    ;MessageBox MB_OK 'User "$0" is in the Admin group'
+    StrCpy $SV_ALLUSERS "AllUsers"
+    Goto done
+  StrCmp $1 "Power" 0 +3
+    SetShellVarContext all
+    ;MessageBox MB_OK 'User "$0" is in the Power Users group'
+    StrCpy $SV_ALLUSERS "AllUsers"
+    Goto done
+    
+  noLM:
+    StrCpy $SV_ALLUSERS "AllUsers"
+    ;Get installation folder from registry if available
+
+  done:
+  StrCmp $SV_ALLUSERS "AllUsers" 0 +3
+    StrCmp "$IS_DEFAULT_INSTALLDIR" "1" 0 +2
+      StrCpy $INSTDIR "C:\OpenSim2.4.0"
+
+  StrCmp "ON" "ON" 0 noOptionsPage
+    !insertmacro MUI_INSTALLOPTIONS_EXTRACT "NSIS.InstallOptions.ini"
+
+  noOptionsPage:
+FunctionEnd

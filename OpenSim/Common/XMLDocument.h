@@ -60,6 +60,11 @@ namespace OpenSim {
  * @version 1.0
  * @author Frank C. Anderson
  */
+#ifdef WIN32
+#pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
+
+#endif
+
 class OSIMCOMMON_API XMLDocument {
 
 //=============================================================================

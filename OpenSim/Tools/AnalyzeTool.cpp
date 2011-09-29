@@ -522,6 +522,10 @@ bool AnalyzeTool::run(bool plotting)
 	}
 
 	// Call helper function to process analysis
+	/*Array<double> bounds;
+	bounds.append(_ti);
+	bounds.append(_tf);
+	const_cast<Storage &>(aStatesStore).interpolateAt(bounds);*/
 	double ti,tf;
 	int iInitial = _statesStore->findIndex(_ti);
 	int iFinal = _statesStore->findIndex(_tf);
@@ -539,6 +543,7 @@ bool AnalyzeTool::run(bool plotting)
 	} catch (Exception &x) {
 		x.print(cout);
 		completed = false;
+		IO::chDir(saveWorkingDirectory);
 		throw Exception(x.what(),__FILE__,__LINE__);
 	}
 

@@ -87,7 +87,7 @@ public:
 private:
 	void setNull();
 	void constructDescription();
-	void constructColumnLabels();
+	void constructColumnLabels(const SimTK::State& s);
 	void allocateStorage();
 	void deleteStorage();
 	void tidyForceNames();
@@ -103,7 +103,6 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// STORAGE
-	void setStorageCapacityIncrements(int aIncrement);
 	const Storage& getForceStorage() const
 	{
 		return _forceStore;

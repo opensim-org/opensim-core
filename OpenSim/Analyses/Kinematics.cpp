@@ -211,6 +211,7 @@ void Kinematics::
 allocateStorage()
 {
 	// ACCELERATIONS
+	_storageList.setSize(0);
 	if(_recordAccelerations) {
 		_aStore = new Storage(1000,"Accelerations");
 		_aStore->setDescription(getDescription());

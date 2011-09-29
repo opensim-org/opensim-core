@@ -50,6 +50,9 @@ void OpenSimContext::getStates( double* statesBuffer) {
         for(int i=0;i<_model->getNumStates();i++ ) *(statesBuffer+i) = rStateValues[i];
 }
 
+void OpenSimContext::getStates( Array<double>&  rStates) {
+		_model->getStateValues(*_configState, rStates);
+}
 // Transforms
 void OpenSimContext::transformPosition(const Body& body, double* offset, double* gOffset) {
 	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
@@ -84,6 +87,8 @@ void OpenSimContext::setValue(const Coordinate& coord, double d, bool enforceCon
 void OpenSimContext::setClamped(const Coordinate&  coord, bool newValue) {
 	SimTK::Stage stg = _configState->getSystemStage();
 	coord.setClamped(*_configState, newValue );
+	_model->updateAssemblyConditions(*_configState);
+	_model->assemble(*_configState);
  	_model->getMultibodySystem().realize(*_configState, stg);
    return;
 }
@@ -97,6 +102,8 @@ void OpenSimContext::setLocked(const Coordinate& coord, bool newValue) {
 	// This invalidates state back to Model, try to restore by re-realizing
 	SimTK::Stage stg = _configState->getSystemStage();
 	coord.setLocked(*_configState, newValue );
+	_model->updateAssemblyConditions(*_configState);
+	_model->assemble(*_configState);
 	_model->getMultibodySystem().realize(*_configState, stg);
     return;
 }
@@ -130,8 +137,10 @@ void OpenSimContext::updateDisplayer(Force& f) {
 		return dynamic_cast<Muscle*>(&f)->updateDisplayer(*_configState);
 	if (f.hasGeometryPath()){
 		Object& pathObj = f.getPropertySet().get("GeometryPath")->getValueObj();
-		dynamic_cast<GeometryPath*>(&pathObj)->updateDisplayer(*_configState);
+		return dynamic_cast<GeometryPath*>(&pathObj)->updateDisplayer(*_configState);
 	}
+	if (f.getDisplayer()!= NULL)
+		f.updateDisplayer(*_configState);
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
@@ -225,8 +234,9 @@ void OpenSimContext::setRangeMax(ConditionalPathPoint&  via, double d) {
 bool OpenSimContext::replacePathPoint(GeometryPath& p, PathPoint& mp, PathPoint& newPoint) {
      
      bool ret= p.replacePathPoint(*_configState, &mp, &newPoint );
-	_configState->invalidateAll(SimTK::Stage::Position);
-	_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+	_model->setDefaultsFromState(*_configState);
+	SimTK::State* newState = &_model->initSystem();
+	setState(newState);
 	p.updateGeometry(*_configState);
      return ret;
 }
@@ -266,6 +276,29 @@ bool OpenSimContext::deletePathPoint(GeometryPath& p, int menuChoice) {
 bool OpenSimContext::isActivePathPoint(PathPoint& mp) { 
 	return mp.isActive(*_configState); 
 };
+
+//_____________________________________________________________________________
+/**
+ * Replace one of the actuator's functions in the property array.
+ *
+ * @param aOldFunction the function being replaced.
+ * @param aNewFunction the new function.
+ */
+void OpenSimContext::replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction)
+{
+	if (aOldFunction && aNewFunction) {
+		PropertySet& propSet = obj.getPropertySet();
+
+		for (int i=0; i <propSet.getSize(); i++) {
+			Property* prop = propSet.get(i);
+			if (prop->getType() == Property::ObjPtr) {
+				if (prop->getValueObjPtr() == aOldFunction) {
+					prop->setValue(aNewFunction);
+				}
+			}
+		}
+	}
+}
 
 // Muscle Wrapping
 void OpenSimContext::setStartPoint(PathWrap& mw, int newStartPt) {

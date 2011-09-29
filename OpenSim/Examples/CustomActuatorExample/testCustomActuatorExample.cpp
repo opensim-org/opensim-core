@@ -31,6 +31,7 @@
 //==============================================================================
 
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -39,11 +40,11 @@ int main()
 {
 	try {
 		Storage result1("SpringActuatedLeg_states_degrees.mot"), standard1("std_SpringActuatedLeg_states_degrees.mot");
-		result1.checkAgainstStandard(standard1, Array<double>(1000., 24), __FILE__, __LINE__, "spring actuated leg states degrees failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1000., 24), __FILE__, __LINE__, "spring actuated leg states degrees failed");
 		cout << "spring actuated leg states degrees passed\n";
 
 		Storage result2("actuator_forces.mot"), standard2("std_actuator_forces.mot");
-		result2.checkAgainstStandard(standard2, Array<double>(1000., 24), __FILE__, __LINE__, "actuator forces failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1000., 24), __FILE__, __LINE__, "actuator forces failed");
 		cout << "actuator forces passed\n";
 	}
 	catch (const Exception& e) {

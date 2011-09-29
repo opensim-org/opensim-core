@@ -36,6 +36,7 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblVec.h>
+#include <OpenSim/Common/VisibleObject.h>
 
 //=============================================================================
 //=============================================================================
@@ -86,6 +87,9 @@ protected:
 	/** Spring rest length */
 	double &_restLength;
 
+	/** how to display the Spring */
+	VisibleObject _displayer;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -102,6 +106,14 @@ public:
 	virtual ~PointToPointSpring();
 	virtual Object* copy() const;
 	void copyData(const PointToPointSpring &aPointToPointSpring);
+
+	//--------------------------------------------------------------------------
+	// Visible Object Support
+	//--------------------------------------------------------------------------
+	virtual VisibleObject* getDisplayer() const;
+	virtual void updateDisplayer(const SimTK::State& s);
+	virtual void updateGeometry(const SimTK::State& s);
+	
 private:
 	void setNull();
 	void setupProperties();

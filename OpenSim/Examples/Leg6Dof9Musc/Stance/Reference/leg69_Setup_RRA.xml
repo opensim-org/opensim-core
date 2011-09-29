@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<RRATool name="leg6dof9musc">
+		<defaults/>
+		<!--Name of the .osim file used to construct a model.-->
+		<model_file>  </model_file>
+		<!--Replace the model's force set with sets specified in
+		    <force_set_files>? If false, the force set is appended to.-->
+		<replace_force_set> true </replace_force_set>
+		<!--List of xml files used to construct an force set for the model.-->
+		<force_set_files> leg69_RRA_residuals_motors.xml </force_set_files>
+		<!--Directory used for writing results.-->
+		<results_directory> RRA </results_directory>
+		<!--Output precision.  It is 20 by default.-->
+		<output_precision> 8 </output_precision>
+		<!--Initial time for the simulation.-->
+		<initial_time>       0.80000000 </initial_time>
+		<!--Final time for the simulation.-->
+		<final_time>       1.25000000 </final_time>
+		<!--Flag indicating whether or not to compute equilibrium values for
+		    states other than the coordinates or speeds.  For example, equilibrium
+		    muscle fiber lengths or muscle forces.-->
+		<solve_for_equilibrium_for_auxiliary_states> false </solve_for_equilibrium_for_auxiliary_states>
+		<!--Maximum number of integrator steps.-->
+		<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
+		<!--Maximum integration step size.-->
+		<maximum_integrator_step_size>       1.00000000 </maximum_integrator_step_size>
+		<!--Minimum integration step size.-->
+		<minimum_integrator_step_size>       0.00000001 </minimum_integrator_step_size>
+		<!--Integrator error tolerance. When the error is greater, the integrator
+		    step size is decreased.-->
+		<integrator_error_tolerance>       0.00100000 </integrator_error_tolerance>
+		<!--Set of analyses to be run during the investigation.-->
+		<AnalysisSet name="Analyses">
+			<objects/>
+			<groups/>
+		</AnalysisSet>
+		<!--Controller objects in the model.-->
+		<ControllerSet name="Controllers">
+			<objects/>
+			<groups/>
+		</ControllerSet>
+		<!--XML file (.xml) containing the external loads applied to the model as
+		    a set of PrescribedForce(s).-->
+		<external_loads_file> leg69_right_grf.xml </external_loads_file>
+		<!--Motion (.mot) or storage (.sto) file containing the desired point
+		    trajectories.-->
+		<desired_points_file>  </desired_points_file>
+		<!--Motion (.mot) or storage (.sto) file containing the desired kinematic
+		    trajectories.-->
+		<desired_kinematics_file> leg69_IK_stance.mot </desired_kinematics_file>
+		<!--File containing the tracking tasks. Which coordinates are tracked and
+		    with what weights are specified here.-->
+		<task_set_file> leg69_Tracking_Tasks.xml </task_set_file>
+		<!--File containing the constraints on the controls.-->
+		<constraints_file> leg69_residuals_motors_control_limits.xml </constraints_file>
+		<!--File containing the controls output by RRA. These can be used to place
+		    constraints on the residuals during CMC.-->
+		<rra_controls_file>  </rra_controls_file>
+		<!--Low-pass cut-off frequency for filtering the desired kinematics. A
+		    negative value results in no filtering. The default value is -1.0, so
+		    no filtering.-->
+		<lowpass_cutoff_frequency>       6.00000000 </lowpass_cutoff_frequency>
+		<!--Preferred optimizer algorithm (currently support "ipopt" or "cfsqp",
+		    the latter requiring the osimFSQP library.-->
+		<optimizer_algorithm> ipopt </optimizer_algorithm>
+		<!--Perturbation size used by the optimizer to compute numerical
+		    derivatives. A value between 1.0e-4 and 1.0e-8 is usually
+		    approprieate.-->
+		<optimizer_derivative_dx>       0.00010000 </optimizer_derivative_dx>
+		<!--Convergence criterion for the optimizer. The smaller this value, the
+		    deeper the convergence. Decreasing this number can improve a solution,
+		    but will also likely increase computation time.-->
+		<optimizer_convergence_criterion>       0.00000100 </optimizer_convergence_criterion>
+		<!--Flag (true or false) indicating whether or not to make an adjustment
+		    in the center of mass of a body to reduced DC offsets in MX and MZ. If
+		    true, a new model is writen out that has altered anthropometry.-->
+		<adjust_com_to_reduce_residuals> true </adjust_com_to_reduce_residuals>
+		<!--Initial time used when computing average residuals in order to adjust
+		    the body's center of mass.  If both initial and final time are set to
+		    -1 (their default value) then the main initial and final time settings
+		    will be used.-->
+		<initial_time_for_com_adjustment>      -1.00000000 </initial_time_for_com_adjustment>
+		<!--Final time used when computing average residuals in order to adjust
+		    the body's center of mass.-->
+		<final_time_for_com_adjustment>      -1.00000000 </final_time_for_com_adjustment>
+		<!--Name of the body whose center of mass is adjusted. The heaviest
+		    segment in the model should normally be chosen. For a gait model, the
+		    torso segment is usually the best choice.-->
+		<adjusted_com_body> pelvis </adjusted_com_body>
+		<!--Name of the output model file (.osim) containing adjustments to
+		    anthropometry made to reduce average residuals. This file is written
+		    if the property adjust_com_to_reduce_residuals is set to true. If a
+		    name is not specified, the model is written out to a file called
+		    adjusted_model.osim.-->
+		<output_model_file> RRA/leg6dof9musc_adjusted.osim </output_model_file>
+		<!--True-false flag indicating whether or not to turn on verbose printing
+		    for cmc.-->
+		<use_verbose_printing> false </use_verbose_printing>
+	</RRATool>
+</OpenSimDocument>
+

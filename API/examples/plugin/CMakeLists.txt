@@ -14,9 +14,12 @@ SET(NameSpace "OpenSim_")
 FILE(GLOB SOURCE_FILES *.cpp)
 FILE(GLOB INCLUDE_FILES *.h)
 
+SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
+      CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
+
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.3.1/" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.4.0/" CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
 
@@ -37,9 +40,9 @@ LINK_LIBRARIES(
 	debug osimSimulation_d optimized osimSimulation
 	debug osimAnalyses_d optimized osimAnalyses
 	debug osimActuators_d optimized osimActuators
+	debug osimTools_d optimized osimTools
 	debug  ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
 	debug  ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKcpodes${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKcpodes
 	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
 	SimTKlapack pthreadVC2
 )

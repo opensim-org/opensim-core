@@ -1,4 +1,4 @@
-SUBDIRS(Arm26 Gait2354_Simbody Gait2392_Simbody Tutorials)
+SUBDIRS(Gait2354_Simbody Gait2392_Simbody Tutorials Arm26 Leg6Dof9Musc)
 # Don't install README.txt for now... it's out of date
 #INSTALL_FILES(/examples/ FILES README.txt)
 SET(BUILD_API_EXAMPLES ON CACHE BOOL "Build examples that are used for the OpenSimAPIExamples distribution")

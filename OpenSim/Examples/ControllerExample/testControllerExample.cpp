@@ -32,6 +32,7 @@
 
 
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -40,15 +41,15 @@ int main()
 {
 	try {
 		Storage result1("tugOfWar_controls.sto"), standard1("std_tugOfWar_controls.sto");
-		result1.checkAgainstStandard(standard1, Array<double>(0.1, 24), __FILE__, __LINE__, "tugOfWar controls failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.1, 24), __FILE__, __LINE__, "tugOfWar controls failed");
 		cout << "tugOfWar controls passed\n";
 
 		Storage result2("tugOfWar_states.sto"), standard2("std_tugOfWar_states.sto");
-		result2.checkAgainstStandard(standard2, Array<double>(0.1, 24), __FILE__, __LINE__, "tugOfWar states failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(0.1, 24), __FILE__, __LINE__, "tugOfWar states failed");
 		cout << "tugOfWar states passed\n";
 
 		Storage result3("tugOfWar_states_degrees.mot"), standard3("std_tugOfWar_states_degrees.mot");
-		result3.checkAgainstStandard(standard3, Array<double>(2., 24), __FILE__, __LINE__, "tugOfWar states degrees failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(2., 24), __FILE__, __LINE__, "tugOfWar states degrees failed");
 		cout << "tugOfWar states degrees passed\n";
 	}
 	catch (const Exception& e) {

@@ -291,7 +291,7 @@ void AbstractTool::setupProperties()
     _controllerSetProp.setName("ControllerSet");
     _propertySet.append(&_controllerSetProp);
 
-	comment = "XML file (.xml) containing the external loads applied to the model as a set of PrescribedForce(s).";
+	comment = "XML file (.xml) containing the forces applied to the model as ExternalLoads.";
 	_externalLoadsFileNameProp.setComment(comment);
 	_externalLoadsFileNameProp.setName("external_loads_file");
 	_propertySet.append( &_externalLoadsFileNameProp );

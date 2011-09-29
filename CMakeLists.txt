@@ -241,6 +241,7 @@ ELSE(WIN32)
 	   ENDIF (ARCH64)
 	ELSE (APPLE)
 	   IF(ARCH64) 
+		  SET( CMAKE_CXX_FLAGS "-m64" )
 	   ELSE (ARCH64)
 		  # I don't believe setting the CXX flags is working in cmake.
 		  SET( CMAKE_CXX_FLAGS "-m32" )
@@ -276,17 +277,17 @@ IF(BUILD_USING_OTHER_LAPACK)
 "Basename of the actual Lapack library we're depending on; can't change here; see variable BUILD_USING_OTHER_LAPACK." FORCE)
 ENDIF(BUILD_USING_OTHER_LAPACK)
 
-IF(${CMAKE_C_COMPILER} MATCHES "gcc")
+IF(${CMAKE_C_COMPILER} MATCHES "cl")
+    ## Assume Microsoft Visual Studio
+    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
+ELSE(${CMAKE_C_COMPILER} MATCHES "cl")
     IF(APPLE)
 	    SET(REALTIME_LIB)
     ELSE()
 	    SET(REALTIME_LIB rt)
     ENDIF()
     SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthread ${REALTIME_LIB} dl)
-ELSE(${CMAKE_C_COMPILER} MATCHES "gcc")
-    ## Assume Microsoft Visual Studio
-    SET(MATH_LIBS_TO_USE    ${LAPACK_BEING_USED} pthreadVC2)
-ENDIF(${CMAKE_C_COMPILER} MATCHES "gcc")
+ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
 
 # If using prebuilt libraries reset SIMTK_DIR to relative path in source tree
 IF(USE_LIBRARIES_FROM_REPOSITORY)
@@ -433,8 +434,8 @@ SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center of Biomedical Com
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
 SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-SET(CPACK_PACKAGE_VERSION_MINOR "3")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
+SET(CPACK_PACKAGE_VERSION_MINOR "4")
+SET(CPACK_PACKAGE_VERSION_PATCH "0")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make

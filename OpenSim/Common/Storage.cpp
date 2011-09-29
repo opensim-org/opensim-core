@@ -42,7 +42,7 @@
 #include "SimmIO.h"
 #include "SimmMacros.h"
 #include "SimTKcommon.h"
-#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
+//#include "OpenSim/Auxiliary/auxiliaryTestFunctions.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -2981,6 +2981,12 @@ bool Storage::parseHeaders(std::ifstream& aStream, int& rNumRows, int& rNumColum
 			bool inDegrees = (lower=="yes" || lower=="y");
 			setInDegrees(inDegrees);
 		}
+		else if (key=="Angles" && _fileVersion==0){
+			if (line == "Angles are in degrees.")
+				setInDegrees(true);
+			else if (line == "Angles are in radians.")
+				setInDegrees(false);
+		}
 		else if(key== DEFAULT_HEADER_TOKEN){				
 			break;			
 		}
@@ -3173,30 +3179,11 @@ double Storage::compareColumnRMS(Storage& aOtherStorage, const std::string& aCol
 	return rms;
 }
 /**
- * Check this storage object against a standard storage object using the
- * specified tolerances. If RMS error for any column is outside the
- * tolerance, throw an Exception.
- */
-void Storage::checkAgainstStandard(Storage standard, Array<double> &tolerances, string testFile, int testFileLine, string errorMessage)
-{
-	Array<string> columnsUsed;
-	Array<double> comparisons;
-	compareWithStandard(standard, columnsUsed, comparisons);
-
-	int columns = columnsUsed.getSize();
-	for (int i = 0; i < columns; ++i) {
-		cout << "column:    " << columnsUsed[i] << endl;
-		cout << "RMS error: " << comparisons[i] << endl;
-		cout << "tolerance: " << tolerances[i] << endl << endl;
-		ASSERT(comparisons[i] < tolerances[i], testFile, testFileLine, errorMessage);
-	}
-}
-/**
  * Compare this storage object with a standard storage object. Find RMS
  * errors for columns occurring in both storage objects, and record the
  * values and column names in the comparisons and columnsUsed Arrays.
  */
-void Storage::compareWithStandard(Storage standard, Array<string> &columnsUsed, Array<double> &comparisons)
+void Storage::compareWithStandard(Storage& standard, Array<string> &columnsUsed, Array<double> &comparisons)
 {
 	int maxColumns = _columnLabels.getSize();
 	columnsUsed.ensureCapacity(maxColumns);

@@ -529,7 +529,7 @@ bool RRATool::run()
 
 	if(desiredKinFlag) {
 		desiredKinStore->pad(60);
-		desiredKinStore->print("desiredKinematics_padded.sto");
+		if (_verbose) desiredKinStore->print("desiredKinematics_padded.sto");
 		if(_lowpassCutoffFrequency>=0) {
 			int order = 50;
 			cout<<"\n\nLow-pass filtering desired kinematics with a cutoff frequency of ";
@@ -595,9 +595,11 @@ bool RRATool::run()
 		delete velStore; velStore=NULL;
 
 		// Print acc for debugging
-		Storage *accStore=posSet->constructStorage(2);
-		accStore->print("desiredPoints_splinefit_accelerations.sto");
-		delete accStore; accStore=NULL;	
+		if (_verbose) {
+			Storage *accStore=posSet->constructStorage(2);
+			accStore->print("desiredPoints_splinefit_accelerations.sto");
+			delete accStore; accStore=NULL;	
+		}
 	}
 
 	GCVSplineSet *qSet=NULL;
@@ -613,9 +615,11 @@ bool RRATool::run()
 		delete uStore; uStore=NULL;
 
 		// Print dudt for debugging
-		Storage *dudtStore = qSet->constructStorage(2);
-		dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
-		delete dudtStore; dudtStore=NULL;
+		if (_verbose) {
+			Storage *dudtStore = qSet->constructStorage(2);
+			dudtStore->print("desiredKinematics_splinefit_accelerations.sto");
+			delete dudtStore; dudtStore=NULL;
+		}
 	}
 
 	// ANALYSES
@@ -835,6 +839,13 @@ bool RRATool::run()
 	catch(Exception &x) {
 		// TODO: eventually might want to allow writing of partial results
 		x.print(cout);
+		IO::chDir(saveWorkingDirectory);
+		// close open files if we die prematurely (e.g. Opt fail)
+		manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");
+		return false;
+	}
+	catch(...) {
+		// TODO: eventually might want to allow writing of partial results
 		IO::chDir(saveWorkingDirectory);
 		// close open files if we die prematurely (e.g. Opt fail)
 		manager.getStateStorage().print(getResultsDir() + "/" + getName() + "_states.sto");

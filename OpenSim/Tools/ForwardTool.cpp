@@ -334,8 +334,13 @@ bool ForwardTool::run()
         printf("ForwardTool::run() caught exception \n"  );
         cout << "Caught some other exception: " << str << "\n";
 		completed = false;
+		IO::chDir(saveWorkingDirectory);
 	}
-
+	catch (...) { // e.g. may get InterruptedException
+        printf("ForwardTool::run() caught exception \n"  );
+		completed = false;
+		IO::chDir(saveWorkingDirectory);
+	}
 	// PRINT RESULTS
 	string fileName;
 	if(_printResultFiles) printResults();

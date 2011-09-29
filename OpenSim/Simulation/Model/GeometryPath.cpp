@@ -688,7 +688,7 @@ bool GeometryPath::replacePathPoint(const SimTK::State& s, PathPoint* aOldPathPo
 		}
 		if (count >= 2 && index >= 0) {
 			_pathPointSet.set(index, aNewPathPoint, true);
-			setup(*_model);
+			//computePath(s);
 			return true;
 		}
 	}

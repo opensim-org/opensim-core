@@ -31,6 +31,7 @@
 //==============================================================================
 
 #include <OpenSim/OpenSim.h>
+#include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -40,15 +41,15 @@ int main()
 	try {
 		
 		Storage result1("Arm26_randomSample_states_degrees.sto"), standard1("std_Arm26_randomSample_states_degrees.sto");
-		result1.checkAgainstStandard(standard1, Array<double>(1000., 24), __FILE__, __LINE__, "Arm26 random sample states degrees failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1000., 24), __FILE__, __LINE__, "Arm26 random sample states degrees failed");
 		cout << "Arm26 random sample states degrees passed\n";
 		
 		Storage result2("Arm26_noActivation_states_degrees.sto"), standard2("std_Arm26_noActivation_states_degrees.sto");
-		result2.checkAgainstStandard(standard2, Array<double>(1000., 24), __FILE__, __LINE__, "Arm26 no activation states degrees failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1000., 24), __FILE__, __LINE__, "Arm26 no activation states degrees failed");
 		cout << "Arm26 no activation states degrees passed\n";
 		
 		Storage result3("Arm26_bestSoFar_states_degrees.sto"), standard3("std_Arm26_bestSoFar_states_degrees.sto");
-		result3.checkAgainstStandard(standard3, Array<double>(1000., 24), __FILE__, __LINE__, "Arm26 best so far states degrees failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(1000., 24), __FILE__, __LINE__, "Arm26 best so far states degrees failed");
 		cout << "Arm26 best so far states degrees passed\n";
 	}
 	catch (const Exception& e) {

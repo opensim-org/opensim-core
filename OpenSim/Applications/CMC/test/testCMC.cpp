@@ -80,7 +80,7 @@ void testSingleMuscle() {
 	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
 	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
 
-	cmc_result.checkAgainstStandard(fwd_result, Array<double>(0.0005, 4), __FILE__, __LINE__, "testSingleMuscle failed");
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0005, 4), __FILE__, __LINE__, "testSingleMuscle failed");
 	cout << "testSingleMuscle passed\n" << endl;
 }
 
@@ -88,7 +88,7 @@ void testTwoMusclesOnBlock() {
 
 	ForwardTool forward("twoMusclesOnBlock_Setup_Forward.xml");
 	forward.run();
-
+	
 	CMCTool cmc("twoMusclesOnBlock_Setup_CMC.xml");
 	cmc.run();
 
@@ -102,9 +102,9 @@ void testTwoMusclesOnBlock() {
 	rms_tols[4] = 0.05;  // muscle 2 activation
 	rms_tols[5] = 0.001; // muscle 2 fiber length 
 
-	cmc_result.checkAgainstStandard(fwd_result, rms_tols, __FILE__, __LINE__, "testTwoMusclesOnBlock failed");
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, rms_tols, __FILE__, __LINE__, "testTwoMusclesOnBlock failed");
 	cout << "testTwoMusclesOnBlock passed\n" << endl;
-}
+			}
 
 
 void testArm26() {
@@ -112,14 +112,15 @@ void testArm26() {
 	CMCTool cmc("arm26_Setup_CMC.xml");
 	cmc.run();
 	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");
+	CHECK_STORAGE_AGAINST_STANDARD(results, standard, Array<double>(6.0e-3, 16), __FILE__, __LINE__, "testArm failed");
 
 	Array<double> rms_tols(5.0e-3, 2*2+2*6);
 	rms_tols[0] = 0.001; // shoulder q
 	rms_tols[1] = 0.001;  // elbow q
 
-	results.checkAgainstStandard(standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
+	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
 
-	cout << "\n testArm26 passed\n" << endl;
+	cout << "\ntestArm26 passed\n" << endl;
 }
 
 void testGait2354() {
@@ -139,12 +140,12 @@ void testGait2354() {
 		rms_tols[i] = 0.15; // muscle activations and fiber-lengths
 	}
 
-	results.checkAgainstStandard(standard, rms_tols, __FILE__, __LINE__, "testGait2354 failed");
+	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testGait2354 failed");
 
 	Storage trackingError("subject01_ResultsCMC/subject01_walk1_pErr.sto");
 
 	cout << "\n testGait2354 passed\n" << endl;
-}
+	}
 
 
 void testEMGDrivenArm() {
@@ -159,10 +160,10 @@ void testEMGDrivenArm() {
 	rms_tols[1] = 0.001;  // elbow q
 	rms_tols[6] = 0.95;  // tri_lat normally off but because of EMG tracking it is on max
 
-	results.checkAgainstStandard(standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
+	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testEMGDrivenArm failed");
 
 	cout << "\n testEMGDrivenArm passed\n" << endl;
-}
+	}
 
 void testHamnerRunningModel()
 {

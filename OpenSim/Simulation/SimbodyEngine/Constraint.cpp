@@ -222,6 +222,7 @@ bool Constraint::setDisabled(SimTK::State& s, bool isDisabled)
 	else
 		simConstraint.enable(s);
 
+	_model->updateAssemblyConditions(s);
 	_isDisabledProp.setValue(isDisabled);
 	
 	return true;

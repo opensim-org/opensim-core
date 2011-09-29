@@ -322,8 +322,30 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 
 	InverseKinematicsSolver* ikSol = new InverseKinematicsSolver(*aModel, markersReference, coordinateReferences, constraintWeight);
 	ikSol->assemble(s);
+
+
 	// Call realize Position so that the transforms are updated and  markers can be moved correctly
 	aModel->getMultibodySystem().realize(s, SimTK::Stage::Position);
+	// Report marker errors to assess the quality 
+	int nm = markerWeightSet.getSize();
+	SimTK::Array_<double> squaredMarkerErrors(nm, 0.0);
+	SimTK::Array_<Vec3> markerLocations(nm, Vec3(0));
+	double totalSquaredMarkerError = 0.0;
+	double maxSquaredMarkerError = 0.0;
+	int worst = -1;
+
+	ikSol->computeCurrentSquaredMarkerErrors(squaredMarkerErrors);
+	for(int j=0; j<nm; ++j){
+		totalSquaredMarkerError += squaredMarkerErrors[j];
+		if(squaredMarkerErrors[j] > maxSquaredMarkerError){
+			maxSquaredMarkerError = squaredMarkerErrors[j];
+			worst = j;
+		}
+	}
+	cout << "Frame at (t=" << s.getTime() << "):\t";
+	cout << "total squared error = " << totalSquaredMarkerError;
+	cout << ", marker error: RMS=" << sqrt(totalSquaredMarkerError/nm);
+	cout << ", max=" << sqrt(maxSquaredMarkerError) << " (" << markerWeightSet[worst].getName() << ")" << endl;
 	/* Now move the non-fixed markers on the model so that they are coincident
 	 * with the measured markers in the static pose. The model is already in
 	 * the proper configuration so the coordinates do not need to be changed.

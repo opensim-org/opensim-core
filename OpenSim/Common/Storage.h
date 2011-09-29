@@ -285,8 +285,8 @@ public:
 	double compareColumnRMS(Storage& aOtherStorage, 
 						 const std::string& aColumnName,
 						 double startTime=SimTK::NaN, double endTime=SimTK::NaN);
-	void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
-	void compareWithStandard(Storage standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
+	//void checkAgainstStandard(Storage standard, Array<double> &tolerances, std::string testFile = "", int testFileLine = -1, std::string errorMessage = "Exception");
+	void compareWithStandard(Storage& standard, Array<std::string> &columnsUsed, Array<double> &comparisons);
 	bool makeStorageLabelsUnique();
 	//--------------------------------------------------------------------------
 	// IO

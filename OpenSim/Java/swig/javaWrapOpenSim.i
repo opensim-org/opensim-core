@@ -36,10 +36,12 @@
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include <OpenSim/Common/StepFunction.h>
+#include <OpenSim/Common/PiecewiseConstantFunction.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
+#include <OpenSim/Common/LoadOpenSimLibrary.h>
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
@@ -61,6 +63,7 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/ExternalLoads.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
 #include <OpenSim/Simulation/Model/Marker.h>
@@ -76,6 +79,7 @@
 #include <OpenSim/Analyses/MuscleAnalysis.h>
 #include <OpenSim/Analyses/InverseDynamics.h>
 #include <OpenSim/Analyses/StaticOptimization.h>
+#include <OpenSim/Analyses/ForceReporter.h>
 
 #include <OpenSim/Simulation/Wrap/WrapObject.h>
 #include <OpenSim/Simulation/Wrap/PathWrapPoint.h>
@@ -275,7 +279,7 @@ static bool trace=false;
 
 %pragma(java) jniclassclassmodifiers="public class"
 
-%pragma(java) jniclassimports="import org.opensim.utils.TheApp;"
+%pragma(java) jniclassimports="import javax.swing.JOptionPane;"
 
 %pragma(java) jniclasscode=%{
   static {
@@ -283,7 +287,8 @@ static bool trace=false;
         System.loadLibrary("osimJavaJNI");		// All OpenSim classes required for GUI operation.
       }
       catch(UnsatisfiedLinkError e){
-           TheApp.exitApp("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e);
+           new JOptionPane("Required library failed to load. Check that the dynamic library osimJavaJNI is in your PATH\n"+e, 
+				JOptionPane.ERROR_MESSAGE).createDialog(null, "Error").setVisible(true);
       }
   }
 %}
@@ -398,6 +403,40 @@ static bool trace=false;
     }
 };
 
+%extend OpenSim::Body {
+	void getCenterOfMass(double dCom[3]) {
+		self->getMassCenter(SimTK::Vec3::updAs(dCom));
+	};
+	void getInertia(Array<double>& rInertia) {
+		SimTK::Mat33 inertia;
+		self->getInertia(inertia);
+		rInertia[0]=inertia[0][0];
+		rInertia[1]=inertia[1][1];
+		rInertia[2]=inertia[2][2];
+		rInertia[3]=inertia[0][1];
+		rInertia[4]=inertia[0][2];
+		rInertia[5]=inertia[1][2];
+
+	};
+	void setInertia(Array<double>& aInertia) {
+		self->setInertia(SimTK::Inertia(aInertia[0], 
+		aInertia[1], aInertia[2], aInertia[3], aInertia[4], aInertia[5]));
+	}
+};
+
+%extend OpenSim::Array<double> {
+	void setValues(double dValues[], int size) {
+		self->setSize(size);
+		for(int i=0; i< size; i++)
+		 self->set(i, dValues[i]);
+	};
+};
+
+%extend OpenSim::Model {
+	static void LoadOpenSimLibrary(std::string libraryName){
+		LoadOpenSimLibrary(libraryName);
+	}
+}
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 // osimCommon Library
@@ -431,6 +470,7 @@ static bool trace=false;
 %include <OpenSim/Common/Constant.h>
 %include <OpenSim/Common/NaturalCubicSpline.h>
 %include <OpenSim/Common/StepFunction.h>
+%include <OpenSim/Common/PiecewiseConstantFunction.h>
 %include <OpenSim/Common/LinearFunction.h>
 %include <OpenSim/Common/PiecewiseLinearFunction.h>
 %include <OpenSim/Common/MultiplierFunction.h>
@@ -442,6 +482,7 @@ static bool trace=false;
 %template(ArrayStr) OpenSim::Array<std::string>;
 %template(ArrayObjPtr) OpenSim::Array<OpenSim::Object*>;
 %template(ArrayPtrsObj) OpenSim::ArrayPtrs<OpenSim::Object>;
+
 %include <OpenSim/Common/Scale.h>
 %template(SetScales) OpenSim::Set<OpenSim::Scale>;
 %include <OpenSim/Common/ScaleSet.h>
@@ -451,7 +492,11 @@ static bool trace=false;
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
 %template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
+//%template(ArrayPtrsModelComponent) OpenSim::ArrayPtrs<OpenSim::ModelComponent>;
+
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
+
+%template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
 
 %include <OpenSim/Simulation/Model/Force.h>
 %template(SetForces) OpenSim::Set<OpenSim::Force>;
@@ -459,6 +504,11 @@ static bool trace=false;
 %include <OpenSim/Simulation/Model/ForceSet.h>
 %include <OpenSim/Simulation/Model/ExternalForce.h>
 %template(SetExternalForces) OpenSim::Set<OpenSim::ExternalForce>;
+
+%include <OpenSim/Simulation/Control/Controller.h>
+%template(SetControllers) OpenSim::Set<OpenSim::Controller>;
+%template(ModelComponentSetControllers) OpenSim::ModelComponentSet<OpenSim::Controller>;
+%include <OpenSim/Simulation/Model/ControllerSet.h>
 
 %template(ModelComponentSetExternalForces) OpenSim::ModelComponentSet<OpenSim::ExternalForce>;
 %include <OpenSim/Simulation/Model/ExternalLoads.h>
@@ -556,7 +606,7 @@ static bool trace=false;
 %include <OpenSim/Analyses/MuscleAnalysis.h>
 %include <OpenSim/Analyses/InverseDynamics.h>
 %include <OpenSim/Analyses/StaticOptimization.h>
-
+%include <OpenSim/Analyses/ForceReporter.h>
 //osimActuators
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
 %include <OpenSim/Actuators/CoordinateActuator.h>

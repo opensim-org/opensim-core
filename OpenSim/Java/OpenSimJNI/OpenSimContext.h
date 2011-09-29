@@ -86,6 +86,7 @@ public:
 	void setStates( double statesBuffer[]);
 	void computeConstrainedCoordinates( double statesBuffer[]);
 	void getStates( double statesBuffer[]);
+	void getStates( Array<double>&  rStates);
 	// Transforms
     void transformPosition(const Body& body, double offset[], double gOffset[]);
     Transform getTransform(const Body& body);
@@ -102,9 +103,9 @@ public:
 	bool isDisabled(const Constraint& constraint) const {
 		return  constraint.isDisabled(*_configState);
 	}
-	void setDisabled(Constraint& constraint, bool disable) const {
+	void setDisabled(Constraint& constraint, bool disable) {
 		constraint.setDisabled(*_configState, disable);
-		_model->getMultibodySystem().realize(*_configState, SimTK::Stage::Position);
+		_model->assemble(*_configState);
 	}
 	// Forces
 	bool isDisabled(const Force& force) const {
@@ -121,6 +122,8 @@ public:
 	const Array<PathPoint*>& getCurrentDisplayPath(GeometryPath& path);
 	void updateDisplayer(Force& f);
     void copyMuscle(Muscle& from, Muscle& to);
+	void replacePropertyFunction(OpenSim::Object& obj, OpenSim::Function* aOldFunction, OpenSim::Function* aNewFunction);
+
 	// Muscle Points
 	void setXFunction(MovingPathPoint& mmp, Function& newFunction);
     void setYFunction(MovingPathPoint& mmp, Function& newFunction);

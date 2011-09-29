@@ -73,6 +73,9 @@ int main(int argc,char **argv)
 		exit(-1);
 	}
 	else {		// Don't know maybe user needs help or have special needs
+		// Load libraries first
+		LoadOpenSimLibraries(argc,argv);
+
 		int i;
 		for(i=1;i<=(argc-1);i++) {
 			option = argv[i];
