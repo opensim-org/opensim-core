@@ -230,11 +230,11 @@ setNull()
 	_lowpassCutoffFrequency = -1.0;
 	//_lowpassCutoffFrequencyForLoadKinematics = -1.0;
     _targetDT = 0.010;  	 	 
-    _useCurvatureFilter = true; 		 
+    _useCurvatureFilter = false; 		 
     _useFastTarget = true;
 	_optimizerAlgorithm = "ipopt";
 	_numericalDerivativeStepSize = 1.0e-4;
-	_optimizationConvergenceTolerance = 1.0e-5;
+	_optimizationConvergenceTolerance = 1.0e-4;
 	_maxIterations = 1000;
 	_printLevel = 0;
 	_verbose = false;
@@ -331,7 +331,7 @@ void CMCTool::setupProperties()
 	_numericalDerivativeStepSizeProp.setName("numerical_derivative_step_size");
 	_propertySet.append( &_numericalDerivativeStepSizeProp );
 
-	comment = "Convergence criterion for the optimizer. The smaller this value, the deeper the convergence. "
+	comment = "Convergence tolerance for the optimizer. The smaller this value, the deeper the convergence. "
 				 "Decreasing this number can improve a solution, but will also likely increase computation time.";
 	_optimizationConvergenceToleranceProp.setComment(comment);
 	_optimizationConvergenceToleranceProp.setName("optimization_convergence_tolerance");
