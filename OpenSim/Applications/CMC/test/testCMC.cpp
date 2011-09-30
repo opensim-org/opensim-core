@@ -148,7 +148,7 @@ void testGait2354() {
 void testEMGDrivenArm() {
 
 	CMCTool cmc("arm26_Setup_ComputedMuscleControl_EMG.xml");
-	//cmc.run();
+	cmc.run();
 
 	Storage results("Results_Arm26_EMG/arm26_states.sto"), standard("std_arm26_states.sto");
 
