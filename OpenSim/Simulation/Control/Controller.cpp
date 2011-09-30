@@ -237,7 +237,7 @@ void Controller:: setup(Model& model)
 				if(model.updActuators().contains(_actuatorNameList[i]))
 					actuatorsByName.append(&model.updActuators().get(_actuatorNameList[i]));
 				else
-					throw Exception("Controller::setup : Actuator " + _actuatorNameList[i] + " not found.");
+					cerr << "WARN: Controller::setup : Actuator " << _actuatorNameList[i] << " was not found and will be ignored.." << endl;
 			}
 			actuatorsByName.setMemoryOwner(false);
 			setActuators(actuatorsByName);
