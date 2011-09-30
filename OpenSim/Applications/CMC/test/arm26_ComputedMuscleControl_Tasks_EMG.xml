@@ -24,7 +24,7 @@
 	      <kv>  20.0 </kv>
 	      <coordinate> r_elbow_flex </coordinate>
 	    </CMC_Joint>
-    <MuscleStateTrackingTask name="TRIlat.activation">
+    <MuscleStateTrackingTask name="BIClong.activation">
       <on> true </on>
       <active> true false false </active>
       <weight> 100.00 0. 0.</weight>
