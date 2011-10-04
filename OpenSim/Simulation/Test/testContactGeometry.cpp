@@ -77,6 +77,7 @@ const static string mesh_file = "sphere_10cm_radius.obj"; //"10_5_cm_sphere_4770
 
 int testBouncingBall(bool useMesh);
 int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh2);
+void compareHertzAndMeshContactResults();
 
 int main()
 {
@@ -87,7 +88,8 @@ int main()
 		testBallToBallContact(false, false, false);
 		testBallToBallContact(true, true, false);
 		testBallToBallContact(true, false, true);
-		testBallToBallContact(true, true, true);
+		testBallToBallContact(true, true, true); 
+		compareHertzAndMeshContactResults();
     }
     catch (const OpenSim::Exception& e) {
         e.print(cerr);
@@ -284,7 +286,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 	    
     }
 
-	force->setName(prefix);
+	force->setName("contact");
 	osimModel->addForce(force);
 	osimModel->setGravity(gravity_vec);
 
@@ -312,8 +314,6 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
     manager.setInitialTime(0.0);
     manager.setFinalTime(duration);
     manager.integrate(osim_state);
-	
-
 
 	kin->printResults(prefix);
 	reporter->printResults(prefix);
@@ -322,4 +322,27 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 	delete osimModel;
 
 	return 0;
+}
+
+void compareHertzAndMeshContactResults()
+{
+	Storage hertz("Hertz_ForceReporter_forces.sto");
+	Storage meshToMesh("EF_Mesh_to_Mesh_ForceReporter_forces.sto");
+	Storage noMeshToMesh("EF_noMesh_to_Mesh_ForceReporter_forces.sto");
+	Storage meshToNoMesh("EF_Mesh_to_noMesh_ForceReporter_forces.sto");
+
+	int nforces = hertz.getColumnLabels().getSize()-1;
+
+	// Hertz theory and ElasticFoundation will not be the same, but they should yield similar results, to withing
+	Array<double> rms_tols_1(12, nforces);
+	CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, hertz, rms_tols_1, __FILE__, __LINE__, "ElasticFoundation FAILED to Match Hertz Contact ");
+
+	// ElasticFoundation on mesh to mesh and mesh to non-mesh should be virtually identical
+	Array<double> rms_tols_2(0.5, nforces);
+	CHECK_STORAGE_AGAINST_STANDARD(meshToMesh, meshToNoMesh, rms_tols_2, __FILE__, __LINE__, "ElasticFoundation Mesh-Mesh FAILED to match Mesh-noMesh Case ");
+
+	// ElasticFoundation on non-mesh to mesh and mesh to non-mesh should be identical
+	Array<double> rms_tols_3(integ_accuracy, nforces);
+	CHECK_STORAGE_AGAINST_STANDARD(noMeshToMesh, meshToNoMesh, rms_tols_3, __FILE__, __LINE__, "ElasticFoundation noMesh-Mesh FAILED to match Mesh-noMesh Case ");
+
 }
