@@ -1,12 +1,22 @@
 ===============================================================
 HOW TO RUN THE CONTROLLER EXAMPLE, IMPROVE IT, AND RUN IT AGAIN
 ===============================================================
-Chand T. John
+Chand T. John and Ajay Seth
 March 14, 2011
 --------------
 
-0) Make sure your PATH contains C:\Program Files\OpenSim 2.3\bin; if not, add
-   this to your PATH.  Also, make sure that no other OpenSim "\bin" directory
+0) <OPENSIM_INSTALL_DIR> is the directory where you installed OpenSim, 
+   such as "C:\OpenSim" or "C:\Program Files\OpenSim".
+   It is a good idea to copy the example out of:
+     <OPENSIM_INSTALL_DIR>\sdk\APIExamples\ControllerExample
+   and into your own workspace, which we will refer to <WORKSPACE_DIR>, e.g.
+   C:\Users\myAccount\OpenSimAPIExamples\ControllerExample
+   
+
+1) Make sure your PATH contains <OPENSIM_INSTALL_DIR>\bin; if not, add
+   this to your PATH.   Whenever you see <OPENSIM_INSTALL_DIR> substitute it with 
+   the full path as above.
+   Also, make sure that no other OpenSim "\bin" directory
    is in your PATH.  If you've ever built OpenSim from source code, make sure
    no directory containing .lib or .dll files for OpenSim are present in your
    PATH either.  If you don't do this, OpenSim will get confused and possibly
@@ -14,95 +24,87 @@ March 14, 2011
    the files from the current version of OpenSim and you will likely experience
    run-time errors.
 
-1) Start Menu -> CMake 2.8 -> CMake (cmake-gui)
+2) Start Menu -> CMake 2.8 -> CMake (cmake-gui)
 
-2) Where is the source code: (copy-paste this into the text field)
-   C:\Program Files\OpenSim 2.3\sdk\APIExamples\ControllerExample
+3) Where is the source code: <WORKSPACE_DIR>
+    (e.g. C:\Users\myAccount\OpenSimAPIExamples\ControllerExample)
 
-3) Where to build the binaries: (copy-paste this into the text field; it's ok
-   if you use all backslashes instead of all forward slashes)
-   C:/Program Files/OpenSim 2.3/sdk/APIExamples/ControllerExample/Build
+4) Where to build the binaries: <WORKSPACE_DIR>\build
+   (e.g. C:\Users\myAccount\OpenSimAPIExamples\ControllerExample\build)
 
-4) Click Configure.
+5) Click Configure.
 
-5) If the "Build" directory doesn't exist yet, a message box will pop up asking
+6) If the "build" directory doesn't exist yet, a message box will pop up asking
    if you want to create this directory.  Click Yes.
 
-6) Another dialog box will open up entitled "cmake-gui" - in the drop-down
+7) Another dialog box will open up entitled "cmake-gui" - in the drop-down
    menu, select the version of Visual Studio you will use to compile the
-   Controller Example program.  I chose Visual Studio 9 2008.  I honestly don't
-   know if the example would work, in its current form, on any environment
-   other than Visual Studio in Windows.
+   Controller Example program.  For example a release of OpenSim is compatible
+   with Visual Studio 10 Express.  
 
    Leave "Use default native compilers" selected in the option menu below the
    drop-down box.
 
 7) Click Finish.
 
-8) One pink field will show up called OPENSIM_INSTALL_DIR.  Click to the right
-   of where it says C:/OpenSim2.2 and change this to:
-   C:\Program Files\OpenSim 2.3
+8) One pink field will show up called OPENSIM_INSTALL_DIR. Select your
+   <OPENSIM_INSTALL_DIR>
 
-9) Press Enter and click once in the box below the OPENSIM_INSTALL_DIR to
-   de-select it.
-
-10) Click Configure.  The message window at the bottom of the CMake window
+9) Click Configure.  The message window at the bottom of the CMake window
     should say "Configuring done"
 
 11) Click Generate.  The message window should now display:
     Configuring done
     Generating done
 
-12) Close CMake.
+10) Close CMake.
 
-13) In Windows Explorer, navigate to:
-    C:\Program Files\OpenSim 2.3\sdk\APIExamples\ControllerExample\Build
+11) In Windows Explorer, navigate to your build directory:
+    <WORKSPACE_DIR>\build
 
-14) Double-click on ControllerExample.sln.
+12) Double-click on ControllerExample.sln (Visual Studio Solution).
 
-15) Right-click on ALL_BUILD and choose Build from the drop-down menu.
+13) Right-click on ALL_BUILD and choose Build from the drop-down menu.
 
-16) Open a Command Prompt window. (e.g., Start -> Run -> cmd and click Run)
+14) Open a Command Prompt window. (e.g., Start -> Run -> cmd and click Run)
 
-17) Navigate to:
-    C:\Program Files\OpenSim 2.3\sdk\APIExamples\ControllerExample\Build
+15) Navigate to: <WORKSPACE_DIR>\build
 
-18) Type:
+16) Type:
     Release\main.exe
     and press Enter.
 
-19) Launch OpenSim 2.3.
+17) Launch OpenSim
 
-20) File -> Open Model...
+18) File -> Open Model...
 
-21) Navigate to:
-    C:\Program Files\OpenSim 2.3\sdk\APIExamples\ControllerExample\Build
+19) Navigate to: Navigate to: <WORKSPACE_DIR>\build
 
-22) Select tugOfWar_model_ThelenOnly.osim and click Open
+20) Select tugOfWar_model_ThelenOnly.osim and click Open
 
-23) File -> Load Motion...
+21) File -> Load Motion...
 
-24) Select tugOfWar_states_degrees.mot and click Open
+22) Select tugOfWar_states_degrees.mot and click Open
 
-25) Play the motion.
+23) Play the motion.
 
-26) File -> Load Motion...
+24) File -> Load Motion...
 
-27) Select tugOfWar_desired_motion.sto and click Open
+25) Select tugOfWar_desired_motion.sto and click Open
 
-28) Play the motion.  Notice how the motion we played previously does not
+26) Play the motion.  Notice how the motion we played previously does not
     quite match this motion: the previous motion, which was computed by the
     controller in the controller example program, doesn't quite move the block
     to the left or right ends of this desired motion, and the block also does
     not move all the way to the center by the end of the motion like it does in
     the desired motion.
 
-29) Do the controller example exercises indicated in the ControllerExample.cpp
+27) Do the controller example exercises indicated in the ControllerExample.cpp
     file.  If you get stuck, the solution is in the OutputReference directory
     inside the ControllerExample directory, as are the output motions computed
     by the controller in the ControllerExample_Solution.cpp file.
 
-30) Once you have completed all the steps outlined in ControllerExample.cpp,
-    repeat steps 15 through 25 above.  Note how much more closely the motion
+28) Once you have completed all the steps outlined in ControllerExample.cpp,
+    repeat steps 14 through 25 above.  Note how much more closely the motion
     computed by the controller now matches the desired motion!
 

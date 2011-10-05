@@ -1,6 +1,6 @@
 // ControllerExample.cpp
 
-/* Copyright (c)  2009 Stanford University
+/* Copyright (c)  2010 Stanford University
  * Use of the OpenSim software in source form is permitted provided that the following
  * conditions are met:
  *   1. The software is used only for non-commercial research and education. It may not
@@ -26,18 +26,17 @@
  */
 
 /* 
- *  Below is an example of an OpenSim application that provides its own 
- *  main() routine.  This application is a forward simulation of tug-of-war between two
- *  muscles pulling on a block.
+ *  Below is an extension example of an OpenSim application that provides its own 
+ *  main() routine.  It applies a controller to the forward simulation of a tug-of-war 
+ *  between two muscles pulling on a block.
  */
 
-// Author:  Chand T. John
+// Author:  Chand T. John and Ajay Seth
 
 //==============================================================================
 //==============================================================================
 
-// This line includes a large number of OpenSim functions and classes so that
-// those things will be available to this program.
+// Include OpenSim and functions
 #include <OpenSim/OpenSim.h>
 
 // This allows us to use OpenSim functions, classes, etc., without having to
@@ -118,10 +117,8 @@ public:
 		double t = s.getTime();
 
 		// Get pointers to each of the muscles in the model.
-		Muscle* leftMuscle = dynamic_cast<Muscle*>
-			( &_actuatorSet.get(0) );
-		Muscle* rightMuscle = dynamic_cast<Muscle*>
-			( &_actuatorSet.get(1) );
+		Muscle* leftMuscle = dynamic_cast<Muscle*>	( &_actuatorSet.get(0) );
+		Muscle* rightMuscle = dynamic_cast<Muscle*> ( &_actuatorSet.get(1) );
 
 		// Compute the desired position of the block in the tug-of-war
 		// model.
@@ -189,26 +186,26 @@ public:
 		// If desired force is in direction of one muscle's pull
 		// direction, then set that muscle's control based on desired
 		// force.  Otherwise, set the muscle's control to zero.
+		double leftControl = 0.0, rightControl = 0.0;
 		if( desFrc < 0 ) {
-			controls[0] = abs( desFrc ) / FoptL;
-			controls[1] = 0.0;
+			leftControl = abs( desFrc ) / FoptL;
+			rightControl = 0.0;
 		}
 		else if( desFrc > 0 ) {
-			controls[0] = 0.0;
-			controls[1] = abs( desFrc ) / FoptR;
+			leftControl = 0.0;
+			rightControl = abs( desFrc ) / FoptR;
 		}
-		else {
-			controls[0] = 0.0;
-			controls[1] = 0.0;
-		}
-
-		// Don't allow any control value to be less than zero.
-		if( controls[0] < 0.0 ) controls[0] = 0.0;
-		if( controls[1] < 0.0 ) controls[1] = 0.0;
-
 		// Don't allow any control value to be greater than one.
-		if( controls[0] > 1.0 ) controls[0] = 1.0;
-		if( controls[1] > 1.0 ) controls[1] = 1.0;
+		if( leftControl > 1.0 ) leftControl = 1.0;
+		if( rightControl > 1.0 ) rightControl = 1.0;
+
+		// Thelen muscle has only one control
+		Vector muscleControl(1, leftControl);
+		// Add in the controls computed for this muscle to the set of all model controls
+		leftMuscle->addInControls(muscleControl, controls);
+		// Specify control for other actuator (muscle) controlled by this controller
+		muscleControl[0] = rightControl;
+		rightMuscle->addInControls(muscleControl, controls);
 	}
 
 // This section contains the member variables of this controller class.
@@ -239,10 +236,6 @@ private:
 int main()
 {
 	try {
-
-		// Need to load this DLL so muscle types are recognized.
-		LoadOpenSimLibrary( "osimActuators" );
-
 		// Create an OpenSim model from the model file provided.
 		Model osimModel( "tugOfWar_model_ThelenOnly.osim" );
 
