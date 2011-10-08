@@ -186,6 +186,8 @@ private:
 	void setupProperties();
 
 protected:
+	void addStateVariables(const Array<std::string> &stateVariableNames);
+
 	// Update the geometry attached to the muscle (location of muscle points and connecting segments
 	//  all in global/interial frame)
 	virtual void updateGeometry(const SimTK::State& s) const;
@@ -198,5 +200,3 @@ protected:
 } // end of namespace OpenSim
 
 #endif // __Muscle_h__
-
-

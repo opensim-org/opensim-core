@@ -209,6 +209,12 @@ void Muscle::setupProperties()
 	_propertySet.append(&_maxContractionVelocityProp, "Parameters");
 }
 
+void Muscle::addStateVariables(const Array<std::string> &stateVariableNames)
+{
+	PathActuator::addStateVariables(stateVariableNames);
+	for (int i = 0; i < stateVariableNames.getSize(); ++i)
+		addCacheVariable<double>(stateVariableNames[i] + "_deriv", 0., SimTK::Stage::Dynamics);
+}
 
 //=============================================================================
 // OPERATORS

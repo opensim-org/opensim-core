@@ -127,10 +127,10 @@ public:
 	virtual bool setMass(double aMass);
 	// Computed quantities
 #ifndef SWIG
-	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, STATE_FIBER_VELOCITY); }
-	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, STATE_FIBER_VELOCITY, fiberVelocity); }
-	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_VELOCITY); }
-	virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, STATE_FIBER_VELOCITY, fiberVelocityDeriv); }
+	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, "fiber_velocity"); }
+	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, "fiber_velocity", fiberVelocity); }
+	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "fiber_velocity"); }
+	virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, "fiber_velocity", fiberVelocityDeriv); }
 	virtual void setActiveForce(const SimTK::State& s, double aForce) const;
 	virtual double getActiveForce(const SimTK::State& s) const;
 

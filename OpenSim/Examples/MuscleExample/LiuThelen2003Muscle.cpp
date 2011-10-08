@@ -194,7 +194,6 @@ void LiuThelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 	stateVariables[0] = "active_motor_units";
 	stateVariables[1] = "fatigued_motor_units";
 	mutableThis->addStateVariables(stateVariables);
-	mutableThis->addCacheVariable<SimTK::Vector>("state_derivatives", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Dynamics);
 }
 
 /**

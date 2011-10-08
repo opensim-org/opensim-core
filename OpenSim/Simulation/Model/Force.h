@@ -108,7 +108,7 @@ protected:
 	/**
 	 * Subclasses should override these methods appropriately.
 	 */
-    virtual void setup(Model& model);
+//    virtual void setup(Model& model);
 	virtual void initState(SimTK::State& state) const;
 
 	/**

@@ -142,15 +142,15 @@ public:
 
 	// Computed quantities
 #ifndef SWIG
-	virtual double getActiveMotorUnits(const SimTK::State& s) const { return getStateVariable(s, STATE_ACTIVE_MOTOR_UNITS); }
-	virtual void setActiveMotorUnits(SimTK::State& s, double activeMotorUnits) const { setStateVariable(s, STATE_ACTIVE_MOTOR_UNITS, activeMotorUnits); }
-	virtual double getActiveMotorUnitsDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVE_MOTOR_UNITS); }
-	virtual void setActiveMotorUnitsDeriv(const SimTK::State& s, double activeMotorUnitsDeriv) const { setStateVariableDeriv(s, STATE_ACTIVE_MOTOR_UNITS, activeMotorUnitsDeriv); }
+	virtual double getActiveMotorUnits(const SimTK::State& s) const { return getStateVariable(s, "active_motor_units"); }
+	virtual void setActiveMotorUnits(SimTK::State& s, double activeMotorUnits) const { setStateVariable(s, "active_motor_units", activeMotorUnits); }
+	virtual double getActiveMotorUnitsDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "active_motor_units"); }
+	virtual void setActiveMotorUnitsDeriv(const SimTK::State& s, double activeMotorUnitsDeriv) const { setStateVariableDeriv(s, "active_motor_units", activeMotorUnitsDeriv); }
 
-	virtual double getFatiguedMotorUnits(const SimTK::State& s) const { return getStateVariable(s, STATE_FATIGUED_MOTOR_UNITS); }
-	virtual void setFatiguedMotorUnits(SimTK::State& s, double fatiguedMotorUnits) const { setStateVariable(s, STATE_FATIGUED_MOTOR_UNITS, fatiguedMotorUnits); }
-	virtual double getFatiguedMotorUnitsDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FATIGUED_MOTOR_UNITS); }
-	virtual void setFatiguedMotorUnitsDeriv(const SimTK::State& s, double fatiguedMotorUnitsDeriv) const { setStateVariableDeriv(s, STATE_FATIGUED_MOTOR_UNITS, fatiguedMotorUnitsDeriv); }
+	virtual double getFatiguedMotorUnits(const SimTK::State& s) const { return getStateVariable(s, "fatigued_motor_units"); }
+	virtual void setFatiguedMotorUnits(SimTK::State& s, double fatiguedMotorUnits) const { setStateVariable(s, "fatigued_motor_units", fatiguedMotorUnits); }
+	virtual double getFatiguedMotorUnitsDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "fatigued_motor_units"); }
+	virtual void setFatiguedMotorUnitsDeriv(const SimTK::State& s, double fatiguedMotorUnitsDeriv) const { setStateVariableDeriv(s, "fatigued_motor_units", fatiguedMotorUnitsDeriv); }
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS

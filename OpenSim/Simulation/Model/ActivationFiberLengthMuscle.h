@@ -173,8 +173,8 @@ protected:
 	
     virtual std::string getStateVariableName(int aIndex) const;
 
-	virtual void setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const;
-	virtual double getStateVariableDeriv(const SimTK::State& s, int aIndex) const;
+	virtual void setStateVariableDeriv(const SimTK::State& s, std::string aStateName, double aValue) const;
+	virtual double getStateVariableDeriv(const SimTK::State& s, std::string aStateName) const;
 
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 

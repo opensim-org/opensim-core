@@ -102,10 +102,6 @@ protected:
 	PropertyDbl _flenProp;
 	double &_flen;
 
-
-private:
-	static const int STATE_ACTIVATION;
-	static const int STATE_FIBER_LENGTH;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -144,12 +140,12 @@ public:
 	virtual double getStress(const SimTK::State& s) const;
 	virtual double getActivation(const SimTK::State& s) const { return getStateVariable(s, "activation"); }
     virtual void setActivation(SimTK::State& s, double activation) const { setStateVariable(s, "activation", activation); }
-    virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_ACTIVATION); }
-    virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, STATE_ACTIVATION, activationDeriv); }
+    virtual double getActivationDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "activation"); }
+    virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const { setStateVariableDeriv(s, "activation", activationDeriv); }
     virtual double getFiberLength(const SimTK::State& s) const { return getStateVariable(s, "fiber_length"); }
     virtual void setFiberLength(SimTK::State& s, double fiberLength) const { setStateVariable(s, "fiber_length", fiberLength); }
-    virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, STATE_FIBER_LENGTH); }
-    virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, STATE_FIBER_LENGTH, fiberLengthDeriv); }
+    virtual double getFiberLengthDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "fiber_length"); }
+    virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const { setStateVariableDeriv(s, "fiber_length", fiberLengthDeriv); }
     virtual void setTendonForce(const SimTK::State& s, double aForce) const;
     virtual double getTendonForce( const SimTK::State& s) const;
     virtual void setActiveForce(const SimTK::State& s, double aForce) const;

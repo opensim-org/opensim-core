@@ -45,19 +45,19 @@ int main()
 		id1.run();
 		Storage result1("Results/arm26_InverseDynamics.sto"), standard1("std_arm26_InverseDynamics.sto");
 		CHECK_STORAGE_AGAINST_STANDARD( result1, standard1, Array<double>(1e-2, 23), __FILE__, __LINE__, "testArm failed");
-		cout << "testArm passed";
+		cout << "testArm passed" << endl;
 
 		InverseDynamicsTool id2("subject01_Setup_InverseDynamics.xml");
 		id2.run();
 		Storage result2("Results/subject01_InverseDynamics.sto"), standard2("std_subject01_InverseDynamics.sto");
 		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(2.0, 23), __FILE__, __LINE__, "testGait failed");
-		cout << "testGait passed";
+		cout << "testGait passed" << endl;
 
 		InverseDynamicsTool id3("subject221_Setup_InverseDynamics.xml");
 		id3.run();
 		Storage result3("Results/subject221_InverseDynamics.sto"), standard3("std_subject221_InverseDynamics.sto");
 		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(2.0, 23), __FILE__, __LINE__, "subject 221 old setup failed");
-		cout << "subject 221 old setup passed";
+		cout << "subject 221 old setup passed" << endl;
 	}
     catch (const Exception& e) {
         e.print(cerr);

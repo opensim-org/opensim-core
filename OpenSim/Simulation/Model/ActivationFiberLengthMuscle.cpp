@@ -135,7 +135,6 @@ void ActivationFiberLengthMuscle::equilibrate(SimTK::State& state) const
 	stateVariables[0] = "activation";
 	stateVariables[1] = "fiber_length";
 	mutableThis->addStateVariables(stateVariables);
-	mutableThis->addCacheVariable<SimTK::Vector>("state_derivatives", SimTK::Vector(getNumStateVariables()), SimTK::Stage::Dynamics);
 	
 	// Cache the computed active and passive muscle force
 	// note the total muscle force is the tendon force and is already a cached variable of the actuator
@@ -193,7 +192,7 @@ string ActivationFiberLengthMuscle::getStateVariableName(int aIndex) const
 		return getName() + ".fiber_length";
 	else {
 		std::stringstream msg;
-		msg << "Actuator::getStateVariableName: ERR- index out of bounds.\nActuator " 
+		msg << "ActivationFiberLengthMuscle::getStateVariableName: ERR- index out of bounds.\nActuator " 
 			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " state variables.";
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 	}
@@ -204,41 +203,26 @@ string ActivationFiberLengthMuscle::getStateVariableName(int aIndex) const
 /**
  * Set the derivative of an actuator state, specified by index
  *
- * @param aIndex The index of the state to set.
+ * @param aStateName The name of the state to set.
  * @param aValue The value to set the state to.
  */
-void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, int aIndex, double aValue) const {
-
-	SimTK::Vector& stateDeriv = updCacheVariable<SimTK::Vector>(s, "state_derivatives");
-	if(0<=aIndex && aIndex<getNumStateVariables()) {
-		stateDeriv[aIndex] = aValue;
-	} else {
-		std::stringstream msg;
-		msg << "ActivationFiberLengthMuscle::setStateVariableDeriv: ERR- index out of bounds.\nActuator " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-	markCacheVariableValid(s, "state_derivatives");
+void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, std::string aStateName, double aValue) const
+{
+	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
+	cacheVariable = aValue;
+	markCacheVariableValid(s, aStateName + "_deriv");
 }
 
 //_____________________________________________________________________________
 /**
  * Get the derivative of an actuator state, by index.
  *
- * @param aIndex the index of the state to get.
+ * @param aStateName the name of the state to get.
  * @return The value of the state.
  */
-double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s, int aIndex) const
+double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s, std::string aStateName) const
 {
-	const SimTK::Vector& stateDeriv = getCacheVariable<SimTK::Vector>(s, "state_derivatives");
-	if(0<=aIndex && aIndex<getNumStateVariables()) {
-        return( stateDeriv[aIndex] );
-	} else {
-		std::stringstream msg;
-		msg << "MusclegetStateVariableDeriv: ERR- index out of bounds.\nActuator " 
-		    << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
+	return getCacheVariable<double>(s, aStateName + "_deriv");
 }
 
 //_____________________________________________________________________________
@@ -290,10 +274,10 @@ void ActivationFiberLengthMuscle::setFiberLength(SimTK::State& s, double fiberLe
 	setStateVariable(s, "fiber_length", fiberLength);
 }
 double ActivationFiberLengthMuscle::getFiberLengthDeriv(const SimTK::State& s) const {
-	return getStateVariableDeriv(s, STATE_FIBER_LENGTH);
+	return getStateVariableDeriv(s, "fiber_length");
 }
 void ActivationFiberLengthMuscle::setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const {
-	setStateVariableDeriv(s, STATE_FIBER_LENGTH, fiberLengthDeriv);
+	setStateVariableDeriv(s, "fiber_length", fiberLengthDeriv);
 }
 //_____________________________________________________________________________
 /**
@@ -414,10 +398,10 @@ void ActivationFiberLengthMuscle::setActivation(SimTK::State& s, double activati
 	setStateVariable(s, "activation", activation);
 }
 double ActivationFiberLengthMuscle::getActivationDeriv(const SimTK::State& s) const {
-	return getStateVariableDeriv(s, STATE_ACTIVATION);
+	return getStateVariableDeriv(s, "activation");
 }
 void ActivationFiberLengthMuscle::setActivationDeriv(const SimTK::State& s, double activationDeriv) const {
-	setStateVariableDeriv(s, STATE_ACTIVATION, activationDeriv);
+	setStateVariableDeriv(s, "activation", activationDeriv);
 }
 //_____________________________________________________________________________
 //**
@@ -483,10 +467,13 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 		// Also define the state derivatives, since realize acceleration will
 		// ask for muscle derivatives, which will be integrated
 		// in the case the force is being overridden, the states aren't being used
-		// but a valid derivative cache entry is still required 
-		SimTK::Vector& stateDerivs =  updCacheVariable<SimTK::Vector>(s, "state_derivatives");
-		stateDerivs = 0.0;
-		markCacheVariableValid(s, "state_derivatives");
+		// but a valid derivative cache entry is still required
+		int numStateVariables = getNumStateVariables();
+		for (int i = 0; i < numStateVariables; ++i) {
+			string stateVariableName = getStateVariableName(i);
+			stateVariableName = stateVariableName.substr(stateVariableName.find('.') + 1);
+			setStateVariableDeriv(s, stateVariableName, 0.0);
+		}
     } 
 
 }

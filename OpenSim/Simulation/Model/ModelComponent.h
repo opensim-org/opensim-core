@@ -300,7 +300,7 @@ public:
 		}
 		else{
 			std::stringstream msg;
-			msg << "ModelComponent::updCacheVariable: ERR- name not found.\n "
+			msg << "ModelComponent::updCacheVariable: ERR- '" << name << "' name not found.\n "
 				<< "for component '"<< getName() << "' of type " << getType();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}

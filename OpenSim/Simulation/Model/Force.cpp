@@ -110,11 +110,6 @@ void Force::setupProperties(void)
 	_propertySet.append(&_isDisabledProp);
 }
 
-void Force::setup(Model& model)
-{
-	ModelComponent::setup(model);
-}
-
 /**
  * Create an underlying SimTK::Force to represent the OpenSim::Force in the computational
  * system.  Create a SimTK::Force::Custom by default.

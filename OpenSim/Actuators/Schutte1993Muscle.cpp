@@ -590,7 +590,7 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
    double passiveForce, activeForce, tendonForce, fiberLength;
 
    if (_optimalFiberLength < ROUNDOFF_ERROR) {
-      setStateVariable(s, STATE_FIBER_LENGTH, 0.0);
+      setStateVariable(s, "fiber_length", 0.0);
 		setPassiveForce(s, 0.0);
       setForce(s, 0.0);
       setTendonForce(s, 0.0);
@@ -622,13 +622,13 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
 		passiveForce = calcNonzeroPassiveForce(s, fiberLength / _optimalFiberLength, 0.0) * _maxIsometricForce;
 
         setPassiveForce(s, passiveForce );
-		setStateVariable(s, STATE_FIBER_LENGTH,  fiberLength);
+		setStateVariable(s, "fiber_length",  fiberLength);
 		tendonForce = (activeForce + passiveForce) * cos_factor;
 		setForce(s, tendonForce);
 		setTendonForce(s, tendonForce);
       return tendonForce;
    } else if (length < _tendonSlackLength) {
-		setStateVariable(s, STATE_FIBER_LENGTH,  muscle_width);
+		setStateVariable(s, "fiber_length",  muscle_width);
 		setPassiveForce(s, 0.0);
       setForce(s, 0.0);
       setTendonForce(s, 0.0);
@@ -749,7 +749,7 @@ double Schutte1993Muscle::computeIsometricForce(SimTK::State& s, double aActivat
       }
    }
 
-   setStateVariable(s, STATE_FIBER_LENGTH,  fiberLength);
+   setStateVariable(s, "fiber_length",  fiberLength);
    setPassiveForce(s, passiveForce * _maxIsometricForce);
 
 	return tendon_force;
