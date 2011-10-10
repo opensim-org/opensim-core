@@ -84,7 +84,7 @@ CMCTool::CMCTool() :
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
-    _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
@@ -114,7 +114,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
-    _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
@@ -184,7 +184,7 @@ CMCTool(const CMCTool &aTool) :
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
 	//_lowpassCutoffFrequencyForLoadKinematics(_lowpassCutoffFrequencyForLoadKinematicsProp.getValueDbl()),
     _targetDT(_targetDTProp.getValueDbl()),  	 	 
-    _useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
+    //_useCurvatureFilter(_useCurvatureFilterProp.getValueBool()),
     _useFastTarget(_useFastTargetProp.getValueBool()),
 	_optimizerAlgorithm(_optimizerAlgorithmProp.getValueStr()),
 	_numericalDerivativeStepSize(_numericalDerivativeStepSizeProp.getValueDbl()),
@@ -230,7 +230,7 @@ setNull()
 	_lowpassCutoffFrequency = -1.0;
 	//_lowpassCutoffFrequencyForLoadKinematics = -1.0;
     _targetDT = 0.010;  	 	 
-    _useCurvatureFilter = false; 		 
+    //_useCurvatureFilter = false; 		 
     _useFastTarget = true;
 	_optimizerAlgorithm = "ipopt";
 	_numericalDerivativeStepSize = 1.0e-4;
@@ -305,9 +305,9 @@ void CMCTool::setupProperties()
   		 
     comment = "Flag (true or false) indicating whether or not to use the curvature filter. " 		 
                        "Setting this flag to true can reduce oscillations in the computed muscle excitations."; 		 
-    _useCurvatureFilterProp.setComment(comment); 		 
-    _useCurvatureFilterProp.setName("use_curvature_filter"); 		 
-    _propertySet.append( &_useCurvatureFilterProp );
+    //_useCurvatureFilterProp.setComment(comment); 		 
+    //_useCurvatureFilterProp.setName("use_curvature_filter"); 		 
+    //_propertySet.append( &_useCurvatureFilterProp );
 
     comment = "Flag (true or false) indicating whether to use the fast CMC optimization target. ";  	 	 
     comment += "The fast target requires the desired accelerations to be met. "; 		 
@@ -381,7 +381,7 @@ operator=(const CMCTool &aTool)
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
 	//_lowpassCutoffFrequencyForLoadKinematics = aTool._lowpassCutoffFrequencyForLoadKinematics;
     _targetDT = aTool._targetDT;  	 	 
-    _useCurvatureFilter = aTool._useCurvatureFilter;
+    //_useCurvatureFilter = aTool._useCurvatureFilter;
 	_numericalDerivativeStepSize = aTool._numericalDerivativeStepSize;
 	_optimizationConvergenceTolerance = aTool._optimizationConvergenceTolerance;
     _useFastTarget = aTool._useFastTarget;
@@ -437,7 +437,7 @@ bool CMCTool::run()
 	controller->setActuators(_model->updActuators());
     _model->addController(controller );
     controller->setDisabled(false);
-    controller->setUseCurvatureFilter(_useCurvatureFilter);
+    controller->setUseCurvatureFilter(false);
     controller->setTargetDT(_targetDT);
     controller->setCheckTargetTime(true);
 

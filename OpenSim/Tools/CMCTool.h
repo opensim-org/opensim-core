@@ -99,10 +99,6 @@ private:
     PropertyDbl _targetDTProp;  	 	   
     double &_targetDT;
 
-    /** Flag indicating whether or not to use the curvature filter. */
-    PropertyBool _useCurvatureFilterProp;  	 	 
-    bool &_useCurvatureFilter;
-
     /** Flag indicating whether to use the fast CMC optimization
     target.  The fast target requires the desired accelerations to  	 	 
     be met within the tolerance set by the convergence criterion. 		 
