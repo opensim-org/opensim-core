@@ -293,33 +293,7 @@ static bool trace=false;
   }
 %}
 
-/* make getCPtr public not package private */
-%typemap(javabody) SWIGTYPE, SWIGTYPE *, SWIGTYPE &, SWIGTYPE [], SWIGTYPE (CLASS::*)%{
-  private long swigCPtr;
-  protected boolean swigCMemOwn;
 
-  public $javaclassname(long cPtr, boolean cMemoryOwn) {
-    swigCMemOwn = cMemoryOwn;
-    swigCPtr = cPtr;
-  }
-
-  public static long getCPtr($javaclassname obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-%}
-
-%typemap(javabody_derived) SWIGTYPE %{
-  private long swigCPtr;
-
-  public $javaclassname(long cPtr, boolean cMemoryOwn) {
-    super(opensimModelJNI.SWIGStorageUpcast(cPtr), cMemoryOwn);
-    swigCPtr = cPtr;
-  }
-
-  public static long getCPtr($javaclassname obj) {
-    return (obj == null) ? 0 : obj.swigCPtr;
-  }
-%}
 // Generic Exception handling
 %typemap(throws) SWIGTYPE, SWIGTYPE &, SWIGTYPE *, SWIGTYPE [ANY] %{
   SWIG_JavaThrowException(jenv, SWIG_JavaIOException,
