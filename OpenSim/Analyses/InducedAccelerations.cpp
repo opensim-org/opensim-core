@@ -990,14 +990,33 @@ Array<bool> InducedAccelerations::applyContactConstraintAccordingToExternalForce
 		
 		// If the applied force is "significant" replace it with a constraint
 		if (force.norm() > _forceThreshold){
+			// get the point of contact from applied external force
+			point = exf->getPointAtTime(t);
+			// point should be expressed in the "applied to" body for consistency across all constraints
+			if(exf->getPointExpressedInBodyName() != exf->getAppliedToBodyName()){
+				int appliedToBodyIndex = _model->getBodySet().getIndex(exf->getAppliedToBodyName());
+				if(appliedToBodyIndex < 0){
+					cout << "External force appliedToBody " <<  exf->getAppliedToBodyName() << " not found." << endl;
+				}
+
+				int expressedInBodyIndex = _model->getBodySet().getIndex(exf->getPointExpressedInBodyName());
+				if(expressedInBodyIndex < 0){
+					cout << "External force expressedInBody " <<  exf->getPointExpressedInBodyName() << " not found." << endl;
+				}
+
+				const Body &appliedToBody = _model->getBodySet().get(appliedToBodyIndex);
+				const Body &expressedInBody = _model->getBodySet().get(expressedInBodyIndex);
+
+				_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+				_model->getSimbodyEngine().transformPosition(s, expressedInBody, point, appliedToBody, point);
+			}
+
+			_constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
+
 			// turn on the constraint
 			_constraintSet.get(i).setDisabled(s, false);
 			// return the state of the constraint
 			constraintOn[i] = true;
-
-			// get the point of contact from applied external force
-			point = exf->getPointAtTime(t);
-			_constraintSet.get(i).setContactPointForInducedAccelerations(s, point);
 
 		}
 		else{
