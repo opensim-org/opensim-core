@@ -1,7 +1,7 @@
 #ifndef __auxiliaryTestFunctions_h__
 #define __auxiliaryTestFunctions_h__
 
-// ContDerivMuscle.h
+// auxiliaryTestFunctions.h
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following

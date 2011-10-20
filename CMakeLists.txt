@@ -250,10 +250,8 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 
-# Build using the simtk headers and libraries checked in the repository. 
-# Currently this only works on windows VC8 since these are the only libraries checked in
-
-SET(USE_LIBRARIES_FROM_REPOSITORY ON CACHE BOOL "Use prebuilt SimTK libraries from the OpenSim repository. SIMTK_DIR will not be used.")
+# Disable Build using the simtk headers and libraries checked in the repository. 
+SET(USE_LIBRARIES_FROM_REPOSITORY OFF)
 
 IF(WIN32)
 	SET(CMAKE_INSTALL_PREFIX "${PROGFILEDIR}/OpenSimDev" CACHE PATH "Install location to place headers and libraries")
@@ -467,4 +465,4 @@ ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
 #-----------------------------------------------------------------------------
 
-SUBDIRS(Vendors OpenSim Install API Documentation)
+SUBDIRS(Vendors OpenSim Install API Documentation Applications)

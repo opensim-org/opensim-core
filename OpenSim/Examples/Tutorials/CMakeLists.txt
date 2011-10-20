@@ -1,1 +1,0 @@
-SUBDIRS(BothLegs SeparateLegs WristModel)

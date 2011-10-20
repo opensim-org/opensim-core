@@ -1,8 +1,0 @@
-tug_of_war_states
-version=1
-nRows=1
-nColumns=7
-inDegrees=no
-endheader
-time	block_tz	block_tz_u	muscle_1.activation	muscle_1.fiber_length	muscle_2.activation	muscle_2.fiber_length
-      0.00000000	      0.00000000	      0.00000000	      0.01000000	      0.09800000	      0.01000000	      0.09800000
