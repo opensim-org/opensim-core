@@ -29,6 +29,9 @@ IF ( JAVA_COMPILE )
      ${JAR_SRCS} 
      WORKING_DIRECTORY ${OpenSim_SOURCE_DIR}/OpenSim/Java/src/org/opensim/modeling/)
      
-  
+  ADD_CUSTOM_COMMAND(TARGET Javajar.classes
+                   POST_BUILD
+                   COMMAND ${JAVA_ARCHIVE} cvf ${OpenSim_SOURCE_DIR}/OpenSim/Java/opensim.jar ${OpenSim_SOURCE_DIR}/OpenSim/Java/src/org
+  )
 ENDIF ( JAVA_COMPILE )
 ENDIF(BUILD_JAVA_WRAPPING)
