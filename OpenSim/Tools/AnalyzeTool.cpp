@@ -17,6 +17,7 @@
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
+#include <OpenSim/Analyses/MuscleAnalysisV1.h> //MM
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 //#include <OpenSim/Analyses/MomentArmAnalysis.h>
 
@@ -112,6 +113,7 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
 		muscleAnalysis->setOn(false);
 		aModel.addAnalysis(muscleAnalysis);
 	}
+
 	//if (analysisSet.getIndex("MomentArmAnalysis")==-1){
 	//	MomentArmAnalysis* momentArmAnalysis = new MomentArmAnalysis(aModel);
 	//	momentArmAnalysis->setOn(false);
