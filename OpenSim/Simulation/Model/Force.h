@@ -154,8 +154,8 @@ protected:
 	 * will produce an exception.
 	 *
 	 * @param aBody    the body to apply the force to
-	 * @param aPoint   the point at which to apply the force, specifieid in the inertial frame
-	 * @param aForce   the force to apply, specified in the body's frame
+	 * @param aPoint   the point at which to apply the force, specifieid in the body's frame
+	 * @param aForce   the force to apply, specified in the inertial (ground) frame
 	 * @param bodyForces  the current set of system bodyForces this force is added to
 	 */
 	void applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint,
