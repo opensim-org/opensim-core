@@ -35,6 +35,7 @@
 #include "TorqueActuator.h"
 #include "PointToPointActuator.h"
 #include "Thelen2003Muscle.h"
+#include "Thelen2003MuscleV1.h" //MM
 #include "Schutte1993Muscle.h"
 #include "Delp1990Muscle.h"
 #include "CoordinateLimitForce.h"
