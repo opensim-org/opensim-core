@@ -1,7 +1,3 @@
-IF(BUILD_UTILITIES)
-SET(TARGETS convertControls convertStorageToControls simplifyControls storageFilter)
-ENDIF(BUILD_UTILITIES)
-
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${XERCES_INCLUDE_DIR})
 LINK_LIBRARIES(debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon 
                debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
