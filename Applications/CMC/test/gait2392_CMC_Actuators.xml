@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ActuatorSet name="gait2392_CMC">
+
+	<defaults>
+
+		<Force name="default">
+			<max_force> 10000.000 </max_force>
+			<min_force> -10000.000 </min_force>
+			<optimal_force> 1000.0 </optimal_force>
+			<body_A> </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 1.000 0.000 0.000 </direction_A>
+			<body_B> </body_B>
+			<point_B> 0.000 0.000 0.000 </point_B>
+		</Force>
+
+		<Torque name="default">
+			<max_force> 10000.000 </max_force>
+			<min_force> -10000.000 </min_force>
+			<optimal_force> 1000.0 </optimal_force>
+			<body_A> </body_A>
+			<direction_A> 1.000 0.000 0.000 </direction_A>
+			<body_B> </body_B>
+		</Torque>
+
+		<GeneralizedForce name="default">
+			<max_force> 10000.0 </max_force>
+			<min_force> -10000.0 </min_force>
+			<optimal_force> 1000.0 </optimal_force>
+			<coordinate> </coordinate>
+		</GeneralizedForce>
+
+	</defaults>
+
+	<objects>
+
+		<!-- Residuals -->
+		<Force name="FX">
+			<optimal_force> 100.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> -1.000 0.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.069981230000000005 0.00000000 0.00000000 </point_B>
+		</Force>
+
+		<Force name="FY">
+			<optimal_force> 200.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 -1.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.069981230000000005 0.00000000 0.00000000 </point_B>
+		</Force>
+
+		<Force name="FZ">
+			<optimal_force> 100.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<point_A> 0.000 0.000 0.000 </point_A>
+			<direction_A> 0.000 0.000 -1.000 </direction_A>
+			<body_B> pelvis </body_B>
+			<point_B> -0.069981230000000005 0.00000000 0.00000000 </point_B>
+		</Force>
+
+		<Torque name="MX">
+			<optimal_force> 80.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<direction_A> -1.000 0.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+		</Torque>
+
+		<Torque name="MY">
+			<optimal_force> 80.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<direction_A> 0.000 -1.000 0.000 </direction_A>
+			<body_B> pelvis </body_B>
+		</Torque>
+
+		<Torque name="MZ">
+			<optimal_force> 80.00000000 </optimal_force>
+			<body_A> ground </body_A>
+			<direction_A> 0.000 0.000 -1.000 </direction_A>
+			<body_B> pelvis </body_B>
+		</Torque>
+
+
+		<!-- Right Leg -->
+
+		<GeneralizedForce name="hip_flexion_r_reserve">
+			<coordinate> hip_flexion_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="hip_adduction_r_reserve">
+			<coordinate> hip_adduction_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="hip_rotation_r_reserve">
+			<coordinate> hip_rotation_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="knee_angle_r_reserve">
+			<coordinate> knee_angle_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="ankle_angle_r_reserve">
+			<coordinate> ankle_angle_r </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+
+		<!-- Left Leg -->
+
+		<GeneralizedForce name="hip_flexion_l_reserve">
+			<coordinate> hip_flexion_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="hip_adduction_l_reserve">
+			<coordinate> hip_adduction_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="hip_rotation_l_reserve">
+			<coordinate> hip_rotation_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="knee_angle_l_reserve">
+			<coordinate> knee_angle_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="ankle_angle_l_reserve">
+			<coordinate> ankle_angle_l </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+		
+
+		<!-- Back Joint -->
+		<GeneralizedForce name="lumbar_extension_reserve">
+			<coordinate> lumbar_extension </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="lumbar_bending_reserve">
+			<coordinate> lumbar_bending </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+
+		<GeneralizedForce name="lumbar_rotation_reserve">
+			<coordinate> lumbar_rotation </coordinate>
+			<optimal_force> 1.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<!--Right Arm-->
+		<GeneralizedForce name="arm_flex_r">
+			<coordinate> arm_flex_r </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="arm_add_r">
+			<coordinate> arm_add_r </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="arm_rot_r">
+			<coordinate> arm_rot_r </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="elbow_flex_r">
+			<coordinate> elbow_flex_r </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="pro_sup_r">
+			<coordinate> pro_sup_r </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<!--Left Arm-->
+		<GeneralizedForce name="arm_flex_l">
+			<coordinate> arm_flex_l </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="arm_add_l">
+			<coordinate> arm_add_l </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="arm_rot_l">
+			<coordinate> arm_rot_l </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="elbow_flex_l">
+			<coordinate> elbow_flex_l </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+		
+		<GeneralizedForce name="pro_sup_l">
+			<coordinate> pro_sup_l </coordinate>
+			<optimal_force> 200.0 </optimal_force>
+		</GeneralizedForce>
+
+	</objects>
+
+</ActuatorSet>
+

@@ -53,12 +53,12 @@ void testHamnerRunningModel();
 
 int main() {
     try {
-		//testSingleMuscle();
-		//testTwoMusclesOnBlock();
-		//testArm26();
-		//testGait2354();
+		testSingleMuscle();
+		testTwoMusclesOnBlock();
+		testArm26();
+		testGait2354();
 		testEMGDrivenArm();
-		//testHamnerRunningModel();
+		testHamnerRunningModel();
     }
     catch (const Exception& e) {
         e.print(cerr);
@@ -173,7 +173,28 @@ void testHamnerRunningModel()
 	Storage results("CMC_Running_Results/subject02_running_CMC_Kinematics_q.sto");
 	Storage standard("subject02_running_RRA_Kinematics_q.sto");
 
-	ASSERT(results.getFirstTime() >= standard.getFirstTime());
-	ASSERT(results.getLastTime() <= standard.getLastTime());
+	int nq = results.getColumnLabels().getSize()-1;
+
+	// Tracking kinematics angles in degrees should be within 2 degrees
+	Array<double> rms_tols(1.75, nq);
+	rms_tols[3] = 0.0025; // pelvis translations in m should be with 5mm
+	rms_tols[4] = 0.0025;
+	rms_tols[5] = 0.0025;
+
+	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testHamnerRunningModel tracking failed");
+
+	Storage results_states("CMC_Running_Results/subject02_running_CMC_states.sto");
+	Storage standard_states("std_subject02_running_CMC_states.sto");
+
+	int nc = results_states.getColumnLabels().getSize()-1;
+
+	// already passed tracking kinematics so focus on muscle states
+	Array<double> rms_states_tols(0.09, nc);
+	for(int i = nq; i< 2*nq; ++i)
+	{
+		rms_states_tols[i] = 0.2; // velocities
+	}
+
+	CHECK_STORAGE_AGAINST_STANDARD(results_states, standard_states, rms_states_tols, __FILE__, __LINE__, "testHamnerRunningModel activations failed");
 
 }

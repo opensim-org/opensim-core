@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rdCMC_TaskSet name="gait2392_CMC">
+
+	<defaults>
+		<rdCMC_Joint name="default">
+			<!--Flag (true or false) indicating whether or not a task is on.-->
+			<on> false </on>
+			<!--Body frame with respect to which a tracking objective is specified.
+			    This property is not used for tracking joint angles.-->
+			<wrt_body> -1 </wrt_body>
+			<!--Specifies the body frame in which the tracking objectives are
+			    expressed.  This property is not used for tracking joint angles.-->
+			<express_body> -1 </express_body>
+			<!--Array of 3 flags (each true or false) specifying whether a component
+			    of a task is active.  For example, tracking the trajectory of a point
+			    in space could have three components (x,y,z).  This allows each of
+			    those to be made active (true) or inactive (false).  A task for
+			    tracking a joint coordinate only has one component.-->
+			<active> false false false </active>
+			<!--Weight with which a task is tracked relative to other tasks. To track
+			    a task more tightly, make the weight larger.-->
+			<weight> 1 1 1 </weight>
+			<!--Position error feedback gain (stiffness). To achieve critical damping
+			    of errors, choose kv = 2*sqrt(kp).-->
+			<kp> 1 1 1 </kp>
+			<!--Velocity error feedback gain (damping). To achieve critical damping of
+			    errors, choose kv = 2*sqrt(kp).-->
+			<kv> 1 1 1 </kv>
+			<!--Feedforward acceleration gain.  This is normally set to 1.0, so no
+			    gain.-->
+			<ka> 1 1 1 </ka>
+			<!--Direction vector[3] for component 0 of a task. Joint tasks do not use
+			    this propery.-->
+			<r0> 0 0 0 </r0>
+			<!--Direction vector[3] for component 1 of a task. Joint tasks do not use
+			    this property.-->
+			<r1> 0 0 0 </r1>
+			<!--Direction vector[3] for component 2 of a task. Joint tasks do not use
+			    this property.-->
+			<r2> 0 0 0 </r2>
+			<!--Name of the coordinate to be tracked.-->
+			<coordinate>  </coordinate>
+		</rdCMC_Joint>
+	</defaults>
+
+	<objects>
+
+		<!-- Pelvis -->
+
+		<rdCMC_Joint name="pelvis_tz">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e0 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pelvis_tz </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="pelvis_tx">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e0 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pelvis_tx </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="pelvis_ty">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e0 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pelvis_ty </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="pelvis_tilt">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pelvis_tilt </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="pelvis_list">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pelvis_list </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="pelvis_rotation">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pelvis_rotation </coordinate>
+		</rdCMC_Joint>
+
+
+		<!-- Right Leg -->
+
+		<rdCMC_Joint name="hip_flexion_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> hip_flexion_r </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="hip_adduction_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> hip_adduction_r </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="hip_rotation_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> hip_rotation_r </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="knee_angle_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> knee_angle_r </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="ankle_angle_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> ankle_angle_r </coordinate>
+		</rdCMC_Joint>
+
+		<!-- Left Leg -->
+
+		<rdCMC_Joint name="hip_flexion_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> hip_flexion_l </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="hip_adduction_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> hip_adduction_l </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="hip_rotation_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> hip_rotation_l </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="knee_angle_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> knee_angle_l </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="ankle_angle_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e2 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> ankle_angle_l </coordinate>
+		</rdCMC_Joint>
+	
+		<!-- Back Joint -->
+
+		<rdCMC_Joint name="lumbar_extension">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> lumbar_extension </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="lumbar_bending">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> lumbar_bending </coordinate>
+		</rdCMC_Joint>
+
+		<rdCMC_Joint name="lumbar_rotation">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> lumbar_rotation </coordinate>
+		</rdCMC_Joint>
+		
+		<!--Right Arm-->
+		<rdCMC_Joint name="arm_flex_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> arm_flex_r </coordinate>
+		</rdCMC_Joint>
+		
+		<rdCMC_Joint name="arm_add_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> arm_add_r </coordinate>
+		</rdCMC_Joint>
+		
+		<rdCMC_Joint name="arm_rot_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> arm_rot_r </coordinate>
+		</rdCMC_Joint>
+		
+		<rdCMC_Joint name="elbow_flex_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> elbow_flex_r </coordinate>
+		</rdCMC_Joint>
+		
+		<rdCMC_Joint name="pro_sup_r">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pro_sup_r </coordinate>
+		</rdCMC_Joint>
+		
+		<!--Left Arm-->
+		<rdCMC_Joint name="arm_flex_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> arm_flex_l </coordinate>
+		</rdCMC_Joint>
+		
+		<rdCMC_Joint name="arm_add_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> arm_add_l </coordinate>
+		</rdCMC_Joint>
+		
+		<rdCMC_Joint name="arm_rot_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> arm_rot_l </coordinate>
+		</rdCMC_Joint>
+				
+		<rdCMC_Joint name="elbow_flex_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> elbow_flex_l </coordinate>
+		</rdCMC_Joint>
+		
+		<rdCMC_Joint name="pro_sup_l">
+			<wrt_body> -1 </wrt_body>
+			<express_body> -1 </express_body>
+			<on> true </on>
+			<active> true false false </active>
+			<weight> 1.0e1 </weight>
+			<kp> 100.0 </kp>
+			<kv>  20.0 </kv>
+			<coordinate> pro_sup_l </coordinate>
+		</rdCMC_Joint>
+
+	</objects>
+
+</rdCMC_TaskSet>
+
