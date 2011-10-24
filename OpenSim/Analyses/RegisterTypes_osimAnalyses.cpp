@@ -48,6 +48,7 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 	Object::RegisterType( PointKinematics() );
 	Object::RegisterType( BodyKinematics() );
 	Object::RegisterType( MuscleAnalysis() );
+	Object::RegisterType( MuscleAnalysisV1() );
 	//Object::RegisterType( InverseDynamics() );
 	Object::RegisterType( JointReaction() );
 	Object::RegisterType( StaticOptimization() );
