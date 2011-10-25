@@ -82,7 +82,7 @@ Thelen2003MuscleV1::Thelen2003MuscleV1() :
 	
 	setNull();
 	setupProperties();
-	setStandardMuscleCurves();
+	//setStandardMuscleCurves();
 }
 
 //_____________________________________________________________________________
@@ -122,7 +122,7 @@ Thelen2003MuscleV1::Thelen2003MuscleV1(const std::string &aName,double aMaxIsome
 {
 	setNull();
 	setupProperties();
-	setStandardMuscleCurves();
+	//setStandardMuscleCurves();
 	setName(aName);
 	setMaxIsometricForce(aMaxIsometricForce);
 	setOptimalFiberLength(aOptimalFiberLength);
@@ -178,7 +178,7 @@ Thelen2003MuscleV1::Thelen2003MuscleV1(const Thelen2003MuscleV1 &aMuscle) :
 {
 	setNull();
 	setupProperties();
-	setStandardMuscleCurves();
+	//setStandardMuscleCurves();
 	copyData(aMuscle);
 }
 
@@ -981,7 +981,7 @@ double Thelen2003MuscleV1::calcActiveForce(const SimTK::State& s, double aNormFi
 	
 
 	double fal = 0.0;
-	bool flag_falSpline = true; //MM: Update! This is temporary only!
+	bool flag_falSpline = false; //MM: Update! This is temporary only!
 
 	if(flag_falSpline == true){
 		//MM The spline class needs revision if this much code has to be written
