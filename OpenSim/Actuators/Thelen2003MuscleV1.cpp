@@ -981,6 +981,7 @@ double Thelen2003MuscleV1::calcActiveForce(const SimTK::State& s, double aNormFi
 	
 
 	double fal = 0.0;
+	double fal_min = 0.01;
 	bool flag_falSpline = false; //MM: Update! This is temporary only!
 
 	if(flag_falSpline == true){
@@ -992,9 +993,16 @@ double Thelen2003MuscleV1::calcActiveForce(const SimTK::State& s, double aNormFi
 			fiblen[i] = aNormFiberLength;
 		fal = _ncsfal->calcValue(fiblen[0]);
 	}else{
-		double x=-(aNormFiberLength-1.)*(aNormFiberLength-1.);
+		double x=(aNormFiberLength-1.)*(aNormFiberLength-1.);
 		fal = exp(-x*x/_kShapeActive);
 	}
+
+	//Lower bound on fal to prevent a singularity
+	if(fal < fal_min){
+		fal = fal_min;
+	}
+
+	return fal;
 
 	return fal;
 }
