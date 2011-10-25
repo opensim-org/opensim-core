@@ -85,7 +85,7 @@ MuscleAnalysisV1::MuscleAnalysisV1(Model *aModel) :
 
 	// STORAGE
 	allocateStorageObjects();
-	setStandardMuscleCurves(); //MM
+	//setStandardMuscleCurves(); //MM
 }
 //_____________________________________________________________________________
 /**
@@ -102,7 +102,7 @@ Analysis(aFileName, false)
 	setNull();
 	updateFromXMLNode();
 	allocateStorageObjects();
-	setStandardMuscleCurves(); //MM
+	//setStandardMuscleCurves(); //MM
 }
 //_____________________________________________________________________________
 /**
@@ -113,7 +113,7 @@ MuscleAnalysisV1::MuscleAnalysisV1(const MuscleAnalysisV1 &aMuscleAnalysisV1):
 Analysis(aMuscleAnalysisV1)
 {
 	setNull();
-	setStandardMuscleCurves();
+	//setStandardMuscleCurves();
 	*this = aMuscleAnalysisV1;
 }
 //_____________________________________________________________________________
@@ -761,10 +761,10 @@ record(const SimTK::State& s)
 
 
 		//MM Compute simulated muscle relative to standard physiologic curves
-		fv_std	= get1DSplineValue(_ncs_stdfv,  dlce[i]);
-		fal_std	= get1DSplineValue(_ncs_stdfal, lce[i]);
-		fse_std	= get1DSplineValue(_ncs_stdfse, tl[i]+1.0);
-		fpe_std	= get1DSplineValue(_ncs_stdfpe, lce[i]);
+		fv_std	= 0.0;//get1DSplineValue(_ncs_stdfv,  dlce[i]);
+		fal_std	= 0.0;//get1DSplineValue(_ncs_stdfal, lce[i]);
+		fse_std	= 0.0;//get1DSplineValue(_ncs_stdfse, tl[i]+1.0);
+		fpe_std	= 0.0;//get1DSplineValue(_ncs_stdfpe, lce[i]);
 
 		errfv[i]	= fv[i]  - fv_std;
 		errfal[i]	= fal[i] - fal_std;
