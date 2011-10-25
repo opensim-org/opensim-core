@@ -992,8 +992,8 @@ double Thelen2003MuscleV1::calcActiveForce(const SimTK::State& s, double aNormFi
 			fiblen[i] = aNormFiberLength;
 		fal = _ncsfal->calcValue(fiblen[0]);
 	}else{
-		double x=-(aNormFiberLength-1.)*(aNormFiberLength-1.)/_kShapeActive;
-		fal = exp(-x*x);
+		double x=-(aNormFiberLength-1.)*(aNormFiberLength-1.);
+		fal = exp(-x*x/_kShapeActive);
 	}
 
 	return fal;
