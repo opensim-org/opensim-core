@@ -1,6 +1,0 @@
-unperturbedAccel
-nRows=1
-nColumns=6
-endheader
-time	knee_angle_l	knee_angle_r	center_of_mass_X	center_of_mass_Y	center_of_mass_Z
-      0.839827670000	   3355.772398518594	    675.453822329825	     -0.942979542496	      0.279814703979	     -0.540594162476

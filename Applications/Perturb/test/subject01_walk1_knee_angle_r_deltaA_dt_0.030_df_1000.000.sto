@@ -1,6 +1,0 @@
-knee_angle_r_deltaA
-nRows=1
-nColumns=4
-endheader
-time	glut_med1_l	psoas_r	gravity
-      0.839827670000	   1246.434769723874	   -767.238545786599	     -0.000000000000

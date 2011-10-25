@@ -1,6 +1,0 @@
-center_of_mass_X_perturbed
-nRows=1
-nColumns=4
-endheader
-time	glut_med1_l	psoas_r	gravity
-      0.839827670000	      0.568499874682	      0.568528806368	      0.568527678327

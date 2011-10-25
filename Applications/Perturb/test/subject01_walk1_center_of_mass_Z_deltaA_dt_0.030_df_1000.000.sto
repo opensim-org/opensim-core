@@ -1,6 +1,0 @@
-center_of_mass_Z_deltaA
-nRows=1
-nColumns=4
-endheader
-time	glut_med1_l	psoas_r	gravity
-      0.839827670000	     -0.017882885796	      0.000229526956	     -0.000000000000

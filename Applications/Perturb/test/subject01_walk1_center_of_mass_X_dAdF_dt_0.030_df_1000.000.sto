@@ -1,6 +1,0 @@
-center_of_mass_X_dAdF
-nRows=1
-nColumns=4
-endheader
-time	glut_med1_l	psoas_r	gravity
-      0.839827670000	     -0.000061785878	      0.000002506758	      0.000000000000
