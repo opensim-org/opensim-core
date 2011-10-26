@@ -1003,8 +1003,6 @@ double Thelen2003MuscleV1::calcActiveForce(const SimTK::State& s, double aNormFi
 	}
 
 	return fal;
-
-	return fal;
 }
 
 //_____________________________________________________________________________
