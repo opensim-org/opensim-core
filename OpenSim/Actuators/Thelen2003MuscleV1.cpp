@@ -77,12 +77,16 @@ Thelen2003MuscleV1::Thelen2003MuscleV1() :
 	_musclePE(_musclePEProp.getValueDbl()),
 	_musclePWR(_musclePWRProp.getValueDbl()),
 	_muscleV(_muscleVProp.getValueDbl()),
-	_muscleF(_muscleFProp.getValueDbl())
+	_muscleF(_muscleFProp.getValueDbl()),
+	_splineFal(_splineFalProp.getValueBool())
 {
 	
 	setNull();
 	setupProperties();
-	//setStandardMuscleCurves();
+	if(_splineFal == true){
+		setStandardMuscleCurves();
+	}
+	
 }
 
 //_____________________________________________________________________________
@@ -118,11 +122,14 @@ Thelen2003MuscleV1::Thelen2003MuscleV1(const std::string &aName,double aMaxIsome
 	_musclePE(_musclePEProp.getValueDbl()),
 	_musclePWR(_musclePWRProp.getValueDbl()),
 	_muscleV(_muscleVProp.getValueDbl()),
-	_muscleF(_muscleFProp.getValueDbl())
+	_muscleF(_muscleFProp.getValueDbl()),
+	_splineFal(_splineFalProp.getValueBool())
 {
 	setNull();
 	setupProperties();
-	//setStandardMuscleCurves();
+	if(_splineFal == true){
+		setStandardMuscleCurves();
+	}
 	setName(aName);
 	setMaxIsometricForce(aMaxIsometricForce);
 	setOptimalFiberLength(aOptimalFiberLength);
@@ -174,11 +181,14 @@ Thelen2003MuscleV1::Thelen2003MuscleV1(const Thelen2003MuscleV1 &aMuscle) :
 	_musclePE(_musclePEProp.getValueDbl()),
 	_musclePWR(_musclePWRProp.getValueDbl()),
 	_muscleV(_muscleVProp.getValueDbl()),
-	_muscleF(_muscleFProp.getValueDbl())
+	_muscleF(_muscleFProp.getValueDbl()),
+	_splineFal(_splineFalProp.getValueBool())
 {
 	setNull();
 	setupProperties();
-	//setStandardMuscleCurves();
+	if(_splineFal == true){
+		setStandardMuscleCurves();
+	}	
 	copyData(aMuscle);
 }
 
@@ -236,11 +246,20 @@ void Thelen2003MuscleV1::setNull()
  */
 
 void Thelen2003MuscleV1::setStandardMuscleCurves(){
-	string fname = "delp1990_approximation_muscle_xafl.sto";
-	_ncsfal		= get1DSpline(fname);
-	//Test that this actually worked with non-zero values for each curve
-	double fal_val	= get1DSplineValue(_ncsfal, 1.0);
-	//printf("Non-zero values for fal(%f) \n",fal_val);
+	if(_splineFal == true){
+		string fname = "muscle_afl.sto";
+		ifstream ifile(fname);
+
+		if(ifile){
+			_ncsfal		= get1DSpline(fname);
+			//Test that this actually worked with non-zero values for each curve
+			double fal_val	= get1DSplineValue(_ncsfal, 1.0);
+			//printf("Non-zero values for fal(%f) \n",fal_val);
+		}else{
+			_splineFal = false;
+			cout << "Thelen2003MuscleV1 couldn't find " << fname << " reverting to default\n";
+		}
+	}
 }
 
 
@@ -357,7 +376,7 @@ void Thelen2003MuscleV1::setupProperties()
 	_propertySet.append(&_dlceProp,"Parameters");
 
 	_fvVmaxProp.setName("Vmax");
-	_fvVmaxProp.setValue(0);	
+	_fvVmaxProp.setValue(10.0);	
 	_fvVmaxProp.setComment("fv curve Vmax");
 	_propertySet.append(&_fvVmaxProp,"Parameters");
 
@@ -391,11 +410,19 @@ void Thelen2003MuscleV1::setupProperties()
 	_muscleVProp.setComment("Muscle Velocity");
 	_propertySet.append(&_muscleVProp,"Parameters");
 
-	_muscleFProp.setName("muscleF");
-	_muscleFProp.setValue(0.0);
-	_muscleFProp.setComment("Muscle Force");
-	_propertySet.append(&_muscleFProp,"Parameters");
+	//Active force length spline curve backdoor
+	_splineFalProp.setName("splineFalBackdoor");
+	_splineFalProp.setValue(false); // Set to true if you'd like to use
+									// spline curves to define the active force length
+									// curve instead of the Gaussian. 
+									// This file should be a *.sto file in the setup
+									// directory, and the file should be named 
+									// muscle_afl.sto
+	_splineFalProp.setComment("Active Force Length Spline Backdoor Flag");
+	_propertySet.append(&_splineFalProp,"Parameters");
 	
+	
+
 }
 
 //=============================================================================
@@ -982,9 +1009,8 @@ double Thelen2003MuscleV1::calcActiveForce(const SimTK::State& s, double aNormFi
 
 	double fal = 0.0;
 	double fal_min = 0.01;
-	bool flag_falSpline = false; //MM: Update! This is temporary only!
-
-	if(flag_falSpline == true){
+	
+	if(_splineFal == true){
 		//MM The spline class needs revision if this much code has to be written
 		//	 just to get a value from it. 
 		SimTK::Vector *fiblen = new SimTK::Vector();

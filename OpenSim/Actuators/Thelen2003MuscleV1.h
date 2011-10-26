@@ -174,6 +174,12 @@ protected:
 	PropertyDbl _muscleFProp;
 	double &_muscleF;
 
+	PropertyBool _splineFalProp; //This is a back door flag. When set to true, it
+	bool &_splineFal;			 //will replace the active force length curve with
+								 //a spline interpolated version that is stored in
+								 //muscle_afl.sto, which it expects in the directory
+								 //that holds the setup files.
+
 //=============================================================================
 // METHODS
 //=============================================================================
