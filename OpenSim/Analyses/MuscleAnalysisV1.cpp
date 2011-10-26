@@ -85,7 +85,7 @@ MuscleAnalysisV1::MuscleAnalysisV1(Model *aModel) :
 
 	// STORAGE
 	allocateStorageObjects();
-	//setStandardMuscleCurves(); //MM
+	setStandardMuscleCurves(); //MM
 }
 //_____________________________________________________________________________
 /**
@@ -102,7 +102,7 @@ Analysis(aFileName, false)
 	setNull();
 	updateFromXMLNode();
 	allocateStorageObjects();
-	//setStandardMuscleCurves(); //MM
+	setStandardMuscleCurves(); //MM
 }
 //_____________________________________________________________________________
 /**
@@ -113,7 +113,7 @@ MuscleAnalysisV1::MuscleAnalysisV1(const MuscleAnalysisV1 &aMuscleAnalysisV1):
 Analysis(aMuscleAnalysisV1)
 {
 	setNull();
-	//setStandardMuscleCurves();
+	setStandardMuscleCurves();
 	*this = aMuscleAnalysisV1;
 }
 //_____________________________________________________________________________
@@ -237,18 +237,23 @@ void MuscleAnalysisV1::setStandardMuscleCurves(){
 	string fileName_fpe		= "delp1990_goldstandard_muscle_gsfpe.sto";
 	string fileName_fse		= "delp1990_goldstandard_tendon_gsfse.sto";
 
-	_ncs_stdfal		= get1DSpline(fileName_fal);
-	_ncs_stdfv		= get1DSpline(fileName_fv);
-	_ncs_stdfpe		= get1DSpline(fileName_fpe);
-	_ncs_stdfse		= get1DSpline(fileName_fse);	
+	ifstream iffileFal(fileName_fal);
+	ifstream iffileFv(fileName_fv);
+	ifstream iffileFpe(fileName_fpe);
+	ifstream iffileFse(fileName_fse);
+
+	if(iffileFal){ _ncs_stdfal		= get1DSpline(fileName_fal);}
+	if(iffileFv){  _ncs_stdfv		= get1DSpline(fileName_fv);}
+	if(iffileFpe){ _ncs_stdfpe		= get1DSpline(fileName_fpe);}
+	if(iffileFse){ _ncs_stdfse		= get1DSpline(fileName_fse);}	
 
 	//Test that this actually worked with non-zero values for each curve
-	double fal_val	= get1DSplineValue(_ncs_stdfal, 1.0);
-	double fv_val	= get1DSplineValue(_ncs_stdfv, 1.0);
-	double fpe_val	= get1DSplineValue(_ncs_stdfpe, 1.6);
-	double fse_val	= get1DSplineValue(_ncs_stdfse, 1.033);
-
-	printf("Non-zero values for fal(%f),fv(%f),fpe(%f),fse(%f) \n",fal_val,fv_val,fpe_val,fse_val);
+	
+	//double fal_val	= get1DSplineValue(_ncs_stdfal, 1.0);
+	//double fv_val	= get1DSplineValue(_ncs_stdfv, 1.0);
+	//double fpe_val	= get1DSplineValue(_ncs_stdfpe, 1.6);
+	//double fse_val	= get1DSplineValue(_ncs_stdfse, 1.033);
+	//printf("Non-zero values for fal(%f),fv(%f),fpe(%f),fse(%f) \n",fal_val,fv_val,fpe_val,fse_val);
 
 }
 
@@ -761,10 +766,15 @@ record(const SimTK::State& s)
 
 
 		//MM Compute simulated muscle relative to standard physiologic curves
-		fv_std	= 0.0;//get1DSplineValue(_ncs_stdfv,  dlce[i]);
-		fal_std	= 0.0;//get1DSplineValue(_ncs_stdfal, lce[i]);
-		fse_std	= 0.0;//get1DSplineValue(_ncs_stdfse, tl[i]+1.0);
-		fpe_std	= 0.0;//get1DSplineValue(_ncs_stdfpe, lce[i]);
+		//   if these files are available
+		fv_std	= 0.0;
+		fal_std = 0.0;
+		fse_std = 0.0;
+		fpe_std = 0.0;
+		if(_ncs_stdfv  != NULL){fv_std	= get1DSplineValue(_ncs_stdfv,  dlce[i]);}		
+		if(_ncs_stdfal != NULL){fal_std	= get1DSplineValue(_ncs_stdfal, lce[i]);}
+		if(_ncs_stdfse != NULL){fse_std	= get1DSplineValue(_ncs_stdfse, tl[i]+1.0);}
+		if(_ncs_stdfpe != NULL){fpe_std	= get1DSplineValue(_ncs_stdfpe, lce[i]);}
 
 		errfv[i]	= fv[i]  - fv_std;
 		errfal[i]	= fal[i] - fal_std;
