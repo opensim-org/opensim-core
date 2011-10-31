@@ -30,7 +30,6 @@
 // INCLUDES
 //=============================================================================
 #include <iostream>
-#include <math.h>
 #include "Joint.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -290,8 +289,7 @@ OpenSim::Body& Joint::getBody() const
  *
  * @param aLocation New location expressed in the local body frame.
  */
-void Joint::
-setLocation(const SimTK::Vec3& aLocation)
+void Joint::setLocation(const SimTK::Vec3& aLocation)
 {
     if (_model != NULL)
         _model->invalidateSystem();
@@ -305,8 +303,7 @@ setLocation(const SimTK::Vec3& aLocation)
  *
  * @param rLocation Current location expressed in the local body frame.
  */
-void Joint::
-getLocation(SimTK::Vec3& rLocation) const
+void Joint::getLocation(SimTK::Vec3& rLocation) const
 {
 	rLocation = _location;
 }
@@ -321,8 +318,7 @@ getLocation(SimTK::Vec3& rLocation) const
  * @param aOrientation New orientation expressed in the local body frame in
  * body-fixed X-Y-Z Euler angles.
  */
-void Joint::
-setOrientation(const SimTK::Vec3& aOrientation)
+void Joint::setOrientation(const SimTK::Vec3& aOrientation)
 {
     if (_model != NULL)
         _model->invalidateSystem();
@@ -337,8 +333,7 @@ setOrientation(const SimTK::Vec3& aOrientation)
  * @param rOrientation Current orientation of the joint expressed in the local
  * body frame in body-fixed X-Y-Z Euler angles.
  */
-void Joint::
-getOrientation(SimTK::Vec3 &rOrientation) const
+void Joint::getOrientation(SimTK::Vec3 &rOrientation) const
 {
 	rOrientation = _orientation;
 }
@@ -372,8 +367,7 @@ string Joint::getParentName() const
  *
  * @param aParentBody Parent body to which this joint attaches.
  */
-void Joint::
-setParentBody(OpenSim::Body& aBody)
+void Joint::setParentBody(OpenSim::Body& aBody)
 {
 	_parentBody = (Body*) &aBody;
 }
@@ -383,8 +377,7 @@ setParentBody(OpenSim::Body& aBody)
  *
  * @return Parent body to which this joint attaches.
  */
-OpenSim::Body& Joint::
-getParentBody() const
+OpenSim::Body& Joint::getParentBody() const
 {
     if (_parentBody == NULL)
         throw Exception("Joint::getParentBody() : Joint has not been initialized");
@@ -400,8 +393,7 @@ getParentBody() const
  *
  * @param aLocation New location expressed in the parent body frame.
  */
-void Joint::
-setLocationInParent(const SimTK::Vec3& aLocation)
+void Joint::setLocationInParent(const SimTK::Vec3& aLocation)
 {
     if (_model != NULL)
         _model->invalidateSystem();
@@ -430,8 +422,7 @@ void Joint::getLocationInParent(SimTK::Vec3& rLocation) const
  * @param aOrientation New orientation expressed in the parent body frame in
  * body-fixed X-Y-Z Euler angles.
  */
-void Joint::
-setOrientationInParent(const SimTK::Vec3& aOrientation)
+void Joint::setOrientationInParent(const SimTK::Vec3& aOrientation)
 {
     if (_model != NULL)
         _model->invalidateSystem();
@@ -458,8 +449,7 @@ void Joint::getOrientationInParent(SimTK::Vec3& rOrientation) const
  * @param aCoordinate Coordinate to look for in joint.
  * @return True if the coordinate is used.
  */
-bool Joint::
-isCoordinateUsed(Coordinate& aCoordinate) const
+bool Joint::isCoordinateUsed(Coordinate& aCoordinate) const
 {
 	int i, size = _coordinateSet.getSize();
 	for(i=0; i<size; i++) {
@@ -563,4 +553,116 @@ void Joint::setDefaultsFromState(const SimTK::State& state)
 {
     for (int i = 0; i < _coordinateSet.getSize(); i++)
         _coordinateSet.get(i).setDefaultsFromState(state);
+}
+
+
+//=============================================================================
+// Computation
+//=============================================================================
+/* Calculate the equivalent spatial force, FB_G, acting on the body connected by this joint at 
+   its location B, expressed in ground.  */
+SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const
+{
+	// The number of mobilities for the entire system.
+	int nm = _model->getMatterSubsystem().getNumMobilities();
+
+	if(nm != mobilityForces.size()){
+		throw Exception("Joint::calcEquivalentSpatialForce(): input mobilityForces does not match model's mobilities");
+	}
+
+	const SimTK::MobilizedBodyIndex &mbx = _body->getIndex();
+	SimTK::Array_<SimTK::MobilizedBodyIndex> mbds;
+
+	for(int i=0; i<_coordinateSet.getSize(); ++i){
+		if(_coordinateSet[i].getBodyIndex() != mbx){
+			if(mbds.size()){
+				if(_coordinateSet[i].getBodyIndex() > *mbds.end())
+					mbds.push_back(_coordinateSet[i].getBodyIndex());
+			}
+		}
+	}
+
+	SimTK::SpatialVec FB_G = calcEquivalentSpatialForceForMobilizedBody(s, mbx, mobilityForces);
+	SimTK::SpatialVec FBx_G;
+
+	for(unsigned int i=0; i<mbds.size(); ++i){
+		FBx_G = calcEquivalentSpatialForceForMobilizedBody(s, mbds[i], mobilityForces);
+		const SimTK::MobilizedBody &B = _model->updMatterSubsystem().getMobilizedBody(mbx);
+		const SimTK::MobilizedBody &b = _model->updMatterSubsystem().getMobilizedBody(mbds[i]);
+		const SimTK::MobilizedBody &G = _model->getMatterSubsystem().getGround();
+
+		SimTK::Vec3 r_BG = B.expressVectorInAnotherBodyFrame(s, B.getOutboardFrame(s).p(), G);
+		SimTK::Vec3 r_bG = b.expressVectorInAnotherBodyFrame(s, b.getOutboardFrame(s).p(), G);
+
+		// Torques add and include term due to offset in forces
+		FB_G += shiftForceFromTo(FBx_G, r_bG, r_BG);
+	}
+
+	return FB_G;
+}
+
+
+//=============================================================================
+// Helper
+//=============================================================================
+/* Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index 
+   acting at its mobilizer frame B, expressed in ground.  */
+SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const
+{
+		// Get the mobilized body
+	const SimTK::MobilizedBody mbd = _model->updMatterSubsystem().getMobilizedBody(mbx);
+	SimTK::UIndex ustart = mbd.getFirstUIndex(s);
+	int nu = mbd.getNumU(s);
+
+	// Construct the H (joint jacobian, joint transition) matrrix for this mobilizer
+	SimTK::Matrix transposeH_PB_w(nu, 3);
+	SimTK::Matrix transposeH_PB_v(nu, 3);
+	// from individual columns
+	SimTK::SpatialVec Hcol;
+	
+	SimTK::Vector f(nu, 0.0);
+	for(int i =0; i<nu; ++i){
+		f[i] = mobilityForces[ustart + i];
+		// Get the H matrix for this Joint by constructing it from the operator H*u
+		Hcol = mbd.getH_FMCol(s, SimTK::MobilizerUIndex(i));
+		const SimTK::Vector hcolw(Hcol[0]);
+		const SimTK::Vector hcolv(Hcol[1]);
+
+		transposeH_PB_w[i] = ~hcolw;
+		transposeH_PB_v[i] = ~hcolv;
+	}
+
+	// Spatial force and torque vectors
+	SimTK::Vector Fv(3, 0.0), Fw(3, 0.0);
+
+	// Solve the pseudoinverse problem of Fv = pinv(~H_PB_G_v)*f;
+	SimTK::FactorQTZ pinvForce(transposeH_PB_v);
+
+	//if rank = 0, body force cannot contribute to the mobility force
+	if(pinvForce.getRank() > 0)
+		pinvForce.solve(f, Fv);
+	
+	// Now solve the pseudoinverse for torque for any unaccounted f: Fw = pinv(~H_PB_G_w)*(f - ~H_PB_G_v*Fv);
+	SimTK::FactorQTZ pinvTorq(transposeH_PB_w);
+
+	//if rank = 0, body torque cannot contribute to the mobility force
+	if(pinvTorq.getRank() > 0)
+		pinvTorq.solve(f - transposeH_PB_v*Fv, Fw);
+	
+	// Transform from parent joint frame, P in the parent body, Po
+	const SimTK::Rotation R_PPo = (mbd.getInboardFrame(s).R());
+
+	// Re-express forces in ground, first by describing force in the parent, Po, frame instead of joint frame
+	SimTK::Vec3 vecFw = R_PPo*SimTK::Vec3::getAs(&Fw[0]);
+	SimTK::Vec3 vecFv = R_PPo*SimTK::Vec3::getAs(&Fv[0]);
+
+	// to apply spatial forces on bodies they must be expressed in ground
+	vecFw = mbd.getParentMobilizedBody().expressVectorInAnotherBodyFrame(s, vecFw, _model->getMatterSubsystem().getGround());
+	vecFv = mbd.getParentMobilizedBody().expressVectorInAnotherBodyFrame(s, vecFv, _model->getMatterSubsystem().getGround());
+
+	// Package resulting torque and force as a spatial vec
+	SimTK::SpatialVec FB_G(vecFw, vecFv);
+
+	return FB_G;
+
 }

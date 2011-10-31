@@ -35,13 +35,14 @@
 //	Tests Include:
 //      1. CustomJoint against Simbody built-in Pin and Universal mobilizers
 //      2. CustomJoint versus Simbody FunctionBased with spline based functions
-//		3. EllipsodJoint against Simbody built-in Ellipsoid mobilizer
+//		3. EllipsoidJoint against Simbody built-in Ellipsoid mobilizer
 //		4. WeldJoint versus Weld Mobilizer by welding bodies to those in test 1.
 //		5. Randomized order of bodies in the BodySet (in 3.) to test connectBodies()
 //		6. PinJoint against Simbody built-in Pin mobilizer
 //		7. SliderJoint against Simbody built-in Pin mobilizer
 //		8. FreeJoint against Simbody built-in Free mobilizer
 //		9. BallJoint against Simbody built-in Ball mobilizer
+//	   10. Equivalent Spatial body force due to applied gen force.
 //		
 //     Add tests here as new joint types are added to OpenSim
 //
@@ -52,6 +53,7 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>
@@ -64,9 +66,13 @@
 #include <OpenSim/Simulation/SimbodyEngine/BallJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/PinJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
+#include <OpenSim/Simulation/Control/PrescribedController.h>
+#include <OpenSim/Actuators/CoordinateActuator.h>
+
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include <OpenSim/Common/LinearFunction.h>
+#include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include "SimTKsimbody.h"
@@ -146,10 +152,17 @@ void testSliderJoint();
 void testBallJoint(bool useEulerAngles);
 void testFreeJoint(bool useEulerAngles);
 void testCustomWithMultidimFunction();
+void testEquivalentBodyForceFromGeneralizedForce();
+void testEquivalentBodyForceForGenForces(Model *model);
 
 int main()
 {
     try {
+
+		// Compare behavior of a double pendulum with OpenSim pin hip and pin knee
+		testPinJoint();
+		// Compare behavior of a two body pendulum with OpenSim pin hip and slider knee
+		testSliderJoint();
 		// First compare behavior of a double pendulum with Universal hip and Pin-like knee
 		testCustomVsUniversalPin();
 		// Compare behavior of a double pendulum with pin hip and function-based translating tibia knee
@@ -160,10 +173,7 @@ int main()
 		testWeldJoint(false);
 		// Compare previous OpenSim model but with randomized body order in BodySet to test connectBodies
 		testWeldJoint(true);
-		// Compare behavior of a double pendulum with OpenSim pin hip and pin knee
-		testPinJoint();
-		// Compare behavior of a two body pendulum with OpenSim pin hip and slider knee
-		testSliderJoint();
+
 		// Compare behavior of a double pendulum with an OpenSim Ball hip and custom pin knee
 		// OpenSim, system restricted to using euelr angles exclusively to support EllipsoidJoint
 		// and teh fact that coordinates cannot map to/from quaternions
@@ -178,6 +188,9 @@ int main()
 		testFreeJoint(true);
 		// Compare behavior of a Free hip and pin knee
 		testCustomWithMultidimFunction();
+
+		testEquivalentBodyForceFromGeneralizedForce();
+
 	}
 	catch(const OpenSim::Exception& e) {
         e.print(cerr);
@@ -419,6 +432,8 @@ void testCustomVsUniversalPin()
 
 	osimModel.disownAllComponents();
 	osimModel.print("test_joints_model.osim");
+
+	//testEquivalentBodyForceForGenForces(&osimModel);
 	
 	Model testModel("test_joints_model.osim");
 
@@ -575,6 +590,8 @@ void testCustomJointVsFunctionBased()
 	// write out the model to file
 	osimModel->print("testCustomJoint.osim");
 
+	testEquivalentBodyForceForGenForces(osimModel);
+
 	//wipe-out the model just constructed
 	delete osimModel;
 
@@ -667,6 +684,9 @@ void testEllipsoidJoint()
 
 	//Write model to file
 	osimModel->print("testEllipsoidJoint.osim");
+
+	cout << "EllipsoidJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(osimModel);
 
 	//Wipe out model
 	delete osimModel;
@@ -809,6 +829,9 @@ void testWeldJoint(bool randomizeBodyOrder)
 	// OpenSim model must realize the topology to get valid osim_state
 	osimModel->setGravity(gravity_vec);
 
+	cout << "testWeldJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(osimModel);
+
 	SimTK::State osim_state = osimModel->initSystem();
 
 	//==========================================================================================================
@@ -892,6 +915,9 @@ void testFreeJoint(bool useEulerAngles)
 	Kinematics *kinAnalysis = new Kinematics(osimModel);
 	kinAnalysis->setInDegrees(false);
 	osimModel->addAnalysis(kinAnalysis);
+
+	cout << "testFreeJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(osimModel);
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
@@ -981,6 +1007,9 @@ void testBallJoint(bool useEulerAngles)
 	kinAnalysis->setInDegrees(false);
 	osimModel->addAnalysis(kinAnalysis);
 
+	cout << "testBallJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(osimModel);
+
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
 	SimTK::State osim_state = osimModel->initSystem();
@@ -1069,6 +1098,9 @@ void testPinJoint()
 	kinAnalysis->setInDegrees(false);
 	osimModel->addAnalysis(kinAnalysis);
 
+	cout << "testPinJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(osimModel);
+
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
 	SimTK::State osim_state = osimModel->initSystem();
@@ -1156,6 +1188,9 @@ void testSliderJoint()
 	Kinematics *kinAnalysis = new Kinematics(&osimModel);
 	kinAnalysis->setInDegrees(false);
 	osimModel.addAnalysis(kinAnalysis);
+
+	cout << "testSliderJoint: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(&osimModel);
 
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
@@ -1280,6 +1315,9 @@ void testCustomWithMultidimFunction()
 	kinAnalysis->setInDegrees(false);
 	osimModel.addAnalysis(kinAnalysis);
 
+	cout << "testCustomWithMultidimFunction: testEquivalentBodyForceForGenForces" << endl;
+    testEquivalentBodyForceForGenForces(&osimModel);
+
 	// Need to setup model before adding an analysis since it creates the AnalysisSet
 	// for the model if it does not exist.
 	SimTK::State osim_state = osimModel.initSystem();
@@ -1289,3 +1327,138 @@ void testCustomWithMultidimFunction()
 	compareSimulations(system, state, &osimModel, osim_state, "testCustomWithMultidimFunction FAILED\n");
 
 } //end of testCustomWithMultidimFunction
+
+
+void testEquivalentBodyForceFromGeneralizedForce()
+{
+	using namespace SimTK;
+
+	cout << endl;
+	cout << "================================================================================" << endl;
+	cout << " OpenSim calcualation of equivalent spatial body force from applied gen. force. " << endl;
+	cout << "================================================================================" << endl;
+
+	//==========================================================================================================
+	Random::Uniform randomAngle(-Pi/2, Pi/2);
+
+	// Setup OpenSim model
+	Model osimModel; 
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel.getGroundBody();
+
+	//OpenSim thigh
+	OpenSim::Body osim_thigh("thigh", femurMass, femurCOM, femurInertiaAboutCOM);
+
+	// create hip as an Ball joint
+	Vec3 ohInB(randomAngle.getValue(),  randomAngle.getValue(), randomAngle.getValue());
+	Vec3 ohInP(randomAngle.getValue(), randomAngle.getValue(), randomAngle.getValue());
+	PinJoint hip("hip", ground, hipInGround+Vec3(1,2,3), ohInP, osim_thigh, hipInFemur+Vec3(-1,2,-3), ohInB);
+
+	// Rename hip coordinates for a pin joint
+	CoordinateSet& hip_coords = hip.getCoordinateSet();
+	for(int i=0; i<hip_coords.getSize(); i++){
+		std::stringstream coord_name;
+		coord_name << "hip_q" << i;
+		hip_coords.get(i).setName(coord_name.str());
+	}
+
+	// Add the thigh body which now also contains the hip joint to the model
+	osimModel.addBody(&osim_thigh);
+
+	// Add OpenSim shank via a knee joint
+	OpenSim::Body osim_shank("shank", tibiaMass.getMass(), tibiaMass.getMassCenter(), tibiaMass.getInertia());
+
+	// create slider knee joint
+	Vec3 okInB(randomAngle.getValue(),  randomAngle.getValue(), randomAngle.getValue());
+	Vec3 okInP(randomAngle.getValue(), randomAngle.getValue(), randomAngle.getValue());
+	SliderJoint knee("knee", osim_thigh, kneeInFemur, okInP, osim_shank, kneeInTibia, okInB);
+	CoordinateSet& kneeCoords =	knee.getCoordinateSet();
+	kneeCoords[0].setName("knee_qx");
+	kneeCoords[0].setMotionType(Coordinate::Translational);
+
+
+	// Add the shank body which now also contains the knee joint to the model
+	osimModel.addBody(&osim_shank);
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel.updBodySet().setMemoryOwner(false);
+
+	testEquivalentBodyForceForGenForces(&osimModel);
+
+	Model gaitModel("gait2354_simbody_patellae.osim");
+	testEquivalentBodyForceForGenForces(&gaitModel);
+	
+} // end testEquivalentBodyForceFromGeneralizedForce
+
+
+void testEquivalentBodyForceForGenForces(Model *model)
+{
+	using namespace SimTK;
+
+	State &state = model->initSystem();
+	Vector& qi = state.updQ();
+	Vector& ui = state.updU();
+	// Randomly select the initial state of this model
+	int nq = initTestStates(qi, ui);
+
+	// The number of mobilities for the entire system.
+	int nm = model->updMatterSubsystem().getNumMobilities();
+	
+	Vector genForces(nm, 0.0);
+	Random::Uniform genForceRandom(-1000, 1000);
+	for(int i=0; i<nm; ++i){
+		genForces[i] = genForceRandom.getValue();
+	}
+
+	int nb = model->updMatterSubsystem().getNumBodies();
+	Vector_<SpatialVec> bodyForces(nb, SpatialVec(Vec3(0), Vec3(0)));
+
+	Vector udot1(nm);
+	Vector_<SpatialVec> bodyAccs(nb);
+
+	model->getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+
+	model->updMatterSubsystem().calcAcceleration(state, genForces, bodyForces, udot1, bodyAccs);
+	udot1.dump("Udot with applied mobility forces.");
+
+	// Construct the system vector of body forces from a Joint's  equivalence to generalized force calculations
+	for(int j=0; j < model->getJointSet().getSize(); ++j){
+		Joint &joint = model->getJointSet()[j];
+		OpenSim::Body &body = joint.getBody();
+		MobilizedBodyIndex mbx = body.getIndex();
+
+		OpenSim::Body &parent = joint.getParentBody();
+		MobilizedBodyIndex mpx = parent.getIndex();
+
+		Vec3 rB_Bo(0), rB_Po(0);
+		joint.getLocation(rB_Bo);
+
+		//Get Joint frame B location in parent, Po, to apply to parent Body
+		model->getSimbodyEngine().transformPosition(state, body, rB_Bo, parent, rB_Po);
+
+		// get the equivalent spatial force on the joint frame of the (child) body expressed in ground
+		SpatialVec FB_G = joint.calcEquivalentSpatialForce(state, genForces);
+
+		// Apply spatial forces at joint to the body
+		model->updMatterSubsystem().addInStationForce(state, mbx, rB_Bo, FB_G[1], bodyForces);
+		model->updMatterSubsystem().addInBodyTorque(state, mbx, FB_G[0], bodyForces);
+
+		// Apply equal and opposite spatial forces at joint to the parent body
+		model->updMatterSubsystem().addInStationForce(state, mpx, rB_Po, -FB_G[1], bodyForces);
+		model->updMatterSubsystem().addInBodyTorque(state, mpx, -FB_G[0], bodyForces);
+	}
+
+	Vector udot2(nm);
+	model->updMatterSubsystem().calcAcceleration(state, 0.0*genForces, bodyForces, udot2, bodyAccs);
+	
+	// If calcEquivalentSpatialForce is correct then the two methods of applying forces to the
+	// model should be equivalent and the accelerations should be identical 
+	Vector error = udot2-udot1;
+	double norm_rel_error = error.norm()/udot1.norm();
+
+	cout << "****************************************************************************" << endl;
+	cout << "uDot Error = " << norm_rel_error << ": from body forces vs. mobility forces." << endl;
+	cout << "****************************************************************************" << endl;
+
+	ASSERT(!SimTK::isNaN(norm_rel_error), __FILE__, __LINE__, "testEquivalentBodyForceForGenForces FAILED, udot_error = NaN");
+	ASSERT_EQUAL(0.0, norm_rel_error, 1.0e-13,  __FILE__, __LINE__, "testEquivalentBodyForceForGenForces FAILED, udot_error > 1e-13"); 
+}

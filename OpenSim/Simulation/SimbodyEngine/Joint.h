@@ -92,9 +92,6 @@ protected:
 	PropertyBool _reverseProp;
 	bool& _reverse;
 
-	/** Simbody ID of the body to which this joint belongs. */
-	SimTK::MobilizedBodyIndex _bodyId;
-
 	/** Body to which this joint belongs. */
 	Body *_body;
 
@@ -159,10 +156,7 @@ public:
 	virtual void getLocationInChild(SimTK::Vec3& rLocation) const {
 		rLocation = _location;
 	};
-	
-	const double& getLocationInParent(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _locationInParent[aXYZ]; }
-	const double& getLocationInChild(int aXYZ) const { assert(aXYZ>=0 && aXYZ<=2); return _location[aXYZ]; }
-	
+
 	// Coordinate Set
 	virtual CoordinateSet& getCoordinateSet() const { return _coordinateSet; }
 
@@ -179,6 +173,20 @@ public:
 
 	// Utility
 	virtual bool isCoordinateUsed(Coordinate& aCoordinate) const;
+	
+	// Computation
+	/** Given some system mobility (generalized) forces, calculate the equivalent spatial body force for this Joint. 
+	Keep in mind that there are typically nm < 6 mobilities per joint with an infinte set of solutions that can map
+	nm gen forces to 6 spatial force components (3 for torque + 3 for force). The solution returned provides the
+	"most" effective force and torque in the joint frame. This means the smallest magnituded force and/or 
+	torque that will result in the same generalized force. If a generalized force is defined along/about a joint
+	axis, then this should be evident in the reported results as a force or torque on the same axis. 
+	NOTE: Joints comprised of multiple mobilizers and/or constraints, should override this method and account for multiple
+	      internal components 
+	@param state constaining the generalized coordinate and speed values 
+	@param mobilityForces for the system as computed by inverse dynamics, for example 
+	@return spatial force, FB_G, acting on the body connected by this joint at its location B, expressed in ground.  */
+	virtual SimTK::SpatialVec calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const;
 
 	// SCALE
 	/**
@@ -213,6 +221,11 @@ protected:
     void initState(SimTK::State& s) const;
     void setDefaultsFromState(const SimTK::State& state);
 	virtual int getNumStateVariables() const { return 0; };
+
+	/* Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index 
+	   acting at its mobilizer frame B, expressed in ground.  */
+	SimTK::SpatialVec calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const;
+
 
 private:
 	void setNull();
