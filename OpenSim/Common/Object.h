@@ -217,6 +217,10 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+	virtual bool isEqualTo(const Object &aObject) const
+	{
+		return ((*this)==aObject);
+	}
 #ifndef SWIG
 	Object& operator=(const Object &aObject);
 	virtual bool operator==(const Object &aObject) const;
