@@ -296,7 +296,7 @@ FILE(GLOB LIB_FILES2 "${Simbody_LIB_DIR}/*.a"
 					 "${Simbody_BIN_DIR}/*.dll")
 SET(LIB_FILES ${THIRDPARTY_DYNLIB_FILES} ${LIB_FILES2})
 
-MESSAGE("LIB_FILES="${LIB_FILES})
+# MESSAGE("LIB_FILES="${LIB_FILES})
 # This is where we're going to put these binaries.
 SET(COPIED_LIB_FILES)
 FOREACH(LIBF ${LIB_FILES})
