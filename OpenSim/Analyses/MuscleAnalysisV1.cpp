@@ -237,10 +237,10 @@ void MuscleAnalysisV1::setStandardMuscleCurves(){
 	string fileName_fpe		= "delp1990_goldstandard_muscle_gsfpe.sto";
 	string fileName_fse		= "delp1990_goldstandard_tendon_gsfse.sto";
 
-	ifstream iffileFal(fileName_fal);
-	ifstream iffileFv(fileName_fv);
-	ifstream iffileFpe(fileName_fpe);
-	ifstream iffileFse(fileName_fse);
+	ifstream iffileFal(fileName_fal.c_str());
+	ifstream iffileFv(fileName_fv.c_str());
+	ifstream iffileFpe(fileName_fpe.c_str());
+	ifstream iffileFse(fileName_fse.c_str());
 
 	if(iffileFal){ _ncs_stdfal		= get1DSpline(fileName_fal);}
 	if(iffileFv){  _ncs_stdfv		= get1DSpline(fileName_fv);}

@@ -248,7 +248,7 @@ void Thelen2003MuscleV1::setNull()
 void Thelen2003MuscleV1::setStandardMuscleCurves(){
 	if(_splineFal == true){
 		string fname = "muscle_afl.sto";
-		ifstream ifile(fname);
+		ifstream ifile(fname.c_str());
 
 		if(ifile){
 			_ncsfal		= get1DSpline(fname);
