@@ -2,8 +2,8 @@
 #define __Thelen2003MuscleV1_h__
 
 // Thelen2003MuscleV1.h
-/*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+/*	Author: Matthew Millard
+ *	Copyright (c)  2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not

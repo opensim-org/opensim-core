@@ -1,6 +1,6 @@
 // Thelen2003MuscleV1.cpp
-/*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+/* Author: Matthew Millard
+ * Copyright (c)  2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -898,12 +898,6 @@ double Thelen2003MuscleV1::calcTendonForce(const SimTK::State& s, double aNormTe
 		double toePE_0	=  (fiso*Ftoe/(exp(kToe)-1.0)) * ((lenR*eToe/kToe) * exp(kToe*(len-lenR)/(lenR*eToe)) - len);
 		double toePEtest = toePE_len-toePE_0;
 
-		//exported from Maple
-		/*len = lenToe;
-		double MPL_toePE_len = fiso * Ftoe / (exp(kToe) - 0.1e1) * (0.1e1 / kToe * lenR * eToe * exp(kToe * (len - lenR) / lenR / eToe) - len);
-		len = lenR;
-		double MPL_toePE_0   = fiso * Ftoe / (exp(kToe) - 0.1e1) * (0.1e1 / kToe * lenR * eToe * exp(kToe * (len - lenR) / lenR / eToe) - len);
-		double toeMPLPEtest = MPL_toePE_len-MPL_toePE_0;*/
 
 		//compute the energy stored in the linear section of the tendon strain curve from ..... 0 to len
 		len = lenTdn;
@@ -912,13 +906,7 @@ double Thelen2003MuscleV1::calcTendonForce(const SimTK::State& s, double aNormTe
 		len = lenToe;
 		double linPE_eToe= (1.0/2.0)*(fiso*klin*(len*len)/lenR) + fiso*len*(klin*(-1.0-eToe)+Ftoe);
 		double linPEtest = linPE_len-linPE_eToe;
-		/*len = lenTdn;
-		double MPL_linPE_len  = fiso * klin / lenR * len * len / 0.2e1 + fiso * (klin *  (-1.0 - eToe) + Ftoe) * len;
-		//ditto from 0 .... eToe
-		len = lenToe;
-		double MPL_linPE_eToe = fiso * klin / lenR * len * len / 0.2e1 + fiso * (klin *  (-1.0 - eToe) + Ftoe) * len;
-		double linMPLPEtest = MPL_linPE_len-MPL_linPE_eToe;*/
-
+		
 		//compute the total potential energy stored in the tendon
 		_tendonPE =(toePE_len-toePE_0) + (linPE_len-linPE_eToe);
 	}else if (tendon_strain>0.0){ 
