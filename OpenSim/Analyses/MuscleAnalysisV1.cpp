@@ -1,8 +1,8 @@
 // MuscleAnalysisV1.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-//	AUTHOR: Katherine Holzbaur, Frank C. Anderson
+//	AUTHOR: Matthew Millard, Katherine Holzbaur, Frank C. Anderson
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/* Copyright (c)  2006 Stanford University
+/* Copyright (c)  2011 Stanford University
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -1062,7 +1062,7 @@ NaturalCubicSpline* MuscleAnalysisV1::get1DSpline(const std::string &aFileName){
 	
 	Storage curvefal(aFileName);
 	OpenSim::Array<double> curvefalX, curvefalY;
-	curvefalX.setSize(curvefal.getSize());
+	/*curvefalX.setSize(curvefal.getSize());
 	curvefalY.setSize(0);	//MM:This is necessary as getDataColumn appends to this reference!
 							//	 the documentation would have you think that the array needs to be
 							//   its full size, and then it is populated. Very confusing!
@@ -1072,6 +1072,15 @@ NaturalCubicSpline* MuscleAnalysisV1::get1DSpline(const std::string &aFileName){
 															 //    data by index alone - it barfs when I ask for column 0
 															 //    (not sure why) when I use the function that would 
 															 //    otherwise do this.
+	*/
+
+	curvefalX.setSize(curvefal.getSize());
+	curvefalY.setSize(curvefal.getSize());	
+
+	int colIdx = 0;
+	int result_col1 = curvefal.getDataColumn(colIdx,curvefalX);
+	colIdx = 1;
+	int result_col2 = curvefal.getDataColumn(colIdx,curvefalY);
 
 	return new NaturalCubicSpline(curvefalX.getSize(),&curvefalX[0],&curvefalY[0],"Active-Force Length Curve Approximation");
 }
