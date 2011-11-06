@@ -1460,5 +1460,5 @@ void testEquivalentBodyForceForGenForces(Model *model)
 	cout << "****************************************************************************" << endl;
 
 	ASSERT(!SimTK::isNaN(norm_rel_error), __FILE__, __LINE__, "testEquivalentBodyForceForGenForces FAILED, udot_error = NaN");
-	ASSERT_EQUAL(0.0, norm_rel_error, 1.0e-13,  __FILE__, __LINE__, "testEquivalentBodyForceForGenForces FAILED, udot_error > 1e-13"); 
+	ASSERT_EQUAL(0.0, norm_rel_error, 1.0e-12,  __FILE__, __LINE__, "testEquivalentBodyForceForGenForces FAILED, udot_error > 1e-13"); 
 }
