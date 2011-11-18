@@ -162,23 +162,50 @@ Storage::Storage(const string &aFileName, bool readHeadersOnly) :
 	// There are situations where we don't want to read the whole file in advance just header
 	if (readHeadersOnly) return;
 
-	// DATA
-	int ny = nc-1;
-	double time;
-	double *y = new double[ny];
-	for(int r=0;r<nr;r++) {
-		(*fp)>>time;
-		for(int i=0;i<ny;i++)
-			(*fp)>>y[i];
-		append(time,ny,y);
-	}
-	delete[] y;
+	//MM using the occurance of time and range in the column labels to distinguish between
+	//SIMM and non SIMMOtion files.
+	Array<std::string> currentLabels = getColumnLabels();
+	int indexTime = currentLabels.findIndex("time");
+	int indexRange = currentLabels.findIndex("range");
 
-	// CLOSE FILE
-	delete fp;
+
+	// DATA	
+	if(indexTime != -1 || indexRange != -1){ //MM edit
+		int ny = nc-1;
+		double time;
+		double *y = new double[ny];
+		for(int r=0;r<nr;r++) {
+				(*fp)>>time;
+				for(int i=0;i<ny;i++)
+					(*fp)>>y[i];
+				append(time,ny,y);
+		}
+		delete[] y;
+		// CLOSE FILE
+		delete fp;
+	}else{	//MM the modifications below are to make the Storage class
+			//well behaved when it is given data that does not contain a 
+			//time or a range column
+		int ny = nc;
+		double time;
+		double *y = new double[ny];
+		for(int r=0;r<nr;r++) {
+				time=(double)r;
+				for(int i=0;i<ny;i++)
+					(*fp)>>y[i];
+				append(time,ny,y);
+		}
+		delete[] y;
+		// CLOSE FILE
+		delete fp;
+	}
 	// If what we read was really a sIMM motion file, adjust the data 
 	// to account for different assumptions between SIMM.mot OpenSim.sto
-	postProcessSIMMMotion();
+
+	//MM if this is a SIMM Motion file, post process it as one. Else don't touch the data
+	if(indexTime != -1 || indexRange != -1){
+		postProcessSIMMMotion();
+	}
 }
 //_____________________________________________________________________________
 /**
