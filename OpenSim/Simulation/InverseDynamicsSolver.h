@@ -36,8 +36,8 @@ class FunctionSet;
 //=============================================================================
 //=============================================================================
 /**
- * Solve for the generalized coordinate coordinate forces (1 per degrees-of-freedom)
- * That satisfy the unconstrained equations of motion given kinemtics: q, u, u_dot
+ * Solve for the generalized coordinate coordinate forces (1 per degree-of-freedom)
+ * that satisfy the unconstrained equations of motion given kinemtics: q, u, u_dot
 
  * The InverseDynamics equation: Tau = M*u_dot-G(q)-C(q,u)-A(q,u,t,x)
  *
@@ -46,7 +46,7 @@ class FunctionSet;
  * System gravity, G, centrifugal and coriolis, C, forces are computed internally.
  * Caller provides q,u,t (supplied by the State), the desired u_dot and the 
  * applied loads, A. If applied loads are from forces in the model, these loads
- * are automatically accounted for unless explicitly provided.
+ * are automatically accounted for unless explicitly disabled.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -89,7 +89,8 @@ public:
 		NOTE: forces with internal states should be removed/disabled prior to solving if default state
 		      is inadequate */
 	virtual SimTK::Vector solve(SimTK::State &s, const FunctionSet &Qs, double time);
-	/** Same as above but for a given time series populate a Vector (trajectory)of generalized-coordinate forces */
+	/** Same as above but for a given time series populate an Array (trajectory) of generalized-coordinate
+	    forces (Vectors) */
 	virtual void solve(SimTK::State &s, const FunctionSet &Qs, const SimTK::Array_<double> &times, 
 		SimTK::Array_<SimTK::Vector> &genForceTrajectory);
 

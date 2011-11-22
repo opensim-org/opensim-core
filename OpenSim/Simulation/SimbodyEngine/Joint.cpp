@@ -609,7 +609,7 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
    acting at its mobilizer frame B, expressed in ground.  */
 SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const
 {
-		// Get the mobilized body
+	// Get the mobilized body
 	const SimTK::MobilizedBody mbd = _model->updMatterSubsystem().getMobilizedBody(mbx);
 	SimTK::UIndex ustart = mbd.getFirstUIndex(s);
 	int nu = mbd.getNumU(s);
@@ -620,6 +620,9 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
 	// from individual columns
 	SimTK::SpatialVec Hcol;
 	
+	// To obtain the joint Jacobian, H_PB (H_FM in Simbody) need to be realized to at least position
+	_model->getMultibodySystem().realize(s, SimTK::Stage::Position);
+
 	SimTK::Vector f(nu, 0.0);
 	for(int i =0; i<nu; ++i){
 		f[i] = mobilityForces[ustart + i];
@@ -647,8 +650,35 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK:
 
 	//if rank = 0, body torque cannot contribute to the mobility force
 	if(pinvTorq.getRank() > 0)
-		pinvTorq.solve(f - transposeH_PB_v*Fv, Fw);
+		pinvTorq.solve(f, Fw);
 	
+	// Now we have two solution with either the body force Fv or body torque accounting for some or all of f
+	SimTK::Vector fv =  transposeH_PB_v*Fv;
+	SimTK::Vector fw =  transposeH_PB_w*Fw; 
+
+	// which to choose? Choose the more effective as fx.norm/Fx.norm
+	if(fv.norm() > SimTK::SignificantReal){ // if body force can contributes at all
+		// if body torque can contribute too and it is more effective
+		if(fw.norm() > SimTK::SignificantReal){
+			if (fw.norm()/Fw.norm() > fv.norm()/Fv.norm() ){ 
+				// account for f using torque, Fw, so compute Fv with remainder
+				pinvForce.solve(f-fw, Fv);		
+			}else{
+				// account for f using force, Fv, first and Fw from remainder
+				pinvTorq.solve(f-fv, Fw);
+			}
+		}
+		// else no torque contribution and Fw should be zero
+	}
+	// no force contribution but have a torque
+	else if(fw.norm() > SimTK::SignificantReal){
+		// just Fw
+	}
+	else{
+		// should be the case where gen force is zero.
+		assert(f.norm() < SimTK::SignificantReal);
+	}
+
 	// Transform from parent joint frame, P in the parent body, Po
 	const SimTK::Rotation R_PPo = (mbd.getInboardFrame(s).R());
 

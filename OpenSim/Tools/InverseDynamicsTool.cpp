@@ -35,6 +35,7 @@
 #include <iostream>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
+#include <OpenSim/Simulation/Model/JointSet.h>
 #include <OpenSim/Simulation/InverseDynamicsSolver.h>
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/IO.h>
@@ -69,7 +70,9 @@ InverseDynamicsTool::~InverseDynamicsTool()
 InverseDynamicsTool::InverseDynamicsTool() : DynamicsTool(),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
+	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr()),
+	_jointsForReportingBodyForces(_jointsForReportingBodyForcesProp.getValueStrArray()),
+	_outputBodyForcesAtJointsFileName(_outputBodyForcesAtJointsFileNameProp.getValueStr())
 {
 	setType("InverseDynamicsTool");
 	setNull();
@@ -87,7 +90,9 @@ InverseDynamicsTool::InverseDynamicsTool(const string &aFileName, bool aLoadMode
 	DynamicsTool(aFileName, false),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
+	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr()),
+	_jointsForReportingBodyForces(_jointsForReportingBodyForcesProp.getValueStrArray()),
+	_outputBodyForcesAtJointsFileName(_outputBodyForcesAtJointsFileNameProp.getValueStr())
 {
 	setType("InverseDynamicsTool");
 	setNull();
@@ -108,7 +113,9 @@ InverseDynamicsTool::InverseDynamicsTool(const InverseDynamicsTool &aTool) :
 	DynamicsTool(aTool),
 	_coordinatesFileName(_coordinatesFileNameProp.getValueStr()),
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
-	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr())
+	_outputGenForceFileName(_outputGenForceFileNameProp.getValueStr()),
+	_jointsForReportingBodyForces(_jointsForReportingBodyForcesProp.getValueStrArray()),
+	_outputBodyForcesAtJointsFileName(_outputBodyForcesAtJointsFileNameProp.getValueStr())
 {
 	setType("InverseDynamicsTool");
 	setNull();
@@ -162,10 +169,20 @@ void InverseDynamicsTool::setupProperties()
 	_timeRangeProp.setValue(defaultTimeRange);
 	_propertySet.append(&_timeRangeProp);
 
-	_outputGenForceFileNameProp.setComment("Name of the storage file (.sto) to which the results should be written.");
+	_outputGenForceFileNameProp.setComment("Name of the storage file (.sto) to which the generalized forces are written.");
 	_outputGenForceFileNameProp.setName("output_gen_force_file");
 	_outputGenForceFileNameProp.setValue("inverse_dynamics.sto");
 	_propertySet.append(&_outputGenForceFileNameProp);
+
+	_jointsForReportingBodyForcesProp.setComment("List of joints (keyword All, for all joints)"
+		" to report body forces acting at the joint frame expressed in ground.");
+	_jointsForReportingBodyForcesProp.setName("joints_to_report_body_forces");
+	_propertySet.append(&_jointsForReportingBodyForcesProp);
+
+	_outputBodyForcesAtJointsFileNameProp.setComment("Name of the storage file (.sto) to which the body forces at specified joints are written.");
+	_outputBodyForcesAtJointsFileNameProp.setName("output_body_forces_file");
+	_outputBodyForcesAtJointsFileNameProp.setValue("body_forces_at_joints.sto");
+	_propertySet.append(&_outputBodyForcesAtJointsFileNameProp);
 }
 
 //_____________________________________________________________________________
@@ -196,6 +213,7 @@ operator=(const InverseDynamicsTool &aTool)
 	_coordinatesFileName = aTool._coordinatesFileName;
 	_lowpassCutoffFrequency = aTool._lowpassCutoffFrequency;
 	_outputGenForceFileName = aTool._outputGenForceFileName;
+	_outputBodyForcesAtJointsFileName = aTool._outputBodyForcesAtJointsFileName;
 	_coordinateValues = NULL;
 
 	return(*this);
@@ -205,10 +223,41 @@ operator=(const InverseDynamicsTool &aTool)
 // GET AND SET
 //=============================================================================
 
-void InverseDynamicsTool::setCoordinateValues(const OpenSim::Storage& aStorage){
+void InverseDynamicsTool::setCoordinateValues(const OpenSim::Storage& aStorage)
+{
 	if (_coordinateValues) delete _coordinateValues;
 	_coordinateValues = new Storage(aStorage);
 }
+
+
+/** Build the list of Joints for computing and reporting equivalent body forces */
+void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string> &jointNames, JointSet &joints) const
+{	
+	const JointSet &modelJoints = model.getJointSet();
+	Array<string> groupNames;
+	modelJoints.getGroupNames(groupNames);
+
+	/* The search for inidividual group or force names IS case-sensitive BUT keywords are not*/
+	for(int i=0; i<jointNames.getSize();  ++i){
+		//Check for kewords first starting with ALL
+		if(IO::Uppercase(jointNames[i]) == "ALL"){
+			for(int j=0; j<modelJoints.getSize(); ++j){
+				joints.append(&modelJoints[j]);
+			}
+			break;
+		} 
+		
+		int k = modelJoints.getIndex(jointNames[i]);
+		if (k >= 0){
+			joints.append(&modelJoints[i]);
+		} else {
+			cout << "\nWARNING: InverseDynamicsTool could not find Joint named '" << jointNames[i] << "' to report body forces." << endl;
+		}
+	}
+	joints.setMemoryOwner(false);
+}
+
+
 //=============================================================================
 // RUN
 //=============================================================================
@@ -311,15 +360,14 @@ bool InverseDynamicsTool::run()
 		// trajectories provided
 		ivdSolver.solve(s, *coordFunctions, times, genForceTraj);
 
+
 		success = true;
 
 		cout << "InverseDynamicsTool: " << nt << " time frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
 	
-		Storage ivdResults(nt);
-		for(int i=0; i<nt; i++){
-			StateVector *dataVec = new StateVector(times[i], nq, &((genForceTraj[i])[0]));
-			ivdResults.append(*dataVec);
-		}
+		JointSet jointsForEquivalentBodyForces;
+		getJointsByName(*_model, _jointsForReportingBodyForces, jointsForEquivalentBodyForces);
+		int nj = jointsForEquivalentBodyForces.getSize();
 
 		Array<string> labels("time", nq+1);
 		for(int i=0; i<nq; i++){
@@ -327,12 +375,70 @@ bool InverseDynamicsTool::run()
 			labels[i+1] += (coords[i].getMotionType() == Coordinate::Rotational) ? "_moment" : "_force";
 		}
 
-		ivdResults.setColumnLabels(labels);
-		ivdResults.setName("Inverse Dynamics");
-		//ivdResults.print(_outputGenForceFileName);
+		Array<string> body_force_labels("time", 6*nj+1);
+		string XYZ = "XYZ";
+		for(int i=0; i<nj; i++){
+			string joint_body_label = jointsForEquivalentBodyForces[i].getName()+"_";
+			joint_body_label += jointsForEquivalentBodyForces[i].getBody().getName();
+			for(int k=0; k<3; ++k){
+				body_force_labels[6*i+k+1] =  joint_body_label+"_F"+XYZ[k]; //first label is time
+				body_force_labels[6*i+k+3+1] =  joint_body_label+"_M"+XYZ[k];
+			}
+		}
+
+		Storage genForceResults(nt);
+		Storage bodyForcesResults(nt);
+		SpatialVec equivalentBodyForceAtJoint;
+
+		for(int i=0; i<nt; i++){
+			StateVector genForceVec(times[i], nq, &((genForceTraj[i])[0]));
+			genForceResults.append(genForceVec);
+
+			// if there are joints requested for equivalent body forces then calculate them
+			if(nj>0){
+				Vector forces(6*nj, 0.0);
+				StateVector bodyForcesVec(times[i], 6*nj, &forces[0]);
+
+				s.updTime() = times[i];
+				Vector &q = s.updQ();
+				Vector &u = s.updU();
+
+				for(int j=0; j<nq; ++j){
+					q[j] = coordFunctions->evaluate(j, 0, times[i]);
+					u[j] = coordFunctions->evaluate(j, 1, times[i]);
+				}
+			
+				for(int j=0; j<nj; ++j){
+					equivalentBodyForceAtJoint = jointsForEquivalentBodyForces[j].calcEquivalentSpatialForce(s, genForceTraj[i]);
+					for(int k=0; k<3; ++k){
+						// body force components
+						bodyForcesVec.setDataValue(6*j+k, equivalentBodyForceAtJoint[1][k]); 
+						// body torque components
+						bodyForcesVec.setDataValue(6*j+k+3, equivalentBodyForceAtJoint[0][k]);
+					}
+				}
+				bodyForcesResults.append(bodyForcesVec);
+
+			}
+		}
+
+		genForceResults.setColumnLabels(labels);
+		genForceResults.setName("Inverse Dynamics Generalized Forces");
+
 		IO::makeDir(getResultsDir());
-		Storage::printResult(&ivdResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
+		Storage::printResult(&genForceResults, _outputGenForceFileName, getResultsDir(), -1, ".sto");
 		IO::chDir(saveWorkingDirectory);
+
+		// if body forces to be reported for specified joints
+		if(nj >0){
+			bodyForcesResults.setColumnLabels(body_force_labels);
+			bodyForcesResults.setName("Inverse Dynamics Body Forces at Specified Joints");
+
+			IO::makeDir(getResultsDir());
+			Storage::printResult(&bodyForcesResults, _outputBodyForcesAtJointsFileName, getResultsDir(), -1, ".sto");
+			IO::chDir(saveWorkingDirectory);
+		}
+
 	}
 	catch (OpenSim::Exception& ex) {
 		std::cout << "InverseDynamicsTool Failed: " << ex.what() << std::endl;

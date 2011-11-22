@@ -47,6 +47,7 @@
 namespace OpenSim {
 
 class Model;
+class JointSet;
 
 //=============================================================================
 //=============================================================================
@@ -81,6 +82,14 @@ protected:
 	PropertyStr _outputGenForceFileNameProp;
 	std::string &_outputGenForceFileName;
 
+	/** Idenitify the list of joints for which equivalent body forces acting at the joint should be reported */
+	PropertyStrArray _jointsForReportingBodyForcesProp;
+	Array<std::string> &_jointsForReportingBodyForces;
+
+	// name of storage file containing generalized forces from innverse dynamics
+	PropertyStr _outputBodyForcesAtJointsFileNameProp;
+	std::string &_outputBodyForcesAtJointsFileName;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -98,6 +107,11 @@ public:
 	static void registerTypes();
 	/* Handle reading older formats/Versioning */
 	virtual void updateFromXMLNode();
+
+protected:
+	/** helper method to get a list of model joints by name */
+	void getJointsByName(Model &model, const Array<std::string> &jointNames, JointSet &joints) const;
+
 private:
 	void setNull();
 	void setupProperties();
