@@ -41,6 +41,7 @@
 #include "Scale.h"
 #include "NaturalCubicSpline.h"
 #include "Constant.h"
+#include "Sine.h"
 #include "StepFunction.h"
 #include "LinearFunction.h"
 #include "PiecewiseLinearFunction.h"
@@ -73,6 +74,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::RegisterType( Scale() );
 	Object::RegisterType( NaturalCubicSpline() );
 	Object::RegisterType( Constant() );
+	Object::RegisterType( Sine() );
 	Object::RegisterType( StepFunction() );
 	Object::RegisterType( LinearFunction() );
 	Object::RegisterType( PiecewiseLinearFunction() );

@@ -41,6 +41,7 @@
 #include "Scale.h"
 #include "NaturalCubicSpline.h"
 #include "Constant.h"
+#include "Sine.h"
 #include "StepFunction.h"
 #include "LinearFunction.h"
 #include "PiecewiseLinearFunction.h"

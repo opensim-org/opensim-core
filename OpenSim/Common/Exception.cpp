@@ -151,6 +151,6 @@ print(ostream &aOut) const
 	}
 
 	// RETURN
-	aOut << '\n';
+	aOut << '\n' << endl;
 }
 

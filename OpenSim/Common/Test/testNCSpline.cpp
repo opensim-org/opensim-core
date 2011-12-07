@@ -85,7 +85,7 @@ SimTK::Vector getCentralDifference(SimTK::Vector x, SimTK::Vector y, bool extrap
 */
 void printMatrixToFile(SimTK::Vector col0,SimTK::Matrix data, string filename){
 	ofstream datafile;
-	datafile.open(filename);
+	datafile.open(filename.c_str());
 
 	for(int i = 0; i < data.nrow(); i++){
 		datafile << col0(i) << ",";

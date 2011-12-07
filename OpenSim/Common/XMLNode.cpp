@@ -38,8 +38,6 @@
 #include "IO.h"
 #include "Object.h"
 #include "XMLParsingException.h"
-#include <cassert>
-#include <SimTKcommon.h>
 
 using namespace OpenSim;
 using namespace std;
