@@ -702,8 +702,7 @@ void testPointOnLineConstraint()
 	OpenSim::Body osim_foot("foot", footMass.getMass(), footMass.getMassCenter(), footMass.getInertia());
 
 	// create foot as a free joint
-	bool useEulerAngles = false;  // set useEulerAngles to True
-	FreeJoint footJoint("", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0), useEulerAngles);
+	FreeJoint footJoint("", ground, Vec3(0), Vec3(0), osim_foot, Vec3(0), Vec3(0));
 	
 	// Add the thigh body which now also contains the hip joint to the model
 	osimModel->updBodySet().append(&osim_foot);

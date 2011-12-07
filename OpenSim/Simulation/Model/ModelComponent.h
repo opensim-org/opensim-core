@@ -38,11 +38,12 @@ namespace OpenSim {
 
 class Model;
 class ModelComponent;
+
 #ifndef SWIG
 //=============================================================================
 // Begin class ModelComponentRep
 //=============================================================================
-class ModelComponentRep
+class ModelComponentRep 
 {
 protected:
 	ModelComponent& _modelComponent;
@@ -89,11 +90,13 @@ protected:
 	~ModelComponentRep();
 
 public:
+
 	/** Get the number of continuous states that the ModelComponent added to the underlying
 	    computational system. It does not include the number of states already built-in by
 		the SimTK::System level component. Should query it and add to this to obtain the total
 		number of states managed by this ModelComponent */
 	int getNumStateVariablesAddedByModelComponent() const {return _namedStateVariableIndices.size();}
+	
 	void realizeTopology(SimTK::State &s) const;
 	void realizeModel(SimTK::State& s) const;
     void realizeInstance(const SimTK::State& s) const;
@@ -534,7 +537,55 @@ private:
 //=============================================================================
 //=============================================================================
 
+
 } // end of namespace OpenSim
+
+
+namespace SimTK {
+
+template <class T>
+class ModelComponentMeasure : public SimTK::Measure_<T> {
+public:
+    SimTK_MEASURE_HANDLE_PREAMBLE(ModelComponentMeasure, SimTK::Measure_<T>);
+
+	ModelComponentMeasure(SimTK::Subsystem& sub, const OpenSim::ModelComponentRep& mcRep)
+    :   Measure_<T>(sub, new Implementation(mcRep), AbstractMeasure::SetHandle()) {}
+
+    SimTK_MEASURE_HANDLE_POSTSCRIPT(ModelComponentMeasure, SimTK::Measure_<T>);
+};
+
+template <class T>
+class ModelComponentMeasure<T>::Implementation : public SimTK::Measure_<T>::Implementation
+{
+public:
+	Implementation(const OpenSim::ModelComponentRep& mcRep)
+    :   SimTK::Measure_<T>::Implementation(1), _modelCompRep(mcRep) {}
+
+    // Implementations of virtual methods.
+    Implementation* cloneVirtual() const {return new Implementation(*this);}
+
+	virtual void realizeMeasureTopologyVirtual(State& s) const {_modelCompRep.realizeTopology(s);}
+    virtual int getNumTimeDerivativesVirtual() const {return 0;}
+	Stage getDependsOnStageVirtual(int order) const {   return Stage::Acceleration; }
+	   
+	void calcCachedValueVirtual(const State& s, int derivOrder, T& value) const
+    {
+        SimTK_ASSERT1_ALWAYS(derivOrder==0,
+            "ModelComponentMeasure::Implementation::calcCachedValueVirtual():"
+            " derivOrder %d seen but only 0 allowed.", derivOrder);
+        value = 0;
+    }
+
+	virtual void realizeMeasureAccelerationVirtual(const State& s) const {_modelCompRep.realizeAcceleration(s);}
+
+
+private:
+    bool presumeValidAtDependsOnStage;
+	const OpenSim::ModelComponentRep& _modelCompRep;
+	Array_<CacheEntryIndex> derivIx;
+};
+
+} // end namespace SimTK
 
 #endif // __ModelComponent_h__
 

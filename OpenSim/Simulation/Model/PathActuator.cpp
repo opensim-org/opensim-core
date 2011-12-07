@@ -148,7 +148,7 @@ void PathActuator::copyData(const PathActuator &aPathActuator)
 /**
  * Assignment operator.
  *
- * @return  aCoordinateID ID (or number, or index) of the generalized coordinate.
+ * @return  PathActuator with contents of aPathActuator.
  */
 PathActuator& PathActuator::operator=(const PathActuator &aPathActuator)
 {

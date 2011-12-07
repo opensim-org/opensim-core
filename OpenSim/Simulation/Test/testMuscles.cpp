@@ -41,8 +41,8 @@
 //
 //==========================================================================================================
 #include <OpenSim/OpenSim.h>
-#include "SimTKsimbody.h"
 #include <OpenSim/Simulation/Model/PathActuator.h>
+#include <OpenSim/Simulation/Model/ActuatorWorkMeter.h>
 #include <OpenSim/Actuators/ContDerivMuscle.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
@@ -53,7 +53,7 @@ using namespace std;
 //==========================================================================================================
 static const double accuracy = 1e-5;
 
-void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double load, Function &control, const double accuracy);
+void simulateMuscle(PathActuator &aMuscle, double startX, double act0, const Function *motion, const Function *control, const double accuracy);
 void testPathActuator();
 void testRigidTendonMuscle();
 void testThelen2003Muscle();
@@ -93,8 +93,11 @@ int main()
 //==========================================================================================================
 // Main test driver to be used on any muscle model (derived from Muscle) so new cases should be easy to add
 //==========================================================================================================
-void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double load, Function &control, const double accuracy)
+void simulateMuscle(PathActuator &aMuscle, double startX, double act0, const Function *motion, const Function *control, const double accuracy)
 {
+	cout << "******************************************************" << endl;
+	cout << "Test for muscle acuator of type: " << aMuscle.getType() << endl;
+	cout << "******************************************************" << endl;
 	using SimTK::Vec3;
 
 	// Define the initial and final simulation times
@@ -123,9 +126,12 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 	jointCoordinateSet[0].setName("tx");
 	jointCoordinateSet[0].setDefaultValue(1.0);
 	jointCoordinateSet[0].setRangeMin(0); jointCoordinateSet[0].setRangeMax(1.0);
+	if(motion != NULL)
+		jointCoordinateSet[0].setPrescribedFunction(*motion);
 	// add ball to model
 	model.addBody(&ball);
 
+	/*
 	// Create a load function
 	Constant loadX(load);
 	Constant loadY(0);
@@ -137,6 +143,7 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 	// By default force is applied at CoM if point not specified
 	forceOnBall.setForceFunctions(&loadX, &loadY, &loadZ);
 	model.addForce(&forceOnBall);
+	*/
 
 	//Attach the muscle
 	const string &actuatorType = aMuscle.getType();
@@ -155,17 +162,23 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 
 	// Create a prescribed controller that simply applies controls as function of time
 	PrescribedController muscleController;
-	muscleController.setActuators(model.updActuators());
-	// Set the indiviudal muscle control functions for the prescribed muscle controller
-	muscleController.prescribeControlForActuator("muscle", ((Function *)control.copy()));
+	if(control != NULL){
+		muscleController.setActuators(model.updActuators());
+		// Set the indiviudal muscle control functions for the prescribed muscle controller
+		muscleController.prescribeControlForActuator("muscle", ((Function *)control->copy()));
 
-	// Add the control set controller to the model
-	model.addController(&muscleController);
+		// Add the control set controller to the model
+		model.addController(&muscleController);
+	}
+
+	// Add an energy meter to measure the work done by the muscle actuator 
+	ActuatorWorkMeter workMeter(aMuscle, 0.0);
+	model.includeAsSubComponent(&workMeter);
 
 	// Since all components are allocated on the stack don't have model own them (and try to free)
 	model.disownAllComponents();
 	model.setName(actuatorType+"ModelTest");
-	model.print(actuatorType+"ModelTest.osim");
+	//model.print(actuatorType+"ModelTest.osim");
 
 	// Initialize the system and get the default state
 	SimTK::State& si = model.initSystem();
@@ -181,8 +194,32 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 	ASSERT_EQUAL(trueLength, length, 0.01*accuracy);
 
 	// Define visualizer
+	//model.updMultibodySystem().updMatterSubsystem().setShowDefaultGeometry(true);
 	//SimTK::Visualizer viz(model.getMultibodySystem());
 	//model.getMultibodySystem().addEventReporter(new SimTK::Visualizer::Reporter(viz, 0.02));
+
+	cout << "Muscle initial energy = " << workMeter.getWork(si) << endl;
+
+	/*
+	double dt = 0.1;
+	double T = 1.0;
+	for(int i=0; i<T/dt; ++i){
+		si.updTime() = i*dt;
+		cout << "=============================================" << endl;
+		cout << "Time = " << si.getTime() << endl;
+		
+		SimTK::Vector z = si.getZ();  z.dump("Aux states");
+		SimTK::Vector u = si.getU();  u.dump("Speeds");
+		SimTK::Vector q = si.getQ();  u.dump("Coords");
+		model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
+		
+		SimTK::Vector zdot = si.getZDot();  zdot.dump("Aux states deriv");
+		SimTK::Vector udot = si.getUDot();  udot.dump("Speeds deriv");
+		
+		si.updU() = u+udot*dt;
+		si.updQ() = q+u*dt;
+		si.updZ() = z+zdot*dt;
+	}*/
 
 	// Create the integrator
 	SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
@@ -204,12 +241,14 @@ void simulateMuscle(PathActuator &aMuscle, double startX, double act0, double lo
 	// how long did it take?
 	double comp_time = (double)(clock()-start)/CLOCKS_PER_SEC;
 
+	cout << "Muscle work = " << workMeter.getWork(si) << endl;
+
 	// Save the simulation results
 	Storage states(manager.getStateStorage());
 	states.print(actuatorType+"_states.sto");
 
 	// Minimum requirement to pass is simulation of single muscle on slider is real-time
-	ASSERT(comp_time <= (finalTime-initialTime));
+	//ASSERT(comp_time <= (finalTime-initialTime));
 	cout << actuatorType << " simulation in " << comp_time << "s, for " << accuracy << " accuracy." << endl;
 }
 
@@ -227,7 +266,9 @@ void testThelen2003Muscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
 }
 
 /*
@@ -263,7 +304,9 @@ void testSchutte1993Muscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
 }
 
 
@@ -282,7 +325,9 @@ void testDelp1990Muscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
 }
 
 void testPathActuator()
@@ -297,7 +342,9 @@ void testPathActuator()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
 }
 
 
@@ -313,5 +360,7 @@ void testRigidTendonMuscle()
 
 	Constant control(0.5);
 
-	simulateMuscle(muscle, x0, act0, loadX, control, accuracy);
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
 }

@@ -30,7 +30,15 @@
 #include "OpenSim/Simulation/Model/ModelComponent.h"
 #include "OpenSim/Simulation/Model/Model.h"
 
+using namespace SimTK;
+
 namespace OpenSim {
+
+//=============================================================================
+// Begin class ModelComponentMeasure
+//=============================================================================
+
+
 
 ModelComponent::ModelComponent() : _model(NULL), _rep(NULL)
 {
@@ -89,6 +97,12 @@ void ModelComponent::setup(Model& model)
 // part
 void ModelComponent::createSystem(SimTK::MultibodySystem& system) const
 {
+	if(!(getIndexOfSubsystemForAllocations().isValid())){
+		ModelComponent* mutableThis = const_cast<ModelComponent *>(this);
+		mutableThis->setIndexOfSubsystemForAllocations(system.getDefaultSubsystem().getMySubsystemIndex());
+		ModelComponentMeasure<SimTK::Real> mcMeasure(system.updDefaultSubsystem(), *_rep);
+		_rep->_simTKcomponentIndex = mcMeasure.getSubsystemMeasureIndex();
+	}
 	for(unsigned int i=0; i<_subComponents.size(); i++)
 		_subComponents[i]->createSystem(system);
 }

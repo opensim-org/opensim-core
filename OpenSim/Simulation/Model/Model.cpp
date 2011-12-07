@@ -550,6 +550,9 @@ void Model::createSystem()
 	// controllers add their parts to the System.
     static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished createSystem for controllers.." << endl;
+
+	// Model is a model component so it should do its model component creation too
+	ModelComponent::createSystem(*_system);
 }
 
 //_____________________________________________________________________________
@@ -636,6 +639,8 @@ void Model::setup()
 	updSimbodyEngine().setup(*this);
 
 	updAnalysisSet().setModel(*this);
+
+	ModelComponent::setup(*this);
 }
 
 /**
@@ -720,6 +725,8 @@ void Model::initState(SimTK::State& state) const
     _contactGeometrySet.initState(state);
     _jointSet.initState(state);
     _forceSet.initState(state);
+
+	ModelComponent::initState(state);
 }
 
 void Model::setDefaultsFromState(const SimTK::State& state)
@@ -1775,13 +1782,18 @@ void Model::DefaultGeometry::generateDecorations(const SimTK::State& state, SimT
     // Display the path of each muscle.
 
     const Set<Muscle>& muscles = _model.getMuscles();
+	double activation= 0;
     for (int i = 0; i < muscles.getSize(); i++) {
         const Muscle& muscle = muscles[i];
+		activation = muscle.getActivation(state);
+		activation = (activation < 0) ? 0 : activation;
+		activation = (activation > 1) ? 1 : activation;
+
         const Array<PathPoint*>& points = muscle.getGeometryPath().getCurrentPath(state);
         Vec3 lastPos = matter.getMobilizedBody(points[0]->getBody().getIndex()).getBodyTransform(state)*points[0]->getLocation();
         for (int j = 1; j < points.getSize(); j++) {
             Vec3 pos = matter.getMobilizedBody(points[j]->getBody().getIndex()).getBodyTransform(state)*points[j]->getLocation();
-            geometry.push_back(DecorativeLine(lastPos, pos).setLineThickness(2).setColor(Vec3(1, 0, 0)));
+            geometry.push_back(DecorativeLine(lastPos, pos).setLineThickness(2).setColor(Vec3(activation, 0, 1-activation)));
             lastPos = pos;
         }
     }

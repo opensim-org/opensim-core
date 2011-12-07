@@ -88,7 +88,7 @@ void Constraint::copyData(const Constraint &aConstraint)
 {
 	//_isDisabled = aConstraint._isDisabled;
 	_isDisabledProp.setValue(aConstraint._isDisabledProp.getValueBool());
-	_model = aConstraint._model;
+
 	// A copy is no longer a live Constraint with an underlying SimTK::Constraint
 	// The system must be created, at which time the constraint will be assigned an index
 	// corresponding to a valid system SimTK::Constraint.
