@@ -34,7 +34,7 @@
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
-
+using namespace SimTK;
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -73,13 +73,16 @@ Thelen2003MuscleV1::Thelen2003MuscleV1() :
     _muscleV(_muscleVProp.getValueDbl()),
     _muscleF(_muscleFProp.getValueDbl()),
     _splineFal(_splineFalProp.getValueBool()),
-    _1DFv(_1DFvProp.getValueBool())			
+    _splineFv(_splineFvProp.getValueBool())			
 {
     
     setNull();
     setupProperties();
     if(_splineFal == true){
-        setStandardMuscleCurves();
+        loadForceActiveLengthCurve();
+    }
+    if(_splineFv == true){
+        loadForceVelocityCurve();
     }
     
 }
@@ -119,13 +122,17 @@ Thelen2003MuscleV1::Thelen2003MuscleV1(const std::string &aName,double aMaxIsome
     _muscleV(_muscleVProp.getValueDbl()),
     _muscleF(_muscleFProp.getValueDbl()),
     _splineFal(_splineFalProp.getValueBool()),
-    _1DFv(_1DFvProp.getValueBool())
+    _splineFv(_splineFvProp.getValueBool())
 {
     setNull();
     setupProperties();
     if(_splineFal == true){
-        setStandardMuscleCurves();
+        loadForceActiveLengthCurve();
     }
+    if(_splineFv == true){
+        loadForceVelocityCurve();
+    }
+
     setName(aName);
     setMaxIsometricForce(aMaxIsometricForce);
     setOptimalFiberLength(aOptimalFiberLength);
@@ -139,7 +146,7 @@ Thelen2003MuscleV1::Thelen2003MuscleV1(const std::string &aName,double aMaxIsome
  */
 Thelen2003MuscleV1::~Thelen2003MuscleV1()
 {
-    delete _ncsfal;
+
 }
 
 //_____________________________________________________________________________
@@ -179,13 +186,17 @@ Thelen2003MuscleV1::Thelen2003MuscleV1(const Thelen2003MuscleV1 &aMuscle) :
     _muscleV(_muscleVProp.getValueDbl()),
     _muscleF(_muscleFProp.getValueDbl()),
     _splineFal(_splineFalProp.getValueBool()),
-    _1DFv(_1DFvProp.getValueBool())
+    _splineFv(_splineFvProp.getValueBool())
 {
     setNull();
     setupProperties();
     if(_splineFal == true){
-        setStandardMuscleCurves();
+        loadForceActiveLengthCurve();
     }    
+    if(_splineFv == true){
+        loadForceVelocityCurve();
+    }
+
     copyData(aMuscle);
 }
 
@@ -233,25 +244,20 @@ void Thelen2003MuscleV1::copyData(const Thelen2003MuscleV1 &aMuscle)
  */
 void Thelen2003MuscleV1::setNull()
 {
-    setType("Thelen2003MuscleV1");
-    _ncsfal=NULL;
+    setType("Thelen2003MuscleV1");    
 }
 
 //_____________________________________________________________________________
 /**
  * Populate spline arrays for muscle curves. 
  */
-
-void Thelen2003MuscleV1::setStandardMuscleCurves(){
+void Thelen2003MuscleV1::loadForceActiveLengthCurve(){
     if(_splineFal == true){
         string fname = "muscle_afl.sto";
         ifstream ifile(fname.c_str());
-
+        //SimTK::Spline_<Real> sTK = SimTK::SplineFitter<Real>::fitForSmoothingParameter(3,xK,yKVal,0.0).getSpline();
         if(ifile){
             _ncsfal        = get1DSpline(fname);
-            //Test that this actually worked with non-zero values for each curve
-            double fal_val    = get1DSplineValue(_ncsfal, 1.0);
-            //printf("Non-zero values for fal(%f) \n",fal_val);
         }else{
             _splineFal = false;
             cout << "Thelen2003MuscleV1 couldn't find " << fname << " reverting to default\n";
@@ -259,6 +265,19 @@ void Thelen2003MuscleV1::setStandardMuscleCurves(){
     }
 }
 
+void Thelen2003MuscleV1::loadForceVelocityCurve(){
+    if(_splineFv == true){
+        string fname = "muscle_fv.sto";
+        ifstream ifile(fname.c_str());
+        //SimTK::Spline_<Real> sTK = SimTK::SplineFitter<Real>::fitForSmoothingParameter(3,xK,yKVal,0.0).getSpline();
+        if(ifile){
+            _ncsfv        = get1DSpline(fname);
+        }else{
+            _splineFv = false;
+            cout << "Thelen2003MuscleV1 couldn't find " << fname << " reverting to default\n";
+        }
+    }
+}
 
 
 //_____________________________________________________________________________
@@ -420,10 +439,10 @@ void Thelen2003MuscleV1::setupProperties()
     
     //Set to true if you'd like the 1D version of the Thelen force velocity
     //surface to be used
-    _1DFvProp.setName("Fv1DBackdoor");
-    _1DFvProp.setValue(false);
-    _1DFvProp.setComment("Force Velocity Backdoor Flag");
-    _propertySet.append(&_1DFvProp,"Parameters");
+    _splineFvProp.setName("Fv1DBackdoor");
+    _splineFvProp.setValue(false);
+    _splineFvProp.setComment("Force Velocity Backdoor Flag");
+    _propertySet.append(&_splineFvProp,"Parameters");
 
 }
 
@@ -671,16 +690,17 @@ double Thelen2003MuscleV1::getMuscleV(){    return _muscleV;}        //get the f
 
 void Thelen2003MuscleV1::useSplineFal(){    
     _splineFal=true;
-    if(_splineFal == true){
-            setStandardMuscleCurves();
-    }
+    loadForceActiveLengthCurve();    
 }
 
-void Thelen2003MuscleV1::use1DFv(){_1DFv = true;}
+void Thelen2003MuscleV1::useSplineFv(){
+    _splineFv = true;
+    loadForceVelocityCurve();   
+}
 
 void Thelen2003MuscleV1::useDefaultThelen(){
     _splineFal=false;
-    _1DFv = false;
+    _splineFv = false;
 }
 
 
@@ -1017,11 +1037,8 @@ double Thelen2003MuscleV1::calcActiveForce(const SimTK::State& s, double aNormFi
     if(_splineFal == true){
         //MM The spline class needs revision if this much code has to be written
         //     just to get a value from it. 
-        SimTK::Vector *fiblen = new SimTK::Vector();
-        fiblen->resize(_ncsfal->getArgumentSize() );
-        for(int i=0; i<_ncsfal->getArgumentSize();i++ )
-            fiblen[i] = aNormFiberLength;
-        fal = _ncsfal->calcValue(fiblen[0]);
+        SimTK::Vector fiblen(1,aNormFiberLength);
+        fal = (double)_ncsfal.calcValue(fiblen);
     }else{
         double x=(aNormFiberLength-1.)*(aNormFiberLength-1.);
         fal = exp(-x/_kShapeActive);
@@ -1103,73 +1120,74 @@ double Thelen2003MuscleV1::calcFiberVelocity(const SimTK::State& s, double aActi
 {
     //The variable names have all been switched to closely match with the notation in
     //Thelen 2003.
-    double a    = aActivation;
-    double afl  = aActivation*aActiveForce;  //afl = a*fl
-
-    if(_1DFv == true){
-       a   = 1.0;
-       afl = 1.0;
-    }
-
-    double Fm = aVelocityDependentForce;    //Fm = a*fl*fv    
-    double Fmlen = _flen;
-
     double dlce = 0.0;      //contractile element velocity
-    double dlcedFm = 0.0; //partial deriviative of contactile element velocity w.r.t. Fm
 
-    double b = 0;
-    double db= 0;
+    if(_splineFv == true){
+        double fv = aVelocityDependentForce/(aActivation*aActiveForce);
+        SimTK::Vector fvV(1,fv);
+        dlce = (double)_ncsfv.calcValue(fvV);
+    }else{
+            double a    = aActivation;
+            double afl  = aActivation*aActiveForce;  //afl = a*fl
+            double Fm = aVelocityDependentForce;    //Fm = a*fl*fv    
+            double Fmlen = _flen;
+            double Fmlen_afl = _flen*aActivation*aActiveForce;
 
-    double Fm_asyC = 0;                                    //Concentric contraction asymptote
-    double Fm_asyE = afl*_flen;    //Eccentric contraction asymptote
-    double asyE_thresh = 0.9;    //Should this be user settable?
-                                //What fraction of Fm_asyE Fv is allowed to have before a linear
-                                //model is used
+            double dlcedFm = 0.0; //partial deriviative of contactile element velocity w.r.t. Fm
 
-        //If fv is in the appropriate region, use Thelen 2003 Eqns 6 & 7 to compute dlce
-        if (Fm > Fm_asyC && Fm < Fm_asyE*asyE_thresh){
+            double b = 0;
+            double db= 0;
 
-            if( Fm <= afl ){        //Muscle is concentrically contracting
-               b = afl + Fm/_af;
-               db= 1/_af;
-            }else{                    //Muscle is eccentrically contracting
-               b = ((2+2/_af)*(afl*Fmlen-Fm))/(Fmlen-1); 
-               db= ((2+2/_af)*(-1))/(Fmlen-1); 
+            double Fm_asyC = 0;                                    //Concentric contraction asymptote
+            double Fm_asyE = aActivation*aActiveForce*_flen;    //Eccentric contraction asymptote
+            double asyE_thresh = 0.9;    //Should this be user settable?
+                                        //What fraction of Fm_asyE Fv is allowed to have before a linear
+                                        //model is used
+
+                //If fv is in the appropriate region, use Thelen 2003 Eqns 6 & 7 to compute dlce
+                if (Fm > Fm_asyC && Fm < Fm_asyE*asyE_thresh){
+
+                    if( Fm <= afl ){        //Muscle is concentrically contracting
+                       b = afl + Fm/_af;
+                       db= 1/_af;
+                    }else{                    //Muscle is eccentrically contracting
+                       b = ((2+2/_af)*(afl*Fmlen-Fm))/(Fmlen-1); 
+                       db= ((2+2/_af)*(-1))/(Fmlen-1); 
+                    }
+
+                    dlce = (0.25 + 0.75*a)*(Fm-afl)/b; //Scaling by VMAX is left out, and is post multiplied outside of the function
+
+                    //This variable may have future use outside this function
+                    dlcedFm = (0.25 + 0.75*a)*(1)/b - ((0.25 + 0.75*a)*(Fm-afl)/(b*b))*db;            
+
+                }else{  //Linear extrapolation
+                        double Fm0 = 0.0; //Last Fm value from the Thelen curve
+
+                        //Compute d and db/dFm from Eqn 7. of Thelen2003
+                        //for the last
+                        if(Fm <= Fm_asyC){ //Concentrically contracting
+                            Fm0 = Fm_asyC;
+                            b = afl + Fm0/_af;
+                            db= 1/_af;               
+                        }else{             //Eccentrically contracting
+                            Fm0 = asyE_thresh*Fm_asyE;
+                            b = ((2+2/_af)*(afl*Fmlen-Fm0))/(Fmlen-1); 
+                            db= ((2+2/_af)*(-1))/(Fmlen-1); 
+                        }
+
+                        //Compute the last dlce value that falls in the region where
+                        //Thelen 2003 Eqn. 6 is valid
+                        double dlce0 = (0.25 + 0.75*a)*(Fm0-afl)/b;
+
+                        //Compute the dlce/dfm of Eqn. 6 of Thelen 2003 at the last
+                        //valid point
+                        dlcedFm = (0.25 + 0.75*a)*(1)/b - ((0.25 + 0.75*a)*(Fm0-afl)/(b*b))*db;
+
+                        //Linearily extrapolate Eqn. 6 from Thelen 2003 to compute
+                        //the new value for dlce/dFm
+                        dlce = dlce0 + dlcedFm*(Fm-Fm0);            
+                    }
             }
-
-            dlce = (0.25 + 0.75*a)*(Fm-afl)/b; //Scaling by VMAX is left out, and is post multiplied outside of the function
-
-            //This variable may have future use outside this function
-            dlcedFm = (0.25 + 0.75*a)*(1)/b - ((0.25 + 0.75*a)*(Fm-afl)/(b*b))*db;            
-
-        }else{  //Linear extrapolation
-                double Fm0 = 0.0; //Last Fm value from the Thelen curve
-
-                //Compute d and db/dFm from Eqn 7. of Thelen2003
-                //for the last
-                if(Fm <= Fm_asyC){ //Concentrically contracting
-                    Fm0 = Fm_asyC;
-                    b = afl + Fm0/_af;
-                    db= 1/_af;               
-                }else{             //Eccentrically contracting
-                    Fm0 = asyE_thresh*Fm_asyE;
-                    b = ((2+2/_af)*(afl*Fmlen-Fm0))/(Fmlen-1); 
-                    db= ((2+2/_af)*(-1))/(Fmlen-1); 
-                }
-
-                //Compute the last dlce value that falls in the region where
-                //Thelen 2003 Eqn. 6 is valid
-                double dlce0 = (0.25 + 0.75*a)*(Fm0-afl)/b;
-
-                //Compute the dlce/dfm of Eqn. 6 of Thelen 2003 at the last
-                //valid point
-                dlcedFm = (0.25 + 0.75*a)*(1)/b - ((0.25 + 0.75*a)*(Fm0-afl)/(b*b))*db;
-
-                //Linearily extrapolate Eqn. 6 from Thelen 2003 to compute
-                //the new value for dlce/dFm
-                dlce = dlce0 + dlcedFm*(Fm-Fm0);            
-            }
-    
         return dlce;
 }
 
@@ -1186,44 +1204,42 @@ double Thelen2003MuscleV1::calcFiberVelocity(const SimTK::State& s, double aActi
  * @param aFileName: a reference to a string of the filename to read. 
  * @returns NaturalCubicSpline* to the interpolated curve in the file.
  */
-NaturalCubicSpline* Thelen2003MuscleV1::get1DSpline(const std::string &aFileName){
+SimTK::Spline_<SimTK::Real> Thelen2003MuscleV1::get1DSpline(const std::string &aFileName){
     
-    Storage curvefal(aFileName);
-    OpenSim::Array<double> curvefalX, curvefalY;
-    curvefalX.setSize(curvefal.getSize());
-    curvefalY.setSize(0);    //MM:This is necessary as getDataColumn appends to this reference!
+    Storage curve(aFileName);
+    OpenSim::Array<double> curveX, curveY;
+    curveX.setSize(curve.getSize());
+    curveY.setSize(0);    //MM:This is necessary as getDataColumn appends to this reference!
                             //     the documentation would have you think that the array needs to be
                             //   its full size, and then it is populated. Very confusing!
-    curvefal.getTimeColumn(curvefalX); //MM: Storage assumes the first column is time ... this does not generalize well
+    curve.getTimeColumn(curveX); //MM: Storage assumes the first column is time ... this does not generalize well
     string colname = "col0";
-    curvefal.getDataColumn(colname,curvefalY,curvefalX[0]); //MM: I'm using this because I cannot grab the column
+    curve.getDataColumn(colname,curveY,curveX[0]); //MM: I'm using this because I cannot grab the column
                                                              //    data by index alone - it barfs when I ask for column 0
                                                              //    (not sure why) when I use the function that would 
-                                                             //    otherwise do this.
+                                                             //    otherwise do this.    
 
-    return new NaturalCubicSpline(curvefalX.getSize(),&curvefalX[0],&curvefalY[0],"Active-Force Length Curve Approximation");
+    //new NaturalCubicSpline(curvefalX.getSize(),&curvefalX[0],&curvefalY[0],"Active-Force Length Curve Approximation");
+    SimTK::Vector x(curveX.getSize());
+    SimTK::Vector y(curveY.getSize());
+
+    double tmpx=0; //just so I can look at the intermediate values in Watch
+    double tmpy=0; 
+
+    for(int i=0; i<x.size(); i++){
+        tmpx = curveX[i];
+        tmpy = curveY[i];
+
+        x(i) = (SimTK::Real)tmpx;
+        y(i) = (SimTK::Real)tmpy;
+    }
+
+    SimTK::Spline_<SimTK::Real> tmp = SimTK::SplineFitter<SimTK::Real>::fitForSmoothingParameter(3,x,y,0.0).getSpline();
+
+    return tmp;
 }
 
 
-//_____________________________________________________________________________
-/**
- *  MM 2011 10 18
- *
- * This function will compute the value of a 1D spline given an argument. I've written
- * this because the window dressing code required to actually do this simple operation is
- * large enough that it will pollute my code, and be annoying to re-write over and over 
- * again.
- *
- * @param aSpline: A pointer to the natural cubic spline you'd like to interpolate
- * @param xval: The value at which you'd like to evaluate the spline
- * @return double of the value of the spline at xval.
- */
-double     Thelen2003MuscleV1::get1DSplineValue(const NaturalCubicSpline *aSpline, double xval){    
-    SimTK::Vector tmpvec(aSpline->getArgumentSize(), 0.0);
-    for(int i=0; i<aSpline->getArgumentSize();i++ )
-        tmpvec[i] = xval;
-        return aSpline->calcValue(tmpvec);
-}
 
 //_____________________________________________________________________________
 /**

@@ -28,6 +28,7 @@
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 
+
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
 		#undef OSIMACTUATORS_API
@@ -149,7 +150,10 @@ protected:
 	double &_ca;
 
 	//MM splined versions of the active force length curve
-	NaturalCubicSpline *_ncsfal;
+	//NaturalCubicSpline *_ncsfal;
+
+    SimTK::Spline_<SimTK::Real> _ncsfal;
+    SimTK::Spline_<SimTK::Real> _ncsfv;
 	//MM flags to select splined or computed curve versions.
 
 	//M.Millard system energy variables
@@ -173,8 +177,8 @@ protected:
 								 //a spline interpolated version that is stored in
 								 //muscle_afl.sto, which it expects in the directory
 								 //that holds the setup files.
-    PropertyBool _1DFvProp;      //This is a back door flag. When set to true, it
-	bool &_1DFv;			     //will use only the fv part of the surface that
+    PropertyBool _splineFvProp;      //This is a back door flag. When set to true, it
+	bool &_splineFv;			     //will use only the fv part of the surface that
                                  //Thelen's equations use when a=fal=1
 
 //=============================================================================
@@ -213,7 +217,7 @@ public:
 
 
     void useSplineFal();
-    void use1DFv();
+    void useSplineFv();
     void useDefaultThelen();
 
 
@@ -285,9 +289,10 @@ public:
 private:
 	void setNull();
 	void setupProperties();
-	void setStandardMuscleCurves(); //MM
-	NaturalCubicSpline* get1DSpline(const std::string &aFileName); //MM
-	double get1DSplineValue(const NaturalCubicSpline *aSpline, double xval); //MM 
+	void loadForceActiveLengthCurve(); //MM
+    void loadForceVelocityCurve(); //MM
+	SimTK::Spline_<SimTK::Real> get1DSpline(const std::string &aFileName); //MM
+	//double get1DSplineValue(const NaturalCubicSpline *aSpline, double xval); //MM 
 //=============================================================================
 };	// END of class Thelen2003MuscleV1
 //=============================================================================
