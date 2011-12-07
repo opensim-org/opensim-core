@@ -50,7 +50,6 @@ void testAssembleModelWithConstraints(string modelFile);
 int main()
 {
 	try {
-		LoadOpenSimLibrary("osimActuators");
 		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
