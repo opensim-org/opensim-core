@@ -456,8 +456,8 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 int LiuThelen2003Muscle::getStateVariableYIndex(int index) const
 {
 	if (index == 2)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+2;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+getZIndex("active_motor_units");
 	if (index == 3)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+3;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+getZIndex("fatigued_motor_units");
 	return Thelen2003Muscle::getStateVariableYIndex(index);
 }
