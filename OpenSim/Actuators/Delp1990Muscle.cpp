@@ -783,6 +783,6 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 int Delp1990Muscle::getStateVariableYIndex(int index) const
 {
 	if (index == 2)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+2;
+		return _model->getMultibodySystem().getDefaultState().getZStart()+ getZIndex("fiber_velocity");
 	return ActivationFiberLengthMuscle::getStateVariableYIndex(index);
 }
