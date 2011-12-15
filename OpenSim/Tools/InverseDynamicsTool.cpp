@@ -249,7 +249,7 @@ void InverseDynamicsTool::getJointsByName(Model &model, const Array<std::string>
 		
 		int k = modelJoints.getIndex(jointNames[i]);
 		if (k >= 0){
-			joints.append(&modelJoints[i]);
+			joints.append(&modelJoints[k]);
 		} else {
 			cout << "\nWARNING: InverseDynamicsTool could not find Joint named '" << jointNames[i] << "' to report body forces." << endl;
 		}

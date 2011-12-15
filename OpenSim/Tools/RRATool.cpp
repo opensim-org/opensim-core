@@ -733,7 +733,7 @@ bool RRATool::run()
 
 	cout<<"\nSetting optimizer print level to "<< (_verbose?4:0) <<".\n";
 	optimizer->setDiagnosticsLevel(_verbose?4:0);
-	cout<<"Setting optimizer convergence criterion to "<<_optimizationConvergenceTolerance<<".\n";
+	cout<<"Setting optimizer convergence tolerance to "<<_optimizationConvergenceTolerance<<".\n";
 	optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
 	cout<<"Setting optimizer maximum iterations to "<<2000<<".\n";
 	optimizer->setMaxIterations(2000);
