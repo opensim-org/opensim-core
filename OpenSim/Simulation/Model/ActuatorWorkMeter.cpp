@@ -149,6 +149,8 @@ void ActuatorWorkMeter::setup(Model& aModel)
 //=============================================================================
 void ActuatorWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 {
+	ModelComponent::createSystem(system);
+	
 	ActuatorWorkMeter* mutableThis = const_cast<ActuatorWorkMeter *>(this);
 
 	// Assign a name to the state variable to access the work value stored in the state
@@ -156,8 +158,28 @@ void ActuatorWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 
 	// Add state variables to the underlying system
 	mutableThis->addStateVariables(stateVariables);
+}
 
-	ModelComponent::createSystem(system);
+std::string ActuatorWorkMeter::getStateVariableName(int index) const
+{
+	if(index == 0)
+		return _actuator->getName() + ".work";
+	else {
+		std::stringstream msg;
+		msg << "ActuatorWorkMeter::getStateVariableName: ERR- index out of bounds.\nComponent " 
+			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " state variables.";
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+	}
+}
+
+
+int ActuatorWorkMeter::getStateVariableYIndex(int index) const
+{
+	if (index == 0){
+		const SimTK::State &s = _model->getMultibodySystem().getDefaultState();
+		return s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex("actuator_work");
+	}
+	throw Exception("ActuatorWorkMeter::getStateVariableYIndex : "+getName()+" at undefined index"); 
 }
 
 //=============================================================================

@@ -86,6 +86,7 @@ Model& ModelComponent::updModel()
 void ModelComponent::setup(Model& model)
 {
 	_model = &model;
+	model._modelComponents.append(this);
 	delete _rep;
 	_rep = new ModelComponentRep(*this);
 
@@ -186,8 +187,14 @@ void ModelComponent::setModelingOption(SimTK::State& s, int flag) const
 
 int ModelComponent::getNumStateVariables() const
 {
-	return _rep->getNumStateVariablesAddedByModelComponent(); //+ numStatesOfUnderlyingComponent
+	int ns = _rep->getNumStateVariablesAddedByModelComponent(); //+ numStatesOfUnderlyingComponent
+	// Include the states of its subcomponents
+	for(unsigned int i=0; i<_subComponents.size(); i++)
+		ns += _subComponents[i]->getNumStateVariables();
+
+	return ns;
 }
+
 
 /* Get the value of a state variable allocated by this ModelComponent by index.
  * TODO: This should be deprecated to use name only to avoid any confusion.
@@ -346,8 +353,6 @@ void ModelComponent::includeAsSubComponent(ModelComponent *aComponent)
 	SimTK::Array_<ModelComponent *>::iterator it = std::find(_subComponents.begin(), _subComponents.end(), aComponent);
 	if(it == _subComponents.end()) 
 		_subComponents.push_back(aComponent);
-
-
 }
 
 const SimTK::ZIndex ModelComponent::getZIndex(const std::string &name) const
@@ -355,6 +360,12 @@ const SimTK::ZIndex ModelComponent::getZIndex(const std::string &name) const
 	std::map<std::string, SimTK::ZIndex>::const_iterator it;
 	it = _rep->_namedStateVariableIndices.find(name);
 	return it->second;
+}
+
+SimTK::SystemYIndex ModelComponent::getStateVariableSystemIndex(std::string stateVariableName) const
+{
+	SimTK::SystemYIndex ix(_model->getMultibodySystem().getDefaultState().getZStart(getIndexOfSubsystemForAllocations())+ getZIndex(stateVariableName));
+	return ix;
 }
 
 const SimTK::DiscreteVariableIndex ModelComponent::getDiscreteVariableIndex(const std::string &name) const

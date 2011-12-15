@@ -67,9 +67,6 @@ protected:
     double _defaultActivation;
     double _defaultFiberLength;
 
-	//Starting index of the ActivationFiberLengthMuscle's states in its subsystem 
-	SimTK::ZIndex _zIndex;
-
 	static const int STATE_ACTIVATION;
 	static const int STATE_FIBER_LENGTH;
 

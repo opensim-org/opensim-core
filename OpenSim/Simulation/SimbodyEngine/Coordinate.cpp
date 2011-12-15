@@ -132,6 +132,7 @@ Coordinate::Coordinate(const std::string &aName, MotionType aMotionType,double a
  */
 Coordinate::~Coordinate()
 {
+	delete _lockFunction;
 }
 
 //_____________________________________________________________________________
@@ -266,7 +267,7 @@ void Coordinate::createSystem(SimTK::MultibodySystem& system) const
 	// Beyond the const Component get the index so we can access the SimTK::Constraint later
 	Coordinate* mutableThis = const_cast<Coordinate *>(this);
 	mutableThis->_lockedConstraintIndex = lock.getConstraintIndex();
-	mutableThis->_model->addModelComponent(this);
+	//mutableThis->_model->addModelComponent(mutableThis);
 			
 	if(_prescribedFunction != NULL){
 		//create prescribed motion constraint automatically

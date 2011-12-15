@@ -107,6 +107,11 @@ public:
 	virtual double getLength(const SimTK::State& s) const;
 	virtual double getLengtheningSpeed(const SimTK::State& s) const;
 
+	// Power: Since lengthening is positive and tension always shortens, positive power
+	// is when muscle is shortening under tension.
+	virtual double getPower(const SimTK::State& s) const { return -getForce(s)*getSpeed(s); }
+
+
 	// STRESS
 	virtual double getStress( const SimTK::State& s ) const;
 

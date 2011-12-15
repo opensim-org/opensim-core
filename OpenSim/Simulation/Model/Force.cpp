@@ -126,7 +126,6 @@ void Force::createSystem(SimTK::MultibodySystem& system) const
 	// Keep track of the subystem the force is a part of in case subclasses want to 
 	// extend by adding states, etc...
 	mutableThis->setIndexOfSubsystemForAllocations(_model->updForceSubsystem().getMySubsystemIndex());
-
 	ModelComponent::createSystem(system);
 }
 

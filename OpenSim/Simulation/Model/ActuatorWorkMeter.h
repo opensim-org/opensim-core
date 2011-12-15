@@ -90,6 +90,9 @@ public:
 
 	virtual double getWork(const SimTK::State& state) const;
 
+	virtual std::string getStateVariableName(int index) const;
+	virtual int getStateVariableYIndex(int index) const;
+
 protected:
 	// Model component interface
 	virtual void setup(Model& aModel);
@@ -97,6 +100,7 @@ protected:
 	virtual void initState(SimTK::State& state) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
 	virtual int getNumStateVariables() const { return 1; };
+	
 	SimTK::Vector ActuatorWorkMeter::computeStateVariableDerivatives(const SimTK::State& s) const;
 
 private:

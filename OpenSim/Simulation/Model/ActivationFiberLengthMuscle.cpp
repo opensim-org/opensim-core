@@ -141,7 +141,7 @@ void ActivationFiberLengthMuscle::equilibrate(SimTK::State& state) const
 	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
 	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
 
-	mutableThis->_model->addModelComponent(this);
+	//mutableThis->_model->addModelComponent(mutableThis);
  }
 
  void ActivationFiberLengthMuscle::initState( SimTK::State& s) const
@@ -149,9 +149,6 @@ void ActivationFiberLengthMuscle::equilibrate(SimTK::State& state) const
     Actuator::initState(s);
 
 	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
-
-	// keep track of the index for the first state variable derivatives in the cache 
-	mutableThis->_zIndex = getZIndex("activation");
 
 	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);
@@ -526,9 +523,10 @@ double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStif
 
 int ActivationFiberLengthMuscle::getStateVariableYIndex(int index) const
 {
+	const SimTK::State &s = _model->getMultibodySystem().getDefaultState();
 	if (index == 0)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex;
+		return s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex("activation");
 	if (index == 1)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+_zIndex+1;
-	throw Exception("Trying to get Coordinate State variable YIndex for Coordinate "+getName()+" at undefined index"); 
+		return s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex("fiber_length");
+	throw Exception("ActivationFiberLengthMuscle::getStateVariableYIndex : "+getName()+" at undefined index"); 
 }

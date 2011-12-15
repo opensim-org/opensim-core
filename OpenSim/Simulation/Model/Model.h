@@ -154,6 +154,10 @@ private:
     PropertyObj _contactGeometrySetProp;
     ContactGeometrySet &_contactGeometrySet;
 
+	/** Set containing the user define components in this model. */
+    PropertyObj _componentSetProp;
+    ModelComponentSet<ModelComponent> &_componentSet;
+
 	// WORK VARIABLES
 
 	/** Assembly solver used for satisfying constraints and other configuration goals */
@@ -332,51 +336,18 @@ public:
     SimTK::DecorationSubsystem& updDecorationSubsystem() {return *_decorationSubsystem; }
 
 	virtual int getNumStateVariables() const;
-	//void getModelComponents(ArrayPtrs<const OpenSim::ModelComponent>& comps) const { comps=_modelComponents; }
-protected:
-#ifndef SWIG
-	/**
-	 * Assignment operator.
-	 *
-	 * @return Reference to this object.
-	 */
-	Model& operator=(const Model &Model);
-#endif
 
-    void setDefaultProperties();
-	virtual void setup(Model& aModel) {setup();};
-
-	virtual void createSystem(SimTK::MultibodySystem& system) const {}; 
-	virtual void createSystem();
-
-    virtual void initState(SimTK::State& state) const;
-	void createGroundBodyIfNecessary();
-private:
-
-	/** Set the values of all data members to an appropriate "null" value. */
-	void setNull();
-    friend class ForceSet;
-	/** Internal method to check that specified mass properties for the bodies are physically possible
-	 * that is, satisfy the triangular inequality condition specified in the Docygen doc. of SimTK::MassPRoperties
-	 * If not true, then the values are forced to satisfy the inequality and a warning is issued.
-	 */
-	void validateMassProperties(bool fixMassProperties=true);
-
-	void createAssemblySolver(const SimTK::State& s);
-public:
 	//--------------------------------------------------------------------------
 	// CREATE THE MULTIBODY SYSTEM
 	//--------------------------------------------------------------------------
 	/**
 	 * Add ModelComponents to the Model. Model takes ownership of the objects.
 	 */
+	virtual void addComponent(ModelComponent* aComponent);
 	virtual void addBody(Body *aBody);
 	virtual void addConstraint(Constraint *aConstraint);
 	virtual void addForce(Force *aForce);
 	virtual void addContactGeometry(ContactGeometry *aContactGeometry);
-	void addModelComponent(const ModelComponent* aComponent) {
-		_modelComponents.append(aComponent);
-	}
 
 	//--------------------------------------------------------------------------
 	// FILE NAME
@@ -654,7 +625,7 @@ public:
    virtual const BodySet& getBodySet() const { return _bodySet; }
 
    virtual JointSet& updJointSet(); 
-   virtual const JointSet& getJointSet();
+   virtual const JointSet& getJointSet() const;
 
    virtual AnalysisSet& updAnalysisSet() {return _analysisSet; }
    virtual const AnalysisSet& getAnalysisSet() const {return _analysisSet; }
@@ -777,6 +748,42 @@ public:
 	 * @return reference to the object if found or throws an exception.
 	 */
 	const Object& getObjectByTypeAndName(const std::string& typeString, const std::string& nameString) SWIG_DECLARE_EXCEPTION;
+
+
+protected:
+
+#ifndef SWIG
+	/**
+	 * Assignment operator.
+	 *
+	 * @return Reference to this object.
+	 */
+	Model& operator=(const Model &Model);
+#endif
+
+    void setDefaultProperties();
+	virtual void setup(Model& aModel) {setup();};
+
+	virtual void createSystem(SimTK::MultibodySystem& system) const; 
+	virtual void createSystem();
+
+    virtual void initState(SimTK::State& state) const;
+	void createGroundBodyIfNecessary();
+
+
+private:
+	/** Set the values of all data members to an appropriate "null" value. */
+	void setNull();
+
+	/** Internal method to check that specified mass properties for the bodies are physically possible
+	 * that is, satisfy the triangular inequality condition specified in the Docygen doc. of SimTK::MassPRoperties
+	 * If not true, then the values are forced to satisfy the inequality and a warning is issued.
+	 */
+	void validateMassProperties(bool fixMassProperties=true);
+
+	void createAssemblySolver(const SimTK::State& s);
+
+	friend void ModelComponent::setup(Model& model);
 
 //=============================================================================
 };	// END of class Model

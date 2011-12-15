@@ -92,6 +92,8 @@ Model::Model() :
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
+	_componentSetProp(PropertyObj("UserComponents", ModelComponentSet<ModelComponent>())),
+    _componentSet((ModelComponentSet<ModelComponent>&)_componentSetProp.getValueObj()),
     _markerSetProp(PropertyObj("", MarkerSet())),
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
@@ -129,6 +131,8 @@ Model::Model(const string &aFileName) :
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
+	_componentSetProp(PropertyObj("UserComponents", ModelComponentSet<ModelComponent>())),
+    _componentSet((ModelComponentSet<ModelComponent>&)_componentSetProp.getValueObj()),
     _markerSetProp(PropertyObj("", MarkerSet())),
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
@@ -172,6 +176,8 @@ Model::Model(const Model &aModel) :
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
+	_componentSetProp(PropertyObj("UserComponents", ModelComponentSet<ModelComponent>())),
+    _componentSet((ModelComponentSet<ModelComponent>&)_componentSetProp.getValueObj()),
     _markerSetProp(PropertyObj("", MarkerSet())),
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
@@ -513,20 +519,29 @@ void Model::createSystem()
 	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
 	_gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
+	createSystem(*_system);
+}
+
+// ModelComponent interface enables this model to be treated as a subcomponent of another model by 
+// creating components in its system.
+void Model::createSystem(SimTK::MultibodySystem& system) const
+{
+	Model *mutableThis = const_cast<Model *>(this);
+
 	// Reset the vector of all controls' defaults
-	_defaultControls.resize(0);
+	mutableThis->_defaultControls.resize(0);
 
 	// Create the shared cache that will hold all model controls
 	// This must be created before Actuator.createSystem() since Actuator will append 
 	// its "slots" and retain its index by accessing this cached Vector
 	Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), Stage::Velocity, Stage::Acceleration);
-	_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
+	mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 
     // Let all the ModelComponents add their parts to the System.
     static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Bodies..." << endl;
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Bodies." << endl;
 	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Joints..." << endl;
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Joints." << endl;
 	for(int i=0;i<getBodySet().getSize();i++) {
 		OpenSim::Body& body = getBodySet().get(i);
 		MobilizedBodyIndex idx(body.getIndex());
@@ -535,24 +550,34 @@ void Model::createSystem()
 	}
 
     static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Constraints..." << endl;
-    static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Contact Geometry..." << endl;
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Constraints." << endl;
 
+	static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Contact Geometry." << endl;
 
     // Add extra constraints for coordinates.
 	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished adding constraints for coordinates.." << endl;
+	if (getDebugLevel()>=2) cout << "Finished adding constraints for Coordinates." << endl;
 
     static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for forces.." << endl;
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Forces." << endl;
 
 	// controllers add their parts to the System.
     static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for controllers.." << endl;
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Controllers." << endl;
 
-	// Model is a model component so it should do its model component creation too
-	ModelComponent::createSystem(*_system);
+	// additional user added/create Components
+	_componentSet.createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for user added Components." << endl;
+}
+
+//_____________________________________________________________________________
+/**
+ * Add any Component derived from ModelComponent to the Model.
+ */
+void Model::addComponent(ModelComponent* aComponent) {
+	_componentSet.append(aComponent);
+	_componentSet.setup(*this);
 }
 
 //_____________________________________________________________________________
@@ -635,12 +660,12 @@ void Model::setup()
 	updForceSet().setup(*this);
 	updControllerSet().setup(*this);
 
+	_componentSet.setup(*this);
+
 	// TODO: Get rid of the SimbodyEngine
 	updSimbodyEngine().setup(*this);
 
 	updAnalysisSet().setModel(*this);
-
-	ModelComponent::setup(*this);
 }
 
 /**
@@ -725,8 +750,7 @@ void Model::initState(SimTK::State& state) const
     _contactGeometrySet.initState(state);
     _jointSet.initState(state);
     _forceSet.initState(state);
-
-	ModelComponent::initState(state);
+	_componentSet.initState(state);
 }
 
 void Model::setDefaultsFromState(const SimTK::State& state)
@@ -736,6 +760,7 @@ void Model::setDefaultsFromState(const SimTK::State& state)
     _contactGeometrySet.setDefaultsFromState(state);
     _jointSet.setDefaultsFromState(state);
     _forceSet.setDefaultsFromState(state);
+	_componentSet.setDefaultsFromState(state);
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)
@@ -972,7 +997,7 @@ void Model::getStateNames(OpenSim::Array<string> &rStateNames, bool includeInter
 			//cout << comp->getStateVariableName(j) << ", " <<
 			//	    comp->getStateVariableYIndex(j) << endl;
 			allStateNames[comp->getStateVariableYIndex(j)] = comp->getStateVariableName(j);
-}
+		}
 	}
 	if (includeInternalStates)
 		rStateNames = allStateNames;
@@ -1467,9 +1492,8 @@ JointSet& Model::updJointSet()
     return _jointSet;
 }
 
-const JointSet& Model::getJointSet()
+const JointSet& Model::getJointSet() const
 {
-
     return _jointSet;
 }
 
@@ -1661,6 +1685,7 @@ void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
 }
 void Model::disownAllComponents()
 {
+	_componentSet.setMemoryOwner(false);
 	updBodySet().setMemoryOwner(false);
 	updConstraintSet().setMemoryOwner(false);
 	updForceSet().setMemoryOwner(false);

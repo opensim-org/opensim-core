@@ -208,6 +208,13 @@ public:
 		throw Exception("This ModelComponent has no state variables");
 	}
 
+	 /**
+     * Get the System Index of a state variable allocated by this ModelComponent.  
+     * Returns an InvalidIndex if no state variable with the name provided is found.
+     * @param stateVariableName   the name of the state variable 
+     */
+	virtual SimTK::SystemYIndex getStateVariableSystemIndex(std::string stateVariableName) const;
+
     /**
      * Get the value of a state variable allocated by this ModelComponent by index.
 	 * TODO: This should be deprecated to use name only to avoid any confusion.

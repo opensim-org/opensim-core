@@ -138,7 +138,7 @@ setControlSetFileName( const std::string&  controlSetFileName )
 void ControlSetController::
 setupProperties()
 {
-    std::string comment = "XML file containing the controls for the controlSet.";
+    std::string comment = "A Storage (.sto) or an XML control nodes file containing the controls for this controlSet.";
     _controlsFileNameProp.setComment(comment);
     _controlsFileNameProp.setName("controls_file");
     _propertySet.append( &_controlsFileNameProp );
