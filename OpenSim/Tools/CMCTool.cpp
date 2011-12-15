@@ -719,7 +719,7 @@ bool CMCTool::run()
 
 	cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
 	optimizer->setDiagnosticsLevel(_printLevel);
-	cout<<"Setting optimizer convergence criterion to "<<_optimizationConvergenceTolerance<<".\n";
+	cout<<"Setting optimizer convergence tolerance to "<<_optimizationConvergenceTolerance<<".\n";
 	optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
 	cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
 	optimizer->setMaxIterations(_maxIterations);
