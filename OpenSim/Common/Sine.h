@@ -72,11 +72,12 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	Sine() : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_omegaProp.getValueDbl()) {};
+	Sine() : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_omegaProp.getValueDbl()) { setupProperties();}
 	// Convenience Constructor
-	Sine(double amplitude, double omega, double phase) : _amplitude(amplitude), _omega(omega), _phase(phase) {};
+	Sine(double amplitude, double omega, double phase) : _amplitude(amplitude), _omega(omega), _phase(phase) { setupProperties(); }
 	// Copy Constructor
 	Sine(const Sine &aFunc): _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_omegaProp.getValueDbl()) {
+			setupProperties();
 			_amplitude = aFunc._amplitude;  _omega = aFunc._omega;  _phase = aFunc._phase; 
 	};
 	virtual ~Sine() {};
@@ -87,6 +88,7 @@ public:
 
 private:
 	void setupProperties() {
+		setType("Sine");
 		_amplitudeProp.setName("amplitude");
 		_amplitudeProp.setComment("amplitude of the sinusoidal function");
 		_amplitudeProp.setValue(1);
