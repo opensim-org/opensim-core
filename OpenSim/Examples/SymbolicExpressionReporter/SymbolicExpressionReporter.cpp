@@ -236,14 +236,12 @@ constructColumnLabels()
 int SymbolicExpressionReporter::
 record(const SimTK::State& s)
 {
- 
 	if(_model==NULL) return(-1);
 
 	// MAKE SURE ALL QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 	// Get state variable names and values in same order and use that to update map
-	Array<std::string> stateNames;
-	_model->getStateNames(stateNames);
+	Array<std::string> stateNames = _model->getStateVariableNames();
 	Array<double> rStateValues;
 	_model->getStateValues(s, rStateValues);
 
@@ -282,8 +280,7 @@ begin( SimTK::State& s)
 	// RESET STORAGE
 	_resultStore.reset(s.getTime());
 	// Populate list of names, initial values from s
-	Array<std::string> stateNames;
-	_model->getStateNames(stateNames);
+	Array<std::string> stateNames = _model->getStateVariableNames();
 	for(int i=0; i< stateNames.getSize(); i++){
 		_variables.insert(pair<string, double>(stateNames[i], 0.0));
 	}

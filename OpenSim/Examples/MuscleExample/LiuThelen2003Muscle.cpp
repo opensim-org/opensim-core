@@ -196,22 +196,6 @@ void LiuThelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 	mutableThis->addStateVariables(stateVariables);
 }
 
-/**
- * Get the name of a state variable, given its index.
- *
- * @param aIndex The index of the state variable to get.
- * @return The name of the state variable.
- */
-string LiuThelen2003Muscle::getStateVariableName(int aIndex) const
-{
-	if(aIndex == 2)
-		return getName() + ".active_motor_units";
-	else if (aIndex == 3)
-		return getName() + ".fatigued_motor_units";
-	else
-		return Thelen2003Muscle::getStateVariableName(aIndex);
-}
-
 void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const
 {
 	// Reasonable initial activation value
@@ -453,11 +437,3 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 	return Thelen2003Muscle::computeIsometricForce(s, aActivation);
 }
 
-int LiuThelen2003Muscle::getStateVariableYIndex(int index) const
-{
-	if (index == 2)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+getZIndex("active_motor_units");
-	if (index == 3)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+getZIndex("fatigued_motor_units");
-	return Thelen2003Muscle::getStateVariableYIndex(index);
-}

@@ -167,11 +167,8 @@ public:
 	// objects to see if they are instances of this muscle class.
 	OPENSIM_DECLARE_DERIVED(LiuThelen2003Muscle, Actuator);
 	
-	virtual int getStateVariableYIndex(int index) const;
-
 protected:
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual std::string LiuThelen2003Muscle::getStateVariableName(int aIndex) const;
 
 private:
 	void setNull();
