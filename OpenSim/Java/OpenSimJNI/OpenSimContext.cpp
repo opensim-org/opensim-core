@@ -47,7 +47,7 @@ void OpenSimContext::getStates( double* statesBuffer) {
         Array<double> rStateValues; 
 		_model->getStateValues(*_configState, rStateValues);
 		//string statedump= _configState->toString();
-        for(int i=0;i<_model->getNumStates();i++ ) *(statesBuffer+i) = rStateValues[i];
+        for(int i=0;i<_model->getNumStateVariables();i++ ) *(statesBuffer+i) = rStateValues[i];
 }
 
 void OpenSimContext::getStates( Array<double>&  rStates) {

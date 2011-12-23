@@ -202,7 +202,7 @@ class AnalysisWrapper : public Analysis {
 public:
 	AnalysisWrapper(Model *aModel=0):
 	  Analysis(aModel),
-	  statesCacheSize(aModel->getNumStates()){
+	  statesCacheSize(aModel->getNumStateVariables()){
 		statesCache = new double[statesCacheSize];
 		simulationTime = -1.0;
 	}
