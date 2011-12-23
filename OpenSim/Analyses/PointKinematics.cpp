@@ -337,7 +337,7 @@ setModel(Model& aModel)
 	if (_dy != 0)
 		delete[] _dy;
 
-	_dy = new double[_model->getNumStates()];
+	_dy = new double[_model->getNumStateVariables()];
 
 	// DESCRIPTION AND LABELS
 	constructDescription();

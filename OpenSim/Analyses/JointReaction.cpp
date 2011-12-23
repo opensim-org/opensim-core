@@ -545,7 +545,7 @@ setModel(Model& aModel)
 	constructDescription();
 	constructColumnLabels();
 	//setupStorage();
-	_dydt.setSize(_model->getNumStates());
+	_dydt.setSize(_model->getNumStateVariables());
 	int numJoints = _reactionList.getSize();
 	// set size of working array of loads.  Each load has 3 components each
 	// for force, moment, and point of application

@@ -328,10 +328,10 @@ record(const SimTK::State& s)
 	int nacc = _accelerationIndices.getSize();
 
 	// IPOPT
-	_optimizerDX = 0.0001;
+	_numericalDerivativeStepSize = 0.0001;
 	_optimizerAlgorithm = "ipopt";
 	_printLevel = 0;
-	_convergenceCriterion = 1e-004;
+	_optimizationConvergenceTolerance = 1e-004;
 	_maxIterations = 2000;
 
 	// Optimization target
@@ -340,7 +340,7 @@ record(const SimTK::State& s)
 	target.setStatesStore(_statesStore);
 	target.setStatesSplineSet(_statesSplineSet);
 	target.setActivationExponent(_activationExponent);
-	target.setDX(_optimizerDX);
+	target.setDX(_numericalDerivativeStepSize);
 
 	// Pick optimizer algorithm
 	SimTK::OptimizerAlgorithm algorithm = SimTK::InteriorPoint;
@@ -352,8 +352,8 @@ record(const SimTK::State& s)
 	// Optimizer options
 	//cout<<"\nSetting optimizer print level to "<<_printLevel<<".\n";
 	optimizer->setDiagnosticsLevel(_printLevel);
-	//cout<<"Setting optimizer convergence criterion to "<<_convergenceCriterion<<".\n";
-	optimizer->setConvergenceTolerance(_convergenceCriterion);
+	//cout<<"Setting optimizer convergence criterion to "<<_optimizationConvergenceTolerance<<".\n";
+	optimizer->setConvergenceTolerance(_optimizationConvergenceTolerance);
 	//cout<<"Setting optimizer maximum iterations to "<<_maxIterations<<".\n";
 	optimizer->setMaxIterations(_maxIterations);
 	optimizer->useNumericalGradient(false);

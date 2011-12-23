@@ -87,10 +87,10 @@ protected:
 	bool _ownsForceSet;
 	ForceSet* _forceSet;
 
-	double _optimizerDX;
+	double _numericalDerivativeStepSize;
 	std::string _optimizerAlgorithm;
 	int _printLevel;
-	double _convergenceCriterion;
+	double _optimizationConvergenceTolerance;
 	int _maxIterations;
 
 	Model *_modelWorkingCopy;

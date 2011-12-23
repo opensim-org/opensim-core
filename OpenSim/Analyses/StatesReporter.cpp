@@ -202,8 +202,7 @@ constructColumnLabels()
 	if (_model)
 	{
 		// ASSIGN
-		Array<string> columnLabels;
-		_model->getStateNames(columnLabels);
+		Array<string> columnLabels = _model->getStateVariableNames();
 		columnLabels.insert(0, "time");		
 		_statesStore.setColumnLabels(columnLabels);
 	}
