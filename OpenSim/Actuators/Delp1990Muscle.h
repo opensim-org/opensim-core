@@ -151,14 +151,12 @@ public:
 	virtual Function* getForceVelocityCurve() const;
 	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
-	virtual int getStateVariableYIndex(int index) const;
 	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, ActivationFiberLengthMuscle);
 
 protected:
 	// Model Component Interface
 	virtual void setup(Model& aModel);
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual std::string Delp1990Muscle::getStateVariableName(int aIndex) const;
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:

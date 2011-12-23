@@ -264,20 +264,6 @@ void Delp1990Muscle::createSystem(SimTK::MultibodySystem& system) const
 	mutableThis->addStateVariables(stateVariables);
  }
 
- //_____________________________________________________________________________
-/**
- * Get the name of a state variable, given its index.
- *
- * @param aIndex The index of the state variable to get.
- * @return The name of the state variable.
- */
-string Delp1990Muscle::getStateVariableName(int aIndex) const
-{
-	if (aIndex == STATE_FIBER_VELOCITY)
-		return getName() + ".fiber_velocity";
-	else
-		return ActivationFiberLengthMuscle::getStateVariableName(aIndex);
-}
 
 void Delp1990Muscle::setActiveForce( const SimTK::State& s, double force ) const {
     setCacheVariable<double>(s, "activeForce", force);
@@ -620,7 +606,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 	double length = getLength(s);
 
 	// rough initial guess of fiber length
-	setStateVariable(s, "fiber_length",  length - _tendonSlackLength);
+	setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length - _tendonSlackLength);
 
 	// Make first guess of fiber and tendon lengths. Make fiber length equal to
 	// optimal_fiber_length so that you start in the middle of the active+passive
@@ -637,7 +623,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 	if (_tendonSlackLength < ROUNDOFF_ERROR) {
 		tendon_length = 0.0;
 		cos_factor = cos(atan(muscle_width / length));
-		setStateVariable(s, "fiber_length",  length / cos_factor);
+		setStateVariable(s, STATE_FIBER_LENGTH_NAME,  length / cos_factor);
 
 		setActiveForce(s, getActiveForceLengthCurve()->calcValue(SimTK::Vector(1, getFiberLength(s) / _optimalFiberLength)) * aActivation * _maxIsometricForce);
 		if (getActiveForce(s) < 0.0)
@@ -651,7 +637,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 		setForce(s, getTendonForce(s));
 	} else if (length < _tendonSlackLength) {
 		tendon_length = length;
-		setStateVariable(s, "fiber_length",  muscle_width);
+		setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
 		setActiveForce(s, 0.0);
 		setPassiveForce(s, 0.0);
 		setTendonForce(s, 0.0);
@@ -667,9 +653,9 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 		if (tendon_length < _tendonSlackLength) {
 			tendon_length = _tendonSlackLength;
 			cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-			setStateVariable(s, "fiber_length",   (length - tendon_length) / cos_factor );
+			setStateVariable(s, STATE_FIBER_LENGTH_NAME,   (length - tendon_length) / cos_factor );
 			if (getFiberLength(s) < muscle_width)
-				setStateVariable(s, "fiber_length",  muscle_width);
+				setStateVariable(s, STATE_FIBER_LENGTH_NAME,  muscle_width);
 		}
 	}
 
@@ -711,7 +697,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 			percent = DABS(error_force) / (DABS(error_force) + DABS(old_error_force));
 			tmp_fiber_length = old_fiber_length;
 			old_fiber_length = getFiberLength(s);
-			setStateVariable(s, "fiber_length",  getFiberLength(s)+ percent * (tmp_fiber_length - getFiberLength(s)) );
+			setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s)+ percent * (tmp_fiber_length - getFiberLength(s)) );
 		} else {
 			// Estimate the stiffnesses of the tendon and the fibers. If tendon
 			// stiffness is too low, then the next length guess will overshoot
@@ -754,9 +740,9 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 			old_fiber_length = getFiberLength(s);
 
 			if (error_force > 0.0)
-				setStateVariable(s, "fiber_length",  getFiberLength(s) + length_change);
+				setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) + length_change);
 			else
-				setStateVariable(s, "fiber_length",  getFiberLength(s) - length_change);
+				setStateVariable(s, STATE_FIBER_LENGTH_NAME,  getFiberLength(s) - length_change);
 
 		}
 
@@ -768,7 +754,7 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 		if (tendon_length < _tendonSlackLength) {
 			tendon_length = _tendonSlackLength;
 			cos_factor = cos(atan(muscle_width / (length - tendon_length)));
-			setStateVariable(s, "fiber_length",  (length - tendon_length) / cos_factor );
+			setStateVariable(s, STATE_FIBER_LENGTH_NAME,  (length - tendon_length) / cos_factor );
 		}
 	}
 
@@ -778,11 +764,4 @@ double Delp1990Muscle::computeIsometricForce(SimTK::State& s, double aActivation
 	setActiveForce(s, getActiveForce(s) * _maxIsometricForce);
 
 	return tendon_force;
-}
-
-int Delp1990Muscle::getStateVariableYIndex(int index) const
-{
-	if (index == 2)
-		return _model->getMultibodySystem().getDefaultState().getZStart()+ getZIndex("fiber_velocity");
-	return ActivationFiberLengthMuscle::getStateVariableYIndex(index);
 }
