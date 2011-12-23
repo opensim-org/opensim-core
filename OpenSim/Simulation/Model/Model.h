@@ -192,8 +192,9 @@ private:
 	ArrayPtrs<const ModelComponent> _modelComponents;
 
 private:
-	OpenSim::Array<std::string>	_stateNames;
-	OpenSim::Array<int>			_stateYIndices;
+	// Members for fast access of state variables in the underlying SimTK::System
+	OpenSim::Array<std::string>	_stateVariableNames;
+	OpenSim::Array<SimTK::SystemYIndex>	_stateVariableSystemIndices;
     class DefaultGeometry;
 
 //=============================================================================
@@ -443,12 +444,6 @@ public:
 	// NUMBERS
 	//--------------------------------------------------------------------------
 	/**
-	 * Get the number of states in the model.
-	 * @return Number of states.
-	 */
-	virtual int getNumStates(bool includeSimTKStates=false) const;
-
-	/**
 	 * Get the number of markers in the model.
 	 * @return Number of markers.
 	 */
@@ -576,12 +571,9 @@ public:
 
 	/**
 	 * Get the names of the states. These are the continuous states introduced by OpenSim
-	 * ModelComponents and exposed thru the ModelComponent API. Other internal SimTK states
-	 * may exist, but we have no way to name them or access them otherwise..
-	 *
-	 * @param rStateNames Array of state names..
+	 * ModelComponents and exposed thru the ModelComponent API. 
 	 */
-	virtual void getStateNames(Array<std::string> &rStateNames, bool includeInternalStates=false) const;
+	virtual Array<std::string> getStateVariableNames() const;
 	
 	/**
 	 * Get the values of state variables in the same ordering as getStateNames. values are
@@ -770,6 +762,7 @@ protected:
     virtual void initState(SimTK::State& state) const;
 	void createGroundBodyIfNecessary();
 
+	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
 private:
 	/** Set the values of all data members to an appropriate "null" value. */

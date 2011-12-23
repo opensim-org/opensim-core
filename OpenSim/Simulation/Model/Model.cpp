@@ -391,8 +391,8 @@ SimTK::State& Model::initSystem()
 		getValidationLog() << endl;
 	
 	_modelComponents.setSize(0);	// Make sure we start on a clean slate
-	_stateNames.setSize(0);
-	_stateYIndices.setSize(0);
+	_stateVariableNames.setSize(0);
+	_stateVariableSystemIndices.setSize(0);
 	setup();
 	createSystem();
     getMultibodySystem().realizeTopology();
@@ -404,7 +404,6 @@ SimTK::State& Model::initSystem()
 	getMultibodySystem().realizeModel(s);
 
     initState(s);
-	getStateNames(_stateNames);
 
     getMultibodySystem().realize(s, Stage::Position );
 
@@ -569,6 +568,17 @@ void Model::createSystem(SimTK::MultibodySystem& system) const
 	// additional user added/create Components
 	_componentSet.createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished createSystem for user added Components." << endl;
+}
+
+/**
+ * Get the system index of any state variable belonging to the Model (and any of its ModelComponents).
+ */
+SimTK::SystemYIndex Model::getStateVariableSystemIndex(const string &stateVariableName) const
+{
+	int i = _stateVariableNames.findIndex(stateVariableName);
+	if(i < 0)
+		throw Exception("Model::getStateVariableSystemIndex : state variable "+stateVariableName+" not found.");
+	return _stateVariableSystemIndices[i];
 }
 
 //_____________________________________________________________________________
@@ -751,6 +761,43 @@ void Model::initState(SimTK::State& state) const
     _jointSet.initState(state);
     _forceSet.initState(state);
 	_componentSet.initState(state);
+
+	// All model components have allocated their state variables so we can speed up access
+	// through model if we build a flat list of available state variables by name an their
+	// corresponding system index in the underlying SimTK::System
+	Model *mutableThis = const_cast<Model *>(this);
+
+	// underlying system can have more states than defined by model components
+	// model components may also have more underlying states than they expose
+	int nssv = state.getNY(); // the total number of state variables in the underlying system
+
+	// initially size arrays to handle all state variables even hidden ones
+	mutableThis->_stateVariableNames.setSize(nssv);
+	mutableThis->_stateVariableSystemIndices.setSize(nssv);
+
+	for(int i=0; i< _modelComponents.getSize(); i++){
+		const ModelComponent* comp=_modelComponents.get(i);
+		int ncsv = comp->getNumStateVariables();				//number of state vars for component
+		Array<string> names = comp->getStateVariableNames();
+
+		assert(names.getSize() == ncsv);
+
+		for(int j=0; j < ncsv; j++){
+			SimTK::SystemYIndex iy = comp->getStateVariableSystemIndex(names[j]);
+			mutableThis->_stateVariableNames[iy] = names[j];
+			mutableThis->_stateVariableSystemIndices[iy] = iy ;
+		}
+	}
+	// now prune out all unnamed state variables that were intended to be hidden
+	for(int i=0; i< nssv; i++){
+		if(_stateVariableNames[i] == ""){
+			mutableThis->_stateVariableNames.remove(i);
+			mutableThis->_stateVariableSystemIndices.remove(i);
+			nssv--; i--; // decrement the size and count by one
+		}
+	}
+	assert(nssv == getNumStateVariables());
+
 }
 
 void Model::setDefaultsFromState(const SimTK::State& state)
@@ -863,10 +910,6 @@ int Model::getNumMarkers() const
 int Model::getNumContactGeometries() const
 {
 	return _contactGeometrySet.getSize();
-}
-int Model::getNumStates(bool includeSimTKStates) const 
-{
-	return( includeSimTKStates?_system->getDefaultState().getNY():_stateNames.getSize() );
 }
 
 /**
@@ -982,49 +1025,23 @@ int Model::getNumAnalyses() const
 /**
  * Get the names of the states.
  *
- * @param rStateNames Array of state names..
  */
-void Model::getStateNames(OpenSim::Array<string> &rStateNames, bool includeInternalStates) const
+Array<std::string> Model::getStateVariableNames() const
 {
-
-	std::string internalStatesName="_unnamedState_";
-	OpenSim::Array<string> allStateNames(internalStatesName, _system->updDefaultState().getY().size());
-	//cout << "All states " << _system->updDefaultState().getY().size() << endl;
-	for(int i=0; i< _modelComponents.getSize(); i++){
-		const ModelComponent* comp=_modelComponents.get(i);
-		int numStates = comp->getNumStateVariables();
-		for(int j=0; j < numStates; j++){
-			//cout << comp->getStateVariableName(j) << ", " <<
-			//	    comp->getStateVariableYIndex(j) << endl;
-			allStateNames[comp->getStateVariableYIndex(j)] = comp->getStateVariableName(j);
-		}
-	}
-	if (includeInternalStates)
-		rStateNames = allStateNames;
-	else { // pack allStateNames into rStateNames removing internalStates
-		rStateNames.setSize(0);
-		Model* mutableThis = const_cast<Model *>(this);
-		mutableThis->_stateYIndices.setSize(0);
-		//int j=0;
-		for(int i=0; i< allStateNames.getSize(); i++)
-			if (allStateNames[i]!= internalStatesName) {
-				rStateNames.append(allStateNames[i]);
-				mutableThis->_stateYIndices.append(i);
-			}
-	}
+	return _stateVariableNames;
 }
 
 void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) const
 {
-	rStateValues.setSize(getNumStates());
-	for(int i=0; i< _stateYIndices.getSize(); i++) 
-		rStateValues[i] = s.getY()[_stateYIndices[i]];
+	rStateValues.setSize(getNumStateVariables());
+	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) 
+		rStateValues[i] = s.getY()[_stateVariableSystemIndices[i]];
 }
 void Model::setStateValues(SimTK::State& s, double* aStateValues) const
 {
 	const SimTK::Stage& currentStage=s.getSystemStage();
-	for(int i=0; i< _stateYIndices.getSize(); i++) // initialize to NaN
-			s.updY()[_stateYIndices[i]]=aStateValues[i]; 
+	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) // initialize to NaN
+			s.updY()[_stateVariableSystemIndices[i]]=aStateValues[i]; 
 	 _system->realize(s, SimTK::Stage::Velocity );
 }
 //=============================================================================
@@ -1279,8 +1296,7 @@ void Model::printDetailedInfo(const SimTK::State& s, std::ostream &aOStream) con
 	aOStream<<"\nCONTACTS ("<<n<<")" << std::endl;
 
 */
-	Array<string> stateNames("");
-	getStateNames(stateNames);
+	Array<string> stateNames = getStateVariableNames();
 	aOStream<<"\nSTATES ("<<stateNames.getSize()<<")"<<std::endl;
 	for(int i=0;i<stateNames.getSize();i++) aOStream<<"y["<<i<<"] = "<<stateNames[i]<<std::endl;
 }
@@ -1604,9 +1620,8 @@ void Model::setAllControllersEnabled( bool enabled ) {
  */
 void Model::formStateStorage(const Storage& originalStorage, Storage& statesStorage)
 {
-	Array<string> rStateNames;
-	getStateNames(rStateNames);
-    int numStates = getNumStates();
+	Array<string> rStateNames =	getStateVariableNames();
+    int numStates = getNumStateVariables();
 	// make sure same size, otherwise warn
 	if (originalStorage.getSmallestNumberOfStates() != rStateNames.getSize()){
 		cout << "Number of columns does not match in formStateStorage. Found "

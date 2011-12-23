@@ -70,6 +70,9 @@ protected:
 	static const int STATE_ACTIVATION;
 	static const int STATE_FIBER_LENGTH;
 
+	static const std::string STATE_ACTIVATION_NAME;
+	static const std::string STATE_FIBER_LENGTH_NAME;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -155,7 +158,8 @@ public:
 		return values;
 	};
 
-	virtual int getStateVariableYIndex(int index) const;
+	virtual Array<std::string> getStateVariableNames() const;
+	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
 	OPENSIM_DECLARE_DERIVED(ActivationFiberLengthMuscle, Muscle);
 
@@ -167,11 +171,9 @@ protected:
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
-	
-    virtual std::string getStateVariableName(int aIndex) const;
 
-	virtual void setStateVariableDeriv(const SimTK::State& s, std::string aStateName, double aValue) const;
-	virtual double getStateVariableDeriv(const SimTK::State& s, std::string aStateName) const;
+	virtual void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
+	virtual double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
 
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 

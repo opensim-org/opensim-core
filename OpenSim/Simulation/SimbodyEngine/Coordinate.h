@@ -226,10 +226,11 @@ public:
 	int getMobilityIndex() const { return _mobilityIndex; };
 	SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
 
-	virtual std::string getStateVariableName(int index) const;
-	virtual int getStateVariableYIndex(int index) const;
+	virtual Array<std::string> getStateVariableNames() const;
 
 	OPENSIM_DECLARE_DERIVED(Coordinate, Object); 
+
+	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
 protected:
 	/* Only model should be invoking these */
@@ -237,6 +238,7 @@ protected:
     virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
 	virtual int getNumStateVariables() const { return 2; };	// For value and Speed
+	
 
 private:
 	void setNull();

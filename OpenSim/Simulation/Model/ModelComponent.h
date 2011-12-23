@@ -96,7 +96,8 @@ public:
 		the SimTK::System level component. Should query it and add to this to obtain the total
 		number of states managed by this ModelComponent */
 	int getNumStateVariablesAddedByModelComponent() const {return _namedStateVariableIndices.size();}
-	
+	Array<std::string> getStateVariablesNamesAddedByModelComponent() const;
+
 	void realizeTopology(SimTK::State &s) const;
 	void realizeModel(SimTK::State& s) const;
     void realizeInstance(const SimTK::State& s) const;
@@ -182,47 +183,25 @@ public:
 
 
 	/**
-     * Gets the number of "Continuous" state variables maintained by the ModelComponent
+     * Get the number of "Continuous" state variables maintained by the ModelComponent
      * If the ModelComponent defines any that are of interest to the user, names should also be given
 	 */
     virtual int getNumStateVariables() const;
 
-    /**
-     * Get the name of a state variable allocated by this ModelComponent.  The default implementation
-     * throws an exception, so subclasses that allocate state variables must override it.
-     *
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
-     */
-	virtual std::string getStateVariableName(int index) const
-	{
-		throw Exception("This ModelComponent has no state variables");
-	}
-    /**
-     * Get the YIndex of a state variable allocated by this ModelComponent.  The default implementation
-     * throws an exception, so subclasses that allocate state variables must override it.
-     *
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
-     */
-	virtual int getStateVariableYIndex(int index) const
-	{
-		throw Exception("This ModelComponent has no state variables");
-	}
-
-	 /**
+   /**
      * Get the System Index of a state variable allocated by this ModelComponent.  
      * Returns an InvalidIndex if no state variable with the name provided is found.
      * @param stateVariableName   the name of the state variable 
      */
-	virtual SimTK::SystemYIndex getStateVariableSystemIndex(std::string stateVariableName) const;
+	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
-    /**
-     * Get the value of a state variable allocated by this ModelComponent by index.
-	 * TODO: This should be deprecated to use name only to avoid any confusion.
-     *
-     * @param state   the State for which to get the value
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
-     */
-	virtual double getStateVariable(const SimTK::State& state, int index) const;
+	/**
+     * Get the names of "continuous" state variables maintained by the ModelComponent
+	 * and its subcomponents
+	 */
+    virtual Array<std::string> getStateVariableNames() const;
+
+
     /**
      * Get the value of a state variable allocated by this ModelComponent.
      *
@@ -231,14 +210,6 @@ public:
      */
 	virtual double getStateVariable(const SimTK::State& state, const std::string &name) const;
 
-    /**
-     * Set the value of a state variable allocated by this ModelComponent.
-     *
-     * @param state   the State for which to set the value
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
-     * @param value   the value to set
-     */
-	virtual void setStateVariable(SimTK::State& state, int index, double value) const;
 
 	/**
      * Set the value of a state variable allocated by this ModelComponent by name.
@@ -252,9 +223,9 @@ public:
 	/**
      * Get the value of a discrete variable allocated by this ModelComponent by name.
      *
-     * @param state  the State for which to set the value
-     * @param name   the name of the state variable
-     * @param value  the value to get
+     * @param[in] state  the State for which to set the value
+     * @param[in] name   the name of the state variable
+     * @return	  value  the discrete variable value
      */
 	virtual double getDiscreteVariable(const SimTK::State& state, const std::string &name) const;
 	/**

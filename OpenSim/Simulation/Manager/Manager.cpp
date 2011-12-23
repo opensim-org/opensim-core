@@ -155,8 +155,7 @@ constructStorage()
 	Array<string> columnLabels;
 
 	// STATES
-	Array<string> stateNames("");
-	_model->getStateNames(stateNames);
+	Array<string> stateNames = _model->getStateVariableNames();
 	int ny = stateNames.getSize();
 	_stateStore = new Storage(512,"states");
 	columnLabels.setSize(0);

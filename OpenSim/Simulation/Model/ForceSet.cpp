@@ -433,7 +433,7 @@ getStateVariableNames(OpenSim::Array<std::string> &rNames) const
 		Actuator *act = dynamic_cast<Actuator*>(&get(i)); 
        
 		if(act) {
-            for( int j=0;j<act->getNumStateVariables(); j++ )rNames.append(act->getStateVariableName(j));
+            rNames.append(act->getStateVariableNames());
         }
 	}
 }

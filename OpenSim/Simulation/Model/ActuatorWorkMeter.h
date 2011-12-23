@@ -90,9 +90,6 @@ public:
 
 	virtual double getWork(const SimTK::State& state) const;
 
-	virtual std::string getStateVariableName(int index) const;
-	virtual int getStateVariableYIndex(int index) const;
-
 protected:
 	// Model component interface
 	virtual void setup(Model& aModel);

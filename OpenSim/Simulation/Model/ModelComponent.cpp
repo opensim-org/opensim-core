@@ -195,33 +195,18 @@ int ModelComponent::getNumStateVariables() const
 	return ns;
 }
 
-
-/* Get the value of a state variable allocated by this ModelComponent by index.
- * TODO: This should be deprecated to use name only to avoid any confusion.
- *
- * param state   the State for which to get the value
- * param index   the index of the state variable (0 to getNumStateVariables()-1) */
-double ModelComponent::getStateVariable(const SimTK::State &s, int index) const
+/**
+* Get the names of "continuous" state variables maintained by the ModelComponent
+* and its subcomponents
+*/
+Array<std::string> ModelComponent::getStateVariableNames() const
 {
-	std::map<std::string,SimTK::ZIndex>::const_iterator it;
-	it = _rep->_namedStateVariableIndices.begin();
-	
-	int cnt = 0;
-	while((it != _rep->_namedStateVariableIndices.end()) && (cnt != index)){
-		 it++; cnt++;
-	}
+	Array<std::string> names = _rep->getStateVariablesNamesAddedByModelComponent();
+	// Include the states of its subcomponents
+	for(unsigned int i=0; i<_subComponents.size(); i++)
+		names.append(_subComponents[i]->getStateVariableNames());
 
-	if(it != _rep->_namedStateVariableIndices.end()) {
-		const SimTK::Vector& z = s.getZ(getIndexOfSubsystemForAllocations());
-		return z[it->second];
-	} 
-	else{
-		std::stringstream msg;
-		msg << "ModelComponent::getStateVariable: ERR- index not found.\n " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-		return SimTK::NaN;
-	}
+	return names;
 }
 
 /* Get the value of a state variable allocated by this ModelComponent.  
@@ -246,33 +231,7 @@ double ModelComponent::getStateVariable(const SimTK::State &s, const std::string
 	}
 }
 
-/* Set the value of a state variable allocated by this ModelComponent given its index
- * for this component.
- *
- * param state   the State for which to set the value
- * param index   the index of the state variable (0 to getNumStateVariables()-1)
- * param value   the value to set */
-void ModelComponent::setStateVariable(SimTK::State &s, int index, double value) const
-{
-	std::map<std::string,SimTK::ZIndex>::const_iterator it;
-	it = _rep->_namedStateVariableIndices.begin();
-	
-	int cnt = 0;
-	while((it != _rep->_namedStateVariableIndices.end()) && (cnt != index)){
-		 it++; cnt++;
-	}
 
-	if(it != _rep->_namedStateVariableIndices.end()) {
-		SimTK::Vector& z = s.updZ(getIndexOfSubsystemForAllocations());
-		z[it->second] = value;
-	} 
-	else{
-		std::stringstream msg;
-		msg << "ModelComponent::setStateVariable: ERR- index not found.\n " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
 /* Set the value of a state variable allocated by this ModelComponent given its index
  * for this component.
  *
@@ -362,9 +321,12 @@ const SimTK::ZIndex ModelComponent::getZIndex(const std::string &name) const
 	return it->second;
 }
 
-SimTK::SystemYIndex ModelComponent::getStateVariableSystemIndex(std::string stateVariableName) const
+SimTK::SystemYIndex ModelComponent::getStateVariableSystemIndex(const std::string &stateVariableName) const
 {
-	SimTK::SystemYIndex ix(_model->getMultibodySystem().getDefaultState().getZStart(getIndexOfSubsystemForAllocations())+ getZIndex(stateVariableName));
+	const SimTK::State &s = _model->getMultibodySystem().getDefaultState();
+	SimTK::SystemYIndex ix(s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex(stateVariableName));
+	if(!(ix.isValid()))
+		throw Exception(getType()+"::getStateVariableSystemIndex : state variable "+stateVariableName+" not found."); 
 	return ix;
 }
 
@@ -406,6 +368,21 @@ ModelComponentRep::~ModelComponentRep()
 		_namedCacheVariableInfo.erase(ic++);
 	}
 }
+
+Array<std::string> ModelComponentRep::getStateVariablesNamesAddedByModelComponent() const
+{
+	std::map<std::string,SimTK::ZIndex>::const_iterator it;
+	it = _namedStateVariableIndices.begin();
+	
+	Array<std::string> names;
+
+	while(it != _namedStateVariableIndices.end()){
+		names.append(it->first);
+		it++;
+	}
+	return names;
+}
+
 
 void ModelComponentRep::realizeTopology(SimTK::State &s) const
 {

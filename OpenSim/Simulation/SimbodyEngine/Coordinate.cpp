@@ -823,22 +823,28 @@ bool Coordinate::getClamped(const SimTK::State& s) const
 //=============================================================================
 //_____________________________________________________________________________
 
-std::string Coordinate::getStateVariableName(int index) const
+Array<std::string> Coordinate::getStateVariableNames() const
 {
-	if (index==0)
-		return _name;
-	if (index==1)
-		return getSpeedName();
-	throw Exception("Trying to get Coordinate State variable name for Coorindate "+getName()+" at undefined index"); 
+	Array<std::string> stateVariableNames("",getNumStateVariables());
+	stateVariableNames[0] = getName();
+	stateVariableNames[1] = getSpeedName();
+	return stateVariableNames;
 }
-int Coordinate::getStateVariableYIndex(int index) const
+
+
+SimTK::SystemYIndex Coordinate::getStateVariableSystemIndex(const std::string &stateVariableName) const
 {
 	const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
-	int startQIndex = mb.getFirstQIndex(_model->getMultibodySystem().getDefaultState());
-	if (index==0)
-		return (_model->getMultibodySystem().getDefaultState().getQStart()+startQIndex+_mobilityIndex);
-	if (index ==1)
-		return (_model->getMultibodySystem().getDefaultState().getUStart()+startQIndex+_mobilityIndex);
-	throw Exception("Trying to get Coordinate State variable YIndex for Coorindate "+getName()+" at undefined index"); 
+	const SimTK::State &state = _model->getMultibodySystem().getDefaultState();
+	int index = -1;
 
+	if (stateVariableName == getName())
+		index = state.getQStart() + mb.getFirstQIndex(state)+ _mobilityIndex;
+	else if (stateVariableName == getSpeedName())
+		index = state.getUStart() + mb.getFirstUIndex(state)+ _mobilityIndex;
+	else
+		throw Exception("Coordinate::getStateVariableSystemIndex: state variable "+stateVariableName+" not found."); 
+	
+	SimTK::SystemYIndex ix(index);
+	return ix;
 }

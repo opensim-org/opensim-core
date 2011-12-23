@@ -44,6 +44,11 @@ const int ActivationFiberLengthMuscle::STATE_ACTIVATION = 0;
 const int ActivationFiberLengthMuscle::STATE_FIBER_LENGTH = 1;
 
 static int counter=0;
+
+const string ActivationFiberLengthMuscle::STATE_ACTIVATION_NAME = "activation";
+const string ActivationFiberLengthMuscle::STATE_FIBER_LENGTH_NAME = "fiber_length";
+
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -132,8 +137,8 @@ void ActivationFiberLengthMuscle::equilibrate(SimTK::State& state) const
 
 	Array<string> stateVariables;
 	stateVariables.setSize(2);
-	stateVariables[0] = "activation";
-	stateVariables[1] = "fiber_length";
+	stateVariables[0] = STATE_ACTIVATION_NAME;
+	stateVariables[1] = STATE_FIBER_LENGTH_NAME;
 	mutableThis->addStateVariables(stateVariables);
 	
 	// Cache the computed active and passive muscle force
@@ -181,18 +186,14 @@ void ActivationFiberLengthMuscle::setDefaultFiberLength(double length) {
  * @param aIndex The index of the state variable to get.
  * @return The name of the state variable.
  */
-string ActivationFiberLengthMuscle::getStateVariableName(int aIndex) const
+Array<std::string> ActivationFiberLengthMuscle::getStateVariableNames() const
 {
-	if(aIndex == STATE_ACTIVATION)
-		return getName() + ".activation";
-	else if (aIndex == STATE_FIBER_LENGTH)
-		return getName() + ".fiber_length";
-	else {
-		std::stringstream msg;
-		msg << "ActivationFiberLengthMuscle::getStateVariableName: ERR- index out of bounds.\nActuator " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " state variables.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
+	Array<std::string> stateVariableNames = ModelComponent::getStateVariableNames();
+	// Make state variable names unique to this muscle
+	for(int i=0; i<stateVariableNames.getSize(); ++i){
+		stateVariableNames[i] = getName()+"."+stateVariableNames[i];
 	}
+	return stateVariableNames;
 }
 
 // STATES
@@ -203,7 +204,7 @@ string ActivationFiberLengthMuscle::getStateVariableName(int aIndex) const
  * @param aStateName The name of the state to set.
  * @param aValue The value to set the state to.
  */
-void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, std::string aStateName, double aValue) const
+void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const
 {
 	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
 	cacheVariable = aValue;
@@ -217,7 +218,7 @@ void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, s
  * @param aStateName the name of the state to get.
  * @return The value of the state.
  */
-double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s, std::string aStateName) const
+double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const
 {
 	return getCacheVariable<double>(s, aStateName + "_deriv");
 }
@@ -265,16 +266,16 @@ ActivationFiberLengthMuscle& ActivationFiberLengthMuscle::operator=(const Activa
 // LENGTH
 //-----------------------------------------------------------------------------
 double ActivationFiberLengthMuscle::getFiberLength(const SimTK::State& s) const {
-	return getStateVariable(s, "fiber_length");
+	return getStateVariable(s, STATE_FIBER_LENGTH_NAME);
 }
 void ActivationFiberLengthMuscle::setFiberLength(SimTK::State& s, double fiberLength) const {
-	setStateVariable(s, "fiber_length", fiberLength);
+	setStateVariable(s, STATE_FIBER_LENGTH_NAME, fiberLength);
 }
 double ActivationFiberLengthMuscle::getFiberLengthDeriv(const SimTK::State& s) const {
-	return getStateVariableDeriv(s, "fiber_length");
+	return getStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME);
 }
 void ActivationFiberLengthMuscle::setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const {
-	setStateVariableDeriv(s, "fiber_length", fiberLengthDeriv);
+	setStateVariableDeriv(s, STATE_FIBER_LENGTH_NAME, fiberLengthDeriv);
 }
 //_____________________________________________________________________________
 /**
@@ -389,16 +390,16 @@ void ActivationFiberLengthMuscle::setTendonForce(const SimTK::State& s, double f
 	setForce(s, force);
 }
 double ActivationFiberLengthMuscle::getActivation(const SimTK::State& s) const {
-	return getStateVariable(s, "activation");
+	return getStateVariable(s, STATE_ACTIVATION_NAME);
 }
 void ActivationFiberLengthMuscle::setActivation(SimTK::State& s, double activation) const {
-	setStateVariable(s, "activation", activation);
+	setStateVariable(s, STATE_ACTIVATION_NAME, activation);
 }
 double ActivationFiberLengthMuscle::getActivationDeriv(const SimTK::State& s) const {
-	return getStateVariableDeriv(s, "activation");
+	return getStateVariableDeriv(s, STATE_ACTIVATION_NAME);
 }
 void ActivationFiberLengthMuscle::setActivationDeriv(const SimTK::State& s, double activationDeriv) const {
-	setStateVariableDeriv(s, "activation", activationDeriv);
+	setStateVariableDeriv(s, STATE_ACTIVATION_NAME, activationDeriv);
 }
 //_____________________________________________________________________________
 //**
@@ -466,10 +467,10 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
 		// in the case the force is being overridden, the states aren't being used
 		// but a valid derivative cache entry is still required
 		int numStateVariables = getNumStateVariables();
+		Array<std::string> stateVariableNames = getStateVariableNames();
 		for (int i = 0; i < numStateVariables; ++i) {
-			string stateVariableName = getStateVariableName(i);
-			stateVariableName = stateVariableName.substr(stateVariableName.find('.') + 1);
-			setStateVariableDeriv(s, stateVariableName, 0.0);
+			stateVariableNames[i] = stateVariableNames[i].substr(stateVariableNames[i].find('.') + 1);
+			setStateVariableDeriv(s, stateVariableNames[i], 0.0);
 		}
     } 
 
@@ -521,12 +522,15 @@ double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStif
 	return isometricForce * normalizedForceVelocity;
 }
 
-int ActivationFiberLengthMuscle::getStateVariableYIndex(int index) const
+SimTK::SystemYIndex ActivationFiberLengthMuscle::getStateVariableSystemIndex(const string &stateVariableName) const
 {
-	const SimTK::State &s = _model->getMultibodySystem().getDefaultState();
-	if (index == 0)
-		return s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex("activation");
-	if (index == 1)
-		return s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex("fiber_length");
-	throw Exception("ActivationFiberLengthMuscle::getStateVariableYIndex : "+getName()+" at undefined index"); 
+	unsigned int start = stateVariableName.find(".");
+	unsigned int end = stateVariableName.length();
+	
+	if(start == end)
+		return ModelComponent::getStateVariableSystemIndex(stateVariableName);
+	else{
+		string localName = stateVariableName.substr(++start, end-start);
+		return ModelComponent::getStateVariableSystemIndex(localName);
+	}
 }

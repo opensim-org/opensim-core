@@ -40,6 +40,8 @@ using namespace std;
 //using namespace SimTK;
 using namespace OpenSim;
 
+static const string WORK_STATE_NAME = "work";
+
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
@@ -143,7 +145,6 @@ void ActuatorWorkMeter::setup(Model& aModel)
 	}
 }
 
-
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
@@ -154,33 +155,12 @@ void ActuatorWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 	ActuatorWorkMeter* mutableThis = const_cast<ActuatorWorkMeter *>(this);
 
 	// Assign a name to the state variable to access the work value stored in the state
-	Array<string> stateVariables("actuator_work", 1);
+	Array<string> stateVariables(_actuator->getName()+"."+WORK_STATE_NAME, 1);
 
 	// Add state variables to the underlying system
 	mutableThis->addStateVariables(stateVariables);
 }
 
-std::string ActuatorWorkMeter::getStateVariableName(int index) const
-{
-	if(index == 0)
-		return _actuator->getName() + ".work";
-	else {
-		std::stringstream msg;
-		msg << "ActuatorWorkMeter::getStateVariableName: ERR- index out of bounds.\nComponent " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " state variables.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-	}
-}
-
-
-int ActuatorWorkMeter::getStateVariableYIndex(int index) const
-{
-	if (index == 0){
-		const SimTK::State &s = _model->getMultibodySystem().getDefaultState();
-		return s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex("actuator_work");
-	}
-	throw Exception("ActuatorWorkMeter::getStateVariableYIndex : "+getName()+" at undefined index"); 
-}
 
 //=============================================================================
 // The state variable derivative (power) to be integrated
@@ -197,7 +177,7 @@ SimTK::Vector ActuatorWorkMeter::computeStateVariableDerivatives(const SimTK::St
 
  void ActuatorWorkMeter::initState( SimTK::State& s) const
 {
-	setStateVariable(s, "actuator_work", _initialWorkProp.getValueDbl());
+	setStateVariable(s, getStateVariableNames()[0], _initialWorkProp.getValueDbl());
 }
 
 void ActuatorWorkMeter::setDefaultsFromState(const SimTK::State& state)
@@ -228,7 +208,7 @@ ActuatorWorkMeter& ActuatorWorkMeter::operator=(const ActuatorWorkMeter &aActuat
 // Computed work is part of the state
 double ActuatorWorkMeter::getWork(const SimTK::State& state) const
 {
-	return getStateVariable(state, "actuator_work");
+	return getStateVariable(state, _actuator->getName()+"."+WORK_STATE_NAME);
 }
 
 
