@@ -82,7 +82,7 @@ ActuatorForceTargetFast(SimTK::State& s, int aNX,CMC *aController):
 	}
 
 	// ALLOCATE STATE ARRAYS
-	int ny = _controller->getModel().getNumStates();
+	int ny = _controller->getModel().getNumStateVariables();
 	int nq = _controller->getModel().getNumCoordinates();
 	int nu = _controller->getModel().getNumSpeeds();
 	int na = _controller->getModel().getActuators().getSize();

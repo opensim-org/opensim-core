@@ -280,7 +280,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
 {
 	int nq = aModel.getNumCoordinates();
 	int nu = aModel.getNumSpeeds();
-	int ny = aModel.getNumStates();
+	int ny = aModel.getNumStateVariables();
 
 	if(aQStore.getSmallestNumberOfStates() != nq)
 		throw Exception("AnalyzeTool.initializeFromFiles: ERROR- Coordinates storage does not have correct number of coordinates.",__FILE__,__LINE__);
@@ -290,7 +290,7 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
 		throw Exception("AnalyzeTool.initializeFromFiles: ERROR- The coordinates storage and speeds storage should have the same number of rows, but do not.",__FILE__,__LINE__);
 
 	Array<string> stateNames("");
-	aModel.getStateNames(stateNames);
+	stateNames = aModel.getStateVariableNames();
 	stateNames.insert(0, "time");
 
 	Storage *statesStore = new Storage(512,"states");
@@ -435,7 +435,7 @@ setStatesFromMotion(const SimTK::State& s, const Storage &aMotion, bool aInDegre
 void AnalyzeTool::
 verifyControlsStates()
 {
-	int ny = _model->getNumStates();
+	int ny = _model->getNumStateVariables();
 
 	// DO WE HAVE STATES?
 	// States

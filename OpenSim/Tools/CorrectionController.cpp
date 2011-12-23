@@ -270,12 +270,13 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 		} 
 		else
 		{
-			int index = aCoord->getStateVariableYIndex(0);
+			int iqx = aCoord->getStateVariableSystemIndex(aCoord->getName());
+			int iux = aCoord->getStateVariableSystemIndex(aCoord->getSpeedName());
 
     		// COMPUTE EXCITATIONS
 			double oneOverFmax = 1.0 / act->getOptimalForce();
-			double pErr = s.getQ()[index] - yDesired[index];
-			double vErr = s.getU()[index] - yDesired[index+nq];
+			double pErr = s.getY()[iqx] - yDesired[iqx];
+			double vErr = s.getY()[iux] - yDesired[iux];
 			double pErrTerm = _kp*oneOverFmax*pErr;
 			double vErrTerm = _kv*oneOverFmax*vErr;
 			newControl = -vErrTerm - pErrTerm;

@@ -89,21 +89,7 @@ public:
 	}
 #endif
 	virtual double getTaskError(const SimTK::State& s) {
-		if (_stateIndex==-1){
-			Array<std::string> stateNames;
-			_model->getStateNames(stateNames, true);	// Since we'll use YIndex we need to account for internal SimTK states too
-			_stateIndex = stateNames.findIndex(getName());
-		}
-		// map State name to Y index
-		double time = s.getTime();
-		if (_stateIndex!=-1){
-			//std::cout << "target emg=" << _pTrk[0]->calcValue(SimTK::Vector(1,time)) << "at time ="<< time << std::endl;
-			//for(double t=0.0; t <= 1.0; t+=0.1)
-			//	std::cout<< _pTrk[0]->calcValue(SimTK::Vector(1,t));
-			return (_pTrk[0]->calcValue(SimTK::Vector(1,time))-s.getY()[_stateIndex]);
-		}
-		throw Exception("StateTrackingTask::getTaskError(): State name not found"+getName());
-		return(0.);
+		return (_pTrk[0]->calcValue(SimTK::Vector(1,s.getTime()))- _model->getStateVariable(s, getName()));
 	}
 	/**
 	 * Return the gradient of the tracking error as a vector, whose length 

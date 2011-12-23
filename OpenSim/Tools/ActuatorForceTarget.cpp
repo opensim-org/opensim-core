@@ -83,7 +83,7 @@ ActuatorForceTarget::ActuatorForceTarget(int aNX,CMC *aController) :
 	}
 
 	// ALLOCATE STATE ARRAYS
-	int ny = _controller->getModel().getNumStates();
+	int ny = _controller->getModel().getNumStateVariables();
 	int nq = _controller->getModel().getNumCoordinates();
 	int nu = _controller->getModel().getNumSpeeds();
 	_y.setSize(ny);
@@ -134,7 +134,7 @@ prepareToOptimize(SimTK::State& s, double *x)
 #ifdef USE_PRECOMPUTED_PERFORMANCE_MATRICES
 	int nu = _controller->getModel().getNumSpeeds();
 	int nf = _controller->getModel().getActuators().getSize();
-	int ny = _controller->getModel().getNumStates();
+	int ny = _controller->getModel().getNumStateVariables();
 	int nacc = _controller->updTaskSet().getDesiredAccelerations().getSize();
 
 	_accelPerformanceMatrix.resize(nacc,nf);
