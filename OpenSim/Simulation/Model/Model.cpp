@@ -1031,6 +1031,22 @@ Array<std::string> Model::getStateVariableNames() const
 	return _stateVariableNames;
 }
 
+double Model::getStateVariable(const SimTK::State& state, const std::string &name) const
+{
+	int found = _stateVariableNames.findIndex(name);
+
+	if(found >= 0){
+		return state.getY()[_stateVariableSystemIndices[found]];
+	}
+	else{
+		std::stringstream msg;
+		msg << "Model::getStateVariable: ERR- variable name '" << name << "' not found.\n " 
+			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+		return SimTK::NaN;
+	}
+}
+
 void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) const
 {
 	rStateValues.setSize(getNumStateVariables());

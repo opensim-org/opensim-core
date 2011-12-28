@@ -68,9 +68,6 @@ protected:
 	Array<int> _coordinateIndices;
 	Array<double> _values;
 
-	double *_q;
-	double *_u;
-	double *_udot;
 	Storage *_pStore;
 	Storage *_vStore;
 	Storage *_aStore;

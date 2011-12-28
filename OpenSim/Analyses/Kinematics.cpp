@@ -58,9 +58,6 @@ using namespace std;
  */
 Kinematics::~Kinematics()
 {
-	if(_q!=NULL) { delete[] _q;  _q=NULL; }
-	if(_u!=NULL) { delete[] _u;  _u=NULL; }
-	if(_udot!=NULL) { delete[] _udot;  _udot=NULL; }
 	deleteStorage();
 }
 //_____________________________________________________________________________
@@ -147,9 +144,6 @@ setNull()
 
 	setType("Kinematics");
 	setName("Kinematics");
-	_q=0;
-	_u=0;
-	_udot=0;
 	_pStore=_vStore=_aStore=0;
 	_coordinates.setSize(1);
 	_coordinates[0] = "all";
@@ -179,20 +173,12 @@ Kinematics& Kinematics::operator=(const Kinematics &aKinematics)
 	_recordAccelerations = aKinematics._recordAccelerations;
 	_coordinates = aKinematics._coordinates;
 
-	// Deallocate if already allocated
-	if(_q!=NULL) {    delete[] _q;     _q=NULL; }
-	if(_u!=NULL) {    delete[] _u;     _u=NULL; }
-	if(_udot!=NULL) { delete[] _udot;  _udot=NULL; }
-
 	// STORAGE
 	deleteStorage();
 	allocateStorage();
 
 	// CHECK MODEL
 	if(_model!=NULL) {
-		_q = new double[_model->getNumCoordinates()];
-		_u = new double[_model->getNumSpeeds()];
-		_udot = new double[_model->getNumSpeeds()];
 		updateCoordinatesToRecord();
 		constructColumnLabels();
 	}
@@ -393,18 +379,6 @@ void Kinematics::setModel(Model& aModel)
 
 	allocateStorage();
 
-	// DATA MEMBERS
-	if(_q!=NULL) {    delete[] _q;     _q=NULL; }
-	if(_u!=NULL) {    delete[] _u;     _u=NULL; }
-	if(_udot!=NULL) { delete[] _udot;  _udot=NULL; }
-
-	if (_model){
-		// ALLOCATE STATE VECTOR
-		_q    = new double[_model->getNumCoordinates()];
-		_u    = new double[_model->getNumSpeeds()];
-		_udot = new double[_model->getNumSpeeds()];
-	}
-
 	// UPDATE LABELS
 	updateCoordinatesToRecord();
 	constructColumnLabels();
@@ -439,55 +413,38 @@ setStorageCapacityIncrements(int aIncrement)
  *
  * @return 0 of success, -1 on error.
  */
-int Kinematics::
-record(const SimTK::State& s)
+int Kinematics::record(const SimTK::State& s)
 {
-    int i;
-	// NUMBERS
-	//
-	int nq = _model->getNumCoordinates();
-	int nu = _model->getNumSpeeds();
-
-/*
-printf("Kinematics::record t=%14.10f y=",s.getTime());
-for(i=0;i<nq;i++) printf(" %f",s.getQ()[i]);
-for(i=0;i<nu;i++) printf(" %f",s.getU()[i]);
-printf("\n");
-*/
-
-    for(i=0;i<nq;i++) _q[i] = s.getQ()[i]; 
-
 	if(_recordAccelerations){
 		_model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-			for(i=0;i<nu;i++)  {
-				_u[i] = s.getU()[i]; 
-				_udot[i] = s.getUDot()[i];
-			}
     }
 	else{
 		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
-		for(i=0;i<nu;i++)  {
-           _u[i] = s.getU()[i];
-		}
     }
-
-	// CONVERT TO DEGREES
-	if(getInDegrees()) {
-		_model->getSimbodyEngine().convertRadiansToDegrees(_q,_q);
-		_model->getSimbodyEngine().convertRadiansToDegrees(_u,_u);
-		if(_recordAccelerations) _model->getSimbodyEngine().convertRadiansToDegrees(_udot, _udot);
-	}
-
 	// RECORD RESULTS
+	const CoordinateSet& cs = _model->getCoordinateSet();
 	int nvalues = _coordinateIndices.getSize();
-	for(int i=0;i<nvalues;i++)  _values[i] = _q[_coordinateIndices[i]];
+	for(int i=0;i<nvalues;i++){
+		_values[i] = cs[_coordinateIndices[i]].getValue(s);
+		if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
+			_values[i] *= SimTK_RADIAN_TO_DEGREE;
+	}
 	_pStore->append(s.getTime(),nvalues,&_values[0]);
 
-	for(int i=0;i<nvalues;i++) _values[i] = _u[_coordinateIndices[i]];
+	for(int i=0;i<nvalues;i++){
+		_values[i] = cs[_coordinateIndices[i]].getSpeedValue(s);
+		if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
+			_values[i] *= SimTK_RADIAN_TO_DEGREE;
+	}
+
 	_vStore->append(s.getTime(),nvalues,&_values[0]);
 
 	if(_recordAccelerations) {
-		for(int i=0;i<nvalues;i++) _values[i] = _udot[_coordinateIndices[i]];
+		for(int i=0;i<nvalues;i++){
+			_values[i] = cs[_coordinateIndices[i]].getAccelerationValue(s);
+			if(getInDegrees() && (cs[_coordinateIndices[i]].getMotionType() == Coordinate::Rotational))
+				_values[i] *= SimTK_RADIAN_TO_DEGREE;
+		}
 		_aStore->append(s.getTime(),nvalues,&_values[0]);
 	}
 

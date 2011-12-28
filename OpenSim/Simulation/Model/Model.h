@@ -574,6 +574,14 @@ public:
 	 * ModelComponents and exposed thru the ModelComponent API. 
 	 */
 	virtual Array<std::string> getStateVariableNames() const;
+
+    /**
+     * Get the value of a state variable of this Model.
+     *
+     * @param state   the State for which to get the value
+     * @param name    the name (string) of the state variable of interest
+     */
+	virtual double getStateVariable(const SimTK::State& state, const std::string &name) const;
 	
 	/**
 	 * Get the values of state variables in the same ordering as getStateNames. values are

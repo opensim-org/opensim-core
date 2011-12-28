@@ -177,7 +177,7 @@ void testHamnerRunningModel()
 
 	// Tracking kinematics angles in degrees should be within 2 degrees
 	Array<double> rms_tols(1.75, nq);
-	rms_tols[3] = 0.0025; // pelvis translations in m should be with 5mm
+	rms_tols[3] = 0.0025; // pelvis translations in m should be with 2.5mm
 	rms_tols[4] = 0.0025;
 	rms_tols[5] = 0.0025;
 
@@ -189,7 +189,7 @@ void testHamnerRunningModel()
 	int nc = results_states.getColumnLabels().getSize()-1;
 
 	// already passed tracking kinematics so focus on muscle states
-	Array<double> rms_states_tols(0.09, nc);
+	Array<double> rms_states_tols(0.1, nc);
 	for(int i = nq; i< 2*nq; ++i)
 	{
 		rms_states_tols[i] = 0.2; // velocities

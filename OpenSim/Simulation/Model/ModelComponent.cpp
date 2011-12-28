@@ -224,7 +224,7 @@ double ModelComponent::getStateVariable(const SimTK::State &s, const std::string
 	} 
 	else{
 		std::stringstream msg;
-		msg << "ModelComponent::setStateVariable: ERR- name not found.\n " 
+		msg << "ModelComponent::getStateVariable: ERR- variable name '" << name << "' not found.\n " 
 			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 		return SimTK::NaN;

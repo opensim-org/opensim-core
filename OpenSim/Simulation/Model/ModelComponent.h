@@ -206,7 +206,7 @@ public:
      * Get the value of a state variable allocated by this ModelComponent.
      *
      * @param state   the State for which to get the value
-     * @param index   the index of the state variable (0 to getNumStateVariables()-1)
+     * @param name    the name (string) of the state variable of interest
      */
 	virtual double getStateVariable(const SimTK::State& state, const std::string &name) const;
 
