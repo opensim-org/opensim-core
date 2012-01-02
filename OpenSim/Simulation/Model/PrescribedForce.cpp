@@ -67,7 +67,7 @@ PrescribedForce::PrescribedForce(Body* body) : Force(),
 {
 	setNull();
 	setupProperties();
-	updateFromXMLNode();
+	//updateFromXMLNode();
 
 	_body = body;
 	if (_body)
@@ -78,7 +78,7 @@ PrescribedForce::PrescribedForce(Body* body) : Force(),
 /**
  * Constructor from XML file
  */
-PrescribedForce::PrescribedForce(DOMElement* aNode) :
+PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) :
 	Force(aNode),
 	_bodyName(_bodyNameProp.getValueStr()),
 	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
@@ -92,7 +92,7 @@ PrescribedForce::PrescribedForce(DOMElement* aNode) :
 {
 	setNull();
 	setupProperties();
-	updateFromXMLNode();
+	updateFromXMLNode(aNode);
 
 	_body = NULL;
 }
@@ -115,7 +115,7 @@ PrescribedForce::PrescribedForce(const PrescribedForce& force) :
 {
 	setNull();
 	setupProperties();
-	updateFromXMLNode();
+	//updateFromXMLNode();
 	copyData(force);
 }
 
@@ -139,10 +139,10 @@ Object* PrescribedForce::copy() const
 /**
  * Update this object based on its XML node.
  */
-void PrescribedForce::updateFromXMLNode()
+void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	// Base class
-	Force::updateFromXMLNode();
+	Force::updateFromXMLNode(aNode, versionNumber);
 
 	//Specify all or none of the components
 	if(_forceFunctionSet.getSize() != 3&& _forceFunctionSet.getSize() != 0)

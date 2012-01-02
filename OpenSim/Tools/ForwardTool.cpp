@@ -29,7 +29,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "ForwardTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/InterruptedException.h>
@@ -91,7 +90,7 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
 	setType("ForwardTool");
 	setNull();
 
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLDocument();
 	if(aLoadModel) { 
 		loadModel(aFileName); 
 		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
@@ -521,9 +520,9 @@ const Manager& ForwardTool::getManager() const {
  * Override default implementation by object to intercept and fix the XML node
  * underneath the tool to match current version
  */
-/*virtual*/ void ForwardTool::updateFromXMLNode()
+/*virtual*/ void ForwardTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
+	int documentVersion = versionNumber;
 	bool neededSprings=false;
 	std::string savedCwd;
 	if(_document) {
@@ -532,7 +531,7 @@ const Manager& ForwardTool::getManager() const {
 	}	
 	if ( documentVersion < XMLDocument::getLatestVersion()){
 			// Now check if we need to create a correction controller to replace springs
-		if (_node!=NULL && documentVersion<10904){
+		if (documentVersion<10904){
 			std::string propNames[]={
 				"body1_linear_corrective_spring_active",
 				"body1_torsional_corrective_spring_active",
@@ -541,9 +540,9 @@ const Manager& ForwardTool::getManager() const {
 			};
 			int i=0;
 			while (!neededSprings && i<4){
-				neededSprings = (XMLNode::GetFirstChildElementByTagName(_node, propNames[i++])!=NULL);
+				neededSprings = (aNode.element_begin(propNames[i++])!=aNode.element_end());
 			}
-			AbstractTool::updateFromXMLNode();
+			AbstractTool::updateFromXMLNode(aNode, versionNumber);
 			if (neededSprings){
 				CorrectionController* cc = new CorrectionController();
 				cc->setKp(16.0);
@@ -556,10 +555,10 @@ const Manager& ForwardTool::getManager() const {
 			}
 		}
 		else
-			AbstractTool::updateFromXMLNode();
+			AbstractTool::updateFromXMLNode(aNode, versionNumber);
 	}
 	else
-		AbstractTool::updateFromXMLNode();
+		AbstractTool::updateFromXMLNode(aNode, versionNumber);
 	if(_document) IO::chDir(savedCwd);
-
+	//Object::updateFromXMLNode(aNode, versionNumber);
 }

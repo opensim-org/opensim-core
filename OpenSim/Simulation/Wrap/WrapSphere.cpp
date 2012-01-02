@@ -116,7 +116,7 @@ void WrapSphere::setNull()
 void WrapSphere::setupProperties()
 {
 	// BASE CLASS
-	WrapObject::setupProperties();
+	//WrapObject::setupProperties();
 
 	_radiusProp.setName("radius");
 	_radiusProp.setValue(-1.0);

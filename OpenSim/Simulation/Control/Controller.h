@@ -101,7 +101,7 @@ public:
 	 *
 	 * @param aFileName The XML file in which this a controller is defined.
 	 * @param aUpdateFromXMLNode A flag indicating whether or not to call
-	 * updateFromXMLNode() from this constructor.  This method is only necessary
+	 * updateFromXMLNode(SimTK::Xml::Element& aNode) from this constructor.  This method is only necessary
 	 * if changes to the XML format (i.e. tag names) are made and future
 	 * versions must convert old syntax to the latest.
 	 */

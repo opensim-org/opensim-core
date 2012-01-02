@@ -240,7 +240,7 @@ public:
 	//--------------------------------------------------------------------------
 	void setupProperties();
 
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	// updateGeometry is the method used to update geometry that can change (e.g. muscles
 	// changing geometry during motion).

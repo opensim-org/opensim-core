@@ -50,6 +50,7 @@ void testAssembleModelWithConstraints(string modelFile);
 int main()
 {
 	try {
+		LoadOpenSimLibrary("osimActuators");
 		testAssembleModelWithConstraints("PushUpToesOnGroundExactConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundLessPreciseConstraints.osim");
 		testAssembleModelWithConstraints("PushUpToesOnGroundWithMuscles.osim");
@@ -72,7 +73,6 @@ void testAssembleModelWithConstraints(string modelFile)
 	//==========================================================================================================
 	// Setup OpenSim model
 	Model model(modelFile);
-
 	const CoordinateSet &coords = model.getCoordinateSet();
 	
 	cout << "*********** Coordinates before initSystem ******************** " << endl;

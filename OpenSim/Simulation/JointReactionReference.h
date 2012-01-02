@@ -217,11 +217,7 @@ public:
 	//--------------------------------------------------------------------------
 	// Convenience Access
 	//--------------------------------------------------------------------------
-	//void setDefaultWeight(double weight) {_defaultWeight = weight; }
-	virtual void updateFromXMLNode(){
-		Object::updateFromXMLNode();
-	}
-	
+	//void setDefaultWeight(double weight) {_defaultWeight = weight; }	
 
 private:
 	// utility to define object properties including their tags, comments and

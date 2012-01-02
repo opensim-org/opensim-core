@@ -494,8 +494,8 @@ computeAccelerations(const SimTK::State& s )
  * the member variables that are not Object's.
  */
 void CMC_Point::
-updateFromXMLNode()
+updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	CMC_Task::updateFromXMLNode();
+	CMC_Task::updateFromXMLNode(aNode);
 	setPoint(_point);
 }

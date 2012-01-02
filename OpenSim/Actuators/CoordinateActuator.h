@@ -157,7 +157,7 @@ public:
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	OPENSIM_DECLARE_DERIVED(CoordinateActuator, Actuator);
 

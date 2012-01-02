@@ -102,7 +102,7 @@ public:
 	 *
 	 * @param aFileName: The XML file in which this Controller is defined
 	 * @param aUpdateFromXMLNode: A flag indicating whether or not to call
-	 * updateFromXMLNode() from this constructor.
+	 * updateFromXMLNode(SimTK::Xml::Element& aNode) from this constructor.
 	 */
 	TrackingController(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 

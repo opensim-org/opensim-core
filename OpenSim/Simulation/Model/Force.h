@@ -69,7 +69,7 @@ public:
 	/**
 	 * deserialization from XML, necessary so that derived classes can (de)serialize
 	 */
-	Force(DOMElement* aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
+	Force(SimTK::Xml::Element& aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
 
 #ifndef SWIG
 	Force& operator=(const Force &aForce);

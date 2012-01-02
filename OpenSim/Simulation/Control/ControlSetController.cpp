@@ -80,7 +80,7 @@ ControlSetController::ControlSetController(const std::string &aFileName, bool aU
      _controlsFileName(_controlsFileNameProp.getValueStr())
 {
 	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
 }
 //_____________________________________________________________________________
 /**

@@ -33,15 +33,6 @@
  */
 
 #include <OpenSim/OpenSim.h>
-/*
-#include <OpenSim/Actuators/osimActuatorsDLL.h>
-#include <OpenSim/Common/PropertyStr.h>
-#include <OpenSim/Common/PropertyDblVec3.h>
-#include <OpenSim/Common/PropertyBool.h>
-#include <OpenSim/Simulation/Model/CustomActuator.h>
-#include "SimTKsimbody.h"
-*/
-
 
 //=============================================================================
 //=============================================================================
@@ -185,7 +176,7 @@ public:
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	OPENSIM_DECLARE_DERIVED(PistonActuator, Actuator);
 

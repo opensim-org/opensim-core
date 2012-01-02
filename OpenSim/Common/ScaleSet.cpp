@@ -49,7 +49,7 @@ ScaleSet::ScaleSet(const string& scalesFileName):
 Set<Scale>(scalesFileName, false)
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 }
 
 //_____________________________________________________________________________

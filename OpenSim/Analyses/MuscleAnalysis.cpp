@@ -93,7 +93,7 @@ MuscleAnalysis::MuscleAnalysis(const std::string &aFileName):
 Analysis(aFileName, false)
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 	allocateStorageObjects();
 }
 //_____________________________________________________________________________

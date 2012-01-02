@@ -103,7 +103,7 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
 {
 	setType("Analysis");
 	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode(getDocument()->getRootDataElement(), _document->getDocumentVersion());
 }
 //_____________________________________________________________________________
 /**

@@ -85,7 +85,7 @@ ControlSet::ControlSet(const string &aFileName) :
 	Set<Control>(aFileName, false), _ptcMap(-1), _ptpMap(-1)
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
 	// removeInvalidObjects();
 	generateParameterMaps();
 }

@@ -31,7 +31,6 @@
 //=============================================================================
 #include "ConditionalPathPoint.h"
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/GeometryPath.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
@@ -166,20 +165,15 @@ void ConditionalPathPoint::setNull()
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
-void ConditionalPathPoint::updateFromXMLNode()
+void ConditionalPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
-	if ( documentVersion < XMLDocument::getLatestVersion()){
-		DOMDocument* document = _node->getOwnerDocument();
-		if (Object::getDebugLevel()>=1)
-			cout << "Updating ConditionalPathPoint object to latest format..." << endl;
+	if ( versionNumber < XMLDocument::getLatestVersion()){
+		if (versionNumber<=20001)
 		// Version has to be 1.6 or later, otherwise assert
-		if (_node!=NULL){
-			renameChildNode("coordinates", "coordinate", _node);
+		XMLDocument::renameChildNode(aNode, "coordinates", "coordinate");
 		}
-	}
 	// Call base class now assuming _node has been corrected for current version
-	PathPoint::updateFromXMLNode();
+	PathPoint::updateFromXMLNode(aNode, versionNumber);
 }
 
 //_____________________________________________________________________________

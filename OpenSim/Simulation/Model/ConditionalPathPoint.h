@@ -98,7 +98,7 @@ public:
 #endif
    void copyData(const ConditionalPathPoint &aPoint);
 	virtual void init(const PathPoint& aPoint);
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	Array<double>& getRange() const { return _range; }
 	const Coordinate* getCoordinate() const { return _coordinate; }

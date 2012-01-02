@@ -34,7 +34,6 @@
 #include "RRATool.h"
 #include "AnalyzeTool.h"
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Simulation/Model/Model.h>
@@ -123,7 +122,7 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
 {
 	setType("RRATool");
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 	if(aLoadModel){
 		loadModel(aFileName, &_originalForceSet);
 		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
@@ -1368,13 +1367,13 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
  * Override default implementation by object to intercept and fix the XML node
  * underneath the tool to match current version, issue warning for unexpected inputs
  */
-/*virtual*/ void RRATool::updateFromXMLNode()
+/*virtual*/ void RRATool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	int documentVersion = getDocument()->getDocumentVersion();
 	std::string controlsFileName ="";
 	if ( documentVersion < XMLDocument::getLatestVersion()){
 		// Replace names of properties
-		if (_node!=NULL && documentVersion<20301){
+		if (documentVersion<20301){
 			// Check that no unexpected settings are used for RRA that was really CMC, we'll do this by checking that
 			// replace_force_set is true
 			// cmc_time_window is .001
@@ -1410,5 +1409,5 @@ void RRATool::setOriginalForceSet(const ForceSet &aForceSet) {
 			}
 		}
 	}
-	AbstractTool::updateFromXMLNode();
+	AbstractTool::updateFromXMLNode(aNode, versionNumber);
 }

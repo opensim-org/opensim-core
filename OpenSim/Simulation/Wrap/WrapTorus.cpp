@@ -122,7 +122,7 @@ void WrapTorus::setNull()
 void WrapTorus::setupProperties()
 {
 	// BASE CLASS
-	WrapObject::setupProperties();
+	//WrapObject::setupProperties();
 
 	_innerRadiusProp.setName("inner_radius");
 	_innerRadiusProp.setValue(-1.0);

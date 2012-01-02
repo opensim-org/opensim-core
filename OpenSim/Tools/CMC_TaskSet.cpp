@@ -92,7 +92,7 @@ CMC_TaskSet::CMC_TaskSet(const string &aFileName) :
 	_w(0.0),_aDes(0.0),_a(0.0)
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 }
 
 

@@ -123,7 +123,7 @@ void WrapCylinder::setNull()
 void WrapCylinder::setupProperties()
 {
 	// BASE CLASS
-	WrapObject::setupProperties();
+	//WrapObject::setupProperties();
 
 	_radiusProp.setName("radius");
 	_radiusProp.setValue(-1.0);

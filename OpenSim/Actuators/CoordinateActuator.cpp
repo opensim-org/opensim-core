@@ -390,13 +390,13 @@ bool CoordinateActuator::isCoordinateValid() const
 /**
  * Update this object based on its XML node.
  *
- * This method simply calls Object::updateFromXMLNode() and then calls
+ * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
  * a few methods in this class to ensure that variable members have been
  * set in a consistent manner.
  */
-void CoordinateActuator::updateFromXMLNode()
+void CoordinateActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	Actuator::updateFromXMLNode();
+	Actuator::updateFromXMLNode(aNode, versionNumber);
 	setCoordinate(_coord);
 	setOptimalForce(_optimalForce);
 }	

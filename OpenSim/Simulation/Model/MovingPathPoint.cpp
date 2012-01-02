@@ -30,7 +30,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "MovingPathPoint.h"
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/MultiplierFunction.h>
@@ -233,21 +232,19 @@ void MovingPathPoint::setupProperties()
  * Override default implementation by Object to intercept and fix the XML node
  * underneath the MovingPathPoint to match the current version.
  */
-void MovingPathPoint::updateFromXMLNode()
+void MovingPathPoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
+	int documentVersion = versionNumber;
 	if (documentVersion < XMLDocument::getLatestVersion()) {
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating MovingPathPoint object to latest format..." << endl;
-		if (_node!=NULL) {
-			renameChildNode("XAttachment", "x_location", _node);
-			renameChildNode("YAttachment", "y_location", _node);
-			renameChildNode("ZAttachment", "z_location", _node);
+		XMLDocument::renameChildNode(aNode, "XAttachment", "x_location");
+		XMLDocument::renameChildNode(aNode,"YAttachment", "y_location");
+		XMLDocument::renameChildNode(aNode,"ZAttachment", "z_location");
 		}
-	}
-
+	
 	// Call base class now assuming _node has been corrected for current version
-	Object::updateFromXMLNode();
+	Object::updateFromXMLNode(aNode, versionNumber);
 }
 
 //_____________________________________________________________________________

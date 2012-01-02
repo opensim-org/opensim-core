@@ -87,7 +87,7 @@ AnalysisSet::AnalysisSet(const string &aFileName) :
 {
 	setType("AnalysisSet");
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**

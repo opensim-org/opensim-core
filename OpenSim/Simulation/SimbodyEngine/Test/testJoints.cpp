@@ -388,10 +388,10 @@ void compareSimulationStates(const SimTK::Vector &q_sb, const SimTK::Vector &u_s
 	cout<< "\nSimbody - OpenSim:  |q_err| = " << qerrnorm << "  |u_err| =" << uerrnorm << endl;
 
 	stringstream errorMessage1, errorMessage2;
-	errorMessage1 << "testJoints compareSimulationStates failed q_err.norm = " << qerrnorm;
-	errorMessage2 << "testJoints compareSimulationStates failed u_err.norm = " << uerrnorm;
-	ASSERT(qerrnorm <= integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage1.str());
-	ASSERT(uerrnorm <= integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage2.str());
+	errorMessage1 << "testJoints compareSimulationStates failed q_err.norm = " << q_err.norm();
+	errorMessage2 << "testJoints compareSimulationStates failed u_err.norm = " << u_err.norm();
+	ASSERT(q_err.norm() <= 10*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage1.str());
+	ASSERT(u_err.norm() <= 100*integ_accuracy, __FILE__, __LINE__, errorMessagePrefix + errorMessage2.str());
 }
 
 void compareSimulations(SimTK::MultibodySystem &system, SimTK::State &state, Model *osimModel, SimTK::State &osim_state, string errorMessagePrefix = "")

@@ -34,7 +34,6 @@
 #include <math.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "Model.h"
 #include "Muscle.h"
 #include "CoordinateSet.h"
@@ -149,7 +148,7 @@ Model::Model(const string &aFileName) :
 {
 	setNull();
 	setupProperties();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 	_fileName = aFileName;
     _analysisSet.setMemoryOwner(false);
 
@@ -220,50 +219,34 @@ Model::~Model()
  * underneath the model to match current version
  */
 /*virtual*/
-void Model::updateFromXMLNode()
+void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
-	if ( documentVersion < XMLDocument::getLatestVersion()){
-		cout << "Updating Model file to latest format..." << endl;
+	
+	if ( versionNumber < XMLDocument::getLatestVersion()){
+		cout << "Updating Model file from "<< versionNumber << " to latest format..." << endl;
 		// Version has to be 1.6 or later, otherwise assert
-		if (_node!=NULL && documentVersion==10600){
+		if (versionNumber==10600){
 			// Get node for DynamicsEngine
-			DOMElement* enginesNode = XMLNode::GetFirstChildElementByTagName(_node,"DynamicsEngine");
+			SimTK::Xml::element_iterator engIter = aNode.element_begin("DynamicsEngine");
 			//Get node for SimbodyEngine
-			if (enginesNode != 0){
-				DOMElement* simbodyEngineNode = XMLNode::GetFirstChildElementByTagName(enginesNode,"SimbodyEngine");
+			if (engIter != aNode.element_end()){
+				SimTK::Xml::element_iterator simbodyEngIter = engIter->element_begin("SimbodyEngine");
 				// Move all Children of simbodyEngineNode to be children of _node
 				// we'll keep inserting before enginesNode then remove it;
-				if (simbodyEngineNode!= 0){
-					for(DOMNode *child=simbodyEngineNode->getFirstChild(); child!=NULL;
-												child=child->getNextSibling()) {
-						DOMElement* childElement = (DOMElement*)child;
-						//const XMLCh *   nodeName = childElement->getTagName();
-						//char *str1 = XMLString::transcode(nodeName);
-						//cout << "Moving child " << std::string(str1) << endl;
-						_node->insertBefore(childElement->cloneNode(true), enginesNode);
+				SimTK::Array_<SimTK::Xml::Element> elts = simbodyEngIter->getAllElements();
+				while(elts.size()!=0){
+					// get first child and move it to Model
+					aNode.insertNodeAfter(aNode.element_end(), simbodyEngIter->removeNode(simbodyEngIter->element_begin()));
+					elts = simbodyEngIter->getAllElements();
 					}
+				engIter->eraseNode(simbodyEngIter);
 				}
-				XMLNode::RemoveChildren(enginesNode);
-				_node->removeChild(enginesNode);
-			}
 			// Now handling the rename of ActuatorSet to ForceSet
-			DOMElement* actuatorsNode = XMLNode::GetFirstChildElementByTagName(_node,"ActuatorSet");
-			if (actuatorsNode != 0) {
-				DOMElement* forcesNode = XMLNode::CreateDOMElement(getDocument()->getDOMDocument(), "ForceSet");
-				DOMNodeList * children = actuatorsNode->getChildNodes();
-				for (unsigned int i=0; i<children->getLength(); i++){
-					DOMNode* nextChild = children->item(i);
-					//actuatorsNode->removeChild(nextChild);
-					forcesNode->appendChild(nextChild->cloneNode(true));
+			XMLDocument::renameChildNode(aNode, "ActuatorSet", "ForceSet");
 				}
-				_node->insertBefore(forcesNode, actuatorsNode);
-				_node->removeChild(actuatorsNode);
 			}
-		}
-	}
 	// Call base class now assuming _node has been corrected for current version
-	Object::updateFromXMLNode();
+	Object::updateFromXMLNode(aNode, versionNumber);
 
 	setDefaultProperties();
 }

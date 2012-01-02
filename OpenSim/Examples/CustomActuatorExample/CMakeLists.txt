@@ -6,8 +6,7 @@ IF(BUILD_API_EXAMPLES)
 SET(EXAMPLE_CUSTOM_ACTUATOR exampleCustomActuator)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors 		  
-		    ${XERCES_INCLUDE_DIR})
+		    ${OpenSim_SOURCE_DIR}/Vendors)
 
 ADD_EXECUTABLE(${EXAMPLE_CUSTOM_ACTUATOR} PistonActuator.cpp toyLeg_example.cpp PistonActuator.h)
 TARGET_LINK_LIBRARIES(${EXAMPLE_CUSTOM_ACTUATOR}

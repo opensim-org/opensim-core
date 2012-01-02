@@ -96,7 +96,7 @@ InverseDynamicsTool::InverseDynamicsTool(const string &aFileName, bool aLoadMode
 {
 	setType("InverseDynamicsTool");
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	if(aLoadModel) {
 		//loadModel(aFileName);
@@ -462,9 +462,9 @@ bool InverseDynamicsTool::hasCoordinateValues()
 	return false;
 }
 /* Handle reading older formats/Versioning */
-void InverseDynamicsTool::updateFromXMLNode()
+void InverseDynamicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
+	int documentVersion = versionNumber;
 	if ( documentVersion < XMLDocument::getLatestVersion()){
 		std::string newFileName = getDocumentFileName();
 		if (documentVersion < 20300){
@@ -474,10 +474,10 @@ void InverseDynamicsTool::updateFromXMLNode()
 			SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
 			doc.writeToFile(newFileName);
 		}
-		if (documentVersion < 20201) {
+		/*if (documentVersion < 20201) {
 			AnalyzeTool updateAnalyzeTool(newFileName, false);
 			updateAnalyzeTool.print(newFileName);
-		}
+		}*/
 		if (documentVersion < 20202){
 			// get filename and use SimTK::Xml to parse it
 			SimTK::Xml::Document doc = SimTK::Xml::Document(newFileName);
@@ -546,10 +546,10 @@ void InverseDynamicsTool::updateFromXMLNode()
 				}
 				newDoc.writeToFile(newFileName);
 				_document = new XMLDocument(newFileName);
-				_node = _document->getRootDataElement();
+				aNode = _document->getRootDataElement();
 			}
 
 		}
 	}
-	Object::updateFromXMLNode();
+	Object::updateFromXMLNode(aNode, versionNumber);
 }

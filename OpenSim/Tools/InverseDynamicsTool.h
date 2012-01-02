@@ -106,7 +106,7 @@ public:
 	/* Register types to be used when reading an InverseDynamicsTool object from xml file. */
 	static void registerTypes();
 	/* Handle reading older formats/Versioning */
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 protected:
 	/** helper method to get a list of model joints by name */

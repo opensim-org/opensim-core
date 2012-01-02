@@ -100,7 +100,7 @@ MuscleAnalysisV1::MuscleAnalysisV1(const std::string &aFileName):
 Analysis(aFileName, false)
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 	allocateStorageObjects();
 	setStandardMuscleCurves(); //MM
 }

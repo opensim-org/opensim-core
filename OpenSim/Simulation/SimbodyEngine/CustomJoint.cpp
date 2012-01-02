@@ -32,7 +32,6 @@
 #include <iostream>
 #include <math.h>
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include "CustomJoint.h"
@@ -346,30 +345,29 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 //_____________________________________________________________________________
 
 /** Override of the default implementation to account for versioning. */
-void CustomJoint::updateFromXMLNode()
+void CustomJoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
+	int documentVersion = versionNumber;
 	if ( documentVersion < XMLDocument::getLatestVersion()){
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating CustomJoint to latest format..." << endl;
 		// Version before refactoring spatialTransform
-		if (_node!=NULL && documentVersion<10901){
+		if (documentVersion<10901){
 			// replace TransformAxisSet with SpatialTransform
 			/////renameChildNode("TransformAxisSet", "SpatialTransform");
 			// Check how many TransformAxes are defined
-			DOMElement* SpatialTransformNode = XMLNode::GetFirstChildElementByTagName(_node,"TransformAxisSet");
-			if (SpatialTransformNode == NULL) return;
+			SimTK::Xml::element_iterator SpatialTransformNode = aNode.element_begin("TransformAxisSet");
+			if (SpatialTransformNode == aNode.element_end()) return;
 
-			DOMElement*axesSetNode = XMLNode::GetFirstChildElementByTagName(SpatialTransformNode,"objects");
+			SimTK::Xml::element_iterator axesSetNode = SpatialTransformNode->element_begin("objects");
 			/////if (axesSetNode != NULL)
 			/////	SpatialTransformNode->removeChild(axesSetNode);
 			/////DOMElement*grpNode = XMLNode::GetFirstChildElementByTagName(SpatialTransformNode,"groups");
 			/////if (grpNode != NULL)
 			/////	SpatialTransformNode->removeChild(grpNode);
-			DOMElement* SpatialTransformAxesNode = axesSetNode;			// Get (at most six) TransformAxis nodes and move them to proper slots 
 			// (0, 1, 2 rotations & 3, 4, 5 translations then remove the is_rotation node)
-			DOMNodeList *list = SpatialTransformAxesNode->getChildNodes();
-			unsigned int listLength = list->getLength();
+			SimTK::Array_<SimTK::Xml::Element> list = axesSetNode->getAllElements();
+			unsigned int listLength = list.size();
 			int objectsFound = 0;
 			Array<int> translationIndices(-1, 0);
 			Array<int>  rotationIndices(-1, 0);
@@ -386,41 +384,28 @@ void CustomJoint::updateFromXMLNode()
 			for(unsigned int j=0;j<listLength;j++) {
 				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
 				// to process element nodes
-				if (!list->item(j) || (list->item(j)->getNodeType() != DOMNode::ELEMENT_NODE)) continue;
-				DOMElement *objElmt = (DOMElement*) list->item(j);
-				string objectType = XMLNode::TranscodeAndTrim(objElmt->getTagName());
+				SimTK::Xml::Element objElmt = list[j];
+				string objectType = objElmt.getElementTag();
 				if (objectType == "TransformAxis"){
 					OpenSim::TransformAxis* readAxis = new OpenSim::TransformAxis(objElmt);
 					assert(nextAxis <=5);
 					bool isRotation = false;
-					DOMElement* rotationNode = XMLNode::GetFirstChildElementByTagName(objElmt,"is_rotation");
-					if (rotationNode){
-						DOMText* txtNode=NULL;
-						if(rotationNode && (txtNode=XMLNode::GetTextNode(rotationNode))) {
-							// Could still be empty or whiteSpace
-							string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
-							if (transcoded.length()>0){
-								bool value = XMLNode::GetValue<bool>(rotationNode);
+					SimTK::Xml::element_iterator rotationNode = objElmt.element_begin("is_rotation");
+					if (rotationNode != objElmt.element_end()){
+						SimTK::String sValue = rotationNode->getValueAs<SimTK::String>();
+						bool value = (sValue.toLower() == "true");
 								isRotation = value;
+						objElmt.eraseNode(rotationNode);
 							}
-						}
-						objElmt->removeChild(rotationNode);
-					}
-					DOMElement* coordinateNode = XMLNode::GetFirstChildElementByTagName(objElmt,"coordinate");
-					std::string cooridnateName = XMLNode::GetValue<std::string>(coordinateNode);
+					SimTK::Xml::element_iterator coordinateNode = objElmt.element_begin("coordinate");
+					SimTK::String cooridnateName = coordinateNode->getValueAs<SimTK::String>();
 					Array<std::string> names("");
 					names.append(cooridnateName);
 					readAxis->setCoordinateNames(names);
-					/*
-					Array<double> coeffs;
-					coeffs.append(1.0);	coeffs.append(0.0);
-					readAxis->setFunction(new LinearFunction(coeffs));
-					*/
-					DOMElement* axisNode = XMLNode::GetFirstChildElementByTagName(objElmt,"axis");
+					SimTK::Xml::element_iterator axisNode = objElmt.element_begin("axis");
 					
-					double *axisVec;
-					XMLNode::GetDblArray(axisNode, axisVec);
-					readAxis->setAxis(SimTK::Vec3(axisVec));
+					SimTK::Vec3 axisVec= axisNode->getValueAs<SimTK::Vec3>();
+					readAxis->setAxis(axisVec);
 					if (isRotation){
 						rotationIndices.append(nextAxis);
 					}
@@ -433,7 +418,7 @@ void CustomJoint::updateFromXMLNode()
 			}
 			assert(rotationIndices.getSize() <=3);
 			assert(translationIndices.getSize() <=3);
-			XMLNode::RemoveChildren(SpatialTransformAxesNode);
+			//XMLNode::RemoveChildren(SpatialTransformAxesNode);
 			int nRotations = rotationIndices.getSize();
 			int nTranslations = translationIndices.getSize();
 			// Now copy coordinateName, Axis, Function into proper slot
@@ -448,7 +433,7 @@ void CustomJoint::updateFromXMLNode()
 			_spatialTransform.constructIndepndentAxes(nTranslations, 3);
 		}
 	}
-	Joint::updateFromXMLNode();
+	Joint::updateFromXMLNode(aNode, versionNumber);
 	// Fix coordinate type post deserialization
 	// Fix coordinate type post deserialization
 	for (int i=0; i<_coordinateSet.getSize(); i++){
@@ -475,4 +460,5 @@ void CustomJoint::updateFromXMLNode()
 				throw(Exception("CustomJoint " + getName() + " has colinear axes and so is not wel-defined. Please fix and retry loading.."));
 		}
 	}
+	//Object::updateFromXMLNode(aNode, versionNumber);
 }

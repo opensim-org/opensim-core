@@ -116,7 +116,7 @@ ActuatorPerturbation::ActuatorPerturbation(const std::string &aFileName, bool aU
 	_endTime(_endTimeProp.getValueDbl())
 {
 	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**

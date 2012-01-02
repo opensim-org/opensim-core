@@ -1,8 +1,8 @@
 #-----------------------------------------------------------------------------
 IF(BUILD_UTILITIES)
-	SUBDIRS(CFSQP lepton MotionAnalysis ${XERCES_DIR_NAME})
+	SUBDIRS(CFSQP lepton MotionAnalysis)
 ELSE(BUILD_UTILITIES)
-	SUBDIRS(CFSQP lepton ${XERCES_DIR_NAME})
+	SUBDIRS(CFSQP lepton)
 ENDIF(BUILD_UTILITIES)
 
 IF(WIN32)

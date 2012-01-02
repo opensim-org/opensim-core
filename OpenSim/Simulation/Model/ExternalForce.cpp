@@ -68,7 +68,7 @@ ExternalForce::ExternalForce() : Force(),
 {
 	setNull();
 	setupProperties();
-	updateFromXMLNode();
+	//updateFromXMLNode();
 }
 
 /**
@@ -103,7 +103,7 @@ ExternalForce::ExternalForce(const Storage &dataSource, string forceIdentifier, 
 /**
  * Constructor from XML file
  */
-ExternalForce::ExternalForce(DOMElement* aNode) :
+ExternalForce::ExternalForce(SimTK::Xml::Element& aNode) :
 	Force(aNode),
 	_appliedToBodyName(_appliedToBodyNameProp.getValueStr()),
 	_forceExpressedInBodyName(_forceExpressedInBodyNameProp.getValueStr()),
@@ -115,7 +115,7 @@ ExternalForce::ExternalForce(DOMElement* aNode) :
 {
 	setNull();
 	setupProperties();
-	updateFromXMLNode();
+	updateFromXMLNode(aNode);
 }
 
 //_____________________________________________________________________________
@@ -182,10 +182,10 @@ Object* ExternalForce::copy() const
 /**
  * Update this object based on its XML node.
  */
-void ExternalForce::updateFromXMLNode()
+void ExternalForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	// Base class
-	Force::updateFromXMLNode();
+	Force::updateFromXMLNode(aNode, versionNumber);
 
 	//Specify all or none of the components
 	//if(_dataSourceName == "" || _dataSourceName == "Unassigned")

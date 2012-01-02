@@ -125,7 +125,7 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 {
 	setType("CMCTool");
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 	if(aLoadModel){
 		loadModel(aFileName, &_originalForceSet);
 		// Append to or replace model forces with those (i.e. actuators) specified by the analysis
@@ -430,6 +430,7 @@ bool CMCTool::run()
     bool externalLoads = createExternalLoads(_externalLoadsFileName, *_model);
 
     CMC_TaskSet taskSet(_taskSetFileName);  	 	 
+	taskSet.print("cmcTasksRT.xml");
     cout<<"\n\n taskSet size = "<<taskSet.getSize()<<endl<<endl; 		 
 
     CMC* controller = new CMC(_model,&taskSet);	// Need to make it a pointer since Model takes ownership 

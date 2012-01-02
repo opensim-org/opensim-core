@@ -946,9 +946,9 @@ computeEffectiveMassMatrix()
  * Update this object based on its XML node.
  */
 void CMC_Task::
-updateFromXMLNode()
+updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	TrackingTask::updateFromXMLNode();
+	TrackingTask::updateFromXMLNode(aNode, versionNumber);
 
 	setWRTBodyName(_wrtBodyName);
 	setExpressBodyName(_expressBodyName);

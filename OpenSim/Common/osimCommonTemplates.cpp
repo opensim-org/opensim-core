@@ -38,7 +38,6 @@
 #include "Array.h"
 #include "ArrayPtrs.h"
 #include "Set.h"
-#include "Material.h"
 
 
 using namespace OpenSim;
@@ -58,6 +57,4 @@ typedef Array<bool> ArrayBool;
 typedef Array<int> ArrayInt;
 typedef Array<double> ArrayDbl;
 typedef Array<std::string> ArrayStr;
-
-typedef Set<Material> SetMaterial;
 

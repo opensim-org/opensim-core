@@ -112,8 +112,6 @@ public:
 	int getMaxDerivativeOrder() const;
 	SimTK::Function* createSimTKFunction() const;
 
-	virtual void updateFromXMLNode();
-
 private:
 	OPENSIM_DECLARE_DERIVED(MultiplierFunction, Function)
 

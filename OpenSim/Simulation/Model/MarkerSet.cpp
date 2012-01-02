@@ -54,7 +54,7 @@ MarkerSet::MarkerSet(const string& aMarkersFileName) :
 	Set<Marker>(aMarkersFileName, false)
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLNode(getDocument()->getRootDataElement(), _document->getDocumentVersion());
 }
 
 //_____________________________________________________________________________

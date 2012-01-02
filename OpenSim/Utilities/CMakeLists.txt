@@ -2,11 +2,6 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} ${OpenSim_SOURCE_DIR}/Vendors ${XERCES
 LINK_LIBRARIES(debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon 
                debug osimSimulation${CMAKE_DEBUG_POSTFIX} optimized osimSimulation
                debug osimActuators${CMAKE_DEBUG_POSTFIX}  optimized osimActuators)
-IF(WIN32)
-    LINK_LIBRARIES(debug xerces-c_2D      optimized xerces-c_2)
-ELSE(WIN32)
-    LINK_LIBRARIES(debug xerces-c      optimized xerces-c)
-ENDIF(WIN32)
 
 FOREACH(TARGET ${TARGETS})
 	ADD_EXECUTABLE(${TARGET} ${TARGET}.cpp)

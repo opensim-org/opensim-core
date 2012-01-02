@@ -276,10 +276,10 @@ setEqual(const GCVSpline &aSpline)
 /**
  * Update this object based on its XML node.
  */
-void GCVSpline::updateFromXMLNode()
+void GCVSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	// Base class
-	Function::updateFromXMLNode();
+	Function::updateFromXMLNode(aNode, versionNumber);
 
 	// Weights may not have been specified in the XML file.
 	int wSize = _weights.getSize();

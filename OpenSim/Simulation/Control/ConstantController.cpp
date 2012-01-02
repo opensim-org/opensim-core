@@ -81,7 +81,7 @@ ConstantController::ConstantController(const std::string &aFileName, bool aUpdat
 {
 	setNull();
     setupProperties();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), _document->getDocumentVersion());
 }
 //_____________________________________________________________________________
 /**

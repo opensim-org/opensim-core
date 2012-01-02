@@ -5,7 +5,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "AnalyzeTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
@@ -71,7 +70,7 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
 {
 	setType("AnalyzeTool");
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	if(aLoadModelAndInput) {
 		loadModel(aFileName);
@@ -612,49 +611,42 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
  * Override default implementation by object to intercept and fix the XML node
  * underneath the tool to match current version
  */
-/*virtual void AnalyzeTool::updateFromXMLNode()
+
+void AnalyzeTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
 	std::string controlsFileName ="";
-	if ( documentVersion < XMLDocument::getLatestVersion()){
+	if ( versionNumber < XMLDocument::getLatestVersion()){
 		// Replace names of properties
-		if (_node!=NULL && documentVersion<20001){
-			AbstractTool::updateFromXMLNode();
+		if (versionNumber<20001){
+			//AbstractTool::updateFromXMLNode(aNode, versionNumber);
 			// if external loads .mot file has been speified, create 
 			// an XML file corresponding to it and set it as new external loads file
-			string oldFile = parseStringProperty(std::string("external_loads_file"));
-			if (oldFile!="" && oldFile!="Unassigned"){
-				// get names of bodies for external loads and create an xml file for the forceSet 
-				string body1, body2;
-				body1 = parseStringProperty(std::string("external_loads_body1"));
-				body2 = parseStringProperty(std::string("external_loads_body2"));
-				string newFileName=createExternalLoadsFile(oldFile, body1, body2);
-				_externalLoadsFileName = newFileName;
-			}
-		}
-	}
-	else
-		AbstractTool::updateFromXMLNode();
-}
-std::string AnalyzeTool::parseStringProperty(std::string& propertyName)
-{
-	std::string propValue="";
-	DOMElement* pNode = XMLNode::GetFirstChildElementByTagName(_node,propertyName);
-	//Get name of the file
-	if (pNode != 0){
-		DOMText* txtNode=NULL;
-		if(txtNode=XMLNode::GetTextNode(pNode)) {
-			// Could still be empty or whiteSpace
-			string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
-			if (transcoded.length()>0){
-				propValue = XMLNode::GetValue<std::string>(txtNode);
-				
-			}
-		}
-	}
-	return propValue;
-}
+			SimTK::Xml::element_iterator iter = aNode.element_begin("external_loads_file");
+			if (iter != aNode.element_end()){	
 
+				SimTK::String oldFile;
+				iter->getValueAs(oldFile);
+				if (oldFile!="" && oldFile!="Unassigned"){
+					// get names of bodies for external loads and create an xml file for the forceSet 
+					string body1, body2;
+					SimTK::Xml::element_iterator iterB1 = aNode.element_begin("external_loads_body1");
+					SimTK::Xml::element_iterator iterB2 = aNode.element_begin("external_loads_body2");
+					if (iterB1 != aNode.element_end() && iterB2 != aNode.element_end()){
+						try {
+							string newFileName="";//;
+							_externalLoadsFileName = newFileName;
+						}
+						catch(Exception& e){
+							cout << "Old External Loads file " << oldFile << "Could not be used... Ignoring." << endl;
+						}
+					}
+				}
+			}
+		}
+	}
+	Object::updateFromXMLNode(aNode, versionNumber);
+}
+/*
 std::string AnalyzeTool::createExternalLoadsFile(const std::string& oldFile, 
 										  const std::string& body1, 
 										  const std::string& body2)
@@ -727,4 +719,5 @@ std::string AnalyzeTool::createExternalLoadsFile(const std::string& oldFile,
 			throw Exception(msg,__FILE__,__LINE__);
 	}
 	if(_document) IO::chDir(savedCwd);
-}*/
+}
+*/

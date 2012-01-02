@@ -87,9 +87,10 @@ void CoordinateSet::populate(Model& model)
     setSize(0);
 
 	for(int i=0; i< model.getJointSet().getSize(); i++){
-		for(int j=0; j< model.getJointSet().get(i).numCoordinates(); j++){
+		Joint& nextJoint = model.getJointSet().get(i);
+		for(int j=0; j< nextJoint.numCoordinates(); j++){
 			// Append a pointer (address) otherwise the model will get a copy that will not be updated properly
-			append(&(model.getJointSet()[i].getCoordinateSet()[j]));
+			append(&(nextJoint.getCoordinateSet()[j]));
 		}
 	}
 }

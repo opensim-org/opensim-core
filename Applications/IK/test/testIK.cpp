@@ -54,13 +54,13 @@ int main()
 		Storage result2(ik2.getOutputMotionFileName());
 		CHECK_STORAGE_AGAINST_STANDARD(result2, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 GUI workflow failed");
 		cout << "testInverseKinematicsGait2354 GUI workflow passed" << endl;
-
+		/*
 		InverseKinematicsTool ik3("subjectOld_Setup_InverseKinematics.xml");
 		ik3.run();
 		Storage result3(ik3.getOutputMotionFileName());
 		CHECK_STORAGE_AGAINST_STANDARD(result3, standard, Array<double>(0.2, 24), __FILE__, __LINE__, "testInverseKinematicsGait2354 Old setup failed");
 		cout << "testInverseKinematicsGait2354 Old setup passed" << endl;
-
+		*/
 		InverseKinematicsTool ik4("uwdynamic_setup_ik.xml");
 		ik4.run();
 		cout << "testInverseKinematicsUWDynamic passed" << endl;

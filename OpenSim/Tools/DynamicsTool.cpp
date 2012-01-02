@@ -84,7 +84,7 @@ DynamicsTool::DynamicsTool(const string &aFileName, bool aLoadModel) :
 {
 	setType("DynamicsTool");
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	if(aLoadModel) {
 		//loadModel(aFileName);

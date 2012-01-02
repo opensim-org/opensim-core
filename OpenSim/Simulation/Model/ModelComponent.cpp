@@ -53,7 +53,7 @@ ModelComponent::ModelComponent(const XMLDocument* aDocument): Object(aDocument),
 {
 }
 
-ModelComponent::ModelComponent(DOMElement* aNode) : Object(aNode), _model(NULL), _rep(NULL)
+ModelComponent::ModelComponent(SimTK::Xml::Element& aNode) : Object(aNode), _model(NULL), _rep(NULL)
 {
 }
 

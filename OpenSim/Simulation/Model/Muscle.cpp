@@ -41,7 +41,6 @@
 
 
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 
 //=============================================================================
 // STATICS
@@ -135,45 +134,37 @@ void Muscle::setNull()
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
-void Muscle::updateFromXMLNode()
+void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
-	if ( documentVersion < XMLDocument::getLatestVersion()){
-		DOMDocument* document = _node->getOwnerDocument();
+	if ( versionNumber < XMLDocument::getLatestVersion()){
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating Muscle object to latest format..." << endl;
-		// Version has to be 1.6 or later, otherwise assert
-		if (documentVersion <= 20301){
-			if (_node!=NULL){
-				DOMElement* pathNode = XMLNode::GetFirstChildElementByTagName(_node, "GeometryPath");
-				if (pathNode==NULL) {
-					pathNode = XMLNode::CreateDOMElement(document, "GeometryPath");
-					DOMElement* attachmentsNode = XMLNode::GetFirstChildElementByTagName(_node, "MusclePointSet");
-					if (attachmentsNode != 0) {
-						pathNode->appendChild(attachmentsNode->cloneNode(true));
-						_node->insertBefore(pathNode, attachmentsNode);
-						_node->removeChild(attachmentsNode);
+		
+		if (versionNumber <= 20301){
+				SimTK::Xml::element_iterator pathIter = aNode.element_begin("GeometryPath");
+				if (pathIter != aNode.element_end()){
+					XMLDocument::renameChildNode(*pathIter, "MusclePointSet", "PathPointSet");
+					XMLDocument::renameChildNode(*pathIter, "MuscleWrapSet", "PathWrapSet");
 					}
-					DOMElement* displayerNode = XMLNode::GetFirstChildElementByTagName(_node, "display");
-					if (displayerNode != 0) {
-						pathNode->appendChild(displayerNode->cloneNode(true));
-						_node->removeChild(displayerNode);
+				else { // There was no GeometryPath, just MusclePointSet
+					XMLDocument::renameChildNode(aNode, "MusclePointSet", "PathPointSet");
+					XMLDocument::renameChildNode(aNode, "MuscleWrapSet", "PathWrapSet");
+					// Now create a "GeometryPath" node and move MusclePointSet & MuscleWrapSet under it
+					SimTK::Xml::Element myPathElement("GeometryPath");
+					SimTK::Xml::element_iterator  pathPointSetIter = aNode.element_begin("PathPointSet");
+					SimTK::Xml::Node moveNode = aNode.removeNode(pathPointSetIter);
+					myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
+					SimTK::Xml::element_iterator  pathWrapSetIter = aNode.element_begin("PathWrapSet");
+					moveNode = aNode.removeNode(pathWrapSetIter);
+					myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
+					aNode.insertNodeAfter(aNode.element_end(), myPathElement);
 					}
-					DOMElement* wrapNode = XMLNode::GetFirstChildElementByTagName(_node, "MuscleWrapSet");
-					if (wrapNode != 0) {
-						pathNode->appendChild(wrapNode->cloneNode(true));
-						_node->removeChild(wrapNode);
+			XMLDocument::renameChildNode(aNode, "pennation_angle", "pennation_angle_at_optimal");
 					}
-				}
-				renameChildNode("MusclePointSet", "PathPointSet", pathNode);
-				renameChildNode("MuscleWrapSet", "PathWrapSet", pathNode);
-			}
-			renameChildNode("pennation_angle", "pennation_angle_at_optimal", _node);
-		}
 
 	}
-	// Call base class now assuming _node has been corrected for current version
-	Actuator::updateFromXMLNode();
+	// Call base class now assuming aNode has been corrected for current version
+	PathActuator::updateFromXMLNode(aNode, versionNumber);
 }
 
 

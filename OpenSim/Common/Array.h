@@ -244,7 +244,7 @@ bool operator==(const Array<T> &aArray) const
  * Implementation of the output operator.
  * The output for an array looks like the following:\n\n
  *
- * Array[size] = T[0] T[1] T[2] ... T[size-1].
+ * T[0] T[1] T[2] ... T[size-1].
  *
  * @param aOut Output stream.
  * @param aArray Array to be output.
@@ -252,7 +252,7 @@ bool operator==(const Array<T> &aArray) const
  */
 friend std::ostream& operator<<(std::ostream &aOut,const Array<T> &aArray)
 {
-	aOut << "Array["<<aArray.getSize()<<"]=";
+	//removed since this is used for serialization now aOut << "Array["<<aArray.getSize()<<"]=";
 
 	int i;
 	for(i=0;i<aArray.getSize();i++)  {
@@ -263,6 +263,21 @@ friend std::ostream& operator<<(std::ostream &aOut,const Array<T> &aArray)
 	return(aOut);
 }
 
+friend
+std::istream& operator>>(std::istream& in, Array<T>& out) 
+{   
+	//return readArrayFromStream<T>(in, out); 
+	return in;
+}
+/*
+template <class T> inline std::istream& readArrayFromStream<T>(std::istream& in, Array<T>& out)
+{
+	SimTK::Array_<T> simtkArray;
+	readArrayFromStream(in, simtkArray);
+	out.setSize(simtkArray.getSize());
+	for(int i=0; i<simtkArray.getSize(); i++)
+		out[i] = simtkArray[i];
+}*/
 #endif
 //=============================================================================
 // CAPACITY

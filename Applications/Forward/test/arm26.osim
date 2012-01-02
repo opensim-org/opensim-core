@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OpenSimDocument Version="10901">
+<OpenSimDocument Version="20302">
 	<Model name="arm26">
 		<defaults>
-			<CoordinateActuator name="default">
-				<coordinate> Unassigned </coordinate>
-				<optimal_force>     300.00000000 </optimal_force>
-			</CoordinateActuator>
 			<ControlLinear name="default">
 				<is_model_control> true </is_model_control>
 				<extrapolate> true </extrapolate>
@@ -19,38 +15,65 @@
 				<kp>     100.00000000 </kp>
 				<kv>      20.00000000 </kv>
 			</ControlLinear>
-			<CorrectionController name="default">
-   			    <kp>     100.00000000 </kp>
-				<kv>      20.00000000 </kv>
-			</CorrectionController>
+			<CoordinateActuator name="default">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control> -infinity </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control> infinity </max_control>
+				<coordinate> Unassigned </coordinate>
+				<optimal_force>     300.00000000 </optimal_force>
+			</CoordinateActuator>
 			<Thelen2003Muscle name="default">
-				<MusclePointSet name="">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control>       0.00000000 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control>       1.00000000 </max_control>
+				<GeometryPath name="">
+					<PathPointSet name="">
 					<objects/>
 					<groups/>
-				</MusclePointSet>
+					</PathPointSet>
 				<VisibleObject name="">
-					<geometry_files> </geometry_files>
-					<VisibleProperties name="">
-						<display_preference> 4 </display_preference>
-						<show_normals> false </show_normals>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
 						<show_axes> false </show_axes>
-						<material_name> DEFAULT </material_name>
-					</VisibleProperties>
-					<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 				</VisibleObject>
-				<MuscleWrapSet name="">
+					<PathWrapSet name="">
 					<objects/>
 					<groups/>
-				</MuscleWrapSet>
-				<muscle_model> 9 </muscle_model>
-				<!--maximum isometric force of the muscle fibers-->
+					</PathWrapSet>
+				</GeometryPath>
+				<optimal_force>       1.00000000 </optimal_force>
+				<!--Maximum isometric force that the fibers can generate-->
 				<max_isometric_force>       0.00000000 </max_isometric_force>
-				<!--optimal length of the muscle fibers-->
+				<!--Optimal length of the muscle fibers-->
 				<optimal_fiber_length>       0.00000000 </optimal_fiber_length>
-				<!--resting length of the tendon-->
+				<!--Resting length of the tendon-->
 				<tendon_slack_length>       0.00000000 </tendon_slack_length>
-				<!--angle between tendon and fibers at optimal fiber length-->
-				<pennation_angle>       0.00000000 </pennation_angle>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
+				<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 				<!--time constant for ramping up of muscle activation-->
 				<activation_time_constant>       0.01000000 </activation_time_constant>
 				<!--time constant for ramping down of muscle activation-->
@@ -77,175 +100,276 @@
 				<Flen>       1.80000000 </Flen>
 			</Thelen2003Muscle>
 			<Schutte1993Muscle name="default">
-				<MusclePointSet name="">
+				<isDisabled> false </isDisabled>
+				<!--Minimum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<min_control>       0.00000000 </min_control>
+				<!--Maximum allowed value for control signal. Used primarily when solving
+				    for control values-->
+				<max_control>       1.00000000 </max_control>
+				<GeometryPath name="">
+					<PathPointSet name="">
 					<objects/>
 					<groups/>
-				</MusclePointSet>
+					</PathPointSet>
 				<VisibleObject name="">
-					<geometry_files> </geometry_files>
-					<VisibleProperties name="">
-						<display_preference> 4 </display_preference>
-						<show_normals> false </show_normals>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
 						<show_axes> false </show_axes>
-						<material_name> DEFAULT </material_name>
-					</VisibleProperties>
-					<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 				</VisibleObject>
-				<MuscleWrapSet name="">
+					<PathWrapSet name="">
 					<objects/>
 					<groups/>
-				</MuscleWrapSet>
-				<muscle_model> 9 </muscle_model>
-				<!--Function representing force-velocity behavior of muscle fibers-->
-				<time_scale>       0.10000000 </time_scale>
-				<activation1>       0.00000000 </activation1>
-				<activation2>       0.00000000 </activation2>
+					</PathWrapSet>
+				</GeometryPath>
+				<optimal_force>       1.00000000 </optimal_force>
+				<!--Maximum isometric force that the fibers can generate-->
 				<max_isometric_force>       0.00000000 </max_isometric_force>
+				<!--Optimal length of the muscle fibers-->
 				<optimal_fiber_length>       0.00000000 </optimal_fiber_length>
+				<!--Resting length of the tendon-->
 				<tendon_slack_length>       0.00000000 </tendon_slack_length>
-				<pennation_angle>       0.00000000 </pennation_angle>
+				<!--Angle between tendon and fibers at optimal fiber length-->
+				<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
+				<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+				    per second-->
 				<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
+				<!--Scale factor for normalizing time-->
+				<time_scale>       0.10000000 </time_scale>
+				<!--Parameter used in time constant of ramping up of muscle force-->
+				<activation1>       0.00000000 </activation1>
+				<!--Parameter used in time constant of ramping up and ramping down of
+				    muscle force-->
+				<activation2>       0.00000000 </activation2>
+				<!--Damping factor related to maximum contraction velocity-->
 				<damping>       0.05000000 </damping>
+				<!--Function representing force-length behavior of tendon-->
 				<tendon_force_length_curve>
-					<natCubicSpline name="">
+					<NaturalCubicSpline name="">
 						<x>     -10.00000000      -0.00200000      -0.00100000       0.00000000       0.00131000       0.00281000       0.00431000       0.00581000       0.00731000       0.00881000       0.01030000       0.01180000       0.01230000       9.20000000       9.20100000       9.20200000      20.00000000 </x>
 						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.01080000       0.02570000       0.04350000       0.06520000       0.09150000       0.12300000       0.16100000       0.20800000       0.22700000     345.00000000     345.00000000     345.00000000     345.00000000 </y>
-					</natCubicSpline>
+					</NaturalCubicSpline>
 				</tendon_force_length_curve>
+				<!--Function representing active force-length behavior of muscle fibers-->
 				<active_force_length_curve>
-					<natCubicSpline name="">
+					<NaturalCubicSpline name="">
 						<x>     -35.00000000       0.00000000       0.40100000       0.40200000       0.40350000       0.52725000       0.62875000       0.71875000       0.86125000       1.04500000       1.21750000       1.43875000       1.61875000       1.62000000       1.62100000       2.20000000      35.00000000 </x>
 						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000       0.22666700       0.63666700       0.85666700       0.95000000       0.99333300       0.77000000       0.24666700       0.00000000       0.00000000       0.00000000       0.00000000       0.00000000 </y>
-					</natCubicSpline>
+					</NaturalCubicSpline>
 				</active_force_length_curve>
+				<!--Function representing passive force-length behavior of muscle fibers-->
 				<passive_force_length_curve>
-					<natCubicSpline name="">
+					<NaturalCubicSpline name="">
 						<x>     -35.00000000       0.99800000       0.99900000       1.15000000       1.25000000       1.35000000       1.45000000       1.55000000       1.65000000       1.75000000       1.75010000       1.75020000      35.00000000 </x>
 						<y>       0.00000000       0.00000000       0.00000000       0.00000000       0.03500000       0.12000000       0.26000000       0.55000000       1.17000000       2.00000000       2.00000000       2.00000000       2.00000000 </y>
-					</natCubicSpline>
+					</NaturalCubicSpline>
 				</passive_force_length_curve>
-				<force_velocity_curve/>
 			</Schutte1993Muscle>
+			<CorrectionController name="default">
+				<!--A list of actuators that this controller will control.The keyword ALL
+				    indicates the controller will controll all the acuators in the model-->
+				<actuator_list> </actuator_list>
+				<!--Flag (true or false) indicating whether or not the controller is
+				    disabled.-->
+				<isDisabled> false </isDisabled>
+				<!--Gain for position errors-->
+				<kp>     100.00000000 </kp>
+				<!--Gain for velocity errors-->
+				<kv>      20.00000000 </kv>
+			</CorrectionController>
 		</defaults>
 		<credits> Model authors names.. </credits>
 		<publications> List of publications related to model... </publications>
 		<ForceSet name="">
 			<objects>
 				<Thelen2003Muscle name="TRIlong">
-					<MusclePointSet name="">
+					<isDisabled> false </isDisabled>
+					<!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<min_control>       0.00000000 </min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<max_control>       1.00000000 </max_control>
+					<GeometryPath name="">
+						<PathPointSet name="">
 						<objects>
-							<MusclePoint name="TRIlong-P1">
+								<PathPoint name="TRIlong-P1">
 								<location>      -0.05365000      -0.01373000       0.14723000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> ground </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlong-P2">
+								</PathPoint>
+								<PathPoint name="TRIlong-P2">
 								<location>      -0.02714000      -0.11441000      -0.00664000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlong-P3">
+								</PathPoint>
+								<PathPoint name="TRIlong-P3">
 								<location>      -0.03184000      -0.22637000      -0.01217000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlong-P4">
+								</PathPoint>
+								<PathPoint name="TRIlong-P4">
 								<location>      -0.01743000      -0.26757000      -0.01208000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlong-P5">
+								</PathPoint>
+								<PathPoint name="TRIlong-P5">
 								<location>      -0.02190000       0.01046000      -0.00078000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_ulna_radius_hand </body>
-							</MusclePoint>
+								</PathPoint>
 						</objects>
 						<groups/>
-					</MusclePointSet>
+						</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
 							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
-					<MuscleWrapSet name="">
+						<PathWrapSet name="">
 						<objects>
-							<MuscleWrap name="">
+								<PathWrap name="">
 								<wrap_object> TRI </wrap_object>
 								<method> hybrid </method>
 								<range> -1 -1 </range>
-							</MuscleWrap>
-							<MuscleWrap name="">
+								</PathWrap>
+								<PathWrap name="">
 								<wrap_object> TRIlonghh </wrap_object>
 								<method> hybrid </method>
 								<range> -1 -1 </range>
-							</MuscleWrap>
-							<MuscleWrap name="">
+								</PathWrap>
+								<PathWrap name="">
 								<wrap_object> TRIlongglen </wrap_object>
 								<method> hybrid </method>
 								<range> -1 -1 </range>
-							</MuscleWrap>
+								</PathWrap>
 						</objects>
 						<groups/>
-					</MuscleWrapSet>
-					<muscle_model> 9 </muscle_model>
-					<!--maximum isometric force of the muscle fibers-->
+						</PathWrapSet>
+					</GeometryPath>
+					<optimal_force>       1.00000000 </optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>     798.52000000 </max_isometric_force>
-					<!--optimal length of the muscle fibers-->
+					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>       0.13400000 </optimal_fiber_length>
-					<!--resting length of the tendon-->
+					<!--Resting length of the tendon-->
 					<tendon_slack_length>       0.14300000 </tendon_slack_length>
-					<!--angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle>       0.20943951 </pennation_angle>
+					<!--Angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle_at_optimal>       0.20943951 </pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+					    per second-->
+					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 					<!--time constant for ramping up of muscle activation-->
 					<activation_time_constant>       0.01000000 </activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -272,110 +396,170 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRIlat">
-					<MusclePointSet name="">
+					<isDisabled> false </isDisabled>
+					<!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<min_control>       0.00000000 </min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<max_control>       1.00000000 </max_control>
+					<GeometryPath name="">
+						<PathPointSet name="">
 						<objects>
-							<MusclePoint name="TRIlat-P1">
+								<PathPoint name="TRIlat-P1">
 								<location>      -0.00599000      -0.12646000       0.00428000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlat-P2">
+								</PathPoint>
+								<PathPoint name="TRIlat-P2">
 								<location>      -0.02344000      -0.14528000       0.00928000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlat-P3">
+								</PathPoint>
+								<PathPoint name="TRIlat-P3">
 								<location>      -0.03184000      -0.22637000      -0.01217000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlat-P4">
+								</PathPoint>
+								<PathPoint name="TRIlat-P4">
 								<location>      -0.01743000      -0.26757000      -0.01208000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRIlat-P5">
+								</PathPoint>
+								<PathPoint name="TRIlat-P5">
 								<location>      -0.02190000       0.01046000      -0.00078000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_ulna_radius_hand </body>
-							</MusclePoint>
+								</PathPoint>
 						</objects>
 						<groups/>
-					</MusclePointSet>
+						</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
 							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
-					<MuscleWrapSet name="">
+						<PathWrapSet name="">
 						<objects>
-							<MuscleWrap name="">
+								<PathWrap name="">
 								<wrap_object> TRI </wrap_object>
 								<method> hybrid </method>
 								<range> -1 -1 </range>
-							</MuscleWrap>
+								</PathWrap>
 						</objects>
 						<groups/>
-					</MuscleWrapSet>
-					<muscle_model> 9 </muscle_model>
-					<!--maximum isometric force of the muscle fibers-->
+						</PathWrapSet>
+					</GeometryPath>
+					<optimal_force>       1.00000000 </optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>     624.30000000 </max_isometric_force>
-					<!--optimal length of the muscle fibers-->
+					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>       0.11380000 </optimal_fiber_length>
-					<!--resting length of the tendon-->
+					<!--Resting length of the tendon-->
 					<tendon_slack_length>       0.09800000 </tendon_slack_length>
-					<!--angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle>       0.15707963 </pennation_angle>
+					<!--Angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle_at_optimal>       0.15707963 </pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+					    per second-->
+					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 					<!--time constant for ramping up of muscle activation-->
 					<activation_time_constant>       0.01000000 </activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -402,110 +586,170 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="TRImed">
-					<MusclePointSet name="">
+					<isDisabled> false </isDisabled>
+					<!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<min_control>       0.00000000 </min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<max_control>       1.00000000 </max_control>
+					<GeometryPath name="">
+						<PathPointSet name="">
 						<objects>
-							<MusclePoint name="TRImed-P1">
+								<PathPoint name="TRImed-P1">
 								<location>      -0.00838000      -0.13695000      -0.00906000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRImed-P2">
+								</PathPoint>
+								<PathPoint name="TRImed-P2">
 								<location>      -0.02601000      -0.15139000      -0.01080000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRImed-P3">
+								</PathPoint>
+								<PathPoint name="TRImed-P3">
 								<location>      -0.03184000      -0.22637000      -0.01217000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRImed-P4">
+								</PathPoint>
+								<PathPoint name="TRImed-P4">
 								<location>      -0.01743000      -0.26757000      -0.01208000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="TRImed-P5">
+								</PathPoint>
+								<PathPoint name="TRImed-P5">
 								<location>      -0.02190000       0.01046000      -0.00078000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_ulna_radius_hand </body>
-							</MusclePoint>
+								</PathPoint>
 						</objects>
 						<groups/>
-					</MusclePointSet>
+						</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
 							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
-					<MuscleWrapSet name="">
+						<PathWrapSet name="">
 						<objects>
-							<MuscleWrap name="">
+								<PathWrap name="">
 								<wrap_object> TRI </wrap_object>
 								<method> hybrid </method>
 								<range> -1 -1 </range>
-							</MuscleWrap>
+								</PathWrap>
 						</objects>
 						<groups/>
-					</MuscleWrapSet>
-					<muscle_model> 9 </muscle_model>
-					<!--maximum isometric force of the muscle fibers-->
+						</PathWrapSet>
+					</GeometryPath>
+					<optimal_force>       1.00000000 </optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>     624.30000000 </max_isometric_force>
-					<!--optimal length of the muscle fibers-->
+					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>       0.11380000 </optimal_fiber_length>
-					<!--resting length of the tendon-->
+					<!--Resting length of the tendon-->
 					<tendon_slack_length>       0.09080000 </tendon_slack_length>
-					<!--angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle>       0.15707963 </pennation_angle>
+					<!--Angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle_at_optimal>       0.15707963 </pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+					    per second-->
+					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 					<!--time constant for ramping up of muscle activation-->
 					<activation_time_constant>       0.01000000 </activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -532,166 +776,258 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BIClong">
-					<MusclePointSet name="">
+					<isDisabled> false </isDisabled>
+					<!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<min_control>       0.00000000 </min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<max_control>       1.00000000 </max_control>
+					<GeometryPath name="">
+						<PathPointSet name="">
 						<objects>
-							<MusclePoint name="BIClong-P1">
+								<PathPoint name="BIClong-P1">
 								<location>      -0.03923500       0.00347000       0.14795000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> ground </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P2">
+								</PathPoint>
+								<PathPoint name="BIClong-P2">
 								<location>      -0.02894500       0.01391000       0.15639000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> ground </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P3">
+								</PathPoint>
+								<PathPoint name="BIClong-P3">
 								<location>       0.02131000       0.01793000       0.01028000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P4">
+								</PathPoint>
+								<PathPoint name="BIClong-P4">
 								<location>       0.02378000      -0.00511000       0.01201000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P5">
+								</PathPoint>
+								<PathPoint name="BIClong-P5">
 								<location>       0.01345000      -0.02827000       0.00136000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P6">
+								</PathPoint>
+								<PathPoint name="BIClong-P6">
 								<location>       0.01068000      -0.07736000      -0.00165000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P7">
+								</PathPoint>
+								<PathPoint name="BIClong-P7">
 								<location>       0.01703000      -0.12125000       0.00024000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P8">
+								</PathPoint>
+								<PathPoint name="BIClong-P8">
 								<location>       0.02280000      -0.17540000      -0.00630000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BIClong-P9">
+								</PathPoint>
+								<PathPoint name="BIClong-P9">
 								<location>       0.00751000      -0.04839000       0.02179000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_ulna_radius_hand </body>
-							</MusclePoint>
+								</PathPoint>
 						</objects>
 						<groups/>
-					</MusclePointSet>
+						</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
 							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
-					<MuscleWrapSet name="">
+						<PathWrapSet name="">
 						<objects>
-							<MuscleWrap name="">
+								<PathWrap name="">
 								<wrap_object> BIClonghh </wrap_object>
 								<method> hybrid </method>
 								<range> 2 3 </range>
-							</MuscleWrap>
+								</PathWrap>
 						</objects>
 						<groups/>
-					</MuscleWrapSet>
-					<muscle_model> 9 </muscle_model>
-					<!--maximum isometric force of the muscle fibers-->
+						</PathWrapSet>
+					</GeometryPath>
+					<optimal_force>       1.00000000 </optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>     624.30000000 </max_isometric_force>
-					<!--optimal length of the muscle fibers-->
+					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>       0.11570000 </optimal_fiber_length>
-					<!--resting length of the tendon-->
+					<!--Resting length of the tendon-->
 					<tendon_slack_length>       0.27230000 </tendon_slack_length>
-					<!--angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--Angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+					    per second-->
+					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 					<!--time constant for ramping up of muscle activation-->
 					<activation_time_constant>       0.01000000 </activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -718,118 +1054,186 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BICshort">
-					<MusclePointSet name="">
+					<isDisabled> false </isDisabled>
+					<!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<min_control>       0.00000000 </min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<max_control>       1.00000000 </max_control>
+					<GeometryPath name="">
+						<PathPointSet name="">
 						<objects>
-							<MusclePoint name="BICshort-P1">
+								<PathPoint name="BICshort-P1">
 								<location>       0.00467500      -0.01231000       0.13475000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> ground </body>
-							</MusclePoint>
-							<MusclePoint name="BICshort-P2">
+								</PathPoint>
+								<PathPoint name="BICshort-P2">
 								<location>      -0.00707500      -0.04004000       0.14507000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> ground </body>
-							</MusclePoint>
-							<MusclePoint name="BICshort-P3">
+								</PathPoint>
+								<PathPoint name="BICshort-P3">
 								<location>       0.01117000      -0.07576000      -0.01101000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BICshort-P4">
+								</PathPoint>
+								<PathPoint name="BICshort-P4">
 								<location>       0.01703000      -0.12125000      -0.01079000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BICshort-P5">
+								</PathPoint>
+								<PathPoint name="BICshort-P5">
 								<location>       0.02280000      -0.17540000      -0.00630000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BICshort-P6">
+								</PathPoint>
+								<PathPoint name="BICshort-P6">
 								<location>       0.00751000      -0.04839000       0.02179000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_ulna_radius_hand </body>
-							</MusclePoint>
+								</PathPoint>
 						</objects>
 						<groups/>
-					</MusclePointSet>
+						</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
 							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
-					<MuscleWrapSet name="">
+						<PathWrapSet name="">
 						<objects/>
 						<groups/>
-					</MuscleWrapSet>
-					<muscle_model> 9 </muscle_model>
-					<!--maximum isometric force of the muscle fibers-->
+						</PathWrapSet>
+					</GeometryPath>
+					<optimal_force>       1.00000000 </optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>     435.56000000 </max_isometric_force>
-					<!--optimal length of the muscle fibers-->
+					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>       0.13210000 </optimal_fiber_length>
-					<!--resting length of the tendon-->
+					<!--Resting length of the tendon-->
 					<tendon_slack_length>       0.19230000 </tendon_slack_length>
-					<!--angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--Angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+					    per second-->
+					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 					<!--time constant for ramping up of muscle activation-->
 					<activation_time_constant>       0.01000000 </activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -856,68 +1260,104 @@
 					<Flen>       1.80000000 </Flen>
 				</Thelen2003Muscle>
 				<Thelen2003Muscle name="BRA">
-					<MusclePointSet name="">
+					<isDisabled> false </isDisabled>
+					<!--Minimum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<min_control>       0.00000000 </min_control>
+					<!--Maximum allowed value for control signal. Used primarily when solving
+					    for control values-->
+					<max_control>       1.00000000 </max_control>
+					<GeometryPath name="">
+						<PathPointSet name="">
 						<objects>
-							<MusclePoint name="BRA-P1">
+								<PathPoint name="BRA-P1">
 								<location>       0.00680000      -0.17390000      -0.00360000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_humerus </body>
-							</MusclePoint>
-							<MusclePoint name="BRA-P2">
+								</PathPoint>
+								<PathPoint name="BRA-P2">
 								<location>      -0.00320000      -0.02390000       0.00090000 </location>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
+										<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+										    .obj-->
+										<GeometrySet name="">
+											<objects/>
+											<groups/>
+										</GeometrySet>
+										<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+										<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--transform relative to owner specified as 3 rotations (rad) followed by
+										    3 translations rX rY rZ tx ty tz-->
+										<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+										<!--Whether to show a coordinate frame-->
 										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
-									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+										<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+										    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<body> r_ulna_radius_hand </body>
-							</MusclePoint>
+								</PathPoint>
 						</objects>
 						<groups/>
-					</MusclePointSet>
+						</PathPointSet>
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
+							<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+							    .obj-->
+							<GeometrySet name="">
+								<objects/>
+								<groups/>
+							</GeometrySet>
+							<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+							<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--transform relative to owner specified as 3 rotations (rad) followed by
+							    3 translations rX rY rZ tx ty tz-->
+							<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+							<!--Whether to show a coordinate frame-->
 							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+							<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+							    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
-					<MuscleWrapSet name="">
+						<PathWrapSet name="">
 						<objects>
-							<MuscleWrap name="">
+								<PathWrap name="">
 								<wrap_object> TRI </wrap_object>
 								<method> hybrid </method>
 								<range> -1 -1 </range>
-							</MuscleWrap>
+								</PathWrap>
 						</objects>
 						<groups/>
-					</MuscleWrapSet>
-					<muscle_model> 9 </muscle_model>
-					<!--maximum isometric force of the muscle fibers-->
+						</PathWrapSet>
+					</GeometryPath>
+					<optimal_force>       1.00000000 </optimal_force>
+					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>     987.26000000 </max_isometric_force>
-					<!--optimal length of the muscle fibers-->
+					<!--Optimal length of the muscle fibers-->
 					<optimal_fiber_length>       0.08580000 </optimal_fiber_length>
-					<!--resting length of the tendon-->
+					<!--Resting length of the tendon-->
 					<tendon_slack_length>       0.05350000 </tendon_slack_length>
-					<!--angle between tendon and fibers at optimal fiber length-->
-					<pennation_angle>       0.00000000 </pennation_angle>
+					<!--Angle between tendon and fibers at optimal fiber length-->
+					<pennation_angle_at_optimal>       0.00000000 </pennation_angle_at_optimal>
+					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths
+					    per second-->
+					<max_contraction_velocity>      10.00000000 </max_contraction_velocity>
 					<!--time constant for ramping up of muscle activation-->
 					<activation_time_constant>       0.01000000 </activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -965,14 +1405,125 @@
 					<!--Joint that connects this body with the parent body.-->
 					<Joint/>
 					<VisibleObject name="">
-						<geometry_files> ground_ribs.vtp ground_spine.vtp ground_skull.vtp ground_jaw.vtp ground_r_clavicle.vtp ground_r_scapula.vtp </geometry_files>
-						<VisibleProperties name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> ground_ribs.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
 							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> ground_spine.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> ground_skull.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> ground_jaw.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> ground_r_clavicle.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> ground_r_scapula.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+							<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 					</VisibleObject>
 					<WrapObjectSet name="">
 						<objects>
@@ -982,14 +1533,22 @@
 								<active> true </active>
 								<quadrant> x </quadrant>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
-										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
+									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+									    .obj-->
+									<GeometrySet name="">
+										<objects/>
+										<groups/>
+									</GeometrySet>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--transform relative to owner specified as 3 rotations (rad) followed by
+									    3 translations rX rY rZ tx ty tz-->
+									<transform>       1.37531945      -0.29461158       2.43595604      -0.04390500      -0.00390000       0.14780000 </transform>
+									<!--Whether to show a coordinate frame-->
+									<show_axes> false </show_axes>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+									    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<radius>       0.00300000 </radius>
 								<length>       0.03000000 </length>
@@ -1019,6 +1578,9 @@
 							<CoordinateSet name="">
 								<objects>
 									<Coordinate name="r_shoulder_elev">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
 										<default_value>       0.00000000 </default_value>
                     <default_speed_value> 0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
@@ -1032,6 +1594,7 @@
 							</CoordinateSet>
 							<reverse> false </reverse>
 							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
                   <TransformAxis name="rotation1">
                     <function>
                       <Constant name="">
@@ -1059,6 +1622,7 @@
 										<coordinates> r_shoulder_elev </coordinates>
 										<axis>      -0.05889802       0.00230000       0.99826136 </axis>
 									</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
                   <TransformAxis name="translation1">
                     <function>
                       <Constant name="">
@@ -1090,14 +1654,40 @@
 						</CustomJoint>
 					</Joint>
 					<VisibleObject name="">
-						<geometry_files> arm_r_humerus.vtp </geometry_files>
-						<VisibleProperties name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_humerus.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
 							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+							<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 					</VisibleObject>
 					<WrapObjectSet name="">
 						<objects>
@@ -1107,14 +1697,22 @@
 								<active> true </active>
 								<quadrant> z </quadrant>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
-										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
+									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+									    .obj-->
+									<GeometrySet name="">
+										<objects/>
+										<groups/>
+									</GeometrySet>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--transform relative to owner specified as 3 rotations (rad) followed by
+									    3 translations rX rY rZ tx ty tz-->
+									<transform>       3.00161725      -0.85346600       2.57418611      -0.00780000      -0.00410000      -0.00140000 </transform>
+									<!--Whether to show a coordinate frame-->
+									<show_axes> false </show_axes>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+									    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<dimensions>       0.03500000       0.02000000       0.02000000 </dimensions>
 							</WrapEllipsoid>
@@ -1124,14 +1722,22 @@
 								<active> true </active>
 								<quadrant> -y </quadrant>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
-										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
+									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+									    .obj-->
+									<GeometrySet name="">
+										<objects/>
+										<groups/>
+									</GeometrySet>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--transform relative to owner specified as 3 rotations (rad) followed by
+									    3 translations rX rY rZ tx ty tz-->
+									<transform>      -2.00433611      -1.00164446       0.97546452       0.00330000       0.00730000       0.00030000 </transform>
+									<!--Whether to show a coordinate frame-->
+									<show_axes> false </show_axes>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+									    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<dimensions>       0.02500000       0.02000000       0.02000000 </dimensions>
 							</WrapEllipsoid>
@@ -1141,14 +1747,22 @@
 								<active> true </active>
 								<quadrant> all </quadrant>
 								<VisibleObject name="">
-									<geometry_files> </geometry_files>
-									<VisibleProperties name="">
-										<display_preference> 4 </display_preference>
-										<show_normals> false </show_normals>
-										<show_axes> false </show_axes>
-										<material_name> DEFAULT </material_name>
-									</VisibleProperties>
+									<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+									    .obj-->
+									<GeometrySet name="">
+										<objects/>
+										<groups/>
+									</GeometrySet>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--transform relative to owner specified as 3 rotations (rad) followed by
+									    3 translations rX rY rZ tx ty tz-->
+									<transform>      -0.14014994      -0.00628319       0.15498524       0.00280000      -0.29190000      -0.00690000 </transform>
+									<!--Whether to show a coordinate frame-->
+									<show_axes> false </show_axes>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+									    individual geometries-->
+										<display_preference> 4 </display_preference>
 								</VisibleObject>
 								<radius>       0.01600000 </radius>
 								<length>       0.05000000 </length>
@@ -1178,6 +1792,9 @@
 							<CoordinateSet name="">
 								<objects>
 									<Coordinate name="r_elbow_flex">
+										<!--Cooridnate can describe rotational, translational, or coupled values.
+										    Defaults to rotational.-->
+										<motion_type> rotational </motion_type>
 										<default_value>       0.00000000 </default_value>
                     <default_speed_value> 0.00000000 </default_speed_value>
 										<initial_value>       0.00000000 </initial_value>
@@ -1191,6 +1808,7 @@
 							</CoordinateSet>
 							<reverse> false </reverse>
 							<SpatialTransform name="">
+								<!--3 Axes for rotations are listed first.-->
                   <TransformAxis name="rotation1">
                     <function>
                       <Constant name="">
@@ -1218,6 +1836,7 @@
 										<coordinates> r_elbow_flex </coordinates>
 										<axis>       0.04940001       0.03660001       0.99810825 </axis>
 									</TransformAxis>
+								<!--3 Axes for translations are listed next.-->
                   <TransformAxis name="translation1">
                     <function>
                       <Constant name="">
@@ -1249,14 +1868,516 @@
 						</CustomJoint>
 					</Joint>
 					<VisibleObject name="">
-						<geometry_files> arm_r_ulna.vtp arm_r_radius.vtp arm_r_lunate.vtp arm_r_scaphoid.vtp arm_r_pisiform.vtp arm_r_triquetrum.vtp arm_r_capitate.vtp arm_r_trapezium.vtp arm_r_trapezoid.vtp arm_r_hamate.vtp arm_r_1mc.vtp arm_r_2mc.vtp arm_r_3mc.vtp arm_r_4mc.vtp arm_r_5mc.vtp arm_r_thumbprox.vtp arm_r_thumbdist.vtp arm_r_2proxph.vtp arm_r_2midph.vtp arm_r_2distph.vtp arm_r_3proxph.vtp arm_r_3midph.vtp arm_r_3distph.vtp arm_r_4proxph.vtp arm_r_4midph.vtp arm_r_4distph.vtp arm_r_5proxph.vtp arm_r_5midph.vtp arm_r_5distph.vtp </geometry_files>
-						<VisibleProperties name="">
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_ulna.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
 							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_radius.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_lunate.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_scaphoid.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_pisiform.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_triquetrum.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_capitate.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_trapezium.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_trapezoid.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_hamate.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_1mc.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_2mc.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_3mc.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_4mc.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_5mc.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_thumbprox.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_thumbdist.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_2proxph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_2midph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_2distph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_3proxph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_3midph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_3distph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_4proxph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_4midph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_4distph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_5proxph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_5midph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+								<DisplayGeometry name="">
+									<!--Name of geometry file .vtp, .stl, .obj-->
+									<geometry_file> arm_r_5distph.vtp </geometry_file>
+									<!--Color used to display the geometry when visible-->
+									<color>       1.00000000       1.00000000       1.00000000 </color>
+									<!--Name of texture file .jpg, .bmp-->
+									<texture_file>  </texture_file>
+									<!--in body transform specified as 3 rotations (rad) followed by 3
+									    translations rX rY rZ tx ty tz-->
+									<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+									<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
+									<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+									<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded-->
+									<display_preference> 4 </display_preference>
+									<!--Display opacity between 0.0 and 1.0-->
+									<opacity>       1.00000000 </opacity>
+								</DisplayGeometry>
+							</objects>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>
+						<!--Whether to show a coordinate frame-->
+							<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+						<display_preference> 4 </display_preference>
 					</VisibleObject>
 					<WrapObjectSet name="">
 						<objects/>
@@ -1285,14 +2406,22 @@
 					<fixed> false </fixed>
 					<!--Used for displaying a marker in the visuals.-->
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000      -0.01256000       0.04000000       0.17000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
 				</Marker>
 				<Marker name="r_humerus_epicondyle">
@@ -1306,14 +2435,22 @@
 					<fixed> false </fixed>
 					<!--Used for displaying a marker in the visuals.-->
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000       0.00500000      -0.29040000       0.03000000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
 				</Marker>
 				<Marker name="r_radius_styloid">
@@ -1327,14 +2464,22 @@
 					<fixed> false </fixed>
 					<!--Used for displaying a marker in the visuals.-->
 					<VisibleObject name="">
-						<geometry_files> </geometry_files>
-						<VisibleProperties name="">
-							<display_preference> 4 </display_preference>
-							<show_normals> false </show_normals>
-							<show_axes> false </show_axes>
-							<material_name> DEFAULT </material_name>
-						</VisibleProperties>
+						<!--Set of geometry files and associated attributes, allow .vtp, .stl,
+						    .obj-->
+						<GeometrySet name="">
+							<objects/>
+							<groups/>
+						</GeometrySet>
+						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
 						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<!--transform relative to owner specified as 3 rotations (rad) followed by
+						    3 translations rX rY rZ tx ty tz-->
+						<transform>      -0.00000000       0.00000000      -0.00000000      -0.00110000      -0.23559000       0.09430000 </transform>
+						<!--Whether to show a coordinate frame-->
+						<show_axes> false </show_axes>
+						<!--Display Pref. 0:Hide 1:Wire 3:Flat 4:Shaded Can be overriden for
+						    individual geometries-->
+							<display_preference> 4 </display_preference>
 					</VisibleObject>
 				</Marker>
 			</objects>
@@ -1345,6 +2490,11 @@
 			<objects/>
 			<groups/>
 		</ContactGeometrySet>
+		<!--Controller objects in the model.-->
+		<ControllerSet name="Controllers">
+			<objects/>
+			<groups/>
+		</ControllerSet>
 	</Model>
 </OpenSimDocument>
 

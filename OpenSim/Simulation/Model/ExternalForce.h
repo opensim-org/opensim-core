@@ -144,12 +144,12 @@ public:
 	ExternalForce(const Storage &dataSource, std::string forceIdentifier="force", std::string PointIdentifier="point", std::string torqueIdentifier="torque",
 		std::string appliedToBodyName="", std::string forceExpressedInBodyName="ground", std::string pointExpressedInBodyName="ground");
 	ExternalForce(const ExternalForce& force);
-	ExternalForce(DOMElement* aNode);
+	ExternalForce(SimTK::Xml::Element& aNode);
 	~ExternalForce();
 	virtual Object* copy() const;
 
 	// Copy properties from XML into member variables
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	// ACCESS METHODS
 	/**

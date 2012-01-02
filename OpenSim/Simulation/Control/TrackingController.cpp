@@ -80,7 +80,7 @@ TrackingController::TrackingController(Model& aModel) :	Controller(aModel)
       Controller(aFileName, aUpdateFromXMLNode)
 {
       setNull();
-      if(aUpdateFromXMLNode) updateFromXMLNode();
+      if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
 }
 
 //_____________________________________________________________________________

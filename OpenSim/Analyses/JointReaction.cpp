@@ -97,7 +97,7 @@ JointReaction::JointReaction(const std::string &aFileName):
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	/* The rest will be done by setModel().
 	// CONSTRUCT DESCRIPTION AND LABELS

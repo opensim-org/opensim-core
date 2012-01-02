@@ -98,7 +98,7 @@ BodyKinematics::BodyKinematics(const std::string &aFileName):
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 }
 

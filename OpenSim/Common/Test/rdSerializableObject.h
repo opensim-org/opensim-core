@@ -34,11 +34,12 @@
 
 
 // INCLUDES
+#include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Common/PropertyObjArray.h>
-
+#include <OpenSim/Common/PropertyDblVec.h>
 #include "rdSerializableObject2.h"
 //extern template class OSIMCOMMON_API Array<double>;
 
@@ -73,7 +74,7 @@ namespace OpenSim {
 		{
 			setNull();
 			setupSerializedMembers();
-			updateFromXMLNode();
+			updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
 		};
 		rdSerializableObject(const rdSerializableObject &aControl)
 		{
@@ -179,10 +180,10 @@ namespace OpenSim {
 			xform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(2, 1, 0.5));
 			PropertyTransform* transformP=new PropertyTransform("MyTransformProperty", xform);
 			_propertySet.append(transformP);
-			/*
-			PropertyObj pObj("Test_Obj",obj);
-			pObj.setComment("Comment on an Object");
-			_propertySet.append(pObj.copy());*/
+			
+			PropertyDblVec3* propPoint = new PropertyDblVec3("Test_DblVec3",SimTK::Vec3(3., 5., 7.));
+			propPoint->setComment("Point at 3,5,7");
+			_propertySet.append(propPoint);
 
 		}
 		//--------------------------------------------------------------------------

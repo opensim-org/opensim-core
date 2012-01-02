@@ -92,7 +92,7 @@ PrescribedController::PrescribedController(Model& aModel) :
     _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
 {
       setNull();
-      if(aUpdateFromXMLNode) updateFromXMLNode();
+      if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
 }
 
 //_____________________________________________________________________________

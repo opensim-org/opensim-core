@@ -71,7 +71,7 @@ ContactGeometrySet::ContactGeometrySet(Model& model, const std::string &aFileNam
 {
 	setNull();
 
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 
 //_____________________________________________________________________________

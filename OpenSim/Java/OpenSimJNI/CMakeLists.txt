@@ -23,20 +23,13 @@ FILE(GLOB INCLUDE_FILES ${swig_generated_file_fullname} OpenSimContext.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 					${OpenSim_SOURCE_DIR}/Vendors 
-					${XERCES_INCLUDE_DIR}
 					${JAVA_INCLUDE_PATH}
 					${JAVA_INCLUDE_PATH2}
 )
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-IF(WIN32)
-     LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter
-                    debug xerces-c_2D optimized  xerces-c_2)
-ELSE(WIN32)
-     LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter
-                    debug xerces-c optimized  xerces-c)
-ENDIF(WIN32)
+LINK_LIBRARIES(osimCommon osimSimulation osimAnalyses osimTools osimSimmFileWriter)
 
 ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 

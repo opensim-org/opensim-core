@@ -92,7 +92,7 @@ protected:
 public:
 	TransformAxis();
 	TransformAxis(const Array<std::string> &coordNames, const SimTK::Vec3& aAxis);
-	TransformAxis(DOMElement *aNode);
+	TransformAxis(SimTK::Xml::Element& aNode);
 	//TransformAxis(const std::string &aName, const Array<std::string> &coordNames, const SimTK::Vec3& aAxis, bool isRotation=false);
 	TransformAxis(const TransformAxis &anAxis);
 	virtual ~TransformAxis();
@@ -141,7 +141,7 @@ public:
 	// Setup the Transform Axis for to be used by its owning Joint
     virtual void setup(Joint& aJoint);
 
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 	OPENSIM_DECLARE_DERIVED(TransformAxis, Object);
 
 protected:

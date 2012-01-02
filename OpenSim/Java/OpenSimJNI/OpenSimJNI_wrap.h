@@ -18,17 +18,14 @@ public:
     SwigDirector_AnalysisWrapper(JNIEnv *jenv, OpenSim::Model *aModel = 0);
     virtual ~SwigDirector_AnalysisWrapper();
     virtual OpenSim::Object *copy() const;
-    virtual OpenSim::Object *copy(DOMElement *aNode) const;
     virtual OpenSim::VisibleObject const *getDisplayer() const;
     virtual OpenSim::VisibleObject *updDisplayer();
     virtual bool isEqualTo(OpenSim::Object const &aObject) const;
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
-    virtual void updateFromXMLNode();
+    virtual void updateFromXMLNode(SimTK::Xml::Element &aNode, int versionNumber);
     virtual void updateDefaultObjectsFromXMLNode();
-    virtual void updateXMLNode(DOMElement *aParent, int aNodeIndex = 0);
-    virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
-    virtual void generateXMLNode(DOMElement *aParent, int aNodeIndex = 0);
-    virtual void update(OpenSim::Object const &aObject, OpenSim::Event &aEvent);
+    virtual void updateXMLNode(SimTK::Xml::Element &aParent, int aNodeIndex = 0);
+    virtual void updateDefaultObjectsXMLNode(SimTK::Xml::Element &aParent);
     virtual bool isA(char const *type) const;
     virtual void copy(OpenSim::Object const &aObject);
     virtual int begin(SimTK::State &s);
@@ -41,10 +38,10 @@ public:
     virtual int printResults(std::string const &aBaseName, std::string const &aDir = "", double aDT = -1.0, std::string const &aExtension = ".sto");
 public:
     bool swig_overrides(int n) {
-      return (n < 28 ? swig_override[n] : false);
+      return (n < 24 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[28];
+    bool swig_override[24];
 };
 
 class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {

@@ -26,8 +26,7 @@ FILE(GLOB SOURCE_FILES Control/*.cpp Integrator/*.cpp Manager/*.cpp Model/*.cpp 
 FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Wrap/*.h SimbodyEngine/*.h *.h)
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-		    ${OpenSim_SOURCE_DIR}/Vendors
-			 ${XERCES_INCLUDE_DIR})
+		    ${OpenSim_SOURCE_DIR}/Vendors)
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
@@ -36,13 +35,11 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 IF(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
                debug osimCommon${CMAKE_DEBUG_POSTFIX} optimized osimCommon pthreadVC2		     
-		       ${SIMTK_ALL_LIBS}
-		       debug xerces-c_2D optimized  xerces-c_2)
+		       ${SIMTK_ALL_LIBS})
 ELSE(WIN32)
 TARGET_LINK_LIBRARIES(osim${KIT} 
                debug osimCommon${CMAKE_DEBUG_POSTFIX}     optimized osimCommon		     
 		       ${SIMTK_ALL_LIBS}
-  		       debug xerces-c      optimized xerces-c
 		dl)
 ENDIF(WIN32)
 

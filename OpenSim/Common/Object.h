@@ -42,24 +42,10 @@
 #include <cstring>
 #include <assert.h>
 #include <map>
-#include "Observable.h"
-#include "Event.h"
 #include "osimCommonDLL.h"
+#include "XMLDocument.h"
 #include "PropertySet.h"
 
-// Only the necessary Xerces includes/defines
-#include <xercesc/util/XercesDefs.hpp>
-#ifndef SWIG
-XERCES_CPP_NAMESPACE_BEGIN
-class DOMElement;
-XERCES_CPP_NAMESPACE_END
-XERCES_CPP_NAMESPACE_USE
-#else
-class DOMElement;	// should be in proper namespace if we care
-					// namespace has XERCES version encoded in it
-					// but we never use DOMStuff from Java anyway.
-					// Swig barfs on the above syntax otherwise. -Ayman 2/07
-#endif
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
 
@@ -148,11 +134,6 @@ private:
 	 */
 	static int _debugLevel;
 
-	/**
-	* A pointer to the observable object implementation. Null if not needed to minimize
-	* memory overhead 
-	*/
-	Observable	*_observable;
 public:
 	/** A length limit for a name. */
 #ifndef SWIG
@@ -174,12 +155,9 @@ protected:
 	/** XML document. -> rdSerializable interface */
 	XMLDocument *_document;
 	/** XML element node. -> rdSerializable interface */
-	DOMElement *_node;
-	/** Inlined object -> rdSerializable interface */
+	//DOMElement *_node;
+	
 	bool _inlined;
-	/** For non inlined objects their _node and _document refer to external file
-	 * _refNode contains the type and reference to file name -> rdSerializable interface */
-	DOMElement *_refNode;
 
 //=============================================================================
 // METHODS
@@ -192,21 +170,12 @@ public:
 	Object();
 	Object(const std::string &aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
 	Object(const XMLDocument *aDocument);
-	Object(DOMElement *aNode);
 	Object(const Object &aObject);
+	Object(SimTK::Xml::Element& aNode);
 	virtual Object* copy() const;
-	virtual Object* copy(DOMElement *aNode) const;
 	static Object* SafeCopy(const Object *aObject) { return aObject ? aObject->copy() : 0; }
 	virtual const VisibleObject *getDisplayer() const { return 0; };
 	virtual VisibleObject *updDisplayer() { return 0; };
-
-	//-------- Versioning
-	/** Now this works by having classes that change over time, implement their own updateFromXMLNode method.
-	 *  The method is responsible for massaging the DOM underneath the object to match latest XML layout.
-	 *  The implmentation of updateFromXMLNode (if any) should call the base class's method to do the actual parsing.
-	 *  The helper function renameChildNode helps with this since it's not provided by the DOM. 
-	 */
-	void renameChildNode(const std::string& aOldName, const std::string& aNewName, DOMElement* startNode=NULL);
 
 private:
 	void setNull();
@@ -290,25 +259,23 @@ public:
 	// XML NEW
 	//--------------------------------------------------------------------------
 	virtual bool isValidDefaultType(const Object *aObject) const;
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+	// Use this method only if you're deserializing from a file and the object is TopLevel
+	// that is primarily in constructors that take fileName as input
+	void updateFromXMLDocument();
 	virtual void updateDefaultObjectsFromXMLNode();
-	virtual void updateXMLNode(DOMElement *aParent, int aNodeIndex=0);
-	virtual void updateDefaultObjectsXMLNode(DOMElement *aParent);
-	virtual void generateXMLNode(DOMElement *aParent, int aNodeIndex=0);
+	virtual void updateXMLNode(SimTK::Xml::Element& aParent, int aNodeIndex=0);
+	virtual void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 	// Inline support
 	bool getInlined() const;
 	void setInlined(bool aInlined, const std::string &aFileName="");
 	XMLDocument* getDocument() const;
 	std::string getDocumentFileName() const;
-	DOMElement* getXMLNode() const;
-	void clearXMLStructures();
 	void setAllPropertiesUseDefault(bool aUseDefault);
-protected:
-	void setXMLNode(DOMElement *aNode);
 private:
 	void generateXMLDocument();
-	static bool parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rChildDocument, DOMElement *&rChildDocumentElement, bool aVerifyTagName = true);
-	static void InitializeObjectFromXMLNode(Property *aProperty, DOMElement *&rObjectElement, Object *aObject);
+	//static bool parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rChildDocument, DOMElement *&rChildDocumentElement, bool aVerifyTagName = true);
+	static void InitializeObjectFromXMLNode(Property *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 
 	//--------------------------------------------------------------------------
 	// IO
@@ -320,76 +287,8 @@ public:
 	static void PrintPropertyInfo(std::ostream &aOStream,
 					const std::string &aClassName,const std::string &aPropertyName);
 
-	//--------------------------------------------------------------------------
-	// Observable Interface
-	//--------------------------------------------------------------------------
-	// Manage Observers
-	//--------------------------------------------------------------------------
-	void addObserver(Object& aObserver)
-	{
-		if (!_observable)
-			_observable = new Observable(*this);	// Lazy creation of observable
-		assert(_observable);
-		_observable->addObserver(aObserver);
-	};
-	void deleteObserver(Object& aObserver)
-	{
-		assert(_observable);
-		_observable->deleteObserver(aObserver);
-	};
-	/**
-	 * Eventually observers will have to specify what event to observe so that they're not
-	 * called unnecessarily. Will do this after the Event class hierarchy matures.
-	 */
-	void addObserverEvent(Object& aObserver, OpenSim::Event& aEvent)
-	{};
-	void notifyObservers(OpenSim::Event& aEvent)
-	{
-		if (!_observable)	// No observer has been added
-			return;
-		assert(_observable);
-		_observable->notifyObservers(aEvent);
-	};
 
-	void deleteObservers()
-	{
-		assert(_observable);
-		_observable->deleteObservers();
-	};
-	int countObservers() const
-	{
-		if (!_observable)	// No observer has been added
-			return 0;		
-		assert(_observable);
-		return _observable->countObservers();
-	};
-protected:
-	//--------------------------------------------------------------------------
-	// Manage _changed flag
-	//--------------------------------------------------------------------------
-	void setChanged()
-	{
-		if (!_observable)	// No observer has been added
-			return;		
-		assert(_observable);
-		_observable->setChanged();
-	};
-	void clearChanged()
-	{
-		if (!_observable)	// No observer has been added
-			return;		
-		assert(_observable);
-		_observable->clearChanged();
-	};
-	bool hasChanged()
-	{
-		if (!_observable)	// No observer has been added
-			return false;		
-		assert(_observable);
-		return (_observable->hasChanged());
-	};
 public:
-	virtual void update(const Object& aObject, OpenSim::Event& aEvent) {};
 	/* Static functions to specify and query if all registered objects are written 
 	 * to the defaults section of output files rather than only those 
 	 * explicitly specified by the user in input files */

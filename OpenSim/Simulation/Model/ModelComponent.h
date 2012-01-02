@@ -144,7 +144,7 @@ public:
 	ModelComponent();
 	ModelComponent(const std::string& aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
 	ModelComponent(const XMLDocument* aDocument);
-	ModelComponent(DOMElement* aNode);
+	ModelComponent(SimTK::Xml::Element& aNode);
 	ModelComponent(const ModelComponent& copy);
     virtual ~ModelComponent();
 

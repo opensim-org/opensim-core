@@ -9,7 +9,6 @@ INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR}
 		    ${OpenSim_SOURCE_DIR}/OpenSim
 		    ${OpenSim_SOURCE_DIR}/Vendors
 		    ${OpenSim_SOURCE_DIR}/Vendors/lepton/include
-		    ${XERCES_INCLUDE_DIR}
 		    ${SIMTK_HEADERS_DIR})
 
 ADD_LIBRARY(${EXAMPLE_EXPRESSION_REPORTER_PLUGIN} SHARED osimExpPluginDLL.cpp RegisterTypes_osimExpPlugin.cpp SymbolicExpressionReporter.cpp osimExpPluginDLL.h RegisterTypes_osimExpPlugin.h SymbolicExpressionReporter.h)
@@ -59,7 +58,7 @@ SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.2.1"
 SET(PLUGIN_NAME "osimExpressionReporter")
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
-${OpenSim_SOURCE_DIR}/OpenSim ${OpenSim_SOURCE_DIR}/Vendors/lepton/include ${XERCES_HEADER_DIR} ${SIMTK_HEADERS_DIR})
+${OpenSim_SOURCE_DIR}/OpenSim ${OpenSim_SOURCE_DIR}/Vendors/lepton/include ${SIMTK_HEADERS_DIR})
 
 ### LIBRARIES
 SET(OPENSIM_LIBS_DIR  ${OPENSIM_INSTALL_DIR}/sdk/lib)

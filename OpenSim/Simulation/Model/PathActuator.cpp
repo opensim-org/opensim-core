@@ -341,13 +341,14 @@ void PathActuator::setup(Model& aModel)
 /**
  * Update this object based on its XML node.
  *
- * This method simply calls Object::updateFromXMLNode() and then calls
+ * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
  * a few methods in this class to ensure that variable members have been
  * set in a consistent manner.
  */
-void PathActuator::updateFromXMLNode()
+void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	Actuator::updateFromXMLNode();
+	_path.setOwner(this);
+	Actuator::updateFromXMLNode(aNode, versionNumber);
 	setOptimalForce(_optimalForce);
 }	
 

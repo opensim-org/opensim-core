@@ -96,7 +96,7 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 
 	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 	OPENSIM_DECLARE_DERIVED(CustomJoint, Joint);
 
 protected:

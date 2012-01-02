@@ -115,7 +115,7 @@ InducedAccelerations::InducedAccelerations(const std::string &aFileName):
 	setNull();
 
 	// Read properties from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 }
 
 // Copy constrctor and virtual copy 

@@ -98,7 +98,7 @@ public:
 #endif
    void copyData(const RigidTendonMuscle &aRigidTendonMuscle);
 	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 
 	//--------------------------------------------------------------------------

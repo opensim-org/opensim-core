@@ -326,9 +326,9 @@ const double* PiecewiseLinearFunction::getYValues() const
 /**
  * Update this object based on its XML node.
  */
-void PiecewiseLinearFunction::updateFromXMLNode()
+void PiecewiseLinearFunction::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	Function::updateFromXMLNode();
+	Function::updateFromXMLNode(aNode, versionNumber);
 	calcCoefficients();
 }	
 

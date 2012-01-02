@@ -35,7 +35,6 @@
 #include "Model.h"
 #include "BodySet.h"
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Common/IO.h>
 
@@ -89,7 +88,7 @@ ExternalLoads::ExternalLoads(Model& model, const std::string &aFileName, bool aU
 	setNull();
 
 	if(aUpdateFromXMLNode)
-		updateFromXMLNode();
+		updateFromXMLDocument();
 }
 
 
@@ -399,47 +398,29 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 // UPDATE FROM OLDER VERSION
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-void ExternalLoads::updateFromXMLNode()
+void ExternalLoads::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
+	int documentVersion = versionNumber;
 	if ( documentVersion < 20301){
-		DOMDocument* document = _node->getOwnerDocument();
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating ExternalLoad object to latest format..." << endl;
 		_dataFileName="";
-		if (_node!=NULL){
-			DOMElement* dataFileNode = XMLNode::GetFirstChildElementByTagName(_node,"datafile");
-			if (dataFileNode != 0){
-				DOMText* txtNode=NULL;
-				if(txtNode=XMLNode::GetTextNode(dataFileNode)) {
+		SimTK::Xml::element_iterator dataFileElementIter =aNode.element_begin("datafile");
+		if(dataFileElementIter!=aNode.element_end()) {
 					// Could still be empty or whiteSpace
-					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
+			SimTK::String transcoded = dataFileElementIter->getValueAs<SimTK::String>();
 					if (transcoded.length()>0)
-						_dataFileName = XMLNode::GetValue<std::string>(txtNode);
+				_dataFileName =transcoded;
 				}
-			}
-			DOMElement* kinFileNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
-			if (kinFileNode != 0){
-				DOMText* txtNode=NULL;
-				if(txtNode=XMLNode::GetTextNode(kinFileNode)) {
-					// Could still be empty or whiteSpace
-					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
+		SimTK::Xml::element_iterator kinFileNode = aNode.element_begin("external_loads_model_kinematics_file");
+		if (kinFileNode != aNode.element_end()){
+			SimTK::String transcoded = kinFileNode->getValueAs<SimTK::String>();
 					if (transcoded.length()>0)
-						_externalLoadsModelKinematicsFileName = XMLNode::GetValue<std::string>(txtNode);
+				_externalLoadsModelKinematicsFileName =transcoded;
 				}
-			}
-			DOMElement* kinFilterNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
-			if (kinFilterNode != 0){
-				DOMText* txtNode=NULL;
-				if(txtNode=XMLNode::GetTextNode(kinFilterNode)) {
-					// Could still be empty or whiteSpace
-					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
-					if (transcoded.length()>0)
-						_lowpassCutoffFrequencyForLoadKinematics = XMLNode::GetValue<double>(txtNode);
-				}
-			}
-			if (_dataFileName==""){
-				// Assert and break (may need to call base class updateFromXMLNode() regardless.
+		SimTK::Xml::element_iterator kinFilterNode = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
+		if (kinFilterNode != aNode.element_end()){
+			_lowpassCutoffFrequencyForLoadKinematics = kinFilterNode->getValueAs<double>();
 			}
 			bool changeWorkingDir = false;
 			std::string savedCwd;
@@ -470,7 +451,6 @@ void ExternalLoads::updateFromXMLNode()
 			
 			const Array<string> &labels = dataSource->getColumnLabels();
 			// Populate data file and other things that haven't changed
-			string objectName = XMLNode::TranscodeAndTrim(_node->getTagName());
 			// Create a ForceSet out of this XML node, this will create a set of PrescribedForces then we can reassign at a higher level to ExternalForces
 			ModelComponentSet<PrescribedForce> oldForces(*_model, getDocument()->getFileName(), true);
 			for(int i=0; i< oldForces.getSize(); i++){
@@ -497,10 +477,9 @@ void ExternalLoads::updateFromXMLNode()
 			}
 			delete dataSource;
 		}
-	}
-	else
+	else 
 		// Call base class now assuming _node has been corrected for current version
-		ModelComponentSet<ExternalForce>::updateFromXMLNode();
+		ModelComponentSet<ExternalForce>::updateFromXMLNode(aNode, versionNumber);
 }
 /**
  * Helper function to recover Identifier based on the conventions used in earlier versions before identifiers were introduced

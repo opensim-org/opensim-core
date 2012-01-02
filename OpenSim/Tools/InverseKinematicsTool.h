@@ -129,7 +129,7 @@ public:
 	/* Register types to be used when reading an InverseKinematicsTool object from xml file. */
 	static void registerTypes();
 	/* Handle reading older formats/Versioning */
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	//---- Setters and getters for various attributes
 	void setModel(Model& aModel) { _model = &aModel; };

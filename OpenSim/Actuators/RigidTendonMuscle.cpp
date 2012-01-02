@@ -140,10 +140,10 @@ void RigidTendonMuscle::setNull()
  * Override default implementation by object to intercept and fix the XML node
  * underneath the model to match current version
  */
-void RigidTendonMuscle::updateFromXMLNode()
+void RigidTendonMuscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	// Call base class now assuming _node has been corrected for current version
-	Muscle::updateFromXMLNode();
+	Muscle::updateFromXMLNode(aNode);
 }
 
 //_____________________________________________________________________________

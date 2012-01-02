@@ -1,8 +1,6 @@
 %module(directors="1") opensimModel
 %module opensimModel
 %{
-#include <xercesc/util/XercesVersion.hpp>
-#include <xercesc/util/XercesDefs.hpp>
 #include <OpenSim/version.h>
 #include <SimTKsimbody.h>
 #include <OpenSim/Common/osimCommonDLL.h>
@@ -169,7 +167,6 @@
 
 using namespace OpenSim;
 using namespace SimTK;
-using OpenSim::Event;
 
 static bool trace=false;
 %}

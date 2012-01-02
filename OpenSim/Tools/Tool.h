@@ -106,7 +106,7 @@ public:
 		_resultsDir(_resultsDirProp.getValueStr()) {
 			setType("Tool");
 			setNull();
-			if(aUpdateFromXMLNode) updateFromXMLNode();
+			if(aUpdateFromXMLNode) updateFromXMLDocument();
 		};
 	
 	/**

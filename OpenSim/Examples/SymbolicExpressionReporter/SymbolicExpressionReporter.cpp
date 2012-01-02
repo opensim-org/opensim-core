@@ -89,7 +89,7 @@ _resultStore(100,"Expression")
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	// DESCRIPTION
 	constructDescription();

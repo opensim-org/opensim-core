@@ -59,9 +59,19 @@ int main()
 
 		// OBJECT 2
 		rdSerializableObject obj2("obj1.xml");
-
-		obj2.updateXMLNode(NULL);
 		obj2.print("roundtrip.xml");
+
+		// OBJECT 3
+		rdSerializableObject obj3("obj1Defaults.xml");
+		Property* pObjArr = obj3.getPropertySet().get(11);
+		PropertyObjArray<OpenSim::Object>* objs = (PropertyObjArray<OpenSim::Object> *)pObjArr;
+		Object* dObj = objs->getValueObjPtr(1);
+		Property* p1 = dObj->getPropertySet().get(0);
+		Property* p2 = dObj->getPropertySet().get(1);
+		std::cout << (*p1) << std::endl;
+		std::cout << (*p2) << std::endl;
+		Object::setSerializeAllDefaults(true);
+		obj3.print("roundtripDefaults.xml");
 
 		// Now compare object properties to make sure we're not reading and writing the file as just text!
 		int numProperties1 = obj1.getPropertySet().getSize();
@@ -81,14 +91,14 @@ int main()
 		
 		ASSERT(((PropertyDbl*) propSet1.get(2))->getValueDbl() == ((PropertyDbl*) propSet2.get(2))->getValueDbl(), __FILE__, __LINE__, "double property");
 		
-		/* The following actually fails due to extra spaces when we read back from file!.
-		string& str1 = ((PropertyStr*) propSet1.get(3))->getValueStr();
-		string& str2 = ((PropertyStr*) propSet2.get(3))->getValueStr();
-		str1.compare(str2);
-		if (!success) {
+		/* The following actually fails due to extra spaces when we read back from file!.*/
+		string& str1 = ((PropertyStr*) propSet1.get(6))->getValueStr();
+		string& str2 = ((PropertyStr*) propSet2.get(6))->getValueStr();
+		int cmp=str1.compare(str2);
+		if (cmp!=0) {
 			throw Exception("String property",__FILE__,__LINE__);
 		}
-		*/
+		
 	}
     catch(const Exception& e) {
         e.print(cerr);

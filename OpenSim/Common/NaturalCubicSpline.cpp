@@ -329,9 +329,9 @@ const double* NaturalCubicSpline::getYValues() const
 /**
  * Update this object based on its XML node.
  */
-void NaturalCubicSpline::updateFromXMLNode()
+void NaturalCubicSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	Function::updateFromXMLNode();
+	Function::updateFromXMLNode(aNode, versionNumber);
 	calcCoefficients();
 }	
 

@@ -83,7 +83,7 @@ ScaleTool::ScaleTool(const string &aFileName) :
 	setNull();
 	setupProperties();
 
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	_pathToSubject = IO::getParentDirectory(aFileName);
 }

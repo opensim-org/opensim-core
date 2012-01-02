@@ -311,16 +311,6 @@ const double* PiecewiseConstantFunction::getYValues() const
 
 
 //-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- */
-void PiecewiseConstantFunction::updateFromXMLNode()
-{
-       Function::updateFromXMLNode();
-}      
 
 //=============================================================================
 // EVALUATION

@@ -87,7 +87,7 @@ _statesStore(1000,"ModelStates")
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	// DESCRIPTION
 	constructDescription();

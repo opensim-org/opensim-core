@@ -81,7 +81,7 @@ _segmentName(_propSegmentName.getValueStr()),
 _apply(_propApply.getValueBool())
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**

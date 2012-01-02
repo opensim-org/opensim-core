@@ -81,7 +81,7 @@ ControllerSet::ControllerSet(Model& model, const std::string &aFileName, bool aU
      ModelComponentSet<Controller>(model, aFileName, false)
 {
     setNull();
-    if(aUpdateFromXMLNode) updateFromXMLNode();
+    if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 
 

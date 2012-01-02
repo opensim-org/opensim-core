@@ -116,7 +116,7 @@ public:
 	MovingPathPoint& operator=(const MovingPathPoint &aPoint);
 #endif
    void copyData(const MovingPathPoint &aPoint);
-	void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
 	virtual void init(const PathPoint& aPoint);
 
 	const Coordinate* getXCoordinate() const { return _xCoordinate; }

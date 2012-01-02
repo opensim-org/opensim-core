@@ -226,7 +226,7 @@ public:
 	virtual ~Model();
 
 	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	/**
 	 * Copy this Model and return a pointer to the copy.

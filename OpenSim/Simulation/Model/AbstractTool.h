@@ -204,7 +204,6 @@ public:
 	* @param aTool Object to be copied.
 	* @see AbstractTool(const XMLDocument *aDocument)
 	* @see AbstractTool(const char *aFileName)
-	* @see generateXMLDocument()
 	*/
 	AbstractTool(const AbstractTool &aObject);
 	//Object* copy() const;
@@ -230,7 +229,6 @@ private:
 	* Verify that column labels are unique.
 	*/
 	bool verifyUniqueComulnLabels(const Storage& aStorage) const;
-	std::string parseStringProperty(const std::string& propertyName);
 	std::string createExternalLoadsFile(const std::string& oldFile, 
 										  const std::string& body1, 
 										  const std::string& body2);
@@ -380,8 +378,8 @@ public:
     bool createExternalLoads( const std::string &aExternalLoadsFileName,
                                      Model& aModel, const Storage *loadKinematics=NULL);
 
-virtual void updateFromXMLNode();
-virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
+	virtual void loadQStorage (const std::string& statesFileName, Storage& rQStore) const;
 //=============================================================================
 };	// END of class AbstractTool
 

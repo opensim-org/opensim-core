@@ -85,7 +85,7 @@ CorrectionController(const string &aFileName, bool aUpdateFromXMLNode) :
 {
 
 	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**

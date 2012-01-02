@@ -30,7 +30,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "TransformAxis.h"
 #include "Joint.h"
 #include "Coordinate.h"
@@ -79,15 +78,14 @@ TransformAxis::TransformAxis() :
 /**
  * Constructor from XML node
  */
-TransformAxis::TransformAxis(DOMElement *aNode) :
+TransformAxis::TransformAxis(SimTK::Xml::Element& aNode) :
     _function(_functionProp.getValueObjPtrRef()),
     _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
 	_axis(_axisProp.getValueDblVec())
 {
 	setNull();
 	setupProperties();
-	_node = aNode;
-	updateFromXMLNode();
+	updateFromXMLNode(aNode);
 }
 
 //_____________________________________________________________________________
@@ -324,11 +322,11 @@ void TransformAxis::setFunction(const OpenSim::Function& aFunction)
 }
 
 
-void TransformAxis::updateFromXMLNode()
+void TransformAxis::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	// Version before refactoring spatialTransform
 	//if (_node!=NULL){
 	//	renameChildNode("coordinate", "coordinates");
 	//}
-	Object::updateFromXMLNode();
+	Object::updateFromXMLNode(aNode, versionNumber);
 }

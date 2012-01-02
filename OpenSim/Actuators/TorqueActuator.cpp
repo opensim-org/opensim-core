@@ -35,7 +35,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "TorqueActuator.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
@@ -403,25 +402,25 @@ bool TorqueActuator::check() const
 /**
  * Update this object based on its XML node.
  *
- * This method simply calls Object::updateFromXMLNode() and then calls
+ * This method simply calls Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber) and then calls
  * a few methods in this class to ensure that variable members have been
  * set in a consistent manner.
  */
 void TorqueActuator::
-updateFromXMLNode()
+updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
+	int documentVersion = versionNumber;
 	bool converting=false;
 	if ( documentVersion < XMLDocument::getLatestVersion()){
-		if (_node!=NULL && documentVersion<10905){
+		if (documentVersion<10905){
 			// This used to be called "Force" back then
-			renameChildNode("body_A", "bodyB"); // body_B -> body
-			renameChildNode("body_B", "bodyA"); // direction_A -> direction
-			renameChildNode("direction_A", "axis"); // direction_A -> direction
+			XMLDocument::renameChildNode(aNode, "body_A", "bodyB"); // body_B -> body
+			XMLDocument::renameChildNode(aNode, "body_B", "bodyA"); // direction_A -> direction
+			XMLDocument::renameChildNode(aNode, "direction_A", "axis"); // direction_A -> direction
 			converting = true;
 		}
 	}
-	Actuator::updateFromXMLNode();
+	Actuator::updateFromXMLNode(aNode, versionNumber);
 	if (converting) _axis *= -1.0;
 	setBodyA(_bodyA);
 	setBodyB(_bodyB);

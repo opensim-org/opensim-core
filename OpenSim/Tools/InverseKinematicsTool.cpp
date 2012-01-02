@@ -112,7 +112,7 @@ InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoad
 {
 	setType("InverseKinematicsTool");
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	if(aLoadModel) {
 		//loadModel(aFileName);
@@ -471,19 +471,18 @@ bool InverseKinematicsTool::run()
 }
 
 // Handle conversion from older format
-void InverseKinematicsTool::updateFromXMLNode()
+void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
-	if ( documentVersion < XMLDocument::getLatestVersion()){
+	if ( versionNumber < XMLDocument::getLatestVersion()){
 		std::string newFileName = getDocumentFileName();
-		if (documentVersion < 20300){
+		if (versionNumber < 20300){
 			std::string origFilename = getDocumentFileName();
 			newFileName=IO::replaceSubstring(newFileName, ".xml", "_v23.xml");
 			cout << "Old version setup file encountered. Converting to new file "<< newFileName << endl;
 			SimTK::Xml::Document doc = SimTK::Xml::Document(origFilename);
 			doc.writeToFile(newFileName);
 		}
-		if (documentVersion <= 20201){
+		if (versionNumber <= 20201){
 			// get filename and use SimTK::Xml to parse it
 			SimTK::Xml doc = SimTK::Xml(newFileName);
 			Xml::Element root = doc.getRootElement();
@@ -520,7 +519,7 @@ void InverseKinematicsTool::updateFromXMLNode()
 				docElement.insertNodeAfter(docElement.node_end(), iter->clone());
 				newDocument.writeToFile(newFileName);
 				_document = new XMLDocument(newFileName);
-				_node = _document->getRootDataElement();
+				aNode = _document->getRootDataElement();
 			}
 			else { 
 				if (root.getElementTag()=="IKTool"){
@@ -557,12 +556,12 @@ void InverseKinematicsTool::updateFromXMLNode()
 					docElement.insertNodeAfter(docElement.node_end(), doc.getRootElement().clone());
 					newDocument.writeToFile(newFileName);
 					_document = new XMLDocument(newFileName);
-					_node = _document->getRootDataElement();
+					aNode = _document->getRootDataElement();
 				}
 				else
 				;	// Somthing wrong! bail out
 			}
 		}
 	}
-	Object::updateFromXMLNode();
+	Object::updateFromXMLNode(aNode, versionNumber);
 }

@@ -95,7 +95,7 @@ public:
 	AnalyzeTool(const AnalyzeTool &aObject);
 	AnalyzeTool(Model& aModel);
 	virtual Object* copy() const;
-	//virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 private:
 	void setNull();
 	void setupProperties();

@@ -108,7 +108,7 @@ Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) :
 {
 	setType("Set");
 	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 //_____________________________________________________________________________
 /**

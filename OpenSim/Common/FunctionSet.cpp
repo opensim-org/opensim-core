@@ -83,7 +83,7 @@ FunctionSet::FunctionSet(const string &aFileName) :
 	Set<Function>(aFileName, false)
 {
 	setNull();
-	updateFromXMLNode();
+	updateFromXMLDocument();
 }
 
 

@@ -33,7 +33,9 @@
 */
 
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/PropertyDblArray.h>
+#include <OpenSim/Common/PropertyBool.h>
 
 //extern template class OSIMCOMMON_API Array<double>;
 
@@ -67,7 +69,7 @@ namespace OpenSim {
 		{
 			setNull();
 			setupSerializedMembers();
-			updateFromXMLNode();
+			updateFromXMLDocument();
 		};
 		rdSerializableObject2(const rdSerializableObject2 &aObject){
 			setNull();
@@ -100,6 +102,8 @@ namespace OpenSim {
 	public:
 		rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
 			Object::operator=(aObject);
+			_propertySet.get(0)->setValue(aObject.getPropertySet().get(0)->getValueBool());
+			_propertySet.get(1)->setValue(aObject.getPropertySet().get(1)->getValueDblArray());
 			return(*this);
 		};
 

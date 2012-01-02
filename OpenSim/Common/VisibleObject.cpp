@@ -36,7 +36,6 @@
 // INCLUDES
 //============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "VisibleObject.h"
 #include "Exception.h"
 #include "PropertyInt.h"
@@ -121,7 +120,7 @@ _dependents(0)
 	// NULL STATES
 	setNull();
 
-	updateFromXMLNode();
+	updateFromXMLNode(getDocument()->getRootDataElement());
 }
 //_____________________________________________________________________________
 /**
@@ -340,47 +339,37 @@ void VisibleObject::setDisplayPreference(const DisplayGeometry::DisplayPreferenc
 		_geometrySet[i].setDisplayPreference(aPreference);
 }
 // Handle conversion from older format
-void VisibleObject::updateFromXMLNode()
-{
-	int documentVersion = getDocument()->getDocumentVersion();
-	if ( documentVersion < XMLDocument::getLatestVersion()){
-		if (_node!=NULL && documentVersion<20101){
+void VisibleObject::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+{ 
+	if ( versionNumber < XMLDocument::getLatestVersion()){
+		if (versionNumber<20101){
+			SimTK::Xml::element_iterator visPropIter = aNode.element_begin("VisibleProperties");
 			// Get geometry files and Preferences if any and set them into 
-			DOMElement*visiblePropertiesNode = XMLNode::GetFirstChildElementByTagName(_node, "VisibleProperties");
-			if (visiblePropertiesNode!=NULL){
+			if (visPropIter!=aNode.element_end()){
 				// Move display_prference, and show_axes nodes up to VisibleObject
-				DOMElement*dNode = XMLNode::GetFirstChildElementByTagName(visiblePropertiesNode, "display_prference");
-				if (dNode){
-					((DOMNode *)visiblePropertiesNode)->removeChild(dNode);
-					_node->appendChild(dNode);
+				SimTK::Xml::element_iterator  prefIter = visPropIter->element_begin("display_preference");
+				if (prefIter!= visPropIter->element_end()){
+					SimTK::Xml::Node moveNode = visPropIter->removeNode(prefIter);
+					aNode.insertNodeAfter(aNode.element_end(), moveNode);
 				}
-				dNode = XMLNode::GetFirstChildElementByTagName(visiblePropertiesNode, "show_axes");
-				if (dNode){
-					((DOMNode *)visiblePropertiesNode)->removeChild(dNode);
-					_node->appendChild(dNode);
+				SimTK::Xml::element_iterator  showAxesIter = visPropIter->element_begin("show_axes");
+				if (showAxesIter!=aNode.element_end()){
+					SimTK::Xml::Node moveNode = visPropIter->removeNode(showAxesIter);
+					aNode.insertNodeAfter(aNode.element_end(), moveNode);
 				}
 			}
-			DOMElement*geometryNode = XMLNode::GetFirstChildElementByTagName(_node, "geometry_files");
+			SimTK::Xml::element_iterator geometryIter = aNode.element_begin("geometry_files");
 			string propValue="";
 			bool hasPieces=false;
-			if (geometryNode!= NULL){
-				DOMText* txtNode=NULL;
-				if(txtNode=XMLNode::GetTextNode(geometryNode)) {
-					// Could still be empty or whiteSpace
-					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
-					if (transcoded.length()>0){
-						propValue = XMLNode::GetValue<std::string>(txtNode);
-						Object::updateFromXMLNode();
-						stringstream ss(propValue);
-						string nextFile;
-						while (ss>>nextFile){
-							setGeometryFileName(0, nextFile);	// This actually appends
+			if (geometryIter!= aNode.element_end()){
+				SimTK::Array_<SimTK::String> value;
+				geometryIter->getValueAs(value);
+				for(unsigned i=0;i< value.size(); i++) {
+					setGeometryFileName(0, value[i]);	// This actually appends
 							hasPieces=true;
 						}
 					}
 				}
 			}
-		}
-	}
-	Object::updateFromXMLNode();
+	Object::updateFromXMLNode(aNode, versionNumber);
 }

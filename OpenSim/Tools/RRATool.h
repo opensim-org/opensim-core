@@ -206,7 +206,7 @@ public:
 
 	void setOriginalForceSet(const ForceSet &aForceSet);
 
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 #ifndef SWIG
 	ControlSet* constructRRAControlSet(ControlSet *aControlConstraints);
 	void initializeControlSetUsingConstraints(const ControlSet *aRRAControlSet,const ControlSet *aControlConstraints, ControlSet& rControlSet );

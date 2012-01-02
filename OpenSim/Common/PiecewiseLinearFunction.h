@@ -129,7 +129,7 @@ public:
     int getMaxDerivativeOrder() const;
     SimTK::Function* createSimTKFunction() const;
 
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 private:
    void calcCoefficients();

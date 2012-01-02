@@ -82,7 +82,7 @@ ForceSet::ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromX
 	setNull();
 
 	if(aUpdateFromXMLNode)
-		updateFromXMLNode();
+		updateFromXMLDocument();
 }
 
 

@@ -31,7 +31,6 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include <OpenSim/Common/XMLNode.h>
 #include "AbstractTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSpline.h>
@@ -122,7 +121,7 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
     _analysisSet.setMemoryOwner(false);
 	setType("AbstractTool");
 	setNull();
-	if(aUpdateFromXMLNode) updateFromXMLNode();
+	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 
 //_____________________________________________________________________________
@@ -654,63 +653,59 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
  * Override default implementation by object to intercept and fix the XML node
  * underneath the tool to match current version
  */
-/*virtual*/ void AbstractTool::updateFromXMLNode()
+/*virtual*/ void AbstractTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	int documentVersion = getDocument()->getDocumentVersion();
 	std::string controlsFileName ="";
-	if ( documentVersion < XMLDocument::getLatestVersion()){
+	if ( versionNumber < XMLDocument::getLatestVersion()){
 		// Replace names of properties
-		if (_node!=NULL && documentVersion<10900){
-			renameChildNode("replace_actuator_set", "replace_force_set");
+		if (versionNumber<10900){
+			XMLDocument::renameChildNode(aNode, "replace_actuator_set", "replace_force_set");
 		}
-		if (_node!=NULL && documentVersion<10904){
-			renameChildNode("actuator_set_files", "force_set_files");
+		if (versionNumber<10904){
+			XMLDocument::renameChildNode(aNode, "actuator_set_files", "force_set_files");
 			// Get name of controls_file of any and use it to build a ControlSetController later
-			DOMElement* controlsFileNode = XMLNode::GetFirstChildElementByTagName(_node,"controls_file");
-			if (controlsFileNode){
-				DOMText* txtNode=NULL;
-				if(controlsFileNode && (txtNode=XMLNode::GetTextNode(controlsFileNode))) {
-					// Could still be empty, whiteSpace or Unassigned
-					string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
-					if (transcoded.length()>0){
-						std::string value = XMLNode::GetValue<std::string>(controlsFileNode);
-						controlsFileName = value;
+
+			SimTK::Xml::element_iterator controlsFileNode = aNode.element_begin("controls_file");
+			if (controlsFileNode!=aNode.element_end()){
+				SimTK::String transcoded=controlsFileNode->getValueAs<SimTK::String>();
+				if (transcoded.length()>0)
+					controlsFileName = transcoded;
+			
+				aNode.eraseNode(controlsFileNode);
 					}
 				}
-				_node->removeChild(controlsFileNode);
-			}
-		}
-		if (_node!=NULL && documentVersion<20001){
+		if (versionNumber<20001){
 			// if external loads .mot file has been speified, create 
 			// an XML file corresponding to it and set it as new external loads file
-			string oldFile = parseStringProperty(std::string("external_loads_file"));
+			SimTK::Xml::element_iterator it = aNode.element_begin("external_loads_file");
+			if (it != aNode.element_end()){
+				string oldFile = it->getValueAs<string>();
 			if (oldFile!="" && oldFile!="Unassigned"){
 				if (oldFile.substr(oldFile.length()-4, 4)!=".xml"){
 					// get names of bodies for external loads and create an xml file for the forceSet 
 					string body1, body2;
-					body1 = parseStringProperty(std::string("external_loads_body1"));
-					body2 = parseStringProperty(std::string("external_loads_body2"));
+						body1 = aNode.element_begin("external_loads_body1")->getValueAs<string>();
+						body2 = aNode.element_begin("external_loads_body2")->getValueAs<string>();
 					string newFileName=createExternalLoadsFile(oldFile, body1, body2);
-					DOMElement* pNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_file");
-					DOMText* txtNode=NULL;
-					if(txtNode=XMLNode::GetTextNode(pNode)) {
-						XMLCh* temp=XMLString::transcode(newFileName.c_str());
-						txtNode->setNodeValue(temp);
-						delete temp;
+						SimTK::Xml::element_iterator pNode = aNode.element_begin("external_loads_file");
+						if(pNode!=aNode.element_end()) {
+							pNode->setValue(newFileName);
 					}
 				}
 			}
 		}
-		if (_node!=NULL && documentVersion<20201){
+		}
+		if (versionNumber<20201){
 			// Move ExternalLoadKinematics and Filtering into ExternalLoads object
 			// Get nodes for "external_loads_model_kinematics_file" and 
 			// "lowpass_cutoff_frequency_for_load_kinematics" and if either is not null
 			// AND "external_loads_file" is not null then move these two nodes under it
 			// and change top level object type from ForceSet to ExternalLoads
-			DOMElement* eNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_file");
+			SimTK::Xml::element_iterator iter = aNode.element_begin("external_loads_file");
 
-			if (eNode!= NULL){
-				string fileName= parseStringProperty(std::string("external_loads_file"));
+			if (iter!= aNode.element_end()){
+				string fileName="";
+				iter->getValueAs(fileName);
 				if (fileName!="" && fileName != "Unassigned"){
 					string saveWorkingDirectory = IO::getCwd();
 					string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
@@ -729,10 +724,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 							Xml::element_iterator iter(root.element_begin("ExternalLoads"));
 							Xml::Element extLoadsElem = *iter;
 
-							DOMElement* kNode = XMLNode::GetFirstChildElementByTagName(_node,"external_loads_model_kinematics_file");
-							if (kNode !=NULL){
-								string kinFileName= parseStringProperty(std::string("external_loads_model_kinematics_file"));
-								XMLNode::RemoveElementFromParent(kNode);
+							SimTK::Xml::element_iterator kIter = aNode.element_begin("external_loads_model_kinematics_file");
+							if (kIter !=aNode.element_end()){
+								string kinFileName= "";
+								iter->getValueAs(kinFileName);
+								aNode.removeNode(iter);
 								// Make sure no node already exist
 								Xml::element_iterator iter2(extLoadsElem.element_begin("external_loads_model_kinematics_file"));
 								if (iter2 == extLoadsElem.element_end())
@@ -740,15 +736,15 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 								else
 									iter2->setValue(kinFileName);
 							}
-							DOMElement* fNode = XMLNode::GetFirstChildElementByTagName(_node,"lowpass_cutoff_frequency_for_load_kinematics");
-							if (fNode !=NULL){
-								string filterFreq= parseStringProperty(std::string("lowpass_cutoff_frequency_for_load_kinematics"));
-								XMLNode::RemoveElementFromParent(fNode);
+							SimTK::Xml::element_iterator fIter = aNode.element_begin("lowpass_cutoff_frequency_for_load_kinematics");
+							if (fIter !=aNode.element_end()){
+								SimTK::String freq;
+								iter->getValueAs(freq);
 								Xml::element_iterator iter2(extLoadsElem.element_begin("lowpass_cutoff_frequency_for_load_kinematics"));
 								if (iter2 == extLoadsElem.element_end())
-									iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", filterFreq));
+									iter->insertNodeAfter(iter->element_end(), Xml::Element("lowpass_cutoff_frequency_for_load_kinematics", freq));
 								else
-									iter2->setValue(filterFreq);
+									iter2->setValue(freq);
 							}
 							doc.writeToFile(fileName);
 						}
@@ -759,8 +755,11 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 				}
 			}
 		}
+		else 
+			Object::updateFromXMLNode(aNode, 20303);
 	}
-	Object::updateFromXMLNode();
+	else 
+		Object::updateFromXMLNode(aNode, 20303);
 	// Create controllers and add them as needed.
 	if (controlsFileName!="" && controlsFileName!="Unassigned"){
 		// controls_file was specified, create a ControlSetController for it
@@ -768,6 +767,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 		csc->setControlSetFileName(controlsFileName);
 		_controllerSet.append(csc);
 	}
+	//Object::updateFromXMLNode(aNode, versionNumber);
 }
 void AbstractTool::loadQStorage (const std::string& statesFileName, Storage& rQStore) const {
 	// Initial states
@@ -858,25 +858,6 @@ std::string AbstractTool::getNextAvailableForceName(const std::string prefix) co
 		found = !(_externalLoads.contains(candidateName));
 	};
 	return candidateName;
-}
-
-std::string AbstractTool::parseStringProperty(const std::string& propertyName)
-{
-	std::string propValue="";
-	DOMElement* pNode = XMLNode::GetFirstChildElementByTagName(_node,propertyName);
-	//Get name of the file
-	if (pNode != 0){
-		DOMText* txtNode=NULL;
-		if(txtNode=XMLNode::GetTextNode(pNode)) {
-			// Could still be empty or whiteSpace
-			string transcoded = XMLNode::TranscodeAndTrim(txtNode->getNodeValue());
-			if (transcoded.length()>0){
-				propValue = XMLNode::GetValue<std::string>(txtNode);
-				
-			}
-		}
-	}
-	return propValue;
 }
 
 std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile, 

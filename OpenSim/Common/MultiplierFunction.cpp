@@ -178,18 +178,6 @@ void MultiplierFunction::setScale(double aScaleFactor)
 	_scale = aScaleFactor;
 }
 
-//-----------------------------------------------------------------------------
-// UPDATE FROM XML NODE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Update this object based on its XML node.
- */
-void MultiplierFunction::updateFromXMLNode()
-{
-	Function::updateFromXMLNode();
-}	
-
 double MultiplierFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
 {
 	if (_osFunction)

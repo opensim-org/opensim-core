@@ -128,8 +128,6 @@ public:
     int getMaxDerivativeOrder() const;
     SimTK::Function* createSimTKFunction() const;
 
-       virtual void updateFromXMLNode();
-
        OPENSIM_DECLARE_DERIVED(PiecewiseConstantFunction, Function)
 
 //=============================================================================

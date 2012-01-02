@@ -102,12 +102,12 @@ public:
 	 */
 	PrescribedForce(OpenSim::Body* body=0);
 	PrescribedForce(const PrescribedForce& force);
-	PrescribedForce(DOMElement* aNode);
+	PrescribedForce(SimTK::Xml::Element& aNode);
 	~PrescribedForce();
 	virtual Object* copy() const;
 
 	// Copy properties from XML into member variables
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	void setBodyName(const std::string& aBodyName) { _bodyName = aBodyName; };
 	const std::string& getBodyName() const { return (_bodyName); }

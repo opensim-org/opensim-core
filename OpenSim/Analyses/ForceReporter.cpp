@@ -88,7 +88,7 @@ ForceReporter::ForceReporter(const std::string &aFileName): Analysis(aFileName, 
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	// DESCRIPTION
 	constructDescription();

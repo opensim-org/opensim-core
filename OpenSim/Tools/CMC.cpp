@@ -205,7 +205,7 @@ CMC::CMC( const std::string &aFileName, bool aUpdateFromXMLNode) :
 {
     setNull();
     setupProperties();
-    if(aUpdateFromXMLNode) updateFromXMLNode();
+    if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
 
 

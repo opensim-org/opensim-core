@@ -95,7 +95,7 @@ Analysis(aFileName, false)
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	// DESCRIPTION
 	constructDescription();

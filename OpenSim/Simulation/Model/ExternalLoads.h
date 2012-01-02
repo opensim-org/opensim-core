@@ -106,7 +106,7 @@ public:
 	void copyData(const ExternalLoads &otherExternalLoads);
 
 	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode();
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	// setup all ExternalForces inside this ExternalLoads collection 
 	virtual void setup(Model& aModel);

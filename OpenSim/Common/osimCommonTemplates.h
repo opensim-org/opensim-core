@@ -49,7 +49,6 @@
 #include "Array.h"
 #include "ArrayPtrs.h"
 #include "Set.h"
-#include "Material.h"
 
 
 #ifdef WIN32
@@ -58,8 +57,6 @@ extern template class OSIMCOMMON_API Array<bool>;
 extern template class OSIMCOMMON_API Array<int>;
 extern template class OSIMCOMMON_API Array<double>;
 extern template class OSIMCOMMON_API Array<std::string>;
-
-extern template class OSIMCOMMON_API Set<Material>;
 
 #endif  // WIN32
 

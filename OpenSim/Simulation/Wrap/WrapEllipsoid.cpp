@@ -124,7 +124,7 @@ void WrapEllipsoid::setNull()
 void WrapEllipsoid::setupProperties()
 {
 	// BASE CLASS
-	WrapObject::setupProperties();
+	//WrapObject::setupProperties();
 
 	const double defaultDimensions[] = {-1.0, -1.0, -1.0};
 	_dimensionsProp.setName("dimensions");

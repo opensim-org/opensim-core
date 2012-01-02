@@ -35,13 +35,10 @@
 
 // INCLUDES
 #include <iostream>	// Ayman: Remove .h extension per .NET 2003
-#include <xercesc/dom/DOM.hpp>
-#include <xercesc/parsers/XercesDOMParser.hpp>
-#include <xercesc/framework/XMLFormatter.hpp>
 #include "osimCommonDLL.h"
+#include <SimTKcommon.h>
+#include "Array.h"
 
-
-XERCES_CPP_NAMESPACE_USE
 //using namespace std;	// Ayman:per .NET 2003
 
 
@@ -65,25 +62,26 @@ namespace OpenSim {
 
 #endif
 
-class OSIMCOMMON_API XMLDocument {
+class Object;
+
+class OSIMCOMMON_API XMLDocument  : public SimTK::Xml::Document {
 
 //=============================================================================
 // DATA
 //=============================================================================
 public:
-	static const XMLCh UTF8[];
-	static const XMLCh VERSION[];
 	/** Latest version of the code encoded as an int xxyyzz where x: major release, y: minor, z: patch */
 	static const int LatestVersion;
 private:
 	/** XML parser. */
-	XercesDOMParser *_parser;
+	//XercesDOMParser *_parser;
 	/** XML document. */
-	DOMDocument *_document;
+	//DOMDocument *_document;
 	/** Name of the XML Document */
 	std::string _fileName;
 	/** Document Version as written to the file */
 	int _documentVersion;
+	OpenSim::Array<Object*> _defaultObjects;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -95,32 +93,37 @@ public:
 	XMLDocument();
 	XMLDocument(const std::string &aFileName);
 	XMLDocument(const XMLDocument &aDocument);
+	void copyDefaultObjects(const XMLDocument &aDocument){
+		_defaultObjects = aDocument._defaultObjects;
+	}
+	void writeDefaultObjects(SimTK::Xml::Element& elmt);
 	//--------------------------------------------------------------------------
 	// VERSIONING /BACKWARD COMPATIBILITY SUPPORT
 	//--------------------------------------------------------------------------	
 	static const int& getLatestVersion() { return LatestVersion; };
+	static void renameChildNode(SimTK::Xml::Element& aNode, std::string oldElementName, std::string newElementName);
 	const int& getDocumentVersion() const { return _documentVersion; };
 	static void getVersionAsString(const int aVersion, std::string& aString); 
-	DOMElement* getRootDataElement();
+	Xml::Element getRootDataElement();
+	bool isEqualTo(XMLDocument& aOtherDocument, double toleranceForDoubles=1e-6, 
+		bool compareDefaults=false, bool compareVersionNumbers=false);
 private:
+	static bool isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element& elt2, double toleranceForDoubles);
 	void updateDocumentVersion();
-	void setNull();
 
 public:
 	//--------------------------------------------------------------------------
 	// SET AND GET
 	//--------------------------------------------------------------------------
-	DOMDocument* getDOMDocument() const;
+	//DOMDocument* getDOMDocument() const;
 	void setFileName(const std::string &aFileName);
 	const std::string &getFileName() const;
+	void addDefaultObject(OpenSim::Object* aDefaultObject);
+	bool hasDefaultObjects() const { return (_defaultObjects.getSize()>0); };
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------
 	bool print(const std::string &aFileName=NULL);
-
-private:
-	static void CreateFormatter(std::ostream *aOstream=&std::cout);
-	void printDeclaration();
 
 //=============================================================================
 };	// END CLASS XMLDocument
@@ -128,48 +131,6 @@ private:
 }; //namespace
 //=============================================================================
 //=============================================================================
-
-
-
-// ---------------------------------------------------------------------------
-//  Local classes
-// ---------------------------------------------------------------------------
-
-// Excluding this from Doxygen until it has better documentation! -Sam Hamner
-    /// @cond
-class DOMPrintFormatTarget : public XMLFormatTarget
-{
-	std::ostream *_out;
-public:
-	DOMPrintFormatTarget(std::ostream *aOStream= &std::cout)  {
-		_out = aOStream;
-	 };
-    ~DOMPrintFormatTarget() {};
-
-    // -----------------------------------------------------------------------
-    //  Implementations of the format target interface
-    // -----------------------------------------------------------------------
-
-    void writeChars(const   XMLByte* const  toWrite,
-                    const   unsigned int    count,
-                            XMLFormatter * const formatter)
-    {
-        // Surprisingly, Solaris was the only platform on which
-        // required the char* cast to print out the string correctly.
-        // Without the cast, it was printing the pointer value in hex.
-        // Quite annoying, considering every other platform printed
-        // the string with the explicit cast to char* below.
-        _out->write((char *) toWrite, (int) count);
-    };
-
-private:
-    // -----------------------------------------------------------------------
-    //  Unimplemented methods.
-    // -----------------------------------------------------------------------
-    DOMPrintFormatTarget(const DOMPrintFormatTarget& other);
-    void operator=(const DOMPrintFormatTarget& rhs);
-};
-/// @endcond
 
 
 #endif // __XMLDocument_h__

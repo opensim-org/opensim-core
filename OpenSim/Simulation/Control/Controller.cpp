@@ -90,7 +90,7 @@ Controller::Controller(Model& aModel) :
       _actuatorNameList(_actuatorNameListProp.getValueStrArray())
 {
       setNull();
-      if(aUpdateFromXMLNode) updateFromXMLNode();
+      if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
 }
 
 //_____________________________________________________________________________

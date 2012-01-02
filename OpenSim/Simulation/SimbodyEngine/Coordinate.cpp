@@ -578,7 +578,7 @@ bool Coordinate::setRangeMax(double aMax)
  void Coordinate::setMotionType(MotionType aMotionType)
  {
 	 _motionType = aMotionType;
-
+	 _motionTypeNameProp.setUseDefault(false);
 	 //Also update the motionTypeName so that it is serialized with the model
 	 switch(aMotionType){
 		case(Rotational) : 	

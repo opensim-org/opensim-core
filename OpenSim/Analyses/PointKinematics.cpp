@@ -115,7 +115,7 @@ _pointName(_pointNameProp.getValueStr())
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	/* The rest will be done by setModel().
 	// CONSTRUCT DESCRIPTION AND LABELS

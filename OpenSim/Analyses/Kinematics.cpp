@@ -101,7 +101,7 @@ Kinematics::Kinematics(const std::string &aFileName):
 	setNull();
 
 	// Serialize from XML
-	updateFromXMLNode();
+	updateFromXMLDocument();
 
 	// CONSTRUCT DESCRIPTION AND LABELS
 	constructDescription();
