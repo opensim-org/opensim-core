@@ -27,6 +27,7 @@
 
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Exception.h>
+#include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
@@ -52,10 +53,13 @@ int main()
 		cout << "Load and update model gait2354_simbody version 10901: PASSED\n" << endl;
 		testUpdateModel("arm26.osim");
 		cout << "Load and update model Arm26 version 10905: PASSED\n" << endl;
+		testUpdateModel("Pendulum.osim");
+		cout << "Load and update model Pendulum version 10905: PASSED\n" << endl;
 		testUpdateModel("Neck3dof_point_constraint.osim"); 
 		cout << "Load and update model Neck3dof_point_constraint version 20001: PASSED\n" << endl;
 		testUpdateModel("BothLegs22.osim");
 		cout << "Load and update model BothLegs22 version 20200: PASSED\n" << endl;
+
 	}
 	catch (const Exception& e) {
         e.print(cerr);
@@ -68,7 +72,7 @@ int main()
 void testUpdateModel(string fileName)
 {
 	Model model(fileName);
-	model.initSystem();
+	//model.initSystem();
 	string newName(fileName);
 	newName=IO::replaceSubstring(newName, ".osim", "_latest.osim");
 	model.print(newName);
