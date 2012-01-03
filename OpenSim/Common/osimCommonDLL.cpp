@@ -42,11 +42,6 @@ using namespace std;
 //
 static void Plugin_Attach()
 {
-	cout<<"-------------------------------------------------------\n";
-	//cout<<"Library osimCommon...\n";
-	cout<<"This program includes software developed by the\n";
-	cout<<"Apache Software Foundation (http://www.apache.org/).\n";
-	cout<<"-------------------------------------------------------\n\n";
 }
 
 static void Plugin_Detach()
