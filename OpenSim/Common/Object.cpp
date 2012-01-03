@@ -1011,7 +1011,7 @@ updateDefaultObjectsFromXMLNode()
  * @param aParent Parent XML element.
  */
 void Object::
-updateXMLNode(SimTK::Xml::Element& aParent, int aNodeIndex)
+updateXMLNode(SimTK::Xml::Element& aParent)
 {
 	// Handle non-inlined object
 	if(!getInlined()) {
@@ -1131,7 +1131,7 @@ updateXMLNode(SimTK::Xml::Element& aParent, int aNodeIndex)
 		case(Property::Obj) : {
 			PropertyObj *propObj = (PropertyObj*)property;
 			Object &object = property->getValueObj();
-			object.updateXMLNode(myObjectElement, 0);
+			object.updateXMLNode(myObjectElement);
 			/*
 			if(propObj->getMatchName()) {
 				
@@ -1169,7 +1169,7 @@ updateXMLNode(SimTK::Xml::Element& aParent, int aNodeIndex)
 					SimTK::Xml::Element objectArrayElement(property->getName());
 					myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectArrayElement);
 					   for(int j=0;j<property->getArraySize();j++)
-						property->getValueObjPtr(j)->updateXMLNode(objectArrayElement, 0);
+						property->getValueObjPtr(j)->updateXMLNode(objectArrayElement);
 				} else { // ObjPtr
 					Object *object = property->getValueObjPtr();
 					SimTK::Xml::Element objectBaseElement(property->getName());
@@ -1562,7 +1562,10 @@ makeObjectFromFile(const std::string &aFileName)
 		Object* newObject = newInstanceOfType(rootName);
 		if(!newObject) throw Exception("Unrecognized XML element '"+rootName+"' and root of file '"+aFileName+"'",__FILE__,__LINE__);
 		newObject->_document=doc;
-		newObject->updateFromXMLNode(doc->getRootElement(), doc->getDocumentVersion());
+		if (newFormat)
+			newObject->updateFromXMLNode(*doc->getRootElement().element_begin(), doc->getDocumentVersion());
+		else 
+			newObject->updateFromXMLNode(doc->getRootElement(), 10500);
 		return (newObject);
 	}
 	catch(Exception &x) {

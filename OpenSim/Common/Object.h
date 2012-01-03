@@ -264,7 +264,7 @@ public:
 	// that is primarily in constructors that take fileName as input
 	void updateFromXMLDocument();
 	virtual void updateDefaultObjectsFromXMLNode();
-	virtual void updateXMLNode(SimTK::Xml::Element& aParent, int aNodeIndex=0);
+	virtual void updateXMLNode(SimTK::Xml::Element& aParent);
 	virtual void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 	// Inline support
 	bool getInlined() const;
