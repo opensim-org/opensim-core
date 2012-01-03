@@ -24,7 +24,7 @@ public:
     virtual bool isValidDefaultType(OpenSim::Object const *aObject) const;
     virtual void updateFromXMLNode(SimTK::Xml::Element &aNode, int versionNumber);
     virtual void updateDefaultObjectsFromXMLNode();
-    virtual void updateXMLNode(SimTK::Xml::Element &aParent, int aNodeIndex = 0);
+    virtual void updateXMLNode(SimTK::Xml::Element &aParent);
     virtual void updateDefaultObjectsXMLNode(SimTK::Xml::Element &aParent);
     virtual bool isA(char const *type) const;
     virtual void copy(OpenSim::Object const &aObject);
@@ -38,10 +38,10 @@ public:
     virtual int printResults(std::string const &aBaseName, std::string const &aDir = "", double aDT = -1.0, std::string const &aExtension = ".sto");
 public:
     bool swig_overrides(int n) {
-      return (n < 24 ? swig_override[n] : false);
+      return (n < 23 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[24];
+    bool swig_override[23];
 };
 
 class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {
