@@ -72,11 +72,14 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	Sine() : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_omegaProp.getValueDbl()) { setupProperties();}
+	Sine() : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) { setupProperties();}
 	// Convenience Constructor
-	Sine(double amplitude, double omega, double phase) : _amplitude(amplitude), _omega(omega), _phase(phase) { setupProperties(); }
+	Sine(double amplitude, double omega, double phase) : _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
+		setupProperties();
+		_amplitude = amplitude;  _omega = omega;  _phase = phase; 
+	}
 	// Copy Constructor
-	Sine(const Sine &aFunc): _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_omegaProp.getValueDbl()) {
+	Sine(const Sine &aFunc): _amplitude(_amplitudeProp.getValueDbl()), _omega(_omegaProp.getValueDbl()), _phase(_phaseProp.getValueDbl()) {
 			setupProperties();
 			_amplitude = aFunc._amplitude;  _omega = aFunc._omega;  _phase = aFunc._phase; 
 	};
