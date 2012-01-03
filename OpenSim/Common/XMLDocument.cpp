@@ -260,7 +260,7 @@ void XMLDocument::writeDefaultObjects(SimTK::Xml::Element& elmt)
 	
 	elmt.insertNodeAfter(elmt.node_end(), defaultsElement);
 	for(int i=0; i < _defaultObjects.getSize(); i++){
-		_defaultObjects.get(i)->updateXMLNode(defaultsElement, 0);
+		_defaultObjects.get(i)->updateXMLNode(defaultsElement);
 	}
 }
 
@@ -346,7 +346,7 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
 	// Recursively compare Elements unless Value Elements in that case do direct compare
 	for(unsigned it = 0; it < elts1.size() && equal; it++){
 		SimTK::String elt1Tag = elts1[it].getElementTag();
-		//cout << "Compare " << elt1Tag << endl;
+		cout << "Compare " << elt1Tag << endl;
 		SimTK::Xml::element_iterator elt2_iter = elt2.element_begin(elt1Tag);
 		if (elt2_iter==elt2.element_end()){
 			cout << "Element " << elt1Tag << " was not found in reference document" << endl;
