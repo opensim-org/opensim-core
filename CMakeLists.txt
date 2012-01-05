@@ -472,5 +472,10 @@ ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 #
 
 #-----------------------------------------------------------------------------
-
-SUBDIRS(Vendors OpenSim Install Documentation Applications)
+SET(BUILD_API_ONLY OFF CACHE BOOL "Build API only (headers and libs, no GUI or Applications")
+IF(BUILD_API_ONLY)
+	SUBDIRS(Vendors OpenSim Documentation)
+	SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF)
+ELSE(BUILD_API_ONLY)
+	SUBDIRS(Vendors OpenSim Install Documentation Applications)
+ENDIF(BUILD_API_ONLY)
