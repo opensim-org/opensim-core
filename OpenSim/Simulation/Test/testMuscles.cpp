@@ -100,6 +100,10 @@ int main()
 
 //==========================================================================================================
 // Main test driver to be used on any muscle model (derived from Muscle) so new cases should be easy to add
+// Currently, the test only verifies that the work done by the muscle corresponds to the change in system
+// energy.
+//
+// TODO: Test will fail wih prescribe motion until the work done by this constraint is accounted for.
 //==========================================================================================================
 void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &act0, 
 					Function *motion,  // prescribe motion of free end of muscle
@@ -255,7 +259,8 @@ void testThelen2003Muscle()
 	Sine motion(0.1, SimTK::Pi, 0);
 
 	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
-	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
+	// Uncomment when work done by prescribed motion constraint is accounted for.
+	//simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
 }
 
 void testSchutte1993Muscle()
