@@ -105,8 +105,7 @@ public:
     virtual void setActuators( Set<Actuator>& );
 
     virtual bool check() const;
-    virtual double getFirstTime() const;
-    virtual double getLastTime() const;
+
     virtual void setDesiredStates( Storage* yStore); 
 
     // post deserialize initialization

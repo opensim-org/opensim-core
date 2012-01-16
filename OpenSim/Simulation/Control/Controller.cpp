@@ -212,13 +212,6 @@ void Controller::setDisabled(bool aTrueFalse)
 	_isDisabledProp.setValue(aTrueFalse);
 }
 
-double Controller::getFirstTime() const {
-  return( -SimTK::Infinity); 
-}
-double Controller::getLastTime() const {
-  return( SimTK::Infinity); 
-}
-
 // for any post XML deseraialization intialization
 void Controller:: setup(Model& model)
 {

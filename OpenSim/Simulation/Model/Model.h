@@ -42,7 +42,6 @@
 #include <OpenSim/Common/Units.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include "SimTKsimbody.h"
 
@@ -65,6 +64,8 @@ class ContactGeometrySet;
 class Storage;
 class ScaleSet;
 class AssemblySolver;
+class Controller;
+class ControllerSet;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API

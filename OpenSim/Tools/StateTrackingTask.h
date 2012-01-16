@@ -34,6 +34,7 @@
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Actuator.h>
 #include "TrackingTask.h"
 
 namespace OpenSim {

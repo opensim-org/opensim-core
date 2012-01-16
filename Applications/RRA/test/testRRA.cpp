@@ -27,7 +27,6 @@
 // INCLUDE
 #include <string>
 #include <iostream>
-#include <OpenSim/Common/Mtx.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>

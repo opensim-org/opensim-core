@@ -40,6 +40,7 @@
 #include "BodySet.h"
 #include "AnalysisSet.h"
 #include "ForceSet.h"
+#include "ControllerSet.h"
 #include <OpenSim/Common/ScaleSet.h>
 #include "Analysis.h"
 #include "ForceAdapter.h"

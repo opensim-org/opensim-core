@@ -42,6 +42,7 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+#include <OpenSim/Simulation/Model/ControllerSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Analyses/Kinematics.h>
 #include <OpenSim/Analyses/PointKinematics.h>

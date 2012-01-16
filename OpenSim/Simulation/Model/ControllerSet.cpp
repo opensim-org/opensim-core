@@ -276,28 +276,6 @@ void ControllerSet::setActuators( Set<Actuator>& as)
 }
 
 // get the initial time for all the controllers 
-double ControllerSet::getFirstTime() const 
-{
-    double ti = get(0).getFirstTime();
-    for (int i=1;i<getSize();i++ ) {
-        if(!get(i).isDisabled() ) { 
-            if( ti < get(i).getFirstTime() ) ti = get(i).getFirstTime();
-        }
-    }
-    return(ti);
-}
-
-// get the initial time for all the controllers 
-double ControllerSet::getLastTime() const 
-{
-    double tf = get(0).getLastTime();
-    for (int i=1;i<getSize();i++ ) {
-        if(!get(i).isDisabled() ) { 
-           if( tf > get(i).getLastTime() ) tf = get(i).getLastTime();
-        }
-    }
-    return( tf );
-}
 
 void ControllerSet::setDesiredStates( Storage* yStore)
 {

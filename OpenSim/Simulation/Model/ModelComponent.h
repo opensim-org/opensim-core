@@ -29,6 +29,21 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** 
+ * This defines the abstract ModelComponent class, which is used to add computational
+ * components to the underlying SimTK::System (MultibodySystem). It specifies
+ * the interface that components must satisfy in order to be part of the system
+ * and provides a series of helper methods for adding variables (state, discrete,
+ * cache, ...) to the underlying system. As such, ModelComponent handles all of
+ * the bookkeeping for variable indices and provides conveniece access via 
+ * variable names. 
+ *
+ * All components, Bodies, Joints, Coordinates, Constraints, Forces, Controllers, .. 
+ * and even Model itself, are ModelComponents. Each component is "connected" to a
+ * SimTK::Subsystem and by default this is the System's DefaultSubsystem.
+ */
+
+
 // INCLUDES
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include "OpenSim/Common/Object.h"
@@ -39,7 +54,9 @@ namespace OpenSim {
 class Model;
 class ModelComponent;
 
+/** @cond **/ // hide from Doxygen
 #ifndef SWIG
+
 //=============================================================================
 // Begin class ModelComponentRep
 //=============================================================================
@@ -113,23 +130,35 @@ public:
 // end class ModelComponentRep
 //==================================
 #endif
-
+/** @endcond **/
 
 //=============================================================================
 // Begin class ModelComponent
 //=============================================================================
 /**
- * This is the base class for any component which can be added to a Model.  It
- * defines a set of methods which a component must implement to be integrated
- * into the underlying system.
+ * This defines the abstract ModelComponent class, which is used to add computational
+ * components to the underlying SimTK::System (MultibodySystem). It specifies
+ * the interface that components must satisfy in order to be part of the system
+ * and provides a series of helper methods for adding variables (state, discrete,
+ * cache, ...) to the underlying system. As such, ModelComponent handles all of
+ * the bookkeeping of system indices and provides convenience access to variable 
+ * values via their names as strings. 
  *
- * The primary responsibility of a ModelComponent is to add its contributions
- * to the underlying SimTK::System by implementing createSystem().
+ * All components: Bodies, Joints, Coordinates, Constraints, Forces, Controllers, .. 
+ * and even Model itself, are ModelComponents. Each component is "connected" to a
+ * SimTK::Subsystem and by default this is the System's DefaultSubsystem.
+ *
+ * The primary responsibility of a ModelComponent is to add its computational 
+ * representation(s) to the underlying SimTK::System by implementing
+ * createSystem().
  *
  * Additional methods provide support for adding modeling options, state and
  * cache variables.
+ *
+ * Public methods enable access to component variables via their names.
+ *
+ * @author Ajay Seth
  */
-
 class OSIMSIMULATION_API ModelComponent : public Object
 {
 protected:
@@ -141,52 +170,49 @@ protected:
 //=============================================================================
 public:
     template <class T> friend class ModelComponentSet;
+	// Default constructor
 	ModelComponent();
+	// Construct ModelComponent from a an XML file
 	ModelComponent(const std::string& aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
+	// Construct ModelComponent from a XML document in memory
 	ModelComponent(const XMLDocument* aDocument);
+	// Construct ModelComponent from a specific node in an XML document
 	ModelComponent(SimTK::Xml::Element& aNode);
+	// Construct ModelComponent with its contents copied from another ModelComponent
 	ModelComponent(const ModelComponent& copy);
+	// Destructor
     virtual ~ModelComponent();
 
 	/** Assignment operator to copy contents of an existing component */
 	ModelComponent& operator=(const ModelComponent &aModelComponent);
 
     /**
-     * Get the Model this object is part of.
+     * Get a const reference to the Model this component is part of.
      */
     const Model& getModel() const;
     /**
-     * Get a modifiable reference to the Model this object is part of.
+     * Get a modifiable reference to the Model this component is part of.
      */
     Model& updModel();
 
 	/**
-	 * In case the ModelCompoenent has a visual representation, override this method to update 
-	 * the representation, typically this's done by recomputing anchor points and positions based 
-	 * on transforms obtained from current state
+	 * In case the ModelCompoenent has a visual representation (VisualObject), override this method  
+	 * to update it. This is typically done by recomputing anchor points and positions based 
+	 * on transforms obtained from current state.
 	 */
 	virtual void updateDisplayer(const SimTK::State& s) {};
 
 	/**
-     * Get the value of a ModelingOption flag for this ModelComponent.
-     *
-     * @param state  the State for which to set the value
-     * @return  flag  integer value for modeling option
-     */
-	virtual int getModelingOption(const SimTK::State& state) const;
-	/**
-     * Set the value of a discrete variable allocated by this ModelComponent by name.
-     *
-     * @param state  the State in which to set the flag
-     */
-	virtual void setModelingOption(SimTK::State& state, int flag) const;
-
-
-	/**
      * Get the number of "Continuous" state variables maintained by the ModelComponent
-     * If the ModelComponent defines any that are of interest to the user, names should also be given
+	 * and its specified subcomponents
 	 */
     virtual int getNumStateVariables() const;
+
+	/**
+     * Get the names of "continuous" state variables maintained by the ModelComponent
+	 * and its subcomponents
+	 */
+    virtual Array<std::string> getStateVariableNames() const;
 
    /**
      * Get the System Index of a state variable allocated by this ModelComponent.  
@@ -195,12 +221,30 @@ public:
      */
 	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
+   /** @name ModelComponent State Access methods
+	 * Get and set modeling option, state, discrete and/or cache variables in the State
+	 */ 
+	//@{
+    
 	/**
-     * Get the names of "continuous" state variables maintained by the ModelComponent
-	 * and its subcomponents
-	 */
-    virtual Array<std::string> getStateVariableNames() const;
+     * Get the ModelingOption flag for this ModelComponent.
+     * The flag is an integer corresponding to the index of modelingOptionNames used 
+	 * add the modeling option to the component. @see addModelingOption
+	 *
+     * @param state  the State for which to set the value
+     * @return flag  integer value for modeling option
+     */
+	virtual int getModelingOption(const SimTK::State& state) const;
 
+	/**
+     * Set the value of a ModelingOption flag for this ModelComponent.
+	 * if the integer value exceeds the number of option names used to
+	 * define the options, an exception is thrown.
+     *
+     * @param state  the State in which to set the flag
+	 * @param flag   the desired flag (integer) value specifying the modeling option
+     */
+	virtual void setModelingOption(SimTK::State& state, int flag) const;
 
     /**
      * Get the value of a state variable allocated by this ModelComponent.
@@ -209,7 +253,6 @@ public:
      * @param name    the name (string) of the state variable of interest
      */
 	virtual double getStateVariable(const SimTK::State& state, const std::string &name) const;
-
 
 	/**
      * Set the value of a state variable allocated by this ModelComponent by name.
@@ -223,11 +266,12 @@ public:
 	/**
      * Get the value of a discrete variable allocated by this ModelComponent by name.
      *
-     * @param[in] state  the State for which to set the value
-     * @param[in] name   the name of the state variable
-     * @return	  value  the discrete variable value
+     * @param state   the State for which to set the value
+     * @param name    the name of the state variable
+     * @return value  the discrete variable value
      */
 	virtual double getDiscreteVariable(const SimTK::State& state, const std::string &name) const;
+
 	/**
      * Set the value of a discrete variable allocated by this ModelComponent by name.
      *
@@ -242,7 +286,7 @@ public:
      *
      * @param state  the State for which to set the value
      * @param name   the name of the cache variable
-     * @return T	 the variable's cache value
+     * @return T	 const reference to the cache variable's value
      */
 	template<typename T> const T& getCacheVariable(const SimTK::State& state, const std::string &name) const
 	{
@@ -268,7 +312,7 @@ public:
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
-     * @return value  the variable's cache value to update
+     * @return value modifiable reference to the cache variable's value
      */
 	template<typename T> T& updCacheVariable(const SimTK::State& state, const std::string &name) const
 	{
@@ -315,12 +359,13 @@ public:
 	}
 
 	/**
-     * Enable the component performing a costly evaluation method to monitor the validity
-	 * of the cache variable value and to use this flag to  force a re-evaluation only
-	 * when necessary.
+     * Enables the to monitor the validity of the cache variable value using the
+	 * returned flag. For components performing a costly evaluation, use this method to 
+	 * force a re-evaluation cache variable value only when necessary (returns false).
 	 *
-     * @param state  the State for which to set the value
-     * @param name   the name of the state variable
+     * @param state  the State in which the cache value resides
+     * @param name   the name of the cache variable
+	 * @return bool  whether the cache variable value is valid or not
      */
 	bool isCacheVariableValid(const SimTK::State& state, const std::string &name) const
 	{
@@ -346,7 +391,7 @@ public:
      *
      * @param state  the State for which to set the value
      * @param name   the name of the state variable
-     * @return value  the variable's cache value to update
+     * @param value  the variable's cache new value to set
      */
 	template<typename T> void setCacheVariable(const SimTK::State& state, const std::string &name, T &value) const
 	{
@@ -365,6 +410,86 @@ public:
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}	
 	}
+	// End of Model Component State Accessors.
+    //@} 
+
+protected:
+
+	/** @name ModelComponent Interface
+	 * The interface ensures that deserialization, resolution of inter-connections and dependicies,
+	 * are performed systematically and prior to system creation. creatSystem() is responsible
+	 * These methods are virtual and must be implemented by subclasses of ModelComponents.
+	*/ 
+	//@{
+
+    /**
+     * setup() is automatically called on all components prior to system creation. 
+	 * Set the Model this component is part of and then perform any necessary initialization,
+	 * such as looking up references to other objects in the Model (to verify that they exist,
+	 * which is not guaranteed when a component is instantiated or constructed from XML).
+	 * Override this method as necessary but always call the parent class setup to
+	 * ensure all members (including those defined by the parent class) are initialized.
+	 * @param model   the model this component is a part of
+     */
+	virtual void setup(Model& model);
+
+    /**
+     * createSystem() is called when the SimTK::System is being created for the Model.  It must be 
+     * implemented in order to add appropriate SimTK elements to the System corresponding to this component. 
+	 * Helper methods for adding modeling option, state variables and their derivatives, discrete variables,
+	 * etc., are available and can be called within createSystem() only.
+	 * @see addModelingOption()
+	 * @see addStateVariables()
+	 * @see addDiscreteVariables()
+	 * @see addCacheVariable()
+     *
+     * @param system   the System being created
+     */
+    virtual void createSystem(SimTK::MultibodySystem& system) const;
+
+    /**
+     * This is called after a SimTK::System and State have been created for the Model.  It is
+     * implementd to set initial values of state variables from defaults (typical) or by  
+     * any calculation that is not dependent on the state (i.e. function of property values).
+     * @param state    the State to initialize
+     */
+	virtual void initState(SimTK::State& state) const {
+		for(unsigned int i=0; i < _subComponents.size(); i++)
+			_subComponents[i]->initState(state);
+	};
+
+    /**
+     * Assign new default values for this component to match those in a specified State.  It must be
+     * implemented/overriden to set default values to states defined by each subclass. @note Defaults 
+	 * are usually properties of the component, and these properties can be updated to match an
+	 * existing state. Thus, state variable values can persist as part of the model component and be
+	 * serialized as a property.
+     *
+     * @param state    the State from which the default values are obtained (calculated) for this component
+     */
+	virtual void setDefaultsFromState(const SimTK::State& state) {
+		for(unsigned int i=0; i < _subComponents.size(); i++)
+			_subComponents[i]->setDefaultsFromState(state);
+	};
+
+	// End of Model Component Interface (virtuals).
+    //@} 
+
+	/** @name ModelComponent System Creation and Access Methods
+	 * These methods support implementing concrete ModelComponents. Add methods
+	 * can only be called inside of createSystem() and are useful for creating
+	 * the underlying SimTK::System level variables that are used for computing
+	 * values of interest.
+	 * @warning Accessors for System indices are intended for component internal use only.
+	 **/
+
+	//@{
+
+	/** Set the index for the subsystem to which new variables (modeling option, state, cache)
+	    corresponding to the ModelComponent will be added. This method is intended to override
+		use of the defaultSubsystem by concrete subclasses. */
+	void setIndexOfSubsystemForAllocations(SimTK::SubsystemIndex subsysIndex);
+	const SimTK::SubsystemIndex getIndexOfSubsystemForAllocations() const;
 
 	/**
      * Include another ModelComponent as a Subcomponent of this ModelComponent.
@@ -375,67 +500,12 @@ public:
 	 */
 	void includeAsSubComponent(ModelComponent *aComponent);
 
-protected:
-    /**
-     * This is called after the Model has been constructed from an XML file.
-	 * Set the Model this object is part of and then so do required initialization,
-	 * such as looking up references to other objects in the Model (which might not
-	 * have existed yet when this object was instantiated).
-	 * Override this method as necessary but always call the parent class setup to
-	 * ensure all members (belonging to parent and child) are initialized.
-     */
-	virtual void setup(Model& model);
-
-    /**
-     * This is called when a SimTK System is being created for the Model.  It must be implemented
-     * to add appropriate elements to the System corresponding to this object. Methods for
-	 * adding modeling options, state variables and their derivatives, discrete variables, as well
-	 * must be called with createSystem() only.
-     *
-     * @param system   the System being created
-     */
-    virtual void createSystem(SimTK::MultibodySystem& system) const;
-
-    /**
-     * This is called after a SimTK System and State have been created for the Model.  It must
-     * be implementd to set initial values of state variables.
-     *
-     * @param state    the State to initialize
-     */
-	virtual void initState(SimTK::State& state) const {
-		for(unsigned int i=0; i < _subComponents.size(); i++)
-			_subComponents[i]->initState(state);
-	};
-
-    /**
-     * Set all default values for this object to match those in a specified State.  It must be
-     * implemented/overriden to set any default values defined by each subclass.
-     *
-     * @param state    the State from which to take values that should become the defaults for this object
-     */
-	virtual void setDefaultsFromState(const SimTK::State& state) {
-		for(unsigned int i=0; i < _subComponents.size(); i++)
-			_subComponents[i]->setDefaultsFromState(state);
-	};
-
-	/** Set the index for the subsystem to which new variables (modeling option, state, cache)
-	    corresponding to the ModelComponent will be added. This method is intended to override
-		use of the defaultSubsystem by concrete subclasses. */
-	void setIndexOfSubsystemForAllocations(SimTK::SubsystemIndex subsysIndex);
-	const SimTK::SubsystemIndex getIndexOfSubsystemForAllocations() const;
-
-	/**
-	 * Helper methods for implementing concrete ModelComponents. These methods
-	 * can only be called inside of createSystem() and are useful for creating
-	 * the underlying SimTK::System level variables that are used for computing
-	 * values of interest.
-	 **/
-
 	/** Add a modeling option (integer flag) used by this ModelComponent,
-	    with each option identified by a label.  Modeling options enable the model
+	    with each option (number) identified by a label.  Modeling options enable the model
 		component to be configured differently in order to represent different operating modes.
-		For example, in may be useful to ignore excitation-activation dynamics of a muscle, or
-		to apply a known muscle force, which could be modeling options. */
+		For example, if two modes of operation are necessary (mode off and mode on) then specify
+		two option names "OFF" and "ON" and subsequent gets will return 0 or 1 and set will
+		only accept 0 and 1 as acceptable values. */
 	void addModelingOption(const Array<std::string> &optionFlagNames);
 
 	/** Add continuous system state variables belonging to this ModelComponent.
@@ -447,8 +517,8 @@ protected:
 		implemented so that the evolution of the state variable can be determined.
 		Otherwise, state variables are intepreted as discrete variables and must be
 		supplied to the model component.
-		Override to return a Vector of the same size as the number of state variables
-		defined, otherwise returns empty (no derivatives are defined). */
+		Override to return a Vector of the same size as the number of state variables defined
+		and in order of getStateVariableNames(). Default returns empty (no derivatives are defined). */
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const
 	{ return SimTK::Vector(0); };
 
@@ -465,11 +535,17 @@ protected:
 	    Cache variables are typically computed from the state and provide
 		convenience and/or efficiency by holding on to them in memory (cache) and
 		using the cached value subsequently rather than recomputing.  Once the state
-		changes, the cache variable values become invalid and have to be
-		recomputed based on the current state.
-		@param cacheVariableName is the name of the variable
-		@param variablePrototype is a prototype of the object (type) to be cached
-		@param the lowest computational stage at which the cache variable is valid 	*/
+		changes, the cache variable values automatically become invalid and have to be
+		recomputed based on the current state. The cache is also invalidated if the
+		realization stage falls below the lowest valid stage. For example, a body's momementum,
+		which is dependent on position and velocity states, should have velocity as it lowestValidStage,
+		that is if velocity (or any stage below) is has to be realized then the cache is invalidated.
+		But, if dynamics (andy anything above) is realized (the is velocity remains valid) then the cache
+		variable is valid and does not have to be recomputed.
+
+		@param cacheVariableName	is the name of the variable
+		@param variablePrototype	is a prototype of the object (type) to be cached
+		@param lowestValidStage		the lowest computational stage at which the cache variable is valid */
 	template<typename T> void addCacheVariable(	const std::string &cacheVariableName,
 					const T& variablePrototype, const SimTK::Stage &lowestValidStage)
 	{
@@ -498,8 +574,13 @@ protected:
 		to its underlying Subsystem.*/
 	const SimTK::CacheEntryIndex getCacheVariableIndex(const std::string &name) const;
 
-	const ModelComponentRep *getRep() {return _rep; };
-	ModelComponentRep *updRep() {return _rep; };
+	// End of System Creation and Access Methods.
+    //@} 
+
+	/** @cond **/ // hide from Doxygen
+	const ModelComponentRep *getRep() {return _rep; }
+	ModelComponentRep *updRep() {return _rep; }
+	/** @endcond **/
 
 private:
 
@@ -509,15 +590,22 @@ private:
 	// Representative implementation of ModelComponent for SimTK::System level allocations
 	ModelComponentRep* _rep;
 
+	/** @cond **/ // hide from Doxygen
 	friend class ModelComponentRep;
+	/** @endcond **/
 //=============================================================================
 };	// END of class ModelComponent
 //=============================================================================
 //=============================================================================
 
-
 } // end of namespace OpenSim
 
+
+/** @cond **/ // hide from Doxygen
+/**
+	The default underlying SimTK component for an OpenSim::ModelComponent is a
+	SimTK::Measure.  In particular, it is a ModelComponentMeasure defined here.
+*/
 
 namespace SimTK {
 
@@ -564,6 +652,7 @@ private:
 };
 
 } // end namespace SimTK
+/** @endcond **/
 
 #endif // __ModelComponent_h__
 

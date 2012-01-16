@@ -175,8 +175,8 @@ public:
    /** 
     *   return the min an max times that a controller knows how to supply controlls for 
     */ 
-   virtual double getFirstTime() const;
-   virtual double getLastTime() const;
+   double getFirstTime() const;
+   double getLastTime() const;
 
 //=============================================================================
 };	// END of class ControlSetController

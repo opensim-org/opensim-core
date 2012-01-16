@@ -64,7 +64,6 @@ Ligament::Ligament() : Force(),
 {
 	setNull();
 	setupProperties();
-	includeAsSubComponent(&_path);
 }
 
 //_____________________________________________________________________________
@@ -98,7 +97,6 @@ Ligament::Ligament(const Ligament &aLigament) : Force(aLigament),
 	setNull();
 	setupProperties();
 	copyData(aLigament);
-	includeAsSubComponent(&_path);
 }
 
 //_____________________________________________________________________________
@@ -144,15 +142,6 @@ void Ligament::setNull()
 
 //_____________________________________________________________________________
 /**
- * allocate and initialize the SimTK state for this ligament.
- */
- void Ligament::createSystem(SimTK::MultibodySystem& system) const
-{
-	Force::createSystem(system);
-}
-
-//_____________________________________________________________________________
-/**
  * Set up the properties for the ligament.
  * 
  * You should give each property a meaningful name and an informative comment.
@@ -190,13 +179,17 @@ void Ligament::setupProperties()
 
 //_____________________________________________________________________________
 /**
- * Perform some set up functions that happen after the
+ * Perform some setup functions that happen after the
  * ligament has been deserialized or copied.
  *
  * @param aModel model containing this ligament.
  */
 void Ligament::setup(Model& aModel)
 {
+	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
+	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
+	// propogated to subcomponents.
+	includeAsSubComponent(&_path);
 	Force::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
@@ -208,6 +201,16 @@ void Ligament::setup(Model& aModel)
 
 	_path.setOwner(this);
 }
+
+//_____________________________________________________________________________
+/**
+ * allocate and initialize the SimTK state for this ligament.
+ */
+ void Ligament::createSystem(SimTK::MultibodySystem& system) const
+{
+	Force::createSystem(system);
+}
+
 
 void Ligament::initState( SimTK::State& s) const
 {

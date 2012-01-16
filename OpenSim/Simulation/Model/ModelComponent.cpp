@@ -94,8 +94,11 @@ void ModelComponent::setup(Model& model)
 		_subComponents[i]->setup(model);
 }
 
-// Default behavior is that ModelComponent owns at least a CustomMeasure that is 
-// part
+// Default behavior is that ModelComponent owns an underlying SimTK::Measure 
+// which is a ModelComponentMeasure<T>. For simplicity, we are specifying
+// T as SimTK::Real but a more flexible mechanism could be developed to 
+// specify according to a specified prototype (similar to how CacheVariables
+// are being specified).
 void ModelComponent::createSystem(SimTK::MultibodySystem& system) const
 {
 	if(!(getIndexOfSubsystemForAllocations().isValid())){
@@ -179,8 +182,10 @@ int ModelComponent::getModelingOption(const SimTK::State& s) const
  */
 void ModelComponent::setModelingOption(SimTK::State& s, int flag) const
 {
+	if((flag < 0 ) || (flag > int(_rep->_optionFlagNames.size())-1))
+			throw Exception("ModelComponent: modeling option flag does not correspond available options.");
+	
 	SimTK::DiscreteVariableIndex dvIndex = _rep->_modelingOptionIndex;
-
 	SimTK::Value<int>::downcast(s.updDiscreteVariable(getIndexOfSubsystemForAllocations(), dvIndex)).upd() = flag;
 }
 

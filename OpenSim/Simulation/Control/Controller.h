@@ -44,22 +44,19 @@
 #include <OpenSim/Common/PropertyStrArray.h>
 #include <OpenSim/Common/Set.h>
 
-//=============================================================================
-//=============================================================================
-/**
- * Controller specifies the interface of a controller in OpenSim 
-  *
- * @author Ajay Seth, Frank C. Anderson, Chand T. John, Samuel R. Hamner 
- * @version 2.0
- */
-
 namespace OpenSim { 
 
 // Forward declarations of classes that are used by the controller implementation
 class Model;
 
-// A Controller is a ModelComponent
-// The interface (defined herein) is  exported by the osimSimulation dll
+/**
+ * Controller is an abstract ModelComponent that specified  
+ * the interface for all Controllers in OpenSim.
+ * The defining method of Controller is computeControls().
+ * @see computeControls()
+ *
+ * @author Ajay Seth
+ */
 class OSIMSIMULATION_API Controller : public ModelComponent
 {
 //=============================================================================
@@ -101,7 +98,8 @@ public:
 	 *
 	 * @param aFileName The XML file in which this a controller is defined.
 	 * @param aUpdateFromXMLNode A flag indicating whether or not to call
-	 * updateFromXMLNode(SimTK::Xml::Element& aNode) from this constructor.  This method is only necessary
+	 * updateFromXMLNode(SimTK::Xml::Element& aNode) from this constructor.
+	 * This method is only necessary
 	 * if changes to the XML format (i.e. tag names) are made and future
 	 * versions must convert old syntax to the latest.
 	 */
@@ -152,19 +150,10 @@ public:
 #ifndef SWIG
 
 	/**
-	 * Assignment operator.  This method is called automatically whenever a
-	 * command of the form "controller1 = controller2;" is made, where both
-	 * controller1 and controller2 are both of type Controller.  Although
-	 * Controller cannot be instantiated directly, a subclass of Controller
-	 * could implement its own operator= method that calls Controller's
-	 * operator= method.  If the subclass does not implement its own operator=
-	 * method, then when a command of the form "controller1 = controller2" is
-	 * made, where both controller1 and controller2 are instants of the
-	 * subclass, the Controller class's operator= method will be called
-	 * automatically.
+	 * Assignment operator.  Copy contents of one Controller into another.
 	 *
 	 * @param aController The controller to be copied.
-	 * @return Reference to the altered object.
+	 * @return Reference to the controller with updated contents.
 	 */
 	Controller& operator=(const Controller &aController);
 
@@ -175,15 +164,15 @@ public:
 	//--------------------------------------------------------------------------
 	/** Get whether or not this controller is disabled.
 	 *
-	 * @return true if on, false if off.
+	 * @return true when controller is disabled.
 	 */
 	virtual bool isDisabled() const;
 
 	/** Disable this controller.
 	 *
-	 * @param aTrueFalse Disable if true.
+	 * @param disableFlag Disable if true.
 	 */
-	virtual void setDisabled(bool aTrueFalse);
+	virtual void setDisabled(bool disableFlag);
 
 	/** Compute the control for actuator
 	 *  This method defines the behavior for any concrete controller 
@@ -204,14 +193,6 @@ public:
 	virtual Set<Actuator>& updActuators();
 	/** get the names of the actuators being controlled */
 	virtual const Array<std::string>& getActuatorNames() const { return _actuatorNameList; }
-
-
-   /** 
-    * return the min an max times that a controller knows how to supply controlls for 
-    */ 
-	virtual double getFirstTime() const;
-	virtual double getLastTime() const;
-
 
 private:
 	// This method sets all pointer member variables to NULL. 
