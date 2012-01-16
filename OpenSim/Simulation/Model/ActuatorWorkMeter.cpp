@@ -108,7 +108,7 @@ void ActuatorWorkMeter::setNull(void)
  */
 void ActuatorWorkMeter::setupProperties(void)
 {
-	_actuatorNameProp.setComment("The actuator name whos work use will be calculated.");
+	_actuatorNameProp.setComment("The actuator name whos work will be calculated.");
 	_actuatorNameProp.setName("actuator_name");
 	_actuatorNameProp.setValue("Unassigned");
 	_propertySet.append(&_actuatorNameProp);

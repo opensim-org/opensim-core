@@ -289,6 +289,7 @@ void Model::copyData(const Model &aModel)
     _bodySet=aModel._bodySet;
     _constraintSet=aModel._constraintSet;
 	_controllerSet=aModel._controllerSet;
+	_componentSet=aModel._componentSet;
     _markerSet = aModel._markerSet;
     _contactGeometrySet = aModel._contactGeometrySet;
 
@@ -315,6 +316,9 @@ void Model::setNull()
 	_assemblySolver = NULL;
 
 	_validationLog="";
+
+	_componentSet.setType("ComponentSet");
+	_componentSet.setName("MiscComponents");
 
 	_modelComponents.setMemoryOwner(false);
 }
@@ -359,11 +363,14 @@ void Model::setupProperties()
     _markerSetProp.setComment("Markers in the model.");
     _propertySet.append(&_markerSetProp);
 
-    _contactGeometrySetProp.setComment("ContactGeometry objects in the model.");
+    _contactGeometrySetProp.setComment("ContactGeometry components in the model.");
     _propertySet.append(&_contactGeometrySetProp);
 
-    _controllerSetProp.setComment("Controller objects in the model.");
+    _controllerSetProp.setComment("Controller components in the model.");
     _propertySet.append(&_controllerSetProp);
+
+	_componentSetProp.setComment("Additional components in the model.");
+    _propertySet.append(&_componentSetProp);
 }
 
 SimTK::State& Model::initSystem()
