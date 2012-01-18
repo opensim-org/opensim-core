@@ -490,7 +490,7 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
 				int curVersion = root.getRequiredAttributeValueAs<int>("Version");
 				if (curVersion <= 20201) root.setAttributeValue("Version", "20300");
 				Xml::element_iterator iter(root.element_begin("IKTool"));
-				iter->setElementTag("InverseKinemtaticsTool");
+				iter->setElementTag("InverseKinematicsTool");
 				Xml::element_iterator toolIter(iter->element_begin("IKTrialSet"));
 				// No optimizer_algorithm specification anymore
 				Xml::element_iterator optIter(iter->element_begin("optimizer_algorithm"));
