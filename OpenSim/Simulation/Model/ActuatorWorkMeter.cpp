@@ -63,8 +63,8 @@ ActuatorWorkMeter::ActuatorWorkMeter(const Actuator &actuator, double initialWor
 {
 	setNull();
 	setupProperties();
-	_actuatorNameProp.setValue(actuator.getName());
-	_initialWorkProp.setValue(initialWork);
+	setPropertyValue("actuator_name", actuator.getName());
+	setPropertyValue("initial_actuator_work", initialWork);
 }
 
 //_____________________________________________________________________________
@@ -108,15 +108,14 @@ void ActuatorWorkMeter::setNull(void)
  */
 void ActuatorWorkMeter::setupProperties(void)
 {
-	_actuatorNameProp.setComment("The actuator name whos work will be calculated.");
-	_actuatorNameProp.setName("actuator_name");
-	_actuatorNameProp.setValue("Unassigned");
-	_propertySet.append(&_actuatorNameProp);
-
-	_initialWorkProp.setComment("The initial amount of work.");
-	_initialWorkProp.setName("initial_actuator_work");
-	_initialWorkProp.setValue(0.0);
-	_propertySet.append(&_initialWorkProp);
+	addProperty<string>("actuator_name",
+		"string",
+		"The actuator name whos work use will be calculated.",
+		"Unassigned");
+	addProperty<double>("initial_actuator_work",
+		"double",
+		"The initial amount of work.",
+		0.0);
 }
 
 Object* ActuatorWorkMeter::copy() const
@@ -134,7 +133,7 @@ Object* ActuatorWorkMeter::copy() const
  */
 void ActuatorWorkMeter::setup(Model& aModel)
 {
-	const string& actName = _actuatorNameProp.getValueStr();
+	const string& actName = getPropertyValue<string>("actuator_name");
 	ModelComponent::setup(aModel);
 	int k = _model->getActuators().getIndex(actName);
 	if( k >=0 )
@@ -177,12 +176,12 @@ SimTK::Vector ActuatorWorkMeter::computeStateVariableDerivatives(const SimTK::St
 
  void ActuatorWorkMeter::initState( SimTK::State& s) const
 {
-	setStateVariable(s, getStateVariableNames()[0], _initialWorkProp.getValueDbl());
+	setStateVariable(s, getStateVariableNames()[0], getPropertyValue<double>("initial_actuator_work"));
 }
 
 void ActuatorWorkMeter::setDefaultsFromState(const SimTK::State& state)
 {
-    _initialWorkProp.setValue(getWork(state));
+    setPropertyValue("initial_actuator_work", getWork(state));
 }
 
 //=============================================================================
@@ -210,5 +209,3 @@ double ActuatorWorkMeter::getWork(const SimTK::State& state) const
 {
 	return getStateVariable(state, _actuator->getName()+"."+WORK_STATE_NAME);
 }
-
-

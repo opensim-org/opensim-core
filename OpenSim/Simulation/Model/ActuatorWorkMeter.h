@@ -33,12 +33,10 @@
 // INCLUDE
 #include <OpenSim/Simulation/Model/Actuator.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Common/PropertyStr.h>
 
 namespace OpenSim {
 
 class Model;
-class ScaleSet;
 
 //==============================================================================
 //==============================================================================
@@ -58,11 +56,6 @@ class OSIMSIMULATION_API ActuatorWorkMeter : public ModelComponent
 //=============================================================================
 
 protected:
-
-	/** Actuator to evaluate work on */
-	PropertyStr _actuatorNameProp;
-	/** initial value for the actuator energy */
-	PropertyDbl _initialWorkProp;
 
 	Actuator* _actuator;
 

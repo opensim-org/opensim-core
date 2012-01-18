@@ -219,6 +219,32 @@ ArrayPtrs<T>& operator=(const ArrayPtrs<T> &aArray)
 }
 
 //-----------------------------------------------------------------------------
+// EQUALITY (==)
+//-----------------------------------------------------------------------------
+//_____________________________________________________________________________
+/**
+ * Determine if two arrays are equal.
+ *
+ * Two arrays are equal if their contents are equal.  That is, each array
+ * must be the same length and their corresponding array elements must be
+ * equal.
+ *
+ * @param aArray Array to be tested as equal.
+ * @return True if equal, false if not equal.
+ */
+bool operator==(const ArrayPtrs<T> &aArray) const
+{
+	if(_size != aArray._size) return(false);
+
+	int i;
+	for(i=0;i<_size;i++) {
+		if( !(_array[i]==aArray._array[i]) ) return(false);
+	}
+
+	return(true);
+}
+
+//-----------------------------------------------------------------------------
 // BRACKETS ([])
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________

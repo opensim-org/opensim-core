@@ -45,6 +45,8 @@
 #include "osimCommonDLL.h"
 #include "XMLDocument.h"
 #include "PropertySet.h"
+#include "PropertyTable.h"
+#include "Property2.h"
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
@@ -145,6 +147,7 @@ protected:
 	/** Property set for serializable member variables of this and
 	derived classes. */
 	PropertySet _propertySet;
+	PropertyTable _propertyTable;
 	/** Type. */
 	std::string _type;
 	/** Name. Made protected so that classes can customize their setName.  
@@ -276,6 +279,7 @@ private:
 	void generateXMLDocument();
 	//static bool parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rChildDocument, DOMElement *&rChildDocumentElement, bool aVerifyTagName = true);
 	static void InitializeObjectFromXMLNode(Property *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+	static void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 
 	//--------------------------------------------------------------------------
 	// IO
@@ -318,8 +322,61 @@ public:
 				rArray.append(dynamic_cast<T*>(_Types[i]));
 	}
 
+protected:
+	void addProperty(AbstractProperty &abstractProperty);
+	template <class T> const Property2<T>& getProperty(const std::string &name) const;
+	template <class T> Property2<T>& updateProperty(const std::string &name);
+	template <class T> void addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value);
+	template <class T> const T& getPropertyValue(const std::string &name) const;
+	template <class T> T& updatePropertyValue(const std::string &name) const;
+	template <class T> void setPropertyValue(const std::string &name, const T &value);
+	std::string getPropertyType(const std::string &name) const;
+	std::string getPropertyComment(const std::string &name) const;
+
 //=============================================================================
 };	// END of class Object
+
+template <class T>
+const Property2<T>& Object::
+getProperty(const std::string &name) const
+{
+	return _propertyTable.getProperty<T>(name);
+}
+
+template <class T>
+Property2<T>& Object::
+updateProperty(const std::string &name)
+{
+	return _propertyTable.updateProperty<T>(name);
+}
+
+template <class T>
+void Object::
+addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value)
+{
+	_propertyTable.addProperty(name, type, comment, value);
+}
+
+template <class T>
+const T& Object::
+getPropertyValue(const std::string &name) const
+{
+	return _propertyTable.getPropertyValue<T>(name);
+}
+
+template <class T>
+T& Object::
+updatePropertyValue(const std::string &name) const
+{
+	return _propertyTable.updatePropertyValue<T>(name);
+}
+
+template <class T>
+void Object::
+setPropertyValue(const std::string &name, const T &value)
+{
+	_propertyTable.setPropertyValue(name, value);
+}
 /**
  * Add public static method declaration in class derived from a
  * parent to assist in downcasting objects of the parent type to the 

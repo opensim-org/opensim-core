@@ -131,7 +131,7 @@ public:
 	virtual void setMaxContractionVelocity(double aMaxContractionVelocity) {_maxContractionVelocity = aMaxContractionVelocity;}
 
 	//--------------------------------------------------------------------------
-	// PROBE MUSCLE FOR INFO
+	// State dependent accessors to internal muscle variables
 	//--------------------------------------------------------------------------
 	virtual double getPennationAngle(const SimTK::State& s) const;
 	virtual double getTendonLength(const SimTK::State& s) const;
