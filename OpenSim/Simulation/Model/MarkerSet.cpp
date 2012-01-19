@@ -54,7 +54,8 @@ MarkerSet::MarkerSet(const string& aMarkersFileName) :
 	Set<Marker>(aMarkersFileName, false)
 {
 	setNull();
-	updateFromXMLNode(getDocument()->getRootDataElement(), _document->getDocumentVersion());
+	SimTK::Xml::Element e = getDocument()->getRootDataElement(); 
+	updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
 //_____________________________________________________________________________

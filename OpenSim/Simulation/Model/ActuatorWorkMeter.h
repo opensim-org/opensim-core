@@ -91,7 +91,7 @@ protected:
     virtual void setDefaultsFromState(const SimTK::State& state);
 	virtual int getNumStateVariables() const { return 1; };
 	
-	SimTK::Vector ActuatorWorkMeter::computeStateVariableDerivatives(const SimTK::State& s) const;
+	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 
 private:
 	void setNull();

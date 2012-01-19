@@ -120,7 +120,8 @@ _dependents(0)
 	// NULL STATES
 	setNull();
 
-	updateFromXMLNode(getDocument()->getRootDataElement());
+	SimTK::Xml::Element e = getDocument()->getRootDataElement(); 
+	updateFromXMLNode(e);
 }
 //_____________________________________________________________________________
 /**

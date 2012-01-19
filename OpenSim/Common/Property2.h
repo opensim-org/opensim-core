@@ -37,6 +37,7 @@
 #include "osimCommonDLL.h"
 #include "Array.h"
 #include "ArrayPtrs.h"
+#include <cmath>
 
 namespace OpenSim {
 

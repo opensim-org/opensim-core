@@ -90,7 +90,8 @@ Controller::Controller(Model& aModel) :
       _actuatorNameList(_actuatorNameListProp.getValueStrArray())
 {
       setNull();
-      if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
+	  SimTK::Xml::Element e = _document->getRootDataElement(); 
+      if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 
 //_____________________________________________________________________________

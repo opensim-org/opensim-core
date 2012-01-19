@@ -44,7 +44,7 @@
 using namespace OpenSim;
 using namespace std;
 
-void checkCOM(string resultsFile, string body, SimTK::Vec3 &standardCOM, Array<double> &tolerances);
+void checkCOM(string resultsFile, string body, const SimTK::Vec3 &standardCOM, const Array<double> &tolerances);
 
 int main() {
     try {
@@ -62,7 +62,7 @@ int main() {
     return 0;
 }
 
-void checkCOM(string resultsFile, string body, SimTK::Vec3 &standardCOM, Array<double> &tolerances) {
+void checkCOM(string resultsFile, string body, const SimTK::Vec3 &standardCOM, const Array<double> &tolerances) {
 
 	// compare the adjusted center of mass to OpenSim 1.9.1 values
 	Model adjusted_model(resultsFile);

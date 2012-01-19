@@ -80,7 +80,8 @@ TrackingController::TrackingController(Model& aModel) :	Controller(aModel)
       Controller(aFileName, aUpdateFromXMLNode)
 {
       setNull();
-      if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), getDocument()->getDocumentVersion());
+	  SimTK::Xml::Element e = _document->getRootDataElement(); 
+      if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 
 //_____________________________________________________________________________

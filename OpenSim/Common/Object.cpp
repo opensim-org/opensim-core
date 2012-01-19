@@ -160,7 +160,8 @@ Object::Object(const XMLDocument *aDocument)
 	_document = new XMLDocument(*aDocument);
 
 	// CONSTRUCT BASED ON ROOT ELEMENT
-	updateFromXMLNode(_document->getRootDataElement(), _document->getDocumentVersion());
+	SimTK::Xml::Element e = _document->getRootDataElement(); 
+	updateFromXMLNode(e, _document->getDocumentVersion());
 }
 //_____________________________________________________________________________
 /**
@@ -740,7 +741,8 @@ InitializeObjectFromXMLNode(Property *aProperty, const SimTK::Xml::element_itera
 	if (!inlinedObject){
 		XMLDocument* newDoc = new XMLDocument(file);
 		aObject->_inlined=false;
-		aObject->updateFromXMLNode(newDoc->getRootDataElement(), newDoc->getDocumentVersion());
+		SimTK::Xml::Element e = newDoc->getRootDataElement();
+		aObject->updateFromXMLNode(e, newDoc->getDocumentVersion());
 	}
 	else
 		aObject->updateFromXMLNode(*rObjectElement, versionNumber);
@@ -773,7 +775,8 @@ InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::X
 	if (!inlinedObject){
 		XMLDocument* newDoc = new XMLDocument(file);
 		aObject->_inlined=false;
-		aObject->updateFromXMLNode(newDoc->getRootDataElement(), newDoc->getDocumentVersion());
+		SimTK::Xml::Element e = newDoc->getRootDataElement();
+		aObject->updateFromXMLNode(e, newDoc->getDocumentVersion());
 	}
 	else
 		aObject->updateFromXMLNode(*rObjectElement, versionNumber);
@@ -990,7 +993,7 @@ try {
 			//}
 
 			// LOOP THROUGH CHILD NODES
-			SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
+			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) break;
 			Object *object =NULL;
 			int objectsFound = 0;
@@ -1177,7 +1180,7 @@ try {
 			//}
 
 			// LOOP THROUGH CHILD NODES
-			SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
+			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) break;
 			Object *object = NULL;
 			int objectsFound = 0;
@@ -1223,7 +1226,7 @@ try {
 			//}
 
 			// LOOP THROUGH CHILD NODES
-			SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
+			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) break;
 			Object *object = NULL;
 			int objectsFound = 0;
@@ -1914,7 +1917,8 @@ print(const string &aFileName)
 			_document->copyDefaultObjects(*oldDoc);
 			delete oldDoc;
 		}
-		updateXMLNode(_document->getRootElement());
+		SimTK::Xml::Element e = _document->getRootElement(); 
+		updateXMLNode(e);
 	} catch (const Exception &ex) {
 		// Important to catch exceptions here so we can restore current working directory...
 		// And then we can rethrow the exception
@@ -2082,8 +2086,10 @@ makeObjectFromFile(const std::string &aFileName)
 		newObject->_document=doc;
 		if (newFormat)
 			newObject->updateFromXMLNode(*doc->getRootElement().element_begin(), doc->getDocumentVersion());
-		else 
-			newObject->updateFromXMLNode(doc->getRootElement(), 10500);
+		else { 
+			SimTK::Xml::Element e = doc->getRootElement();
+			newObject->updateFromXMLNode(e, 10500);
+		}
 		return (newObject);
 	}
 	catch(Exception &x) {
@@ -2152,8 +2158,9 @@ renameChildNode(const std::string& aOldName, const std::string& aNewName, DOMEle
 void Object::updateFromXMLDocument()
 {
 	assert(_document!= 0);
-
-	updateFromXMLNode(_document->getRootDataElement(), _document->getDocumentVersion());
+	
+	SimTK::Xml::Element e = _document->getRootDataElement(); 
+	updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
 void Object::

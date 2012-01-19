@@ -785,7 +785,8 @@ private:
 
 	void createAssemblySolver(const SimTK::State& s);
 
-	friend void ModelComponent::setup(Model& model);
+	//friend void ModelComponent::setup(Model& model);
+	friend class ModelComponent;
 
 //=============================================================================
 };	// END of class Model

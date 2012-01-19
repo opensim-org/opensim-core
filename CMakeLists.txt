@@ -105,6 +105,7 @@ IF( APPLE )
    SET( CMAKE_CXX_FLAGS "-mmacosx-version-min=10.4 -m32" )
    SET( CMAKE_C_FLAGS "-mmacosx-version-min=10.4 -m32" )
    SET( LIB64  )
+   SET(ARCH64 OFF) 
 ENDIF( APPLE )
 
 IF(UNIX AND NOT CMAKE_BUILD_TYPE)

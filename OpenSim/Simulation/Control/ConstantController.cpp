@@ -81,7 +81,8 @@ ConstantController::ConstantController(const std::string &aFileName, bool aUpdat
 {
 	setNull();
     setupProperties();
-	if(aUpdateFromXMLNode) updateFromXMLNode(_document->getRootDataElement(), _document->getDocumentVersion());
+	SimTK::Xml::Element e = _document->getRootDataElement(); 
+	if(aUpdateFromXMLNode) updateFromXMLNode(e, _document->getDocumentVersion());
 }
 //_____________________________________________________________________________
 /**
