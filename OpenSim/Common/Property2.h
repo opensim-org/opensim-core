@@ -135,7 +135,7 @@ public:
 	const T& getValue() const;
 	T& updateValue();
 	void setValue(const T &aValue);
-	virtual PropertyType getPropertyType() const;
+	virtual PropertyType getPropertyType() const {throw Exception("Property2: Use of unspecified property."); return None;}
 };
 
 template <>
@@ -223,12 +223,6 @@ template <typename T>
 void Property2<T>::setValue(const T &aValue)
 {
 	_value = aValue;
-}
-
-template <typename T>
-AbstractProperty::PropertyType Property2<T>::getPropertyType() const
-{
-	return None;
 }
 
 
