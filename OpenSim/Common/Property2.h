@@ -171,16 +171,7 @@ inline AbstractProperty::PropertyType Property2< Array<double> >::getPropertyTyp
 template <>
 inline AbstractProperty::PropertyType Property2< Array<std::string> >::getPropertyType() const { return StrArray; }
 
-/*
-template <>
-inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
-
-template <>
-inline AbstractProperty::PropertyType Property2< Array<Object> >::getPropertyType() const { return ObjArray; }
-
-template <>
-inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() const { return ObjPtr; }
-*/
+/**@NOTE: Specializations involving Object must be performed in Object. */
 
 template <typename T>
 Property2<T>::Property2()

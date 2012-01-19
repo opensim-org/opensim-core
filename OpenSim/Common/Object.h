@@ -336,6 +336,15 @@ protected:
 //=============================================================================
 };	// END of class Object
 
+template <>
+inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
+
+template <>
+inline AbstractProperty::PropertyType Property2< Array<Object> >::getPropertyType() const { return ObjArray; }
+
+template <>
+inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() const { return ObjPtr; }
+
 template <class T>
 const Property2<T>& Object::
 getProperty(const std::string &name) const
