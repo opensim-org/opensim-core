@@ -851,7 +851,7 @@ double  Thelen2003MuscleV1::computeActuation(const SimTK::State& s) const
     
 
     fiberLengthDeriv = calcFiberVelocity(s,activation,activeForce,velocity_dependent_force);
-    _dlce = Vmax*_optimalFiberLength*fiberLengthDeriv; //MM
+    _dlce = Vmax*fiberLengthDeriv; //MM
 
     /* Un-normalize the muscle state derivatives and forces. */
     setActivationDeriv(s, activationDeriv );
