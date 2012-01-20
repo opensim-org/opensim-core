@@ -99,15 +99,17 @@ public:
 	AbstractProperty();
 	AbstractProperty(const std::string &aName, const std::string &aType, const std::string &aComment);
 	AbstractProperty(const AbstractProperty &aAbstractProperty);
+	virtual ~AbstractProperty() {}
 	virtual AbstractProperty& operator=(const AbstractProperty &aAbstractProperty);
+	virtual AbstractProperty* copy() const = 0;
 	virtual bool equals(AbstractProperty* aAbstractPropertyPtr) const = 0;
-	std::string getName() const;
-	void setName(std::string aName);
-	std::string getType() const;
-	void setType(std::string aType);
+	std::string getName() const { return _name; }
+	void setName(std::string aName){ _name = aName; }
+	std::string getType() const { return _type; }
+	void setType(std::string aType){ _type = aType; }
 	virtual PropertyType getPropertyType() const = 0;
-	std::string getComment() const;
-	void setComment(std::string aComment);
+	std::string getComment() const { return _comment; }
+	void setComment(std::string aComment){ _comment = aComment; }
 	bool getUseDefault() const { return _useDefault; }
 	void setUseDefault(bool aTrueFalse) { _useDefault = aTrueFalse; }
 	bool getMatchName() const { return _matchName; }
@@ -134,11 +136,13 @@ public:
 	Property2();
 	Property2(const std::string &aName, const std::string &aType, const std::string &aComment, const T &aValue);
 	Property2(const Property2 &aProperty);
+	virtual ~Property2() {}
 	virtual Property2& operator=(const Property2 &aProperty);
+	virtual Property2* copy() const;
 	virtual bool equals(AbstractProperty* aAbstractPropertyPtr) const;
-	const T& getValue() const;
-	T& updateValue();
-	void setValue(const T &aValue);
+	const T& getValue() const { return _value; }
+	T& updateValue() { return _value; }
+	void setValue(const T &aValue) { _value = aValue; }
 	virtual PropertyType getPropertyType() const;
 };
 
@@ -212,30 +216,19 @@ Property2<T>& Property2<T>::operator=(const Property2<T> &aProperty)
 }
 
 template <typename T>
+Property2<T>* Property2<T>::copy() const
+{
+	Property2<T> *prop = new Property2<T>(*this);
+	return prop;
+}
+
+template <typename T>
 bool Property2<T>::equals(AbstractProperty* aAbstractPropertyPtr) const
 {
 	Property2<T>* aPropertyPtr = dynamic_cast<Property2<T>*>(aAbstractPropertyPtr);
 	if (aPropertyPtr)
 		return _value == aPropertyPtr->getValue();
 	return false;
-}
-
-template <typename T>
-const T& Property2<T>::getValue() const
-{
-	return _value;
-}
-
-template <typename T>
-T& Property2<T>::updateValue()
-{
-	return _value;
-}
-
-template <typename T>
-void Property2<T>::setValue(const T &aValue)
-{
-	_value = aValue;
 }
 
 }; //namespace

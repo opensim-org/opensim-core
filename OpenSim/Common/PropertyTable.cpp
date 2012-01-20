@@ -64,12 +64,18 @@ PropertyTable::PropertyTable(const PropertyTable &aPropertyTable)
 
 PropertyTable::~PropertyTable()
 {
-
+	for (map<string, AbstractProperty*>::const_iterator it = _properties.begin(); it != _properties.end(); ++it) {
+		AbstractProperty *abstractProperty = (*it).second;
+		delete abstractProperty;
+	}
 }
 
 PropertyTable& PropertyTable::operator=(const PropertyTable &aPropertyTable)
 {
-	_properties = aPropertyTable._properties;
+	for (map<string, AbstractProperty*>::const_iterator it = aPropertyTable._properties.begin(); it != aPropertyTable._properties.end(); ++it) {
+		AbstractProperty *abstractProperty = (*it).second;
+		_properties.insert(pair<string, AbstractProperty*>(abstractProperty->getName(), abstractProperty->copy()));
+	}
 	return *this;
 }
 
@@ -103,7 +109,7 @@ Array<AbstractProperty *> PropertyTable::getArray()
 void PropertyTable::addProperty(AbstractProperty &aProperty)
 {
 	aProperty.setIndex(_properties.size());
-	_properties.insert(std::pair<std::string, AbstractProperty*>(aProperty.getName(), &aProperty));
+	_properties.insert(pair<string, AbstractProperty*>(aProperty.getName(), &aProperty));
 }
 
 std::string PropertyTable::getPropertyType(const std::string &name) const

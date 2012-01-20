@@ -75,6 +75,11 @@ AbstractProperty::AbstractProperty(const AbstractProperty &aAbstractProperty)
 	_name = aAbstractProperty._name;
 	_type = aAbstractProperty._type;
 	_comment = aAbstractProperty._comment;
+	_useDefault = aAbstractProperty._useDefault;
+	_matchName = aAbstractProperty._matchName;
+	_index = aAbstractProperty._index;
+	_minArraySize = aAbstractProperty._minArraySize;
+	_maxArraySize = aAbstractProperty._maxArraySize;
 }
 
 AbstractProperty& AbstractProperty::operator=(const AbstractProperty &aAbstractProperty)
@@ -82,35 +87,10 @@ AbstractProperty& AbstractProperty::operator=(const AbstractProperty &aAbstractP
 	_name = aAbstractProperty._name;
 	_type = aAbstractProperty._type;
 	_comment = aAbstractProperty._comment;
+	_useDefault = aAbstractProperty._useDefault;
+	_matchName = aAbstractProperty._matchName;
+	_index = aAbstractProperty._index;
+	_minArraySize = aAbstractProperty._minArraySize;
+	_maxArraySize = aAbstractProperty._maxArraySize;
 	return *this;
-}
-
-std::string AbstractProperty::getName() const
-{
-	return _name;
-}
-
-void AbstractProperty::setName(std::string aName)
-{
-	_name = aName;
-}
-
-std::string AbstractProperty::getType() const
-{
-	return _type;
-}
-
-void AbstractProperty::setType(std::string aType)
-{
-	_type = aType;
-}
-
-std::string AbstractProperty::getComment() const
-{
-	return _comment;
-}
-
-void AbstractProperty::setComment(std::string aComment)
-{
-	_comment = aComment;
 }
