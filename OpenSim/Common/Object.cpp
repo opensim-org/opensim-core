@@ -1031,9 +1031,10 @@ try {
 		}
 	}
 
-	for(map<string, AbstractProperty*>::iterator it = _propertyTable.begin(); it!=_propertyTable.end(); it++) {
+	Array<AbstractProperty *> propertyArray = getPropertyArray();
+	for(int i=0;i<_propertyTable.getSize();i++) {
 
-		AbstractProperty *abstractProperty = (*it).second;
+		AbstractProperty *abstractProperty = propertyArray[i];
 
 		// TYPE
 		AbstractProperty::PropertyType type = abstractProperty->getPropertyType();	
@@ -1180,7 +1181,7 @@ try {
 			//}
 
 			// LOOP THROUGH CHILD NODES
-			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
+			SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) break;
 			Object *object = NULL;
 			int objectsFound = 0;
@@ -1203,7 +1204,7 @@ try {
 			}
 			break; }
 		case(AbstractProperty::ObjPtr) : {
-			propertyObjPtr = dynamic_cast<Property2<Object *> *>(abstractProperty);
+			propertyObjPtr = static_cast<Property2<Object *> *>(abstractProperty);
 			propertyObjPtr->setUseDefault(true);
 
 			// GET ENCLOSING ELEMENT
@@ -1226,7 +1227,7 @@ try {
 			//}
 
 			// LOOP THROUGH CHILD NODES
-			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
+			SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) break;
 			Object *object = NULL;
 			int objectsFound = 0;
@@ -1514,11 +1515,12 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 		}
 	}
 
-	for(map<string, AbstractProperty*>::iterator it = _propertyTable.begin(); it!=_propertyTable.end(); it++) {
+	Array<AbstractProperty *> propertyArray = getPropertyArray();
+	for(int i=0;i<_propertyTable.getSize();i++) {
 
 		//_document->writeToString(elemAsString);
 
-		AbstractProperty *abstractProperty = (*it).second;
+		AbstractProperty *abstractProperty = propertyArray[i];
 
 		// Add comment if any
 		if (!abstractProperty->getComment().empty()) {
@@ -1541,15 +1543,15 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 		switch(type) {
 
 		// Bool
-		case(Property::Bool) :
+		case(AbstractProperty::Bool) :
 			UpdateXMLNodeSimpleProperty2<bool>(abstractProperty, myObjectElement, name);
 			break;
 		// Int
-		case(Property::Int) :
+		case(AbstractProperty::Int) :
 			UpdateXMLNodeSimpleProperty2<int>(abstractProperty, myObjectElement, name);
 			break;
 		// Dbl
-		case(Property::Dbl) :
+		case(AbstractProperty::Dbl) :
 			propertyDbl = dynamic_cast<Property2<double> *>(abstractProperty);
 			if (SimTK::isFinite(propertyDbl->getValue()))
 				UpdateXMLNodeSimpleProperty2<double>(propertyDbl, myObjectElement, name);
@@ -1567,19 +1569,19 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			} 
 			break;
 		// Str
-		case(Property::Str) :
+		case(AbstractProperty::Str) :
 			UpdateXMLNodeSimpleProperty2<string>(abstractProperty, myObjectElement, name);
 			break;
 		// BoolArray
-		case(Property::BoolArray) :
+		case(AbstractProperty::BoolArray) :
 			UpdateXMLNodeArrayProperty2<bool>(abstractProperty,myObjectElement,name);
 			break;
 		// IntArray
-		case(Property::IntArray) :
+		case(AbstractProperty::IntArray) :
 			UpdateXMLNodeArrayProperty2<int>(abstractProperty,myObjectElement,name);
 			break;
 		// DblArray
-		case(Property::DblArray) :
+		case(AbstractProperty::DblArray) :
 			UpdateXMLNodeArrayProperty2<double>(abstractProperty,myObjectElement,name);
 			break;/*
 		// DblVec3
@@ -1591,12 +1593,12 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			UpdateXMLNodeTransform(property,myObjectElement,name);
 			break;*/
 		// StrArray
-		case(Property::StrArray) :
+		case(AbstractProperty::StrArray) :
 			UpdateXMLNodeArrayProperty2<string>(abstractProperty,myObjectElement,name);
 			break;
 
 		// Obj
-		case(Property::Obj) : {
+		case(AbstractProperty::Obj) : {
 			propertyObj = dynamic_cast<Property2<Object> *>(abstractProperty);
 			Object &object = propertyObj->updateValue();
 			object.updateXMLNode(myObjectElement);
@@ -1627,7 +1629,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			break; }
 
 		// ObjArray AND ObjPtr (handled very similarly)
-		case(Property::ObjArray) : {
+		case(AbstractProperty::ObjArray) : {
 			propertyObjArray = dynamic_cast<Property2< ArrayPtrs<Object> > *>(abstractProperty);
 			// Set all the XML nodes to NULL, and then update them all
 			// in order, with index=0 so each new one is added to the end
@@ -1639,8 +1641,8 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			for(int j=0; j < objArray.getSize(); j++)
 				objArray.get(j)->updateXMLNode(objectArrayElement);
 			}
-		case(Property::ObjPtr) : {
-			propertyObjPtr = dynamic_cast<Property2<Object *> *>(abstractProperty);
+		case(AbstractProperty::ObjPtr) : {
+			propertyObjPtr = static_cast<Property2<Object *> *>(abstractProperty);
 			Object *object = propertyObjPtr->updateValue();
 			SimTK::Xml::Element objectBaseElement(propertyObjPtr->getName());
 			myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectBaseElement);
@@ -1835,9 +1837,10 @@ setAllPropertiesUseDefault(bool aUseDefault)
 			break;
 		}
 	}
-	for(map<string, AbstractProperty*>::iterator it = _propertyTable.begin(); it!=_propertyTable.end(); it++) {
+	Array<AbstractProperty *> propertyArray = getPropertyArray();
+	for(int i=0;i<_propertyTable.getSize();i++) {
 
-		AbstractProperty *abstractProperty = (*it).second;
+		AbstractProperty *abstractProperty = propertyArray[i];
 		abstractProperty->setUseDefault(aUseDefault);
 		AbstractProperty::PropertyType type = abstractProperty->getPropertyType();
 
@@ -2179,6 +2182,12 @@ std::string Object::
 getPropertyComment(const std::string &name) const
 {
 	return _propertyTable.getPropertyComment(name);
+}
+
+Array<AbstractProperty *> Object::
+getPropertyArray()
+{
+	return _propertyTable.getArray();
 }
 
 /** 

@@ -35,9 +35,9 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
+#include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
-#include <cmath>
 
 namespace OpenSim {
 
@@ -70,7 +70,7 @@ namespace OpenSim {
  *
  * @todo Make default constructors for all derived classes
  * @version 1.0
- * @author Cassidy Kelly, Ajay Seth
+ * @author Frank C. Anderson
  */
 
 class OSIMCOMMON_API AbstractProperty
@@ -81,6 +81,7 @@ private:
 	std::string _comment;
 	bool _useDefault;
 	bool _matchName;
+	int _index;
 	int _minArraySize; // minimum number of elements for a property of array type
 	int _maxArraySize; // maximum number of elements for a property of array type
 
@@ -88,7 +89,7 @@ public:
 	/** Enumeration of recognized types. */
 	enum PropertyType
 	{
-		None=0,Bool, Int, Dbl, Str, Obj, ObjPtr,
+		None=0, Bool, Int, Dbl, Str, Obj, ObjPtr,
 		BoolArray, IntArray, DblArray, StrArray, ObjArray,
 		DblVec,
 		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
@@ -111,6 +112,8 @@ public:
 	void setUseDefault(bool aTrueFalse) { _useDefault = aTrueFalse; }
 	bool getMatchName() const { return _matchName; }
 	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
+	int getIndex() { return _index; }
+	void setIndex(int aIndex) { _index = aIndex; }
 	void setAllowableArraySize(int aMin, int aMax) { _minArraySize = aMin; _maxArraySize = aMax; }
 	void setAllowableArraySize(int aNum) { _minArraySize = _maxArraySize = aNum; }
 	int getMinArraySize() { return _minArraySize; }
@@ -136,11 +139,8 @@ public:
 	const T& getValue() const;
 	T& updateValue();
 	void setValue(const T &aValue);
-	virtual PropertyType getPropertyType() const {throw Exception("Property2: Use of unspecified property."); return None;}
+	virtual PropertyType getPropertyType() const;
 };
-
-template <>
-inline AbstractProperty::PropertyType Property2<double>::getPropertyType() const { return Dbl; }
 
 template <>
 inline bool Property2<double>::equals(AbstractProperty *aAbstractPropertyPtr) const
@@ -152,13 +152,16 @@ inline bool Property2<double>::equals(AbstractProperty *aAbstractPropertyPtr) co
 }
 
 template <>
+inline AbstractProperty::PropertyType Property2<double>::getPropertyType() const { return Dbl; }
+
+template <>
 inline AbstractProperty::PropertyType Property2<bool>::getPropertyType() const { return Bool; }
 
 template <>
 inline AbstractProperty::PropertyType Property2<int>::getPropertyType() const { return Int; }
 
 template <>
-inline AbstractProperty::PropertyType Property2<std::string>::getPropertyType() const { 	return Str; }
+inline AbstractProperty::PropertyType Property2<std::string>::getPropertyType() const { return Str; }
 
 template <>
 inline AbstractProperty::PropertyType Property2< Array<bool> >::getPropertyType() const { return BoolArray; }
@@ -172,7 +175,16 @@ inline AbstractProperty::PropertyType Property2< Array<double> >::getPropertyTyp
 template <>
 inline AbstractProperty::PropertyType Property2< Array<std::string> >::getPropertyType() const { return StrArray; }
 
-/**@NOTE: Specializations involving Object must be performed in Object. */
+/*
+template <>
+inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
+
+template <>
+inline AbstractProperty::PropertyType Property2< Array<Object> >::getPropertyType() const { return ObjArray; }
+
+template <>
+inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() const { return ObjPtr; }
+*/
 
 template <typename T>
 Property2<T>::Property2()
@@ -225,7 +237,6 @@ void Property2<T>::setValue(const T &aValue)
 {
 	_value = aValue;
 }
-
 
 }; //namespace
 //=============================================================================

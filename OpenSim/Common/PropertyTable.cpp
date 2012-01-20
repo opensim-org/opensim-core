@@ -62,6 +62,11 @@ PropertyTable::PropertyTable(const PropertyTable &aPropertyTable)
 	_properties = aPropertyTable._properties;
 }
 
+PropertyTable::~PropertyTable()
+{
+
+}
+
 PropertyTable& PropertyTable::operator=(const PropertyTable &aPropertyTable)
 {
 	_properties = aPropertyTable._properties;
@@ -85,8 +90,19 @@ AbstractProperty* PropertyTable::getPropertyPtr(const std::string &name) const
 	return (*_properties.find(name)).second;
 }
 
+Array<AbstractProperty *> PropertyTable::getArray()
+{
+	Array<AbstractProperty *> propertyArray(NULL, _properties.size());
+	for(map<string, AbstractProperty*>::iterator it = _properties.begin(); it != _properties.end(); ++it) {
+		AbstractProperty *abstractProperty = (*it).second;
+		propertyArray[abstractProperty->getIndex()] = abstractProperty;
+	}
+	return propertyArray;
+}
+
 void PropertyTable::addProperty(AbstractProperty &aProperty)
 {
+	aProperty.setIndex(_properties.size());
 	_properties.insert(std::pair<std::string, AbstractProperty*>(aProperty.getName(), &aProperty));
 }
 
@@ -98,16 +114,6 @@ std::string PropertyTable::getPropertyType(const std::string &name) const
 std::string PropertyTable::getPropertyComment(const std::string &name) const
 {
 	return (*(*_properties.find(name)).second).getComment();
-}
-
-map<string, AbstractProperty*>::iterator PropertyTable::begin()
-{
-	return _properties.begin();
-}
-
-map<string, AbstractProperty*>::iterator PropertyTable::end()
-{
-	return _properties.end();
 }
 
 int PropertyTable::getSize() const

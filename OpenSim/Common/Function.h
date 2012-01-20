@@ -40,6 +40,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
+#include "Property2.h"
 #include "SimTKmath.h"
 
 
@@ -143,6 +144,9 @@ protected:
 
 //=============================================================================
 };	// END class Function
+
+template <>
+inline AbstractProperty::PropertyType Property2<Function *>::getPropertyType() const { return ObjPtr; }
 
 }; //namespace
 //=============================================================================

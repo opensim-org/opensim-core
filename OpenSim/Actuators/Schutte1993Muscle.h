@@ -56,38 +56,6 @@ class OSIMACTUATORS_API Schutte1993Muscle : public ActivationFiberLengthMuscle
 {
 
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-	/** Scale factor for normalizing time */
-	PropertyDbl _timeScaleProp;
-	double &_timeScale;
-
-	/** Parameter used in time constant of ramping up of muscle force */
-	PropertyDbl _activation1Prop;
-	double &_activation1;
-
-	/** Parameter used in time constant of ramping up and ramping down of muscle force */
-	PropertyDbl _activation2Prop;
-	double &_activation2;
-
-	/** Damping factor related to maximum contraction velocity */
-	PropertyDbl _dampingProp;
-	double &_damping;
-
-	/* Function representing force-length behavior of tendon */
-	PropertyObjPtr<Function> _tendonForceLengthCurveProp;
-	Function *&_tendonForceLengthCurve;
-
-	/* Function representing active force-length behavior of muscle fibers */
-	PropertyObjPtr<Function> _activeForceLengthCurveProp;
-	Function *&_activeForceLengthCurve;
-
-	/* Function representing passive force-length behavior of muscle fibers */
-	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
-	Function *&_passiveForceLengthCurve;
-
-//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
@@ -110,14 +78,14 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getTimeScale() const { return _timeScale; }
-	virtual double getDamping() const { return _damping; }
+	virtual double getTimeScale() const { return getPropertyValue<double>("time_scale"); }
+	virtual double getDamping() const { return getPropertyValue<double>("damping"); }
 	virtual bool setTimeScale(double aTimeScale);
 	virtual bool setActivation1(double aActivation1);
 	virtual bool setActivation2(double aActivation2);
 
 	virtual bool setDamping(double aDamping);
-	virtual double getDamping() { return _damping; }
+	virtual double getDamping() { return getPropertyValue<double>("damping"); }
 #ifndef SWIG
 
 	//--------------------------------------------------------------------------

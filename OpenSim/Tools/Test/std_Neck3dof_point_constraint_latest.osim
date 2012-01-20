@@ -3654,6 +3654,10 @@
 			<objects/>
 			<groups/>
 		</ControllerSet>
+		<ComponentSet name="MiscComponents">
+			<objects />
+			<groups />
+		</ComponentSet>
 	</Model>
 </OpenSimDocument>
 

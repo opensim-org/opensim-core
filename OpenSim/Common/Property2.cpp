@@ -30,10 +30,13 @@
  * Author: Frank C. Anderson 
  */
 
+
 //============================================================================
 // INCLUDES
 //============================================================================
+#include "Property2.h"
 #include "Object.h"
+#include "Function.h"
 
 
 using namespace OpenSim;
@@ -57,7 +60,6 @@ AbstractProperty::AbstractProperty()
  */
 AbstractProperty::AbstractProperty(const std::string &aName, const std::string &aType, const std::string &aComment)
 {
-	_useDefault = false;
 	_name = aName;
 	_type = aType;
 	_comment = aComment;
@@ -70,7 +72,6 @@ AbstractProperty::AbstractProperty(const std::string &aName, const std::string &
  */
 AbstractProperty::AbstractProperty(const AbstractProperty &aAbstractProperty)
 {
-	_useDefault = aAbstractProperty._useDefault;
 	_name = aAbstractProperty._name;
 	_type = aAbstractProperty._type;
 	_comment = aAbstractProperty._comment;

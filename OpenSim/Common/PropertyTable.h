@@ -58,11 +58,10 @@ class PropertyTable
 //=============================================================================
 // DATA
 //=============================================================================
-public:
+private:
 	/** Set of properties. */
-	std::map<std::string, AbstractProperty*> _properties;
+	std::map<std::string, AbstractProperty *> _properties;
 
-protected:
 	/** Array of property groups. */
 	ArrayPtrs<PropertyGroup> _propertyGroups;
 
@@ -75,10 +74,11 @@ protected:
 public:
 	PropertyTable();
 	PropertyTable(const PropertyTable &aPropertyTable);
-	virtual ~PropertyTable() {};
+	~PropertyTable();
 	PropertyTable& operator=(const PropertyTable &aPropertyTable);
 	bool operator==(const PropertyTable &aPropertyTable) const;
 	AbstractProperty* getPropertyPtr(const std::string &name) const;
+	Array<AbstractProperty *> getArray();
 	void addProperty(AbstractProperty &aProperty);
 	template <class T> const Property2<T>& getProperty(const std::string &name) const;
 	template <class T> Property2<T>& updateProperty(const std::string &name);
@@ -88,10 +88,7 @@ public:
 	template <class T> void setPropertyValue(const std::string &name, const T &value);
 	std::string getPropertyType(const std::string &name) const;
 	std::string getPropertyComment(const std::string &name) const;
-	std::map<std::string, AbstractProperty*>::iterator begin();
-	std::map<std::string, AbstractProperty*>::iterator end();
 	int getSize() const;
-
 
 //=============================================================================
 };	// END of class PropertyTable
@@ -122,6 +119,7 @@ template <class T>
 void PropertyTable::addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value)
 {
 	Property2<T>* propPtr = new Property2<T>(name, type, comment, value);
+	propPtr->setIndex(_properties.size());
 	_properties.insert(std::pair<std::string, AbstractProperty*>(name, propPtr));
 }
 
@@ -152,10 +150,9 @@ void PropertyTable::setPropertyValue(const std::string &name, const T &value)
 {
 	std::map<std::string, AbstractProperty*>::iterator it = _properties.find(name);
 	if (it != _properties.end()) {
-		Property2<T>& prop = dynamic_cast<Property2<T>&>(*(it->second));
+		Property2<T>& prop = dynamic_cast<Property2<T>&>(*(*it).second);
 		prop.setValue(value);
-	}
-	else{
+	} else {
 		throw Exception("Property " + name + " not found!");
 	}
 }

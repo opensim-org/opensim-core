@@ -332,6 +332,7 @@ protected:
 	template <class T> void setPropertyValue(const std::string &name, const T &value);
 	std::string getPropertyType(const std::string &name) const;
 	std::string getPropertyComment(const std::string &name) const;
+	Array<AbstractProperty *> getPropertyArray();
 
 //=============================================================================
 };	// END of class Object

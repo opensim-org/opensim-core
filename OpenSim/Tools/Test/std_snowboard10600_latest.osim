@@ -2422,6 +2422,10 @@ Anderson F.C., Pandy M.G.: Dynamic optimization of human walking. Journal of Bio
 			<objects/>
 			<groups/>
 		</ControllerSet>
+		<ComponentSet name="MiscComponents">
+			<objects />
+			<groups />
+		</ComponentSet>
 	</Model>
 </OpenSimDocument>
 
