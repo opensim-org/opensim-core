@@ -143,7 +143,7 @@ public:
 	const T& getValue() const { return _value; }
 	T& updateValue() { return _value; }
 	void setValue(const T &aValue) { _value = aValue; }
-	virtual PropertyType getPropertyType() const;
+	virtual PropertyType getPropertyType() const {throw Exception("Property2: Use of unspecified property."); return None;}
 };
 
 template <>

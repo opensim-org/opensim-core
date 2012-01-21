@@ -1181,7 +1181,7 @@ try {
 			//}
 
 			// LOOP THROUGH CHILD NODES
-			SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
+			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) break;
 			Object *object = NULL;
 			int objectsFound = 0;
@@ -1227,7 +1227,7 @@ try {
 			//}
 
 			// LOOP THROUGH CHILD NODES
-			SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
+			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) break;
 			Object *object = NULL;
 			int objectsFound = 0;
