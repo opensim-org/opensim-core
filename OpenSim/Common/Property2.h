@@ -35,9 +35,11 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
+
+#include <string>
+#include <cmath>
 
 namespace OpenSim {
 
@@ -151,7 +153,7 @@ inline bool Property2<double>::equals(AbstractProperty *aAbstractPropertyPtr) co
 {
 	Property2<double> *aPropertyPtr = dynamic_cast<Property2<double> *>(aAbstractPropertyPtr);
 	if (aPropertyPtr)
-		return fabs(_value - aPropertyPtr->getValue()) <= 1e-7;
+		return std::abs(_value - aPropertyPtr->getValue()) <= 1e-7;
 	return false;
 }
 
