@@ -213,8 +213,11 @@ ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
 SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're building the GUI and have SWIG and Java installed on your machine.)")
 
 
-# Uncomment to make the linux Makefiles print the compile/link commands they are executing
-SET(CMAKE_VERBOSE_MAKEFILE ON)
+# You can enable this advanced-variable feature to cause Visual Studio 
+# or Makefiles to print the compile/link commands they are executing. Very
+# useful for debugging CMake stuff but messy and obscures errors and warnings
+# so should be off by default.
+SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
 IF(WIN32)
 ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
