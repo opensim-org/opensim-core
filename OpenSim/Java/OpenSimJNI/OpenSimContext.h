@@ -32,6 +32,7 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Common/Array.h>
 #include "SimTKsimbody.h"
 #include <OpenSim/Tools/InverseKinematicsTool.h>
