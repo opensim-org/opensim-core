@@ -217,7 +217,8 @@ SET(BUILD_JAVA_WRAPPING OFF CACHE BOOL "Build Java wrapping (needed if you're bu
 # or Makefiles to print the compile/link commands they are executing. Very
 # useful for debugging CMake stuff but messy and obscures errors and warnings
 # so should be off by default.
-SET(CMAKE_VERBOSE_MAKEFILE OFF)
+SET(CMAKE_VERBOSE_MAKEFILE OFF CACHE BOOL 
+    "Enable this for verbose build output.")
 
 IF(WIN32)
 ADD_DEFINITIONS(-D_CRT_SECURE_NO_DEPRECATE)
