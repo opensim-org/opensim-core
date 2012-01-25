@@ -100,7 +100,7 @@ void opensim_about_rdsimulation(const char* key, int maxlen, char* value) {
     for (size_t i=0; i<skey.size(); ++i)
         skey[i] = tolower(skey[i]);
 
-    char* v = 0;
+    const char* v = 0;
     if      (skey == "version")   v = GET_VERSION_STRING;
     else if (skey == "library")   v = GET_LIBRARY_STRING;
     else if (skey == "type")      v = GET_TYPE_STRING;
