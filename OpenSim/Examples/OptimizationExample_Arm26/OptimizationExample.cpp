@@ -227,9 +227,8 @@ int main()
 		
 		// osimModel.print("optimization_model_ARM.osim");
 		std::cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
-		char c;
-		std::cout << "Press RETURN to end program...\n" << std::endl;
-		std::cin.get(c);
+
+        std::cout << "OpenSim example completed successfully.\n";
 	}
     catch (std::exception ex)
     {

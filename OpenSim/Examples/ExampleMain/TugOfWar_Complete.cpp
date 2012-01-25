@@ -318,6 +318,6 @@ int main()
     std::cout << "main() routine time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
 
     std::cout << "OpenSim example completed successfully.\n";
-	std::cin.get();
+
 	return 0;
 }

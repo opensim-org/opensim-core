@@ -60,8 +60,6 @@ int main()
     }
 
     std::cout << "OpenSim example completed successfully.\n";
-	char c;
-	std::cout << "Press any key to exit.\n";
-	std::cin.get(c);
+
 	return 0;
 }
