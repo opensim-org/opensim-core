@@ -19,7 +19,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static char* wrapTypeName = "sphereObst";
+static const char* wrapTypeName = "sphereObst";
 
 
 //=============================================================================

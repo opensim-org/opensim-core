@@ -45,7 +45,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static char* wrapTypeName = "sphere";
+static const char* wrapTypeName = "sphere";
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================

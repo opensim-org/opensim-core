@@ -45,7 +45,7 @@ using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
-static char* wrapTypeName = "cylinder";
+static const char* wrapTypeName = "cylinder";
 static Vec3 p0(0.0, 0.0, -1.0);
 static Vec3 dn(0.0, 0.0, 1.0);
 #define MAX_ITERATIONS    100
