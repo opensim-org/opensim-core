@@ -315,7 +315,7 @@
 		<desired_points_file>  </desired_points_file>
 		<!--Motion (.mot) or storage (.sto) file containing the desired kinematic
 		    trajectories.-->
-		<desired_kinematics_file> block_hanging_from_muscle_ForwardResults\block_hanging_from_muscle_states.sto </desired_kinematics_file>
+		<desired_kinematics_file> block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto </desired_kinematics_file>
 		<!--File containing the tracking tasks. Which coordinates are tracked and
 		    with what weights are specified here.-->
 		<task_set_file> block_hanging_from_muscle_CMC_Tasks.xml </task_set_file>
