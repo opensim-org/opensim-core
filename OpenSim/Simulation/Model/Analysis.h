@@ -189,7 +189,7 @@ public:
 	 * Set whether or not to write the output of angles in degrees.
 	 * This flag must be set before an analysis is performed to ensure that
 	 * the results are in the proper format.
-	 * @param aTureFalse Output will be in degrees if "true" and in radians
+	 * @param aTrueFalse Output will be in degrees if "true" and in radians
 	 * if "false".
 	 */
 	void setInDegrees(bool aTrueFalse);
