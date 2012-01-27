@@ -34,11 +34,6 @@ using namespace SimTK;
 
 namespace OpenSim {
 
-//=============================================================================
-// Begin class ModelComponentMeasure
-//=============================================================================
-
-
 
 ModelComponent::ModelComponent() : _model(NULL), _rep(NULL)
 {
@@ -46,10 +41,6 @@ ModelComponent::ModelComponent() : _model(NULL), _rep(NULL)
 
 ModelComponent::ModelComponent(const std::string& aFileName, bool aUpdateFromXMLNode) : Object(aFileName, aUpdateFromXMLNode),
 		_model(NULL), _rep(NULL)
-{
-}
-
-ModelComponent::ModelComponent(const XMLDocument* aDocument): Object(aDocument), _model(NULL), _rep(NULL)
 {
 }
 
@@ -75,11 +66,15 @@ ModelComponent& ModelComponent::operator=(const ModelComponent &aModelComponent)
 
 const Model& ModelComponent::getModel() const
 {
-    return *_model;
+    if(_model==NULL)
+		throw Exception("ModelComponent::getModel(): component does not belong to a model."); 
+	return *_model;
 }
 
 Model& ModelComponent::updModel()
 {
+	if(_model==NULL)
+		throw Exception("ModelComponent::updModel(): component does not belong to a model."); 
     return *_model;
 }
 
@@ -125,22 +120,25 @@ const SimTK::SubsystemIndex ModelComponent::getIndexOfSubsystemForAllocations() 
 }
 
 
-void ModelComponent::addModelingOption(const Array<std::string> &optionFlagNames)
+void ModelComponent::addModelingOption(const std::string &optionName, int maxFlagValue) const
 {
 	if((int(_rep->_indexOfSubsystemForAllocations) == SimTK::InvalidIndex) ||
 		_model->getMultibodySystem().systemTopologyHasBeenRealized())
-			throw Exception("ModelComponent: Modeling Option can only be added during createSystem().");
+			throw Exception("ModelComponent::addModelingOption: Modeling Option can only be added during createSystem().");
 
-	_rep->_optionFlagNames.resize(optionFlagNames.getSize());
-	for(int i=0; i<optionFlagNames.getSize(); i++)
-		_rep->_optionFlagNames[i] = optionFlagNames[i];
+	// assign a "slot" for a modeling option by name
+	// modeling option index will be invalid by default
+	// upon allocation during realizeTopology the index will be set
+	ModelComponentRep::ModelingOptionInfo *moi = new ModelComponentRep::ModelingOptionInfo;
+	moi->maxOptionValue = maxFlagValue;
+	_rep->_namedModelingOptionInfo[optionName] = moi;
 }
 
-void ModelComponent::addStateVariables(const Array<std::string> &stateVariableNames)
+void ModelComponent::addStateVariables(const Array<std::string> &stateVariableNames) const
 {
 	if((int(_rep->_indexOfSubsystemForAllocations) == SimTK::InvalidIndex) ||
 		_model->getMultibodySystem().systemTopologyHasBeenRealized())
-			throw Exception("ModelComponent: State Variables can only be added during createSystem().");
+			throw Exception("ModelComponent::addStateVariables: State Variables can only be added during createSystem().");
 	// assign "slots" for the the state variables by name
 	// state variable indices (ZIndex) will be invalid by default
 	// upon allocation during realizeTopology the indices will be set
@@ -150,7 +148,7 @@ void ModelComponent::addStateVariables(const Array<std::string> &stateVariableNa
 }
 
 void ModelComponent::addDiscreteVariables(const Array<std::string> &discreteVariableNames, 
-											const SimTK::Stage &dependentOnStage)
+											const SimTK::Stage &dependentOnStage) const
 {
 	if((int(_rep->_indexOfSubsystemForAllocations) == SimTK::InvalidIndex) ||
 		_model->getMultibodySystem().systemTopologyHasBeenRealized())
@@ -170,23 +168,47 @@ void ModelComponent::addDiscreteVariables(const Array<std::string> &discreteVari
  * @param state  the State for which to set the value
  * @return  flag  integer value for modeling option
  */
-int ModelComponent::getModelingOption(const SimTK::State& s) const
+int ModelComponent::getModelingOption(const SimTK::State& s, const std::string &name) const
 {
-	SimTK::DiscreteVariableIndex dvIndex = _rep->_modelingOptionIndex;
+	std::map<std::string, ModelComponentRep::ModelingOptionInfo*>::const_iterator it;
+	it = _rep->_namedModelingOptionInfo.find(name);
 
-	return( SimTK::Value<int>::downcast(s.getDiscreteVariable(getIndexOfSubsystemForAllocations(), dvIndex)).get());
+	if(it != _rep->_namedModelingOptionInfo.end()) {
+		SimTK::DiscreteVariableIndex dvIndex = it->second->index;
+		return( SimTK::Value<int>::downcast(s.getDiscreteVariable(getIndexOfSubsystemForAllocations(), dvIndex)).get());
+	} 
+	else{
+		std::stringstream msg;
+		msg << "ModelComponent::getModelingOption: ERR- name not found.\n " 
+			<< "for component '"<< getName() << "' of type " << getType();
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+		return -1;
+	}
 }
 /* Set the value of a discrete variable allocated by this ModelComponent by name. 
  *
  * @param state  the State in which to set the flag
  */
-void ModelComponent::setModelingOption(SimTK::State& s, int flag) const
+void ModelComponent::setModelingOption(SimTK::State& s, const std::string &name, int flag) const
 {
-	if((flag < 0 ) || (flag > int(_rep->_optionFlagNames.size())-1))
-			throw Exception("ModelComponent: modeling option flag does not correspond available options.");
-	
-	SimTK::DiscreteVariableIndex dvIndex = _rep->_modelingOptionIndex;
-	SimTK::Value<int>::downcast(s.updDiscreteVariable(getIndexOfSubsystemForAllocations(), dvIndex)).upd() = flag;
+	std::map<std::string, ModelComponentRep::ModelingOptionInfo*>::const_iterator it;
+	it = _rep->_namedModelingOptionInfo.find(name);
+
+	if(it != _rep->_namedModelingOptionInfo.end()) {
+		SimTK::DiscreteVariableIndex dvIndex = it->second->index;
+		if(flag > it->second->maxOptionValue){
+			std::stringstream msg;
+			msg << "ModelComponent::setModelingOption: "<< name << " flag cannot exceed "<< it->second->maxOptionValue <<".\n ";
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+		}
+
+		SimTK::Value<int>::downcast(s.updDiscreteVariable(getIndexOfSubsystemForAllocations(), dvIndex)).upd() = flag;
+	} 
+	else{
+		std::stringstream msg;
+		msg << "ModelComponent::setModelingOption: modeling option "<< name <<" not found.\n ";
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+	}
 }
 
 
@@ -397,8 +419,13 @@ void ModelComponentRep::realizeTopology(SimTK::State &s) const
 	ModelComponentRep *mutableThis = const_cast<ModelComponentRep *>(this);
 
 	// Allocate Modeling Option
-	if(_optionFlagNames.size()>0)
-		mutableThis->_modelingOptionIndex = subSys.allocateDiscreteVariable(s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
+	if(_namedModelingOptionInfo.size()>0){
+		std::map<std::string, ModelingOptionInfo*>::iterator it;
+		for(it = (mutableThis->_namedModelingOptionInfo).begin(); it!=_namedModelingOptionInfo.end(); it++){
+			ModelingOptionInfo *moi = it->second;
+			moi->index = subSys.allocateDiscreteVariable(s, SimTK::Stage::Instance, new SimTK::Value<int>(0));
+		}
+	}
 
 	// Allocate Continuous State Variables
 	if(_namedStateVariableIndices.size()>0){

@@ -269,10 +269,7 @@ void Actuator::createSystem(SimTK::MultibodySystem& system) const
 	Actuator* mutableThis = const_cast<Actuator *>(this);
 
 	// Add modeling flag to compute actuation with dynamic or by-pass with override force provided
-	Array<std::string> modelingFlags;
-	modelingFlags.append("ComputeActuation");
-	modelingFlags.append("OverrideForce");
-	mutableThis->addModelingOption(modelingFlags);
+	mutableThis->addModelingOption("override_force", 1);
 
 	// Cache the computed force and speed of the scalar valued actuator
 	mutableThis->addCacheVariable<double>("force", 0.0, Stage::Velocity);
@@ -331,12 +328,12 @@ void Actuator::setSpeed(const State &s, double speed) const
  */
 void Actuator::overrideForce(SimTK::State& s, bool flag ) const 
 {
-    setModelingOption(s, int(flag));
+    setModelingOption(s, "override_force", int(flag));
 }
 
 bool Actuator::isForceOverriden(const SimTK::State& s ) const 
 {
-    return (getModelingOption(s) > 0);
+    return (getModelingOption(s, "override_force") > 0);
 }
        
 //_____________________________________________________________________________

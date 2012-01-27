@@ -36,7 +36,7 @@
  * and provides a series of helper methods for adding variables (state, discrete,
  * cache, ...) to the underlying system. As such, ModelComponent handles all of
  * the bookkeeping for variable indices and provides conveniece access via 
- * variable names. 
+ * variable names.
  *
  * All components, Bodies, Joints, Coordinates, Constraints, Forces, Controllers, .. 
  * and even Model itself, are ModelComponents. Each component is "connected" to a
@@ -64,6 +64,13 @@ class ModelComponentRep
 {
 protected:
 	ModelComponent& _modelComponent;
+
+	// Structure to hold modeling option information
+	struct ModelingOptionInfo {
+		int maxOptionValue;
+		SimTK::DiscreteVariableIndex index;
+		ModelingOptionInfo(): maxOptionValue(0), index(SimTK::InvalidIndex) {};
+    };
 
 	// Structures to hold related info about discrete variables and cache entries to be added
 	struct DiscreteVariableInfo {
@@ -94,6 +101,8 @@ protected:
 	// Index of the modeling option integer flag in the state
 	SimTK::DiscreteVariableIndex _modelingOptionIndex;
 
+	// Map names of modeling options for the ModelComponent to their underlying SimTK indices
+	std::map<std::string, ModelingOptionInfo*, std::less<std::string> > _namedModelingOptionInfo;
 	// Map names of continuous state variables of the ModelComponent to their underlying SimTK indices
 	std::map<std::string, SimTK::ZIndex, std::less<std::string> > _namedStateVariableIndices;
 	// Map names of discrete variables of the ModelComponent to their underlying SimTK indices
@@ -144,6 +153,92 @@ public:
  * the bookkeeping of system indices and provides convenience access to variable 
  * values via their names as strings. 
  *
+ * The MultibodySystem and its State are defined by Simbody (ref ...). Briefly,
+ * a System can be thought of the equations that define the mathematical behavior
+ * of a model. The State is a collection of all the variables that uniquely
+ * define the unknowns in the system equations. These would be joint coordinates,
+ * their speeds, accelerations as well other variables that govern system dynamics 
+ * (e.g. muscle activation and fiber-length variables that dictate muscle force). 
+ * These variables are called continuous state variables in Simbody, but  are more
+ * simply referred to as <em>StateVariables</em> in OpenSim.  ModelComponent provides 
+ * services to define and access its StateVariables and specify their dynamics
+ * (derivatives with respect to time) that are automatically and simultaneously
+ * integrated with the MultibodySystem dynamics.
+ *
+ * There are other types of "State" variables such as a flag (or option) that 
+ * enables a component to be disabled or for a muscle force to be overridden and 
+ * and these are identified as <em>ModelingOptions</em> since they fundamentally 
+ * change the modeled dynamics of the component. ModelComponent provides services
+ * that enable developers of components to define additional ModelingOptions.
+ *
+ * Often a component requires input from an outside source (precompuetd data from 
+ * a file, another program, or interaction from a user) in which case these
+ * variables do not have dynamics (differential eqns.) known to the component, but 
+ * are necessary to describe the dynamical "state" of the system. An example, is
+ * a throttle component (a "controller" that provides an actuator (e.g. a motor) with
+ * a control signal (a voltage or current)) which it gets direct input from the user 
+ * (via a joystick, key press, etc..). The throttle controls the motor torque output 
+ * and therefore the behavior of the model. The input by the user to the throttle
+ * the motor (the controls) is necesary to specify the model dynamics at any instant
+ * and therefore are considered part of the State in Simbody as Discrete State Variables.  
+ * In OpenSim they are simpliy referred to as <em>DiscreteVariables>em. The ModelComponent 
+ * provides services to enable developers of components to define and access its 
+ * DiscreteVariables.
+ *
+ * Fast and efficient simulations also require compututationally expensive calculations
+ * to be performed only when necessary. Often the result of a expensive calculation can
+ * be reused many times over, while the variables it is dependent on remain fixed. The
+ * concept of holding onto these values is called caching and the variables that hold
+ * these values are call <em>CacheVariables<em>. It is important to note, that cache 
+ * variables are not state variables. Cache variables can always be recomputed excactly
+ * from the State. OpenSim uses the Simbody infrasture to manage cache variables and
+ * their validity. ModelComponent provides a simplified interface to define and 
+ * access CacheVariables.
+ *
+ * Many modeling and simulation codes put the owness on users & component creators to
+ * manage the validity of cache variables, which is likely to lead to undetectable 
+ * errors where cache values are stale (calculated based on past state variable values).
+ * Simbody, on the other hand, provides a more strict infrastucture to make it easy to
+ * exploit the efficiencies of caching while reducing the risks of validity errors. 
+ * To do this, Simbody employs the concept of computational stages. To "realize" a model's
+ * system a particular stage is to perform all the computations necessary to evaluate the 
+ * cached quantities up to and including the stage specified. Simbody utilizes 9 realization
+ * stages (SimTK::Stage::)
+
+ * 1. <em>Topology</em>		create the system with "slots" for most variables (above)
+ * 2. <em>Model</em>		create the default state and fixed model parmaters
+ * 3. <em>Instance</em>		specify options and modifiable model parameters
+ * 4. <em>Time</em>			compute time dependent quantities
+ * 5. <em>Position</em>		compute position dependent quantities	
+ * 6. <em>Velocity</em>		compute velocity dependent quantities
+ * 7. <em>Dynamics</em>		compute system applied forces and dependent quantities	
+ * 8. <em>Acceleration</em> compute system accelerations and all other derivatives
+ * 9. <em>Report</em>		compute quantities for reporting/output
+ *  
+ * The ModelComponent interface is automatically invoked by the System and its realizations.
+ * Component users and most developers need not concern themselves with
+ * topology, model or instance stages. That interaction is managed by ModelComponent 
+ * when component creators implement createSystem() and use the services provded ModelComponent.
+ * Component creators do need to determine and specify stage dependencies for Discrete  
+ * and CacheVariables that they add to their components. For example, the throttle 
+ * controller reads its value from user input and it is valid for all calculations as
+ * long as time does not change. If the simulation (via numerical integration) steps
+ * forward (or backward for a trial step) and updates the state, the control from
+ * a previous state (time) should be invalid and an error generated for trying to access
+ * the DiscreteVariable for the control value. To do this one specifies the "dependsOn" stage
+ * (e.g SimTK::Stage:: Time) for a DiscreteVariable when the variable is added to
+ * the ModelComponent. If the control is fixed (not changing with time) then the lowest
+ * valid stage could just be Instance.
+ *
+ * Similar principles apply to CacheVariables, which requires a "lowestValid" stage to 
+ * be specified when a CacheVariable is added to the component. In this case, the cache
+ * variable augments the State (unlike a discrete state variable, which is a part
+ * of the State) for the convenience of not recomputing a value unless necesary.
+ * Accessing the cache variable at a stage lower than the lowestValid specified will trigger
+ * an exception. It is up to the component to update the value of the cache variable.
+ * ModelComponent provides methods to check if the cache is valid, update its value and 
+ * mark as valid. 
+
  * All components: Bodies, Joints, Coordinates, Constraints, Forces, Controllers, .. 
  * and even Model itself, are ModelComponents. Each component is "connected" to a
  * SimTK::Subsystem and by default this is the System's DefaultSubsystem.
@@ -162,6 +257,7 @@ public:
 class OSIMSIMULATION_API ModelComponent : public Object
 {
 protected:
+	/** The model this component belongs to. */
 	Model* _model;
 
 
@@ -174,8 +270,6 @@ public:
 	ModelComponent();
 	// Construct ModelComponent from a an XML file
 	ModelComponent(const std::string& aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
-	// Construct ModelComponent from a XML document in memory
-	ModelComponent(const XMLDocument* aDocument);
 	// Construct ModelComponent from a specific node in an XML document
 	ModelComponent(SimTK::Xml::Element& aNode);
 	// Construct ModelComponent with its contents copied from another ModelComponent
@@ -227,14 +321,15 @@ public:
 	//@{
     
 	/**
-     * Get the ModelingOption flag for this ModelComponent.
+     * Get a ModelingOption flag for this ModelComponent by name.
      * The flag is an integer corresponding to the index of modelingOptionNames used 
 	 * add the modeling option to the component. @see addModelingOption
 	 *
-     * @param state  the State for which to set the value
+     * @param state  the State in which to set the modeling option
+	 * @param name   the name (string) of the modeling option of interest
      * @return flag  integer value for modeling option
      */
-	virtual int getModelingOption(const SimTK::State& state) const;
+	virtual int getModelingOption(const SimTK::State& state, const std::string &name) const;
 
 	/**
      * Set the value of a ModelingOption flag for this ModelComponent.
@@ -242,9 +337,10 @@ public:
 	 * define the options, an exception is thrown.
      *
      * @param state  the State in which to set the flag
+	 * @param name   the name (string) of the modeling option of interest
 	 * @param flag   the desired flag (integer) value specifying the modeling option
      */
-	virtual void setModelingOption(SimTK::State& state, int flag) const;
+	virtual void setModelingOption(SimTK::State& state, const std::string &name, int flag) const;
 
     /**
      * Get the value of a state variable allocated by this ModelComponent.
@@ -500,18 +596,19 @@ protected:
 	 */
 	void includeAsSubComponent(ModelComponent *aComponent);
 
-	/** Add a modeling option (integer flag) used by this ModelComponent,
-	    with each option (number) identified by a label.  Modeling options enable the model
+	/** Add a modeling option (integer flag) used by this ModelComponent.
+	    Each modeling option identified by its own optionName.  Modeling options enable the model
 		component to be configured differently in order to represent different operating modes.
 		For example, if two modes of operation are necessary (mode off and mode on) then specify
-		two option names "OFF" and "ON" and subsequent gets will return 0 or 1 and set will
-		only accept 0 and 1 as acceptable values. */
-	void addModelingOption(const Array<std::string> &optionFlagNames);
+		optionName, "mode" with maxFlagValue = 1. Subsequent gets will return 0 or 1 and set will
+		only accept 0 and 1 as acceptable values. Changing the value of a model option, invalidates
+		Instance and above realization Stages.*/
+	void addModelingOption(const std::string &optionName, int maxFlagValue) const;
 
 	/** Add continuous system state variables belonging to this ModelComponent.
 	    The number of states is defined by the number of stateVariableNames, and each
 		state variable is assigned the corresponding name.*/
-	void addStateVariables(const Array<std::string> &stateVariableNames);
+	void addStateVariables(const Array<std::string> &stateVariableNames) const;
 
 	/** If state variables are continuous, then computeStateVariableDerivatives() must be
 		implemented so that the evolution of the state variable can be determined.
@@ -529,7 +626,7 @@ protected:
 		Use repeated calls with a different Stage for variables that are dependent on
 		other Stages */
 	void addDiscreteVariables(const Array<std::string> &discreteVariableNames,
-							  const SimTK::Stage &dependentOnStage);
+							  const SimTK::Stage &dependentOnStage) const;
 
 	/** Add a state cache variable belonging to this ModelComponent.
 	    Cache variables are typically computed from the state and provide
@@ -538,8 +635,8 @@ protected:
 		changes, the cache variable values automatically become invalid and have to be
 		recomputed based on the current state. The cache is also invalidated if the
 		realization stage falls below the lowest valid stage. For example, a body's momementum,
-		which is dependent on position and velocity states, should have velocity as it lowestValidStage,
-		that is if velocity (or any stage below) is has to be realized then the cache is invalidated.
+		which is dependent on position and velocity states, should have velocity as its lowestValidStage.
+		That is if velocity (or any stage below) has to be realized then the cache is invalidated.
 		But, if dynamics (andy anything above) is realized (the is velocity remains valid) then the cache
 		variable is valid and does not have to be recomputed.
 
@@ -547,7 +644,7 @@ protected:
 		@param variablePrototype	is a prototype of the object (type) to be cached
 		@param lowestValidStage		the lowest computational stage at which the cache variable is valid */
 	template<typename T> void addCacheVariable(	const std::string &cacheVariableName,
-					const T& variablePrototype, const SimTK::Stage &lowestValidStage)
+					const T& variablePrototype, const SimTK::Stage &lowestValidStage) const
 	{
 		if(int(_rep->_indexOfSubsystemForAllocations) == SimTK::InvalidIndex)
 			throw Exception("ModelComponent: Cache Variables can only be added during createSystem().");
