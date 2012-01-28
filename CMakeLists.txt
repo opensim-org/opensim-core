@@ -432,12 +432,9 @@ ENDIF(WIN32)
 ## Install other files (batch file, doc, api)
 INCLUDE (Dart)
 
-## Docs
-SET(INSTALL_DOC OFF CACHE BOOL "Install Doxygen generated files into distribution")
-##IF(INSTALL_DOC)
-##	INCLUDE(ApiDoxygen.cmake)
-##ENDIF(INSTALL_DOC)
-MARK_AS_ADVANCED(INSTALL_DOC)
+## This adds a target "doxygen" for building the doxygen docs, as well as 
+## an INSTALL procedure.
+INCLUDE(ApiDoxygen.cmake)
 
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
