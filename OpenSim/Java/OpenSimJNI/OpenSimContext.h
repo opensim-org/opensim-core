@@ -88,6 +88,9 @@ public:
 	void computeConstrainedCoordinates( double statesBuffer[]);
 	void getStates( double statesBuffer[]);
 	void getStates( Array<double>&  rStates);
+        void recreateSystemAfterSystemExistsKeepStage(); 
+        void recreateSystemAfterSystemExists(); 
+
 	// Transforms
     void transformPosition(const Body& body, double offset[], double gOffset[]);
     Transform getTransform(const Body& body);
