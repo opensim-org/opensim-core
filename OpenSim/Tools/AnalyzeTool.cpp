@@ -636,7 +636,7 @@ void AnalyzeTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumbe
 							string newFileName="";//;
 							_externalLoadsFileName = newFileName;
 						}
-						catch(Exception& e){
+						catch(const Exception&){
 							cout << "Old External Loads file " << oldFile << "Could not be used... Ignoring." << endl;
 						}
 					}
