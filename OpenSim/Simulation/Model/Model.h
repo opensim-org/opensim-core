@@ -66,6 +66,7 @@ class ScaleSet;
 class AssemblySolver;
 class Controller;
 class ControllerSet;
+class ModelVisualizer;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -94,12 +95,15 @@ class OSIMSIMULATION_API Model  : public ModelComponent
 private:
 
 	/* Simbody  multibody system */    
-	SimTK::MultibodySystem* _system;
-	SimTK::SimbodyMatterSubsystem* _matter;
-	SimTK::Force::Gravity* _gravityForce;
-	SimTK::GeneralForceSubsystem* _forceSubsystem;
+	SimTK::MultibodySystem*         _system;
+	SimTK::SimbodyMatterSubsystem*  _matter;
+	SimTK::Force::Gravity*          _gravityForce;
+	SimTK::GeneralForceSubsystem*   _forceSubsystem;
 	SimTK::GeneralContactSubsystem* _contactSubsystem;
-        SimTK::DecorationSubsystem* _decorationSubsystem;
+    SimTK::DecorationSubsystem*     _decorationSubsystem;
+
+    /* If visualization has been requested, we'll allocate a ModelVisualizer. */
+    ModelVisualizer*                _modelViz;
 
 	/** Model controls as a shared pool (Vector) of individual Actuator controls */
 	SimTK::MeasureIndex _modelControlsIndex;
@@ -164,8 +168,12 @@ private:
 	/** Assembly solver used for satisfying constraints and other configuration goals */
 	AssemblySolver *_assemblySolver;
 
+    /** If this flag is set when initSystem() is called, we'll allocate
+    a ModelVisualizer for display. **/
+    bool _useVisualizer;
+
     /** global flag  used to disable all Controllers */
-	 bool _allControllersEnabled;
+	bool _allControllersEnabled;
 
     /** flag indicating the model has actuators that are being perturbed  */
     bool _perturbActuatorForces; 
@@ -186,7 +194,8 @@ private:
     PropertyObj _controllerSetProp;
     ControllerSet& _controllerSet;
 
-	/*** Private place to save some deserializtion/error checking info in case needed later */
+	/** Private place to save some deserialization/error checking info in case 
+    needed later */
 	std::string _validationLog;
 
 	/** A Flat list of ModelComponents contained by the model */
@@ -196,7 +205,6 @@ private:
 	// Members for fast access of state variables in the underlying SimTK::System
 	OpenSim::Array<std::string>	_stateVariableNames;
 	OpenSim::Array<SimTK::SystemYIndex>	_stateVariableSystemIndices;
-    class DefaultGeometry;
 
 //=============================================================================
 // METHODS
@@ -272,6 +280,58 @@ public:
 	 */
 	void cleanup();
 
+
+	//--------------------------------------------------------------------------
+	// VISUALIZATION
+	//--------------------------------------------------------------------------
+    /** @name                     Visualization
+    Methods in this group control the use of the ModelVisualizer which can
+    provide limited run-time display and user interaction capability for an
+    OpenSim API-based program. If you enable visualization, OpenSim will create
+    a ModelVisualizer that you can use to control display and user interaction.
+    In turn, the ModelVisualizer makes use of a Simbody SimTK::Visualizer; for
+    advanced features you can ask the ModelVisualizer to give you direct access
+    to the SimTK::Visualizer; consult Simbody documentation for more details.
+    **/
+    /**@{**/
+
+    /** Request or suppress visualization of this %Model. This flag is checked
+    during initSystem() and if set causes the %Model to allocate a
+    ModelVisualizer that provides visualization and interaction with the %Model
+    as it is executing. The default is no visualization. 
+    @see getModelVisualizer() **/
+    void setUseVisualizer(bool visualize) {_useVisualizer=visualize;}
+    /** Return the current setting of the "use visualizer" flag, which will
+    take effect at the next call to initSystem() on this %Model. **/
+    bool getUseVisualizer() const {return _useVisualizer;}
+
+    /** Test whether a ModelVisualizer has been created for this Model. Even
+    if visualization has been requested there will be no visualizer present
+    until initSystem() has been successfully invoked. Use this method prior
+    to calling getModelVisualizer() or updModelVisualizer() to avoid an
+    unpleasant exception. **/
+    bool hasModelVisualizer() const {return _modelViz != 0;}
+
+    /** Obtain read-only access to the ModelVisualizer. This will throw an 
+    exception if visualization was not requested or initSystem() not yet
+    called.
+    @return A const reference to the allocated ModelVisualizer. **/
+    const ModelVisualizer& getModelVisualizer() const {
+        if (!hasModelVisualizer())
+			throw Exception("Model::getModelVisualizer(): no visualizer present.");
+        return *_modelViz;
+    }
+    /** Obtain writable access to the ModelVisualizer. This will throw an 
+    exception if visualization was not requested or initSystem() not yet
+    called. Writable access to the ModelVisualizer requires that you have 
+    writable access to this containing Model.
+    @return A non-const reference to the allocated ModelVisualizer. **/
+    ModelVisualizer& updModelVisualizer() {
+        if (!hasModelVisualizer())
+			throw Exception("Model::updModelVisualizer(): no visualizer present.");
+        return *_modelViz; 
+    }
+    /**@}**/
     
 	/**
 	 * This must be called after the Model is fully created but before starting a simulation.
@@ -315,7 +375,7 @@ public:
 	 * Update the AssemblySolver to the latest coordinate locking/constraints
 	 */
 	void updateAssemblyConditions(SimTK::State& s);
-   /**
+    /**
      * Find the kinematic state of the model that satisfies constraints and coordinate goals
 	 * If assemble is being called due to a coordinate set value, provide the option
 	 * to weight that coordinate value more heavily if specified.
@@ -323,19 +383,70 @@ public:
 	void assemble(SimTK::State& state, const Coordinate *coord = NULL, double weight = 10);
 
 
-   /**
+    /**
      * Update the state of all Muscles so they are in equilibrium.
      */
     void equilibrateMuscles(SimTK::State& state);
 
-    const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const {return _system->getMatterSubsystem(); }
-    SimTK::SimbodyMatterSubsystem& updMatterSubsystem() {return _system->updMatterSubsystem(); }
-    const SimTK::Force::Gravity& getGravityForce() const {return *_gravityForce; }
-	SimTK::Force::Gravity& updGravityForce() {return *_gravityForce; }
-    const SimTK::GeneralForceSubsystem& getForceSubsystem() const {return *_forceSubsystem; }
-    SimTK::GeneralForceSubsystem& updForceSubsystem() {return *_forceSubsystem; }
-    const SimTK::DecorationSubsystem& getDecorationSubsystem() const {return *_decorationSubsystem; }
-    SimTK::DecorationSubsystem& updDecorationSubsystem() {return *_decorationSubsystem; }
+	//--------------------------------------------------------------------------
+    /**@name       Access to the Simbody System and components
+
+    Methods in this section provide advanced users access to the underlying
+    Simbody System and associated subcomponents that are constructed and 
+    maintained by this %Model. Note that these are not available until after
+    initSystem() has been invoked on this %Model. Be very careful if you
+    call any of the upd() methods since modifying a System after the %Model
+    creates it can require reinitialization. 
+    @see initStateWithoutRecreatingSystem() **/
+    /**@{**/
+
+    /** Get read-only access to the internal Simbody MultibodySystem that was
+    created by this %Model at the last initSystem() call. **/    
+	const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
+    /** (Advanced) Get writable access to the internal Simbody MultibodySystem 
+    that was created by this %Model at the last initSystem() call. Be careful
+    if you make modifications to the System because that will invalidate 
+    initialization already performed by the Model. 
+    @see initStateWithoutRecreatingSystem() **/    
+	SimTK::MultibodySystem& updMultibodySystem() const {return *_system; } 
+
+    /** Get read-only access to the internal SimbodyMatterSubsystem allocated
+    by this %Model. **/
+    const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const 
+    {   return _system->getMatterSubsystem(); }
+    /** (Advanced) Get writable access to the internal SimbodyMatterSubsystem 
+    allocated by this %Model. **/
+    SimTK::SimbodyMatterSubsystem& updMatterSubsystem() 
+    {   return _system->updMatterSubsystem(); }
+
+    /** Get read-only access to the Simbody Force::Gravity element that was 
+    allocated by this %Model. **/
+    const SimTK::Force::Gravity& getGravityForce() const 
+    {   return *_gravityForce; }
+    /** (Advanced) Get writable access to the Simbody Force::Gravity element 
+    that was allocated by this %Model. **/
+	SimTK::Force::Gravity& updGravityForce() 
+    {   return *_gravityForce; }
+
+    /** Get read-only access to the internal Simbody GeneralForceSubsystem 
+    allocated by this %Model. **/
+    const SimTK::GeneralForceSubsystem& getForceSubsystem() const 
+    {   return *_forceSubsystem; }
+    /** (Advanced) Get writable access to the internal Simbody 
+    GeneralForceSubsystem allocated by this %Model. **/
+    SimTK::GeneralForceSubsystem& updForceSubsystem() 
+    {   return *_forceSubsystem; }
+
+    /** Get read-only access to the internal Simbody DecorationSubsystem 
+    allocated by this %Model. **/
+    const SimTK::DecorationSubsystem& getDecorationSubsystem() const 
+    {   return *_decorationSubsystem; }
+    /** Get writable access to the internal Simbody DecorationSubsystem 
+    allocated by this %Model. **/
+    SimTK::DecorationSubsystem& updDecorationSubsystem() 
+    {   return *_decorationSubsystem; }
+
+    /**@}**/
 
 	virtual int getNumStateVariables() const;
 
@@ -416,12 +527,6 @@ public:
 	 * @return Force units
 	 */
 	virtual const Units& getForceUnits() const { return _forceUnits; }
-
-	//--------------------------------------------------------------------------
-	// MultibodySystem
-	//--------------------------------------------------------------------------
-	virtual const SimTK::MultibodySystem& getMultibodySystem() const {return *_system; } 
-	virtual SimTK::MultibodySystem& updMultibodySystem() const {return *_system; } 
 
 	//--------------------------------------------------------------------------
 	// GRAVITY
@@ -792,13 +897,6 @@ private:
 };	// END of class Model
 //=============================================================================
 
-class Model::DefaultGeometry : public SimTK::DecorationGenerator {
-public:
-    DefaultGeometry(Model& model);
-    void generateDecorations(const SimTK::State& state, SimTK::Array_<SimTK::DecorativeGeometry>& geometry);
-private:
-    Model& _model;
-};
 
 //=============================================================================
 

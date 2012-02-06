@@ -29,25 +29,11 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
-#include <math.h>
+
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/XMLDocument.h>
-#include "Model.h"
-#include "Muscle.h"
-#include "CoordinateSet.h"
-#include "BodySet.h"
-#include "AnalysisSet.h"
-#include "ForceSet.h"
-#include "ControllerSet.h"
 #include <OpenSim/Common/ScaleSet.h>
-#include "Analysis.h"
-#include "ForceAdapter.h"
-#include "Actuator.h"
 #include <OpenSim/Common/Storage.h>
-#include <OpenSim/Simulation/Model/MarkerSet.h>
-#include <OpenSim/Simulation/Model/ContactGeometrySet.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/CoordinateCouplerConstraint.h>
@@ -56,16 +42,35 @@
 #include <OpenSim/Simulation/Wrap/WrapCylinder.h>
 #include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 #include <OpenSim/Simulation/Wrap/WrapSphere.h>
-#include "SimTKcommon/internal/SystemGuts.h"
-
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Simulation/AssemblySolver.h>
 #include <OpenSim/Simulation/CoordinateReference.h>
 
+#include "SimTKcommon/internal/SystemGuts.h"
+
+#include "Model.h"
+#include "ModelVisualizer.h"
+
+#include "Muscle.h"
+#include "CoordinateSet.h"
+#include "BodySet.h"
+#include "AnalysisSet.h"
+#include "ForceSet.h"
+#include "ControllerSet.h"
+#include "Analysis.h"
+#include "ForceAdapter.h"
+#include "Actuator.h"
+#include "MarkerSet.h"
+#include "ContactGeometrySet.h"
+
+#include <iostream>
+#include <string>
+#include <cmath>
+
 using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
-using SimTK::Mat33;
+
 
 //=============================================================================
 // STATICS
@@ -103,6 +108,7 @@ Model::Model() :
     _coordinateSet(CoordinateSet()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
+    _useVisualizer(false),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
@@ -142,6 +148,7 @@ Model::Model(const string &aFileName) :
     _coordinateSet(CoordinateSet()),
     _controllerSetProp(PropertyObj("Controllers", ControllerSet())),
     _controllerSet((ControllerSet&)_controllerSetProp.getValueObj()),
+    _useVisualizer(false),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _system(NULL),
@@ -182,6 +189,7 @@ Model::Model(const Model &aModel) :
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
     _contactGeometrySet((ContactGeometrySet&)_contactGeometrySetProp.getValueObj()),
+    _useVisualizer(false),
     _allControllersEnabled(true),
     _perturbActuatorForces(false),
     _jointSet(JointSet()),
@@ -206,13 +214,14 @@ Model::Model(const Model &aModel) :
  */
 Model::~Model()
 {
-	delete _matter;
-	delete _forceSubsystem;
-	delete _contactSubsystem;
-	delete _decorationSubsystem;
-	delete _gravityForce;
-	delete _system;
 	delete _assemblySolver;
+    delete _modelViz;
+	delete _decorationSubsystem;
+	delete _contactSubsystem;
+	delete _gravityForce;
+	delete _forceSubsystem;
+	delete _matter;
+	delete _system;
 }
 //_____________________________________________________________________________
 /**
@@ -301,6 +310,7 @@ void Model::copyData(const Model &aModel)
 void Model::setNull()
 {
 	setType("Model");
+    _useVisualizer = false;
     _allControllersEnabled = true;
 	_perturbActuatorForces = false,
     _groundBody = NULL;
@@ -313,6 +323,7 @@ void Model::setNull()
     _decorationSubsystem = NULL;
     _gravityForce = NULL;
 
+    _modelViz = NULL;
 	_assemblySolver = NULL;
 
 	_validationLog="";
@@ -373,6 +384,9 @@ void Model::setupProperties()
     _propertySet.append(&_componentSetProp);
 }
 
+//------------------------------------------------------------------------------
+//                                  INIT SYSTEM
+//------------------------------------------------------------------------------
 SimTK::State& Model::initSystem()
 {
 	// Some validation
@@ -386,6 +400,14 @@ SimTK::State& Model::initSystem()
 	_stateVariableSystemIndices.setSize(0);
 	setup();
 	createSystem();
+
+    // Create a Visualizer for this Model if one has been requested. Set up
+    // auxiliary objects to be used for dispatching geometry-creation and
+    // interaction activities.
+    if (getUseVisualizer()) {
+        _modelViz = new ModelVisualizer(*this);
+    }
+
     getMultibodySystem().realizeTopology();
     SimTK::State& s = updMultibodySystem().updDefaultState();
 
@@ -393,6 +415,7 @@ SimTK::State& Model::initSystem()
 	// added to the system during realizeTopology()
     _matter->setUseEulerAngles(s, true);
 	getMultibodySystem().realizeModel(s);
+
 
     initState(s);
 
@@ -408,6 +431,7 @@ SimTK::State& Model::initSystem()
 
 	return(s);
 }
+
 
 void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 {
@@ -487,11 +511,12 @@ void Model::createSystem()
     if (_system != NULL)
     {
         // Delete the old system.
-        delete _matter;
-        delete _forceSubsystem;
-        delete _contactSubsystem;
+        delete _modelViz;
         delete _decorationSubsystem;
         delete _gravityForce;
+        delete _contactSubsystem;
+        delete _forceSubsystem;
+        delete _matter;
         delete _system;
     }
 
@@ -501,8 +526,6 @@ void Model::createSystem()
     _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
     _decorationSubsystem = new SimTK::DecorationSubsystem(*_system);
-    _decorationSubsystem->addDecorationGenerator(SimTK::Stage::Position, new Model::DefaultGeometry(*this));
-    _matter->setShowDefaultGeometry(false);
 
 	// create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
 	double magnitude = _gravity.norm();
@@ -1798,88 +1821,4 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
 		" and name "+nameString+" was found in the model.");
 
-}
-
-Model::DefaultGeometry::DefaultGeometry(Model& model) : _model(model) {
-}
-
-void Model::DefaultGeometry::generateDecorations(const SimTK::State& state, SimTK::Array_<SimTK::DecorativeGeometry>& geometry) {
-    const SimTK::SimbodyMatterSubsystem& matter = _model.getMatterSubsystem();
-
-    // Display a cylinder connecting each pair of joints.
-
-    const JointSet& joints = _model.getJointSet();
-    for (int i = 0; i < joints.getSize(); i++) {
-        const Joint& joint = joints[i];
-        if (joint.getType() != "FreeJoint" && joint.getParentBody().hasJoint()) {
-            const Joint& parent = joint.getParentBody().getJoint();
-            Vec3 childLocation, parentLocation;
-            joint.getLocation(childLocation);
-            parent.getLocation(parentLocation);
-            childLocation = matter.getMobilizedBody(joint.getBody().getIndex()).getBodyTransform(state)*childLocation;
-            parentLocation = matter.getMobilizedBody(parent.getBody().getIndex()).getBodyTransform(state)*parentLocation;
-            double length = (childLocation-parentLocation).norm();
-            Vec3 center = (childLocation+parentLocation)*0.5;
-            Rotation orientation;
-            orientation.setRotationFromOneAxis(UnitVec3(childLocation-parentLocation), YAxis);
-            geometry.push_back(DecorativeCylinder(0.1*length, 0.5*length).setTransform(Transform(orientation, center)));
-        }
-    }
-
-    // Display the path of each muscle.
-
-    const Set<Muscle>& muscles = _model.getMuscles();
-	double activation= 0;
-    for (int i = 0; i < muscles.getSize(); i++) {
-        const Muscle& muscle = muscles[i];
-		activation = muscle.getActivation(state);
-		activation = (activation < 0) ? 0 : activation;
-		activation = (activation > 1) ? 1 : activation;
-
-        const Array<PathPoint*>& points = muscle.getGeometryPath().getCurrentPath(state);
-        Vec3 lastPos = matter.getMobilizedBody(points[0]->getBody().getIndex()).getBodyTransform(state)*points[0]->getLocation();
-        for (int j = 1; j < points.getSize(); j++) {
-            Vec3 pos = matter.getMobilizedBody(points[j]->getBody().getIndex()).getBodyTransform(state)*points[j]->getLocation();
-            geometry.push_back(DecorativeLine(lastPos, pos).setLineThickness(2).setColor(Vec3(activation, 0, 1-activation)));
-            lastPos = pos;
-        }
-    }
-
-    // Display wrap objects.
-
-    const bool displayWrapObjects = false;
-    if (displayWrapObjects) {
-        Transform ztoy;
-        ztoy.updR().setRotationFromAngleAboutX(SimTK_PI/2);
-        const BodySet& bodies = _model.getBodySet();
-        for (int i = 0; i < bodies.getSize(); i++) {
-            const Body& body = bodies[i];
-            const Transform& bodyTransform = matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
-            const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
-            for (int j = 0; j < wrapObjects.getSize(); j++) {
-                const string& type = wrapObjects[j].getType();
-                if (type == "WrapCylinder") {
-                    const WrapCylinder* cylinder = dynamic_cast<const WrapCylinder*>(&wrapObjects[j]);
-                    if (cylinder != NULL) {
-                        Transform transform = bodyTransform*cylinder->getTransform()*ztoy;
-                        geometry.push_back(DecorativeCylinder(cylinder->getRadius(), 0.5*cylinder->getLength()).setTransform(transform).setOpacity(0.5).setColor(Vec3(0, 1, 0)));
-                    }
-                }
-                else if (type == "WrapEllipsoid") {
-                    const WrapEllipsoid* ellipsoid = dynamic_cast<const WrapEllipsoid*>(&wrapObjects[j]);
-                    if (ellipsoid != NULL) {
-                        Transform transform = bodyTransform*ellipsoid->getTransform();
-                        geometry.push_back(DecorativeEllipsoid(ellipsoid->getRadii()).setTransform(transform).setOpacity(0.5).setColor(Vec3(0, 1, 0)));
-                    }
-                }
-                else if (type == "WrapSphere") {
-                    const WrapSphere* sphere = dynamic_cast<const WrapSphere*>(&wrapObjects[j]);
-                    if (sphere != NULL) {
-                        Transform transform = bodyTransform*sphere->getTransform();
-                        geometry.push_back(DecorativeSphere(sphere->getRadius()).setTransform(transform).setOpacity(0.5).setColor(Vec3(0, 1, 0)));
-                    }
-                }
-            }
-        }
-    }
 }

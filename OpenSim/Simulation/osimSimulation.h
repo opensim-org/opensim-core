@@ -32,6 +32,7 @@
 
 #include "Model/AnalysisSet.h"
 #include "Model/Model.h"
+#include "Model/ModelVisualizer.h"
 #include "Model/ForceSet.h"
 #include "Model/BodyScale.h"
 #include "Model/BodyScaleSet.h"
