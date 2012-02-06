@@ -478,7 +478,7 @@ void ModelVisualizer::initVisualizer() {
                     pmesh.loadVtpFile(attempts.back());
                 } else {
                     std::ifstream objFile;
-                    objFile.open(attempts.back());
+                    objFile.open(attempts.back().c_str());
                     pmesh.loadObjFile(objFile);
                     // objFile closes when destructed
                 }
