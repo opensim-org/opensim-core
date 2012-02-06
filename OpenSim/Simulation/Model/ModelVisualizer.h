@@ -49,6 +49,13 @@ the Model's getModelVisualizer() method.
 @see Model **/
 class OSIMSIMULATION_API ModelVisualizer {
 public:
+    /** @name                Drawing methods
+    Currently there is just a single method for generating a frame. **/
+    /**@{**/
+    /** Evaluate the geometry needed to visualize the given \a state and
+    use it to generate a new image in the Visualizer window. **/
+    void show(const SimTK::State& state) const;
+    /**@}**/
 
     /** @name       Methods for controlling what gets displayed **/
     /**@{**/

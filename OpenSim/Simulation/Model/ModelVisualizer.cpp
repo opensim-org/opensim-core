@@ -299,6 +299,12 @@ void DefaultGeometry::generateDecorations
 //                            MODEL VISUALIZER
 //==============================================================================
 
+void ModelVisualizer::show(const SimTK::State& state) const {
+    // Make sure we're realized at least through Position stage.
+    _model.getMultibodySystem().realize(state, SimTK::Stage::Position);
+    getVisualizer().report(state);
+}
+
 // See if we can find the given file. The rules are
 //  - if it is an absolute pathname, we only get one shot, else:
 //  - define "modelDir" to be the absolute pathname of the 
