@@ -11,6 +11,7 @@
 #include <OpenSim/Common/ArrayPtrs.h>
 #include <OpenSim/Common/Property.h>
 #include <OpenSim/Common/PropertyStr.h>
+#include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Common/PropertyGroup.h>
 #include <OpenSim/Common/PropertySet.h>
@@ -105,6 +106,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 #include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 #include <OpenSim/Simulation/Model/JointSet.h>
 
@@ -401,6 +403,40 @@ static bool trace=false;
 		for(int i=0; i< size; i++)
 		 self->set(i, dValues[i]);
 	};
+	SimTK::Vec3 getAsVec3() {
+		return SimTK::Vec3::getAs(self->get());
+	};
+	static SimTK::Vec3 createVec3(double e1, double e2, double e3) {
+		Array<double>* arr = new Array<double>(e1, 3);
+		arr->set(1, e2);
+		arr->set(2, e3);
+		return SimTK::Vec3::getAs(arr->get());
+	};
+  
+   static SimTK::Vec3 createVec3(double e1) {
+		Array<double>* arr = new Array<double>(e1, 3);
+		return SimTK::Vec3::getAs(arr->get());
+  };
+   
+   static SimTK::Vec3  createVec3(double es[3]) {
+		Array<double>* arr = new Array<double>(es[0], 3);
+		arr->set(1, es[1]);
+		arr->set(2, es[2]);
+		return SimTK::Vec3::getAs(arr->get());
+  };
+   static  OpenSim::Array<double> getValuesFromVec3(SimTK::Vec3 vec3) {
+		OpenSim::Array<double> arr(0, 3);
+		for (int i=0; i<3; i++) arr[i] = vec3[i];
+		return arr;
+  };
+  
+  std::string toString() const {
+		std::stringstream stream;
+		for (int i=0; i< self->getSize(); i++)
+			stream <<  self->get(i) << " ";
+		return stream.str(); 
+  }
+
 };
 
 %extend OpenSim::Model {
@@ -420,6 +456,10 @@ static bool trace=false;
 %include <OpenSim/Common/PropertyStr.h>
 %template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property>;
 %include <OpenSim/Common/PropertyDblArray.h>
+%include <OpenSim/Common/PropertyDblVec.h>
+%template(PropertyDblVec2) OpenSim::PropertyDblVec_<2>;
+%template(PropertyDblVec3) OpenSim::PropertyDblVec_<3>;
+%template(PropertyDblVec6) OpenSim::PropertyDblVec_<6>;
 %include <OpenSim/Common/PropertyTransform.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;
@@ -544,6 +584,7 @@ static bool trace=false;
 %include <OpenSim/Simulation/Model/CoordinateSet.h>
 
 %include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+%include <OpenSim/Simulation/SimbodyEngine/FreeJoint.h>
 %include <OpenSim/Simulation/SimbodyEngine/CustomJoint.h>
 %template(SetJoints) OpenSim::Set<OpenSim::Joint>;
 %template(ModelComponentSetJoints) OpenSim::ModelComponentSet<OpenSim::Joint>;

@@ -72,6 +72,23 @@ public:
 	FreeJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 		  Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
 		  /*bool useEulerAngles=true,*/ bool reverse=false);
+	
+	/**
+	 * Constructor that's more friendly to scripting with only primitive data
+     * types or OpenSim types as arguments.
+     */
+	FreeJoint(const std::string &name, OpenSim::Body& parent, double locationInParent[], double orientationInParent[],
+					OpenSim::Body& body, double locationInBody[], double orientationInBody[],
+					/*bool useEulerAngles,*/ bool reverse) :
+	Joint(name, parent, SimTK::Vec3(locationInParent),SimTK::Vec3(orientationInParent),
+			body, SimTK::Vec3(locationInBody), SimTK::Vec3(orientationInBody), reverse)
+{
+	setNull();
+	setupProperties();
+	//_useEulerAngles = useEulerAngles;
+	_body->setJoint(*this);
+	setName(name);
+}
 
 	FreeJoint(const FreeJoint &aJoint);
 	virtual ~FreeJoint();
