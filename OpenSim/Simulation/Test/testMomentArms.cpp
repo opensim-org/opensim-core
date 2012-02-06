@@ -318,7 +318,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 			// Verify that the definition of the moment-arm is satisfied
 			ASSERT_EQUAL(ma, ma_dldtheta, integ_accuracy);
 		}
-		catch (const OpenSim::Exception& e) {
+		catch (const OpenSim::Exception&) {
 			passesDefinition = false;
 		}
 
@@ -378,7 +378,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 				// verify that equivalent torque is in fact moment-arm*force
 				ASSERT_EQUAL(equivalentIvdMuscleTorque, ma*force, integ_accuracy);
 			}
-			catch (const OpenSim::Exception& e) {
+			catch (const OpenSim::Exception&) {
 				passesDynamicConsistency = false;
 			}
 		} else {
