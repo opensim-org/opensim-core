@@ -151,7 +151,7 @@ public:
 		return (_geometrySet); 
 	};
 	// TRANSFORM
-	const SimTK::Transform& getTransform() {
+	const SimTK::Transform& getTransform() const {
 		return _transform;
 	}
 	SimTK::Transform& updTransform() {
