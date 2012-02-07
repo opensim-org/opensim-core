@@ -51,11 +51,8 @@ namespace OpenSim {
  * The document can originate from one of two sources:  1) parsed from an
  * XML source or 2) created locally in memory.
  *
- * This product includes software developed by the
- * Apache Software Foundation (http://www.apache.org/).
- *
  * @version 1.0
- * @author Frank C. Anderson
+ * @author Ayman Habib, Frank C. Anderson, 
  */
 #ifdef WIN32
 #pragma warning( disable : 4251 )	// VC2010 no-dll export of std::string
