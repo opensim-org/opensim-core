@@ -52,7 +52,7 @@ using namespace std;
  */
 AbstractProperty::AbstractProperty()
 {
-	_useDefault = false;
+	setNull();
 }
 //_____________________________________________________________________________
 /**
@@ -63,6 +63,10 @@ AbstractProperty::AbstractProperty(const std::string &aName, const std::string &
 	_name = aName;
 	_type = aType;
 	_comment = aComment;
+	_useDefault = false;
+	_matchName = false;
+	_minArraySize = 0;
+	_maxArraySize = INT_MAX;
 }
 //_____________________________________________________________________________
 /**
@@ -93,4 +97,21 @@ AbstractProperty& AbstractProperty::operator=(const AbstractProperty &aAbstractP
 	_minArraySize = aAbstractProperty._minArraySize;
 	_maxArraySize = aAbstractProperty._maxArraySize;
 	return *this;
+}
+
+//=============================================================================
+// CONSTRUCTION
+//=============================================================================
+//_____________________________________________________________________________
+/**
+ * Set member variables to their null values.
+ */
+void AbstractProperty::setNull()
+{
+	_name = "unknown";
+	_type = "none";
+	_useDefault = false;
+	_matchName = false;
+	_minArraySize = 0;
+	_maxArraySize = INT_MAX;
 }

@@ -415,7 +415,7 @@ double ActivationFiberLengthMuscle::getExcitation( const SimTK::State& s) const 
  */
 double ActivationFiberLengthMuscle::getStress(const SimTK::State& s) const
 {
-	return getForce(s) / _maxIsometricForce;
+	return getForce(s) / getPropertyValue<double>("max_isometric_force");
 }
 
 //=============================================================================
@@ -433,14 +433,16 @@ double ActivationFiberLengthMuscle::getStress(const SimTK::State& s) const
  */
 void ActivationFiberLengthMuscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	_path.postScale(s, aScaleSet);
+	GeometryPath &path = updPropertyValue<GeometryPath>("GeometryPath");
 
-	if (_path.getPreScaleLength(s) > 0.0)
+	path.postScale(s, aScaleSet);
+
+	if (path.getPreScaleLength(s) > 0.0)
 		{
-			double scaleFactor = getLength(s) / _path.getPreScaleLength(s);
-			_optimalFiberLength *= scaleFactor;
-			_tendonSlackLength *= scaleFactor;
-			_path.setPreScaleLength(s, 0.0) ;
+			double scaleFactor = getLength(s) / path.getPreScaleLength(s);
+			updPropertyValue<double>("optimal_fiber_length") *= scaleFactor;
+			updPropertyValue<double>("tendon_slack_length") *= scaleFactor;
+			path.setPreScaleLength(s, 0.0) ;
 		}
 }
 
@@ -515,8 +517,12 @@ double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStif
 {
 	double isometricForce = computeIsometricForce(s, aActivation);
 
-	double normalizedLength = getFiberLength(s) / _optimalFiberLength;
-	double normalizedVelocity = -cos(_pennationAngleAtOptimal) * getLengtheningSpeed(s) / (_maxContractionVelocity * _optimalFiberLength);
+	const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
+	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
+	const double &maxContractionVelocity = getPropertyValue<double>("max_contraction_velocity");
+
+	double normalizedLength = getFiberLength(s) / optimalFiberLength;
+	double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
 	double normalizedForceVelocity = evaluateForceLengthVelocityCurve(1.0,1.0,normalizedVelocity);
 
 	return isometricForce * normalizedForceVelocity;

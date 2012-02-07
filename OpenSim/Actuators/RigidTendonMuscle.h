@@ -62,23 +62,6 @@ namespace OpenSim {
 class OSIMACTUATORS_API RigidTendonMuscle : public Muscle  
 {
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-	/* Function representing active force-length behavior of muscle fibers */
-	PropertyObjPtr<Function> _activeForceLengthCurveProp;
-	Function *&_activeForceLengthCurve;
-
-	/* Function representing passive force-length behavior of muscle fibers */
-	PropertyObjPtr<Function> _passiveForceLengthCurveProp;
-	Function *&_passiveForceLengthCurve;
-
-	/* Function representing force-velocity behavior of muscle fibers */
-	PropertyObjPtr<Function> _forceVelocityCurveProp;
-	Function *&_forceVelocityCurve;
-
-//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------

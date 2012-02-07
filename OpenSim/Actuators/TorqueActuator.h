@@ -62,33 +62,7 @@ class OSIMACTUATORS_API TorqueActuator : public Actuator
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Name of Body to which the Body actuator is applied. */
-	PropertyStr _propBodyNameA;
-
-	/** Name of Body to which the equal and opposite torque is applied. */
-	PropertyStr _propBodyNameB;
-
-	/** Direction */
-	PropertyDblVec3 _propAxis;
-	PropertyBool _propTorqueIsGlobal;
-
-	/** Optimal force. */
-	PropertyDbl _propOptimalForce;
-
-	// REFERENCES
-	std::string& _bodyNameA;
-	std::string& _bodyNameB;
-
-	/** force direction:  _axis is assumed to be expressed in the frame
-	 *  of _bodyA unless _torqueIsGlobal is true.  If _torqueIsGlobal is
-	 *  true, _axis is assumed to be expressed in the ground body */
-	SimTK::Vec3 &_axis;
-	bool &_torqueIsGlobal;
-	
-	double &_optimalForce;
-
-    /** Corresponding Body to which the torque actuator is applied. */
+	/** Corresponding Body to which the torque actuator is applied. */
     Body *_bodyA;
 
 	/** Corresponding Body to which the equal and opposite torque is applied. */
@@ -128,10 +102,10 @@ public:
 	Body* getBodyA() const;
 	Body* getBodyB() const;
 	//Torque Axis
-	void setAxis(SimTK::Vec3 anAxis) { _axis = anAxis; } ;
-	SimTK::Vec3 getAxis() const { return _axis; };
-	void setTorqueIsGlobal(bool aBool) {_torqueIsGlobal = aBool; };
-	bool getTorqueIsGlobal() { return _torqueIsGlobal; };
+	void setAxis(SimTK::Vec3 anAxis) { setPropertyValue("axis", anAxis); } ;
+	SimTK::Vec3 getAxis() const { return getPropertyValue<SimTK::Vec3>("axis"); };
+	void setTorqueIsGlobal(bool aBool) {setPropertyValue("torque_is_global", aBool); };
+	bool getTorqueIsGlobal() { return getPropertyValue<bool>("torque_is_global"); };
 
 	// OPTIMAL FORCE
 	void setOptimalForce(double aOptimalForce);

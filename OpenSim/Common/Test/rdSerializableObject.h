@@ -40,6 +40,7 @@
 #include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
+#include <OpenSim/Common/NaturalCubicSpline.h>
 #include "rdSerializableObject2.h"
 //extern template class OSIMCOMMON_API Array<double>;
 
@@ -186,6 +187,104 @@ namespace OpenSim {
 			propPoint->setComment("Point at 3,5,7");
 			_propertySet.append(propPoint);
 
+			// Bool
+			addProperty<bool>("Test_Bool_2",
+				"bool",
+				"Comment on a boolean",
+				true);
+
+			// Int
+			addProperty<int>("Test_Int_2",
+				"int",
+				"Comment on a int",
+				0);
+
+			// Dbl
+			addProperty<double>("Test_Infinity_2",
+				"double",
+				"Comment on a double infinity",
+				SimTK::Infinity);
+
+			// Dbl
+			addProperty<double>("Test_MinusInfinity_2",
+				"double",
+				"Comment on a double minus infinity",
+				-SimTK::Infinity);
+
+			// Dbl
+			addProperty<double>("Test_Dbl_2",
+				"double",
+				"Comment on a double",
+				1.23456);
+
+			// Dbl
+			addProperty<double>("Test_NaN_2",
+				"double",
+				"Comment on a double not a number",
+				SimTK::NaN);
+
+			// Str
+			addProperty<string>("Test_Str_2",
+				"string",
+				"Comment on a string",
+				"ABC");
+			
+			// Obj
+			rdSerializableObject3 obj2;
+			obj2.setName("Test_Obj_2");
+			addProperty<rdSerializableObject3>("Test_Obj_2",
+				"rdSerializableObject3",
+				"Comment on an Object",
+				obj2);
+			
+			// IntArray
+			Array<int> arrayInt2(2);
+			arrayInt2.setSize(4);
+			for(i=0;i<arrayInt.getSize();i++) arrayInt2[i] = i;
+			addProperty< Array<int> >("Test_IntArray_2",
+				"Array<int>",
+				"Comment on an int-array",
+				arrayInt2);
+
+			// DblArray
+			Array<double> arrayDbl2(0.0);
+			arrayDbl2.setSize(4);
+			for(i=0;i<arrayDbl.getSize();i++) arrayDbl2[i] = (double)i;
+			addProperty< Array<double> >("Test_DblArray_2",
+				"Array<double>",
+				"Comment on a double-array",
+				arrayDbl2);
+
+			// StrArray
+			Array<string> arrayStr2("");
+			arrayStr2.setSize(4);
+			arrayStr2[0] = "abc";
+			arrayStr2[1] = "def";
+			arrayStr2[2] = "ghi";
+			arrayStr2[3] = "jkl";
+			addProperty< Array<string> >("Test_StrArray_2",
+				"Array<string>",
+				"Comment on a string-array",
+				arrayStr2);
+
+			// ObjArray
+			ArrayPtrs<Object> arrayObj2;
+			rdSerializableObject2 object2;
+			object2.setName("Obj1");
+			arrayObj.append(object2.copy());
+			object2.setName("Obj2");
+			arrayObj.append(object2.copy());
+			object2.setName("Obj3");
+			arrayObj.append(object2.copy());
+			addProperty< ArrayPtrs<Object> >("Test_ObjArray_2",
+				"ArrayPtrs<Object>",
+				"Comment on Object Array",
+				arrayObj2);
+			
+			addProperty<SimTK::Vec3>("Test_DblVec3_2",
+				"Vec3",
+				"Point at 3,5,7",
+				SimTK::Vec3(3., 5., 7.));
 		}
 		//--------------------------------------------------------------------------
 		// OPERATORS

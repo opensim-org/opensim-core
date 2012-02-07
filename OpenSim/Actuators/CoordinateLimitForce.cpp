@@ -56,14 +56,7 @@ CoordinateLimitForce::~CoordinateLimitForce()
 /**
  * Default constructor.
  */
-CoordinateLimitForce::CoordinateLimitForce() : Force(),
-	_coordName(_propCoordinateName.getValueStr()),
-	_upperStiffness(_propUpperStiffness.getValueDbl()),
-	_upperLimit(_propUpperLimit.getValueDbl()),
-	_lowerStiffness(_propLowerStiffness.getValueDbl()),
-	_lowerLimit(_propLowerLimit.getValueDbl()),
-	_damping(_propDamping.getValueDbl()),
-	_transition(_propTransition.getValueDbl())
+CoordinateLimitForce::CoordinateLimitForce() : Force()
 {
 	setNull();
 }
@@ -74,25 +67,18 @@ CoordinateLimitForce::CoordinateLimitForce() : Force(),
  */
 CoordinateLimitForce::CoordinateLimitForce(const string &coordName, double q_upper, 
 	double K_upper,	double q_lower, double K_lower, double damping, double dq) 
-	: Force(),
-	_coordName(_propCoordinateName.getValueStr()),
-	_upperStiffness(_propUpperStiffness.getValueDbl()),
-	_upperLimit(_propUpperLimit.getValueDbl()),
-	_lowerStiffness(_propLowerStiffness.getValueDbl()),
-	_lowerLimit(_propLowerLimit.getValueDbl()),
-	_damping(_propDamping.getValueDbl()),
-	_transition(_propTransition.getValueDbl())
+	: Force()
 {
 	setNull();
-	_coordName = coordName;
-	_upperStiffness = K_upper;
-	_upperLimit = q_upper;
-	_lowerStiffness = K_lower;
-	_lowerLimit = q_lower;
-	_damping = damping;
-	_transition = dq;
+	setPropertyValue("coordinate", coordName);
+	setPropertyValue("upper_stiffness", K_upper);
+	setPropertyValue("upper_limit", q_upper);
+	setPropertyValue("lower_stiffness", K_lower);
+	setPropertyValue("lower_limit", q_lower);
+	setPropertyValue("damping", damping);
+	setPropertyValue("transition", dq);
 
-	setName(_coordName + "_LimitForce");
+	setName(coordName + "_LimitForce");
 
 }
 
@@ -102,14 +88,7 @@ CoordinateLimitForce::CoordinateLimitForce(const string &coordName, double q_upp
  *
  * @param aForce Actuator to be copied.
  */
-CoordinateLimitForce::CoordinateLimitForce(const CoordinateLimitForce &aForce) : Force(aForce),
-	_coordName(_propCoordinateName.getValueStr()),
-	_upperStiffness(_propUpperStiffness.getValueDbl()),
-	_upperLimit(_propUpperLimit.getValueDbl()),
-	_lowerStiffness(_propLowerStiffness.getValueDbl()),
-	_lowerLimit(_propLowerLimit.getValueDbl()),
-	_damping(_propDamping.getValueDbl()),
-	_transition(_propTransition.getValueDbl())
+CoordinateLimitForce::CoordinateLimitForce(const CoordinateLimitForce &aForce) : Force(aForce)
 {
 	setNull();
 	copyData(aForce);
@@ -151,41 +130,37 @@ void CoordinateLimitForce::setNull()
  */
 void CoordinateLimitForce::setupProperties()
 {
-	_propCoordinateName.setName("coordinate"); 
-	_propertySet.append( &_propCoordinateName );
-
-	_propUpperStiffness.setComment("Stiffness of the passive limit force when coordinate exceeds upper limit."
-				" Note, rotational stiffness expected in N*m/degree.");
-	_propUpperStiffness.setName("upper_stiffness");
-	_propUpperStiffness.setValue(1);
-	_propertySet.append( &_propUpperStiffness );
-	
-	_propUpperLimit.setComment("The upper limit of the coordinate range of motion (rotations in degrees).");
-	_propUpperLimit.setName("upper_limit");
-	_propUpperLimit.setValue(0);
-	_propertySet.append( &_propUpperLimit );
-	
-	_propLowerStiffness.setComment("Stiffness of the passive limit force when coordinate exceeds lower limit."
-				" Note, rotational stiffness expected in N*m/degree.");
-	_propLowerStiffness.setName("lower_stiffness");
-	_propLowerStiffness.setValue(1);
-	_propertySet.append( &_propLowerStiffness );
-	
-	_propLowerLimit.setComment("The lower limit of the coordinate range of motion (rotations in degrees).");
-	_propLowerLimit.setName("lower_limit");
-	_propLowerLimit.setValue(0);
-	_propertySet.append( &_propLowerLimit );
-	
-	_propDamping.setComment("Damping factor on the coordinate's speed applied only when limit is exceeded");
-	_propDamping.setName("damping");
-	_propDamping.setValue(0.001);
-	_propertySet.append( &_propDamping );
-
-	_propTransition.setComment("Transition region width in the units of the coordinate (rotations in degrees)."
-		"Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.");
-	_propTransition.setName("transition");
-	_propTransition.setValue(0.1);
-	_propertySet.append( &_propTransition );
+	addProperty<string>("coordinate",
+		"string",
+		"",
+		"");
+	addProperty<double>("upper_stiffness",
+		"double",
+		"Stiffness of the passive limit force when coordinate exceeds upper limit."
+		" Note, rotational stiffness expected in N*m/degree.",
+		1.0);
+	addProperty<double>("upper_limit",
+		"double",
+		"The upper limit of the coordinate range of motion (rotations in degrees).",
+		0.0);
+	addProperty<double>("lower_stiffness",
+		"double",
+		"Stiffness of the passive limit force when coordinate exceeds lower limit."
+		" Note, rotational stiffness expected in N*m/degree.",
+		1.0);
+	addProperty<double>("lower_limit",
+		"double",
+		"The lower limit of the coordinate range of motion (rotations in degrees).",
+		0.0);
+	addProperty<double>("damping",
+		"double",
+		"Damping factor on the coordinate's speed applied only when limit is exceeded",
+		0.001);
+	addProperty<double>("transition",
+		"double",
+		"Transition region width in the units of the coordinate (rotations in degrees)."
+		" Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.",
+		0.1);
 }
 
 
@@ -195,13 +170,13 @@ void CoordinateLimitForce::setupProperties()
  */
 void CoordinateLimitForce::copyData(const CoordinateLimitForce &aForce)
 {
-	_coordName = aForce._coordName;
-	_upperStiffness = aForce._upperStiffness;
-	_upperLimit = aForce._upperLimit;
-	_lowerStiffness = aForce._lowerStiffness;
-	_lowerLimit = aForce._lowerLimit;
-	_damping = aForce._damping;
-	_transition = aForce._transition;
+	setPropertyValue("coordinate", aForce.getPropertyValue<string>("coordinate"));
+	setPropertyValue("upper_stiffness", aForce.getPropertyValue<double>("upper_stiffness"));
+	setPropertyValue("upper_limit", aForce.getPropertyValue<double>("upper_limit"));
+	setPropertyValue("lower_stiffness", aForce.getPropertyValue<double>("lower_stiffness"));
+	setPropertyValue("lower_limit", aForce.getPropertyValue<double>("lower_limit"));
+	setPropertyValue("damping", aForce.getPropertyValue<double>("damping"));
+	setPropertyValue("transition", aForce.getPropertyValue<double>("transition"));
 }
 
 
@@ -242,32 +217,32 @@ CoordinateLimitForce& CoordinateLimitForce::operator=(const CoordinateLimitForce
  */
 void CoordinateLimitForce::setUpperStiffness(double aUpperStiffness)
 {
-	_upperStiffness = aUpperStiffness;
+	setPropertyValue("upper_stiffness", aUpperStiffness);
 }
 
 void CoordinateLimitForce::setUpperLimit(double aUpperLimit)
 {
-	_upperLimit = aUpperLimit;
+	setPropertyValue("upper_limit", aUpperLimit);
 }
 
 void CoordinateLimitForce::setLowerStiffness(double aLowerStiffness)
 {
-	_lowerStiffness = aLowerStiffness;
+	setPropertyValue("lower_stiffness", aLowerStiffness);
 }
 
 void CoordinateLimitForce::setLowerLimit(double aLowerLimit)
 {
-	_lowerLimit = aLowerLimit;
+	setPropertyValue("lower_limit", aLowerLimit);
 }
 
 void CoordinateLimitForce::setDamping(double aDamping)
 {
-	_damping = aDamping;
+	setPropertyValue("damping", aDamping);
 }
 
 void CoordinateLimitForce::setTransition(double aTransition)
 {
-	_transition = aTransition;
+	setPropertyValue("transition", aTransition);
 }
 
 //_____________________________________________________________________________
@@ -277,26 +252,26 @@ void CoordinateLimitForce::setTransition(double aTransition)
  */
 double CoordinateLimitForce::getUpperStiffness() const
 {
-	return(_upperStiffness);
+	return getPropertyValue<double>("upper_stiffness");
 }
 
 double CoordinateLimitForce::getUpperLimit() const
 {
-	return(_upperLimit);
+	return getPropertyValue<double>("upper_limit");
 }
 
 double CoordinateLimitForce::getLowerStiffness() const
 {
-	return(_lowerStiffness);
+	return getPropertyValue<double>("lower_stiffness");
 }
 double CoordinateLimitForce::getLowerLimit() const
 {
-	return(_lowerLimit);
+	return getPropertyValue<double>("lower_limit");
 }
 
 double CoordinateLimitForce::getDamping() const
 {
-	return(_damping);
+	return getPropertyValue<double>("damping");
 }
 
 //_____________________________________________________________________________
@@ -310,24 +285,31 @@ void CoordinateLimitForce::setup(Model& aModel)
 {
 	string errorMessage;
 
+	const string &coordName = getPropertyValue<string>("coordinate");
+	const double &upperStiffness = getPropertyValue<double>("upper_stiffness");
+	const double &upperLimit = getPropertyValue<double>("upper_limit");
+	const double &lowerStiffness = getPropertyValue<double>("lower_stiffness");
+	const double &lowerLimit = getPropertyValue<double>("lower_limit");
+	const double &transition = getPropertyValue<double>("transition");
+
 	// Base class
 	Force::setup(aModel);
 
 	// Look up the coordinate
-	if (!_model->updCoordinateSet().contains(_coordName)) {
-		errorMessage = "CoordinateLimitForce: Invalid coordinate (" + _coordName + ") specified in Actuator " + getName();
+	if (!_model->updCoordinateSet().contains(coordName)) {
+		errorMessage = "CoordinateLimitForce: Invalid coordinate (" + coordName + ") specified in Actuator " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	_coord = &_model->updCoordinateSet().get(_coordName);
+	_coord = &_model->updCoordinateSet().get(coordName);
 
 	// scaling for units
 	_w = (_coord->getMotionType() == Coordinate::Rotational) ? SimTK_DEGREE_TO_RADIAN : 1.0;
 
 	// Define the transition from no stiffness to the upperStiffness as coordinate increases 
 	// beyond the upper limit
-	upStep = new SimTK::Function::Step(0.0, _upperStiffness/_w, _w*_upperLimit, _w*(_upperLimit+_transition));
+	upStep = new SimTK::Function::Step(0.0, upperStiffness/_w, _w*upperLimit, _w*(upperLimit+transition));
 	// Define the transition from lowerStiffness to zero as coordinate increases to the lower limit
-	loStep = new SimTK::Function::Step(_lowerStiffness/_w, 0.0, _w*(_lowerLimit-_transition), _w*_lowerLimit);
+	loStep = new SimTK::Function::Step(lowerStiffness/_w, 0.0, _w*(lowerLimit-transition), _w*lowerLimit);
 }
 
 //=============================================================================
@@ -353,9 +335,9 @@ double CoordinateLimitForce::calcLimitForce( const SimTK::State& s) const
 	double K_low = loStep->calcValue(qv);
 
 	double qdot = _coord->getSpeedValue(s);
-	double f_up = -K_up*(q - _w*_upperLimit);
-	double f_low = K_low*(_w*_lowerLimit - q);
-	double f_damp = -_damping*(K_up/_upperStiffness+K_low/_lowerStiffness)*qdot;
+	double f_up = -K_up*(q - _w*getPropertyValue<double>("upper_limit"));
+	double f_low = K_low*(_w*getPropertyValue<double>("lower_limit") - q);
+	double f_damp = -getPropertyValue<double>("damping")*(K_up/getPropertyValue<double>("upper_stiffness")+K_low/getPropertyValue<double>("lower_stiffness"))*qdot;
 
 	double f_limit = f_up + f_low + f_damp;
 

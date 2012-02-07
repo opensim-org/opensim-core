@@ -64,27 +64,6 @@ class OSIMSIMULATION_API PrescribedForce : public Force
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-	/** The body that the Prescribed force is applied to. */
-	PropertyStr _bodyNameProp;
-	std::string& _bodyName;
-
-	PropertyBool _forceIsGlobalProp;
-	bool &_forceIsGlobal;
-
-	PropertyBool _pointIsGlobalProp;
-	bool &_pointIsGlobal;
-
-	/* Functions representing force, applicationPoint, and torque in x,y,z directions */
-	PropertyObj _forceFunctionSetProp;
-	FunctionSet &_forceFunctionSet;
-
-	PropertyObj _pointFunctionSetProp;
-	FunctionSet &_pointFunctionSet;
-
-	PropertyObj _torqueFunctionSetProp;
-	FunctionSet &_torqueFunctionSet;
-
 private:
 	OpenSim::Body *_body;
 
@@ -109,8 +88,8 @@ public:
 	// Copy properties from XML into member variables
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
-	void setBodyName(const std::string& aBodyName) { _bodyName = aBodyName; };
-	const std::string& getBodyName() const { return (_bodyName); }
+	void setBodyName(const std::string& aBodyName) { setPropertyValue("body", aBodyName); }
+	const std::string& getBodyName() const { return (getPropertyValue<std::string>("body")); }
 
 	/**
 	 * Set the functions which specify the force to apply.  By default the force is specified in inertial coordinates.
@@ -124,14 +103,14 @@ public:
 	 * @param forceZ   a function of time which calculates the Z component of the force to apply
 	 */
 	void setForceFunctions(Function* forceX, Function* forceY, Function* forceZ);
-	const FunctionSet& getForceFunctions() const { return _forceFunctionSet; };
-	FunctionSet& updForceFunctions() { return _forceFunctionSet; };
+	const FunctionSet& getForceFunctions() const { return getPropertyValue<FunctionSet>("forceFunctions"); }
+	FunctionSet& updForceFunctions() { return updPropertyValue<FunctionSet>("forceFunctions"); }
 	void getForceFunctionNames(OpenSim::Array<std::string>& aFunctionNames) {
-			_forceFunctionSet.getNames(aFunctionNames);
-	};
+			getPropertyValue<FunctionSet>("forceFunctions").getNames(aFunctionNames);
+	}
 	void setForceFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 		const OpenSim::Storage& kineticsStore);
-	void clearForceFunctions() { _forceFunctionSet.setSize(0); };
+	void clearForceFunctions() { updPropertyValue<FunctionSet>("forceFunctions").setSize(0); }
 	/**
 	 * Set the functions which specify the point at which to apply the force.  By default the point is specified in
 	 * the body's local coordinates.  This can be changed by calling setPointIsInGlobalFrame().
@@ -144,14 +123,14 @@ public:
 	 * @param pointZ   a function of time which calculates the Z coordinate of the point at which to apply the force
 	 */
 	void setPointFunctions(Function* pointX, Function* pointY, Function* pointZ);
-	const FunctionSet& getPointFunctions() const { return _pointFunctionSet; };
-	FunctionSet& updPointFunctions() { return _pointFunctionSet; };
+	const FunctionSet& getPointFunctions() const { return getPropertyValue<FunctionSet>("pointFunctions"); }
+	FunctionSet& updPointFunctions() { return updPropertyValue<FunctionSet>("pointFunctions"); }
 	void getPointFunctionNames(OpenSim::Array<std::string>& aFunctionNames){
-			_pointFunctionSet.getNames(aFunctionNames);
+			getPropertyValue<FunctionSet>("pointFunctions").getNames(aFunctionNames);
 	}
 	void setPointFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 		const OpenSim::Storage& kineticsStore) ;
-	void clearPointFunctions() { _pointFunctionSet.setSize(0); };
+	void clearPointFunctions() { updPropertyValue<FunctionSet>("pointFunctions").setSize(0); }
 	/**
 	 * Set the functions which specify the torque to apply.  By default the torque is specified in inertial coordinates.
 	 * This can be changed by calling setForceIsInGlobalFrame().
@@ -164,14 +143,14 @@ public:
 	 * @param torqueZ   a function of time which calculates the Z component of the torque to apply
 	 */
 	void setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ);
-	const FunctionSet& getTorqueFunctions() const { return _torqueFunctionSet; };
-	FunctionSet& updTorqueFunctions() { return _torqueFunctionSet; };
+	const FunctionSet& getTorqueFunctions() const { return getPropertyValue<FunctionSet>("torqueFunctions"); }
+	FunctionSet& updTorqueFunctions() { return updPropertyValue<FunctionSet>("torqueFunctions"); }
 	void getTorqueFunctionNames(OpenSim::Array<std::string>& aFunctionNames){
-		_torqueFunctionSet.getNames(aFunctionNames);
+		getPropertyValue<FunctionSet>("torqueFunctions").getNames(aFunctionNames);
 	}
 	void setTorqueFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 		const OpenSim::Storage& kineticsStore);
-	void clearTorqueFunctions() { _torqueFunctionSet.setSize(0); };
+	void clearTorqueFunctions() { updPropertyValue<FunctionSet>("torqueFunctions").setSize(0); }
 	/**
 	 * Get whether the force and torque are specified in inertial coordinates or in the body's local coordinates.
 	 */

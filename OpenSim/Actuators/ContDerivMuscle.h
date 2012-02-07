@@ -54,55 +54,6 @@ class OSIMACTUATORS_API ContDerivMuscle : public ActivationFiberLengthMuscle
 {
 
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-	/** Activation time constant */  
-	PropertyDbl _activationTimeConstantProp;
-	double &_activationTimeConstant;
-
-	/** Deactivation time constant */
-	PropertyDbl _deactivationTimeConstantProp;
-	double &_deactivationTimeConstant;
-
-	/** Max contraction velocity full activation in fiber lengths per second */
-	PropertyDbl _vmaxProp;
-	double &_vmax;
-
-	/** Max contraction velocity at low activation */
-	PropertyDbl _vmax0Prop;
-	double &_vmax0;
-
-	/** Tendon strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxTendonStrainProp;
-	double &_fmaxTendonStrain;
-
-	/** Passive muscle strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxMuscleStrainProp;
-	double &_fmaxMuscleStrain;
-
-	/** Shape factor for Gaussian active muscle force-length relationship */
-	PropertyDbl _kShapeActiveProp;
-	double &_kShapeActive;
-
-	/** Exponential shape factor for passive force-length relationship */
-	PropertyDbl _kShapePassiveProp;
-	double &_kShapePassive;
-
-	/** Passive damping included in the force-velocity relationship */
-	PropertyDbl _dampingProp;
-	double &_damping;
-
-	/** Force-velocity shape factor */
-	PropertyDbl _afProp;
-	double &_af;
-
-	/** Maximum normalized lengthening force */
-	PropertyDbl _flenProp;
-	double &_flen;
-
-//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
@@ -123,17 +74,17 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
-	virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
-	virtual double getVmax() const { return _vmax; }
-	virtual double getVmax0() const { return _vmax0; }
-	virtual double getFmaxTendonStrain() const { return _fmaxTendonStrain; }
-	virtual double getFmaxMuscleStrain() const { return _fmaxMuscleStrain; }
-	virtual double getKshapeActive() const { return _kShapeActive; }
-	virtual double getKshapePassive() const { return _kShapePassive; }
-	virtual double getDamping() const { return _damping; }
-	virtual double getAf() const { return _af; }
-	virtual double getFlen() const { return _flen; }
+	virtual double getActivationTimeConstant() const { return getPropertyValue<double>("activation_time_constant"); }
+	virtual double getDeactivationTimeConstant() const { return getPropertyValue<double>("deactivation_time_constant"); }
+	virtual double getVmax() const { return getPropertyValue<double>("Vmax"); }
+	virtual double getVmax0() const { return getPropertyValue<double>("Vmax0"); }
+	virtual double getFmaxTendonStrain() const { return getPropertyValue<double>("FmaxTendonStrain"); }
+	virtual double getFmaxMuscleStrain() const { return getPropertyValue<double>("FmaxMuscleStrain"); }
+	virtual double getKshapeActive() const { return getPropertyValue<double>("KshapeActive"); }
+	virtual double getKshapePassive() const { return getPropertyValue<double>("KshapePassive"); }
+	virtual double getDamping() const { return getPropertyValue<double>("damping"); }
+	virtual double getAf() const { return getPropertyValue<double>("Af"); }
+	virtual double getFlen() const { return getPropertyValue<double>("Flen"); }
 	// Computed quantities
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const;

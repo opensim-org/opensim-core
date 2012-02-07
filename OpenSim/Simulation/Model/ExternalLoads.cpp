@@ -304,16 +304,20 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	Array<string> labels;
 	labels.append("time");
 
-	labels.append(exForce._forceIdentifier + ".x");
-	labels.append(exForce._forceIdentifier + ".y");
-	labels.append(exForce._forceIdentifier + ".z");
-	labels.append(exForce._pointIdentifier + ".x");
-	labels.append(exForce._pointIdentifier + ".y");
-	labels.append(exForce._pointIdentifier + ".z");
+	const string &forceIdentifier = exForce.getPropertyValue<string>("force_identifier");
+	const string &pointIdentifier = exForce.getPropertyValue<string>("point_identifier");
+	const string &torqueIdentifier = exForce.getPropertyValue<string>("torque_identifier");
+
+	labels.append(forceIdentifier + ".x");
+	labels.append(forceIdentifier + ".y");
+	labels.append(forceIdentifier + ".z");
+	labels.append(pointIdentifier + ".x");
+	labels.append(pointIdentifier + ".y");
+	labels.append(pointIdentifier + ".z");
 	if(exForce._appliesTorque){
-		labels.append(exForce._torqueIdentifier + ".x");
-		labels.append(exForce._torqueIdentifier + ".y");
-		labels.append(exForce._torqueIdentifier + ".z");
+		labels.append(torqueIdentifier + ".x");
+		labels.append(torqueIdentifier + ".y");
+		labels.append(torqueIdentifier + ".z");
 	}
 
 	newDataSource->setColumnLabels(labels);
@@ -380,7 +384,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	}
 
 	// assign a name to the new data source
-	newDataSource->setName(exForce._dataSourceName + "_transformedP");
+	newDataSource->setName(exForce.getPropertyValue<string>("data_source_name") + "_transformedP");
 
 	ExternalForce *exF_transformedPoint = (ExternalForce *)exForce.copy();
 	exF_transformedPoint->setName(exForce.getName()+"_transformedP");

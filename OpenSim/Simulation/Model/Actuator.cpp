@@ -188,8 +188,6 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 
 /** Default constructor */
 Actuator::Actuator() : Actuator_(),
-	_minControl(_propMinControl.getValueDbl()),
-	_maxControl(_propMaxControl.getValueDbl()),
     _overrideForceFunction(0)
 {
 	setNull();
@@ -202,14 +200,12 @@ Actuator::Actuator() : Actuator_(),
  * @param aActuator Actuator to copy.
  */
 Actuator::Actuator(const Actuator &aAct) : Actuator_(aAct),
-	_minControl(_propMinControl.getValueDbl()),
-	_maxControl(_propMaxControl.getValueDbl()),
     _overrideForceFunction(0)
 {
 	setNull();
 	setupProperties();
-	_minControl = aAct._minControl;
-	_maxControl = aAct._maxControl;
+	setPropertyValue("min_control", aAct.getPropertyValue<double>("min_control"));
+	setPropertyValue("max_control", aAct.getPropertyValue<double>("max_control"));
 }
 
 /**
@@ -225,15 +221,14 @@ Actuator::~Actuator()
  */
 void Actuator::setupProperties()
 {
-	_propMinControl.setComment("Minimum allowed value for control signal. Used primarily when solving for control values");
-	_propMinControl.setName("min_control");
-        _propMinControl.setValue(-std::numeric_limits<SimTK::Real>::infinity());
-	_propertySet.append( &_propMinControl );
-	
-	_propMaxControl.setComment("Maximum allowed value for control signal. Used primarily when solving for control values");
-	_propMaxControl.setName("max_control");
-        _propMaxControl.setValue(std::numeric_limits<SimTK::Real>::infinity());
-	_propertySet.append( &_propMaxControl );	
+	addProperty<double>("min_control",
+		"double",
+		"Minimum allowed value for control signal. Used primarily when solving for control values",
+		-std::numeric_limits<SimTK::Real>::infinity());
+	addProperty<double>("max_control",
+		"double",
+		"Maximum allowed value for control signal. Used primarily when solving for control values",
+		std::numeric_limits<SimTK::Real>::infinity());
 }
 
 /**
@@ -254,8 +249,8 @@ Actuator& Actuator::operator=(const Actuator &aAct)
 	// BASE CLASS
 	Actuator_::operator=(aAct);
 
-	_minControl=aAct._minControl;
-	_maxControl=aAct._maxControl;
+	setPropertyValue("min_control", aAct.getPropertyValue<double>("min_control"));
+	setPropertyValue("max_control", aAct.getPropertyValue<double>("max_control"));
 
 	return(*this);
 }

@@ -51,10 +51,6 @@ class ForceAdapter;
 class OSIMSIMULATION_API Force : public ModelComponent
 {
 	protected:
-	/** Flag indicating whether the force is disabled or not.  Disabled
-	means that the force is not active in subsequent dynamics realizations. */
-	PropertyBool _isDisabledProp;
-
 	/** ID for the force in Simbody. */
 	SimTK::ForceIndex _index;
 

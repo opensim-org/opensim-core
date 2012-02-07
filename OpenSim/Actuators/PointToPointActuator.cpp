@@ -66,12 +66,6 @@ PointToPointActuator::~PointToPointActuator()
  */
 PointToPointActuator::PointToPointActuator( string aBodyNameA, string aBodyNameB) :
 	Actuator(),
-	_bodyNameA(_propBodyNameA.getValueStr()),
-	_bodyNameB(_propBodyNameB.getValueStr()),
-	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec()),
-	_pointB(_propPointB.getValueDblVec()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
 {
@@ -79,12 +73,12 @@ PointToPointActuator::PointToPointActuator( string aBodyNameA, string aBodyNameB
 	setNull();
 
 	// MEMBER VARIABLES
-	_bodyNameA = aBodyNameA;
-	_bodyNameB = aBodyNameB;
+	setPropertyValue("bodyA", aBodyNameA);
+	setPropertyValue("bodyB", aBodyNameB);
 
 	if (_model) {
-		_bodyA = &_model->updBodySet().get(_bodyNameA);
-		_bodyB = &_model->updBodySet().get(_bodyNameB);
+		_bodyA = &_model->updBodySet().get(aBodyNameA);
+		_bodyB = &_model->updBodySet().get(aBodyNameB);
 	} 
 }
 //_____________________________________________________________________________
@@ -95,12 +89,6 @@ PointToPointActuator::PointToPointActuator( string aBodyNameA, string aBodyNameB
  */
 PointToPointActuator::PointToPointActuator(const PointToPointActuator &anActuator) :
 	Actuator(anActuator),
-	_bodyNameA(_propBodyNameA.getValueStr()),
-	_bodyNameB(_propBodyNameB.getValueStr()),
-	_pointsAreGlobal(_propPointsAreGlobal.getValueBool()),
-	_pointA(_propPointA.getValueDblVec()),
-	_pointB(_propPointB.getValueDblVec()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
 {
@@ -143,29 +131,31 @@ setNull()
 void PointToPointActuator::
 setupProperties()
 {
+	addProperty<string>("bodyA",
+		"string",
+		"Name of Body to which the Body actuator is applied.",
+		"");
+	addProperty<string>("bodyB",
+		"string",
+		"Name of Body to which the equal and opposite torque is applied.",
+		"");
+	addProperty<bool>("points_are_global",
+		"bool",
+		"bool to indicate whether or not the points are expressed in global frame",
+		false);
 	SimTK::Vec3 x(0.0, 0.0, 0.0);
-
-	_propBodyNameA.setName("bodyA");
-	_propertySet.append( &_propBodyNameA );
-
-	_propBodyNameB.setName("bodyB");
-	_propertySet.append( &_propBodyNameB );
-
-	_propPointsAreGlobal.setName("points_are_global");
-	_propPointsAreGlobal.setValue(false);
-	_propertySet.append( &_propPointsAreGlobal );
-
-	_propPointA.setName("pointA");
-	_propPointA.setValue(x);
-	_propertySet.append( &_propPointA );
-
-	_propPointB.setName("pointB");
-	_propPointB.setValue(x);
-	_propertySet.append( &_propPointB );
-
-	_propOptimalForce.setName("optimal_force");
-	_propOptimalForce.setValue(1.0);
-	_propertySet.append( &_propOptimalForce );
+	addProperty<SimTK::Vec3>("pointA",
+		"Vec3",
+		"Point of application on body A.",
+		x);
+	addProperty<SimTK::Vec3>("pointB",
+		"Vec3",
+		"Point of application on body B.",
+		x);
+	addProperty<double>("optimal_force",
+		"double",
+		"",
+		1.0);
 }
 
 //_____________________________________________________________________________
@@ -177,11 +167,11 @@ void PointToPointActuator::
 copyData(const PointToPointActuator &aPointToPointActuator)
 {
 	// MEMBER VARIABLES
-	_bodyNameA = aPointToPointActuator._bodyNameA;
-	_bodyNameB = aPointToPointActuator._bodyNameB;
-	_pointsAreGlobal = aPointToPointActuator._pointsAreGlobal;
-	_pointA = aPointToPointActuator._pointA;
-	_pointB = aPointToPointActuator._pointB;
+	setPropertyValue("bodyA", aPointToPointActuator.getPropertyValue<string>("bodyA"));
+	setPropertyValue("bodyB", aPointToPointActuator.getPropertyValue<string>("bodyB"));
+	setPropertyValue("points_are_global", aPointToPointActuator.getPropertyValue<bool>("points_are_global"));
+	setPropertyValue("pointA", aPointToPointActuator.getPropertyValue<SimTK::Vec3>("pointA"));
+	setPropertyValue("pointB", aPointToPointActuator.getPropertyValue<SimTK::Vec3>("pointB"));
 
 	setOptimalForce(aPointToPointActuator.getOptimalForce());
 	setBodyA(aPointToPointActuator.getBodyA());
@@ -229,7 +219,7 @@ void PointToPointActuator::setBodyA(Body* aBody)
 {
 	_bodyA = aBody;
 	if(aBody)
-		_bodyNameA = aBody->getName();
+		setPropertyValue("bodyA", aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -242,7 +232,7 @@ void PointToPointActuator::setBodyB(Body* aBody)
 {
 	_bodyB = aBody;
 	if(aBody)
-		_bodyNameB = aBody->getName();
+		setPropertyValue("bodyB", aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -253,7 +243,7 @@ void PointToPointActuator::setBodyB(Body* aBody)
  */
 Body* PointToPointActuator::getBodyA() const
 {
-	return(_bodyA);
+	return _bodyA;
 }
 //_____________________________________________________________________________
 /**
@@ -264,7 +254,7 @@ Body* PointToPointActuator::getBodyA() const
  */
 Body* PointToPointActuator::getBodyB() const
 {
-	return(_bodyB);
+	return _bodyB;
 }
 
 //-----------------------------------------------------------------------------
@@ -278,7 +268,7 @@ Body* PointToPointActuator::getBodyB() const
  */
 void PointToPointActuator::setOptimalForce(double aOptimalForce)
 {
-	_optimalForce = aOptimalForce;
+	setPropertyValue("optimal_force", aOptimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -288,7 +278,7 @@ void PointToPointActuator::setOptimalForce(double aOptimalForce)
  */
 double PointToPointActuator::getOptimalForce() const
 {
-	return(_optimalForce);
+	return getPropertyValue<double>("optimal_force");
 }
 //_____________________________________________________________________________
 /**
@@ -298,7 +288,7 @@ double PointToPointActuator::getOptimalForce() const
  */
 double PointToPointActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/_optimalForce); 
+	return fabs(getForce(s)/getPropertyValue<double>("optimal_force")); 
 }
 
 
@@ -318,7 +308,7 @@ double PointToPointActuator::computeActuation( const SimTK::State& s ) const
 	if(_model==NULL) return 0;
 
 	// FORCE
-	return ( getControl(s) * _optimalForce );
+	return ( getControl(s) * getPropertyValue<double>("optimal_force") );
 }
 
 
@@ -336,6 +326,10 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 							    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							    SimTK::Vector& generalizedForces) const
 {
+	const double &pointsAreGlobal = getPropertyValue<bool>("points_are_global");
+	const SimTK::Vec3 &pointA = getPropertyValue<SimTK::Vec3>("pointA");
+	const SimTK::Vec3 &pointB = getPropertyValue<SimTK::Vec3>("pointB");
+
 	if(_model==NULL) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 	
@@ -348,17 +342,17 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 
 	SimTK::Vec3 pointA_inGround, pointB_inGround, pointA_inBodyA, pointB_inBodyB;
 
-	if (_pointsAreGlobal)
+	if (pointsAreGlobal)
 	{
-		pointA_inGround = _pointA;
-		pointB_inGround = _pointB;
+		pointA_inGround = pointA;
+		pointB_inGround = pointB;
 		engine.transformPosition(s, engine.getGroundBody(), pointA_inGround, *_bodyA, pointA_inBodyA);
 		engine.transformPosition(s, engine.getGroundBody(), pointB_inGround, *_bodyB, pointB_inBodyB);
 	}
 	else
 	{
-		pointA_inBodyA = _pointA;
-		pointB_inBodyB = _pointB;
+		pointA_inBodyA = pointA;
+		pointB_inBodyB = pointB;
 		engine.transformPosition(s, *_bodyA, pointA_inBodyA, engine.getGroundBody(), pointA_inGround);
 		engine.transformPosition(s, *_bodyB, pointB_inBodyB, engine.getGroundBody(), pointB_inGround);
 	}
@@ -401,8 +395,8 @@ void PointToPointActuator::setup(Model& aModel)
 	Actuator::setup( aModel);
 
 	if (_model) {
-		_bodyA = &_model->updBodySet().get(_bodyNameA);
-		_bodyB = &_model->updBodySet().get(_bodyNameB);
+		_bodyA = &_model->updBodySet().get(getPropertyValue<string>("bodyA"));
+		_bodyB = &_model->updBodySet().get(getPropertyValue<string>("bodyB"));
 	}
 }
 
@@ -422,7 +416,7 @@ bool PointToPointActuator::check() const
 	if( _bodyA != NULL) {
 		printf("PointToPointActuator.check: ERROR- %s actuates ",
 			getName().c_str());
-		printf("an invalid Body (%s).\n", _bodyNameA.c_str());
+		printf("an invalid Body (%s).\n", getPropertyValue<string>("bodyA").c_str());
 		return(false);
 	}
 	return(true);
@@ -448,7 +442,6 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 	Actuator::updateFromXMLNode(aNode, versionNumber);
 	setBodyA(_bodyA);
 	setBodyB(_bodyB);
-	setOptimalForce(_optimalForce);
 }	
 
 /** 

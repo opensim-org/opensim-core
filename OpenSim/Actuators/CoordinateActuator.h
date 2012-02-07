@@ -62,17 +62,7 @@ class OSIMACTUATORS_API CoordinateActuator : public Actuator
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Name of coordinate to which the coordinate actuator is applied. */
-	PropertyStr _propCoordinateName;
-	/** Optimal force. */
-	PropertyDbl _propOptimalForce;
-
-	// REFERENCES
-	std::string& _coordName;
-	double &_optimalForce;
-
-    /** Corresponding generalized coordinate to which the coordinate actuator
+	/** Corresponding generalized coordinate to which the coordinate actuator
     is applied. */
     mutable Coordinate *_coord;
 

@@ -81,10 +81,10 @@ public:
 	Array<AbstractProperty *> getArray();
 	void addProperty(AbstractProperty &aProperty);
 	template <class T> const Property2<T>& getProperty(const std::string &name) const;
-	template <class T> Property2<T>& updateProperty(const std::string &name);
+	template <class T> Property2<T>& updProperty(const std::string &name);
 	template <class T> void addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value);
 	template <class T> const T& getPropertyValue(const std::string &name) const;
-	template <class T> T& updatePropertyValue(const std::string &name) const;
+	template <class T> T& updPropertyValue(const std::string &name) const;
 	template <class T> void setPropertyValue(const std::string &name, const T &value);
 	std::string getPropertyType(const std::string &name) const;
 	std::string getPropertyComment(const std::string &name) const;
@@ -105,7 +105,7 @@ const Property2<T>& PropertyTable::getProperty(const std::string &name) const
 }
 
 template <class T>
-Property2<T>& PropertyTable::updateProperty(const std::string &name)
+Property2<T>& PropertyTable::updProperty(const std::string &name)
 {
 	std::map<std::string, AbstractProperty*>::iterator it = _properties.find(name);
 	if (it != _properties.end()) {
@@ -135,12 +135,12 @@ const T& PropertyTable::getPropertyValue(const std::string &name) const
 }
 
 template <class T>
-T& PropertyTable::updatePropertyValue(const std::string &name) const
+T& PropertyTable::updPropertyValue(const std::string &name) const
 {
 	std::map<std::string, AbstractProperty*>::const_iterator it = _properties.find(name);
 	if (it != _properties.end()) {
 		Property2<T>& prop = dynamic_cast<Property2<T>&>(*(*it).second);
-		return prop.updateValue();
+		return prop.updValue();
 	}
 	throw Exception("Property " + name + " not found!");
 }

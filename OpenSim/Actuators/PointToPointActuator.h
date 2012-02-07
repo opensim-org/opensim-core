@@ -62,38 +62,7 @@ class OSIMACTUATORS_API PointToPointActuator : public Actuator
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Name of Body to which the Body actuator is applied. */
-	PropertyStr _propBodyNameA;
-
-	/** Name of Body to which the equal and opposite torque is applied. */
-	PropertyStr _propBodyNameB;
-
-	/** Point of application on each body*/
-	PropertyDblVec3 _propPointA;
-	PropertyDblVec3 _propPointB;
-	
-	/** bool to indicate whether or not the points are expressed in global frame*/
-	PropertyBool _propPointsAreGlobal;
-
-	/** Optimal force. */
-	PropertyDbl _propOptimalForce;
-
-	// REFERENCES
-	std::string& _bodyNameA;
-	std::string& _bodyNameB;
-
-	/** force points of application:  assumed to be expressed in the frame
-	 *  of _bodyA  and _bodyB unless _pointsAreGlobal is true.  If _pointsAreGlobal is
-	 *  true, _pointA and _pointB are assumed to be expressed in the ground body */
-	SimTK::Vec3 &_pointA;
-	SimTK::Vec3 &_pointB;
-	bool &_pointsAreGlobal;
-	
-	/** Optimal force*/
-	double &_optimalForce;
-
-    /** Corresponding Body to which the force actuator is applied. */
+	/** Corresponding Body to which the force actuator is applied. */
     Body *_bodyA;
 
 	/** Corresponding Body to which the equal and force torque is applied. */
@@ -136,14 +105,14 @@ public:
 	Body* getBodyB() const;
 
 	// Force points of application
-	void setPointA(SimTK::Vec3 aPosition) { _pointA = aPosition; } ;
-	SimTK::Vec3 getPointA() const { return _pointA; };
-	void setPointB(SimTK::Vec3 aPosition) { _pointB = aPosition; } ;
-	SimTK::Vec3 getPointB() const { return _pointB; };
+	void setPointA(SimTK::Vec3 aPosition) { setPropertyValue("pointA", aPosition); } ;
+	SimTK::Vec3 getPointA() const { return getPropertyValue<SimTK::Vec3>("pointA"); };
+	void setPointB(SimTK::Vec3 aPosition) { setPropertyValue("pointB", aPosition); } ;
+	SimTK::Vec3 getPointB() const { return getPropertyValue<SimTK::Vec3>("pointB"); };
 
 	// flag for reference frame
-	void setPointsAreGlobal(bool aBool) {_pointsAreGlobal = aBool; };
-	bool getPointsAreGlobal() {return _pointsAreGlobal; };
+	void setPointsAreGlobal(bool aBool) {setPropertyValue("points_are_global", aBool); };
+	bool getPointsAreGlobal() {return getPropertyValue<bool>("points_are_global"); };
 
 	// OPTIMAL FORCE
 	void setOptimalForce(double aOptimalForce);

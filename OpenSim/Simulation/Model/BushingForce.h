@@ -55,55 +55,6 @@ class OSIMSIMULATION_API BushingForce : public Force
 {
 
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-	/** Specify first of two bodies held together by the bushing. */
-	PropertyStr _body1NameProp;
-	std::string& _body1Name;
-
-	/** Specify second of two bodies held by the bushing force. */
-	PropertyStr _body2NameProp;
-	std::string& _body2Name;
-
-	/** Location of the bushing in first body specified in body1 reference frame. */
-	PropertyDblVec3 _locationInBody1Prop;
-	SimTK::Vec3& _locationInBody1;
-
-	/** Orientation of the bushing axes on body1 specified in body1's
-	reference frame.  Euler XYZ body-fixed rotation angles are used to express
-	the orientation. */
-	PropertyDblVec3 _orientationInBody1Prop;
-	SimTK::Vec3& _orientationInBody1;
-
-	/** Location of the bushing in second body specified in body2 reference frame. */
-	PropertyDblVec3 _locationInBody2Prop;
-	SimTK::Vec3& _locationInBody2;
-
-	/** Orientation of the bushing axes on body2 specified in body2's
-	reference frame.  Euler XYZ body-fixed rotation angles are used to express
-	the orientation. */
-	PropertyDblVec3 _orientationInBody2Prop;
-	SimTK::Vec3& _orientationInBody2;
-
-	/** Stiffness of the bushing related to Euler XYZ body-fixed rotation angles 
-	    used to express the orientation. */
-	PropertyDblVec3 _rotStiffnessProp;
-	SimTK::Vec3& _rotStiffness;
-
-	/** Stiffness of the bushing related to XYZ translations between frames   */
-	PropertyDblVec3 _transStiffnessProp;
-	SimTK::Vec3& _transStiffness;
-
-	/** Damping of the bushing related to Euler XYZ body-fixed angular speeds */ 
-	PropertyDblVec3 _rotDampingProp;
-	SimTK::Vec3& _rotDamping;
-
-	/** Damping of the bushing related to XYZ translation speeds between frames   */
-	PropertyDblVec3 _transDampingProp;
-	SimTK::Vec3& _transDamping;
-
-//=============================================================================
 // METHODS
 //=============================================================================
 public:

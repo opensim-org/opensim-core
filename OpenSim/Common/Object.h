@@ -325,10 +325,10 @@ public:
 protected:
 	void addProperty(AbstractProperty &abstractProperty);
 	template <class T> const Property2<T>& getProperty(const std::string &name) const;
-	template <class T> Property2<T>& updateProperty(const std::string &name);
+	template <class T> Property2<T>& updProperty(const std::string &name);
 	template <class T> void addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value);
 	template <class T> const T& getPropertyValue(const std::string &name) const;
-	template <class T> T& updatePropertyValue(const std::string &name) const;
+	template <class T> T& updPropertyValue(const std::string &name) const;
 	template <class T> void setPropertyValue(const std::string &name, const T &value);
 	std::string getPropertyType(const std::string &name) const;
 	std::string getPropertyComment(const std::string &name) const;
@@ -341,7 +341,7 @@ template <>
 inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
 
 template <>
-inline AbstractProperty::PropertyType Property2< Array<Object> >::getPropertyType() const { return ObjArray; }
+inline AbstractProperty::PropertyType Property2< ArrayPtrs<Object> >::getPropertyType() const { return ObjArray; }
 
 template <>
 inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() const { return ObjPtr; }
@@ -355,9 +355,9 @@ getProperty(const std::string &name) const
 
 template <class T>
 Property2<T>& Object::
-updateProperty(const std::string &name)
+updProperty(const std::string &name)
 {
-	return _propertyTable.updateProperty<T>(name);
+	return _propertyTable.updProperty<T>(name);
 }
 
 template <class T>
@@ -376,9 +376,9 @@ getPropertyValue(const std::string &name) const
 
 template <class T>
 T& Object::
-updatePropertyValue(const std::string &name) const
+updPropertyValue(const std::string &name) const
 {
-	return _propertyTable.updatePropertyValue<T>(name);
+	return _propertyTable.updPropertyValue<T>(name);
 }
 
 template <class T>

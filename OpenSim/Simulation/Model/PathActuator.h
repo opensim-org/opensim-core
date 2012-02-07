@@ -54,19 +54,6 @@ class Model;
 class OSIMSIMULATION_API PathActuator : public Actuator
 {
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-	// PROPERTIES
-	/** the set of points defining the path of the muscle */
-	PropertyObj _pathProp;
-	GeometryPath &_path;
-	/** Optimal force. */
-	PropertyDbl _propOptimalForce;
-	double &_optimalForce;
-
-
-//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
@@ -95,8 +82,8 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// Path
-	GeometryPath& updGeometryPath() const { return _path; }
-	const GeometryPath& getGeometryPath() const { return _path; }
+	GeometryPath& updGeometryPath() { return updPropertyValue<GeometryPath>("GeometryPath"); }
+	const GeometryPath& getGeometryPath() const { return getPropertyValue<GeometryPath>("GeometryPath"); }
 	virtual bool hasGeometryPath() const { return true;};
 
 	// OPTIMAL FORCE

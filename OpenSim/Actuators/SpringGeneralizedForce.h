@@ -60,22 +60,6 @@ class OSIMACTUATORS_API SpringGeneralizedForce : public Force
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Name of coordinate to which the spring gen force is applied. */
-	PropertyStr _propCoordinateName;
-	/** Stiffness. */
-	PropertyDbl _propStiffness;
-	/** Rest length. */
-	PropertyDbl _propRestLength;
-	/** Viscosity. */
-	PropertyDbl _propViscosity;
-
-	// REFERENCES
-	std::string& _coordName;
-	double &_stiffness;
-	double &_restLength;
-	double &_viscosity;
-
 	/** Corresponding generalized coordinate to which the coordinate actuator
        is applied. */
     mutable Coordinate *_coord;

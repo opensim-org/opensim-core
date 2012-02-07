@@ -63,42 +63,6 @@ class LiuThelen2003Muscle : public Thelen2003Muscle
 // DATA
 //=============================================================================
 protected:
-	// Properties are the user-specified quantities that are read in from
-	// file and are used to configure an instance of this class.
-	// 
-	// A property consists of a type, a name, and a value.  You can
-	// access each of these by calling methods on the property.  For example,
-	//
-	// string type = property.getType();
-	// string name = property.getName();
-	// double value = property.getValueDbl();
-	// double x = 1.0;
-	// property.setValue(x);
-	// 
-	// To make writing your code more streamlined, you can initialize
-	// a reference to point to the value of a property.  For example,
-	//
-	// double &_param1 = _param1Prop.getValueDbl();
-	//
-	// In this way you can write your code using _param1 as a normal
-	// variable, instead of using get and set methods on
-	// _param1Prop all the time.  The references to the properties
-	// (e.g., _param1) are initialized in the initialization list
-	// of the class constructors.
-	//
-	// As a convention, all member variables of a class are
-	// preceded with an underscore (e.g., _param1).  In this way,
-	// you can tell which variables are member variables and which
-	// are not as you look at and modify code.
-
-	// the rate at which active muscle fibers become fatigued
-	PropertyDbl _fatigueFactorProp;
-	double &_fatigueFactor;
-
-	// the rate at which fatigued fibers recover (become active)
-	PropertyDbl _recoveryFactorProp;
-	double &_recoveryFactor;
-
 	// defaults for the state variables
 	double _defaultActiveMotorUnits;
 	double _defaultFatiguedMotorUnits;
@@ -135,9 +99,9 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getFatigueFactor() const { return _fatigueFactor; }
+	virtual double getFatigueFactor() const { return getPropertyValue<double>("fatigue_factor"); }
 	virtual bool setFatigueFactor(double aFatigueFactor);
-	virtual double getRecoveryFactor() const { return _recoveryFactor; }
+	virtual double getRecoveryFactor() const { return getPropertyValue<double>("recovery_factor"); }
 	virtual bool setRecoveryFactor(double aRecoveryFactor);
 
 	// Computed quantities

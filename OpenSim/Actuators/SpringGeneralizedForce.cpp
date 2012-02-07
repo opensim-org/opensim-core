@@ -60,17 +60,13 @@ SpringGeneralizedForce::~SpringGeneralizedForce()
 SpringGeneralizedForce::
 SpringGeneralizedForce(string aCoordinateName) :
 	Force(),
-	_coordName(_propCoordinateName.getValueStr()),
-	_stiffness(_propStiffness.getValueDbl()),
-	_restLength(_propRestLength.getValueDbl()),
-	_viscosity(_propViscosity.getValueDbl()),
 	_coord(NULL)
 {
 	// NULL
 	setNull();
-	_coordName=aCoordinateName;
+	setPropertyValue("coordinate", aCoordinateName);
 	if (_model) {
-		_coord = &_model->updCoordinateSet().get(_coordName);
+		_coord = &_model->updCoordinateSet().get(aCoordinateName);
 	} 
 }
 //_____________________________________________________________________________
@@ -82,16 +78,12 @@ SpringGeneralizedForce(string aCoordinateName) :
 SpringGeneralizedForce::
 SpringGeneralizedForce(const SpringGeneralizedForce &aForce) :
 	Force(aForce),
-	_coordName(_propCoordinateName.getValueStr()),
-	_stiffness(_propStiffness.getValueDbl()),
-	_restLength(_propRestLength.getValueDbl()),
-	_viscosity(_propViscosity.getValueDbl()),
 	_coord(NULL)
 {
 	setNull();
 
 	// MEMBER VARIABLES
-	_coordName = aForce._coordName;
+	setPropertyValue("coordinate", aForce.getPropertyValue<string>("coordinate"));
 	setStiffness(aForce.getStiffness());
 	setRestLength(aForce.getRestLength());
 	setViscosity(aForce.getViscosity());
@@ -124,12 +116,6 @@ setNull()
 {
 	setType("SpringGeneralizedForce");
 	setupProperties();
-
-	// Defualt VALUES
-	_stiffness = 0.0;
-	_restLength = 0.0;
-	_viscosity = 0.0;
-	_coordName="";
 }
 
 	
@@ -141,20 +127,22 @@ setNull()
 void SpringGeneralizedForce::
 setupProperties()
 {
-	_propCoordinateName.setName("coordinate"); 
-	_propertySet.append( &_propCoordinateName );
-
-	_propStiffness.setName("stiffness");
-	_propStiffness.setValue(0.0);
-	_propertySet.append( &_propStiffness );
-
-	_propRestLength.setName("rest_length");
-	_propRestLength.setValue(0.0);
-	_propertySet.append( &_propRestLength );
-
-	_propViscosity.setName("viscosity");
-	_propViscosity.setValue(0.0);
-	_propertySet.append( &_propViscosity );
+	addProperty<string>("coordinate",
+		"string",
+		"",
+		"");
+	addProperty<double>("stiffness",
+		"double",
+		"",
+		0.0);
+	addProperty<double>("rest_length",
+		"double",
+		"",
+		0.0);
+	addProperty<double>("viscosity",
+		"double",
+		"",
+		0.0);
 }
 
 
@@ -177,7 +165,7 @@ operator=(const SpringGeneralizedForce &aForce)
 	Force::operator =(aForce);
 
 	// MEMBER VARIABLES
-	_coordName = aForce._coordName;
+	setPropertyValue("coordinate", aForce.getPropertyValue<string>("coordinate"));
 	setStiffness(aForce.getStiffness());
 	setRestLength(aForce.getRestLength());
 	setViscosity(aForce.getViscosity());
@@ -195,7 +183,7 @@ void SpringGeneralizedForce::setup(Model& aModel)
 	Force::setup( aModel);
 
 	if (_model) {
-		_coord = &_model->updCoordinateSet().get(_coordName);
+		_coord = &_model->updCoordinateSet().get(getPropertyValue<string>("coordinate"));
 	}
 }
 
@@ -214,7 +202,7 @@ void SpringGeneralizedForce::setup(Model& aModel)
 void SpringGeneralizedForce::
 setRestLength(double aRestLength)
 {
-	_restLength = aRestLength;
+	setPropertyValue("rest_length", aRestLength);
 }
 //_____________________________________________________________________________
 /**
@@ -225,7 +213,7 @@ setRestLength(double aRestLength)
 double SpringGeneralizedForce::
 getRestLength() const
 {
-	return(_restLength);
+	return getPropertyValue<double>("rest_length");
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +230,7 @@ getRestLength() const
 void SpringGeneralizedForce::
 setViscosity(double aViscosity)
 {
-	_viscosity = aViscosity;
+	setPropertyValue("viscosity", aViscosity);
 }
 //_____________________________________________________________________________
 /**
@@ -253,7 +241,7 @@ setViscosity(double aViscosity)
 double SpringGeneralizedForce::
 getViscosity() const
 {
-	return(_viscosity);
+	return getPropertyValue<double>("viscosity");
 }
 
 //-----------------------------------------------------------------------------
@@ -270,7 +258,7 @@ getViscosity() const
 void SpringGeneralizedForce::
 setStiffness(double aStiffness)
 {
-	_stiffness = aStiffness;
+	setPropertyValue("stiffness", aStiffness);
 }
 //_____________________________________________________________________________
 /**
@@ -282,7 +270,7 @@ double SpringGeneralizedForce::
 getStiffness() const
 {
 
-	return _stiffness;
+	return getPropertyValue<double>("stiffness");
 }
 
 
@@ -314,7 +302,7 @@ createSystem(SimTK::MultibodySystem& system) const {
      Force::createSystem( system );
 
 	if (_model) 
-		_coord = &_model->updCoordinateSet().get(_coordName);
+		_coord = &_model->updCoordinateSet().get(getPropertyValue<string>("coordinate"));
      
 }
 /** 
@@ -347,6 +335,6 @@ computeForceMagnitude(const SimTK::State& s) const
 {
 	double q = _coord->getValue(s);
 	double speed =  _coord->getSpeedValue(s);
-	double force = -getStiffness()*(q - _restLength) - _viscosity*speed;
+	double force = -getStiffness()*(q - getPropertyValue<double>("rest_length")) - getPropertyValue<double>("viscosity")*speed;
 	return force;
 }

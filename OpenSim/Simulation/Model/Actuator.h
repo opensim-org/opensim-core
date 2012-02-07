@@ -144,13 +144,6 @@ protected:
 
 	StateFunction* _overrideForceFunction;
 
-	/** Bounds on control of this actuator. */
-	PropertyDbl _propMinControl;
-	PropertyDbl _propMaxControl;
-	// REFERENCES
-	double& _minControl;
-	double& _maxControl;
-
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -185,10 +178,10 @@ public:
 	virtual double getOptimalForce() const;
 
 	// manage bounds on Control
-	void setMinControl(const double& aMinControl) { _minControl=aMinControl; }
-	double getMinControl() const { return _minControl; }
-	void setMaxControl(const double& aMaxControl) {	_maxControl=aMaxControl; }
-	double getMaxControl() const { return _maxControl; }
+	void setMinControl(const double& aMinControl) { setPropertyValue<double>("min_control", aMinControl); }
+	double getMinControl() const { return getPropertyValue<double>("min_control"); }
+	void setMaxControl(const double& aMaxControl) {	setPropertyValue<double>("max_control", aMaxControl); }
+	double getMaxControl() const { return getPropertyValue<double>("max_control"); }
 
     ///--------------------------------------------------------------------------
     /// Overriding forces

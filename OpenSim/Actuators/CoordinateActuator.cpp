@@ -64,18 +64,16 @@ CoordinateActuator::~CoordinateActuator()
  */
 CoordinateActuator::CoordinateActuator( string aCoordinateName) :
 	Actuator(),
-	_coordName(_propCoordinateName.getValueStr()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
 	_coord(NULL)
 {
 	// NULL
 	setNull();
 
 	// MEMBER VARIABLES
-	_coordName = aCoordinateName;
+	setPropertyValue("coordinate", aCoordinateName);
 
 	if (_model) {
-		_coord = &_model->updCoordinateSet().get(_coordName);
+		_coord = &_model->updCoordinateSet().get(aCoordinateName);
 	} 
 }
 //_____________________________________________________________________________
@@ -86,8 +84,6 @@ CoordinateActuator::CoordinateActuator( string aCoordinateName) :
  */
 CoordinateActuator::CoordinateActuator(const CoordinateActuator &aGenForce) :
 	Actuator(aGenForce),
-	_coordName(_propCoordinateName.getValueStr()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
 	_coord(NULL)
 {
 	setNull();
@@ -127,12 +123,14 @@ void CoordinateActuator::setNull()
  */
 void CoordinateActuator::setupProperties()
 {
-	_propCoordinateName.setName("coordinate"); 
-	_propertySet.append( &_propCoordinateName );
-
-	_propOptimalForce.setName("optimal_force");
-	_propOptimalForce.setValue(1.0);
-	_propertySet.append( &_propOptimalForce );
+	addProperty<string>("coordinate",
+		"string",
+		"",
+		"");
+	addProperty<double>("optimal_force",
+		"double",
+		"",
+		1.0);
 }
 
 //_____________________________________________________________________________
@@ -142,7 +140,7 @@ void CoordinateActuator::setupProperties()
 void CoordinateActuator::copyData(const CoordinateActuator &aGenForce)
 {
 	// MEMBER VARIABLES
-	_coordName=aGenForce._coordName;
+	setPropertyValue("coordinate", aGenForce.getPropertyValue<string>("coordinate"));
 	setCoordinate(aGenForce.getCoordinate());
 	setOptimalForce(aGenForce.getOptimalForce());
 }
@@ -187,7 +185,7 @@ void CoordinateActuator::setCoordinate(Coordinate* aCoordinate)
 {
 	_coord = aCoordinate;
 	if(aCoordinate)
-		_coordName = aCoordinate->getName();
+		setPropertyValue("coordinate", aCoordinate->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -212,7 +210,7 @@ Coordinate* CoordinateActuator::getCoordinate() const
  */
 void CoordinateActuator::setOptimalForce(double aOptimalForce)
 {
-	_optimalForce = aOptimalForce;
+	setPropertyValue("optimal_force", aOptimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -222,7 +220,7 @@ void CoordinateActuator::setOptimalForce(double aOptimalForce)
  */
 double CoordinateActuator::getOptimalForce() const
 {
-	return(_optimalForce);
+	return getPropertyValue<double>("optimal_force");
 }
 //_____________________________________________________________________________
 /**
@@ -232,7 +230,7 @@ double CoordinateActuator::getOptimalForce() const
  */
 double CoordinateActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/_optimalForce); 
+	return fabs(getForce(s)/getPropertyValue<double>("optimal_force")); 
 }
 
 
@@ -250,7 +248,7 @@ double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 		return 0.0;
 
 	// FORCE
-	return( getControl(s) * _optimalForce );
+	return( getControl(s) * getPropertyValue<double>("optimal_force") );
 }
 
 
@@ -325,16 +323,18 @@ void CoordinateActuator::setup(Model& aModel)
 {
 	string errorMessage;
 
+	const string &coordName = getPropertyValue<string>("coordinate");
+
 	// Base class
 	Actuator::setup(aModel);
 
 	// Look up the coordinate
-	if (!_model->updCoordinateSet().contains(_coordName)) {
-		errorMessage = "CoordinateActuator: Invalid coordinate (" + _coordName + ") specified in Actuator " + getName();
+	if (!_model->updCoordinateSet().contains(coordName)) {
+		errorMessage = "CoordinateActuator: Invalid coordinate (" + coordName + ") specified in Actuator " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
 	else
-		_coord = &_model->updCoordinateSet().get(_coordName);
+		_coord = &_model->updCoordinateSet().get(coordName);
 }
 
 //_____________________________________________________________________________
@@ -362,7 +362,7 @@ bool CoordinateActuator::check() const
 	if(!isCoordinateValid()) {
 		printf("CoordinateActuator.check: ERROR- %s actuates ",
 			getName().c_str());
-		printf("an invalid generalized coordinate (%s).\n", _coordName.c_str());
+		printf("an invalid generalized coordinate (%s).\n", getPropertyValue<string>("coordinate").c_str());
 		return(false);
 	}
 
@@ -398,7 +398,6 @@ void CoordinateActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versi
 {
 	Actuator::updateFromXMLNode(aNode, versionNumber);
 	setCoordinate(_coord);
-	setOptimalForce(_optimalForce);
 }	
 
 /** 

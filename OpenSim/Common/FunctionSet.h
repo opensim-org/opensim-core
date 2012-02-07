@@ -85,6 +85,9 @@ public:
 //=============================================================================
 };	// END class FunctionSet
 
+template <>
+inline AbstractProperty::PropertyType Property2<FunctionSet>::getPropertyType() const { return Obj; }
+
 }; //namespace
 //=============================================================================
 //=============================================================================

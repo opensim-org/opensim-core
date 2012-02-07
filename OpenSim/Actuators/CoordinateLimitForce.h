@@ -67,36 +67,7 @@ class OSIMACTUATORS_API CoordinateLimitForce : public Force
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-
-	/** Name of coordinate to which the coordinate actuator is applied. */
-	PropertyStr _propCoordinateName;
-	std::string& _coordName;
-
-	/** Stiffness of the limiting force beyond the transition region. 
-	    Translations have units of Force/length and rotations have 
-		units of Torque/degree */
-	PropertyDbl _propUpperStiffness;
-	double &_upperStiffness;
-	
-	PropertyDbl _propUpperLimit;
-	double &_upperLimit;
-	
-	PropertyDbl _propLowerStiffness;
-	double &_lowerStiffness;
-	
-	PropertyDbl _propLowerLimit;
-	double &_lowerLimit;
-
-	/** Damping parameter. */
-	PropertyDbl _propDamping;
-	double &_damping;
-
-	/** The width of the nonlinear transition region */ 
-	PropertyDbl _propTransition;
-	double &_transition;
-
-    /** Corresponding generalized coordinate to which the coordinate actuator
+	/** Corresponding generalized coordinate to which the coordinate actuator
     is applied. */
     mutable Coordinate *_coord;
 

@@ -54,16 +54,7 @@ PrescribedForce::~PrescribedForce()
 /**
  * Default constructor.
  */
-PrescribedForce::PrescribedForce(Body* body) : Force(),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
-	_forceIsGlobal(_forceIsGlobalProp.getValueBool()),
-	_forceFunctionSetProp(PropertyObj("", FunctionSet())),
-    _forceFunctionSet((FunctionSet&)_forceFunctionSetProp.getValueObj()),
-	_pointFunctionSetProp(PropertyObj("", FunctionSet())),
-    _pointFunctionSet((FunctionSet&)_pointFunctionSetProp.getValueObj()),
-	_torqueFunctionSetProp(PropertyObj("", FunctionSet())),
-    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj())
+PrescribedForce::PrescribedForce(Body* body) : Force()
 {
 	setNull();
 	setupProperties();
@@ -71,7 +62,7 @@ PrescribedForce::PrescribedForce(Body* body) : Force(),
 
 	_body = body;
 	if (_body)
-		_bodyName = _body->getName();
+		setPropertyValue("body", _body->getName());
 }
 
 //_____________________________________________________________________________
@@ -79,16 +70,7 @@ PrescribedForce::PrescribedForce(Body* body) : Force(),
  * Constructor from XML file
  */
 PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) :
-	Force(aNode),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
-	_forceIsGlobal(_forceIsGlobalProp.getValueBool()),
-	_forceFunctionSetProp(PropertyObj("", FunctionSet())),
-    _forceFunctionSet((FunctionSet&)_forceFunctionSetProp.getValueObj()),
-	_pointFunctionSetProp(PropertyObj("", FunctionSet())),
-    _pointFunctionSet((FunctionSet&)_pointFunctionSetProp.getValueObj()),
-	_torqueFunctionSetProp(PropertyObj("", FunctionSet())),
-    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj())
+	Force(aNode)
 {
 	setNull();
 	setupProperties();
@@ -102,16 +84,7 @@ PrescribedForce::PrescribedForce(SimTK::Xml::Element& aNode) :
  * Copy constructor.
  */
 PrescribedForce::PrescribedForce(const PrescribedForce& force) :
-	Force(force),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_pointIsGlobal(_pointIsGlobalProp.getValueBool()),
-	_forceIsGlobal(_forceIsGlobalProp.getValueBool()),
-	_forceFunctionSetProp(PropertyObj("", FunctionSet())),
-    _forceFunctionSet((FunctionSet&)_forceFunctionSetProp.getValueObj()),
-	_pointFunctionSetProp(PropertyObj("", FunctionSet())),
-    _pointFunctionSet((FunctionSet&)_pointFunctionSetProp.getValueObj()),
-	_torqueFunctionSetProp(PropertyObj("", FunctionSet())),
-    _torqueFunctionSet((FunctionSet&)_torqueFunctionSetProp.getValueObj())
+	Force(force)
 {
 	setNull();
 	setupProperties();
@@ -144,18 +117,22 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
 	// Base class
 	Force::updateFromXMLNode(aNode, versionNumber);
 
+	const FunctionSet &forceFunctionSet = getPropertyValue<FunctionSet>("forceFunctions");
+	const FunctionSet &pointFunctionSet = getPropertyValue<FunctionSet>("pointFunctions");
+	const FunctionSet &torqueFunctionSet = getPropertyValue<FunctionSet>("torqueFunctions");
+
 	//Specify all or none of the components
-	if(_forceFunctionSet.getSize() != 3&& _forceFunctionSet.getSize() != 0)
+	if(forceFunctionSet.getSize() != 3&& forceFunctionSet.getSize() != 0)
 	{
 		throw Exception("PrescribedForce:: three components of the force must be specified.");
 	}
 
-	if(_pointFunctionSet.getSize() != 3 && _pointFunctionSet.getSize() != 0)
+	if(pointFunctionSet.getSize() != 3 && pointFunctionSet.getSize() != 0)
 	{
 		throw Exception("PrescribedForce:: three components of the point must be specified.");
 	}
 
-	if(_torqueFunctionSet.getSize() != 3 && _torqueFunctionSet.getSize() != 0)
+	if(torqueFunctionSet.getSize() != 3 && torqueFunctionSet.getSize() != 0)
 	{
 		throw Exception("PrescribedForce:: three components of the torque must be specified.");
 	}
@@ -167,53 +144,48 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
  */
 void PrescribedForce::setupProperties()
 {
-	string comment;
-
-	// Body name
-	comment = "Name of the body the force is applied to.";
-	_bodyNameProp.setComment(comment);
-	_bodyNameProp.setName("body");
-	_propertySet.append(&_bodyNameProp);
-
-	// Point is Global 
-	comment = "Flag indicating whether the point (specified in pointFunctions) is in global frame";
-	_pointIsGlobalProp.setComment(comment);
-	_pointIsGlobalProp.setName("pointIsGlobal");
-	_pointIsGlobalProp.setValue(false);
-	_propertySet.append(&_pointIsGlobalProp);
-
-	// Force/Torque is global 
-	comment = "Flag indicating whether the quantities (specified in force/torqueFunctions) is in global frame";
-	_forceIsGlobalProp.setComment(comment);
-	_forceIsGlobalProp.setName("forceIsGlobal");
-	_forceIsGlobalProp.setValue(true);
-	_propertySet.append(&_forceIsGlobalProp);
-
-	comment = "Three functions describing the force to be applied.";
-	_forceFunctionSetProp.setComment(comment);
-	_forceFunctionSetProp.setName("forceFunctions");
-	_forceFunctionSet.setName("forceFunctions");
-	_forceFunctionSetProp.setMatchName(true);
-	_forceFunctionSetProp.setAllowableArraySize(3);
-	_propertySet.append(&_forceFunctionSetProp);
-
-	comment = "Three functions describing the location at which the force is applied";
-	_pointFunctionSetProp.setComment(comment);
-	_pointFunctionSetProp.setName("pointFunctions");
-	_pointFunctionSet.setName("pointFunctions");
-	_pointFunctionSetProp.setMatchName(true);
-	_pointFunctionSetProp.setAllowableArraySize(0, 3);
-	_propertySet.append(&_pointFunctionSetProp);
-
-	comment = "Three functions describing the torque the PrescribedForce applies";
-	_torqueFunctionSetProp.setComment(comment);
-	_torqueFunctionSetProp.setName("torqueFunctions");
-	_torqueFunctionSet.setName("torqueFunctions");
-	_torqueFunctionSetProp.setMatchName(true);
-	_torqueFunctionSetProp.setAllowableArraySize(0, 3);
-	_propertySet.append(&_torqueFunctionSetProp);
-
-	
+	addProperty<string>("body",
+		"string",
+		"Name of the body the force is applied to.",
+		"");
+	addProperty<bool>("pointIsGlobal",
+		"bool",
+		"Flag indicating whether the point (specified in pointFunctions) is in global frame",
+		false);
+	addProperty<bool>("forceIsGlobal",
+		"bool",
+		"Flag indicating whether the quantities (specified in force/torqueFunctions) is in global frame",
+		true);
+	addProperty<FunctionSet>("forceFunctions",
+		"FunctionSet",
+		"Three functions describing the force to be applied.",
+		FunctionSet());
+	Property2<FunctionSet> &forceFunctionSetProp = updProperty<FunctionSet>("forceFunctions");
+	forceFunctionSetProp.setMatchName(true);
+	forceFunctionSetProp.setAllowableArraySize(3);
+	FunctionSet &forceFunctionSet = updPropertyValue<FunctionSet>("forceFunctions");
+	forceFunctionSet.setName("forceFunctions");
+	forceFunctionSet.setMemoryOwner(false);
+	addProperty<FunctionSet>("pointFunctions",
+		"FunctionSet",
+		"Three functions describing the location at which the force is applied.",
+		FunctionSet());
+	Property2<FunctionSet> &pointFunctionSetProp = updProperty<FunctionSet>("pointFunctions");
+	pointFunctionSetProp.setMatchName(true);
+	pointFunctionSetProp.setAllowableArraySize(0, 3);
+	FunctionSet &pointFunctionSet = updPropertyValue<FunctionSet>("pointFunctions");
+	pointFunctionSet.setName("pointFunctions");
+	pointFunctionSet.setMemoryOwner(false);
+	addProperty<FunctionSet>("torqueFunctions",
+		"FunctionSet",
+		"Three functions describing the torque the PrescribedForce applies.",
+		FunctionSet());
+	Property2<FunctionSet> &torqueFunctionSetProp = updProperty<FunctionSet>("torqueFunctions");
+	torqueFunctionSetProp.setMatchName(true);
+	torqueFunctionSetProp.setAllowableArraySize(0, 3);
+	FunctionSet &torqueFunctionSet = updPropertyValue<FunctionSet>("torqueFunctions");
+	torqueFunctionSet.setName("torqueFunctions");
+	torqueFunctionSet.setMemoryOwner(false);
 }
 
 PrescribedForce& PrescribedForce::operator=(const PrescribedForce &aForce)
@@ -225,33 +197,41 @@ PrescribedForce& PrescribedForce::operator=(const PrescribedForce &aForce)
 
 void PrescribedForce::setForceFunctions(Function* forceX, Function* forceY, Function* forceZ)
 {
-	_forceFunctionSet.setSize(0);
-	_forceFunctionSet.append(forceX);
-	_forceFunctionSet.append(forceY);
-	_forceFunctionSet.append(forceZ);
+	FunctionSet &forceFunctionSet = updPropertyValue<FunctionSet>("forceFunctions");
+
+	forceFunctionSet.setSize(0);
+	forceFunctionSet.append(forceX);
+	forceFunctionSet.append(forceY);
+	forceFunctionSet.append(forceZ);
 }
 
 
 void PrescribedForce::setPointFunctions(Function* pointX, Function* pointY, Function* pointZ)
 {
-	_pointFunctionSet.setSize(0);
-	_pointFunctionSet.append(pointX);
-	_pointFunctionSet.append(pointY);
-	_pointFunctionSet.append(pointZ);
+	FunctionSet &pointFunctionSet = updPropertyValue<FunctionSet>("pointFunctions");
+
+	pointFunctionSet.setSize(0);
+	pointFunctionSet.append(pointX);
+	pointFunctionSet.append(pointY);
+	pointFunctionSet.append(pointZ);
 }
 
 void PrescribedForce::setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ)
 {
-	_torqueFunctionSet.setSize(0);
-	_torqueFunctionSet.append(torqueX);
-	_torqueFunctionSet.append(torqueY);
-	_torqueFunctionSet.append(torqueZ);
+	FunctionSet &torqueFunctionSet = updPropertyValue<FunctionSet>("torqueFunctions");
+
+	torqueFunctionSet.setSize(0);
+	torqueFunctionSet.append(torqueX);
+	torqueFunctionSet.append(torqueY);
+	torqueFunctionSet.append(torqueZ);
 
 }
 
 void PrescribedForce::setTorqueFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 											 const Storage& kineticsStore)  
 {
+	FunctionSet &torqueFunctionSet = updPropertyValue<FunctionSet>("torqueFunctions");
+
 	int forceSize = kineticsStore.getSize();
 	if(forceSize<=0) return;
 	double *t=0;
@@ -266,11 +246,13 @@ void PrescribedForce::setTorqueFunctionNames(const OpenSim::Array<std::string>& 
 	}
 	setTorqueFunctions(tSpline[0], tSpline[1], tSpline[2]);
 	for (int i=0; i<aFunctionNames.getSize();i++)
-		_torqueFunctionSet.get(i).setName(aFunctionNames.get(i));
+		torqueFunctionSet.get(i).setName(aFunctionNames.get(i));
 }
 void PrescribedForce::setForceFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 											 const Storage& kineticsStore)  
 {
+	FunctionSet &forceFunctionSet = updPropertyValue<FunctionSet>("forceFunctions");
+
 	int forceSize = kineticsStore.getSize();
 	if(forceSize<=0) return;
 	double *t=0;
@@ -285,11 +267,13 @@ void PrescribedForce::setForceFunctionNames(const OpenSim::Array<std::string>& a
 	}
 	setForceFunctions(tSpline[0], tSpline[1], tSpline[2]);
 	for (int i=0; i<aFunctionNames.getSize();i++)
-		_forceFunctionSet.get(i).setName(aFunctionNames.get(i));
+		forceFunctionSet.get(i).setName(aFunctionNames.get(i));
 }
 void PrescribedForce::setPointFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 											 const Storage& kineticsStore)  
 {
+	FunctionSet &pointFunctionSet = updPropertyValue<FunctionSet>("pointFunctions");
+
 	int forceSize = kineticsStore.getSize();
 	if(forceSize<=0) return;
 	double *t=0;
@@ -304,25 +288,25 @@ void PrescribedForce::setPointFunctionNames(const OpenSim::Array<std::string>& a
 	}
 	setPointFunctions(tSpline[0], tSpline[1], tSpline[2]);
 	for (int i=0; i<aFunctionNames.getSize();i++)
-		_pointFunctionSet.get(i).setName(aFunctionNames.get(i));
+		pointFunctionSet.get(i).setName(aFunctionNames.get(i));
 }
 
 
 bool PrescribedForce::getForceIsInGlobalFrame() const
 {
-	return _forceIsGlobal;
+	return getPropertyValue<bool>("forceIsGlobal");
 }
 void PrescribedForce::setForceIsInGlobalFrame(bool isGlobal)
 {
-	_forceIsGlobal = isGlobal;
+	setPropertyValue("forceIsGlobal", isGlobal);
 }
 bool PrescribedForce::getPointIsInGlobalFrame() const
 {
-	return _pointIsGlobal;
+	return getPropertyValue<bool>("pointIsGlobal");
 }
 void PrescribedForce::setPointIsInGlobalFrame(bool isGlobal)
 {
-	_pointIsGlobal = isGlobal;
+	setPropertyValue("pointIsGlobal", isGlobal);
 }
 
 //-----------------------------------------------------------------------------
@@ -334,6 +318,12 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
+	const bool &pointIsGlobal = getPropertyValue<bool>("pointIsGlobal");
+	const bool &forceIsGlobal = getPropertyValue<bool>("forceIsGlobal");
+	const FunctionSet &forceFunctionSet = getPropertyValue<FunctionSet>("forceFunctions");
+	const FunctionSet &pointFunctionSet = getPropertyValue<FunctionSet>("pointFunctions");
+	const FunctionSet &torqueFunctionSet = getPropertyValue<FunctionSet>("torqueFunctions");
+
 	double time = state.getTime();
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 	SimTK::Vector  timeAsVector(1, time);
@@ -342,20 +332,20 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 	Function* forceX=NULL;
 	Function* forceY=NULL;
 	Function* forceZ=NULL;
-	if (_forceFunctionSet.getSize()==3){
-		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	if (forceFunctionSet.getSize()==3){
+		forceX=&forceFunctionSet[0];	forceY=&forceFunctionSet[1];	forceZ=&forceFunctionSet[2];
 	}
 	if (forceX != NULL) {
 		Function* pointX=NULL;
 		Function* pointY=NULL;
 		Function* pointZ=NULL;
-		if (_pointFunctionSet.getSize()==3){
-			pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+		if (pointFunctionSet.getSize()==3){
+			pointX=&pointFunctionSet[0];	pointY=&pointFunctionSet[1];	pointZ=&pointFunctionSet[2];
 		}
 		Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
 			forceY?forceY->calcValue(timeAsVector):0.0, 
 			forceZ?forceZ->calcValue(timeAsVector):0.0);
-		if (!_forceIsGlobal)
+		if (!forceIsGlobal)
 			engine.transform(state, *_body, force, engine.getGroundBody(), force);
 		if (pointX == NULL) {
 			applyForce(state, *_body, force, bodyForces);
@@ -364,7 +354,7 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 			Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
 				pointY?pointY->calcValue(timeAsVector):0.0, 
 				pointZ?pointZ->calcValue(timeAsVector):0.0);
-			if (_pointIsGlobal)
+			if (pointIsGlobal)
 				engine.transformPosition(state, engine.getGroundBody(), point, *_body, point);
 			applyForceToPoint(state, *_body, point, force, bodyForces);
 		}
@@ -372,14 +362,14 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 	Function* torqueX=NULL;
 	Function* torqueY=NULL;
 	Function* torqueZ=NULL;
-	if (_torqueFunctionSet.getSize()==3){
-		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	if (torqueFunctionSet.getSize()==3){
+		torqueX=&torqueFunctionSet[0];	torqueY=&torqueFunctionSet[1];	torqueZ=&torqueFunctionSet[2];
 	}
 	if (torqueX != NULL) {
 		Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
 			torqueY?torqueY->calcValue(timeAsVector):0.0, 
 			torqueZ?torqueZ->calcValue(timeAsVector):0.0);
-		if (!_forceIsGlobal)
+		if (!forceIsGlobal)
 			engine.transform(state, *_body, torque, engine.getGroundBody(), torque);
 		applyTorque(state, *_body, torque, bodyForces);
 	}
@@ -390,12 +380,14 @@ void PrescribedForce::computeForce(const SimTK::State& state,
  */
 Vec3 PrescribedForce::getForceAtTime(double aTime) const	
 {
+	const FunctionSet &forceFunctionSet = getPropertyValue<FunctionSet>("forceFunctions");
+
 	SimTK::Vector timeAsVector(1, aTime);
 	Function* forceX=NULL;
 	Function* forceY=NULL;
 	Function* forceZ=NULL;
-	if (_forceFunctionSet.getSize()==3){
-		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	if (forceFunctionSet.getSize()==3){
+		forceX=&forceFunctionSet[0];	forceY=&forceFunctionSet[1];	forceZ=&forceFunctionSet[2];
 	}
 	Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
 		forceY?forceY->calcValue(timeAsVector):0.0, 
@@ -405,12 +397,14 @@ Vec3 PrescribedForce::getForceAtTime(double aTime) const
 
 Vec3 PrescribedForce::getPointAtTime(double aTime) const
 {
+	const FunctionSet &pointFunctionSet = getPropertyValue<FunctionSet>("pointFunctions");
+
 	SimTK::Vector timeAsVector(1, aTime);
 	Function* pointX=NULL;
 	Function* pointY=NULL;
 	Function* pointZ=NULL;
-	if (_pointFunctionSet.getSize()==3){
-		pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+	if (pointFunctionSet.getSize()==3){
+		pointX=&pointFunctionSet[0];	pointY=&pointFunctionSet[1];	pointZ=&pointFunctionSet[2];
 	}
 	Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
 		pointY?pointY->calcValue(timeAsVector):0.0, 
@@ -420,12 +414,14 @@ Vec3 PrescribedForce::getPointAtTime(double aTime) const
 
 Vec3 PrescribedForce::getTorqueAtTime(double aTime) const
 {
+	const FunctionSet &torqueFunctionSet = getPropertyValue<FunctionSet>("torqueFunctions");
+
 	SimTK::Vector timeAsVector(1, aTime);
 	Function* torqueX=NULL;
 	Function* torqueY=NULL;
 	Function* torqueZ=NULL;
-	if (_torqueFunctionSet.getSize()==3){
-		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	if (torqueFunctionSet.getSize()==3){
+		torqueX=&torqueFunctionSet[0];	torqueY=&torqueFunctionSet[1];	torqueZ=&torqueFunctionSet[2];
 	}
 	Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
 		torqueY?torqueY->calcValue(timeAsVector):0.0, 
@@ -441,29 +437,34 @@ Vec3 PrescribedForce::getTorqueAtTime(double aTime) const
 OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 
+	const bool &forceIsGlobal = getPropertyValue<bool>("forceIsGlobal");
+	const FunctionSet &forceFunctionSet = getPropertyValue<FunctionSet>("forceFunctions");
+	const FunctionSet &pointFunctionSet = getPropertyValue<FunctionSet>("pointFunctions");
+	const FunctionSet &torqueFunctionSet = getPropertyValue<FunctionSet>("torqueFunctions");
+
 	// Compute flags to find out if a point is specified or not and if a torque or force or both are specified
 	Function* forceX=NULL;
 	Function* forceY=NULL;
 	Function* forceZ=NULL;
-	if (_forceFunctionSet.getSize()==3){
-		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	if (forceFunctionSet.getSize()==3){
+		forceX=&forceFunctionSet[0];	forceY=&forceFunctionSet[1];	forceZ=&forceFunctionSet[2];
 	}
 	Function* pointX=NULL;
 	Function* pointY=NULL;
 	Function* pointZ=NULL;
-	if (_pointFunctionSet.getSize()==3){
-		pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+	if (pointFunctionSet.getSize()==3){
+		pointX=&pointFunctionSet[0];	pointY=&pointFunctionSet[1];	pointZ=&pointFunctionSet[2];
 	}
 	Function* torqueX=NULL;
 	Function* torqueY=NULL;
 	Function* torqueZ=NULL;
-	if (_torqueFunctionSet.getSize()==3){
-		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	if (torqueFunctionSet.getSize()==3){
+		torqueX=&torqueFunctionSet[0];	torqueY=&torqueFunctionSet[1];	torqueZ=&torqueFunctionSet[2];
 	}
 	bool appliesForce = (forceX!=NULL) || (forceY!=NULL) || (forceZ!=NULL);
 	bool pointSpecified = (pointX!=NULL) || (pointY!=NULL) || (pointZ!=NULL);
 	// Instead of trying to figure out which values are not specified we'll write NaNs 
-	std::string BodyToReport = (_forceIsGlobal?"ground":_body->getName());
+	std::string BodyToReport = (forceIsGlobal?"ground":_body->getName());
 	if (appliesForce) {
 		labels.append(BodyToReport+"_"+getName()+"_fx");
 		labels.append(BodyToReport+"_"+getName()+"_fy");
@@ -488,6 +489,13 @@ OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
 OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& state) const {
 	OpenSim::Array<double>	values(SimTK::NaN);
 	assert(_body!=0);
+
+	const bool &pointIsGlobal = getPropertyValue<bool>("pointIsGlobal");
+	const bool &forceIsGlobal = getPropertyValue<bool>("forceIsGlobal");
+	const FunctionSet &forceFunctionSet = getPropertyValue<FunctionSet>("forceFunctions");
+	const FunctionSet &pointFunctionSet = getPropertyValue<FunctionSet>("pointFunctions");
+	const FunctionSet &torqueFunctionSet = getPropertyValue<FunctionSet>("torqueFunctions");
+
 	// This is bad as it duplicates the code in computeForce we'll cleanup after it works!
 	double time = state.getTime();
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
@@ -496,26 +504,26 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 	Function* forceX=NULL;
 	Function* forceY=NULL;
 	Function* forceZ=NULL;
-	if (_forceFunctionSet.getSize()==3){
-		forceX=&_forceFunctionSet[0];	forceY=&_forceFunctionSet[1];	forceZ=&_forceFunctionSet[2];
+	if (forceFunctionSet.getSize()==3){
+		forceX=&forceFunctionSet[0];	forceY=&forceFunctionSet[1];	forceZ=&forceFunctionSet[2];
 	}
 	Function* pointX=NULL;
 	Function* pointY=NULL;
 	Function* pointZ=NULL;
-	if (_pointFunctionSet.getSize()==3){
-		pointX=&_pointFunctionSet[0];	pointY=&_pointFunctionSet[1];	pointZ=&_pointFunctionSet[2];
+	if (pointFunctionSet.getSize()==3){
+		pointX=&pointFunctionSet[0];	pointY=&pointFunctionSet[1];	pointZ=&pointFunctionSet[2];
 	}
 	Function* torqueX=NULL;
 	Function* torqueY=NULL;
 	Function* torqueZ=NULL;
-	if (_torqueFunctionSet.getSize()==3){
-		torqueX=&_torqueFunctionSet[0];	torqueY=&_torqueFunctionSet[1];	torqueZ=&_torqueFunctionSet[2];
+	if (torqueFunctionSet.getSize()==3){
+		torqueX=&torqueFunctionSet[0];	torqueY=&torqueFunctionSet[1];	torqueZ=&torqueFunctionSet[2];
 	}
 	if (forceX != NULL) {
 		Vec3 force(forceX?forceX->calcValue(timeAsVector):0.0, 
 			forceY?forceY->calcValue(timeAsVector):0.0, 
 			forceZ?forceZ->calcValue(timeAsVector):0.0);
-		if (!_forceIsGlobal)
+		if (!forceIsGlobal)
 			engine.transform(state, *_body, force, engine.getGroundBody(), force);
 		if (pointX == NULL) {
 			//applyForce(*_body, force);
@@ -524,7 +532,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 			Vec3 point(pointX?pointX->calcValue(timeAsVector):0.0, 
 				pointY?pointY->calcValue(timeAsVector):0.0, 
 				pointZ?pointZ->calcValue(timeAsVector):0.0);
-			if (_pointIsGlobal)
+			if (pointIsGlobal)
 				engine.transformPosition(state, engine.getGroundBody(), point, *_body, point);
 			//applyForceToPoint(*_body, point, force);
 			for (int i=0; i<3; i++) values.append(force[i]);
@@ -535,7 +543,7 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 		Vec3 torque(torqueX?torqueX->calcValue(timeAsVector):0.0, 
 			torqueY?torqueY->calcValue(timeAsVector):0.0, 
 			torqueZ?torqueZ->calcValue(timeAsVector):0.0);
-		if (!_forceIsGlobal)
+		if (!forceIsGlobal)
 			engine.transform(state, *_body, torque, engine.getGroundBody(), torque);
 		for (int i=0; i<3; i++) values.append(torque[i]);
 		//applyTorque(*_body, torque);
@@ -545,25 +553,19 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 
 void PrescribedForce::setNull()
 {
-	_forceIsGlobal=true;
-	_pointIsGlobal=false;
 	setType("PrescribedForce");
-
-	_forceFunctionSet.setMemoryOwner(false);
-	_pointFunctionSet.setMemoryOwner(false);
-	_torqueFunctionSet.setMemoryOwner(false);
 }
 
 void PrescribedForce::copyData(const PrescribedForce& orig)
 {
-	_forceIsGlobal = orig._forceIsGlobal;
-	_pointIsGlobal = orig._pointIsGlobal;
+	setPropertyValue("forceIsGlobal", orig.getPropertyValue<bool>("forceIsGlobal"));
+	setPropertyValue("pointIsGlobal", orig.getPropertyValue<bool>("pointIsGlobal"));
 
-	_forceFunctionSet = orig._forceFunctionSet;
-	_pointFunctionSet = orig._pointFunctionSet;
-	_torqueFunctionSet = orig._torqueFunctionSet;
+	setPropertyValue("forceFunctions", orig.getPropertyValue<FunctionSet>("forceFunctions"));
+	setPropertyValue("pointFunctions", orig.getPropertyValue<FunctionSet>("pointFunctions"));
+	setPropertyValue("torqueFunctions", orig.getPropertyValue<FunctionSet>("torqueFunctions"));
 
-	_bodyName = orig._bodyName;
+	setPropertyValue("body", orig.getPropertyValue<string>("body"));
 	_body = orig._body;
 }
 
@@ -573,5 +575,5 @@ void PrescribedForce::setup(Model& model)
 
 	// hook up body pointer to name
 	if (_model)
-		_body = &_model->updBodySet().get(_bodyName);
+		_body = &_model->updBodySet().get(getPropertyValue<string>("body"));
 }

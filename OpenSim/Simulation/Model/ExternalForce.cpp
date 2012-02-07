@@ -57,14 +57,7 @@ ExternalForce::~ExternalForce()
 /**
  * Default constructor.
  */
-ExternalForce::ExternalForce() : Force(),
-	_appliedToBodyName(_appliedToBodyNameProp.getValueStr()),
-	_forceExpressedInBodyName(_forceExpressedInBodyNameProp.getValueStr()),
-	_pointExpressedInBodyName(_pointExpressedInBodyNameProp.getValueStr()),
-	_dataSourceName(_dataSourceNameProp.getValueStr()),
-	_forceIdentifier(_forceIdentifierProp.getValueStr()),
-	_pointIdentifier(_pointIdentifierProp.getValueStr()),
-	_torqueIdentifier(_torqueIdentifierProp.getValueStr())
+ExternalForce::ExternalForce() : Force()
 {
 	setNull();
 	setupProperties();
@@ -76,26 +69,19 @@ ExternalForce::ExternalForce() : Force(),
  * 
  */
 ExternalForce::ExternalForce(const Storage &dataSource, string forceIdentifier, string pointIdentifier, string torqueIdentifier,
-		string appliedToBodyName, string forceExpressedInBodyName, string pointExpressedInBodyName) : Force(),
-	_appliedToBodyName(_appliedToBodyNameProp.getValueStr()),
-	_forceExpressedInBodyName(_forceExpressedInBodyNameProp.getValueStr()),
-	_pointExpressedInBodyName(_pointExpressedInBodyNameProp.getValueStr()),
-	_dataSourceName(_dataSourceNameProp.getValueStr()),
-	_forceIdentifier(_forceIdentifierProp.getValueStr()),
-	_pointIdentifier(_pointIdentifierProp.getValueStr()),
-	_torqueIdentifier(_torqueIdentifierProp.getValueStr())
+		string appliedToBodyName, string forceExpressedInBodyName, string pointExpressedInBodyName) : Force()
 {
 	setNull();
 	setupProperties();
 	_dataSource = &dataSource;
 
-	_appliedToBodyName = appliedToBodyName;
-	_forceExpressedInBodyName = forceExpressedInBodyName;
-	_pointExpressedInBodyName = pointExpressedInBodyName;
-	_dataSourceName = dataSource.getName();
-	_forceIdentifier = forceIdentifier;
-	_pointIdentifier = pointIdentifier;
-	_torqueIdentifier = torqueIdentifier;
+	setPropertyValue("applied_to_body", appliedToBodyName);
+	setPropertyValue("force_expressed_in_body", forceExpressedInBodyName);
+	setPropertyValue("point_expressed_in_body", pointExpressedInBodyName);
+	setPropertyValue("data_source_name", dataSource.getName());
+	setPropertyValue("force_identifier", forceIdentifier);
+	setPropertyValue("point_identifier", pointIdentifier);
+	setPropertyValue("torque_identifier", torqueIdentifier);
 }
 
 
@@ -104,14 +90,7 @@ ExternalForce::ExternalForce(const Storage &dataSource, string forceIdentifier, 
  * Constructor from XML file
  */
 ExternalForce::ExternalForce(SimTK::Xml::Element& aNode) :
-	Force(aNode),
-	_appliedToBodyName(_appliedToBodyNameProp.getValueStr()),
-	_forceExpressedInBodyName(_forceExpressedInBodyNameProp.getValueStr()),
-	_pointExpressedInBodyName(_pointExpressedInBodyNameProp.getValueStr()),
-	_dataSourceName(_dataSourceNameProp.getValueStr()),
-	_forceIdentifier(_forceIdentifierProp.getValueStr()),
-	_pointIdentifier(_pointIdentifierProp.getValueStr()),
-	_torqueIdentifier(_torqueIdentifierProp.getValueStr())
+	Force(aNode)
 {
 	setNull();
 	setupProperties();
@@ -123,14 +102,7 @@ ExternalForce::ExternalForce(SimTK::Xml::Element& aNode) :
  * Copy constructor.
  */
 ExternalForce::ExternalForce(const ExternalForce& force) :
-	Force(force),
-	_appliedToBodyName(_appliedToBodyNameProp.getValueStr()),
-	_forceExpressedInBodyName(_forceExpressedInBodyNameProp.getValueStr()),
-	_pointExpressedInBodyName(_pointExpressedInBodyNameProp.getValueStr()),
-	_dataSourceName(_dataSourceNameProp.getValueStr()),
-	_forceIdentifier(_forceIdentifierProp.getValueStr()),
-	_pointIdentifier(_pointIdentifierProp.getValueStr()),
-	_torqueIdentifier(_torqueIdentifierProp.getValueStr())
+	Force(force)
 {
 	setNull();
 	setupProperties();
@@ -148,14 +120,14 @@ void ExternalForce::setNull()
 
 void ExternalForce::copyData(const ExternalForce& orig)
 {
-	_appliedToBodyName = orig._appliedToBodyName;
-	_forceExpressedInBodyName = orig._forceExpressedInBodyName;
-	_pointExpressedInBodyName = orig._pointExpressedInBodyName;
+	setPropertyValue("applied_to_body", orig.getPropertyValue<string>("applied_to_body"));
+	setPropertyValue("force_expressed_in_body", orig.getPropertyValue<string>("force_expressed_in_body"));
+	setPropertyValue("point_expressed_in_body", orig.getPropertyValue<string>("point_expressed_in_body"));
 
-	_dataSourceName = orig._dataSourceName;
-	_forceIdentifier = orig._forceIdentifier;
-	_pointIdentifier = orig._pointIdentifier;
-	_torqueIdentifier = orig._torqueIdentifier;
+	setPropertyValue("data_source_name", orig.getPropertyValue<string>("data_source_name"));
+	setPropertyValue("force_identifier", orig.getPropertyValue<string>("force_identifier"));
+	setPropertyValue("point_identifier", orig.getPropertyValue<string>("point_identifier"));
+	setPropertyValue("torque_identifier", orig.getPropertyValue<string>("torque_identifier"));
 
 	if(orig._dataSource)
 		_dataSource = orig._dataSource;
@@ -193,7 +165,7 @@ void ExternalForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 	//	throw Exception("ExternalForce:: data source name must be assigned.");
 	//}
 
-	if(_forceIdentifier==""  && _torqueIdentifier=="")
+	if(getPropertyValue<string>("force_identifier")=="" && getPropertyValue<string>("torque_identifier")=="")
 	{
 		throw Exception("ExternalForce:: no force or torque identified.");
 	}
@@ -205,47 +177,34 @@ void ExternalForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
  */
 void ExternalForce::setupProperties()
 {
-	string comment;
-
-	// Applied to body name
-	comment = "Name of the body the force is applied to.";
-	_appliedToBodyNameProp.setComment(comment);
-	_appliedToBodyNameProp.setName("applied_to_body");
-	_propertySet.append(&_appliedToBodyNameProp);
-
-	// force expressed in body
-	comment = "Name of the body the force is expressed in (default is ground).";
-	_forceExpressedInBodyNameProp.setComment(comment);
-	_forceExpressedInBodyNameProp.setName("force_expressed_in_body");
-	_propertySet.append(&_forceExpressedInBodyNameProp);
-
-	// point expressed in body
-	comment = "Name of the body the point is expressed in (default is ground).";
-	_pointExpressedInBodyNameProp.setComment(comment);
-	_pointExpressedInBodyNameProp.setName("point_expressed_in_body");
-	_propertySet.append(&_pointExpressedInBodyNameProp);
-
-	comment = "Identifier (string) to locate the force to be applied in the data source.";
-	_forceIdentifierProp.setComment(comment);
-	_forceIdentifierProp.setName("force_identifier");
-	_propertySet.append(&_forceIdentifierProp);
-
-	comment = "Identifier (string) to locate the point to be applied in the data source.";
-	_pointIdentifierProp.setComment(comment);
-	_pointIdentifierProp.setName("point_identifier");
-	_propertySet.append(&_pointIdentifierProp);
-
-	comment = "Identifier (string) to locate the torque to be applied in the data source.";
-	_torqueIdentifierProp.setComment(comment);
-	_torqueIdentifierProp.setName("torque_identifier");
-	_propertySet.append(&_torqueIdentifierProp);
-
-	comment = "Name of the data source (Storage) that will supply the force data.";
-	_dataSourceNameProp.setComment(comment);
-	_dataSourceNameProp.setName("data_source_name");
-	_propertySet.append(&_dataSourceNameProp);
-
-	
+	addProperty<string>("applied_to_body",
+		"string",
+		"Name of the body the force is applied to.",
+		"");
+	addProperty<string>("force_expressed_in_body",
+		"string",
+		"Name of the body the force is expressed in (default is ground).",
+		"");
+	addProperty<string>("point_expressed_in_body",
+		"string",
+		"Name of the body the point is expressed in (default is ground).",
+		"");
+	addProperty<string>("force_identifier",
+		"string",
+		"Identifier (string) to locate the force to be applied in the data source.",
+		"");
+	addProperty<string>("point_identifier",
+		"string",
+		"Identifier (string) to locate the point to be applied in the data source.",
+		"");
+	addProperty<string>("torque_identifier",
+		"string",
+		"Identifier (string) to locate the torque to be applied in the data source.",
+		"");
+	addProperty<string>("data_source_name",
+		"string",
+		"Name of the data source (Storage) that will supply the force data.",
+		"");
 }
 
 ExternalForce& ExternalForce::operator=(const ExternalForce &aForce)
@@ -258,12 +217,20 @@ ExternalForce& ExternalForce::operator=(const ExternalForce &aForce)
 void ExternalForce::setDataSource(const Storage *dataSource)
 { 
 	_dataSource = dataSource;
-	_dataSourceName = dataSource->getName();
+	setPropertyValue("data_source_name", dataSource->getName());
 }
 
 void ExternalForce::setup(Model& model)
 {
 	Force::setup(model);
+
+	const string &appliedToBodyName = getPropertyValue<string>("applied_to_body");
+	const string &forceExpressedInBodyName = getPropertyValue<string>("force_expressed_in_body");
+	const string &pointExpressedInBodyName = getPropertyValue<string>("point_expressed_in_body");
+	const string &dataSourceName = getPropertyValue<string>("data_source_name");
+	const string &forceIdentifier = getPropertyValue<string>("force_identifier");
+	const string &pointIdentifier = getPropertyValue<string>("point_identifier");
+	const string &torqueIdentifier = getPropertyValue<string>("torque_identifier");
 
 	_appliesForce = appliesForce();
 	_specifiesPoint = specifiesPoint();
@@ -271,28 +238,28 @@ void ExternalForce::setup(Model& model)
 
 	// hook up body pointers from names
 	if (_model){
-		_appliedToBody = &_model->updBodySet().get(_appliedToBodyName);
-		_forceExpressedInBody = &_model->updBodySet().get(_forceExpressedInBodyName);
-		_pointExpressedInBody = _specifiesPoint ? &_model->updBodySet().get(_pointExpressedInBodyName) : NULL;
+		_appliedToBody = &_model->updBodySet().get(appliedToBodyName);
+		_forceExpressedInBody = &_model->updBodySet().get(forceExpressedInBodyName);
+		_pointExpressedInBody = _specifiesPoint ? &_model->updBodySet().get(pointExpressedInBodyName) : NULL;
 	}
 
 	if(!_appliedToBody){
-		throw(Exception("ExternalForce: Could not find body '"+_appliedToBodyName+"' to apply force to." ));
+		throw(Exception("ExternalForce: Could not find body '"+appliedToBodyName+"' to apply force to." ));
 	}
 	if(!_forceExpressedInBody){
-		cout << "WARNING::ExternalForce could not find body '"+_forceExpressedInBodyName+"' that force is expressed in-"
+		cout << "WARNING::ExternalForce could not find body '"+forceExpressedInBodyName+"' that force is expressed in-"
 			    "  ground is being assumed." << endl;
 	}
 	if(_specifiesPoint && !_pointExpressedInBody){
-		cout << "WARNING::ExternalForce could not find body '"+_pointExpressedInBodyName+"' that point is expressed in-"
+		cout << "WARNING::ExternalForce could not find body '"+pointExpressedInBodyName+"' that point is expressed in-"
 			    "  ground is being assumed." << endl;
 	}
 
 	if(_dataSource == NULL){
 		throw(Exception("ExternalForce: Data source has not been set." ));
 	}
-	else if(_dataSource->getName() != _dataSourceName){
-		throw(Exception("ExternalForce: Data source "+_dataSourceName+" specified by name, but "+_dataSource->getName()+" was set." ));
+	else if(_dataSource->getName() != dataSourceName){
+		throw(Exception("ExternalForce: Data source "+dataSourceName+" specified by name, but "+_dataSource->getName()+" was set." ));
 	}
 
 	// temporary data arrays
@@ -315,24 +282,24 @@ void ExternalForce::setup(Model& model)
 	if(!_appliesForce && _specifiesPoint)
 		throw(Exception("ExternalForce:"+getName()+" Point is specified for no applied force.")); 
 
-	_dataSource->getDataForIdentifier(_forceIdentifier, force);
+	_dataSource->getDataForIdentifier(forceIdentifier, force);
 	if(_appliesForce && (force.getSize() != 3)) // if applying force MUST have 3 components
 		throw(Exception("ExternalForce: 3 unique force components could not be found, for force identifier: "
-		+_forceIdentifier+
+		+forceIdentifier+
 		"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 
 	if(_specifiesPoint){
-		_dataSource->getDataForIdentifier(_pointIdentifier, point);
+		_dataSource->getDataForIdentifier(pointIdentifier, point);
 		if(point.getSize() != 3) // if specifying a point of application, it MUST have 3 components
 			throw(Exception("ExternalForce: 3 unique point components could not be found, for point identifier: "
-			+_pointIdentifier+
+			+pointIdentifier+
 			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 	}
 
-	_dataSource->getDataForIdentifier(_torqueIdentifier, torque);
+	_dataSource->getDataForIdentifier(torqueIdentifier, torque);
 	if(_appliesTorque && (torque.getSize() != 3)) // if specifying a point of application, it MUST have 3 components
 		throw(Exception("ExternalForce: 3 unique torque components could not be identified for torque identifier: "
-			+_torqueIdentifier+
+			+torqueIdentifier+
 			"\n. Please make sure data file contains exactly 3 unique columns with this common prefix."));
 
 	// clear out functions from previous data source
@@ -487,21 +454,23 @@ Vec3 ExternalForce::getTorqueAtTime(double aTime) const
 OpenSim::Array<std::string> ExternalForce::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 
+	const string &appliedToBodyName = getPropertyValue<string>("applied_to_body");
+
 	if (_appliesForce) {
-		labels.append(_appliedToBodyName+"_"+getName()+"_Fx");
-		labels.append(_appliedToBodyName+"_"+getName()+"_Fy");
-		labels.append(_appliedToBodyName+"_"+getName()+"_Fz");
+		labels.append(appliedToBodyName+"_"+getName()+"_Fx");
+		labels.append(appliedToBodyName+"_"+getName()+"_Fy");
+		labels.append(appliedToBodyName+"_"+getName()+"_Fz");
 
 		if (_specifiesPoint) {
-			labels.append(_appliedToBodyName+"_"+getName()+"_px");
-			labels.append(_appliedToBodyName+"_"+getName()+"_py");
-			labels.append(_appliedToBodyName+"_"+getName()+"_pz");
+			labels.append(appliedToBodyName+"_"+getName()+"_px");
+			labels.append(appliedToBodyName+"_"+getName()+"_py");
+			labels.append(appliedToBodyName+"_"+getName()+"_pz");
 		}
 	}
 	if (_appliesTorque){
-		labels.append(_appliedToBodyName+"_"+getName()+"_Tx");
-		labels.append(_appliedToBodyName+"_"+getName()+"_Ty");
-		labels.append(_appliedToBodyName+"_"+getName()+"_Tz");
+		labels.append(appliedToBodyName+"_"+getName()+"_Tx");
+		labels.append(appliedToBodyName+"_"+getName()+"_Ty");
+		labels.append(appliedToBodyName+"_"+getName()+"_Tz");
 	}
 	return labels;
 }

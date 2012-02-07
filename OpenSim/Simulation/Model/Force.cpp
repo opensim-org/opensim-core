@@ -82,7 +82,7 @@ Force::Force(const Force &aForce) : ModelComponent(aForce)
 void Force::copyData(const Force &aForce)
 {
 	//_isDisabled = aForce._isDisabled;
-	_isDisabledProp.setValue(aForce._isDisabledProp.getValueBool());
+	setPropertyValue("isDisabled", aForce.getPropertyValue<bool>("isDisabled"));
 
 	// A copy is no longer a live Force with an underlying SimTK::Force
 	// The system must be created, at which time the Force will be assigned an index
@@ -105,9 +105,11 @@ void Force::setNull(void)
  */
 void Force::setupProperties(void)
 {
-	_isDisabledProp.setName("isDisabled");
-	_isDisabledProp.setValue(false);
-	_propertySet.append(&_isDisabledProp);
+	addProperty<bool>("isDisabled",
+		"bool",
+		"Flag indicating whether the force is disabled or not.  Disabled"
+		" means that the force is not active in subsequent dynamics realizations.",
+		false);
 }
 
 /**
@@ -135,7 +137,7 @@ void Force::initState(SimTK::State& s) const
 	SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 
 	// Otherwise we have to change the status of the constraint
-	if(_isDisabledProp.getValueBool())
+	if(getPropertyValue<bool>("isDisabled"))
 		simForce.disable(s);
 	else
 		simForce.enable(s);
@@ -145,7 +147,7 @@ void Force::initState(SimTK::State& s) const
 
 void Force::setDefaultsFromState(const SimTK::State& state)
 {
-    _isDisabledProp.setValue(isDisabled(state));
+    setPropertyValue("isDisabled", isDisabled(state));
 
 	ModelComponent::setDefaultsFromState(state);
 }
@@ -186,7 +188,7 @@ void Force::setDisabled(SimTK::State& s, bool isDisabled)
 		else
 			simtkForce.enable(s);
 	}
-	_isDisabledProp.setValue(isDisabled);
+	setPropertyValue("isDisabled", isDisabled);
 }
 
 bool Force::isDisabled(const SimTK::State& s) const
@@ -195,7 +197,7 @@ bool Force::isDisabled(const SimTK::State& s) const
 		SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
 		return simtkForce.isDisabled(s);
 	}
-	return _isDisabledProp.getValueBool();
+	return getPropertyValue<bool>("isDisabled");
 }
 
 //-----------------------------------------------------------------------------

@@ -37,6 +37,7 @@
 #include "osimCommonDLL.h"
 #include "Array.h"
 #include "ArrayPtrs.h"
+#include "SimTKsimbody.h"
 
 #include <string>
 #include <cmath>
@@ -93,7 +94,7 @@ public:
 	{
 		None=0, Bool, Int, Dbl, Str, Obj, ObjPtr,
 		BoolArray, IntArray, DblArray, StrArray, ObjArray,
-		DblVec,
+		DblVec3,
 		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
 		//Station	   Point on a Body: String, Vec3 
 	};
@@ -122,6 +123,9 @@ public:
 	void setAllowableArraySize(int aNum) { _minArraySize = _maxArraySize = aNum; }
 	int getMinArraySize() { return _minArraySize; }
 	int getMaxArraySize() { return _maxArraySize; }
+
+private:
+	void setNull();
 };
 
 template <class T>
@@ -132,19 +136,19 @@ class Property2 : public AbstractProperty
 // DATA
 //=============================================================================
 private:
-	T _value;
+	T* _valuePtr;
 
 public:
 	Property2();
 	Property2(const std::string &aName, const std::string &aType, const std::string &aComment, const T &aValue);
 	Property2(const Property2 &aProperty);
-	virtual ~Property2() {}
+	virtual ~Property2() { delete _valuePtr; }
 	virtual Property2& operator=(const Property2 &aProperty);
 	virtual Property2* copy() const;
 	virtual bool equals(AbstractProperty* aAbstractPropertyPtr) const;
-	const T& getValue() const { return _value; }
-	T& updateValue() { return _value; }
-	void setValue(const T &aValue) { _value = aValue; }
+	const T& getValue() const { return *_valuePtr; }
+	T& updValue() { return *_valuePtr; }
+	void setValue(const T &aValue) { *_valuePtr = aValue; }
 	virtual PropertyType getPropertyType() const {throw Exception("Property2: Use of unspecified property."); return None;}
 };
 
@@ -152,8 +156,12 @@ template <>
 inline bool Property2<double>::equals(AbstractProperty *aAbstractPropertyPtr) const
 {
 	Property2<double> *aPropertyPtr = dynamic_cast<Property2<double> *>(aAbstractPropertyPtr);
-	if (aPropertyPtr)
-		return std::abs(_value - aPropertyPtr->getValue()) <= 1e-7;
+	if (aPropertyPtr) {
+		if (fabs(*_valuePtr - aPropertyPtr->getValue()) > 1e-7)
+			return false;
+		else
+			return true;
+	}
 	return false;
 }
 
@@ -181,6 +189,9 @@ inline AbstractProperty::PropertyType Property2< Array<double> >::getPropertyTyp
 template <>
 inline AbstractProperty::PropertyType Property2< Array<std::string> >::getPropertyType() const { return StrArray; }
 
+template <>
+inline AbstractProperty::PropertyType Property2<SimTK::Vec3>::getPropertyType() const { return DblVec3; }
+
 /*
 template <>
 inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
@@ -195,25 +206,26 @@ inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() con
 template <typename T>
 Property2<T>::Property2()
 {
+	_valuePtr = new T;
 }
 
 template <typename T>
 Property2<T>::Property2(const std::string &aName, const std::string &aType, const std::string &aComment, const T &aValue) : AbstractProperty(aName, aType, aComment)
 {
-	_value = aValue;
+	_valuePtr = new T(aValue);
 }
 
 template <typename T>
 Property2<T>::Property2(const Property2<T> &aProperty) : AbstractProperty(aProperty)
 {
-	_value = aProperty._value;
+	_valuePtr = new T(aProperty.getValue());
 }
 
 template <typename T>
 Property2<T>& Property2<T>::operator=(const Property2<T> &aProperty)
 {
 	AbstractProperty::operator=(aProperty);
-	_value = aProperty._value;
+	*_valuePtr = aProperty.getValue();
 	return *this;
 }
 
@@ -229,7 +241,7 @@ bool Property2<T>::equals(AbstractProperty* aAbstractPropertyPtr) const
 {
 	Property2<T>* aPropertyPtr = dynamic_cast<Property2<T>*>(aAbstractPropertyPtr);
 	if (aPropertyPtr)
-		return _value == aPropertyPtr->getValue();
+		return *_valuePtr == aPropertyPtr->getValue();
 	return false;
 }
 

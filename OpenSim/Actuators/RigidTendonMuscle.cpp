@@ -48,10 +48,7 @@ static int counter=0;
 /**
  * Default constructor.
  */
-RigidTendonMuscle::RigidTendonMuscle() : Muscle(),
-	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
-	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
-	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
+RigidTendonMuscle::RigidTendonMuscle() : Muscle()
 {
 	setNull();
 	setupProperties();
@@ -62,10 +59,7 @@ RigidTendonMuscle::RigidTendonMuscle() : Muscle(),
  * Convenience Constructor.
  */
 RigidTendonMuscle::RigidTendonMuscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle) :
-   Muscle(),
-	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
-	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
-	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
+   Muscle()
 {
 	setNull();
 	setupProperties();
@@ -90,10 +84,7 @@ RigidTendonMuscle::~RigidTendonMuscle()
  *
  * @param aRigidTendonMuscle RigidTendonMuscle to be copied.
  */
-RigidTendonMuscle::RigidTendonMuscle(const RigidTendonMuscle &aRigidTendonMuscle) : Muscle(aRigidTendonMuscle),
-	_activeForceLengthCurve(_activeForceLengthCurveProp.getValueObjPtrRef()),
-	_passiveForceLengthCurve(_passiveForceLengthCurveProp.getValueObjPtrRef()),
-	_forceVelocityCurve(_forceVelocityCurveProp.getValueObjPtrRef())
+RigidTendonMuscle::RigidTendonMuscle(const RigidTendonMuscle &aRigidTendonMuscle) : Muscle(aRigidTendonMuscle)
 {
 	setNull();
 	setupProperties();
@@ -184,34 +175,32 @@ void RigidTendonMuscle::setDefaultsFromState(const SimTK::State& state)
  */
 void RigidTendonMuscle::setupProperties()
 {
-	_activeForceLengthCurveProp.setName("active_force_length_curve");
-	_activeForceLengthCurveProp.setComment("Function representing active force-length behavior of muscle fibers");
 	int activeForceLengthCurvePoints = 21;
 	double activeForceLengthCurveX[] = {-5.30769200, -4.30769200, -1.92307700, -0.88461500, -0.26923100,  0.23076900,  0.46153800,  0.52725000,  0.62875000,  0.71875000,  0.86125000,  1.04500000,  1.21750000,  1.43875000,  1.50000000,  1.61538500,  2.00000000,  2.96153800,  3.69230800,  5.46153800,  9.90190200};
 	double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
 	NaturalCubicSpline *activeForceLengthCurve = new NaturalCubicSpline(activeForceLengthCurvePoints, activeForceLengthCurveX, activeForceLengthCurveY);
-	_activeForceLengthCurveProp.setValue(activeForceLengthCurve);
-	_propertySet.append(&_activeForceLengthCurveProp, "Functions");
-
-	_passiveForceLengthCurveProp.setName("passive_force_length_curve");
-	_passiveForceLengthCurveProp.setComment("Function representing passive force-length behavior of muscle fibers");
+	addProperty<Function *>("active_force_length_curve",
+		"Function *",
+		"Function representing active force-length behavior of muscle fibers",
+		activeForceLengthCurve);
 	int passiveForceLengthCurvePoints = 13;
 	double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
 	double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
 	NaturalCubicSpline *passiveForceLengthCurve = new NaturalCubicSpline(passiveForceLengthCurvePoints, passiveForceLengthCurveX, passiveForceLengthCurveY);
-	_passiveForceLengthCurveProp.setValue(passiveForceLengthCurve);
-	_propertySet.append(&_passiveForceLengthCurveProp, "Functions");
-
-	_forceVelocityCurveProp.setName("force_velocity_curve");
-	_forceVelocityCurveProp.setComment("Function representing force-velocity behavior of muscle fibers");
+	addProperty<Function *>("passive_force_length_curve",
+		"Function *",
+		"Function representing passive force-length behavior of muscle fibers",
+		passiveForceLengthCurve);
 	int forceVelocityLengthCurvePoints = 42;
 	double forceVelocityLengthCurveX[] = {-1.00100000000, -1.00000000000, -0.95000000000, -0.90000000000, -0.85000000000, -0.80000000000, -0.75000000000, -0.70000000000, -0.65000000000, -0.60000000000, -0.55000000000, -0.50000000000, -0.45000000000, -0.40000000000, -0.35000000000, -0.30000000000, -0.25000000000, -0.20000000000, -0.15000000000, -0.10000000000, -0.05000000000, 0.000000000000,
 		0.050000000000, 0.100000000000, 0.150000000000, 0.200000000000, 0.250000000000, 0.300000000000, 0.350000000000, 0.400000000000, 0.450000000000, 0.500000000000, 0.550000000000, 0.600000000000, 0.650000000000, 0.700000000000, 0.750000000000, 0.800000000000, 0.850000000000, 0.900000000000, 0.950000000000, 1.000000000000};
 	double forceVelocityLengthCurveY[] = {0.000000000000, 0.000000000000, 0.010417000000, 0.021739000000, 0.034091000000, 0.047619000000, 0.062500000000, 0.078947000000, 0.097222000000, 0.117647000000, 0.140625000000, 0.166667000000, 0.196429000000, 0.230769000000, 0.270833000000, 0.318182000000, 0.375000000000, 0.444444000000, 0.531250000000, 0.642857000000, 0.791667000000, 1.000000000000,
 		1.482014000000, 1.601571000000, 1.655791000000, 1.686739000000, 1.706751000000, 1.720753000000, 1.731099000000, 1.739055000000, 1.745365000000, 1.750490000000, 1.754736000000, 1.758312000000, 1.761364000000, 1.763999000000, 1.766298000000, 1.768321000000, 1.770115000000, 1.771717000000, 1.773155000000, 1.774455000000};
 	NaturalCubicSpline *forceVelocityLengthCurve = new NaturalCubicSpline(forceVelocityLengthCurvePoints, forceVelocityLengthCurveX, forceVelocityLengthCurveY);
-	_forceVelocityCurveProp.setValue(forceVelocityLengthCurve);
-	_propertySet.append(&_forceVelocityCurveProp, "Functions");
+	addProperty<Function *>("force_velocity_curve",
+		"Function *",
+		"Function representing force-velocity behavior of muscle fibers",
+		forceVelocityLengthCurve);
 }
 
 //_____________________________________________________________________________
@@ -277,19 +266,19 @@ double RigidTendonMuscle::getFiberForce(const SimTK::State& s) const
 	const double &aNormFiberLength = getNormalizedFiberLength(s);
 	const double &aNormFiberVelocity = getLengtheningSpeed(s)/(getMaxContractionVelocity() * cos(getPennationAngle(s)));
 
-	double activeForceLength = _activeForceLengthCurve->calcValue(SimTK::Vector(1, aNormFiberLength));
-	double passiveForceLength = _passiveForceLengthCurve->calcValue(SimTK::Vector(1, aNormFiberLength));
-	double activeForceVelocity = _forceVelocityCurve->calcValue(SimTK::Vector(1, aNormFiberVelocity));
+	double activeForceLength = getPropertyValue<Function *>("active_force_length_curve")->calcValue(SimTK::Vector(1, aNormFiberLength));
+	double passiveForceLength = getPropertyValue<Function *>("passive_force_length_curve")->calcValue(SimTK::Vector(1, aNormFiberLength));
+	double activeForceVelocity = getPropertyValue<Function *>("force_velocity_curve")->calcValue(SimTK::Vector(1, aNormFiberVelocity));
 
 
-	return _maxIsometricForce*(getActivation(s) * activeForceLength * activeForceVelocity + passiveForceLength);
+	return getPropertyValue<double>("max_isometric_force")*(getActivation(s) * activeForceLength * activeForceVelocity + passiveForceLength);
 }
 
 
 double RigidTendonMuscle::getFiberLength(const SimTK::State& s) const
 {
 	double zeroPennateLength = (getLength(s) - getTendonLength(s));
-	double width = sin(_pennationAngleAtOptimal)*_optimalFiberLength;
+	double width = sin(getPropertyValue<double>("pennation_angle_at_optimal"))*getPropertyValue<double>("optimal_fiber_length");
 	return sqrt(zeroPennateLength*zeroPennateLength + width*width);
 }
 
@@ -302,7 +291,7 @@ double RigidTendonMuscle::getNormalizedFiberLength(const SimTK::State& s) const
 double RigidTendonMuscle::getPassiveFiberForce(const SimTK::State& s) const
 {
 	const double &aNormFiberLength = getNormalizedFiberLength(s);
-	return _passiveForceLengthCurve->calcValue(SimTK::Vector(1, aNormFiberLength));
+	return getPropertyValue<Function *>("passive_force_length_curve")->calcValue(SimTK::Vector(1, aNormFiberLength));
 }
 
 //_____________________________________________________________________________
@@ -388,8 +377,8 @@ double RigidTendonMuscle::computeIsometricForce(SimTK::State& s, double activati
 {
 	const double &aNormFiberLength = getNormalizedFiberLength(s);
 
-	double activeForceLength = _activeForceLengthCurve->calcValue(SimTK::Vector(1, aNormFiberLength));
-	double passiveForceLength = _passiveForceLengthCurve->calcValue(SimTK::Vector(1, aNormFiberLength));
+	double activeForceLength = getPropertyValue<Function *>("active_force_length_curve")->calcValue(SimTK::Vector(1, aNormFiberLength));
+	double passiveForceLength = getPropertyValue<Function *>("passive_force_length_curve")->calcValue(SimTK::Vector(1, aNormFiberLength));
 
 	//Isometric means velocity is zero, so velocity "factor" is 1
 	return (activation*activeForceLength + passiveForceLength)*cos(getPennationAngle(s));

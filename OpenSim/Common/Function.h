@@ -148,6 +148,15 @@ protected:
 template <>
 inline AbstractProperty::PropertyType Property2<Function *>::getPropertyType() const { return ObjPtr; }
 
+template <>
+inline bool Property2<Function *>::equals(AbstractProperty *aAbstractPropertyPtr) const
+{
+	Property2<Function *> *aPropertyPtr = dynamic_cast<Property2<Function *> *>(aAbstractPropertyPtr);
+	if (aPropertyPtr)
+		return **_valuePtr == *(aPropertyPtr->getValue());
+	return false;
+}
+
 }; //namespace
 //=============================================================================
 //=============================================================================

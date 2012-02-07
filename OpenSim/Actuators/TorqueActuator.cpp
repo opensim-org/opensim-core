@@ -65,11 +65,6 @@ TorqueActuator::~TorqueActuator()
  */
 TorqueActuator::TorqueActuator( string aBodyNameA, string aBodyNameB) :
 	Actuator(),
-	_bodyNameA(_propBodyNameA.getValueStr()),
-	_bodyNameB(_propBodyNameB.getValueStr()),
-	_torqueIsGlobal(_propTorqueIsGlobal.getValueBool()),
-	_axis(_propAxis.getValueDblVec()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
 {
@@ -77,12 +72,12 @@ TorqueActuator::TorqueActuator( string aBodyNameA, string aBodyNameB) :
 	setNull();
 
 	// MEMBER VARIABLES
-	_bodyNameA = aBodyNameA;
-	_bodyNameB = aBodyNameB;
+	setPropertyValue("bodyA", aBodyNameA);
+	setPropertyValue("bodyB", aBodyNameB);
 
 	if (_model) {
-		_bodyA = &_model->updBodySet().get(_bodyNameA);
-		_bodyB = &_model->updBodySet().get(_bodyNameB);
+		_bodyA = &_model->updBodySet().get(aBodyNameA);
+		_bodyB = &_model->updBodySet().get(aBodyNameB);
 	} 
 }
 //_____________________________________________________________________________
@@ -93,11 +88,6 @@ TorqueActuator::TorqueActuator( string aBodyNameA, string aBodyNameB) :
  */
 TorqueActuator::TorqueActuator(const TorqueActuator &anActuator) :
 	Actuator(anActuator),
-	_bodyNameA(_propBodyNameA.getValueStr()),
-	_bodyNameB(_propBodyNameB.getValueStr()),
-	_torqueIsGlobal(_propTorqueIsGlobal.getValueBool()),
-	_axis(_propAxis.getValueDblVec()),
-	_optimalForce(_propOptimalForce.getValueDbl()),
 	_bodyA(NULL),
 	_bodyB(NULL)
 {
@@ -140,25 +130,27 @@ setNull()
 void TorqueActuator::
 setupProperties()
 {
+	addProperty<string>("bodyA",
+		"string",
+		"Name of Body to which the Body actuator is applied.",
+		"");
+	addProperty<string>("bodyB",
+		"string",
+		"Name of Body to which the equal and opposite torque is applied.",
+		"");
+	addProperty<bool>("torque_is_global",
+		"bool",
+		"",
+		true);
 	SimTK::Vec3 z(0.0, 0.0, 1.0 );
-
-	_propBodyNameA.setName("bodyA");
-	_propertySet.append( &_propBodyNameA );
-
-	_propBodyNameB.setName("bodyB");
-	_propertySet.append( &_propBodyNameB );
-
-	_propTorqueIsGlobal.setName("torque_is_global");
-	_propTorqueIsGlobal.setValue(true);
-	_propertySet.append( &_propTorqueIsGlobal );
-
-	_propAxis.setName("axis");
-	_propAxis.setValue(z);
-	_propertySet.append( &_propAxis );
-
-	_propOptimalForce.setName("optimal_force");
-	_propOptimalForce.setValue(1.0);
-	_propertySet.append( &_propOptimalForce );
+	addProperty<SimTK::Vec3>("axis",
+		"Vec3",
+		"",
+		z);
+	addProperty<double>("optimal_force",
+		"double",
+		"",
+		1.0);
 }
 
 //_____________________________________________________________________________
@@ -169,10 +161,10 @@ void TorqueActuator::
 copyData(const TorqueActuator &aTorqueActuator)
 {
 	// MEMBER VARIABLES
-	_bodyNameA = aTorqueActuator._bodyNameA;
-	_bodyNameB = aTorqueActuator._bodyNameB;
-	_torqueIsGlobal = aTorqueActuator._torqueIsGlobal;
-	_axis = aTorqueActuator._axis;
+	setPropertyValue("bodyA", aTorqueActuator.getPropertyValue<string>("bodyA"));
+	setPropertyValue("bodyB", aTorqueActuator.getPropertyValue<string>("bodyB"));
+	setPropertyValue("torque_is_global", aTorqueActuator.getPropertyValue<bool>("torque_is_global"));
+	setPropertyValue("axis", aTorqueActuator.getPropertyValue<SimTK::Vec3>("axis"));
 
 	setOptimalForce(aTorqueActuator.getOptimalForce());
 	setBodyA(aTorqueActuator.getBodyA());
@@ -220,7 +212,7 @@ void TorqueActuator::setBodyA(Body* aBody)
 {
 	_bodyA = aBody;
 	if(aBody)
-		_bodyNameA = aBody->getName();
+		setPropertyValue("bodyA", aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -233,7 +225,7 @@ void TorqueActuator::setBodyB(Body* aBody)
 {
 	_bodyB = aBody;
 	if(aBody)
-		_bodyNameB = aBody->getName();
+		setPropertyValue("bodyB", aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -244,7 +236,7 @@ void TorqueActuator::setBodyB(Body* aBody)
  */
 Body* TorqueActuator::getBodyA() const
 {
-	return(_bodyA);
+	return _bodyA;
 }
 //_____________________________________________________________________________
 /**
@@ -255,7 +247,7 @@ Body* TorqueActuator::getBodyA() const
  */
 Body* TorqueActuator::getBodyB() const
 {
-	return(_bodyB);
+	return _bodyB;
 }
 
 //-----------------------------------------------------------------------------
@@ -269,7 +261,7 @@ Body* TorqueActuator::getBodyB() const
  */
 void TorqueActuator::setOptimalForce(double aOptimalForce)
 {
-	_optimalForce = aOptimalForce;
+	setPropertyValue("optimal_force", aOptimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -279,7 +271,7 @@ void TorqueActuator::setOptimalForce(double aOptimalForce)
  */
 double TorqueActuator::getOptimalForce() const
 {
-	return(_optimalForce);
+	return getPropertyValue<double>("optimal_force");
 }
 //_____________________________________________________________________________
 /**
@@ -289,7 +281,7 @@ double TorqueActuator::getOptimalForce() const
  */
 double TorqueActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/_optimalForce); 
+	return fabs(getForce(s)/getPropertyValue<double>("optimal_force")); 
 }
 
 
@@ -306,7 +298,7 @@ double TorqueActuator::computeActuation( const SimTK::State& s ) const
 	if(_model==NULL) return 0;
 
 	// FORCE
-	return ( getControl(s) * _optimalForce );
+	return ( getControl(s) * getPropertyValue<double>("optimal_force") );
 }
 
 
@@ -324,6 +316,9 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 {
 	if(_model==NULL) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
+
+	const bool &torqueIsGlobal = getPropertyValue<bool>("torque_is_global");
+	const SimTK::Vec3 &axis = getPropertyValue<SimTK::Vec3>("axis");
 	
     double force;
 
@@ -339,9 +334,9 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 	
 
     setForce(s, force );
-	SimTK::Vec3 torque = force*SimTK::UnitVec3(_axis);
+	SimTK::Vec3 torque = force*SimTK::UnitVec3(axis);
 	
-	if (!_torqueIsGlobal)
+	if (!torqueIsGlobal)
 		engine.transform(s, *_bodyA, torque, engine.getGroundBody(), torque);
 	
 	applyTorque(s, *_bodyA, torque, bodyForces);
@@ -354,7 +349,7 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 	SimTK::Vec3 omega(0);
 	engine.getAngularVelocity(s, *_bodyA, omega);
 	// the speed of the body about the axis the torque is applied is the "speed" of the actuator used to compute power
-	setSpeed(s, ~omega*_axis);
+	setSpeed(s, ~omega*axis);
 }
 //_____________________________________________________________________________
 /**
@@ -365,8 +360,8 @@ void TorqueActuator::setup(Model& aModel)
 	Actuator::setup( aModel);
 
 	if (_model) {
-		_bodyA = &_model->updBodySet().get(_bodyNameA);
-		_bodyB = &_model->updBodySet().get(_bodyNameB);
+		_bodyA = &_model->updBodySet().get(getPropertyValue<string>("bodyA"));
+		_bodyB = &_model->updBodySet().get(getPropertyValue<string>("bodyB"));
 	}
 }
 
@@ -386,7 +381,7 @@ bool TorqueActuator::check() const
 	if( _bodyA != NULL) {
 		printf("TorqueActuator.check: ERROR- %s actuates ",
 			getName().c_str());
-		printf("an invalid Body (%s).\n", _bodyNameA.c_str());
+		printf("an invalid Body (%s).\n", getPropertyValue<string>("bodyA").c_str());
 		return(false);
 	}
 	return(true);
@@ -421,10 +416,9 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 		}
 	}
 	Actuator::updateFromXMLNode(aNode, versionNumber);
-	if (converting) _axis *= -1.0;
+	if (converting) updPropertyValue<SimTK::Vec3>("axis") *= -1.0;
 	setBodyA(_bodyA);
 	setBodyB(_bodyB);
-	setOptimalForce(_optimalForce);
 }	
 
 /** 

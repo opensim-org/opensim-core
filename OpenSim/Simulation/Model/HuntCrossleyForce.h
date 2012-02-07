@@ -52,14 +52,6 @@ public:
     class ContactParameters;
     class ContactParametersSet;
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-    PropertyObj _contactParametersSetProp;
-    ContactParametersSet& _contactParametersSet;
-	PropertyDbl _transitionVelocityProp;
-	double& _transitionVelocity;
-//=============================================================================
 // METHODS
 //=============================================================================
 public:
@@ -112,19 +104,7 @@ private:
 class OSIMSIMULATION_API HuntCrossleyForce::ContactParameters : public Object
 {
 private:
-    PropertyStrArray _geometryProp;
-    Array<std::string>& _geometry;
-	PropertyDbl _stiffnessProp;
-	double& _stiffness;
-	PropertyDbl _dissipationProp;
-	double& _dissipation;
-	PropertyDbl _staticFrictionProp;
-	double& _staticFriction;
-	PropertyDbl _dynamicFrictionProp;
-	double& _dynamicFriction;
-	PropertyDbl _viscousFrictionProp;
-	double& _viscousFriction;
-	void setupProperties();
+    void setupProperties();
 public:
     ContactParameters();
     ContactParameters(const ContactParameters& copy);
@@ -159,6 +139,9 @@ public:
 	ContactParametersSet& operator=(const ContactParametersSet &copy);
 #endif
 };
+
+template <>
+inline AbstractProperty::PropertyType Property2<HuntCrossleyForce::ContactParametersSet>::getPropertyType() const { return Obj; }
 
 } // end of namespace OpenSim
 

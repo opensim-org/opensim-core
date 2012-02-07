@@ -68,29 +68,6 @@ class OSIMSIMULATION_API Ligament : public Force
 {
 
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-   // the set of points defining the path of the ligament
-	PropertyObj _pathProp;
-	GeometryPath &_path;
-
-	/** Resting length of the ligament fibers */
-	PropertyDbl _restingLengthProp;
-	double &_restingLength;
-
-	/** Force for un-normalizing force-length curve (proportional to PCSA) */
-	PropertyDbl _pcsaForceProp;
-	double &_pcsaForce;
-
-	/** Force-length behavior of the ligament fibers */
-	PropertyObjPtr<Function> _forceLengthCurveProp;
-	Function *&_forceLengthCurve;
-
-private:
-
-//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
@@ -111,14 +88,14 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	GeometryPath& getGeometryPath() const { return _path; }
+	GeometryPath& getGeometryPath() const { return updPropertyValue<GeometryPath>("GeometryPath"); }
 	virtual bool hasGeometryPath() const { return true;};
 	virtual double getLength(const SimTK::State& s) const;
-	virtual double getRestingLength() const { return _restingLength; }
+	virtual double getRestingLength() const { return getPropertyValue<double>("resting_length"); }
 	virtual bool setRestingLength(double aRestingLength);
-	virtual double getMaxIsometricForce() const { return _pcsaForce; }
+	virtual double getMaxIsometricForce() const { return getPropertyValue<double>("pcsa_force"); }
 	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
-	virtual Function* getForceLengthCurve() const { return _forceLengthCurve; }
+	virtual Function* getForceLengthCurve() const { return getPropertyValue<Function *>("force_length_curve"); }
 	virtual bool setForceLengthCurve(Function* aForceLengthCurve);
 
 	//--------------------------------------------------------------------------

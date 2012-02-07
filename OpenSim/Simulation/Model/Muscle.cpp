@@ -57,18 +57,13 @@ static int counter=0;
 /**
  * Default constructor.
  */
-Muscle::Muscle() : PathActuator(),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngleAtOptimal(_pennationAngleAtOptimalProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl())
+Muscle::Muscle() : PathActuator()
 {
 	setNull();
 	setupProperties();
 	// override the value of default _minControl, _maxControl
-	_minControl=0.0;
-	_maxControl=1.0;
+	setPropertyValue("min_control", 0.0);
+	setPropertyValue("max_control", 1.0);
 }
 
 //_____________________________________________________________________________
@@ -90,12 +85,7 @@ Muscle::~Muscle()
  *
  * @param aMuscle Muscle to be copied.
  */
-Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle),
-	_maxIsometricForce(_maxIsometricForceProp.getValueDbl()),
-	_optimalFiberLength(_optimalFiberLengthProp.getValueDbl()),
-	_tendonSlackLength(_tendonSlackLengthProp.getValueDbl()),
-	_pennationAngleAtOptimal(_pennationAngleAtOptimalProp.getValueDbl()),
-	_maxContractionVelocity(_maxContractionVelocityProp.getValueDbl())
+Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle)
 {
 	setNull();
 	setupProperties();
@@ -113,11 +103,11 @@ Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle),
  */
 void Muscle::copyData(const Muscle &aMuscle)
 {
-	_maxIsometricForce = aMuscle._maxIsometricForce;
-	_optimalFiberLength = aMuscle._optimalFiberLength;
-	_tendonSlackLength = aMuscle._tendonSlackLength;
-	_pennationAngleAtOptimal = aMuscle._pennationAngleAtOptimal;
-	_maxContractionVelocity = aMuscle._maxContractionVelocity;
+	setPropertyValue("max_isometric_force", aMuscle.getPropertyValue<double>("max_isometric_force"));
+	setPropertyValue("optimal_fiber_length", aMuscle.getPropertyValue<double>("optimal_fiber_length"));
+	setPropertyValue("tendon_slack_length", aMuscle.getPropertyValue<double>("tendon_slack_length"));
+	setPropertyValue("pennation_angle_at_optimal", aMuscle.getPropertyValue<double>("pennation_angle_at_optimal"));
+	setPropertyValue("max_contraction_velocity", aMuscle.getPropertyValue<double>("max_contraction_velocity"));
 }
 
 //_____________________________________________________________________________
@@ -174,30 +164,26 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
  */
 void Muscle::setupProperties()
 {
-	_maxIsometricForceProp.setName("max_isometric_force");
-	_maxIsometricForceProp.setComment("Maximum isometric force that the fibers can generate");
-	_maxIsometricForceProp.setValue(1000.0);
-	_propertySet.append(&_maxIsometricForceProp, "Parameters");
-
-	_optimalFiberLengthProp.setName("optimal_fiber_length");
-	_optimalFiberLengthProp.setComment("Optimal length of the muscle fibers");
-	_optimalFiberLengthProp.setValue(0.1);
-	_propertySet.append(&_optimalFiberLengthProp, "Parameters");
-
-	_tendonSlackLengthProp.setName("tendon_slack_length");
-	_tendonSlackLengthProp.setComment("Resting length of the tendon");
-	_tendonSlackLengthProp.setValue(0.2);
-	_propertySet.append(&_tendonSlackLengthProp, "Parameters");
-
-	_pennationAngleAtOptimalProp.setName("pennation_angle_at_optimal");
-	_pennationAngleAtOptimalProp.setComment("Angle between tendon and fibers at optimal fiber length");
-	_pennationAngleAtOptimalProp.setValue(0.0);
-	_propertySet.append(&_pennationAngleAtOptimalProp, "Parameters");
-
-	_maxContractionVelocityProp.setName("max_contraction_velocity");
-	_maxContractionVelocityProp.setComment("Maximum contraction velocity of the fibers, in optimal fiberlengths per second");
-	_maxContractionVelocityProp.setValue(10.0);
-	_propertySet.append(&_maxContractionVelocityProp, "Parameters");
+	addProperty<double>("max_isometric_force",
+		"double",
+		"Maximum isometric force that the fibers can generate",
+		1000.0);
+	addProperty<double>("optimal_fiber_length",
+		"double",
+		"Optimal length of the muscle fibers",
+		0.1);
+	addProperty<double>("tendon_slack_length",
+		"double",
+		"Resting length of the tendon",
+		0.2);
+	addProperty<double>("pennation_angle_at_optimal",
+		"double",
+		"Angle between tendon and fibers at optimal fiber length",
+		0.0);
+	addProperty<double>("max_contraction_velocity",
+		"double",
+		"Maximum contraction velocity of the fibers, in optimal fiberlengths per second",
+		10.0);
 }
 
 void Muscle::addStateVariables(const Array<std::string> &stateVariableNames)
@@ -275,7 +261,7 @@ double Muscle::evaluateForceLengthVelocityCurve(double aActivation, double aNorm
  */
 double Muscle::getPennationAngle(const SimTK::State& s) const
 {
-	return calcPennation( getFiberLength(s),_optimalFiberLength,_pennationAngleAtOptimal );
+	return calcPennation( getFiberLength(s),getPropertyValue<double>("optimal_fiber_length"),getPropertyValue<double>("pennation_angle_at_optimal") );
 }
 //_____________________________________________________________________________
 /**
@@ -418,5 +404,5 @@ void Muscle::computeForce(const SimTK::State& s,
 
 void Muscle::updateGeometry(const SimTK::State& s) const
 {
-	_path.updateGeometry(s);
+	updPropertyValue<GeometryPath>("GeometryPath").updateGeometry(s);
 }

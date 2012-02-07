@@ -62,31 +62,7 @@ class OSIMACTUATORS_API PointActuator : public Actuator
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Name of Body to which the Body actuator is applied. */
-	PropertyStr _propBodyName;
-	/** Point */
-	PropertyDblVec3 _propPoint;
-	PropertyBool _propPointIsGlobal;
-	/** Direction */
-	PropertyDblVec3 _propDirection;
-	PropertyBool _propForceIsGlobal;
-
-	/** Optimal force. */
-	PropertyDbl _propOptimalForce;
-
-	// REFERENCES
-	std::string& _bodyName;
-	// point
-	SimTK::Vec3 &_point;
-	bool &_pointIsGlobal;
-	// force direction
-	SimTK::Vec3 &_direction;
-	bool &_forceIsGlobal;
-	
-	double &_optimalForce;
-
-    /** Corresponding Body to which the point actuator is applied. */
+	/** Corresponding Body to which the point actuator is applied. */
     Body *_body;
 
 //=============================================================================

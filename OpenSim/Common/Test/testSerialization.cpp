@@ -77,6 +77,8 @@ int main()
 		int numProperties1 = obj1.getPropertySet().getSize();
 		ASSERT(numProperties1 == obj2.getPropertySet().getSize(), __FILE__, __LINE__, "num properties");
 
+		ASSERT(obj1 == obj2, __FILE__, __LINE__, "equality");
+
 		PropertySet &propSet1 = obj1.getPropertySet();
 		PropertySet &propSet2 = obj2.getPropertySet();
 		for (int i=0; i < numProperties1; i++){

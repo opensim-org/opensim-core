@@ -71,31 +71,6 @@ class Coordinate;
 class OSIMSIMULATION_API Muscle : public PathActuator  
 {
 //=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-	/** Optimal length of the muscle fibers */
-	PropertyDbl _optimalFiberLengthProp;
-	double &_optimalFiberLength;
-
-	/** Maximum isometric force that the fibers can generate */
-	PropertyDbl _maxIsometricForceProp;
-	double &_maxIsometricForce;
-
-	/** Resting length of the tendon */
-	PropertyDbl _tendonSlackLengthProp;
-	double &_tendonSlackLength;
-
-	/** Angle between tendon and fibers at optimal fiber length */
-	PropertyDbl _pennationAngleAtOptimalProp;
-	double &_pennationAngleAtOptimal;
-
-	/** Maximum contraction velocity of the fibers, in optimal fiberlengths per second */
-	PropertyDbl _maxContractionVelocityProp;
-	double &_maxContractionVelocity;
-
-//=============================================================================
 // METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
@@ -118,17 +93,17 @@ public:
 	//--------------------------------------------------------------------------
 	// MUSCLE PARAMETERS
 	//--------------------------------------------------------------------------
-	virtual double getMaxIsometricForce() const { return _maxIsometricForce; }
-	virtual double getOptimalFiberLength() const { return _optimalFiberLength; }
-	virtual double getTendonSlackLength() const { return _tendonSlackLength; }
-	virtual double getPennationAngleAtOptimalFiberLength() const { return _pennationAngleAtOptimal; }
-	virtual double getMaxContractionVelocity() const { return _maxContractionVelocity; }
+	virtual double getMaxIsometricForce() const { return getPropertyValue<double>("max_isometric_force"); }
+	virtual double getOptimalFiberLength() const { return getPropertyValue<double>("optimal_fiber_length"); }
+	virtual double getTendonSlackLength() const { return getPropertyValue<double>("tendon_slack_length"); }
+	virtual double getPennationAngleAtOptimalFiberLength() const { return getPropertyValue<double>("pennation_angle_at_optimal"); }
+	virtual double getMaxContractionVelocity() const { return getPropertyValue<double>("max_contraction_velocity"); }
 
-	virtual void setMaxIsometricForce(double aMaxIsometricForce) { _maxIsometricForce = aMaxIsometricForce;}
-	virtual void setOptimalFiberLength(double aOptimalFiberLength) { _optimalFiberLength = aOptimalFiberLength;}
-	virtual void setTendonSlackLength(double aTendonSlackLength) { _tendonSlackLength = aTendonSlackLength;}
-	virtual void setPennationAngleAtOptimalFiberLength(double aPennationAngle) {_pennationAngleAtOptimal = aPennationAngle;}
-	virtual void setMaxContractionVelocity(double aMaxContractionVelocity) {_maxContractionVelocity = aMaxContractionVelocity;}
+	virtual void setMaxIsometricForce(double aMaxIsometricForce) { setPropertyValue("max_isometric_force", aMaxIsometricForce);}
+	virtual void setOptimalFiberLength(double aOptimalFiberLength) { setPropertyValue("optimal_fiber_length", aOptimalFiberLength);}
+	virtual void setTendonSlackLength(double aTendonSlackLength) { setPropertyValue("tendon_slack_length", aTendonSlackLength);}
+	virtual void setPennationAngleAtOptimalFiberLength(double aPennationAngle) { setPropertyValue("pennation_angle_at_optimal", aPennationAngle);}
+	virtual void setMaxContractionVelocity(double aMaxContractionVelocity) { setPropertyValue("max_contraction_velocity", aMaxContractionVelocity);}
 
 	//--------------------------------------------------------------------------
 	// State dependent accessors to internal muscle variables

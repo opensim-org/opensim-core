@@ -61,10 +61,7 @@ PathActuator::~PathActuator()
 /**
  * Default constructor.
  */
-PathActuator::PathActuator() :	Actuator(),
-	_pathProp(PropertyObj("", GeometryPath())),
-	_path((GeometryPath&)_pathProp.getValueObj()),
-	_optimalForce(_propOptimalForce.getValueDbl())
+PathActuator::PathActuator() :	Actuator()
 {
 	// NULL
 	setNull();
@@ -76,10 +73,7 @@ PathActuator::PathActuator() :	Actuator(),
  * @param aForce Force to be copied.
  */
 PathActuator::PathActuator(const PathActuator &aPathActuator) :
-	Actuator(aPathActuator),
-	_pathProp(PropertyObj("", GeometryPath())),
-	_path((GeometryPath&)_pathProp.getValueObj()),
-	_optimalForce(_propOptimalForce.getValueDbl())
+	Actuator(aPathActuator)
 {
 	setNull();
 	copyData(aPathActuator);
@@ -118,12 +112,14 @@ void PathActuator::setNull()
  */
 void PathActuator::setupProperties()
 {
-	_pathProp.setName("GeometryPath");
-	_propertySet.append(&_pathProp);
-
-	_propOptimalForce.setName("optimal_force");
-	_propOptimalForce.setValue(1.0);
-	_propertySet.append( &_propOptimalForce );
+	addProperty<GeometryPath>("GeometryPath",
+		"GeometryPath",
+		"the set of points defining the path of the muscle",
+		GeometryPath());
+	addProperty<double>("optimal_force",
+		"double",
+		"Optimal force.",
+		1.0);
 }
 
 //_____________________________________________________________________________
@@ -133,7 +129,7 @@ void PathActuator::setupProperties()
 void PathActuator::copyData(const PathActuator &aPathActuator)
 {
 	// MEMBER VARIABLES
-	_path = aPathActuator._path;
+	setPropertyValue("GeometryPath", aPathActuator.getPropertyValue<GeometryPath>("GeometryPath"));
 	setOptimalForce(aPathActuator.getOptimalForce());
 }
 
@@ -175,7 +171,7 @@ PathActuator& PathActuator::operator=(const PathActuator &aPathActuator)
  */
 void PathActuator::setOptimalForce(double aOptimalForce)
 {
-	_optimalForce = aOptimalForce;
+	setPropertyValue("optimal_force", aOptimalForce);
 }
 
 //_____________________________________________________________________________
@@ -186,7 +182,7 @@ void PathActuator::setOptimalForce(double aOptimalForce)
  */
 double PathActuator::getOptimalForce() const
 {
-	return(_optimalForce);
+	return getPropertyValue<double>("optimal_force");
 }
 
 //-----------------------------------------------------------------------------
@@ -201,7 +197,7 @@ double PathActuator::getOptimalForce() const
  */
 double PathActuator::getLength(const SimTK::State& s) const
 {
-	return _path.getLength(s);
+	return getPropertyValue<GeometryPath>("GeometryPath").getLength(s);
 }
 //_____________________________________________________________________________
 /**
@@ -211,7 +207,7 @@ double PathActuator::getLength(const SimTK::State& s) const
  */
 double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 {
-	return(_path.getLengtheningSpeed(s));
+	return getPropertyValue<GeometryPath>("GeometryPath").getLengtheningSpeed(s);
 }
 //_____________________________________________________________________________
 /**
@@ -221,7 +217,7 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
  */
 double PathActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/_optimalForce); 
+	return fabs(getForce(s)/getPropertyValue<double>("optimal_force")); 
 }
 
 
@@ -236,7 +232,7 @@ void PathActuator::addNewPathPoint(
 		 OpenSim::Body& aBody, 
 		 const SimTK::Vec3& aPositionOnBody) {
 	// Create new PathPoint
-	PathPoint* newPathPoint =_path.appendNewPathPoint(proposedName, aBody, aPositionOnBody);
+	PathPoint* newPathPoint = updPropertyValue<GeometryPath>("GeometryPath").appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 	// Set offset/position on owner body
 	newPathPoint->setName(proposedName);
 	for (int i=0; i<3; i++)	// Use interface that does not depend on state
@@ -257,7 +253,7 @@ double PathActuator::computeActuation( const SimTK::State& s ) const
 		return 0.0;
 
 	// FORCE
-	return( getControl(s) * _optimalForce );
+	return( getControl(s) * getPropertyValue<double>("optimal_force") );
 }
 
 
@@ -274,8 +270,10 @@ void PathActuator::computeForce( const SimTK::State& s,
 {
 	if(_model==NULL) return;
 
+	const GeometryPath &path = getPropertyValue<GeometryPath>("GeometryPath");
+
 	// compute path's lengthening speed if necessary
-	double speed = _path.getLengtheningSpeed(s);
+	double speed = path.getLengtheningSpeed(s);
 
 	// the lengthening speed of this actutor is the "speed" of the actuator used to compute power
 	setSpeed(s, speed);
@@ -291,7 +289,7 @@ void PathActuator::computeForce( const SimTK::State& s,
     setForce(s,  force );
 
 	OpenSim::Array<PointForceDirection*> PFDs;
-	_path.getPointForceDirections(s, &PFDs);
+	path.getPointForceDirections(s, &PFDs);
 
 	for (int i=0; i < PFDs.getSize(); i++) {
 		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), force*PFDs[i]->direction(), bodyForces);
@@ -305,7 +303,7 @@ void PathActuator::computeForce( const SimTK::State& s,
  */
 double PathActuator::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
 {
-	return _path.computeMomentArm(s, aCoord);
+	return updPropertyValue<GeometryPath>("GeometryPath").computeMomentArm(s, aCoord);
 }
 
 //_____________________________________________________________________________
@@ -317,17 +315,19 @@ double PathActuator::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
  */
 void PathActuator::setup(Model& aModel)
 {
+	GeometryPath &path = updPropertyValue<GeometryPath>("GeometryPath");
+
 	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
 	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
 	// propogated.
-	includeAsSubComponent(&_path);
+	includeAsSubComponent(&path);
 	Actuator::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)
 		return;
 
-	_path.setOwner(this);
+	path.setOwner(this);
 }
 
 
@@ -347,9 +347,8 @@ void PathActuator::setup(Model& aModel)
  */
 void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	_path.setOwner(this);
+	updPropertyValue<GeometryPath>("GeometryPath").setOwner(this);
 	Actuator::updateFromXMLNode(aNode, versionNumber);
-	setOptimalForce(_optimalForce);
 }	
 
 /** 
@@ -387,7 +386,7 @@ VisibleObject* PathActuator::getDisplayer() const
  */
 void PathActuator::updateDisplayer(const SimTK::State& s)
 {
-	_path.updateDisplayer(s);
+	updPropertyValue<GeometryPath>("GeometryPath").updateDisplayer(s);
 }
 
 //=============================================================================
@@ -403,7 +402,7 @@ void PathActuator::updateDisplayer(const SimTK::State& s)
  */
 void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	_path.preScale(s, aScaleSet);
+	updPropertyValue<GeometryPath>("GeometryPath").preScale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -415,7 +414,7 @@ void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	_path.scale(s, aScaleSet);
+	updPropertyValue<GeometryPath>("GeometryPath").scale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -429,5 +428,5 @@ void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	_path.postScale(s, aScaleSet);
+	updPropertyValue<GeometryPath>("GeometryPath").postScale(s, aScaleSet);
 }

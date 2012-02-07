@@ -56,17 +56,7 @@ BushingForce::~BushingForce()
  * Default constructor.
  */
 BushingForce::BushingForce() :
-	Force(),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec()),
-	_rotStiffness(_rotStiffnessProp.getValueDblVec()),
-	_transStiffness(_transStiffnessProp.getValueDblVec()),
-	_rotDamping(_rotDampingProp.getValueDblVec()),
-	_transDamping(_transDampingProp.getValueDblVec())
+	Force()
 {
 	setNull();
 }
@@ -75,29 +65,19 @@ BushingForce::BushingForce() :
 BushingForce::BushingForce( std::string body1Name, SimTK::Vec3 point1, SimTK::Vec3 orientation1,
 		          std::string body2Name, SimTK::Vec3 point2, SimTK::Vec3 orientation2,
 				  SimTK::Vec3 transStiffness, SimTK::Vec3 rotStiffness, SimTK::Vec3 transDamping, SimTK::Vec3 rotDamping ):
-	Force(),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec()),
-	_rotStiffness(_rotStiffnessProp.getValueDblVec()),
-	_transStiffness(_transStiffnessProp.getValueDblVec()),
-	_rotDamping(_rotDampingProp.getValueDblVec()),
-	_transDamping(_transDampingProp.getValueDblVec())
+	Force()
 {
 	setNull();
-	_body1Name = body1Name;
-	_body2Name = body2Name;
-	_locationInBody1 = point1;
-	_orientationInBody1 = orientation1;
-	_locationInBody2 = point2;
-	_orientationInBody2 = orientation2;
-	_rotStiffness = rotStiffness;
-	_transStiffness = transStiffness;
-	_rotDamping = rotDamping;
-	_transDamping = transDamping;
+	setPropertyValue("body_1", body1Name);
+	setPropertyValue("body_2", body2Name);
+	setPropertyValue("location_body_1", point1);
+	setPropertyValue("orientation_body_1", orientation1);
+	setPropertyValue("location_body_2", point2);
+	setPropertyValue("orientation_body_2", orientation2);
+	setPropertyValue("rotational_stiffness", rotStiffness);
+	setPropertyValue("translational_stiffness", transStiffness);
+	setPropertyValue("rotational_damping", rotDamping);
+	setPropertyValue("translational_damping", transDamping);
 }
 
 
@@ -108,17 +88,7 @@ BushingForce::BushingForce( std::string body1Name, SimTK::Vec3 point1, SimTK::Ve
  * @param aForce BushingForce to be copied.
  */
 BushingForce::BushingForce(const BushingForce &aForce) :
-   Force(aForce),
-	_body1Name(_body1NameProp.getValueStr()),
-	_body2Name(_body2NameProp.getValueStr()),
-	_locationInBody1(_locationInBody1Prop.getValueDblVec()),
-	_orientationInBody1(_orientationInBody1Prop.getValueDblVec()),
-	_locationInBody2(_locationInBody2Prop.getValueDblVec()),
-	_orientationInBody2(_orientationInBody2Prop.getValueDblVec()),
-	_rotStiffness(_rotStiffnessProp.getValueDblVec()),
-	_transStiffness(_transStiffnessProp.getValueDblVec()),
-	_rotDamping(_rotDampingProp.getValueDblVec()),
-	_transDamping(_transDampingProp.getValueDblVec())
+   Force(aForce)
 {
 	setNull();
 	copyData(aForce);
@@ -148,16 +118,16 @@ Object* BushingForce::copy() const
 void BushingForce::copyData(const BushingForce &aForce)
 {
 	Force::copyData(aForce);
-	_body1Name = aForce._body1Name;
-	_body2Name = aForce._body2Name;
-	_locationInBody1 = aForce._locationInBody1;
-	_orientationInBody1 = aForce._orientationInBody1;
-	_locationInBody2 = aForce._locationInBody2;
-	_orientationInBody2 = aForce._orientationInBody2;
-	_rotStiffness = aForce._rotStiffness;
-	_transStiffness = aForce._transStiffness;
-	_rotDamping = aForce._rotDamping;
-	_transDamping = aForce._transDamping;
+	setPropertyValue("body_1", aForce.getPropertyValue<string>("body_1"));
+	setPropertyValue("body_2", aForce.getPropertyValue<string>("body_2"));
+	setPropertyValue("location_body_1", aForce.getPropertyValue<SimTK::Vec3>("location_body_1"));
+	setPropertyValue("orientation_body_1", aForce.getPropertyValue<SimTK::Vec3>("orientation_body_1"));
+	setPropertyValue("location_body_2", aForce.getPropertyValue<SimTK::Vec3>("location_body_2"));
+	setPropertyValue("orientation_body_2", aForce.getPropertyValue<SimTK::Vec3>("orientation_body_2"));
+	setPropertyValue("rotational_stiffness", aForce.getPropertyValue<SimTK::Vec3>("rotational_stiffness"));
+	setPropertyValue("translational_stiffness", aForce.getPropertyValue<SimTK::Vec3>("translational_stiffness"));
+	setPropertyValue("rotational_damping", aForce.getPropertyValue<SimTK::Vec3>("rotational_damping"));
+	setPropertyValue("translational_damping", aForce.getPropertyValue<SimTK::Vec3>("translational_damping"));
 }
 
 //_____________________________________________________________________________
@@ -176,52 +146,48 @@ void BushingForce::setNull()
  */
 void BushingForce::setupProperties()
 {
-	// Body 1 name
-	_body1NameProp.setName("body_1");
-	_propertySet.append(&_body1NameProp);
-
-	// Body 2 name
-	_body2NameProp.setName("body_2");
-	_propertySet.append(&_body2NameProp);
-
+	addProperty<string>("body_1",
+		"string",
+		"",
+		"");
+	addProperty<string>("body_2",
+		"string",
+		"",
+		"");
 	//Default location and orientation (rotation sequence)
 	SimTK::Vec3 origin(0.0, 0.0, 0.0);
-
-	// Location in Body 1 
-	_locationInBody1Prop.setName("location_body_1");
-	_locationInBody1Prop.setValue(origin);
-	_propertySet.append(&_locationInBody1Prop);
-
-	// Orientation in Body 1 
-	_orientationInBody1Prop.setName("orientation_body_1");
-	_orientationInBody1Prop.setValue(origin);
-	_propertySet.append(&_orientationInBody1Prop);
-
-	// Location in Body 2 
-	_locationInBody2Prop.setName("location_body_2");
-	_locationInBody2Prop.setValue(origin);
-	_propertySet.append(&_locationInBody2Prop);
-
-	// Orientation in Body 2 
-	_orientationInBody2Prop.setName("orientation_body_2");
-	_orientationInBody2Prop.setValue(origin);
-	_propertySet.append(&_orientationInBody2Prop);
-
-	_rotStiffnessProp.setName("rotational_stiffness");
-	_rotStiffnessProp.setValue(Vec3(0));
-	_propertySet.append(&_rotStiffnessProp);
-
-	_transStiffnessProp.setName("translational_stiffness");
-	_transStiffnessProp.setValue(Vec3(0));
-	_propertySet.append(&_transStiffnessProp);
-
-	_rotDampingProp.setName("rotational_damping");
-	_rotDampingProp.setValue(Vec3(0));
-	_propertySet.append(&_rotDampingProp);
-
-	_transDampingProp.setName("translational_damping");
-	_transDampingProp.setValue(Vec3(0));
-	_propertySet.append(&_transDampingProp);
+	addProperty<SimTK::Vec3>("location_body_1",
+		"Vec3",
+		"",
+		origin);
+	addProperty<SimTK::Vec3>("orientation_body_1",
+		"Vec3",
+		"",
+		origin);
+	addProperty<SimTK::Vec3>("location_body_2",
+		"Vec3",
+		"",
+		origin);
+	addProperty<SimTK::Vec3>("orientation_body_2",
+		"Vec3",
+		"",
+		origin);
+	addProperty<SimTK::Vec3>("rotational_stiffness",
+		"Vec3",
+		"",
+		Vec3(0));
+	addProperty<SimTK::Vec3>("translational_stiffness",
+		"Vec3",
+		"",
+		Vec3(0));
+	addProperty<SimTK::Vec3>("rotational_damping",
+		"Vec3",
+		"",
+		Vec3(0));
+	addProperty<SimTK::Vec3>("translational_damping",
+		"Vec3",
+		"",
+		Vec3(0));
 }
 
 //_____________________________________________________________________________
@@ -235,37 +201,51 @@ void BushingForce::setup(Model& aModel)
 {
 	string errorMessage;
 
+	const string &body1Name = getPropertyValue<string>("body_1");
+	const string &body2Name = getPropertyValue<string>("body_2");
+
 	// Base class
 	Force::setup(aModel);
 
 	// Look up the two bodies being connected by bushing by name in the
 	// model and might as well keep a pointer to them
-	if (!aModel.updBodySet().contains(_body1Name)) {
-		errorMessage = "Invalid bushing body1 (" + _body1Name + ") specified in Force " + getName();
+	if (!aModel.updBodySet().contains(body1Name)) {
+		errorMessage = "Invalid bushing body1 (" + body1Name + ") specified in Force " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
-	if (!aModel.updBodySet().contains(_body2Name)) {
-		errorMessage = "Invalid bushing body2 (" + _body2Name + ") specified in Force " + getName();
+	if (!aModel.updBodySet().contains(body2Name)) {
+		errorMessage = "Invalid bushing body2 (" + body2Name + ") specified in Force " + getName();
 		throw (Exception(errorMessage.c_str()));
 	}
 }
 
 void BushingForce::createSystem(SimTK::MultibodySystem& system) const
 {
-	Body &body1 = _model->updBodySet().get(_body1Name);
-	Body &body2 = _model->updBodySet().get(_body2Name);
+	const string &body1Name = getPropertyValue<string>("body_1");
+	const string &body2Name = getPropertyValue<string>("body_2");
+	const SimTK::Vec3 &locationInBody1 = getPropertyValue<SimTK::Vec3>("location_body_1");
+	const SimTK::Vec3 &orientationInBody1 = getPropertyValue<SimTK::Vec3>("orientation_body_1");
+	const SimTK::Vec3 &locationInBody2 = getPropertyValue<SimTK::Vec3>("location_body_2");
+	const SimTK::Vec3 &orientationInBody2 = getPropertyValue<SimTK::Vec3>("orientation_body_2");
+	const SimTK::Vec3 &rotStiffness = getPropertyValue<SimTK::Vec3>("rotational_stiffness");
+	const SimTK::Vec3 &transStiffness = getPropertyValue<SimTK::Vec3>("translational_stiffness");
+	const SimTK::Vec3 &rotDamping = getPropertyValue<SimTK::Vec3>("rotational_damping");
+	const SimTK::Vec3 &transDamping = getPropertyValue<SimTK::Vec3>("translational_damping");
+
+	Body &body1 = _model->updBodySet().get(body1Name);
+	Body &body2 = _model->updBodySet().get(body2Name);
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(body1.getIndex());
 	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(body2.getIndex());
 	// Build the transforms
-	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(_orientationInBody1);
-	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(_orientationInBody2);
-	SimTK::Transform inb1(r1, _locationInBody1);
-	SimTK::Transform inb2(r2, _locationInBody2);
+	SimTK::Rotation r1; r1.setRotationToBodyFixedXYZ(orientationInBody1);
+	SimTK::Rotation r2; r2.setRotationToBodyFixedXYZ(orientationInBody2);
+	SimTK::Transform inb1(r1, locationInBody1);
+	SimTK::Transform inb2(r2, locationInBody2);
 
-	Vec6 stiffness(_rotStiffness[0], _rotStiffness[1], _rotStiffness[2], _transStiffness[0], _transStiffness[1], _transStiffness[2]);
-	Vec6 damping(_rotDamping[0], _rotDamping[1], _rotDamping[2], _transDamping[0], _transDamping[1], _transDamping[2]);
+	Vec6 stiffness(rotStiffness[0], rotStiffness[1], rotStiffness[2], transStiffness[0], transStiffness[1], transStiffness[2]);
+	Vec6 damping(rotDamping[0], rotDamping[1], rotDamping[2], transDamping[0], transDamping[1], transDamping[2]);
 
     // Now create a Simbody Force::LinearBushing
     SimTK::Force::LinearBushing simtkForce(_model->updForceSubsystem(), b1, inb1, b2, inb2, stiffness, damping);
@@ -299,26 +279,26 @@ BushingForce& BushingForce::operator=(const BushingForce &aForce)
  * Following methods set attributes of the weld Force */
 void BushingForce::setBody1ByName(std::string aBodyName)
 {
-	_body1Name = aBodyName;
+	setPropertyValue("body_1", aBodyName);
 }
 
 void BushingForce::setBody2ByName(std::string aBodyName)
 {
-	_body2Name = aBodyName;
+	setPropertyValue("body_2", aBodyName);
 }
 
 /** Set the location and orientation (optional) for weld on body 1*/
 void BushingForce::setBody1BushingLocation(Vec3 location, Vec3 orientation)
 {
-	_locationInBody1 = location;
-	_orientationInBody1 = orientation;
+	setPropertyValue("location_body_1", location);
+	setPropertyValue("orientation_body_1", orientation);
 }
 
 /** Set the location and orientation (optional) for weld on body 2*/
 void BushingForce::setBody2BushingLocation(Vec3 location, Vec3 orientation)
 {
-	_locationInBody2 = location;
-	_orientationInBody2 = orientation;
+	setPropertyValue("location_body_2", location);
+	setPropertyValue("orientation_body_2", orientation);
 }
 
 /* Potential energy is computed by underlying SimTK::Force. */
@@ -336,19 +316,22 @@ double BushingForce::computePotentialEnergy(const SimTK::State& s) const
  */
 OpenSim::Array<std::string> BushingForce::getRecordLabels() const 
 {
+	const string &body1Name = getPropertyValue<string>("body_1");
+	const string &body2Name = getPropertyValue<string>("body_2");
+
 	OpenSim::Array<std::string> labels("");
-	labels.append(getName()+"."+_body1Name+".force.X");
-	labels.append(getName()+"."+_body1Name+".force.Y");
-	labels.append(getName()+"."+_body1Name+".force.Z");
-	labels.append(getName()+"."+_body1Name+".torque.X");
-	labels.append(getName()+"."+_body1Name+".torque.Y");
-	labels.append(getName()+"."+_body1Name+".torque.Z");
-	labels.append(getName()+"."+_body2Name+".force.X");
-	labels.append(getName()+"."+_body2Name+".force.Y");
-	labels.append(getName()+"."+_body2Name+".force.Z");
-	labels.append(getName()+"."+_body2Name+".torque.X");
-	labels.append(getName()+"."+_body2Name+".torque.Y");
-	labels.append(getName()+"."+_body2Name+".torque.Z");
+	labels.append(getName()+"."+body1Name+".force.X");
+	labels.append(getName()+"."+body1Name+".force.Y");
+	labels.append(getName()+"."+body1Name+".force.Z");
+	labels.append(getName()+"."+body1Name+".torque.X");
+	labels.append(getName()+"."+body1Name+".torque.Y");
+	labels.append(getName()+"."+body1Name+".torque.Z");
+	labels.append(getName()+"."+body2Name+".force.X");
+	labels.append(getName()+"."+body2Name+".force.Y");
+	labels.append(getName()+"."+body2Name+".force.Z");
+	labels.append(getName()+"."+body2Name+".torque.X");
+	labels.append(getName()+"."+body2Name+".torque.Y");
+	labels.append(getName()+"."+body2Name+".torque.Z");
 
 	return labels;
 }
@@ -357,6 +340,9 @@ OpenSim::Array<std::string> BushingForce::getRecordLabels() const
  */
 OpenSim::Array<double> BushingForce::getRecordValues(const SimTK::State& state) const 
 {
+	const string &body1Name = getPropertyValue<string>("body_1");
+	const string &body2Name = getPropertyValue<string>("body_2");
+
 	OpenSim::Array<double> values(1);
 
 	const SimTK::Force::LinearBushing &simtkSpring = (SimTK::Force::LinearBushing &)(_model->getForceSubsystem().getForce(_index));
@@ -367,13 +353,13 @@ OpenSim::Array<double> BushingForce::getRecordValues(const SimTK::State& state) 
 
 	//get the net force added to the system contributed by the bushing
 	simtkSpring.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
-	SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(_body1Name).getIndex())[1];
-	SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(_body1Name).getIndex())[0];
+	SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(body1Name).getIndex())[1];
+	SimTK::Vec3 torques = bodyForces(_model->getBodySet().get(body1Name).getIndex())[0];
 	values.append(3, &forces[0]);
 	values.append(3, &torques[0]);
 
-	forces = bodyForces(_model->getBodySet().get(_body2Name).getIndex())[1];
-	torques = bodyForces(_model->getBodySet().get(_body2Name).getIndex())[0];
+	forces = bodyForces(_model->getBodySet().get(body2Name).getIndex())[1];
+	torques = bodyForces(_model->getBodySet().get(body2Name).getIndex())[0];
 
 	values.append(3, &forces[0]);
 	values.append(3, &torques[0]);

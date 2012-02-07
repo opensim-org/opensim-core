@@ -65,8 +65,6 @@ const int LiuThelen2003Muscle::STATE_FATIGUED_MOTOR_UNITS = 3;
  */
 LiuThelen2003Muscle::LiuThelen2003Muscle() :
    Thelen2003Muscle(),
-	_fatigueFactor(_fatigueFactorProp.getValueDbl()),
-	_recoveryFactor(_recoveryFactorProp.getValueDbl()),
    _defaultActiveMotorUnits(0.0),
    _defaultFatiguedMotorUnits(0.0)
 {
@@ -83,8 +81,6 @@ LiuThelen2003Muscle::LiuThelen2003Muscle(const std::string &aName, double aMaxIs
 													  double aPennationAngle, double aFatigueFactor,
 													  double aRecoveryFactor) :
    Thelen2003Muscle(aName, aMaxIsometricForce, aOptimalFiberLength, aTendonSlackLength, aPennationAngle),
-	_fatigueFactor(_fatigueFactorProp.getValueDbl()),
-	_recoveryFactor(_recoveryFactorProp.getValueDbl()),
    _defaultActiveMotorUnits(0.0),
    _defaultFatiguedMotorUnits(0.0)
 {
@@ -110,8 +106,6 @@ LiuThelen2003Muscle::~LiuThelen2003Muscle()
  */
 LiuThelen2003Muscle::LiuThelen2003Muscle(const LiuThelen2003Muscle &aMuscle) :
    Thelen2003Muscle(aMuscle),
-	_fatigueFactor(_fatigueFactorProp.getValueDbl()),
-	_recoveryFactor(_recoveryFactorProp.getValueDbl()),
    _defaultActiveMotorUnits(0.0),
    _defaultFatiguedMotorUnits(0.0)
 {
@@ -144,8 +138,8 @@ Object* LiuThelen2003Muscle::copy() const
  */
 void LiuThelen2003Muscle::copyData(const LiuThelen2003Muscle &aMuscle)
 {
-	_fatigueFactor = aMuscle._fatigueFactor;
-	_recoveryFactor = aMuscle._recoveryFactor;
+	setPropertyValue("fatigue_factor", aMuscle.getPropertyValue<double>("fatigue_factor"));
+	setPropertyValue("recovery_factor", aMuscle.getPropertyValue<double>("recovery_factor"));
 }
 
 //_____________________________________________________________________________
@@ -171,15 +165,14 @@ void LiuThelen2003Muscle::setNull()
 */
 void LiuThelen2003Muscle::setupProperties()
 {
-	_fatigueFactorProp.setName("fatigue_factor");
-	_fatigueFactorProp.setValue(0.0);
-	_fatigueFactorProp.setComment("percentage of active motor units that fatigue in unit time");
-	_propertySet.append(&_fatigueFactorProp, "Parameters");
-
-	_recoveryFactorProp.setName("recovery_factor");
-	_recoveryFactorProp.setValue(0.0);
-	_recoveryFactorProp.setComment("percentage of fatigued motor units that recover in unit time");
-	_propertySet.append(&_recoveryFactorProp, "Parameters");
+	addProperty<double>("fatigue_factor",
+		"double",
+		"percentage of active motor units that fatigue in unit time",
+		0.0);
+	addProperty<double>("recovery_factor",
+		"double",
+		"percentage of fatigued motor units that recover in unit time",
+		0.0);
 }
 
 //_____________________________________________________________________________
@@ -246,7 +239,7 @@ LiuThelen2003Muscle& LiuThelen2003Muscle::operator=(const LiuThelen2003Muscle &a
  */
 bool LiuThelen2003Muscle::setFatigueFactor(double aFatigueFactor)
 {
-	_fatigueFactor = aFatigueFactor;
+	setPropertyValue("fatigue_factor", aFatigueFactor);
 	return true;
 }
 
@@ -262,7 +255,7 @@ bool LiuThelen2003Muscle::setFatigueFactor(double aFatigueFactor)
  */
 bool LiuThelen2003Muscle::setRecoveryFactor(double aRecoveryFactor)
 {
-	_recoveryFactor = aRecoveryFactor;
+	setPropertyValue("recovery_factor", aRecoveryFactor);
 	return true;
 }
 
@@ -323,28 +316,37 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 	double normState[4], normStateDeriv[4], norm_tendon_length, ca;
 	double norm_muscle_tendon_length, pennation_angle;
 
+	const double &maxIsometricForce = getPropertyValue<double>("max_isometric_force");
+    const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
+	const double &tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
+	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
+	const double &activationTimeConstant = getPropertyValue<double>("activation_time_constant");
+	const double &deactivationTimeConstant = getPropertyValue<double>("deactivation_time_constant");
+	const double &vmax = getPropertyValue<double>("Vmax");
+	const double &vmax0 = getPropertyValue<double>("Vmax0");
+
 	// Normalize the muscle states.
 	normState[STATE_ACTIVATION] = getActivation(s);
-	normState[STATE_FIBER_LENGTH] = getFiberLength(s) / _optimalFiberLength;
+	normState[STATE_FIBER_LENGTH] = getFiberLength(s) / optimalFiberLength;
 	normState[STATE_ACTIVE_MOTOR_UNITS] = getActiveMotorUnits(s);
 	normState[STATE_FATIGUED_MOTOR_UNITS] = getFatiguedMotorUnits(s);
 
 	// Maximum contraction velocity is an activation scaled value.
-	double Vmax = _vmax;
+	double Vmax = vmax;
 	if (normState[STATE_ACTIVATION]<1.0)
-		Vmax = _vmax0 + normState[STATE_ACTIVATION]*(Vmax-_vmax0);
-	Vmax = Vmax*_optimalFiberLength;
+		Vmax = vmax0 + normState[STATE_ACTIVATION]*(Vmax-vmax0);
+	Vmax = Vmax*optimalFiberLength;
 
 	// Compute normalized muscle state derivatives.
 	if (getExcitation(s) >= normState[STATE_ACTIVATION])
-      normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _activationTimeConstant;
+      normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / activationTimeConstant;
 	else
-      normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / _deactivationTimeConstant;
+      normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / deactivationTimeConstant;
 
-	pennation_angle = Muscle::calcPennation( normState[STATE_FIBER_LENGTH], 1.0, _pennationAngleAtOptimal);
+	pennation_angle = Muscle::calcPennation( normState[STATE_FIBER_LENGTH], 1.0, pennationAngleAtOptimal);
 	ca = cos(pennation_angle);
 
-	norm_muscle_tendon_length = getLength(s) / _optimalFiberLength;
+	norm_muscle_tendon_length = getLength(s) / optimalFiberLength;
 	norm_tendon_length = norm_muscle_tendon_length - normState[STATE_FIBER_LENGTH] * ca;
 
 	tendonForce = calcTendonForce(s,norm_tendon_length);
@@ -363,10 +365,10 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 		}
 		else 
 		{
-         double h = norm_muscle_tendon_length - _tendonSlackLength;
-         double w = _optimalFiberLength * sin(_pennationAngleAtOptimal);
-         double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
-			double new_pennation_angle = Muscle::calcPennation( new_fiber_length, 1.0, _pennationAngleAtOptimal);
+         double h = norm_muscle_tendon_length - tendonSlackLength;
+         double w = optimalFiberLength * sin(pennationAngleAtOptimal);
+         double new_fiber_length = sqrt(h*h + w*w) / optimalFiberLength;
+			double new_pennation_angle = Muscle::calcPennation( new_fiber_length, 1.0, pennationAngleAtOptimal);
          double new_ca = cos(new_pennation_angle);
          normStateDeriv[STATE_FIBER_LENGTH] = getSpeed(s) / (Vmax * new_ca);
 		}
@@ -388,10 +390,10 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 	setActiveMotorUnitsDeriv(s, normStateDeriv[STATE_ACTIVE_MOTOR_UNITS]);
 	setFatiguedMotorUnitsDeriv(s, normStateDeriv[STATE_FATIGUED_MOTOR_UNITS]);
 
-	tendonForce = tendonForce *  _maxIsometricForce;
+	tendonForce = tendonForce *  maxIsometricForce;
 	setForce( s, tendonForce );
 	setTendonForce( s, tendonForce );
-	setPassiveForce( s, getPassiveForce(s) * _maxIsometricForce);
+	setPassiveForce( s, getPassiveForce(s) * maxIsometricForce);
 	
 	return tendonForce;
 }
@@ -412,9 +414,13 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 double LiuThelen2003Muscle::
 computeIsometricForce(SimTK::State& s, double aActivation) const
 {
-   if (_optimalFiberLength < ROUNDOFF_ERROR) {
-      return 0.0;
-   }
+	const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
+	const double &fatigueFactor = getPropertyValue<double>("fatigue_factor");
+	const double &recoveryFactor = getPropertyValue<double>("recovery_factor");
+
+    if (optimalFiberLength < ROUNDOFF_ERROR) {
+       return 0.0;
+    }
 
 	// This muscle model includes two fatigue states, so this function assumes
 	// that t=infinity in order to compute the [steady-state] isometric force.
@@ -423,9 +429,9 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 	// (_fatigueFactor + _recoveryFactor), I think). So the passed-in activation
 	// is not used in this function (unless the fatigue and recovery factors are
 	// both zero which means there is no fatigue).
-	if ((_fatigueFactor + _recoveryFactor > 0.0) && (aActivation >= _recoveryFactor / (_fatigueFactor + _recoveryFactor))) {
-		setActiveMotorUnits(s, _recoveryFactor / (_fatigueFactor + _recoveryFactor));
-		setFatiguedMotorUnits(s, _fatigueFactor / (_fatigueFactor + _recoveryFactor));
+	if ((fatigueFactor + recoveryFactor > 0.0) && (aActivation >= recoveryFactor / (fatigueFactor + recoveryFactor))) {
+		setActiveMotorUnits(s, recoveryFactor / (fatigueFactor + recoveryFactor));
+		setFatiguedMotorUnits(s, fatigueFactor / (fatigueFactor + recoveryFactor));
 	} else {
 		setActiveMotorUnits(s, aActivation);
 		setFatiguedMotorUnits(s, 0.0);

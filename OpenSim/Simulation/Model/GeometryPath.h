@@ -199,6 +199,9 @@ private:
 //=============================================================================
 //=============================================================================
 
+template <>
+inline AbstractProperty::PropertyType Property2<GeometryPath>::getPropertyType() const { return Obj; }
+
 } // end of namespace OpenSim
 
 #endif // __GeometryPath_h__

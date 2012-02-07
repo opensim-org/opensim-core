@@ -59,38 +59,6 @@ class OSIMSIMULATION_API ExternalForce : public Force
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-	/** The body that the external force(torque) is applied to. */
-	PropertyStr _appliedToBodyNameProp;
-	std::string& _appliedToBodyName;
-
-	/** The body (reference frame) that the external force(torque) is expressed in. */
-	PropertyStr _forceExpressedInBodyNameProp;
-	std::string& _forceExpressedInBodyName;
-
-	/** The body (reference frame) that the point of force application is expressed. */
-	PropertyStr _pointExpressedInBodyNameProp;
-	std::string& _pointExpressedInBodyName;
-
-	/** The name of the data source (Storage) that contains the force as data points in time. */
-	PropertyStr _dataSourceNameProp;
-	std::string& _dataSourceName;
-
-	/** The identifier (as part of its label) of the force data in the dataSource necessary to retrieve 
-	    the force data from the dataSource. */
-	PropertyStr _forceIdentifierProp;
-	std::string& _forceIdentifier;
-
-	/** The identifier of the point data in the dataSource necessary to retieve the point
-	    data from the dataSource. */
-	PropertyStr _pointIdentifierProp;
-	std::string& _pointIdentifier;
-
-	/** The identifier for the torque data in the dataSource necessary to retieve the torque
-	    data from the dataSource. */
-	PropertyStr _torqueIdentifierProp;
-	std::string& _torqueIdentifier;
-
 private:
 
 	/** Pointer to the body that force is applied to */
@@ -161,31 +129,31 @@ public:
 	/**
 	 *  Specify or obtain the body to which the force will be applied
 	 */
-	void setAppliedToBodyName(const std::string &applyToName) const { _appliedToBodyName =applyToName; }
-	const std::string& getAppliedToBodyName() const { return (_appliedToBodyName); }
+	void setAppliedToBodyName(const std::string &applyToName) { setPropertyValue("applied_to_body", applyToName); }
+	const std::string& getAppliedToBodyName() const { return getPropertyValue<std::string>("applied_to_body"); }
 
 	/**
 	 *  Specify or obtain the body in which the point of application is expressed
 	 */
-	void setPointExpressedInBodyName(const std::string &pointInBodyName) const { _pointExpressedInBodyName =pointInBodyName; }
-	const std::string& getPointExpressedInBodyName() const { return (_pointExpressedInBodyName); }
+	void setPointExpressedInBodyName(const std::string &pointInBodyName) { setPropertyValue("point_expressed_in_body", pointInBodyName); }
+	const std::string& getPointExpressedInBodyName() const { return getPropertyValue<std::string>("point_expressed_in_body"); }
 
 	/**
 	 *  Specify or obtain the body in which the force is expressed
 	 */
-	void setForceExpressedInBodyName(const std::string &forceInBodyName) const { _forceExpressedInBodyName =forceInBodyName; }
-	const std::string& getForceExpressedInBodyName() const { return (_forceExpressedInBodyName); }
+	void setForceExpressedInBodyName(const std::string &forceInBodyName) { setPropertyValue("force_expressed_in_body", forceInBodyName); }
+	const std::string& getForceExpressedInBodyName() const { return getPropertyValue<std::string>("force_expressed_in_body"); }
 
 	/**
 	 * Identifiers
 	 */
-	void setForceIdentifier(const std::string aForceIdentifier) { _forceIdentifier = aForceIdentifier; }
-	void setPointIdentifier(const std::string aPointIdentifier) { _pointIdentifier = aPointIdentifier; }
-	void setTorqueIdentifier(const std::string aTorqueIdentifier) { _torqueIdentifier = aTorqueIdentifier; }
+	void setForceIdentifier(const std::string aForceIdentifier) { setPropertyValue("force_identifier", aForceIdentifier); }
+	void setPointIdentifier(const std::string aPointIdentifier) { setPropertyValue("point_identifier", aPointIdentifier); }
+	void setTorqueIdentifier(const std::string aTorqueIdentifier) { setPropertyValue("torque_identifier", aTorqueIdentifier); }
 
-	const std::string& getForceIdentifier() const { return _forceIdentifier; }
-	const std::string& getPointIdentifier() const { return _pointIdentifier; }
-	const std::string& getTorqueIdentifier() const { return _torqueIdentifier; }
+	const std::string& getForceIdentifier() const { return getPropertyValue<std::string>("force_identifier"); }
+	const std::string& getPointIdentifier() const { return getPropertyValue<std::string>("point_identifier"); }
+	const std::string& getTorqueIdentifier() const { return getPropertyValue<std::string>("torque_identifier"); }
 	/**
 	 * Convenience methods to access external forces at a given time
 	 */
@@ -206,9 +174,9 @@ public:
 	/**
 	 * Methods to query the force properties to find out if it's a body vs. point force and/or if it applies a torque 
 	 */
-	bool appliesForce() const { return !((_forceIdentifier.find_first_not_of(" \t")==std::string::npos) || (_forceIdentifier == "Unassigned"));};
-	bool specifiesPoint() const { return !((_pointIdentifier.find_first_not_of(" \t")==std::string::npos) || (_pointIdentifier == "Unassigned"));};
-	bool appliesTorque() const { return !((_torqueIdentifier.find_first_not_of(" \t")==std::string::npos) || (_torqueIdentifier == "Unassigned"));};
+	bool appliesForce() const { const std::string &forceIdentifier = getPropertyValue<std::string>("force_identifier"); return !((forceIdentifier.find_first_not_of(" \t")==std::string::npos) || (forceIdentifier == "Unassigned"));};
+	bool specifiesPoint() const { const std::string &pointIdentifier = getPropertyValue<std::string>("point_identifier"); return !((pointIdentifier.find_first_not_of(" \t")==std::string::npos) || (pointIdentifier == "Unassigned"));};
+	bool appliesTorque() const { const std::string &torqueIdentifier = getPropertyValue<std::string>("torque_identifier"); return !((torqueIdentifier.find_first_not_of(" \t")==std::string::npos) || (torqueIdentifier == "Unassigned"));};
 
 #ifndef SWIG
 	ExternalForce& operator=(const ExternalForce &aForce);

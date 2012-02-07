@@ -55,38 +55,6 @@ class OSIMSIMULATION_API PointToPointSpring : public Force
 // DATA
 //=============================================================================
 protected:
-	// PROPERTIES
-	/** Name of Body to which 1 end of the spring is attached. */
-	PropertyStr _propBody1Name;
-
-	/** Name of Body to which the 2nd end of the spring is attached. */
-	PropertyStr _propBody2Name;
-
-	/** Point of spring application on each body */
-	PropertyDblVec3 _propPoint1;
-	PropertyDblVec3 _propPoint2;
-
-	/** Spring stiffness property */
-	PropertyDbl _propStiffness;
-
-	/** Spring rest length property */
-	PropertyDbl _propRestlength;
-
-	// REFERENCES
-	/** Names of bodies to which ends of the spring are attached. */
-	std::string& _body1Name;
-	std::string& _body2Name;
-
-	/** Points of application on each body */
-	SimTK::Vec3 &_point1;
-	SimTK::Vec3 &_point2;
-	
-	/** Spring stiffness */
-	double &_stiffness;
-
-	/** Spring rest length */
-	double &_restLength;
-
 	/** how to display the Spring */
 	VisibleObject _displayer;
 
@@ -135,33 +103,33 @@ public:
 	* 
 	* @param std::string bodyName<1/2>
 	*/
-	void setBody1Name(std::string body1Name) {_body1Name = body1Name;} ;
-	void setBody2Name(std::string body2Name) {_body2Name = body2Name;} ;
-	std::string getBody1Name() const {return _body1Name;} ;
-	std::string getBody2Name() const {return _body2Name;};
+	void setBody1Name(std::string body1Name) {setPropertyValue("body1", body1Name);}
+	void setBody2Name(std::string body2Name) {setPropertyValue("body2", body2Name);}
+	std::string getBody1Name() const {return getPropertyValue<std::string>("body1");}
+	std::string getBody2Name() const {return getPropertyValue<std::string>("body2");}
 
 	/**
 	* Spring end points 
 	* 
 	* @param Vec3 point<1/2> 
 	*/
-	void setPoint1(SimTK::Vec3 aPosition) { _point1 = aPosition; } ;
-	SimTK::Vec3 getPoint1() const { return _point1; };
-	void setPoint2(SimTK::Vec3 aPosition) { _point2 = aPosition; } ;
-	SimTK::Vec3 getPoint2() const { return _point2; };
+	void setPoint1(SimTK::Vec3 aPosition) { setPropertyValue("point1", aPosition); }
+	SimTK::Vec3 getPoint1() const { return getPropertyValue<SimTK::Vec3>("point1"); }
+	void setPoint2(SimTK::Vec3 aPosition) { setPropertyValue("point2", aPosition); }
+	SimTK::Vec3 getPoint2() const { return getPropertyValue<SimTK::Vec3>("point2"); }
 
 	/**
 	* Spring stiffness
 	* @param stiffness 
 	*/
-	void setStiffness(double stiffness) {_stiffness = stiffness;} ;
-	double getStiffness() const {return _stiffness;} ;
+	void setStiffness(double stiffness) {setPropertyValue("stiffness", stiffness);}
+	double getStiffness() const {return getPropertyValue<double>("stiffness");}
 	/**
 	* Spring rest length
 	* @param restLength 
 	*/
-	void setRestlength(double restLength) {_restLength = restLength;} ;
-	double getRestlength() const {return _restLength;} ;
+	void setRestlength(double restLength) {setPropertyValue("rest_length", restLength);}
+	double getRestlength() const {return getPropertyValue<double>("rest_length");}
 
 	//-----------------------------------------------------------------------------
 	// Model setup and system creation
