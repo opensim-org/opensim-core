@@ -260,8 +260,6 @@ public:
 
 
 	// Computed quantities
-#ifndef SWIG
-
 	//--------------------------------------------------------------------------
 	// FORCE-LENGTH-VELOCITY PROPERTIES
 	//--------------------------------------------------------------------------
@@ -282,8 +280,6 @@ public:
 	double calcMusclePE(const SimTK::State& s, double aNormFiberLength, double aFiberRestLength ,double aMaxIsometricForce) const;
 	double calcMuscleW(const SimTK::State& s,  double aNormFiberLength, double aFiberRestLength, double aNormFiberVelocity, double aMaxFiberVelocity, double aMaxIsometricForce) const;
 	*/
-
-#endif
 	OPENSIM_DECLARE_DERIVED(Thelen2003MuscleV1, ActivationFiberLengthMuscle);
 
 private:

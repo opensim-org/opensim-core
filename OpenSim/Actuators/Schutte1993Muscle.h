@@ -86,15 +86,12 @@ public:
 
 	virtual bool setDamping(double aDamping);
 	virtual double getDamping() { return getPropertyValue<double>("damping"); }
-#ifndef SWIG
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s ) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-
-#endif
 
 	virtual Function* getActiveForceLengthCurve() const;
 	virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);

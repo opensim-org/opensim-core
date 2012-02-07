@@ -151,8 +151,6 @@ public:
 	virtual bool setFlen(double aFlen);
 
 	// Computed quantities
-#ifndef SWIG
-
 	//--------------------------------------------------------------------------
 	// FORCE-LENGTH-VELOCITY PROPERTIES
 	//--------------------------------------------------------------------------
@@ -167,7 +165,6 @@ public:
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
-#endif
 	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle, ActivationFiberLengthMuscle);
 
 private:

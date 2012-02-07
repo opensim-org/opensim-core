@@ -126,7 +126,6 @@ public:
 	virtual bool setActivation2(double aActivation2);
 	virtual bool setMass(double aMass);
 	// Computed quantities
-#ifndef SWIG
 	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, "fiber_velocity"); }
 	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, "fiber_velocity", fiberVelocity); }
 	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "fiber_velocity"); }
@@ -139,8 +138,6 @@ public:
 	//--------------------------------------------------------------------------
 	virtual double computeActuation(const SimTK::State& s) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-
-#endif
 
 	virtual Function* getActiveForceLengthCurve() const;
 	virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);

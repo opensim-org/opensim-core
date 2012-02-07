@@ -141,7 +141,6 @@ public:
 	virtual bool setRecoveryFactor(double aRecoveryFactor);
 
 	// Computed quantities
-#ifndef SWIG
 	virtual double getActiveMotorUnits(const SimTK::State& s) const { return getStateVariable(s, "active_motor_units"); }
 	virtual void setActiveMotorUnits(SimTK::State& s, double activeMotorUnits) const { setStateVariable(s, "active_motor_units", activeMotorUnits); }
 	virtual double getActiveMotorUnitsDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "active_motor_units"); }
@@ -161,7 +160,6 @@ public:
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 	virtual void equilibrate(SimTK::State& state) const;
 
-#endif
 
 	// This macro allows the OpenSim GUI to check Actuator
 	// objects to see if they are instances of this muscle class.
