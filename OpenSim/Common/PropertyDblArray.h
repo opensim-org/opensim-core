@@ -60,7 +60,7 @@ class OSIMCOMMON_API PropertyDblArray : public Property
 // DATA
 //=============================================================================
 protected:
-	/** Array of integers. */
+	/** Array of doubles. */
 	Array<double> _array;
 
 //=============================================================================

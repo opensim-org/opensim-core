@@ -139,13 +139,25 @@ public:
 		assert(aSize == M);
 		setValue(SimTK::Vec<M>::getAs(aArray));
 	};
+#ifndef SWIG
 	/** get value as double array */
 	virtual const Array<double>& getValueDblArray() const {
 		_array.setSize(M);
 		for(int i=0;i<M; i++)
 			_array[i] = _vec[i];
 		return _array;
-	;}
+	};
+#endif
+	/** Nonconst version of accessor for use by GUI.
+	 * Beware: changes to returned array will not change _vec member as it should
+	 * both _vec and _array should point to same memory to fix this issue
+	 */
+	virtual Array<double>& getValueDblArray() {
+		_array.setSize(M);
+		for(int i=0;i<M; i++)
+			_array[i] = _vec[i];
+		return _array;
+	};
 	/** Get a constant String represeting the value of this property. */
 	virtual const std::string &toString(){
 		std::string str = "(";

@@ -456,10 +456,6 @@ static bool trace=false;
 %include <OpenSim/Common/PropertyStr.h>
 %template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property>;
 %include <OpenSim/Common/PropertyDblArray.h>
-%include <OpenSim/Common/PropertyDblVec.h>
-%template(PropertyDblVec2) OpenSim::PropertyDblVec_<2>;
-%template(PropertyDblVec3) OpenSim::PropertyDblVec_<3>;
-%template(PropertyDblVec6) OpenSim::PropertyDblVec_<6>;
 %include <OpenSim/Common/PropertyTransform.h>
 %include <OpenSim/Common/PropertyGroup.h>
 %template(ArrayPtrsPropertyGroup) OpenSim::ArrayPtrs<OpenSim::PropertyGroup>;

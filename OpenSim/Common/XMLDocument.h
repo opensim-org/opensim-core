@@ -70,10 +70,6 @@ public:
 	/** Latest version of the code encoded as an int xxyyzz where x: major release, y: minor, z: patch */
 	static const int LatestVersion;
 private:
-	/** XML parser. */
-	//XercesDOMParser *_parser;
-	/** XML document. */
-	//DOMDocument *_document;
 	/** Name of the XML Document */
 	std::string _fileName;
 	/** Document Version as written to the file */
@@ -112,7 +108,6 @@ public:
 	//--------------------------------------------------------------------------
 	// SET AND GET
 	//--------------------------------------------------------------------------
-	//DOMDocument* getDOMDocument() const;
 	void setFileName(const std::string &aFileName);
 	const std::string &getFileName() const;
 	void addDefaultObject(OpenSim::Object* aDefaultObject);
