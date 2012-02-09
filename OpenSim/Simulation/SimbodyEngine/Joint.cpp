@@ -610,9 +610,12 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
 SimTK::SpatialVec Joint::calcEquivalentSpatialForceForMobilizedBody(const SimTK::State &s, const SimTK::MobilizedBodyIndex mbx, const SimTK::Vector &mobilityForces) const
 {
 	// Get the mobilized body
-	const SimTK::MobilizedBody mbd = _model->updMatterSubsystem().getMobilizedBody(mbx);
-	SimTK::UIndex ustart = mbd.getFirstUIndex(s);
-	int nu = mbd.getNumU(s);
+	const SimTK::MobilizedBody mbd    = _model->updMatterSubsystem().getMobilizedBody(mbx);
+	const SimTK::UIndex        ustart = mbd.getFirstUIndex(s);
+	const int                  nu     = mbd.getNumU(s);
+
+    if (nu == 0) // No mobility forces (weld joint?).
+        return SimTK::SpatialVec(SimTK::Vec3(0), SimTK::Vec3(0));
 
 	// Construct the H (joint jacobian, joint transition) matrrix for this mobilizer
 	SimTK::Matrix transposeH_PB_w(nu, 3);
