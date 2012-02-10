@@ -58,8 +58,8 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
 #endif
 #endif
 
-typedef std::map<std::string, OpenSim::Object*, std::less<std::string> > stringsToObjects;
-typedef std::map<std::string, bool, std::less<std::string> > defaultsReadFromFile;
+typedef std::map<std::string, OpenSim::Object* > stringsToObjects;
+typedef std::map<std::string, bool> defaultsReadFromFile;
 
 
 // CONSTANTS
@@ -88,14 +88,14 @@ class XMLDocument;
 //=============================================================================
 /**
  * Class Oject is intended to be used as the base class for all
- * OpenSim objects.  It provides a common object from which
+ * OpenSim objects.that are serializable  It provides a common object from which
  * to derive and also some basic functionality, such as writing to files
  * in XML format and the equality, less than, and output operators.
  * Future enhancements to Object might include thread functionality.
  *
  * @version 1.0
- * @author Frank C. Anderson
- * @todo Use a hash table to store registered object types.
+ * @author Frank C. Anderson, Ayman Habib
+ * 
  */
 class OSIMCOMMON_API Object  
 {
@@ -113,10 +113,6 @@ private:
 	 * A Hash map that maps an std::string& to the corresponding default object.
 	 */
 	static stringsToObjects _mapTypesToDefaultObjects;
-	/**
-	 * A Hash map that maps an std::string& to the flag specifying if default objects are user specified in file
-	 */
-	static defaultsReadFromFile	_defaultsReadFromFile;
 	/**
 	 * A list of types that has been depreacted so we can take them out when writing
 	 */
@@ -150,17 +146,21 @@ protected:
 	PropertyTable _propertyTable;
 	/** Type. */
 	std::string _type;
-	/** Name. Made protected so that classes can customize their setName.  
-	-Ayman 04/04 */
+	/** Name */
 	std::string _name;
-	/** A description of the object. -> rdSerializable interface */
+	/** A description of the object */
 	std::string _description;
-	/** XML document. -> rdSerializable interface */
+
+	/** A List of authors */
+	std::string _authors;
+	/** A List of references */
+	std::string _references;
+
+	/** XML document.*/
 	XMLDocument *_document;
-	/** XML element node. -> rdSerializable interface */
-	//DOMElement *_node;
-	
+	/** flag indicating whether the object is serialized to this _document or to another fresh document */
 	bool _inlined;
+
 
 //=============================================================================
 // METHODS
@@ -169,14 +169,41 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~Object();
+	/** Constrctor to be used by no arg constructor of derived types. Sets type to Object and initializes 
+	 * PropertyList. */
 	Object();
+
+	/**
+	 * Constructor from a File, normally called from other constructors that take a file as input
+	 */
 	Object(const std::string &aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
-	Object(const XMLDocument *aDocument);
+
+	/**
+	 * Copy constructor for Object, used by Arrays of Objects
+	 */
 	Object(const Object &aObject);
-	Object(SimTK::Xml::Element& aNode);
+
+	/**
+	 * Constructor from an Xml element that describes the Object
+	 */
+	Object(SimTK::Xml::Element& aElement);
+
+	/**
+	 * Virtual destructor for cleanup
+	 */
+	virtual ~Object();
+
+	/**
+	 * copy method that returns a clone of the Object. Used to grow Arrays of Objects
+	 */
 	virtual Object* copy() const;
+
 	static Object* SafeCopy(const Object *aObject) { return aObject ? aObject->copy() : 0; }
+
+	/**
+	 * Methods to support making the object displayable in the GUI or Visualizer
+	 * Implemented only in few objects
+	 */
 	virtual const VisibleObject *getDisplayer() const { return 0; };
 	virtual VisibleObject *updDisplayer() { return 0; };
 
@@ -189,6 +216,9 @@ private:
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+	/**
+	 * Equality operator wrapper for use from languages not supporting operator overloading
+	 */
 	virtual bool isEqualTo(const Object &aObject) const
 	{
 		return ((*this)==aObject);
@@ -214,6 +244,15 @@ public:
 	const std::string& getName() const;
 	void setDescription(const std::string &aDescrip);
 	const std::string& getDescription() const;
+
+	/** set/get Authors */
+	const std::string& getAuthors() const { return _authors; };
+	void setAuthors(const std::string &aAuthors) { _authors=aAuthors; };
+
+	/** set/get References */
+	const std::string& getReferences() const { return _references; };
+	void setReferences(const std::string &aReferences) { _references=aReferences; };
+
 	const std::string& toString() const;
 	PropertySet& getPropertySet() { return(_propertySet); }
 #ifndef SWIG
@@ -262,9 +301,15 @@ public:
 	// XML NEW
 	//--------------------------------------------------------------------------
 	virtual bool isValidDefaultType(const Object *aObject) const;
+	/**
+	 * Use this method to serialize an object from a SimTK::Xml::Element,
+	 * The element is assumed to be on the format consistent with passed in versionNumber
+	 */
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
-	// Use this method only if you're deserializing from a file and the object is TopLevel
-	// that is primarily in constructors that take fileName as input
+	/**
+	 * Use this method only if you're deserializing from a file and the object is TopLevel
+	 *  that is primarily in constructors that take fileName as input
+	 */
 	void updateFromXMLDocument();
 	virtual void updateDefaultObjectsFromXMLNode();
 	virtual void updateXMLNode(SimTK::Xml::Element& aParent);
@@ -276,8 +321,10 @@ public:
 	std::string getDocumentFileName() const;
 	void setAllPropertiesUseDefault(bool aUseDefault);
 private:
+	/**
+	 * Functions to support deserialization 
+	 */
 	void generateXMLDocument();
-	//static bool parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rChildDocument, DOMElement *&rChildDocumentElement, bool aVerifyTagName = true);
 	static void InitializeObjectFromXMLNode(Property *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 	static void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 

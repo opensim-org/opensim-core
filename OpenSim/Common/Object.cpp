@@ -57,7 +57,6 @@ using SimTK::Transform;
 ArrayPtrs<Object> Object::_Types;
 
 stringsToObjects Object::_mapTypesToDefaultObjects;
-defaultsReadFromFile	Object::_defaultsReadFromFile;
 bool Object::_serializeAllDefaults=false;
 
 #include <vector>
@@ -126,17 +125,11 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 
 	_document = new XMLDocument(aFileName);
 
-	//try {
-
 	// GET DOCUMENT ELEMENT
 	SimTK::Xml::Element myNode =  _document->getRootDataElement(); //either actual root or node after OpenSimDocument
 
 	// UPDATE OBJECT
 	if (aUpdateFromXMLNode) updateFromXMLNode(myNode, _document->getDocumentVersion());
-	//}
-	//catch(Exception &x) {
-		//x.print(cout);
-	//}
 
 }
 //_____________________________________________________________________________
@@ -145,7 +138,7 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
  *
  * The document is copied and this object, including its derived classes,
  * are constructed based on the nodes within the document.
- */
+ *
 Object::Object(const XMLDocument *aDocument)
 {
 	setNull();
@@ -162,7 +155,7 @@ Object::Object(const XMLDocument *aDocument)
 	// CONSTRUCT BASED ON ROOT ELEMENT
 	SimTK::Xml::Element e = _document->getRootDataElement(); 
 	updateFromXMLNode(e, _document->getDocumentVersion());
-}
+}*/
 //_____________________________________________________________________________
 /**
  * Copy constructor.
@@ -248,6 +241,8 @@ setNull()
 	_inlined = true;
 	_propertySet.clear();
 	_description = "";
+	_authors = "";
+	_references = "";
 
 }
 //_____________________________________________________________________________
@@ -297,6 +292,8 @@ operator=(const Object &aObject)
 {
 	setType(aObject.getType());
 	setName(aObject.getName());
+	_authors=aObject.getAuthors();
+	_references=aObject.getReferences();
 	return(*this);
 }
 
@@ -314,6 +311,8 @@ operator==(const Object &aObject) const
 {
 	if(getType() != aObject.getType()) return(false);
 	if(getName() != aObject.getName()) return(false);
+	if (_authors!= aObject.getAuthors()) return(false);
+	if (_references!= aObject.getReferences()) return(false);
 	bool equal = true;
 	for (int i=0; i< _propertySet.getSize() && equal ; i++){
 		const Property& myProperty = *(_propertySet.get(i));
@@ -515,25 +514,7 @@ RenameType(const std::string& oldTypeName, const Object& newTypeObject)
 		RegisterType(*objectCopy);
 		if (_deprecatedTypes.findIndex(oldTypeName)==-1)
 			_deprecatedTypes.append(oldTypeName);
-	}/*
-	// To avoid having multiple entries in the map which causes trouble to parsing downstream
-	// We'll not make a copy, instead we'll have the old name map to the existing instance of the new type
-	int i;
-	for(i=0;i<_Types.getSize();i++) {
-		Object *object = _Types.get(i);
-		if(object->getType() == newTypeObject.getType()) {
-			if(_debugLevel>=2) {
-				cout<<"Object.RenameType: adding ref to object of type ";
-				cout<<newTypeObject;
-				cout<<"\n"<<endl;
-			}
-			_mapTypesToDefaultObjects[oldTypeName]= object;
-			return;
-		} 
 	}
-	// Should throw an exception or give warning that nothing happened
-	cout<<"Object.renameType: ERROR- could not find type "<< newTypeObject << endl;
-	*/
 }
 
 //_____________________________________________________________________________
