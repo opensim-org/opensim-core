@@ -41,7 +41,7 @@
 //=============================================================================
 //=============================================================================
 /**
- * Asimple point to point spring with a resting length and stiffness.
+ * A simple point to point spring with a resting length and stiffness.
  * Points are connected to bodies and are defined in the body frame.
  *
  * @author Ajay Seth

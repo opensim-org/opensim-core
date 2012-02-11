@@ -29,7 +29,7 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** 
+/** @file
  * This defines the abstract ModelComponent class, which is used to add computational
  * components to the underlying SimTK::System (MultibodySystem). It specifies
  * the interface that components must satisfy in order to be part of the system
@@ -101,18 +101,20 @@ protected:
 	// Index of the modeling option integer flag in the state
 	SimTK::DiscreteVariableIndex _modelingOptionIndex;
 
-	// Map names of modeling options for the ModelComponent to their underlying SimTK indices
-	std::map<std::string, ModelingOptionInfo*, std::less<std::string> > _namedModelingOptionInfo;
-	// Map names of continuous state variables of the ModelComponent to their underlying SimTK indices
-	std::map<std::string, SimTK::ZIndex, std::less<std::string> > _namedStateVariableIndices;
-	// Map names of discrete variables of the ModelComponent to their underlying SimTK indices
-	std::map<std::string, DiscreteVariableInfo*, std::less<std::string> > _namedDiscreteVariableInfo;
-	// Map names of cache entries of the ModelComponent to their individual cache information
-	std::map<std::string, CacheInfo*, std::less<std::string> > _namedCacheVariableInfo;
+	// Map names of modeling options for the ModelComponent to their underlying
+    // SimTK indices.
+	std::map<std::string, ModelingOptionInfo*>      _namedModelingOptionInfo;
+	// Map names of continuous state variables of the ModelComponent to their 
+    // underlying SimTK indices.
+	std::map<std::string, SimTK::ZIndex>            _namedStateVariableIndices;
+	// Map names of discrete variables of the ModelComponent to their underlying
+    // SimTK indices.
+	std::map<std::string, DiscreteVariableInfo*>    _namedDiscreteVariableInfo;
+	// Map names of cache entries of the ModelComponent to their individual 
+    // cache information.
+	std::map<std::string, CacheInfo*>               _namedCacheVariableInfo;
 
-	/** Constructor */
-	ModelComponentRep(ModelComponent &mc);
-	/** Destructor */
+	explicit ModelComponentRep(ModelComponent &mc);
 	~ModelComponentRep();
 
 public:
@@ -181,7 +183,7 @@ public:
  * and therefore the behavior of the model. The input by the user to the throttle
  * the motor (the controls) is necesary to specify the model dynamics at any instant
  * and therefore are considered part of the State in Simbody as Discrete State Variables.  
- * In OpenSim they are simpliy referred to as <em>DiscreteVariables>em. The ModelComponent 
+ * In OpenSim they are simplify referred to as \e DiscreteVariables. The ModelComponent 
  * provides services to enable developers of components to define and access its 
  * DiscreteVariables.
  *
@@ -189,35 +191,35 @@ public:
  * to be performed only when necessary. Often the result of a expensive calculation can
  * be reused many times over, while the variables it is dependent on remain fixed. The
  * concept of holding onto these values is called caching and the variables that hold
- * these values are call <em>CacheVariables<em>. It is important to note, that cache 
+ * these values are call <em>CacheVariables</em>. It is important to note, that cache 
  * variables are not state variables. Cache variables can always be recomputed excactly
- * from the State. OpenSim uses the Simbody infrasture to manage cache variables and
+ * from the State. OpenSim uses the Simbody infrastructure to manage cache variables and
  * their validity. ModelComponent provides a simplified interface to define and 
  * access CacheVariables.
  *
- * Many modeling and simulation codes put the owness on users & component creators to
+ * Many modeling and simulation codes put the onus on users and component creators to
  * manage the validity of cache variables, which is likely to lead to undetectable 
  * errors where cache values are stale (calculated based on past state variable values).
- * Simbody, on the other hand, provides a more strict infrastucture to make it easy to
+ * Simbody, on the other hand, provides a more strict infrastructure to make it easy to
  * exploit the efficiencies of caching while reducing the risks of validity errors. 
  * To do this, Simbody employs the concept of computational stages. To "realize" a model's
  * system a particular stage is to perform all the computations necessary to evaluate the 
- * cached quantities up to and including the stage specified. Simbody utilizes 9 realization
- * stages (SimTK::Stage::)
-
- * 1. <em>Topology</em>		create the system with "slots" for most variables (above)
- * 2. <em>Model</em>		create the default state and fixed model parmaters
- * 3. <em>Instance</em>		specify options and modifiable model parameters
- * 4. <em>Time</em>			compute time dependent quantities
- * 5. <em>Position</em>		compute position dependent quantities	
- * 6. <em>Velocity</em>		compute velocity dependent quantities
- * 7. <em>Dynamics</em>		compute system applied forces and dependent quantities	
- * 8. <em>Acceleration</em> compute system accelerations and all other derivatives
- * 9. <em>Report</em>		compute quantities for reporting/output
+ * cached quantities up to and including the stage specified. Simbody utilizes 
+ * nine realization stages (<tt>SimTK::Stage::</tt>)
+ *
+ * -# \c Topology       finalize System with "slots" for most variables (above)
+ * -# \c %Model         specify modeling choices
+ * -# \c Instance       specify modifiable model parameters
+ * -# \c Time           compute time dependent quantities
+ * -# \c Position       compute position dependent quantities	
+ * -# \c Velocity       compute velocity dependent quantities
+ * -# \c Dynamics       compute system applied forces and dependent quantities	
+ * -# \c Acceleration   compute system accelerations and all other derivatives
+ * -# \c Report         compute quantities for reporting/output
  *  
  * The ModelComponent interface is automatically invoked by the System and its realizations.
  * Component users and most developers need not concern themselves with
- * topology, model or instance stages. That interaction is managed by ModelComponent 
+ * \c Topology, \c %Model or \c Instance stages. That interaction is managed by ModelComponent 
  * when component creators implement createSystem() and use the services provded ModelComponent.
  * Component creators do need to determine and specify stage dependencies for Discrete  
  * and CacheVariables that they add to their components. For example, the throttle 
@@ -226,7 +228,7 @@ public:
  * forward (or backward for a trial step) and updates the state, the control from
  * a previous state (time) should be invalid and an error generated for trying to access
  * the DiscreteVariable for the control value. To do this one specifies the "dependsOn" stage
- * (e.g SimTK::Stage:: Time) for a DiscreteVariable when the variable is added to
+ * (e.g. <tt>SimTK::Stage::Time</tt>) for a DiscreteVariable when the variable is added to
  * the ModelComponent. If the control is fixed (not changing with time) then the lowest
  * valid stage could just be Instance.
  *
@@ -290,7 +292,7 @@ public:
     Model& updModel();
 
 	/**
-	 * In case the ModelCompoenent has a visual representation (VisualObject), override this method  
+	 * In case the ModelComponent has a visual representation (VisualObject), override this method  
 	 * to update it. This is typically done by recomputing anchor points and positions based 
 	 * on transforms obtained from current state.
 	 */
@@ -513,7 +515,7 @@ protected:
 
 	/** @name ModelComponent Interface
 	 * The interface ensures that deserialization, resolution of inter-connections and dependicies,
-	 * are performed systematically and prior to system creation. creatSystem() is responsible
+	 * are performed systematically and prior to system creation. createSystem() is responsible
 	 * These methods are virtual and must be implemented by subclasses of ModelComponents.
 	*/ 
 	//@{

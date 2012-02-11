@@ -87,7 +87,7 @@ class XMLDocument;
 //=============================================================================
 //=============================================================================
 /**
- * Class Oject is intended to be used as the base class for all
+ * Class Object is intended to be used as the base class for all
  * OpenSim objects.that are serializable  It provides a common object from which
  * to derive and also some basic functionality, such as writing to files
  * in XML format and the equality, less than, and output operators.
