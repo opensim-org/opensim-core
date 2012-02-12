@@ -143,9 +143,6 @@ private:
 	// names of the individual components
 	SimTK::Array_<std::string> _componentNames;
 
-	// reference weights collected
-	//SimTK::Array_<double> _weights;
-
 	
 
 //=============================================================================

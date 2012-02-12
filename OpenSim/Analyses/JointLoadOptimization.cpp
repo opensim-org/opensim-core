@@ -263,7 +263,7 @@ setupProperties()
 	_jointTaskSetProp.setComment(
 		"A set of joint reaction references used to define which joint loads to minimize and"
 		"their relative weights in the objective function.");
-	_jointTaskSet.setType("JointTaskSet");
+	//_jointTaskSet.setType("JointTaskSet");
 	_jointTaskSetProp.setName("JointTaskSet");
 	_propertySet.append(&_jointTaskSetProp);
 

@@ -133,9 +133,7 @@ private:
 	static int _debugLevel;
 
 public:
-	/** A length limit for a name. */
 #ifndef SWIG
-	enum { NAME_LENGTH=128 };
 	/** Name used for default objects when they are serialized. */
 	static const std::string DEFAULT_NAME;
 #endif
@@ -184,7 +182,7 @@ public:
 	Object(const Object &aObject);
 
 	/**
-	 * Constructor from an Xml element that describes the Object
+	 * Constructor Object from an Xml element that describes this Object. Assumes latest XML file format
 	 */
 	Object(SimTK::Xml::Element& aElement);
 
@@ -204,7 +202,9 @@ public:
 	 * Methods to support making the object displayable in the GUI or Visualizer
 	 * Implemented only in few objects
 	 */
+	/** Get const pointer to VisibleObject that contains geometry */
 	virtual const VisibleObject *getDisplayer() const { return 0; };
+	/** get Non const pointer to VisibleObject */
 	virtual VisibleObject *updDisplayer() { return 0; };
 
 private:
@@ -237,20 +237,28 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-public:
+protected:
 	void setType(const std::string &aType);
+public:
+	/** Get type of current Object */
 	const std::string& getType() const;
+	/** Set the name of the Object */
 	void setName(const std::string &aName);
+	/** Get the name */
 	const std::string& getName() const;
+	/** Set description, a one liner summary. Currently unused */
 	void setDescription(const std::string &aDescrip);
+	/** Get description, a one liner summary. Currently unused */
 	const std::string& getDescription() const;
 
-	/** set/get Authors */
+	/** get Authors of this Object */
 	const std::string& getAuthors() const { return _authors; };
+	/** set Authors of this object, call this method in your constructor if needed */
 	void setAuthors(const std::string &aAuthors) { _authors=aAuthors; };
 
-	/** set/get References */
+	/** get References or Publications to site if using this object */
 	const std::string& getReferences() const { return _references; };
+	/** set References or Publications to site if using this object */
 	void setReferences(const std::string &aReferences) { _references=aReferences; };
 
 	const std::string& toString() const;
@@ -298,9 +306,8 @@ public:
 	static void getRegisteredTypenames(Array<std::string>& rTypeNames);
 
 	//--------------------------------------------------------------------------
-	// XML NEW
+	// XML
 	//--------------------------------------------------------------------------
-	virtual bool isValidDefaultType(const Object *aObject) const;
 	/**
 	 * Use this method to serialize an object from a SimTK::Xml::Element,
 	 * The element is assumed to be on the format consistent with passed in versionNumber
@@ -311,9 +318,7 @@ public:
 	 *  that is primarily in constructors that take fileName as input
 	 */
 	void updateFromXMLDocument();
-	virtual void updateDefaultObjectsFromXMLNode();
 	virtual void updateXMLNode(SimTK::Xml::Element& aParent);
-	virtual void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 	// Inline support
 	bool getInlined() const;
 	void setInlined(bool aInlined, const std::string &aFileName="");
@@ -327,6 +332,8 @@ private:
 	void generateXMLDocument();
 	static void InitializeObjectFromXMLNode(Property *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 	static void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+	void updateDefaultObjectsFromXMLNode();
+	void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
 	//--------------------------------------------------------------------------
 	// IO
@@ -360,7 +367,10 @@ public:
 	{ 
 		return this->isKindOf(type); 
 	} 
-
+	/**
+	 * Method to return instances of Objects that derives from a given type, useful for example
+	 * to find all Joints, Constraints, Analyses, ... etc.
+	 */
 	template<class T> static void getRegisteredObjectsOfGivenType(ArrayPtrs<T> &rArray) {
 		rArray.setSize(0);
 		rArray.setMemoryOwner(false);
@@ -370,6 +380,7 @@ public:
 	}
 
 protected:
+	/** Methods to handle Properties */
 	void addProperty(AbstractProperty &abstractProperty);
 	template <class T> const Property2<T>& getProperty(const std::string &name) const;
 	template <class T> Property2<T>& updProperty(const std::string &name);

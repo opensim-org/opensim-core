@@ -709,20 +709,20 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 //printf("doIntegration  t=%10.6e  stepToTime=%10.6e  states=%f %f %f   \n", time, _tf, s.getY()[0], s.getY()[1], s.getY()[2] );
 
 	// CHECK SPECIFIED DT STEPPING
-	char tmp[Object::NAME_LENGTH];
+	
 	if(_specifiedDT) {
 		if(_tArray.getSize()<=0) {
-			strcpy(tmp,"IntegRKF.integrate: ERR- specified dt stepping not");
-			strcat(tmp,"possible-- empty time array.");
-			throw( Exception((const char*)tmp) );
+			string msg="IntegRKF.integrate: ERR- specified dt stepping not";
+			msg += "possible-- empty time array.";
+			throw( Exception(msg) );
 		}
 		double first = _tArray[0];
 		double last = _tArray.getLast();
 		if((getTimeArrayStep(_ti)<0) || (_ti<first) || (_tf>last)) {
-			strcpy(tmp,"IntegRKF.integrate: ERR- specified dt stepping not");
-			strcat(tmp,"possible-- time array does not cover the requested");
-			strcat(tmp," integration interval.");
-			throw(Exception((const char*)tmp));
+			string msg="IntegRKF.integrate: ERR- specified dt stepping not";
+			msg +="possible-- time array does not cover the requested";
+			msg +=" integration interval.";
+			throw(Exception(msg));
 		}
 	}
 

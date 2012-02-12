@@ -1066,7 +1066,7 @@ simplify(const PropertySet &aProperties)
 
 	// ADD NEW NODES
 	int newSize = t.getSize();
-	char name[Object::NAME_LENGTH];
+	char name[32];
 	ControlLinearNode *node;
 	for(i=0;i<newSize;i++) {
 		node = new ControlLinearNode(t[i],xFilt[i]);

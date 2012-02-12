@@ -140,14 +140,9 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
 	// TRACK OBJECTS
 	_taskSet = aTaskSet;
 	if(_taskSet==NULL) {
-		char tmp[Object::NAME_LENGTH];
-		strcpy(tmp,"CMC.CMC: ERR- no ");
-		strcat(tmp,"track objects.\n");
-		throw(new Exception(tmp,__FILE__,__LINE__));
+		std::string msg="CMC.CMC: ERR- no track objects.\n";
+		throw(new Exception(msg));
 	}
-	//TrackingTask* dTask = new MuscleStateTrackingTask();
-	//_taskSet->append(dTask);
-	//_taskSet->print("MyTasks.xml");
 	// STORAGE
 	Array<string> labels;
 	labels.append("time");
@@ -242,6 +237,7 @@ setNull()
 	_verbose = false;
 	_paramList.setSize(0);
     _controlSet.setSize(0);
+	_authors="Frank Anderson";
 
 }
 void CMC::setupProperties()

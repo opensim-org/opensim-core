@@ -134,30 +134,6 @@ Object::Object(const string &aFileName, bool aUpdateFromXMLNode)
 }
 //_____________________________________________________________________________
 /**
- * Construct an object from a document.
- *
- * The document is copied and this object, including its derived classes,
- * are constructed based on the nodes within the document.
- *
-Object::Object(const XMLDocument *aDocument)
-{
-	setNull();
-
-	// CHECK DOCUMENT
-	if(aDocument==NULL) {
-		cout<<"Object(aDocument): ERROR- document was null.\n";
-		return;
-	}
-
-	// COPY DOCUMENT
-	_document = new XMLDocument(*aDocument);
-
-	// CONSTRUCT BASED ON ROOT ELEMENT
-	SimTK::Xml::Element e = _document->getRootDataElement(); 
-	updateFromXMLNode(e, _document->getDocumentVersion());
-}*/
-//_____________________________________________________________________________
-/**
  * Copy constructor.
  *
  * Copy constructors for all Object's only copy the non-XML variable
@@ -403,7 +379,8 @@ operator==(const Object &aObject) const
  * than the name of the other property.
  *
  * @param aProperty Property for which to make the less than test.
- * @return True if this property is less than the other, false otherwise.
+ * @return True if this object's name is less than the other, false otherwise.
+ * used to put Objects in Arrays/maps
  */
 bool Object::
 operator<(const Object &aObject) const
@@ -429,7 +406,6 @@ void Object::
 setType(const string &aType)
 {
 	_type = aType;
-	if(_type.size()>NAME_LENGTH) _type.resize(NAME_LENGTH);
 }
 //_____________________________________________________________________________
 /**
@@ -580,53 +556,18 @@ RegisterType(const Object &aObject)
 	Object *defaultObj = aObject.copy();
 	defaultObj->setType(aObject.getType());	// Since the copy overwrites type
 	_Types.append(defaultObj);
+	// Object is registered for first time
+	//if (defaultObj->getAuthors()!="")
+	//	cout << "This software include component "<<aObject.getType()<< " developed by "<< defaultObj->getAuthors() << endl;
+
 	_mapTypesToDefaultObjects[aObject.getType()]= defaultObj;
 	_Types.getLast()->setName(DEFAULT_NAME);
 }
 
 
 //=============================================================================
-// XML NEW
+// XML
 //=============================================================================
-//-----------------------------------------------------------------------------
-// DEFAULT OBJECTS
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Determine whether a specified object is a valid or recognized type
- * for this object.
- *
- * This method is used during XML serialization to determine whether or not
- * objects in the type registry (@see Object::RegisterType()) should be
- * written to a header element containing the default objects for this
- * object.  An object is generally a valid type if that object could be a
- * member or sub-member of this object.  The header containing the default
- * objects has the tag name "defaults".
- *
- * The default elements allow a user to see all the available properties for
- * an object of a particular type and also allow a user to specify default
- * values for any member objects.
- *
- * The implementation of this method in Object always returns true.
- * This results in every object in the type registery being written to
- * the defaults header.  To be more restrictive about which objects are
- * valid (and written to the defaults header), this method should be
- * overridden by derived classes.  For example, class ActuatorSet might
- * override this method to allow only object derived from Actuator to be
- * valid.
- *
- * @param aObject Object to be tested as valid or invalid default type
- * for this object.
- * @see updateFromXMLNode()
- * @see updateXMLNode()
- * @see RegisterType()
- */
-bool Object::
-isValidDefaultType(const Object *aObject) const
-{
-	return(true);
-}
-
 //-----------------------------------------------------------------------------
 // UTILITY FUNCTIONS
 //-----------------------------------------------------------------------------
@@ -1302,7 +1243,6 @@ updateDefaultObjectsFromXMLNode()
 		// GET DEFAULT OBJECT
 		Object *defaultObject = _mapTypesToDefaultObjects[stg];
 		if(defaultObject==NULL) continue;
-		if(!isValidDefaultType(defaultObject)) continue; // unused
 
 		// GET ELEMENT
 		const string &type = defaultObject->getType();
@@ -1751,34 +1691,6 @@ setInlined(bool aInlined, const std::string &aFileName)
 	}
 }
 
-/** 
- * Parameters aRefNode, aChildDocument, aChildDocumentElement, only set if return value is true
- *
-bool Object::
-parseFileAttribute(DOMElement *aElement, DOMElement *&rRefNode, XMLDocument *&rChildDocument, DOMElement *&rChildDocumentElement, bool aVerifyTagName)
-{
-	if(!aElement) return false;
-	string fileAttrib = XMLNode::GetAttribute(aElement, "file");
-	bool parsedFileAttribute = false;
-	
-	if(!fileAttrib.empty()) {
-		if(!ifstream(fileAttrib.c_str()))
-			throw Exception("Object.parseFileAttribute: ERROR- Could not find file '" + fileAttrib + 
-								 "' named in file attribute of XML tag <" + XMLNode::TranscodeAndTrim(aElement->getTagName()) + ">", __FILE__, __LINE__);
-		// Change _node to refer to the root of the external file
-		rRefNode = aElement;
-		rChildDocument = new XMLDocument(fileAttrib);
-		rChildDocumentElement = rChildDocument->getRootDataElement();
-		if(aVerifyTagName && XMLString::compareString(aElement->getTagName(),rChildDocumentElement->getTagName())!=0)
-			throw Exception("Object.parseFileAttribute: ERROR- Top-level element in file '" + fileAttrib +
-								 "' named in file attribute of XML tag <" + XMLNode::TranscodeAndTrim(aElement->getTagName()) + 
-								 "> has non-matching tag <" + XMLNode::TranscodeAndTrim(rChildDocumentElement->getTagName()) + ">", __FILE__, __LINE__);
-		parsedFileAttribute = true;
-	}
-	return parsedFileAttribute;
-}
-*/
-
 //-----------------------------------------------------------------------------
 // setAllPropertiesUseDefault
 //-----------------------------------------------------------------------------
@@ -2164,21 +2076,7 @@ getRegisteredTypenames(Array<std::string>& rTypeNames)
 	}
 }
 
-/**
- * renameChildNode is a utility, helpful for migration to allow an object to change the "tag" in the XML
- * structure from aOldName to aNewName so that the rest of the serialization code doesn't need to handle
- * legacy file formats.
- *
-void Object::
-renameChildNode(const std::string& aOldName, const std::string& aNewName, DOMElement* startNode)
-{
-	DOMElement*	localStartNode=NULL;
-	if (startNode==NULL)
-		localStartNode = _node;
-	else
-		localStartNode = startNode;
-}
-*/
+
 void Object::updateFromXMLDocument()
 {
 	assert(_document!= 0);

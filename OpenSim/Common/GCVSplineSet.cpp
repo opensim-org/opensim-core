@@ -140,7 +140,7 @@ construct(int aDegree,const Storage *aStore,double aErrorVariance)
 
 	// GET COLUMN NAMES
 	const Array<std::string> &labels = aStore->getColumnLabels();
-	char tmp[Object::NAME_LENGTH];
+	char tmp[32];
 	std::string name;
 
 	// LOOP THROUGHT THE STATES
@@ -250,11 +250,13 @@ constructStorage(int aDerivOrder,double aDX)
 	}
 
 	// CONSTRUCT STORAGE OBJECT
-	char name[2*Object::NAME_LENGTH];
+	std::string name="";
 	if(aDerivOrder==0) {
-		sprintf(name,"%s_GCVSpline",getName().c_str());
+		name=getName()+"_GCVSpline";
 	} else {
-		sprintf(name,"%s_GCVSpline_Deriv_%d",getName().c_str(),aDerivOrder);
+		char temp[10];
+		sprintf(temp, "%d", aDerivOrder);
+		name=getName()+"_GCVSpline_Deriv_"+std::string(temp);
 	}
 	Storage *store = new Storage(nSteps,name);
 
@@ -268,8 +270,9 @@ constructStorage(int aDerivOrder,double aDX)
 	for(int i=0;i<n;i++) {
 		spline = getGCVSpline(i);
 		if(spline==NULL) {
-			sprintf(name,"data_%d",i);
-			labels.append(name);
+			char cName[32];
+			sprintf(cName,"data_%d",i);
+			labels.append(std::string(cName));
 		} else {
 			labels.append(spline->getName());
 		}
