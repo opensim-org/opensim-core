@@ -167,7 +167,7 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	/** Constrctor to be used by no arg constructor of derived types. Sets type to Object and initializes 
+	/** Constructor to be used by no arg constructor of derived types. Sets type to Object and initializes 
 	 * PropertyList. */
 	Object();
 
