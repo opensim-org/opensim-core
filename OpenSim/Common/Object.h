@@ -78,24 +78,37 @@ const char ObjectDEFAULT_NAME[] = "default";
 
 namespace OpenSim { 
 
-/** VisibleObject needs Object for persistence while Object
-	needs VisibleObject so that anything can be made visible.
-	Ideally VisibleObject would be broken into interfaces
-	so that the behavior only (not the serialization) is used here.*/
 class VisibleObject;
 class XMLDocument;
 //=============================================================================
 //=============================================================================
 /**
- * Class Object is intended to be used as the base class for all
- * OpenSim objects.that are serializable  It provides a common object from which
- * to derive and also some basic functionality, such as writing to files
- * in XML format and the equality, less than, and output operators.
- * Future enhancements to Object might include thread functionality.
- *
- * @version 1.0
- * @author Frank C. Anderson, Ayman Habib
- * 
+Class Object is intended to be used as the base class for all
+OpenSim objects that are serializable, most notably ModelComponents.
+It provides a common object from which to derive and also some basic 
+functionality, such as writing to files in XML format and the equality, less than, 
+and output operators.
+For serialization (persistence in files), an Object maintains a list of "Properties"
+that know how to read themseleves from XML files and write to XML. The available Property types are
+  -# Primitive data types (Int, Bool, Double, String, ...) 
+  -# Objects composed of Primitive data types or other Objects, 
+  -# Arrays of either of the previous 2 categories
+
+An Object type needs to be "Registered" by calling "RegisterType" with an instance of the 
+Object so that the serialization infrastructure knows what Object to create when it encounters 
+a specific XML tag. The registration process is normally done during dynamic library (dll) loading.
+
+Defaults Mechanism: When an Object is registered (either programmatically, or overridden in the defaults 
+section of a document), a copy of it is maintained in a dictionary as a "default" Object of its class. 
+When new instances of this class are requested, the contents of the defaut object are used to 
+populate the new instance before deserialization. This allows for specifying 
+default values that will be commonly used in one place in the XML file rather then with each object 
+which leads to smaller files.
+
+
+@version 1.0
+@author Frank C. Anderson, Ayman Habib
+  
  */
 class OSIMCOMMON_API Object  
 {
@@ -104,9 +117,10 @@ class OSIMCOMMON_API Object
 // DATA
 //=============================================================================
 private:
-	/** Array of all registered object types.  Each object type only appears
-	once in this array.  Future enhancements could be using a hash table
-	instead of an array. */
+	/* Array of all registered object types.  Each object type only appears
+	 * once in this array.  Future enhancements could be using a hash table
+	 * instead of an array. 
+	 */
 	static ArrayPtrs<Object> _Types;
 
 	/** 
@@ -128,7 +142,9 @@ private:
 	 *	0: Hides non fatal warnings 
 	 *  1: Shows illegal tags 
 	 *  2: level 1 + registration troubleshooting
-	 *  3: 2 + more verbose troubleshooting of Object (de)serialization
+	 *  3: 2 + more verbose troubleshooting of Object (de)serialization. When used from
+	 *     Java wrapping in GUI/Matlab this catches all exceptions thrown by the low level libraries
+	 *     which is slower but helpful in troubleshooting.
 	 */
 	static int _debugLevel;
 
@@ -262,6 +278,8 @@ public:
 	void setReferences(const std::string &aReferences) { _references=aReferences; };
 
 	const std::string& toString() const;
+
+	/** Get a reference to the PropertySet maintained by the Object */
 	PropertySet& getPropertySet() { return(_propertySet); }
 #ifndef SWIG
 	const PropertySet& getPropertySet() const { return(_propertySet); }
@@ -270,7 +288,10 @@ public:
 	//--------------------------------------------------------------------------
 	// REGISTRATION OF TYPES AND DEFAULT OBJECTS
 	//--------------------------------------------------------------------------
+	/** Register an instance of a class, if the class is already registered it will throw an Exception */
 	static void RegisterType(const Object &aObject);
+
+	/** Support versioning by associating new Object type with old name */
 	static void RenameType(const std::string& oldTypeName, const Object& aObjectOfNewType);
 
 	static void setDebugLevel(int newLevel) {
