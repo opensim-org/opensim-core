@@ -260,18 +260,6 @@ void Model::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 
 	setDefaultProperties();
 }
-//_____________________________________________________________________________
-/**
- * Copy this Model and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Model.
- */
-Object* Model::copy() const
-{
-	Model *model = new Model(*this);
-	return(model);
-}
 
 
 //=============================================================================
@@ -311,6 +299,7 @@ void Model::setNull()
 {
 	setType("Model");
     _useVisualizer = false;
+    _displayHints.clear();
     _allControllersEnabled = true;
 	_perturbActuatorForces = false,
     _groundBody = NULL;
@@ -401,9 +390,7 @@ SimTK::State& Model::initSystem()
 	setup();
 	createSystem();
 
-    // Create a Visualizer for this Model if one has been requested. Set up
-    // auxiliary objects to be used for dispatching geometry-creation and
-    // interaction activities.
+    // Create a Visualizer for this Model if one has been requested.
     if (getUseVisualizer()) {
         _modelViz = new ModelVisualizer(*this);
     }
@@ -411,15 +398,12 @@ SimTK::State& Model::initSystem()
     getMultibodySystem().realizeTopology();
     SimTK::State& s = updMultibodySystem().updDefaultState();
 
-	// The folllowing line is commented out as it removes all forces that were
-	// added to the system during realizeTopology()
     _matter->setUseEulerAngles(s, true);
 	getMultibodySystem().realizeModel(s);
 
-
     initState(s);
 
-    getMultibodySystem().realize(s, Stage::Position );
+    getMultibodySystem().realize(s, Stage::Position);
 
     updControllerSet().setActuators(updActuators());
     //updControllerSet().constructStorage();
@@ -774,6 +758,7 @@ void Model::initState(SimTK::State& state) const
     _contactGeometrySet.initState(state);
     _jointSet.initState(state);
     _forceSet.initState(state);
+	_controllerSet.initState(state);
 	_componentSet.initState(state);
 
 	// All model components have allocated their state variables so we can speed up access
@@ -821,7 +806,23 @@ void Model::setDefaultsFromState(const SimTK::State& state)
     _contactGeometrySet.setDefaultsFromState(state);
     _jointSet.setDefaultsFromState(state);
     _forceSet.setDefaultsFromState(state);
+	_controllerSet.setDefaultsFromState(state);
 	_componentSet.setDefaultsFromState(state);
+}
+
+void Model::generateDecorations
+       (bool                                        fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+{
+    _bodySet.generateDecorations(fixed,hints,state,appendToThis);
+    _constraintSet.generateDecorations(fixed,hints,state,appendToThis);
+    _contactGeometrySet.generateDecorations(fixed,hints,state,appendToThis);
+    _jointSet.generateDecorations(fixed,hints,state,appendToThis);
+    _forceSet.generateDecorations(fixed,hints,state,appendToThis);
+	_controllerSet.generateDecorations(fixed,hints,state,appendToThis);
+	_componentSet.generateDecorations(fixed,hints,state,appendToThis);
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)
@@ -1067,7 +1068,7 @@ void Model::getStateValues(const SimTK::State& s, Array<double> &rStateValues) c
 	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) 
 		rStateValues[i] = s.getY()[_stateVariableSystemIndices[i]];
 }
-void Model::setStateValues(SimTK::State& s, double* aStateValues) const
+void Model::setStateValues(SimTK::State& s, const double* aStateValues) const
 {
 	const SimTK::Stage& currentStage=s.getSystemStage();
 	for(int i=0; i< _stateVariableSystemIndices.getSize(); i++) // initialize to NaN

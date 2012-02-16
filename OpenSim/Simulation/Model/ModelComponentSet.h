@@ -4,7 +4,7 @@
 // ModelComponentSet.h
 // Authors: Peter Eastman, Ajay Seth
 /*
- * Copyright (c) 2009, Stanford University. All rights reserved. 
+ * Copyright (c) 2009-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -30,9 +30,9 @@
  */
 
 // INCLUDES
-#include "OpenSim/Common/Set.h"
-#include "SimTKsimbody.h"
 #include <OpenSim/Simulation/osimSimulationDLL.h>
+#include "OpenSim/Common/Set.h"
+#include "Simbody.h"
 #include "ModelComponent.h"
 
 #ifdef SWIG
@@ -49,43 +49,51 @@ class Model;
 //=============================================================================
 //=============================================================================
 /**
- * This is the base class for sets of ModelComponent subclasses.  It provides
+ * This is the base class for sets of ModelComponent subclasses. It provides
  * methods for invoking all of the ModelComponent methods on each member of the
  * set.
+ *
+ * @tparam  T   This must be a concrete class derived from ModelComponent.
  */
 
 template <class T>
 class OSIMSIMULATION_API ModelComponentSet : public Set<T>
 {
 protected:
-    	Model* _model;
+    Model* _model;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
     friend class Model;
+    /** Default constructor creates an empty Set with no associated Model. **/
     ModelComponentSet() : _model(NULL)
     {
     }
-    ModelComponentSet(Model& model) : _model(NULL)
+    /** Create an empty set associated to the specified Model. **/
+    explicit ModelComponentSet(Model& model) : _model(&model)
     {
     }
     /**
      * Construct from file.
      *
-     * @param aFileName Name of the file.
+     * @param[in]   model       The Model to which this set is associated.
+     * @param[in]   fileName    Name of the file.
+     * @param[in]   aUpdateFromXMLNode  
+     *                          (Advanced) Used to avoid duplicate XML parsing.
      */
-    ModelComponentSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true) :
-        Set<T>(aFileName, aUpdateFromXMLNode), _model(&model)
+    ModelComponentSet(Model& model, const std::string& fileName, 
+                      bool aUpdateFromXMLNode = true) 
+    :   Set<T>(fileName, aUpdateFromXMLNode), _model(&model)
     {
     }
     /**
      * Copy constructor.
      *
-     * @param aSet Set to be copied.
+     * @param[in]   source      Set to be copied.
      */
-    ModelComponentSet(const ModelComponentSet<T> &aSet) : Set<T>(aSet)
+    ModelComponentSet(const ModelComponentSet<T>& source) : Set<T>(source)
     {
     }
     /**
@@ -116,12 +124,12 @@ public:
     /**
      * Adding an object to the set causes its Model field to be set.
      */
-    bool append(T *aObject)
+    bool append(T* aObject)
     {
         return Set<T>::append(aObject);
     }
 #ifndef SWIG
-	bool append(T &aObject)
+	bool append(T& aObject)
     {
         return Set<T>::append((T*) aObject.copy());
     }
@@ -129,21 +137,32 @@ public:
     /**
      * Adding an object to the set causes its Model field to be set.
      */
-    bool insert(int aIndex, T *aObject)
+    bool insert(int aIndex, T* aObject)
     {
         return Set<T>::insert(aIndex, aObject);
     }
     /**
      * Adding an object to the set causes its Model field to be set.
      */
-    bool set(int aIndex, T *aObject, bool preserveGroups = false)
+    bool set(int aIndex, T* aObject, bool preserveGroups = false)
     {
         return Set<T>::set(aIndex, aObject, preserveGroups);
     }
 
 protected:
+    // The following methods dispatch calls to the corresponding ModelComponent
+    // methods. We have to upcast each concrete ModelComponent of type T to
+    // ModelComponent so that we can invoke the methods, which are protected.
+    // ModelComponent however declares ModelComponentSet as a friend.
+    //
+    // These methods are virtual because some derived sets need to override
+    // them.
+
     /**
-     * Set the Model this object is part of.
+     * Set the Model this object is part of and allow each contained
+     * ModelComponent to connect itself to the Model by invoking its setup()
+     * method.
+     * @see ModelComponent::setup()
      */
     virtual void setup(Model& model)
     {
@@ -156,6 +175,7 @@ protected:
 
     /**
      * Invoke createSystem() on each element of the Set.
+     * @see ModelComponent::createSystem()
      */
     virtual void createSystem(SimTK::MultibodySystem& system) const
     {
@@ -165,6 +185,7 @@ protected:
 
     /**
      * Invoke initState() on each element of the Set.
+     * @see ModelComponent::initState()
      */
     virtual void initState(SimTK::State& state) const
     {
@@ -174,11 +195,28 @@ protected:
 
     /**
      * Invoke setDefaultsFromState() on each element of the Set.
+     * @see ModelComponent::setDefaultsFromState()
      */
     virtual void setDefaultsFromState(const SimTK::State& state)
     {
         for (int i = 0; i < Set<T>::getSize(); i++)
             static_cast<ModelComponent&>(Set<T>::get(i)).setDefaultsFromState(state);
+    }
+
+    /** 
+     * Invoke generateDecorations() on each of the contained 
+     * ModelComponent objects. 
+     * @see ModelComponent::generateDecorations()
+     */
+    virtual void generateDecorations
+       (bool                                        fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+    {
+        for (int i = 0; i < Set<T>::getSize(); i++)
+            static_cast<const ModelComponent&>(Set<T>::get(i))
+                    .generateDecorations(fixed,hints,state,appendToThis);
     }
 
 

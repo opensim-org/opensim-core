@@ -36,7 +36,7 @@ that uses the OpenSim API. **/
 
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include "SimTKsimbody.h"
+#include "Simbody.h"
 
 namespace OpenSim {
 
@@ -45,8 +45,14 @@ manipulated through the OpenSim API. You should not allocate one of these
 yourself; instead, call the Model's setUseVisualizer() method and let the
 Model allocate one for itself. You may find the defaults to be adequate, but
 you can also get access to the %ModelVisualizer if you need it by calling
-the Model's getModelVisualizer() method. 
-@see Model **/
+the Model's getVisualizer() method. 
+
+The %ModelVisualizer consults the Model's ModelDisplayHints object for 
+instructions on what to display.
+
+@author Michael Sherman
+
+@see ModelDisplayHints, Model **/
 class OSIMSIMULATION_API ModelVisualizer {
 public:
     /** @name                Drawing methods
@@ -55,44 +61,6 @@ public:
     /** Evaluate the geometry needed to visualize the given \a state and
     use it to generate a new image in the Visualizer window. **/
     void show(const SimTK::State& state) const;
-    /**@}**/
-
-    /** @name       Methods for controlling what gets displayed **/
-    /**@{**/
-
-    /** %Control whether wrap geometry appears in the visualization window.
-    The default is yes. **/
-    void setShowWrapGeometry(bool showWrap) {_showWrapGeometry=showWrap;}
-    /** Return current setting of the "show wrap geometry" flag. **/
-    bool getShowWrapGeometry() const {return _showWrapGeometry;}
-
-    /** %Control whether contact geometry appears in the visualization window.
-    The default is yes. **/
-    void setShowContactGeometry(bool showContact) 
-    {   _showContactGeometry=showContact; }
-    /** Return current setting of the "show contact geometry" flag. **/
-    bool getShowContactGeometry() const {return _showContactGeometry;}
-
-    /** %Control whether muscle path lines appear in the visualization window.
-    The default is yes. **/
-    void setShowMusclePaths(bool showMusclePaths) 
-    {   _showMusclePaths=showMusclePaths; }
-    /** Return current setting of the "show muscle paths" flag. **/
-    bool getShowMusclePaths() const {return _showMusclePaths;}
-
-    /** %Control whether path points appear along muscle paths in the 
-    visualization window. The default is yes but has no effect if muscle paths
-    are not being displayed. **/
-    void setShowPathPoints(bool showPathPoints) 
-    {   _showPathPoints=showPathPoints; }
-    /** Return current setting of the "show path points" flag. **/
-    bool getShowPathPoints() const {return _showPathPoints;}
-
-    /** %Control whether marker points appear in the visualization window.
-    The default is yes. **/
-    void setShowMarkers(bool showMarkers) {_showMarkers=showMarkers;}
-    /** Return current setting of the "show markers" flag. **/
-    bool getShowMarkers() const {return _showMarkers;}
     /**@}**/
 
     /** @name       Access to SimTK::Visualizer features
@@ -110,12 +78,12 @@ public:
 
     /** If you want access to the underlying Simbody SimTK::Visualizer, you
     can get a const reference here. **/
-    const SimTK::Visualizer& getVisualizer() const 
+    const SimTK::Visualizer& getSimbodyVisualizer() const 
     {   assert(_viz); return *_viz; }
     /** If you want writable access to the underlying Simbody SimTK::Visualizer,
     you can get a non-const reference here, provided that you have non-const
     access to the %ModelVisualizer. **/
-    SimTK::Visualizer& updVisualizer() 
+    SimTK::Visualizer& updSimbodyVisualizer() 
     {   assert(_viz); return *_viz; }
     /**@}**/
 
@@ -158,7 +126,7 @@ public:
         clear();
         initVisualizer();
     }
-    /** Don't call this directly; let the Model manage its ModelVisualizer. **/ 
+    /** Don't call this directly; let the Model manage its %ModelVisualizer. **/ 
     ~ModelVisualizer() {clear();}
     /**@}**/
 
@@ -166,21 +134,14 @@ private:
     void clear() {
         delete _viz; _viz = 0;
         _silo = 0; // Visualizer will have deleted this.
-        _showWrapGeometry =_showContactGeometry=true;
-        _showMusclePaths  =_showPathPoints=true;
-        _showMarkers  =true;
     }
     void initVisualizer();
 
     Model&                  _model;
     SimTK::Visualizer*      _viz;
 
-    bool _showWrapGeometry, _showContactGeometry, _showMusclePaths, 
-         _showPathPoints, _showMarkers;
-
-
-    // This is just a reference -- it is owned by the Visualizer so don't 
-    // delete it!
+    // This is just a reference -- it is owned by the Simbody Visualizer so 
+    // don't delete it!
     SimTK::Visualizer::InputSilo*   _silo;
 };
 

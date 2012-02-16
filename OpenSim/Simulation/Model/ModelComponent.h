@@ -52,6 +52,7 @@
 namespace OpenSim {
 
 class Model;
+class ModelDisplayHints;
 class ModelComponent;
 
 /** @cond **/ // hide from Doxygen
@@ -513,7 +514,7 @@ public:
 
 protected:
 
-	/** @name ModelComponent Interface
+	/** @name                   ModelComponent Interface
 	 * The interface ensures that deserialization, resolution of inter-connections and dependicies,
 	 * are performed systematically and prior to system creation. createSystem() is responsible
 	 * These methods are virtual and must be implemented by subclasses of ModelComponents.
@@ -569,6 +570,42 @@ protected:
 		for(unsigned int i=0; i < _subComponents.size(); i++)
 			_subComponents[i]->setDefaultsFromState(state);
 	};
+
+    /** Optional method for generating arbitrary display geometry that reflects
+    this %ModelComponent at the specified \a state. This will be called once to 
+    obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
+    once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
+    as rubber band lines, force arrows, labels, or debugging aids.
+
+    @param[in]      fixed   
+        If \c true, generate only geometry that is independent of time, 
+        configuration, and velocity. Otherwise generate only such dependent 
+        geometry.
+    @param[in]      hints   
+        See documentation for ModelDisplayHints; you may want to alter the 
+        geometry you generate depending on what you find there. For example, 
+        you can determine whether the user wants to see debug geometry.
+    @param[in]      state
+        The State for which geometry should be produced. See below for more
+        information.
+    @param[in,out]  appendToThis
+        %Array to which generated geometry should be \e appended via the
+        \c push_back() method.
+
+    When called with \a fixed=\c true only modeling options and parameters 
+    (Instance variables) should affect geometry; time, position, and velocity
+    should not. In that case OpenSim will already have realized the \a state
+    through Instance stage. When called with \a fixed=\c false, you may 
+    consult any relevant value in \a state. However, to avoid unnecessary
+    computation, OpenSim guarantees only that \a state will have been realized
+    through Position stage; if you need anything higher than that (reaction 
+    forces, for example) you should make sure the \a state is realized through 
+    Acceleration stage. **/
+    virtual void generateDecorations
+       (bool                                        fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const {}
 
 	// End of Model Component Interface (virtuals).
     //@} 

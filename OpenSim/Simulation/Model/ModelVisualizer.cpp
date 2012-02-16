@@ -31,10 +31,13 @@
 #include <OpenSim/version.h>
 
 #include "Model.h"
+#include "ModelDisplayHints.h"
 #include "ModelVisualizer.h"
 #include "MarkerSet.h"
 #include "Muscle.h"
 #include "BodySet.h"
+
+#include "Simbody.h"
 
 #include <string>
 using std::string;
@@ -68,7 +71,7 @@ Visualizer's InputSilo where it will remain until the user's program goes
 looking for it. */
 class OpenSimInputListener : public Visualizer::InputListener {
 public:
-    OpenSimInputListener(ModelVisualizer& viz) : _viz(viz) {}
+    OpenSimInputListener(Model& model) : _model(model) {}
 
     /* This is the implementation of the InputListener interface. We're going
     to override only the menu-pick method and ignore anything we don't
@@ -79,25 +82,26 @@ public:
     handles synchronization automatically but this one does not. */
     /*virtual*/ bool menuSelected(int menu, int item) {
         if (menu != ShowMenuId) return false; // some other menu
+        ModelDisplayHints& hints = _model.updDisplayHints();
         switch(item) {
         case ToggleWrapGeometry:
-            _viz.setShowWrapGeometry(!_viz.getShowWrapGeometry());
+            hints.setShowWrapGeometry(!hints.getShowWrapGeometry());
             return true; // absorb this input
         case ToggleContactGeometry:
-            _viz.setShowContactGeometry(!_viz.getShowContactGeometry());
+            hints.setShowContactGeometry(!hints.getShowContactGeometry());
             return true;
         case ToggleMusclePaths:
-            _viz.setShowMusclePaths(!_viz.getShowMusclePaths());
+            hints.setShowMusclePaths(!hints.getShowMusclePaths());
             return true;
         case TogglePathPoints:
-            _viz.setShowPathPoints(!_viz.getShowPathPoints());
+            hints.setShowPathPoints(!hints.getShowPathPoints());
             return true;
         case ToggleMarkers:
-            _viz.setShowMarkers(!_viz.getShowMarkers());
+            hints.setShowMarkers(!hints.getShowMarkers());
             return true;
         case ToggleDefaultGeometry: {
             SimbodyMatterSubsystem& matter = 
-                _viz.updModel().updMatterSubsystem();
+                _model.updMatterSubsystem();
             matter.setShowDefaultGeometry(!matter.getShowDefaultGeometry());
             return true;
             }
@@ -105,7 +109,7 @@ public:
         return false; // let someone else deal with this input
     }
 private:
-    ModelVisualizer&    _viz;
+    Model&  _model;
 };
 
 
@@ -122,7 +126,7 @@ public:
     void generateDecorations(const State& state, 
                              Array_<DecorativeGeometry>& geometry);
 private:
-    Model& _model;
+    Model&  _model;
 };
 
 // Draw a path point with a small body-axis-aligned cross centered on
@@ -154,35 +158,11 @@ void DefaultGeometry::generateDecorations
     Array_<SimTK::DecorativeGeometry>&   geometry) 
 {
     const SimbodyMatterSubsystem& matter = _model.getMatterSubsystem();
-    const ModelVisualizer&        viz    = _model.getModelVisualizer();
-
-
-    //// Display a cylinder connecting each pair of joints.
-
-    //const JointSet& joints = _model.getJointSet();
-    //for (int i = 0; i < joints.getSize(); i++) {
-    //    const Joint& joint = joints[i];
-    //    if (joint.getType() != "FreeJoint" && joint.getParentBody().hasJoint()) {
-    //        const Joint& parent = joint.getParentBody().getJoint();
-    //        Vec3 childLocation, parentLocation;
-    //        joint.getLocation(childLocation);
-    //        parent.getLocation(parentLocation);
-    //        childLocation = matter.getMobilizedBody(joint.getBody().getIndex())
-    //                                    .getBodyTransform(state)*childLocation;
-    //        parentLocation = matter.getMobilizedBody(parent.getBody().getIndex())
-    //                                    .getBodyTransform(state)*parentLocation;
-    //        double length = (childLocation-parentLocation).norm();
-    //        Vec3 center = (childLocation+parentLocation)*0.5;
-    //        Rotation orientation;
-    //        orientation.setRotationFromOneAxis
-    //           (UnitVec3(childLocation-parentLocation), YAxis);
-    //        geometry.push_back(DecorativeCylinder(0.1*length, 0.5*length)
-    //                            .setTransform(Transform(orientation, center)));
-    //    }
-    //}
+    const ModelVisualizer&        viz    = _model.getVisualizer();
+    const ModelDisplayHints&      hints  = _model.getDisplayHints();
 
     // Display the path and activation level of each muscle.
-    if (viz.getShowMusclePaths()) {
+    if (hints.getShowMusclePaths()) {
         const Set<Muscle>& muscles = _model.getMuscles();
         for (int i = 0; i < muscles.getSize(); ++i) {
             const Muscle& muscle = muscles[i];
@@ -200,7 +180,7 @@ void DefaultGeometry::generateDecorations
             Vec3 lastLoc_B = lastPoint->getLocation();
             MobilizedBodyIndex lastBody = lastPoint->getBody().getIndex();
 
-            if (viz.getShowPathPoints())
+            if (hints.getShowPathPoints())
                 drawPathPoint(lastBody, lastLoc_B, 0.9*SimTK::White, geometry);
 
 
@@ -210,7 +190,7 @@ void DefaultGeometry::generateDecorations
                 const PathPoint* point = points[j];
                 const Vec3 loc_B = point->getLocation();
                 const MobilizedBodyIndex body = point->getBody().getIndex();
-                if (viz.getShowPathPoints())
+                if (hints.getShowPathPoints())
                     drawPathPoint(body, loc_B, 0.9*SimTK::White, geometry);
 
                 Vec3 pos = matter.getMobilizedBody(body)
@@ -225,7 +205,7 @@ void DefaultGeometry::generateDecorations
     }
 
     // Display markers.
-    if (viz.getShowMarkers()) {
+    if (hints.getShowMarkers()) {
         const double radius=.005, opacity=1;
         const Vec3 pink(1,.6,.8);
         const MarkerSet& markers = _model.getMarkerSet();
@@ -242,7 +222,7 @@ void DefaultGeometry::generateDecorations
 
     // Display wrap objects.
 
-    if (viz.getShowWrapGeometry()) {
+    if (hints.getShowWrapGeometry()) {
         const double opacity = 0.5;
         const double rez = 2;
         const Vec3 color(SimTK::Cyan);
@@ -293,6 +273,10 @@ void DefaultGeometry::generateDecorations
             }
         }
     }
+
+    // Ask all the ModelComponents to generate dynamic geometry.
+    _model.generateDecorations(false, _model.getDisplayHints(),
+                               state, geometry);
 }
 
 //==============================================================================
@@ -302,7 +286,7 @@ void DefaultGeometry::generateDecorations
 void ModelVisualizer::show(const SimTK::State& state) const {
     // Make sure we're realized at least through Position stage.
     _model.getMultibodySystem().realize(state, SimTK::Stage::Position);
-    getVisualizer().report(state);
+    getSimbodyVisualizer().report(state);
 }
 
 // See if we can find the given file. The rules are
@@ -399,7 +383,7 @@ void ModelVisualizer::initVisualizer() {
     _viz->addMenu("Show", ShowMenuId, selections);
 
     // Add an input listener to handle display menu picks.
-    _viz->addInputListener(new OpenSimInputListener(*this));
+    _viz->addInputListener(new OpenSimInputListener(_model));
 
     // Allocate an InputSilo to pick up anything the above listener doesn't.
     _silo = new SimTK::Visualizer::InputSilo();
@@ -464,14 +448,6 @@ void ModelVisualizer::initVisualizer() {
                 continue;
             }
 
-            //TODO: just for debugging
-            //if (foundIt) {
-            //    std::clog << "ModelVisualizer found file '" << file
-            //        << "'; tried\n";
-            //    for (unsigned i=0; i < attempts.size(); ++i)
-            //        std::clog << "  " << attempts[i] << "\n";
-            //}
-
             SimTK::PolygonalMesh pmesh;
             try {
                 if (lowerExtension == ".vtp") {
@@ -499,4 +475,15 @@ void ModelVisualizer::initVisualizer() {
         }
     }
 
+    // Collect any fixed geometry from the ModelComponents.
+    Array_<DecorativeGeometry> fixedGeometry;
+    _model.generateDecorations
+       (true, _model.getDisplayHints(),
+        _model.getMultibodySystem().getDefaultState(), fixedGeometry);
+
+    for (unsigned i=0; i < fixedGeometry.size(); ++i) {
+        const DecorativeGeometry& dgeo = fixedGeometry[i];
+        _model.updDecorationSubsystem().addBodyFixedDecoration
+           (MobilizedBodyIndex(dgeo.getBodyId()), Transform(), dgeo);
+    }
 }
