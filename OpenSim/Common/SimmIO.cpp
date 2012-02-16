@@ -287,7 +287,7 @@ bool OpenSim::readDoubleFromString(string &aString, double *rNumber, bool allowN
       aString.erase(0, i);
    }
    /* remove number from string, copy number to buffer */
-   i = aString.find_first_not_of("0123456789-.eE", 0);
+   i = aString.find_first_not_of("0123456789-+.eE", 0);
    end = aString.length();
    if (i != aString.npos)
    {

@@ -77,7 +77,15 @@ int main() {
 		ASSERT(SimTK::isNaN(m1[2]), __FILE__, __LINE__);
 		SimTK::Vec3 diff = (markers[1]-SimTK::Vec3(expectedData[0], expectedData[1], expectedData[2]));
 		ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
-    }
+
+		MarkerData md3("chris_mri-prot-writing-trial-11-twosheet-right.trc");
+		double expectedData3[] = {-1.52E-01,	2.45E-01,	-1.71E+00};
+		const MarkerFrame& frame3 = md3.getFrame(0);
+		const SimTK::Array_<SimTK::Vec3>& markers3 = frame3.getMarkers();
+		const SimTK::Vec3& m31 = markers3[1];    
+		SimTK::Vec3 diff3 = (markers3[1]-SimTK::Vec3(expectedData3));
+		ASSERT(diff.norm() < 1e-7, __FILE__, __LINE__);
+	}
     catch(const Exception& e) {
         e.print(cerr);
         return 1;
