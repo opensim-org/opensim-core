@@ -745,6 +745,11 @@ EXCLUDE_SYMLINKS       = NO
 
 EXCLUDE_PATTERNS       = *.svn* \
                          *.java* \
+                         *.c \
+                         *.cc \
+                         *.cpp \
+                         *.cxx \
+                         *.c++ \
                          *.xml* \
                          *.sto* \
                          *src* \
