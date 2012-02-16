@@ -54,9 +54,7 @@ Geometry *PathPoint::_defaultGeometry= AnalyticSphere::createSphere(0.005);
  */
 PathPoint::PathPoint() :
    _location(_locationProp.getValueDblVec()),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
+	_bodyName(_bodyNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -79,9 +77,7 @@ PathPoint::~PathPoint()
 PathPoint::PathPoint(const PathPoint &aPoint) :
    Object(aPoint),
    _location(_locationProp.getValueDblVec()),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
+	_bodyName(_bodyNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -154,9 +150,6 @@ void PathPoint::setupProperties()
 	//_locationProp.setAllowableArraySize(3);
 	_propertySet.append(&_locationProp);
 
-	_displayerProp.setName("display");
-	_propertySet.append(&_displayerProp);
-
 	_bodyNameProp.setName("body");
 	_propertySet.append(&_bodyNameProp);
 }
@@ -182,22 +175,6 @@ void PathPoint::setup(const Model& aModel, GeometryPath& aPath)
 	}
 	_body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
 
-	// _displayer.setOwner(this);
-	// Muscle points depend on body
-	// A displayer may not be needed altogether.
-	// - Removing the dependency since muscle points now display as part of the
-	// - muscle itself, extracted directly from the set of line segments
-	// - representing the muscle path. -Ayman 02/07
-	//
-	//
-	//_body->getDisplayer()->addDependent(&_displayer);
-	//_displayer.addGeometry(_defaultGeometry);
-	// 
-	// Transform position;
-	// position.translate(_location.get());
-	// getDisplayer()->setTransform(position);
-	// double defaultColor[3] = { 1.0, 0.0, 0.0 };
-	// _displayer.getVisibleProperties().setColor(defaultColor);
 }
 //_____________________________________________________________________________
 /**

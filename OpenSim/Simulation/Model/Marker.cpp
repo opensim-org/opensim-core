@@ -53,9 +53,7 @@ Marker::Marker() :
    Object(),
    _offset(_offsetProp.getValueDblVec()),
 	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
+	_bodyName(_bodyNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -80,9 +78,7 @@ Marker::Marker(const Marker &aMarker) :
    Object(aMarker),
    _offset(_offsetProp.getValueDblVec()),
 	_fixed(_fixedProp.getValueBool()),
-	_bodyName(_bodyNameProp.getValueStr()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-   _displayer((VisibleObject&)_displayerProp.getValueObj())
+	_bodyName(_bodyNameProp.getValueStr())
 {
 	setNull();
 	setupProperties();
@@ -155,10 +151,6 @@ void Marker::setupProperties()
 	_fixedProp.setName("fixed");
 	_fixedProp.setValue(false);
 	_propertySet.append(&_fixedProp);
-
-	_displayerProp.setComment("Used for displaying a marker in the visuals.");
-	_displayerProp.setName("Displayer");
-	_propertySet.append(&_displayerProp);
 }
 
 //_____________________________________________________________________________
@@ -196,7 +188,6 @@ void Marker::setup(const Model& aModel)
 		if (_body && (ownerBodyDisplayer = _body->updDisplayer())){
 			if(! ownerBodyDisplayer->hasDependent(&_displayer)){	// Only if first time to be encountered 
 				ownerBodyDisplayer->addDependent(&_displayer);
-				//_displayer.addGeometry(_defaultGeometry);
 			}
 		}
 		_displayer.setOwner(this);

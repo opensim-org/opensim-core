@@ -85,8 +85,7 @@ protected:
    std::string &_bodyName;
 
 	// Support for Display
-	PropertyObj _displayerProp;
-	VisibleObject &_displayer;
+	VisibleObject _displayer;
 
 	/* const*/ OpenSim::Body *_body; // Not const anymore since the body's displayer is not const
 

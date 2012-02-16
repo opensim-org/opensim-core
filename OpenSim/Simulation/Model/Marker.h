@@ -2,7 +2,7 @@
 #define __Marker_h__
 
 // Marker.h
-// Author: Peter Loan
+// Author: Peter Loan, Ayman Habib
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -87,8 +87,7 @@ protected:
 	OpenSim::Body* _body;
 
 	// Support for Display
-	PropertyObj _displayerProp;
-	VisibleObject &_displayer;
+	VisibleObject _displayer;
 
 	/** A temporary kluge until the default mechanism is working */
 	static Geometry *_defaultGeometry;
