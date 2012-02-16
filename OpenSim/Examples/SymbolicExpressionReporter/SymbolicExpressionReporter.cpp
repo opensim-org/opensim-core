@@ -31,11 +31,12 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
+
+#include "OpenSim.h"
+#include "Lepton.h"
+#include "SymbolicExpressionReporter.h"
 #include <iostream>
 #include <string>
-#include "Lepton.h"
-#include "OpenSim.h"
-#include "SymbolicExpressionReporter.h"
 
 using namespace OpenSim;
 using namespace std;
