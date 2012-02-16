@@ -84,11 +84,6 @@ else()
         set(Simbody_SEARCH_PATHS "${INSTDIR}")
     endif()
 
-    # Generic locations to search for Simbody files. First look to see
-    # if there is a Simbody already in the directory where we're going
-    # to install Molmodel.
-    list(APPEND Simbody_SEARCH_PATHS "${SimTK_INSTALL_PREFIX}")
-    
     # UNIX includes Mac, Linux, and Cygwin
     if (UNIX)
         list(APPEND Simbody_SEARCH_PATHS /usr/local)
@@ -118,8 +113,22 @@ endif(SimTK_SDK)
 # root directory. We're assuming the header is in 
 #    Simbody_INCLUDE_DIR == ${Simbody_ROOT_DIR}/include
 # So stripping off the "/include" should give the root directory.
-find_path(Simbody_INCLUDE_DIR NAMES "SimTKsimbody.h" "Simbody.h"
-    PATHS ${Simbody_SEARCH_PATHS}
+
+foreach(pth IN LISTS Simbody_SEARCH_PATHS)
+  find_path(Simbody_INCLUDE_DIR 
+    NAMES "SimTKsimbody.h" "Simbody.h"
+    PATHS "${pth}"
+    PATH_SUFFIXES "include" "SimTK/include" "simtk/include"
+                  "Simbody/include" "simbody/include"
+    NO_DEFAULT_PATH
+    DOC "Location of top-level installed Simbody header files"
+  )
+endforeach()
+
+# This will only be executed if the first loop fails. We're getting
+# desperate!
+find_path(Simbody_INCLUDE_DIR 
+    NAMES "SimTKsimbody.h" "Simbody.h"
     PATH_SUFFIXES "include" "SimTK/include" "simtk/include"
                   "Simbody/include" "simbody/include"
     DOC "Location of top-level installed Simbody header files"
