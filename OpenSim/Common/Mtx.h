@@ -93,9 +93,10 @@ public:
 	* If aV has a magnitude of zero, all elements of rV are set to 0.0.
 	* It is permissible for aV and rV to coincide in memory.
 	*
-	* @param aV Vector to be normalized.
-	* @param rV Result of the normalization.
-	* @return Magnitude of aV.
+    * @param aN     Obsolete -- always pass as a "3".
+	* @param aV     Vector to be normalized.
+	* @param rV     Result of the normalization.
+	* @returns      Magnitude of aV.
 	*/
 	inline static double Normalize(int aN,const SimTK::Vec3& aV,SimTK::Vec3& rV){
 		double mag = aV.norm();
@@ -105,8 +106,9 @@ public:
 	/**
 	* Compute the magnitude of a vector.
 	*
-	* @param aV Vector.
-	* @return Square root of the dot product aV*aV.
+    * @param aN     Obsolete -- always pass as a "3".
+	* @param aV     Vector.
+	* @returns      Square root of the dot product aV*aV.
 	*/
 	inline static double Magnitude(int aN,const SimTK::Vec3& aV){
 		return aV.norm();
@@ -127,7 +129,7 @@ public:
 	*
 	* If the arguments are not valid (aR=aS=NULL), -1 is returned.
 	*/
-	inline static void CrossProduct(SimTK::Vec3& aV1,SimTK::Vec3& aV2,SimTK::Vec3& aV){
+	inline static void CrossProduct(const SimTK::Vec3& aV1, const SimTK::Vec3& aV2, SimTK::Vec3& aV){
 		 aV = aV1 % aV2;
 	};
 	/**
@@ -138,7 +140,7 @@ public:
 	* @param aV Input vector.
 	* @param rV Perpendicular unit vector.
 	*/
-	static void PerpendicularUnitVector(SimTK::Vec3& aV, SimTK::Vec3& rV)
+	static void PerpendicularUnitVector(const SimTK::Vec3& aV, SimTK::Vec3& rV)
 	{
 		SimTK::UnitVec3 unit(aV);
 		rV = unit.perp().asVec3();

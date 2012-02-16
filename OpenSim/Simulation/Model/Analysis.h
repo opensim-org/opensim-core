@@ -227,10 +227,12 @@ public:
 	/**
 	 * Print the results of the analysis.
 	 *
-	 * @param aFileName File to which to print the data.
-	 * @param aDT Time interval between results (linear interpolation is used).
-	 * If not included as an argument or negative, all time steps are printed
-	 * without interpolation.
+	 * @param aBaseName Base name of file to which to print the data.
+     * @param aDir      Directory name.
+	 * @param aDT       Time interval between results (linear interpolation 
+     *                  is used). If not supplied as an argument or negative, 
+     *                  all time steps are printed without interpolation.
+     * @param aExtension    File extension if not the default ".sto".
 	 *
 	 * @return -1 on error, 0 otherwise.
 	 */	

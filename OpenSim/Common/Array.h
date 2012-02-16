@@ -164,10 +164,12 @@ bool arrayEquals(const Array<T> &aArray) const
 //_____________________________________________________________________________
 /**
  * Get the array element at a specified index.  This overloaded operator
- * can be used both to set and get element values:\n
- *		\tArray<T> array(2);\n
- *		\tT value = array[i];\n
- *		\tarray[i] = value;\n\n
+ * can be used both to set and get element values:
+ * @code
+ *		Array<T> array(2);
+ *		T value = array[i];
+ *		array[i] = value;
+ * @endcode
  *
  * This operator is intended for accessing array elements with as little
  * overhead as possible, so no error checking is performed.

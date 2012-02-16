@@ -54,20 +54,20 @@ namespace OpenSim {
  *
  * At the time of the first formulation of the property classes, the only
  * property types that were envisioned are for a few fundamental data types
- * and for Object:\n\n
- * \tbool\n
- * \tint\n
- * \tfloat\n
- * \tdouble\n
- * \tstring\n
- * \tObject\n
- * \tObject pointer\n
- * \tarray of bools\n
- * \tarray of ints\n
- * \tarray of floats\n
- * \tarray of doubles\n
- * \tarray of strings\n
- * \tarray of Objects\n\n
+ * and for Object:
+ * - bool
+ * - int
+ * - float
+ * - double
+ * - string
+ * - Object
+ * - Object pointer
+ * - array of bools
+ * - array of ints
+ * - array of floats
+ * - array of doubles
+ * - array of strings
+ * - array of Objects
  *
  * As additional property types are needed, they may be added however.
  *
