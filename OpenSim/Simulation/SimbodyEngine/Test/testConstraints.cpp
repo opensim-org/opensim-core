@@ -193,7 +193,6 @@ void integrateSimbodySystem(SimTK::MultibodySystem &system, SimTK::State &state)
 
 	RungeKuttaMersonIntegrator integ(system);
 	integ.setAccuracy(integ_accuracy);
-	integ.setAbsoluteTolerance(integ_accuracy);
 	
     TimeStepper ts(system, integ);
     ts.initialize(state);
@@ -209,7 +208,7 @@ void integrateOpenSimModel(Model *osimModel, SimTK::State &osim_state)
 	osimModel->getMultibodySystem().realize(osim_state, Stage::Velocity);
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
 	integrator.setAccuracy(integ_accuracy);
-	integrator.setAbsoluteTolerance(integ_accuracy);
+
     Manager manager(*osimModel,  integrator);
 
 	// Specify the initial and final times of the simulation.
@@ -542,7 +541,7 @@ void testCoordinateLocking()
 	integrator.setMaximumStepSize(1.0e-3);
 	integrator.setMinimumStepSize(1.0e-6);
 	integrator.setAccuracy(integ_accuracy);
-	integrator.setAbsoluteTolerance(integ_accuracy);
+
 	Manager manager(*osimModel,  integrator);
 
 	// Print out the initial position and velocity states

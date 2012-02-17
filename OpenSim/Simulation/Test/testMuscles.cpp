@@ -209,7 +209,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	// Create the integrator
 	SimTK::RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
 	integrator.setAccuracy(accuracy);
-	integrator.setAbsoluteTolerance(accuracy);
+
 	// Create the manager
 	Manager manager(model, integrator);
 

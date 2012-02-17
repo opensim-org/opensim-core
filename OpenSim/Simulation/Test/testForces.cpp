@@ -644,7 +644,6 @@ void testExternalForce()
 	double accuracy = 1e-6;
     RungeKuttaMersonIntegrator integrator(model.getMultibodySystem());
 	integrator.setAccuracy(accuracy);
-	integrator.setAbsoluteTolerance(accuracy);
     Manager manager(model,  integrator);
 
 	// Specify the initial and final times of the simulation.
@@ -690,7 +689,7 @@ void testExternalForce()
 
     RungeKuttaMersonIntegrator integrator2(model.getMultibodySystem());
 	integrator2.setAccuracy(accuracy);
-	integrator2.setAbsoluteTolerance(accuracy);
+
     manager.setIntegrator(&integrator2);
 	manager.integrate(s2);
 
@@ -727,7 +726,7 @@ void testExternalForce()
 
     RungeKuttaMersonIntegrator integrator3(model.getMultibodySystem());
 	integrator3.setAccuracy(accuracy);
-	integrator3.setAbsoluteTolerance(accuracy);
+
     manager.setIntegrator(&integrator3);
 	manager.integrate(s3);
 
@@ -773,7 +772,7 @@ void testExternalForce()
 
     RungeKuttaMersonIntegrator integrator4(model.getMultibodySystem());
 	integrator4.setAccuracy(accuracy);
-	integrator4.setAbsoluteTolerance(accuracy);
+
     manager.setIntegrator(&integrator4);
 	manager.integrate(s4);
 

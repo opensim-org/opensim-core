@@ -267,7 +267,6 @@ int main(int argc, char **argv)
 		// Create the integrator
 		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-3);
-		integrator.setAbsoluteTolerance(1.0e-3);
 		
 		// Create the force reporter
 		ForceReporter* reporter = new ForceReporter(&osimModel);

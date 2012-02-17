@@ -201,7 +201,7 @@ int main()
 		
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-3);
-		integrator.setAbsoluteTolerance(1.0e-4);
+
 		Manager manager(osimModel, integrator);
 		
 		

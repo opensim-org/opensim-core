@@ -97,7 +97,7 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime)
 	integrator.setMaximumStepSize(1);
 	integrator.setMinimumStepSize(1.0e-9);
 	integrator.setAccuracy(accuracy);
-	integrator.setAbsoluteTolerance(1.0e-5);
+
 	Manager manager(osimModel, integrator);
 
 	// Integrate from initial time to final time
