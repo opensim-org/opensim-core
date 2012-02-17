@@ -242,7 +242,7 @@ int main()
 		integrator.setMaximumStepSize(3.7e-3);
 		integrator.setMinimumStepSize(1.0e-4);
 		integrator.setAccuracy(1.0e-3);
-		integrator.setAbsoluteTolerance(1.0e-3);
+
 		// Create the force reporter
 		ForceReporter* reporter = new ForceReporter(&osimModel);
 		osimModel.updAnalysisSet().append(reporter);
