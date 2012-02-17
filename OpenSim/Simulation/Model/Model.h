@@ -321,15 +321,6 @@ public:
     SimTK::GeneralForceSubsystem& updForceSubsystem() 
     {   return *_forceSubsystem; }
 
-    /** Get read-only access to the internal Simbody DecorationSubsystem 
-    allocated by this %Model. **/
-    const SimTK::DecorationSubsystem& getDecorationSubsystem() const 
-    {   return *_decorationSubsystem; }
-    /** Get writable access to the internal Simbody DecorationSubsystem 
-    allocated by this %Model. **/
-    SimTK::DecorationSubsystem& updDecorationSubsystem() 
-    {   return *_decorationSubsystem; }
-
     /**@}**/
 
 	virtual int getNumStateVariables() const;
@@ -949,7 +940,6 @@ private:
 	SimTK::Force::Gravity*          _gravityForce;
 	SimTK::GeneralForceSubsystem*   _forceSubsystem;
 	SimTK::GeneralContactSubsystem* _contactSubsystem;
-    SimTK::DecorationSubsystem*     _decorationSubsystem;
 
     // System-dependent objects.
 

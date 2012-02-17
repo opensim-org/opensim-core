@@ -118,8 +118,8 @@ private:
 //                           DEFAULT GEOMETRY
 //==============================================================================
 // This class implements a SimTK DecorationGenerator. We'll add one to the
-// Model's DecorationSubsystem so the Visualizer can invoke the 
-// generateDecorations() dispatcher to pick up per-frame geometry.
+// Visualizer so it can invoke the generateDecorations() dispatcher to pick up 
+// per-frame geometry.
 class DefaultGeometry : public DecorationGenerator {
 public:
     DefaultGeometry(Model& model) : _model(model) {}
@@ -351,8 +351,6 @@ findGeometryFile(const std::string&          geoFile,
 // System that must be done prior to realizeTopology(), and may modify the
 // Model also.
 void ModelVisualizer::createVisualizer() {
-    _model.updDecorationSubsystem().addDecorationGenerator
-       (SimTK::Stage::Position, new DefaultGeometry(_model));
     _model.updMatterSubsystem().setShowDefaultGeometry(false);
 
     // Allocate a Simbody Visualizer.
@@ -383,6 +381,10 @@ void ModelVisualizer::createVisualizer() {
                                         ToggleDefaultGeometry));
     _viz->addMenu("Show", ShowMenuId, selections);
 
+    // Add a DecorationGenerator to dispatch runtime generateDecorations()
+    // calls.
+    _viz->addDecorationGenerator(new DefaultGeometry(_model));
+
     // Add an input listener to handle display menu picks.
     _viz->addInputListener(new OpenSimInputListener(_model));
 
@@ -391,6 +393,7 @@ void ModelVisualizer::createVisualizer() {
     _viz->addInputListener(_silo);
 
     // This is used for regular output of frames during forward dynamics.
+    // TODO: allow user control of timing.
     _model.updMultibodySystem().addEventReporter
         (new SimTK::Visualizer::Reporter(*_viz, 1./30));
 }

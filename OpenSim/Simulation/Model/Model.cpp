@@ -216,7 +216,6 @@ Model::~Model()
 {
 	delete _assemblySolver;
     delete _modelViz;
-	delete _decorationSubsystem;
 	delete _contactSubsystem;
 	delete _gravityForce;
 	delete _forceSubsystem;
@@ -309,7 +308,6 @@ void Model::setNull()
 
     _forceSubsystem = NULL;
     _contactSubsystem = NULL;
-    _decorationSubsystem = NULL;
     _gravityForce = NULL;
 
     _modelViz = NULL;
@@ -503,7 +501,6 @@ void Model::createSystem()
     {
         // Delete the old system.
         delete _modelViz;
-        delete _decorationSubsystem;
         delete _gravityForce;
         delete _contactSubsystem;
         delete _forceSubsystem;
@@ -516,7 +513,6 @@ void Model::createSystem()
     _matter = new SimTK::SimbodyMatterSubsystem(*_system);
     _forceSubsystem = new SimTK::GeneralForceSubsystem(*_system);
     _contactSubsystem = new SimTK::GeneralContactSubsystem(*_system);
-    _decorationSubsystem = new SimTK::DecorationSubsystem(*_system);
 
 	// create gravity force, a direction is needed even if magnitude=0 for PotentialEnergy purposes.
 	double magnitude = _gravity.norm();
