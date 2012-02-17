@@ -418,18 +418,8 @@ begin(SimTK::State& s )
 	if(!proceed()) return(0);
 
 	SimTK::Matrix massMatrix;
-	const int nu = _model->getNumCoordinates();
-    massMatrix.resize(nu,nu);
- 
-    // This could be calculated much faster by doing it directly and calculating
-    // only half of it. As a placeholder, however, we're doing this with
-    // repeated O(n) calls to calcMV() to get M one column at a time.
-	SimTK::Vector v(nu); v = 0;
-    for (int i=0; i < nu; ++i) {
-        v[i] = 1;
-        _model->getMatterSubsystem().calcMV(s, v, massMatrix(i));
-        v[i] = 0;
-    }
+    _model->getMatterSubsystem().calcM(s, massMatrix);
+
 	//massMatrix.dump("mass matrix is:");
 	// Check that m is full rank
 	try {
