@@ -475,20 +475,18 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
             dmesh.setOpacity(geo.getOpacity());
             // TODO: xyz factors
             dmesh.setScale(geo.getScaleFactors()[0]*scale[0]); 
-            _model.updDecorationSubsystem().addBodyFixedDecoration
-                (bx, X_BV*geo.getTransform(), dmesh);
+            _viz->addDecoration(bx, X_BV*geo.getTransform(), dmesh);
         }
     }
 
     // Collect any fixed geometry from the ModelComponents.
     Array_<DecorativeGeometry> fixedGeometry;
     _model.generateDecorations
-       (true, _model.getDisplayHints(),
-        _model.getMultibodySystem().getDefaultState(), fixedGeometry);
+       (true, _model.getDisplayHints(), state, fixedGeometry);
 
     for (unsigned i=0; i < fixedGeometry.size(); ++i) {
         const DecorativeGeometry& dgeo = fixedGeometry[i];
-        _model.updDecorationSubsystem().addBodyFixedDecoration
-           (MobilizedBodyIndex(dgeo.getBodyId()), Transform(), dgeo);
+        _viz->addDecoration(MobilizedBodyIndex(dgeo.getBodyId()), 
+                            Transform(), dgeo);
     }
 }
