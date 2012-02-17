@@ -24,12 +24,16 @@ SET(BUILD_BINARY_DIR ${CMAKE_BINARY_DIR}
 SET(EXECUTABLE_OUTPUT_PATH ${BUILD_BINARY_DIR})
 SET(LIBRARY_OUTPUT_PATH ${BUILD_BINARY_DIR})
 
-# Decide if NameSpace for Simbody and other libraries is assumed (Prefix, defaults to OpenSim_ on Windows and empty otherwise)
-IF(WIN32)
-	SET(NameSpace "OpenSim_" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Set to '' to use stock SimTK libraries.")
-ELSE(WIN32)
-	SET(NameSpace "" CACHE STRING "Prefix for simtk lib names, includes trailing '_'. Set to '' to use stock SimTK libraries.")
-ENDIF(WIN32)
+# Decide if NameSpace for Simbody and other libraries is assumed.
+# Prefix, defaults to empty. Set to "OpenSim_" to use private Simbody 
+# libraries that you generated with prefix "OpenSim_".
+SET(NameSpace "" CACHE STRING 
+   "Prefix for Simbody/SimTK lib names, includes trailing '_'. Set to '' to use stock libraries.")
+
+# This will be initialized to the environment variable of the same name
+# if it is set, otherwise it will be empty.
+SET(SimTK_INSTALL_DIR $ENV{SimTK_INSTALL_DIR} CACHE
+  STRING "Where to look for the Simbody libraries; you can change this.")
 
 #
 # These are the names of all the libraries we depend on. These are

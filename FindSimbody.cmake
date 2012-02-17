@@ -79,9 +79,9 @@ else()
     set(Simbody_SEARCH_PATHS)
     # If the SimTK_INSTALL_DIR environment variable has been set, we'll
     # look for Simbody there.
-    set(INSTDIR $ENV{SimTK_INSTALL_DIR})
-    if (INSTDIR)
-        set(Simbody_SEARCH_PATHS "${INSTDIR}")
+#    set(INSTDIR $ENV{SimTK_INSTALL_DIR})
+    if (SimTK_INSTALL_DIR)
+        set(Simbody_SEARCH_PATHS "${SimTK_INSTALL_DIR}")
     endif()
 
     # UNIX includes Mac, Linux, and Cygwin
@@ -114,6 +114,10 @@ endif(SimTK_SDK)
 #    Simbody_INCLUDE_DIR == ${Simbody_ROOT_DIR}/include
 # So stripping off the "/include" should give the root directory.
 
+# Force this to be recalculated every time.
+set(Simbody_INCLUDE_DIR "Simbody_INCLUDE_DIR-NOTFOUND" CACHE PATH
+    "The Simbody and SimTK include directory." FORCE)
+
 foreach(pth IN LISTS Simbody_SEARCH_PATHS)
   find_path(Simbody_INCLUDE_DIR 
     NAMES "SimTKsimbody.h" "Simbody.h"
@@ -134,9 +138,9 @@ find_path(Simbody_INCLUDE_DIR
     DOC "Location of top-level installed Simbody header files"
 )
 
-get_filename_component(Simbody_ROOT_DIR_TEMP ${Simbody_INCLUDE_DIR} PATH)
-set(Simbody_ROOT_DIR ${Simbody_ROOT_DIR_TEMP} CACHE PATH
-    "The Simbody and SimTK top-level installation directory." FORCE)
+get_filename_component(Simbody_ROOT_DIR_TEMP "${Simbody_INCLUDE_DIR}" PATH)
+set(Simbody_ROOT_DIR "${Simbody_ROOT_DIR_TEMP}" CACHE PATH
+    "Where we found Simbody; use SimTK_INSTALL_DIR to change." FORCE)
 
 set(Simbody_LIB_DIR ${Simbody_ROOT_DIR}/lib${LIB64} CACHE PATH
     "Location of Simbody and SimTK libraries." FORCE)
