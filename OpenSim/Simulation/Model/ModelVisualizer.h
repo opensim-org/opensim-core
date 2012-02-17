@@ -119,24 +119,32 @@ public:
     bool findGeometryFile(const std::string&          geoFile,
                           bool&                       isAbsolute,
                           SimTK::Array_<std::string>& attempts) const;
+    /**@}**/
+private:
+    friend class Model;
 
-    /** Don't call this directly; instead, ask the Model to create it for you
-    using Model's setUseVisualizer() method. **/
+    // Only Model is permitted to create or destruct one of these. Note that
+    // this will cause modifications to System that must occur prior to 
+    // realizeTopology().
     ModelVisualizer(Model& model) : _model(model), _viz(0) {
         clear();
-        initVisualizer();
+        createVisualizer();
     }
-    /** Don't call this directly; let the Model manage its %ModelVisualizer. **/ 
-    ~ModelVisualizer() {clear();}
-    /**@}**/
 
-private:
+    // Called from Model's initSystem() method; state must be realized 
+    // through Instance stage.
+    void collectFixedGeometry(const SimTK::State& state) const;
+
+    ~ModelVisualizer() {clear();}
+
     void clear() {
         delete _viz; _viz = 0;
         _silo = 0; // Visualizer will have deleted this.
     }
-    void initVisualizer();
 
+    void createVisualizer();
+
+private:
     Model&                  _model;
     SimTK::Visualizer*      _viz;
 

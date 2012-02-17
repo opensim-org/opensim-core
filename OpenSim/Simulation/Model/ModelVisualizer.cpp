@@ -347,9 +347,10 @@ findGeometryFile(const std::string&          geoFile,
 
 // Call this on a newly-constructed ModelVisualizer (typically from the Model's
 // initSystem() method) to set up the various auxiliary classes used for
-// visualization and user interaction. We also rummage through the model to 
-// find fixed geometry that should be part of every frame.
-void ModelVisualizer::initVisualizer() {
+// visualization and user interaction. This involves modifications to the
+// System that must be done prior to realizeTopology(), and may modify the
+// Model also.
+void ModelVisualizer::createVisualizer() {
     _model.updDecorationSubsystem().addDecorationGenerator
        (SimTK::Stage::Position, new DefaultGeometry(_model));
     _model.updMatterSubsystem().setShowDefaultGeometry(false);
@@ -392,8 +393,11 @@ void ModelVisualizer::initVisualizer() {
     // This is used for regular output of frames during forward dynamics.
     _model.updMultibodySystem().addEventReporter
         (new SimTK::Visualizer::Reporter(*_viz, 1./30));
+}
 
-
+// We also rummage through the model to find fixed geometry that should be part
+// of every frame. The supplied State must be realized through Instance stage.
+void ModelVisualizer::collectFixedGeometry(const State& state) const {
     // Run through all the bodies and try to open the meshes associated
     // with them.
     const BodySet& bodies = _model.getBodySet();
@@ -423,6 +427,7 @@ void ModelVisualizer::initVisualizer() {
             };
 
             const std::string& file = geo.getGeometryFile();
+            bool isAbsolutePath; string directory, fileName, extension; 
             SimTK::Pathname::deconstructPathname(file,
                 isAbsolutePath, directory, fileName, extension);
             const string lowerExtension = SimTK::String::toLower(extension);

@@ -390,7 +390,8 @@ SimTK::State& Model::initSystem()
 	setup();
 	createSystem();
 
-    // Create a Visualizer for this Model if one has been requested.
+    // Create a Visualizer for this Model if one has been requested. Doesn't
+    // initialize geometry yet.
     if (getUseVisualizer()) {
         _modelViz = new ModelVisualizer(*this);
     }
@@ -402,6 +403,12 @@ SimTK::State& Model::initSystem()
 	getMultibodySystem().realizeModel(s);
 
     initState(s);
+    getMultibodySystem().realize(s, Stage::Instance);
+
+    // We can now collect up all the fixed geometry.
+    if (getUseVisualizer()) {
+        _modelViz->collectFixedGeometry(s);
+    }
 
     getMultibodySystem().realize(s, Stage::Position);
 
