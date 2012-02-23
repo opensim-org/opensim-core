@@ -2050,7 +2050,10 @@ newInstanceOfType(const std::string &aType)
 	if (find_Iter != _mapTypesToDefaultObjects.end()){
 		Object* defaultObject = find_Iter->second;
 		// This object has proper type;
-		newObj = defaultObject->copy();
+		if(defaultObject)
+			newObj = defaultObject->copy();
+		else
+			cerr << "Object::newInstanceOfType '"+aType+"' was not found!" << endl;
 	}
 	if (newObj==0){
 		cout << "Cant create a new instance of object type (" << aType << ") likely a typo in xml/osim file" << endl;

@@ -110,15 +110,16 @@ prepareToOptimize(SimTK::State& s, double *x)
  		 Actuator* act = dynamic_cast<Actuator*>(&fSet.get(i));
          if( act ) {
              double fOpt;
-             ActivationFiberLengthMuscle *mus = dynamic_cast<ActivationFiberLengthMuscle*>(&fSet.get(i));
+             Muscle *mus = dynamic_cast<Muscle*>(&fSet.get(i));
              if( mus ) {
-    		 	  if(_useMusclePhysiology) {
+				ActivationFiberLengthMuscle *aflmus = dynamic_cast<ActivationFiberLengthMuscle*>(mus);
+				if(aflmus && _useMusclePhysiology) {
 					_model->setAllControllersEnabled(true);
-    				fOpt = mus->computeIsokineticForceAssumingInfinitelyStiffTendon(const_cast<SimTK::State&>(s), 1.0);
+    				fOpt = aflmus->computeIsokineticForceAssumingInfinitelyStiffTendon(s, 1.0);
 					_model->setAllControllersEnabled(false);
-    			  } else {
+    			} else {
     				fOpt = mus->getMaxIsometricForce();
-                  }
+                }
              } else {
                   fOpt = act->getOptimalForce();
              }

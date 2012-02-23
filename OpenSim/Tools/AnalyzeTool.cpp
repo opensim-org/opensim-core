@@ -589,8 +589,8 @@ void AnalyzeTool::run(SimTK::State& s, Model &aModel, int iInitial, int iFinal, 
 		// Adjust configuration to match constraints and other goals
 		aModel.assemble(s);
 
-		// computeEquilibriumForAuxiliaryStates before realization as it may affect forces
-		if(aSolveForEquilibrium) aModel.computeEquilibriumForAuxiliaryStates(s);
+		// equilibrateMuscles before realization as it may affect forces
+		if(aSolveForEquilibrium) aModel.equilibrateMuscles(s);
 
 		// Make sure model is atleast ready to provide kinematics
 		aModel.getMultibodySystem().realize(s, SimTK::Stage::Velocity);

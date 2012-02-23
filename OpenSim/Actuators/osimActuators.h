@@ -34,10 +34,11 @@
 #include "PointActuator.h"
 #include "TorqueActuator.h"
 #include "PointToPointActuator.h"
-#include "Thelen2003Muscle.h"
+#include "Thelen2003Muscle_Deprecated.h"
+#include "Thelen2003Muscle.h" //MM
 #include "Thelen2003MuscleV1.h" //MM
-#include "Schutte1993Muscle.h"
-#include "Delp1990Muscle.h"
+#include "Schutte1993Muscle_Deprecated.h"
+#include "Delp1990Muscle_Deprecated.h"
 #include "CoordinateLimitForce.h"
 #include "SpringGeneralizedForce.h"
 #include "RegisterTypes_osimActuators.h"	// to expose RegisterTypes_osimActuators

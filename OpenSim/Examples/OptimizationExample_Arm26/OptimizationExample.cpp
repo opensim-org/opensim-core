@@ -164,13 +164,11 @@ int main()
 		// Initialize the system and get the state representing the state system
 		
 		// Define the initial muscle states
-		const OpenSim::Set<OpenSim::Actuator> &muscleSet = osimModel.getActuators();
+		const Set<Muscle> &muscleSet = osimModel.getMuscles();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
-			Actuator* act = &muscleSet.get(i);
-			OpenSim::ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(act);
+			ActivationFiberLengthMuscle_Deprecated* mus = dynamic_cast<ActivationFiberLengthMuscle_Deprecated*>(&muscleSet[i]);
 			mus->setDefaultActivation(0.5);
 			mus->setDefaultFiberLength(0.1);
-			// mus->initState(si);
 		}
 
 		State& si = osimModel.initSystem();

@@ -1,7 +1,7 @@
-#ifndef __ContDerivMuscle_h__
-#define __ContDerivMuscle_h__
+#ifndef __ContDerivMuscle_Deprecated_h__
+#define __ContDerivMuscle_Deprecated_h__
 
-// ContDerivMuscle.h
+// ContDerivMuscle_Deprecated.h
 /*
  * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -31,7 +31,7 @@
 
 // INCLUDE
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -50,8 +50,57 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API ContDerivMuscle : public ActivationFiberLengthMuscle  
+class OSIMACTUATORS_API ContDerivMuscle_Deprecated : public ActivationFiberLengthMuscle_Deprecated  
 {
+
+//=============================================================================
+// DATA
+//=============================================================================
+protected:
+
+	/** Activation time constant */  
+	PropertyDbl _activationTimeConstantProp;
+	double &_activationTimeConstant;
+
+	/** Deactivation time constant */
+	PropertyDbl _deactivationTimeConstantProp;
+	double &_deactivationTimeConstant;
+
+	/** Max contraction velocity full activation in fiber lengths per second */
+	PropertyDbl _vmaxProp;
+	double &_vmax;
+
+	/** Max contraction velocity at low activation */
+	PropertyDbl _vmax0Prop;
+	double &_vmax0;
+
+	/** Tendon strain due to maximum isometric muscle force */
+	PropertyDbl _fmaxTendonStrainProp;
+	double &_fmaxTendonStrain;
+
+	/** Passive muscle strain due to maximum isometric muscle force */
+	PropertyDbl _fmaxMuscleStrainProp;
+	double &_fmaxMuscleStrain;
+
+	/** Shape factor for Gaussian active muscle force-length relationship */
+	PropertyDbl _kShapeActiveProp;
+	double &_kShapeActive;
+
+	/** Exponential shape factor for passive force-length relationship */
+	PropertyDbl _kShapePassiveProp;
+	double &_kShapePassive;
+
+	/** Passive damping included in the force-velocity relationship */
+	PropertyDbl _dampingProp;
+	double &_damping;
+
+	/** Force-velocity shape factor */
+	PropertyDbl _afProp;
+	double &_af;
+
+	/** Maximum normalized lengthening force */
+	PropertyDbl _flenProp;
+	double &_flen;
 
 //=============================================================================
 // METHODS
@@ -60,31 +109,31 @@ class OSIMACTUATORS_API ContDerivMuscle : public ActivationFiberLengthMuscle
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	ContDerivMuscle();
-	ContDerivMuscle(const ContDerivMuscle &aMuscle);
-	virtual ~ContDerivMuscle();
+	ContDerivMuscle_Deprecated();
+	ContDerivMuscle_Deprecated(const ContDerivMuscle_Deprecated &aMuscle);
+	virtual ~ContDerivMuscle_Deprecated();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	ContDerivMuscle& operator=(const ContDerivMuscle &aMuscle);
+	ContDerivMuscle_Deprecated& operator=(const ContDerivMuscle_Deprecated &aMuscle);
 #endif
-	void copyData(const ContDerivMuscle &aMuscle);
+	void copyData(const ContDerivMuscle_Deprecated &aMuscle);
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getActivationTimeConstant() const { return getPropertyValue<double>("activation_time_constant"); }
-	virtual double getDeactivationTimeConstant() const { return getPropertyValue<double>("deactivation_time_constant"); }
-	virtual double getVmax() const { return getPropertyValue<double>("Vmax"); }
-	virtual double getVmax0() const { return getPropertyValue<double>("Vmax0"); }
-	virtual double getFmaxTendonStrain() const { return getPropertyValue<double>("FmaxTendonStrain"); }
-	virtual double getFmaxMuscleStrain() const { return getPropertyValue<double>("FmaxMuscleStrain"); }
-	virtual double getKshapeActive() const { return getPropertyValue<double>("KshapeActive"); }
-	virtual double getKshapePassive() const { return getPropertyValue<double>("KshapePassive"); }
-	virtual double getDamping() const { return getPropertyValue<double>("damping"); }
-	virtual double getAf() const { return getPropertyValue<double>("Af"); }
-	virtual double getFlen() const { return getPropertyValue<double>("Flen"); }
+	virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
+	virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
+	virtual double getVmax() const { return _vmax; }
+	virtual double getVmax0() const { return _vmax0; }
+	virtual double getFmaxTendonStrain() const { return _fmaxTendonStrain; }
+	virtual double getFmaxMuscleStrain() const { return _fmaxMuscleStrain; }
+	virtual double getKshapeActive() const { return _kShapeActive; }
+	virtual double getKshapePassive() const { return _kShapePassive; }
+	virtual double getDamping() const { return _damping; }
+	virtual double getAf() const { return _af; }
+	virtual double getFlen() const { return _flen; }
 	// Computed quantities
 	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
 	virtual double getPassiveFiberForce(const SimTK::State& s) const;
@@ -121,7 +170,7 @@ public:
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
-	OPENSIM_DECLARE_DERIVED(ContDerivMuscle, ActivationFiberLengthMuscle);
+	OPENSIM_DECLARE_DERIVED(ContDerivMuscle_Deprecated, ActivationFiberLengthMuscle_Deprecated);
 
 protected:
 	// Model Component Interface
@@ -133,12 +182,12 @@ private:
 	void setNull();
 	void setupProperties();
 //=============================================================================
-};	// END of class ContDerivMuscle
+};	// END of class ContDerivMuscle_Deprecated
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __ContDerivMuscle_h__
+#endif // __ContDerivMuscle_Deprecated_h__
 
 

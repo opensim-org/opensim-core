@@ -52,8 +52,8 @@
 #include <OpenSim/Simulation/Model/MovingPathPoint.h>
 #include <OpenSim/Simulation/Wrap/WrapEllipsoid.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
-#include <OpenSim/Actuators/Schutte1993Muscle.h>
-#include <OpenSim/Actuators/Delp1990Muscle.h>
+#include <OpenSim/Actuators/Schutte1993Muscle_Deprecated.h>
+#include <OpenSim/Actuators/Delp1990Muscle_Deprecated.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
@@ -1045,9 +1045,9 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 		(dynamic_cast<WrapEllipsoid*>(&wrapObjects.get(i)) ? (wrapObjects.get(i).getMethodName()+" ") : "") <<
 		"range " << wrapObjects.get(i).getStartPoint() << " " << wrapObjects.get(i).getEndPoint() << endl;
 
-	if (dynamic_cast<Schutte1993Muscle*>(&aMuscle))
+	if (dynamic_cast<Schutte1993Muscle_Deprecated*>(&aMuscle))
 	{
-		Schutte1993Muscle *szh = dynamic_cast<Schutte1993Muscle*>(&aMuscle);
+		Schutte1993Muscle_Deprecated *szh = dynamic_cast<Schutte1993Muscle_Deprecated*>(&aMuscle);
 
 		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;
@@ -1087,9 +1087,9 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 		aStream << "Flen " << sdm->getFlen() << endl;
 		aStream << "muscle_model 9" << endl;
 	}
-	else if (dynamic_cast<Delp1990Muscle*>(&aMuscle))
+	else if (dynamic_cast<Delp1990Muscle_Deprecated*>(&aMuscle))
 	{
-		Delp1990Muscle *szh = dynamic_cast<Delp1990Muscle*>(&aMuscle);
+		Delp1990Muscle_Deprecated *szh = dynamic_cast<Delp1990Muscle_Deprecated*>(&aMuscle);
 
 		aStream << "max_force " << szh->getMaxIsometricForce() << endl;
 		aStream << "optimal_fiber_length " << szh->getOptimalFiberLength() << endl;

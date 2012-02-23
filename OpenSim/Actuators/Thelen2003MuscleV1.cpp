@@ -43,7 +43,7 @@ using namespace SimTK;
  * Default constructor.
  */
 Thelen2003MuscleV1::Thelen2003MuscleV1() :
-   ActivationFiberLengthMuscle(),
+   ActivationFiberLengthMuscle_Deprecated(),
     _activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
     _deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
     _vmax(_vmaxProp.getValueDbl()),
@@ -92,7 +92,7 @@ Thelen2003MuscleV1::Thelen2003MuscleV1() :
  * Constructor.
  */
 Thelen2003MuscleV1::Thelen2003MuscleV1(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle) :
-   ActivationFiberLengthMuscle(),
+   ActivationFiberLengthMuscle_Deprecated(),
     _activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
     _deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
     _vmax(_vmaxProp.getValueDbl()),
@@ -156,7 +156,7 @@ Thelen2003MuscleV1::~Thelen2003MuscleV1()
  * @param aMuscle Thelen2003MuscleV1 to be copied.
  */
 Thelen2003MuscleV1::Thelen2003MuscleV1(const Thelen2003MuscleV1 &aMuscle) :
-   ActivationFiberLengthMuscle(aMuscle),
+   ActivationFiberLengthMuscle_Deprecated(aMuscle),
     _activationTimeConstant(_activationTimeConstantProp.getValueDbl()),
     _deactivationTimeConstant(_deactivationTimeConstantProp.getValueDbl()),
     _vmax(_vmaxProp.getValueDbl()),
@@ -458,7 +458,7 @@ void Thelen2003MuscleV1::setupProperties()
 Thelen2003MuscleV1& Thelen2003MuscleV1::operator=(const Thelen2003MuscleV1 &aMuscle)
 {
     // BASE CLASS
-    ActivationFiberLengthMuscle::operator=(aMuscle);
+    ActivationFiberLengthMuscle_Deprecated::operator=(aMuscle);
     copyData(aMuscle);
 
     return(*this);
@@ -749,10 +749,10 @@ double  Thelen2003MuscleV1::computeActuation(const SimTK::State& s) const
     double norm_muscle_tendon_length, pennation_angle;
     double excitation = getExcitation(s);
 
-	const double &maxIsometricForce = getPropertyValue<double>("max_isometric_force");
-    const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double &tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
-	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
+	const double &maxIsometricForce = _maxIsometricForce; //getPropertyValue<double>("max_isometric_force");
+    const double &optimalFiberLength = _optimalFiberLength; //getPropertyValue<double>("optimal_fiber_length");
+	const double &tendonSlackLength = _tendonSlackLength; //getPropertyValue<double>("tendon_slack_length");
+	const double &pennationAngleAtOptimal = _pennationAngleAtOptimal; //getPropertyValue<double>("pennation_angle_at_optimal");
 
     /* Normalize the muscle states */
     double activation = getActivation(s);
@@ -898,9 +898,9 @@ double  Thelen2003MuscleV1::computeActuation(const SimTK::State& s) const
  */
 double Thelen2003MuscleV1::calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
 {
-	const double &maxIsometricForce = getPropertyValue<double>("max_isometric_force");
-    const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double &tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
+	const double &maxIsometricForce = _maxIsometricForce; //getPropertyValue<double>("max_isometric_force");
+    const double &optimalFiberLength = _optimalFiberLength; //getPropertyValue<double>("optimal_fiber_length");
+	const double &tendonSlackLength = _tendonSlackLength; //getPropertyValue<double>("tendon_slack_length");
 
     //MM - This business of normalizing the tendon length with respect to the fiber length is weird
     //It works, but is a candidate for revision.
@@ -987,8 +987,8 @@ double Thelen2003MuscleV1::calcPassiveForce(const SimTK::State& s, double aNormF
 {
     double passive_force;
 
-	const double &maxIsometricForce = getPropertyValue<double>("max_isometric_force");
-    const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
+	const double &maxIsometricForce = _maxIsometricForce; //getPropertyValue<double>("max_isometric_force");
+    const double &optimalFiberLength = _optimalFiberLength; //getPropertyValue<double>("optimal_fiber_length");
 
     //Compute the passive force developed by the muscle
     if(aNormFiberLength > 1.0){
@@ -1283,10 +1283,10 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
     double passiveForce;
     double fiberLength;
 
-    const double &maxIsometricForce = getPropertyValue<double>("max_isometric_force");
-    const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double &tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
-	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
+	const double &maxIsometricForce = _maxIsometricForce; //getPropertyValue<double>("max_isometric_force");
+    const double &optimalFiberLength = _optimalFiberLength; //getPropertyValue<double>("optimal_fiber_length");
+	const double &tendonSlackLength = _tendonSlackLength; //getPropertyValue<double>("tendon_slack_length");
+	const double &pennationAngleAtOptimal = _pennationAngleAtOptimal; //getPropertyValue<double>("pennation_angle_at_optimal");
 
     if (optimalFiberLength < ROUNDOFF_ERROR) {
        setStateVariable(s, STATE_FIBER_LENGTH_NAME, 0.0);

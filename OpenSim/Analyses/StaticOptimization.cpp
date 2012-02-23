@@ -320,7 +320,7 @@ record(const SimTK::State& s)
 	sWorkingCopy.setTime(s.getTime());
 	sWorkingCopy.setQ(s.getQ());
 	sWorkingCopy.setU(s.getU());
-	_modelWorkingCopy->computeEquilibriumForAuxiliaryStates(sWorkingCopy);
+	_modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
 
     const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
 
@@ -546,7 +546,7 @@ begin(SimTK::State& s )
 		sWorkingCopy.setU(s.getU());
 		sWorkingCopy.setZ(s.getZ());
 		_modelWorkingCopy->getMultibodySystem().realize(s,SimTK::Stage::Velocity);
-		_modelWorkingCopy->computeEquilibriumForAuxiliaryStates(sWorkingCopy);
+		_modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
 		// Gather indices into speed set corresponding to the unconstrained degrees of freedom (for which we will set acceleration constraints)
 		_accelerationIndices.setSize(0);
 		const CoordinateSet& coordSet = _model->getCoordinateSet();

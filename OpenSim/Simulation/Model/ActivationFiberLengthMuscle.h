@@ -4,7 +4,7 @@
 // ActivationFiberLengthMuscle.h
 // Author: Ajay Seth
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2012, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -45,16 +45,19 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A base class representing a muscle-tendon actuator. It adds states to the 
+ * A base class representing a two-state muscle-tendon actuator. 
+ * It adds activation and fiber-length states and dynamics to the 
  * Muscle class, but does not implement all of the necessary methods,
- * so it is abstract too. The path information for a muscle is contained
- * in this class, and the force-generating behavior should be defined in
+ * so it is abstract as well. The path information for a muscle is contained
+ * in the Muscle class, and the force-generating behavior should be defined in
  * the derived classes.
  *
+ * @version 2.0
+ * @author Ajay Seth
+ *
+ * @version 1.0 (was in base Muscle)
  * @author Peter Loan
  * @author Frank C. Anderson
- * @author Ajay Seth
- * @version 2.0
  */
 class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle  
 {
@@ -62,13 +65,6 @@ class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle
 // DATA
 //=============================================================================
 protected:
-
-	// Defaults for state variables.
-    double _defaultActivation;
-    double _defaultFiberLength;
-
-	static const int STATE_ACTIVATION;
-	static const int STATE_FIBER_LENGTH;
 
 	static const std::string STATE_ACTIVATION_NAME;
 	static const std::string STATE_FIBER_LENGTH_NAME;
@@ -82,56 +78,36 @@ protected:
 public:
 	ActivationFiberLengthMuscle();
 	ActivationFiberLengthMuscle(const ActivationFiberLengthMuscle &aMuscle);
-	virtual ~ActivationFiberLengthMuscle();
-	virtual Object* copy() const = 0;
 
 #ifndef SWIG
 	ActivationFiberLengthMuscle& operator=(const ActivationFiberLengthMuscle &aMuscle);
 #endif
-	virtual void equilibrate(SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
-    // GET
+    // ActivationFiberLengthMuscle Parameters
     //--------------------------------------------------------------------------
     // Defaults
-    virtual double getDefaultActivation() const;
-    virtual void setDefaultActivation(double activation);
-    virtual double getDefaultFiberLength() const;
-    virtual void setDefaultFiberLength(double length);
+    double getDefaultActivation() const;
+    void setDefaultActivation(double activation);
+    double getDefaultFiberLength() const;
+    void setDefaultFiberLength(double length);
 
 	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual double getFiberLength(const SimTK::State& s) const;
-    virtual void setFiberLength(SimTK::State& s, double fiberLength) const;
-	virtual double getFiberLengthDeriv(const SimTK::State& s) const;
-	virtual void setFiberLengthDeriv(const SimTK::State& s, double fiberLengthDeriv) const;
-	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
-	virtual double getFiberLengthAlongTendon(const SimTK::State& s) const;
-	virtual double getTendonLength(const SimTK::State& s) const;
-	virtual double getFiberForce(const SimTK::State& s) const;
-	virtual double getActiveFiberForce(const SimTK::State& s) const;
-	virtual double getPassiveFiberForce(const SimTK::State& s) const;
-	virtual double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
-	virtual double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
-	virtual double getPassiveForce( const SimTK::State& s) const;
-	virtual void setPassiveForce(const SimTK::State& s, double aForce) const;
-	virtual double getTendonForce(const SimTK::State& s) const;
-	virtual void setTendonForce(const SimTK::State& s, double aForce) const;
-	virtual double getActivation(const SimTK::State& s) const;
-    virtual void setActivation(SimTK::State& s, double activation) const;
-	virtual double getActivationDeriv(const SimTK::State& s) const;
-	virtual void setActivationDeriv(const SimTK::State& s, double activationDeriv) const;
-    virtual double getExcitation( const SimTK::State& s) const;
-	virtual double getStress(const SimTK::State& s) const;
+    // State Variables
+    //--------------------------------------------------------------------------
+	void setActivation(SimTK::State& s, double activation) const;
+	void setFiberLength(SimTK::State& s, double fiberLength) const;
 
 
 	//--------------------------------------------------------------------------
-	// COMPUTATIONS
+    // State Variable Derivative
+    //--------------------------------------------------------------------------
+	double getActivationRate(const SimTK::State& s) const;
+
+
 	//--------------------------------------------------------------------------
-	virtual void computeEquilibrium(SimTK::State& s ) const;
-	virtual double computeActuation( const SimTK::State& s ) const = 0;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
+	// TO BE DEPPRECATED 
+	//--------------------------------------------------------------------------
 	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
    
 	//--------------------------------------------------------------------------
@@ -147,16 +123,6 @@ protected:
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForce) const;
 public:
-	virtual OpenSim::Array<std::string> getRecordLabels() const {
-		OpenSim::Array<std::string> labels("");
-		labels.append(getName());
-		return labels;
-	}
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
-		OpenSim::Array<double> values(1);
-		values.append(getForce(state));
-		return values;
-	};
 
 	virtual Array<std::string> getStateVariableNames() const;
 	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
@@ -166,17 +132,25 @@ public:
 private:
 	void setNull();
 	void setupProperties();
+	void copyData(const ActivationFiberLengthMuscle &aMuscle);
 
 protected:
+
+	/** Calculate activation rate */
+	virtual double calcActivationRate(const SimTK::State& s) const = 0;
+	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
+	    in static equilibrium and update the state */
+	virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
+
+	/** Model Component Interface */
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
-
-	virtual void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
-	virtual double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
-
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 
+	/** State derivative access helper methods */
+	void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
+	double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
 //=============================================================================
 };	// END of class ActivationFiberLengthMuscle
 //=============================================================================

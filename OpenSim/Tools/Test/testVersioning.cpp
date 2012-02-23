@@ -32,7 +32,6 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include <OpenSim/Actuators/Delp1990Muscle.h>
 #include "SimTKsimbody.h"
 #include "SimTKmath.h"
 

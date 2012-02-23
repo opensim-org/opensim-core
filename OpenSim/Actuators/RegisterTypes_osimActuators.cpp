@@ -37,9 +37,10 @@
 #include "TorqueActuator.h"
 #include "PointToPointActuator.h"
 #include "Thelen2003Muscle.h"
+#include "Thelen2003Muscle_Deprecated.h"
 #include "Thelen2003MuscleV1.h"//MM
-#include "Schutte1993Muscle.h"
-#include "Delp1990Muscle.h"
+#include "Schutte1993Muscle_Deprecated.h"
+#include "Delp1990Muscle_Deprecated.h"
 #include "CoordinateLimitForce.h"
 #include "SpringGeneralizedForce.h"
 
@@ -65,10 +66,11 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( TorqueActuator() );
 	Object::RegisterType( PointToPointActuator() );
 
-	Object::RegisterType( Thelen2003Muscle() );
+	//Object::RegisterType( Thelen2003Muscle() );
+	Object::RegisterType( Thelen2003Muscle_Deprecated() );
 	Object::RegisterType( Thelen2003MuscleV1() ); //MM
-	Object::RegisterType( Schutte1993Muscle() );
-	Object::RegisterType( Delp1990Muscle() );
+	Object::RegisterType( Schutte1993Muscle_Deprecated() );
+	Object::RegisterType( Delp1990Muscle_Deprecated() );
 	Object::RegisterType( CoordinateLimitForce() );
 	Object::RegisterType( SpringGeneralizedForce() );
 	Object::RegisterType( RigidTendonMuscle() );
@@ -79,6 +81,10 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RenameType("GeneralizedForce", CoordinateActuator());
 	Object::RenameType("Force", PointActuator());
 	Object::RenameType("Torque", TorqueActuator());
+	Object::RenameType("Schutte1993Muscle", Schutte1993Muscle_Deprecated());
+	Object::RenameType("Delp1990Muscle", Delp1990Muscle_Deprecated());
+
+	Object::RenameType("Thelen2003Muscle", Thelen2003Muscle_Deprecated());
 }
 
 osimActuatorsInstantiator::osimActuatorsInstantiator()

@@ -25,7 +25,7 @@
 
 // INCLUDE
 #include "osimActuatorsDLL.h"
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 
 
@@ -46,7 +46,7 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Thelen2003MuscleV1 : public ActivationFiberLengthMuscle  
+class OSIMACTUATORS_API Thelen2003MuscleV1 : public ActivationFiberLengthMuscle_Deprecated  
 {
 
 //=============================================================================
@@ -280,7 +280,7 @@ public:
 	double calcMusclePE(const SimTK::State& s, double aNormFiberLength, double aFiberRestLength ,double aMaxIsometricForce) const;
 	double calcMuscleW(const SimTK::State& s,  double aNormFiberLength, double aFiberRestLength, double aNormFiberVelocity, double aMaxFiberVelocity, double aMaxIsometricForce) const;
 	*/
-	OPENSIM_DECLARE_DERIVED(Thelen2003MuscleV1, ActivationFiberLengthMuscle);
+	OPENSIM_DECLARE_DERIVED(Thelen2003MuscleV1, ActivationFiberLengthMuscle_Deprecated);
 
 private:
 	void setNull();

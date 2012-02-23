@@ -3,7 +3,7 @@
 
 // Thelen2003Muscle.h
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2012, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -45,10 +45,16 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM muscle.
+ * Implementation of a two state (activation and fiber-length) Muscle model by:
+ * DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
+ * contractions in older adults. Journal of biomechanical engineering, 2003.
+ * This a complete rewrite of a previous implementation by Peter Loan.
  *
- * @author Peter Loan
- * @version 1.0
+ * @author Matt Millard
+ * @author Ajay Seth
+ * @version 3.0
+ *
+ * @contributor Peter Loan
  */
 class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle  
 {
@@ -79,28 +85,28 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getActivationTimeConstant() const { return getPropertyValue<double>("activation_time_constant"); }
-	virtual double getDeactivationTimeConstant() const { return getPropertyValue<double>("deactivation_time_constant"); }
-	virtual double getVmax() const { return getPropertyValue<double>("Vmax"); }
-	virtual double getVmax0() const { return getPropertyValue<double>("Vmax0"); }
-	virtual double getFmaxTendonStrain() const { return getPropertyValue<double>("FmaxTendonStrain"); }
-	virtual double getFmaxMuscleStrain() const { return getPropertyValue<double>("FmaxMuscleStrain"); }
-	virtual double getKshapeActive() const { return getPropertyValue<double>("KshapeActive"); }
-	virtual double getKshapePassive() const { return getPropertyValue<double>("KshapePassive"); }
-	virtual double getDamping() const { return getPropertyValue<double>("damping"); }
-	virtual double getAf() const { return getPropertyValue<double>("Af"); }
-	virtual double getFlen() const { return getPropertyValue<double>("Flen"); }
-	virtual bool setActivationTimeConstant(double aActivationTimeConstant);
-	virtual bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
-	virtual bool setVmax(double aVmax);
-	virtual bool setVmax0(double aVmax0);
-	virtual bool setFmaxTendonStrain(double aFmaxTendonStrain);
-	virtual bool setFmaxMuscleStrain(double aFmaxMuscleStrain);
-	virtual bool setKshapeActive(double aKShapeActive);
-	virtual bool setKshapePassive(double aKshapePassive);
-	virtual bool setDamping(double aDamping);
-	virtual bool setAf(double aAf);
-	virtual bool setFlen(double aFlen);
+	double getActivationTimeConstant() const { return getPropertyValue<double>("activation_time_constant"); }
+	double getDeactivationTimeConstant() const { return getPropertyValue<double>("deactivation_time_constant"); }
+	double getVmax() const { return getPropertyValue<double>("Vmax"); }
+	double getVmax0() const { return getPropertyValue<double>("Vmax0"); }
+	double getFmaxTendonStrain() const { return getPropertyValue<double>("FmaxTendonStrain"); }
+	double getFmaxMuscleStrain() const { return getPropertyValue<double>("FmaxMuscleStrain"); }
+	double getKshapeActive() const { return getPropertyValue<double>("KshapeActive"); }
+	double getKshapePassive() const { return getPropertyValue<double>("KshapePassive"); }
+	double getDamping() const { return getPropertyValue<double>("damping"); }
+	double getAf() const { return getPropertyValue<double>("Af"); }
+	double getFlen() const { return getPropertyValue<double>("Flen"); }
+	void setActivationTimeConstant(double aActivationTimeConstant);
+	void setDeactivationTimeConstant(double aDeactivationTimeConstant);
+	void setVmax(double aVmax);
+	void setVmax0(double aVmax0);
+	void setFmaxTendonStrain(double aFmaxTendonStrain);
+	void setFmaxMuscleStrain(double aFmaxMuscleStrain);
+	void setKshapeActive(double aKShapeActive);
+	void setKshapePassive(double aKshapePassive);
+	void setDamping(double aDamping);
+	void setAf(double aAf);
+	void setFlen(double aFlen);
 
 	// Computed quantities
 	//--------------------------------------------------------------------------
@@ -110,7 +116,7 @@ public:
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 	//--------------------------------------------------------------------------
-	virtual double computeActuation(const SimTK::State& s) const;
+	double computeActuation(const SimTK::State& s) const;
 	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
 	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
 	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
@@ -118,6 +124,22 @@ public:
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
 	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle, ActivationFiberLengthMuscle);
+
+protected:
+	/** calculate muscle's position related values such fiber and tendon lengths,
+	normalized lengths, pennation angle, etc... */
+	virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
+
+	/** calculate muscle's velocity related values such fiber and tendon velocities,
+		normalized velocities, pennation angular velocity, etc... */
+	virtual void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
+
+	/** calculate muscle's active and passive force-length, force-velocity, 
+	    tendon force, relationships and their related values */
+	virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
+
+	/** Calculate activation rate */
+	virtual double calcActivationRate(const SimTK::State& s) const;
 
 private:
 	void setNull();

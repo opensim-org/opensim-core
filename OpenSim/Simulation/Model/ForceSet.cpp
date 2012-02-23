@@ -397,28 +397,6 @@ void ForceSet::updateMuscles()
 //=============================================================================
 //_____________________________________________________________________________
 
-//_____________________________________________________________________________
-/**
- * Compute a set of equlibirium states. Based on each actuator's curent set of
- * states, each actuator alters those states to satisfy some notion of
- * equilibrium. Each actuator is in charge of what it considers to be
- * equilibirum. For example, given a muscle activation, compute muscle fiber
- * length that is consistent with that activation level.
- */
-void ForceSet::
-computeEquilibrium(SimTK::State& s)
-{
-	int i;
-	int size = getSize();
-	Actuator *act;
-	for(i=0;i<size;i++) {
-		act = dynamic_cast<Actuator *>(&get(i));
-		if(act) {
-			act->computeActuation(s);
-			act->computeEquilibrium(s);
-		}
-	}
-}
 
 //_____________________________________________________________________________
 /**

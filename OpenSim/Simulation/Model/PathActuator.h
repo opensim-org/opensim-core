@@ -82,7 +82,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// Path
-	GeometryPath& updGeometryPath() { return updPropertyValue<GeometryPath>("GeometryPath"); }
+	GeometryPath& updGeometryPath() const { return updPropertyValue<GeometryPath>("GeometryPath"); }
 	const GeometryPath& getGeometryPath() const { return getPropertyValue<GeometryPath>("GeometryPath"); }
 	virtual bool hasGeometryPath() const { return true;};
 
@@ -120,18 +120,6 @@ public:
 	//--------------------------------------------------------------------------
 	virtual double computeActuation( const SimTK::State& s) const;
 	virtual double computeMomentArm(SimTK::State& s, Coordinate& aCoord) const;
-
-	/** 
-	 * Methods to query a Force for the value actually applied during simulation
-	 * The names of the quantities (column labels) is returned by this first function
-	 * getRecordLabels()
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	 * Given SimTK::State object extract all the values necessary to report forces, application location
-	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
-	 */
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 	//--------------------------------------------------------------------------
 	// XML

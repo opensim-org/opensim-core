@@ -234,7 +234,7 @@ int main()
 		//muscle2->initState(si);
 
 		// Compute initial conditions for muscles
-		osimModel.computeEquilibriumForAuxiliaryStates(si);
+		osimModel.equilibrateMuscles(si);
 
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator

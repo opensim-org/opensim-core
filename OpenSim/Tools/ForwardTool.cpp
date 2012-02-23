@@ -316,8 +316,7 @@ bool ForwardTool::run()
 
 	// SOLVE FOR EQUILIBRIUM FOR AUXILIARY STATES (E.G., MUSCLE FIBER LENGTHS)
 	if(_solveForEquilibriumForAuxiliaryStates) {
-		_model->computeEquilibriumForAuxiliaryStates(s);  
-		
+		_model->equilibrateMuscles(s);  
 	}
 
 

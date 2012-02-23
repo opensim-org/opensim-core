@@ -32,7 +32,7 @@
 //
 //	Tests Include:
 //      1. Thelen2003Muscle
-//		2. Schutte1993Muscle
+//		2. Schutte1993Muscle_Deprecated
 //		3. Delp1990Muscle
 //		4. PathActuator 
 //		5. RigidTendonMuscle 
@@ -40,10 +40,11 @@
 //     Add more test cases to address specific problems with muscle models
 //
 //==========================================================================================================
-#include <OpenSim/OpenSim.h>
+#include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Simulation/osimSimulation.h>
+#include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorWorkMeter.h>
-#include <OpenSim/Actuators/ContDerivMuscle.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 
@@ -64,6 +65,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 
 void testPathActuator();
 void testRigidTendonMuscle();
+void testThelen2003Muscle_Deprecated();
 void testThelen2003Muscle();
 void testSchutte1993Muscle();
 void testDelp1990Muscle();
@@ -77,6 +79,9 @@ int main()
 
 		testRigidTendonMuscle();
 		cout << "RigidTendonMuscle Test passed" << endl;
+
+		testThelen2003Muscle_Deprecated();
+		cout << "testThelen2003Muscle_Deprecated Test passed" << endl;
 		
 		testThelen2003Muscle();
 		cout << "Thelen2003Muscle Test passed" << endl;
@@ -85,7 +90,7 @@ int main()
 		cout << "Thelen2003MuscleV1 Test passed" << endl;
 		
 		testSchutte1993Muscle();
-		cout << "Schutte1993Muscle Test passed" << endl;
+		cout << "Schutte1993Muscle_Deprecated Test passed" << endl;
 		
 		testDelp1990Muscle();
 		cout << "Delp1990Muscle Test passed" << endl;
@@ -153,12 +158,20 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	aMuscle.addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
 	aMuscle.addNewPathPoint("muscle-ball", ball, Vec3(-ballRadius,0,0));
 	
-	ActivationFiberLengthMuscle *aflMuscle = dynamic_cast<ActivationFiberLengthMuscle *>(&aMuscle);
+	ActivationFiberLengthMuscle_Deprecated *aflMuscle = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(&aMuscle);
 	if(aflMuscle){
 		// Define the default states for the muscle that has activation and fiber-length states
 		aflMuscle->setDefaultActivation(act0);
 		aflMuscle->setDefaultFiberLength(aflMuscle->getOptimalFiberLength());
+	}else{
+		ActivationFiberLengthMuscle *aflMuscle2 = dynamic_cast<ActivationFiberLengthMuscle *>(&aMuscle);
+		if(aflMuscle2){
+			// Define the default states for the muscle that has activation and fiber-length states
+			aflMuscle2->setDefaultActivation(act0);
+			aflMuscle2->setDefaultFiberLength(aflMuscle2->getOptimalFiberLength());
+		}
 	}
+
 
 	model.addForce(&aMuscle);
 
@@ -245,6 +258,24 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 //==========================================================================================================
 // Individudal muscle model (derived from Muscle) test cases can be added here
 //==========================================================================================================
+void testThelen2003Muscle_Deprecated()
+{
+	Thelen2003Muscle_Deprecated muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+	muscle.setActivationTimeConstant(activation);
+	muscle.setDeactivationTimeConstant(deactivation);
+
+	double x0 = 0;
+	double act0 = 0.2;
+
+	Constant control(0.5);
+
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
+	// Uncomment when work done by prescribed motion constraint is accounted for.
+	//simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
+}
+
 void testThelen2003Muscle()
 {
 	Thelen2003Muscle muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
@@ -263,9 +294,10 @@ void testThelen2003Muscle()
 	//simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
 }
 
+
 void testSchutte1993Muscle()
 {
-	Schutte1993Muscle muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+	Schutte1993Muscle_Deprecated muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 	muscle.setActivation1(activation1);
 	muscle.setActivation2(activation2);
 
@@ -282,7 +314,7 @@ void testSchutte1993Muscle()
 
 void testDelp1990Muscle()
 {
-	Delp1990Muscle muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+	Delp1990Muscle_Deprecated muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 	muscle.setActivation1(activation1);
 	muscle.setActivation2(activation2);
 	muscle.setMass(0.1);

@@ -830,6 +830,8 @@ void Model::generateDecorations
 
 void Model::equilibrateMuscles(SimTK::State& state)
 {
+	getMultibodySystem().realize(state, Stage::Velocity);
+
     for (int i = 0; i < _forceSet.getSize(); i++)
     {
         Muscle* muscle = dynamic_cast<Muscle*>(&_forceSet.get(i));
@@ -1141,34 +1143,6 @@ void Model::removeController(Controller *aController)
 	_controllerSet.remove(aController);
 }
 
-//_____________________________________________________________________________
-/**
-//_____________________________________________________________________________
-/**
- * Compute values for the auxiliary states (i.e., states other than the
- * generalized coordinates and speeds) that are in quasi-static equilibrium.
- * The auxiliary states usually belong to the actuators (e.g., muscle
- * activation and muscle fiber length).  The equilibrium computations
- * are passed on to the owner of the the states.
- *
- * This methods is useful for computing initial conditions for a simulation
- * or for computing torque-angle curves, for example.
- *
- * @param rY Array of states. The values sent in are used as the initial
- * guess for equilibrium. The values returned are those that satisfy
- * equilibrium.
- */
-void Model::
-computeEquilibriumForAuxiliaryStates( SimTK::State& s)
-{
-
-    _system->realize(s, SimTK::Stage::Velocity );
-
-	//s.getY().dump("y");
-	// COMPUTE EQUILIBRIUM STATES
-	_forceSet.computeEquilibrium(s);
-
-}
 
 
 //==========================================================================
@@ -1213,7 +1187,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	bool returnVal = updSimbodyEngine().scale(s, aScaleSet, aFinalMass, aPreserveMassDist);
 
 	// 4. If the dynamics engine was scaled successfully,
-	//    call each SimmMuscle's postScale method so it
+	//    call each Muscle's postScale method so it
 	//    can calculate its post-scale length in the current
 	//    position and then scale the tendon and fiber length
 	//    properties.

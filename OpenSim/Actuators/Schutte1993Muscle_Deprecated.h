@@ -1,10 +1,10 @@
-#ifndef __Delp1990Muscle_h__
-#define __Delp1990Muscle_h__
+#ifndef __Schutte1993Muscle_Deprecated_h__
+#define __Schutte1993Muscle_Deprecated_h__
 
-// Delp1990Muscle.h
+// Schutte1993Muscle_Deprecated.h
 // Author: Peter Loan
 /*
- * Copyright (c)  2008, Stanford University. All rights reserved. 
+ * Copyright (c)  2006, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -33,7 +33,7 @@
 // INCLUDE
 #include "osimActuatorsDLL.h"
 #include <OpenSim/Common/PropertyObjPtr.h>
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 
 #ifdef SWIG
 	#ifdef OSIMACTUATORS_API
@@ -47,19 +47,14 @@ namespace OpenSim {
 //=============================================================================
 //=============================================================================
 /**
- * A class implementing a SIMM muscle. This implementation is based on muscle
- * model 2 from the Dynamics Pipeline, but is modified slightly so that when
- * fiber_velocity = 0.0, this model calculates lengths and forces that match
- * SIMM's isometric calculations.
+ * A class implementing a SIMM muscle.
  *
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Delp1990Muscle : public ActivationFiberLengthMuscle  
+class OSIMACTUATORS_API Schutte1993Muscle_Deprecated : public ActivationFiberLengthMuscle_Deprecated  
 {
 
-private:
-	static const int STATE_FIBER_VELOCITY;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -67,40 +62,35 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Delp1990Muscle();
-	Delp1990Muscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
-	Delp1990Muscle(const Delp1990Muscle &aMuscle);
-	virtual ~Delp1990Muscle();
+	Schutte1993Muscle_Deprecated();
+	Schutte1993Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
+	Schutte1993Muscle_Deprecated(const Schutte1993Muscle_Deprecated &aMuscle);
+	virtual ~Schutte1993Muscle_Deprecated();
 	virtual Object* copy() const;
 
 #ifndef SWIG
-	Delp1990Muscle& operator=(const Delp1990Muscle &aMuscle);
+	Schutte1993Muscle_Deprecated& operator=(const Schutte1993Muscle_Deprecated &aMuscle);
 
 #endif
-	void copyData(const Delp1990Muscle &aMuscle);
+    void copyData(const Schutte1993Muscle_Deprecated &aMuscle);
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
 	virtual double getTimeScale() const { return getPropertyValue<double>("time_scale"); }
-	virtual double getMass() const { return getPropertyValue<double>("mass"); }
+	virtual double getDamping() const { return getPropertyValue<double>("damping"); }
 	virtual bool setTimeScale(double aTimeScale);
 	virtual bool setActivation1(double aActivation1);
 	virtual bool setActivation2(double aActivation2);
-	virtual bool setMass(double aMass);
-	// Computed quantities
-	virtual double getFiberVelocity(const SimTK::State& s) const { return getStateVariable(s, "fiber_velocity"); }
-	virtual void setFiberVelocity(SimTK::State& s, double fiberVelocity) const { setStateVariable(s, "fiber_velocity", fiberVelocity); }
-	virtual double getFiberVelocityDeriv(const SimTK::State& s) const { return getStateVariableDeriv(s, "fiber_velocity"); }
-	virtual void setFiberVelocityDeriv(const SimTK::State& s, double fiberVelocityDeriv) const { setStateVariableDeriv(s, "fiber_velocity", fiberVelocityDeriv); }
-	virtual void setActiveForce(const SimTK::State& s, double aForce) const;
-	virtual double getActiveForce(const SimTK::State& s) const;
+
+	virtual bool setDamping(double aDamping);
+	virtual double getDamping() { return getPropertyValue<double>("damping"); }
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
 	//--------------------------------------------------------------------------
-	virtual double computeActuation(const SimTK::State& s) const;
+	virtual double computeActuation( const SimTK::State& s ) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
 	virtual Function* getActiveForceLengthCurve() const;
@@ -109,30 +99,25 @@ public:
 	virtual bool setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve);
 	virtual Function* getTendonForceLengthCurve() const;
 	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
-	virtual Function* getForceVelocityCurve() const;
-	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
 
-	OPENSIM_DECLARE_DERIVED(Delp1990Muscle, ActivationFiberLengthMuscle);
+	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle_Deprecated, ActivationFiberLengthMuscle_Deprecated);
 
 protected:
 	// Model Component Interface
 	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
 
 private:
+	double calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const;
+	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
+	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
+
 	void setNull();
 	void setupProperties();
-	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
-	double calcFiberForce(double aActivation, double aNormFiberLength, double aNormFiberVelocity) const;
-
 //=============================================================================
-};	// END of class Delp1990Muscle
+};	// END of class Schutte1993Muscle_Deprecated
 //=============================================================================
 //=============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __Delp1990Muscle_h__
-
-
+#endif // __Schutte1993Muscle_Deprecated_h__

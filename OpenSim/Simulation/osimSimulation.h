@@ -61,6 +61,8 @@
 #include "Model/BushingForce.h"
 #include "Model/ExternalLoads.h"
 
+#include "Manager/Manager.h"
+
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
 #include "Control/ControlConstant.h"

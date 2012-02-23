@@ -645,22 +645,6 @@ public:
 	//--------------------------------------------------------------------------
 	// DERIVATIVES
 	//--------------------------------------------------------------------------	
-	/**
-	 * Compute values for the auxiliary states (i.e., states other than the
-	 * generalized coordinates and speeds) that are in quasi-static equilibrium.
-	 * The auxiliary states usually belong to the actuators (e.g., muscle
-	 * activation and muscle fiber length).  The equilibrium computations
-	 * are passed on to the owner of the the states.
-	 *
-	 * This method is useful for computing initial conditions for a simulation
-	 * or for computing torque-angle curves, for example.
-	 *
-	 * @param[in,out] state     The values sent in are used as the initial
-	 *                          guess for equilibrium. The values returned are
-     *                          those that satisfy equilibrium.
-	 */
-	void computeEquilibriumForAuxiliaryStates(SimTK::State& state);
-
 	//--------------------------------------------------------------------------
 	// OPERATIONS
 	//--------------------------------------------------------------------------

@@ -253,7 +253,7 @@ int main()
 		modelCoordinateSet[4].setValue(si, blockSideLength/2+0.01); // set y-translation value 
 
 		// Compute initial conditions for muscles
-		osimModel.computeEquilibriumForAuxiliaryStates(si);
+		osimModel.equilibrateMuscles(si);
 
 		// Create the integrator, force reporter, and manager for the simulation.
 		// Create the integrator

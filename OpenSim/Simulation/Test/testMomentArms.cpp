@@ -326,7 +326,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 		if (mass!=0 ) {
 			osimModel.getMultibodySystem().realize(s, Stage::Acceleration);
 
-			double force = muscle.getTendonForce(s);
+			double force = muscle.getForce(s);
 		
 			// Get all applied body forces like those from conact
 			const Vector_<SpatialVec>& appliedBodyForces = osimModel.getMultibodySystem().getRigidBodyForces(s, Stage::Dynamics);
@@ -374,9 +374,9 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 
 			try {	
 				// Resulting torque from ID (no constraints) + constraints = equivalent applied torque 
-				ASSERT_EQUAL(equivalentIvdMuscleTorque, equivalentMuscleTorque, integ_accuracy);
+				ASSERT_EQUAL(0.0, (equivalentIvdMuscleTorque-equivalentMuscleTorque)/equivalentIvdMuscleTorque, integ_accuracy);
 				// verify that equivalent torque is in fact moment-arm*force
-				ASSERT_EQUAL(equivalentIvdMuscleTorque, ma*force, integ_accuracy);
+				ASSERT_EQUAL(0.0, (ma*force-equivalentIvdMuscleTorque)/equivalentIvdMuscleTorque, integ_accuracy);
 			}
 			catch (const OpenSim::Exception&) {
 				passesDynamicConsistency = false;

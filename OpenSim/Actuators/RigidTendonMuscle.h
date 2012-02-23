@@ -53,8 +53,8 @@ namespace OpenSim {
  * this class. The force (muscle tension) assumes rigid tendon so that 
  * fiber-length and velocity are kinematics dependent and the force-length
  * force-velocity relationships are evaluated directly.
- * The control of this mode is its activation. Force production is instantaneous  
- * with no excitation-to-activation dynamics. 
+ * The control of this model is its activation. Force production is instantaneous  
+ * with no excitation-to-activation dynamics and excitation=activation.
  *
  * @author Ajay Seth
  * @version 1.0
@@ -72,34 +72,34 @@ public:
 	/** Convenicencec Contructor */
 	RigidTendonMuscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	RigidTendonMuscle(const RigidTendonMuscle &aRigidTendonMuscle);
-	virtual ~RigidTendonMuscle();
 	virtual Object* copy() const;
 
 	void setName(const std::string &aName);
-#ifndef SWIG
+
 	RigidTendonMuscle& operator=(const RigidTendonMuscle &aRigidTendonMuscle);
-#endif
-   void copyData(const RigidTendonMuscle &aRigidTendonMuscle);
-	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
+	OPENSIM_DECLARE_DERIVED(RigidTendonMuscle, Muscle);
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual double getTendonLength(const SimTK::State& s) const;
-	virtual double getFiberLength(const SimTK::State& s) const;
-	virtual double getNormalizedFiberLength(const SimTK::State& s) const;
-	virtual double getFiberForce(const SimTK::State& s) const;
-	virtual double getActiveFiberForce(const SimTK::State& s) const;
-	virtual double getPassiveFiberForce(const SimTK::State& s) const;
-	virtual double getActiveFiberForceAlongTendon(const SimTK::State& s) const;
-	virtual double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
-	virtual double getTendonForce(const SimTK::State& s) const {return getFiberForce(s)*cos(getPennationAngle(s)); }
-	
-	
-	virtual double getActivation(const SimTK::State& s) const;
-	virtual void setActivation(SimTK::State& s, double activation) const;
+	/** activation level for this muscle */
+	void setActivation(SimTK::State& s, double activation) const {setExcitation(s, activation); }
+
+protected:
+
+	/** calculate muscle's length related values such fiber and tendon lengths,
+		normalized lengths, pennation angle, etc... */
+	void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
+
+	/** calculate muscle's velocity related values such fiber and tendon velocities,
+		normalized velocities, pennation angular velocity, etc... */
+	void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
+
+	/** calculate muscle's active and passive force-length, force-velocity, 
+	    tendon force, relationships and their related values */
+	void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
+
+	/** compute initial fiber length (velocity) such that muscle fiber and tendon are 
+	    in static equilibrium and update the state */
+	void computeInitialFiberEquilibrium(SimTK::State& s) const {}
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -108,40 +108,12 @@ public:
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 	virtual void equilibrate(SimTK::State& s) const {}
     
-	//--------------------------------------------------------------------------
-	// SCALING
-	//--------------------------------------------------------------------------
-protected:
-
-	//--------------------------------------------------------------------------
-	// FORCE APPLICATION
-	//--------------------------------------------------------------------------
-	virtual void computeForce(const SimTK::State& state, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForce) const;
-public:
-	virtual OpenSim::Array<std::string> getRecordLabels() const {
-		OpenSim::Array<std::string> labels("");
-		labels.append(getName());
-		return labels;
-	}
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
-		OpenSim::Array<double> values(1);
-		values.append(getForce(state));
-		return values;
-	};
-
-	OPENSIM_DECLARE_DERIVED(RigidTendonMuscle, PathActuator);
 
 private:
 	void setNull();
 	void setupProperties();
 
 protected:
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void initState(SimTK::State& s) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
 
 //=============================================================================
 };	// END of class RigidTendonMuscle

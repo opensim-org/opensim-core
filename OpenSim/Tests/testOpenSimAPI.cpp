@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 		// Create two new muscles
 		double maxIsometricForce = 1000.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation = 0.0001, deactivation = 1.0;
 		// Create new muscle 1
-		Schutte1993Muscle *muscle1 = new Schutte1993Muscle("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+		Schutte1993Muscle_Deprecated *muscle1 = new Schutte1993Muscle_Deprecated("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 		muscle1->setActivation1(activation);
 		muscle1->setActivation2(deactivation);
 		// Create new muscle 2
@@ -257,7 +257,7 @@ int main(int argc, char **argv)
 		modelCoordinateSet[4].setValue(si, blockSideLength/2+0.01); // set y-translation value 
 
 		// Compute initial conditions for muscles
-		osimModel.computeEquilibriumForAuxiliaryStates(si);
+		osimModel.equilibrateMuscles(si);
 
 		//osimModel.updMultibodySystem().updMatterSubsystem().setShowDefaultGeometry(false);
 		//Visualizer viz(osimModel.getMultibodySystem());
