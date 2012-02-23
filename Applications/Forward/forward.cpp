@@ -34,7 +34,7 @@
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <OpenSim/Actuators/Schutte1993Muscle.h>
+#include <OpenSim/Actuators/Schutte1993Muscle_Deprecated.h>
 #include <OpenSim/Tools/ForwardTool.h>
 #include "SimTKsimbody.h"
 

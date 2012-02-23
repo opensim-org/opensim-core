@@ -52,20 +52,40 @@ void testEMGDrivenArm();
 void testHamnerRunningModel();
 
 int main() {
-    try {
-		testSingleMuscle();
-		testTwoMusclesOnBlock();
-		testArm26();
-		testGait2354();
-		testEMGDrivenArm();
-		testHamnerRunningModel();
-    }
-    catch (const Exception& e) {
-        e.print(cerr);
+    SimTK::Array_<std::string> failures;
+    try {testSingleMuscle();}
+    catch (const Exception& e)
+		{   e.print(cerr); failures.push_back("testSingleMuscle"); }
+
+    try {testTwoMusclesOnBlock();}
+    catch (const Exception& e)
+		{   e.print(cerr); failures.push_back("testTwoMusclesOnBlock"); }
+
+    try {testArm26();}
+    catch (const Exception& e)
+		{   e.print(cerr); failures.push_back("testArm26"); }
+
+    try {testGait2354();}
+    catch (const Exception& e)
+		{   e.print(cerr); failures.push_back("testGait2354"); }
+   
+	try {testEMGDrivenArm();}
+    catch (const Exception& e)
+	    {   e.print(cerr); failures.push_back("testEMGDrivenArm"); }
+
+    try {testHamnerRunningModel();}
+	catch (const Exception& e)
+		{   e.print(cerr); failures.push_back("testHamnerRunningModel"); }
+
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-    cout << "Done" << endl;
+
+	cout << "Done" << endl;
+
     return 0;
+
 }
 
 
@@ -113,8 +133,9 @@ void testArm26() {
 	cmc.run();
 	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");
 
-	Array<double> rms_tols(0.004, 2*2+2*6);
-
+	Array<double> rms_tols(0.01, 2*2+2*6);
+	rms_tols[0] = rms_tols[1] = 0.001;  // angles within .06 degrees
+	
 	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
 
 	cout << "\ntestArm26 passed\n" << endl;
