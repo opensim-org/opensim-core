@@ -64,7 +64,7 @@ const int LiuThelen2003Muscle::STATE_FATIGUED_MOTOR_UNITS = 3;
  * Default constructor.
  */
 LiuThelen2003Muscle::LiuThelen2003Muscle() :
-   Thelen2003Muscle(),
+   Thelen2003Muscle_Deprecated(),
    _defaultActiveMotorUnits(0.0),
    _defaultFatiguedMotorUnits(0.0)
 {
@@ -80,7 +80,7 @@ LiuThelen2003Muscle::LiuThelen2003Muscle(const std::string &aName, double aMaxIs
 													  double aOptimalFiberLength, double aTendonSlackLength,
 													  double aPennationAngle, double aFatigueFactor,
 													  double aRecoveryFactor) :
-   Thelen2003Muscle(aName, aMaxIsometricForce, aOptimalFiberLength, aTendonSlackLength, aPennationAngle),
+   Thelen2003Muscle_Deprecated(aName, aMaxIsometricForce, aOptimalFiberLength, aTendonSlackLength, aPennationAngle),
    _defaultActiveMotorUnits(0.0),
    _defaultFatiguedMotorUnits(0.0)
 {
@@ -105,7 +105,7 @@ LiuThelen2003Muscle::~LiuThelen2003Muscle()
  * @param aMuscle LiuThelen2003Muscle to be copied.
  */
 LiuThelen2003Muscle::LiuThelen2003Muscle(const LiuThelen2003Muscle &aMuscle) :
-   Thelen2003Muscle(aMuscle),
+   Thelen2003Muscle_Deprecated(aMuscle),
    _defaultActiveMotorUnits(0.0),
    _defaultFatiguedMotorUnits(0.0)
 {
@@ -178,7 +178,7 @@ void LiuThelen2003Muscle::setupProperties()
 //_____________________________________________________________________________
 void LiuThelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	Thelen2003Muscle::createSystem(system);
+	Thelen2003Muscle_Deprecated::createSystem(system);
 
 	LiuThelen2003Muscle* mutableThis = const_cast<LiuThelen2003Muscle *>(this);
 
@@ -288,7 +288,7 @@ void LiuThelen2003Muscle::setDefaultFatiguedMotorUnits(double fatiguedMotorUnits
  */
 SimTK::Vector LiuThelen2003Muscle::computeStateVariableDerivatives(const SimTK::State& s) const
 {
-	SimTK::Vector derivs = Thelen2003Muscle::computeStateVariableDerivatives(s);
+	SimTK::Vector derivs = Thelen2003Muscle_Deprecated::computeStateVariableDerivatives(s);
 	derivs.resize(4);
 	derivs[2] = getActiveMotorUnitsDeriv(s);
 	derivs[3] = getFatiguedMotorUnitsDeriv(s);
@@ -320,10 +320,14 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
     const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
 	const double &tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
 	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
-	const double &activationTimeConstant = getPropertyValue<double>("activation_time_constant");
-	const double &deactivationTimeConstant = getPropertyValue<double>("deactivation_time_constant");
-	const double &vmax = getPropertyValue<double>("Vmax");
-	const double &vmax0 = getPropertyValue<double>("Vmax0");
+	//const double &activationTimeConstant = getPropertyValue<double>("activation_time_constant");
+	//const double &deactivationTimeConstant = getPropertyValue<double>("deactivation_time_constant");
+	//const double &vmax = getPropertyValue<double>("Vmax");
+	//const double &vmax0 = getPropertyValue<double>("Vmax0");
+	const double activationTimeConstant = .01;
+	const double deactivationTimeConstant = .04;
+	const double vmax = 10.;
+	const double vmax0 = 5.;
 
 	// Normalize the muscle states.
 	normState[STATE_ACTIVATION] = getActivation(s);
@@ -343,7 +347,7 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 	else
       normStateDeriv[STATE_ACTIVATION] = (getExcitation(s) - normState[STATE_ACTIVATION]) / deactivationTimeConstant;
 
-	pennation_angle = Muscle::calcPennation( normState[STATE_FIBER_LENGTH], 1.0, pennationAngleAtOptimal);
+	pennation_angle = calcPennation( normState[STATE_FIBER_LENGTH], 1.0, pennationAngleAtOptimal);
 	ca = cos(pennation_angle);
 
 	norm_muscle_tendon_length = getLength(s) / optimalFiberLength;
@@ -368,7 +372,7 @@ double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
          double h = norm_muscle_tendon_length - tendonSlackLength;
          double w = optimalFiberLength * sin(pennationAngleAtOptimal);
          double new_fiber_length = sqrt(h*h + w*w) / optimalFiberLength;
-			double new_pennation_angle = Muscle::calcPennation( new_fiber_length, 1.0, pennationAngleAtOptimal);
+			double new_pennation_angle = calcPennation( new_fiber_length, 1.0, pennationAngleAtOptimal);
          double new_ca = cos(new_pennation_angle);
          normStateDeriv[STATE_FIBER_LENGTH] = getSpeed(s) / (Vmax * new_ca);
 		}
@@ -440,6 +444,6 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 	aActivation = getActiveMotorUnits(s);
 
 	// Now you can call the base class's function with the steady-state activation
-	return Thelen2003Muscle::computeIsometricForce(s, aActivation);
+	return Thelen2003Muscle_Deprecated::computeIsometricForce(s, aActivation);
 }
 

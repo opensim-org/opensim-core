@@ -56,7 +56,7 @@ namespace OpenSim {
  * will need to implement more functions than are declared in this header
  * file. See Muscle.h for a complete list.
  */
-class LiuThelen2003Muscle : public Thelen2003Muscle  
+class LiuThelen2003Muscle : public Thelen2003Muscle_Deprecated  
 {
 
 //=============================================================================
