@@ -151,9 +151,9 @@ public:
 	
 	/** set the excitation (control) for this muscle. NOTE if controllers are connected to the
 	    muscle and are adding in their controls, and setExcitation is called after the model's
-		computeControls(), then setExcitatin will override the controller values. If called 
+		computeControls(), then setExcitation will override the controller values. If called 
 		before computeControls, then controller value(s) are added to the excitation set here. */
-	void setExcitation(SimTK::State& s, double excitaion) const;
+	void setExcitation(SimTK::State& s, double excitation) const;
 	double getExcitation(const SimTK::State& s) const;
 
 
