@@ -111,7 +111,7 @@ void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aM
  */
  void ActivationFiberLengthMuscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	PathActuator::createSystem(system);
+	Muscle::createSystem(system);   // invoke superclass implementation
 
 	// Cache the calculated values for this muscle categorized by their realization stage 
 	addCacheVariable<Muscle::MuscleLengthInfo>("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Position);
@@ -128,7 +128,7 @@ void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aM
 
  void ActivationFiberLengthMuscle::initState( SimTK::State& s) const
 {
-    Actuator::initState(s);
+    Muscle::initState(s);   // invoke superclass implementation
 
 	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
 
@@ -138,7 +138,8 @@ void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aM
 
 void ActivationFiberLengthMuscle::setDefaultsFromState(const SimTK::State& state)
 {
-	Muscle::setDefaultsFromState(state);
+	Muscle::setDefaultsFromState(state);    // invoke superclass implementation
+
     setDefaultActivation(getStateVariable(state, STATE_ACTIVATION_NAME));
     setDefaultFiberLength(getStateVariable(state, STATE_FIBER_LENGTH_NAME));
 }

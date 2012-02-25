@@ -130,7 +130,7 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
  */
  void ActivationFiberLengthMuscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
 {
-	PathActuator::createSystem(system);
+	Muscle::createSystem(system);
 
 	ActivationFiberLengthMuscle_Deprecated* mutableThis = const_cast<ActivationFiberLengthMuscle_Deprecated *>(this);
 
@@ -150,7 +150,7 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 
  void ActivationFiberLengthMuscle_Deprecated::initState( SimTK::State& s) const
 {
-    Actuator::initState(s);
+    Muscle::initState(s);
 
 	ActivationFiberLengthMuscle_Deprecated* mutableThis = const_cast<ActivationFiberLengthMuscle_Deprecated *>(this);
 
@@ -160,7 +160,8 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 
 void ActivationFiberLengthMuscle_Deprecated::setDefaultsFromState(const SimTK::State& state)
 {
-	Actuator::setDefaultsFromState(state);
+	Muscle::setDefaultsFromState(state);
+
     _defaultActivation = getActivation(state);
     _defaultFiberLength = getFiberLength(state);
 }
