@@ -131,8 +131,6 @@
 
 #include <OpenSim/Actuators/CoordinateActuator.h>
 #include <OpenSim/Actuators/Thelen2003Muscle.h>
-#include <OpenSim/Actuators/Schutte1993Muscle.h>
-#include <OpenSim/Actuators/Delp1990Muscle.h>
 
 #include <OpenSim/Tools/IKTask.h>
 #include <OpenSim/Tools/IKMarkerTask.h>
@@ -621,8 +619,6 @@ static bool trace=false;
 %include <OpenSim/Actuators/osimActuatorsDLL.h>
 %include <OpenSim/Actuators/CoordinateActuator.h>
 %include <OpenSim/Actuators/Thelen2003Muscle.h>
-%include <OpenSim/Actuators/Schutte1993Muscle.h>
-%include <OpenSim/Actuators/Delp1990Muscle.h>
 
 //osimTools
 %include <OpenSim/Tools/osimToolsDLL.h>
