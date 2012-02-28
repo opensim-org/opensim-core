@@ -54,7 +54,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
 	   ExampleOptimizationSystem(int numParameters, State& s, Model& aModel): 
              numControls(numParameters), OptimizerSystem(numParameters), si(s), osimModel(aModel){}
 			 	
-	int objectiveFunc(  const Vector &newControls, const bool new_coefficients, Real& f ) const {
+	int objectiveFunc(  const Vector &newControls, bool new_coefficients, Real& f ) const {
 
         // make a copy of out initial states
         State s = si;
@@ -65,7 +65,7 @@ class ExampleOptimizationSystem : public OptimizerSystem {
         
 		// Create the integrator for the simulation.
 		RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-		integrator.setAccuracy(1.0e-5);
+		integrator.setAccuracy(1.0e-6);
 
 		// Create a manager to run the simulation
 		Manager manager(osimModel, integrator);

@@ -160,7 +160,7 @@ void testSpringMass()
 	// Compute the force and torque at the specified times.
 
     RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
-	integrator.setAccuracy(1e-6);
+	integrator.setAccuracy(1e-7);
     Manager manager(*osimModel,  integrator);
     manager.setInitialTime(0.0);
 

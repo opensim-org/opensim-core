@@ -241,7 +241,10 @@ int main()
 
 		// Define the initial and final simulation times.
 		double initialTime = 0.0;
-		double finalTime = 2.0;
+        // sherm 120226: I shortened this to 1s because the simulation drifts
+        // chaotically and becomes too sensitive to arbitrary small changes.
+		// double finalTime = 2.0;
+		double finalTime = 1.0;
 
 		// Set gain for the controller.
 		double kp = 100.0; // position gain
