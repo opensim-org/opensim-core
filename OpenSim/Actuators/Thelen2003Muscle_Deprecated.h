@@ -58,49 +58,6 @@ class OSIMACTUATORS_API Thelen2003Muscle_Deprecated : public ActivationFiberLeng
 //=============================================================================
 protected:
 
-	/** Activation time constant */  
-	PropertyDbl _activationTimeConstantProp;
-	double &_activationTimeConstant;
-
-	/** Deactivation time constant */
-	PropertyDbl _deactivationTimeConstantProp;
-	double &_deactivationTimeConstant;
-
-	/** Max contraction velocity full activation in fiber lengths per second */
-	PropertyDbl _vmaxProp;
-	double &_vmax;
-
-	/** Max contraction velocity at low activation */
-	PropertyDbl _vmax0Prop;
-	double &_vmax0;
-
-	/** Tendon strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxTendonStrainProp;
-	double &_fmaxTendonStrain;
-
-	/** Passive muscle strain due to maximum isometric muscle force */
-	PropertyDbl _fmaxMuscleStrainProp;
-	double &_fmaxMuscleStrain;
-
-	/** Shape factor for Gaussian active muscle force-length relationship */
-	PropertyDbl _kShapeActiveProp;
-	double &_kShapeActive;
-
-	/** Exponential shape factor for passive force-length relationship */
-	PropertyDbl _kShapePassiveProp;
-	double &_kShapePassive;
-
-	/** Passive damping included in the force-velocity relationship */
-	PropertyDbl _dampingProp;
-	double &_damping;
-
-	/** Force-velocity shape factor */
-	PropertyDbl _afProp;
-	double &_af;
-
-	/** Maximum normalized lengthening force */
-	PropertyDbl _flenProp;
-	double &_flen;
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -127,28 +84,40 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getActivationTimeConstant() const { return _activationTimeConstant; }
-	virtual double getDeactivationTimeConstant() const { return _deactivationTimeConstant; }
-	virtual double getVmax() const { return _vmax; }
-	virtual double getVmax0() const { return _vmax0; }
-	virtual double getFmaxTendonStrain() const { return _fmaxTendonStrain; }
-	virtual double getFmaxMuscleStrain() const { return _fmaxMuscleStrain; }
-	virtual double getKshapeActive() const { return _kShapeActive; }
-	virtual double getKshapePassive() const { return _kShapePassive; }
-	virtual double getDamping() const { return _damping; }
-	virtual double getAf() const { return _af; }
-	virtual double getFlen() const { return _flen; }
-	virtual bool setActivationTimeConstant(double aActivationTimeConstant);
-	virtual bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
-	virtual bool setVmax(double aVmax);
-	virtual bool setVmax0(double aVmax0);
-	virtual bool setFmaxTendonStrain(double aFmaxTendonStrain);
-	virtual bool setFmaxMuscleStrain(double aFmaxMuscleStrain);
-	virtual bool setKshapeActive(double aKShapeActive);
-	virtual bool setKshapePassive(double aKshapePassive);
-	virtual bool setDamping(double aDamping);
-	virtual bool setAf(double aAf);
-	virtual bool setFlen(double aFlen);
+	double getActivationTimeConstant() const { return getPropertyValue<double>("activation_time_constant"); }
+	double getDeactivationTimeConstant() const { return getPropertyValue<double>("deactivation_time_constant"); }
+	double getVmax() const { return getPropertyValue<double>("Vmax"); }
+	double getVmax0() const { return getPropertyValue<double>("Vmax0"); }
+	double getFmaxTendonStrain() const { return getPropertyValue<double>("FmaxTendonStrain"); }
+	double getFmaxMuscleStrain() const { return getPropertyValue<double>("FmaxMuscleStrain"); }
+	double getKshapeActive() const { return getPropertyValue<double>("KshapeActive"); }
+	double getKshapePassive() const { return getPropertyValue<double>("KshapePassive"); }
+	double getDamping() const { return getPropertyValue<double>("damping"); }
+	double getAf() const { return getPropertyValue<double>("Af"); }
+	double getFlen() const { return getPropertyValue<double>("Flen"); }
+
+	void setActivationTimeConstant(double aActivationTimeConstant)
+    {	setPropertyValue("activation_time_constant", aActivationTimeConstant); }
+	void setDeactivationTimeConstant(double aDeactivationTimeConstant)
+    {	setPropertyValue("deactivation_time_constant", aDeactivationTimeConstant); }
+	void setVmax(double aVmax)
+    {	setPropertyValue("Vmax", aVmax); }
+	void setVmax0(double aVmax0)
+    {	setPropertyValue("Vmax0", aVmax0); }
+	void setFmaxTendonStrain(double aFmaxTendonStrain)
+    {	setPropertyValue("FmaxTendonStrain", aFmaxTendonStrain); }
+	void setFmaxMuscleStrain(double aFmaxMuscleStrain)
+    {	setPropertyValue("FmaxMuscleStrain", aFmaxMuscleStrain); }
+	void setKshapeActive(double aKShapeActive)
+    {	setPropertyValue("KshapeActive", aKShapeActive); }
+	void setKshapePassive(double aKshapePassive)
+    {	setPropertyValue("KshapePassive", aKshapePassive); }
+	void setDamping(double aDamping)
+    {	setPropertyValue("damping", aDamping); }
+	void setAf(double aAf)
+    {	setPropertyValue("Af", aAf); }
+	void setFlen(double aFlen)
+    {	setPropertyValue("Flen", aFlen); }
 
 	// Computed quantities
 	//--------------------------------------------------------------------------

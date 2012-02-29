@@ -310,24 +310,20 @@ void LiuThelen2003Muscle::computeEquilibrium(SimTK::State& s) const
  * Compute the actuation for the muscle. This function assumes
  * that computeDerivatives has already been called.
  */
-double  LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
+double LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 {
 	double tendonForce;
 	double normState[4], normStateDeriv[4], norm_tendon_length, ca;
 	double norm_muscle_tendon_length, pennation_angle;
 
-	const double &maxIsometricForce = getPropertyValue<double>("max_isometric_force");
-    const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double &tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
-	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
-	//const double &activationTimeConstant = getPropertyValue<double>("activation_time_constant");
-	//const double &deactivationTimeConstant = getPropertyValue<double>("deactivation_time_constant");
-	//const double &vmax = getPropertyValue<double>("Vmax");
-	//const double &vmax0 = getPropertyValue<double>("Vmax0");
-	const double activationTimeConstant = .01;
-	const double deactivationTimeConstant = .04;
-	const double vmax = 10.;
-	const double vmax0 = 5.;
+	const double maxIsometricForce = getPropertyValue<double>("max_isometric_force");
+    const double optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
+	const double tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
+	const double pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
+	const double activationTimeConstant = getPropertyValue<double>("activation_time_constant");
+	const double deactivationTimeConstant = getPropertyValue<double>("deactivation_time_constant");
+	const double vmax = getPropertyValue<double>("Vmax");
+	const double vmax0 = getPropertyValue<double>("Vmax0");
 
 	// Normalize the muscle states.
 	normState[STATE_ACTIVATION] = getActivation(s);
