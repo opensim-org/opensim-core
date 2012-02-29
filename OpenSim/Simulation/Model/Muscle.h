@@ -109,8 +109,9 @@ public:
 	 */ 
 	//@{
 	/** get the activation level of the muscle, which modulates the active force of the muscle 
-	    and has a normalized (0 to 1) value */
-	double getActivation(const SimTK::State& s) const;
+	    and has a normalized (0 to 1) value 
+        TODO: virtual to allow override by deprecated muscles. */
+	virtual double getActivation(const SimTK::State& s) const;
 
 	/** get the current working fiber length (m) for the muscle */
 	double getFiberLength(const SimTK::State& s) const;
