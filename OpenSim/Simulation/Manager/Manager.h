@@ -124,6 +124,8 @@ private:
 public:
 	virtual ~Manager();
 	Manager(Model&,  SimTK::Integrator&);
+	/** Constructor that takes a model only and builds integrator internally */
+	Manager(Model& aModel) ;
 	/** A Constructor that does not take a model or controllerSet */
 	Manager();	
 
@@ -131,7 +133,7 @@ private:
 	void setNull();
 	bool constructStates();
 	bool constructStorage();
-
+	bool _ownsIntegrator;
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------

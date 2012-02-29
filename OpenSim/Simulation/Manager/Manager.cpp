@@ -62,7 +62,7 @@ Manager::~Manager()
 {
 	// DESTRUCTORS
 	delete _stateStore;
-	
+	if (_ownsIntegrator){ delete _integ; _integ=0; }
 }
 
 
@@ -94,6 +94,16 @@ Manager::Manager(Model& model, SimTK::Integrator& integ):
 
 	// SESSION NAME
 	setSessionName(_model->getName());
+}
+//_____________________________________________________________________________
+/**
+ * Construct a simulation manager.
+ *
+ * @param aModel model to integrate.
+ */
+Manager::Manager(Model& aModel) {	   
+	new(this) Manager(aModel, *(new SimTK::RungeKuttaMersonIntegrator(aModel.getMultibodySystem())));
+	_ownsIntegrator = true;
 }
 //_____________________________________________________________________________
 /**
@@ -133,6 +143,7 @@ setNull()
 	_tArray.setSize(0);
     _system = 0;
 	_dtArray.setSize(0);
+	_ownsIntegrator = false;
 }
 //_____________________________________________________________________________
 /**
