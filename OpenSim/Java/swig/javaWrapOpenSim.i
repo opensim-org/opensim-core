@@ -221,6 +221,27 @@ static bool trace=false;
   public double[] getTimeRange() { return new double[]{getStartFrameTime(), getLastFrameTime()}; }
 %}
 
+%typemap(javacode) OpenSim::Array<double> %{
+	public void fromString(String string) {
+      // Remove open and close parenth if any
+      String workString= new String(string);
+      int liveStart = workString.indexOf("(");
+      int liveEnd = workString.indexOf(")");
+      if (liveStart!=-1 && liveEnd!=-1){
+          workString = workString.substring(liveStart+1, liveEnd);
+      }
+      else if (liveStart!=liveEnd){
+          //throw new ParseException("Illegal format: Expect space separated values, optionally between matched parentheses", liveEnd);
+          return;
+      }
+      String[] splits = workString.split(" ");
+      double[] values = new double[splits.length];
+      for(int i=0; i<splits.length; i++){
+           values[i]=Double.parseDouble(splits[i]);
+       }
+       this.setValues(values, splits.length);
+	}
+%}
 %typemap(javacode) OpenSim::Model %{
   private String originalModelPath = null;
   // Important that we only refer to originalModelPath if the model's getInputFileName() is not set
@@ -396,6 +417,7 @@ static bool trace=false;
 	}
 };
 
+
 %extend OpenSim::Array<double> {
 	void setValues(double dValues[], int size) {
 		self->setSize(size);
@@ -405,6 +427,7 @@ static bool trace=false;
 	SimTK::Vec3 getAsVec3() {
 		return SimTK::Vec3::getAs(self->get());
 	};
+	
 	static SimTK::Vec3 createVec3(double e1, double e2, double e3) {
 		Array<double>* arr = new Array<double>(e1, 3);
 		arr->set(1, e2);
