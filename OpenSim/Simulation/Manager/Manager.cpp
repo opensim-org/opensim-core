@@ -709,15 +709,13 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
 	// CLEAR ANY INTERRUPT
 	// Halts must arrive during an integration.
-	clearHalt();
+    clearHalt();
 
 	double dt,dtPrev,tReal;
 	double time =_ti;
 	dt=dtFirst;
 	if(dt>_dtMax) dt = _dtMax;
 	dtPrev=dt;
-
-//printf("doIntegration  t=%10.6e  stepToTime=%10.6e  states=%f %f %f   \n", time, _tf, s.getY()[0], s.getY()[1], s.getY()[2] );
 
 	// CHECK SPECIFIED DT STEPPING
 	
@@ -748,18 +746,14 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
     double fixedStepSize;
 	if( _constantDT || _specifiedDT) fixedStep = true;
 
-    //  if _system is has been set we should be integrating a CMC system
-    //  not the model's sytem.
-    SimTK::TimeStepper* ts;
-    if( _system != 0 ) {
-	    ts = new SimTK::TimeStepper(*_system, *_integ);
-    } else { 
-	    ts = new SimTK::TimeStepper(_model->getMultibodySystem(), *_integ);
-    }
-    
+    // If _system is has been set we should be integrating a CMC system
+    // not the model's system.
+    SimTK::TimeStepper ts(_system ? *_system 
+                                  : _model->getMultibodySystem(), 
+                          *_integ);
 
-    ts->initialize(s);
-    ts->setReportAllSignificantStates(true);
+    ts.initialize(s);
+    ts.setReportAllSignificantStates(true);
 	SimTK::Integrator::SuccessfulStepStatus status;
 
     if( fixedStep ) {
@@ -794,12 +788,12 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             getStateStorage().append(vec);
 			if(_model->isControlled())
 				_controllerSet->storeControls(s,step);
-         }
-     }
+        }
+    }
 
-   double stepToTime = _tf;
+    double stepToTime = _tf;
 
-// LOOP
+    // LOOP
     while( time  < _tf ) {
 		if( fixedStep ){
               fixedStepSize = getNextTimeArrayTime( time ) - time;
@@ -808,11 +802,13 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
              stepToTime = time + fixedStepSize; 
         }
 
-        status = ts->stepTo(stepToTime);
+        // stepTo() does not return if it fails. However, the final step
+        // is returned once as an ordinary return; by the time we get
+        // EndOfSimulation status we have already seen the state and don't
+        // need to record it again.
+        status = ts.stepTo(stepToTime);
 
-   	   if( status == SimTK::Integrator::TimeHasAdvanced   ||
-		   status == SimTK::Integrator::ReachedReportTime ||
-           status == SimTK::Integrator::ReachedScheduledEvent ) {
+        if( status != SimTK::Integrator::EndOfSimulation ) {
             const SimTK::State& s =  _integ->getState();
             if(_performAnalyses)_model->updAnalysisSet().step(s,step);
             tReal = s.getTime();
@@ -826,24 +822,19 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 					_controllerSet->storeControls(s, step);
             }
             step++;
-       } else {
-// cout << " integrator return status = " << status << "  advanced state time = " << _integ->getState().getTime() << endl;
-       }
+        }
         
-       time = _integ->getState().getTime();
-		// CHECK FOR INTERRUPT
-		if(checkHalt()) break;
-// printf("\n");
+        time = _integ->getState().getTime();
+        // CHECK FOR INTERRUPT
+        if(checkHalt()) break;
     }
     finalize(_integ->updAdvancedState() );
     s = _integ->getState();
 
-	// CLEAR ANY INTERRUPT
-	clearHalt();
+    // CLEAR ANY INTERRUPT
+    clearHalt();
 
-    delete ts;
-
-	return true;
+    return true;
 }
 //_____________________________________________________________________________
 /**
@@ -874,8 +865,6 @@ void Manager::initialize(SimTK::State& s, double dt )
 	if( _writeToStorage && _performAnalyses ) { 
 
         double tReal = s.getTime();
-    	const double* y = &s.getY()[0];
-
 	
     	// STORE STARTING CONTROLS
 		if(_model->isControlled())
@@ -885,7 +874,10 @@ void Manager::initialize(SimTK::State& s, double dt )
     	if(hasStateStorage()) {
     		// ONLY IF NO STATES WERE PREVIOUSLY STORED
     		if(getStateStorage().getSize()==0) {
-    			getStateStorage().store(0,tReal,s.getNY(),y);
+                OpenSim::Array<double> stateValues;
+			    _model->getStateValues(s, stateValues);
+                getStateStorage().store(0,tReal,stateValues.getSize(),
+                                        &stateValues[0]);
     		}
     	}
 
