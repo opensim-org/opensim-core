@@ -122,8 +122,8 @@ public:
 	//--------------------------------------------------------------------------
 	// REQUIRED OPTIMIZATION TARGET METHODS
 	//--------------------------------------------------------------------------
-   int objectiveFunc(const SimTK::Vector &aF, const bool new_coefficients, SimTK::Real& rP) const;
-   int gradientFunc(const SimTK::Vector &x, const bool new_coefficients, SimTK::Vector &gradient ) const;
+   int objectiveFunc(const SimTK::Vector &aF, bool new_coefficients, SimTK::Real& rP) const;
+   int gradientFunc(const SimTK::Vector &x, bool new_coefficients, SimTK::Vector &gradient ) const;
 
 private:
 	void computePerformanceVectors(SimTK::State& s, const SimTK::Vector &aF, SimTK::Vector &rAccelPerformanceVector, SimTK::Vector &rForcePerformanceVector);

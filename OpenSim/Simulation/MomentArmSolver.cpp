@@ -69,10 +69,6 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 
 	// Calculate coupling matrix C to determine the influence of other coordinates 
 	// (mobilities) on the coordinate of interest due to constraints
-    // First declare dummies for the call to project().
-    const Vector yWeights(s_ma.getNY(), 1); 
-    const Vector cWeights(s_ma.getNMultipliers(), 1);
-    Vector yErrEst;
 
     s_ma.updU() = 0;
 	// Light-up speed of coordinate of interest and see how other coordinates
@@ -81,8 +77,10 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 
 	_model.getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
 
-    _model.getMultibodySystem().project(s_ma, 1e-10, 
-        yWeights, cWeights, yErrEst, System::ProjectOptions::VelocityOnly);
+
+    // Satisfy all the velocity constraints.
+    _model.getMultibodySystem().projectU(s_ma, 1e-10);
+	
 	
 	// Now calculate C. by checking how speeds of other coordinates change
 	// normalized by how much the speed of the coordinate of interest changed 
@@ -102,14 +100,15 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 												   pfds[i]->point(), pfds[i]->direction(), bodyForces);
 	}
 
-	//Mapping spatial forces to generalized forces
+	// Convert body spatial forces F to equivalent mobility forces f based on 
+    // geometry (no dynamics required): f = ~J(q) * F.
 	Vector generalizedForces;
+	_model.getMultibodySystem().getMatterSubsystem()
+        .multiplyBySystemJacobianTranspose(s_ma, bodyForces, generalizedForces);
 
-	// Convert body forces to equivalent mobility forces based on geometry (no dynamics required)
-	_model.getMultibodySystem().getMatterSubsystem().calcInternalGradientFromSpatial(s_ma, bodyForces, generalizedForces);
-
-	// Moment-arm is the effective torque (since tension is 1) at the coordinate of interest taking into account
-	// the generalized forces also acting on other coordinates that are coupled via constraint
+	// Moment-arm is the effective torque (since tension is 1) at the 
+    // coordinate of interest taking into account the generalized forces also 
+    // acting on other coordinates that are coupled via constraint.
 	return ~C*generalizedForces;
 }
 

@@ -125,11 +125,6 @@ double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath 
 {
 	using namespace SimTK;
 
-	 // Declare dummies for the call to project().
-    const Vector yWeights(s.getNY(), 1); 
-    const Vector cWeights(s.getNMultipliers(), 1);
-    Vector yErrEst;
-
 	//Compute r = dl/dtheta
 	SimTK::State s_ma = s;
 	coord.setClamped(s_ma, false);
@@ -141,9 +136,8 @@ double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath 
 	coord.setValue(s_ma, theta-dtheta, false);
 
 	// satisfy contraints using project since we are close to the solution
-	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
-    coord.getModel().getMultibodySystem().project(s_ma, 1e-8, 
-        yWeights, cWeights, yErrEst, System::ProjectOptions::PositionOnly);
+	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
+    coord.getModel().getMultibodySystem().projectQ(s_ma, 1e-8);
 
 	double theta1 = coord.getValue(s_ma);
 	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
@@ -154,9 +148,8 @@ double computeMomentArmFromDefinition(const SimTK::State &s, const GeometryPath 
 	coord.setValue(s_ma, theta+dtheta, false);
 
 	// satisfy contraints using project since we are close to the solution
-	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
-    coord.getModel().getMultibodySystem().project(s_ma, 1e-8, 
-        yWeights, cWeights, yErrEst, System::ProjectOptions::PositionOnly);
+	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
+    coord.getModel().getMultibodySystem().projectQ(s_ma, 1e-8);
 
 	double theta2 = coord.getValue(s_ma);
 	coord.getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Position);
@@ -179,30 +172,26 @@ SimTK::Vector computeGenForceScaling(const Model &osimModel, const SimTK::State 
 
 	// Calculate coupling matrix C to determine the influence of other coordinates 
 	// (mobilities) on the coordinate of interest due to constraints
-    // First declare dummies for the call to project().
-    const Vector yWeights(s_ma.getNY(), 1); 
-    const Vector cWeights(s_ma.getNMultipliers(), 1);
-    Vector yErrEst;
 
     s_ma.updU() = 0;
 	// Light-up speed of coordinate of interest and see how other coordinates
 	// affected by constraints respond
     coord.setSpeedValue(s_ma, 1);
 
+    // Satisfy velocity constraints. Note that the speed we just set may 
+    // change here too so be sure to retrieve the modified value.
 	osimModel.getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
-
-    osimModel.getMultibodySystem().project(s_ma, 1e-10, 
-        yWeights, cWeights, yErrEst, System::ProjectOptions::VelocityOnly);
+    osimModel.getMultibodySystem().projectU(s_ma, 1e-10);
 	
 	// Now calculate C. by checking how speeds of other coordinates change
-	// normalized by how much the speed of the coordinate of interest changed 
+	// normalized by how much the speed of the coordinate of interest changed. 
     const Vector C = s_ma.getU() / coord.getSpeedValue(s_ma); 
 	
 	// Compute the scaling matrix for converting gen_forces to torques
 	// Unlike C, ignore all coupling that are not explicit coordinate
-	// coupling that defines theta = sum(q_i) or q_i = w_i*theta
+	// coupling that defines theta = sum(q_i) or q_i = w_i*theta.
 	// Also do not consider coupled torques for coordinates not spanned by 
-	// the path of interest
+	// the path of interest.
 	Vector W(osimModel.getNumSpeeds(), 0.0);
 
 	for(int i=0; i< osimModel.getCoordinateSet().getSize(); i++){

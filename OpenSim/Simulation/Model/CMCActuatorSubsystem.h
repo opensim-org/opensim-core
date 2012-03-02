@@ -52,16 +52,17 @@ class Model;
 // Excluding this from Doxygen. -Sam Hamner
     /// @cond
 class CMCActuatorSystemRep : public System::Guts {
-   public:
-   CMCActuatorSystemRep() : SimTK::System::Guts( "CMCActuatorSystem", "2.0") { }
-   CMCActuatorSystemRep* cloneImpl() const { return new CMCActuatorSystemRep(*this); }
-   int projectImpl(State& s, Real consAccuracy, const Vector& yweights,
-                              const Vector& ootols, Vector& yerrest, System::ProjectOptions opt) const
-{
-    return std::numeric_limits<int>::min();
-}
+    public:
+    CMCActuatorSystemRep() : SimTK::System::Guts( "CMCActuatorSystem", "2.0") {}
+    
+    // Required by the System::Guts interface.
+    /*virtual*/ CMCActuatorSystemRep* cloneImpl() const 
+    {   return new CMCActuatorSystemRep(*this); }
 
-  SimTK_DOWNCAST( CMCActuatorSystemRep, System::Guts );
+    // This system doesn't have constraints, prescribed motion, or events so
+    // we don't need to implement any of the related System::Guts methods.
+
+    SimTK_DOWNCAST( CMCActuatorSystemRep, System::Guts );
 };
 
 class CMCActuatorSystem : public System {
@@ -70,8 +71,8 @@ class CMCActuatorSystem : public System {
        adoptSystemGuts( new CMCActuatorSystemRep() );
        DefaultSystemSubsystem defsub(*this);
    }
-   void project (State &, Real consAccuracy, const Vector &yweights, const Vector &ootols, Vector &yerrest, System::ProjectOptions) const {}
-  SimTK_PIMPL_DOWNCAST( CMCActuatorSystem, System );
+
+   SimTK_PIMPL_DOWNCAST( CMCActuatorSystem, System );
 };
 
 class CMCActuatorSubsystemRep : public Subsystem::Guts {

@@ -576,7 +576,7 @@ record(const SimTK::State& s)
 	//SimTK::OptimizerAlgorithm algorithm = SimTK::CFSQP;
 	std::transform(_optimizerAlgorithm.begin(),_optimizerAlgorithm.end(),_optimizerAlgorithm.begin(), ::tolower);
 
-	if(_optimizerAlgorithm == "bestavailable") { algorithm = SimTK::BestAvailiable; }
+	if(_optimizerAlgorithm == "bestavailable") { algorithm = SimTK::BestAvailable; }
 	else if (_optimizerAlgorithm == "ipopt" || _optimizerAlgorithm == "interiorpoint")
 	{ algorithm = SimTK::InteriorPoint; }
 	else if (_optimizerAlgorithm == "lbfgs") { algorithm = SimTK::LBFGS; }

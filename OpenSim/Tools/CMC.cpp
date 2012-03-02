@@ -76,8 +76,7 @@ public:
         _controller( controller ) {
     }
 
-    void handleEvent (SimTK::State& s, Real accuracy, const Vector& yWeigths, const Vector&  constraintTols, Stage& lowestModified, bool& terminate)     const {
-        lowestModified = Stage::Velocity;
+    void handleEvent (SimTK::State& s, Real accuracy, bool& terminate) const {
         terminate = false;
         _controller->computeControls( s, _controller->updControlSet() );
         _controller->setTargetTime(s.getTime() + _controller->getTargetDT());
