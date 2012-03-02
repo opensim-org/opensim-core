@@ -748,9 +748,9 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
     // If _system is has been set we should be integrating a CMC system
     // not the model's system.
-    SimTK::TimeStepper ts(_system ? *_system 
-                                  : _model->getMultibodySystem(), 
-                          *_integ);
+    const SimTK::System& sys = _system ? *_system 
+                                       : _model->getMultibodySystem();
+    SimTK::TimeStepper ts(sys, *_integ);
 
     ts.initialize(s);
     ts.setReportAllSignificantStates(true);
@@ -764,20 +764,17 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
 
     if( s.getTime()+dt >= _tf ) dt = _tf - s.getTime();
    
-	// We need to be at a valid stage to initialize the controls, but only when we 
-	// are integrating the complete model system, not the CMC system. This is very ugly 
-	// and a cleaner solution is required- aseth
+	// We need to be at a valid stage to initialize the controls, but only when 
+    // we are integrating the complete model system, not the CMC system. This 
+    // is very ugly and a cleaner solution is required- aseth
 	if(_system == NULL)
-		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity);
+		sys.realize(s, SimTK::Stage::Velocity); // this is multibody system 
     initialize(s, dt);  
 
 	if( fixedStep){
         s.updTime() = time;
-        if( _system != 0 ) {
-            _system->realize(s, SimTK::Stage::Acceleration);
-        } else {
-            _model->getMultibodySystem().realize(s, SimTK::Stage::Acceleration);
-        }
+        sys.realize(s, SimTK::Stage::Acceleration);
+
         if(_performAnalyses)_model->updAnalysisSet().step(s, step);
         tReal = s.getTime();
         if( _writeToStorage ) {
