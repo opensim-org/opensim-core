@@ -123,22 +123,19 @@ private:
 	 */
 	static ArrayPtrs<Object> _Types;
 
-	/** 
-	 * A Hash map that maps an std::string& to the corresponding default object.
+	/* A Hash map that maps an std::string& to the corresponding default object.
 	 */
 	static stringsToObjects _mapTypesToDefaultObjects;
-	/**
-	 * A list of types that has been depreacted so we can take them out when writing
+	/* A list of types that have been deprecated so we can take them out when
+     * writing.
 	 */
 	static Array<std::string> _deprecatedTypes;
 
-	/**
-	 * Global flag to indicate if all registered objects are written in the defaults section
+	/* Global flag to indicate if all registered objects are written in the defaults section
 	 */
 	static bool _serializeAllDefaults;
 
-	/**
-	 * Debug level: 
+	/* Debug level: 
 	 *	0: Hides non fatal warnings 
 	 *  1: Shows illegal tags 
 	 *  2: level 1 + registration troubleshooting
