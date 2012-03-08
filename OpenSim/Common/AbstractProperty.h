@@ -41,6 +41,8 @@
 
 #include <string>
 #include <cmath>
+#include <typeinfo>
+#include <cassert>
 
 namespace OpenSim {
 
@@ -69,9 +71,11 @@ public:
 	};
 
 	AbstractProperty();
-	AbstractProperty(const std::string &aName, const std::string &aType, const std::string &aComment);
-	AbstractProperty(const AbstractProperty &aAbstractProperty);
-	AbstractProperty& operator=(const AbstractProperty &aAbstractProperty);
+	AbstractProperty(const std::string& name, 
+                     const std::string& typeAsString, 
+                     const std::string& comment);
+	
+    // Default copy constructor and copy assignment operator.
 
     // This is the interface that any concrete Property class must implement.
 	virtual ~AbstractProperty() {}
@@ -79,29 +83,49 @@ public:
 	virtual bool equals(AbstractProperty* aAbstractPropertyPtr) const = 0;
 	virtual PropertyType getPropertyType() const = 0;
 
-
-	std::string getName() const { return _name; }
-	void setName(std::string aName){ _name = aName; }
-	std::string getType() const { return _type; }
-	void setType(std::string aType){ _type = aType; }
-	std::string getComment() const { return _comment; }
-	void setComment(std::string aComment){ _comment = aComment; }
-	bool getUseDefault() const { return _useDefault; }
+    /** Set the property name. **/
+	void setName(const std::string& aName){ _name = aName; }
+	/** Comment to be associated with property, shown for default objects only
+	for efficiency. */
+	void setComment(const std::string& aComment){ _comment = aComment; }
+	/** Flag indicating whether or not this property uses some
+	default property for initializing its value. */
 	void setUseDefault(bool aTrueFalse) { _useDefault = aTrueFalse; }
-	bool getMatchName() const { return _matchName; }
+    /** TODO: what is this? */
 	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
-	int getIndex() { return _index; }
+    /** Define an ordering for this property among its peers. */
 	void setIndex(int aIndex) { _index = aIndex; }
-	void setAllowableArraySize(int aMin, int aMax) { _minArraySize = aMin; _maxArraySize = aMax; }
-	void setAllowableArraySize(int aNum) { _minArraySize = _maxArraySize = aNum; }
-	int getMinArraySize() { return _minArraySize; }
+    /** For an array property, require that the number of elements n in the
+    array be aMin <= n <= aMax. */
+	void setAllowableArraySize(int aMin, int aMax) 
+    {   assert(0 <= aMin && aMin <= aMax); 
+       _minArraySize = aMin; _maxArraySize = aMax; }
+    /** For an array property, require that the number of elements n in the
+    array be exactly n=aNum. **/
+	void setAllowableArraySize(int aNum) 
+    {   assert(aNum >= 1); _minArraySize = _maxArraySize = aNum; }
+
+	const std::string& getName() const { return _name; }
+	const std::string& getTypeAsString() const { return _typeAsString; }
+	const std::string& getComment() const { return _comment; }
+	bool getUseDefault() const { return _useDefault; }
+	bool getMatchName() const { return _matchName; }
+	int getIndex() { return _index; }
+    int getMinArraySize() { return _minArraySize; }
 	int getMaxArraySize() { return _maxArraySize; }
+
+protected:
+    /** This is for use by the concrete property types that derive from
+    AbstractProperty to provide a string we can use to represent the type
+    without us having to know what it is in the base class. */
+    void setTypeAsString(const char* typeName) 
+    {   _typeAsString = std::string(typeName); }
 
 private:
 	void setNull();
 
 	std::string _name;
-	std::string _type;
+	std::string _typeAsString;
 	std::string _comment;
 	bool _useDefault;
 	bool _matchName;
@@ -109,6 +133,39 @@ private:
 	int _minArraySize; // minimum number of elements for a property of array type
 	int _maxArraySize; // maximum number of elements for a property of array type
 };
+
+/** This class defines the external string representation for a property type T.
+In case you don't like the name you get from typeid() (and
+you probably won't -- it will vary across platforms), you should specialize
+this class to provide a nicer name. When a new type is defined that can be
+used as a property type, add a specialization of this class in that header.
+Here we'll specialize for the built-in, std:: and SimTK:: types and some
+basic OpenSim:: types. **/
+template <class T> struct PropertyTypeName {
+    static const char* name() {return typeid(T).name();}
+};
+
+template<> struct PropertyTypeName<bool> 
+{   static const char* name() {return "bool";} };
+template<> struct PropertyTypeName<int> 
+{   static const char* name() {return "int";} };
+template<> struct PropertyTypeName<double> 
+{   static const char* name() {return "double";} };
+template<> struct PropertyTypeName<std::string> 
+{   static const char* name() {return "string";} };
+template<> struct PropertyTypeName<SimTK::Vec3> 
+{   static const char* name() {return "Vec3";} };
+template<> struct PropertyTypeName<SimTK::Transform> 
+{   static const char* name() {return "Transform";} };
+
+template<> struct PropertyTypeName< Array<bool> > 
+{   static const char* name() {return "Array<bool>";} };
+template<> struct PropertyTypeName< Array<int> > 
+{   static const char* name() {return "Array<int>";} };
+template<> struct PropertyTypeName< Array<double> > 
+{   static const char* name() {return "Array<double>";} };
+template<> struct PropertyTypeName< Array<std::string> > 
+{   static const char* name() {return "Array<string>";} };
 
 
 }; //namespace

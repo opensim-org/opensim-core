@@ -39,7 +39,7 @@ using namespace std;
 
 
 //=============================================================================
-// CONSTRUCTOR(S)
+// CONSTRUCTION
 //=============================================================================
 //_____________________________________________________________________________
 /**
@@ -53,50 +53,17 @@ AbstractProperty::AbstractProperty()
 /**
  * Constructor.
  */
-AbstractProperty::AbstractProperty(const std::string &aName, const std::string &aType, const std::string &aComment)
+AbstractProperty::AbstractProperty(const std::string& name, 
+                                   const std::string& typeAsString, 
+                                   const std::string& comment)
 {
-	_name = aName;
-	_type = aType;
-	_comment = aComment;
-	_useDefault = false;
-	_matchName = false;
-	_minArraySize = 0;
-	_maxArraySize = INT_MAX;
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aProperty Property to be copied.
- */
-AbstractProperty::AbstractProperty(const AbstractProperty &aAbstractProperty)
-{
-	_name = aAbstractProperty._name;
-	_type = aAbstractProperty._type;
-	_comment = aAbstractProperty._comment;
-	_useDefault = aAbstractProperty._useDefault;
-	_matchName = aAbstractProperty._matchName;
-	_index = aAbstractProperty._index;
-	_minArraySize = aAbstractProperty._minArraySize;
-	_maxArraySize = aAbstractProperty._maxArraySize;
+    setNull();
+	_name = name;
+	_typeAsString = typeAsString;
+	_comment = comment;
 }
 
-AbstractProperty& AbstractProperty::operator=(const AbstractProperty &aAbstractProperty)
-{
-	_name = aAbstractProperty._name;
-	_type = aAbstractProperty._type;
-	_comment = aAbstractProperty._comment;
-	_useDefault = aAbstractProperty._useDefault;
-	_matchName = aAbstractProperty._matchName;
-	_index = aAbstractProperty._index;
-	_minArraySize = aAbstractProperty._minArraySize;
-	_maxArraySize = aAbstractProperty._maxArraySize;
-	return *this;
-}
 
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
 /**
  * Set member variables to their null values.
@@ -104,9 +71,11 @@ AbstractProperty& AbstractProperty::operator=(const AbstractProperty &aAbstractP
 void AbstractProperty::setNull()
 {
 	_name = "unknown";
-	_type = "none";
+	_typeAsString = "none";
+    _comment = "";
 	_useDefault = false;
 	_matchName = false;
+    _index = -1;
 	_minArraySize = 0;
 	_maxArraySize = INT_MAX;
 }

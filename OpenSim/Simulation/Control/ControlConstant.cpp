@@ -30,7 +30,7 @@
  * Author: Frank C. Anderson 
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
-#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/Property_Deprecated.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include "ControlConstant.h"
 #include "SimTKcommon.h"

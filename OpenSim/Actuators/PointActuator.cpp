@@ -126,28 +126,22 @@ void PointActuator::
 setupProperties()
 {
 	addProperty<string>("body",
-		"string",
 		"",
 		"");
 	SimTK::Vec3 origin(0.0);
 	addProperty<SimTK::Vec3>("point",
-		"Vec3",
 		"",
 		origin);
 	addProperty<bool>("point_is_global",
-		"bool",
 		"",
 		false);
 	addProperty<SimTK::Vec3>("direction",
-		"Vec3",
 		"",
 		origin);
 	addProperty<bool>("force_is_global",
-		"bool",
 		"",
 		false);
 	addProperty<double>("optimal_force",
-		"double",
 		"",
 		1.0);
 }

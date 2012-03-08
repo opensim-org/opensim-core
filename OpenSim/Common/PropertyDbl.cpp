@@ -52,7 +52,7 @@ using namespace std;
  */
 PropertyDbl::
 PropertyDbl(const string &aName,double aValue) :
-	Property(Property::Dbl,aName)
+	Property_Deprecated(Property_Deprecated::Dbl,aName)
 {
 	_value = aValue;
 }
@@ -62,7 +62,7 @@ PropertyDbl(const string &aName,double aValue) :
  */
 PropertyDbl::
 PropertyDbl() :
-	Property(Property::Dbl,"DblPropertyName")
+	Property_Deprecated(Property_Deprecated::Dbl,"DblPropertyName")
 {
 	_value = 0.0;
 }
@@ -70,10 +70,10 @@ PropertyDbl() :
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyDbl::PropertyDbl(const PropertyDbl &aProperty) :
-	Property(aProperty)
+	Property_Deprecated(aProperty)
 {
 	_value = aProperty.getValueDbl();
 }
@@ -85,10 +85,10 @@ PropertyDbl::PropertyDbl(const PropertyDbl &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyDbl::copy() const
+PropertyDbl* PropertyDbl::copy() const
 {
-	Property *property = new PropertyDbl(*this);
-	return(property);
+	PropertyDbl* prop = new PropertyDbl(*this);
+	return prop;
 }
 
 
@@ -102,13 +102,13 @@ Property* PropertyDbl::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyDbl& PropertyDbl::
 operator=(const PropertyDbl &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator=(aProperty);
 	_value = aProperty.getValueDbl();
 	return(*this);
 }

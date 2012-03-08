@@ -53,7 +53,7 @@ using namespace std;
 PropertyStrArray::
 PropertyStrArray(const string &aName,
 	const Array<string> &aArray) :
-	Property(Property::StrArray,aName), _array("")
+	Property_Deprecated(Property_Deprecated::StrArray,aName), _array("")
 {
 	_array = aArray;
 }
@@ -63,7 +63,7 @@ PropertyStrArray(const string &aName,
  */
 PropertyStrArray::
 PropertyStrArray() :
-	Property(Property::StrArray,"StrArrayPropertyName"), _array("")
+	Property_Deprecated(Property_Deprecated::StrArray,"StrArrayPropertyName"), _array("")
 {
 }
 //_____________________________________________________________________________
@@ -73,7 +73,7 @@ PropertyStrArray() :
 PropertyStrArray::
 PropertyStrArray(const string &aName,
 	int aSize,const string *aArray) :
-	Property(Property::StrArray,aName), _array("")
+	Property_Deprecated(Property_Deprecated::StrArray,aName), _array("")
 {
 	if(aSize<=0) return;
 	if(aArray==NULL) return;
@@ -83,10 +83,10 @@ PropertyStrArray(const string &aName,
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyStrArray::PropertyStrArray(const PropertyStrArray &aProperty) :
-	Property(aProperty), _array("")
+	Property_Deprecated(aProperty), _array("")
 {
 	_array = aProperty._array;
 }
@@ -98,9 +98,9 @@ PropertyStrArray::PropertyStrArray(const PropertyStrArray &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyStrArray::copy() const
+PropertyStrArray* PropertyStrArray::copy() const
 {
-	Property *property = new PropertyStrArray(*this);
+	PropertyStrArray *property = new PropertyStrArray(*this);
 	return(property);
 }
 
@@ -115,13 +115,13 @@ Property* PropertyStrArray::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyStrArray& PropertyStrArray::
 operator=(const PropertyStrArray &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator =(aProperty);
 	_array = aProperty._array;
 	return(*this);
 }

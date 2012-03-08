@@ -147,45 +147,35 @@ void BushingForce::setNull()
 void BushingForce::setupProperties()
 {
 	addProperty<string>("body_1",
-		"string",
 		"",
 		"");
 	addProperty<string>("body_2",
-		"string",
 		"",
 		"");
 	//Default location and orientation (rotation sequence)
 	SimTK::Vec3 origin(0.0, 0.0, 0.0);
 	addProperty<SimTK::Vec3>("location_body_1",
-		"Vec3",
 		"",
 		origin);
 	addProperty<SimTK::Vec3>("orientation_body_1",
-		"Vec3",
 		"",
 		origin);
 	addProperty<SimTK::Vec3>("location_body_2",
-		"Vec3",
 		"",
 		origin);
 	addProperty<SimTK::Vec3>("orientation_body_2",
-		"Vec3",
 		"",
 		origin);
 	addProperty<SimTK::Vec3>("rotational_stiffness",
-		"Vec3",
 		"",
 		Vec3(0));
 	addProperty<SimTK::Vec3>("translational_stiffness",
-		"Vec3",
 		"",
 		Vec3(0));
 	addProperty<SimTK::Vec3>("rotational_damping",
-		"Vec3",
 		"",
 		Vec3(0));
 	addProperty<SimTK::Vec3>("translational_damping",
-		"Vec3",
 		"",
 		Vec3(0));
 }

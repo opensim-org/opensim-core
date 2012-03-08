@@ -36,7 +36,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <string>
-#include "Property.h"
+#include "Property_Deprecated.h"
 
 
 //=============================================================================
@@ -50,7 +50,7 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PropertyBool : public Property
+class OSIMCOMMON_API PropertyBool : public Property_Deprecated
 {
 
 //=============================================================================
@@ -70,8 +70,7 @@ public:
 	PropertyBool();
 	PropertyBool(const std::string &aName,bool aValue);
 	PropertyBool(const PropertyBool &aProperty);
-	virtual Property* copy() const;
-	virtual ~PropertyBool() { };
+	/*virtual*/ PropertyBool* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

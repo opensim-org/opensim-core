@@ -124,11 +124,9 @@ void CoordinateActuator::setNull()
 void CoordinateActuator::setupProperties()
 {
 	addProperty<string>("coordinate",
-		"string",
 		"",
 		"");
 	addProperty<double>("optimal_force",
-		"double",
 		"",
 		1.0);
 }

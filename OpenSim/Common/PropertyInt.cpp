@@ -52,7 +52,7 @@ using namespace std;
  */
 PropertyInt::
 PropertyInt(const string &aName,int aValue) :
-Property(Property::Int,aName)
+Property_Deprecated(Property_Deprecated::Int,aName)
 {
 	_value = aValue;
 }
@@ -62,7 +62,7 @@ Property(Property::Int,aName)
  */
 PropertyInt::
 PropertyInt() :
-Property(Property::Int,"IntPropertyName")
+Property_Deprecated(Property_Deprecated::Int,"IntPropertyName")
 {
 	_value = 0;
 }
@@ -70,10 +70,10 @@ Property(Property::Int,"IntPropertyName")
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyInt::PropertyInt(const PropertyInt &aProperty) :
-	Property(aProperty)
+	Property_Deprecated(aProperty)
 {
 	_value = aProperty.getValueInt();
 }
@@ -85,9 +85,9 @@ PropertyInt::PropertyInt(const PropertyInt &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyInt::copy() const
+PropertyInt* PropertyInt::copy() const
 {
-	Property *property = new PropertyInt(*this);
+	PropertyInt *property = new PropertyInt(*this);
 	return(property);
 }
 
@@ -102,13 +102,13 @@ Property* PropertyInt::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyInt& PropertyInt::
 operator=(const PropertyInt &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator =(aProperty);
 	_value = aProperty.getValueInt();
 	return(*this);
 }

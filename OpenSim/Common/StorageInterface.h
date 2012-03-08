@@ -56,11 +56,13 @@ public:
 	virtual Object* copy() const=0;
 	virtual ~StorageInterface(){};
 
+#ifndef SWIG
 	StorageInterface& operator=(const StorageInterface &aStorageInterface)
 	{
 		Object::operator=(aStorageInterface);
 		return(*this);
 	}
+#endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------

@@ -53,7 +53,7 @@ using namespace std;
 PropertyBoolArray::
 PropertyBoolArray(const string &aName,
 	const Array<bool> &aArray) :
-	Property(Property::BoolArray,aName), _array(0)
+	Property_Deprecated(Property_Deprecated::BoolArray,aName), _array(0)
 {
 	_array = aArray;
 }
@@ -63,7 +63,7 @@ PropertyBoolArray(const string &aName,
  */
 PropertyBoolArray::
 PropertyBoolArray() :
-	Property(Property::BoolArray,"BoolArrayPropertyName"), _array(0)
+	Property_Deprecated(Property_Deprecated::BoolArray,"BoolArrayPropertyName"), _array(0)
 {
 }
 //_____________________________________________________________________________
@@ -73,7 +73,7 @@ PropertyBoolArray() :
 PropertyBoolArray::
 PropertyBoolArray(const string &aName,
 	int aSize,const bool aArray[]) :
-	Property(Property::BoolArray,aName), _array(0)
+	Property_Deprecated(Property_Deprecated::BoolArray,aName), _array(0)
 {
 	if(aSize<=0) return;
 	if(aArray==NULL) return;
@@ -83,10 +83,10 @@ PropertyBoolArray(const string &aName,
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyBoolArray::PropertyBoolArray(const PropertyBoolArray &aProperty) :
-	Property(aProperty), _array(0)
+	Property_Deprecated(aProperty), _array(0)
 {
 	_array = aProperty._array;
 }
@@ -98,10 +98,10 @@ PropertyBoolArray::PropertyBoolArray(const PropertyBoolArray &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyBoolArray::copy() const
+PropertyBoolArray* PropertyBoolArray::copy() const
 {
-	Property *property = new PropertyBoolArray(*this);
-	return(property);
+	PropertyBoolArray *prop = new PropertyBoolArray(*this);
+	return prop;
 }
 
 
@@ -115,13 +115,13 @@ Property* PropertyBoolArray::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyBoolArray& PropertyBoolArray::
 operator=(const PropertyBoolArray &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator =(aProperty);
 	_array = aProperty._array;
 	return(*this);
 }

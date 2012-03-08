@@ -109,11 +109,9 @@ void ActuatorWorkMeter::setNull(void)
 void ActuatorWorkMeter::setupProperties(void)
 {
 	addProperty<string>("actuator_name",
-		"string",
 		"The actuator name whos work use will be calculated.",
 		"Unassigned");
 	addProperty<double>("initial_actuator_work",
-		"double",
 		"The initial amount of work.",
 		0.0);
 }

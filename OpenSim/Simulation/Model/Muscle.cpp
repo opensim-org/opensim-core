@@ -165,23 +165,18 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 void Muscle::setupProperties()
 {
 	addProperty<double>("max_isometric_force",
-		"double",
 		"Maximum isometric force that the fibers can generate",
 		1000.0);
 	addProperty<double>("optimal_fiber_length",
-		"double",
 		"Optimal length of the muscle fibers",
 		0.1);
 	addProperty<double>("tendon_slack_length",
-		"double",
 		"Resting length of the tendon",
 		0.2);
 	addProperty<double>("pennation_angle_at_optimal",
-		"double",
 		"Angle between tendon and fibers at optimal fiber length",
 		0.0);
 	addProperty<double>("max_contraction_velocity",
-		"double",
 		"Maximum contraction velocity of the fibers, in optimal fiberlengths per second",
 		10.0);
 }

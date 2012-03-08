@@ -178,31 +178,24 @@ void ExternalForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 void ExternalForce::setupProperties()
 {
 	addProperty<string>("applied_to_body",
-		"string",
 		"Name of the body the force is applied to.",
 		"");
 	addProperty<string>("force_expressed_in_body",
-		"string",
 		"Name of the body the force is expressed in (default is ground).",
 		"");
 	addProperty<string>("point_expressed_in_body",
-		"string",
 		"Name of the body the point is expressed in (default is ground).",
 		"");
 	addProperty<string>("force_identifier",
-		"string",
 		"Identifier (string) to locate the force to be applied in the data source.",
 		"");
 	addProperty<string>("point_identifier",
-		"string",
 		"Identifier (string) to locate the point to be applied in the data source.",
 		"");
 	addProperty<string>("torque_identifier",
-		"string",
 		"Identifier (string) to locate the torque to be applied in the data source.",
 		"");
 	addProperty<string>("data_source_name",
-		"string",
 		"Name of the data source (Storage) that will supply the force data.",
 		"");
 }

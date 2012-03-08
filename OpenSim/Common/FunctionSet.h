@@ -85,8 +85,12 @@ public:
 //=============================================================================
 };	// END class FunctionSet
 
-template <>
-inline AbstractProperty::PropertyType Property2<FunctionSet>::getPropertyType() const { return Obj; }
+
+template<> struct PropertyTypeName<FunctionSet> 
+{   static const char* name() {return "FunctionSet";} };
+
+template <> inline AbstractProperty::PropertyType 
+Property2<FunctionSet>::getPropertyType() const { return Obj; }
 
 }; //namespace
 //=============================================================================

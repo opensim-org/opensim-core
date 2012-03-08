@@ -106,7 +106,6 @@ void Force::setNull(void)
 void Force::setupProperties(void)
 {
 	addProperty<bool>("isDisabled",
-		"bool",
 		"Flag indicating whether the force is disabled or not.  Disabled"
 		" means that the force is not active in subsequent dynamics realizations.",
 		false);

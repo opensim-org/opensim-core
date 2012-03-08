@@ -131,33 +131,26 @@ void CoordinateLimitForce::setNull()
 void CoordinateLimitForce::setupProperties()
 {
 	addProperty<string>("coordinate",
-		"string",
 		"",
 		"");
 	addProperty<double>("upper_stiffness",
-		"double",
 		"Stiffness of the passive limit force when coordinate exceeds upper limit."
 		" Note, rotational stiffness expected in N*m/degree.",
 		1.0);
 	addProperty<double>("upper_limit",
-		"double",
 		"The upper limit of the coordinate range of motion (rotations in degrees).",
 		0.0);
 	addProperty<double>("lower_stiffness",
-		"double",
 		"Stiffness of the passive limit force when coordinate exceeds lower limit."
 		" Note, rotational stiffness expected in N*m/degree.",
 		1.0);
 	addProperty<double>("lower_limit",
-		"double",
 		"The lower limit of the coordinate range of motion (rotations in degrees).",
 		0.0);
 	addProperty<double>("damping",
-		"double",
 		"Damping factor on the coordinate's speed applied only when limit is exceeded",
 		0.001);
 	addProperty<double>("transition",
-		"double",
 		"Transition region width in the units of the coordinate (rotations in degrees)."
 		" Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.",
 		0.1);

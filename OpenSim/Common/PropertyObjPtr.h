@@ -32,7 +32,7 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "Object.h"
-#include "Property.h"
+#include "Property_Deprecated.h"
 
 
 //=============================================================================
@@ -50,7 +50,7 @@
  */
 namespace OpenSim { 
 
-template<class T=Object> class PropertyObjPtr : public Property
+template<class T=Object> class PropertyObjPtr : public Property_Deprecated
 {
 
 //=============================================================================
@@ -67,24 +67,23 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	PropertyObjPtr()
-		: Property(Property::ObjPtr, "ObjPtrPropertyName")
+	PropertyObjPtr() : Property_Deprecated(ObjPtr, "ObjPtrPropertyName")
 	{
 		_value = 0;
 	}
 
 	PropertyObjPtr(const PropertyObjPtr<T> &aProperty)
-		: Property(aProperty)
+		: Property_Deprecated(aProperty)
 	{
 		_value = aProperty._value ? (T*)aProperty._value->copy() : 0;
 	}
 
-	virtual Property* copy() const
+	/*virtual*/ PropertyObjPtr* copy() const
 	{
 		return new PropertyObjPtr<T>(*this);
 	}
 
-	virtual ~PropertyObjPtr() 
+	/*virtual*/ ~PropertyObjPtr() 
 	{ 
 		delete _value; 
 	}
@@ -95,14 +94,14 @@ public:
 public:
 	PropertyObjPtr<T>& operator=(const PropertyObjPtr &aProperty)
 	{
-		Property::operator =(aProperty);
+		Property_Deprecated::operator =(aProperty);
 		delete _value;
 		_value = aProperty._value ? (T*)aProperty._value->copy() : 0;
 		return *this;
 	}
 
-	virtual bool operator==(const Property &aProperty) const {
-		bool equal = Property::operator ==(aProperty);
+	virtual bool operator==(const Property_Deprecated& aProperty) const {
+		bool equal = Property_Deprecated::operator==(aProperty);
 		if (equal){ 
 			if (_value==NULL) return (((PropertyObjPtr&) aProperty)._value==NULL);
 			return ((*_value) == (*((PropertyObjPtr&) aProperty)._value));

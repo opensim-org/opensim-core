@@ -140,7 +140,7 @@ getSize() const
  * @param aIndex Index of the property to get.
  * @throws Exception if the index is out of bounds.
  */
-Property* PropertySet::
+Property_Deprecated* PropertySet::
 get(int aIndex) throw(Exception)
 {
 	// NO SUCH PROPERTY - THROW EXCEPTION
@@ -158,7 +158,7 @@ get(int aIndex) throw(Exception)
  * @param aIndex Index of the property to get.
  * @throws Exception if the index is out of bounds.
  */
-const Property* PropertySet::
+const Property_Deprecated* PropertySet::
 get(int aIndex) const
 {
 	// NO SUCH PROPERTY - THROW EXCEPTION
@@ -176,7 +176,7 @@ get(int aIndex) const
  * @param aName Name of the property to get.
  * @throws Exception if there is no such property.
  */
-Property* PropertySet::
+Property_Deprecated* PropertySet::
 get(const string &aName) throw(Exception)
 {
 	int i;
@@ -196,7 +196,7 @@ get(const string &aName) throw(Exception)
  * @param aName Name of the property to get.
  * @throws Exception if there is no such property.
  */
-const Property* PropertySet::
+const Property_Deprecated* PropertySet::
 get(const string &aName) const
 {
 	int i;
@@ -216,7 +216,7 @@ get(const string &aName) const
  * @param aName Name of the property to get.
  * @return Pointer to the property.
  */
-const Property* PropertySet::
+const Property_Deprecated* PropertySet::
 contains(const string& aName) const
 {
 	int i;
@@ -233,7 +233,7 @@ contains(const string& aName) const
  * @param aName Name of the property to get.
  * @return Pointer to the property.
  */
-Property* PropertySet::
+Property_Deprecated* PropertySet::
 contains(const string& aName)
 {
 	int i;
@@ -252,10 +252,10 @@ contains(const string& aName)
 /**
  * Append a property to the set.
  *
- * @param aProperty Property to be appended.  Note that a copy is NOT made.
+ * @param aProperty Property_Deprecated to be appended.  Note that a copy is NOT made.
  */
 void PropertySet::
-append(Property *aProperty)
+append(Property_Deprecated *aProperty)
 {
 	_array.append(aProperty);
 }
@@ -264,10 +264,10 @@ append(Property *aProperty)
 /**
  * Append a property to the set, and put it in the specified group.
  *
- * @param aProperty Property to be appended.  Note that a copy is NOT made.
+ * @param aProperty Property_Deprecated to be appended.  Note that a copy is NOT made.
  */
 void PropertySet::
-append(Property *aProperty, const string& aName)
+append(Property_Deprecated *aProperty, const string& aName)
 {
 	_array.append(aProperty);
 
@@ -354,7 +354,7 @@ addGroup(string aGroupName)
 void PropertySet::
 addPropertyToGroup(std::string aGroupName, std::string aPropertyName)
 {
-	Property* prop = _array.get(aPropertyName);
+	Property_Deprecated* prop = _array.get(aPropertyName);
 	if (prop)
 	{
 		PropertyGroup* group = _propertyGroups.get(aGroupName);
@@ -374,7 +374,7 @@ addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName)
 {
 	// Make sure the group and property are in the PropertySet before adding the
 	// property to the group.
-	Property* prop = _array.get(aPropertyName);
+	Property_Deprecated* prop = _array.get(aPropertyName);
 	if (prop && aGroup)
 	{
 		int i;
@@ -392,7 +392,7 @@ addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName)
  * PropertySet.
  */
 void PropertySet::
-addPropertyToGroup(PropertyGroup* aGroup, Property* aProperty)
+addPropertyToGroup(PropertyGroup* aGroup, Property_Deprecated* aProperty)
 {
 	// Make sure the group and property are in the PropertySet before adding the
 	// property to the group.
@@ -415,7 +415,7 @@ addPropertyToGroup(PropertyGroup* aGroup, Property* aProperty)
  * added to the group.
  */
 void PropertySet::
-addPropertyToGroup(std::string aGroupName, Property* aProperty)
+addPropertyToGroup(std::string aGroupName, Property_Deprecated* aProperty)
 {
 	int index = _array.getIndex(aProperty);
 	if (index >= 0)
@@ -432,7 +432,7 @@ addPropertyToGroup(std::string aGroupName, Property* aProperty)
  * Get the group containing the passed-in property.
  */
 PropertyGroup* PropertySet::
-getGroupContaining(Property* aProperty)
+getGroupContaining(Property_Deprecated* aProperty)
 {
 	int i;
 	for (i = 0; i < _propertyGroups.getSize(); i++) {
@@ -448,7 +448,7 @@ getGroupContaining(Property* aProperty)
  * Get the index of the group containing the passed-in property.
  */
 int PropertySet::
-getGroupIndexContaining(Property* aProperty)
+getGroupIndexContaining(Property_Deprecated* aProperty)
 {
 	int i;
 	for (i = 0; i < _propertyGroups.getSize(); i++) {

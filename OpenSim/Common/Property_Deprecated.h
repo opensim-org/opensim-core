@@ -1,9 +1,9 @@
-#ifndef _Property_h_
-#define _Property_h_
-// Property.h
+#ifndef OPENSIM_PROPERTY_DEPRECATED_H_
+#define OPENSIM_PROPERTY_DEPRECATED_H_
+// Property_Deprecated.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2005-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -92,28 +92,15 @@ class Object;
 #define Property_PROPERTY_TYPE_MISMATCH() \
 	throw Exception(std::string(__FUNCTION__)+": Property type mismatch. This property is of type "+getTypeAsString()+".",__FILE__,__LINE__);
 
-class OSIMCOMMON_API Property : public AbstractProperty
+class OSIMCOMMON_API Property_Deprecated : public AbstractProperty
 {
 //=============================================================================
 // DATA
 //=============================================================================
 private:
 	/** Type of the property. */
-	PropertyType _type;
-	/** Name of the property. */
-	std::string _name;
-
-	/** Flag indicating whether or not this property uses some
-	default property for initializing its value. */
-	bool _useDefault;
-
-	int _minArraySize; // minimum number of elements for a property of array type
-	int _maxArraySize; // maximum number of elements for a property of array type
+	PropertyType _propertyType;
 protected:
-	/** Comment to be associated with property, shown for default objects only
-	for efficiency. */
-	std::string _comment;
-	/** String representation of property */
 	std::string _valueString;
 //=============================================================================
 // METHODS
@@ -122,20 +109,20 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	Property();
-	Property(PropertyType aType,const std::string &aName);
-	Property(const Property &aProperty);
+	Property_Deprecated();
+	Property_Deprecated(PropertyType aType,const std::string &aName);
+	Property_Deprecated(const Property_Deprecated &aProperty);
 
     // Implement the AbstractProperty interface.
-	virtual ~Property() {}
+	virtual ~Property_Deprecated() {}
     /*virtual*/ bool equals(AbstractProperty* aAbstractPropertyPtr) const {
         OPENSIM_FUNCTION_NOT_IMPLEMENTED();
     }
-    /*virtual*/ PropertyType getPropertyType() const {return _type;}
+    /*virtual*/ PropertyType getPropertyType() const {return _propertyType;}
 
-    // Property does not implement AbstractProperty::copy(); that is left to 
-    // concrete Property objects like PropertyInt.
-	virtual Property* copy() const = 0;
+    // Property_Deprecated does not implement AbstractProperty::copy(); that 
+    // is left to concrete Property_Deprecated objects like PropertyInt.
+	virtual Property_Deprecated* copy() const = 0;
 
 	void setNull();
 
@@ -144,10 +131,10 @@ public:
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	Property& operator=(const Property &aProperty);
-	virtual bool operator==(const Property &aProperty) const;
-	virtual bool operator<(const Property &aProperty) const;
-	friend std::ostream& operator<<(std::ostream &aOut,const Property &aProperty) {
+	Property_Deprecated& operator=(const Property_Deprecated &aProperty);
+	virtual bool operator==(const Property_Deprecated &aProperty) const;
+	virtual bool operator<(const Property_Deprecated &aProperty) const;
+	friend std::ostream& operator<<(std::ostream &aOut,const Property_Deprecated &aProperty) {
 		aOut << aProperty.getTypeAsString() << " " << aProperty.getName();
 		return(aOut);
 	};
@@ -162,21 +149,9 @@ public:
 	PropertyType getType() const;
 	virtual const char* getTypeAsString() const;
 
-	// NAME
-	void setName(const std::string &aName);
-	const std::string& getName() const;
-
-	// Comment
-	void setComment(const std::string &aComment) { _comment = aComment; };
-	const std::string& getComment() const { return _comment; };
 	// VALUE
 	// Textual representation
-	virtual const std::string &toString()=0;
-
-	void setAllowableArraySize(int aMin, int aMax) { _minArraySize = aMin; _maxArraySize = aMax; }
-	void setAllowableArraySize(int aNum) { _minArraySize = _maxArraySize = aNum; }
-	int getMinArraySize() { return _minArraySize; }
-	int getMaxArraySize() { return _maxArraySize; }
+	virtual const std::string& toString()=0;
 
 	// These methods have been given default implementations, rather than being made pure virtual
 	// so that all classes derived from Property will not have to implement each method.
@@ -252,9 +227,6 @@ public:
 	virtual Object* getValueObjPtr(int index) { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual void appendValue(Object *obj) { Property_PROPERTY_TYPE_MISMATCH(); }
 	virtual void clearObjArray() { Property_PROPERTY_TYPE_MISMATCH(); }
-	// USE DEFAULT
-	void setUseDefault(bool aTrueFalse);
-	bool getUseDefault() const;
 
 	// Generic way to get number of elements
 	virtual int getArraySize() const { Property_PROPERTY_TYPE_MISMATCH(); }
@@ -266,30 +238,30 @@ public:
 	template<class T> const Array<T> &getValueArray() const;
 
 //=============================================================================
-};	// END of class Property
+};	// END of class Property_Deprecated
 
 // Specializations of template get/set
 // Must be inline! (Trying to put function bodies in cpp fails with an internal compiler error in VC7.1)
-template<> inline bool &Property::getValue() { return getValueBool(); }
-template<> inline const bool &Property::getValue() const { return getValueBool(); }
-template<> inline int &Property::getValue() { return getValueInt(); }
-template<> inline const int &Property::getValue() const { return getValueInt(); }
-template<> inline double &Property::getValue() { return getValueDbl(); }
-template<> inline const double &Property::getValue() const { return getValueDbl(); }
-template<> inline std::string &Property::getValue() { return getValueStr(); }
-template<> inline const std::string &Property::getValue() const { return getValueStr(); }
+template<> inline bool& Property_Deprecated::getValue() { return getValueBool(); }
+template<> inline const bool& Property_Deprecated::getValue() const { return getValueBool(); }
+template<> inline int& Property_Deprecated::getValue() { return getValueInt(); }
+template<> inline const int& Property_Deprecated::getValue() const { return getValueInt(); }
+template<> inline double& Property_Deprecated::getValue() { return getValueDbl(); }
+template<> inline const double& Property_Deprecated::getValue() const { return getValueDbl(); }
+template<> inline std::string& Property_Deprecated::getValue() { return getValueStr(); }
+template<> inline const std::string& Property_Deprecated::getValue() const { return getValueStr(); }
 
-template<> inline Array<bool> &Property::getValueArray() { return getValueBoolArray(); }
-template<> inline const Array<bool> &Property::getValueArray() const { return getValueBoolArray(); }
-template<> inline Array<int> &Property::getValueArray() { return getValueIntArray(); }
-template<> inline const Array<int> &Property::getValueArray() const { return getValueIntArray(); }
-template<> inline Array<double> &Property::getValueArray() { return getValueDblArray(); }
-template<> inline const Array<double> &Property::getValueArray() const { return getValueDblArray(); }
-template<> inline Array<std::string> &Property::getValueArray() { return getValueStrArray(); }
-template<> inline const Array<std::string> &Property::getValueArray() const { return getValueStrArray(); }
+template<> inline Array<bool>& Property_Deprecated::getValueArray() { return getValueBoolArray(); }
+template<> inline const Array<bool>& Property_Deprecated::getValueArray() const { return getValueBoolArray(); }
+template<> inline Array<int>& Property_Deprecated::getValueArray() { return getValueIntArray(); }
+template<> inline const Array<int>& Property_Deprecated::getValueArray() const { return getValueIntArray(); }
+template<> inline Array<double>& Property_Deprecated::getValueArray() { return getValueDblArray(); }
+template<> inline const Array<double>& Property_Deprecated::getValueArray() const { return getValueDblArray(); }
+template<> inline Array<std::string>& Property_Deprecated::getValueArray() { return getValueStrArray(); }
+template<> inline const Array<std::string>& Property_Deprecated::getValueArray() const { return getValueStrArray(); }
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif //__Property_h__
+#endif // OPENSIM_PROPERTY_DEPRECATED_H_

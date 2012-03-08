@@ -50,9 +50,8 @@ using namespace std;
 /**
  * Constructor.
  */
-PropertyBool::
-PropertyBool(const string &aName,bool aValue) :
-Property(Property::Bool,aName)
+PropertyBool::PropertyBool(const string &aName,bool aValue) 
+:   Property_Deprecated(Property_Deprecated::Bool,aName)
 {
 	_value = aValue;
 }
@@ -60,9 +59,8 @@ Property(Property::Bool,aName)
 /**
  * Default Constructor.
  */
-PropertyBool::
-PropertyBool() :
-Property(Property::Bool,"BoolPropertyName")
+PropertyBool::PropertyBool() 
+:   Property_Deprecated(Property_Deprecated::Bool,"BoolPropertyName")
 {
 	_value = false;
 }
@@ -72,8 +70,8 @@ Property(Property::Bool,"BoolPropertyName")
  *
  * @param aProperty Property to be copied.
  */
-PropertyBool::PropertyBool(const PropertyBool &aProperty) :
-	Property(aProperty)
+PropertyBool::PropertyBool(const PropertyBool &aProperty) 
+:   Property_Deprecated(aProperty)
 {
 	_value = aProperty.getValueBool();
 }
@@ -85,10 +83,10 @@ PropertyBool::PropertyBool(const PropertyBool &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyBool::copy() const
+PropertyBool* PropertyBool::copy() const
 {
-	Property *property = new PropertyBool(*this);
-	return(property);
+	PropertyBool* prop = new PropertyBool(*this);
+	return prop;
 }
 
 
@@ -108,7 +106,7 @@ Property* PropertyBool::copy() const
 PropertyBool& PropertyBool::
 operator=(const PropertyBool &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator=(aProperty);
 	_value = aProperty.getValueBool();
 	return(*this);
 }

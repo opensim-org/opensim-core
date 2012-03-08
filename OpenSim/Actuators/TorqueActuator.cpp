@@ -131,24 +131,19 @@ void TorqueActuator::
 setupProperties()
 {
 	addProperty<string>("bodyA",
-		"string",
 		"Name of Body to which the Body actuator is applied.",
 		"");
 	addProperty<string>("bodyB",
-		"string",
 		"Name of Body to which the equal and opposite torque is applied.",
 		"");
 	addProperty<bool>("torque_is_global",
-		"bool",
 		"",
 		true);
 	SimTK::Vec3 z(0.0, 0.0, 1.0 );
 	addProperty<SimTK::Vec3>("axis",
-		"Vec3",
 		"",
 		z);
 	addProperty<double>("optimal_force",
-		"double",
 		"",
 		1.0);
 }

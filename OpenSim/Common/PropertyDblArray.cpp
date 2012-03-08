@@ -54,7 +54,7 @@ using namespace std;
 PropertyDblArray::
 PropertyDblArray(const string &aName,
 	const Array<double> &aArray) :
-	Property(Property::DblArray,aName), _array(0.0)
+	Property_Deprecated(Property_Deprecated::DblArray,aName), _array(0.0)
 {
 	_array = aArray;
 }
@@ -64,7 +64,7 @@ PropertyDblArray(const string &aName,
  */
 PropertyDblArray::
 PropertyDblArray() :
-	Property(Property::DblArray,"BoolArrayPropertyName"), _array(0.0)
+	Property_Deprecated(Property_Deprecated::DblArray,"BoolArrayPropertyName"), _array(0.0)
 {
 
 }
@@ -75,7 +75,7 @@ PropertyDblArray() :
 PropertyDblArray::
 PropertyDblArray(const string &aName,
 	int aSize,const double aArray[]) :
-	Property(Property::DblArray,aName), _array(0.0)
+	Property_Deprecated(Property_Deprecated::DblArray,aName), _array(0.0)
 {
 	if(aSize<=0) return;
 	if(aArray==NULL) return;
@@ -85,10 +85,10 @@ PropertyDblArray(const string &aName,
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyDblArray::PropertyDblArray(const PropertyDblArray &aProperty) :
-	Property(aProperty), _array(0.0)
+	Property_Deprecated(aProperty), _array(0.0)
 {
 	_array = aProperty._array;
 }
@@ -100,9 +100,9 @@ PropertyDblArray::PropertyDblArray(const PropertyDblArray &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyDblArray::copy() const
+PropertyDblArray* PropertyDblArray::copy() const
 {
-	Property *property = new PropertyDblArray(*this);
+	PropertyDblArray *property = new PropertyDblArray(*this);
 	return(property);
 }
 
@@ -117,13 +117,13 @@ Property* PropertyDblArray::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyDblArray& PropertyDblArray::
 operator=(const PropertyDblArray &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator =(aProperty);
 	_array = aProperty._array;
 	return(*this);
 }

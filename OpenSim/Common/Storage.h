@@ -126,8 +126,10 @@ public:
 	virtual Object* copy() const;
 	virtual ~Storage();
 
+#ifndef SWIG
 	/** Assignment operator to copy contents of an existing storage */
 	Storage& operator=(const Storage &aStorage);
+#endif
 
 	const std::string& getName() const { return _name; };
 	const std::string& getDescription() const { return _description; };

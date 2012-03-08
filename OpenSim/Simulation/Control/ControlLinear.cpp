@@ -31,7 +31,7 @@
  */
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/Signal.h>
-#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/Property_Deprecated.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertySet.h>

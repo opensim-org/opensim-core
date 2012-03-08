@@ -155,8 +155,11 @@ public:
 	Actuator(const Actuator &aActuator);
 	virtual ~Actuator();
 
+#ifndef SWIG
 	/** Assignment operator */
 	Actuator& operator=(const Actuator &aActuator);
+#endif
+
 	virtual Object* copy() const = 0;	// Needed by operator= and to put Actuators in Arrays
 
 	/** Convenience method to set controls given scalar (double) valued control */

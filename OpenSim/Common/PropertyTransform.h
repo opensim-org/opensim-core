@@ -35,7 +35,7 @@
 
 #include "osimCommonDLL.h"
 #include <string>
-#include "Property.h"
+#include "Property_Deprecated.h"
 #include "PropertyDblArray.h"
 #include "SimTKcommon.h"
 
@@ -74,8 +74,7 @@ public:
 	PropertyTransform(const std::string &aName,
 		const Array<double> &aArray);
 	PropertyTransform(const PropertyTransform &aProperty);
-	virtual Property* copy() const;
-	virtual ~PropertyTransform() { };
+	/*virtual*/ PropertyTransform* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

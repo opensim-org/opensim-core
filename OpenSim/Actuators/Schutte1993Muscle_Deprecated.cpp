@@ -141,19 +141,15 @@ void Schutte1993Muscle_Deprecated::setNull()
 void Schutte1993Muscle_Deprecated::setupProperties()
 {
 	addProperty<double>("time_scale",
-		"double",
 		"Scale factor for normalizing time",
 		0.1);
 	addProperty<double>("activation1",
-		"double",
 		"Parameter used in time constant of ramping up of muscle force",
 		7.667);
 	addProperty<double>("activation2",
-		"double",
 		"Parameter used in time constant of ramping up and ramping down of muscle force",
 		1.459854);
 	addProperty<double>("damping",
-		"double",
 		"Damping factor related to maximum contraction velocity",
 		0.1);
 	int tendonForceLengthCurvePoints = 17;
@@ -161,7 +157,6 @@ void Schutte1993Muscle_Deprecated::setupProperties()
 	double tendonForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.01080000,  0.02570000,  0.04350000,  0.06520000,  0.09150000,  0.12300000,  0.16100000,  0.20800000,  0.22700000,  345.00000000,  345.00000000,  345.00000000,  345.00000000};
 	NaturalCubicSpline *tendonForceLengthCurve = new NaturalCubicSpline(tendonForceLengthCurvePoints, tendonForceLengthCurveX, tendonForceLengthCurveY);
 	addProperty<Function *>("tendon_force_length_curve",
-		"Function *",
 		"Function representing force-length behavior of tendon",
 		tendonForceLengthCurve);
 	int activeForceLengthCurvePoints = 21;
@@ -169,7 +164,6 @@ void Schutte1993Muscle_Deprecated::setupProperties()
 	double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
 	NaturalCubicSpline *activeForceLengthCurve = new NaturalCubicSpline(activeForceLengthCurvePoints, activeForceLengthCurveX, activeForceLengthCurveY);
 	addProperty<Function *>("active_force_length_curve",
-		"Function *",
 		"Function representing active force-length behavior of muscle fibers",
 		activeForceLengthCurve);
 	int passiveForceLengthCurvePoints = 13;
@@ -177,7 +171,6 @@ void Schutte1993Muscle_Deprecated::setupProperties()
 	double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
 	NaturalCubicSpline *passiveForceLengthCurve = new NaturalCubicSpline(passiveForceLengthCurvePoints, passiveForceLengthCurveX, passiveForceLengthCurveY);
 	addProperty<Function *>("passive_force_length_curve",
-		"Function *",
 		"Function representing passive force-length behavior of muscle fibers",
 		passiveForceLengthCurve);
 }

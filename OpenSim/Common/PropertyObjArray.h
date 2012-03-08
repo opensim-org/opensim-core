@@ -37,7 +37,7 @@
 #include "osimCommonDLL.h"
 #include <string>
 #include "ArrayPtrs.h"
-#include "Property.h"
+#include "Property_Deprecated.h"
 #include "Object.h"
 
 
@@ -53,7 +53,7 @@
 namespace OpenSim { 
 
 template<class T = Object>
-class PropertyObjArray : public Property
+class PropertyObjArray : public Property_Deprecated
 {
 
 //=============================================================================
@@ -71,16 +71,17 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	PropertyObjArray(const std::string &aName = "",const ArrayPtrs<T> &aArray = ArrayPtrs<T>()) 
-		: Property(Property::ObjArray, aName), _array(aArray) {}
-	PropertyObjArray(const PropertyObjArray<T> &aProperty) : Property(aProperty) { _array = aProperty._array; }
-	virtual Property* copy() const { return new PropertyObjArray<T>(*this); }
+	:   Property_Deprecated(ObjArray, aName), _array(aArray) {}
+	PropertyObjArray(const PropertyObjArray<T> &aProperty) 
+    :   Property_Deprecated(aProperty) { _array = aProperty._array; }
+	/*virtual*/ PropertyObjArray* copy() const { return new PropertyObjArray<T>(*this); }
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
 	PropertyObjArray& operator=(const PropertyObjArray &aProperty) {
-		Property::operator =(aProperty);
+		Property_Deprecated::operator=(aProperty);
 		_array = aProperty._array;
 		return (*this);
 	}
@@ -109,9 +110,9 @@ public:
 	ArrayPtrs<T>& getValueObjArray() { return _array; }
 #ifndef SWIG
 	const ArrayPtrs<T>& getValueObjArray() const { return _array; }
-	virtual bool operator==(const Property &aProperty) const {
+	virtual bool operator==(const Property_Deprecated& aProperty) const {
 		// base class
-		bool equal=(Property::operator ==(aProperty));
+		bool equal=(Property_Deprecated::operator==(aProperty));
 		if (equal) {
 			PropertyObjArray& other = ((PropertyObjArray&)aProperty);
 			if (_array.getSize()>0 && other._array.getSize()>0){	

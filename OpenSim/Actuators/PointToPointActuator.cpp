@@ -132,28 +132,22 @@ void PointToPointActuator::
 setupProperties()
 {
 	addProperty<string>("bodyA",
-		"string",
 		"Name of Body to which the Body actuator is applied.",
 		"");
 	addProperty<string>("bodyB",
-		"string",
 		"Name of Body to which the equal and opposite torque is applied.",
 		"");
 	addProperty<bool>("points_are_global",
-		"bool",
 		"bool to indicate whether or not the points are expressed in global frame",
 		false);
 	SimTK::Vec3 x(0.0, 0.0, 0.0);
 	addProperty<SimTK::Vec3>("pointA",
-		"Vec3",
 		"Point of application on body A.",
 		x);
 	addProperty<SimTK::Vec3>("pointB",
-		"Vec3",
 		"Point of application on body B.",
 		x);
 	addProperty<double>("optimal_force",
-		"double",
 		"",
 		1.0);
 }

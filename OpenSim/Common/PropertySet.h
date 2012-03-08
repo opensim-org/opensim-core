@@ -38,7 +38,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include "ArrayPtrs.h"
-#include "Property.h"
+#include "Property_Deprecated.h"
 #include "PropertyGroup.h"
 #include "PropertyDblVec.h"
 
@@ -52,7 +52,7 @@
 
 #ifndef SWIG
 #ifdef WIN32
-template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property>;
+template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Property_Deprecated>;
 #endif
 #endif
 
@@ -84,7 +84,7 @@ class OSIMCOMMON_API PropertySet
 //=============================================================================
 public:
 	/** Set of properties. */
-	ArrayPtrs<Property> _array;
+	ArrayPtrs<Property_Deprecated> _array;
 
 protected:
 	/** Array of property groups. */
@@ -121,21 +121,21 @@ public:
 	// Number of properties
 	int getSize() const;
 	// Get
-	virtual Property* get(int i) throw (Exception);
+	virtual Property_Deprecated* get(int i) throw (Exception);
 #ifndef SWIG
-	virtual const Property* get(int i) const;
+	virtual const Property_Deprecated* get(int i) const;
 #endif
-	virtual Property* get(const std::string &aName) throw (Exception);
+	virtual Property_Deprecated* get(const std::string &aName) throw (Exception);
 #ifndef SWIG
-	virtual const Property* get(const std::string &aName) const;
+	virtual const Property_Deprecated* get(const std::string &aName) const;
 #endif
-	virtual const Property* contains(const std::string& aName) const;
+	virtual const Property_Deprecated* contains(const std::string& aName) const;
 #ifndef SWIG
-	virtual Property* contains(const std::string& aName);
+	virtual Property_Deprecated* contains(const std::string& aName);
 #endif
 	// Append
-	virtual void append(Property *aProperty);
-	virtual void append(Property *aProperty, const std::string& aName);
+	virtual void append(Property_Deprecated *aProperty);
+	virtual void append(Property_Deprecated *aProperty, const std::string& aName);
 	// Remove
 	virtual void remove(const std::string &aName);
 	// Clear
@@ -144,11 +144,11 @@ public:
    PropertyGroup* addGroup(std::string aGroupName);
    void addPropertyToGroup(std::string aGroupName, std::string aPropertyName);
    void addPropertyToGroup(PropertyGroup* aGroup, std::string aPropertyName);
-	void addPropertyToGroup(PropertyGroup* aGroup, Property* aProperty);
-	void addPropertyToGroup(std::string aGroupName, Property* aProperty);
+	void addPropertyToGroup(PropertyGroup* aGroup, Property_Deprecated* aProperty);
+	void addPropertyToGroup(std::string aGroupName, Property_Deprecated* aProperty);
 	ArrayPtrs<PropertyGroup>& getGroups() { return _propertyGroups; }
-	PropertyGroup* getGroupContaining(Property* aProperty);
-	int getGroupIndexContaining(Property* aProperty);
+	PropertyGroup* getGroupContaining(Property_Deprecated* aProperty);
+	int getGroupIndexContaining(Property_Deprecated* aProperty);
 
 //=============================================================================
 };	// END of class PropertySet

@@ -90,11 +90,9 @@ void ActivationFiberLengthMuscle::setNull()
 void ActivationFiberLengthMuscle::setupProperties()
 {
 	addProperty<double>("default_activation",
-		"double",
 		"Assumed activation level if none is assigned.",
 		0.0);
 	addProperty<double>("default_fiber_length",
-		"double",
 		"Assumed fiber length, unless otherwise assigned.",
 		0.0);
 }

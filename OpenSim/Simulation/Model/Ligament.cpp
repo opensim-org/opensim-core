@@ -145,15 +145,12 @@ void Ligament::setNull()
 void Ligament::setupProperties()
 {
 	addProperty<GeometryPath>("GeometryPath",
-		"GeometryPath",
 		"the set of points defining the path of the ligament",
 		GeometryPath());
 	addProperty<double>("resting_length",
-		"double",
 		"resting length of the ligament",
 		0.0);
 	addProperty<double>("pcsa_force",
-		"double",
 		"force magnitude that scales the force-length curve",
 		0.0);
 	int forceLengthCurvePoints = 13;
@@ -161,7 +158,6 @@ void Ligament::setupProperties()
 	double forceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
 	NaturalCubicSpline *forceLengthCurve = new NaturalCubicSpline(forceLengthCurvePoints, forceLengthCurveX, forceLengthCurveY);
 	addProperty<Function *>("force_length_curve",
-		"Function *",
 		"Function representing the force-length behavior of the ligament",
 		forceLengthCurve);
 }

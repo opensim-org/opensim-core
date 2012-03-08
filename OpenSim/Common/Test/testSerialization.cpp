@@ -63,11 +63,11 @@ int main()
 
 		// OBJECT 3
 		rdSerializableObject obj3("obj1Defaults.xml");
-		Property* pObjArr = obj3.getPropertySet().get(11);
+		Property_Deprecated* pObjArr = obj3.getPropertySet().get(11);
 		PropertyObjArray<OpenSim::Object>* objs = (PropertyObjArray<OpenSim::Object> *)pObjArr;
 		Object* dObj = objs->getValueObjPtr(1);
-		Property* p1 = dObj->getPropertySet().get(0);
-		Property* p2 = dObj->getPropertySet().get(1);
+		Property_Deprecated* p1 = dObj->getPropertySet().get(0);
+		Property_Deprecated* p2 = dObj->getPropertySet().get(1);
 		std::cout << (*p1) << std::endl;
 		std::cout << (*p2) << std::endl;
 		Object::setSerializeAllDefaults(true);
@@ -82,8 +82,8 @@ int main()
 		PropertySet &propSet1 = obj1.getPropertySet();
 		PropertySet &propSet2 = obj2.getPropertySet();
 		for (int i=0; i < numProperties1; i++){
-			Property *prop1 = propSet1.get(i);
-			Property *prop2 = propSet2.get(i);
+			Property_Deprecated *prop1 = propSet1.get(i);
+			Property_Deprecated *prop2 = propSet2.get(i);
 			ASSERT(prop1->getName() == prop2->getName(), __FILE__, __LINE__, "property names");
 		}
 

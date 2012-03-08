@@ -112,12 +112,12 @@ void PropertyTable::addProperty(AbstractProperty &aProperty)
 	_properties.insert(pair<string, AbstractProperty*>(aProperty.getName(), &aProperty));
 }
 
-std::string PropertyTable::getPropertyType(const std::string &name) const
+const std::string& PropertyTable::getPropertyTypeAsString(const std::string &name) const
 {
-	return (*(*_properties.find(name)).second).getType();
+	return (*(*_properties.find(name)).second).getTypeAsString();
 }
 
-std::string PropertyTable::getPropertyComment(const std::string &name) const
+const std::string& PropertyTable::getPropertyComment(const std::string &name) const
 {
 	return (*(*_properties.find(name)).second).getComment();
 }

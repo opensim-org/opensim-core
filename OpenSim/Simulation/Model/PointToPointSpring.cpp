@@ -150,28 +150,22 @@ void PointToPointSpring::setNull()
 void PointToPointSpring::setupProperties()
 {
 	addProperty<string>("body1",
-		"string",
 		"Name of Body to which 1 end of the spring is attached.",
 		"");
 	addProperty<string>("body2",
-		"string",
 		"Name of Body to which the 2nd end of the spring is attached.",
 		"");
 	SimTK::Vec3 pointZero(0.0, 0.0, 0.0);
 	addProperty<SimTK::Vec3>("point1",
-		"Vec3",
 		"",
 		pointZero);
 	addProperty<SimTK::Vec3>("point2",
-		"Vec3",
 		"",
 		pointZero);
 	addProperty<double>("stiffness",
-		"double",
 		"",
 		1.0);
 	addProperty<double>("rest_length",
-		"double",
 		"",
 		0.0);
 }

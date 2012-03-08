@@ -35,7 +35,7 @@
 
 // INCLUDE
 #include "osimCommonDLL.h"
-#include "Property.h"
+#include "Property_Deprecated.h"
 #include "Array.h"
 
 namespace OpenSim {
@@ -67,7 +67,7 @@ private:
 
 protected:
 	/** Pointers to the properties in the group. */
-	Array<Property*> _properties;
+	Array<Property_Deprecated*> _properties;
 
 //=============================================================================
 // METHODS
@@ -91,11 +91,11 @@ public:
 	void clear();
 
 	bool contains(const std::string& aName) const;
-	void add(Property* aProperty);
-	void remove(Property* aProperty);
-	const Array<Property*>& getProperties() const { return _properties; }
-	Property* get(int aIndex);
-	int getPropertyIndex(Property* aProperty) const;
+	void add(Property_Deprecated* aProperty);
+	void remove(Property_Deprecated* aProperty);
+	const Array<Property_Deprecated*>& getProperties() const { return _properties; }
+	Property_Deprecated* get(int aIndex);
+	int getPropertyIndex(Property_Deprecated* aProperty) const;
 
 	// NAME
 	void setName(const std::string &aName) { _name = aName; }

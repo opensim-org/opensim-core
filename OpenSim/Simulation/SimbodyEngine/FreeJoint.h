@@ -93,7 +93,11 @@ public:
 	FreeJoint(const FreeJoint &aJoint);
 	virtual ~FreeJoint();
 	virtual Object* copy() const;
+
+#ifndef SWIG
 	FreeJoint& operator=(const FreeJoint &aJoint);
+#endif
+
 	void copyData(const FreeJoint &aJoint);
 	virtual void setup(Model& aModel);
 

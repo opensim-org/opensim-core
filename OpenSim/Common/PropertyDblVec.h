@@ -35,7 +35,7 @@
 
 #include "osimCommonDLL.h"
 #include <string>
-#include "Property.h"
+#include "Property_Deprecated.h"
 #include "SimTKcommon.h"
 
 //=============================================================================
@@ -50,7 +50,7 @@
  */
 namespace OpenSim { 
 
-template<int M> class PropertyDblVec_ : public Property
+template<int M> class PropertyDblVec_ : public Property_Deprecated
 {
 
 //=============================================================================
@@ -73,30 +73,33 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	/** Default constructor */
-	PropertyDblVec_():Property(Property::DblVec, "DblVec_PropertyName")
+	PropertyDblVec_() : Property_Deprecated(DblVec, "DblVec_PropertyName")
 		{ sprintf(_typeAsString, "DblVec%i", M);
 		  setAllowableArraySize(M);	  
 		};
 	/** Construct from name and value */
-	PropertyDblVec_(const std::string &aName, const SimTK::Vec<M>& aVec):Property(Property::DblVec, aName) 
+	PropertyDblVec_(const std::string &aName, const SimTK::Vec<M>& aVec)
+    :   Property_Deprecated(DblVec, aName) 
 		{ sprintf(_typeAsString, "DblVec%i", M);  setValue(aVec);
 		  setAllowableArraySize(M);
 
 		};
 	/** Construct from name and value as an Array<double> */
-	PropertyDblVec_(const std::string &aName, const Array<double> &anArray):Property(Property::DblVec, aName)
+	PropertyDblVec_(const std::string &aName, const Array<double> &anArray)
+    :   Property_Deprecated(DblVec, aName)
 		{ sprintf(_typeAsString, "DblVec%i", M);  setValue(anArray);
 		  setAllowableArraySize(M);
 		};
 	/** Copy constructor */
-	PropertyDblVec_(const PropertyDblVec_ &aProperty):Property(aProperty)
+	PropertyDblVec_(const PropertyDblVec_ &aProperty)
+    :   Property_Deprecated(aProperty)
 		{ setValue(aProperty._vec);};
+
 	/* Return a copy of this property */
-	virtual Property* copy() const {
-		Property *property = new PropertyDblVec_<M>(*this);
-		return(property);
+	/*virtual*/ PropertyDblVec_* copy() const {
+		PropertyDblVec_* prop = new PropertyDblVec_<M>(*this);
+		return prop;
 	};
-	virtual ~PropertyDblVec_() { };
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

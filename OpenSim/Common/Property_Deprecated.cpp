@@ -1,4 +1,4 @@
-// Property.cpp
+// Property_Deprecated.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -34,7 +34,7 @@
 //============================================================================
 // INCLUDES
 //============================================================================
-#include "Property.h"
+#include "Property_Deprecated.h"
 #include <climits>
 
 
@@ -50,8 +50,8 @@ using namespace std;
 /**
  * Default constructor.
  */
-Property::
-Property()
+Property_Deprecated::
+Property_Deprecated() : AbstractProperty()
 {
 	setNull();
 }
@@ -59,40 +59,26 @@ Property()
 /**
  * Constructor.
  */
-Property::
-Property(PropertyType aType,const string &aName)
+Property_Deprecated::
+Property_Deprecated(PropertyType aType, const string &aName) 
+:   AbstractProperty()
 {
 	setNull();
-	_type = aType;
-	_name = aName;
+	setName(aName);
+	_propertyType = aType;
 }
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
-Property::Property(const Property &aProperty)
+Property_Deprecated::Property_Deprecated(const Property_Deprecated &aProperty)
 {
 	setNull();
 	*this = aProperty;
-	_comment = aProperty.getComment();
 }
-//_____________________________________________________________________________
-/**
- * Construct and return a copy of this property.
- *
- * The property is allocated using the new operator, so the caller is
- * responsible for deleting the returned object.
- *
- * @return Copy of this property.
- *
-Property* Property::copy() const
-{
-	Property *property = new Property(*this);
-	return(property);
-}
-*/
+
 
 //=============================================================================
 // CONSTRUCTION
@@ -101,14 +87,11 @@ Property* Property::copy() const
 /**
  * Set member variables to their null values.
  */
-void Property::
+void Property_Deprecated::
 setNull()
 {
-	_type = Property::None;
-	_name = "unknown";
-	_useDefault = false;
-	_minArraySize = 0;
-	_maxArraySize = INT_MAX;
+	_propertyType = Property_Deprecated::None;
+    _valueString = "";
 }
 
 
@@ -123,19 +106,17 @@ setNull()
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
-Property& Property::
-operator=(const Property &aProperty)
+Property_Deprecated& Property_Deprecated::
+operator=(const Property_Deprecated& aProperty)
 {
-	setType(aProperty.getType());
-	setName(aProperty.getName());
-	setUseDefault(aProperty.getUseDefault());
-	_comment = aProperty.getComment();
-	_minArraySize = aProperty._minArraySize;
-	_maxArraySize = aProperty._maxArraySize;
-	return(*this);
+    AbstractProperty::operator=(aProperty);
+    _propertyType = aProperty._propertyType;
+    _valueString = aProperty._valueString;
+
+	return *this;
 }
 
 //-----------------------------------------------------------------------------
@@ -148,14 +129,14 @@ operator=(const Property &aProperty)
  * Two properties are equal if their names are the same; the types do not
  * need to be the same.
  *
- * @param aProperty Property for which to make the equality test.
+ * @param aProperty Property_Deprecated for which to make the equality test.
  * @return True if the specified property and this property are equal, false
  * otherwise.
  */
-bool Property::
-operator==(const Property &aProperty) const
+bool Property_Deprecated::
+operator==(const Property_Deprecated &aProperty) const
 {
-	if(_name != aProperty.getName()) return(false);
+	if(getName() != aProperty.getName()) return(false);
 	return(true);
 }
 
@@ -169,13 +150,13 @@ operator==(const Property &aProperty) const
  * This property is less than another if the name of this string is less
  * than the name of the other property.
  *
- * @param aProperty Property for which to make the less than test.
+ * @param aProperty Property_Deprecated for which to make the less than test.
  * @return True if this property is less than the other, false otherwise.
  */
-bool Property::
-operator<(const Property &aProperty) const
+bool Property_Deprecated::
+operator<(const Property_Deprecated &aProperty) const
 {
-	return(_name < aProperty.getName());
+	return(getName() < aProperty.getName());
 }
 
 //-----------------------------------------------------------------------------
@@ -187,9 +168,9 @@ operator<(const Property &aProperty) const
  * The output consists of the type and name:\n\n
  *
  * @param aOut Output stream.
- * @param aProperty Property to be output.
+ * @param aProperty Property_Deprecated to be output.
  * @return Reference to the output stream.
-ostream& operator<<(ostream &aOut,const Property &aProperty)
+ostream& operator<<(ostream &aOut,const Property_Deprecated &aProperty)
 {
 	aOut << aProperty.getTypeAsString() << " " << aProperty.getName();
 	return(aOut);
@@ -209,7 +190,7 @@ ostream& operator<<(ostream &aOut,const Property &aProperty)
  *
  * @return Type of the property.
  */
-const char* Property::
+const char* Property_Deprecated::
 getTypeAsString() const
 {
 	return("None");
@@ -225,10 +206,10 @@ getTypeAsString() const
  * @param aType Type of this object represented as a string.  In most all
  * cases, the type should be the name of the class.
  */
-void Property::
+void Property_Deprecated::
 setType(PropertyType aType)
 {
-	_type = aType;
+	_propertyType = aType;
 }
 //_____________________________________________________________________________
 /**
@@ -236,74 +217,12 @@ setType(PropertyType aType)
  *
  * @return Type of the property.
  */
-Property::PropertyType Property::
+Property_Deprecated::PropertyType Property_Deprecated::
 getType() const
 {
-	return(_type);
+	return _propertyType;
 }
 
-//-----------------------------------------------------------------------------
-// NAME
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the name of this property.
- *
- * @param aName Name to which to set this property.
- */
-void Property::
-setName(const string &aName)
-{
-	_name = aName;
-}
-//_____________________________________________________________________________
-/**
- * Get the name of this property.
- *
- * @retrun Name of this property
- */
-const string& Property::
-getName() const
-{
-	return(_name);
-}
-
-//-----------------------------------------------------------------------------
-// USE DEFAULT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set whether or not this property uses a "default" property for its value.
- *
- * True means that this property should have the same value as
- * some default property.  False means that the value of this property is
- * independent of the value of any other property.
- *
- * @param aTrueFalse True means this property uses another property for its
- * value.  False means this property does not use another property for its
- * value.
- */
-void Property::
-setUseDefault(bool aTrueFalse)
-{
-	_useDefault = aTrueFalse;
-}
-//_____________________________________________________________________________
-/**
- * Get whether or not this property uses a "default" property for its value.
- *
- * True means that this property should have the same value as
- * some default property.  False means that the value of this property is
- * independent of the value of any other property.
- *
- * @return True if this property uses another property for its value; false if
- * this property does not use another property for its value.
- */
-bool Property::
-getUseDefault() const
-{
-	return(_useDefault);
-}
 
 
 

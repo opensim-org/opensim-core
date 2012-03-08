@@ -145,8 +145,11 @@ protected:
 //=============================================================================
 };	// END class Function
 
-template <>
-inline AbstractProperty::PropertyType Property2<Function *>::getPropertyType() const { return ObjPtr; }
+template<> struct PropertyTypeName<Function *> 
+{   static const char* name() {return "Function *";} };
+
+template <> inline AbstractProperty::PropertyType 
+Property2<Function *>::getPropertyType() const { return ObjPtr; }
 
 template <>
 inline bool Property2<Function *>::equals(AbstractProperty *aAbstractPropertyPtr) const

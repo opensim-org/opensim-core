@@ -145,19 +145,15 @@ void PrescribedForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionN
 void PrescribedForce::setupProperties()
 {
 	addProperty<string>("body",
-		"string",
 		"Name of the body the force is applied to.",
 		"");
 	addProperty<bool>("pointIsGlobal",
-		"bool",
 		"Flag indicating whether the point (specified in pointFunctions) is in global frame",
 		false);
 	addProperty<bool>("forceIsGlobal",
-		"bool",
 		"Flag indicating whether the quantities (specified in force/torqueFunctions) is in global frame",
 		true);
 	addProperty<FunctionSet>("forceFunctions",
-		"FunctionSet",
 		"Three functions describing the force to be applied.",
 		FunctionSet());
 	Property2<FunctionSet> &forceFunctionSetProp = updProperty<FunctionSet>("forceFunctions");
@@ -167,7 +163,6 @@ void PrescribedForce::setupProperties()
 	forceFunctionSet.setName("forceFunctions");
 	forceFunctionSet.setMemoryOwner(false);
 	addProperty<FunctionSet>("pointFunctions",
-		"FunctionSet",
 		"Three functions describing the location at which the force is applied.",
 		FunctionSet());
 	Property2<FunctionSet> &pointFunctionSetProp = updProperty<FunctionSet>("pointFunctions");
@@ -177,7 +172,6 @@ void PrescribedForce::setupProperties()
 	pointFunctionSet.setName("pointFunctions");
 	pointFunctionSet.setMemoryOwner(false);
 	addProperty<FunctionSet>("torqueFunctions",
-		"FunctionSet",
 		"Three functions describing the torque the PrescribedForce applies.",
 		FunctionSet());
 	Property2<FunctionSet> &torqueFunctionSetProp = updProperty<FunctionSet>("torqueFunctions");

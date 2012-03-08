@@ -144,47 +144,36 @@ void Thelen2003Muscle::setNull()
 void Thelen2003Muscle::setupProperties()
 {
 	addProperty<double>("activation_time_constant",
-		"double",
 		"time constant for ramping up of muscle activation",
 		0.01);
 	addProperty<double>("deactivation_time_constant",
-		"double",
 		"time constant for ramping down of muscle activation",
 		0.04);
 	addProperty<double>("Vmax",
-		"double",
 		"maximum contraction velocity at full activation in fiber lengths per second",
 		10.0);
 	addProperty<double>("Vmax0",
-		"double",
 		"maximum contraction velocity at low activation in fiber lengths per second",
 		5.0);
 	addProperty<double>("FmaxTendonStrain",
-		"double",
 		"tendon strain due to maximum isometric muscle force",
 		0.033);
 	addProperty<double>("FmaxMuscleStrain",
-		"double",
 		"passive muscle strain due to maximum isometric muscle force",
 		0.6);
 	addProperty<double>("KshapeActive",
-		"double",
 		"shape factor for Gaussian active muscle force-length relationship",
 		0.5);
 	addProperty<double>("KshapePassive",
-		"double",
 		"exponential shape factor for passive force-length relationship",
 		4.0);
 	addProperty<double>("damping",
-		"double",
 		"passive damping in the force-velocity relationship",
 		0.05);
 	addProperty<double>("Af",
-		"double",
 		"force-velocity shape factor",
 		0.3);
 	addProperty<double>("Flen",
-		"double",
 		"maximum normalized lengthening force",
 		1.8);
 }

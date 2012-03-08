@@ -58,7 +58,7 @@ private:
 
 public:
 	Property2();
-	Property2(const std::string &aName, const std::string &aType, const std::string &aComment, const T &aValue);
+	Property2(const std::string &aName, const std::string &aComment, const T &aValue);
 	Property2(const Property2 &aProperty);
 	Property2& operator=(const Property2 &aProperty);
 
@@ -66,13 +66,16 @@ public:
 	/*virtual*/ ~Property2() { delete _valuePtr; }
 	/*virtual*/ Property2* copy() const;
 	/*virtual*/ bool equals(AbstractProperty* aAbstractPropertyPtr) const;
+    // This is specialized for types T below.
+	/*virtual*/ PropertyType getPropertyType() const 
+    {   throw Exception("Property2: Use of unspecified property."); return None;}
 
 	const T& getValue() const { return *_valuePtr; }
 	T& updValue() { return *_valuePtr; }
 	void setValue(const T &aValue) { *_valuePtr = aValue; }
-	virtual PropertyType getPropertyType() const {throw Exception("Property2: Use of unspecified property."); return None;}
 };
 
+// Specialize Property2::equals() for type double to allow for a tolerance.
 template <>
 inline bool Property2<double>::equals(AbstractProperty *aAbstractPropertyPtr) const
 {
@@ -125,19 +128,23 @@ inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() con
 */
 
 template <typename T>
-Property2<T>::Property2()
+Property2<T>::Property2() : AbstractProperty()
 {
+    setTypeAsString(PropertyTypeName<T>::name());
 	_valuePtr = new T;
 }
 
 template <typename T>
-Property2<T>::Property2(const std::string &aName, const std::string &aType, const std::string &aComment, const T &aValue) : AbstractProperty(aName, aType, aComment)
+Property2<T>::Property2(const std::string &aName, const std::string &aComment, 
+                        const T &aValue) 
+:   AbstractProperty(aName, PropertyTypeName<T>::name(), aComment)
 {
 	_valuePtr = new T(aValue);
 }
 
 template <typename T>
-Property2<T>::Property2(const Property2<T> &aProperty) : AbstractProperty(aProperty)
+Property2<T>::Property2(const Property2<T> &aProperty) 
+:   AbstractProperty(aProperty)
 {
 	_valuePtr = new T(aProperty.getValue());
 }

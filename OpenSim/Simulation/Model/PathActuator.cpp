@@ -113,11 +113,9 @@ void PathActuator::setNull()
 void PathActuator::setupProperties()
 {
 	addProperty<GeometryPath>("GeometryPath",
-		"GeometryPath",
-		"the set of points defining the path of the muscle",
+		"The set of points defining the path of the muscle.",
 		GeometryPath());
 	addProperty<double>("optimal_force",
-		"double",
 		"Optimal force.",
 		1.0);
 }

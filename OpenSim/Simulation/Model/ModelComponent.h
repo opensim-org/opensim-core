@@ -280,8 +280,10 @@ public:
 	// Destructor
     virtual ~ModelComponent();
 
+#ifndef SWIG
 	/** Assignment operator to copy contents of an existing component */
 	ModelComponent& operator=(const ModelComponent &aModelComponent);
+#endif
 
     /**
      * Get a const reference to the Model this component is part of.

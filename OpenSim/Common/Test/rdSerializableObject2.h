@@ -33,7 +33,7 @@
 */
 
 #include <OpenSim/Common/Object.h>
-#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/Property_Deprecated.h>
 #include <OpenSim/Common/PropertyDblArray.h>
 #include <OpenSim/Common/PropertyBool.h>
 
@@ -171,8 +171,10 @@ namespace OpenSim {
 		//=============================================================================
 	};
 
-	template <>
-	inline AbstractProperty::PropertyType Property2<rdSerializableObject3>::getPropertyType() const { return Obj; }
+    template<> struct PropertyTypeName<rdSerializableObject3> 
+    {   static const char* name() {return "rdSerializableObject3";} };
+	template <> inline AbstractProperty::PropertyType 
+    Property2<rdSerializableObject3>::getPropertyType() const { return Obj; }
 
 }; //namespace
 

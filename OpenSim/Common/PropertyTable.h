@@ -73,21 +73,23 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	PropertyTable();
-	PropertyTable(const PropertyTable &aPropertyTable);
+	PropertyTable(const PropertyTable& aPropertyTable);
 	~PropertyTable();
-	PropertyTable& operator=(const PropertyTable &aPropertyTable);
-	bool operator==(const PropertyTable &aPropertyTable) const;
-	AbstractProperty* getPropertyPtr(const std::string &name) const;
+	PropertyTable& operator=(const PropertyTable& aPropertyTable);
+	bool operator==(const PropertyTable& aPropertyTable) const;
+	AbstractProperty* getPropertyPtr(const std::string& name) const;
 	Array<AbstractProperty *> getArray();
 	void addProperty(AbstractProperty &aProperty);
-	template <class T> const Property2<T>& getProperty(const std::string &name) const;
-	template <class T> Property2<T>& updProperty(const std::string &name);
-	template <class T> void addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value);
-	template <class T> const T& getPropertyValue(const std::string &name) const;
-	template <class T> T& updPropertyValue(const std::string &name) const;
-	template <class T> void setPropertyValue(const std::string &name, const T &value);
-	std::string getPropertyType(const std::string &name) const;
-	std::string getPropertyComment(const std::string &name) const;
+	template <class T> const Property2<T>& getProperty(const std::string& name) const;
+	template <class T> Property2<T>& updProperty(const std::string& name);
+	template <class T> void addProperty(const std::string& name, 
+                                        const std::string& comment, 
+                                        const T &value);
+	template <class T> const T& getPropertyValue(const std::string& name) const;
+	template <class T> T& updPropertyValue(const std::string& name) const;
+	template <class T> void setPropertyValue(const std::string& name, const T &value);
+	const std::string& getPropertyTypeAsString(const std::string& name) const;
+	const std::string& getPropertyComment(const std::string& name) const;
 	int getSize() const;
 
 //=============================================================================
@@ -116,9 +118,11 @@ Property2<T>& PropertyTable::updProperty(const std::string &name)
 }
 
 template <class T>
-void PropertyTable::addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value)
+void PropertyTable::addProperty(const std::string& name, 
+                                const std::string& comment, 
+                                const T &value)
 {
-	Property2<T>* propPtr = new Property2<T>(name, type, comment, value);
+	Property2<T>* propPtr = new Property2<T>(name, comment, value);
 	propPtr->setIndex(_properties.size());
 	_properties.insert(std::pair<std::string, AbstractProperty*>(name, propPtr));
 }

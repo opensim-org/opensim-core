@@ -60,7 +60,7 @@ PropertyObj::~PropertyObj()
  */
 PropertyObj::
 PropertyObj(const string &aName,const Object &aValue) :
-	Property(Property::Obj,aName)
+	Property_Deprecated(Property_Deprecated::Obj,aName)
 {
 	setName(aName);
 	_value = aValue.copy();
@@ -73,7 +73,7 @@ PropertyObj(const string &aName,const Object &aValue) :
  */
 PropertyObj::
 PropertyObj() :
-	Property(Property::Obj,"Object")
+	Property_Deprecated(Property_Deprecated::Obj,"Object")
 {
 	_value = 0;
 	_matchName = false;
@@ -82,10 +82,10 @@ PropertyObj() :
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyObj::PropertyObj(const PropertyObj &aProperty) :
-	Property(aProperty)
+	Property_Deprecated(aProperty)
 {
 	_value = aProperty.getValueObj().copy();
 	_matchName = aProperty._matchName;
@@ -98,9 +98,9 @@ PropertyObj::PropertyObj(const PropertyObj &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyObj::copy() const
+PropertyObj* PropertyObj::copy() const
 {
-	Property *property = new PropertyObj(*this);
+	PropertyObj *property = new PropertyObj(*this);
 	return(property);
 }
 
@@ -115,13 +115,13 @@ Property* PropertyObj::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyObj& PropertyObj::
 operator=(const PropertyObj &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator =(aProperty);
 	if(_value!=NULL) { delete _value;  _value=NULL; }
 	_value = aProperty.getValueObj().copy();
 	return(*this);

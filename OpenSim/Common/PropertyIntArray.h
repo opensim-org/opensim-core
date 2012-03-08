@@ -36,7 +36,7 @@
 // INCLUDES
 #include "osimCommonDLL.h"
 #include <string>
-#include "Property.h"
+#include "Property_Deprecated.h"
 #ifdef WIN32
 #pragma warning( disable : 4251 )
 #endif
@@ -53,7 +53,7 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PropertyIntArray : public Property
+class OSIMCOMMON_API PropertyIntArray : public Property_Deprecated
 {
 
 //=============================================================================
@@ -76,8 +76,7 @@ public:
 	PropertyIntArray(const std::string &aName,
 		int aSize,const int aArray[]);
 	PropertyIntArray(const PropertyIntArray &aProperty);
-	virtual Property* copy() const;
-	virtual ~PropertyIntArray() { };
+	/*virtual*/ PropertyIntArray* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

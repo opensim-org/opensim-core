@@ -121,7 +121,6 @@ void RigidTendonMuscle::setupProperties()
 	double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
 	NaturalCubicSpline *activeForceLengthCurve = new NaturalCubicSpline(activeForceLengthCurvePoints, activeForceLengthCurveX, activeForceLengthCurveY);
 	addProperty<Function *>("active_force_length_curve",
-		"Function *",
 		"Function representing active force-length behavior of muscle fibers",
 		activeForceLengthCurve);
 	int passiveForceLengthCurvePoints = 13;
@@ -129,7 +128,6 @@ void RigidTendonMuscle::setupProperties()
 	double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
 	NaturalCubicSpline *passiveForceLengthCurve = new NaturalCubicSpline(passiveForceLengthCurvePoints, passiveForceLengthCurveX, passiveForceLengthCurveY);
 	addProperty<Function *>("passive_force_length_curve",
-		"Function *",
 		"Function representing passive force-length behavior of muscle fibers",
 		passiveForceLengthCurve);
 	int forceVelocityLengthCurvePoints = 42;
@@ -139,7 +137,6 @@ void RigidTendonMuscle::setupProperties()
 		1.482014000000, 1.601571000000, 1.655791000000, 1.686739000000, 1.706751000000, 1.720753000000, 1.731099000000, 1.739055000000, 1.745365000000, 1.750490000000, 1.754736000000, 1.758312000000, 1.761364000000, 1.763999000000, 1.766298000000, 1.768321000000, 1.770115000000, 1.771717000000, 1.773155000000, 1.774455000000};
 	NaturalCubicSpline *forceVelocityLengthCurve = new NaturalCubicSpline(forceVelocityLengthCurvePoints, forceVelocityLengthCurveX, forceVelocityLengthCurveY);
 	addProperty<Function *>("force_velocity_curve",
-		"Function *",
 		"Function representing force-velocity behavior of muscle fibers",
 		forceVelocityLengthCurve);
 }

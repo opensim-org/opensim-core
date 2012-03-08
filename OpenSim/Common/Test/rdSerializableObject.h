@@ -189,43 +189,36 @@ namespace OpenSim {
 
 			// Bool
 			addProperty<bool>("Test_Bool_2",
-				"bool",
 				"Comment on a boolean",
 				true);
 
 			// Int
 			addProperty<int>("Test_Int_2",
-				"int",
 				"Comment on a int",
 				0);
 
 			// Dbl
 			addProperty<double>("Test_Infinity_2",
-				"double",
 				"Comment on a double infinity",
 				SimTK::Infinity);
 
 			// Dbl
 			addProperty<double>("Test_MinusInfinity_2",
-				"double",
 				"Comment on a double minus infinity",
 				-SimTK::Infinity);
 
 			// Dbl
 			addProperty<double>("Test_Dbl_2",
-				"double",
 				"Comment on a double",
 				1.23456);
 
 			// Dbl
 			addProperty<double>("Test_NaN_2",
-				"double",
 				"Comment on a double not a number",
 				SimTK::NaN);
 
 			// Str
 			addProperty<string>("Test_Str_2",
-				"string",
 				"Comment on a string",
 				"ABC");
 			
@@ -233,7 +226,6 @@ namespace OpenSim {
 			rdSerializableObject3 obj2;
 			obj2.setName("Test_Obj_2");
 			addProperty<rdSerializableObject3>("Test_Obj_2",
-				"rdSerializableObject3",
 				"Comment on an Object",
 				obj2);
 			
@@ -242,7 +234,6 @@ namespace OpenSim {
 			arrayInt2.setSize(4);
 			for(i=0;i<arrayInt.getSize();i++) arrayInt2[i] = i;
 			addProperty< Array<int> >("Test_IntArray_2",
-				"Array<int>",
 				"Comment on an int-array",
 				arrayInt2);
 
@@ -251,7 +242,6 @@ namespace OpenSim {
 			arrayDbl2.setSize(4);
 			for(i=0;i<arrayDbl.getSize();i++) arrayDbl2[i] = (double)i;
 			addProperty< Array<double> >("Test_DblArray_2",
-				"Array<double>",
 				"Comment on a double-array",
 				arrayDbl2);
 
@@ -263,7 +253,6 @@ namespace OpenSim {
 			arrayStr2[2] = "ghi";
 			arrayStr2[3] = "jkl";
 			addProperty< Array<string> >("Test_StrArray_2",
-				"Array<string>",
 				"Comment on a string-array",
 				arrayStr2);
 
@@ -277,12 +266,10 @@ namespace OpenSim {
 			object2.setName("Obj3");
 			arrayObj.append(object2.copy());
 			addProperty< ArrayPtrs<Object> >("Test_ObjArray_2",
-				"ArrayPtrs<Object>",
 				"Comment on Object Array",
 				arrayObj2);
 			
 			addProperty<SimTK::Vec3>("Test_DblVec3_2",
-				"Vec3",
 				"Point at 3,5,7",
 				SimTK::Vec3(3., 5., 7.));
 		}

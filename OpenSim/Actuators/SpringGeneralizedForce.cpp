@@ -128,19 +128,15 @@ void SpringGeneralizedForce::
 setupProperties()
 {
 	addProperty<string>("coordinate",
-		"string",
 		"",
 		"");
 	addProperty<double>("stiffness",
-		"double",
 		"",
 		0.0);
 	addProperty<double>("rest_length",
-		"double",
 		"",
 		0.0);
 	addProperty<double>("viscosity",
-		"double",
 		"",
 		0.0);
 }

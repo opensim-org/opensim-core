@@ -166,11 +166,9 @@ void LiuThelen2003Muscle::setNull()
 void LiuThelen2003Muscle::setupProperties()
 {
 	addProperty<double>("fatigue_factor",
-		"double",
 		"percentage of active motor units that fatigue in unit time",
 		0.0);
 	addProperty<double>("recovery_factor",
-		"double",
 		"percentage of fatigued motor units that recover in unit time",
 		0.0);
 }

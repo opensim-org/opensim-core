@@ -209,7 +209,7 @@ contains(const string& aName) const
  *
  */
 void PropertyGroup::
-add(Property* aProperty)
+add(Property_Deprecated* aProperty)
 {
 	if (_properties.findIndex(aProperty) < 0)
 		_properties.append(aProperty);
@@ -221,7 +221,7 @@ add(Property* aProperty)
  *
  */
 void PropertyGroup::
-remove(Property* aProperty)
+remove(Property_Deprecated* aProperty)
 {
 	int index = getPropertyIndex(aProperty);
 	if (index >= 0)
@@ -233,7 +233,7 @@ remove(Property* aProperty)
  * Get a property by index.
  *
  */
-Property* PropertyGroup::
+Property_Deprecated* PropertyGroup::
 get(int aIndex)
 {
 	if (aIndex >= 0 && aIndex < _properties.getSize())
@@ -248,7 +248,7 @@ get(int aIndex)
  *
  */
 int PropertyGroup::
-getPropertyIndex(Property* aProperty) const
+getPropertyIndex(Property_Deprecated* aProperty) const
 {
 	for (int i = 0; i < _properties.getSize(); i++)
 		if (_properties.get(i) == aProperty)

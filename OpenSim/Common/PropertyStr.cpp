@@ -51,7 +51,7 @@ using namespace std;
  */
 PropertyStr::
 PropertyStr(const string &aName,const string &aValue) :
-	Property(Property::Str,aName)
+	Property_Deprecated(Property_Deprecated::Str,aName)
 {
 	_value = aValue;
 }
@@ -61,7 +61,7 @@ PropertyStr(const string &aName,const string &aValue) :
  */
 PropertyStr::
 PropertyStr() :
-	Property(Property::Str,"StringPropertyName")
+	Property_Deprecated(Property_Deprecated::Str,"StringPropertyName")
 {
 	_value = PropertyStr::getDefaultStr();
 }
@@ -69,10 +69,10 @@ PropertyStr() :
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyStr::PropertyStr(const PropertyStr &aProperty) :
-	Property(aProperty)
+	Property_Deprecated(aProperty)
 {
 	_value = aProperty.getValueStr();
 }
@@ -84,9 +84,9 @@ PropertyStr::PropertyStr(const PropertyStr &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyStr::copy() const
+PropertyStr* PropertyStr::copy() const
 {
-	Property *property = new PropertyStr(*this);
+	PropertyStr *property = new PropertyStr(*this);
 	return(property);
 }
 
@@ -101,13 +101,13 @@ Property* PropertyStr::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyStr& PropertyStr::
 operator=(const PropertyStr &aProperty)
 {
-	Property::operator =(aProperty);
+	Property_Deprecated::operator =(aProperty);
 	_value = aProperty.getValueStr();
 	return(*this);
 }

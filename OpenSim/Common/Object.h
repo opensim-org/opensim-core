@@ -348,7 +348,7 @@ private:
 	 * Functions to support deserialization 
 	 */
 	void generateXMLDocument();
-	static void InitializeObjectFromXMLNode(Property *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+	static void InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 	static void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 	void updateDefaultObjectsFromXMLNode();
 	void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
@@ -399,19 +399,29 @@ public:
 
 protected:
 	/** Methods to handle Properties */
-	void addProperty(AbstractProperty &abstractProperty);
-	template <class T> const Property2<T>& getProperty(const std::string &name) const;
-	template <class T> Property2<T>& updProperty(const std::string &name);
-	template <class T> void addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value);
-	template <class T> const T& getPropertyValue(const std::string &name) const;
-	template <class T> T& updPropertyValue(const std::string &name) const;
-	template <class T> void setPropertyValue(const std::string &name, const T &value);
-	std::string getPropertyType(const std::string &name) const;
-	std::string getPropertyComment(const std::string &name) const;
+	void addProperty(AbstractProperty& abstractProperty);
+	template <class T> const Property2<T>& getProperty(const std::string& name) const;
+	template <class T> Property2<T>& updProperty(const std::string& name);
+	template <class T> void addProperty(const std::string& name, 
+                                        const std::string& comment, 
+                                        const T &value);
+	template <class T> const T& getPropertyValue(const std::string& name) const;
+	template <class T> T& updPropertyValue(const std::string& name) const;
+	template <class T> void setPropertyValue(const std::string& name, const T &value);
+	const std::string& getPropertyTypeAsString(const std::string& name) const;
+	const std::string& getPropertyComment(const std::string& name) const;
 	Array<AbstractProperty *> getPropertyArray();
 
 //=============================================================================
 };	// END of class Object
+
+// TODO: are these the right names to use?
+template<> struct PropertyTypeName<Object> 
+{   static const char* name() {return "Object";} };
+template<> struct PropertyTypeName<Object*> 
+{   static const char* name() {return "ObjPtr";} };
+template<> struct PropertyTypeName< ArrayPtrs<Object> > 
+{   static const char* name() {return "ArrayPtrs<Object>";} };
 
 template <>
 inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
@@ -438,9 +448,9 @@ updProperty(const std::string &name)
 
 template <class T>
 void Object::
-addProperty(const std::string &name, const std::string &type, const std::string &comment, const T &value)
+addProperty(const std::string &name, const std::string &comment, const T &value)
 {
-	_propertyTable.addProperty(name, type, comment, value);
+	_propertyTable.addProperty(name, comment, value);
 }
 
 template <class T>

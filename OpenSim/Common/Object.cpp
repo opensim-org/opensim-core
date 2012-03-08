@@ -38,7 +38,7 @@
 #include "Object.h"
 #include "XMLDocument.h"
 #include "Exception.h"
-#include "Property.h"
+#include "Property_Deprecated.h"
 #include "PropertyObj.h"
 #include "PropertyDblVec.h"
 #include "PropertyTransform.h"
@@ -291,58 +291,58 @@ operator==(const Object &aObject) const
 	if (_references!= aObject.getReferences()) return(false);
 	bool equal = true;
 	for (int i=0; i< _propertySet.getSize() && equal ; i++){
-		const Property& myProperty = *(_propertySet.get(i));
-		const Property& theirProperty = *(aObject.getPropertySet().get(i));
+		const Property_Deprecated& myProperty = *(_propertySet.get(i));
+		const Property_Deprecated& theirProperty = *(aObject.getPropertySet().get(i));
 		switch(myProperty.getType()){
-			case (Property::Bool): 
+			case (Property_Deprecated::Bool): 
 				if (myProperty.getValueBool()!=theirProperty.getValueBool()) return false;
 				continue;
-			case Property::Int:
+			case Property_Deprecated::Int:
 				if (myProperty.getValueInt()!=theirProperty.getValueInt()) return false;
 				continue;
-			case Property::Dbl:
+			case Property_Deprecated::Dbl:
 				if (fabs(myProperty.getValueDbl()-theirProperty.getValueDbl())>1e-7) return false;
 				continue;
-			case Property::Str:
+			case Property_Deprecated::Str:
 				if (myProperty.getValueStr()!=theirProperty.getValueStr()) return false;
 				continue;
-			case Property::Obj:
+			case Property_Deprecated::Obj:
 				if (!(myProperty.getValueObj()==theirProperty.getValueObj())) return false;
 				continue;
-			case Property::ObjPtr:
+			case Property_Deprecated::ObjPtr:
 				equal = (myProperty==theirProperty);
 				if (!equal) return false;
 				continue;
-			case Property::BoolArray:
+			case Property_Deprecated::BoolArray:
 				for(int j=0; j < myProperty.getValueBoolArray().getSize() && equal; j++)
 					equal= (myProperty.getValueBoolArray().get(j)==
 								theirProperty.getValueBoolArray().get(j));
 				if (!equal) return false;
 				continue;
-			case Property::IntArray:
+			case Property_Deprecated::IntArray:
 				for(int j=0; j < myProperty.getValueIntArray().getSize() && equal; j++)
 					equal= (myProperty.getValueIntArray().get(j) ==
 								theirProperty.getValueIntArray().get(j));
 				if (!equal) return false;
 				continue;
-			case Property::DblArray:
+			case Property_Deprecated::DblArray:
 				for(int j=0; j < myProperty.getValueDblArray().getSize() && equal; j++)
 					equal= (fabs(myProperty.getValueDblArray().get(j)-
 								theirProperty.getValueDblArray().get(j))<1e-8);
 				if (!equal) return false;
 				continue;
-			case Property::StrArray:
+			case Property_Deprecated::StrArray:
 				for(int j=0; j < myProperty.getValueStrArray().getSize() && equal; j++)
 					equal= (myProperty.getValueStrArray().get(j)==
 								theirProperty.getValueStrArray().get(j));
 				if (!equal) return false;
 				continue;
 	
-			case Property::ObjArray:
+			case Property_Deprecated::ObjArray:
 				equal = (myProperty==theirProperty);
 				if (!equal) return false;
 				continue;
-			case Property::DblVec:
+			case Property_Deprecated::DblVec:
 				{
 				int M = myProperty.getArraySize();
 				equal = (((const PropertyDblVec_<1>&)myProperty).getValueDblVec() - 
@@ -350,7 +350,7 @@ operator==(const Object &aObject) const
 				if (!equal) return false;
 				continue;
 				}
-			case Property::Transform:
+			case Property_Deprecated::Transform:
 				const SimTK::Transform& t1 = ((const PropertyTransform&)myProperty).getValueTransform();
 				const SimTK::Transform& t2 = ((const PropertyTransform&)theirProperty).getValueTransform();
 				SimTK::Transform tComposed =  t1.compose(t2.invert());
@@ -571,7 +571,7 @@ RegisterType(const Object &aObject)
 //-----------------------------------------------------------------------------
 // UTILITY FUNCTIONS
 //-----------------------------------------------------------------------------
-template<class T> void UpdateFromXMLNodeSimpleProperty(Property *aProperty, SimTK::Xml::Element& aNode, const string &aName)
+template<class T> void UpdateFromXMLNodeSimpleProperty(Property_Deprecated *aProperty, SimTK::Xml::Element& aNode, const string &aName)
 {
 	aProperty->setUseDefault(true);
 	SimTK::String string;
@@ -600,7 +600,7 @@ template<class T> void UpdateFromXMLNodeSimpleProperty2(AbstractProperty *aAbstr
 			aProperty->setUseDefault(false);
 }
 
-template<class T> void UpdateFromXMLNodeArrayProperty(Property *aProperty, SimTK::Xml::Element& aNode, const string &aName)
+template<class T> void UpdateFromXMLNodeArrayProperty(Property_Deprecated *aProperty, SimTK::Xml::Element& aNode, const string &aName)
 {
 	aProperty->setUseDefault(true);
 	//SimTK::String string;
@@ -657,7 +657,7 @@ void UpdateFromXMLNodeVec3Property2(AbstractProperty *aAbstractProperty, SimTK::
 }
 
 void Object::	// Populate Object from XML node corresponding to Obj property
-InitializeObjectFromXMLNode(Property *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber)
+InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber)
 {
 	SimTK::String toString;
 	rObjectElement->writeToString(toString);
@@ -724,7 +724,7 @@ InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::X
 	//aObject->updateFromXMLNode();
 }
 
-template<class T> void UpdateXMLNodeSimpleProperty(const Property *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+template<class T> void UpdateXMLNodeSimpleProperty(const Property_Deprecated *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
 {
 	const T &value = aProperty->getValue<T>();
 	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
@@ -743,7 +743,7 @@ template<class T> void UpdateXMLNodeSimpleProperty2(const AbstractProperty *aAbs
 	} 
 }
 
-template<class T> void UpdateXMLNodeArrayProperty(const Property *aProperty,  SimTK::Xml::Element& dParentNode, const string &aName)
+template<class T> void UpdateXMLNodeArrayProperty(const Property_Deprecated *aProperty,  SimTK::Xml::Element& dParentNode, const string &aName)
 {
 
 	const Array<T> &value = aProperty->getValueArray<T>();
@@ -765,7 +765,7 @@ template<class T> void UpdateXMLNodeArrayProperty2(const AbstractProperty *aAbst
 	} 
 }
 
-void UpdateXMLNodeVec(const Property *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+void UpdateXMLNodeVec(const Property_Deprecated *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
 {
 	const Array<double> &value = aProperty->getValueArray<double>();
 	
@@ -792,7 +792,7 @@ void UpdateXMLNodeVec3(const AbstractProperty *aAbstractProperty, SimTK::Xml::El
 
 }
 
-void UpdateXMLNodeTransform(const Property *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+void UpdateXMLNodeTransform(const Property_Deprecated *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
 {
 
 	// Get 6 raw numbers into an array and then use those to update the node
@@ -821,10 +821,10 @@ try {
 	// LOOP THROUGH PROPERTIES
 	for(int i=0;i<_propertySet.getSize();i++) {
 
-		Property *property = _propertySet.get(i);
+		Property_Deprecated *property = _propertySet.get(i);
 
 		// TYPE
-		Property::PropertyType type = property->getType();	
+		Property_Deprecated::PropertyType type = property->getType();	
 
 		// NAME
 		string name = property->getName();
@@ -841,7 +841,7 @@ try {
 		switch(type) {
 
 		// Bool
-		case(Property::Bool) : 
+		case(Property_Deprecated::Bool) : 
 			iter= aNode.element_begin(name);
 			if (iter == aNode.element_end()) break;	// Not found
 			iter->getValueAs(valueString); // true/false
@@ -850,11 +850,11 @@ try {
 			//UpdateFromXMLNodeSimpleProperty<bool>(property, aNode, name);
 			break;
 		// Int
-		case(Property::Int) :
+		case(Property_Deprecated::Int) :
 			UpdateFromXMLNodeSimpleProperty<int>(property, aNode, name);
 			break;
 		// Double
-		case(Property::Dbl) :
+		case(Property_Deprecated::Dbl) :
 			iter= aNode.element_begin(name);
 			if (iter == aNode.element_end()) continue;	// Not found
 			iter->getValueAs(valueString); // special values
@@ -869,11 +869,11 @@ try {
 				UpdateFromXMLNodeSimpleProperty<double>(property, aNode, name);
 			break;
 		// Str
-		case(Property::Str) : 
+		case(Property_Deprecated::Str) : 
 			UpdateFromXMLNodeSimpleProperty<string>(property, aNode, name);
 			break;
 		// BoolArray
-		case(Property::BoolArray) : 
+		case(Property_Deprecated::BoolArray) : 
 			// Parse as a String array then map true/false to boolean values
 			property->setUseDefault(true);
 			iter = aNode.element_begin(name);
@@ -886,22 +886,22 @@ try {
 			property->setUseDefault(false);
 			break;
 		// IntArray
-		case(Property::IntArray) :
+		case(Property_Deprecated::IntArray) :
 			UpdateFromXMLNodeArrayProperty<int>(property,aNode,name);
 			break;
 		// DblArray
-		case(Property::DblArray) :
-		case(Property::DblVec) :
-		case(Property::Transform) :
+		case(Property_Deprecated::DblArray) :
+		case(Property_Deprecated::DblVec) :
+		case(Property_Deprecated::Transform) :
 			UpdateFromXMLNodeArrayProperty<double>(property,aNode,name);
 			break;
 		// StrArray
-		case(Property::StrArray) :
+		case(Property_Deprecated::StrArray) :
 			UpdateFromXMLNodeArrayProperty<string>(property,aNode,name);
 			break;
 
 		// Obj
-		case(Property::Obj) : {
+		case(Property_Deprecated::Obj) : {
 			property->setUseDefault(true);
 			Object &object = property->getValueObj();
 			SimTK::Xml::element_iterator iter = aNode.element_begin(object.getType());
@@ -919,8 +919,8 @@ try {
 			break; }
 
 		// ObjArray AND ObjPtr (handled very similarly)
-		case(Property::ObjArray) : 
-		case(Property::ObjPtr) : {
+		case(Property_Deprecated::ObjArray) : 
+		case(Property_Deprecated::ObjPtr) : {
 			property->setUseDefault(true);
 
 			// GET ENCLOSING ELEMENT
@@ -933,7 +933,7 @@ try {
 			//	break;
 			//}
 
-			if(type==Property::ObjArray) {
+			if(type==Property_Deprecated::ObjArray) {
 				// CLEAR EXISTING OBJECT ARRAY
 				// Eran: Moved after elmt check above so that values set by constructor are kept if
 				// property is not specified in the xml file
@@ -964,7 +964,7 @@ try {
 				//if(!property->isValidObject(object)) throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
 				objectsFound++;
 
-				if(type==Property::ObjPtr) {
+				if(type==Property_Deprecated::ObjPtr) {
 					if(objectsFound > 1){
 						//throw XMLParsingException("Found multiple objects under "+name+" tag, but expected only one.",objElmt,__FILE__,__LINE__);
 					}
@@ -1326,14 +1326,14 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 
 		//_document->writeToString(elemAsString);
 
-		Property *property = _propertySet.get(i);
+		Property_Deprecated *property = _propertySet.get(i);
 
 		// Add comment if any
 		if (!property->getComment().empty()) {
 			myObjectElement.insertNodeAfter(myObjectElement.node_end(), SimTK::Xml::Comment(property->getComment()));
 		}
 		// TYPE
-		Property::PropertyType type = property->getType();
+		Property_Deprecated::PropertyType type = property->getType();
 
 		// NAME
 		string name = property->getName();
@@ -1343,15 +1343,15 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 		switch(type) {
 
 		// Bool
-		case(Property::Bool) :
+		case(Property_Deprecated::Bool) :
 			UpdateXMLNodeSimpleProperty<bool>(property, myObjectElement, name);
 			break;
 		// Int
-		case(Property::Int) :
+		case(Property_Deprecated::Int) :
 			UpdateXMLNodeSimpleProperty<int>(property, myObjectElement, name);
 			break;
 		// Dbl
-		case(Property::Dbl) :
+		case(Property_Deprecated::Dbl) :
 			if (SimTK::isFinite(property->getValueDbl()))
 				UpdateXMLNodeSimpleProperty<double>(property, myObjectElement, name);
 			else {
@@ -1368,36 +1368,36 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			} 
 			break;
 		// Str
-		case(Property::Str) :
+		case(Property_Deprecated::Str) :
 			UpdateXMLNodeSimpleProperty<string>(property, myObjectElement, name);
 			break;
 		// BoolArray
-		case(Property::BoolArray) :
+		case(Property_Deprecated::BoolArray) :
 			UpdateXMLNodeArrayProperty<bool>(property,myObjectElement,name);
 			break;
 		// IntArray
-		case(Property::IntArray) :
+		case(Property_Deprecated::IntArray) :
 			UpdateXMLNodeArrayProperty<int>(property,myObjectElement,name);
 			break;
 		// DblArray
-		case(Property::DblArray) :
+		case(Property_Deprecated::DblArray) :
 			UpdateXMLNodeArrayProperty<double>(property,myObjectElement,name);
 			break;
 		// DblVec3
-		case(Property::DblVec) :
+		case(Property_Deprecated::DblVec) :
 			UpdateXMLNodeVec(property,myObjectElement,name);
 			break;
 		// Transform
-		case(Property::Transform) :
+		case(Property_Deprecated::Transform) :
 			UpdateXMLNodeTransform(property,myObjectElement,name);
 			break;
 		// StrArray
-		case(Property::StrArray) :
+		case(Property_Deprecated::StrArray) :
 			UpdateXMLNodeArrayProperty<string>(property,myObjectElement,name);
 			break;
 
 		// Obj
-		case(Property::Obj) : {
+		case(Property_Deprecated::Obj) : {
 			PropertyObj *propObj = (PropertyObj*)property;
 			Object &object = property->getValueObj();
 			object.updateXMLNode(myObjectElement);
@@ -1428,9 +1428,9 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			break; }
 
 		// ObjArray AND ObjPtr (handled very similarly)
-		case(Property::ObjArray) :
-		case(Property::ObjPtr) : {
-				if(type==Property::ObjArray) {
+		case(Property_Deprecated::ObjArray) :
+		case(Property_Deprecated::ObjPtr) : {
+				if(type==Property_Deprecated::ObjArray) {
 						// Set all the XML nodes to NULL, and then update them all
 						// in order, with index=0 so each new one is added to the end
 						// of the list (more efficient than inserting each one into
@@ -1700,40 +1700,40 @@ setAllPropertiesUseDefault(bool aUseDefault)
 	// LOOP THROUGH PROPERTIES
 	for(int i=0;i<_propertySet.getSize();i++) {
 
-		Property *property = _propertySet.get(i);
+		Property_Deprecated *property = _propertySet.get(i);
 		property->setUseDefault(aUseDefault);
-		Property::PropertyType type = property->getType();
+		Property_Deprecated::PropertyType type = property->getType();
 
 		// VALUE
 		switch(type) {
 
-		case(Property::Bool) :
-		case(Property::Int) :
-		case(Property::Dbl) :
-		case(Property::Str) :
-		case(Property::BoolArray) :
-		case(Property::IntArray) :
-		case(Property::DblArray) :
-		case(Property::StrArray) :
-		case(Property::DblVec) :
-		case(Property::Transform) :
+		case(Property_Deprecated::Bool) :
+		case(Property_Deprecated::Int) :
+		case(Property_Deprecated::Dbl) :
+		case(Property_Deprecated::Str) :
+		case(Property_Deprecated::BoolArray) :
+		case(Property_Deprecated::IntArray) :
+		case(Property_Deprecated::DblArray) :
+		case(Property_Deprecated::StrArray) :
+		case(Property_Deprecated::DblVec) :
+		case(Property_Deprecated::Transform) :
 			break; // Nothing to do for the basic types
 
 		// Obj
-		case(Property::Obj) : {
+		case(Property_Deprecated::Obj) : {
 			Object &object = property->getValueObj();
 			object.setAllPropertiesUseDefault(aUseDefault);
 			break;
 		}
 
 		// ObjArray
-		case(Property::ObjArray) :
+		case(Property_Deprecated::ObjArray) :
 			for(int j=0;j<property->getArraySize();j++)
 				property->getValueObjPtr(j)->setAllPropertiesUseDefault(aUseDefault);
 			break;
 
 		// ObjPtr
-		case(Property::ObjPtr) : {
+		case(Property_Deprecated::ObjPtr) : {
 			Object *object = property->getValueObjPtr();
 			if(object) object->setAllPropertiesUseDefault(aUseDefault);
 			break;
@@ -1924,8 +1924,8 @@ PrintPropertyInfo(ostream &aOStream,
 
 	// NO PROPERTY
 	PropertySet propertySet = object->getPropertySet();
-	Property *property;
-	AbstractProperty *abstractProperty;
+	Property_Deprecated* property;
+	AbstractProperty* abstractProperty;
 	if((aPropertyName=="")||(aPropertyName=="*")) {
 		int propertySetSize = propertySet.getSize();
 		int propertyTableSize = object->_propertyTable.getSize();
@@ -2094,13 +2094,13 @@ addProperty(AbstractProperty &abstractProperty)
 	_propertyTable.addProperty(abstractProperty);
 }
 
-std::string Object::
-getPropertyType(const std::string &name) const
+const std::string& Object::
+getPropertyTypeAsString(const std::string &name) const
 {
-	return _propertyTable.getPropertyType(name);
+	return _propertyTable.getPropertyTypeAsString(name);
 }
 
-std::string Object::
+const std::string& Object::
 getPropertyComment(const std::string &name) const
 {
 	return _propertyTable.getPropertyComment(name);

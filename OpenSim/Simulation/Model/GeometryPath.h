@@ -199,8 +199,11 @@ private:
 //=============================================================================
 //=============================================================================
 
-template <>
-inline AbstractProperty::PropertyType Property2<GeometryPath>::getPropertyType() const { return Obj; }
+template<> struct PropertyTypeName<GeometryPath> 
+{   static const char* name() {return "GeometryPath";} };
+
+template <> inline AbstractProperty::PropertyType 
+Property2<GeometryPath>::getPropertyType() const { return Obj; }
 
 } // end of namespace OpenSim
 

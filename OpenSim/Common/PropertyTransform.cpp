@@ -86,7 +86,7 @@ PropertyTransform() :
 /**
  * Copy constructor.
  *
- * @param aProperty Property to be copied.
+ * @param aProperty Property_Deprecated to be copied.
  */
 PropertyTransform::PropertyTransform(const PropertyTransform &aProperty) :
 	PropertyDblArray(aProperty)
@@ -101,9 +101,9 @@ PropertyTransform::PropertyTransform(const PropertyTransform &aProperty) :
  *
  * @return Copy of this property.
  */
-Property* PropertyTransform::copy() const
+PropertyTransform* PropertyTransform::copy() const
 {
-	Property *property = new PropertyTransform(*this);
+	PropertyTransform *property = new PropertyTransform(*this);
 	return(property);
 }
 
@@ -118,7 +118,7 @@ Property* PropertyTransform::copy() const
 /**
  * Assign this property to another.
  *
- * @param aProperty Property to which to assign this property.
+ * @param aProperty Property_Deprecated to which to assign this property.
  * @return Reference to this property.
  */
 PropertyTransform& PropertyTransform::

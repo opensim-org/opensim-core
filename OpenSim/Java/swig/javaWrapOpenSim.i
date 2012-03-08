@@ -9,7 +9,8 @@
 #include <OpenSim/Common/OldVersionException.h>
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/ArrayPtrs.h>
-#include <OpenSim/Common/Property.h>
+#include <OpenSim/Common/AbstractProperty.h>
+#include <OpenSim/Common/Property_Deprecated.h>
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyTransform.h>
@@ -474,9 +475,10 @@ static bool trace=false;
 %include <OpenSim/Common/OldVersionException.h>
 %include <OpenSim/Common/Array.h>
 %include <OpenSim/Common/ArrayPtrs.h>
-%include <OpenSim/Common/Property.h>
+%include <OpenSim/Common/AbstractProperty.h>
+%include <OpenSim/Common/Property_Deprecated.h>
 %include <OpenSim/Common/PropertyStr.h>
-%template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property>;
+%template(ArrayPtrsProperty) OpenSim::ArrayPtrs<OpenSim::Property_Deprecated>;
 %include <OpenSim/Common/PropertyDblArray.h>
 %include <OpenSim/Common/PropertyTransform.h>
 %include <OpenSim/Common/PropertyGroup.h>

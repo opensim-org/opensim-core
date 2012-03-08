@@ -222,13 +222,11 @@ Actuator::~Actuator()
 void Actuator::setupProperties()
 {
 	addProperty<double>("min_control",
-		"double",
 		"Minimum allowed value for control signal. Used primarily when solving for control values",
-		-std::numeric_limits<SimTK::Real>::infinity());
+		-Infinity);
 	addProperty<double>("max_control",
-		"double",
 		"Maximum allowed value for control signal. Used primarily when solving for control values",
-		std::numeric_limits<SimTK::Real>::infinity());
+		Infinity);
 }
 
 /**

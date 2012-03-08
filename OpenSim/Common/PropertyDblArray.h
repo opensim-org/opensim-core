@@ -38,7 +38,7 @@
 
 #include "osimCommonDLL.h"
 #include <string>
-#include "Property.h"
+#include "Property_Deprecated.h"
 
 
 //=============================================================================
@@ -53,7 +53,7 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PropertyDblArray : public Property
+class OSIMCOMMON_API PropertyDblArray : public Property_Deprecated
 {
 
 //=============================================================================
@@ -76,15 +76,15 @@ public:
 	PropertyDblArray(const std::string &aName,
 		int aSize,const double aArray[]);
 	PropertyDblArray(const PropertyDblArray &aProperty);
-	virtual Property* copy() const;
-	virtual ~PropertyDblArray() { };
+	/*virtual*/ PropertyDblArray* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
+#ifndef SWIG
 	PropertyDblArray& operator=(const PropertyDblArray &aProperty);
-
+#endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
@@ -95,7 +95,9 @@ public:
 	virtual void setValue(const Array<double> &aArray);
 	virtual void setValue(int aSize,const double aArray[]);
 	virtual Array<double>& getValueDblArray();
+#ifndef SWIG
 	virtual const Array<double>& getValueDblArray() const;
+#endif
 	// VALUE as String
 	virtual const std::string &toString();
 	// SIZE

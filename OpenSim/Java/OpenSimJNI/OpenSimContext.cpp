@@ -301,8 +301,8 @@ void OpenSimContext::replacePropertyFunction(OpenSim::Object& obj, OpenSim::Func
     PropertySet& propSet = obj.getPropertySet();
 
     for (int i=0; i <propSet.getSize(); i++) {
-      Property* prop = propSet.get(i);
-      if (prop->getType() == Property::ObjPtr) {
+      Property_Deprecated* prop = propSet.get(i);
+      if (prop->getType() == Property_Deprecated::ObjPtr) {
         if (prop->getValueObjPtr() == aOldFunction) {
           prop->setValue(aNewFunction);
         }

@@ -89,11 +89,9 @@ void HuntCrossleyForce::setupProperties()
     setType("HuntCrossleyForce");
 
 	addProperty<ContactParametersSet>("contact_parameters",
-		"ContactParametersSet",
 		"",
 		ContactParametersSet());
 	addProperty<double>("transition_velocity",
-		"double",
 		"",
 		0.01);
 }
@@ -185,27 +183,21 @@ void HuntCrossleyForce::ContactParameters::setupProperties()
 {
     setType("HuntCrossleyForce::ContactParameters");
 	addProperty< Array<std::string> >("geometry",
-		"Array<string>",
 		"",
 		Array<std::string>());
 	addProperty<double>("stiffness",
-		"double",
 		"",
 		0.0);
 	addProperty<double>("dissipation",
-		"double",
 		"",
 		0.0);
 	addProperty<double>("static_friction",
-		"double",
 		"",
 		0.0);
 	addProperty<double>("dynamic_friction",
-		"double",
 		"",
 		0.0);
 	addProperty<double>("viscous_friction",
-		"double",
 		"",
 		0.0);
 }
