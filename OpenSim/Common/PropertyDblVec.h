@@ -107,7 +107,7 @@ public:
 public:
 	/** Assign this property to another */
 	PropertyDblVec_& operator=(const PropertyDblVec_ &aProperty){
-		Property::operator =(aProperty);
+		Property_Deprecated::operator=(aProperty);
 		_vec = aProperty._vec;
 		return(*this);
 	};
