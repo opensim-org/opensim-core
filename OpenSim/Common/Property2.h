@@ -1,6 +1,6 @@
-#ifndef _Property2_h_
-#define _Property2_h_
-// Property.h
+#ifndef OPENSIM_PROPERTY2_H_
+#define OPENSIM_PROPERTY2_H_
+// Property2.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -37,6 +37,7 @@
 #include "osimCommonDLL.h"
 #include "Array.h"
 #include "ArrayPtrs.h"
+#include "AbstractProperty.h"
 #include "SimTKsimbody.h"
 
 #include <string>
@@ -44,89 +45,6 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
-/**
- * A property consists of a type, name, and a value or an array of values.
- *
- * Class Property is an abstract base class that provides the functionality
- * common to all property types.
- *
- * At the time of the first formulation of the property classes, the only
- * property types that were envisioned are for a few fundamental data types
- * and for Object:
- * - bool
- * - int
- * - float
- * - double
- * - string
- * - Object
- * - Object pointer
- * - array of bools
- * - array of ints
- * - array of floats
- * - array of doubles
- * - array of strings
- * - array of Objects
- *
- * As additional property types are needed, they may be added however.
- *
- * @todo Make default constructors for all derived classes
- * @version 1.0
- * @author Frank C. Anderson
- */
-
-class OSIMCOMMON_API AbstractProperty
-{
-private:
-	std::string _name;
-	std::string _type;
-	std::string _comment;
-	bool _useDefault;
-	bool _matchName;
-	int _index;
-	int _minArraySize; // minimum number of elements for a property of array type
-	int _maxArraySize; // maximum number of elements for a property of array type
-
-public:
-	/** Enumeration of recognized types. */
-	enum PropertyType
-	{
-		None=0, Bool, Int, Dbl, Str, Obj, ObjPtr,
-		BoolArray, IntArray, DblArray, StrArray, ObjArray,
-		DblVec3,
-		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
-		//Station	   Point on a Body: String, Vec3 
-	};
-
-	AbstractProperty();
-	AbstractProperty(const std::string &aName, const std::string &aType, const std::string &aComment);
-	AbstractProperty(const AbstractProperty &aAbstractProperty);
-	virtual ~AbstractProperty() {}
-	virtual AbstractProperty& operator=(const AbstractProperty &aAbstractProperty);
-	virtual AbstractProperty* copy() const = 0;
-	virtual bool equals(AbstractProperty* aAbstractPropertyPtr) const = 0;
-	std::string getName() const { return _name; }
-	void setName(std::string aName){ _name = aName; }
-	std::string getType() const { return _type; }
-	void setType(std::string aType){ _type = aType; }
-	virtual PropertyType getPropertyType() const = 0;
-	std::string getComment() const { return _comment; }
-	void setComment(std::string aComment){ _comment = aComment; }
-	bool getUseDefault() const { return _useDefault; }
-	void setUseDefault(bool aTrueFalse) { _useDefault = aTrueFalse; }
-	bool getMatchName() const { return _matchName; }
-	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
-	int getIndex() { return _index; }
-	void setIndex(int aIndex) { _index = aIndex; }
-	void setAllowableArraySize(int aMin, int aMax) { _minArraySize = aMin; _maxArraySize = aMax; }
-	void setAllowableArraySize(int aNum) { _minArraySize = _maxArraySize = aNum; }
-	int getMinArraySize() { return _minArraySize; }
-	int getMaxArraySize() { return _maxArraySize; }
-
-private:
-	void setNull();
-};
 
 template <class T>
 class Property2 : public AbstractProperty
@@ -142,10 +60,13 @@ public:
 	Property2();
 	Property2(const std::string &aName, const std::string &aType, const std::string &aComment, const T &aValue);
 	Property2(const Property2 &aProperty);
-	virtual ~Property2() { delete _valuePtr; }
-	virtual Property2& operator=(const Property2 &aProperty);
-	virtual Property2* copy() const;
-	virtual bool equals(AbstractProperty* aAbstractPropertyPtr) const;
+	Property2& operator=(const Property2 &aProperty);
+
+    // Implement the AbstractProperty interface.
+	/*virtual*/ ~Property2() { delete _valuePtr; }
+	/*virtual*/ Property2* copy() const;
+	/*virtual*/ bool equals(AbstractProperty* aAbstractPropertyPtr) const;
+
 	const T& getValue() const { return *_valuePtr; }
 	T& updValue() { return *_valuePtr; }
 	void setValue(const T &aValue) { *_valuePtr = aValue; }
@@ -249,4 +170,4 @@ bool Property2<T>::equals(AbstractProperty* aAbstractPropertyPtr) const
 //=============================================================================
 //=============================================================================
 
-#endif //__Property2_h__
+#endif // OPENSIM_PROPERTY2_H_

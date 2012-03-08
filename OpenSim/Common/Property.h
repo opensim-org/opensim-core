@@ -38,6 +38,8 @@
 #include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
+#include "AbstractProperty.h"
+#include "DebugUtilities.h"
 
 namespace OpenSim { 
 
@@ -90,38 +92,16 @@ class Object;
 #define Property_PROPERTY_TYPE_MISMATCH() \
 	throw Exception(std::string(__FUNCTION__)+": Property type mismatch. This property is of type "+getTypeAsString()+".",__FILE__,__LINE__);
 
-class OSIMCOMMON_API Property  
+class OSIMCOMMON_API Property : public AbstractProperty
 {
-
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-	/** Enumeration of recognized types. */
-	enum PropertyType
-	{
-		None=0,Bool, Int, Dbl, Str, Obj, ObjPtr,
-		BoolArray, IntArray, DblArray, StrArray, ObjArray,
-		DblVec,
-		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
-		//Station	   Point on a Body: String, Vec3 
-	};
-
-	enum PropertyCategory
-	{
-		NoCategory,
-		Display,
-		System,
-		Dynamics
-	};
-
 private:
 	/** Type of the property. */
 	PropertyType _type;
 	/** Name of the property. */
 	std::string _name;
-	/** Category of property */
-	PropertyCategory _category;
 
 	/** Flag indicating whether or not this property uses some
 	default property for initializing its value. */
@@ -145,8 +125,18 @@ public:
 	Property();
 	Property(PropertyType aType,const std::string &aName);
 	Property(const Property &aProperty);
-	virtual Property* copy() const=0;
-	virtual ~Property() {};
+
+    // Implement the AbstractProperty interface.
+	virtual ~Property() {}
+    /*virtual*/ bool equals(AbstractProperty* aAbstractPropertyPtr) const {
+        OPENSIM_FUNCTION_NOT_IMPLEMENTED();
+    }
+    /*virtual*/ PropertyType getPropertyType() const {return _type;}
+
+    // Property does not implement AbstractProperty::copy(); that is left to 
+    // concrete Property objects like PropertyInt.
+	virtual Property* copy() const = 0;
+
 	void setNull();
 
 	//--------------------------------------------------------------------------
