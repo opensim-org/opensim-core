@@ -65,7 +65,7 @@ public:
     // Implement the AbstractProperty interface.
 	/*virtual*/ ~Property2() { delete _valuePtr; }
 	/*virtual*/ Property2* copy() const;
-	/*virtual*/ bool equals(AbstractProperty* aAbstractPropertyPtr) const;
+	/*virtual*/ bool equals(const AbstractProperty& other) const;
     // This is specialized for types T below.
 	/*virtual*/ PropertyType getPropertyType() const 
     {   throw Exception("Property2: Use of unspecified property."); return None;}
@@ -75,18 +75,24 @@ public:
 	void setValue(const T &aValue) { *_valuePtr = aValue; }
 };
 
-// Specialize Property2::equals() for type double to allow for a tolerance.
+/** Specialize Property2::equals() for type double to allow for a tolerance.
+Also, in contrast to standard numerical treatment we consider the values to
+be equal if they are both NaN. **/
 template <>
-inline bool Property2<double>::equals(AbstractProperty *aAbstractPropertyPtr) const
-{
-	Property2<double> *aPropertyPtr = dynamic_cast<Property2<double> *>(aAbstractPropertyPtr);
-	if (aPropertyPtr) {
-		if (fabs(*_valuePtr - aPropertyPtr->getValue()) > 1e-7)
-			return false;
-		else
-			return true;
-	}
-	return false;
+inline bool Property2<double>::equals(const AbstractProperty& other) const {
+	const Property2<double>* p = dynamic_cast<const Property2<double>*>(&other);
+    if (p == NULL)
+        return false; // Type mismatch.
+
+    if (*_valuePtr == p->getValue())
+        return true; // catch exact match and Infinities
+
+    if (SimTK::isNaN(*_valuePtr) && SimTK::isNaN(p->getValue()))
+        return true; // we define NaN==NaN to be true here
+
+    // Floating point need only match to a tolerance.
+    // TODO: why is this the right number??
+    return std::abs(*_valuePtr - p->getValue()) <= 1e-7;
 }
 
 template <>
@@ -165,12 +171,12 @@ Property2<T>* Property2<T>::copy() const
 }
 
 template <typename T>
-bool Property2<T>::equals(AbstractProperty* aAbstractPropertyPtr) const
+bool Property2<T>::equals(const AbstractProperty& other) const
 {
-	Property2<T>* aPropertyPtr = dynamic_cast<Property2<T>*>(aAbstractPropertyPtr);
-	if (aPropertyPtr)
-		return *_valuePtr == aPropertyPtr->getValue();
-	return false;
+	const Property2<T>* p = dynamic_cast<const Property2<T>*>(&other);
+    if (p == NULL)
+        return false; // Type mismatch.
+    return *_valuePtr == p->getValue();
 }
 
 }; //namespace

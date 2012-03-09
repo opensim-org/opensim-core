@@ -988,10 +988,9 @@ try {
 		}
 	}
 
-	Array<AbstractProperty *> propertyArray = getPropertyArray();
-	for(int i=0;i<_propertyTable.getSize();i++) {
-
-		AbstractProperty *abstractProperty = propertyArray[i];
+	for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
+		AbstractProperty* abstractProperty = 
+            &_propertyTable.updAbstractPropertyByIndex(i);
 
 		// TYPE
 		AbstractProperty::PropertyType type = abstractProperty->getPropertyType();	
@@ -1457,12 +1456,12 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 		}
 	}
 
-	Array<AbstractProperty *> propertyArray = getPropertyArray();
-	for(int i=0;i<_propertyTable.getSize();i++) {
+	for(int i=0;i<_propertyTable.getNumProperties();i++) {
 
 		//_document->writeToString(elemAsString);
 
-		AbstractProperty *abstractProperty = propertyArray[i];
+		AbstractProperty* abstractProperty = 
+            &_propertyTable.updAbstractPropertyByIndex(i);
 
 		// Add comment if any
 		if (!abstractProperty->getComment().empty()) {
@@ -1745,10 +1744,11 @@ setAllPropertiesUseDefault(bool aUseDefault)
 			break;
 		}
 	}
-	Array<AbstractProperty *> propertyArray = getPropertyArray();
-	for(int i=0;i<_propertyTable.getSize();i++) {
 
-		AbstractProperty *abstractProperty = propertyArray[i];
+    for(int i=0;i<_propertyTable.getNumProperties();i++) {
+		AbstractProperty *abstractProperty = 
+            &_propertyTable.updAbstractPropertyByIndex(i);
+
 		abstractProperty->setUseDefault(aUseDefault);
 		AbstractProperty::PropertyType type = abstractProperty->getPropertyType();
 
@@ -1898,7 +1898,7 @@ PrintPropertyInfo(ostream &aOStream,
  */
 void Object::
 PrintPropertyInfo(ostream &aOStream,
-						const string &aClassName,const string &aPropertyName)
+				  const string &aClassName,const string &aPropertyName)
 {
 	// NO CLASS
 	if(aClassName=="") {
@@ -1925,10 +1925,10 @@ PrintPropertyInfo(ostream &aOStream,
 	// NO PROPERTY
 	PropertySet propertySet = object->getPropertySet();
 	Property_Deprecated* property;
-	AbstractProperty* abstractProperty;
+	const AbstractProperty* abstractProperty;
 	if((aPropertyName=="")||(aPropertyName=="*")) {
 		int propertySetSize = propertySet.getSize();
-		int propertyTableSize = object->_propertyTable.getSize();
+		int propertyTableSize = object->_propertyTable.getNumProperties();
 		int size = propertySetSize + propertyTableSize;
 		aOStream<<"\nPROPERTIES FOR "<<aClassName<<" ("<<size<<")\n";
 		string comment;
@@ -1947,9 +1947,10 @@ PrintPropertyInfo(ostream &aOStream,
 				}
 			}
 		}
-		Array<AbstractProperty *> propertyArray = object->getPropertyArray();
-		for(;i<size;i++) {
-			abstractProperty = propertyArray[i];
+
+        for(;i<size;i++) {
+			abstractProperty = 
+                &object->_propertyTable.getAbstractPropertyByIndex(i-propertySetSize);
 			if(abstractProperty==NULL) continue;
 			if(aPropertyName=="") {
 				aOStream<<i+1<<". "<<abstractProperty->getName()<<endl;
@@ -2088,12 +2089,6 @@ void Object::updateFromXMLDocument()
 	updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
-void Object::
-addProperty(AbstractProperty &abstractProperty)
-{
-	_propertyTable.addProperty(abstractProperty);
-}
-
 const std::string& Object::
 getPropertyTypeAsString(const std::string &name) const
 {
@@ -2104,12 +2099,6 @@ const std::string& Object::
 getPropertyComment(const std::string &name) const
 {
 	return _propertyTable.getPropertyComment(name);
-}
-
-Array<AbstractProperty *> Object::
-getPropertyArray()
-{
-	return _propertyTable.getArray();
 }
 
 /** 

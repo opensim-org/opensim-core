@@ -40,89 +40,70 @@
 using namespace OpenSim;
 using namespace std;
 
+//_____________________________________________________________________________
+// Default constructor is inline
 
-//=============================================================================
-// CONSTRUCTOR(S)
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Constructor.
- */
-PropertyTable::PropertyTable()
+// Copy constructor has to clone the source properties.
+PropertyTable::PropertyTable(const PropertyTable& source)
 {
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aTable Table of properties to be copied.
- */
-PropertyTable::PropertyTable(const PropertyTable &aPropertyTable)
-{
-	_properties = aPropertyTable._properties;
+	replaceProperties(source.properties);
 }
 
+//_____________________________________________________________________________
+// Destructor must deep-delete the properties since they are owned by the
+// PropertyTable.
 PropertyTable::~PropertyTable()
 {
-	for (map<string, AbstractProperty*>::const_iterator it = _properties.begin(); it != _properties.end(); ++it) {
-		AbstractProperty *abstractProperty = (*it).second;
-		delete abstractProperty;
-	}
+	deleteProperties();
 }
 
-PropertyTable& PropertyTable::operator=(const PropertyTable &aPropertyTable)
+//_____________________________________________________________________________
+// Copy assignment has to clone the source properties.
+PropertyTable& PropertyTable::operator=(const PropertyTable& source)
 {
-	for (map<string, AbstractProperty*>::const_iterator it = aPropertyTable._properties.begin(); it != aPropertyTable._properties.end(); ++it) {
-		AbstractProperty *abstractProperty = (*it).second;
-		_properties.insert(pair<string, AbstractProperty*>(abstractProperty->getName(), abstractProperty->copy()));
-	}
+	replaceProperties(source.properties);
 	return *this;
 }
 
-bool PropertyTable::operator==(const PropertyTable &aPropertyTable) const
-{
-	map<string, AbstractProperty*>::const_iterator it;
-	for (it = _properties.begin(); it != _properties.end(); ++it) {
-		string name = (*it).first;
-		AbstractProperty& prop1 = *(*it).second;
-		if (!prop1.equals(aPropertyTable.getPropertyPtr(name)))
-			return false;
-	}
-	return true;
+//_____________________________________________________________________________
+// Equality operator compares each property with the one at the same position.
+bool PropertyTable::equals(const PropertyTable& other) const {
+    if (getNumProperties() != other.getNumProperties())
+        return false;
+    for (int i=0; i < getNumProperties(); ++i) {
+        if (!(getAbstractPropertyByIndex(i) == other.getAbstractPropertyByIndex(i)))
+            return false;
+    }
+    return true;
 }
 
-AbstractProperty* PropertyTable::getPropertyPtr(const std::string &name) const
-{
-	return (*_properties.find(name)).second;
+// Private method to look up the property by name in the map to find its index
+// in the property array and return that. If the name isn't there, return -1.
+// This private method is reused in the implementation of any method that
+// takes a property by name.
+int PropertyTable::findPropertyIndex(const std::string& name) const {
+    const std::map<std::string, int>::const_iterator 
+        it = propertyIndex.find(name);
+    return it == propertyIndex.end() ? -1 : it->second;
 }
 
-Array<AbstractProperty *> PropertyTable::getArray()
-{
-	Array<AbstractProperty *> propertyArray(NULL, _properties.size());
-	for(map<string, AbstractProperty*>::iterator it = _properties.begin(); it != _properties.end(); ++it) {
-		AbstractProperty *abstractProperty = (*it).second;
-		propertyArray[abstractProperty->getIndex()] = abstractProperty;
-	}
-	return propertyArray;
+// Private method to replace the existing properties with a deep copy of 
+// the source, and update the index map to match.
+void PropertyTable::replaceProperties
+   (const SimTK::Array_<AbstractProperty*>& source) {
+    deleteProperties();
+    for (unsigned i=0; i < source.size(); ++i) {
+        properties.push_back(source[i]->copy());
+        propertyIndex[source[i]->getName()] = i;
+    }
 }
 
-void PropertyTable::addProperty(AbstractProperty &aProperty)
-{
-	aProperty.setIndex(_properties.size());
-	_properties.insert(pair<string, AbstractProperty*>(aProperty.getName(), &aProperty));
+// Private method to delete all the properties and clear the index.
+void PropertyTable::deleteProperties() {
+    for (unsigned i=0; i < properties.size(); ++i)
+        delete properties[i];
+    properties.clear();
+    propertyIndex.clear();
 }
 
-const std::string& PropertyTable::getPropertyTypeAsString(const std::string &name) const
-{
-	return (*(*_properties.find(name)).second).getTypeAsString();
-}
-
-const std::string& PropertyTable::getPropertyComment(const std::string &name) const
-{
-	return (*(*_properties.find(name)).second).getComment();
-}
-
-int PropertyTable::getSize() const
-{
-	return _properties.size();
-}

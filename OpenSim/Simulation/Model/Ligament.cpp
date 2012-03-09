@@ -343,7 +343,7 @@ void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 double Ligament::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
 {
-	return updPropertyValue<GeometryPath>("GeometryPath").computeMomentArm(s, aCoord);
+	return getGeometryPath().computeMomentArm(s, aCoord);
 }
 
 
@@ -385,5 +385,5 @@ VisibleObject* Ligament::getDisplayer() const
  */
 void Ligament::updateDisplayer(const SimTK::State& s)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").updateDisplayer(s);
+	updGeometryPath().updateDisplayer(s);
 }

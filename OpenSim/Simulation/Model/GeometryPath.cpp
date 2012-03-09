@@ -1219,7 +1219,8 @@ double GeometryPath::calcLengthAfterPathComputation(const SimTK::State& s, const
  *
  * @param aCoord, the coordinate
  */   
-double GeometryPath::computeMomentArm(const SimTK::State& s, const Coordinate& aCoord)
+double GeometryPath::
+computeMomentArm(const SimTK::State& s, const Coordinate& aCoord) const
 {
 	// Get the underlying geometry of the muscle in terms of individual point 
 	// force directions

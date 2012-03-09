@@ -1,5 +1,5 @@
-#ifndef _Object_h_
-#define _Object_h_
+#ifndef OPENSIM_OBJECT_H_
+#define OPENSIM_OBJECT_H_
 // Object.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -399,18 +399,16 @@ public:
 
 protected:
 	/** Methods to handle Properties */
-	void addProperty(AbstractProperty& abstractProperty);
 	template <class T> const Property2<T>& getProperty(const std::string& name) const;
 	template <class T> Property2<T>& updProperty(const std::string& name);
 	template <class T> void addProperty(const std::string& name, 
                                         const std::string& comment, 
                                         const T &value);
 	template <class T> const T& getPropertyValue(const std::string& name) const;
-	template <class T> T& updPropertyValue(const std::string& name) const;
+	template <class T> T& updPropertyValue(const std::string& name);
 	template <class T> void setPropertyValue(const std::string& name, const T &value);
 	const std::string& getPropertyTypeAsString(const std::string& name) const;
 	const std::string& getPropertyComment(const std::string& name) const;
-	Array<AbstractProperty *> getPropertyArray();
 
 //=============================================================================
 };	// END of class Object
@@ -462,7 +460,7 @@ getPropertyValue(const std::string &name) const
 
 template <class T>
 T& Object::
-updPropertyValue(const std::string &name) const
+updPropertyValue(const std::string &name)
 {
 	return _propertyTable.updPropertyValue<T>(name);
 }
@@ -511,4 +509,4 @@ setPropertyValue(const std::string &name, const T &value)
 
 }; //namespace
 
-#endif //__Object_h__
+#endif // OPENSIM_OBJECT_H_

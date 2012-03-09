@@ -1,5 +1,5 @@
-#ifndef __Ligament_h__
-#define __Ligament_h__
+#ifndef OPENSIM_LIGAMENT_H_
+#define OPENSIM_LIGAMENT_H_
 
 // Ligament.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -88,7 +88,8 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	GeometryPath& getGeometryPath() const { return updPropertyValue<GeometryPath>("GeometryPath"); }
+	const GeometryPath& getGeometryPath() const { return getPropertyValue<GeometryPath>("GeometryPath"); }
+	GeometryPath& updGeometryPath() { return updPropertyValue<GeometryPath>("GeometryPath"); }
 	virtual bool hasGeometryPath() const { return true;};
 	virtual double getLength(const SimTK::State& s) const;
 	virtual double getRestingLength() const { return getPropertyValue<double>("resting_length"); }
@@ -139,4 +140,4 @@ private:
 //=============================================================================
 } // end of namespace OpenSim
 
-#endif // __Ligament_h__
+#endif // OPENSIM_LIGAMENT_H_

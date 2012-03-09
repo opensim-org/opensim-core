@@ -1,5 +1,5 @@
-#ifndef _PathActuator_h_
-#define _PathActuator_h_
+#ifndef OPENSIM_PATH_ACTUATOR_H_
+#define OPENSIM_PATH_ACTUATOR_H_
 // PathActuator.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -82,7 +82,7 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// Path
-	GeometryPath& updGeometryPath() const { return updPropertyValue<GeometryPath>("GeometryPath"); }
+	GeometryPath& updGeometryPath() { return updPropertyValue<GeometryPath>("GeometryPath"); }
 	const GeometryPath& getGeometryPath() const { return getPropertyValue<GeometryPath>("GeometryPath"); }
 	virtual bool hasGeometryPath() const { return true;};
 
@@ -154,6 +154,6 @@ protected:
 //=============================================================================
 //=============================================================================
 
-#endif // __PathActuator_h__
+#endif // OPENSIM_PATH_ACTUATOR_H_
 
 

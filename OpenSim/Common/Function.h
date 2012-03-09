@@ -1,6 +1,6 @@
-#ifndef _Function_h_
-#define _Function_h_
-// Function.cpp
+#ifndef OPENSIM_FUNCTION_H_
+#define OPENSIM_FUNCTION_H_
+// Function.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
 * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -145,23 +145,24 @@ protected:
 //=============================================================================
 };	// END class Function
 
-template<> struct PropertyTypeName<Function *> 
-{   static const char* name() {return "Function *";} };
+template<> struct PropertyTypeName<Function*> 
+{   static const char* name() {return "Function*";} };
 
 template <> inline AbstractProperty::PropertyType 
-Property2<Function *>::getPropertyType() const { return ObjPtr; }
+Property2<Function*>::getPropertyType() const { return ObjPtr; }
 
 template <>
-inline bool Property2<Function *>::equals(AbstractProperty *aAbstractPropertyPtr) const
+inline bool Property2<Function*>::equals(const AbstractProperty& other) const
 {
-	Property2<Function *> *aPropertyPtr = dynamic_cast<Property2<Function *> *>(aAbstractPropertyPtr);
-	if (aPropertyPtr)
-		return **_valuePtr == *(aPropertyPtr->getValue());
-	return false;
+	const Property2<Function*>* p = 
+        dynamic_cast<const Property2<Function*>*>(&other);
+    if (p == NULL)
+        return false; // Type mismatch.
+	return **_valuePtr == *(p->getValue());
 }
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif  // __Function_h__
+#endif // OPENSIM_FUNCTION_H_

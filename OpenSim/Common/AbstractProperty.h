@@ -77,11 +77,28 @@ public:
 	
     // Default copy constructor and copy assignment operator.
 
+    #ifndef SWIG
+    /** See the equals() method for the meaning of this operator. **/
+    bool operator==(const AbstractProperty& other) const
+    {   return equals(other); }
+    #endif
+
     // This is the interface that any concrete Property class must implement.
-	virtual ~AbstractProperty() {}
+    //--------------------------------------------------------------------------
+	/** Return all heap space used by this property. **/
+    virtual ~AbstractProperty() {}
+    /** Return a new instance of this concrete property object. This is
+    allocated on the heap and it is up to the caller to delete it when done. **/
 	virtual AbstractProperty* copy() const = 0;
-	virtual bool equals(AbstractProperty* aAbstractPropertyPtr) const = 0;
+    /** The meaning of equals() is determined by the concrete property
+    depending on its type. Floating point values should be compared to a
+    tolerance, and should be considered equal if both are the same infinity
+    or both are NaN (the latter in contrast to normal IEEE floating point 
+    behavior, where NaN!=NaN). **/
+	virtual bool equals(const AbstractProperty& other) const = 0;
+    /** Return the enum value corresponding to the concrete property. **/
 	virtual PropertyType getPropertyType() const = 0;
+    //--------------------------------------------------------------------------
 
     /** Set the property name. **/
 	void setName(const std::string& aName){ _name = aName; }
@@ -93,8 +110,6 @@ public:
 	void setUseDefault(bool aTrueFalse) { _useDefault = aTrueFalse; }
     /** TODO: what is this? */
 	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
-    /** Define an ordering for this property among its peers. */
-	void setIndex(int aIndex) { _index = aIndex; }
     /** For an array property, require that the number of elements n in the
     array be aMin <= n <= aMax. */
 	void setAllowableArraySize(int aMin, int aMax) 
@@ -110,7 +125,7 @@ public:
 	const std::string& getComment() const { return _comment; }
 	bool getUseDefault() const { return _useDefault; }
 	bool getMatchName() const { return _matchName; }
-	int getIndex() { return _index; }
+	//int getIndex() { return _index; }
     int getMinArraySize() { return _minArraySize; }
 	int getMaxArraySize() { return _maxArraySize; }
 
@@ -127,11 +142,10 @@ private:
 	std::string _name;
 	std::string _typeAsString;
 	std::string _comment;
-	bool _useDefault;
-	bool _matchName;
-	int _index;
-	int _minArraySize; // minimum number of elements for a property of array type
-	int _maxArraySize; // maximum number of elements for a property of array type
+	bool        _useDefault;
+	bool        _matchName;
+	int         _minArraySize; // minimum # elements for property of array type
+	int         _maxArraySize; // maximum # elements for property of array type
 };
 
 /** This class defines the external string representation for a property type T.

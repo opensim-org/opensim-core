@@ -75,7 +75,6 @@ void AbstractProperty::setNull()
     _comment = "";
 	_useDefault = false;
 	_matchName = false;
-    _index = -1;
 	_minArraySize = 0;
 	_maxArraySize = INT_MAX;
 }

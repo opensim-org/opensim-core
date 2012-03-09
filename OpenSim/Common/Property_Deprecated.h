@@ -115,7 +115,7 @@ public:
 
     // Implement the AbstractProperty interface.
 	virtual ~Property_Deprecated() {}
-    /*virtual*/ bool equals(AbstractProperty* aAbstractPropertyPtr) const {
+    /*virtual*/ bool equals(const AbstractProperty& other) const {
         OPENSIM_FUNCTION_NOT_IMPLEMENTED();
     }
     /*virtual*/ PropertyType getPropertyType() const {return _propertyType;}

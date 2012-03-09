@@ -127,7 +127,7 @@ void PathActuator::setupProperties()
 void PathActuator::copyData(const PathActuator &aPathActuator)
 {
 	// MEMBER VARIABLES
-	setPropertyValue("GeometryPath", aPathActuator.getPropertyValue<GeometryPath>("GeometryPath"));
+	setPropertyValue("GeometryPath", aPathActuator.getGeometryPath());
 	setOptimalForce(aPathActuator.getOptimalForce());
 }
 
@@ -195,7 +195,7 @@ double PathActuator::getOptimalForce() const
  */
 double PathActuator::getLength(const SimTK::State& s) const
 {
-	return getPropertyValue<GeometryPath>("GeometryPath").getLength(s);
+	return getGeometryPath().getLength(s);
 }
 //_____________________________________________________________________________
 /**
@@ -205,7 +205,7 @@ double PathActuator::getLength(const SimTK::State& s) const
  */
 double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
 {
-	return getPropertyValue<GeometryPath>("GeometryPath").getLengtheningSpeed(s);
+	return getGeometryPath().getLengtheningSpeed(s);
 }
 //_____________________________________________________________________________
 /**
@@ -230,7 +230,7 @@ void PathActuator::addNewPathPoint(
 		 OpenSim::Body& aBody, 
 		 const SimTK::Vec3& aPositionOnBody) {
 	// Create new PathPoint
-	PathPoint* newPathPoint = updPropertyValue<GeometryPath>("GeometryPath").appendNewPathPoint(proposedName, aBody, aPositionOnBody);
+	PathPoint* newPathPoint = updGeometryPath().appendNewPathPoint(proposedName, aBody, aPositionOnBody);
 	// Set offset/position on owner body
 	newPathPoint->setName(proposedName);
 	for (int i=0; i<3; i++)	// Use interface that does not depend on state
@@ -268,7 +268,7 @@ void PathActuator::computeForce( const SimTK::State& s,
 {
 	if(_model==NULL) return;
 
-	const GeometryPath &path = getPropertyValue<GeometryPath>("GeometryPath");
+	const GeometryPath &path = getGeometryPath();
 
 	// compute path's lengthening speed if necessary
 	double speed = path.getLengtheningSpeed(s);
@@ -301,7 +301,7 @@ void PathActuator::computeForce( const SimTK::State& s,
  */
 double PathActuator::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
 {
-	return updPropertyValue<GeometryPath>("GeometryPath").computeMomentArm(s, aCoord);
+	return getGeometryPath().computeMomentArm(s, aCoord);
 }
 
 //_____________________________________________________________________________
@@ -313,7 +313,7 @@ double PathActuator::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
  */
 void PathActuator::setup(Model& aModel)
 {
-	GeometryPath &path = updPropertyValue<GeometryPath>("GeometryPath");
+	GeometryPath &path = updGeometryPath();
 
 	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
 	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
@@ -345,7 +345,7 @@ void PathActuator::setup(Model& aModel)
  */
 void PathActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").setOwner(this);
+	updGeometryPath().setOwner(this);
 	Actuator::updateFromXMLNode(aNode, versionNumber);
 }	
 
@@ -364,7 +364,7 @@ VisibleObject* PathActuator::getDisplayer() const
  */
 void PathActuator::updateDisplayer(const SimTK::State& s)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").updateDisplayer(s);
+	updGeometryPath().updateDisplayer(s);
 }
 
 //=============================================================================
@@ -380,7 +380,7 @@ void PathActuator::updateDisplayer(const SimTK::State& s)
  */
 void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").preScale(s, aScaleSet);
+	updGeometryPath().preScale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -392,7 +392,7 @@ void PathActuator::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").scale(s, aScaleSet);
+	updGeometryPath().scale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -406,5 +406,5 @@ void PathActuator::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void PathActuator::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").postScale(s, aScaleSet);
+	updGeometryPath().postScale(s, aScaleSet);
 }
