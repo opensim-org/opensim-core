@@ -162,6 +162,9 @@ public:
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
+	void setOutputMotionFileName(const std::string aOutputMotionFileName) {
+		_outputMotionFileName = aOutputMotionFileName;
+	}
 	std::string getOutputMotionFileName() { return _outputMotionFileName;}
 	IKTaskSet& getIKTaskSet() { return _ikTaskSet; }
 
