@@ -80,7 +80,7 @@ ControlSetController::ControlSetController(const std::string &aFileName, bool aU
      _controlsFileName(_controlsFileNameProp.getValueStr())
 {
 	setNull();
-	SimTK::Xml::Element e = _document->getRootDataElement(); 
+	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
 	if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 //_____________________________________________________________________________

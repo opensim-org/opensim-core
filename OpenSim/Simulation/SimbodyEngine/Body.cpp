@@ -320,7 +320,7 @@ void Body::setup(Model& aModel)
 
 void Body::createSystem(SimTK::MultibodySystem& system) const
 {
-	if(_name == "ground"){
+	if(getName() == "ground"){
 		Body * mutableThis = const_cast<Body *>(this);
 		mutableThis->_index = SimTK::GroundIndex;
 	}
@@ -498,7 +498,7 @@ void Body::scale(const SimTK::Vec3& aScaleFactors, bool aScaleMass)
 	// Update scale factors for displayer
 	updDisplayer()->setScaleFactors(oldScaleFactors);
 
-	if (_name == "ground")	// The following throws an exception if applied to ground.
+	if (getName() == "ground")	// The following throws an exception if applied to ground.
 		scaleInertialProperties(aScaleFactors, aScaleMass);
 }
 

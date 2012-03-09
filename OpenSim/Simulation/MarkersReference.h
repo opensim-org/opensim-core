@@ -47,12 +47,16 @@ private:
 	double &_weight;
 
 public:
-	MarkerWeight() : Object(), _weight(_weightProp.getValueDbl()) {};
-	MarkerWeight(std::string name, double weight) : Object(), _weight(_weightProp.getValueDbl())
-		{_name = name; _weight = weight;}
+	MarkerWeight() : Object(), _weight(_weightProp.getValueDbl()) {}
+
+	MarkerWeight(std::string name, double weight) 
+    :   Object(), _weight(_weightProp.getValueDbl())
+	{   setName(name); _weight = weight; }
 
 	//Copy
-	MarkerWeight(const MarkerWeight &aWeight) : Object(aWeight), _weight(_weightProp.getValueDbl()) {_weight = aWeight._weight;}
+	MarkerWeight(const MarkerWeight &aWeight) 
+    :   Object(aWeight), _weight(_weightProp.getValueDbl()) 
+    {   _weight = aWeight._weight; }
 
 
 	void setWeight(double weight) {_weight = weight; }
@@ -126,10 +130,12 @@ public:
 
 	MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
 
-	void copyData(const MarkersReference &aRef){_type = "MarkersReference";
-												_markersFile = aRef._markersFile;
-												setMarkerWeightSet(aRef._markerWeightSet);
-												_defaultWeight = aRef._defaultWeight;  }
+	void copyData(const MarkersReference &aRef) {
+        setType("MarkersReference");
+		_markersFile = aRef._markersFile;
+		setMarkerWeightSet(aRef._markerWeightSet);
+		_defaultWeight = aRef._defaultWeight;  
+    }
 
 	/** load the marker data for this MarkersReference from markerFile  */
 	void loadMarkersFile(const std::string markerFile, Units modelUnits=Units(Units::Meters));

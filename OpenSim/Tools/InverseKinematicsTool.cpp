@@ -518,8 +518,8 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
 				// Copy all children of root to newRoot
 				docElement.insertNodeAfter(docElement.node_end(), iter->clone());
 				newDocument.writeToFile(newFileName);
-				_document = new XMLDocument(newFileName);
-				aNode = _document->getRootDataElement();
+				setDocument(new XMLDocument(newFileName));
+				aNode = updDocument()->getRootDataElement();
 			}
 			else { 
 				if (root.getElementTag()=="IKTool"){
@@ -555,8 +555,8 @@ void InverseKinematicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int ve
 					// Copy all children of root to newRoot
 					docElement.insertNodeAfter(docElement.node_end(), doc.getRootElement().clone());
 					newDocument.writeToFile(newFileName);
-					_document = new XMLDocument(newFileName);
-					aNode = _document->getRootDataElement();
+				    setDocument(new XMLDocument(newFileName));
+				    aNode = updDocument()->getRootDataElement();
 				}
 				else
 				;	// Somthing wrong! bail out

@@ -509,7 +509,7 @@ bool Coordinate::setSpeedValue(SimTK::State& s, double aValue) const
 
 const std::string  Coordinate::getSpeedName() const
 {
-	return _name + "_u";
+	return getName() + "_u";
 }
 
 double Coordinate::getAccelerationValue(const SimTK::State& s) const
@@ -653,7 +653,7 @@ void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
 		Constraint& aConstraint = _model->getConstraintSet().get(i);
 		if(aConstraint.getType() == "CoordinateCouplerConstraint"){
 			CoordinateCouplerConstraint& coupler = dynamic_cast<CoordinateCouplerConstraint&>(aConstraint);
-			if (coupler.getDependentCoordinateName() == this->_name)
+			if (coupler.getDependentCoordinateName() == getName())
 				return !coupler.isDisabled(s);
 		}
 	}

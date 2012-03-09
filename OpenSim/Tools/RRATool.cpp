@@ -930,7 +930,7 @@ writeAdjustedModel()
 		cerr<<"Warning: A name for the output model was not set.\n";
 		cerr<<"Specify a value for the property "<<_outputModelFileProp.getName();
 		cerr<<" in the setup file.\n";
-		if (_document!=NULL){
+		if (getDocument()){
 			string directoryOfSetupFile = IO::getParentDirectory(getDocumentFileName());
 			_outputModelFile = directoryOfSetupFile+"adjusted_model.osim";
 		}

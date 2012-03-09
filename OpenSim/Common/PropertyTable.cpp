@@ -1,7 +1,7 @@
 // PropertyTable.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -25,11 +25,6 @@
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-
-/* Note: This code was originally developed by Realistic Dynamics Inc. 
- * Author: Frank C. Anderson 
- */
-
 
 //============================================================================
 // INCLUDES

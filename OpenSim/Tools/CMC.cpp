@@ -236,7 +236,7 @@ setNull()
 	_verbose = false;
 	_paramList.setSize(0);
     _controlSet.setSize(0);
-	_authors="Frank Anderson";
+	setAuthors("Frank Anderson");
 
 }
 void CMC::setupProperties()

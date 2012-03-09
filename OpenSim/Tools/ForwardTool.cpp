@@ -524,9 +524,9 @@ const Manager& ForwardTool::getManager() const {
 	int documentVersion = versionNumber;
 	bool neededSprings=false;
 	std::string savedCwd;
-	if(_document) {
+	if(getDocument()) {
 		savedCwd = IO::getCwd();
-		IO::chDir(IO::getParentDirectory(_document->getFileName()));
+		IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
 	}	
 	if ( documentVersion < XMLDocument::getLatestVersion()){
 			// Now check if we need to create a correction controller to replace springs
@@ -558,6 +558,6 @@ const Manager& ForwardTool::getManager() const {
 	}
 	else
 		AbstractTool::updateFromXMLNode(aNode, versionNumber);
-	if(_document) IO::chDir(savedCwd);
+	if(getDocument()) IO::chDir(savedCwd);
 	//Object::updateFromXMLNode(aNode, versionNumber);
 }

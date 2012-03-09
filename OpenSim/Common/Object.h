@@ -146,14 +146,18 @@ private:
 	static int _debugLevel;
 
 public:
-#ifndef SWIG
+    #ifndef SWIG
 	/** Name used for default objects when they are serialized. */
 	static const std::string DEFAULT_NAME;
-#endif
+    #endif
 protected:
-	/** Property set for serializable member variables of this and
+	/** OBSOLETE: Property set for serializable member variables of this and
 	derived classes. */
 	PropertySet _propertySet;
+
+private:
+	/** Property table for serializable properties of this and derived 
+    classes. */
 	PropertyTable _propertyTable;
 	/** Type. */
 	std::string _type;
@@ -340,7 +344,9 @@ public:
 	// Inline support
 	bool getInlined() const;
 	void setInlined(bool aInlined, const std::string &aFileName="");
-	XMLDocument* getDocument() const;
+    void setDocument(XMLDocument* doc) {_document=doc;}
+    const XMLDocument* getDocument() const {return _document;}
+    XMLDocument* updDocument() {return _document;}
 	std::string getDocumentFileName() const;
 	void setAllPropertiesUseDefault(bool aUseDefault);
 private:
@@ -389,7 +395,7 @@ public:
 	 * Method to return instances of Objects that derives from a given type, useful for example
 	 * to find all Joints, Constraints, Analyses, ... etc.
 	 */
-	template<class T> static void getRegisteredObjectsOfGivenType(ArrayPtrs<T> &rArray) {
+	template<class T> static void getRegisteredObjectsOfGivenType(ArrayPtrs<T>& rArray) {
 		rArray.setSize(0);
 		rArray.setMemoryOwner(false);
 		for(int i=0; i<_Types.getSize(); i++)
@@ -403,7 +409,8 @@ protected:
 	template <class T> Property2<T>& updProperty(const std::string& name);
 	template <class T> void addProperty(const std::string& name, 
                                         const std::string& comment, 
-                                        const T &value);
+                                        const T&           value,
+                                        const std::string& group = "Misc");
 	template <class T> const T& getPropertyValue(const std::string& name) const;
 	template <class T> T& updPropertyValue(const std::string& name);
 	template <class T> void setPropertyValue(const std::string& name, const T &value);
@@ -417,7 +424,7 @@ protected:
 template<> struct PropertyTypeName<Object> 
 {   static const char* name() {return "Object";} };
 template<> struct PropertyTypeName<Object*> 
-{   static const char* name() {return "ObjPtr";} };
+{   static const char* name() {return "Object*";} };
 template<> struct PropertyTypeName< ArrayPtrs<Object> > 
 {   static const char* name() {return "ArrayPtrs<Object>";} };
 
@@ -430,47 +437,43 @@ inline AbstractProperty::PropertyType Property2< ArrayPtrs<Object> >::getPropert
 template <>
 inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() const { return ObjPtr; }
 
-template <class T>
-const Property2<T>& Object::
-getProperty(const std::string &name) const
+template <class T> const Property2<T>& Object::
+getProperty(const std::string& name) const
 {
 	return _propertyTable.getProperty<T>(name);
 }
 
-template <class T>
-Property2<T>& Object::
-updProperty(const std::string &name)
+template <class T> Property2<T>& Object::
+updProperty(const std::string& name)
 {
 	return _propertyTable.updProperty<T>(name);
 }
 
-template <class T>
-void Object::
-addProperty(const std::string &name, const std::string &comment, const T &value)
+template <class T> void Object::
+addProperty(const std::string& name, const std::string& comment, 
+            const T& value, const std::string& group)
 {
-	_propertyTable.addProperty(name, comment, value);
+	_propertyTable.addProperty(name, comment, value, group);
 }
 
-template <class T>
-const T& Object::
-getPropertyValue(const std::string &name) const
+template <class T> const T& Object::
+getPropertyValue(const std::string& name) const
 {
 	return _propertyTable.getPropertyValue<T>(name);
 }
 
-template <class T>
-T& Object::
-updPropertyValue(const std::string &name)
+template <class T> T& Object::
+updPropertyValue(const std::string& name)
 {
 	return _propertyTable.updPropertyValue<T>(name);
 }
 
-template <class T>
-void Object::
-setPropertyValue(const std::string &name, const T &value)
+template <class T> void Object::
+setPropertyValue(const std::string& name, const T& value)
 {
 	_propertyTable.setPropertyValue(name, value);
 }
+
 /**
  * Add public static method declaration in class derived from a
  * parent to assist in downcasting objects of the parent type to the 

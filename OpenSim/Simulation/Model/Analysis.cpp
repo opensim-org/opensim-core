@@ -103,8 +103,8 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
 {
 	setType("Analysis");
 	setNull();
-	SimTK::Xml::Element e = getDocument()->getRootDataElement(); 
-	if(aUpdateFromXMLNode) updateFromXMLNode(e, _document->getDocumentVersion());
+	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
+	if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 //_____________________________________________________________________________
 /**

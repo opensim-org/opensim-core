@@ -581,7 +581,7 @@ bool AbstractTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 		// And then we can rethrow the exception
 		 cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
 			 << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
-		if(_document) IO::chDir(savedCwd);
+		if(getDocument()) IO::chDir(savedCwd);
 		throw(ex);
 	}
 	_externalLoads.setMemoryOwner(false);
@@ -867,13 +867,13 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 	bool oldFileValid = !(oldFile=="" || oldFile=="Unassigned");
 
 	std::string savedCwd;
-	if(_document) {
+	if(getDocument()) {
 		savedCwd = IO::getCwd();
-		IO::chDir(IO::getParentDirectory(_document->getFileName()));
+		IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
 	}
 	if (oldFileValid){
 		if(!ifstream(oldFile.c_str(), ios_base::in).good()) {
-			if(_document) IO::chDir(savedCwd);
+			if(getDocument()) IO::chDir(savedCwd);
 			string msg =
 				"Object: ERR- Could not open file " + oldFile+ ". It may not exist or you don't have permission to read it.";
 			throw Exception(msg,__FILE__,__LINE__);
@@ -893,7 +893,7 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 		for(int i=0; i<9; i++){
 			indices[i][0]= labels.findIndex(forceLabels[i]);
 			if (indices[i][0]==-1){	// Something went wrong, abort here 
-				if(_document) IO::chDir(savedCwd);
+				if(getDocument()) IO::chDir(savedCwd);
 				string msg =
 					"Object: ERR- Could not find label "+forceLabels[i]+ "in file " + oldFile+ ". Aborting.";
 				throw Exception(msg,__FILE__,__LINE__);
@@ -917,15 +917,15 @@ std::string AbstractTool::createExternalLoadsFile(const std::string& oldFile,
 		_externalLoads.setDataFileName(oldFile);
 		std::string newName=oldFile.substr(0, oldFile.length()-4)+".xml";
 		_externalLoads.print(newName);
-		if(_document) IO::chDir(savedCwd);
+		if(getDocument()) IO::chDir(savedCwd);
 		cout<<"\n\n- Created ForceSet file " << newName << "to apply forces from " << oldFile << ".\n\n";
 		return newName;
 	}
 	else {
-			if(_document) IO::chDir(savedCwd);
+			if(getDocument()) IO::chDir(savedCwd);
 			string msg =
 				"Object: ERR- Only one body is specified in " + oldFile+ ".";
 			throw Exception(msg,__FILE__,__LINE__);
 	}
-	if(_document) IO::chDir(savedCwd);
+	if(getDocument()) IO::chDir(savedCwd);
 }

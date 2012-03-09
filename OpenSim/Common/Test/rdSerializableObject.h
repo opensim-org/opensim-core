@@ -75,7 +75,7 @@ namespace OpenSim {
 		{
 			setNull();
 			setupSerializedMembers();
-			SimTK::Xml::Element e = _document->getRootDataElement(); 
+			SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
 			updateFromXMLNode(e, getDocument()->getDocumentVersion());
 		};
 		rdSerializableObject(const rdSerializableObject &aControl)

@@ -545,8 +545,8 @@ void InverseDynamicsTool::updateFromXMLNode(SimTK::Xml::Element& aNode, int vers
 					iterTool->eraseNode(iterAnalysisSet);
 				}
 				newDoc.writeToFile(newFileName);
-				_document = new XMLDocument(newFileName);
-				aNode = _document->getRootDataElement();
+				setDocument(new XMLDocument(newFileName));
+				aNode = updDocument()->getRootDataElement();
 			}
 
 		}

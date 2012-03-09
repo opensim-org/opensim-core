@@ -519,7 +519,7 @@ void Joint::constructCoordinates()
 
 	for(int i = ncoords; i< numCoordinates() ; i++){
 		std::stringstream name;
-		name << _name << "_coord_" << i;
+		name << getName() << "_coord_" << i;
 		Coordinate *coord = new Coordinate();
 		coord->setName(name.str());
 		_coordinateSet.append(coord);

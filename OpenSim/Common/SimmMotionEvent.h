@@ -75,7 +75,6 @@ public:
 	SimmMotionEvent& operator=(const SimmMotionEvent &aEvent);
 
 	void copyData(const SimmMotionEvent &aEvent);
-	void setName(std::string aName) { _name = aName; }
 	void setTime(double aTime) { _time = aTime; }
 	double getTime() const { return _time; }
 	void setColor(double* aColor);

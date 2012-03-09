@@ -261,7 +261,7 @@ void PointToPointSpring::setup(Model& aModel)
 		throw (Exception(errorMessage.c_str()));
 	}
 
-	if(_name == "")
+	if(getName() == "")
 		setName("spring");
 }
 

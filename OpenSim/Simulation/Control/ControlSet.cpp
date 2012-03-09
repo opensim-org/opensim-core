@@ -85,7 +85,7 @@ ControlSet::ControlSet(const string &aFileName) :
 	Set<Control>(aFileName, false), _ptcMap(-1), _ptpMap(-1)
 {
 	setNull();
-	SimTK::Xml::Element e = _document->getRootDataElement(); 
+	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
 	updateFromXMLNode(e, getDocument()->getDocumentVersion());
 	// removeInvalidObjects();
 	generateParameterMaps();

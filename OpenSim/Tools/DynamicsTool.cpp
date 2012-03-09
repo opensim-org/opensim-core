@@ -246,7 +246,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 		// And then we can rethrow the exception
 		 cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
 			 << ". Please make sure the file exists and that it contains an ExternalLoads object or create a fresh one." << endl;
-		if(_document) IO::chDir(savedCwd);
+		if(getDocument()) IO::chDir(savedCwd);
 		throw(ex);
 	}
 	_externalLoads.setMemoryOwner(false);

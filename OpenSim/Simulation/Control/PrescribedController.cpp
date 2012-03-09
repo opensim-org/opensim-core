@@ -92,7 +92,7 @@ PrescribedController::PrescribedController(Model& aModel) :
     _prescribedControlFunctions((FunctionSet&)_prescribedControlFunctionsProp.getValueObj())
 {
       setNull();
-	  SimTK::Xml::Element e = _document->getRootDataElement(); 
+	  SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
       if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
 }
 

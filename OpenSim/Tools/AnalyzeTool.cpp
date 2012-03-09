@@ -502,7 +502,7 @@ bool AnalyzeTool::run(bool plotting)
 	// Do the maneuver to change then restore working directory 
 	// so that the parsing code behaves properly if called from a different directory.
 	string saveWorkingDirectory = IO::getCwd();
-	if (_document)	// When the tool is created live from GUI it has no file/document association
+	if (getDocument())	// When the tool is created live from GUI it has no file/document association
 		IO::chDir(IO::getParentDirectory(getDocumentFileName()));
 
 	bool completed = true;

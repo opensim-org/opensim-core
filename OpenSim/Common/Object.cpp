@@ -1619,16 +1619,8 @@ updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent)
 // DOCUMENT
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Get the document for this object.
- *
- * @return Document set for this object.
- */
-XMLDocument* Object::
-getDocument() const
-{
-	return(_document);
-}
+// getDocument(), updDocument() are inline.
+
 //_____________________________________________________________________________
 /**
  * Get the document's filename
