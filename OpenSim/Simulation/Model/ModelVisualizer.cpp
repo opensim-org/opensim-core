@@ -476,8 +476,9 @@ void ModelVisualizer::collectFixedGeometry(const State& state) const {
             DecorativeMesh dmesh(pmesh);
             dmesh.setColor(geo.getColor());
             dmesh.setOpacity(geo.getOpacity());
-            // TODO: xyz factors
-            dmesh.setScale(geo.getScaleFactors()[0]*scale[0]); 
+            const Vec3 netScale = geo.getScaleFactors()
+                                        .elementwiseMultiply(scale);
+            dmesh.setScaleFactors(netScale); 
             _viz->addDecoration(bx, X_BV*geo.getTransform(), dmesh);
         }
     }
