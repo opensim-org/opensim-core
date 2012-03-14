@@ -298,24 +298,24 @@ ENDIF(${CMAKE_C_COMPILER} MATCHES "cl")
 
 # Copy libraries from ${SIMTK_BIN_DIR} to ${BUILD_BINARY_DIR}
 
-FILE(GLOB LIB_FILES2 "${Simbody_LIB_DIR}/*.a"
-					 "${Simbody_LIB_DIR}/*.so"
-					 "${Simbody_LIB_DIR}/*.so.*"
-				     "${Simbody_LIB_DIR}/*.dylib"
-					 "${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
-SET(LIB_FILES ${THIRDPARTY_DYNLIB_FILES} ${LIB_FILES2})
+FILE(GLOB LIB_FILES "${Simbody_LIB_DIR}/*.a"
+					"${Simbody_LIB_DIR}/*.so"
+					"${Simbody_LIB_DIR}/*.so.*"
+				    "${Simbody_LIB_DIR}/*.dylib"
+					"${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
 
-# MESSAGE("LIB_FILES="${LIB_FILES})
 # This is where we're going to put these binaries.
 SET(COPIED_LIB_FILES)
 FOREACH(LIBF ${LIB_FILES})
 	GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
 	SET(COPIED_LIB_FILES ${COPIED_LIB_FILES}
-	"${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
+	    "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
 ENDFOREACH()
+
 ADD_CUSTOM_TARGET(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
 SET_TARGET_PROPERTIES(SimbodyFiles
  	PROPERTIES PROJECT_LABEL "Library - Simbody Files")
+
 FOREACH(LIBF ${LIB_FILES})
     # MESSAGE("LIB_FILE" ${LIBF})
 	GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
@@ -385,43 +385,40 @@ SET(SIMTK_COMMON_LIB debug ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimiz
 SET(SIMTK_MATH_LIB debug ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKmath)
 SET(SIMTK_SIMBODY_LIB debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized ${NameSpace}SimTKsimbody)
 
+SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
+                    ${SIMTK_MATH_LIB} 
+                    ${SIMTK_SIMBODY_LIB} 
+                    ${MATH_LIBS_TO_USE})
+
+# Now figure out which 3rd party files need to be installed in the /bin 
+# directory and which in the lib directory. Executables go in /bin on all 
+# platforms.  Libraries (shared or otherwise) go in /lib, except on Windows 
+# where the ".dll" files go in bin along with executables.
 IF(WIN32)	
-	SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
-					${SIMTK_MATH_LIB} 
-					${SIMTK_SIMBODY_LIB} 
-					${MATH_LIBS_TO_USE})
-	# MESSAGE("SIMTK_BIN_DIR="${SIMTK_BIN_DIR})
-	# MESSAGE("SIMTK_LIB_DIR="${SIMTK_LIB_DIR})
-	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
+	FILE(GLOB THIRDPARTY_BIN_FILES 
 					${Simbody_BIN_DIR}/*.dll	# non repository layout
 					${Simbody_BIN_DIR}/*.exe
 					${Simbody_BIN_DIR}/${VCVERSION}/*.dll
 					${Simbody_BIN_DIR}/${VCVERSION}/*.exe)
-	FILE(GLOB THIRDPARTY_EXPORTLIB_FILES 
+	FILE(GLOB THIRDPARTY_LIB_FILES 
 					${Simbody_LIB_DIR}/*.lib	# non repository layout
 					${Simbody_LIB_DIR}/${VCVERSION}/*.lib)
-	# MESSAGE("THIRDPARTY_DYNLIB_FILES:" ${THIRDPARTY_DYNLIB_FILES})
 ELSE(WIN32)
-	SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB} 
-					${SIMTK_MATH_LIB} 
-					${SIMTK_SIMBODY_LIB} 
-					${MATH_LIBS_TO_USE})
-	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
+	FILE(GLOB THIRDPARTY_BIN_FILES 
+					${Simbody_BIN_DIR}/*) # executables only (e.g. Visualizer)
+	FILE(GLOB THIRDPARTY_LIB_FILES 
 					${Simbody_LIB_DIR}/*.so
 					${Simbody_LIB_DIR}/*.a
-					${Simbody_LIB_DIR}/*.dylib
-					${Simbody_BIN_DIR}/*) # executables (e.g. Visualizer)
-	# MESSAGE("3rd_Party" ${THIRDPARTY_DYNLIB_FILES})
-					
+					${Simbody_LIB_DIR}/*.dylib)
 ENDIF(WIN32)
+INSTALL_FILES(/bin/ FILES ${THIRDPARTY_BIN_FILES})
+INSTALL_FILES(/sdk/lib/ FILES ${THIRDPARTY_LIB_FILES})
 
 ## These INSTALL commands should go into proper subdirectories
 IF(WIN32)
-	INSTALL_FILES(/bin/ FILES ${THIRDPARTY_DYNLIB_FILES})
-	INSTALL_FILES(/sdk/lib/ FILES ${THIRDPARTY_EXPORTLIB_FILES})
-
 	IF(OPENSIM_INSTALL_PACKAGE_BUILD)
-		# Install windows runtime libraries to support prebuilt libraries and redistributable
+		# Install windows runtime libraries to support prebuilt libraries
+        # and redistributable
 		INSTALL_FILES(/bin/ FILES 
 			${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
 		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll
@@ -429,9 +426,6 @@ IF(WIN32)
 		            ${SIMTK_LIB_DIR}/msvcp80.dll
 		            ${SIMTK_LIB_DIR}/vcredist_x86.exe)
 	ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
-
-ELSE(WIN32)
-	INSTALL_FILES(/bin/ FILES ${THIRDPARTY_DYNLIB_FILES})
 ENDIF(WIN32)
 
 
