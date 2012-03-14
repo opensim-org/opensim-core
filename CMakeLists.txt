@@ -302,7 +302,7 @@ FILE(GLOB LIB_FILES2 "${Simbody_LIB_DIR}/*.a"
 					 "${Simbody_LIB_DIR}/*.so"
 					 "${Simbody_LIB_DIR}/*.so.*"
 				     "${Simbody_LIB_DIR}/*.dylib"
-					 "${Simbody_BIN_DIR}/*.dll")
+					 "${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
 SET(LIB_FILES ${THIRDPARTY_DYNLIB_FILES} ${LIB_FILES2})
 
 # MESSAGE("LIB_FILES="${LIB_FILES})
@@ -394,6 +394,7 @@ IF(WIN32)
 	# MESSAGE("SIMTK_LIB_DIR="${SIMTK_LIB_DIR})
 	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
 					${Simbody_BIN_DIR}/*.dll	# non repository layout
+					${Simbody_BIN_DIR}/*.exe
 					${Simbody_BIN_DIR}/${VCVERSION}/*.dll
 					${Simbody_BIN_DIR}/${VCVERSION}/*.exe)
 	FILE(GLOB THIRDPARTY_EXPORTLIB_FILES 
@@ -408,7 +409,8 @@ ELSE(WIN32)
 	FILE(GLOB THIRDPARTY_DYNLIB_FILES 
 					${Simbody_LIB_DIR}/*.so
 					${Simbody_LIB_DIR}/*.a
-					${Simbody_LIB_DIR}/*.dylib)
+					${Simbody_LIB_DIR}/*.dylib
+					${Simbody_BIN_DIR}/*) # executables (e.g. Visualizer)
 	# MESSAGE("3rd_Party" ${THIRDPARTY_DYNLIB_FILES})
 					
 ENDIF(WIN32)
