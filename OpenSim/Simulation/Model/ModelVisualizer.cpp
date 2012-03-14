@@ -353,8 +353,20 @@ findGeometryFile(const std::string&          geoFile,
 void ModelVisualizer::createVisualizer() {
     _model.updMatterSubsystem().setShowDefaultGeometry(false);
 
-    // Allocate a Simbody Visualizer.
-    _viz = new SimTK::Visualizer(_model.getMultibodySystem());
+    // Allocate a Simbody Visualizer. If environment variable
+    // OPENSIM_HOME is set, add its bin subdirectory to the search path
+    // for the SimbodyVisualizer executable. The search will go as 
+    // follows: first look in the same directory as the currently-
+    // executing executable; then look in the $OPENSIM_HOME/bin 
+    // directory, then look in various default Simbody places.
+    Array_<String> searchPath;
+    if (SimTK::Pathname::environmentVariableExists("OPENSIM_HOME")) {
+        searchPath.push_back( 
+            SimTK::Pathname::getEnvironmentVariable("OPENSIM_HOME")
+            + "/bin");
+    }
+    _viz = new SimTK::Visualizer(_model.getMultibodySystem(),
+                                 searchPath);
     _viz->setCameraClippingPlanes(.01,100.);
     _viz->setBackgroundColor(SimTK::Black);
     _viz->setBackgroundType(SimTK::Visualizer::SolidColor);
