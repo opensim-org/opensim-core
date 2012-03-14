@@ -173,9 +173,8 @@ getValueBool() const
  *
  * @return Constant reference to a String represeting the value of this property.
  */
-const string &PropertyBool::
-toString()
+string PropertyBool::
+toString() const
 {
-	_valueString = _value? "true" : "false";
-	return (_valueString);
+	return _value? "true" : "false";
 }

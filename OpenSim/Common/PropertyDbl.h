@@ -92,7 +92,7 @@ public:
 #endif
 	virtual const double& getValueDbl() const;
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 
 //=============================================================================
 };	// END of class PropertyDbl

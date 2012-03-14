@@ -162,7 +162,7 @@ public:
 		return _array;
 	};
 	/** Get a constant String represeting the value of this property. */
-	virtual const std::string &toString(){
+	virtual std::string toString() const {
 		std::string str = "(";
 		char dbl[256];
 			for(int i=0; i < _vec.size(); i++){
@@ -170,8 +170,7 @@ public:
 				str += (i>0?" ":"") + std::string(dbl);
 			}
 		str += ")";
-		_valueString = str;
-		return (_valueString);
+		return str;
 	};
 	// SIZE
 	virtual int getArraySize() const { return M; }

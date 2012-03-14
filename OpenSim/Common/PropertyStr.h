@@ -93,7 +93,7 @@ public:
 #endif
 	virtual const std::string& getValueStr() const;
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 
 	// Special method to reset the value
 	void clearValue() { _value = getDefaultStr(); setUseDefault(true); }

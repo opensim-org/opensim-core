@@ -89,7 +89,7 @@ public:
 	virtual bool& getValueBool();
 	virtual const bool& getValueBool() const;
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 //=============================================================================
 };	// END of class PropertyBool
 

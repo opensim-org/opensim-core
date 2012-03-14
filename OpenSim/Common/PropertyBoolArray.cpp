@@ -203,13 +203,12 @@ getValueBoolArray() const
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyBoolArray::
-toString()
+string PropertyBoolArray::
+toString() const
 {
 	string str = "(";
 	for(int i=0; i < _array.getSize(); i++)
 		str += (i>0?" ":"") + (_array[i]?string("True"):string("False"));
 	str += ")";
-	_valueString = str;
-	return (_valueString);
+	return str;
 }

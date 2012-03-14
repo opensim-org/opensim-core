@@ -91,7 +91,6 @@ void Property_Deprecated::
 setNull()
 {
 	_propertyType = Property_Deprecated::None;
-    _valueString = "";
 }
 
 
@@ -114,7 +113,6 @@ operator=(const Property_Deprecated& aProperty)
 {
     AbstractProperty::operator=(aProperty);
     _propertyType = aProperty._propertyType;
-    _valueString = aProperty._valueString;
 
 	return *this;
 }

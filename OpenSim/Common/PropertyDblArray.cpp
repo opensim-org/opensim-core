@@ -201,12 +201,12 @@ getValueDblArray() const
 }
 //_____________________________________________________________________________
 /**
- * Get a constant String represeting the value of this property.
+ * Get a constant String representing the value of this property.
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyDblArray::
-toString()
+string PropertyDblArray::
+toString() const
 {
 	string str = "(";
 	char dbl[256];
@@ -215,6 +215,5 @@ toString()
 		str += (i>0?" ":"") + string(dbl);
 	}
 	str += ")";
-	_valueString = str;
-	return (_valueString);
+	return str;
 }

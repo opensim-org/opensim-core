@@ -69,6 +69,8 @@ public:
     // This is specialized for types T below.
 	/*virtual*/ PropertyType getPropertyType() const 
     {   throw Exception("Property2: Use of unspecified property."); return None;}
+    /*virtual*/ std::string toString() const 
+    {assert(false); return "Property2::toString() NOT IMPLEMENTED";}
 
 	const T& getValue() const { return *_valuePtr; }
 	T& updValue() { return *_valuePtr; }

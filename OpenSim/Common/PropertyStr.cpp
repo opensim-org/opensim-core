@@ -174,10 +174,10 @@ getValueStr() const
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyStr::
-toString()
+string PropertyStr::
+toString() const
 {
-	return (_value);
+	return _value;
 }
 const std::string& PropertyStr::getDefaultStr() {
     static const std::string defaultValue = "Unassigned";

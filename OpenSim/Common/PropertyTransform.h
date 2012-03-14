@@ -102,7 +102,7 @@ public:
 		setValue(6, &aArray[0]);
 	};*/
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 
 
 //=============================================================================

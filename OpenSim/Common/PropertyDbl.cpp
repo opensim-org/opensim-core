@@ -171,21 +171,21 @@ getValueDbl() const
 }
 //_____________________________________________________________________________
 /**
- * Get a constant String represeting the value of this property.
+ * Get a constant String representing the value of this property.
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyDbl::
-toString()
+string PropertyDbl::
+toString() const
 {
-	char dbl[256];
-	if (_value==SimTK::Infinity)
-		_valueString= "infinity";
-	else if (_value==-SimTK::Infinity)
-		_valueString= "-infinity";
-	else {
-	sprintf(dbl, "%g", _value);
-	_valueString = string(dbl);
-	}
-	return (_valueString);
+    if (SimTK::isFinite(_value)) {
+	    char dbl[256];
+        sprintf(dbl, "%g", _value);
+        return dbl;
+    }
+
+    if (SimTK::isNaN(_value)) return "NaN";
+	if (_value ==  SimTK::Infinity) return "infinity";
+	if (_value == -SimTK::Infinity) return "-infinity";
+	return "UnrecognizedNonFinite???";
 }

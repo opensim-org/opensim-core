@@ -98,6 +98,16 @@ public:
 	virtual bool equals(const AbstractProperty& other) const = 0;
     /** Return the enum value corresponding to the concrete property. **/
 	virtual PropertyType getPropertyType() const = 0;
+    /** Return the current value of this property in a string suitable for
+    displaying to a user in the GUI. **/
+    virtual std::string toString() const = 0;
+    /** Return the current value as type T; this works only if the underlying
+    concrete property stores type T otherwise throws an exception. **/
+    template <class T> const T& getValue() const;
+    /** Return writable access to the current value as type T; this works only
+    if the underlying concrete property is actually of type T. Otherwise it
+    throws an exception. **/
+    template <class T> T& updValue();
     //--------------------------------------------------------------------------
 
     /** Set the property name. **/

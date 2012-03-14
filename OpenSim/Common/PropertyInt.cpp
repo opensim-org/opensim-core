@@ -175,11 +175,10 @@ getValueInt() const
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyInt::
-toString()
+string PropertyInt::
+toString() const
 {
 	char intString[32];
 	sprintf(intString, "%d", _value);
-	_valueString = string(intString);
-	return (_valueString);
+	return intString;
 }

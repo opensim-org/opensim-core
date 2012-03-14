@@ -100,8 +100,7 @@ class OSIMCOMMON_API Property_Deprecated : public AbstractProperty
 private:
 	/** Type of the property. */
 	PropertyType _propertyType;
-protected:
-	std::string _valueString;
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -151,7 +150,7 @@ public:
 
 	// VALUE
 	// Textual representation
-	virtual const std::string& toString()=0;
+	virtual std::string toString() const=0;
 
 	// These methods have been given default implementations, rather than being made pure virtual
 	// so that all classes derived from Property will not have to implement each method.

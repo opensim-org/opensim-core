@@ -1,5 +1,5 @@
-#ifndef __OpenSimContext_h__
-#define __OpenSimContext_h__
+#ifndef OPENSIM_OPENSIM_CONTEXT_H_
+#define OPENSIM_OPENSIM_CONTEXT_H_
 
 // OpenSimContext.h
 // Authors: Jack Middleton, Ayman Habib
@@ -34,8 +34,9 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Common/Array.h>
-#include "SimTKsimbody.h"
 #include <OpenSim/Tools/InverseKinematicsTool.h>
+
+#include "Simbody.h"
 
 namespace OpenSim {
 
@@ -248,7 +249,8 @@ public:
 	}
 	
 };
-}  // namespace OpenSimContext
 
-#endif // _OpenSimContext_h__
+} // namespace OpenSim
+
+#endif // OPENSIM_OPENSIM_CONTEXT_H_
 

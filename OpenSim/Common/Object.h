@@ -420,6 +420,34 @@ protected:
 //=============================================================================
 };	// END of class Object
 
+
+template <class T> const T& AbstractProperty::getValue() const {
+    //TODO: temporary support for obsolete properties
+    const Property_Deprecated* pd = 
+        dynamic_cast<const Property_Deprecated*>(this);
+    if (pd) return pd->getValue<T>();
+
+    const Property2<T>* p = dynamic_cast<const Property2<T>*>(this);
+    if (p == NULL)
+        throw Exception("AbstractProperty::getValue(): property "
+                        + getName() + " is not of type " 
+                        + std::string(PropertyTypeName<T>::name()));
+    return p->getValue();
+}
+
+template <class T> T& AbstractProperty::updValue() {
+    //TODO: temporary support for obsolete properties
+    Property_Deprecated* pd = dynamic_cast<Property_Deprecated*>(this);
+    if (pd) return pd->getValue<T>();
+
+    Property2<T>* p = dynamic_cast<Property2<T>*>(this);
+    if (p == NULL)
+        throw Exception("AbstractProperty::updValue(): property "
+                        + getName() + " is not of type " 
+                        + std::string(PropertyTypeName<T>::name()));
+    return p->updValue();
+}
+
 // TODO: are these the right names to use?
 template<> struct PropertyTypeName<Object> 
 {   static const char* name() {return "Object";} };

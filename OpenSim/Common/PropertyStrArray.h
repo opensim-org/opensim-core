@@ -98,7 +98,7 @@ public:
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 
 //=============================================================================
 };	// END of class PropertyStrArray

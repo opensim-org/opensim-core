@@ -89,7 +89,7 @@ public:
 	virtual int& getValueInt();
 	virtual const int& getValueInt() const;
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 
 //=============================================================================
 };	// END of class PropertyInt

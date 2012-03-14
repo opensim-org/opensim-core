@@ -99,7 +99,7 @@ public:
 	virtual const Array<double>& getValueDblArray() const;
 #endif
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
 

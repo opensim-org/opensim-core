@@ -178,9 +178,8 @@ getValueObj() const
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyObj::
-toString()
+string PropertyObj::
+toString() const
 {
-	_valueString = "(Object)";
-	return (_valueString);
+	return "(Object)";
 }

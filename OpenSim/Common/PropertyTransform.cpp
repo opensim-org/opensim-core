@@ -222,8 +222,8 @@ void PropertyTransform::getRotationsAndTranslationsAsArray6(double aArray[]) con
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyTransform::
-toString()
+string PropertyTransform::
+toString() const
 {
 	string str = "(";
 	char pad[256];
@@ -232,6 +232,5 @@ toString()
 	sprintf(pad, "%g %g %g %g %g %g", rawData[0], rawData[1], rawData[2], rawData[3], rawData[4], rawData[5]);
 	str += string(pad);
 	str += ")";
-	_valueString = str;
-	return (_valueString);
+	return str;
 }

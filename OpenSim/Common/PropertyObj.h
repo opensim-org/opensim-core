@@ -96,7 +96,7 @@ public:
 	virtual Object& getValueObj();
 	virtual const Object& getValueObj() const;
 	// VALUE as String
-	virtual const std::string &toString();
+	virtual std::string toString() const;
 	// MATCH NAME
 	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
 	bool getMatchName() const { return _matchName; }

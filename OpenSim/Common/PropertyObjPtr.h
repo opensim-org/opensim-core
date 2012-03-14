@@ -120,7 +120,7 @@ public:
 	virtual Object* getValueObjPtr() { return _value; }
 	T*& getValueObjPtrRef() { return _value; }
 	// VALUE as String
-	virtual const std::string &toString() { _valueString = "(ObjectPointer)"; return _valueString; }
+	virtual std::string toString() const {return "(ObjectPointer)";}
 
 //=============================================================================
 };	// END of class PropertyObjPtr

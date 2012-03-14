@@ -94,7 +94,7 @@ public:
 	// TYPE
 	virtual const char* getTypeAsString() const { return "ObjArray"; }
 	// VALUE as String
-	virtual const std::string &toString() { _valueString = "(Array of objects)"; return _valueString; }
+	virtual std::string toString() const {return "(Array of objects)";}
 	// SIZE
 	virtual int getArraySize() const { return _array.getSize(); }
 	// VALUE

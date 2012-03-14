@@ -203,8 +203,8 @@ getValueIntArray() const
  *
  * @return Constant String represeting the value of this property.
  */
-const string &PropertyIntArray::
-toString()
+string PropertyIntArray::
+toString() const
 {
 	string str = "(";
 	char intString[256];
@@ -213,6 +213,5 @@ toString()
 		str += (i>0?" ":"") + string(intString);
 	}
 	str += ")";
-	_valueString = str;
-	return (_valueString);
+	return str;
 }
