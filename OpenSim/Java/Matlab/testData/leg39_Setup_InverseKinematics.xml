@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSimDocument Version="20302">
+	<IKTool name="leg39_IKTool">
+		<!--Directory used for writing results.-->
+		<results_directory> ./ </results_directory>
+		<!--Directory for input files-->
+		<input_directory>  </input_directory>
+	<!--Name of the .osim file used to construct a model.-->
+	<model_file>  </model_file>
+		<!--A positive scalar that is used to weight the importance of satisfying
+		    constraints.A weighting of 'Infinity' or if it is unassigned results
+		    in the constraints being strictly enforced.-->
+		<constraint_weight>      20.00000000 </constraint_weight>
+		<!--The accuracy of the solution in absolute terms. I.e. the number of
+		    significantdigits to which the solution can be trusted.-->
+		<accuracy>       0.00001000 </accuracy>
+		<!--Markers and coordinates to be considered (tasks) and their weightings.-->
+	<IKTaskSet name="leg39_IK">
+		<objects>
+			<IKMarkerTask name="R.Thigh.Upper">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       1.00000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Thigh.Front">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       1.00000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Thigh.Rear">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       1.00000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Shank.Upper">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       1.00000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Shank.Front">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       1.00000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Shank.Rear">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       1.00000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Heel">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       0.01000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Midfoot.Lat">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+				<weight>       0.01000000 </weight>
+			</IKMarkerTask>
+			<IKMarkerTask name="R.Toe.Tip">
+				<!--Whether or not this task will be used during inverse kinematics solve.-->
+				<apply> true </apply>
+				<!--Weight given to a marker or coordinate for solving inverse kinematics
+				    problems.-->
+					<weight>     100.00000000 </weight>
+			</IKMarkerTask>
+		</objects>
+			<groups/>
+	</IKTaskSet>
+		<!--TRC file (.trc) containing the time history of observations of marker
+				    positions.-->
+				<marker_file> leg39_swing.trc </marker_file>
+		<!--The name of the storage (.sto or .mot) file containing coordinate
+		    observations.Coordinate values from this file are included if there is
+		    a corresponding coordinate task.-->
+		<coordinate_file> Unassigned </coordinate_file>
+		<!--Time range over which the inverse kinematics problem is solved.-->
+		<time_range>       0.00000000       0.40000000 </time_range>
+		<!--Flag (true or false) indicating whether or not to report marker and
+		    coordinate errors from the inverse kinematics solution.-->
+		<report_errors> true </report_errors>
+				<!--Name of the motion file (.mot) to which the results should be written.-->
+				<output_motion_file> leg39_InverseKinematics.mot </output_motion_file>
+	</IKTool>
+</OpenSimDocument>
+

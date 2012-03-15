@@ -36,7 +36,7 @@ blockToGround = FreeJoint('blockToGround', ground, locationInParentVec3, vec3Zer
 % set bounds on coordinates to make them reasonable, names could also be assigned here if needed
 jointCoordinateSet=blockToGround.getCoordinateSet()
 for c =0:2 
-	jointCoordinateSet.get(c).setRange([-1.57, 1.57]);
+	jointCoordinateSet.get(c).setRange([-pi/2, pi/2]);
 	jointCoordinateSet.get(c+3).setRange([-1, 1]);
 end
 
@@ -45,3 +45,63 @@ model.addBody(block)
 
 %Write the model to .osim file for loading later if needed
 model.print('TugOfWar_FreeJoint.osim')
+
+maxIsometricForce = 1000.0
+optimalFiberLength = 0.1
+tendonSlackLength = 0.2
+pennationAngle = 0.0
+
+% Create new muscles
+muscle1 = Thelen2003Muscle()
+muscle1.setName('muscle1')
+muscle1.setMaxIsometricForce(maxIsometricForce)
+muscle1.setOptimalFiberLength(optimalFiberLength)
+muscle1.setTendonSlackLength(tendonSlackLength);
+muscle1.setPennationAngleAtOptimalFiberLength(pennationAngle)
+
+% Path for muscle 1
+muscle1.addNewPathPoint('muscle1-point1', ground, ArrayDouble.createVec3([0.0,0.05,-0.35]))
+muscle1.addNewPathPoint('muscle1-point2', block, ArrayDouble.createVec3([0.0,0.0,-0.05]))
+
+model.addForce(muscle1);
+
+% Repeat for Muscle 2
+muscle2 = Thelen2003Muscle()
+muscle2.setName('muscle2')
+muscle2.setMaxIsometricForce(maxIsometricForce)
+muscle2.setOptimalFiberLength(optimalFiberLength)
+muscle2.setTendonSlackLength(tendonSlackLength)
+muscle2.setPennationAngleAtOptimalFiberLength(pennationAngle)
+% Path for muscle 2
+muscle2.addNewPathPoint('muscle2-point1', ground, ArrayDouble.createVec3([0.0,0.05,0.35]))
+muscle2.addNewPathPoint('muscle2-point2', block, ArrayDouble.createVec3([0.0,0.0,0.05]))
+
+% Add the two muscles (as forces) to the model
+model.addForce(muscle2)
+
+%Set up Controller
+initialTime = 0.0
+finalTime = 4.0
+
+muscleController = PrescribedController()
+muscleController.setName('LinearRamp Controller')
+muscleController.setActuators(model.updActuators())
+% Define linear functions for the control values for the two muscles
+slopeAndIntercept1=ArrayDouble(0.0, 2)
+slopeAndIntercept2=ArrayDouble(0.0, 2)
+% muscle1 control has slope of -1 starting 1 at t = 0
+slopeAndIntercept1.setitem(0, -1.0/(finalTime-initialTime))
+slopeAndIntercept1.setitem(1,  1.0)
+% muscle2 control has slope of 1 starting 0.05 at t = 0
+slopeAndIntercept2.setitem(0, 1.0/(finalTime-initialTime))
+slopeAndIntercept2.setitem(1,  0.05)
+
+% Set the indiviudal muscle control functions for the prescribed muscle controller
+muscleController.prescribeControlForActuator('muscle1', LinearFunction(slopeAndIntercept1))
+muscleController.prescribeControlForActuator('muscle2', LinearFunction(slopeAndIntercept2))
+
+% Add the control set controller to the model
+model.addController(muscleController)
+
+model.disownAllComponents()
+model.print('tug-of-war-all.osim')

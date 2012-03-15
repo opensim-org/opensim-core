@@ -302,7 +302,8 @@ FILE(GLOB LIB_FILES "${Simbody_LIB_DIR}/*.a"
 					"${Simbody_LIB_DIR}/*.so"
 					"${Simbody_LIB_DIR}/*.so.*"
 				    "${Simbody_LIB_DIR}/*.dylib"
-					"${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
+					 "${Simbody_BIN_DIR}/*.dll"
+S					"${Simbody_BIN_DIR}/*") # .dll, .exe, no suffix executable
 
 # This is where we're going to put these binaries.
 SET(COPIED_LIB_FILES)
@@ -421,10 +422,7 @@ IF(WIN32)
         # and redistributable
 		INSTALL_FILES(/bin/ FILES 
 			${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
-		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll
-		            ${SIMTK_LIB_DIR}/msvcr80.dll
-		            ${SIMTK_LIB_DIR}/msvcp80.dll
-		            ${SIMTK_LIB_DIR}/vcredist_x86.exe)
+		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll)
 	ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 ENDIF(WIN32)
 
@@ -441,9 +439,9 @@ SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
 SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center of Biomedical Computation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
-SET(CPACK_PACKAGE_VERSION_MAJOR "2")
-SET(CPACK_PACKAGE_VERSION_MINOR "4")
-SET(CPACK_PACKAGE_VERSION_PATCH "0")
+SET(CPACK_PACKAGE_VERSION_MAJOR "3")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "0a1")
 SET(CPACK_PACKAGE_INSTALL_DIRECTORY "OpenSim ${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
 IF(WIN32 AND NOT UNIX)
    # There is a bug in NSI that does not handle full unix paths properly. Make
