@@ -19,41 +19,48 @@ SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.4.0/" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR "C:/OpenSim3.0/" CACHE PATH 
+    "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimPlugin" CACHE STRING "Name of shared library to create")
 
 ### HEADERS
 SET(OPENSIM_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include)
-SET(XERCES_HEADER_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/xercesc)
-SET(SIMTK_HEADERS_DIR ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
+SET(SIMTK_HEADERS_DIR   ${OPENSIM_INSTALL_DIR}/sdk/include/SimTK/include)
 
-INCLUDE_DIRECTORIES(${OPENSIM_HEADERS_DIR} ${XERCES_HEADER_DIR} ${SIMTK_HEADERS_DIR})
+INCLUDE_DIRECTORIES(${OPENSIM_HEADERS_DIR} 
+                    ${SIMTK_HEADERS_DIR})
 
 ### LIBRARIES
-SET(OPENSIM_LIBS_DIR  ${OPENSIM_INSTALL_DIR}/sdk/lib)
+SET(OPENSIM_LIBS_DIR  
+    ${OPENSIM_INSTALL_DIR}/lib
+    ${OPENSIM_INSTALL_DIR}/sdk/lib)
 LINK_DIRECTORIES(${OPENSIM_LIBS_DIR})
 
-# SimmKinematicsEngine library only needed for SimmFileWriter...
+# Assumes Windows
 LINK_LIBRARIES(
-	debug osimCommon_d optimized osimCommon
+	debug osimCommon_d     optimized osimCommon
 	debug osimSimulation_d optimized osimSimulation
-	debug osimAnalyses_d optimized osimAnalyses
-	debug osimActuators_d optimized osimActuators
-	debug osimTools_d optimized osimTools
-	debug  ${NameSpace}SimTKcommon${CMAKE_DEBUG_POSTFIX} optimized   ${NameSpace}SimTKcommon
-	debug  ${NameSpace}SimTKmath${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKmath
-	debug ${NameSpace}SimTKsimbody${CMAKE_DEBUG_POSTFIX} optimized  ${NameSpace}SimTKsimbody
-	SimTKlapack pthreadVC2
+	debug osimAnalyses_d   optimized osimAnalyses
+	debug osimActuators_d  optimized osimActuators
+	debug osimTools_d      optimized osimTools
+	debug     ${NameSpace}SimTKcommon_d
+    optimized ${NameSpace}SimTKcommon
+	debug     ${NameSpace}SimTKmath_d
+    optimized ${NameSpace}SimTKmath
+	debug     ${NameSpace}SimTKsimbody_d
+    optimized ${NameSpace}SimTKsimbody
+	SimTKlapack 
+    pthreadVC2
 )
 
 ADD_LIBRARY(${PLUGIN_NAME} SHARED ${SOURCE_FILES} ${INCLUDE_FILES}) 
 
 IF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}/ CACHE PATH "Install path prefix." FORCE)
-ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	SET(CMAKE_INSTALL_PREFIX ${OPENSIM_INSTALL_DIR}/ CACHE PATH 
+        "Install path prefix." FORCE)
+ENDIF()
 
-## MARK_AS_ADVANCED(CMAKE_INSTALL_PREFIX)
 MARK_AS_ADVANCED(EXECUTABLE_OUTPUT_PATH)
 MARK_AS_ADVANCED(LIBRARY_OUTPUT_PATH)
 

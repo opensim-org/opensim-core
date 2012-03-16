@@ -313,10 +313,6 @@ FOREACH(LIBF ${LIB_FILES})
 	    "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
 ENDFOREACH()
 
-ADD_CUSTOM_TARGET(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
-SET_TARGET_PROPERTIES(SimbodyFiles
- 	PROPERTIES PROJECT_LABEL "Library - Simbody Files")
-
 FOREACH(LIBF ${LIB_FILES})
     # MESSAGE("LIB_FILE" ${LIBF})
 	GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
@@ -394,14 +390,15 @@ SET(SIMTK_ALL_LIBS	${SIMTK_COMMON_LIB}
 # Now figure out which 3rd party files need to be installed in the /bin 
 # directory and which in the lib directory. Executables go in /bin on all 
 # platforms.  Libraries (shared or otherwise) go in /lib, except on Windows 
-# where the ".dll" files go in bin along with executables.
+# where the ".dll" files go in bin along with executables. Anything that
+# is only needed for programmers goes in sdk/lib.
 IF(WIN32)	
 	FILE(GLOB THIRDPARTY_BIN_FILES 
 					${Simbody_BIN_DIR}/*.dll	# non repository layout
 					${Simbody_BIN_DIR}/*.exe
 					${Simbody_BIN_DIR}/${VCVERSION}/*.dll
 					${Simbody_BIN_DIR}/${VCVERSION}/*.exe)
-	FILE(GLOB THIRDPARTY_LIB_FILES 
+	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
 					${Simbody_LIB_DIR}/*.lib	# non repository layout
 					${Simbody_LIB_DIR}/${VCVERSION}/*.lib)
 ELSE(WIN32)
@@ -409,11 +406,14 @@ ELSE(WIN32)
 					${Simbody_BIN_DIR}/*) # executables only (e.g. Visualizer)
 	FILE(GLOB THIRDPARTY_LIB_FILES 
 					${Simbody_LIB_DIR}/*.so
-					${Simbody_LIB_DIR}/*.a
 					${Simbody_LIB_DIR}/*.dylib)
+	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
+					${Simbody_LIB_DIR}/*.a)
 ENDIF(WIN32)
-INSTALL_FILES(/bin/ FILES ${THIRDPARTY_BIN_FILES})
-INSTALL_FILES(/sdk/lib/ FILES ${THIRDPARTY_LIB_FILES})
+
+INSTALL(FILES ${THIRDPARTY_BIN_FILES}    DESTINATION bin)
+INSTALL(FILES ${THIRDPARTY_LIB_FILES}    DESTINATION lib)
+INSTALL(FILES ${THIRDPARTY_SDKLIB_FILES} DESTINATION sdk/lib)
 
 ## These INSTALL commands should go into proper subdirectories
 IF(WIN32)
@@ -436,7 +436,7 @@ INCLUDE(ApiDoxygen.cmake)
 
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "OpenSim project")
-SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center of Biomedical Computation")
+SET(CPACK_PACKAGE_VENDOR "Stanford University, National Center for Biomedical Computation")
 SET(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt")
 SET(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/Copyright.txt")
 SET(CPACK_PACKAGE_VERSION_MAJOR "3")

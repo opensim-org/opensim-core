@@ -1,6 +1,15 @@
 SET(KIT Simulation)
 SET(UKIT SIMULATION)
 
+SET(SIMULATION_SUBDIRS 
+        .
+        Control
+        Manager
+        Model
+        Wrap
+        SimbodyEngine)
+
+
 ##
 ## Version stuff
 ##
@@ -22,8 +31,14 @@ ADD_DEFINITIONS(-DOPENSIM_SIMULATION_LIBRARY_NAME=${OPENSIM_SIMULATION_LIBRARY_N
 
 ## Name headers under individual directories so that INSTALL doesn't barf on them
 
-FILE(GLOB SOURCE_FILES Control/*.cpp Integrator/*.cpp Manager/*.cpp Model/*.cpp Wrap/*.cpp SimbodyEngine/*.cpp *.cpp)
-FILE(GLOB INCLUDE_FILES Control/*.h Integrator/*.h Manager/*.h Model/*.h Wrap/*.h SimbodyEngine/*.h *.h)
+SET(SOURCE_FILES)
+SET(INCLUDE_FILES)
+FOREACH(dir ${SIMULATION_SUBDIRS})
+    FILE(GLOB SOURCE_FILES_ONEDIR ${dir}/*.cpp)
+    FILE(GLOB INCLUDE_FILES_ONEDIR ${dir}/*.h)
+    LIST(APPEND SOURCE_FILES ${SOURCE_FILES_ONEDIR})
+    LIST(APPEND INCLUDE_FILES ${INCLUDE_FILES_ONEDIR})
+ENDFOREACH()
 
 INCLUDE_DIRECTORIES(${OpenSim_SOURCE_DIR} 
 		    ${OpenSim_SOURCE_DIR}/Vendors)
@@ -49,29 +64,29 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    PROJECT_LABEL "Libraries - osim${KIT}"
 )
 
-## install stuff
-IF (WIN32)
-	INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
-ELSE(WIN32)
-	INSTALL_TARGETS(/bin/ RUNTIME_DIRECTORY /bin osim${KIT})
-ENDIF(WIN32)
-
-SET(SIMULATION_SUBDIRS 
-.
-Control
-Manager
-Model
-Wrap
-SimbodyEngine
-)
+# Shared libraries are needed at runtime for applications, so we put them
+# at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
+# or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
+# archives are only needed at link time so go in sdk/lib.
+IF(WIN32)
+    INSTALL(TARGETS osim${KIT}
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION sdk/lib
+            ARCHIVE DESTINATION sdk/lib)
+ELSE()
+    INSTALL(TARGETS osim${KIT}
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION sdk/lib)
+ENDIF()
 
 FOREACH(dir ${SIMULATION_SUBDIRS})
    FILE(GLOB HEADERS ${dir}/*.h)	# returns full pathnames
-   INSTALL_FILES(/sdk/include/OpenSim/Simulation/${dir} .h ${HEADERS})
+   INSTALL(FILES ${HEADERS}
+        DESTINATION sdk/include/OpenSim/Simulation/${KIT})
 ENDFOREACH(dir)
 
 IF(BUILD_TESTING)
+    # SimbodyEngine has a Test subdirectory also
 	SUBDIRS(SimbodyEngine Test)
-ELSE(BUILD_TESTING)
-	SUBDIRS(SimbodyEngine)
-ENDIF(BUILD_TESTING)
+ENDIF()

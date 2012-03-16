@@ -39,13 +39,25 @@ SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES
    PROJECT_LABEL "Libraries - osim${KIT}"
 )
 
+# Shared libraries are needed at runtime for applications, so we put them
+# at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
+# or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
+# archives are only needed at link time so go in sdk/lib.
 IF(WIN32)
-	INSTALL_TARGETS(/sdk/lib/ RUNTIME_DIRECTORY /bin osim${KIT})
-ELSE(WIN32)
-	INSTALL_TARGETS(/bin/ RUNTIME_DIRECTORY /bin osim${KIT})
-ENDIF(WIN32)
+    INSTALL(TARGETS osim${KIT}
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION sdk/lib
+            ARCHIVE DESTINATION sdk/lib)
+ELSE()
+    INSTALL(TARGETS osim${KIT}
+            RUNTIME DESTINATION bin
+            LIBRARY DESTINATION lib
+            ARCHIVE DESTINATION sdk/lib)
+ENDIF()
 
-INSTALL_FILES(/sdk/include/OpenSim/${KIT} .h ${INCLUDE_FILES})
+INSTALL(FILES ${INCLUDE_FILES}
+        DESTINATION sdk/include/OpenSim/${KIT})
+
 
 IF(BUILD_TESTING)
 	SUBDIRS(Test)
