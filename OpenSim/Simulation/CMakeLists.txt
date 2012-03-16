@@ -83,7 +83,7 @@ ENDIF()
 FOREACH(dir ${SIMULATION_SUBDIRS})
    FILE(GLOB HEADERS ${dir}/*.h)	# returns full pathnames
    INSTALL(FILES ${HEADERS}
-        DESTINATION sdk/include/OpenSim/Simulation/${KIT})
+        DESTINATION sdk/include/OpenSim/${KIT}/${dir})
 ENDFOREACH(dir)
 
 IF(BUILD_TESTING)
