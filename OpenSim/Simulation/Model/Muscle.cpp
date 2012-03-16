@@ -179,6 +179,14 @@ void Muscle::setupProperties()
 	addProperty<double>("max_contraction_velocity",
 		"Maximum contraction velocity of the fibers, in optimal fiberlengths per second",
 		10.0);
+
+	addProperty<bool>("ignore_tendon_compliance",
+		"Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.",
+		false);
+
+	addProperty<bool>("ignore_activation_dynamics",
+		"Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.",
+		false);
 }
 
 //=============================================================================
@@ -235,6 +243,7 @@ void Muscle::setPennationAngleAtOptimalFiberLength(double aPennationAngle)
 void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity) 
 { setPropertyValue("max_contraction_velocity", aMaxContractionVelocity);}
 
+
 //=============================================================================
 // ModelComponent Interface Implementation
 //=============================================================================
@@ -253,6 +262,9 @@ void Muscle::setup(Model &aModel)
  void Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
 	PathActuator::createSystem(system);
+
+	addModelingOption("ignore_tendon_compliance", 1);
+	addModelingOption("ignore_activation_dynamics", 1);
 	
 	// Cache the calculated values for this muscle categorized by their realization stage 
 	addCacheVariable<Muscle::MuscleLengthInfo>("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Position);
@@ -260,12 +272,35 @@ void Muscle::setup(Model &aModel)
 	addCacheVariable<Muscle::MuscleDynamicsInfo>("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
  }
 
-void Muscle::addStateVariables(const Array<std::string> &stateVariableNames) const
+void Muscle::setDefaultsFromState(const SimTK::State& s)
 {
-	PathActuator::addStateVariables(stateVariableNames);
-	for (int i = 0; i < stateVariableNames.getSize(); ++i)
-		addCacheVariable<double>(stateVariableNames[i] + "_deriv", 0., SimTK::Stage::Dynamics);
+    setPropertyValue<bool>("ignore_tendon_compliance", getIgnoreTendonCompliance(s));
+	setPropertyValue<bool>("ignore_activation_dynamics", getIgnoreActivationDynamics(s));
 }
+
+/* get/set flag to ignore tendon compliance when computing muscle dynamics */
+bool Muscle::getIgnoreTendonCompliance(const SimTK::State& s) const
+{
+	return (getModelingOption(s, "ignore_tendon_compliance") > 0);
+}
+
+void Muscle::setIgnoreTendonCompliance(SimTK::State& s, bool ignore)
+{
+	setModelingOption(s, "ignore_tendon_compliance", int(ignore));
+}
+
+
+/* get/set flag to activation dynamics when computing muscle dynamics  */
+bool Muscle::getIgnoreActivationDynamics(const SimTK::State& s) const
+{
+	return (getModelingOption(s, "ignore_activation_dynamics") > 0);
+}
+
+void Muscle::setIgnoreActivationDynamics(SimTK::State& s, bool ignore)
+{
+	setModelingOption(s, "ignore_activation_dynamics", int(ignore));
+}
+
 
 
 //=============================================================================
@@ -412,15 +447,21 @@ void Muscle::setExcitation(SimTK::State& s, double excitaion) const
 const Muscle::MuscleLengthInfo& Muscle::getMuscleLengthInfo(const SimTK::State& s) const
 {
 	if(!isCacheVariableValid(s,"lengthInfo")){
-		calcMuscleLengthInfo(s, updMuscleLengthInfo(s));
+		MuscleLengthInfo &umli = updMuscleLengthInfo(s);
+		calcMuscleLengthInfo(s, umli);
 		markCacheVariableValid(s,"lengthInfo");
+		// don't bother fishing it out of the cache since 
+		// we just calculated it and still have a handle on it
+		return umli;
 	}
 	return getCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
 }
+
 Muscle::MuscleLengthInfo& Muscle::updMuscleLengthInfo(const SimTK::State& s) const
 {
 	return updCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
 }
+
 const Muscle::FiberVelocityInfo& Muscle::getFiberVelocityInfo(const SimTK::State& s) const
 {
 	if(!isCacheVariableValid(s,"velInfo")){
@@ -433,10 +474,12 @@ const Muscle::FiberVelocityInfo& Muscle::getFiberVelocityInfo(const SimTK::State
 	}
 	return getCacheVariable<FiberVelocityInfo>(s, "velInfo");
 }
+
 Muscle::FiberVelocityInfo& Muscle::updFiberVelocityInfo(const SimTK::State& s) const
 {
 	return updCacheVariable<FiberVelocityInfo>(s, "velInfo");
 }
+
 const Muscle::MuscleDynamicsInfo& Muscle::getMuscleDynamicsInfo(const SimTK::State& s) const
 {
 	if(!isCacheVariableValid(s,"dynamicsInfo")){

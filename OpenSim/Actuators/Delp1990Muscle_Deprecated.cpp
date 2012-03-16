@@ -255,15 +255,10 @@ void Delp1990Muscle_Deprecated::setup(Model& aModel)
 void Delp1990Muscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
 {
 	ActivationFiberLengthMuscle_Deprecated::createSystem(system);
-
-	Delp1990Muscle_Deprecated* mutableThis = const_cast<Delp1990Muscle_Deprecated *>(this);
-
-	Array<string> stateVariables;
-	stateVariables.setSize(1);
-	stateVariables[0] = "fiber_velocity";
-	mutableThis->addStateVariables(stateVariables);
+	
+	addStateVariable("fiber_velocity");
+	addCacheVariable("fiber_velocity_deriv", 0.0, SimTK::Stage::Dynamics);
  }
-
 
 void Delp1990Muscle_Deprecated::setActiveForce( const SimTK::State& s, double force ) const {
     setCacheVariable<double>(s, "activeForce", force);

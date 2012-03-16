@@ -148,14 +148,12 @@ void ActuatorWorkMeter::setup(Model& aModel)
 void ActuatorWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 {
 	ModelComponent::createSystem(system);
-	
-	ActuatorWorkMeter* mutableThis = const_cast<ActuatorWorkMeter *>(this);
 
 	// Assign a name to the state variable to access the work value stored in the state
-	Array<string> stateVariables(_actuator->getName()+"."+WORK_STATE_NAME, 1);
+	string stateName = _actuator->getName()+"."+WORK_STATE_NAME;
 
 	// Add state variables to the underlying system
-	mutableThis->addStateVariables(stateVariables);
+	addStateVariable(stateName);
 }
 
 

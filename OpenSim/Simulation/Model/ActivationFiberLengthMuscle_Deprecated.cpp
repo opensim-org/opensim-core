@@ -132,20 +132,17 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 {
 	Muscle::createSystem(system);
 
-	ActivationFiberLengthMuscle_Deprecated* mutableThis = const_cast<ActivationFiberLengthMuscle_Deprecated *>(this);
+	addStateVariable(STATE_ACTIVATION_NAME);
+	addStateVariable(STATE_FIBER_LENGTH_NAME);
 
-	Array<string> stateVariables;
-	stateVariables.setSize(2);
-	stateVariables[0] = STATE_ACTIVATION_NAME;
-	stateVariables[1] = STATE_FIBER_LENGTH_NAME;
-	mutableThis->addStateVariables(stateVariables);
+	double value = 0.0;
+	addCacheVariable(STATE_ACTIVATION_NAME+"_deriv", value, SimTK::Stage::Dynamics);
+	addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", value, SimTK::Stage::Dynamics);
 	
 	// Cache the computed active and passive muscle force
 	// note the total muscle force is the tendon force and is already a cached variable of the actuator
-	mutableThis->addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
-	mutableThis->addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
-
-	//mutableThis->_model->addModelComponent(mutableThis);
+	addCacheVariable<double>("activeForce", 0.0, SimTK::Stage::Velocity);
+	addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
  }
 
  void ActivationFiberLengthMuscle_Deprecated::initState( SimTK::State& s) const

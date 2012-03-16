@@ -194,6 +194,10 @@ void RigidTendonMuscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLength
 	mli.pennationAngle = acos(mli.cosPennationAngle);
 	
 	mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
+
+	mli.forceLengthMultiplier = getPropertyValue<Function *>("active_force_length_curve")->calcValue(SimTK::Vector(1, mli.normFiberLength));
+	mli.passiveForceMultiplier = getPropertyValue<Function *>("passive_force_length_curve")->calcValue(SimTK::Vector(1, mli.normFiberLength));
+
 	mli.normTendonLength = 1.0;
 	mli.tendonStrain = 0.0;
 }
@@ -205,6 +209,7 @@ void RigidTendonMuscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVeloci
 	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 	fvi.fiberVelocity = getSpeed(s);
 	fvi.normFiberVelocity = fvi.fiberVelocity/(getOptimalFiberLength()*getMaxContractionVelocity());
+	fvi.forceVelocityMultiplier = getPropertyValue<Function *>("force_velocity_curve")->calcValue(SimTK::Vector(1, fvi.normFiberVelocity));
 }
 
 /* calculate muscle's active and passive force-length, force-velocity, 
@@ -214,16 +219,12 @@ void RigidTendonMuscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDyna
 	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 	const FiberVelocityInfo &fvi = getFiberVelocityInfo(s);
 
-	mdi.forceLengthMultiplier = getPropertyValue<Function *>("active_force_length_curve")->calcValue(SimTK::Vector(1, mli.normFiberLength));
-	mdi.passiveForceMultiplier = getPropertyValue<Function *>("passive_force_length_curve")->calcValue(SimTK::Vector(1, mli.normFiberLength));
-	mdi.forceVelocityMultiplier = getPropertyValue<Function *>("force_velocity_curve")->calcValue(SimTK::Vector(1, fvi.normFiberVelocity));
-
 	mdi.activation = getControl(s);
-	double normActiveForce = mdi.activation * mdi.forceLengthMultiplier * mdi.forceVelocityMultiplier;
+	double normActiveForce = mdi.activation * mli.forceLengthMultiplier * fvi.forceVelocityMultiplier;
 	mdi.activeFiberForce =  getMaxIsometricForce()*normActiveForce;
-	mdi.passiveFiberForce = getMaxIsometricForce()*mdi.passiveForceMultiplier;
+	mdi.passiveFiberForce = getMaxIsometricForce()*mli.passiveForceMultiplier;
 
-	mdi.normTendonForce = (normActiveForce+mdi.passiveForceMultiplier)*mli.cosPennationAngle;
+	mdi.normTendonForce = (normActiveForce+mli.passiveForceMultiplier)*mli.cosPennationAngle;
 }
 
 

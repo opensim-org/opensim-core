@@ -66,7 +66,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RegisterType( TorqueActuator() );
 	Object::RegisterType( PointToPointActuator() );
 
-	//Object::RegisterType( Thelen2003Muscle() );
+	Object::RegisterType( Thelen2003Muscle() );
 	Object::RegisterType( Thelen2003Muscle_Deprecated() );
 	Object::RegisterType( Thelen2003MuscleV1() ); //MM
 	Object::RegisterType( Schutte1993Muscle_Deprecated() );
@@ -84,7 +84,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::RenameType("Schutte1993Muscle", Schutte1993Muscle_Deprecated());
 	Object::RenameType("Delp1990Muscle", Delp1990Muscle_Deprecated());
 
-	Object::RenameType("Thelen2003Muscle", Thelen2003Muscle_Deprecated());
+	//Object::RenameType("Thelen2003Muscle", Thelen2003Muscle_Deprecated());
 }
 
 osimActuatorsInstantiator::osimActuatorsInstantiator()

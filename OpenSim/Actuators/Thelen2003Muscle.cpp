@@ -413,6 +413,9 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthI
 	mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
 	mli.normTendonLength = norm_muscle_tendon_length - mli.normFiberLength * mli.cosPennationAngle;
 	mli.tendonStrain = (mli.tendonLength/getTendonSlackLength()-1.0);
+
+	mli.forceLengthMultiplier = calcActiveForce(s, mli.normFiberLength);
+	mli.passiveForceMultiplier = calcPassiveForce(s, mli.normFiberLength);
 }
 
 /* calculate muscle's velocity related values such fiber and tendon velocities,
@@ -445,10 +448,13 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocit
 			fvi.normFiberVelocity = fvi.fiberVelocity/(optimalFiberLength*getMaxContractionVelocity());
 		}
 	} else {
-		double velocity_dependent_force = mdi.normTendonForce / mli.cosPennationAngle - mdi.passiveForceMultiplier;
-		fvi.normFiberVelocity = calcFiberVelocity(s, mdi.activation, mdi.forceLengthMultiplier, velocity_dependent_force);
+		double velocity_dependent_force = mdi.normTendonForce / mli.cosPennationAngle - mli.passiveForceMultiplier;
+		fvi.normFiberVelocity = calcFiberVelocity(s, mdi.activation, mli.forceLengthMultiplier, velocity_dependent_force);
 		fvi.fiberVelocity = fvi.normFiberVelocity * Vmax;
 	}
+
+	fvi.forceVelocityMultiplier = mdi.activeFiberForce/(getMaxIsometricForce() *mdi.activation*mli.forceLengthMultiplier);
+
 }
 
 /* calculate muscle's active and passive force-length, force-velocity, 
@@ -459,17 +465,16 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynam
 	const double &maxIsometricForce = getMaxIsometricForce();
 
 	mdi.normTendonForce = calcTendonForce(s, mli.normTendonLength);
-	mdi.passiveForceMultiplier = calcPassiveForce(s, mli.normFiberLength);
-	mdi.passiveFiberForce = mdi.passiveForceMultiplier * maxIsometricForce;
 	
-	mdi.forceLengthMultiplier = calcActiveForce(s, mli.normFiberLength);
+	mdi.passiveFiberForce = mli.passiveForceMultiplier * maxIsometricForce;
+	
+	
 	
 	mdi.activation = getStateVariable(s, STATE_ACTIVATION_NAME);
 
 	double tendonForce = maxIsometricForce*mdi.normTendonForce;
 	mdi.activeFiberForce =  tendonForce/mli.cosPennationAngle - mdi.passiveFiberForce;
 
-	mdi.forceVelocityMultiplier = mdi.activeFiberForce/(maxIsometricForce *mdi.activation*mdi.forceLengthMultiplier);
 }
 
 /* Calculate muscle's activation rate (derivative) that will be integrated */

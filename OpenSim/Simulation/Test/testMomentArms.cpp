@@ -294,9 +294,6 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 		coord.setValue(s, q, true);
 		double angle = coord.getValue(s);
 
-		muscle.setActivation(s, 0.1);
-		muscle.equilibrate(s);
-
 		//cout << "muscle  force: " << muscle.getForce(s) << endl;
 		double ma = muscle.computeMomentArm(s, coord);
 		double ma_dldtheta = computeMomentArmFromDefinition(s, muscle.getGeometryPath(), coord);

@@ -178,13 +178,10 @@ void LiuThelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
 	Thelen2003Muscle_Deprecated::createSystem(system);
 
-	LiuThelen2003Muscle* mutableThis = const_cast<LiuThelen2003Muscle *>(this);
-
-	Array<string> stateVariables;
-	stateVariables.setSize(2);
-	stateVariables[0] = "active_motor_units";
-	stateVariables[1] = "fatigued_motor_units";
-	mutableThis->addStateVariables(stateVariables);
+	addStateVariable("active_motor_units");
+	addStateVariable("fatigued_motor_units");
+	addCacheVariable("active_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
+	addCacheVariable("fatigued_motor_units_deriv", 0.0, SimTK::Stage::Dynamics);
 }
 
 void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const

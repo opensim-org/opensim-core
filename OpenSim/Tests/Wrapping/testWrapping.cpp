@@ -46,9 +46,9 @@ int main()
 		// performance with ellipsoid wrapping
 		simulateModelWithMuscles("test_wrapEllipsoid_vasint.osim");
 		// performance with multiple muscles and no wrapping
-		simulateModelWithMuscles("gait2392_pelvisFixed.osim", 0.2);
+		simulateModelWithMuscles("gait2392_pelvisFixed.osim", 0.1);
 		// performance with multiple muscles and wrapping
-		simulateModelWithMuscles("Arnold2010_pelvisFixed.osim", 0.2);
+		simulateModelWithMuscles("Arnold2010_pelvisFixed.osim", 0.1);
 		// performance with multiple muscles and wrapping in upper-exremity
 		simulateModelWithMuscles("TestShoulderModel.osim", 0.1);
 	}

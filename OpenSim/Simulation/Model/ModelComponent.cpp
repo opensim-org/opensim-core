@@ -124,8 +124,13 @@ void ModelComponent::addModelingOption(const std::string &optionName, int maxFla
 {
 	if((int(_rep->_indexOfSubsystemForAllocations) == SimTK::InvalidIndex) ||
 		_model->getMultibodySystem().systemTopologyHasBeenRealized())
-			throw Exception("ModelComponent::addModelingOption: Modeling Option can only be added during createSystem().");
-
+			throw Exception("ModelComponent::addModelingOption: Modeling option can only be added during createSystem().");
+	
+	// don't add modeling option there is another state with the same name for this component
+	std::map<std::string, ModelComponentRep::ModelingOptionInfo*>::const_iterator it;
+	it = _rep->_namedModelingOptionInfo.find(optionName);
+	if(it != _rep->_namedModelingOptionInfo.end())
+		throw Exception("ModelComponent::addModelingOption: Modeling option '"+optionName+"' already exists.");
 	// assign a "slot" for a modeling option by name
 	// modeling option index will be invalid by default
 	// upon allocation during realizeTopology the index will be set
@@ -134,33 +139,51 @@ void ModelComponent::addModelingOption(const std::string &optionName, int maxFla
 	_rep->_namedModelingOptionInfo[optionName] = moi;
 }
 
-void ModelComponent::addStateVariables(const Array<std::string> &stateVariableNames) const
+void ModelComponent::addStateVariable(const std::string &stateVariableName, const SimTK::Stage &dependentOnStage) const
 {
 	if((int(_rep->_indexOfSubsystemForAllocations) == SimTK::InvalidIndex) ||
 		_model->getMultibodySystem().systemTopologyHasBeenRealized())
-			throw Exception("ModelComponent::addStateVariables: State Variables can only be added during createSystem().");
-	// assign "slots" for the the state variables by name
-	// state variable indices (ZIndex) will be invalid by default
-	// upon allocation during realizeTopology the indices will be set
-	for(int i=0; i<stateVariableNames.getSize(); i++)
-		_rep->_namedStateVariableIndices[stateVariableNames[i]];
+			throw Exception("ModelComponent::addStateVariable: State Variable can only be added during createSystem().");
 
+	if((dependentOnStage < Stage::Position) || (dependentOnStage > Stage::Dynamics)){
+		throw Exception("ModelComponent::addStateVariable: dependentOnStage can only be Position, Velocity or Dynamics.");
+	}
+
+	// don't add state if there is another state variable with the same name for this component
+	std::map<std::string, ModelComponentRep::StateVariableInfo*>::const_iterator it;
+	it = _rep->_namedStateVariableInfo.find(stateVariableName);
+	if(it != _rep->_namedStateVariableInfo.end()){
+		throw Exception("ModelComponent::addStateVariable: State variable '" + 
+			stateVariableName + "' already exists.");
+	}
+	// assign a "slot" for a state variable by name
+	// state variable index will be invalid by default
+	// upon allocation during realizeTopology the index will be set
+	ModelComponentRep::StateVariableInfo *svi = new ModelComponentRep::StateVariableInfo;
+	svi->dependentOnStage = dependentOnStage;
+	_rep->_namedStateVariableInfo[stateVariableName] = svi;
 }
 
-void ModelComponent::addDiscreteVariables(const Array<std::string> &discreteVariableNames, 
+void ModelComponent::addDiscreteVariable(const std::string &discreteVariableName, 
 											const SimTK::Stage &dependentOnStage) const
 {
 	if((int(_rep->_indexOfSubsystemForAllocations) == SimTK::InvalidIndex) ||
 		_model->getMultibodySystem().systemTopologyHasBeenRealized())
 			throw Exception("ModelComponent: Discrete Variables can only be added during createSystem().");
+	
+	// don't add discrete var if there is another discrete variable with the same name for this component
+	std::map<std::string, ModelComponentRep::DiscreteVariableInfo*>::const_iterator it;
+	it = _rep->_namedDiscreteVariableInfo.find(discreteVariableName);
+	if(it != _rep->_namedDiscreteVariableInfo.end()){
+		throw Exception("ModelComponent::addDiscreteVariable: discrete variable '" + 
+			discreteVariableName + "' already exists.");
+	}
 	// assign "slots" for the the discrete variables by name
 	// discrete variable indices will be invalid by default
 	// upon allocation during realizeTopology the indices will be set
-	for(int i=0; i<discreteVariableNames.getSize(); i++){
-		ModelComponentRep::DiscreteVariableInfo *dvi = new ModelComponentRep::DiscreteVariableInfo;
-		dvi->dependentOnStage = dependentOnStage;
-		_rep->_namedDiscreteVariableInfo[discreteVariableNames[i]] = dvi;
-	}
+	ModelComponentRep::DiscreteVariableInfo *dvi = new ModelComponentRep::DiscreteVariableInfo;
+	dvi->dependentOnStage = dependentOnStage;
+	_rep->_namedDiscreteVariableInfo[discreteVariableName] = dvi;
 }
 
 /*  Get the value of a ModelingOption flag for this ModelComponent. 
@@ -242,20 +265,30 @@ Array<std::string> ModelComponent::getStateVariableNames() const
  * param name    the name of the state variable  */
 double ModelComponent::getStateVariable(const SimTK::State &s, const std::string &name) const
 {
-	std::map<std::string,SimTK::ZIndex>::const_iterator it;
-	it = _rep->_namedStateVariableIndices.find(name);
+	std::map<std::string, ModelComponentRep::StateVariableInfo*>::const_iterator it;
+	it = _rep->_namedStateVariableInfo.find(name);
 
-	if(it != _rep->_namedStateVariableIndices.end()) {
-		const SimTK::Vector& z = s.getZ(getIndexOfSubsystemForAllocations());
-		return z[it->second];
+	if(it != _rep->_namedStateVariableInfo.end()) {
+		ModelComponentRep::StateVariableInfo* svi = it->second;
+		if(svi->dependentOnStage == Stage::Dynamics){
+			const SimTK::Vector& z = s.getZ(getIndexOfSubsystemForAllocations());
+			return z[ZIndex(svi->index)];
+		}
+		else if(svi->dependentOnStage == Stage::Velocity){
+			const SimTK::Vector& u = s.getU(getIndexOfSubsystemForAllocations());
+			return u[UIndex(svi->index)];
+		}
+		else if(svi->dependentOnStage == Stage::Position){
+			const SimTK::Vector& q = s.getQ(getIndexOfSubsystemForAllocations());
+			return q[QIndex(svi->index)];
+		}	
 	} 
-	else{
-		std::stringstream msg;
-		msg << "ModelComponent::getStateVariable: ERR- variable name '" << name << "' not found.\n " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
-		throw( Exception(msg.str(),__FILE__,__LINE__) );
-		return SimTK::NaN;
-	}
+
+	std::stringstream msg;
+	msg << "ModelComponent::getStateVariable: ERR- variable name '" << name << "' not found.\n " 
+		<< getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
+	throw( Exception(msg.str(),__FILE__,__LINE__) );
+	return SimTK::NaN;
 }
 
 
@@ -267,12 +300,23 @@ double ModelComponent::getStateVariable(const SimTK::State &s, const std::string
  * param value   the value to set */
 void ModelComponent::setStateVariable(SimTK::State &s, const std::string &name, double value) const
 {
-	std::map<std::string,SimTK::ZIndex>::const_iterator it;
-	it = _rep->_namedStateVariableIndices.find(name);
+	std::map<std::string, ModelComponentRep::StateVariableInfo*>::const_iterator it;
+	it = _rep->_namedStateVariableInfo.find(name);
 
-	if(it != _rep->_namedStateVariableIndices.end()) {
-		SimTK::Vector& z = s.updZ(getIndexOfSubsystemForAllocations());
-		z[it->second] = value;
+	if(it != _rep->_namedStateVariableInfo.end()) {
+		ModelComponentRep::StateVariableInfo* svi = it->second;
+		if(svi->dependentOnStage == Stage::Dynamics){
+			SimTK::Vector& z = s.updZ(getIndexOfSubsystemForAllocations());
+			z[ZIndex(svi->index)] = value;
+		}
+		else if(svi->dependentOnStage == Stage::Velocity){
+			SimTK::Vector& u = s.updU(getIndexOfSubsystemForAllocations());
+			u[UIndex(svi->index)] = value;
+		}
+		else if(svi->dependentOnStage == Stage::Position){
+			SimTK::Vector& q = s.updQ(getIndexOfSubsystemForAllocations());
+			q[QIndex(svi->index)] = value;
+		}	
 	} 
 	else{
 		std::stringstream msg;
@@ -341,17 +385,47 @@ void ModelComponent::includeAsSubComponent(ModelComponent *aComponent)
 		_subComponents.push_back(aComponent);
 }
 
-const SimTK::ZIndex ModelComponent::getZIndex(const std::string &name) const
+const int ModelComponent::getStateIndex(const std::string &name) const
 {
-	std::map<std::string, SimTK::ZIndex>::const_iterator it;
-	it = _rep->_namedStateVariableIndices.find(name);
-	return it->second;
+	std::map<std::string, ModelComponentRep::StateVariableInfo*>::const_iterator it;
+	it = _rep->_namedStateVariableInfo.find(name);
+
+	if(it != _rep->_namedStateVariableInfo.end()) {
+		return it->second->index;
+	} 
+	else{
+		std::stringstream msg;
+		msg << "ModelComponent::getStateVariableSystemIndex: ERR- name not found.\n " 
+			<< "for component '"<< getName() << "' of type " << getType();
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+		return SimTK::InvalidIndex;
+	}
 }
 
 SimTK::SystemYIndex ModelComponent::getStateVariableSystemIndex(const std::string &stateVariableName) const
 {
 	const SimTK::State &s = _model->getMultibodySystem().getDefaultState();
-	SimTK::SystemYIndex ix(s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ getZIndex(stateVariableName));
+
+	std::map<std::string, ModelComponentRep::StateVariableInfo*>::const_iterator it;
+	it = _rep->_namedStateVariableInfo.find(stateVariableName);
+	
+	if(it == _rep->_namedStateVariableInfo.end()) {
+		std::stringstream msg;
+		msg << "ModelComponent::getStateVariableSystemIndex: ERR- name not found.\n " 
+			<< "for component '"<< getName() << "' of type " << getType();
+		throw( Exception(msg.str(),__FILE__,__LINE__) );
+	} 
+	
+	ModelComponentRep::StateVariableInfo *svi = it->second;
+
+	SimTK::SystemYIndex ix;
+	if(svi->dependentOnStage == Stage::Dynamics)
+		ix = SystemYIndex(s.getZStart()+ s.getZStart(getIndexOfSubsystemForAllocations())+ ZIndex(svi->index));
+	else if(svi->dependentOnStage == Stage::Velocity)
+		ix = SystemYIndex(s.getUStart()+ s.getUStart(getIndexOfSubsystemForAllocations())+ UIndex(svi->index));
+	else if(svi->dependentOnStage == Stage::Position)
+		ix = SystemYIndex(s.getQStart()+ s.getQStart(getIndexOfSubsystemForAllocations())+ QIndex(svi->index));
+	
 	if(!(ix.isValid()))
 		throw Exception(getType()+"::getStateVariableSystemIndex : state variable "+stateVariableName+" not found."); 
 	return ix;
@@ -398,12 +472,12 @@ ModelComponentRep::~ModelComponentRep()
 
 Array<std::string> ModelComponentRep::getStateVariablesNamesAddedByModelComponent() const
 {
-	std::map<std::string,SimTK::ZIndex>::const_iterator it;
-	it = _namedStateVariableIndices.begin();
+	std::map<std::string, StateVariableInfo*>::const_iterator it;
+	it = _namedStateVariableInfo.begin();
 	
 	Array<std::string> names;
 
-	while(it != _namedStateVariableIndices.end()){
+	while(it != _namedStateVariableInfo.end()){
 		names.append(it->first);
 		it++;
 	}
@@ -428,14 +502,20 @@ void ModelComponentRep::realizeTopology(SimTK::State &s) const
 	}
 
 	// Allocate Continuous State Variables
-	if(_namedStateVariableIndices.size()>0){
+	if(_namedStateVariableInfo.size()>0){
 		SimTK::Vector zInit(1, 0.0);
-		std::map<std::string,SimTK::ZIndex>::iterator it;
-		for(it = (mutableThis->_namedStateVariableIndices).begin(); it!=_namedStateVariableIndices.end(); it++){
-			// should set to default value and not assume 0.0
-			it->second = subSys.allocateZ(s, zInit);
+		std::map<std::string, StateVariableInfo*>::iterator it;
+		for(it = (mutableThis->_namedStateVariableInfo).begin(); it!=_namedStateVariableInfo.end(); it++){
+			StateVariableInfo *svi = it->second;
+			if(svi->dependentOnStage == Stage::Dynamics)
+				svi->index = subSys.allocateZ(s, zInit);
+			else if(svi->dependentOnStage == Stage::Velocity)
+				svi->index = subSys.allocateU(s, zInit);
+			else if(svi->dependentOnStage == Stage::Position)
+				svi->index = subSys.allocateQ(s, zInit);
 		}
 	}
+
 
 	// Allocate Discrete State Variables
 	if(_namedDiscreteVariableInfo.size()>0){
@@ -467,14 +547,20 @@ void ModelComponentRep::realizeAcceleration(const SimTK::State& s) const
 
 	SimTK::Vector derivs = _modelComponent.computeStateVariableDerivatives(s);
 	
-	if(derivs.size() != _namedStateVariableIndices.size())
+	if(derivs.size() != _namedStateVariableInfo.size())
 		throw Exception("ModelComponent: number of derivatives does not match number of state variables.");
 
-	if(_namedStateVariableIndices.size()>0){
-		std::map<std::string,SimTK::ZIndex>::const_iterator it;
+	if(_namedStateVariableInfo.size()>0){
+		std::map<std::string, StateVariableInfo*>::const_iterator it;
 		int cnt = 0;
-		for(it = _namedStateVariableIndices.begin(); it!=_namedStateVariableIndices.end(); it++){
-			subSys.updZDot(s)[it->second] = derivs[cnt++];
+		for(it = _namedStateVariableInfo.begin(); it!=_namedStateVariableInfo.end(); it++){
+			StateVariableInfo *svi = it->second;
+			if(svi->dependentOnStage == Stage::Dynamics)
+				subSys.updZDot(s)[ZIndex(svi->index)] = derivs[cnt++];
+			else if(svi->dependentOnStage == Stage::Velocity)
+				subSys.updUDot(s)[UIndex(svi->index)] = derivs[cnt++];
+			else if(svi->dependentOnStage == Stage::Position)
+				subSys.updQDot(s)[QIndex(svi->index)] = derivs[cnt++];
 		}
 	}
 

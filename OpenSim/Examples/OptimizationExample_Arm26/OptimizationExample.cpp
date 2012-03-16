@@ -166,9 +166,11 @@ int main()
 		// Define the initial muscle states
 		const Set<Muscle> &muscleSet = osimModel.getMuscles();
      	for(int i=0; i< muscleSet.getSize(); i++ ){
-			ActivationFiberLengthMuscle_Deprecated* mus = dynamic_cast<ActivationFiberLengthMuscle_Deprecated*>(&muscleSet[i]);
-			mus->setDefaultActivation(0.5);
-			mus->setDefaultFiberLength(0.1);
+			ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&muscleSet[i]);
+			if(mus){
+				mus->setDefaultActivation(0.5);
+				mus->setDefaultFiberLength(0.1);
+			}
 		}
 
 		State& si = osimModel.initSystem();

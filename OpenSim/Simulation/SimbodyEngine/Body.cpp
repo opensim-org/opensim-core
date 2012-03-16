@@ -139,32 +139,6 @@ Body::Body(const Body &aBody) :
 
 //_____________________________________________________________________________
 /**
- * Copy constructor from an AbstractBody.
- *
- * @param aBody Body to be copied.
- *
-Body::Body(const AbstractBody &aBody) :
-   AbstractBody(aBody),
-	_mass(_massProp.getValueDbl()),
-	_massCenter(_massCenterProp.getValueDblVec()),
-	_inertiaXX(_inertiaXXProp.getValueDbl()),
-	_inertiaYY(_inertiaYYProp.getValueDbl()),
-	_inertiaZZ(_inertiaZZProp.getValueDbl()),
-	_inertiaXY(_inertiaXYProp.getValueDbl()),
-	_inertiaXZ(_inertiaXZProp.getValueDbl()),
-	_inertiaYZ(_inertiaYZProp.getValueDbl()),
-	_joint(_jointProp.getValueObjPtrRef()),
-	_displayerProp(PropertyObj("", VisibleObject())),
-	_displayer((VisibleObject&)_displayerProp.getValueObj())
-{
-	setNull();
-	setupProperties();
-	copyData(aBody);
-}
-*/
-
-//_____________________________________________________________________________
-/**
  * Copy this body and return a pointer to the copy.
  * The copy constructor for this class is used.
  *

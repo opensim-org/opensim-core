@@ -101,7 +101,8 @@ void testAssembleModelWithConstraints(string modelFile)
 	
 	for(int i=0; i< constraints.getSize(); i++) {
 		constraints[i].calcConstraintForces(state, constraintBodyForces, mobilityForces);
-		cout << "Constraint " << i << ":  " << constraints[i].getName() << endl;
+		cout << "Constraint " << i << ":  " << constraints[i].getName();
+		cout << " Force = " << constraintBodyForces(1)(1)(1) << endl;
 		//constraintBodyForces.dump("Consrtaint Body Forces");
 		totalYforce += constraintBodyForces(1)(1)(1);
 	}

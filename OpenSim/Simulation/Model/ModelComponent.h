@@ -73,13 +73,21 @@ protected:
 		ModelingOptionInfo(): maxOptionValue(0), index(SimTK::InvalidIndex) {};
     };
 
-	// Structures to hold related info about discrete variables and cache entries to be added
+	// Structure to hold related info about state variables 
+	struct StateVariableInfo {
+		int index;
+		SimTK::Stage dependentOnStage;
+		StateVariableInfo(): index(SimTK::InvalidIndex), dependentOnStage(SimTK::Stage::Empty) {};
+    };
+
+	// Structure to hold related info about discrete variables 
 	struct DiscreteVariableInfo {
 		SimTK::DiscreteVariableIndex index;
 		SimTK::Stage dependentOnStage;
 		DiscreteVariableInfo(): index(SimTK::InvalidIndex), dependentOnStage(SimTK::Stage::Empty) {};
     };
 
+	// Structure to hold related info about cache variables 
 	struct CacheInfo {
 		SimTK::CacheEntryIndex index;
 		SimTK::AbstractValue *prototype;
@@ -107,7 +115,7 @@ protected:
 	std::map<std::string, ModelingOptionInfo*>      _namedModelingOptionInfo;
 	// Map names of continuous state variables of the ModelComponent to their 
     // underlying SimTK indices.
-	std::map<std::string, SimTK::ZIndex>            _namedStateVariableIndices;
+	std::map<std::string, StateVariableInfo*>       _namedStateVariableInfo;
 	// Map names of discrete variables of the ModelComponent to their underlying
     // SimTK indices.
 	std::map<std::string, DiscreteVariableInfo*>    _namedDiscreteVariableInfo;
@@ -124,7 +132,7 @@ public:
 	    computational system. It does not include the number of states already built-in by
 		the SimTK::System level component. Should query it and add to this to obtain the total
 		number of states managed by this ModelComponent */
-	int getNumStateVariablesAddedByModelComponent() const {return _namedStateVariableIndices.size();}
+	int getNumStateVariablesAddedByModelComponent() const {return _namedStateVariableInfo.size();}
 	Array<std::string> getStateVariablesNamesAddedByModelComponent() const;
 
 	void realizeTopology(SimTK::State &s) const;
@@ -334,7 +342,7 @@ public:
 	 * @param name   the name (string) of the modeling option of interest
      * @return flag  integer value for modeling option
      */
-	virtual int getModelingOption(const SimTK::State& state, const std::string &name) const;
+	int getModelingOption(const SimTK::State& state, const std::string &name) const;
 
 	/**
      * Set the value of a ModelingOption flag for this ModelComponent.
@@ -345,7 +353,7 @@ public:
 	 * @param name   the name (string) of the modeling option of interest
 	 * @param flag   the desired flag (integer) value specifying the modeling option
      */
-	virtual void setModelingOption(SimTK::State& state, const std::string &name, int flag) const;
+	void setModelingOption(SimTK::State& state, const std::string &name, int flag) const;
 
     /**
      * Get the value of a state variable allocated by this ModelComponent.
@@ -353,7 +361,7 @@ public:
      * @param state   the State for which to get the value
      * @param name    the name (string) of the state variable of interest
      */
-	virtual double getStateVariable(const SimTK::State& state, const std::string &name) const;
+	double getStateVariable(const SimTK::State& state, const std::string &name) const;
 
 	/**
      * Set the value of a state variable allocated by this ModelComponent by name.
@@ -362,7 +370,7 @@ public:
      * @param name   the name of the state variable
      * @param value  the value to set
      */
-	virtual void setStateVariable(SimTK::State& state, const std::string &name, double value) const;
+	void setStateVariable(SimTK::State& state, const std::string &name, double value) const;
 
 	/**
      * Get the value of a discrete variable allocated by this ModelComponent by name.
@@ -371,7 +379,7 @@ public:
      * @param name    the name of the state variable
      * @return value  the discrete variable value
      */
-	virtual double getDiscreteVariable(const SimTK::State& state, const std::string &name) const;
+	double getDiscreteVariable(const SimTK::State& state, const std::string &name) const;
 
 	/**
      * Set the value of a discrete variable allocated by this ModelComponent by name.
@@ -380,7 +388,7 @@ public:
      * @param name   the name of the dsicrete variable
      * @param value  the value to set
      */
-	virtual void setDiscreteVariable(SimTK::State& state, const std::string &name, double value) const;
+	void setDiscreteVariable(SimTK::State& state, const std::string &name, double value) const;
 
 	/**
      * Get the value of a cache variable allocated by this ModelComponent by name.
@@ -439,8 +447,8 @@ public:
      * as valid, the evaluation method monitoring this flag will force a re-evaluation
 	 * rather that just reading the value from the cache.
 	 *
-     * @param state  the State for which to set the value
-     * @param name   the name of the state variable
+     * @param state  the State containing the cache variable
+     * @param name   the name of the cache variable
      */
 	void markCacheVariableValid(const SimTK::State& state, const std::string &name) const
 	{
@@ -454,6 +462,39 @@ public:
 		else{
 			std::stringstream msg;
 			msg << "ModelComponent::markCacheVariableValid: ERR- name not found.\n "
+				<< "for component '"<< getName() << "' of type " << getType();
+			throw( Exception(msg.str(),__FILE__,__LINE__) );
+		}
+	}
+
+	/**
+     * Mark a cache variable value allocated by this ModelComponent as invalid.
+	 * When the system realization drops to below the lowest valid stage, cache 
+	 * variables are automatically marked as invalid. There are instances when
+     * component added state variables require invalidating a cache at a lower stage.
+	 * For example, a component may have a length state variable which should 
+	 * invalidate calculations involving it and other positions when the state
+	 * variable is set. Changing the component state variable automatically
+	 * invalidates Dynamics and higher realizations, but to force realizations
+	 * at Position and Velocity requires setting the lowest valid stage to 
+	 * Position and marking the cache variable as invalid whenver the length
+	 * state variable value is set/changed.
+	 *
+     * @param state  the State containing the cache variable
+     * @param name   the name of the cache variable
+     */
+	void markCacheVariableInvalid(const SimTK::State& state, const std::string &name) const
+	{
+		std::map<std::string, ModelComponentRep::CacheInfo*>::const_iterator it;
+		it = _rep->_namedCacheVariableInfo.find(name);
+
+		if(it != _rep->_namedCacheVariableInfo.end()) {
+			SimTK::CacheEntryIndex ceIndex = it->second->index;
+			state.markCacheValueNotRealized(getIndexOfSubsystemForAllocations(), ceIndex);
+		}
+		else{
+			std::stringstream msg;
+			msg << "ModelComponent::markCacheVariableInvalid: ERR- name not found.\n "
 				<< "for component '"<< getName() << "' of type " << getType();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}
@@ -540,7 +581,7 @@ protected:
 	 * Helper methods for adding modeling option, state variables and their derivatives, discrete variables,
 	 * etc., are available and can be called within createSystem() only.
 	 * @see addModelingOption()
-	 * @see addStateVariables()
+	 * @see addStateVariable()
 	 * @see addDiscreteVariables()
 	 * @see addCacheVariable()
      *
@@ -646,10 +687,12 @@ protected:
 		Instance and above realization Stages.*/
 	void addModelingOption(const std::string &optionName, int maxFlagValue) const;
 
+
 	/** Add continuous system state variables belonging to this ModelComponent.
-	    The number of states is defined by the number of stateVariableNames, and each
-		state variable is assigned the corresponding name.*/
-	void addStateVariables(const Array<std::string> &stateVariableNames) const;
+	    Changing the state will automatically invalidate everything at and above
+		 the dependsOnStage */
+	void addStateVariable(const std::string &stateVariableName,
+						  const SimTK::Stage &dependentOnStage=SimTK::Stage::Dynamics) const;
 
 	/** If state variables are continuous, then computeStateVariableDerivatives() must be
 		implemented so that the evolution of the state variable can be determined.
@@ -660,13 +703,11 @@ protected:
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const
 	{ return SimTK::Vector(0); };
 
-	/** Add system discrete variables belonging to this ModelComponent.
-	    The number of discrete variables is specified  by the number of discreteVariableNames,
-		and each allocated discrete variable is assigned the corresponding name.
+	/** Add a system discrete variable belonging to this ModelComponent by name.
 		Each variable is allocated as SimTK::Real and is dependent on the same Stage.
 		Use repeated calls with a different Stage for variables that are dependent on
 		other Stages */
-	void addDiscreteVariables(const Array<std::string> &discreteVariableNames,
+	void addDiscreteVariable(const std::string &discreteVariableName,
 							  const SimTK::Stage &dependentOnStage) const;
 
 	/** Add a state cache variable belonging to this ModelComponent.
@@ -700,7 +741,7 @@ protected:
 	/** Get the index of a ModelComponent's conintuous state variable in the Subsystem for
 		allocations. This method is intended for derived ModelComponents that may need direct
 		access to its underlying Subsystem.*/
-	const SimTK::ZIndex getZIndex(const std::string &name) const;
+	const int getStateIndex(const std::string &name) const;
 
 	/** Get the index of a ModelComponent's discrete variable in the Subsystem for allocations.
 		This method is intended for derived ModelComponents that may need direct access

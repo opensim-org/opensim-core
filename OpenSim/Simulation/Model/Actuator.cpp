@@ -261,18 +261,16 @@ Actuator& Actuator::operator=(const Actuator &aAct)
 void Actuator::createSystem(SimTK::MultibodySystem& system) const
 {
 	Actuator_::createSystem(system);
-    // Beyond the const Component get the index so we can access the SimTK::Force later
-	Actuator* mutableThis = const_cast<Actuator *>(this);
 
 	// Add modeling flag to compute actuation with dynamic or by-pass with override force provided
-	mutableThis->addModelingOption("override_force", 1);
+	addModelingOption("override_force", 1);
 
 	// Cache the computed force and speed of the scalar valued actuator
-	mutableThis->addCacheVariable<double>("force", 0.0, Stage::Velocity);
-	mutableThis->addCacheVariable<double>("speed", 0.0, Stage::Velocity);
+	addCacheVariable<double>("force", 0.0, Stage::Velocity);
+	addCacheVariable<double>("speed", 0.0, Stage::Velocity);
 
 	// Discrete state variable is the override force value if in override mode
-	mutableThis->addDiscreteVariables(Array<string>("override_force",1), Stage::Time);
+	addDiscreteVariable("override_force", Stage::Time);
 }
 
 double Actuator::getControl(const SimTK::State& s ) const
