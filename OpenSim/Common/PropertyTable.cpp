@@ -62,6 +62,12 @@ PropertyTable& PropertyTable::operator=(const PropertyTable& source)
 }
 
 //_____________________________________________________________________________
+// Reinitialize the table to be completely empty.
+void PropertyTable::clear() {
+    deleteProperties();
+}
+
+//_____________________________________________________________________________
 // Equality operator compares each property with the one at the same position.
 bool PropertyTable::equals(const PropertyTable& other) const {
     if (getNumProperties() != other.getNumProperties())

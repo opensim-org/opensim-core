@@ -280,6 +280,33 @@ public:
 
 	const std::string& toString() const;
 
+	//--------------------------------------------------------------------------
+    /** @name                      Properties
+    Methods in this section are for public access to the properties maintained
+    by this OpenSim %Object. These are returned as AbstractProperty objects
+    which support various type-independent property services. If you know the
+    type you can use templatized methods to deal with the value directly. **/
+    /**@{**/
+    /** Determine how many properties are stored with this %Object. These
+    are numbered 0..n-1 in the order they were created. **/
+    int getNumProperties() const;
+    /** Get a const reference to a property by its index number, returned as
+    an AbstractProperty. **/
+    const AbstractProperty& getPropertyByIndex(int propertyIndex) const;
+    /** Get a writable reference to a property by its index number, returned as
+    an AbstractProperty. **/
+    AbstractProperty& updPropertyByIndex(int propertyIndex);
+    /** Get a const reference to a property by its name, returned as
+    an AbstractProperty. An exception is thrown if no property by this name
+    is present in this %Object. **/
+    const AbstractProperty& getPropertyByName(const std::string& name) const;
+    /** Get a writable reference to a property by its name, returned as
+    an AbstractProperty.  An exception is thrown if no property by this name
+    is present in this %Object. **/
+    AbstractProperty& updPropertyByName(const std::string& name);
+    /**@}**/
+	//--------------------------------------------------------------------------
+
 	/** Get a reference to the PropertySet maintained by the Object */
 	PropertySet& getPropertySet() { return(_propertySet); }
 #ifndef SWIG

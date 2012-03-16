@@ -69,6 +69,10 @@ public:
     it had been copy constructed from the source. **/
 	PropertyTable& operator=(const PropertyTable& source);
 
+    /** Delete all the properties currently in this table, restoring the
+    table to its default-constructed state. **/
+    void clear();
+
     /** Compare this table to another one for equality. Two tables are defined
     to be equal if they have the same number of properties, and each property
     tests equal to the one with the same index. **/

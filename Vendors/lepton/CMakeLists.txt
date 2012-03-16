@@ -34,9 +34,6 @@ ADD_LIBRARY(osim${KIT} SHARED ${SOURCE_FILES} ${INCLUDE_FILES})
 
 SET_TARGET_PROPERTIES(osim${KIT} PROPERTIES PROJECT_LABEL "Vendor Libraries - osim${KIT}")
 
-# To include it in public release. TODO: does this work?
-INSTALL_FILES(/include/Vendors/include/Lepton.h .h ${INCLUDE_FILES})
-
 # Shared libraries are needed at runtime for applications, so we put them
 # at the top level in OpenSim/bin/*.dll (Windows) or OpenSim/lib/*.so (Linux)
 # or OpemSim/lib/*.dylib (Mac). Windows .lib files, and Linux/Mac .a static
@@ -52,6 +49,11 @@ ELSE()
             LIBRARY DESTINATION lib
             ARCHIVE DESTINATION sdk/lib)
 ENDIF()
+
+# To include it in public release. (sherm 20120316: not sure this is right;
+# needs testing)
+INSTALL(FILES ${INCLUDE_FILES}
+        DESTINATION sdk/include/Vendors/include/Lepton.h)
 
 
 ENABLE_TESTING()

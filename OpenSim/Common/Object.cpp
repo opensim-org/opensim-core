@@ -203,23 +203,27 @@ copy() const
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Set all member variables to their null or default values.
+ * Set all non-static member variables to their null or default values.
  */
 void Object::
 setNull()
 {
-	setType("Object");
-	setName("");
-
-	setupProperties();
-
-	_document = NULL;
-	_inlined = true;
 	_propertySet.clear();
-	_description = "";
-	_authors = "";
-	_references = "";
+    _propertyTable.clear();
 
+	_type           = "Object";
+	_name           = "";
+    _description    = "";
+	_authors        = "";
+	_references     = "";
+
+	_document       = NULL;
+	_inlined        = true;
+
+    // In case there are properties allocated at the Object base class level,
+    // they need to be reallocated now. Derived objects will get a chance to
+    // do this later.
+	setupProperties();
 }
 //_____________________________________________________________________________
 /**
@@ -373,14 +377,11 @@ operator==(const Object &aObject) const
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
- * Determine if this property is less than another.
+ * Determine if this Object is "less than" another, used to put Objects in
+ * sorted containers.
  *
- * This property is less than another if the name of this string is less
- * than the name of the other property.
- *
- * @param aProperty Property for which to make the less than test.
- * @return True if this object's name is less than the other, false otherwise.
- * used to put Objects in Arrays/maps
+ * This Object is less than another if the name of this string is less
+ * than the name of the other Object.
  */
 bool Object::
 operator<(const Object &aObject) const
@@ -474,6 +475,90 @@ getDescription() const
 	return(_description);
 }
 
+//=============================================================================
+// PUBLIC PROPERTY ACCESS
+//=============================================================================
+// TODO: (sherm 20120315) These currently provide support for the deprecated
+// PropertySet method of handling properties, not yet fully replaced by the
+// PropertyTable approach. The interface here hides the fact that there are
+// to different sets of properties -- instead, it will appear that there is
+// a single set which will actually be all those from the PropertyTable 
+// followed by all those from the PropertySet, so that the property index of
+// the first PropertySet property is one larger than that of the last 
+// PropertyTable property. Names will be looked up first in the PropertyTable
+// and then in the PropertySet.
+
+int Object::
+getNumProperties() const {
+    return   _propertyTable.getNumProperties() 
+           + _propertySet.getSize(); // TODO: remove
+}
+
+const AbstractProperty& Object::
+getPropertyByIndex(int propertyIndex) const {
+    if (!(0 <= propertyIndex && propertyIndex < getNumProperties()))
+        throw Exception("Property index " + SimTK::String(propertyIndex)
+                        + " out of range 0 <= index < "
+                        + SimTK::String(getNumProperties())
+                        + " for Object " + getName());
+
+    // TODO: remove deprecated code from here ...
+    if (propertyIndex >= _propertyTable.getNumProperties()) {
+        const int setIndex = propertyIndex-_propertyTable.getNumProperties();
+        return *_propertySet.get(setIndex);
+    }
+    // ... to here.
+
+    return _propertyTable.getAbstractPropertyByIndex(propertyIndex);
+}
+
+AbstractProperty& Object::
+updPropertyByIndex(int propertyIndex) {
+    if (!(0 <= propertyIndex && propertyIndex < getNumProperties()))
+        throw Exception("Property index " + SimTK::String(propertyIndex)
+                        + " out of range 0 <= index < "
+                        + SimTK::String(getNumProperties())
+                        + " for Object " + getName());
+
+    // TODO: remove deprecated code from here ...
+    if (propertyIndex >= _propertyTable.getNumProperties()) {
+        const int setIndex = propertyIndex-_propertyTable.getNumProperties();
+        return *_propertySet.get(setIndex);
+    }
+    // ... to here.
+
+    return _propertyTable.updAbstractPropertyByIndex(propertyIndex);
+}
+
+const AbstractProperty& Object::
+getPropertyByName(const std::string& name) const {
+    const AbstractProperty* p = _propertyTable.getPropertyPtr(name);
+    if (p) return *p;
+
+    // TODO: remove deprecated code from here ...
+    p = _propertySet.contains(name);
+    if (p) return *p;
+    // ... to here.
+
+    throw Exception("Property '" + name + "' not present in Object "
+                    + getName());
+    return *p; //NOTREACHED
+}
+
+AbstractProperty& Object::
+updPropertyByName(const std::string& name) {
+    AbstractProperty* p = _propertyTable.updPropertyPtr(name);
+    if (p) return *p;
+
+    // TODO: remove deprecated code from here ...
+    p = _propertySet.contains(name);
+    if (p) return *p;
+    // ... to here.
+
+    throw Exception("Property '" + name + "' not present in Object "
+                    + getName());
+    return *p; //NOTREACHED
+}
 
 //=============================================================================
 // REGISTRATION
@@ -569,9 +654,12 @@ RegisterType(const Object &aObject)
 // XML
 //=============================================================================
 //-----------------------------------------------------------------------------
-// UTILITY FUNCTIONS
+// LOCAL STATIC UTILITY FUNCTIONS
 //-----------------------------------------------------------------------------
-template<class T> void UpdateFromXMLNodeSimpleProperty(Property_Deprecated *aProperty, SimTK::Xml::Element& aNode, const string &aName)
+template<class T> static void 
+UpdateFromXMLNodeSimpleProperty(Property_Deprecated* aProperty, 
+                                SimTK::Xml::Element& aNode, 
+                                const string&        aName)
 {
 	aProperty->setUseDefault(true);
 	SimTK::String string;
@@ -585,7 +673,10 @@ template<class T> void UpdateFromXMLNodeSimpleProperty(Property_Deprecated *aPro
 			aProperty->setUseDefault(false);
 }
 
-template<class T> void UpdateFromXMLNodeSimpleProperty2(AbstractProperty *aAbstractProperty, SimTK::Xml::Element& aNode, const string &aName)
+template<class T> static void 
+UpdateFromXMLNodeSimpleProperty2(AbstractProperty*    aAbstractProperty, 
+                                 SimTK::Xml::Element& aNode, 
+                                 const string&        aName)
 {
 	aAbstractProperty->setUseDefault(true);
 	SimTK::String string;
@@ -596,11 +687,14 @@ template<class T> void UpdateFromXMLNodeSimpleProperty2(AbstractProperty *aAbstr
 	Property2<T> *aProperty = dynamic_cast<Property2<T> *>(aAbstractProperty);
 	T value;
 	iter->getValueAs(value); // fails for Nan, infinity, -infinity, true/false
-			aProperty->setValue(value);
-			aProperty->setUseDefault(false);
+    aProperty->setValue(value);
+    aProperty->setUseDefault(false);
 }
 
-template<class T> void UpdateFromXMLNodeArrayProperty(Property_Deprecated *aProperty, SimTK::Xml::Element& aNode, const string &aName)
+template<class T> static void 
+UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty, 
+                               SimTK::Xml::Element& aNode, 
+                               const string&        aName)
 {
 	aProperty->setUseDefault(true);
 	//SimTK::String string;
@@ -615,10 +709,13 @@ template<class T> void UpdateFromXMLNodeArrayProperty(Property_Deprecated *aProp
 	osimValue.setSize(value.size());
 	for(unsigned i=0; i< value.size(); i++) osimValue[i]=value[i];
 	aProperty->setValue(osimValue);
-		aProperty->setUseDefault(false);
+    aProperty->setUseDefault(false);
 }
 
-template<class T> void UpdateFromXMLNodeArrayProperty2(AbstractProperty *aAbstractProperty, SimTK::Xml::Element& aNode, const string &aName)
+template<class T> static void 
+UpdateFromXMLNodeArrayProperty2(AbstractProperty*    aAbstractProperty, 
+                                SimTK::Xml::Element& aNode, 
+                                const string&        aName)
 {
 	aAbstractProperty->setUseDefault(true);
 	//SimTK::String string;
@@ -626,7 +723,8 @@ template<class T> void UpdateFromXMLNodeArrayProperty2(AbstractProperty *aAbstra
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
 
-	Property2< OpenSim::Array<T> > *aProperty = dynamic_cast<Property2< OpenSim::Array<T> > *>(aAbstractProperty);
+	Property2< OpenSim::Array<T> > *aProperty = 
+        dynamic_cast<Property2< OpenSim::Array<T> > *>(aAbstractProperty);
 	SimTK::Array_<T> value;
 	iter->getValueAs(value);
 	//cout << value << endl;
@@ -634,10 +732,13 @@ template<class T> void UpdateFromXMLNodeArrayProperty2(AbstractProperty *aAbstra
 	osimValue.setSize(value.size());
 	for(unsigned i=0; i< value.size(); i++) osimValue[i]=value[i];
 	aProperty->setValue(osimValue);
-		aProperty->setUseDefault(false);
+    aProperty->setUseDefault(false);
 }
 
-void UpdateFromXMLNodeVec3Property2(AbstractProperty *aAbstractProperty, SimTK::Xml::Element& aNode, const string &aName)
+static void 
+UpdateFromXMLNodeVec3Property2(AbstractProperty*    aAbstractProperty, 
+                               SimTK::Xml::Element& aNode, 
+                               const string&        aName)
 {
 	aAbstractProperty->setUseDefault(true);
 	//SimTK::String string;
@@ -645,7 +746,8 @@ void UpdateFromXMLNodeVec3Property2(AbstractProperty *aAbstractProperty, SimTK::
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
 
-	Property2<Vec3> *aProperty = dynamic_cast<Property2<Vec3> *>(aAbstractProperty);
+	Property2<Vec3> *aProperty = 
+        dynamic_cast<Property2<Vec3> *>(aAbstractProperty);
 	SimTK::Array_<double> value;
 	iter->getValueAs(value);
 	//cout << value << endl;
@@ -656,6 +758,9 @@ void UpdateFromXMLNodeVec3Property2(AbstractProperty *aAbstractProperty, SimTK::
 	aProperty->setUseDefault(false);
 }
 
+//-----------------------------------------------------------------------------
+// OBJECT XML METHODS
+//-----------------------------------------------------------------------------
 void Object::	// Populate Object from XML node corresponding to Obj property
 InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber)
 {

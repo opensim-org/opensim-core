@@ -222,14 +222,12 @@ Actuator::~Actuator()
  */
 void Actuator::setupProperties()
 {
-    // (sherm) Can't use SimTK::Infinity here because it may not have
-    // been initialized when this is used in static registration.
 	addProperty<double>("min_control",
 		"Minimum allowed value for control signal. Used primarily when solving for control values",
-		-std::numeric_limits<double>::infinity());
+		-Infinity);
 	addProperty<double>("max_control",
 		"Maximum allowed value for control signal. Used primarily when solving for control values",
-		std::numeric_limits<double>::infinity());
+		Infinity);
 }
 
 /**
