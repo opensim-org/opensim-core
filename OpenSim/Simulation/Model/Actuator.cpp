@@ -33,12 +33,13 @@
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Common/StateFunction.h>
-#include <sstream>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include "SimTKsimbody.h"
 #include "ForceAdapter.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+#include <sstream>
+#include <limits>
 
 using namespace std;
 using namespace OpenSim;
@@ -221,12 +222,14 @@ Actuator::~Actuator()
  */
 void Actuator::setupProperties()
 {
+    // (sherm) Can't use SimTK::Infinity here because it may not have
+    // been initialized when this is used in static registration.
 	addProperty<double>("min_control",
 		"Minimum allowed value for control signal. Used primarily when solving for control values",
-		-Infinity);
+		-std::numeric_limits<double>::infinity());
 	addProperty<double>("max_control",
 		"Maximum allowed value for control signal. Used primarily when solving for control values",
-		Infinity);
+		std::numeric_limits<double>::infinity());
 }
 
 /**
