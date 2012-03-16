@@ -133,7 +133,7 @@ void testArm26() {
 	cmc.run();
 	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");
 
-	Array<double> rms_tols(0.01, 2*2+2*6);
+	Array<double> rms_tols(0.02, 2*2+2*6);
 	rms_tols[0] = rms_tols[1] = 0.001;  // angles within .06 degrees
 	
 	CHECK_STORAGE_AGAINST_STANDARD(results, standard, rms_tols, __FILE__, __LINE__, "testArm26 failed");
@@ -176,8 +176,8 @@ void testEMGDrivenArm() {
 	Array<double> rms_tols(0.1, 2*2+2*6);
 	rms_tols[0] = 0.002; // shoulder q
 	rms_tols[1] = 0.002;  // elbow q
-	rms_tols[6] = 0.20;  // trilat normally off but because of bicep long EMG tracking it turns on
-	rms_tols[8] = 0.20;  // trimed normally off but because of bicep long EMG tracking it turns on
+	rms_tols[6] = 0.25;  // trilat normally off but because of bicep long EMG tracking it turns on
+	rms_tols[8] = 0.25;  // trimed normally off but because of bicep long EMG tracking it turns on
 	rms_tols[10] = 0.50;  // biceps long normally low but because of EMG tracking should be on more
 	rms_tols[12] = 0.50;  // biceps short normally on but because of EMG tracking should be lower
 

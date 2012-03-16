@@ -49,8 +49,8 @@ int main()
 		analyze1.run();
 		Storage resultActivation1("Results/arm26_StaticOptimization_activation.sto"), standardActivation1("std_arm26_StaticOptimization_activation.sto");
 		Storage resultForce1("Results/arm26_StaticOptimization_force.sto"), standardForce1("std_arm26_StaticOptimization_force.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(resultActivation1, standardActivation1, Array<double>(2e-3, 24), __FILE__, __LINE__, "testArm failed");
-		CHECK_STORAGE_AGAINST_STANDARD(resultForce1, standardForce1, Array<double>(1e-2, 24), __FILE__, __LINE__, "testArm failed");
+		CHECK_STORAGE_AGAINST_STANDARD(resultActivation1, standardActivation1, Array<double>(0.005, 24), __FILE__, __LINE__, "testArm failed");
+		CHECK_STORAGE_AGAINST_STANDARD(resultForce1, standardForce1, Array<double>(0.1, 24), __FILE__, __LINE__, "testArm failed");
 		cout << "testArm passed" << endl;
 
 		AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
@@ -58,8 +58,8 @@ int main()
 		analyze2.run();
 		Storage resultActivation2("Results/arm26_bounds_StaticOptimization_activation.sto"), standardActivation2("std_arm26_bounds_StaticOptimization_activation.sto");
 		Storage resultForce2("Results/arm26_bounds_StaticOptimization_force.sto"), standardForce2("std_arm26_bounds_StaticOptimization_force.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(resultActivation2, standardActivation2, Array<double>(2e-3, 24), __FILE__, __LINE__, "testArm with bounds failed");
-		CHECK_STORAGE_AGAINST_STANDARD(resultForce2, standardForce2, Array<double>(1e-2, 24), __FILE__, __LINE__, "testArm with bounds failed");
+		CHECK_STORAGE_AGAINST_STANDARD(resultActivation2, standardActivation2, Array<double>(0.005, 24), __FILE__, __LINE__, "testArm with bounds failed");
+		CHECK_STORAGE_AGAINST_STANDARD(resultForce2, standardForce2, Array<double>(0.1, 24), __FILE__, __LINE__, "testArm with bounds failed");
 		cout << "testArm with bounds passed" << endl;
 	}
 	catch (const Exception& e) {
