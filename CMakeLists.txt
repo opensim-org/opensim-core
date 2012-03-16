@@ -313,6 +313,14 @@ FOREACH(LIBF ${LIB_FILES})
 	    "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
 ENDFOREACH()
 
+# This target depends on the destination copies of the Simbody files (in the
+# binary build directory).  Those are produced by the OUTPUT custom command 
+# below, which depends on the source files from the Simbody installation 
+# directory.
+ADD_CUSTOM_TARGET(SimbodyFiles ALL DEPENDS ${COPIED_LIB_FILES})
+SET_TARGET_PROPERTIES(SimbodyFiles
+ 	PROPERTIES PROJECT_LABEL "Library - Simbody Files")
+
 FOREACH(LIBF ${LIB_FILES})
     # MESSAGE("LIB_FILE" ${LIBF})
 	GET_FILENAME_COMPONENT(LIBF_ROOT ${LIBF} NAME)
@@ -320,6 +328,9 @@ FOREACH(LIBF ${LIB_FILES})
 	SET(COPIED_LIBF "${BUILD_BINARY_DIR}/${CMAKE_CFG_INTDIR}/${LIBF_ROOT}")
 	FILE(TO_NATIVE_PATH "${LIBF}" LIBF_SRC)
 	FILE(TO_NATIVE_PATH "${COPIED_LIBF}" LIBF_DEST)
+
+    # Copy Simbody files if they are out of date. This is invoked because
+    # the SimbodyFiles target depends on these output files.
 	ADD_CUSTOM_COMMAND(OUTPUT "${COPIED_LIBF}"
 		COMMAND ${NATIVE_COPY_CMD} "${LIBF_SRC}" "${LIBF_DEST}"
 		DEPENDS "${LIBF}"
@@ -407,11 +418,16 @@ ELSE(WIN32)
 	FILE(GLOB THIRDPARTY_LIB_FILES 
 					${Simbody_LIB_DIR}/*.so
 					${Simbody_LIB_DIR}/*.dylib)
+    # Put .so or .dylib both in OpenSim/lib and OpenSim/sdk/lib.
 	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
+					${Simbody_LIB_DIR}/*.so
+					${Simbody_LIB_DIR}/*.dylib
 					${Simbody_LIB_DIR}/*.a)
 ENDIF(WIN32)
 
-INSTALL(FILES ${THIRDPARTY_BIN_FILES}    DESTINATION bin)
+# Specify "PROGRAMS" rather than "FILES" so the execute bit gets set.
+INSTALL(PROGRAMS ${THIRDPARTY_BIN_FILES}    
+        DESTINATION bin)
 INSTALL(FILES ${THIRDPARTY_LIB_FILES}    DESTINATION lib)
 INSTALL(FILES ${THIRDPARTY_SDKLIB_FILES} DESTINATION sdk/lib)
 
