@@ -418,10 +418,7 @@ ELSE(WIN32)
 	FILE(GLOB THIRDPARTY_LIB_FILES 
 					${Simbody_LIB_DIR}/*.so
 					${Simbody_LIB_DIR}/*.dylib)
-    # Put .so or .dylib both in OpenSim/lib and OpenSim/sdk/lib.
 	FILE(GLOB THIRDPARTY_SDKLIB_FILES 
-					${Simbody_LIB_DIR}/*.so
-					${Simbody_LIB_DIR}/*.dylib
 					${Simbody_LIB_DIR}/*.a)
 ENDIF(WIN32)
 
