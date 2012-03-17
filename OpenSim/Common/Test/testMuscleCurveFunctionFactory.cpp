@@ -1,0 +1,1272 @@
+// testMuscleCurveFunctionFactory.cpp
+/*
+ * Permission is hereby granted, free of charge, to any person obtaining a    *
+ * copy of this software and associated documentation files (the "Software"), *
+ * to deal in the Software without restriction, including without limitation  *
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,   *
+ * and/or sell copies of the Software, and to permit persons to whom the      *
+ * Software is furnished to do so, subject to the following conditions:       *
+ *                                                                            *
+ * The above copyright notice and this permission notice shall be included in *
+ * all copies or substantial portions of the Software.                        *
+ *                                                                            *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   *
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL    *
+ * THE AUTHORS, CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,    *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR      *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE  *
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
+ * -------------------------------------------------------------------------- */
+
+/* 
+    Below is a basic bench mark simulation for the MuscleCurveFunctionFactory
+    class, a class that enables the easy generation of C2 continuous curves 
+    that define the various characteristic curves required in a muscle model
+ */
+
+// Author:  Matthew Millard
+
+//==============================================================================
+// INCLUDES
+//==============================================================================
+
+
+#include <OpenSim/Common/Exception.h>
+#include <OpenSim/Common/QuinticBezierCurveSet.h>
+#include <OpenSim/Common/MuscleCurveFunctionFactory.h>
+
+
+#include <SimTKsimbody.h>
+#include <ctime>
+#include <string>
+#include <stdio.h>
+
+
+using namespace std;
+using namespace OpenSim;
+using namespace SimTK;
+
+
+/**
+This function will print cvs file of the column vector col0 and the matrix 
+ data
+
+@params col0: A vector that must have the same number of rows as the data matrix
+				This column vector is printed as the first column
+@params data: A matrix of data
+@params filename: The name of the file to print
+*/
+void printMatrixToFile(const SimTK::Vector& col0, 
+    const SimTK::Matrix& data, string filename)
+{
+	
+    ofstream datafile;
+	datafile.open(filename.c_str());
+
+	for(int i = 0; i < data.nrow(); i++){
+		datafile << col0(i) << ",";
+		for(int j = 0; j < data.ncol(); j++){
+			if(j<data.ncol()-1)
+				datafile << data(i,j) << ",";
+			else
+				datafile << data(i,j) << "\n";
+		}	
+	}
+	datafile.close();
+} 
+
+
+/**
+This function will print cvs file of the matrix 
+ data
+
+@params data: A matrix of data
+@params filename: The name of the file to print
+*/
+void printMatrixToFile( const SimTK::Matrix& data, string filename)
+{
+    ofstream datafile;
+	datafile.open(filename.c_str());
+
+	for(int i = 0; i < data.nrow(); i++){
+		for(int j = 0; j < data.ncol(); j++){
+			if(j<data.ncol()-1)
+				datafile << data(i,j) << ",";
+			else
+				datafile << data(i,j) << "\n";
+		}	
+	}
+	datafile.close();
+}
+
+/**
+    This function computes a standard central difference dy/dx. If 
+    extrap_endpoints is set to 1, then the derivative at the end points is 
+    estimated by linearly extrapolating the dy/dx values beside the end points
+
+ @param x domain vector
+ @param y range vector
+ @param extrap_endpoints: (false)	Endpoints of the returned vector will be 
+                                    zero, because a central difference
+									is undefined at these endpoints
+							(true)	Endpoints are computed by linearly 
+                                    extrapolating using a first difference from 
+									the neighboring 2 points
+ @returns dy/dx computed using central differences
+*/
+SimTK::Vector calcCentralDifference(SimTK::Vector x, SimTK::Vector y, 
+                                               bool extrap_endpoints){
+	SimTK::Vector dy(x.size());
+	double dx1,dx2;
+	double dy1,dy2;
+	int size = x.size();
+	for(int i=1; i<x.size()-1; i++){
+		dx1 = x(i)-x(i-1);
+		dx2 = x(i+1)-x(i);
+		dy1 = y(i)-y(i-1);
+		dy2 = y(i+1)-y(i);
+		dy(i)= 0.5*dy1/dx1 + 0.5*dy2/dx2;
+	}
+
+	if(extrap_endpoints == true){
+		dy1 = dy(2)-dy(1);
+		dx1 = x(2)-x(1);
+		dy(0) = dy(1) + (dy1/dx1)*(x(0)-x(1));
+
+		dy2 = dy(size-2)-dy(size-3);
+		dx2 = x(size-2)-x(size-3);
+		dy(size-1) = dy(size-2) + (dy2/dx2)*(x(size-1)-x(size-2));
+	}
+	return dy;
+}
+
+/**
+    This function tests numerically for continuity of a curve. The test is 
+    performed by taking a point on the curve, and then two points (called the 
+    shoulder points) to the left and right of the point in question. The value
+    of the functions derivative is evaluated at each of the shoulder points and
+    used to linearly extrapolate from the shoulder points back to the original 
+    point. If the original point and the linear extrapolations of each of the 
+    shoulder points agree within tol, then the curve is assumed to be 
+    continuous.
+
+
+    @param x        Values to test for continuity
+    @param yx       The MuscleCurveFunction to test
+    @param order    The order of the curve of MuscleCurveFunction to test
+                    for continuity
+    @param minTol   The minimum error allowed - this prevents the second order
+                    error term from going to zero
+    @param taylorErrorMult  This scales the error tolerance. The default error
+                            tolerance is the the 2nd order Taylor series
+                            term.
+*/
+bool isFunctionContinuous(SimTK::Vector xV, 
+                      MuscleCurveFunction yV, int order, 
+                      double minTol,
+                      double taylorErrorMult)
+{
+    bool flag_continuous = true;
+
+    double xL = 0;      // left shoulder point
+    double xR = 0;      // right shoulder point
+    double yL = 0;      // left shoulder point function value
+    double yR = 0;      // right shoulder point function value
+    double dydxL = 0;   // left shoulder point derivative value
+    double dydxR = 0;   // right shoulder point derivative value
+
+    double xVal = 0;    //x value to test
+    double yVal = 0;    //Y(x) value to test
+
+    double yValEL = 0;  //Extrapolation to yVal from the left
+    double yValER = 0;  //Extrapolation to yVal from the right
+
+    double errL = 0;
+    double errR = 0;
+
+    double errLMX = 0;
+    double errRMX = 0;
+
+
+    for(int i =1; i < xV.nelt()-1; i++){
+        xVal = xV(i);
+        yVal = yV.calcDerivative(xVal, order);
+
+        xL = 0.5*(xV(i)+xV(i-1));
+        xR = 0.5*(xV(i)+xV(i+1));
+
+        yL = yV.calcDerivative(xL,order);
+        yR = yV.calcDerivative(xR,order);
+
+        dydxL = yV.calcDerivative(xL,order+1);
+        dydxR = yV.calcDerivative(xR,order+1);
+
+        
+        yValEL = yL + dydxL*(xVal-xL);
+        yValER = yR - dydxR*(xR-xVal);
+
+        errL = abs(yValEL-yVal);
+        errR = abs(yValER-yVal);
+
+        errLMX = abs(yV.calcDerivative(xL,order+2)*0.5*(xVal-xL)*(xVal-xL));
+        errRMX = abs(yV.calcDerivative(xR,order+2)*0.5*(xR-xVal)*(xR-xVal));
+
+        errLMX*=taylorErrorMult;
+        errRMX*=taylorErrorMult;
+
+        if(errLMX < minTol)
+            errLMX = minTol;
+
+        if(errRMX < minTol)
+            errRMX = minTol; // to accomodate numerical
+                             //error in errL
+
+        if(errL > errLMX || errR > errRMX){            
+            flag_continuous = false;
+        }
+    }
+
+    return flag_continuous;
+}
+
+
+/**
+This function will scan through a vector and determine if it is monotonic or
+not
+
+@param y the vector of interest
+@param multEPS The tolerance on the monotoncity check, expressed as a scaling of
+                SimTK::Eps
+@return true if the vector is monotonic, false if it is not
+*/
+bool isVectorMonotonic(SimTK::Vector y, int multEPS)
+{
+    double dir = y(y.nelt()-1)-y(0);
+    bool isMonotonic = true;
+
+    if(dir < 0){
+        for(int i =1; i <y.nelt(); i++){
+            if(y(i) > y(i-1)+SimTK::Eps*multEPS){
+                isMonotonic = false;
+                printf("Monotonicity broken at idx %i, since %fe-10 > %fe-10",
+                        i,y(i)*1e10,y(i-1)*1e10);
+            }
+        }
+    }
+    if(dir > 0){
+        for(int i =1; i <y.nelt(); i++){
+            if(y(i) < y(i-1)-SimTK::Eps*multEPS){
+                isMonotonic = false;
+                printf("Monotonicity broken at idx %i, since %f < %f",
+                        i,y(i),y(i-1));
+            }
+        }
+    }
+    if(dir == 0){
+        isMonotonic = false;
+    }
+
+    return isMonotonic;
+}
+
+/**
+This function will compute the numerical integral of y(x) using the trapezoidal
+method
+
+@param x the domain vector
+@param y the range vector, of y(x), evaluated at x
+@param flag_TrueIntForward_FalseIntBackward 
+    When this flag is set to true, the integral of y(x) will be evaluated from
+    left to right, starting with int(y(0)) = 0. When this flag is false, then
+    y(x) will be evaluated from right to left with int(y(n)) = 0, where n is 
+    the maximum number of elements.                                            
+@return the integral of y(x)
+*/
+SimTK::Vector calcTrapzIntegral(SimTK::Vector x, SimTK::Vector y, 
+                                bool flag_TrueIntForward_FalseIntBackward)
+{
+    SimTK::Vector inty(y.nelt());
+    inty = 0;
+
+
+    int startIdx = 1;
+    int endIdx = y.nelt()-1;
+
+    if(flag_TrueIntForward_FalseIntBackward == true){
+               
+        double width = 0;
+        for(int i = 1; i <= endIdx; i=i+1){
+            width = abs(x(i)-x(i-1));
+            inty(i) = inty(i-1) +  width*(0.5)*(y(i)+y(i-1));
+        }
+
+    }else{
+        
+        double width = 0;            
+        for(int i = endIdx-1; i >= 0; i=i-1){
+            width = abs(x(i)-x(i+1));
+            inty(i) = inty(i+1) +  width*(0.5)*(y(i)+y(i+1));
+        }
+    }
+
+     
+    return inty;
+}
+
+/**
+   @param a The first vector
+   @param b The second vector
+   @return Returns the maximum absolute difference between vectors a and b
+*/
+double calcMaximumVectorError(SimTK::Vector a, SimTK::Vector b)
+{
+    double error = 0;
+    double cerror=0;
+    for(int i = 0; i< a.nelt(); i++)
+    {
+        cerror = abs(a(i)-b(i));
+        if(cerror > error){
+            error = cerror;
+        }           
+    }
+    return error;
+}
+
+
+
+
+/**
+    This function will create a quintic Bezier curve y(x) and sample it, its 
+    first derivative w.r.t. U (dx(u)/du and dy(u)/du), and its first derivative
+    w.r.t. to X and print it to the screen.
+*/
+void testQuinticBezier_DU_DYDX()
+{
+    cout <<"**************************************************"<<endl;
+    cout << "   TEST: Bezier Curve Derivative DU" << endl;
+    string name  = "testQuinticBezier_DU_DYDX()";
+        SimTK::Vector xPts(6);
+        SimTK::Vector yPts(6);
+        xPts(0) = 0;
+        xPts(1) = 0.5;
+        xPts(2) = 0.5;
+        xPts(3) = 0.75;
+        xPts(4) = 0.75;
+        xPts(5) = 1;
+
+        yPts(0) = 0;
+        yPts(1) = 0.125;
+        yPts(2) = 0.125;
+        yPts(3) = 0.5;
+        yPts(4) = 0.5;
+        yPts(5) = 1;
+
+        double val = 0;
+        double d1 = 0;
+        double d2 = 0;
+        double d3 = 0;
+        double d4 = 0;
+        double d5 = 0;
+        double d6 = 0;
+
+        double u = 0;
+
+        int steps = 100;
+
+        SimTK::Matrix analyticDerXU(steps,8);
+        SimTK::Matrix analyticDerYU(steps,8);
+        SimTK::Vector uV(steps);
+        for(int i = 0; i<steps; i++){
+            //int i = 10;
+            u = (double)i/(steps-1);
+            uV(i) = u;
+
+            val= QuinticBezierCurveSet::
+                calcQuinticBezierCurveVal(u,xPts,name);
+            d1 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,xPts,1,name);
+            d2 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,xPts,2,name);
+            d3 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,xPts,3,name);
+            d4 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,xPts,4,name);
+            d5 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,xPts,5,name);
+            d6 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,xPts,6,name);
+
+            analyticDerXU(i,0) = u;
+            analyticDerXU(i,1) = val;
+            analyticDerXU(i,2) = d1;
+            analyticDerXU(i,3) = d2;
+            analyticDerXU(i,4) = d3;
+            analyticDerXU(i,5) = d4;
+            analyticDerXU(i,6) = d5;
+            analyticDerXU(i,7) = d6;
+
+            val= QuinticBezierCurveSet::
+                calcQuinticBezierCurveVal(u,yPts,name);
+            d1 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,yPts,1,name);
+            d2 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,yPts,2,name);
+            d3 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,yPts,3,name);
+            d4 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,yPts,4,name);
+            d5 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,yPts,5,name);
+            d6 = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivU(u,yPts,6,name);
+
+            analyticDerYU(i,0) = u;
+            analyticDerYU(i,1) = val;
+            analyticDerYU(i,2) = d1;
+            analyticDerYU(i,3) = d2;
+            analyticDerYU(i,4) = d3;
+            analyticDerYU(i,5) = d4;
+            analyticDerYU(i,6) = d5;
+            analyticDerYU(i,7) = d6;
+
+        }
+
+        int mxDU = 6-1;
+        SimTK::Matrix numericDer(analyticDerXU.nrow(), mxDU);
+        SimTK::Matrix errorDer(analyticDerXU.nrow(), mxDU);
+
+        double tol = (double)(1.0/steps);
+        tol = tol*tol*50; 
+        //Numerical error in a central difference increases with the 
+        //square of h. 
+        //http://en.wikipedia.org/wiki/Finite_difference
+
+        for(int i=0;i<mxDU;i++){
+            numericDer(i) = calcCentralDifference(analyticDerXU(0),
+                                                    analyticDerXU(i+1),true); 
+            errorDer(i) = abs(analyticDerXU(i+2)-numericDer(i));
+            //errorDer(i)= abs( errorDer(i).elementwiseDivide(numericDer(i)) );
+            //The end points can't be tested because a central difference
+            //cannot be accurately calculated at these locations
+            for(int j=1; j<analyticDerXU.nrow()-1; j++){
+                SimTK_TEST(abs(errorDer(j,i))<tol);
+                //if(errorDer(j,i)>tol)
+                //printf("Error > Tol: (%i,%i): %f > %f\n",j,i,errorDer(j,i),tol);
+            }
+        }
+        //cout << errorDer << endl;
+
+        printf("...absolute tolerance of %f met\n", tol);
+
+        cout << "   TEST: Bezier Curve Derivative DYDX to d6y/dx6" << endl;
+        SimTK::Matrix numericDerXY(analyticDerXU.nrow(), 6);
+        SimTK::Matrix analyticDerXY(analyticDerXU.nrow(),6);
+
+        for(int i=0; i< analyticDerXU.nrow(); i++)
+        {
+            analyticDerXY(i,0) = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,1,name);
+            analyticDerXY(i,1) = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,2,name);
+            analyticDerXY(i,2) = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,3,name);
+            analyticDerXY(i,3) = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,4,name);
+            analyticDerXY(i,4) = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,5,name);
+            analyticDerXY(i,5) = QuinticBezierCurveSet::
+                calcQuinticBezierCurveDerivDYDX(uV(i),xPts,yPts,6,name);
+        }
+
+        //Generate numerical derivative curves for the first 3 derivatives
+        numericDerXY(0) = calcCentralDifference(analyticDerXU(1),
+                                                    analyticDerYU(1),true);
+        numericDerXY(1) = calcCentralDifference(analyticDerXU(1),
+                                                    analyticDerXY(0),true);
+        numericDerXY(2) = calcCentralDifference(analyticDerXU(1),
+                                                    analyticDerXY(1),true);
+        numericDerXY(3) = calcCentralDifference(analyticDerXU(1),
+                                                    analyticDerXY(2),true);
+        numericDerXY(4) = calcCentralDifference(analyticDerXU(1),
+                                                    analyticDerXY(3),true);
+        numericDerXY(5) = calcCentralDifference(analyticDerXU(1),
+                                                    analyticDerXY(4),true);
+
+        //Create the matrix of errors
+        SimTK::Matrix errorDerXY(analyticDerXU.nrow(), 6);
+        errorDerXY = abs(analyticDerXY-numericDerXY);
+        errorDerXY = errorDerXY.elementwiseDivide(
+                                abs(analyticDerXY+numericDerXY));
+
+        double relTol = 5e-2;
+
+        int relTolExceeded = 0;
+
+        for(int j=0;j<6;j++){
+            //can't test the first and last entries because a central diff.
+            //cannot calculate these values accurately.
+            for(int i=1;i<analyticDerXU.nrow()-1;i++){
+                if(errorDerXY(i,j)>relTol){
+                 //printf("Error > Tol: (%i,%i): %f > %f\n",i,j,
+                 //                      errorDerXY(i,j),relTol);
+                 relTolExceeded++;
+                }
+            }
+        }
+        //cout << relTolExceeded << endl;
+
+        //The relative tolerance gets exceeded occasionally in locations of
+        //rapid change in the curve. Provided there are only a few locations
+        //where the relative tolerance of 5% is broken, the curves should be
+        //regarded as being good. Ten errors out of a possible 100*6 data points
+        //seems relatively small.
+        SimTK_TEST(relTolExceeded < 10);
+
+        //printMatrixToFile(analyticDerXY,"analyticDerXY.csv");
+        //printMatrixToFile(numericDerXY,"numericDerXY.csv");
+        //printMatrixToFile(errorDerXY,"errorDerXY.csv");
+        printf("   ...relative tolerance of %f not exceeded more than %i times\n"
+               "      across all 6 derivatives, with 100 samples each\n",
+                relTol, 10);
+        cout <<"**************************************************"<<endl;
+
+
+}
+
+/**
+    This function will generate a series of quintic Bezier control points 
+    that form a C2 corner and print the results to the command window
+*/
+void sampleBezierCornerGeneration()
+{
+    string name = "testBezierCornerGeneration()";
+    double x0 = 0;
+    double y0 = 0;
+    double dydx0 = 0.01;
+    double x1 = 1;
+    double y1 = 1;
+    double dydx1 = 2;
+    double curviness = 0.5;
+
+    
+    
+    
+    SimTK::Matrix xyPts = QuinticBezierCurveSet::
+       calcQuinticBezierCornerControlPoints(x0,y0,dydx0, x1,y1,dydx1,
+                                                      curviness,name);
+
+    cout << "XY Corner Control Points" << endl;
+    cout << xyPts << endl;
+
+
+}
+/**
+    This function will sample and print a SimTK::Function to file
+*/
+void samplePrintExtrapolatedFunction(const SimTK::Function_<double>& fcn, 
+    double x0, double x1, int num, string name)
+{
+    SimTK::Vector tcX(num);
+    SimTK::Matrix tcY(num,3);
+    SimTK::Array_<int> dx(1), ddx(2);
+    dx[0]=0;
+    ddx[0]=0;
+    ddx[1]=0;
+
+    double tcD = (x1-x0)/(num-1);
+    SimTK::Vector x(1);
+
+    for(int i=0; i<num; i++){
+        tcX(i) = x0 + i*tcD;
+        x(0)   = tcX(i);
+        tcY(i,0)  = fcn.calcValue(x);
+        tcY(i,1)  = fcn.calcDerivative(dx,x);
+        tcY(i,2)  = fcn.calcDerivative(ddx,x);
+    }
+    printMatrixToFile(tcX,tcY,name);
+}
+
+
+
+/**
+ 1. The MuscleCurveFunction's derivatives will be compared against numerically 
+    calculated derivatives to ensure that the errors between the 2 are small
+
+*/
+void testMuscleCurveDerivatives(MuscleCurveFunction mcf,SimTK::Matrix mcfSample,
+                                double relTol)
+{
+    cout << "   TEST: Derivative correctness " << endl;
+
+    //Get a matrix of just the derivatives
+    SimTK::Matrix mcfDerivative(mcfSample.nrow(), mcf.getMaxDerivativeOrder());
+    for(int i=0; i < mcf.getMaxDerivativeOrder(); i++){
+        mcfDerivative(i) = mcfSample(i+2); //+2 because the first two columns are
+                                           // x and y.
+    }
+
+    //Compute the width between each of the samples, because the width
+    //of this sample dictates how accurate the numerical derivative is
+    SimTK::Vector xWidth(mcfSample.nrow());
+    double xWidthMax = 0;
+    for(int i=0; i<mcfSample.nrow()-1; i++){
+        xWidth(i) = mcfSample(i+1,0)-mcfSample(i,0);
+        if(xWidth(i) > xWidthMax){
+            xWidthMax = xWidth(i);
+        }
+
+    }
+    xWidth(mcfSample.nrow()-1) = xWidth(mcfSample.nrow()-2);
+
+    //1. Derivative error test
+    //Scan through the error vector to determine if the errors are acceptable
+    double tol = 0;
+
+    SimTK::Matrix numSample(mcfSample.nrow(),mcf.getMaxDerivativeOrder());  
+    SimTK::Matrix numError(mcfSample.nrow(),mcf.getMaxDerivativeOrder());
+
+    for(int i=0; i < mcf.getMaxDerivativeOrder(); i++){
+        //Numerical error in a central difference increases with the 
+        //square of h. 
+        //http://en.wikipedia.org/wiki/Finite_difference
+
+        //tol  = xWidthMax*xWidthMax*scaleWidthSquaredTolerance; 
+        numSample(i)=calcCentralDifference(mcfSample(0),mcfSample(i+1),true);
+
+        //Calculate the relative error
+        numError(i)=(mcfSample(i+2)-numSample(i));
+        numError(i) = numError(i).elementwiseDivide( 
+                                    (mcfSample(i+2)) );
+        numError(i) = abs(numError(i));
+
+        //Remove the divide by zeros
+        for(int j=0; j<mcfSample.nrow(); j++){
+            if(abs(mcfSample(j,i+2)) < SimTK::Eps*100){
+                numError(j,i) = 0;
+            }
+        }
+    }
+
+    //double relTol = 0.05;
+    int relTolExceeded = 0;
+    for(int j=0;j<6;j++){
+        for(int i=0; i<mcfSample.nrow(); i++){
+            if(numError(i,j) > relTol){
+                relTolExceeded++;
+            }
+        }
+    }
+    
+    /*
+    The relative tolerance gets exceeded occasionally in locations of
+    rapid change in the curve - particularly near the transition between the
+    linear extrapolation and the curve. Provided there are only a few locations
+    where the relative tolerance of 5% is broken, the curves should be
+    regarded as being good. 
+    
+    The numerical derivatives at the point of transition between the linear 
+    extrapolation and the curve will all be inaccurate, so we can afford to 
+    ignore 2*mcf.getMaxDerivativeOrder() points. The additional 10 errors 
+    are left to accomodate locations where the slope is changing rapidly ---
+    locations where the numerical derivative will be inaccurate
+    */
+
+    int limit = 2*mcf.getMaxDerivativeOrder() + 50;
+    SimTK_TEST(relTolExceeded < limit);
+
+     //   printMatrixToFile(mcfSample,"analyticDerivatives.csv");
+     //   printMatrixToFile(numSample,"numericDerivatives.csv");
+     //   printMatrixToFile(numError,"numAnalyticError.csv");
+     //   cout << "Matricies Printed" << endl;
+
+  printf("   passed: relative tolerance of %f exceeded %i < %i times\n"
+            "      across all %i derivatives, with %i samples each\n",
+            relTol, relTolExceeded, limit, mcf.getMaxDerivativeOrder()
+            ,mcfSample.nrow());
+     cout << endl;
+
+    
+}
+ /*
+ 2. The MuscleCurveFunction's integral, when calculated, will be compared against 
+    a numerically computed integral (using the trapezoidal method)
+ */
+
+void testMuscleCurveIntegral(MuscleCurveFunction mcf,SimTK::Matrix mcfSample)
+{
+
+
+    //2. Integral test
+    if(mcf.isIntegralAvailable()){
+        cout << "   TEST: Integral correctness " << endl;
+        SimTK::Vector intyTRAPZ = calcTrapzIntegral(mcfSample(0), mcfSample(1), 
+                                        mcf.isIntegralComputedLeftToRight());
+        //cout << intyTRAPZ << endl;
+        //The error of the trapezoidal integration method is
+        //no more than (width^2/2)*sup(f'(x)), which we approximate by
+        //http://en.wikipedia.org/wiki/Numerical_integration#Conservative_.28a
+        //_priori.29_error_estimation
+
+        //Compute the width between each of the samples, because the width
+        //of this sample dictates how accurate the numerical derivative is
+        SimTK::Vector xWidth(mcfSample.nrow());
+
+        double xWidthMax = 0;
+        for(int i=0; i<mcfSample.nrow()-1; i++){
+            xWidth(i) = mcfSample(i+1,0)-mcfSample(i,0);
+            if(xWidth(i) > xWidthMax){
+                xWidthMax = xWidth(i);
+            }
+
+        }
+        xWidth(mcfSample.nrow()-1) = xWidth(mcfSample.nrow()-2);
+
+        //cout << xWidth << endl;
+        //cout <<endl;
+
+        SimTK::Vector intyCumError(xWidth.nelt());
+        double supdf = 0;
+
+        if(mcf.isIntegralComputedLeftToRight()){
+            //Get the vector of accumulated errors left to rigth
+            intyCumError(0) = xWidth(0)*xWidth(0)*0.5*mcfSample(0,1);
+            for(int i=1; i< intyCumError.nelt(); i++){
+                supdf = max(mcfSample(i,1),mcfSample(i-1,1));
+                intyCumError(i) = intyCumError(i-1)
+                                  + xWidth(i)*xWidth(i)*0.5*supdf;
+            }
+            //margin of error
+            intyCumError = intyCumError*2.0;
+            intyCumError += intyCumError(intyCumError.nelt()-1)*1.05;
+            
+        }
+        else{
+            //Get the vector of accumulated errors right to left
+            int eidx = intyCumError.nelt()-1;
+            intyCumError(eidx) = xWidth(eidx)*xWidth(eidx)*0.5*mcfSample(eidx,1);
+            for(int i=eidx-1; i>=0; i--){
+                supdf = max(mcfSample(i,1),mcfSample(i+1,1));
+                intyCumError(i) = intyCumError(i+1)
+                                  + xWidth(i)*xWidth(i)*0.5*supdf;
+            }
+            //margin of error
+            intyCumError = intyCumError*2.0;
+            intyCumError += intyCumError(0)*1.05;
+            
+        }
+        
+
+        //cout << intyCumError << endl;
+        //cout << endl;
+
+        double maxError = 0;
+        double mxErr = 0;
+        double mnErr = 1e10;
+
+        SimTK::Vector error(mcfSample.nrow());
+        //double relErrorTol = 0.01;
+
+        int intyCol = 2+mcf.getMaxDerivativeOrder();
+        int errCtr = 0;
+        for(int i=0; i< intyCumError.nelt(); i++){
+            error(i)=abs( intyTRAPZ(i)-mcfSample(i,intyCol) );
+            maxError = intyCumError(i);
+
+            if(error(i)>mxErr)
+                mxErr=error(i);
+            if(mnErr>error(i))
+                mnErr=error(i);
+
+
+            
+            if(error(i)>maxError){
+                printf("Tol exceeded (%i), %f e-6> %f e-6\n",i,error(i)*1e6,
+                     maxError*1e6);
+                errCtr++;
+            }
+        }
+        SimTK_TEST(errCtr==0);
+        //cout << error << endl;
+        printf("   passed: integral agrees with trapz within a factor of 2.05 \n"
+               "      of the theoretical accuracy of trapz, with a maximum \n"
+               "      error of %fe-6\n",mxErr*1e6);
+        cout << endl;
+    }
+
+}
+
+/*
+ 3. The MuscleCurveFunctions function value, first and second derivative curves
+    will be numerically tested for continuity.
+*/ 
+void testMuscleCurveC2Continuity(MuscleCurveFunction mcf,
+                                       SimTK::Matrix mcfSample)
+{
+    cout << "   TEST: C2 Continuity " << endl;
+
+    int multC0 = 2;
+    int multC1 = 9;
+    int multC2 = 12;
+
+    bool c0 = isFunctionContinuous(mcfSample(0), mcf, 0, 1e-6, multC0);
+    bool c1 = isFunctionContinuous(mcfSample(0), mcf, 1, 1e-6, multC1);
+    bool c2 = isFunctionContinuous(mcfSample(0), mcf, 2, 1e-6, multC2);
+
+    SimTK_TEST(c0);
+    SimTK_TEST(c1);
+    SimTK_TEST(c2);
+
+    printf( "   passed: C2 continuity estabilished to a multiple\n"
+            "           of the next Taylor series error term.\n "
+            "           C0,C1, and C2 multiples: %i,%i and %i\n",
+                        multC0,multC1,multC2);
+    cout << endl;
+}
+
+/*
+ 4. The MuscleCurveFunctions which are supposed to be monotonic will be
+    tested for monotonicity.
+*/
+void testMonotonicity(SimTK::Matrix mcfSample)
+{
+    cout << "   TEST: Monotonicity " << endl;
+    int multEps = 10;
+    bool monotonic = isVectorMonotonic(mcfSample(1),10);
+    SimTK_TEST(monotonic);
+    printf("   passed: curve is monotonic to %i*SimTK::Eps",multEps);
+    cout << endl;
+}
+
+//______________________________________________________________________________
+/**
+ * Create a muscle bench marking system. The bench mark consists of a single muscle 
+ * spans a distance. The distance the muscle spans can be controlled, as can the 
+ * excitation of the muscle.
+ */
+int main(int argc, char* argv[])
+{
+	
+
+	try {
+        SimTK_START_TEST("Testing MuscleCurveFunctionFactory");
+
+        testQuinticBezier_DU_DYDX();
+
+        //Functions to facilitate manual debugging        
+        //sampleQuinticBezierValDeriv();
+        //sampleBezierCornerGeneration();
+        //generatePrintMuscleCurves();
+
+        //1. Create every kind of curve that MuscleCurveFunctionFactory can make
+        //2. Test the properties of the curve numerically
+        //3. Test that the curve fulfills the contract implied by the 
+        //   function that created it
+
+            string filePath = "";
+            double tolBig = 1e-6;
+            double tolSmall = 1e-12;
+        ///////////////////////////////////////
+        //TENDON CURVE
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"TENDON CURVE TESTING                              "<<endl;
+
+                double e0   = 0.04;
+                double kiso = 42.79679348815859;
+                double c    = 1.0;//0.75;    
+            MuscleCurveFunction tendonCurve = MuscleCurveFunctionFactory::
+                           createTendonForceLengthCurve(e0,kiso,c,true,"test");
+            SimTK::Matrix tendonCurveSample=tendonCurve.calcSampledMuscleCurve();
+            
+        //0. Test that each curve fulfills its contract at the end points.
+            cout << "   Keypoint Testing" << endl;
+            SimTK::Vec2 tendonCurveDomain = tendonCurve.getCurveDomain();
+            SimTK_TEST_EQ_TOL(tendonCurveDomain(0), 1, tolSmall);
+            SimTK_TEST_EQ_TOL(tendonCurveDomain(1), (1+e0), tolSmall);
+
+            SimTK_TEST_EQ_TOL(tendonCurve.calcValue(1.0)       ,0.0,tolSmall);  
+            SimTK_TEST_EQ_TOL(tendonCurve.calcDerivative(1.0,1),0.0,tolBig);
+            SimTK_TEST_EQ_TOL(tendonCurve.calcDerivative(1.0,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(tendonCurve.calcValue(1+e0)       ,1.0 ,tolSmall);  
+            SimTK_TEST_EQ_TOL(tendonCurve.calcDerivative(1+e0,1),kiso,tolBig);
+            SimTK_TEST_EQ_TOL(tendonCurve.calcDerivative(1+e0,2),0   ,tolBig);
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(tendonCurve,tendonCurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(tendonCurve, tendonCurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(tendonCurve,tendonCurveSample);
+        //4. Test for montonicity where appropriate
+            testMonotonicity(tendonCurveSample);
+        ///////////////////////////////////////
+        //FIBER FORCE LENGTH CURVE
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"FIBER FORCE LENGTH CURVE TESTING                  "<<endl;
+                double e0f      = 0.6;
+                double kisof    = 8.389863790885878;
+                double cf       = 0.65;
+            MuscleCurveFunction fiberFLCurve = MuscleCurveFunctionFactory::
+                                    createFiberForceLengthCurve(e0f,kisof,cf,
+                                    true,"test");
+
+            SimTK::Matrix fiberFLCurveSample 
+                            = fiberFLCurve.calcSampledMuscleCurve();
+
+        //0. Test that each curve fulfills its contract.
+            cout << "   Keypoint Testing" << endl;
+
+            SimTK::Vec2 fiberFLCurveDomain = fiberFLCurve.getCurveDomain();
+            SimTK_TEST_EQ_TOL(fiberFLCurveDomain(0), 1, tolSmall);
+            SimTK_TEST_EQ_TOL(fiberFLCurveDomain(1), (1+e0f), tolSmall);
+
+
+            SimTK_TEST_EQ_TOL(fiberFLCurve.calcValue(1.0)       ,0.0,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFLCurve.calcDerivative(1.0,1),0.0,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFLCurve.calcDerivative(1.0,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberFLCurve.calcValue(1+e0f)       ,1.0 ,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFLCurve.calcDerivative(1+e0f,1),kisof,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFLCurve.calcDerivative(1+e0f,2),0   ,tolBig);
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(fiberFLCurve,fiberFLCurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(fiberFLCurve,fiberFLCurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(fiberFLCurve,fiberFLCurveSample);
+        //4. Test for montonicity where appropriate
+
+            testMonotonicity(fiberFLCurveSample);
+        ///////////////////////////////////////
+        //FIBER COMPRESSIVE FORCE LENGTH
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"FIBER COMPRESSIVE FORCE LENGTH CURVE TESTING      "<<endl;
+
+
+                double lmax = 0.6;
+                double kce  = -8.389863790885878;
+                double cce  = 0.1;//0.0;
+            MuscleCurveFunction fiberCECurve = MuscleCurveFunctionFactory::
+               createFiberCompressiveForceLengthCurve(lmax,kce,cce,true,"test");
+            fiberCECurve.printMuscleCurveToFile("C:/mjhmilla/Stanford/dev"
+                "/OpenSim_LOCALPROJECTS/MuscleLibrary_Bench_20120210/build");
+        SimTK::Matrix fiberCECurveSample 
+                            = fiberCECurve.calcSampledMuscleCurve();
+
+        //0. Test that each curve fulfills its contract.
+            cout << "   Keypoint Testing" << endl;
+
+            SimTK::Vec2 fiberCECurveDomain = fiberCECurve.getCurveDomain();
+            SimTK_TEST_EQ_TOL(fiberCECurveDomain(0), 0, tolSmall);
+            SimTK_TEST_EQ_TOL(fiberCECurveDomain(1), lmax, tolSmall);
+
+            SimTK_TEST_EQ_TOL(fiberCECurve.calcValue(lmax)       ,0.0,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberCECurve.calcDerivative(lmax,1),0.0,tolBig);
+            SimTK_TEST_EQ_TOL(fiberCECurve.calcDerivative(lmax,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberCECurve.calcValue(0)       ,1.0 ,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberCECurve.calcDerivative(0,1),kce,tolBig);
+            SimTK_TEST_EQ_TOL(fiberCECurve.calcDerivative(0,2),0   ,tolBig);
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(fiberCECurve,fiberCECurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(fiberCECurve,fiberCECurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(fiberCECurve,fiberCECurveSample);
+        //4. Test for montonicity where appropriate
+
+            testMonotonicity(fiberCECurveSample);
+        ///////////////////////////////////////
+        //FIBER COMPRESSIVE PHI CURVE
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"FIBER COMPRESSIVE FORCE PHI CURVE TESTING      "<<endl;
+
+                double phi0 = (SimTK::Pi/2)*(8.0/9.0);
+                double phi1 = SimTK::Pi/2;
+                double kphi  = 8.389863790885878;
+                double cphi  = 0.0;  
+            MuscleCurveFunction fiberCEPhiCurve = MuscleCurveFunctionFactory::          
+          createFiberCompressiveForcePennationCurve(phi0,kphi,cphi,true,"test");          
+        
+            SimTK::Matrix fiberCEPhiCurveSample 
+                            = fiberCEPhiCurve.calcSampledMuscleCurve();
+
+        //0. Test that each curve fulfills its contract.
+            cout << "   Keypoint Testing" << endl;
+
+            SimTK_TEST_EQ_TOL(fiberCEPhiCurve.calcValue(phi0)       ,0.0,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberCEPhiCurve.calcDerivative(phi0,1),0.0,tolBig);
+            SimTK_TEST_EQ_TOL(fiberCEPhiCurve.calcDerivative(phi0,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberCEPhiCurve.calcValue(phi1)       ,1.0 ,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberCEPhiCurve.calcDerivative(phi1,1),kphi,tolBig);
+            SimTK_TEST_EQ_TOL(fiberCEPhiCurve.calcDerivative(phi1,2),0   ,tolBig);
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(fiberCEPhiCurve,fiberCEPhiCurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(fiberCEPhiCurve,fiberCEPhiCurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(fiberCEPhiCurve,fiberCEPhiCurveSample);
+        //4. Test for montonicity where appropriate
+
+            testMonotonicity(fiberCEPhiCurveSample);
+        ///////////////////////////////////////
+        //FIBER COMPRESSIVE COSPHI CURVE
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"FIBER COMPRESSIVE FORCE COSPHI CURVE TESTING      "<<endl;
+
+                double cosPhi0 = cos( (80.0/90.0)*SimTK::Pi/2);
+                double kcosPhi  = -1.2/(cosPhi0);
+                double ccosPhi  = 0.5;
+            MuscleCurveFunction fiberCECosPhiCurve = MuscleCurveFunctionFactory::
+            createFiberCompressiveForceCosPennationCurve(cosPhi0,kcosPhi,ccosPhi
+                                                                ,true,"test");
+
+            SimTK::Matrix fiberCECosPhiCurveSample 
+                            = fiberCECosPhiCurve.calcSampledMuscleCurve();
+
+        //0. Test that each curve fulfills its contract.
+            cout << "   Keypoint Testing" << endl;
+
+            SimTK_TEST_EQ_TOL(fiberCECosPhiCurve.calcValue(cosPhi0),0.0,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberCECosPhiCurve.calcDerivative(cosPhi0,1),0.0,tolBig);
+            SimTK_TEST_EQ_TOL(fiberCECosPhiCurve.calcDerivative(cosPhi0,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberCECosPhiCurve.calcValue(0)       ,1.0 ,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberCECosPhiCurve.calcDerivative(0,1),kcosPhi,tolBig);
+            SimTK_TEST_EQ_TOL(fiberCECosPhiCurve.calcDerivative(0,2),0   ,tolBig);
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(fiberCECosPhiCurve,fiberCECosPhiCurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(fiberCECosPhiCurve,fiberCECosPhiCurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(fiberCECosPhiCurve,fiberCECosPhiCurveSample);
+        //4. Test for montonicity where appropriate
+
+            testMonotonicity(fiberCECosPhiCurveSample);
+        ///////////////////////////////////////
+        //FIBER FORCE-VELOCITY CURVE
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"FIBER FORCE VELOCITY CURVE TESTING                "<<endl;
+
+            double fmaxE = 1.8;
+            double dydxC = 0.1;
+            double dydxE = 0.1;
+            double dydxIso= 5;
+            double concCurviness = 0.1;
+            double eccCurviness = 0.75;
+
+            MuscleCurveFunction fiberFVCurve = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                concCurviness,  eccCurviness,false,"test");
+            //fiberFVCurve.printMuscleCurveToFile(filePath);
+
+            SimTK::Matrix fiberFVCurveSample 
+                            = fiberFVCurve.calcSampledMuscleCurve();
+
+        //0. Test that each curve fulfills its contract.
+            cout << "   Keypoint Testing" << endl;
+
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcValue(-1),0.0,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcDerivative(-1,1),dydxC,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcDerivative(-1,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcValue(0),1.0,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcDerivative(0,1),dydxIso,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcDerivative(0,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcValue(1),fmaxE,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcDerivative(1,1),dydxE,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFVCurve.calcDerivative(1,2),0.0,tolBig);
+
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(fiberFVCurve,fiberFVCurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(fiberFVCurve,fiberFVCurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(fiberFVCurve,fiberFVCurveSample);
+        //4. Test for montonicity where appropriate
+
+            testMonotonicity(fiberFVCurveSample);
+
+        ///////////////////////////////////////
+        //FIBER FORCE-VELOCITY INVERSE CURVE
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"FIBER FORCE VELOCITY INVERSE CURVE TESTING        "<<endl;
+
+            MuscleCurveFunction fiberFVInvCurve = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                     concCurviness,  eccCurviness,false,"test");
+            //fiberFVInvCurve.printMuscleCurveToFile(filePath);
+
+            SimTK::Matrix fiberFVInvCurveSample 
+                            = fiberFVInvCurve.calcSampledMuscleCurve();
+
+        //0. Test that each curve fulfills its contract.
+            cout << "   Keypoint Testing" << endl;
+
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcValue(0),-1,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcDerivative(0,1),1/dydxC,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcDerivative(0,2),0.0,tolBig);
+                                    
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcValue(1),0,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcDerivative(1,1),1/dydxIso,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcDerivative(1,2),0.0,tolBig);
+                                     
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcValue(fmaxE),1,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcDerivative(fmaxE,1),1/dydxE,tolBig);
+            SimTK_TEST_EQ_TOL(fiberFVInvCurve.calcDerivative(fmaxE,2),0.0,tolBig);
+
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(fiberFVInvCurve,fiberFVInvCurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(fiberFVInvCurve,fiberFVInvCurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(fiberFVInvCurve,fiberFVInvCurveSample);
+        //4. Test for montonicity where appropriate
+
+            testMonotonicity(fiberFVInvCurveSample);
+
+            cout << endl;
+            cout << "   TEST: Inverse correctness:fv(fvinv(fv)) = fv" << endl;
+            
+
+            double fv = 0;
+            double dlce = 0;
+            double fvCalc = 0;
+            double fvErr = 0;
+            double fvErrMax = 0;
+            for(int i = 0; i < fiberFVInvCurveSample.nrow(); i++){
+                fv = fiberFVCurveSample(i,0);
+                dlce = fiberFVInvCurve.calcValue(fv);
+                fvCalc = fiberFVCurve.calcValue(dlce);
+                fvErr = abs(fv-fvCalc);
+                if(fvErrMax < fvErr)
+                    fvErrMax = fvErr;
+
+                SimTK_TEST( fvErr < tolBig);
+            }
+            printf("   passed with a maximum error of %fe-12",fvErrMax*1e12);
+        ///////////////////////////////////////
+        //FIBER ACTIVE FORCE-LENGTH CURVE
+        ///////////////////////////////////////
+            double lce0 = 0.5;
+            double lce1 = 0.75;
+            double lce2 = 1;
+            double lce3 = 1.5;
+            double shoulderVal  = 0.1;
+            double plateauSlope = 0.75;
+            double curviness    = 0.9;
+            MuscleCurveFunction fiberfalCurve = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
+                              shoulderVal, plateauSlope, curviness,false,"test");
+            //fiberfalCurve.printMuscleCurveToFile(filePath);
+
+
+            SimTK::Matrix fiberfalCurveSample 
+                            = fiberfalCurve.calcSampledMuscleCurve();
+
+        //0. Test that each curve fulfills its contract.
+            cout << "   Keypoint Testing" << endl;
+
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcValue(lce0),shoulderVal,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce0,1),0,tolBig);
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce0,2),0.0,tolBig);
+              
+            //lce2 isn't the location of the end of a quintic Bezier curve
+            //so I can't actually do any testing on this point.
+            //SimTK_TEST_EQ_TOL(fiberfalCurve.calcValue(lce0),shoulderVal,tolSmall);  
+            //SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce2,1),plateauSlope,tolBig);
+            //SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce2,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcValue(lce2),1,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce2,1),0,tolBig);
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce2,2),0.0,tolBig);
+
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcValue(lce3),shoulderVal,tolSmall);  
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce3,1),0,tolBig);
+            SimTK_TEST_EQ_TOL(fiberfalCurve.calcDerivative(lce3,2),0.0,tolBig);
+
+            cout << "   passed" << endl;
+            cout << endl;
+        //1. Test each derivative sample for correctness against a numerically
+        //   computed version
+            testMuscleCurveDerivatives(fiberfalCurve,fiberfalCurveSample,0.05);
+
+        //2. Test each integral, where computed for correctness.
+            testMuscleCurveIntegral(fiberfalCurve,fiberfalCurveSample);
+
+        //3. Test numerically to see if the curve is C2 continuous
+            testMuscleCurveC2Continuity(fiberfalCurve,fiberfalCurveSample);
+        
+
+        SimTK_END_TEST();
+
+    }
+    catch (OpenSim::Exception ex)
+    {
+        cout << ex.getMessage() << endl;
+		cin.get();
+        return 1;
+    }
+    catch (const std::exception& ex)
+    {
+        cout << ex.what() << endl;
+		cin.get();		
+		return 1;
+    }
+    catch (...)
+    {
+        cout << "UNRECOGNIZED EXCEPTION" << endl;
+		cin.get();
+        return 1;
+    }
+
+	
+
+    cout << "\nThelen_Bench_1 completed successfully.\n";
+	return 0;
+}
+
