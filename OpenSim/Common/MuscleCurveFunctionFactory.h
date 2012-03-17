@@ -28,11 +28,10 @@
 #include "QuinticBezierCurveSet.h"
 
 #include "Simbody.h"
-//#include "SimTKcommon/internal/SystemGuts.h"
+
 #include <cstdio>
 #include <iostream>
 #include <fstream>
-//#include <OpenSim\OpenSim.h>
 #include <cmath>
 
 
@@ -44,14 +43,14 @@ namespace OpenSim {
 /**
 This is a class that acts as a user friendly wrapper to QuinticBezerCurveSet
 to build specific kinds of muscle curves using C2 continuous sets of quintic
-Bezier curves. In general the functions this class contains class take parameters
+Bezier curves. In general the functions in this class take parameters
 that would be intuitive to biomechanists who simulate human musculoskeletal 
 systems, and returns a MuscleCurveFunction which is capable of evaluating the
 value, derivatives and optionally the integral of the desired function (or 
 actually relation as the case may be). 
 
 Each curve is made up of linearly extrapolated C2 quintic Bezier curves x(u), 
-and y(u), as shown in the figure below. These quintic curves spans 2 points, and 
+and y(u), as shown in the figure below. These quintic curves span 2 points, and 
 achieve the desired derivative at its end points. The degree of curviness can be 
 varied from 0 to 1 (0, 0.75 and 1.0 are shown in the figure in grey, blue and 
 black respectively), and will make the curve approximate a line when set to 0 
@@ -213,17 +212,18 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 sharply bent elbow). This parameter affects only
                                 the concentric side of the fv curve.
 
-        @param eccCurviness:    The dimensionless 'curviness' parameter that 
+        @param eccCurviness     The dimensionless 'curviness' parameter that 
                                 can vary between 0 (a line) to 1 (a smooth, but 
                                 sharply bent elbow). This parameter affects only 
                                 the eccentric side of the fv curve.
 
-        @param computeIntegral: If this is true, the integral for this curve
+        @param computeIntegral  If this is true, the integral for this curve
                                 is numerically calculated and splined. If false, 
                                 this integral is not computed, and a call to 
-                                .calcIntegral will throw an exception
+                                MuscleCurveFunction::calcIntegral() will throw 
+                                an exception
 
-        @param mclName  : The name of the muscle this curve is for
+        @param mclName          The name of the muscle this curve is for.
         @return MuscleCurveFunction object
         
                 \image html fvCurve.png
