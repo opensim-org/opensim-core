@@ -105,7 +105,7 @@ namespace OpenSim {
 
        @param name          The name of the data this MuscleCurveFunction 
 
-       <B>COMPUTATIONAL COSTS</B>
+       <B>Computational Costs</B>
 
 
        Costs for an m-section Quintic Bezier Curve. Generating the integral 
@@ -177,7 +177,7 @@ namespace OpenSim {
        evalulated
 
 
-       <B>COMPUTATIONAL COSTS</B>
+       <B>Computational Costs</B>
 
 
        For an m-section Bezier curve this function has the following costs
@@ -230,7 +230,7 @@ namespace OpenSim {
        If x is outside of the domain of these Bezier curves a linear 
        extrapolation will be evalulated
         
-       <B>COMPUTATIONAL COSTS</B>
+       <B>Computational Costs</B>
 
 
        For an m-section Bezier curve this function has the following costs
@@ -310,7 +310,7 @@ namespace OpenSim {
        have some error in them. A very fine mesh of points is used to create the
        spline so the errors will be small
 
-       <B>COMPUTATIONAL COSTS</B>
+       <B>Computational Costs</B>
        \verbatim
        ________________________________________________________________________
        If x is in the Bezier Curve, and dy/dx is being evaluated
@@ -409,7 +409,7 @@ namespace OpenSim {
        and will have 2000+20 rows. The active force length curve has 5 elbows, 
        and so its sampled matrix will have 5000+20 rows    
 
-       <B>COMPUTATIONAL COSTS</B>
+       <B>Computational Costs</B>
 
 
         For a curve with m quintic Bezier curve sections:

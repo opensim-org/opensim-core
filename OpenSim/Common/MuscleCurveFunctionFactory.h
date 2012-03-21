@@ -238,7 +238,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             0 <= eccCurviness <= 0
         \endverbatim
 
-        <B>Explanation</B>
+        <B>Example:</B>
         @code
             double fmaxE = 1.8;
             double dydxC = 0.1;
@@ -321,7 +321,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         \endverbatim
 
 
-        <B>Examples</B>
+        <B>Example:</B>
         @code
             double phi0 = (SimTK::Pi/2)*(8.0/9.0);
             double kiso = 8.389863790885878;
@@ -387,7 +387,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         \endverbatim
 
 
-        <B>Examples</B>
+        <B>Example:</B>
         @code
             double cosPhi0 = cos( (80.0/90.0)*SimTK::Pi/2);
             double kiso    = -1.2/(cosPhi0);

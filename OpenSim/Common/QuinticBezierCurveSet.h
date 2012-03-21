@@ -141,7 +141,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         spline inverse of u(x) to get a very good initial guess, and then one or 
         two Newton iterations to polish the answer to the desired tolerance.
         
-        <B>COMPUTATIONAL COSTS</B>
+        <B>Computational Costs</B>
         \verbatim
         Cost
                     Comparisons     Div     Mult     Additions   Assignments
@@ -218,7 +218,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         it simply scans through the Bezier curve sets until it finds the correct
         one. 
 
-        <B>COMPUTATIONAL COSTS</B>
+        <B>Computational Costs</B>
         \verbatim
         Cost: n comparisons, for a quintic Bezier curve with n-spline sections
 
@@ -277,7 +277,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         dimension. The code to compute the value of a quintic bezier curve has
         been optimized to have the following cost:
 
-        <B>COMPUTATIONAL COSTS</B>
+        <B>Computational Costs</B>
         \verbatim
         Multiplications     Additions   Assignments
         21                  20          13
@@ -361,7 +361,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         the sixth and all following derivatives, which are 0. Higher derivatives
         w.r.t. to U are less expensive to compute than lower derivatives.
 
-        <B>COMPUTATIONAL COSTS</B>
+        <B>Computational Costs</B>
         \verbatim
                     Divisions   Multiplications Additions   Assignments
             dx/du               20              19          11
@@ -413,7 +413,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         etc.
         \endverbatim
 
-        <B>COMPUTATIONAL COSTS</B>
+        <B>Computational Costs</B>
 
         This obviously only functions when the Bezier curve in question has a 
         finite derivative. Additionally, higher order derivatives are more 
@@ -549,7 +549,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         The current implementation of this function is not optimized in anyway
         and has the following costs:
 
-        <B>COMPUTATIONAL COSTS</B>
+        <B>Computational Costs</B>
         \verbatim
         Divisions   Multiplication  Additions   Assignments
         1           13              9              23
@@ -601,7 +601,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         both x and y are specified in terms of u. Evaluate the integral at the 
         locations specified in vX and return the result. 
 
-        <B>COMPUTATIONAL COSTS</B>
+        <B>Computational Costs</B>
 
         This the expense of this function depends on the number of points in
         vX, the points for which the integral y(x) must be calculated. The 
