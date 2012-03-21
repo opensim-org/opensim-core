@@ -250,6 +250,22 @@ public:
 	
 };
 
+
+// This class allows access to property values using template-free
+// methods. Note that this will work regardless of whether the given
+// AbstractProperty is the deprecated kind or the new one.
+class PropertyHelper {
+    static bool getValueBool(const AbstractProperty& p) 
+    {   return p.getValue<bool>(); }
+    static bool& updValueBool(AbstractProperty& p) 
+    {   return p.updValue<bool>(); }
+    static int getValueInt(const AbstractProperty& p) 
+    {   return p.getValue<int>(); }
+    static int& updValueInt(AbstractProperty& p) 
+    {   return p.updValue<int>(); }
+    // etc.
+};
+
 } // namespace OpenSim
 
 #endif // OPENSIM_OPENSIM_CONTEXT_H_

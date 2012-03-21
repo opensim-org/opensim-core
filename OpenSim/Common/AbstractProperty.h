@@ -60,6 +60,7 @@ namespace OpenSim {
 class OSIMCOMMON_API AbstractProperty
 {
 public:
+    // TODO: this enumeration should not be necessary.
 	/** Enumeration of recognized types. */
 	enum PropertyType
 	{
@@ -67,7 +68,6 @@ public:
 		BoolArray, IntArray, DblArray, StrArray, ObjArray,
 		DblVec, DblVec3,
 		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
-		//Station	   Point on a Body: String, Vec3 
 	};
 
 	AbstractProperty();
@@ -98,8 +98,9 @@ public:
 	virtual bool equals(const AbstractProperty& other) const = 0;
     /** Return the enum value corresponding to the concrete property. **/
 	virtual PropertyType getPropertyType() const = 0;
-    /** Return the current value of this property in a string suitable for
-    displaying to a user in the GUI. **/
+    /** For relatively simple types, return the current value of this property 
+    in a string suitable for displaying to a user in the GUI. Objects just
+    return something like "(Object)". **/
     virtual std::string toString() const = 0;
     /** Return the current value as type T; this works only if the underlying
     concrete property stores type T otherwise throws an exception. **/
@@ -139,12 +140,24 @@ public:
     int getMinArraySize() { return _minArraySize; }
 	int getMaxArraySize() { return _maxArraySize; }
 
+    /** Provides type-specific methods used to implement generic functionality
+    at the AbstractProperty level. This class must be specialized for any 
+    type T that is used in a Property<T> instantiation, unless T is an 
+    Object or something derived from Object. **/
+    template <class T> struct TypeHelper {
+        static const char* name() {return "Obj";}
+        static PropertyType getPropertyType() {return Obj;}
+        static bool isEqual(const T& a, const T& b) {return a==b;}
+        static std::string formatForDisplay(const T&) {return "(Object)";}
+    };
+
 protected:
     /** This is for use by the concrete property types that derive from
     AbstractProperty to provide a string we can use to represent the type
     without us having to know what it is in the base class. */
     void setTypeAsString(const char* typeName) 
     {   _typeAsString = std::string(typeName); }
+
 
 private:
 	void setNull();
@@ -158,39 +171,111 @@ private:
 	int         _maxArraySize; // maximum # elements for property of array type
 };
 
-/** This class defines the external string representation for a property type T.
-In case you don't like the name you get from typeid() (and
-you probably won't -- it will vary across platforms), you should specialize
-this class to provide a nicer name. When a new type is defined that can be
-used as a property type, add a specialization of this class in that header.
-Here we'll specialize for the built-in, std:: and SimTK:: types and some
-basic OpenSim:: types. **/
-template <class T> struct PropertyTypeName {
-    static const char* name() {return typeid(T).name();}
+
+template<> struct AbstractProperty::TypeHelper<bool> {
+    static const char* name() {return "bool";}
+    static PropertyType getPropertyType() {return Bool;}
+    static bool isEqual(bool a, bool b) {return a==b;}
+    OSIMCOMMON_API static std::string formatForDisplay(bool);
+};
+template<> struct AbstractProperty::TypeHelper<int> {
+    static const char* name() {return "int";}
+    static PropertyType getPropertyType() {return Int;}
+    static bool isEqual(int a, int b) {return a==b;}
+    OSIMCOMMON_API static std::string formatForDisplay(int);
+};
+template<> struct AbstractProperty::TypeHelper<std::string> {
+    static const char* name() {return "string";}
+    static PropertyType getPropertyType() {return Str;}
+    OSIMCOMMON_API static bool isEqual(const std::string& a, 
+                                       const std::string& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const std::string&);
 };
 
-template<> struct PropertyTypeName<bool> 
-{   static const char* name() {return "bool";} };
-template<> struct PropertyTypeName<int> 
-{   static const char* name() {return "int";} };
-template<> struct PropertyTypeName<double> 
-{   static const char* name() {return "double";} };
-template<> struct PropertyTypeName<std::string> 
-{   static const char* name() {return "string";} };
-template<> struct PropertyTypeName<SimTK::Vec3> 
-{   static const char* name() {return "Vec3";} };
-template<> struct PropertyTypeName<SimTK::Transform> 
-{   static const char* name() {return "Transform";} };
+template<> struct AbstractProperty::TypeHelper< Array<bool> > {
+    static const char* name() {return "Array<bool>";}
+    static PropertyType getPropertyType() {return BoolArray;}
+    OSIMCOMMON_API static bool isEqual(const Array<bool>& a, 
+                                       const Array<bool>& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const Array<bool>&);
+};
+template<> struct AbstractProperty::TypeHelper< Array<int> > {
+    static const char* name() {return "Array<int>";} 
+    static PropertyType getPropertyType() {return IntArray;}
+    OSIMCOMMON_API static bool isEqual(const Array<int>& a, 
+                                       const Array<int>& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const Array<int>&);
+};
+template<> struct AbstractProperty::TypeHelper< Array<std::string> > {
+    static const char* name() {return "Array<string>";} 
+    static PropertyType getPropertyType() {return StrArray;}
+    OSIMCOMMON_API static bool isEqual(const Array<std::string>& a, 
+                                       const Array<std::string>& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const Array<std::string>&);
+};
 
-template<> struct PropertyTypeName< Array<bool> > 
-{   static const char* name() {return "Array<bool>";} };
-template<> struct PropertyTypeName< Array<int> > 
-{   static const char* name() {return "Array<int>";} };
-template<> struct PropertyTypeName< Array<double> > 
-{   static const char* name() {return "Array<double>";} };
-template<> struct PropertyTypeName< Array<std::string> > 
-{   static const char* name() {return "Array<string>";} };
+// Floating point values' isEqual() operator returns true if all the numbers
+// are equal to within a tolerance. We also say NaN==NaN, which is not standard
+// IEEE floating point behavior.
+template<> struct AbstractProperty::TypeHelper<double> {
+    static const char* name() {return "double";}
+    static PropertyType getPropertyType() {return Dbl;}
+    OSIMCOMMON_API static bool isEqual(double a, double b);
+    OSIMCOMMON_API static std::string formatForDisplay(double);
+};
+template<> struct AbstractProperty::TypeHelper<SimTK::Vec3>  {
+    static const char* name() {return "Vec3";}
+    static PropertyType getPropertyType() {return DblVec3;}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
+                                       const SimTK::Vec3& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Vec3&);
+};
+template<> struct AbstractProperty::TypeHelper<SimTK::Vector>  {
+    static const char* name() {return "Vector";}
+    static PropertyType getPropertyType() {return DblVec;}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
+                                       const SimTK::Vector& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Vector&);
+};
+template<> struct AbstractProperty::TypeHelper<SimTK::Transform>  {
+    static const char* name() {return "Transform";}
+    static PropertyType getPropertyType() {return AbstractProperty::Transform;}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
+                                       const SimTK::Transform& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Transform&);
+};
 
+template<> struct AbstractProperty::TypeHelper< Array<double> >  {
+    static const char* name() {return "Array<double>";}
+    static PropertyType getPropertyType() {return DblArray;}
+    OSIMCOMMON_API static bool isEqual(const Array<double>& a, 
+                                       const Array<double>& b);
+    OSIMCOMMON_API static std::string formatForDisplay(const  Array<double>&);
+};
+
+
+// Partial specializations for Object* derivations and ArrayPtr<Object>. These
+// must be fully defined in this header file since we don't know type O yet.
+template <class O> struct AbstractProperty::TypeHelper<O*> {
+    static const char* name() {return "ObjPtr";} 
+    static PropertyType getPropertyType() {return ObjPtr;}
+    static bool isEqual(const O* a, const O* b) {return *a==*b;}
+    static std::string formatForDisplay(const O*)
+    {   return "(ObjectPointer)"; }
+};
+template<class O> struct AbstractProperty::TypeHelper< ArrayPtrs<O> > {
+    static const char* name() {return "ObjArray";} 
+    static PropertyType getPropertyType() {return ObjArray;}
+    static bool isEqual(const ArrayPtrs<O>& a, const ArrayPtrs<O>& b) {
+        if (a.getSize() != b.getSize()) return false;
+        for (int i=0; i < a.getSize(); ++i)
+            if (!TypeHelper<O*>::isEqual(a.get(i),b.get(i)))
+                return false;
+        return true;
+    }
+    static std::string formatForDisplay(const ArrayPtrs<O>&)
+    {   return "(Array of objects)"; }  
+};
 
 }; //namespace
 //=============================================================================

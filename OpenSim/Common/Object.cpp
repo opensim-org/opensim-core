@@ -758,11 +758,41 @@ UpdateFromXMLNodeVec3Property2(AbstractProperty*    aAbstractProperty,
 	aProperty->setUseDefault(false);
 }
 
+// Although we use a SimTK::Transform internally (a Rotation matrix and a
+// position vector), in the XML file this is represented as three rotation
+// angles (in body fixed X-Y-Z sequence) followed by the position vector.
+static void 
+UpdateFromXMLNodeTransformProperty2(AbstractProperty*    aAbstractProperty, 
+                                    SimTK::Xml::Element& aNode, 
+                                    const string&        aName)
+{
+	aAbstractProperty->setUseDefault(true);
+	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
+	if (iter == aNode.element_end()) return;	// Not found
+
+	Property2<SimTK::Transform> *prop = 
+        dynamic_cast<Property2<SimTK::Transform> *>(aAbstractProperty);
+    SimTK::Transform& X = prop->updValue(); // result goes here
+
+	SimTK::Vec6 value;
+	iter->getValueAs(value);
+    const Vec3& anglesXYZ = value.getSubVec<3>(0); // body fixed, x-y-z sequence
+    const Vec3& pos       = value.getSubVec<3>(3);
+
+    X.updP() = pos;
+    X.updR().setRotationToBodyFixedXYZ(anglesXYZ);
+
+	prop->setUseDefault(false);
+}
+
 //-----------------------------------------------------------------------------
 // OBJECT XML METHODS
 //-----------------------------------------------------------------------------
 void Object::	// Populate Object from XML node corresponding to Obj property
-InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber)
+InitializeObjectFromXMLNode(Property_Deprecated*                aProperty, 
+                            const SimTK::Xml::element_iterator& rObjectElement, 
+                            Object*                             aObject, 
+                            int                                 versionNumber)
 {
 	SimTK::String toString;
 	rObjectElement->writeToString(toString);
@@ -829,7 +859,10 @@ InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::X
 	//aObject->updateFromXMLNode();
 }
 
-template<class T> void UpdateXMLNodeSimpleProperty(const Property_Deprecated *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+template<class T> static void 
+UpdateXMLNodeSimpleProperty(const Property_Deprecated*  aProperty, 
+                            SimTK::Xml::Element&        dParentNode, 
+                            const string&               aName)
 {
 	const T &value = aProperty->getValue<T>();
 	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
@@ -838,7 +871,10 @@ template<class T> void UpdateXMLNodeSimpleProperty(const Property_Deprecated *aP
 	} 
 }
 
-template<class T> void UpdateXMLNodeSimpleProperty2(const AbstractProperty *aAbstractProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+template<class T> static void 
+UpdateXMLNodeSimpleProperty2(const AbstractProperty*    aAbstractProperty,
+                             SimTK::Xml::Element&       dParentNode, 
+                             const string&              aName)
 {
 	const Property2<T> *aProperty = dynamic_cast<const Property2<T> *>(aAbstractProperty);
 	const T &value = aProperty->getValue();
@@ -848,7 +884,10 @@ template<class T> void UpdateXMLNodeSimpleProperty2(const AbstractProperty *aAbs
 	} 
 }
 
-template<class T> void UpdateXMLNodeArrayProperty(const Property_Deprecated *aProperty,  SimTK::Xml::Element& dParentNode, const string &aName)
+template<class T> static void 
+UpdateXMLNodeArrayProperty(const Property_Deprecated*   aProperty,  
+                           SimTK::Xml::Element&         dParentNode, 
+                           const string&                aName)
 {
 
 	const Array<T> &value = aProperty->getValueArray<T>();
@@ -859,7 +898,10 @@ template<class T> void UpdateXMLNodeArrayProperty(const Property_Deprecated *aPr
 	} 
 }
 
-template<class T> void UpdateXMLNodeArrayProperty2(const AbstractProperty *aAbstractProperty,  SimTK::Xml::Element& dParentNode, const string &aName)
+template<class T> static void 
+UpdateXMLNodeArrayProperty2(const AbstractProperty*     aAbstractProperty,  
+                            SimTK::Xml::Element&        dParentNode, 
+                            const string&               aName)
 {
 	const Property2< Array<T> > *aProperty = dynamic_cast<const Property2< Array<T> > *>(aAbstractProperty);
 	const Array<T> &value = aProperty->getValue();
@@ -870,7 +912,10 @@ template<class T> void UpdateXMLNodeArrayProperty2(const AbstractProperty *aAbst
 	} 
 }
 
-void UpdateXMLNodeVec(const Property_Deprecated *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+static void 
+UpdateXMLNodeVec(const Property_Deprecated*     aProperty, 
+                 SimTK::Xml::Element&           dParentNode, 
+                 const string&                  aName)
 {
 	const Array<double> &value = aProperty->getValueArray<double>();
 	
@@ -881,7 +926,10 @@ void UpdateXMLNodeVec(const Property_Deprecated *aProperty, SimTK::Xml::Element&
 
 }
 
-void UpdateXMLNodeVec3(const AbstractProperty *aAbstractProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+static void 
+UpdateXMLNodeVec3(const AbstractProperty*   aAbstractProperty, 
+                  SimTK::Xml::Element&      dParentNode, 
+                  const string&             aName)
 {
 	const Property2<Vec3> *aProperty = dynamic_cast<const Property2<Vec3> *>(aAbstractProperty);
 	const Vec3 &vector = aProperty->getValue();
@@ -894,10 +942,12 @@ void UpdateXMLNodeVec3(const AbstractProperty *aAbstractProperty, SimTK::Xml::El
 		SimTK::Xml::Element elt(aAbstractProperty->getName(), values);
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
 	} 
-
 }
 
-void UpdateXMLNodeTransform(const Property_Deprecated *aProperty, SimTK::Xml::Element& dParentNode, const string &aName)
+static void 
+UpdateXMLNodeTransform(const Property_Deprecated*   aProperty, 
+                       SimTK::Xml::Element&         dParentNode, 
+                       const string&                aName)
 {
 
 	// Get 6 raw numbers into an array and then use those to update the node
@@ -908,10 +958,30 @@ void UpdateXMLNodeTransform(const Property_Deprecated *aProperty, SimTK::Xml::El
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
 	//} 
 }
+
+
+static void 
+UpdateXMLNodeTransformProperty2(const AbstractProperty *aAbstractProperty, 
+                                SimTK::Xml::Element& dParentNode, 
+                                const string &aName)
+{
+	const Property2<SimTK::Transform> *prop = 
+        dynamic_cast<const Property2<SimTK::Transform> *>(aAbstractProperty);
+	const SimTK::Transform& X = prop->getValue();
+    SimTK::Vector rotTrans(6);
+    rotTrans(0,3) = SimTK::Vector(X.R().convertRotationToBodyFixedXYZ());
+    rotTrans(3,3) = SimTK::Vector(X.p()); // translations
+	
+	if(!aAbstractProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
+		SimTK::Xml::Element elt(aAbstractProperty->getName(), rotTrans);
+		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
+	} 
+}
+
+
 //-----------------------------------------------------------------------------
 // UPDATE OBJECT
 //-----------------------------------------------------------------------------
-//__________
 void Object::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 try {
@@ -1173,10 +1243,10 @@ try {
 			break;
 		case(AbstractProperty::DblVec3) :
 			UpdateFromXMLNodeVec3Property2(abstractProperty,aNode,name);
-			break;/*
+			break;
 		case(AbstractProperty::Transform) :
-			UpdateFromXMLNodeArrayProperty2<double>(abstractProperty,aNode,name);
-			break;*/
+			UpdateFromXMLNodeTransformProperty2(abstractProperty,aNode,name);
+			break;
 		// StrArray
 		case(AbstractProperty::StrArray) :
 			UpdateFromXMLNodeArrayProperty2<string>(abstractProperty,aNode,name);
@@ -1628,11 +1698,11 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 		// DblVec3
 		case(AbstractProperty::DblVec3) :
 			UpdateXMLNodeVec3(abstractProperty,myObjectElement,name);
-			break;/*
+			break;
 		// Transform
-		case(Property::Transform) :
-			UpdateXMLNodeTransform(property,myObjectElement,name);
-			break;*/
+		case(AbstractProperty::Transform) :
+			UpdateXMLNodeTransformProperty2(abstractProperty,myObjectElement,name);
+			break;
 		// StrArray
 		case(AbstractProperty::StrArray) :
 			UpdateXMLNodeArrayProperty2<string>(abstractProperty,myObjectElement,name);

@@ -1,5 +1,5 @@
-#ifndef _FunctionSet_h_
-#define _FunctionSet_h_
+#ifndef OPENSIM_FUNCTION_SET_H_
+#define OPENSIM_FUNCTION_SET_H_
 // FunctionSet.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -86,14 +86,8 @@ public:
 };	// END class FunctionSet
 
 
-template<> struct PropertyTypeName<FunctionSet> 
-{   static const char* name() {return "FunctionSet";} };
-
-template <> inline AbstractProperty::PropertyType 
-Property2<FunctionSet>::getPropertyType() const { return Obj; }
-
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif  // __FunctionSet_h__
+#endif  // OPENSIM_FUNCTION_SET_H_

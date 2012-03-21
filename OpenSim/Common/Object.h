@@ -458,7 +458,7 @@ template <class T> const T& AbstractProperty::getValue() const {
     if (p == NULL)
         throw Exception("AbstractProperty::getValue(): property "
                         + getName() + " is not of type " 
-                        + std::string(PropertyTypeName<T>::name()));
+                        + std::string(TypeHelper<T>::name()));
     return p->getValue();
 }
 
@@ -471,26 +471,9 @@ template <class T> T& AbstractProperty::updValue() {
     if (p == NULL)
         throw Exception("AbstractProperty::updValue(): property "
                         + getName() + " is not of type " 
-                        + std::string(PropertyTypeName<T>::name()));
+                        + std::string(TypeHelper<T>::name()));
     return p->updValue();
 }
-
-// TODO: are these the right names to use?
-template<> struct PropertyTypeName<Object> 
-{   static const char* name() {return "Object";} };
-template<> struct PropertyTypeName<Object*> 
-{   static const char* name() {return "Object*";} };
-template<> struct PropertyTypeName< ArrayPtrs<Object> > 
-{   static const char* name() {return "ArrayPtrs<Object>";} };
-
-template <>
-inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
-
-template <>
-inline AbstractProperty::PropertyType Property2< ArrayPtrs<Object> >::getPropertyType() const { return ObjArray; }
-
-template <>
-inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() const { return ObjPtr; }
 
 template <class T> const Property2<T>& Object::
 getProperty(const std::string& name) const

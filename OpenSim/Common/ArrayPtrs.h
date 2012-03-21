@@ -115,7 +115,7 @@ virtual ~ArrayPtrs()
  * @param aCapacity Initial capacity of the array.  The capacity
  * must be 1 or greater.
  */
-ArrayPtrs(int aCapacity=1)
+explicit ArrayPtrs(int aCapacity=1)
 {
 	setNull();
 

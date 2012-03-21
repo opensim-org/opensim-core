@@ -136,14 +136,6 @@ public:
 #endif
 };
 
-template<> struct PropertyTypeName<ElasticFoundationForce::ContactParametersSet> 
-{   static const char* name() {return "ContactParametersSet";} };
-
-template <>
-inline AbstractProperty::PropertyType 
-Property2<ElasticFoundationForce::ContactParametersSet>::getPropertyType() const
-{   return Obj; }
-
 } // end of namespace OpenSim
 
 #endif // __ElasticFoundationForce_h__

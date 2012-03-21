@@ -1,5 +1,5 @@
-#ifndef __GeometryPath_h__
-#define __GeometryPath_h__
+#ifndef OPENSIM_GEOMETRY_PATH_H_
+#define OPENSIM_GEOMETRY_PATH_H_
 
 // GeometryPath.h
 // Author: Peter Loan
@@ -199,14 +199,8 @@ private:
 //=============================================================================
 //=============================================================================
 
-template<> struct PropertyTypeName<GeometryPath> 
-{   static const char* name() {return "GeometryPath";} };
-
-template <> inline AbstractProperty::PropertyType 
-Property2<GeometryPath>::getPropertyType() const { return Obj; }
-
 } // end of namespace OpenSim
 
-#endif // __GeometryPath_h__
+#endif // OPENSIM_GEOMETRY_PATH_H_
 
 

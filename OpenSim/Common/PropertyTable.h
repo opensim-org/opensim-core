@@ -244,7 +244,7 @@ const Property2<T>& PropertyTable::getProperty(const std::string &name) const {
     const Property2<T>* propT = dynamic_cast<const Property2<T>*>(&prop);
     if (propT == NULL)
         throw Exception("Property " + name + " was not of type "
-                        + std::string(PropertyTypeName<T>::name()));
+                        + std::string(AbstractProperty::TypeHelper<T>::name()));
     return *propT;
 }
 
@@ -254,7 +254,7 @@ Property2<T>& PropertyTable::updProperty(const std::string &name) {
     Property2<T>* propT = dynamic_cast<Property2<T>*>(&prop);
     if (propT == NULL)
         throw Exception("Property " + name + " was not of type "
-                        + std::string(PropertyTypeName<T>::name()));
+                        + std::string(AbstractProperty::TypeHelper<T>::name()));
     return *propT;
 }
 

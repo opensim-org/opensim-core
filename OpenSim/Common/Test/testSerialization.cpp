@@ -100,6 +100,11 @@ int main()
 		if (cmp!=0) {
 			throw Exception("String property",__FILE__,__LINE__);
 		}
+
+        for (int i=0; i < obj1.getNumProperties(); ++i) {
+            const AbstractProperty& ap = obj1.getPropertyByIndex(i); 
+            std::cout << ap.getName() << "=" << ap.toString() << std::endl;
+        }
 		
 	}
     catch(const Exception& e) {

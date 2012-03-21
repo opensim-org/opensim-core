@@ -62,90 +62,44 @@ public:
 	Property2(const Property2 &aProperty);
 	Property2& operator=(const Property2 &aProperty);
 
-    // Implement the AbstractProperty interface.
-	/*virtual*/ ~Property2() { delete _valuePtr; }
-	/*virtual*/ Property2* copy() const;
-	/*virtual*/ bool equals(const AbstractProperty& other) const;
-    // This is specialized for types T below.
-	/*virtual*/ PropertyType getPropertyType() const 
-    {   throw Exception("Property2: Use of unspecified property."); return None;}
-    /*virtual*/ std::string toString() const 
-    {assert(false); return "Property2::toString() NOT IMPLEMENTED";}
+    /** Delete the stored value object if necessary. **/
+	~Property2() { delete _valuePtr; }
+    /** Clone this object, including a new copy of the stored value object. **/
+	Property2* copy() const                             FINAL_11;
+    /** Determine if this property is the same as another, using a
+    type-dependent criterion. **/
+	bool equals(const AbstractProperty& other) const    FINAL_11;
+    /** Return the AbstractProperty::PropertyType enum assigned to type T. **/
+	PropertyType getPropertyType() const                FINAL_11
+    {   return TypeHelper<T>::getPropertyType(); }
+    /** Format this property's value as a string suitable for display to a
+    user in the GUI. This is not necessarily the right format for 
+    serialization to XML. **/
+    std::string toString() const                        FINAL_11
+    {   return TypeHelper<T>::formatForDisplay(getValue());}
 
+    /** Obtain a const reference to the value object stored in this 
+    property. **/
 	const T& getValue() const { return *_valuePtr; }
+    /** Obtain a writable reference to the value object stored in this 
+    property. **/
 	T& updValue() { return *_valuePtr; }
-	void setValue(const T &aValue) { *_valuePtr = aValue; }
+    /** Set the value of this property to the supplied object. **/
+	void setValue(const T& v) { *_valuePtr = v; }
 };
 
-/** Specialize Property2::equals() for type double to allow for a tolerance.
-Also, in contrast to standard numerical treatment we consider the values to
-be equal if they are both NaN. **/
-template <>
-inline bool Property2<double>::equals(const AbstractProperty& other) const {
-	const Property2<double>* p = dynamic_cast<const Property2<double>*>(&other);
-    if (p == NULL)
-        return false; // Type mismatch.
-
-    if (*_valuePtr == p->getValue())
-        return true; // catch exact match and Infinities
-
-    if (SimTK::isNaN(*_valuePtr) && SimTK::isNaN(p->getValue()))
-        return true; // we define NaN==NaN to be true here
-
-    // Floating point need only match to a tolerance.
-    // TODO: why is this the right number??
-    return std::abs(*_valuePtr - p->getValue()) <= 1e-7;
-}
-
-template <>
-inline AbstractProperty::PropertyType Property2<double>::getPropertyType() const { return Dbl; }
-
-template <>
-inline AbstractProperty::PropertyType Property2<bool>::getPropertyType() const { return Bool; }
-
-template <>
-inline AbstractProperty::PropertyType Property2<int>::getPropertyType() const { return Int; }
-
-template <>
-inline AbstractProperty::PropertyType Property2<std::string>::getPropertyType() const { return Str; }
-
-template <>
-inline AbstractProperty::PropertyType Property2< Array<bool> >::getPropertyType() const { return BoolArray; }
-
-template <>
-inline AbstractProperty::PropertyType Property2< Array<int> >::getPropertyType() const { return IntArray; }
-
-template <>
-inline AbstractProperty::PropertyType Property2< Array<double> >::getPropertyType() const { return DblArray; }
-
-template <>
-inline AbstractProperty::PropertyType Property2< Array<std::string> >::getPropertyType() const { return StrArray; }
-
-template <>
-inline AbstractProperty::PropertyType Property2<SimTK::Vec3>::getPropertyType() const { return DblVec3; }
-
-/*
-template <>
-inline AbstractProperty::PropertyType Property2<Object>::getPropertyType() const { return Obj; }
-
-template <>
-inline AbstractProperty::PropertyType Property2< Array<Object> >::getPropertyType() const { return ObjArray; }
-
-template <>
-inline AbstractProperty::PropertyType Property2<Object *>::getPropertyType() const { return ObjPtr; }
-*/
 
 template <typename T>
 Property2<T>::Property2() : AbstractProperty()
 {
-    setTypeAsString(PropertyTypeName<T>::name());
+    setTypeAsString(TypeHelper<T>::name());
 	_valuePtr = new T;
 }
 
 template <typename T>
 Property2<T>::Property2(const std::string &aName, const std::string &aComment, 
                         const T &aValue) 
-:   AbstractProperty(aName, PropertyTypeName<T>::name(), aComment)
+:   AbstractProperty(aName, TypeHelper<T>::name(), aComment)
 {
 	_valuePtr = new T(aValue);
 }
@@ -178,7 +132,7 @@ bool Property2<T>::equals(const AbstractProperty& other) const
 	const Property2<T>* p = dynamic_cast<const Property2<T>*>(&other);
     if (p == NULL)
         return false; // Type mismatch.
-    return *_valuePtr == p->getValue();
+    return TypeHelper<T>::isEqual(getValue(), p->getValue());
 }
 
 }; //namespace

@@ -33,6 +33,7 @@
 #include "Object.h"
 #include "Function.h"
 
+#include <string>
 
 using namespace OpenSim;
 using namespace std;
@@ -77,4 +78,204 @@ void AbstractProperty::setNull()
 	_matchName = false;
 	_minArraySize = 0;
 	_maxArraySize = INT_MAX;
+}
+
+//=============================================================================
+// TYPE HELPER SPECIALIZATIONS
+//=============================================================================
+string AbstractProperty::TypeHelper<bool>::
+formatForDisplay(bool v) {
+    return v ? "true" : "false";
+}
+
+string AbstractProperty::TypeHelper<int>::
+formatForDisplay(int v) {
+    char intString[32];
+	sprintf(intString, "%d", v);
+	return intString;
+}
+
+// Strings are compared exactly here but could conceivably by made fancier
+// so make sure that Array<string>::isEqual() is defined in terms of this one.
+bool AbstractProperty::TypeHelper<string>::
+isEqual(const string& a, const std::string& b) {
+    return a == b;
+}
+string AbstractProperty::TypeHelper<string>::
+formatForDisplay(const string& s) {
+    return s;
+}
+
+// Doubles compare equal if they are close enough, and they compare equal
+// if they are both NaN. Vec3, Vector, and Array<double> properties must all
+// be implemented in terms of this method.
+bool AbstractProperty::TypeHelper<double>::
+isEqual(double a, double b) {
+    if (a == b)
+        return true; // catch exact match and Infinities
+
+    if (SimTK::isNaN(a) && SimTK::isNaN(b))
+        return true; // we define NaN==NaN to be true here
+
+    // Floating point need only match to a tolerance.
+    // TODO: why is this the right number??
+    return std::abs(a - b) <= 1e-7;
+}
+
+// All formatForDisplay() methods involving doubles must be implemented using
+// this method.
+string AbstractProperty::TypeHelper<double>::
+formatForDisplay(double v) {
+    if (SimTK::isFinite(v)) {
+	    char dbl[256];
+        sprintf(dbl, "%g", v);
+        return dbl;
+    }
+
+    if (SimTK::isNaN(v)) return "NaN";
+	if (v ==  SimTK::Infinity) return "infinity";
+	if (v == -SimTK::Infinity) return "-infinity";
+	return "UnrecognizedNonFinite???";
+}
+
+bool AbstractProperty::TypeHelper<SimTK::Vec3>::
+isEqual(const SimTK::Vec3& a, const SimTK::Vec3& b) {
+    for (int i=0; i < 3; ++i)
+        if (!TypeHelper<double>::isEqual(a[i],b[i]))
+            return false;
+    return true;
+}
+
+string AbstractProperty::TypeHelper<SimTK::Vec3>::
+formatForDisplay(const SimTK::Vec3& v) {
+	string str = "(";
+	for(int i=0; i < 3; ++i) {
+        if (i>0) str += " ";
+        str += TypeHelper<double>::formatForDisplay(v[i]);
+    }
+	str += ")";
+	return str;
+}
+
+// SimTK::Vector
+bool AbstractProperty::TypeHelper<SimTK::Vector>::
+isEqual(const SimTK::Vector& a, const SimTK::Vector& b) {
+    if (a.size() != b.size())
+        return false;
+    for (int i=0; i < a.size(); ++i)
+        if (!TypeHelper<double>::isEqual(a[i],b[i]))
+            return false;
+    return true;
+}
+string AbstractProperty::TypeHelper<SimTK::Vector>::
+formatForDisplay(const SimTK::Vector& v) {
+	string str = "(";
+	for(int i=0; i < v.size(); ++i) {
+        if (i>0) str += " ";
+        str += TypeHelper<double>::formatForDisplay(v[i]);
+    }
+	str += ")";
+	return str;
+}
+
+// SimTK::Transform
+bool AbstractProperty::TypeHelper<SimTK::Transform>::
+isEqual(const SimTK::Transform& a, const SimTK::Transform& b) {
+    // Check position vectors for equality, elementwise to a tolerance.
+    if (!TypeHelper<SimTK::Vec3>::isEqual(a.p(), b.p()))
+        return false;
+    // Check rotation matrix to equality within angle tolerance.
+    // TODO: is this angle reasonable?
+    if (!a.R().isSameRotationToWithinAngle(b.R(), 1e-7))
+        return false;
+
+    return true;
+}
+string AbstractProperty::TypeHelper<SimTK::Transform>::
+formatForDisplay(const SimTK::Transform& X) {
+    SimTK::Vector rotTrans(6);
+    rotTrans(0,3) = SimTK::Vector(X.R().convertRotationToBodyFixedXYZ());
+    rotTrans(3,3) = SimTK::Vector(X.p()); // translations
+    return TypeHelper<SimTK::Vector>::formatForDisplay(rotTrans);
+}
+
+// OpenSim::Array<bool>
+bool AbstractProperty::TypeHelper< OpenSim::Array<bool> >::
+isEqual(const OpenSim::Array<bool>& a, const OpenSim::Array<bool>& b) {
+    if (a.getSize() != b.getSize())
+        return false;
+    for (int i=0; i < a.getSize(); ++i)
+        if (a[i] != b[i])
+            return false;
+    return true;
+}
+string AbstractProperty::TypeHelper< OpenSim::Array<bool> >::
+formatForDisplay(const OpenSim::Array<bool>& a) {
+	string str = "(";
+	for(int i=0; i < a.getSize(); ++i) {
+        if (i>0) str += " ";
+        str += TypeHelper<bool>::formatForDisplay(a[i]);
+    }
+	str += ")";
+	return str;
+}
+
+bool AbstractProperty::TypeHelper< OpenSim::Array<int> >::
+isEqual(const OpenSim::Array<int>& a, const OpenSim::Array<int>& b) {
+    if (a.getSize() != b.getSize())
+        return false;
+    for (int i=0; i < a.getSize(); ++i)
+        if (a[i] != b[i])
+            return false;
+    return true;
+}
+string AbstractProperty::TypeHelper< OpenSim::Array<int> >::
+formatForDisplay(const OpenSim::Array<int>& a) {
+	string str = "(";
+	for(int i=0; i < a.getSize(); ++i) {
+        if (i>0) str += " ";
+        str += TypeHelper<int>::formatForDisplay(a[i]);
+    }
+	str += ")";
+	return str;
+}
+
+bool AbstractProperty::TypeHelper< OpenSim::Array<double> >::
+isEqual(const OpenSim::Array<double>& a, const OpenSim::Array<double>& b) {
+    if (a.getSize() != b.getSize())
+        return false;
+    for (int i=0; i < a.getSize(); ++i)
+        if (!TypeHelper<double>::isEqual(a[i],b[i]))
+            return false;
+    return true;
+}
+string AbstractProperty::TypeHelper< OpenSim::Array<double> >::
+formatForDisplay(const OpenSim::Array<double>& a) {
+	string str = "(";
+	for(int i=0; i < a.getSize(); ++i) {
+        if (i>0) str += " ";
+        str += TypeHelper<double>::formatForDisplay(a[i]);
+    }
+	str += ")";
+	return str;
+}
+
+bool AbstractProperty::TypeHelper< OpenSim::Array<string> >::
+isEqual(const OpenSim::Array<string>& a, const OpenSim::Array<string>& b) {
+    if (a.getSize() != b.getSize())
+        return false;
+    for (int i=0; i < a.getSize(); ++i)
+        if (!TypeHelper<string>::isEqual(a[i],b[i]))
+            return false;
+    return true;
+}
+string AbstractProperty::TypeHelper< OpenSim::Array<string> >::
+formatForDisplay(const OpenSim::Array<string>& a) {
+	string str = "(";
+	for(int i=0; i < a.getSize(); ++i) {
+        if (i>0) str += " ";
+        str += TypeHelper<string>::formatForDisplay(a[i]);
+    }
+	str += ")";
+	return str;
 }

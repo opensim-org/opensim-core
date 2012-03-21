@@ -171,11 +171,6 @@ namespace OpenSim {
 		//=============================================================================
 	};
 
-    template<> struct PropertyTypeName<rdSerializableObject3> 
-    {   static const char* name() {return "rdSerializableObject3";} };
-	template <> inline AbstractProperty::PropertyType 
-    Property2<rdSerializableObject3>::getPropertyType() const { return Obj; }
-
 }; //namespace
 
 //=============================================================================

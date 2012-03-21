@@ -52,8 +52,8 @@ int main()
 		// performance with multiple muscles and wrapping in upper-exremity
 		simulateModelWithMuscles("TestShoulderModel.osim", 0.1);
 	}
-	catch (const Exception& e) {
-        e.print(cerr);
+	catch (const std::exception& e) {
+        std::cerr << "Exception: " << e.what() << std::endl;
         return 1;
     }
     cout << "Done" << endl;

@@ -180,10 +180,14 @@ namespace OpenSim {
 			SimTK::Transform xform;
 			xform.updP() = SimTK::Vec3(3., 2., 1.);
 			xform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(2, 1, 0.5));
-			PropertyTransform* transformP=new PropertyTransform("MyTransformProperty", xform);
+			PropertyTransform* transformP =
+                new PropertyTransform("MyTransformProperty", xform);
+            transformP->setComment("Comment on deprecated Transform");
 			_propertySet.append(transformP);
 			
-			PropertyDblVec3* propPoint = new PropertyDblVec3("Test_DblVec3",SimTK::Vec3(3., 5., 7.));
+            // Vec3
+			PropertyDblVec3* propPoint = 
+                new PropertyDblVec3("Test_DblVec3",SimTK::Vec3(3., 5., 7.));
 			propPoint->setComment("Point at 3,5,7");
 			_propertySet.append(propPoint);
 
@@ -268,7 +272,16 @@ namespace OpenSim {
 			addProperty< ArrayPtrs<Object> >("Test_ObjArray_2",
 				"Comment on Object Array",
 				arrayObj2);
-			
+
+			// Transform
+			SimTK::Transform xform2;
+			xform2.updP() = SimTK::Vec3(3., 2., 1.);
+			xform2.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(2, 1, 0.5));
+            addProperty<SimTK::Transform>("MyTransformProperty",
+                "Comment on Transform",
+                xform2);
+
+            // Vec3
 			addProperty<SimTK::Vec3>("Test_DblVec3_2",
 				"Point at 3,5,7",
 				SimTK::Vec3(3., 5., 7.));

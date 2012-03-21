@@ -140,13 +140,6 @@ public:
 #endif
 };
 
-template<> struct PropertyTypeName<HuntCrossleyForce::ContactParametersSet> 
-{   static const char* name() {return "ContactParametersSet";} };
-
-template <> inline AbstractProperty::PropertyType 
-Property2<HuntCrossleyForce::ContactParametersSet>::getPropertyType() const 
-{   return Obj; }
-
 } // end of namespace OpenSim
 
 #endif // __HuntCrossleyForce_h__
