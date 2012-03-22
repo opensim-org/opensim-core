@@ -764,7 +764,7 @@ class BezierData {
         SimTK::Matrix _mY;
         /**An n element array containing the approximate spline fits of the
         inverse function of x(u), namely u(x)*/
-        SimTK::Array_<SimTK::Spline_<double>> _aArraySplineUX;
+        SimTK::Array_< SimTK::Spline_<double> > _aArraySplineUX;
         /**The initial value of the integral*/
         double _initalValue;
         /**The tolerance to use when computing u. Solving u(x) can only be done
