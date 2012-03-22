@@ -128,7 +128,7 @@ double MuscleCurveFunction::calcValue(const SimTK::Vector& ax) const
         "MuscleCurveFunction::calcValue",
         "%s: Argument x must have only 1 element, as this function is "
         "designed only for 1D functions, but a function with %i elements was"
-        "entered",_name,ax.nelt());
+        "entered",_name.c_str(),ax.nelt());
 
     double yVal = 0;
     if(ax(0) >= _x0 && ax(0) <= _x1 )
@@ -159,19 +159,19 @@ double MuscleCurveFunction::
         "%s: derivComponents can only be populated with 0's because "
         "MuscleCurveFunction is only valid for a 1D function, but "
         "derivComponents had a value of %i in it",
-        _name, derivComponents[i]);
+        _name.c_str(), derivComponents[i]);
     }
     SimTK_ERRCHK2_ALWAYS( derivComponents.size() <= 6,
         "MuscleCurveFunction::calcDerivative",
         "%s: calcDerivative is only valid up to a 6th order derivative"
         " but derivComponents had a size of %i",
-        _name, derivComponents.size());
+        _name.c_str(), derivComponents.size());
 
     SimTK_ERRCHK2_ALWAYS( ax.nelt() == 1,
         "MuscleCurveFunction::calcValue",
         "%s: Argument x must have only 1 element, as this function is "
         "designed only for 1D functions, but ax had a size of %i",
-        _name, ax.nelt());
+        _name.c_str(), ax.nelt());
 
 
     double yVal = 0;
@@ -221,7 +221,7 @@ double MuscleCurveFunction::calcIntegral(double x) const
     SimTK_ERRCHK1_ALWAYS(_computeIntegral,
         "MuscleCurveFunction::calcIntegral",
         "%s: This curve was not constructed with its integral because"
-        "computeIntegral was false",_name);
+        "computeIntegral was false",_name.c_str());
 
 
     double yVal = 0;    
