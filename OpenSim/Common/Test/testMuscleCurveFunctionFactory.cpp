@@ -117,6 +117,8 @@ void printMatrixToFile( const SimTK::Matrix& data, string filename)
 */
 SimTK::Vector calcCentralDifference(SimTK::Vector x, SimTK::Vector y, 
                                                bool extrap_endpoints){
+ 
+
 	SimTK::Vector dy(x.size());
 	double dx1,dx2;
 	double dy1,dy2;
@@ -139,6 +141,112 @@ SimTK::Vector calcCentralDifference(SimTK::Vector x, SimTK::Vector y,
 		dy(size-1) = dy(size-2) + (dy2/dx2)*(x(size-1)-x(size-2));
 	}
 	return dy;
+}
+
+/**
+    This function computes a standard central difference dy/dx at each point in
+    a vector x, for a MuscleCurveFunction mcf, to a desired tolerance. This 
+    function will take the best step size at each point to minimize the 
+    error caused by taking a numerical derivative, and the error caused by
+    numerical rounding error:
+
+    For a step size of h/2 to the left and to the right of the point of 
+    interest the error is
+    error = 1/4*h^2*c3 + r*f(x)/h,                  (1)
+         
+    Where c3 is the coefficient of the 3rd order Taylor series expansion
+    about point x. Thus c3 can be computed if the order + 2 derivative is
+    known
+        
+        c3 = (d^3f(x)/dx^3)/(6)                        (2)
+        
+    And r*f(x)/h is the rounding error that occurs due to the central 
+    difference.
+
+    Taking a first derivative of 1 and solving for h yields
+
+    h = (r*f(x)*2/c3)^(1/3)
+
+    Where r is SimTK::Eps
+
+     @param x domain vector
+     @param mcf the MuscleCurveFunction of interest
+     @param order the order of the numerical derivative
+     @param tolerance desired tolerance on the returned result
+     @returns dy/dx computed using central differences
+*/
+SimTK::Vector calcCentralDifference(SimTK::Vector x, MuscleCurveFunction& mcf 
+                                                   ,double tol, int order){
+ 
+
+	SimTK::Vector dyV(x.size());
+ 
+    double y = 0;
+    double dy = 0;
+    double dyNUM = 0;
+    double err= 0;
+    double h = 0;
+    double xL = 0;
+    double xR = 0;
+
+    double c3 = 0;
+    double fL = 0;
+    double fR = 0;
+    double rootEPS = sqrt(SimTK::Eps);
+
+    double y_C3min = 1e-10;
+    double y_C3max = 1e1;
+
+    for(int i=0; i< x.size(); i++){
+        
+        c3 = abs(mcf.calcDerivative(x(i),order+2));
+
+        //singularity prevention
+        if(abs(c3) < y_C3min)
+            c3 = y_C3min;
+        //Compute h
+        y  = abs(mcf.calcDerivative(x(i), order-1));
+        //preventing 0 from being assigned to y
+        if(y < y_C3min)
+            y = y_C3min;
+
+        //Dumb check
+        if(y/c3 < y_C3min){
+            c3 = 1;
+            y = y_C3min;
+        }
+        if(y/c3 > y_C3max){
+            c3 = 1;
+            y = y_C3max;
+        }
+
+        h  = pow( ( (SimTK::Eps*y*2.0)/(c3) ) , 1.0/3.0);
+       
+        //Now check that h to the left and right are at least similar
+        //If not, take the smallest one.
+        xL = x(i)-h/2;
+        xR = x(i)+h/2;
+
+        fL = mcf.calcDerivative(xL, order-1);
+        fR = mcf.calcDerivative(xR, order-1);
+
+        //Just for convenience checking ...
+        dyNUM = (fR-fL)/h;
+        dy    = mcf.calcDerivative(x(i),order);
+        err   = abs(dy-dyNUM);
+
+        /*if(err > tol && abs(dy) > rootEPS && order <= 2){
+            err = err/abs(dy);
+            if(err > tol)
+                cout << "rel tol exceeded" << endl;           
+        }*/
+
+        dyV(i) = dyNUM;
+
+    }
+
+
+	return dyV;
 }
 
 /**
@@ -595,95 +703,107 @@ void samplePrintExtrapolatedFunction(const SimTK::Function_<double>& fcn,
 
 */
 void testMuscleCurveDerivatives(MuscleCurveFunction mcf,SimTK::Matrix mcfSample,
-                                double relTol)
+                                double tol)
 {
     cout << "   TEST: Derivative correctness " << endl;
+    int maxDer = mcf.getMaxDerivativeOrder() - 2;
+   
+    SimTK::Matrix numSample(mcfSample.nrow(),maxDer);  
+    SimTK::Matrix relError(mcfSample.nrow(),maxDer);
+    double bigTol = sqrt(SimTK::Eps);
 
-    //Get a matrix of just the derivatives
-    SimTK::Matrix mcfDerivative(mcfSample.nrow(), mcf.getMaxDerivativeOrder());
-    for(int i=0; i < mcf.getMaxDerivativeOrder(); i++){
-        mcfDerivative(i) = mcfSample(i+2); //+2 because the first two columns are
-                                           // x and y.
-    }
+    for(int i=0; i < maxDer; i++){
+        //Compute the relative error
+        numSample(i)=calcCentralDifference(mcfSample(0),mcf,tol,i+1);
 
-    //Compute the width between each of the samples, because the width
-    //of this sample dictates how accurate the numerical derivative is
-    SimTK::Vector xWidth(mcfSample.nrow());
-    double xWidthMax = 0;
-    for(int i=0; i<mcfSample.nrow()-1; i++){
-        xWidth(i) = mcfSample(i+1,0)-mcfSample(i,0);
-        if(xWidth(i) > xWidthMax){
-            xWidthMax = xWidth(i);
-        }
+        relError(i)= abs(mcfSample(i+2)-numSample(i));  
 
-    }
-    xWidth(mcfSample.nrow()-1) = xWidth(mcfSample.nrow()-2);
-
-    //1. Derivative error test
-    //Scan through the error vector to determine if the errors are acceptable
-    double tol = 0;
-
-    SimTK::Matrix numSample(mcfSample.nrow(),mcf.getMaxDerivativeOrder());  
-    SimTK::Matrix numError(mcfSample.nrow(),mcf.getMaxDerivativeOrder());
-
-    for(int i=0; i < mcf.getMaxDerivativeOrder(); i++){
-        //Numerical error in a central difference increases with the 
-        //square of h. 
-        //http://en.wikipedia.org/wiki/Finite_difference
-
-        //tol  = xWidthMax*xWidthMax*scaleWidthSquaredTolerance; 
-        numSample(i)=calcCentralDifference(mcfSample(0),mcfSample(i+1),true);
-
-        //Calculate the relative error
-        numError(i)=(mcfSample(i+2)-numSample(i));
-        numError(i) = numError(i).elementwiseDivide( 
-                                    (mcfSample(i+2)) );
-        numError(i) = abs(numError(i));
-
-        //Remove the divide by zeros
-        for(int j=0; j<mcfSample.nrow(); j++){
-            if(abs(mcfSample(j,i+2)) < SimTK::Eps*100){
-                numError(j,i) = 0;
+        //compute a relative error where possible
+        for(int j=0; j < relError.nrow(); j++){
+            if(abs(mcfSample(j,i+2)) > tol){
+                relError(j,i) = relError(j,i)/mcfSample(j,i+2);
             }
         }
+
     }
 
-    //double relTol = 0.05;
-    int relTolExceeded = 0;
-    for(int j=0;j<6;j++){
+
+
+    // <<"relError "<<endl;
+    //cout << relError << endl;
+
+    SimTK::Vector errRelMax(6);
+    errRelMax = 0;
+    SimTK::Vector errAbsMax(6);
+    errAbsMax = 0;
+    double absTol = 5*tol;
+
+    int tolExceeded12 = 0;
+    int tolExceeded34 = 0;
+    for(int j=0;j<maxDer;j++){
         for(int i=0; i<mcfSample.nrow(); i++){
-            if(numError(i,j) > relTol){
-                relTolExceeded++;
+            if(relError(i,j) > tol && mcfSample(i,j+2) > tol){
+                if(j <= 1)
+                    tolExceeded12++;
+                if(j>=2)
+                    tolExceeded34++;                
             }
+            if(mcfSample(i,j+2) > tol)
+            if(errRelMax(j) < abs(relError(i,j)))
+                    errRelMax(j) = abs(relError(i,j));
+
+            //This is a harder test: here we're comparing absolute error
+            //so the tolerance margin is a little higher
+            if(relError(i,j) > absTol && mcfSample(i,j+2) <= tol){
+                if(j <= 1)
+                    tolExceeded12++;
+                if(j>=2)
+                    tolExceeded34++;                           
+            }
+
+            if(mcfSample(i,j+2) < tol)
+            if(errAbsMax(j) < abs(relError(i,j)))
+                    errAbsMax(j) = abs(relError(i,j));
+            
         }
     }
     
-    /*
-    The relative tolerance gets exceeded occasionally in locations of
-    rapid change in the curve - particularly near the transition between the
-    linear extrapolation and the curve. Provided there are only a few locations
-    where the relative tolerance of 5% is broken, the curves should be
-    regarded as being good. 
-    
-    The numerical derivatives at the point of transition between the linear 
-    extrapolation and the curve will all be inaccurate, so we can afford to 
-    ignore 2*mcf.getMaxDerivativeOrder() points. The additional 10 errors 
-    are left to accomodate locations where the slope is changing rapidly ---
-    locations where the numerical derivative will be inaccurate
-    */
+    if(tolExceeded12 > 0){
+        cout << "XrelError" << endl;
+        SimTK::Matrix XrelError(relError.nrow(), 1+6);
+        XrelError(0) = mcfSample(0);
+        //1st derivative error, value, and numerical value
+        XrelError(1) = relError(0);
+        XrelError(2) = mcfSample(2);
+        XrelError(3) = numSample(0);
+        //2nd derivative error, value, and numerical value
+        XrelError(4) = relError(1);
+        XrelError(5) = mcfSample(3);
+        XrelError(6) = numSample(1);
+        cout << XrelError << endl;
+    }
 
-    int limit = 2*mcf.getMaxDerivativeOrder() + 50;
-    SimTK_TEST(relTolExceeded < limit);
+
+
+    SimTK_TEST(tolExceeded12 == 0);
 
      //   printMatrixToFile(mcfSample,"analyticDerivatives.csv");
      //   printMatrixToFile(numSample,"numericDerivatives.csv");
      //   printMatrixToFile(numError,"numAnalyticError.csv");
      //   cout << "Matricies Printed" << endl;
 
-  printf("   passed: relative tolerance of %f exceeded %i < %i times\n"
-            "      across all %i derivatives, with %i samples each\n",
-            relTol, relTolExceeded, limit, mcf.getMaxDerivativeOrder()
-            ,mcfSample.nrow());
+  printf("   passed: A tolerance of %fe-3 reached with a maximum relative error\n"
+         "           of %fe-3 and %fe-3 for the first two derivatives\n"
+         "           at points where it is possible to compute the relative\n"
+         "           error.                                                \n\n"
+         "           At points where the relative error couldn't be computed,\n"
+         "           due to divide by 0, the first two derivatives met an \n"
+         "           absolute tolerance of %fe-3, with a maximum value of \n"
+         "           %fe-3 and %fe-3. \n\n"
+         "           Derivatives of order 3 through %i exceeded the \n"
+         "           relative or absolute tolerance (as appropriate) %i times.\n",
+            tol*1e3, errRelMax(0)*1e3, errRelMax(1)*1e3, absTol*1e3,
+            errAbsMax(0)*1e3, errAbsMax(1)*1e3, maxDer, tolExceeded34);
      cout << endl;
 
     
@@ -864,6 +984,7 @@ int main(int argc, char* argv[])
         //   function that created it
 
             string filePath = "";
+            double tolDX = 1e-3;
             double tolBig = 1e-6;
             double tolSmall = 1e-12;
         ///////////////////////////////////////
@@ -896,7 +1017,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(tendonCurve,tendonCurveSample,0.05);
+            testMuscleCurveDerivatives(tendonCurve,tendonCurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(tendonCurve, tendonCurveSample);
@@ -939,7 +1060,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(fiberFLCurve,fiberFLCurveSample,0.05);
+            testMuscleCurveDerivatives(fiberFLCurve,fiberFLCurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(fiberFLCurve,fiberFLCurveSample);
@@ -984,7 +1105,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(fiberCECurve,fiberCECurveSample,0.05);
+            testMuscleCurveDerivatives(fiberCECurve,fiberCECurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(fiberCECurve,fiberCECurveSample);
@@ -1024,7 +1145,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(fiberCEPhiCurve,fiberCEPhiCurveSample,0.05);
+            testMuscleCurveDerivatives(fiberCEPhiCurve,fiberCEPhiCurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(fiberCEPhiCurve,fiberCEPhiCurveSample);
@@ -1064,7 +1185,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(fiberCECosPhiCurve,fiberCECosPhiCurveSample,0.05);
+            testMuscleCurveDerivatives(fiberCECosPhiCurve,fiberCECosPhiCurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(fiberCECosPhiCurve,fiberCECosPhiCurveSample);
@@ -1114,7 +1235,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(fiberFVCurve,fiberFVCurveSample,0.05);
+            testMuscleCurveDerivatives(fiberFVCurve,fiberFVCurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(fiberFVCurve,fiberFVCurveSample);
@@ -1158,7 +1279,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(fiberFVInvCurve,fiberFVInvCurveSample,0.05);
+            testMuscleCurveDerivatives(fiberFVInvCurve,fiberFVInvCurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(fiberFVInvCurve,fiberFVInvCurveSample);
@@ -1192,6 +1313,10 @@ int main(int argc, char* argv[])
         ///////////////////////////////////////
         //FIBER ACTIVE FORCE-LENGTH CURVE
         ///////////////////////////////////////
+            cout << endl;
+            cout << endl;
+            cout <<"**************************************************"<<endl;
+            cout <<"FIBER ACTIVE FORCE LENGTH CURVE TESTING        "<<endl;
             double lce0 = 0.5;
             double lce1 = 0.75;
             double lce2 = 1;
@@ -1233,7 +1358,7 @@ int main(int argc, char* argv[])
             cout << endl;
         //1. Test each derivative sample for correctness against a numerically
         //   computed version
-            testMuscleCurveDerivatives(fiberfalCurve,fiberfalCurveSample,0.05);
+            testMuscleCurveDerivatives(fiberfalCurve,fiberfalCurveSample,tolDX);
 
         //2. Test each integral, where computed for correctness.
             testMuscleCurveIntegral(fiberfalCurve,fiberfalCurveSample);

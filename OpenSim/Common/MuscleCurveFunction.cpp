@@ -288,7 +288,7 @@ SimTK::Vec2 MuscleCurveFunction::getCurveDomain() const
 // Utility functions
 ///////////////////////////////////////////////////////////////////////////////
 SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve() const{
-    int pts = 10; //Number of points between each of the spline points used
+    int pts = 1; //Number of points between each of the spline points used
                   //to fit u(x), and also the integral spline
 
     double x0,x1,delta;
@@ -322,14 +322,14 @@ SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve() const{
         }         
 
         
-    SimTK::Vector xsmpl(pts*(midX.nelt()-1)+2*pts);
+    SimTK::Vector xsmpl(pts*(midX.nelt()-1)+2*10*pts);
     
     SimTK::Matrix results;
 
     if(_computeIntegral){
-        results.resize(pts*(midX.nelt()-1)+2*pts,9);
+        results.resize(pts*(midX.nelt()-1)+2*10*pts,9);
     }else{
-        results.resize(pts*(midX.nelt()-1)+2*pts,8);
+        results.resize(pts*(midX.nelt()-1)+2*10*pts,8);
     }
     //Array initialization is so ugly ...
     SimTK::Array_<int> d1y(1),d2y(2),d3y(3),d4y(4),d5y(5),d6y(6);
@@ -349,12 +349,13 @@ SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve() const{
     idx=0;
     x0 = _x0 - 0.1*(_x1-_x0);
     x1 = _x0;
-    delta = (x1-x0)/pts;
+    delta = 0.1*(x1-x0)/pts;
 
-    for(int j=0;j<pts;j++){
+    for(int j=0;j<pts*10;j++){
         xsmpl(idx) = x0 + delta*j;
         idx++;
     }
+
 
     //generate some points in the mid region
     for(int i=0; i< midX.nelt()-1;i++){  
@@ -370,9 +371,9 @@ SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve() const{
     //generate some points in the extrapolated region
     x0 = _x1;
     x1 = _x1 + 0.1*(_x1-_x0);
-    delta = (x1-x0)/pts;
+    delta = 0.1*(x1-x0)/pts;
 
-    for(int j=0;j<pts;j++){
+    for(int j=0;j<pts*10;j++){
         xsmpl(idx) = x0 + delta*j;
         idx++;
     }
