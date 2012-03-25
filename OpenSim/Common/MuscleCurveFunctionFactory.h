@@ -34,10 +34,6 @@
 #include <fstream>
 #include <cmath>
 
-
-using namespace SimTK;
-using namespace std;
-
 namespace OpenSim {
 
 /**
@@ -156,7 +152,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction createFiberActiveForceLengthCurve(
             double lce0, double lce1, double lce2, double lce3, 
             double shoulderVal, double plateauSlope, double curviness,
-            const bool computeIntegral, const string mclName);   
+            const bool computeIntegral, const std::string mclName);   
 
         /**
         This function will generate a C2 continous (continuous to the second 
@@ -256,7 +252,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction createFiberForceVelocityCurve(
             double fmaxE, double dydxC, double dydxIso, double dydxE, 
             double concCurviness, double eccCurviness,
-            const bool computeIntegral, const string mclName);
+            const bool computeIntegral, const std::string mclName);
 
         /**
         This function will generate a C2 continuous (continuous to the 2nd
@@ -275,7 +271,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction createFiberForceVelocityInverseCurve(
             double fmaxE, double dydxC, double dydxIso, double dydxE, 
             double concCurviness, double eccCurviness, 
-            const bool computeIntegral, const string mclName);
+            const bool computeIntegral, const std::string mclName);
 
         /**
         This element will generate a C2 continuous (continuous to the 2nd
@@ -336,7 +332,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction 
             createFiberCompressiveForcePennationCurve(
                 double phi0, double kiso, double curviness, 
-                const bool computeIntegral, const string mclName);
+                const bool computeIntegral, const std::string mclName);
 
         /**
         This element will generate a C2 continuous (continuous to the 2nd
@@ -405,7 +401,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction 
             createFiberCompressiveForceCosPennationCurve(
                 double cosPhi0, double kiso, double curviness, 
-                const bool computeIntegral, const string mclName);
+                const bool computeIntegral, const std::string mclName);
 
 
         /**
@@ -466,7 +462,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction 
             createFiberCompressiveForceLengthCurve(double l0, double kiso, 
-            double curviness, const bool computeIntegral, const string mclName);
+            double curviness, const bool computeIntegral, const std::string mclName);
 
          /**
         This function will generate a C2 continuous curve that fits a fiber's 
@@ -521,7 +517,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction createFiberForceLengthCurve(double e0, 
                         double kiso, double curviness,
-                        const bool computeIntegral, const string mclName);
+                        const bool computeIntegral, const std::string mclName);
 
         /**
         Will generate a C2 continous (continuous to the second derivative) 
@@ -581,7 +577,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction 
            createTendonForceLengthCurve(double e0,double kiso,double curviness,
-           const bool computeIntegral, const string mclname);
+           const bool computeIntegral, const std::string mclname);
 
     private:
         /**

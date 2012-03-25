@@ -29,7 +29,6 @@
 //=============================================================================
 using namespace SimTK;
 using namespace OpenSim;
-//using namespace OpenSim;
 using namespace std;
 
 static bool DEBUG=false;

@@ -25,15 +25,11 @@
 #include "osimCommonDLL.h"
 
 #include "Simbody.h"
-//#include "SimTKcommon/internal/SystemGuts.h"
 #include <cstdio>
 #include <iostream>
 #include <fstream>
-//#include <OpenSim\OpenSim.h>
 #include <cmath>
 
-using namespace SimTK;
-using namespace std;
 
 namespace OpenSim {
 
@@ -199,7 +195,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */
         static double calcU(double ax, const SimTK::Vector& bezierPtsX, 
             const SimTK::Spline& splineUX, double tol, int maxIter,
-            const string caller);
+            const std::string caller);
 
 
 
@@ -255,7 +251,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         */
         static int calcIndex(double x, const SimTK::Matrix& bezierPtsX,
-                                                  const string caller);
+                                                  const std::string caller);
 
 
         
@@ -324,7 +320,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         */
         static double calcQuinticBezierCurveVal(double u, 
-                                  const SimTK::Vector& pts,const string caller);
+                                  const SimTK::Vector& pts,const std::string caller);
 
         /**
         Calculates the value of a quintic Bezier derivative curve at value u. 
@@ -388,7 +384,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */
         static double calcQuinticBezierCurveDerivU(double u, 
                            const SimTK::Vector& pts,int order, 
-                           const string caller);
+                           const std::string caller);
 
         /**
         Calculates the value of dydx of a quintic Bezier curve derivative at u.
@@ -520,7 +516,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */        
         static double  calcQuinticBezierCurveDerivDYDX(double u,
               const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order,
-              const string caller);
+              const std::string caller);
 
         
         /**
@@ -574,7 +570,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */
         static SimTK::Matrix calcQuinticBezierCornerControlPoints(double x0, 
             double y0, double dydx0, double x1, double y1, double dydx1, 
-            double curviness, const string caller);
+            double curviness, const std::string caller);
 
         /**
         This function numerically integrates the Bezier curve y(x).
@@ -732,7 +728,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
             double ic0, double intAcc, double uTol, int uMaxIter,
             const SimTK::Matrix& mX, const SimTK::Matrix& mY,
             const SimTK::Array_<SimTK::Spline>& aSplineUX, 
-            bool flag_intLeftToRight,const string caller);
+            bool flag_intLeftToRight,const std::string caller);
 
 
    private:
@@ -749,11 +745,11 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         @param filename The name of the file to print
         */
         static void printMatrixToFile(const SimTK::Vector& col0, 
-                                    const SimTK::Matrix& data, string filename);
+                                    const SimTK::Matrix& data, std::string filename);
 
         static void printBezierSplineFitCurves(
             const SimTK::Function_<double>& curveFit,SimTK::Matrix& ctrlPts, 
-            SimTK::Vector& xVal, SimTK::Vector& yVal, string filename);        
+            SimTK::Vector& xVal, SimTK::Vector& yVal, std::string filename);        
 
         /**
         This function will return a value that is equal to u, except when u is

@@ -24,10 +24,7 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 
-//#include <OpenSim/OpenSim.h>
 #include "QuinticBezierCurveSet.h"
-
-using namespace std;
 
 namespace OpenSim { 
 
@@ -76,7 +73,7 @@ namespace OpenSim {
         to left (x1 to x0) is computed*/
         const bool _intx0x1;
         /**The name of the function**/
-        const string _name;
+        const std::string _name;
 
     public:
        //MuscleCurveFunction();
@@ -163,7 +160,7 @@ namespace OpenSim {
               */
        MuscleCurveFunction(const SimTK::Matrix& mX,const SimTK::Matrix& mY, 
           double x0, double x1,double y0, double y1,double dydx0, double dydx1,
-          const bool computeIntegral, const bool intx0x1, const string name);
+          const bool computeIntegral, const bool intx0x1, const std::string name);
 
        /**Calculates the value of the curve this object represents.
 
@@ -359,7 +356,7 @@ namespace OpenSim {
        time of construction and cannot be changed after construction.
 
        @return The string name this object was given during construction*/
-       string getName() const;
+       std::string getName() const;
 
        /**
        This function returns a SimTK::Vec2 that contains in its 0th element
@@ -443,7 +440,7 @@ namespace OpenSim {
        \endverbatim
 
        */
-       void printMuscleCurveToFile(string path) const;
+       void printMuscleCurveToFile(std::string path) const;
        
 ///@cond       
        /**
@@ -494,8 +491,8 @@ namespace OpenSim {
         @param path The desired path to the folder to write the file
         @param filename The name of the file to print
         */
-        static void printMatrixToFile(SimTK::Matrix& data,SimTK::Array_<string>,
-            string path, string filename);
+        static void printMatrixToFile(SimTK::Matrix& data,SimTK::Array_<std::string>,
+            std::string path, std::string filename);
 
         
 
