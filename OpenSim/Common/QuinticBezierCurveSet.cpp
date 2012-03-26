@@ -46,7 +46,7 @@ static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
 */
 void QuinticBezierCurveSet::
     printMatrixToFile(const SimTK::Vector& col0, 
-    const SimTK::Matrix& data, string filename)
+    const SimTK::Matrix& data, std::string& filename)
 {
 	
     ofstream datafile;
@@ -67,9 +67,9 @@ void QuinticBezierCurveSet::
 void QuinticBezierCurveSet::
     printBezierSplineFitCurves(const SimTK::Function_<double>& curveFit, 
     SimTK::Matrix& ctrlPts, SimTK::Vector& xVal, SimTK::Vector& yVal, 
-    string filename)
+    std::string& filename)
 {
-        string caller = "printBezierSplineFitCurves";
+        std::string caller = "printBezierSplineFitCurves";
         int nbezier =  int(ctrlPts.ncol()/2.0);
         int rows = NUM_SAMPLE_PTS*nbezier - (nbezier-1);
 
@@ -131,10 +131,15 @@ void QuinticBezierCurveSet::
 //=============================================================================
 // Bezier Corner Element Fitting Function
 //=============================================================================
+
+/*Detailed Computational Costs
+        Divisions   Multiplication  Additions   Assignments
+        1           13              9              23
+*/
 SimTK::Matrix QuinticBezierCurveSet::
     calcQuinticBezierCornerControlPoints(double x0, double y0, double dydx0, 
                            double x1, double y1, double dydx1, double curviness,
-                           const string caller)
+                           const std::string& caller)
 {
     SimTK::Matrix xyPts(6,2); 
 
@@ -144,7 +149,7 @@ SimTK::Matrix QuinticBezierCurveSet::
         "Called by %s", caller.c_str());
 
     //(abs(dydx0-dydx1) <= (double)SimTK::Eps)
-    SimTK_ERRCHK1_ALWAYS( !(abs(dydx0-dydx1) <= (double)SimTK::Eps) , 
+    SimTK_ERRCHK1_ALWAYS( !(abs(dydx0-dydx1) < 0) , 
         "QuinticBezierCurveSet::calcQuinticBezierCornerControlPoints", 
         "Error: dydx0 and dydx1 must have different values."
         "Called by %s", caller.c_str());
@@ -153,9 +158,17 @@ SimTK::Matrix QuinticBezierCurveSet::
     // (x-x0)*dydx0 + y0 = (x-x1)*dydx1 + y1
     //   x*(dydx0-dydx1) = y1-y0-x1*dydx1+x0*dydx0
     //                 x = (y1-y0-x1*dydx1+x0*dydx0)/(dydx0-dydx1);
-    double xC = (y1-y0-x1*dydx1+x0*dydx0)/(dydx0-dydx1);
-    double yC = (xC-x1)*dydx1 + y1;
 
+    double xC = 0;
+    double yC = 0;
+    double rootEPS = sqrt(SimTK::Eps);
+    if(abs(dydx0-dydx1) > rootEPS){
+        xC = (y1-y0-x1*dydx1+x0*dydx0)/(dydx0-dydx1);    
+    }else{
+        xC = (x1+x0)/2;
+    }
+
+    yC = (xC-x1)*dydx1 + y1;
     //Check to make sure that the inputs are consistent with a corner, and will
     //not produce an 's' shaped section. To check this we compute the sides of
     //a triangle that is formed by the two points that the user entered, and 
@@ -208,9 +221,14 @@ SimTK::Matrix QuinticBezierCurveSet::
 //=============================================================================
 // BASIC QUINTIC BEZIER EVALUATION FUNCTIONS
 //=============================================================================
+
+/* 
+Multiplications     Additions   Assignments
+21                  20          13
+*/
 double  QuinticBezierCurveSet::
     calcQuinticBezierCurveVal(double u, const SimTK::Vector& pts, 
-                                                           const string caller)
+                                                   const std::string& caller)
 {
     double val = -1;
 
@@ -261,9 +279,80 @@ double  QuinticBezierCurveSet::
     return val;
 }
 
+/*
+Detailed Computational Costs
+        dy/dx       Divisions   Multiplications Additions   Assignments
+            dy/du               20              19          11
+            dx/du               20              19          11
+            dy/dx   1        
+            total   1           40              38          22
+
+        d2y/dx2     Divisions   Multiplications Additions   Assignments
+            dy/du               20              19          11
+            dx/du               20              19          11
+            d2y/du2             17              17          9
+            d2x/du2             17              17          9
+            d2y/dx2 2           4               1           3    
+            total   2           78              73          23
+
+        d3y/dx3     Divisions   Multiplications Additions   Assignments
+            dy/du               20              19          11
+            dx/du               20              19          11
+            d2y/du2             17              17          9
+            d2x/du2             17              17          9
+            d3y/du3             14              14          6
+            d3x/du3             14              14          6
+
+            d3y/dx3 4           16              5           6
+            total   4           118             105         58
+
+        d4y/dx4     Divisions   Multiplications Additions   Assignments
+            dy/du               20              19          11
+            dx/du               20              19          11
+            d2y/du2             17              17          9
+            d2x/du2             17              17          9
+            d3y/du3             14              14          6
+            d3x/du3             14              14          6
+            d4y/du4             11              11          3
+            d4x/du4             11              11          3
+
+            d4y/dx4 5           44              15          13
+            total   5           168             137         71
+
+        d5y/dx5     Divisions   Multiplications Additions   Assignments
+            dy/du               20              19          11
+            dx/du               20              19          11
+            d2y/du2             17              17          9
+            d2x/du2             17              17          9
+            d3y/du3             14              14          6
+            d3x/du3             14              14          6
+            d4y/du4             11              11          3
+            d4x/du4             11              11          3
+            d5y/du5             6               6           1
+            d5x/du5             6               6           1 
+
+            d5y/dx5 7           100             36          28
+            total   7           236             170         88  
+
+        d6y/dx6
+            dy/du               20              19          11
+            dx/du               20              19          11
+            d2y/du2             17              17          9
+            d2x/du2             17              17          9
+            d3y/du3             14              14          6
+            d3x/du3             14              14          6
+            d4y/du4             11              11          3
+            d4x/du4             11              11          3
+            d5y/du5             6               6           1
+            d5x/du5             6               6           1 
+
+            d6y/dx6 9           198             75          46
+            total   9           334             209         106
+
+*/
 double QuinticBezierCurveSet::calcQuinticBezierCurveDerivDYDX(double u,
                 const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order,
-                const string caller)
+                const std::string& caller)
 {
     double val = SimTK::NaN;
    
@@ -292,7 +381,7 @@ double QuinticBezierCurveSet::calcQuinticBezierCurveDerivDYDX(double u,
         "Error: order must be less than, or equal to 6.  Called by %s", 
         caller.c_str());
 
-    string localCaller = caller;
+    std::string localCaller = caller;
     localCaller.append(".calcQuinticBezierCurveDerivDYDX");
     //Compute the derivative d^n y/ dx^n
      switch(order){
@@ -536,8 +625,15 @@ double QuinticBezierCurveSet::calcQuinticBezierCurveDerivDYDX(double u,
      return val;
 }
 
+/* Computational Cost Details
+        Divisions   Multiplications Additions   Assignments
+dx/du               20              19          11
+d2x/du2             17              17          9
+d3y/du3             14              14          6
+
+*/
 double QuinticBezierCurveSet::calcQuinticBezierCurveDerivU(double u,
-                     const SimTK::Vector& pts,int order, const string caller)
+                 const SimTK::Vector& pts,int order, const std::string& caller)
 {
     double val = -1;
 
@@ -664,10 +760,30 @@ double QuinticBezierCurveSet::clampU(double u){
     return uC;
 }
 
+/*Detailed Computational Costs
+                Comparisons     Div     Mult     Additions   Assignments
+    splineGuess log(n,2)                2        3           1
+    (n currently set to 100)
+
+    Newton Iter
+        f                               21       20          13 
+        df                              20       19          11
+        update  4               1                3           6    
+        total   4               1       41       42          30
+    \endverbatim
+
+    To evaluate u to SimTK::Eps*100 this typically involves 2 Newton 
+    iterations, yielding a total cost of
+
+    \verbatim
+                Comparisons     Div     Mult    Additions   Assignments
+    eval U      7+8=15          2       82      42          60
+*/
 double QuinticBezierCurveSet::calcU(double ax, const SimTK::Vector& bezierPtsX, 
-    const SimTK::Spline& splineUX, double tol, int maxIter, const string caller)
+                                 const SimTK::Spline& splineUX, double tol, 
+                                 int maxIter, const std::string& caller)
 {
-    string name = caller;
+    std::string name = caller;
     name.append(".calcU");
 
     SimTK::Vector xV(1);
@@ -714,9 +830,16 @@ double QuinticBezierCurveSet::calcU(double ax, const SimTK::Vector& bezierPtsX,
     //Return the value
     return u;
 }
+/*
 
+Cost: n comparisons, for a quintic Bezier curve with n-spline sections
+
+                Comp    Div     Mult        Add      Assignments
+Cost            3*n+2                       1*n      3                         
+        
+*/
 int QuinticBezierCurveSet::calcIndex(double x, const SimTK::Matrix& bezierPtsX,
-    const string caller)
+    const std::string& caller)
 {
     int idx = 0;
     bool flag_found = false;
@@ -785,7 +908,7 @@ class BezierData {
 
         /**The name of the curve being intergrated. This is used to generate
         useful error messages when something fails*/
-        string _name;
+        std::string _name;
 };
 ///@endcond
 
@@ -873,6 +996,37 @@ public:
 
 ///@endcond
 
+/*
+            Comp        Div     Mult    Additions   Assignments
+calcIdx     3*3+2=11                    1*3=3       3
+calcU       15          2       82      42          60
+calcQuinticBezierCurveVal
+                                21      20          13
+Total       26          2       103     65          76
+\endverbatim
+
+Ignoring the costs associated with the integrator itself, and assuming
+that the integrator evaluates the function 6 times per integrated point,
+the cost of evaluating the integral at each point in vX is:
+
+\verbatim
+                Comp        Div     Mult    Additions      Assignments
+RK45 on 1pt  6*(26          2       103      65              76)
+Total           156         12      618      390            456
+\endverbatim
+
+Typically the integral is evaluated 100 times per section in order to 
+build an accurate spline-fit of the integrated function. Once again,
+ignoring the overhead of the integrator, the function evaluations alone
+for the current example would be
+
+\verbatim
+RK45 on 100pts per section, over 3 sections
+            Comp        Div     Mult        Additions      Assignments        
+        3*100*(156         12      618         390            456
+Total       46,800      3600    185,400     117,000        136,000
+
+*/
 SimTK::Matrix QuinticBezierCurveSet::calcNumIntBezierYfcnX(
                             const SimTK::Vector& vX, 
                             double ic0, double intAcc, 
@@ -880,7 +1034,7 @@ SimTK::Matrix QuinticBezierCurveSet::calcNumIntBezierYfcnX(
                             const SimTK::Matrix& mX, const SimTK::Matrix& mY,
                             const SimTK::Array_<SimTK::Spline>& aSplineUX,
                             bool flag_intLeftToRight,
-                            const string caller)
+                            const std::string& caller)
 {
     SimTK::Matrix intXY(vX.nelt(),2);
     BezierData bdata;

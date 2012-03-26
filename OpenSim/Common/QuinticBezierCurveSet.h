@@ -113,6 +113,20 @@ the code produced using this means is reasonably fast, it is usally possible
 to obtain superiour performance (and sometimes less round off error) by 
 doing this work by hand.
 
+<B>Computational Cost Details</B>
+All computational costs assume the following operation costs:
+
+\verbatim
+Operation Type   : #flops
++,-,=,Boolean Op : 1 
+               / : 10
+             sqrt: 20
+             trig: 40
+\endverbatim
+
+These relative weightings will vary processor to processor, and so any of 
+the quoted computational costs are approximate.
+
 */
 class OSIMCOMMON_API QuinticBezierCurveSet
 //class QuinticBezierCurveSet
@@ -139,28 +153,8 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         
         <B>Computational Costs</B>
         \verbatim
-        Cost
-                    Comparisons     Div     Mult     Additions   Assignments
-        splineGuess log(n,2)                2        3           1
-        (n currently set to 100)
-
-        Newton Iter
-            f                               21       20          13 
-            df                              20       19          11
-            update  4               1                3           6    
-            total   4               1       41       42          30
+            ~219 flops
         \endverbatim
-
-        To evaluate u to SimTK::Eps*100 this typically involves 2 Newton 
-        iterations, yielding a total cost of
-
-        \verbatim
-                    Comparisons     Div     Mult    Additions   Assignments
-        eval U      7+8=15          2       82      42          60
-        \endverbatim
-
-
-
 
         <B>Example:</B>
         @code
@@ -195,7 +189,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */
         static double calcU(double ax, const SimTK::Vector& bezierPtsX, 
             const SimTK::Spline& splineUX, double tol, int maxIter,
-            const std::string caller);
+            const std::string& caller);
 
 
 
@@ -214,15 +208,12 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         it simply scans through the Bezier curve sets until it finds the correct
         one. 
 
+      
         <B>Computational Costs</B>
+        Quoted for a Bezier curve set containing 1 to 5 curves.
         \verbatim
-        Cost: n comparisons, for a quintic Bezier curve with n-spline sections
-
-                        Comp    Div     Mult        Add      Assignments
-        Cost            3*n+2                       1*n      3                         
+            ~9-25
         \endverbatim
-
-
 
         <B>Example:</B>
         @code
@@ -251,7 +242,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         */
         static int calcIndex(double x, const SimTK::Matrix& bezierPtsX,
-                                                  const std::string caller);
+                                                  const std::string& caller);
 
 
         
@@ -275,8 +266,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         <B>Computational Costs</B>
         \verbatim
-        Multiplications     Additions   Assignments
-        21                  20          13
+         ~54 flops
         \endverbatim
 
 
@@ -320,7 +310,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         */
         static double calcQuinticBezierCurveVal(double u, 
-                                  const SimTK::Vector& pts,const std::string caller);
+                             const SimTK::Vector& pts,const std::string& caller);
 
         /**
         Calculates the value of a quintic Bezier derivative curve at value u. 
@@ -359,10 +349,12 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         <B>Computational Costs</B>
         \verbatim
-                    Divisions   Multiplications Additions   Assignments
-            dx/du               20              19          11
-            d2x/du2             17              17          9
-            d3y/du3             14              14          6
+            dy/dx  : ~50 flops
+            d2x/du2: ~43 flops
+            d3x/du3: ~34 flops
+            d4x/du4: ~26 flops
+            d5x/du5: ~15 flops
+            d6x/du6: ~1  flop
         \endverbatim
 
 
@@ -384,7 +376,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */
         static double calcQuinticBezierCurveDerivU(double u, 
                            const SimTK::Vector& pts,int order, 
-                           const std::string caller);
+                           const std::string& caller);
 
         /**
         Calculates the value of dydx of a quintic Bezier curve derivative at u.
@@ -417,75 +409,13 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         example, here are the number of operations required to compute the
         following derivatives
         \verbatim
-        dy/dx       Divisions   Multiplications Additions   Assignments
-            dy/du               20              19          11
-            dx/du               20              19          11
-            dy/dx   1        
-            total   1           40              38          22
-
-        d2y/dx2     Divisions   Multiplications Additions   Assignments
-            dy/du               20              19          11
-            dx/du               20              19          11
-            d2y/du2             17              17          9
-            d2x/du2             17              17          9
-            d2y/dx2 2           4               1           3    
-            total   2           78              73          23
-
-        d3y/dx3     Divisions   Multiplications Additions   Assignments
-            dy/du               20              19          11
-            dx/du               20              19          11
-            d2y/du2             17              17          9
-            d2x/du2             17              17          9
-            d3y/du3             14              14          6
-            d3x/du3             14              14          6
-
-            d3y/dx3 4           16              5           6
-            total   4           118             105         58
-
-        d4y/dx4     Divisions   Multiplications Additions   Assignments
-            dy/du               20              19          11
-            dx/du               20              19          11
-            d2y/du2             17              17          9
-            d2x/du2             17              17          9
-            d3y/du3             14              14          6
-            d3x/du3             14              14          6
-            d4y/du4             11              11          3
-            d4x/du4             11              11          3
-
-            d4y/dx4 5           44              15          13
-            total   5           168             137         71
-
-        d5y/dx5     Divisions   Multiplications Additions   Assignments
-            dy/du               20              19          11
-            dx/du               20              19          11
-            d2y/du2             17              17          9
-            d2x/du2             17              17          9
-            d3y/du3             14              14          6
-            d3x/du3             14              14          6
-            d4y/du4             11              11          3
-            d4x/du4             11              11          3
-            d5y/du5             6               6           1
-            d5x/du5             6               6           1 
-
-            d5y/dx5 7           100             36          28
-            total   7           236             170         88  
-
-        d6y/dx6
-            dy/du               20              19          11
-            dx/du               20              19          11
-            d2y/du2             17              17          9
-            d2x/du2             17              17          9
-            d3y/du3             14              14          6
-            d3x/du3             14              14          6
-            d4y/du4             11              11          3
-            d4x/du4             11              11          3
-            d5y/du5             6               6           1
-            d5x/du5             6               6           1 
-
-            d6y/dx6 9           198             75          46
-            total   9           334             209         106
-
-        etc ...
+            Name    : flops
+            dy/dx   : ~102
+            d2y/dx2 : ~194
+            d3y/dx3 : ~321
+            d4y/dx4 : ~426
+            d5y/dx5 : ~564
+            d6y/dx6 : ~739
         \endverbatim
 
         <B>Example:</B>
@@ -516,7 +446,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */        
         static double  calcQuinticBezierCurveDerivDYDX(double u,
               const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order,
-              const std::string caller);
+              const std::string& caller);
 
         
         /**
@@ -547,8 +477,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         <B>Computational Costs</B>
         \verbatim
-        Divisions   Multiplication  Additions   Assignments
-        1           13              9              23
+            ~55 flops
         \endverbatim
 
 
@@ -570,7 +499,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         */
         static SimTK::Matrix calcQuinticBezierCornerControlPoints(double x0, 
             double y0, double dydx0, double x1, double y1, double dydx1, 
-            double curviness, const std::string caller);
+            double curviness, const std::string& caller);
 
         /**
         This function numerically integrates the Bezier curve y(x).
@@ -605,37 +534,10 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         point requires 6 function evaluations. 
         (http://en.wikipedia.org/wiki/Dormand%E2%80%93Prince_method)
 
-        The cost of evaluating y(x), which has 3 Bezier curves,
-        each with a splined approximate inverse of 100 points, once is:
+        The cost of evaluating 1 Bezier curve y(x) scales with the number
+        of points in xVal:
         \verbatim
-                    Comp        Div     Mult    Additions   Assignments
-        calcIdx     3*3+2=11                    1*3=3       3
-        calcU       15          2       82      42          60
-        calcQuinticBezierCurveVal
-                                        21      20          13
-        Total       26          2       103     65          76
-        \endverbatim
-
-        Ignoring the costs associated with the integrator itself, and assuming
-        that the integrator evaluates the function 6 times per integrated point,
-        the cost of evaluating the integral at each point in vX is:
-
-        \verbatim
-                        Comp        Div     Mult    Additions      Assignments
-        RK45 on 1pt  6*(26          2       103      65              76)
-        Total           156         12      618      390            456
-        \endverbatim
-
-        Typically the integral is evaluated 100 times per section in order to 
-        build an accurate spline-fit of the integrated function. Once again,
-        ignoring the overhead of the integrator, the function evaluations alone
-        for the current example would be
-
-        \verbatim
-        RK45 on 100pts per section, over 3 sections
-                    Comp        Div     Mult        Additions      Assignments        
-             3*100*(156         12      618         390            456
-        Total       46,800      3600    185,400     117,000        136,000
+            ~1740 flops per point
         \endverbatim
 
         The example below is quite involved, but just so it can show you an
@@ -647,10 +549,13 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         <B>Example:</B>
         @code
+        //Integrator and u tolerance settings
         double INTTOL = 1e-12;
         double UTOL   = 1e-14;
         int    MAXITER= 10;
 
+        //Make up a Bezier curve - these happen to be the control points
+        //for a tendon curve
         SimTK::Matrix _mX(6,1), _mY(6,1);
         _mX(0)= 1;
         _mX(1)= 1.01164;
@@ -686,9 +591,9 @@ class OSIMCOMMON_API QuinticBezierCurveSet
                 x(i) = QuinticBezierCurveSet::
                     calcQuinticBezierCurveVal(u(i),_mX(s),_name);            
                 if(_numBezierSections > 1){
-                    //Skip the last point of a set that has another set of points
-                    //after it. Why? The last point and the starting point of the
-                    //next set are identical in value.
+                   //Skip the last point of a set that has another set of points
+                   //after it. Why? The last point and the starting point of the
+                   //next set are identical in value.
                     if(i<(NUM_SAMPLE_PTS-1) || s == (_numBezierSections-1)){
                         xALL(xidx) = x(i);
                         xidx++;
@@ -728,7 +633,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
             double ic0, double intAcc, double uTol, int uMaxIter,
             const SimTK::Matrix& mX, const SimTK::Matrix& mY,
             const SimTK::Array_<SimTK::Spline>& aSplineUX, 
-            bool flag_intLeftToRight,const std::string caller);
+            bool flag_intLeftToRight,const std::string& caller);
 
 
    private:
@@ -745,11 +650,11 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         @param filename The name of the file to print
         */
         static void printMatrixToFile(const SimTK::Vector& col0, 
-                                    const SimTK::Matrix& data, std::string filename);
+                          const SimTK::Matrix& data, std::string& filename);
 
         static void printBezierSplineFitCurves(
             const SimTK::Function_<double>& curveFit,SimTK::Matrix& ctrlPts, 
-            SimTK::Vector& xVal, SimTK::Vector& yVal, std::string filename);        
+            SimTK::Vector& xVal, SimTK::Vector& yVal, std::string& filename);        
 
         /**
         This function will return a value that is equal to u, except when u is

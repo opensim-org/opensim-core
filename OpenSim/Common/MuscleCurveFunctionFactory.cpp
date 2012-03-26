@@ -61,23 +61,29 @@ double MuscleCurveFunctionFactory::scaleCurviness(double curviness)
 MuscleCurveFunction MuscleCurveFunctionFactory::
     createFiberActiveForceLengthCurve(double x0, double x1, double x2, 
     double x3, double ylow,  double dydx, double curviness,
-    const bool computeIntegral, const string mclName)
+    bool computeIntegral, const std::string& muscleName)
 {
     //Ensure that the inputs are within a valid range
-    SimTK_ERRCHK1_ALWAYS( (x0>0 && x1>x0 && x2>x1 && x3>x2),
+    double rootEPS = sqrt(SimTK::Eps);
+    SimTK_ERRCHK1_ALWAYS( (x0>0 && x1>x0+rootEPS  
+                        && x2>x1+rootEPS && x3>x2+rootEPS),
         "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
-        "%s: This must be true: 0 < lce0 < lce1 < lce2 < lce3",mclName.c_str());
+        "%s: This must be true: 0 < lce0 < lce1 < lce2 < lce3",
+        muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( ylow >= 0,
         "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
-        "%s: shoulderVal must be greater than, or equal to 0",mclName.c_str());
-    SimTK_ERRCHK1_ALWAYS(dydx > 0,
+        "%s: shoulderVal must be greater than, or equal to 0",
+        muscleName.c_str());
+    SimTK_ERRCHK1_ALWAYS(dydx >= 0,
         "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
-        "%s: plateauSlope must be greater than 0",mclName.c_str());
+        "%s: plateauSlope must be greater than 0",
+        muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( (curviness >= 0 && curviness <= 1),
         "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
-        "%s: curviness must be between 0 and 1",mclName.c_str());
+        "%s: curviness must be between 0 and 1",
+        muscleName.c_str());
 
-    string name = mclName;
+    std::string name = muscleName;
     name.append(".createFiberActiveForceLengthCurve");
 
 
@@ -89,7 +95,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     //Compute the locations of the joining point of each elbow section.
 
     //Calculate the location of the shoulder
-       double xs    = x1 + 0.9*(x2-x1);
+       double xs    = x1 + 0.75*(x2-x1);
    
    //Calculate the intermediate points located on the ascending limb
        double y0    = ylow;   
@@ -154,7 +160,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
         mY(3) = p3(1);
         mY(4) = p4(1);
 
-        string curveName = mclName;
+        std::string curveName = muscleName;
         curveName.append("_fiberActiveForceLengthCurve");
         MuscleCurveFunction mclCrvFcn(mX,mY,x0,x3,ylow,ylow,0,0,computeIntegral,
             true, curveName);    
@@ -164,31 +170,31 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 MuscleCurveFunction MuscleCurveFunctionFactory::
     createFiberForceVelocityCurve(double fmaxE, double dydxC, double dydxIso, 
     double dydxE, double concCurviness,double eccCurviness,
-    const bool computeIntegral, const string mclName)
+    bool computeIntegral, const std::string& muscleName)
 {
     //Ensure that the inputs are within a valid range
     SimTK_ERRCHK1_ALWAYS( fmaxE > 1.0, 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
-        "%s: fmaxE must be greater than 1",mclName.c_str());
+        "%s: fmaxE must be greater than 1",muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( (dydxC >= 0.0 && dydxC < 1), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
         "%s: dydxC must be greater than or equal to 0"
-        "and less than 1",mclName.c_str());
+        "and less than 1",muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( dydxIso > 1.0, 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
-        "%s: dydxIso must be greater than or equal to 1",mclName.c_str());
+        "%s: dydxIso must be greater than or equal to 1",muscleName.c_str());
     SimTK_ERRCHK2_ALWAYS( (dydxE >= 0.0 && dydxE < (fmaxE-1)), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
         "%s: dydxE must be greater than or equal to 0"
-        "and less than fmaxE-1 (%f)",mclName.c_str(),(fmaxE-1));
+        "and less than fmaxE-1 (%f)",muscleName.c_str(),(fmaxE-1));
     SimTK_ERRCHK1_ALWAYS( (concCurviness <= 1.0 && concCurviness >= 0), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
-        "%s: concCurviness must be between 0 and 1",mclName.c_str());
+        "%s: concCurviness must be between 0 and 1",muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( (eccCurviness <= 1.0 && eccCurviness >= 0), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
-        "%s: eccCurviness must be between 0 and 1",mclName.c_str());
+        "%s: eccCurviness must be between 0 and 1",muscleName.c_str());
 
-    string name = mclName;
+    std::string name = muscleName;
     name.append(".createFiberForceVelocityCurve");
 
     //Translate the users parameters into Bezier point locations
@@ -216,7 +222,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     mY(0) = concPts(1);
     mY(1) = eccPts(1);
 
-    string curveName = mclName;
+    std::string curveName = muscleName;
     curveName.append("_fiberForceVelocityCurve");
     MuscleCurveFunction mclCrvFcn(mX,mY,xC,xE,yC,yE,dydxC,dydxE,computeIntegral,
                                                                true, curveName);    
@@ -227,31 +233,31 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 MuscleCurveFunction MuscleCurveFunctionFactory::
     createFiberForceVelocityInverseCurve(double fmaxE, double dydxC, 
     double dydxIso, double dydxE, double concCurviness, double eccCurviness,
-    const bool computeIntegral, const string mclName)
+    bool computeIntegral, const std::string& muscleName)
 {
     //Ensure that the inputs are within a valid range
     SimTK_ERRCHK1_ALWAYS( fmaxE > 1.0, 
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
-        "%s: fmaxE must be greater than 1",mclName.c_str());
+        "%s: fmaxE must be greater than 1",muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( (dydxC > 0.0 && dydxC < 1), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxC must be greater than 0"
-        "and less than 1",mclName.c_str());
+        "and less than 1",muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( dydxIso > 1.0, 
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
-        "%s: dydxIso must be greater than or equal to 1",mclName.c_str());
+        "%s: dydxIso must be greater than or equal to 1",muscleName.c_str());
     SimTK_ERRCHK2_ALWAYS( (dydxE > 0.0 && dydxE < (fmaxE-1)), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxE must be greater than or equal to 0"
-        "and less than fmaxE-1 (%f)",mclName.c_str(),(fmaxE-1));
+        "and less than fmaxE-1 (%f)",muscleName.c_str(),(fmaxE-1));
     SimTK_ERRCHK1_ALWAYS( (concCurviness <= 1.0 && concCurviness >= 0), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
-        "%s: concCurviness must be between 0 and 1",mclName.c_str());
+        "%s: concCurviness must be between 0 and 1",muscleName.c_str());
     SimTK_ERRCHK1_ALWAYS( (eccCurviness <= 1.0 && eccCurviness >= 0), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
-        "%s: eccCurviness must be between 0 and 1",mclName.c_str());
+        "%s: eccCurviness must be between 0 and 1",muscleName.c_str());
 
-    string name = mclName;
+    std::string name = muscleName;
     name.append(".createFiberForceVelocityInverseCurve");
 
     //Translate the users parameters into Bezier point locations
@@ -278,7 +284,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     mY(0) = concPts(1);
     mY(1) = eccPts(1);
 
-    string curveName = mclName;
+    std::string curveName = muscleName;
     curveName.append("_fiberForceVelocityInverseCurve");
     MuscleCurveFunction mclCrvFcn(mY,mX,yC,yE,xC,xE,1/dydxC,1/dydxE,
         computeIntegral,true, curveName);    
@@ -288,23 +294,23 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 MuscleCurveFunction MuscleCurveFunctionFactory::
     createFiberCompressiveForcePennationCurve(double phi0, double k, 
-         double curviness, const bool computeIntegral, const string mclName)
+         double curviness, bool computeIntegral, const std::string& muscleName)
 {
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( (phi0>0 && phi0<(SimTK::Pi/2.0)) , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForcePennationCurve", 
-        "%s: phi0 must be greater than 0, and less than Pi/2",mclName.c_str());
+        "%s: phi0 must be greater than 0, and less than Pi/2",muscleName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( k > (1.0/(SimTK::Pi/2.0-phi0)) , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForcePennationCurve", 
-        "%s: k must be greater than %f",mclName.c_str(), 
+        "%s: k must be greater than %f",muscleName.c_str(), 
         (1.0/(SimTK::Pi/2.0-phi0)));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForcePennationCurve", 
-        "%s: curviness must be between 0.0 and 1.0",mclName.c_str());
+        "%s: curviness must be between 0.0 and 1.0",muscleName.c_str());
 
-    string name=mclName;
+    std::string name=muscleName;
     name.append(".createFiberCompressiveForcePennationCurve");
 
     //Translate the user parameters to quintic Bezier points
@@ -323,7 +329,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     mX = ctrlPts(0);
     mY = ctrlPts(1);
 
-    string curveName = mclName;
+    std::string curveName = muscleName;
     curveName.append("_fiberCompressiveForcePennationCurve");
     MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                 true,curveName);
@@ -335,22 +341,22 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 MuscleCurveFunction MuscleCurveFunctionFactory::
     createFiberCompressiveForceCosPennationCurve(double cosPhi0, double k, 
-         double curviness, const bool computeIntegral, const string mclName)
+         double curviness, bool computeIntegral, const std::string& muscleName)
 {
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( (cosPhi0>0 && cosPhi0 < 1) , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
-        "%s: cosPhi0 must be greater than 0, and less than 1",mclName.c_str());
+        "%s: cosPhi0 must be greater than 0, and less than 1",muscleName.c_str());
 
     SimTK_ERRCHK1_ALWAYS( k < 0 , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
-        "%s: k must be less than 0",mclName.c_str());
+        "%s: k must be less than 0",muscleName.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
-        "%s: curviness must be between 0.0 and 1.0",mclName.c_str());
+        "%s: curviness must be between 0.0 and 1.0",muscleName.c_str());
 
-    string name=mclName;
+    std::string name=muscleName;
     name.append(".createFiberCompressiveForceCosPennationCurve");
 
     //Translate the user parameters to quintic Bezier points
@@ -369,7 +375,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     mX = ctrlPts(0);
     mY = ctrlPts(1);
 
-    string curveName = mclName;
+    std::string curveName = muscleName;
     curveName.append("_fiberCompressiveForceCosPennationCurve");
     MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                               false,curveName);
@@ -381,22 +387,22 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 MuscleCurveFunction MuscleCurveFunctionFactory::
       createFiberCompressiveForceLengthCurve(double lmax, double k, 
-               double curviness, const bool computeIntegral, string mclName)
+               double curviness, bool computeIntegral, const std::string& muscleName)
 {
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( lmax>0 , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForceLength", 
-        "%s: l0 must be greater than 0",mclName.c_str());
+        "%s: l0 must be greater than 0",muscleName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( k < -(1.0/lmax) , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForceLength", 
-        "%s: k must be less than %f",mclName.c_str(),-(1.0/lmax));
+        "%s: k must be less than %f",muscleName.c_str(),-(1.0/lmax));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForceLength", 
-        "%s: curviness must be between 0.0 and 1.0",mclName.c_str());
+        "%s: curviness must be between 0.0 and 1.0",muscleName.c_str());
 
-    string caller = mclName;
+    std::string caller = muscleName;
     caller.append(".createFiberCompressiveForceLength");
 
     //Translate the user parameters to quintic Bezier points
@@ -415,7 +421,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     mX(0) = ctrlPts(0);
     mY(0) = ctrlPts(1);
 
-    String curveName = mclName;
+    String curveName = muscleName;
     curveName.append("_fiberCompressiveForceLengthCurve");
     MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                false,curveName);
@@ -427,23 +433,23 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 MuscleCurveFunction MuscleCurveFunctionFactory::
           createFiberForceLengthCurve(double e0, double kiso, double curviness,
-          const bool computeIntegral, const string mclName)
+          bool computeIntegral, const std::string& muscleName)
 {
     
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( e0>0 , 
         "MuscleCurveFunctionFactory::createFiberForceLength", 
-        "%s: e0 must be greater than 0",mclName.c_str());
+        "%s: e0 must be greater than 0",muscleName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( kiso > (1/e0) , 
         "MuscleCurveFunctionFactory::createFiberForceLength", 
-        "%s: kiso must be greater than 1/e0 (%f)",mclName.c_str(),(1/e0));
+        "%s: kiso must be greater than 1/e0 (%f)",muscleName.c_str(),(1/e0));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "MuscleCurveFunctionFactory::createFiberForceLength", 
-        "%s: curviness must be between 0.0 and 1.0",mclName.c_str());
+        "%s: curviness must be between 0.0 and 1.0",muscleName.c_str());
 
-    string caller = mclName;
+    std::string caller = muscleName;
     caller.append(".createFiberForceLength");
 
     //Translate the user parameters to quintic Bezier points
@@ -462,7 +468,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     mX(0) = ctrlPts(0);
     mY(0) = ctrlPts(1);
 
-    string curveName = mclName;
+    std::string curveName = muscleName;
     curveName.append("_fiberForceLengthCurve");
         //Instantiate a muscle curve object
     MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
@@ -476,25 +482,25 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 MuscleCurveFunction MuscleCurveFunctionFactory::
           createTendonForceLengthCurve(double e0, double kiso, double curviness,
-                                     const bool computeIntegral, string mclName)
+                                    bool computeIntegral, const std::string& muscleName)
 {
     //Check the input arguments
     //e0>0 
     SimTK_ERRCHK1_ALWAYS( e0>0 , 
         "MuscleCurveFunctionFactory::createTendonForceLengthCurve", 
-        "%s: e0 must be greater than 0, but %f was entered", mclName.c_str());
+        "%s: e0 must be greater than 0, but %f was entered", muscleName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( kiso > (1/e0) , 
         "MuscleCurveFunctionFactory::createTendonForceLengthCurve", 
         "%s : kiso must be greater than 1/e0, (%f)", 
-        mclName.c_str(), (1/e0));
+        muscleName.c_str(), (1/e0));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
         "MuscleCurveFunctionFactory::createTendonForceLengthCurve", 
         "%s : curviness must be between 0.0 and 1.0, but %f was entered"
-        , mclName.c_str());
+        , muscleName.c_str());
 
-    string callerName = mclName;
+    std::string callerName = muscleName;
     callerName.append(".createTendonForceLengthCurve");
 
     //Translate the user parameters to quintic Bezier points
@@ -515,7 +521,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     mX(0) = ctrlPts(0);
     mY(0) = ctrlPts(1);
 
-    string curveName = mclName;
+    std::string curveName = muscleName;
     curveName.append("_tendonForceLengthCurve");
     //Instantiate a muscle curve object
    MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,

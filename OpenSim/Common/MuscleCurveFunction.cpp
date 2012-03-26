@@ -39,12 +39,58 @@ static int NUM_SAMPLE_PTS = 100;
 //=============================================================================
 // UTILITY FUNCTIONS
 //=============================================================================
+/*
+ DETAILED COMPUTATIONAL COSTS:
+ =========================================================================
+       WITHOUT INTEGRAL
+       _________________________________________________________________________
+                        Function    Comp    Div     Mult    Add     Assignments 
+       _________________________________________________________________________
+        member assign                                               M:2, 9
+        curve gen:      m,m*100     m       m*100           m       m*100*(4) 
+                                 +m*100(3)                  +m*100*(3)
 
+        Function detail
+            Evaluations Function
+            m           SimTK::SplineFitter<Real>::
+                            fitForSmoothingParameter(3,x,u,0).getSpline();
+            Cost:       ?
 
+            m*100       QuinticBezierCurveSet::
+                            calcQuinticBezierCurveVal
+            Cost:                                   Mult     Add   Assignments
+                                                    21       20    13       
+
+        Total           ~typically  > 2100*m multiplications, additions,
+                                    > 1000*m assignments
+                                    > 100*m divisions
+       _________________________________________________________________________    
+                    Comp        Div     Mult        Add         Assignments
+        Total:      m+m*100(3)  m*100   m*100*21    m*100*20    m*100*13
+                                                    +m+m*100*3  +m*100*4+9+M:2                             
+                    + m*Cost(SimTK::SplineFitter ...)
+       =========================================================================
+        ADDITIONAL COST OF COMPUTING THE INTEGRAL CURVE
+        
+                               Comp Div     Mult  Add      Assign       
+       RK45 Fn.Eval     m*100*(156  12      618   390      456)
+       RK45 Overhead    m*100*(?    ?       ?     ?         ? )
+       Spline cost      m*100*(?    ?       ?     ?         ? )
+
+       Total:           ~typically > 100,000's mult, additions, assignments
+                                   > 40,000 comparisions 
+                                   > 3000 divisions
+
+       =========================================================================
+        M: Matrix
+        V: Vector
+
+        N.B. These costs are dependent on QuinticBezierCurveSet
+*/
 MuscleCurveFunction::
   MuscleCurveFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY,  
           double x0, double x1, double y0, double y1,double dydx0, double dydx1,
-          const bool computeIntegral, const bool intx0x1, const string name):
+          bool computeIntegral, bool intx0x1, const std::string& name):
  _mX(mX),_mY(mY),_x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
      _computeIntegral(computeIntegral),_intx0x1(intx0x1),_name(name)
 {
@@ -108,16 +154,32 @@ MuscleCurveFunction::
   
 }
 
+
+ /*Detailed Computational Costs
+ ________________________________________________________________________
+    If x is in the Bezier Curve
+                            Name     Comp.   Div.    Mult.   Add.    Assign.
+_______________________________________________________________________
+        QuinticBezierCurveSet::
+                        calcIndex     3*m+2                   1*m     3   
+                            *calcU     15      2      82      42      60  
+        calcQuinticBezierCurveVal                     21      20      13
+                            total  15+3*m+2    2      103     62+1*m  76
+
+        *Approximate. Uses iteration
+________________________________________________________________________
+If x is in the linear region
+
+                        Name     Comp.   Div.    Mult.   Add.    Assign.
+                                    1               1      2     1
+________________________________________________________________________
+ 
+ */
 double MuscleCurveFunction::calcValue(double x) const
 {
     return calcValue(SimTK::Vector(1,x));
 }
 
-double MuscleCurveFunction::calcDerivative(double x, int order) const
-{
-    return calcDerivative( SimTK::Array_<int>(order,0),
-                           SimTK::Vector(1,x));
-}
 
 
 double MuscleCurveFunction::calcValue(const SimTK::Vector& ax) const
@@ -147,6 +209,40 @@ double MuscleCurveFunction::calcValue(const SimTK::Vector& ax) const
 
     return yVal;
 }
+
+/*Detailed Computational Costs
+________________________________________________________________________
+If x is in the Bezier Curve, and dy/dx is being evaluated
+                        Name     Comp.   Div.    Mult.   Add.    Assign.
+_______________________________________________________________________
+Overhead:
+    QuinticBezierCurveSet::
+                    calcIndex     3*m+2                   1*m     3   
+                        *calcU     15      2      82      42     60  
+    Derivative Evaluation:
+    **calcQuinticBezierCurveDYDX                  21      20      13
+                        dy/du                     20      19      11
+                        dx/du                     20      19      11
+                        dy/dx             1
+
+                        total    17+3*m   3       143     m+100   98
+
+*Approximate. Uses iteration
+**Higher order derivatives cost more
+________________________________________________________________________
+If x is in the linear region
+
+                        Name     Comp.   Div.    Mult.   Add.    Assign.
+                                    1                            1
+________________________________________________________________________
+    */
+double MuscleCurveFunction::calcDerivative(double x, int order) const
+{
+    return calcDerivative( SimTK::Array_<int>(order,0),
+                           SimTK::Vector(1,x));
+}
+
+
 
 double MuscleCurveFunction::
     calcDerivative(const SimTK::Array_<int>& derivComponents,
@@ -205,16 +301,28 @@ double MuscleCurveFunction::
     return yVal;
 }
 
-bool MuscleCurveFunction::isIntegralAvailable() const
-{
-    return _computeIntegral;
-}
 
-bool MuscleCurveFunction::isIntegralComputedLeftToRight() const
-{
-    return _intx0x1;
-}
+/*Detailed Computational Costs
+________________________________________________________________________
+If x is in the Bezier Curve, and dy/dx is being evaluated
+                        Name     Comp.   Div.    Mult.   Add.    Assign.
+_______________________________________________________________________
+            *spline.calcValue     7               2       3       1
 
+*Approximate cost of evaluating a cubic spline with 100 knots, where
+the bisection method is used to find the correct index
+________________________________________________________________________
+If x is in the linear region
+
+                Name              Comp.   Div.    Mult.   Add.    Assign.
+                *spline.calcValue  1               2       3       1        
+                integral eval      2               4       5       1
+                total              3               6       8       2
+
+*Approximate cost of evaluating a cubic spline at its last knot point
+________________________________________________________________________
+
+*/
 double MuscleCurveFunction::calcIntegral(double x) const
 {
     SimTK_ERRCHK1_ALWAYS(_computeIntegral,
@@ -260,6 +368,16 @@ double MuscleCurveFunction::calcIntegral(double x) const
     return yVal;
 }
 
+bool MuscleCurveFunction::isIntegralAvailable() const
+{
+    return _computeIntegral;
+}
+
+bool MuscleCurveFunction::isIntegralComputedLeftToRight() const
+{
+    return _intx0x1;
+}
+
 int MuscleCurveFunction::getArgumentSize() const
 {
     return 1;
@@ -270,7 +388,7 @@ int MuscleCurveFunction::getMaxDerivativeOrder() const
     return 6;
 }
 
-string MuscleCurveFunction::getName() const
+std::string MuscleCurveFunction::getName() const
 {
     return _name;
 }
@@ -286,9 +404,42 @@ SimTK::Vec2 MuscleCurveFunction::getCurveDomain() const
 ///////////////////////////////////////////////////////////////////////////////
 // Utility functions
 ///////////////////////////////////////////////////////////////////////////////
-SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve() const{
+
+/*Detailed Computational Costs
+
+_______________________________________________________________________
+                        Name     Comp.   Div.    Mult.   Add.    Assign.
+_______________________________________________________________________
+
+                *overhead    (17+3*m     2    82      42+m    63)*7
+                                119+21*m  14    574     294+7m  441
+
+                calcValue                     21      20      13
+    calcDerivative: dy/dx                1    40      38      22          
+                    : d2y/dx2              2    78      73      23
+                    : d3y/dx3              4    118     105     58
+                    : d4y/dx4              5    168     137     71
+                    : d5y/dx5              7    236     170     88
+                    : d6y/dx6              9    334     209     106
+
+                **calcIntegral    7               2       3       1             
+
+            total per point     126+21*m  42   1571    1049    823
+            total per elbow   126k+21k*m  42k  1571k   1049k   823k
+                   
+    *Approximate. Overhead associated with finding the correct Bezier
+                    spline section, and evaluating u(x). 
+                    Assumes 2 Newton iterations in calcU
+
+    **Approximate. Includes estimated cost of evaluating a cubic spline
+                    with 100 knots
+*/
+SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve(int maxOrder) const{
     int pts = 1; //Number of points between each of the spline points used
                   //to fit u(x), and also the integral spline
+    SimTK_ERRCHK_ALWAYS(maxOrder <= getMaxDerivativeOrder(),
+        "MuscleCurveFunction::calcSampledMuscleCurve",
+        "Derivative order past the maximum computed order requested");
 
     double x0,x1,delta;
     //y,dy,d1y,d2y,d3y,d4y,d5y,d6y,iy
@@ -326,9 +477,9 @@ SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve() const{
     SimTK::Matrix results;
 
     if(_computeIntegral){
-        results.resize(pts*(midX.nelt()-1)+2*10*pts,9);
+        results.resize(pts*(midX.nelt()-1)+2*10*pts,maxOrder+2+1);
     }else{
-        results.resize(pts*(midX.nelt()-1)+2*10*pts,8);
+        results.resize(pts*(midX.nelt()-1)+2*10*pts,maxOrder+2);
     }
     //Array initialization is so ugly ...
     SimTK::Array_<int> d1y(1),d2y(2),d3y(3),d4y(4),d5y(5),d6y(6);
@@ -383,38 +534,72 @@ SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve() const{
         ax(0) = xsmpl(i);
         results(i,0) = ax(0);
         results(i,1) = calcValue(ax);
+        if(maxOrder>=1)
         results(i,2) = calcDerivative(d1y,ax);
+
+        if(maxOrder>=2)
         results(i,3) = calcDerivative(d2y,ax);
+        
+        if(maxOrder>=3)
         results(i,4) = calcDerivative(d3y,ax);
+        
+        if(maxOrder>=4)
         results(i,5) = calcDerivative(d4y,ax);
+        
+        if(maxOrder>=5)
         results(i,6) = calcDerivative(d5y,ax);
+        
+        if(maxOrder>=6)
         results(i,7) = calcDerivative(d6y,ax);
 
         if(_computeIntegral){
-            results(i,8) = calcIntegral(ax(0));
+            results(i,maxOrder+2) = calcIntegral(ax(0));
         }
     }
    return results;
 }
 
-void MuscleCurveFunction::printMuscleCurveToFile(string path) const
+
+/*Detailed Computational Costs
+
+_______________________________________________________________________
+                        Name     Comp.   Div.    Mult.   Add.    Assign.
+_______________________________________________________________________
+
+                 *overhead     (17+3*m     2    82      42+m    63)*3
+                                51+9m      6    246     126+3m   189
+
+                calcValue                       21      20      13
+    calcDerivative  : dy/dx                1    40      38      22          
+                    : d2y/dx2              2    78      73      23
+
+                **calcIntegral    7              2       3       1             
+
+            total per point      58+9m     9    387    260+3m   248
+            total per elbow    5.8k+900m   900  38.7k  26k+300m 24.8k
+                   
+    *Approximate. Overhead associated with finding the correct Bezier
+                    spline section, and evaluating u(x). 
+                    Assumes 2 Newton iterations in calcU
+
+    **Approximate. Includes estimated cost of evaluating a cubic spline
+                    with 100 knots
+*/
+void MuscleCurveFunction::printMuscleCurveToCSVFile(const std::string& path) const
 {
-    SimTK::Matrix results = calcSampledMuscleCurve();
-    SimTK::Array_<string> colNames(results.ncol());
+    //Only compute up to the 2nd derivative
+    SimTK::Matrix results = calcSampledMuscleCurve(2);
+    SimTK::Array_<std::string> colNames(results.ncol());
     colNames[0] = "x";
     colNames[1] = "y";
     colNames[2] = "dy/dx";
     colNames[3] = "d2y/dx2";
-    colNames[4] = "d3y/dx3";
-    colNames[5] = "d4y/dx4";
-    colNames[6] = "d5y/dx5";
-    colNames[7] = "d6y/dx6";
-
-    if(results.ncol() == 9){
-        colNames[8] = "int_y(x)";
+    
+    if(results.ncol() == 5){
+        colNames[4] = "int_y(x)";
     }
 
-            string fname = _name;
+            std::string fname = _name;
             fname.append(".csv");
             printMatrixToFile(results,colNames,path,fname);
 }
@@ -425,12 +610,12 @@ This function will print cvs file of the column vector col0 and the matrix data
 @params filename: The name of the file to print
 */
 void MuscleCurveFunction::
-    printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<string> colNames,
-    string path, string filename)
+    printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
+    const std::string& path, const std::string& filename)
 {
 	
     ofstream datafile;
-    string fullpath = path;
+    std::string fullpath = path;
     fullpath.append("/");
     fullpath.append(filename);
 	datafile.open(fullpath.c_str());

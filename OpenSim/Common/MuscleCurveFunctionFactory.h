@@ -38,29 +38,94 @@ namespace OpenSim {
 
 /**
 This is a class that acts as a user friendly wrapper to QuinticBezerCurveSet
-to build specific kinds of muscle curves using C2 continuous sets of quintic
-Bezier curves. In general the functions in this class take parameters
-that would be intuitive to biomechanists who simulate human musculoskeletal 
-systems, and returns a MuscleCurveFunction which is capable of evaluating the
-value, derivatives and optionally the integral of the desired function (or 
-actually relation as the case may be). 
+to build specific kinds of physiologically plausible muscle curves using C2 
+continuous sets of quintic Bezier curves. This class has been written there did 
+not exist a set of curves describing muscle characteristics that was:
 
-Each curve is made up of linearly extrapolated C2 quintic Bezier curves x(u), 
-and y(u), as shown in the figure below. These quintic curves span 2 points, and 
-achieve the desired derivative at its end points. The degree of curviness can be 
-varied from 0 to 1 (0, 0.75 and 1.0 are shown in the figure in grey, blue and 
-black respectively), and will make the curve approximate a line when set to 0 
-(grey), and approximate a curve that hugs the intersection of the lines that are 
-defined by the end points locations and the slopes at the end of each curve 
-segment (red lines). Although you do not need to set all of this information 
-directly, for some of the curves it is useful to know that both the slope and 
-the curviness parameter may need to be altered to achieve the desired shape.
+\verbatim
+1. Physiologically Accurate
+2. Continuous to the second derivative
+3. Parameterized in a physically meaningful manner
+\endverbatim
+
+For example, the curves employed by Thelen (Thelen DG(2003). Adjustment of Muscle 
+Mechanics Model Parameters to Simulate Dynamic Contractions in Older Adults.
+ASME Journal of Biomechanical Engineering (125).) are parameterized in a 
+physically meaningful manner, making them easy to use. However there are 
+many shortcomings of these curves:
+
+a. The tendon and parallel element are not C2 continuous, making them slow to 
+simulate and likely not physiologically accurate. 
+b. The active force length curve approaches does not achieve its minimum value
+at a normalized fiber length of 0.5, and 1.5. 
+c. The force velocity curve is not C2 continuous at the origin. As it is 
+written in the paper the curve is impossible to use with an equilibrium model
+because it is not invertible. In addition the force-velocity curve actually 
+increases in stiffness as activation drops - a very undesirable property given
+that many muscles are inactive at any one time.
+
+The muscle curves used in the literature until 2012 have been hugely influenced
+by Thelen's work, and thus similar comments can easily be applied to just about
+every other musculoskeletal simulation.
+
+Another example is from Miller (Miller,RH(2011).Optimal Control of 
+Human Running. PhD Thesis). On pg 149 a physiolgically plausible force velocity
+curve is specified that gives the user the ability to change the concentric 
+curvature to be consistent with a slow or a fast twitch musle. This curve is 
+not C2 continuous at the origin, but even worse, it contains singularities in 
+its parameter space. Since these parameters do not have a physical interpretation 
+this model is difficult to use without accidentically creating a curve with a 
+singularity.
+
+With this motivation I set out to develop a class that could generate muscle
+characteristic curves with the following properties:
+
+\verbatim
+1. Physiologically Accurate
+2. Continuous to the second derivative
+3. Parameterized in a physically meaningful manner
+4. Monotonicity for monotonic curves
+5. Computationally efficient
+\endverbatim
+
+These goals were surprisingly difficult to achieve, but these goals have been 
+achieved using sets of C2 continuous quintic Bezier curves. The resulting 
+muscle curve functions in this class take parameters that would be intuitive to 
+biomechanists who simulate human musculoskeletal systems, and returns a 
+MuscleCurveFunction which is capable of evaluating the value, derivatives 
+and optionally the integral of the desired function (or actually relation as 
+the case may be). 
+
+Each curve is made up of one or more C2 quintic Bezier curves x(u), 
+and y(u), with linearily extrapolated ends as shown in the figure below. These 
+quintic curves span 2 points, and achieve the desired derivative at its end 
+points. The degree of curviness can be varied from 0 to 1 (0, 0.75 and 1.0 are 
+shown in the figure in grey, blue and black respectively), and will make the 
+curve approximate a line when set to 0 (grey), and approximate a curve that 
+hugs the intersection of the lines that are defined by the end points locations 
+and the slopes at the end of each curve segment (red lines). Although you do 
+not need to set all of this information directly, for some of the curves it is 
+useful to know that both the slope and the curviness parameter may need to be 
+altered to achieve the desired shape.
 
 
 \image html quinticCornerSections.png
 
 
 
+<B>Computational Cost Details</B>
+All computational costs assume the following operation costs:
+
+\verbatim
+Operation Type   : #flops
++,-,=,Boolean Op : 1 
+               / : 10
+             sqrt: 20
+             trig: 40
+\endverbatim
+
+These relative weightings will vary processor to processor, and so any of 
+the quoted computational costs are approximate.
 
 */
 class OSIMCOMMON_API MuscleCurveFunctionFactory
@@ -70,12 +135,12 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
     public:
 
-        
+       // friend class MuscleCurveFunction;
 
 
         /**
         This is a function that will produce a C2 (continuous to the second
-        derivative) active force length curve. 
+        derivative) active force length curve.
 
 
         @param lce0   Normalized fiber length at the left-most shoulder of the 
@@ -95,7 +160,8 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                       force length curve for lce > lce2 will be equal to the 
                       value of shoulderVal. Normally lce3 is 1.5
 
-        @param shoulderVal    The minimum value of the active force length 
+        @param minActiveForceLengthValue
+                              The minimum value of the active force length 
                               curve. A physiological non-equibrium muscle model
                               would have this value set to 0. An equilibrium 
                               muscle model would have a non-zero lower bound on 
@@ -118,17 +184,29 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                is numerically calculated and splined. If false, 
                                this integral is not computed, and a call to 
                                .calcIntegral will throw an exception
-        @param mclName The name of the muscle this curve is for
+        @param muscleName The name of the muscle this curve applies to. This 
+                          muscle name will have the name of the curve appended
+                          to it (e.g. "bicep_fiberActiveForceLengthCurve") so
+                          that if this curve ever causes an exception, a 
+                          userfriendly error message can be displayed to the
+                          end user to help them debug their model.
         @return MuscleCurveFunction object
 
                 \image html falCurve.png
 
+       
         <B>Conditions:</B>
         \verbatim
             0 < lce0 < lce1 < lce2 < lce3 
             shoulderVal >= 0
             plateauSlope > 0
-            0 <= curviness <= 0
+            0 <= curviness <= 1
+        \endverbatim
+
+        <B>Computational Costs</B>
+        \verbatim 
+            Without Integral :   ~20,500 flops
+            With Integral    :  ~870,500 flops
         \endverbatim
 
         <B>Example:</B>
@@ -151,8 +229,9 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction createFiberActiveForceLengthCurve(
             double lce0, double lce1, double lce2, double lce3, 
-            double shoulderVal, double plateauSlope, double curviness,
-            const bool computeIntegral, const std::string mclName);   
+            double minActiveForceLengthValue, double plateauSlope, 
+            double curviness, bool computeIntegral, 
+            const std::string& muscleName);   
 
         /**
         This function will generate a C2 continous (continuous to the second 
@@ -219,7 +298,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 MuscleCurveFunction::calcIntegral() will throw 
                                 an exception
 
-        @param mclName          The name of the muscle this curve is for.
+        @param muscleName The name of the muscle this curve applies to. This 
+                          muscle name will have the name of the curve appended
+                          to it (e.g. "bicep_fiberForceVelocityCurve") so
+                          that if this curve ever causes an exception, a 
+                          userfriendly error message can be displayed to the
+                          end user to help them debug their model.
+
         @return MuscleCurveFunction object
         
                 \image html fvCurve.png
@@ -232,6 +317,12 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             dydxE < (fmaxE-1) 
             0<= concCurviness <=0
             0 <= eccCurviness <= 0
+        \endverbatim
+
+        <B>Computational Costs</B>
+        \verbatim 
+            Without Integral :   ~8,200 flops
+            With Integral    : ~348,200 flops
         \endverbatim
 
         <B>Example:</B>
@@ -252,7 +343,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction createFiberForceVelocityCurve(
             double fmaxE, double dydxC, double dydxIso, double dydxE, 
             double concCurviness, double eccCurviness,
-            const bool computeIntegral, const std::string mclName);
+            bool computeIntegral, const std::string& muscleName);
 
         /**
         This function will generate a C2 continuous (continuous to the 2nd
@@ -271,7 +362,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction createFiberForceVelocityInverseCurve(
             double fmaxE, double dydxC, double dydxIso, double dydxE, 
             double concCurviness, double eccCurviness, 
-            const bool computeIntegral, const std::string mclName);
+            bool computeIntegral, const std::string& muscleName);
 
         /**
         This element will generate a C2 continuous (continuous to the 2nd
@@ -303,7 +394,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-        @param mclName  : The name of the muscle this curve is for
+        @param muscleName The name of the muscle this curve applies to. This 
+                          muscle name will have the name of the curve appended
+                          to it 
+                          (e.g. "bicep_fiberCompressiveForcePennationCurve") so
+                          that if this curve ever causes an exception, a 
+                          userfriendly error message can be displayed to the
+                          end user to help them debug their model.
 
         @return MuscleCurveFunction object
 
@@ -313,9 +410,14 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         \verbatim
             0 < phi0 < SimTK::Pi/2
             kiso > 1/(SimTK::Pi/2-phi0)
-            0 <= curviness <= 0
+            0 <= curviness <= 1
         \endverbatim
 
+        <B>Computational Costs</B>
+        \verbatim 
+            Without Integral :   ~4,100 flops
+            With Integral    : ~174,100 flops
+        \endverbatim
 
         <B>Example:</B>
         @code
@@ -332,7 +434,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction 
             createFiberCompressiveForcePennationCurve(
                 double phi0, double kiso, double curviness, 
-                const bool computeIntegral, const std::string mclName);
+                bool computeIntegral, const std::string& muscleName);
 
         /**
         This element will generate a C2 continuous (continuous to the 2nd
@@ -368,7 +470,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-        @param mclName  The name of the muscle this curve is for
+        @param muscleName The name of the muscle this curve applies to. This 
+                          muscle name will have the name of the curve appended
+                          to it 
+                          (e.g. "bicep_fiberCompressiveForceCosPennationCurve") 
+                          so that if this curve ever causes an exception, a 
+                          userfriendly error message can be displayed to the
+                          end user to help them debug their model.
 
         @return MuscleCurveFunction object
 
@@ -379,9 +487,14 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         \verbatim
             0 < cosPhi0
             kiso > 1/(cosPhi0)
-            0 <= curviness <= 0
+            0 <= curviness <= 1
         \endverbatim
 
+        <B>Computational Costs</B>
+        \verbatim 
+            Without Integral :   ~4,100 flops
+            With Integral    : ~174,100 flops
+        \endverbatim
 
         <B>Example:</B>
         @code
@@ -401,7 +514,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction 
             createFiberCompressiveForceCosPennationCurve(
                 double cosPhi0, double kiso, double curviness, 
-                const bool computeIntegral, const std::string mclName);
+                bool computeIntegral, const std::string& muscleName);
 
 
         /**
@@ -435,7 +548,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-        @param mclName  The name of the muscle this curve is for
+         @param muscleName The name of the muscle this curve applies to. This 
+                          muscle name will have the name of the curve appended
+                          to it 
+                          (e.g. "bicep_fiberCompressiveForceLengthCurve") 
+                          so that if this curve ever causes an exception, a 
+                          userfriendly error message can be displayed to the
+                          end user to help them debug their model.
 
         @return MuscleCurveFunction object
 
@@ -446,6 +565,12 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             e0 > 0
             kiso > 1/(e0)
             0 <= curviness <= 1
+        \endverbatim
+
+        <B>Computational Costs</B>
+        \verbatim 
+            Without Integral :   ~4,100 flops
+            With Integral    : ~174,100 flops
         \endverbatim
 
         <B>Example:</B>
@@ -462,7 +587,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction 
             createFiberCompressiveForceLengthCurve(double l0, double kiso, 
-            double curviness, const bool computeIntegral, const std::string mclName);
+            double curviness, bool computeIntegral, const std::string& muscleName);
 
          /**
         This function will generate a C2 continuous curve that fits a fiber's 
@@ -488,7 +613,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-        @param mclName  The name of the muscle this curve is for
+         @param muscleName The name of the muscle this curve applies to. This 
+                          muscle name will have the name of the curve appended
+                          to it 
+                          (e.g. "bicep_fiberForceLengthCurve") 
+                          so that if this curve ever causes an exception, a 
+                          userfriendly error message can be displayed to the
+                          end user to help them debug their model.
 
         @return MuscleCurveFunction object
 
@@ -499,7 +630,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         \verbatim
             e0 > 0
             kiso > 1/e0
-            0 <= curviness <= 0
+            0 <= curviness <= 1
+        \endverbatim
+
+        <B>Computational Costs</B>
+        \verbatim 
+            Without Integral :   ~4,100 flops
+            With Integral    : ~174,100 flops
         \endverbatim
 
         <B>Example:</B>
@@ -517,7 +654,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction createFiberForceLengthCurve(double e0, 
                         double kiso, double curviness,
-                        const bool computeIntegral, const std::string mclName);
+                        bool computeIntegral, const std::string& muscleName);
 
         /**
         Will generate a C2 continous (continuous to the second derivative) 
@@ -547,7 +684,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-        @param mclname  The name of the muscle this curve is for
+         @param muscleName The name of the muscle this curve applies to. This 
+                          muscle name will have the name of the curve appended
+                          to it 
+                          (e.g. "bicep_tendonForceLengthCurve") 
+                          so that if this curve ever causes an exception, a 
+                          userfriendly error message can be displayed to the
+                          end user to help them debug their model.
 
         @return MuscleCurveFunction
 
@@ -557,9 +700,14 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         \verbatim
             e0 > 0
             kiso > 1/e0
-            0 <= curviness <= 0
+            0 <= curviness <= 1
         \endverbatim
 
+        <B>Computational Costs</B>
+        \verbatim 
+            Without Integral :   ~4,100 flops
+            With Integral    : ~174,100 flops
+        \endverbatim
 
         <B>Example:</B>
         @code
@@ -577,7 +725,9 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction 
            createTendonForceLengthCurve(double e0,double kiso,double curviness,
-           const bool computeIntegral, const std::string mclname);
+           bool computeIntegral, const std::string& muscleName);
+
+        
 
     private:
         /**
@@ -592,6 +742,8 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static double scaleCurviness(double curviness);
 
+        
+        
 
 };
 
