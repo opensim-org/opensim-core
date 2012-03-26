@@ -79,6 +79,7 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime)
 
 	// add the controller to the model
 	osimModel.addController(&actuatorController);
+	osimModel.disownAllComponents(); // because PrescribedController is on stack
 
 	// Initialize the system and get the state representing the state system
 	SimTK::State& si = osimModel.initSystem();
@@ -116,5 +117,4 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime)
 	states.setWriteSIMMHeader(true);
 	states.print(osimModel.getName()+"_states_degrees.mot");
 
-	osimModel.disownAllComponents();
 }// end of simulateModelWithSingleMuscle()
