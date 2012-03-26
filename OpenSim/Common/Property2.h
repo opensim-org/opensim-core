@@ -69,6 +69,11 @@ public:
     /** Determine if this property is the same as another, using a
     type-dependent criterion. **/
 	bool equals(const AbstractProperty& other) const    FINAL_11;
+    /** Set the "use default" flag on all the subproperties, if there are
+    any for this type of property. **/
+    void setSubPropertiesUseDefault(bool shouldUseDefault) FINAL_11
+    {   TypeHelper<T>::setSubPropertiesUseDefault(shouldUseDefault, 
+                                                  *_valuePtr); }
     /** Return the AbstractProperty::PropertyType enum assigned to type T. **/
 	PropertyType getPropertyType() const                FINAL_11
     {   return TypeHelper<T>::getPropertyType(); }

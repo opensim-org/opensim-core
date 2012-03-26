@@ -76,6 +76,10 @@ public:
     :   Property_Deprecated(aProperty) { _array = aProperty._array; }
 	/*virtual*/ PropertyObjArray* copy() const { return new PropertyObjArray<T>(*this); }
 
+    void setSubPropertiesUseDefault(bool shouldUseDefault) OVERRIDE_11
+    {   for (int i=0; i < _array.getSize(); ++i)
+            _array.get(i)->setAllPropertiesUseDefault(shouldUseDefault); }
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

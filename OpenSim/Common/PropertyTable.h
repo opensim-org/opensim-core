@@ -91,8 +91,7 @@ public:
 	template <class T> void 
     addProperty(const std::string& name, 
                 const std::string& comment, 
-                const T&           value,
-                const std::string& group = "Misc");
+                const T&           value);
 
     /** Return a const reference to a property of known type T from the 
     table by name. This will throw an exception if no property with this name
@@ -223,8 +222,7 @@ private:
 template <class T> inline
 void PropertyTable::addProperty(const std::string& name, 
                                 const std::string& comment, 
-                                const T&           value,
-                                const std::string& group)
+                                const T&           value)
 {
     if (hasProperty(name))
         throw Exception("Property " + name + " already in table.");
@@ -234,8 +232,6 @@ void PropertyTable::addProperty(const std::string& name,
 
     properties.push_back(new Property2<T>(name, comment, value));
     propertyIndex[name] = nxtIndex;
-
-    //TODO: deal with group
 }
 
 template <class T> inline

@@ -74,8 +74,12 @@ public:
 	PropertyObj();
 	PropertyObj(const std::string &aName,const Object &aValue);
 	PropertyObj(const PropertyObj &aProperty);
-	/*virtual*/ PropertyObj* copy() const;
-	/*virtual*/ ~PropertyObj();
+
+	PropertyObj* copy() const OVERRIDE_11;
+	virtual ~PropertyObj();
+    void setSubPropertiesUseDefault(bool shouldUseDefault) OVERRIDE_11
+    {   _value->setAllPropertiesUseDefault(shouldUseDefault); }
+
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

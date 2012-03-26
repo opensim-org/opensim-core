@@ -83,6 +83,14 @@ public:
     {   return equals(other); }
     #endif
 
+    /** This method sets the "use default" flag for this property and the 
+    properties of any objects it contains to the given value. **/
+    void setAllPropertiesUseDefault(bool shouldUseDefault) {
+        setUseDefault(shouldUseDefault);
+        setSubPropertiesUseDefault(shouldUseDefault);
+    }
+
+
     // This is the interface that any concrete Property class must implement.
     //--------------------------------------------------------------------------
 	/** Return all heap space used by this property. **/
@@ -96,12 +104,18 @@ public:
     or both are NaN (the latter in contrast to normal IEEE floating point 
     behavior, where NaN!=NaN). **/
 	virtual bool equals(const AbstractProperty& other) const = 0;
+    /** If this concrete property contains Objects (which may themselves 
+    contain properties), then this method should call the 
+    setAllPropertiesUseDefault() method on each contained object, providing
+    the same flag as is passed here in \a shouldUseDefault. **/
+    virtual void setSubPropertiesUseDefault(bool shouldUseDefault) = 0;
     /** Return the enum value corresponding to the concrete property. **/
 	virtual PropertyType getPropertyType() const = 0;
     /** For relatively simple types, return the current value of this property 
     in a string suitable for displaying to a user in the GUI. Objects just
     return something like "(Object)". **/
     virtual std::string toString() const = 0;
+
     /** Return the current value as type T; this works only if the underlying
     concrete property stores type T otherwise throws an exception. **/
     template <class T> const T& getValue() const;
@@ -136,7 +150,7 @@ public:
 	const std::string& getComment() const { return _comment; }
 	bool getUseDefault() const { return _useDefault; }
 	bool getMatchName() const { return _matchName; }
-	//int getIndex() { return _index; }
+
     int getMinArraySize() { return _minArraySize; }
 	int getMaxArraySize() { return _maxArraySize; }
 
@@ -148,6 +162,8 @@ public:
         static const char* name() {return "Obj";}
         static PropertyType getPropertyType() {return Obj;}
         static bool isEqual(const T& a, const T& b) {return a==b;}
+        static void setSubPropertiesUseDefault(bool shouldUseDefault, T& obj)
+        {   obj.setAllPropertiesUseDefault(shouldUseDefault); }
         static std::string formatForDisplay(const T&) {return "(Object)";}
     };
 
@@ -176,12 +192,14 @@ template<> struct AbstractProperty::TypeHelper<bool> {
     static const char* name() {return "bool";}
     static PropertyType getPropertyType() {return Bool;}
     static bool isEqual(bool a, bool b) {return a==b;}
+    static void setSubPropertiesUseDefault(bool, bool&) {}
     OSIMCOMMON_API static std::string formatForDisplay(bool);
 };
 template<> struct AbstractProperty::TypeHelper<int> {
     static const char* name() {return "int";}
     static PropertyType getPropertyType() {return Int;}
     static bool isEqual(int a, int b) {return a==b;}
+    static void setSubPropertiesUseDefault(bool, int&) {}
     OSIMCOMMON_API static std::string formatForDisplay(int);
 };
 template<> struct AbstractProperty::TypeHelper<std::string> {
@@ -189,6 +207,7 @@ template<> struct AbstractProperty::TypeHelper<std::string> {
     static PropertyType getPropertyType() {return Str;}
     OSIMCOMMON_API static bool isEqual(const std::string& a, 
                                        const std::string& b);
+    static void setSubPropertiesUseDefault(bool, std::string&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const std::string&);
 };
 
@@ -197,6 +216,7 @@ template<> struct AbstractProperty::TypeHelper< Array<bool> > {
     static PropertyType getPropertyType() {return BoolArray;}
     OSIMCOMMON_API static bool isEqual(const Array<bool>& a, 
                                        const Array<bool>& b);
+    static void setSubPropertiesUseDefault(bool, Array<bool>&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const Array<bool>&);
 };
 template<> struct AbstractProperty::TypeHelper< Array<int> > {
@@ -204,6 +224,7 @@ template<> struct AbstractProperty::TypeHelper< Array<int> > {
     static PropertyType getPropertyType() {return IntArray;}
     OSIMCOMMON_API static bool isEqual(const Array<int>& a, 
                                        const Array<int>& b);
+    static void setSubPropertiesUseDefault(bool, Array<int>&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const Array<int>&);
 };
 template<> struct AbstractProperty::TypeHelper< Array<std::string> > {
@@ -211,6 +232,7 @@ template<> struct AbstractProperty::TypeHelper< Array<std::string> > {
     static PropertyType getPropertyType() {return StrArray;}
     OSIMCOMMON_API static bool isEqual(const Array<std::string>& a, 
                                        const Array<std::string>& b);
+    static void setSubPropertiesUseDefault(bool, Array<std::string>&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const Array<std::string>&);
 };
 
@@ -221,6 +243,7 @@ template<> struct AbstractProperty::TypeHelper<double> {
     static const char* name() {return "double";}
     static PropertyType getPropertyType() {return Dbl;}
     OSIMCOMMON_API static bool isEqual(double a, double b);
+    static void setSubPropertiesUseDefault(bool, double&) {}
     OSIMCOMMON_API static std::string formatForDisplay(double);
 };
 template<> struct AbstractProperty::TypeHelper<SimTK::Vec3>  {
@@ -228,6 +251,7 @@ template<> struct AbstractProperty::TypeHelper<SimTK::Vec3>  {
     static PropertyType getPropertyType() {return DblVec3;}
     OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
                                        const SimTK::Vec3& b);
+    static void setSubPropertiesUseDefault(bool, SimTK::Vec3&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Vec3&);
 };
 template<> struct AbstractProperty::TypeHelper<SimTK::Vector>  {
@@ -235,6 +259,7 @@ template<> struct AbstractProperty::TypeHelper<SimTK::Vector>  {
     static PropertyType getPropertyType() {return DblVec;}
     OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
                                        const SimTK::Vector& b);
+    static void setSubPropertiesUseDefault(bool, SimTK::Vector&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Vector&);
 };
 template<> struct AbstractProperty::TypeHelper<SimTK::Transform>  {
@@ -242,6 +267,7 @@ template<> struct AbstractProperty::TypeHelper<SimTK::Transform>  {
     static PropertyType getPropertyType() {return AbstractProperty::Transform;}
     OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
                                        const SimTK::Transform& b);
+    static void setSubPropertiesUseDefault(bool, SimTK::Transform&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Transform&);
 };
 
@@ -250,6 +276,7 @@ template<> struct AbstractProperty::TypeHelper< Array<double> >  {
     static PropertyType getPropertyType() {return DblArray;}
     OSIMCOMMON_API static bool isEqual(const Array<double>& a, 
                                        const Array<double>& b);
+    static void setSubPropertiesUseDefault(bool, Array<double>&) {}
     OSIMCOMMON_API static std::string formatForDisplay(const  Array<double>&);
 };
 
@@ -260,6 +287,8 @@ template <class O> struct AbstractProperty::TypeHelper<O*> {
     static const char* name() {return "ObjPtr";} 
     static PropertyType getPropertyType() {return ObjPtr;}
     static bool isEqual(const O* a, const O* b) {return *a==*b;}
+    static void setSubPropertiesUseDefault(bool shouldUseDefault, O* obj)
+    {   obj->setAllPropertiesUseDefault(shouldUseDefault); }
     static std::string formatForDisplay(const O*)
     {   return "(ObjectPointer)"; }
 };
@@ -272,6 +301,11 @@ template<class O> struct AbstractProperty::TypeHelper< ArrayPtrs<O> > {
             if (!TypeHelper<O*>::isEqual(a.get(i),b.get(i)))
                 return false;
         return true;
+    }
+    static void setSubPropertiesUseDefault(bool shouldUseDefault, 
+                                           ArrayPtrs<O>& objs) {
+       for (int i=0; i < objs.getSize(); ++i)
+           objs.get(i)->setAllPropertiesUseDefault(shouldUseDefault);
     }
     static std::string formatForDisplay(const ArrayPtrs<O>&)
     {   return "(Array of objects)"; }  

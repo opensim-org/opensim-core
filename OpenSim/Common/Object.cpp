@@ -34,7 +34,7 @@
 //============================================================================
 // INCLUDES
 //============================================================================
-#include <fstream>
+
 #include "Object.h"
 #include "XMLDocument.h"
 #include "Exception.h"
@@ -44,6 +44,8 @@
 #include "PropertyTransform.h"
 #include "IO.h"
 #include "OldVersionException.h"
+
+#include <fstream>
 
 using namespace OpenSim;
 using namespace std;
@@ -56,7 +58,7 @@ using SimTK::Transform;
 //=============================================================================
 ArrayPtrs<Object> Object::_Types;
 
-stringsToObjects Object::_mapTypesToDefaultObjects;
+StringsToObjects Object::_mapTypesToDefaultObjects;
 bool Object::_serializeAllDefaults=false;
 
 #include <vector>
@@ -265,128 +267,58 @@ init()
  *
  * @return Reference to this object.
  * @see updateXMLNode()
- * @see generateXMLNode()
  */
 Object& Object::
-operator=(const Object &aObject)
+operator=(const Object& source)
 {
-	setType(aObject.getType());
-	setName(aObject.getName());
-	_authors=aObject.getAuthors();
-	_references=aObject.getReferences();
-	return(*this);
+	setType(source.getType());
+	setName(source.getName());
+	setDescription(source.getDescription());
+	setAuthors(source.getAuthors());
+	setReferences(source.getReferences());
+	return *this;
 }
 
 //-----------------------------------------------------------------------------
 // EQUALITY
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Determine if two objects are equal.
- *
- * @return True if the two objects are equal, false otherwise.
- */
+// Compare the base class mundane data members, and the properties. Concrete
+// Objects should override this but they must make sure to invoke the base
+// operator.
 bool Object::
-operator==(const Object &aObject) const
+operator==(const Object& other) const
 {
-	if(getType() != aObject.getType()) return(false);
-	if(getName() != aObject.getName()) return(false);
-	if (_authors!= aObject.getAuthors()) return(false);
-	if (_references!= aObject.getReferences()) return(false);
-	bool equal = true;
-	for (int i=0; i< _propertySet.getSize() && equal ; i++){
-		const Property_Deprecated& myProperty = *(_propertySet.get(i));
-		const Property_Deprecated& theirProperty = *(aObject.getPropertySet().get(i));
-		switch(myProperty.getType()){
-			case (Property_Deprecated::Bool): 
-				if (myProperty.getValueBool()!=theirProperty.getValueBool()) return false;
-				continue;
-			case Property_Deprecated::Int:
-				if (myProperty.getValueInt()!=theirProperty.getValueInt()) return false;
-				continue;
-			case Property_Deprecated::Dbl:
-				if (fabs(myProperty.getValueDbl()-theirProperty.getValueDbl())>1e-7) return false;
-				continue;
-			case Property_Deprecated::Str:
-				if (myProperty.getValueStr()!=theirProperty.getValueStr()) return false;
-				continue;
-			case Property_Deprecated::Obj:
-				if (!(myProperty.getValueObj()==theirProperty.getValueObj())) return false;
-				continue;
-			case Property_Deprecated::ObjPtr:
-				equal = (myProperty==theirProperty);
-				if (!equal) return false;
-				continue;
-			case Property_Deprecated::BoolArray:
-				for(int j=0; j < myProperty.getValueBoolArray().getSize() && equal; j++)
-					equal= (myProperty.getValueBoolArray().get(j)==
-								theirProperty.getValueBoolArray().get(j));
-				if (!equal) return false;
-				continue;
-			case Property_Deprecated::IntArray:
-				for(int j=0; j < myProperty.getValueIntArray().getSize() && equal; j++)
-					equal= (myProperty.getValueIntArray().get(j) ==
-								theirProperty.getValueIntArray().get(j));
-				if (!equal) return false;
-				continue;
-			case Property_Deprecated::DblArray:
-				for(int j=0; j < myProperty.getValueDblArray().getSize() && equal; j++)
-					equal= (fabs(myProperty.getValueDblArray().get(j)-
-								theirProperty.getValueDblArray().get(j))<1e-8);
-				if (!equal) return false;
-				continue;
-			case Property_Deprecated::StrArray:
-				for(int j=0; j < myProperty.getValueStrArray().getSize() && equal; j++)
-					equal= (myProperty.getValueStrArray().get(j)==
-								theirProperty.getValueStrArray().get(j));
-				if (!equal) return false;
-				continue;
-	
-			case Property_Deprecated::ObjArray:
-				equal = (myProperty==theirProperty);
-				if (!equal) return false;
-				continue;
-			case Property_Deprecated::DblVec:
-				{
-				int M = myProperty.getArraySize();
-				equal = (((const PropertyDblVec_<1>&)myProperty).getValueDblVec() - 
-					((const PropertyDblVec_<1>&)theirProperty).getValueDblVec()).norm() < 1e-8;
-				if (!equal) return false;
-				continue;
-				}
-			case Property_Deprecated::Transform:
-				const SimTK::Transform& t1 = ((const PropertyTransform&)myProperty).getValueTransform();
-				const SimTK::Transform& t2 = ((const PropertyTransform&)theirProperty).getValueTransform();
-				SimTK::Transform tComposed =  t1.compose(t2.invert());
-				equal = (tComposed.p().norm() < 1e-8 &&
-					fabs(tComposed.R().trace()-3) < 1e-8);
-				if (!equal) return false;
-				continue;
+	if (getType()        != other.getType())        return false;
+	if (getName()        != other.getName())        return false;
+	if (getDescription() != other.getDescription()) return false;
+	if (getAuthors()     != other.getAuthors())     return false;
+	if (getReferences()  != other.getReferences())  return false;
 
-		}
-	}
+    // Must have the same number of properties, in the same order.
+    const int numProps = getNumProperties();
+    if (other.getNumProperties() != numProps)
+        return false;
 
-	if (equal)
-		equal = _propertyTable == aObject._propertyTable;
+    for (int px = 0; px < numProps; ++px) {
+        const AbstractProperty& myProp    = getPropertyByIndex(px);
+        const AbstractProperty& otherProp = other.getPropertyByIndex(px);
 
-	return(equal);
+        if (!myProp.equals(otherProp))
+            return false;
+    }
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
 // LESS THAN
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Determine if this Object is "less than" another, used to put Objects in
- * sorted containers.
- *
- * This Object is less than another if the name of this string is less
- * than the name of the other Object.
- */
+// This Object is less than another if the name of this string is less
+// than the name of the other Object. TODO: is that a unique ordering?
 bool Object::
-operator<(const Object &aObject) const
+operator<(const Object& other) const
 {
-	return(_name < aObject._name);
+	return getName() < other.getName();
 }
 
 
@@ -662,15 +594,14 @@ UpdateFromXMLNodeSimpleProperty(Property_Deprecated* aProperty,
                                 const string&        aName)
 {
 	aProperty->setUseDefault(true);
-	SimTK::String string;
-	aNode.writeToString(string);
+
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
 
 	T value;
 	iter->getValueAs(value); // fails for Nan, infinity, -infinity, true/false
-			aProperty->setValue(value);
-			aProperty->setUseDefault(false);
+    aProperty->setValue(value);
+    aProperty->setUseDefault(false);
 }
 
 template<class T> static void 
@@ -679,8 +610,7 @@ UpdateFromXMLNodeSimpleProperty2(AbstractProperty*    aAbstractProperty,
                                  const string&        aName)
 {
 	aAbstractProperty->setUseDefault(true);
-	SimTK::String string;
-	aNode.writeToString(string);
+
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
 
@@ -697,14 +627,13 @@ UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty,
                                const string&        aName)
 {
 	aProperty->setUseDefault(true);
-	//SimTK::String string;
-	//aNode.writeToString(string);
+
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
 
 	SimTK::Array_<T> value;
 	iter->getValueAs(value);
-	//cout << value << endl;
+
 	OpenSim::Array<T> osimValue;
 	osimValue.setSize(value.size());
 	for(unsigned i=0; i< value.size(); i++) osimValue[i]=value[i];
@@ -718,8 +647,7 @@ UpdateFromXMLNodeArrayProperty2(AbstractProperty*    aAbstractProperty,
                                 const string&        aName)
 {
 	aAbstractProperty->setUseDefault(true);
-	//SimTK::String string;
-	//aNode.writeToString(string);
+
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
 
@@ -727,7 +655,7 @@ UpdateFromXMLNodeArrayProperty2(AbstractProperty*    aAbstractProperty,
         dynamic_cast<Property2< OpenSim::Array<T> > *>(aAbstractProperty);
 	SimTK::Array_<T> value;
 	iter->getValueAs(value);
-	//cout << value << endl;
+
 	OpenSim::Array<T> osimValue;
 	osimValue.setSize(value.size());
 	for(unsigned i=0; i< value.size(); i++) osimValue[i]=value[i];
@@ -741,8 +669,7 @@ UpdateFromXMLNodeVec3Property2(AbstractProperty*    aAbstractProperty,
                                const string&        aName)
 {
 	aAbstractProperty->setUseDefault(true);
-	//SimTK::String string;
-	//aNode.writeToString(string);
+
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
 
@@ -750,7 +677,7 @@ UpdateFromXMLNodeVec3Property2(AbstractProperty*    aAbstractProperty,
         dynamic_cast<Property2<Vec3> *>(aAbstractProperty);
 	SimTK::Array_<double> value;
 	iter->getValueAs(value);
-	//cout << value << endl;
+
 	Vec3 &propertyValues = aProperty->updValue();
 	propertyValues[0]=value[0];
 	propertyValues[1]=value[1];
@@ -1406,7 +1333,8 @@ updateDefaultObjectsFromXMLNode()
 	if(_document==NULL) return;
 
 	// GET DEFAULTS ELEMENT
-	SimTK::Xml::element_iterator iterDefault = _document->getRootDataElement().element_begin("defaults");
+	SimTK::Xml::element_iterator iterDefault =
+        _document->getRootDataElement().element_begin("defaults");
 	if (iterDefault==_document->getRootDataElement().element_end() || 
 		!iterDefault->isValid()) return;	// No defaults, skip over
 
@@ -1420,8 +1348,8 @@ updateDefaultObjectsFromXMLNode()
 
 		// GET ELEMENT
 		const string &type = defaultObject->getType();
-		SimTK::Xml::element_iterator iterDefaultType =iterDefault->element_begin(type);
-		//DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(defaultsElmt,type);
+		SimTK::Xml::element_iterator iterDefaultType=
+            iterDefault->element_begin(type);
 		if(iterDefaultType==iterDefault->element_end()) continue;
 
 		// CONSTRUCT AND REGISTER DEFAULT OBJECT
@@ -1429,11 +1357,11 @@ updateDefaultObjectsFromXMLNode()
 		// that ended up causing XML to be parsed twice.  Got rid of that
 		// copy method! - Eran, Feb/07
 		Object *object = defaultObject->copy();
-		object->updateFromXMLNode(*iterDefaultType, _document->getDocumentVersion());
+		object->updateFromXMLNode(*iterDefaultType, 
+                                  _document->getDocumentVersion());
 		object->setName(DEFAULT_NAME);
 		RegisterType(*object);
-		_document->addDefaultObject(object);	// object will be owned by the _document
-		//delete object;
+		_document->addDefaultObject(object); // object will be owned by _document
 	} 
 }
 
@@ -1441,18 +1369,7 @@ updateDefaultObjectsFromXMLNode()
 // UPDATE XML NODE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Update the XML node that represents this object.
- *
- * @param aParent Parent XML node of this object.  Sending in a parent node
- * allows an XML node to be generated for this object if it doesn't already
- * have one.  If the parent node is sent in as NULL and this object doesn't
- * already have an XML node, this object will become the root node for a
- * new XML document.  If this object already has an XML node associated with
- * it, no new nodes are ever generated and the parent node is not used.
- *
- * @param aParent Parent XML element.
- */
+
 void Object::
 updateXMLNode(SimTK::Xml::Element& aParent)
 {
@@ -1839,18 +1756,14 @@ getInlined() const
 void Object::
 setInlined(bool aInlined, const std::string &aFileName)
 {
-	// In theory we might be able to re-use an existing _document node rather than deleting and re-creating one,
-	// but currently if you try that you will get "ERROR- document already has root" from AppendNewElementWithComment, called by generateXMLDocument
-	// TODO: use DOMDocument::adoptNode(DOMNode *source) to be able to switch owner documents...
-	// For now it's safest to delete all XML structures
-	XMLDocument* oldDocument=NULL;
-	if (!_inlined){
-		oldDocument = _document;
-	}
-	if (oldDocument)
-		delete oldDocument;
+	// Wipe out the previously associated document if we weren't inline.
+    if (!_inlined && _document) {
+        delete _document;
+        _document = NULL;
+    }
 
-	_inlined = aInlined;
+	_inlined = aInlined; // set new inline status
+
 	if(!_inlined) {
 		_document = new XMLDocument();
 		_document->setFileName(aFileName);
@@ -1864,108 +1777,13 @@ void Object::
 setAllPropertiesUseDefault(bool aUseDefault)
 {
 	// LOOP THROUGH PROPERTIES
-	for(int i=0;i<_propertySet.getSize();i++) {
-
-		Property_Deprecated *property = _propertySet.get(i);
-		property->setUseDefault(aUseDefault);
-		Property_Deprecated::PropertyType type = property->getType();
-
-		// VALUE
-		switch(type) {
-
-		case(Property_Deprecated::Bool) :
-		case(Property_Deprecated::Int) :
-		case(Property_Deprecated::Dbl) :
-		case(Property_Deprecated::Str) :
-		case(Property_Deprecated::BoolArray) :
-		case(Property_Deprecated::IntArray) :
-		case(Property_Deprecated::DblArray) :
-		case(Property_Deprecated::StrArray) :
-		case(Property_Deprecated::DblVec) :
-		case(Property_Deprecated::Transform) :
-			break; // Nothing to do for the basic types
-
-		// Obj
-		case(Property_Deprecated::Obj) : {
-			Object &object = property->getValueObj();
-			object.setAllPropertiesUseDefault(aUseDefault);
-			break;
-		}
-
-		// ObjArray
-		case(Property_Deprecated::ObjArray) :
-			for(int j=0;j<property->getArraySize();j++)
-				property->getValueObjPtr(j)->setAllPropertiesUseDefault(aUseDefault);
-			break;
-
-		// ObjPtr
-		case(Property_Deprecated::ObjPtr) : {
-			Object *object = property->getValueObjPtr();
-			if(object) object->setAllPropertiesUseDefault(aUseDefault);
-			break;
-		}
-
-		// NOT RECOGNIZED
-		default :
-			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
-			break;
-		}
-	}
-
-    for(int i=0;i<_propertyTable.getNumProperties();i++) {
-		AbstractProperty *abstractProperty = 
-            &_propertyTable.updAbstractPropertyByIndex(i);
-
-		abstractProperty->setUseDefault(aUseDefault);
-		AbstractProperty::PropertyType type = abstractProperty->getPropertyType();
-
-		// VALUE
-		switch(type) {
-
-		case(AbstractProperty::Bool) :
-		case(AbstractProperty::Int) :
-		case(AbstractProperty::Dbl) :
-		case(AbstractProperty::Str) :
-		case(AbstractProperty::BoolArray) :
-		case(AbstractProperty::IntArray) :
-		case(AbstractProperty::DblArray) :
-		case(AbstractProperty::StrArray) :
-		case(AbstractProperty::DblVec3) :
-		case(AbstractProperty::Transform) :
-			break; // Nothing to do for the basic types
-
-		// Obj
-		case(AbstractProperty::Obj) : {
-			Property2<Object> *propertyObj = static_cast<Property2<Object> *>(abstractProperty);
-			Object &object = propertyObj->updValue();
-			object.setAllPropertiesUseDefault(aUseDefault);
-			break;
-		}
-
-		// ObjArray
-		case(AbstractProperty::ObjArray) : {
-			Property2< ArrayPtrs<Object> > *propertyObjArray = dynamic_cast<Property2< ArrayPtrs<Object> > *>(abstractProperty);
-			ArrayPtrs<Object> &objects = propertyObjArray->updValue();
-			for(int j=0; j<objects.getSize(); j++)
-				objects.get(j)->setAllPropertiesUseDefault(aUseDefault);
-			break;
-		}
-
-		// ObjPtr
-		case(AbstractProperty::ObjPtr) : {
-			Property2<Object *> *propertyObjPtr = dynamic_cast<Property2<Object *> *>(abstractProperty);
-			Object *object = propertyObjPtr->updValue();
-			if(object) object->setAllPropertiesUseDefault(aUseDefault);
-			break;
-		}
-
-		// NOT RECOGNIZED
-		default :
-			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
-			break;
-		}
-	}
+    const int numProps = getNumProperties();
+    for (int px = 0; px < numProps; ++px) {
+        AbstractProperty& myProp = updPropertyByIndex(px);
+        myProp.setAllPropertiesUseDefault(aUseDefault);
+    }
 }
+
 //=============================================================================
 // IO
 //=============================================================================
@@ -2213,7 +2031,7 @@ makeObjectFromFile(const std::string &aFileName)
 Object* Object::
 newInstanceOfType(const std::string &aType)
 {
-	stringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.find(aType);
+	StringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.find(aType);
 	Object* newObj=0;
 	if (find_Iter != _mapTypesToDefaultObjects.end()){
 		Object* defaultObject = find_Iter->second;
@@ -2238,7 +2056,7 @@ newInstanceOfType(const std::string &aType)
 void Object::
 getRegisteredTypenames(Array<std::string>& rTypeNames)
 {
-	stringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.begin();
+	StringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.begin();
 	while (find_Iter != _mapTypesToDefaultObjects.end()){
 		std::string nextTypeName = find_Iter->first;
 		if (_deprecatedTypes.findIndex(nextTypeName)==-1)

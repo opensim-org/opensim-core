@@ -1,4 +1,4 @@
-// testVersioing.cpp
+// testVersioning.cpp
 // Author:  Ayman Habib
 /*
 * Copyright (c) 2010, Stanford University. All rights reserved. 
@@ -32,8 +32,8 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
-#include "SimTKmath.h"
+
+#include "Simbody.h"
 
 using namespace OpenSim;
 using namespace std;

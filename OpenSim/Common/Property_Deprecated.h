@@ -35,11 +35,12 @@
 
 // INCLUDES
 #include "osimCommonDLL.h"
-#include <string>
 #include "Array.h"
 #include "ArrayPtrs.h"
 #include "AbstractProperty.h"
 #include "DebugUtilities.h"
+
+#include <string>
 
 namespace OpenSim { 
 
@@ -114,14 +115,18 @@ public:
 
     // Implement the AbstractProperty interface.
 	virtual ~Property_Deprecated() {}
-    /*virtual*/ bool equals(const AbstractProperty& other) const {
-        OPENSIM_FUNCTION_NOT_IMPLEMENTED();
+    bool equals(const AbstractProperty& other) const /*override*/ {
+        return operator==(dynamic_cast<const Property_Deprecated&>(other));
     }
-    /*virtual*/ PropertyType getPropertyType() const {return _propertyType;}
+    PropertyType getPropertyType() const /*override*/ {return _propertyType;}
+
+    // Most property types don't contain any objects. For those this method
+    // can do nothing. Any property types containing objects must override.
+    void setSubPropertiesUseDefault(bool shouldUseDefault) /*override*/ {}
 
     // Property_Deprecated does not implement AbstractProperty::copy(); that 
     // is left to concrete Property_Deprecated objects like PropertyInt.
-	virtual Property_Deprecated* copy() const = 0;
+	Property_Deprecated* copy() const /*override*/ = 0;
 
 	void setNull();
 
@@ -249,6 +254,15 @@ template<> inline double& Property_Deprecated::getValue() { return getValueDbl()
 template<> inline const double& Property_Deprecated::getValue() const { return getValueDbl(); }
 template<> inline std::string& Property_Deprecated::getValue() { return getValueStr(); }
 template<> inline const std::string& Property_Deprecated::getValue() const { return getValueStr(); }
+
+template<> inline Array<bool>& Property_Deprecated::getValue() { return getValueBoolArray(); }
+template<> inline const Array<bool>& Property_Deprecated::getValue() const { return getValueBoolArray(); }
+template<> inline Array<int>& Property_Deprecated::getValue() { return getValueIntArray(); }
+template<> inline const Array<int>& Property_Deprecated::getValue() const { return getValueIntArray(); }
+template<> inline Array<double>& Property_Deprecated::getValue() { return getValueDblArray(); }
+template<> inline const Array<double>& Property_Deprecated::getValue() const { return getValueDblArray(); }
+template<> inline Array<std::string>& Property_Deprecated::getValue() { return getValueStrArray(); }
+template<> inline const Array<std::string>& Property_Deprecated::getValue() const { return getValueStrArray(); }
 
 template<> inline Array<bool>& Property_Deprecated::getValueArray() { return getValueBoolArray(); }
 template<> inline const Array<bool>& Property_Deprecated::getValueArray() const { return getValueBoolArray(); }

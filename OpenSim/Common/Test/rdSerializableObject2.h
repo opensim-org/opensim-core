@@ -102,8 +102,10 @@ namespace OpenSim {
 	public:
 		rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
 			Object::operator=(aObject);
-			_propertySet.get(0)->setValue(aObject.getPropertySet().get(0)->getValueBool());
-			_propertySet.get(1)->setValue(aObject.getPropertySet().get(1)->getValueDblArray());
+            updPropertyByIndex(0).updValue<bool>()=
+                aObject.getPropertyByIndex(0).getValue<bool>();
+            updPropertyByIndex(1).updValue< Array<double> >()=
+                aObject.getPropertyByIndex(1).getValue< Array<double> >();
 			return(*this);
 		};
 
@@ -163,8 +165,10 @@ namespace OpenSim {
 	public:
 		rdSerializableObject3& operator=(const rdSerializableObject3 &aObject){
 			Object::operator=(aObject);
-			_propertySet.get(0)->setValue(aObject.getPropertySet().get(0)->getValueBool());
-			_propertySet.get(1)->setValue(aObject.getPropertySet().get(1)->getValueDblArray());
+            updPropertyByIndex(0).updValue<bool>()=
+                aObject.getPropertyByIndex(0).getValue<bool>();
+            updPropertyByIndex(1).updValue< Array<double> >()=
+                aObject.getPropertyByIndex(1).getValue< Array<double> >();
 			return(*this);
 		};
 

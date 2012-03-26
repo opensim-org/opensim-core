@@ -3,7 +3,7 @@
 // Object.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-1
+* Copyright (c) 2005-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -39,14 +39,16 @@
 #endif
 
 // INCLUDES
-#include <cstring>
-#include <assert.h>
-#include <map>
+
 #include "osimCommonDLL.h"
 #include "XMLDocument.h"
 #include "PropertySet.h"
 #include "PropertyTable.h"
 #include "Property2.h"
+
+#include <cstring>
+#include <cassert>
+#include <map>
 
 // DISABLES MULTIPLE INSTANTIATION WARNINGS
 
@@ -58,12 +60,6 @@ template class OSIMCOMMON_API OpenSim::ArrayPtrs<OpenSim::Object>;
 #endif
 #endif
 
-typedef std::map<std::string, OpenSim::Object* > stringsToObjects;
-typedef std::map<std::string, bool> defaultsReadFromFile;
-
-
-// CONSTANTS
-const char ObjectDEFAULT_NAME[] = "default";
 
 #ifdef SWIG
 	#ifdef OSIMCOMMON_API
@@ -78,120 +74,61 @@ const char ObjectDEFAULT_NAME[] = "default";
 
 namespace OpenSim { 
 
+typedef std::map<std::string, OpenSim::Object* > StringsToObjects;
+
+// CONSTANTS
+const char ObjectDEFAULT_NAME[] = "default";
+
 class VisibleObject;
 class XMLDocument;
-//=============================================================================
-//=============================================================================
-/**
-Class Object is intended to be used as the base class for all
-OpenSim objects that are serializable, most notably ModelComponents.
-It provides a common object from which to derive and also some basic 
-functionality, such as writing to files in XML format and the equality, less than, 
-and output operators.
-For serialization (persistence in files), an Object maintains a list of "Properties"
-that know how to read themseleves from XML files and write to XML. The available Property types are
-  -# Primitive data types (Int, Bool, Double, String, ...) 
-  -# Objects composed of Primitive data types or other Objects, 
+
+//==============================================================================
+//                                 OBJECT
+//==============================================================================
+// TODO: this class should be renamed "SerializableObject" or something like 
+// that.
+
+/** This is the base class for all %OpenSim objects that are serializable 
+(meaning they can be written to and read back from files). In particular, all 
+ModelComponents derive from %Object. It provides a common base class from which
+to derive serializable objects and also some basic functionality, such as 
+writing to files in XML format, managing properties, and the equality, 
+less than, and output operators.
+
+An %Object maintains a list of "Properties" that know how to read themselves 
+from XML and write themselves to XML. The available Property types are
+  -# Primitive data types (int, bool, double, std::string, ...) 
+  -# Properties that are other Objects, 
   -# Arrays of either of the previous 2 categories
 
-An Object type needs to be "Registered" by calling "RegisterType" with an instance of the 
-Object so that the serialization infrastructure knows what Object to create when it encounters 
-a specific XML tag. The registration process is normally done during dynamic library (dll) loading.
+An %Object type needs to be "registered" by calling "RegisterType" with an 
+instance of a concrete object so that the serialization infrastructure knows 
+what kind of %Object to create when it encounters a specific XML tag. The 
+registration process is normally done during dynamic library (dll) loading.
 
-Defaults Mechanism: When an Object is registered (either programmatically, or overridden in the defaults 
-section of a document), a copy of it is maintained in a dictionary as a "default" Object of its class. 
-When new instances of this class are requested, the contents of the defaut object are used to 
-populate the new instance before deserialization. This allows for specifying 
-default values that will be commonly used in one place in the XML file rather then with each object 
-which leads to smaller files.
-
+Defaults mechanism: When an %Object is registered (either programmatically, or
+overridden in the defaults section of a document), a copy of it is maintained 
+in a dictionary as a "default" object of its class. When new instances of this 
+class are requested, the contents of the defaut object are used to populate the
+new instance before deserialization. This allows for specifying default values
+that will be commonly used in one place in the XML file rather then with each 
+object which leads to smaller files that are easier to read.
 
 @version 1.0
-@author Frank C. Anderson, Ayman Habib
-  
- */
+@author Frank C. Anderson, Ayman Habib 
+**/
 class OSIMCOMMON_API Object  
 {
-
-//=============================================================================
-// DATA
-//=============================================================================
-private:
-	/* Array of all registered object types.  Each object type only appears
-	 * once in this array.  Future enhancements could be using a hash table
-	 * instead of an array. 
-	 */
-	static ArrayPtrs<Object> _Types;
-
-	/* A Hash map that maps an std::string& to the corresponding default object.
-	 */
-	static stringsToObjects _mapTypesToDefaultObjects;
-	/* A list of types that have been deprecated so we can take them out when
-     * writing.
-	 */
-	static Array<std::string> _deprecatedTypes;
-
-	/* Global flag to indicate if all registered objects are written in the defaults section
-	 */
-	static bool _serializeAllDefaults;
-
-	/* Debug level: 
-	 *	0: Hides non fatal warnings 
-	 *  1: Shows illegal tags 
-	 *  2: level 1 + registration troubleshooting
-	 *  3: 2 + more verbose troubleshooting of Object (de)serialization. When used from
-	 *     Java wrapping in GUI/Matlab this catches all exceptions thrown by the low level libraries
-	 *     which is slower but helpful in troubleshooting.
-	 */
-	static int _debugLevel;
-
+//------------------------------------------------------------------------------
+// PUBLIC METHODS
+//------------------------------------------------------------------------------
 public:
-    #ifndef SWIG
-	/** Name used for default objects when they are serialized. */
-	static const std::string DEFAULT_NAME;
-    #endif
-protected:
-	/** OBSOLETE: Property set for serializable member variables of this and
-	derived classes. */
-	PropertySet _propertySet;
-
-private:
-	/** Property table for serializable properties of this and derived 
-    classes. */
-	PropertyTable _propertyTable;
-	/** Type. */
-	std::string _type;
-	/** Name */
-	std::string _name;
-	/** A description of the object */
-	std::string _description;
-
-	/** A List of authors */
-	std::string _authors;
-	/** A List of references */
-	std::string _references;
-
-	/** XML document.*/
-	XMLDocument *_document;
-	/** flag indicating whether the object is serialized to this _document or to another fresh document */
-	bool _inlined;
-
-
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-public:
-	/** Constructor to be used by no arg constructor of derived types. Sets type to Object and initializes 
-	 * PropertyList. */
-	Object();
-
-	/**
-	 * Constructor from a File, normally called from other constructors that take a file as input
-	 */
-	Object(const std::string &aFileName, bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
+	/** 
+     * Constructor from a file, normally called from other constructors that 
+     * take a file as input. 
+     */
+	Object(const std::string& fileName, 
+           bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
 
 	/**
 	 * Copy constructor for Object, used by Arrays of Objects
@@ -201,7 +138,7 @@ public:
 	/**
 	 * Constructor Object from an Xml element that describes this Object. Assumes latest XML file format
 	 */
-	Object(SimTK::Xml::Element& aElement);
+	explicit Object(SimTK::Xml::Element& aElement);
 
 	/**
 	 * Virtual destructor for cleanup
@@ -224,64 +161,70 @@ public:
 	/** get Non const pointer to VisibleObject */
 	virtual VisibleObject *updDisplayer() { return 0; };
 
-private:
-	void setNull();
-	void setupProperties();
-	void init();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
-public:
 	/**
-	 * Equality operator wrapper for use from languages not supporting operator overloading
+	 * Equality operator wrapper for use from languages not supporting operator
+     * overloading.
 	 */
-	virtual bool isEqualTo(const Object &aObject) const
+	bool isEqualTo(const Object &aObject) const
 	{
 		return ((*this)==aObject);
 	}
-#ifndef SWIG
+
+    #ifndef SWIG
+    /** Copy assignment copies only the simple base class fields, not the 
+    properties. **/
 	Object& operator=(const Object &aObject);
+    /** Determine if two objects are equal. They are equal if all the simple
+    base class members are equal, both objects have the same number of 
+    properties and corresponding properties are equal, and if the objects
+    are the same concrete type and the concrete class says they are equal. 
+    Concrete object classes must override this if they have any fields to
+    compare, but be sure to invoke the base class operator too. **/
 	virtual bool operator==(const Object &aObject) const;
+    /** Provide an ordering for objects so they can be put in sorted
+    containers. **/
 	virtual bool operator<(const Object &aObject) const;
+    /** Write the type and name of this object into the given output stream. **/
 	friend std::ostream& operator<<(std::ostream &aOut,
-												const Object &aObject) {
+									const Object &aObject) {
 		aOut << aObject.getType() << " " << aObject.getName();
 		return(aOut);
 	};
-#endif
+    #endif
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-protected:
-	void setType(const std::string &aType);
-public:
-	/** Get type of current Object */
+	/** Get type of current concrete Object as a string suitable for use as
+    an XML tag for that object. */
 	const std::string& getType() const;
-	/** Set the name of the Object */
-	void setName(const std::string &aName);
-	/** Get the name */
+	/** Set the name of the Object. */
+	void setName(const std::string& name);
+	/** Get the name of this Object. */
 	const std::string& getName() const;
-	/** Set description, a one liner summary. Currently unused */
-	void setDescription(const std::string &aDescrip);
-	/** Get description, a one liner summary. Currently unused */
+	/** Set description, a one-liner summary. */
+	void setDescription(const std::string& description);
+	/** Get description, a one-liner summary. */
 	const std::string& getDescription() const;
 
-	/** get Authors of this Object */
+	/** Get Authors of this Object */
 	const std::string& getAuthors() const { return _authors; };
-	/** set Authors of this object, call this method in your constructor if needed */
-	void setAuthors(const std::string &aAuthors) { _authors=aAuthors; };
+	/** Set Authors of this object, call this method in your constructor if needed */
+	void setAuthors(const std::string& authors) { _authors=authors; };
 
-	/** get References or Publications to site if using this object */
+	/** Get references or publications to cite if using this object. */
 	const std::string& getReferences() const { return _references; };
-	/** set References or Publications to site if using this object */
-	void setReferences(const std::string &aReferences) { _references=aReferences; };
+	/** Set references or publications to cite if using this object. */
+	void setReferences(const std::string& references) 
+    {   _references=references; };
 
-	const std::string& toString() const;
 
 	//--------------------------------------------------------------------------
-    /** @name                      Properties
+    /** @name              Public access to properties
     Methods in this section are for public access to the properties maintained
     by this OpenSim %Object. These are returned as AbstractProperty objects
     which support various type-independent property services. If you know the
@@ -307,11 +250,6 @@ public:
     /**@}**/
 	//--------------------------------------------------------------------------
 
-	/** Get a reference to the PropertySet maintained by the Object */
-	PropertySet& getPropertySet() { return(_propertySet); }
-#ifndef SWIG
-	const PropertySet& getPropertySet() const { return(_propertySet); }
-#endif
 
 	//--------------------------------------------------------------------------
 	// REGISTRATION OF TYPES AND DEFAULT OBJECTS
@@ -328,76 +266,85 @@ public:
 	static int getDebugLevel() {
 		return _debugLevel; 
 	};
-	/*=============================================================================
-	 * makeObjectFromFile creates an OpenSim object based on the tag at the root
-	 * node of the XML file passed in. This is useful since the constructor of Object 
-	 * doesn't have the proper type info. This works by using the defaults table so 
-	 * that "Object" does not need to know about 
-	 * derived classes. It uses the defaults table to get an instance.
-	 * =============================================================================*/
-	static Object* makeObjectFromFile(const std::string &aFileName);
 
-	/*=============================================================================
-	 * newInstanceOfType Creates a new instance of the type indicated by aType. 
-	 * The instance is initialized to the default Object
-	 * of corresponding type.
-	 =============================================================================*/
-	static Object* newInstanceOfType(const std::string &aType);
+	/** Create a new instance of the type whose tag name is given as \a type. 
+	The instance is initialized to the default object of corresponding type. **/
+	static Object* newInstanceOfType(const std::string& type);
 
-	/*=============================================================================
-	* getRegisteredTypenames is a utility to retrieve all the typenames registered so far.
-	* This is done by traversing the registered objects map, so only concrete classes that 
-	* have registered instances are dealt with.
-	* The result returned in rTypeNames should not be cached while more dlls are loaded 
-	* as they get stale
-	* instead the list should be constructed whenever in doubt
-	=============================================================================*/
-	static void getRegisteredTypenames(Array<std::string>& rTypeNames);
+	/** Retrieve all the typenames registered so far. This is done by traversing
+    the registered objects map, so only concrete classes that have registered 
+    instances are dealt with. The result returned in \c typeNames should not be 
+    cached while more shared libraries or plugins are loaded, because more types
+    may be registered as a result. Instead the list should be reconstructed 
+    whenever in doubt. **/
+	static void getRegisteredTypenames(Array<std::string>& typeNames);
 
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------
-	/**
-	 * Use this method to serialize an object from a SimTK::Xml::Element,
-	 * The element is assumed to be on the format consistent with passed in versionNumber
-	 */
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber);
-	/**
-	 * Use this method only if you're deserializing from a file and the object is TopLevel
-	 *  that is primarily in constructors that take fileName as input
-	 */
+	/** Create an %OpenSim object whose type is based on the tag at the root 
+    node of the XML file passed in. This is useful since the constructor of 
+    %Object doesn't have the proper type info. This works by using the defaults 
+    table so that %Object does not need to know about its derived classes. It 
+    uses the defaults table to get an instance. **/
+	static Object* makeObjectFromFile(const std::string& fileName);
+
+
+	/** Use this method only if you're deserializing from a file and the object
+    is at the top level; that is, primarily in constructors that take a file
+    name as input. **/
 	void updateFromXMLDocument();
-	virtual void updateXMLNode(SimTK::Xml::Element& aParent);
-	// Inline support
+
+
+	/** Use this method to deserialize an object from a SimTK::Xml::Element. The 
+    element is assumed to be in the format consistent with passed in 
+    \a versionNumber. **/
+	virtual void updateFromXMLNode(SimTK::Xml::Element& node, 
+                                   int                  versionNumber);
+
+    /** Serialize this object into the XML node that represents it.   
+    @param      parent 
+        Parent XML node of this object. Sending in a parent node allows an XML 
+        node to be generated for this object if it doesn't already have one. If 
+        no parent node is supplied and this object doesn't already have an XML 
+        node, this object will become the root node for a new XML document. If 
+        this object already has an XML node associated with it, no new nodes 
+        are ever generated and the parent node is not used. 
+    **/
+	virtual void updateXMLNode(SimTK::Xml::Element& parent);
+
+	/** Inlined means an in-memory Object that is not associated with
+    an XMLDocument. **/
 	bool getInlined() const;
+    /** Mark this as inlined or not and optionally provide a file name
+    to associate with the new XMLDocument for the non-inline case. If 
+    there was already a document associated with this object it is
+    deleted. **/
 	void setInlined(bool aInlined, const std::string &aFileName="");
+    /** Unconditionally set the XMLDocument associated with this object.
+    Use carefully -- if there was already a document its heap space is
+    lost here. **/
     void setDocument(XMLDocument* doc) {_document=doc;}
+    /** Get a const pointer to the document (if any) associated with this
+    object. **/
     const XMLDocument* getDocument() const {return _document;}
+    /** Get a writable pointer to the document (if any) associated with this
+    object. **/
     XMLDocument* updDocument() {return _document;}
+    /** If there is a document associated with this object then return the
+    file name maintained by the document. Otherwise return an empty string. **/
 	std::string getDocumentFileName() const;
 	void setAllPropertiesUseDefault(bool aUseDefault);
-private:
-	/**
-	 * Functions to support deserialization 
-	 */
-	void generateXMLDocument();
-	static void InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
-	static void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
-	void updateDefaultObjectsFromXMLNode();
-	void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 
 	//--------------------------------------------------------------------------
 	// IO
 	//--------------------------------------------------------------------------
-public:
 	bool print(const std::string &aFileName);
 	static void PrintPropertyInfo(std::ostream &aOStream,
 					const std::string &aClassNameDotPropertyName);
 	static void PrintPropertyInfo(std::ostream &aOStream,
 					const std::string &aClassName,const std::string &aPropertyName);
 
-
-public:
 	/* Static functions to specify and query if all registered objects are written 
 	 * to the defaults section of output files rather than only those 
 	 * explicitly specified by the user in input files */
@@ -409,7 +356,7 @@ public:
 	{
 		return _serializeAllDefaults;
 	}
-public: 
+
 	static bool isKindOf(const char *type) 
 	{ 
 		return (strcmp("Object",type)==0);
@@ -430,19 +377,144 @@ public:
 				rArray.append(dynamic_cast<T*>(_Types[i]));
 	}
 
+	//--------------------------------------------------------------------------
+    /** @name                      Advanced/Obscure
+    Methods in this section are for specialized purposes not of interest to
+    most OpenSim API users. For example, some of these are services needed by
+    the OpenSim GUI which is written in Java. **/
+    /**@{**/
+
+    /** Wrapper to be used on Java side to display objects in tree; this returns
+    just the object's name. **/
+	const std::string& toString() const;
+
+	/** OBSOLETE: Get a reference to the PropertySet maintained by the 
+    Object. **/
+	PropertySet& getPropertySet() { return _propertySet; }
+	const PropertySet& getPropertySet() const { return _propertySet; }
+    /**@}**/
+	//--------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------
+// PROTECTED METHODS
+//--------------------------------------------------------------------------
 protected:
-	/** Methods to handle Properties */
-	template <class T> const Property2<T>& getProperty(const std::string& name) const;
-	template <class T> Property2<T>& updProperty(const std::string& name);
+	/** The default constructor is only for use by constructors of 
+    derived types. Sets type string to "Object" and initializes all base class
+    data members to innocuous values. **/
+	Object();
+
+    /** Concrete derived objects can use this to tell the base class their 
+    type as a string suitable for use as an XML tag. **/
+	void setType(const std::string& type);
+
+	/** Get property \a name of known type T as a const reference; the property
+    must exist. **/
+	template <class T> const Property2<T>& 
+    getProperty(const std::string& name) const;
+	/** Get property \a name of known type T as a writable reference; the 
+    property must exist. **/
+	template <class T> Property2<T>& 
+    updProperty(const std::string& name);
+
+    /** Define a new property of known type T, with the given \a name and
+    associated \a comment. **/
 	template <class T> void addProperty(const std::string& name, 
                                         const std::string& comment, 
-                                        const T&           value,
-                                        const std::string& group = "Misc");
+                                        const T&           value);
+    /** Obtain a const reference to the value of known type T that is stored
+    in the property named \a name, which must exist. **/
 	template <class T> const T& getPropertyValue(const std::string& name) const;
+    /** Obtain a writable reference to the value of known type T that is stored
+    in the property named \a name, which must exist. **/
 	template <class T> T& updPropertyValue(const std::string& name);
-	template <class T> void setPropertyValue(const std::string& name, const T &value);
+    /** Set the value of the property named \a name, which must exist and be
+    a property of type T. **/
+	template <class T> void 
+    setPropertyValue(const std::string& name, const T& value);
+
+    /** Obtain the property type as a string; this is just for display and
+    debugging. **/
 	const std::string& getPropertyTypeAsString(const std::string& name) const;
+    /** Obtain the comment that was associated with this property at the time
+    it was defined. **/
 	const std::string& getPropertyComment(const std::string& name) const;
+
+//--------------------------------------------------------------------------
+// PRIVATE METHODS
+//--------------------------------------------------------------------------
+private:
+	void setNull();
+	void setupProperties();
+	void init();
+
+	// Functions to support deserialization. 
+	void generateXMLDocument();
+	static void InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+	static void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+	void updateDefaultObjectsFromXMLNode();
+	void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
+
+
+//==============================================================================
+// DATA
+//==============================================================================
+public:
+    #ifndef SWIG
+	/** Name used for default objects when they are serialized. */
+	static const std::string DEFAULT_NAME;
+    #endif
+
+protected:
+	/** OBSOLETE: Property set for serializable member variables of this and
+	derived classes. */
+	PropertySet _propertySet;
+
+private:
+	// Array of all registered object types. Each object type only appears once 
+    // in this array. TODO: use map or hash table. 
+	static ArrayPtrs<Object> _Types;
+
+	// Map from type (tag) name to a default object of that type.
+	static StringsToObjects _mapTypesToDefaultObjects;
+
+	// A list of types that have been deprecated so we can take them out when
+    // writing.
+	static Array<std::string> _deprecatedTypes;
+
+	// Global flag to indicate if all registered objects are written in the 
+    // defaults section.
+	static bool _serializeAllDefaults;
+
+	// Debug level: 
+	//	0: Hides non fatal warnings 
+	//  1: Shows illegal tags 
+	//  2: level 1 + registration troubleshooting
+	//  3: 2 + more verbose troubleshooting of Object (de)serialization. When 
+    //     used from ava wrapping in GUI/Matlab this catches all exceptions 
+    //     thrown by the low level libraries which is slower but helpful in 
+    //     troubleshooting.
+	static int _debugLevel;
+
+	// Property table for serializable properties of this and derived classes.
+	PropertyTable _propertyTable;
+	// The type of this object as a string suitable for use as an XML tag.
+	std::string _type;
+	// The name of this object.
+	std::string _name;
+	// A short description of the object.
+	std::string _description;
+
+	// List of authors who contributed to the concrete object.
+	std::string _authors;
+	// List of references that should be cited when using this concrete object.
+	std::string _references;
+
+	// The XML document, if any, associated with this object.
+	XMLDocument *_document;
+	// Flag indicating whether the object is serialized to this _document or 
+    // to another fresh document.
+	bool _inlined;
 
 //=============================================================================
 };	// END of class Object
@@ -489,9 +561,9 @@ updProperty(const std::string& name)
 
 template <class T> void Object::
 addProperty(const std::string& name, const std::string& comment, 
-            const T& value, const std::string& group)
+            const T& value)
 {
-	_propertyTable.addProperty(name, comment, value, group);
+	_propertyTable.addProperty(name, comment, value);
 }
 
 template <class T> const T& Object::

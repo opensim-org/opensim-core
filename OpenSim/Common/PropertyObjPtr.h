@@ -78,15 +78,19 @@ public:
 		_value = aProperty._value ? (T*)aProperty._value->copy() : 0;
 	}
 
-	/*virtual*/ PropertyObjPtr* copy() const
+	PropertyObjPtr* copy() const OVERRIDE_11
 	{
 		return new PropertyObjPtr<T>(*this);
 	}
 
-	/*virtual*/ ~PropertyObjPtr() 
+	virtual ~PropertyObjPtr()
 	{ 
 		delete _value; 
 	}
+
+    void setSubPropertiesUseDefault(bool shouldUseDefault) OVERRIDE_11
+    {   _value->setAllPropertiesUseDefault(shouldUseDefault); }
+
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
