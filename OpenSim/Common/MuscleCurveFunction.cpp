@@ -611,14 +611,23 @@ This function will print cvs file of the column vector col0 and the matrix data
 */
 void MuscleCurveFunction::
     printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
-    const std::string& path, const std::string& filename)
+    const std::string& path, const std::string& filename) const
 {
 	
     ofstream datafile;
     std::string fullpath = path;
     fullpath.append("/");
     fullpath.append(filename);
-	datafile.open(fullpath.c_str());
+
+	datafile.open(fullpath.c_str(),std::ios::out);
+
+    if(!datafile){
+        datafile.close();
+        SimTK_ERRCHK2_ALWAYS( false, 
+        "MuscleCurveFunction::printMatrixToFile",
+        "%s: Failed to open the file path: %s", _name.c_str(),fullpath.c_str());
+    }
+
 
     for(int i = 0; i < (signed)colNames.size(); i++){
         if(i < (signed)colNames.size()-1)

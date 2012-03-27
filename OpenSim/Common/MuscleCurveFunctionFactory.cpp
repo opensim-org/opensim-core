@@ -180,9 +180,10 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
         "%s: dydxC must be greater than or equal to 0"
         "and less than 1",muscleName.c_str());
-    SimTK_ERRCHK1_ALWAYS( dydxIso > 1.0, 
+    SimTK_ERRCHK2_ALWAYS( dydxIso > 1, 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
-        "%s: dydxIso must be greater than or equal to 1",muscleName.c_str());
+        "%s: dydxIso must be greater than (fmaxE-1)/1 (%f)",muscleName.c_str(),
+                                                            ((fmaxE-1.0)/1.0));
     SimTK_ERRCHK2_ALWAYS( (dydxE >= 0.0 && dydxE < (fmaxE-1)), 
         "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
         "%s: dydxE must be greater than or equal to 0"
@@ -243,7 +244,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxC must be greater than 0"
         "and less than 1",muscleName.c_str());
-    SimTK_ERRCHK1_ALWAYS( dydxIso > 1.0, 
+    SimTK_ERRCHK1_ALWAYS( dydxIso > 1, 
         "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxIso must be greater than or equal to 1",muscleName.c_str());
     SimTK_ERRCHK2_ALWAYS( (dydxE > 0.0 && dydxE < (fmaxE-1)), 
@@ -348,7 +349,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
         "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
         "%s: cosPhi0 must be greater than 0, and less than 1",muscleName.c_str());
 
-    SimTK_ERRCHK1_ALWAYS( k < 0 , 
+    SimTK_ERRCHK1_ALWAYS( k < 1/cosPhi0 , 
         "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
         "%s: k must be less than 0",muscleName.c_str());
 

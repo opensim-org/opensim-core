@@ -148,11 +148,6 @@ SimTK::Matrix QuinticBezierCurveSet::
         "Error: double argument curviness must be between 0.0 and 1.0."
         "Called by %s", caller.c_str());
 
-    //(abs(dydx0-dydx1) <= (double)SimTK::Eps)
-    SimTK_ERRCHK1_ALWAYS( !(abs(dydx0-dydx1) < 0) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCornerControlPoints", 
-        "Error: dydx0 and dydx1 must have different values."
-        "Called by %s", caller.c_str());
 
     //1. Calculate the location where the two lines intersect
     // (x-x0)*dydx0 + y0 = (x-x1)*dydx1 + y1
@@ -788,7 +783,23 @@ double QuinticBezierCurveSet::calcU(double ax, const SimTK::Vector& bezierPtsX,
 
     SimTK::Vector xV(1);
     xV(0) = ax;
-    
+
+    //Check to make sure that ax is in the curve domain
+    double minX = 1e100;
+    double maxX = -1e100;
+    for(int i=0; i<bezierPtsX.nrow(); i++){
+        if(bezierPtsX(i) > maxX)
+            maxX = bezierPtsX(i);
+        if(bezierPtsX(i) < minX)
+            minX = bezierPtsX(i);
+    }
+
+    SimTK_ERRCHK1_ALWAYS( ax >= minX && ax <= maxX, 
+        "QuinticBezierCurveSet::calcU", 
+        "Error: input ax was not in the domain of the Bezier curve specified \n"
+        "by the control points in bezierPtsX. Called by %s", caller.c_str());
+
+
     double u = splineUX.calcValue(xV);
     u = clampU(u);
     double f = 0;
@@ -843,26 +854,20 @@ int QuinticBezierCurveSet::calcIndex(double x, const SimTK::Matrix& bezierPtsX,
 {
     int idx = 0;
     bool flag_found = false;
-    if(bezierPtsX.ncol() > 1){
-        for(int i=0; i<bezierPtsX.ncol(); i++){
-            if( x >= bezierPtsX(0,i) && x < bezierPtsX(5,i) ){
-                idx = i;
-                i = bezierPtsX.ncol();
-                flag_found = true;
-            }
-        }
 
-        //Check if the value x is identically the last point
-        if(flag_found == false && x == bezierPtsX(5,bezierPtsX.ncol()-1)){
-            idx = bezierPtsX.ncol()-1;
+    for(int i=0; i<bezierPtsX.ncol(); i++){
+        if( x >= bezierPtsX(0,i) && x < bezierPtsX(5,i) ){
+            idx = i;
+            i = bezierPtsX.ncol();
             flag_found = true;
         }
-
-    }else{
-        flag_found = true;
-        idx = 0;
     }
-    
+
+    //Check if the value x is identically the last point
+    if(flag_found == false && x == bezierPtsX(5,bezierPtsX.ncol()-1)){
+        idx = bezierPtsX.ncol()-1;
+        flag_found = true;
+    }
 
     SimTK_ERRCHK1_ALWAYS( (flag_found == true), 
         "QuinticBezierCurveSet::calcIndex", 

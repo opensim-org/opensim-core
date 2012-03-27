@@ -310,7 +310,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
         */
         static double calcQuinticBezierCurveVal(double u, 
-                             const SimTK::Vector& pts,const std::string& caller);
+                            const SimTK::Vector& pts,const std::string& caller);
 
         /**
         Calculates the value of a quintic Bezier derivative curve at value u. 

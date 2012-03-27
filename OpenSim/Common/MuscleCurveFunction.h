@@ -281,6 +281,7 @@ namespace OpenSim {
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
 
+
        For example the tendon 
        curve for a muscle named 'glutmax' will be:
        
@@ -375,9 +376,9 @@ namespace OpenSim {
         @param path The desired path to the folder to write the file
         @param filename The name of the file to print
         */
-        static void printMatrixToFile(SimTK::Matrix& data,
+        void printMatrixToFile(SimTK::Matrix& data,
             SimTK::Array_<std::string>& colnames,
-            const std::string& path, const std::string& filename);
+            const std::string& path, const std::string& filename) const;
 
        /**
        Refer to the documentation for calcValue(double x) 

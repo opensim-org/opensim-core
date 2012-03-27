@@ -449,6 +449,150 @@ double calcMaximumVectorError(SimTK::Vector a, SimTK::Vector b)
 }
 
 
+void testQuinticBezier_Exceptions(){
+    cout <<"**************************************************"<<endl;
+    cout << "   TEST: Bezier Curve Exceptions" << endl;
+    string name  = "testQuinticBezier_Exceptions()";
+
+    //Generate a Bezier curve
+    SimTK::Vector xPts(6);
+    SimTK::Vector yPts(6);
+
+    SimTK::Matrix xMPts(6,1);
+    SimTK::Matrix yMPts(6,1);
+
+    xPts(0) = 0;
+    xPts(1) = 0.5;
+    xPts(2) = 0.5;
+    xPts(3) = 0.75;
+    xPts(4) = 0.75;
+    xPts(5) = 1;
+    xMPts(0) = xPts;
+
+    yPts(0) = 0;
+    yPts(1) = 0.125;
+    yPts(2) = 0.125;
+    yPts(3) = 0.5;
+    yPts(4) = 0.5;
+    yPts(5) = 1;
+    yMPts(0) = yPts;
+
+    SimTK::Vector u(100);
+    SimTK::Vector x(100);
+    SimTK::Array_< SimTK::Spline > aSplineUX(1);
+    for(int i=0; i<100; i++){
+        u(i) = ((double)i)/((double)99);
+        x(i)=QuinticBezierCurveSet::calcQuinticBezierCurveVal(u(i), xPts, name);
+    }
+
+    aSplineUX[0] = SimTK::SplineFitter<Real>::
+            fitForSmoothingParameter(3,x,u,0).getSpline();
+    //Now we have a curve.
+
+    //=========================================================================
+    //Test exceptions for calcQuinticBezierCornerControlPoints
+    //=========================================================================
+    double x0 = 0;
+    double x1 = 1;
+    double y0 = 0;
+    double y1 = 1;
+    double dydx0 = 0;
+    double dydx1 = 1;
+    double curviness = 0;
+
+    double curvinessEX1 = 1.01; //illegal value 
+    double curvinessEX2 = -0.01; //illegal value 
+
+
+    double dydx0EX1 = 0; //illeagle pair
+    double dydx1EX1 = 0.1;
+
+    SimTK_TEST_MUST_THROW(SimTK::Matrix test1 = QuinticBezierCurveSet::
+                     calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
+                                        x1, y1,dydx1, curvinessEX1,name));
+
+    SimTK_TEST_MUST_THROW(SimTK::Matrix test2 = QuinticBezierCurveSet::
+        calcQuinticBezierCornerControlPoints(x0, y0, dydx0, 
+                            x1, y1,dydx1, curvinessEX2,name));
+
+    SimTK_TEST_MUST_THROW(SimTK::Matrix test2 = QuinticBezierCurveSet::
+        calcQuinticBezierCornerControlPoints(x0, y0, dydx0EX1, 
+                            x1, y1,dydx1EX1, curviness,name));
+
+    //=========================================================================
+    //Test exceptions for calcIndex
+    //=========================================================================
+
+    double xEX1 = xPts(0)-0.01; //This is not in the set.
+    double xEX2 = xPts(5)+0.01; //This is not in the set.
+
+    SimTK_TEST_MUST_THROW(int t = QuinticBezierCurveSet::
+                            calcIndex(xEX1, xMPts,name));
+    SimTK_TEST_MUST_THROW(int t = QuinticBezierCurveSet::
+                            calcIndex(xEX2, xMPts,name));
+
+    //=========================================================================
+    //Test exceptions for calcU
+    //=========================================================================
+    
+    //xEX1 is not within the curve, and so the Newton iteration will not
+    //converge
+    SimTK_TEST_MUST_THROW(double uPt = QuinticBezierCurveSet::
+                 calcU(xEX1, xPts, aSplineUX[0], 1e-8, 10,name));
+
+    //=========================================================================
+    //Test exceptions for calcQuinticBezierCurveVal
+    //=========================================================================
+
+    double uEX1 = -0.01; //illeagle
+    double uEX2 = 1.01;  //illeagle
+    SimTK::Vector xPtsEX(5);
+    xPtsEX = 0;
+
+    SimTK_TEST_MUST_THROW(double tst = QuinticBezierCurveSet::
+        calcQuinticBezierCurveVal(uEX1,xPts,name));
+    SimTK_TEST_MUST_THROW(double tst = QuinticBezierCurveSet::
+        calcQuinticBezierCurveVal(uEX2,xPts,name));
+    SimTK_TEST_MUST_THROW(double tst = QuinticBezierCurveSet::
+        calcQuinticBezierCurveVal(0.5,xPtsEX,name));
+
+    //=========================================================================
+    //Test exceptions for calcQuinticBezierCurveDerivU
+    //=========================================================================
+
+    SimTK_TEST_MUST_THROW(double tst = QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivU(uEX1, xPts, (int)1, name));
+    SimTK_TEST_MUST_THROW(double tst = QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivU(uEX2, xPts, (int)1, name));
+    SimTK_TEST_MUST_THROW(double tst = QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivU(0.5, xPtsEX, (int)1, name));
+    SimTK_TEST_MUST_THROW(double tst = QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivU(0.5, xPts, 0, name));
+
+    //=========================================================================
+    //Test exceptions for calcQuinticBezierCurveDerivDYDX
+    //=========================================================================
+    
+    SimTK_TEST_MUST_THROW(double test= QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivDYDX(uEX1,xPts,yPts,1,name));
+    SimTK_TEST_MUST_THROW(double test= QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivDYDX(uEX2,xPts,yPts,1,name));
+    SimTK_TEST_MUST_THROW(double test= QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,0,name));
+    SimTK_TEST_MUST_THROW(double test= QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivDYDX(0.5,xPts,yPts,7,name));
+    SimTK_TEST_MUST_THROW(double test= QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivDYDX(0.5,xPtsEX,yPts,3,name));
+    SimTK_TEST_MUST_THROW(double test= QuinticBezierCurveSet::
+        calcQuinticBezierCurveDerivDYDX(0.5,xPts,xPtsEX,3,name));
+    
+    //=========================================================================
+    //Test exceptions for calcNumIntBezierYfcnX
+    //=========================================================================
+    //There are none.
+    cout << "    passed. All exceptions are functioning as intended" << endl;
+    cout <<"**************************************************"<<endl;
+}
 
 
 /**
@@ -978,7 +1122,14 @@ int main(int argc, char* argv[])
 	try {
         SimTK_START_TEST("Testing MuscleCurveFunctionFactory");
 
+        cout << endl;
+        cout <<"**************************************************"<<endl;
+        cout <<"          TESTING QuinticBezierCurveSet           "<<endl;
+        cout <<"  (a class that MuscleCurveFunctionFactory uses)  "<<endl;
+        cout <<"**************************************************"<<endl;
+
         testQuinticBezier_DU_DYDX();
+        testQuinticBezier_Exceptions();
 
         //Functions to facilitate manual debugging        
         //sampleQuinticBezierValDeriv();
@@ -1034,6 +1185,24 @@ int main(int argc, char* argv[])
             testMuscleCurveC2Continuity(tendonCurve,tendonCurveSample);
         //4. Test for montonicity where appropriate
             testMonotonicity(tendonCurveSample);
+
+        //5. Testing Exceptions
+            cout << endl;
+            cout << "   Exception Testing" << endl;
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction tendonCurveEX
+                = MuscleCurveFunctionFactory::
+                  createTendonForceLengthCurve(0,kiso,c,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction tendonCurveEX
+                = MuscleCurveFunctionFactory::
+                  createTendonForceLengthCurve(e0,(1/e0),c,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction tendonCurveEX
+                = MuscleCurveFunctionFactory::
+                  createTendonForceLengthCurve(e0,kiso,-0.01,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction tendonCurveEX
+                = MuscleCurveFunctionFactory::
+                  createTendonForceLengthCurve(e0,kiso,1.01,true,"test"));
+            cout << "    passed" << endl;
+
         ///////////////////////////////////////
         //FIBER FORCE LENGTH CURVE
         ///////////////////////////////////////
@@ -1078,6 +1247,23 @@ int main(int argc, char* argv[])
         //4. Test for montonicity where appropriate
 
             testMonotonicity(fiberFLCurveSample);
+
+        //5. Testing Exceptions
+            cout << endl;
+            cout << "   Exception Testing" << endl;
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFLCurveEX 
+                = MuscleCurveFunctionFactory::
+                  createFiberForceLengthCurve(0,kisof,cf,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFLCurveEX 
+                = MuscleCurveFunctionFactory::
+                  createFiberForceLengthCurve(e0f,1/e0f,cf,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFLCurveEX 
+                = MuscleCurveFunctionFactory::
+                  createFiberForceLengthCurve(e0f,kisof,-0.01,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFLCurveEX 
+                = MuscleCurveFunctionFactory::
+                  createFiberForceLengthCurve(e0f,kisof,1.01,true,"test"));
+            cout << "    passed" << endl;
         ///////////////////////////////////////
         //FIBER COMPRESSIVE FORCE LENGTH
         ///////////////////////////////////////
@@ -1123,6 +1309,23 @@ int main(int argc, char* argv[])
         //4. Test for montonicity where appropriate
 
             testMonotonicity(fiberCECurveSample);
+        //5. Testing Exceptions
+            cout << endl;
+            cout << "   Exception Testing" << endl;
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECurveEX 
+                = MuscleCurveFunctionFactory::
+              createFiberCompressiveForceLengthCurve(0,kce,cce,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECurveEX 
+                = MuscleCurveFunctionFactory::
+              createFiberCompressiveForceLengthCurve(lmax,-1/lmax,cce,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECurveEX 
+                = MuscleCurveFunctionFactory::
+              createFiberCompressiveForceLengthCurve(lmax,kce,-0.01,true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECurveEX 
+                = MuscleCurveFunctionFactory::
+              createFiberCompressiveForceLengthCurve(lmax,kce,1.01,true,"test"));
+            cout << "    passed" << endl;
+
         ///////////////////////////////////////
         //FIBER COMPRESSIVE PHI CURVE
         ///////////////////////////////////////
@@ -1161,8 +1364,32 @@ int main(int argc, char* argv[])
         //3. Test numerically to see if the curve is C2 continuous
             testMuscleCurveC2Continuity(fiberCEPhiCurve,fiberCEPhiCurveSample);
         //4. Test for montonicity where appropriate
-
             testMonotonicity(fiberCEPhiCurveSample);
+        //5. Testing Exceptions
+            cout << endl;
+            cout << "   Exception Testing" << endl;
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCEPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForcePennationCurve(0,kphi,cphi,
+                                                          true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCEPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForcePennationCurve(SimTK::Pi/2,kphi,cphi,
+                                                          true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCEPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                    createFiberCompressiveForcePennationCurve(phi0,
+                    1.0/(SimTK::Pi/2-phi0),cphi, true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCEPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForcePennationCurve(phi0,kphi,-0.01,
+                                                          true,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCEPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForcePennationCurve(phi0,kphi,1.01,
+                                                          true,"test"));
+            cout << "    passed" << endl;
+
         ///////////////////////////////////////
         //FIBER COMPRESSIVE COSPHI CURVE
         ///////////////////////////////////////
@@ -1203,6 +1430,34 @@ int main(int argc, char* argv[])
         //4. Test for montonicity where appropriate
 
             testMonotonicity(fiberCECosPhiCurveSample);
+        //5. Test exceptions
+            cout << endl;
+        cout << "   Exception Testing" << endl;
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECosPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForceCosPennationCurve(0,kcosPhi,
+                                                        ccosPhi, true,"test"));
+
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECosPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForceCosPennationCurve(1,kcosPhi,
+                                                        ccosPhi, true,"test"));
+
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECosPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForceCosPennationCurve(cosPhi0,1/kcosPhi,
+                                                        ccosPhi, true,"test"));
+
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECosPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForceCosPennationCurve(cosPhi0,kcosPhi,
+                                                        -0.01, true,"test"));
+
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberCECosPhiCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberCompressiveForceCosPennationCurve(cosPhi0,kcosPhi,
+                                                        1.01, true,"test"));
+            cout << "    passed" << endl;
         ///////////////////////////////////////
         //FIBER FORCE-VELOCITY CURVE
         ///////////////////////////////////////
@@ -1253,6 +1508,52 @@ int main(int argc, char* argv[])
         //4. Test for montonicity where appropriate
 
             testMonotonicity(fiberFVCurveSample);
+        //5. Exception testing
+            cout << endl;    
+            cout << "   Exception Testing" << endl;
+                
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(1, dydxC, dydxIso, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, -0.01, dydxIso, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, 1.01, dydxIso, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, 1.0, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, -0.01, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, (fmaxE-1), 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                -0.01,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                1.01,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                concCurviness,  -0.01,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                1.01,  1.01,false,"test"));
+            
+            cout << "    passed" << endl;
 
         ///////////////////////////////////////
         //FIBER FORCE-VELOCITY INVERSE CURVE
@@ -1298,6 +1599,56 @@ int main(int argc, char* argv[])
 
             testMonotonicity(fiberFVInvCurveSample);
 
+        //5. Testing the exceptions
+
+            //5. Exception testing
+            cout << endl;
+                cout << "   Exception Testing" << endl;
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(1, dydxC, dydxIso, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, 0, dydxIso, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, 1.01, dydxIso, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, 1.0, dydxE, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, 0, 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, (fmaxE-1), 
+                                concCurviness,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                -0.01,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                1.01,  eccCurviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                concCurviness,  -0.01,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction fiberFVCurveEX 
+                = MuscleCurveFunctionFactory::
+                createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
+                                1.01,  1.01,false,"test"));
+            
+            cout << "    passed" << endl;
+
+
+        //6. Testing the inverse of the curve - is it really an inverse?
             cout << endl;
             cout << "   TEST: Inverse correctness:fv(fvinv(fv)) = fv" << endl;
             
@@ -1375,8 +1726,62 @@ int main(int argc, char* argv[])
             testMuscleCurveC2Continuity(fiberfalCurve,fiberfalCurveSample);
 
             //fiberfalCurve.MuscleCurveToCSVFile("C:/mjhmilla/Stanford/dev");
-        
+       
+        //4. Exception Testing
+            cout << endl;
+            cout << "    Exception Testing" << endl;
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction 
+                fiberfalCurveEX = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce0, lce2, lce3, 
+                      shoulderVal, plateauSlope, curviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction 
+                fiberfalCurveEX = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce1, lce1, lce3, 
+                      shoulderVal, plateauSlope, curviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction 
+                fiberfalCurveEX = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce2, 
+                      shoulderVal, plateauSlope, curviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction 
+                fiberfalCurveEX = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
+                      -0.01, plateauSlope, curviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction 
+                fiberfalCurveEX = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
+                      shoulderVal, -0.01, curviness,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction 
+                fiberfalCurveEX = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
+                      shoulderVal, plateauSlope, -0.01,false,"test"));
+            SimTK_TEST_MUST_THROW(MuscleCurveFunction 
+                fiberfalCurveEX = MuscleCurveFunctionFactory::
+                createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
+                      shoulderVal, plateauSlope, 1.01,false,"test"));
+            cout << "    passed"<<endl;
 
+                    ///////////////////////////////////////
+        //FIBER COMPRESSIVE PHI CURVE
+        ///////////////////////////////////////
+            cout <<"**************************************************"<<endl;
+            cout <<"MuscleCurveFunction Exception Testing     "<<endl;
+
+            //calcValue doesn't throw an exception in a way a user can trigger
+            //calcDerivative ... ditto
+            
+            //This function does not have an integral curve
+            SimTK_TEST_MUST_THROW(double tst = fiberfalCurve.calcIntegral(0.0));
+
+            //isIntegralAvailable doesn't throw an exception
+            //isIntegralComputedLeftToRight doesn't rhwo an exception
+            //getName doesn't throw an exception
+            //getCurveDomain doesn't throw an exception
+
+            //printMuscleCurveToCSVFile should throw one when given a bad path
+            SimTK_TEST_MUST_THROW(fiberfalCurve.printMuscleCurveToCSVFile
+                                                        ("C:/aBadPath"));
+            //fiberfalCurve.printMuscleCurveToCSVFile("C:/mjhmilla/Stanford/dev");
+            cout << "    passed"<<endl;
         SimTK_END_TEST();
 
     }
