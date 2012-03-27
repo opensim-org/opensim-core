@@ -55,6 +55,10 @@ namespace OpenSim {
         These relative weightings will vary processor to processor, and so any of 
         the quoted computational costs are approximate.
 
+        @author Matt Millard
+        @version 0.0
+
+
     */
     class OSIMCOMMON_API MuscleCurveFunction : public SimTK::Function_<double>
 //    class MuscleCurveFunction : public SimTK::Function_<double>

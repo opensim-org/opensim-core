@@ -127,6 +127,9 @@ Operation Type   : #flops
 These relative weightings will vary processor to processor, and so any of 
 the quoted computational costs are approximate.
 
+@author Matt Millard
+@version 0.0
+
 */
 class OSIMCOMMON_API QuinticBezierCurveSet
 //class QuinticBezierCurveSet
