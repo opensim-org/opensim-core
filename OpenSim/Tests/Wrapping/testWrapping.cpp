@@ -26,10 +26,11 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 // INCLUDE
-#include <string>
-#include <iostream>
 #include <OpenSim/OpenSim.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+
+#include <string>
+#include <iostream>
 
 using namespace OpenSim;
 using namespace std;
@@ -92,11 +93,12 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime)
 
 	osimModel.printBasicInfo(cout);
 
+    // Dump model back out; no automated test provided here though.
+    // osimModel.print(osimModel.getName() + "_out.osim");
+
 	// Create the integrator and manager for the simulation.
-	double accuracy = 1.0e-4;
+	const double accuracy = 1.0e-4;
 	SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-	integrator.setMaximumStepSize(1);
-	integrator.setMinimumStepSize(1.0e-9);
 	integrator.setAccuracy(accuracy);
 
 	Manager manager(osimModel, integrator);
@@ -106,9 +108,10 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime)
 	manager.setFinalTime(finalTime);
 	cout << "\nIntegrating from " << initialTime << " to " << finalTime << endl;
 	
-	const clock_t start = clock();
+	const double start = SimTK::realTime();
 	manager.integrate(si);
-	cout << "simulation time = " << (double)(clock()-start)/CLOCKS_PER_SEC << " seconds\n" << endl;
+	cout << "simulation time = " << SimTK::realTime()-start 
+         << " seconds (wallclock time)\n" << endl;
 
 	// Save the simulation results
 	Storage states(manager.getStateStorage());

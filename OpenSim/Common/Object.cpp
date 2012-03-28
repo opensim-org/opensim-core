@@ -721,8 +721,6 @@ InitializeObjectFromXMLNode(Property_Deprecated*                aProperty,
                             Object*                             aObject, 
                             int                                 versionNumber)
 {
-	SimTK::String toString;
-	rObjectElement->writeToString(toString);
 	// If object is from non-inlined, detect it and set attributes
 	// However we need to do that on the finalized object as copying
 	// does not keep track of XML related issues
@@ -1007,18 +1005,26 @@ try {
 			property->setUseDefault(true);
 			Object &object = property->getValueObj();
 			SimTK::Xml::element_iterator iter = aNode.element_begin(object.getType());
-			if (iter == aNode.element_end()) continue;	// Not found
-			if (((PropertyObj*)property)->getMatchName()){
-					while(object.getName() != iter->getOptionalAttributeValueAs<std::string>("name", dName) &&
-						 iter != aNode.element_end()){
-							iter++;
+			if (iter == aNode.element_end()) 
+                continue;	// No element of this object type found.
+
+            // If matchName is set, search through elements of this type to find
+            // one that has a "name" attribute that matches the name of this
+            // object.
+			if (property->getMatchName()) {
+                while(object.getName() != 
+                        iter->getOptionalAttributeValueAs<std::string>("name", dName) 
+                      && iter != aNode.element_end()) 
+                {
+                    ++iter;
 				}
-					if (iter != aNode.element_end())
-						InitializeObjectFromXMLNode(property, iter, &object, versionNumber);
-					}
+				if (iter != aNode.element_end())
+					InitializeObjectFromXMLNode(property, iter, &object, versionNumber);
+				}
 			else
 				InitializeObjectFromXMLNode(property, iter, &object, versionNumber);
-			break; }
+			break; 
+        }
 
 		// ObjArray AND ObjPtr (handled very similarly)
 		case(Property_Deprecated::ObjArray) : 
@@ -1051,19 +1057,26 @@ try {
 			//	parseFileAttribute(elmt, refNode, childDocument, elmt);
 			//}
 
-			// LOOP THROUGH CHILD NODES
-			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
-			if (propElementIter==aNode.element_end()) break;
+            // FIND THE PROPERTY ELEMENT (in aNode)
+			const SimTK::Xml::element_iterator propElementIter = aNode.element_begin(name);
+			if (propElementIter==aNode.element_end()) 
+                break;
+
+			// LOOP THROUGH PROPERTY ELEMENT'S CHILD ELEMENTS
+            // Each element is expected to be an Object of some type given
+            // by the element's tag.
 			Object *object =NULL;
 			int objectsFound = 0;
 			SimTK::Xml::element_iterator iter = propElementIter->element_begin();
 			while(iter != propElementIter->element_end()){
-				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
-				// to process element nodes
-				//std::cout << "Create Object of type " << iter->getElementTag() << std::endl;
+				// Create an Object of the element tag's type.
 				object = newInstanceOfType(iter->getElementTag());
-				if(!object) { std::cerr << "Object type " << iter->getElementTag() << " not recognized" << std::endl; iter++; continue; }
-				//if(!property->isValidObject(object)) throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
+				if (!object) { 
+                    std::cerr << "Object type " << iter->getElementTag() << " not recognized" 
+                              << std::endl; 
+                    iter++; 
+                    continue; 
+                }
 				objectsFound++;
 
 				if(type==Property_Deprecated::ObjPtr) {

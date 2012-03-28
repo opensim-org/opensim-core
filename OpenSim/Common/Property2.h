@@ -45,7 +45,23 @@
 
 namespace OpenSim {
 
+//==============================================================================
+//                                PROPERTY
+//==============================================================================
+// TODO: rename Property2 to Property
 
+/** An %Property is a (name, value) pair belonging to an %OpenSim Object, which
+maintains a PropertyTable. Property is templatized by the value type T which
+may be a simple type (like int or string) or another Object, or an Array of
+simple types or Objects. In the latter case
+the contained Object will itself contain properties so this property can be
+viewed as a node in a property tree. Properties where T is a simple type can
+be viewed as the terminal nodes of that tree.
+
+Any object contained in a property is
+owned by that property; deleting the property deletes the contained objects.
+
+**/
 template <class T>
 class Property2 : public AbstractProperty
 {

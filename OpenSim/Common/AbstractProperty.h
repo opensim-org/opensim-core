@@ -37,7 +37,7 @@
 #include "osimCommonDLL.h"
 #include "Array.h"
 #include "ArrayPtrs.h"
-#include "SimTKsimbody.h"
+#include "Simbody.h"
 
 #include <string>
 #include <cmath>
@@ -46,17 +46,20 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
-/**
- * A property consists of a type, name, and a value or an array of values.
- *
- * AbstractProperty is an abstract base class that provides the functionality
- * common to all property types.
- *
- * @author Cassidy Kelly, Ajay Seth
- */
+//==============================================================================
+//                            ABSTRACT PROPERTY
+//==============================================================================
+/** An abstract property is a serializable (name,value) pair, for which we
+do not know the type of the value. Values may be simple types like int or 
+string, or may be serializable objects derived from the %OpenSim Object class.
 
+AbstractProperty is an abstract base class that provides the functionality
+common to all properties that does not involve knowledge of the value
+type. AbstractProperty::TypeHelper<T> is specialized to provide useful 
+type-specific information.
+
+@author Cassidy Kelly, Ajay Seth, Michael Sherman
+**/
 class OSIMCOMMON_API AbstractProperty
 {
 public:
