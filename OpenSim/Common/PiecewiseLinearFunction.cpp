@@ -482,7 +482,7 @@ double PiecewiseLinearFunction::calcValue(const Vector& x) const
 
 double PiecewiseLinearFunction::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
 {
-    if (derivComponents.size() < 0)
+    if (derivComponents.size() == 0)
         return SimTK::NaN;
     if (derivComponents.size() > 1)
         return 0.0;

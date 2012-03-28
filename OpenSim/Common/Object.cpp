@@ -2021,7 +2021,8 @@ makeObjectFromFile(const std::string &aFileName)
 	catch(...){	// Document couldn't be opened, or something went really bad
 		return 0;
 	}
-
+	assert(!"Shouldn't be here");
+	return 0;
 }
 
 /**

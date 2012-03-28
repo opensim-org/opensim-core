@@ -318,8 +318,8 @@ bool XMLDocument::isElementEqual(SimTK::Xml::Element& elt1, SimTK::Xml::Element&
 	SimTK::Xml::attribute_iterator att1 = elt1.attribute_begin();
 	SimTK::Xml::attribute_iterator att2 = elt2.attribute_begin();
 	// Handle different # attributes
-	if (att1 == elt1.attribute_end() && att2 != elt2.attribute_end() ||
-		att1 != elt1.attribute_end() && att2 == elt2.attribute_end()){
+	if ( (att1 == elt1.attribute_end() && att2 != elt2.attribute_end()) ||
+		 (att1 != elt1.attribute_end() && att2 == elt2.attribute_end()) ){
 			cout << "Number of attributes is different, element " << elt1.getElementTag() << endl;
 			return false;
 	}

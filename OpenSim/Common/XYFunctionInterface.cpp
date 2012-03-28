@@ -282,6 +282,8 @@ void XYFunctionInterface::setX(int aIndex, double aValue)
 	   case typeGCVSpline:
 		   _gcvSpline->setX(aIndex, aValue);
 		   break;
+		default:
+			return;
 	}
 }
 
@@ -307,6 +309,8 @@ void XYFunctionInterface::setY(int aIndex, double aValue)
 	   case typeGCVSpline:
 		   _gcvSpline->setY(aIndex, aValue);
 		   break;
+		default:
+			return;
 	}
 }
 

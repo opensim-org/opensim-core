@@ -163,7 +163,7 @@ public:
 	Tool& operator=(const Tool &aTool) 
 		{	Object::operator=(aTool);	
 			_resultsDir = aTool._resultsDir; 
-			_inputsDir == aTool._inputsDir;
+			_inputsDir = aTool._inputsDir;
 			_verboseLevel = aTool._verboseLevel;
 			return(*this);};
 

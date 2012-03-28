@@ -55,4 +55,5 @@
 #include "CMC_TaskSet.h"
 #include "CorrectionController.h"
 #include "RegisterTypes_osimTools.h"	// to expose RegisterTypes_osimTools
-#endif _osimTools_h_
+
+#endif // _osimTools_h_

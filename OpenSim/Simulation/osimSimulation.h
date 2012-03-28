@@ -99,4 +99,4 @@
 #include "SimbodyEngine/SpatialTransform.h"
 #include "RegisterTypes_osimSimulation.h"	// to expose RegisterTypes_osimSimulation
 
-#endif _osimSimulation_h_
+#endif // _osimSimulation_h_

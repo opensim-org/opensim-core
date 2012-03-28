@@ -42,4 +42,5 @@
 #include "CoordinateLimitForce.h"
 #include "SpringGeneralizedForce.h"
 #include "RegisterTypes_osimActuators.h"	// to expose RegisterTypes_osimActuators
-#endif _osimActuators_h_
+
+#endif // _osimActuators_h_

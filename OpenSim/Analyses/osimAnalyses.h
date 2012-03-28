@@ -44,4 +44,4 @@
 #include "InducedAccelerations.h"
 #include "RegisterTypes_osimAnalyses.h"	// to expose RegisterTypes_Analyses
 
-#endif _osimAnalyses_h_
+#endif // _osimAnalyses_h_

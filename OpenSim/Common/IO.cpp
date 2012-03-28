@@ -598,13 +598,13 @@ formatText(const string& aComment,const string& leadingWhitespace,int width,cons
 string IO::
 GetSuffix(const std::string &aStr, int aLen)
 {
-	return aStr.substr((aStr.size()-aLen)>=0?aStr.size()-aLen:0);
+	return aStr.substr((aStr.size()>=aLen?aStr.size()-aLen:0));
 }
 
 void IO::
 RemoveSuffix(std::string &rStr, int aLen)
 {
-	rStr.erase((rStr.size()-aLen)>=0?rStr.size()-aLen:0);
+	rStr.erase((rStr.size()>=aLen?rStr.size()-aLen:0));
 }
 
 string IO::

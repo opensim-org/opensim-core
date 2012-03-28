@@ -43,8 +43,6 @@ using SimTK::Vec3;
 const int ActivationFiberLengthMuscle_Deprecated::STATE_ACTIVATION = 0;
 const int ActivationFiberLengthMuscle_Deprecated::STATE_FIBER_LENGTH = 1;
 
-static int counter=0;
-
 const string ActivationFiberLengthMuscle_Deprecated::STATE_ACTIVATION_NAME = "activation";
 const string ActivationFiberLengthMuscle_Deprecated::STATE_FIBER_LENGTH_NAME = "fiber_length";
 

@@ -23,7 +23,7 @@
  * -------------------------------------------------------------------------- */
 //#include "OpenSim/Simulation/osimSimulationDLL.h"
 #include "Simbody.h"
-#include <OpenSim\Simulation\osimSimulationDLL.h>
+#include <OpenSim/Simulation/osimSimulationDLL.h>
 
 namespace OpenSim {
 

@@ -574,7 +574,7 @@ int JointReaction::
 record(const SimTK::State& s)
 {
 	/** if a forces file is specified replace the computed actuation with the 
-	/** forces from storage.*/
+	    forces from storage.*/
 	SimTK::State s_analysis = s;
 	s_analysis.setY(s.getY());
 	_model->updMultibodySystem().realize(s_analysis, s.getSystemStage());
