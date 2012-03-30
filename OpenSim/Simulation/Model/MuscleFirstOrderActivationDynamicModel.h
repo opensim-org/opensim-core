@@ -65,7 +65,7 @@ namespace OpenSim {
     simulating using equilibrium muscle models.
 
     Equation 1 can be made to respect a lower bond on activation by introducing
-    a lower bound, a_low, scaling activation to range from amin to 1
+    a lower bound, amin, scaling activation to range from amin to 1
 
     \verbatim
         aS       = a/(1-amin)                                               (4)
