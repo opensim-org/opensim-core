@@ -172,7 +172,9 @@ namespace OpenSim {
 
        public:
 
-        
+        ///The default constructor, which populates the member data fields with
+        ///NaN's
+        MuscleCurveFunction();
 
        /**Calculates the value of the curve this object represents.
 

@@ -154,6 +154,15 @@ MuscleCurveFunction::
   
 }
 
+ MuscleCurveFunction::MuscleCurveFunction():
+ _mX(0,0),_mY(0,0),_x0(SimTK::NaN),_x1(SimTK::NaN),_y0(SimTK::NaN)
+     ,_y1(SimTK::NaN),_dydx0(SimTK::NaN),_dydx1(SimTK::NaN),
+     _computeIntegral(false),_intx0x1(false),_name("NOT_YET_SET")
+ {
+        _arraySplineUX.resize(0);        
+        _splineYintX = SimTK::Spline();
+        _numBezierSections = (int)SimTK::NaN;
+ }
 
  /*Detailed Computational Costs
  ________________________________________________________________________

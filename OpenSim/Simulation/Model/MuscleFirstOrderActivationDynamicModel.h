@@ -193,7 +193,10 @@ namespace OpenSim {
                                                double tauDeactivation, 
                                                double minActivation,
                                                const std::string& muscleName);
-        
+        ///Default constructor. Sets data members to NAN and other error
+        ///causing values
+        MuscleFirstOrderActivationDynamicModel();
+
         /**
         @param excitation The excitation signal being sent to the muscle 
                           (Unitless, [0,1])

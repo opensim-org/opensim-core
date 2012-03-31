@@ -124,6 +124,10 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
         MuscleFixedWidthPennationModel(double optimalFiberLength, 
                                               double optimalPennationAngle,
                                               std::string& caller);
+        ///Default constructor. Populates member data with NaN's and other
+        ///obviously wrong values
+        MuscleFixedWidthPennationModel();
+
 
         /**
             @returns height of the paralleogram (m)

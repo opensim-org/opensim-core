@@ -27,6 +27,13 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
+MuscleFixedWidthPennationModel::MuscleFixedWidthPennationModel()
+{
+    m_parallelogramHeight   = SimTK::NaN;
+    m_optimalFiberLength    = SimTK::NaN;
+    m_optimalPennationAngle = SimTK::NaN;
+}
+
 MuscleFixedWidthPennationModel::
     MuscleFixedWidthPennationModel(double optimalFiberLength,
                                           double optimalPennationAngle,

@@ -32,6 +32,13 @@ using namespace SimTK;
 // Code
 //=============================================================================
 
+MuscleFirstOrderActivationDynamicModel::
+    MuscleFirstOrderActivationDynamicModel(): m_ta(SimTK::NaN),m_td(SimTK::NaN),
+                                          m_minA(SimTK::NaN),m_minAS(SimTK::NaN)
+{
+    m_name = "NOT_ASSIGNED_YET";
+}
+
 /*
 Detailed Computational Cost
         Comparison  Div.    Mult.   Add.    Assign
