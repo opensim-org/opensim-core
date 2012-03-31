@@ -121,7 +121,8 @@ public:
 	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
 	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
+	
+	double computeIsometricForce(SimTK::State& s, double activation) const;
 
 	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle, ActivationFiberLengthMuscle);
 

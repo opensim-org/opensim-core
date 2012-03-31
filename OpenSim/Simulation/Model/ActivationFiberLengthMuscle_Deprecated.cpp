@@ -595,3 +595,52 @@ double ActivationFiberLengthMuscle_Deprecated::calcPennation( double aFiberLengt
    else
       return asin(value);
 }
+
+//=============================================================================
+// CALCULATIONS
+//=============================================================================
+/* calculate muscle's position related values such fiber and tendon lengths,
+	normalized lengths, pennation angle, etc... */
+void ActivationFiberLengthMuscle_Deprecated::calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const
+{
+	double norm_muscle_tendon_length = getLength(s) / getOptimalFiberLength();
+	
+	mli.fiberLength = getStateVariable(s, STATE_FIBER_LENGTH_NAME);
+	
+	mli.pennationAngle = calcPennation(mli.fiberLength, getOptimalFiberLength(), getPennationAngleAtOptimalFiberLength());
+
+	mli.cosPennationAngle = cos(mli.pennationAngle);
+	mli.tendonLength = getLength(s)-mli.fiberLength*mli.cosPennationAngle;
+	
+	mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
+	mli.normTendonLength = norm_muscle_tendon_length - mli.normFiberLength * mli.cosPennationAngle;
+	mli.tendonStrain = (mli.tendonLength/getTendonSlackLength()-1.0);
+
+	mli.forceLengthMultiplier = calcActiveForce(s, mli.normFiberLength);
+	mli.passiveForceMultiplier = calcPassiveForce(s, mli.normFiberLength);
+}
+
+/* calculate muscle's velocity related values such fiber and tendon velocities,
+	normalized velocities, pennation angular velocity, etc... */
+void ActivationFiberLengthMuscle_Deprecated::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
+{
+	fvi.fiberVelocity = getFiberLengthDeriv(s);
+	fvi.normFiberVelocity = fvi.fiberVelocity/(getOptimalFiberLength()*getMaxContractionVelocity());
+}
+
+/* calculate muscle's active and passive force-length, force-velocity, 
+	tendon force, relationships and their related values */
+void ActivationFiberLengthMuscle_Deprecated::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
+{
+	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+	const double &maxIsometricForce = getMaxIsometricForce();
+
+	double tendonForce = getForce(s);
+	mdi.normTendonForce = tendonForce/maxIsometricForce;
+	
+	mdi.passiveFiberForce = mli.passiveForceMultiplier * maxIsometricForce;
+	
+	mdi.activation = getStateVariable(s, STATE_ACTIVATION_NAME);
+
+	mdi.activeFiberForce =  tendonForce/mli.cosPennationAngle - mdi.passiveFiberForce;
+}

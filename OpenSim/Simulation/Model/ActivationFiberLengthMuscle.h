@@ -142,6 +142,11 @@ protected:
 	    in static equilibrium and update the state */
 	virtual void computeInitialFiberEquilibrium(SimTK::State& s) const;
 
+	/** compute the fiber-length state and resulting muscle force that yields
+	    zero fiber velocity (isometric) for the given activation */
+	virtual double computeIsometricForce(SimTK::State& s, double activation) const =0;
+
+
 	/** Model Component Interface */
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
 	virtual void initState(SimTK::State& s) const;

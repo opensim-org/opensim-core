@@ -169,6 +169,19 @@ protected:
 
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 
+	// Muscle interface
+	virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
+	virtual void calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
+	virtual void calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
+
+	virtual double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
+	{
+		throw Exception("ERROR- "+getType()+"::calcActiveForce() NOT IMPLEMENTED.");
+	}
+	virtual double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
+	{
+		throw Exception("ERROR- "+getType()+"::calcPassiveForce() NOT IMPLEMENTED.");
+	}
 //=============================================================================
 };	// END of class ActivationFiberLengthMuscle_Deprecated
 //=============================================================================

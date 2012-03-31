@@ -27,19 +27,11 @@
 // author:  Frank C. Anderson, Ajay Seth
 
 // INCLUDE
-#include <string>
-#include <iostream>
-#include <sstream>
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Simulation/Model/LoadModel.h>
-#include <OpenSim/Simulation/Model/AnalysisSet.h>
 #include <OpenSim/Tools/ForwardTool.h>
-#include <OpenSim/Analyses/Kinematics.h>
-#include <OpenSim/Analyses/Actuation.h>
-#include <OpenSim/Analyses/PointKinematics.h>
-#include <OpenSim/Analyses/BodyKinematics.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include "SimTKmath.h"
 
 using namespace OpenSim;
 using namespace std;

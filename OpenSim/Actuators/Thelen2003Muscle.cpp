@@ -423,17 +423,20 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthI
 void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 {
 	const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-	const MuscleDynamicsInfo& mdi = getMuscleDynamicsInfo(s);
-
 	const double &optimalFiberLength = getOptimalFiberLength();
+	const double &maxIsometricForce = getMaxIsometricForce();
+
+	double activation =  getStateVariable(s, STATE_ACTIVATION_NAME);
 
 	// Maximum contraction velocity is an activation scaled value
 	double Vmax = getPropertyValue<double>("Vmax");
 	const double &vmax0 = getPropertyValue<double>("Vmax0");
-	if (mdi.activation < 1.0) {
-		Vmax = vmax0 + mdi.activation*(Vmax-vmax0);
+	if (activation < 1.0) {
+		Vmax = vmax0 + activation*(Vmax-vmax0);
 	}
 	Vmax = Vmax*optimalFiberLength;
+
+	double normTendonForce = calcTendonForce(s, mli.normTendonLength);
 
 	/* If pennation equals 90 degrees, fiber length equals muscle width and fiber
 	* velocity goes to zero.  Pennation will stay at 90 until tendon starts to
@@ -441,20 +444,21 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocit
 	* fiber velocity.
 	*/
 	if (abs(mli.cosPennationAngle) < SimTK::SqrtEps) {
-		if (abs(mdi.normTendonForce) < SimTK::SqrtEps) {
+		if (abs(normTendonForce) < SimTK::SqrtEps) {
 			fvi.normFiberVelocity = fvi.fiberVelocity = 0.0;
 		} else { // assume rigid tendon
 			fvi.fiberVelocity = getLengtheningSpeed(s);
 			fvi.normFiberVelocity = fvi.fiberVelocity/(optimalFiberLength*getMaxContractionVelocity());
 		}
 	} else {
-		double velocity_dependent_force = mdi.normTendonForce / mli.cosPennationAngle - mli.passiveForceMultiplier;
-		fvi.normFiberVelocity = calcFiberVelocity(s, mdi.activation, mli.forceLengthMultiplier, velocity_dependent_force);
+		double velocity_dependent_force = normTendonForce / mli.cosPennationAngle - mli.passiveForceMultiplier;
+		fvi.normFiberVelocity = calcFiberVelocity(s, activation, mli.forceLengthMultiplier, velocity_dependent_force);
 		fvi.fiberVelocity = fvi.normFiberVelocity * Vmax;
 	}
 
-	fvi.forceVelocityMultiplier = mdi.activeFiberForce/(getMaxIsometricForce() *mdi.activation*mli.forceLengthMultiplier);
+	double activeFiberForce = maxIsometricForce*(normTendonForce/mli.cosPennationAngle - mli.passiveForceMultiplier);
 
+	fvi.forceVelocityMultiplier = activeFiberForce/(maxIsometricForce *activation*mli.forceLengthMultiplier);
 }
 
 /* calculate muscle's active and passive force-length, force-velocity, 
@@ -462,19 +466,22 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocit
 void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 {
 	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
+	const FiberVelocityInfo &fvi = getFiberVelocityInfo(s);
 	const double &maxIsometricForce = getMaxIsometricForce();
 
 	mdi.normTendonForce = calcTendonForce(s, mli.normTendonLength);
 	
 	mdi.passiveFiberForce = mli.passiveForceMultiplier * maxIsometricForce;
 	
-	
-	
 	mdi.activation = getStateVariable(s, STATE_ACTIVATION_NAME);
 
 	double tendonForce = maxIsometricForce*mdi.normTendonForce;
 	mdi.activeFiberForce =  tendonForce/mli.cosPennationAngle - mdi.passiveFiberForce;
 
+	double mtuSpeed = getGeometryPath().getLengtheningSpeed(s);
+	mdi.fiberPower = -(mdi.activeFiberForce + mdi.passiveFiberForce)*fvi.fiberVelocity;
+	mdi.tendonPower = -tendonForce*(mtuSpeed-fvi.fiberVelocityAlongTendon);
+	mdi.musclePower = -getMaxIsometricForce()*mdi.normTendonForce*mtuSpeed;
 }
 
 /* Calculate muscle's activation rate (derivative) that will be integrated */

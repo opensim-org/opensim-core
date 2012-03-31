@@ -137,14 +137,30 @@ public:
 	/** get the current tendon strain (delta_l/tendon_slack_length is dimensionless)  */
 	double getTendonStrain(const SimTK::State& s) const;
 
+	/** the potential energy (J) stored in the fiber due to its parallel elastic element */
+	double getFiberPotentialEnergy(const SimTK::State& s) const;
+	/** the potential energy (J) stored in the tendon */	
+    double getTendonPotentialEnergy(const SimTK::State& s) const;
+	/** the total potential energy (J) stored in the muscle */	
+    double getMusclePotentialEnergy(const SimTK::State& s) const;
+	
+	/** get the passive fiber (parallel elastic element) force multiplier */
+	double getPassiveForceMultiplier(const SimTK::State& s) const;
+	/** get the active fiber (contractile element) force multiplier due to current fiber length */
+    double getActiveForceLengthMultiplier(const SimTK::State& s) const;
+
 	/** get current fiber velocity (m/s) positive is lengthening */
 	double getFiberVelocity(const SimTK::State& s) const;
-	/** get normalize fiber velocity (fiber_length/s / max_contraction_velocity) */
+	/** get normalize fiber velocity (fiber_lengths/s / max_contraction_velocity) */
 	double getNormalizedFiberVelocity(const SimTK::State& s) const;
 	/** get the current afiber velocity (m/s) projected onto the tendon direction */
 	double getFiberVelocityAlongTendon(const SimTK::State& s) const;
 	/** get pennation angular velocity (radians/s) */
 	double getPennationAngularVelocity(const SimTK::State& s) const;
+	/** get the tendon velocity (m/s) positive is lengthening */
+	double getTendonVelocity(const SimTK::State& s) const;
+	/** get the dimensionless multiplier resulting from the fiber's force-velocity curve */
+	double getForceVelocityMultiplier(const SimTK::State& s) const;
 
 	/** get the current fiber force (N) applied to the tendon */
 	double getFiberForce(const SimTK::State& s) const;
@@ -158,6 +174,24 @@ public:
 	double getPassiveFiberForceAlongTendon(const SimTK::State& s) const;
 	/** get the current tendon force (N) applied to bones */
 	double getTendonForce(const SimTK::State& s) const;
+
+	/** get the current fiber stiffness (N/m) defined as the partial derivative
+	    of fiber force w.r.t. fiber length */
+	double getFiberStiffness(const SimTK::State& s) const;
+	/** get the current tendon stiffness (N/m) defined as the partial derivative
+	    of tendon force w.r.t. tendon length */
+    double getTendonStiffness(const SimTK::State& s) const;
+	/** get the current muscle stiffness (N/m) defined as the partial derivative
+	    of muscle force w.r.t. muscle length */
+    double getMuscleStiffness(const SimTK::State& s) const;
+
+	/** get the current fiber power (W) */
+	double getFiberPower(const SimTK::State& s) const;
+	/** get the current tendon power (W) */
+    double getTendonPower(const SimTK::State& s) const;
+	/** get the current muscle power (W) */
+    double getMusclePower(const SimTK::State& s) const;
+	
 	/** get the stress in the muscle (part of the Actuator interface as well) */
 	double getStress(const SimTK::State& s) const;
 	
@@ -194,7 +228,7 @@ protected:
 	struct FiberVelocityInfo;
 	struct MuscleDynamicsInfo;
 
-	/** Developer Access to intermediate values computed by the model */
+	/** Developer Access to intermediate values calculate by the muscle model */
 	const MuscleLengthInfo& getMuscleLengthInfo(const SimTK::State& s) const;
 	MuscleLengthInfo& updMuscleLengthInfo(const SimTK::State& s) const;
 
@@ -209,7 +243,7 @@ protected:
 	// CALCULATIONS
 	//--------------------------------------------------------------------------
 	/** @name Muscle State Dependent Calculations
-	 *  Developers must override these method to implement the desired behavior
+	 *  Developers must override these methods to implement the desired behavior
 	 *  of their muscle models. Unless you are augmenting the behavior
 	 *  of an existing muscle class or writing a new derived class, you do not
 	 *  have access to these methods. 
@@ -279,14 +313,6 @@ public:
 
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-	/** @name Old Junk to be deprecated
-	 */ 
-	//@{
-	virtual double calcPennationAngle(const SimTK::State &s) const;
-	virtual double computeIsometricForce(SimTK::State& s, double activation) const = 0;
-	// End of Old Junk.
-    //@} 
 
 	OPENSIM_DECLARE_DERIVED(Muscle, PathActuator);
 
@@ -397,25 +423,25 @@ protected:
         - use as necessary.
        
     */
-	struct MuscleLengthInfo{        //DIMENSION         Units      
+	struct MuscleLengthInfo{			 //DIMENSION         Units      
 		double fiberLength;              //length            m  
         double fiberLengthAlongTendon;   //length            m
 		double normFiberLength;          //length/length     m/m        
                 
-		double tendonLength;            //length            m
-		double normTendonLength;        //length/length     m/m        
-		double tendonStrain;            //length/length     m/m        
-                                        //
-        double pennationAngle;          //angle             1/s (rads)        
-		double cosPennationAngle;       //NA                NA         
-        double sinPennationAngle;       //NA                NA         
+		double tendonLength;             //length            m
+		double normTendonLength;         //length/length     m/m        
+		double tendonStrain;             //length/length     m/m        
+                                         //
+        double pennationAngle;           //angle             1/s (rads)        
+		double cosPennationAngle;        //NA                NA         
+        double sinPennationAngle;        //NA                NA         
 
         double fiberPotentialEnergy;     //force*distance    J (Nm)     
         double tendonPotentialEnergy;    //force*distance    J (Nm)     
         double musclePotentialEnergy;    //force*distance    J (Nm)
 
-        double passiveForceMultiplier;  //NA             NA
-        double forceLengthMultiplier;   //NA             NA
+        double passiveForceMultiplier;   //NA             NA
+        double forceLengthMultiplier;    //NA             NA
         
         SimTK::Vector userDefinedLengthExtras;//NA        NA
 
@@ -458,7 +484,7 @@ protected:
             NAME                     DIMENSION             UNITS
              fiberVelocity             length/time           m/s
              fiberVelocityAlongTendon  length/time           m/s       [1]
-             normFiberVelocity         (length/time)/length  (m/s)/m   [2]
+             normFiberVelocity         (length/time)/Vmax    NA		   [2]
              
              pennationAngularVelocity  angle/time            rad/s     [3]
              
@@ -467,13 +493,14 @@ protected:
              
              forceVelocityMultiplier    force/force          NA        [5]
 
-             userDefinedVelocityExtras    NA                   NA        [6]
+             userDefinedVelocityExtras    NA                   NA      [6]
         
         [1] fiberVelocityAlongTendon is the first derivative of the symbolic
             equation that defines the fiberLengthAlongTendon.
 
         [2] normFiberVelocity is the fiberVelocity normalized with respect to 
-            the optimal fiber length of the fiber.
+            the optimal fiber length of the fiber and the maximum fiber velocity
+			defined in fiber-lengths/s.
 
         [3] The sign of the angular velocity is defined using the right 
             hand rule.

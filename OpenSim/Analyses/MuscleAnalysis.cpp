@@ -60,6 +60,8 @@ using namespace std;
  */
 MuscleAnalysis::~MuscleAnalysis()
 {
+	// Individual storages where added to the Analysis' _storageList
+	// which takes ownerwhip of the Storage objects and deletes them.
 }
 //_____________________________________________________________________________
 /**
@@ -140,6 +142,11 @@ setNull()
 	_fiberLengthStore = NULL;
 	_normalizedFiberLengthStore = NULL;
 	_tendonLengthStore = NULL;
+
+	_fiberVelocityStore = NULL;
+	_normFiberVelocityStore = NULL;
+	_pennationAngularVelocityStore = NULL;
+
 	_forceStore = NULL;
 	_fiberForceStore = NULL;
 	_activeFiberForceStore = NULL;
@@ -259,6 +266,19 @@ allocateStorageObjects()
 	_tendonLengthStore->setDescription(getDescription());
 	_storageList.append(_tendonLengthStore );
 
+	_fiberVelocityStore = new Storage(1000,"FiberVelocity");
+	_fiberVelocityStore->setDescription(getDescription());
+	_storageList.append(_fiberVelocityStore );
+
+	_normFiberVelocityStore = new Storage(1000,"NormFiberVelocity");
+	_normFiberVelocityStore->setDescription(getDescription());
+	_storageList.append(_normFiberVelocityStore );
+
+	_pennationAngularVelocityStore = new Storage(1000,"PennationAngularVelocity");
+	_pennationAngularVelocityStore->setDescription(getDescription());
+	_storageList.append(_pennationAngularVelocityStore );
+
+
 	_forceStore = new Storage(1000,"TendonForce");
 	_forceStore->setDescription(getDescription());
 	_storageList.append(_forceStore );
@@ -282,6 +302,18 @@ allocateStorageObjects()
 	_passiveFiberForceAlongTendonStore = new Storage(1000,"PassiveFiberForceAlongTendon");
 	_passiveFiberForceAlongTendonStore->setDescription(getDescription());
 	_storageList.append(_passiveFiberForceAlongTendonStore );
+
+	_fiberPowerStore = new Storage(1000,"FiberPower");
+	_fiberPowerStore->setDescription(getDescription());
+	_storageList.append(_fiberPowerStore );
+
+	_tendonPowerStore = new Storage(1000,"TendonPower");
+	_tendonPowerStore->setDescription(getDescription());
+	_storageList.append(_tendonPowerStore );
+
+	_musclePowerStore = new Storage(1000,"MuscleActuatorPower");
+	_musclePowerStore->setDescription(getDescription());
+	_storageList.append(_musclePowerStore );
 
 	// UPDATE ALL STORAGE OBJECTS
 	updateStorageObjects();
@@ -316,8 +348,10 @@ updateStorageObjects()
 	for(int i=0; i<nm; i++) {
 		if(fSet.contains(_muscleList[i])) {
     		Muscle* mus = dynamic_cast<Muscle*>( &fSet.get(_muscleList[i]) );
-			_muscleArray.append(mus);
-			tmpMuscleList.append(mus->getName());
+			if(mus){
+				_muscleArray.append(mus);
+				tmpMuscleList.append(mus->getName());
+			}
 		}
 	}
 	_muscleList = tmpMuscleList;
@@ -482,8 +516,7 @@ setStorageCapacityIncrements(int aIncrement)
 /**
  * Record the MuscleAnalysis quantities.
  */
-int MuscleAnalysis::
-record(const SimTK::State& s)
+int MuscleAnalysis::record(const SimTK::State& s)
 {
 	if(_model==NULL) return(-1);
 	if (!getOn()) return(-1);
@@ -496,18 +529,36 @@ record(const SimTK::State& s)
 	// ----------------------------------
 	// LOOP THROUGH MUSCLES
 	int nm = _muscleArray.getSize();
+	// Angles and lengths
 	Array<double> penang(0.0,nm);
-	Array<double> len(0.0,nm),tlen(0.0,nm);
-	Array<double> fiblen(0.0,nm),normfiblen(0.0,nm);
+	Array<double> len(0.0,nm), tlen(0.0,nm);
+	Array<double> fiblen(0.0,nm), normfiblen(0.0,nm);
+
+	// Muscle velocity information
+	Array<double> fibVel(0.0,nm), normFibVel(0.0,nm);
+	Array<double> penAngVel(0.0,nm);
+
+	// Muscle component forces
 	Array<double> force(0.0,nm),fibforce(0.0,nm);
 	Array<double> actfibforce(0.0,nm),passfibforce(0.0,nm);
 	Array<double> actfibforcealongten(0.0,nm),passfibforcealongten(0.0,nm);
+
+	// Muscle and component powers
+	Array<double> fibPower(0.0,nm), tendonPower(0.0,nm), muscPower(0.0,nm);
+
+	// state derivatives are gauranteed to be evaluated by acceleration
+	_model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);  
+
 	for(int i=0; i<nm; i++) {
 		penang[i] = _muscleArray[i]->getPennationAngle(s);
 		len[i] = _muscleArray[i]->getLength(s);
 		tlen[i] = _muscleArray[i]->getTendonLength(s);
 		fiblen[i] = _muscleArray[i]->getFiberLength(s);
 		normfiblen[i] = _muscleArray[i]->getNormalizedFiberLength(s);
+
+		fibVel[i] = _muscleArray[i]->getFiberVelocity(s);
+		normFibVel[i] =  _muscleArray[i]->getNormalizedFiberVelocity(s);
+		penAngVel[i] =  _muscleArray[i]->getPennationAngularVelocity(s);
 
 		// Compute muscle forces that are dependent on Positions, Velocities
 		// so that later quantities are valid and setForce is called
@@ -518,13 +569,24 @@ record(const SimTK::State& s)
 		passfibforce[i] = _muscleArray[i]->getPassiveFiberForce(s);
 		actfibforcealongten[i] = _muscleArray[i]->getActiveFiberForceAlongTendon(s);
 		passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon(s);
+	
+		//Powers
+		fibPower[i] = _muscleArray[i]->getFiberPower(s);
+		tendonPower[i] = _muscleArray[i]->getTendonPower(s);
+		muscPower[i] = _muscleArray[i]->getMusclePower(s);
 	}
+
 	// APPEND TO STORAGE
 	_pennationAngleStore->append(tReal,penang.getSize(),&penang[0]);
 	_lengthStore->append(tReal,len.getSize(),&len[0]);
 	_fiberLengthStore->append(tReal,fiblen.getSize(),&fiblen[0]);
 	_normalizedFiberLengthStore->append(tReal,normfiblen.getSize(),&normfiblen[0]);
 	_tendonLengthStore->append(tReal,tlen.getSize(),&tlen[0]);
+
+	_fiberVelocityStore->append(tReal,fibVel.getSize(),&fibVel[0]);
+	_normFiberVelocityStore->append(tReal,normFibVel.getSize(),&normFibVel[0]);
+	_pennationAngularVelocityStore->append(tReal,penAngVel.getSize(),&penAngVel[0]);
+
 	_forceStore->append(tReal,force.getSize(),&force[0]);
 	_fiberForceStore->append(tReal,fibforce.getSize(),&fibforce[0]);
 	_activeFiberForceStore->append(tReal,actfibforce.getSize(),&actfibforce[0]);
@@ -532,14 +594,16 @@ record(const SimTK::State& s)
 	_activeFiberForceAlongTendonStore->append(tReal,actfibforcealongten.getSize(),&actfibforcealongten[0]);
 	_passiveFiberForceAlongTendonStore->append(tReal,passfibforcealongten.getSize(),&passfibforcealongten[0]);
 
+	_fiberPowerStore->append(tReal,fibPower.getSize(),&fibPower[0]);
+	_tendonPowerStore->append(tReal,tendonPower.getSize(),&tendonPower[0]);
+	_musclePowerStore->append(tReal,muscPower.getSize(),&muscPower[0]);
+
 	if (_computeMoments){
 	// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
 	Coordinate *q = NULL;
 	Storage *maStore=NULL, *mStore=NULL;
 	int nq = _momentArmStorageArray.getSize();
 	Array<double> ma(0.0,nm),m(0.0,nm);
-
-   _model->getMultibodySystem().realize(s,SimTK::Stage::Velocity);  // need to be at Velocity to compaute path length 
 
 	for(int i=0; i<nq; i++) {
 
@@ -681,6 +745,10 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	}
 
 	std::string prefix = aBaseName + "_" + getName() + "_";
+	for(int i=0; i<_storageList.getSize(); ++i){
+		Storage::printResult(_storageList[i],prefix+_storageList[i]->getName(),aDir,aDT,aExtension);
+	}
+	/*
 	Storage::printResult(_pennationAngleStore,prefix+"PennationAngle",aDir,aDT,aExtension);
 	Storage::printResult(_lengthStore,prefix+"Length",aDir,aDT,aExtension);
 	Storage::printResult(_fiberLengthStore,prefix+"FiberLength",aDir,aDT,aExtension);
@@ -692,6 +760,7 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
 	Storage::printResult(_passiveFiberForceStore,prefix+"PassiveFiberForce",aDir,aDT,aExtension);
 	Storage::printResult(_activeFiberForceAlongTendonStore,prefix+"ActiveFiberForceAlongTendon",aDir,aDT,aExtension);
 	Storage::printResult(_passiveFiberForceAlongTendonStore,prefix+"PassiveFiberForceAlongTendon",aDir,aDT,aExtension);
+	*/
 
 	int size = _momentArmStorageArray.getSize();
 	for(int i=0;i<size;i++) {

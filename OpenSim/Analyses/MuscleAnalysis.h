@@ -104,6 +104,14 @@ private:
 	Storage *_normalizedFiberLengthStore;
 	/** Tendon length storage. */
 	Storage *_tendonLengthStore;
+
+	/** Lengthening velocity of the muscle fibers. */
+	Storage *_fiberVelocityStore;
+	/** Normalized lengthening velocity of the muscle fibers. */
+	Storage *_normFiberVelocityStore;
+	/** Angular velocity of the muscle fibers. */
+	Storage *_pennationAngularVelocityStore;
+
 	/** Force applied by the muscle. */
 	Storage *_forceStore;
 	/** Force in the muscle fibers. */
@@ -116,6 +124,13 @@ private:
 	Storage *_activeFiberForceAlongTendonStore;
 	/** Passive force in the muscle fibers along tendon. */
 	Storage *_passiveFiberForceAlongTendonStore;
+
+	/** Fiber power */
+	Storage *_fiberPowerStore;
+	/** Tendon power */
+	Storage *_tendonPowerStore;
+	/** Muscle actuator power */
+	Storage *_musclePowerStore;
 
 	// FOR MOMENT ARMS AND MOMENTS----------------
 	/** Work array for holding the list of muscles.  This array */

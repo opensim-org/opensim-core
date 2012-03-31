@@ -30,23 +30,27 @@
 //	testMuscles builds various OpenSim models using the OpenSim API and compares muscle behavior
 //  for varying physical parameters (fiber-to-tendon ratio, tendon stiffness, etc...)
 //
-//	Tests Include:
-//      1. Thelen2003Muscle
-//		2. Schutte1993Muscle_Deprecated
-//		3. Delp1990Muscle
-//		4. PathActuator 
-//		5. RigidTendonMuscle 
+//	Models tested include:
+//      1. PathActuator (Base of Muscle, is controlled tension along a GeometryPath)
+//		2. RigidTendonMuscle (Stateless muscle with user-defined fiber f-l, f-v splines)
+//      3. Thelen2003Muscle_Deprecated (Simm implementation)
+//		4. Thelen2003MuscleV1 (Updated to correspond to the Thelen paper.)
+//		4. Thelen2003Muscle (Uses the Muscle interface)
+//		5. Schutte1993Muscle(_Deprecated)
+//		6. Delp1990Muscle(_Deprecated)
 //		
 //     Add more test cases to address specific problems with muscle models
 //
 //==========================================================================================================
 #include <OpenSim/Common/osimCommon.h>
+#include <OpenSim/Common/IO.h>
 #include <OpenSim/Simulation/osimSimulation.h>
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorWorkMeter.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
+#include <OpenSim/Analyses/MuscleAnalysis.h>
 
 using namespace OpenSim;
 using namespace std;
@@ -73,33 +77,48 @@ void testThelen2003MuscleV1();
 
 int main()
 {
-	try {
-		testPathActuator();
-		cout << "PathActuator Test passed" << endl;
+	SimTK::Array_<std::string> failures;
+    try { testPathActuator();
+		cout << "PathActuator Test passed" << endl; }
+    catch (const Exception& e)
+		{ e.print(cerr); failures.push_back("testPathActuator"); }
 
-		testRigidTendonMuscle();
-		cout << "RigidTendonMuscle Test passed" << endl;
+    try { testRigidTendonMuscle();
+		cout << "RigidTendonMuscle Test passed" << endl; }
+    catch (const Exception& e)
+		{ e.print(cerr); failures.push_back("testRigidTendonMuscle"); }
 
-		testThelen2003Muscle_Deprecated();
-		cout << "testThelen2003Muscle_Deprecated Test passed" << endl;
+    try { testThelen2003Muscle_Deprecated();
+		cout << "Thelen2003Muscle_Deprecated Test passed" << endl; }
+    catch (const Exception& e)
+		{ e.print(cerr); failures.push_back("testThelen2003Muscle_Deprecated"); }
+
+	try { testThelen2003Muscle();
+		cout << "Thelen2003Muscle Test passed" << endl; }
+    catch (const Exception& e)
+		{ e.print(cerr); failures.push_back("testThelen2003Muscle"); }
 		
-		testThelen2003Muscle();
-		cout << "Thelen2003Muscle Test passed" << endl;
-		
-		testThelen2003MuscleV1();
-		cout << "Thelen2003MuscleV1 Test passed" << endl;
-		
-		testSchutte1993Muscle();
-		cout << "Schutte1993Muscle_Deprecated Test passed" << endl;
-		
-		testDelp1990Muscle();
-		cout << "Delp1990Muscle Test passed" << endl;
-	}
-	catch (const Exception& e) {
-        e.print(cerr);
+	try { testThelen2003MuscleV1();
+		cout << "Thelen2003MuscleV1 Test passed" << endl; }
+    catch (const Exception& e)
+		{ e.print(cerr); failures.push_back("testThelen2003MuscleV1"); }
+	
+	try { testSchutte1993Muscle();
+		cout << "Schutte1993Muscle_Deprecated Test passed" << endl; }
+    catch (const Exception& e)
+		{ e.print(cerr); failures.push_back("testSchutte1993Muscle"); }
+
+	try { testDelp1990Muscle();
+		cout << "Delp1990Muscle_Deprecated Test passed" << endl; }
+    catch (const Exception& e)
+		{ e.print(cerr); failures.push_back("testDelp1990Muscle"); }
+
+    if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
-    cout << "Done" << endl;
+
+	cout << "testMuscles Done" << endl;
     return 0;
 }
 
@@ -195,6 +214,16 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	model.setName(actuatorType+"ModelTest");
 	model.print(actuatorType+"ModelTest.osim");
 
+	// Setup a Muscle Analysis to report all internal values of the muscle during
+	// the simulation. If you uncomment, remember to uncomment the corresponding
+	// calls to write the results to file after the simualtion.
+/*	MuscleAnalysis muscleAnalysis;
+	muscleAnalysis.setMuscles(Array<string>("muscle",1));
+	model.addAnalysis(&muscleAnalysis);
+*/
+	// Define visualizer for debugging
+	//model.setUseVisualizer(true);
+
 	// Initialize the system and get the default state
 	SimTK::State& si = model.initSystem();
 
@@ -202,16 +231,11 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	CoordinateSet& modelCoordinateSet = model.updCoordinateSet();
 	modelCoordinateSet[0].setValue(si, startX); // set x-translation value
 
-	// Check model setup
+	// Check muscle is setup correctly 
 	const PathActuator &muscle = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
 	double length = muscle.getLength(si);
 	double trueLength = startX + xSinG - anchorWidth/2;
-	//ASSERT_EQUAL(trueLength, length, 0.01*accuracy);
-
-	// Define visualizer
-	//model.updMultibodySystem().updMatterSubsystem().setShowDefaultGeometry(true);
-	//SimTK::Visualizer viz(model.getMultibodySystem());
-	//model.getMultibodySystem().addEventReporter(new SimTK::Visualizer::Reporter(viz, 0.01));
+	ASSERT_EQUAL(trueLength, length, 0.01*accuracy);
 
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 	double Emuscle0 = workMeter.getWork(si);
@@ -248,6 +272,10 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	// Save the simulation results
 	Storage states(manager.getStateStorage());
 	states.print(actuatorType+"_states.sto");
+	
+	//An analysis only writes to a dir that exists, so create here.
+	//IO::makeDir("testMuscleResults");
+	//muscleAnalysis.printResults(actuatorType, "testMuscleResults");
 
 	// Minimum requirement to pass is simulation of single muscle on slider is real-time
 	//ASSERT(comp_time <= (finalTime-initialTime));

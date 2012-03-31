@@ -187,8 +187,9 @@ void RigidTendonMuscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLength
 {
 	mli.tendonLength = getTendonSlackLength();
 	double zeroPennateLength = getLength(s) - mli.tendonLength;
+	zeroPennateLength = zeroPennateLength < 0 ? 0 : zeroPennateLength;
 
-	mli.fiberLength = sqrt(zeroPennateLength*zeroPennateLength + _muscleWidth*_muscleWidth);
+	mli.fiberLength = sqrt(zeroPennateLength*zeroPennateLength + _muscleWidth*_muscleWidth) + SimTK::Eps;
 	
 	mli.cosPennationAngle = zeroPennateLength/mli.fiberLength;
 	mli.pennationAngle = acos(mli.cosPennationAngle);
@@ -207,7 +208,7 @@ void RigidTendonMuscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLength
 void RigidTendonMuscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 {
 	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
-	fvi.fiberVelocity = getSpeed(s);
+	fvi.fiberVelocity = getGeometryPath().getLengtheningSpeed(s);
 	fvi.normFiberVelocity = fvi.fiberVelocity/(getOptimalFiberLength()*getMaxContractionVelocity());
 	fvi.forceVelocityMultiplier = getPropertyValue<Function *>("force_velocity_curve")->calcValue(SimTK::Vector(1, fvi.normFiberVelocity));
 }
@@ -225,6 +226,10 @@ void RigidTendonMuscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDyna
 	mdi.passiveFiberForce = getMaxIsometricForce()*mli.passiveForceMultiplier;
 
 	mdi.normTendonForce = (normActiveForce+mli.passiveForceMultiplier)*mli.cosPennationAngle;
+
+	mdi.fiberPower = -(mdi.activeFiberForce + mdi.passiveFiberForce)*fvi.fiberVelocity;
+	mdi.tendonPower = 0;
+	mdi.musclePower = -getMaxIsometricForce()*mdi.normTendonForce*getSpeed(s);
 }
 
 
