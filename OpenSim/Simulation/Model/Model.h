@@ -478,6 +478,13 @@ public:
     ForceSet& updForceSet() { return _forceSet; };
 
 	/**
+     * Get the subset of misc ModelComponents in the model
+     * @return The set of misc ModelComponents
+     */
+	const ModelComponentSet<ModelComponent>& getMiscModelComponentSet() const { return _componentSet; };
+	ModelComponentSet<ModelComponent>& updMiscModelComponentSet() { return _componentSet; };
+
+	/**
 	 * Get the number of analyses in the model.
 	 * @return The number of analyses.
 	 */
