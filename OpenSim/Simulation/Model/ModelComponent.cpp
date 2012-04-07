@@ -202,7 +202,7 @@ int ModelComponent::getModelingOption(const SimTK::State& s, const std::string &
 	} 
 	else{
 		std::stringstream msg;
-		msg << "ModelComponent::getModelingOption: ERR- name not found.\n " 
+		msg << "ModelComponent::getModelingOption: ERR- name '" << name << "' not found.\n " 
 			<< "for component '"<< getName() << "' of type " << getType();
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 		return -1;
@@ -320,7 +320,7 @@ void ModelComponent::setStateVariable(SimTK::State &s, const std::string &name, 
 	} 
 	else{
 		std::stringstream msg;
-		msg << "ModelComponent::setStateVariable: ERR- name not found.\n " 
+		msg << "ModelComponent::setStateVariable: ERR- name '" << name << "' not found.\n " 
 			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 	}
@@ -343,7 +343,7 @@ double ModelComponent::getDiscreteVariable(const SimTK::State &s, const std::str
 	} 
 	else{
 		std::stringstream msg;
-		msg << "ModelComponent::getDiscreteVariable: ERR- name not found.\n " 
+		msg << "ModelComponent::getDiscreteVariable: ERR- name '" << name << "' not found.\n " 
 			<< "for component '"<< getName() << "' of type " << getType();
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 		return SimTK::NaN;
@@ -366,7 +366,7 @@ void ModelComponent::setDiscreteVariable(SimTK::State &s, const std::string &nam
 	} 
 	else{
 		std::stringstream msg;
-		msg << "ModelComponent::setDiscreteVariable: ERR- name not found.\n " 
+		msg << "ModelComponent::setDiscreteVariable: ERR- name '" << name << "' not found.\n " 
 			<< "for component '"<< getName() << "' of type " << getType();
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 	}
@@ -395,7 +395,7 @@ const int ModelComponent::getStateIndex(const std::string &name) const
 	} 
 	else{
 		std::stringstream msg;
-		msg << "ModelComponent::getStateVariableSystemIndex: ERR- name not found.\n " 
+		msg << "ModelComponent::getStateVariableSystemIndex: ERR- name '" << name << "' not found.\n " 
 			<< "for component '"<< getName() << "' of type " << getType();
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 		return SimTK::InvalidIndex;
@@ -411,7 +411,7 @@ SimTK::SystemYIndex ModelComponent::getStateVariableSystemIndex(const std::strin
 	
 	if(it == _rep->_namedStateVariableInfo.end()) {
 		std::stringstream msg;
-		msg << "ModelComponent::getStateVariableSystemIndex: ERR- name not found.\n " 
+		msg << "ModelComponent::getStateVariableSystemIndex: ERR- name '" << stateVariableName << "' not found.\n " 
 			<< "for component '"<< getName() << "' of type " << getType();
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 	} 
