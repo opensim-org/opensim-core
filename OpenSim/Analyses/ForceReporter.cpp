@@ -452,6 +452,7 @@ void ForceReporter::tidyForceNames()
 			}
 			string newName(pad);
 			_model->updForceSet()[i].setName(newName);
+			forceNames.set(i, newName);
 			cout << "Changing blank name for force to " << newName << endl;
 		}
 	}
