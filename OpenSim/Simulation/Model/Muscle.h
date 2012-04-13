@@ -223,6 +223,7 @@ public:
     //@} 
 
 
+
 protected:
 	struct MuscleLengthInfo;
 	struct FiberVelocityInfo;
@@ -363,8 +364,8 @@ protected:
              tendonPotentalEnergy     force*distance    J (Nm)      
              musclePotentalEnergy     force*distance    J (Nm)
     
-             passiveForceMultiplier   force/force     N/N           [6]
-             forceLengthMultiplier    force/force     N/N           [7]
+             fiberPassiveForceLengthMultiplier   force/force     N/N           [6]
+             fiberActiveForceLengthMultiplier    force/force     N/N           [7]
         
             userDefinedLengthExtras     NA              NA            [8]
 
@@ -406,12 +407,12 @@ protected:
          //  
         //     
 
-    [6] The passiveForceMultiplier represents the elastic force the fiber 
+    [6] The fiberPassiveForceLengthMultiplier represents the elastic force the fiber 
         generates normalized w.r.t. the maximum isometric force of the fiber.
 		Is typically specified by a passiveForceLengthCurve. 
 		
 
-    [7] The forceLengthMultiplier is the scaling of the maximum force a fiber 
+    [7] The fiberActiveForceLengthMultiplier is the scaling of the maximum force a fiber 
         can generate as a function of its length. This term usually follows a 
         curve that is zero at a normalized fiber length of 0.5, is 1 at a 
         normalized fiber length of 1, and then zero again at a normalized fiber
@@ -443,8 +444,8 @@ protected:
         double tendonPotentialEnergy;    //force*distance    J (Nm)     
         double musclePotentialEnergy;    //force*distance    J (Nm)
 
-        double passiveForceMultiplier;   //NA             NA
-        double forceLengthMultiplier;    //NA             NA
+        double fiberPassiveForceLengthMultiplier;   //NA             NA
+        double fiberActiveForceLengthMultiplier;  //NA             NA
         
         SimTK::Vector userDefinedLengthExtras;//NA        NA
 
@@ -461,8 +462,8 @@ protected:
             fiberPotentialEnergy(SimTK::NaN),
             tendonPotentialEnergy(SimTK::NaN),
             musclePotentialEnergy(SimTK::NaN), 
-            passiveForceMultiplier(SimTK::NaN), 
-            forceLengthMultiplier(SimTK::NaN),
+            fiberPassiveForceLengthMultiplier(SimTK::NaN), 
+            fiberActiveForceLengthMultiplier(SimTK::NaN),
             userDefinedLengthExtras(0, SimTK::NaN){}
 		friend std::ostream& operator<<(std::ostream& o, 
             const MuscleLengthInfo& mli) {
@@ -494,7 +495,7 @@ protected:
              tendonVelocity            length/time           m/s       
              normTendonVelocity        (length/time)/length  (m/s)/m   [4]
              
-             forceVelocityMultiplier    force/force          NA        [5]
+             fiberForceVelocityMultiplier force/force          NA        [5]
 
              userDefinedVelocityExtras    NA                   NA      [6]
         
@@ -511,7 +512,7 @@ protected:
         [4] normTendonVelocity is the tendonVelocity (the lengthening velocity 
             of the tendon) divided by its resting length
 
-        [5] The forceVelocityMultiplier is the scaling factor that represents
+        [5] The fiberForceVelocityMultiplier is the scaling factor that represents
             how a muscle fiber's force generating capacity is modulated by the
             contraction (concentric or eccentric) velocity of the fiber.
             Generally this curve has a value of 1 at a fiber velocity of 0, 
@@ -538,7 +539,7 @@ protected:
         double tendonVelocity;              //length/time           m/s
         double normTendonVelocity;          //(length/time)/length  (m/s)/m
 
-        double forceVelocityMultiplier;     //force/force           NA
+        double fiberForceVelocityMultiplier;     //force/force           NA
 
         SimTK::Vector userDefinedVelocityExtras;//NA                  NA
 
@@ -549,7 +550,7 @@ protected:
             pennationAngularVelocity(SimTK::NaN),
             tendonVelocity(SimTK::NaN), 
             normTendonVelocity(SimTK::NaN),
-            forceVelocityMultiplier(SimTK::NaN),
+            fiberForceVelocityMultiplier(SimTK::NaN),
             userDefinedVelocityExtras(0,SimTK::NaN){};
 		friend std::ostream& operator<<(std::ostream& o, 
             const FiberVelocityInfo& fvi) {

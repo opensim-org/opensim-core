@@ -390,14 +390,14 @@ double Muscle::getMusclePotentialEnergy(const SimTK::State& s) const
 double Muscle::getPassiveForceMultiplier(const SimTK::State& s) const
 {
 	const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-	return mli.passiveForceMultiplier;
+	return mli.fiberPassiveForceLengthMultiplier;
 }
 
 /* get the active fiber (contractile element) force multiplier due to current fiber length */
 double Muscle::getActiveForceLengthMultiplier(const SimTK::State& s) const
 {
 	const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-	return mli.forceLengthMultiplier;
+	return mli.fiberActiveForceLengthMultiplier;
 }
 
 /* get current fiber velocity (m/s) positive is lengthening */
@@ -433,7 +433,7 @@ double Muscle::getTendonVelocity(const SimTK::State& s) const
 double Muscle::getForceVelocityMultiplier(const SimTK::State& s) const
 {
 	const FiberVelocityInfo& fvi = getFiberVelocityInfo(s);
-	return fvi.forceVelocityMultiplier; 
+	return fvi.fiberForceVelocityMultiplier; 
 }
 
 
