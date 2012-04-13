@@ -650,6 +650,13 @@ void Muscle::computeForce(const SimTK::State& s,
     }
 }
 
+double Muscle::computePotentialEnergy(const SimTK::State& s) const
+{
+	const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
+	return mli.musclePotentialEnergy;
+}
+
+
 void Muscle::updateGeometry(const SimTK::State& s)
 {
 	updGeometryPath().updateGeometry(s);

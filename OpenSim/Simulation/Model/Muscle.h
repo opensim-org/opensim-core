@@ -279,6 +279,9 @@ protected:
 	virtual void computeForce(const SimTK::State& state, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForce) const;
+
+	/** Potential energy stored by the muscle */
+	virtual double computePotentialEnergy(const SimTK::State& state) const;
 	
 
 	/** Model Component creation interface */
