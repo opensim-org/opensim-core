@@ -601,6 +601,28 @@ SimTK::SpatialVec Joint::calcEquivalentSpatialForce(const SimTK::State &s, const
 	return FB_G;
 }
 
+/** Joints only produce power when internal constraint forces have components along
+	the mobilities of the joint (for example to satisfy prescribed motion). In 
+    which case the joint power is the constraint forces projected onto the mobilities
+	multiplied by the mobilities (internal coordinate velocities). Only constraints
+	internal to the joint are accounted for, not external constrainst that effect
+	joint motion. */
+double Joint::calcPower(const SimTK::State &s) const
+{
+	const CoordinateSet &coords = getCoordinateSet();
+	int nc = coords.getSize();
+
+	double power = 0;
+	for(int i=0; i<nc; ++i){
+		if (coords[i].isPrescribed(s)){
+			// get the reaction force for this coordinate prescribed motion constraint
+			const SimTK::Constraint &pc = _model->updMultibodySystem().updMatterSubsystem().getConstraint(coords[i]._prescribedConstraintIndex);
+			power += pc.calcPower(s);
+		}
+	}
+
+	return power;
+}
 
 //=============================================================================
 // Helper

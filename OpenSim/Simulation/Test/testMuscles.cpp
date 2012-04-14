@@ -48,6 +48,7 @@
 #include <OpenSim/Actuators/osimActuators.h>
 #include <OpenSim/Simulation/Model/PathActuator.h>
 #include <OpenSim/Simulation/Model/ActuatorWorkMeter.h>
+#include <OpenSim/Simulation/Model/JointWorkMeter.h>
 #include <OpenSim/Actuators/RigidTendonMuscle.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
 #include <OpenSim/Analyses/MuscleAnalysis.h>
@@ -103,6 +104,7 @@ int main()
     catch (const Exception& e)
 		{ e.print(cerr); failures.push_back("testThelen2003MuscleV1"); }
 	
+	/*
 	try { testSchutte1993Muscle();
 		cout << "Schutte1993Muscle_Deprecated Test passed" << endl; }
     catch (const Exception& e)
@@ -112,6 +114,7 @@ int main()
 		cout << "Delp1990Muscle_Deprecated Test passed" << endl; }
     catch (const Exception& e)
 		{ e.print(cerr); failures.push_back("testDelp1990Muscle"); }
+	*/
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -209,6 +212,11 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	ActuatorWorkMeter workMeter(aMuscle, 0.0);
 	model.addComponent(&workMeter);
 
+	// Add an energy meter to measure the work done by the joint
+	// will be 0 unless joint has prescribed motion
+	JointWorkMeter jointWorkMeter(slider, 0.0);
+	model.addComponent(&jointWorkMeter);
+
 	// Since all components are allocated on the stack don't have model own them (and try to free)
 	model.disownAllComponents();
 	model.setName(actuatorType+"ModelTest");
@@ -240,7 +248,8 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 	double Emuscle0 = workMeter.getWork(si);
 	//cout << "Muscle initial energy = " << Emuscle0 << endl;
-	double Esys0 = model.getMultibodySystem().calcEnergy(si) + Emuscle0;
+	double Esys0 = model.getMultibodySystem().calcEnergy(si);
+	Esys0 += (Emuscle0 + jointWorkMeter.getWork(si));
 	//cout << "Total initial system energy = " << Esys0 << endl; 
 
 	// Create the integrator
@@ -265,7 +274,9 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
 	cout << "Muscle work = " << workMeter.getWork(si) << endl;
-	double ESysMinusWork = model.getMultibodySystem().calcEnergy(si) - workMeter.getWork(si); 
+
+	double jointWork = jointWorkMeter.getWork(si);
+	double ESysMinusWork = model.getMultibodySystem().calcEnergy(si) - workMeter.getWork(si) - jointWork; 
 	cout << "Total system energy - work = " << ESysMinusWork << endl; 
 	ASSERT_EQUAL(Esys0, ESysMinusWork, 0.5*accuracy, __FILE__, __LINE__, "System energy with muscle not conserved.");
 
@@ -301,7 +312,7 @@ void testThelen2003Muscle_Deprecated()
 
 	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
 	// Uncomment when work done by prescribed motion constraint is accounted for.
-	//simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
+	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
 }
 
 void testThelen2003Muscle()

@@ -777,7 +777,7 @@ void Coordinate::setIsPrescribed(SimTK::State& s, bool isPrescribed) const
 
 bool Coordinate::isPrescribed(const SimTK::State& s) const
 {
-	if(int(_prescribedConstraintIndex) != SimTK::InvalidIndex){
+	if(_prescribedConstraintIndex.isValid()){
 		bool disabled = _model->updMultibodySystem().updMatterSubsystem().getConstraint(_prescribedConstraintIndex).isDisabled(s);
 		return !disabled;
 	}

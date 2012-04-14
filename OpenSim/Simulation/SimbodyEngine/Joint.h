@@ -188,6 +188,13 @@ public:
 	@return spatial force, FB_G, acting on the body connected by this joint at its location B, expressed in ground.  */
 	virtual SimTK::SpatialVec calcEquivalentSpatialForce(const SimTK::State &s, const SimTK::Vector &mobilityForces) const;
 
+
+	/** Joints in general do not contribute power since the reaction space forces
+	    are orthogonal to the mobility space. However, when joint motion is prescribed, 
+		the internal forces that move the joint will do work. In this case, the power is
+		non-zero */
+	virtual double calcPower(const SimTK::State &s) const;
+
 	// SCALE
 	/**
 	* Scale a joint based on XYZ scale factors for the bodies.
