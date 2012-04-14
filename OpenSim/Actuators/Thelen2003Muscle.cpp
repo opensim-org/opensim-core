@@ -414,8 +414,10 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthI
 	mli.normTendonLength = norm_muscle_tendon_length - mli.normFiberLength * mli.cosPennationAngle;
 	mli.tendonStrain = (mli.tendonLength/getTendonSlackLength()-1.0);
 
-	mli.forceLengthMultiplier = calcActiveForce(s, mli.normFiberLength);
-	mli.passiveForceMultiplier = calcPassiveForce(s, mli.normFiberLength);
+	mli.fiberActiveForceLengthMultiplier = calcActiveForce(s, mli.normFiberLength);
+	mli.fiberPassiveForceLengthMultiplier = calcPassiveForce(s, mli.normFiberLength);
+
+	mli.musclePotentialEnergy = 0;
 }
 
 /* calculate muscle's velocity related values such fiber and tendon velocities,
@@ -451,14 +453,14 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocit
 			fvi.normFiberVelocity = fvi.fiberVelocity/(optimalFiberLength*getMaxContractionVelocity());
 		}
 	} else {
-		double velocity_dependent_force = normTendonForce / mli.cosPennationAngle - mli.passiveForceMultiplier;
-		fvi.normFiberVelocity = calcFiberVelocity(s, activation, mli.forceLengthMultiplier, velocity_dependent_force);
+		double velocity_dependent_force = normTendonForce / mli.cosPennationAngle - mli.fiberPassiveForceLengthMultiplier;
+		fvi.normFiberVelocity = calcFiberVelocity(s, activation, mli.fiberActiveForceLengthMultiplier, velocity_dependent_force);
 		fvi.fiberVelocity = fvi.normFiberVelocity * Vmax;
 	}
 
-	double activeFiberForce = maxIsometricForce*(normTendonForce/mli.cosPennationAngle - mli.passiveForceMultiplier);
+	double activeFiberForce = maxIsometricForce*(normTendonForce/mli.cosPennationAngle - mli.fiberPassiveForceLengthMultiplier);
 
-	fvi.forceVelocityMultiplier = activeFiberForce/(maxIsometricForce *activation*mli.forceLengthMultiplier);
+	fvi.fiberForceVelocityMultiplier = activeFiberForce/(maxIsometricForce *activation*mli.fiberActiveForceLengthMultiplier);
 }
 
 /* calculate muscle's active and passive force-length, force-velocity, 
@@ -471,7 +473,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynam
 
 	mdi.normTendonForce = calcTendonForce(s, mli.normTendonLength);
 	
-	mdi.passiveFiberForce = mli.passiveForceMultiplier * maxIsometricForce;
+	mdi.passiveFiberForce = mli.fiberPassiveForceLengthMultiplier * maxIsometricForce;
 	
 	mdi.activation = getStateVariable(s, STATE_ACTIVATION_NAME);
 
