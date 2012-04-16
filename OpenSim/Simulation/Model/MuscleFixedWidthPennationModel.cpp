@@ -129,7 +129,7 @@ double MuscleFixedWidthPennationModel::
             "MuscleFixedWidthPennationModel::calcPennationAngularVelocity",
             "%s: Fiber length cannot be zero.",caller.c_str());
 
-        double dphi = -(fiberVelocity/fiberLength)*tanPennationAngle;
+        dphi = -(fiberVelocity/fiberLength)*tanPennationAngle;
     }
     return dphi;
 
