@@ -99,54 +99,6 @@ isEqual(const SimTK::Transform& a, const SimTK::Transform& b) {
     return true;
 }
 
-
-//// OpenSim::Array<bool>
-//template <>
-//bool AbstractProperty::TypeHelper< OpenSim::Array<bool> >::
-//isEqual(const OpenSim::Array<bool>& a, const OpenSim::Array<bool>& b) {
-//    if (a.getSize() != b.getSize())
-//        return false;
-//    for (int i=0; i < a.getSize(); ++i)
-//        if (a[i] != b[i])
-//            return false;
-//    return true;
-//}
-//
-//
-//template <>
-//bool AbstractProperty::TypeHelper< OpenSim::Array<int> >::
-//isEqual(const OpenSim::Array<int>& a, const OpenSim::Array<int>& b) {
-//    if (a.getSize() != b.getSize())
-//        return false;
-//    for (int i=0; i < a.getSize(); ++i)
-//        if (a[i] != b[i])
-//            return false;
-//    return true;
-//}
-
-
-//template <>
-//bool AbstractProperty::TypeHelper< OpenSim::Array<double> >::
-//isEqual(const OpenSim::Array<double>& a, const OpenSim::Array<double>& b) {
-//    if (a.getSize() != b.getSize())
-//        return false;
-//    for (int i=0; i < a.getSize(); ++i)
-//        if (!TypeHelper<double>::isEqual(a[i],b[i]))
-//            return false;
-//    return true;
-//}
-//
-//
-//bool AbstractProperty::TypeHelper< OpenSim::Array<string> >::
-//isEqual(const OpenSim::Array<string>& a, const OpenSim::Array<string>& b) {
-//    if (a.getSize() != b.getSize())
-//        return false;
-//    for (int i=0; i < a.getSize(); ++i)
-//        if (!TypeHelper<string>::isEqual(a[i],b[i]))
-//            return false;
-//    return true;
-//}
-
 //=============================================================================
 // PROPERTY 
 //=============================================================================

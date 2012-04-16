@@ -355,14 +355,14 @@ public:
             << valstream.str().substr(0,50) // limit displayed length
             << "'.\n";
         }
-        if (values.size() < getMinListSize()) {
+        if (values.size() < this->getMinListSize()) {
             std::cerr << "Not enough values for " 
             << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
             << "; input='" << valstream.str().substr(0,50) // limit displayed length 
             << "'. Expected " << this->getMinListSize()
             << ", got " << values.size() << ".\n";
         }
-        if (values.size() > getMaxListSize()) {
+        if (values.size() > this->getMaxListSize()) {
             std::cerr << "Too many values for " 
             << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
             << "; input='" << valstream.str().substr(0,50) // limit displayed length 
@@ -588,13 +588,13 @@ public:
             if (!Object::isObjectTypeDerivedFrom<T>(objTypeTag)) {
                 std::cerr << "Object type " << objTypeTag  
                           << " wrong for " << objectClassName
-                          << " property " << getName()
+                          << " property " << this->getName()
                           << "; ignoring.\n";
                 continue;                        
             }
 			++objectsFound;
 
-            if (objectsFound > getMaxListSize())
+            if (objectsFound > this->getMaxListSize())
                 continue; // ignore this one
 
 			// Create an Object of the element tag's type.
@@ -607,13 +607,13 @@ public:
             adoptHeapValueVirtual(objectT); // don't copy
 		}
 
-        if (objectsFound < getMinListSize()) {
+        if (objectsFound < this->getMinListSize()) {
             std::cerr << "Got " << objectsFound 
                       << " object values for Property "
                       << this->getName() << " but the minimum is " 
                       << this->getMinListSize() << ". Continuing anyway.\n"; 
         }
-        if (objectsFound > getMaxListSize()) {
+        if (objectsFound > this->getMaxListSize()) {
             std::cerr << "Got " << objectsFound
                       << " object values for Property "
                       << this->getName() << " but the maximum is " 

@@ -856,7 +856,7 @@ setPropertyValue(const std::string& name,
     if (sz < dest.getMinListSize() || sz > dest.getMaxListSize())
         throw OpenSim::Exception(
             "Object::setListPropertyValue(): supplied list length "
-            + String(sz) + " out of range for property " + dest.getName());
+            + SimTK::String(sz) + " out of range for property " + dest.getName());
     dest.clear();
     for (int i=0; i < sz; ++i)
         dest.appendValue(valueList[i]);
