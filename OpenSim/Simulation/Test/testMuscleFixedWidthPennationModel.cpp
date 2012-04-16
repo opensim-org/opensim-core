@@ -326,8 +326,9 @@ int main(int argc, char* argv[])
 
             SimTK::Vector time(numPts);
             SimTK::Vector fibLen(numPts);
+            SimTK::Vector fibLenAT(numPts);
             SimTK::Vector fibVel(numPts);
-
+            SimTK::Vector fibVelAT(numPts);
             SimTK::Vector tdnLen(numPts);
             SimTK::Vector tdnVel(numPts);
 
@@ -342,6 +343,7 @@ int main(int argc, char* argv[])
 
                 //Artificial fiber kinematics
                 fibLen(i) = ( 2.01 + cos(time(i)*(2*SimTK::Pi)) )*paraHeight;
+                
                 fibVel(i) = -sin(time(i)*(2*SimTK::Pi)) 
                             * paraHeight*(2*SimTK::Pi);
                 
@@ -361,6 +363,12 @@ int main(int argc, char* argv[])
                 tdnVel(i) = mclVel(i) - fibVel(i)*cos(penAng(i)) 
                                       + fibLen(i)*sin(penAng(i))*penAngVel(i);
                
+                fibLenAT(i) = fibKin.calcFiberLengthAlongTendon( fibLen(i),
+                                                             cos(penAng(i)) );
+
+                fibVelAT(i) = fibKin.calcFiberVelocityAlongTendon(fibLen(i),
+                                fibVel(i),sin(penAng(i)), cos(penAng(i)), 
+                                penAngVel(i));
             }            
 
         cout << endl;
@@ -436,6 +444,38 @@ int main(int argc, char* argv[])
             }
             printf("    :passed with a max. error < big. tol (%fe-8 < %fe-8) \n"
                                                         ,maxErr*1e8,bigTol*1e8);
+        cout << endl;
+        cout << "**************************************************" << endl;
+        cout << "TEST: calcFiberLengthAlongTendon correctness" << endl;
+
+        for(int i=0; i<numPts; i++){
+            SimTK_TEST_EQ_TOL(fibLen(i)*penAng(i), 
+                fibKin.calcFiberLengthAlongTendon(fibLen(i),penAng(i)), 
+                smallTol);
+        }
+        printf("    :passed with a max. error < small. tol (%fe-16) \n"
+                                                        ,smallTol*1e16);
+
+
+        cout << endl;
+        cout << "**************************************************" << endl;
+        cout << "TEST: calcFiberVelocityAlongTendon correctness" << endl;
+
+        //fibVelAT(i)
+
+        SimTK::Vector fibLenATNumDer =calcCentralDifference(time,fibLenAT,true);
+        
+        maxErr = 0;
+        double err = 0;
+        for(int i=0; i<numPts; i++){
+            err = abs(fibLenATNumDer(i)-fibVelAT(i));
+            if(err > maxErr)
+                maxErr = err;
+
+            SimTK_TEST_EQ_TOL(err,0, relTol);
+        }
+        printf("    :passed with a max. error < rel tol (%fe-6< %fe-6)",
+                        maxErr*1e6, relTol*1e6);
 
         cout << endl;
         cout << "**************************************************" << endl;
