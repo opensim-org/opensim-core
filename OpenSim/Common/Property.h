@@ -304,8 +304,8 @@ public:
             throw OpenSim::Exception(
                 "addProperty<" + std::string(SimTK::NiceTypeName<T>::name())
                 + ">(): a simple (non-Object) property must have a name.");        
-        setName(name); 
-        if (isOneValue) setAllowableListSize(1); 
+        this->setName(name); 
+        if (isOneValue) this->setAllowableListSize(1); 
     }
 
     // Default destructor, copy constructor, copy assignment.
@@ -315,9 +315,9 @@ public:
    
     std::string toString() const                        FINAL_11 {
         std::stringstream out;
-        if (!isOneValueProperty()) out << "(";
+        if (!this->isOneValueProperty()) out << "(";
         writeSimplePropertyToStream(out);
-        if (!isOneValueProperty()) out << ")";
+        if (!this->isOneValueProperty()) out << ")";
         return out.str();
     }
 
@@ -332,7 +332,7 @@ public:
     bool isEqualTo(const AbstractProperty& other) const FINAL_11 {
         // Check here rather than in base class because the old
         // Property_Deprecated implementation can't copy this flag right.
-        if (getUseDefault() != other.getUseDefault())
+        if (this->getUseDefault() != other.getUseDefault())
             return false;
         assert(size() == other.size()); // base class checked
         const SimpleProperty& otherS = SimpleProperty::getAs(other);
@@ -351,25 +351,25 @@ public:
         std::istringstream valstream(propertyElement.getValue());
         if (!readSimplePropertyFromStream(valstream)) {
             std::cerr << "Failed to read " << SimTK::NiceTypeName<T>::name()
-            << " property " << getName() << "; input='" 
+            << " property " << this->getName() << "; input='" 
             << valstream.str().substr(0,50) // limit displayed length
             << "'.\n";
         }
         if (values.size() < getMinListSize()) {
             std::cerr << "Not enough values for " 
-            << SimTK::NiceTypeName<T>::name() << " property " << getName() 
+            << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
             << "; input='" << valstream.str().substr(0,50) // limit displayed length 
-            << "'. Expected " << getMinListSize()
+            << "'. Expected " << this->getMinListSize()
             << ", got " << values.size() << ".\n";
         }
         if (values.size() > getMaxListSize()) {
             std::cerr << "Too many values for " 
-            << SimTK::NiceTypeName<T>::name() << " property " << getName() 
+            << SimTK::NiceTypeName<T>::name() << " property " << this->getName() 
             << "; input='" << valstream.str().substr(0,50) // limit displayed length 
-            << ". Expected " << getMaxListSize()
+            << ". Expected " << this->getMaxListSize()
             << ", got " << values.size() << ". Ignoring extras.\n";
 
-            values.resize(getMaxListSize());
+            values.resize(this->getMaxListSize());
         }
     }
 
@@ -386,20 +386,20 @@ public:
 
     const Object& getValueAsObject(int index=-1) const FINAL_11 {
         throw OpenSim::Exception(
-                "SimpleProperty<T>::getValueAsObject(): property " + getName()
-                + " is not an Object property."); 
+                "SimpleProperty<T>::getValueAsObject(): property " 
+                + this->getName() + " is not an Object property."); 
     }
 
     Object& updValueAsObject(int index=-1) FINAL_11 {
         throw OpenSim::Exception(
-                "SimpleProperty<T>::updValueAsObject(): property " + getName()
-                + " is not an Object property."); 
+                "SimpleProperty<T>::updValueAsObject(): property " 
+                + this->getName() + " is not an Object property."); 
     }
 
     void setValueAsObject(const Object& obj, int index=-1) FINAL_11 {
         throw OpenSim::Exception(
-                "SimpleProperty<T>::setValueAsObject(): property " + getName()
-                + " is not an Object property."); 
+                "SimpleProperty<T>::setValueAsObject(): property " 
+                + this->getName() + " is not an Object property."); 
     }
 
     // This is the Property<T> interface implementation.
@@ -521,11 +521,11 @@ public:
                     "the object type as a name.");
 
             isUnnamed = true;
-            setName(objectClassName); // use object type as property name
+            this->setName(objectClassName); // use object type as property name
         } else
-            setName(name);
+            this->setName(name);
 
-        if (isOneValue) setAllowableListSize(1);
+        if (isOneValue) this->setAllowableListSize(1);
     }
 
     // Default destructor, copy constructor, copy assignment
@@ -539,12 +539,12 @@ public:
     std::string toString() const                        FINAL_11 {
         if (objects.empty()) return "(No Objects)";
         std::string out;
-        if (!isOneValueProperty()) out += '(';
+        if (!this->isOneValueProperty()) out += '(';
         for (int i=0; i < objects.size(); ++i) {
             if (i != 0) out += ' ';
             out += objects[i]->getConcreteClassName();
         }
-        if (!isOneValueProperty()) out += ')';
+        if (!this->isOneValueProperty()) out += ')';
         return out;
     }
 
@@ -559,7 +559,7 @@ public:
     bool isEqualTo(const AbstractProperty& other) const FINAL_11 {
         // Check here rather than in base class because the old
         // Property_Deprecated implementation can't copy this flag right.
-        if (getUseDefault() != other.getUseDefault())
+        if (this->getUseDefault() != other.getUseDefault())
             return false;
         assert(size() == other.size()); // base class checked
         const ObjectProperty& otherO = ObjectProperty::getAs(other);
@@ -610,14 +610,14 @@ public:
         if (objectsFound < getMinListSize()) {
             std::cerr << "Got " << objectsFound 
                       << " object values for Property "
-                      << getName() << " but the minimum is " 
-                      << getMinListSize() << ". Continuing anyway.\n"; 
+                      << this->getName() << " but the minimum is " 
+                      << this->getMinListSize() << ". Continuing anyway.\n"; 
         }
         if (objectsFound > getMaxListSize()) {
             std::cerr << "Got " << objectsFound
                       << " object values for Property "
-                      << getName() << " but the maximum is " 
-                      << getMaxListSize() << ". Ignoring the rest.\n"; 
+                      << this->getName() << " but the maximum is " 
+                      << this->getMaxListSize() << ". Ignoring the rest.\n"; 
         }
     }
 
@@ -631,19 +631,19 @@ public:
     }
 
     const Object& getValueAsObject(int index=-1) const FINAL_11 {
-        if (index < 0 && getMinListSize()==1 && getMaxListSize()==1)
+        if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         return *objects[index];
     }
 
     Object& updValueAsObject(int index=-1) FINAL_11 {
-        if (index < 0 && getMinListSize()==1 && getMaxListSize()==1)
+        if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         return *objects[index];
     }
 
     void setValueAsObject(const Object& obj, int index=-1) FINAL_11 {
-        if (index < 0 && getMinListSize()==1 && getMaxListSize()==1)
+        if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         T* newObjT = dynamic_cast<T*>(obj.clone());
         if (newObjT == NULL) 
@@ -651,7 +651,7 @@ public:
                ("ObjectProperty<T>::setValueAsObject(): the supplied object"
                 + obj.getName() + " was of type " + obj.getConcreteClassName()
                 + " which can't be stored in this " + objectClassName
-                + " property " + getName(),
+                + " property " + this->getName(),
                 __FILE__, __LINE__);
 
         objects[index] = newObjT;
