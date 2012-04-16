@@ -909,22 +909,23 @@ setPropertyValue(const std::string& name, const T& value)
 
 /** @name               Object Declaration Macros
 One of these macros must appear as the first line of any class declaration
-that derives directly or indirection from %OpenSim's Object class. In almost
+that derives directly or indirectly from %OpenSim's Object class. In almost
 all cases, the right macro to use is \c OpenSim_DECLARE_CONCRETE_OBJECT().
 
 Use of these macros provides:
   - a public typedef Super that is the immediate parent class,
   - implementation of required Object pure virtual methods, including
     the clone() method that will create a new heap-allocated copy of any 
-    concrete Object.
+    concrete Object,
   - uniform treatment of class names, which are used as tags in XML and for 
     interfacing with Java using class names as strings to identify C++ 
     objects. The static getClassName() returns the name of any class, and
     the member getConcreteClassName() returns the class name of the concrete 
-    object being referenced.
+    object being referenced, and
+  - an assortment of methods used only for interfacing with Java.
 **/
 /**@{**/
-/** Macro to be included in a public section of the class declaration for
+/** Macro to be included as the first line of the class declaration for
 any non-templatized, concrete class that derives from OpenSim::Object. You 
 should use this for any such class, even if you intend to derive more specific 
 concrete objects from it. Don't use this for a still-abstract class, or a 
@@ -935,7 +936,7 @@ OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass);                            \
 OpenSim_OBJECT_NONTEMPLATE_DEFS(ConcreteClass, SuperClass);                    \
 OpenSim_OBJECT_CONCRETE_DEFS(ConcreteClass);
 
-/** Macro to be included in a public section of the class declaration for
+/** Macro to be included as the first line of the class declaration for
 any still-abstract class that derives from OpenSim::Object. These are classes
 that represent categories of objects, like Function and ModelComponent. This
 macro leaves Object pure virtuals clone() and getConcreteClassName() unimplemented,
@@ -946,7 +947,7 @@ OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass);                            \
 OpenSim_OBJECT_NONTEMPLATE_DEFS(ConcreteClass, SuperClass);                    \
 OpenSim_OBJECT_ABSTRACT_DEFS(ConcreteClass);
 
-/** Macro to be included in a public section of the class declaration for
+/** Macro to be included as the first line of the class declaration for
 any templatized, concrete class that derives from OpenSim::Object, 
 like Set\<T>.
 @relates OpenSim::Object **/
@@ -955,7 +956,7 @@ OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass);                            \
 OpenSim_OBJECT_TEMPLATE_DEFS(ConcreteClass, TArg, SuperClass);                 \
 OpenSim_OBJECT_CONCRETE_DEFS(ConcreteClass);
 
-/** Macro to be included in a public section of the class declaration for
+/** Macro to be included as the first line of the class declaration for
 any templatized, still-abstract class that derives from OpenSim::Object.
 @relates OpenSim::Object **/
 #define OpenSim_DECLARE_ABSTRACT_OBJECT_T(ConcreteClass, TArg, SuperClass)     \
