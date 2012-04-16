@@ -1060,7 +1060,127 @@ private:
 /** @endcond **/
 
 //==============================================================================
-//                  ABSTRACT PROPERTY TEMPLATE METHODS
+//                        OBJECT PROPERTY IMPLEMENTATION
+//==============================================================================
+// These methods of ObjectProperty are defined here because they depend on 
+// methods of Object. See Property.h for ObjectProperty's declaration.
+
+template <class T> std::string 
+ObjectProperty<T>::toString() const {
+    if (objects.empty()) return "(No Objects)";
+    std::string out;
+    if (!this->isOneValueProperty()) out += '(';
+    for (int i=0; i < objects.size(); ++i) {
+        if (i != 0) out += ' ';
+        out += objects[i]->getConcreteClassName();
+    }
+    if (!this->isOneValueProperty()) out += ')';
+    return out;
+}
+
+template <class T> bool 
+ObjectProperty<T>::isAcceptableObjectTag
+   (const std::string& objectTypeTag) const { 
+    return Object::isObjectTypeDerivedFrom<T>(objectTypeTag); 
+}
+
+template <class T> bool 
+ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
+    // Check here rather than in base class because the old
+    // Property_Deprecated implementation can't copy this flag right.
+    if (this->getUseDefault() != other.getUseDefault())
+        return false;
+    assert(size() == other.size()); // base class checked
+    const ObjectProperty& otherO = ObjectProperty::getAs(other);
+    for (int i=0; i<objects.size(); ++i)
+        if (!(objects[i] == otherO.objects[i]))
+            return false;
+    return true;
+}
+
+
+// Property element is a compound element, consisting of subelements
+// each of which is one of the object values.
+template <class T> void 
+ObjectProperty<T>::readFromXMLElement
+    (SimTK::Xml::Element& propertyElement,
+    int                  versionNumber)
+{
+    clearValues();
+	// LOOP THROUGH PROPERTY ELEMENT'S CHILD ELEMENTS
+    // Each element is expected to be an Object of some type given
+    // by the element's tag; that type must be derived from O or we
+    // can't store it in this property.
+	int objectsFound = 0;
+	SimTK::Xml::element_iterator iter = propertyElement.element_begin();
+	for (; iter != propertyElement.element_end(); ++iter) {
+        const SimTK::String& objTypeTag = iter->getElementTag();
+
+        if (!Object::isObjectTypeDerivedFrom<T>(objTypeTag)) {
+            std::cerr << "Object type " << objTypeTag  
+                        << " wrong for " << objectClassName
+                        << " property " << this->getName()
+                        << "; ignoring.\n";
+            continue;                        
+        }
+		++objectsFound;
+
+        if (objectsFound > this->getMaxListSize())
+            continue; // ignore this one
+
+		// Create an Object of the element tag's type.
+		Object* object = Object::newInstanceOfType(objTypeTag);
+        assert(object); // we just checked above
+		object->updateFromXMLNode(*iter, versionNumber);
+
+        T* objectT = dynamic_cast<T*>(object);
+        assert(objectT); // should have worked by construction
+        adoptHeapValueVirtual(objectT); // don't copy
+	}
+
+    if (objectsFound < this->getMinListSize()) {
+        std::cerr << "Got " << objectsFound 
+                    << " object values for Property "
+                    << this->getName() << " but the minimum is " 
+                    << this->getMinListSize() << ". Continuing anyway.\n"; 
+    }
+    if (objectsFound > this->getMaxListSize()) {
+        std::cerr << "Got " << objectsFound
+                    << " object values for Property "
+                    << this->getName() << " but the maximum is " 
+                    << this->getMaxListSize() << ". Ignoring the rest.\n"; 
+    }
+}
+
+// Each object value serializes itself into a subelement of the given
+// property element.
+template <class T> void 
+ObjectProperty<T>::writeToXMLElement
+    (SimTK::Xml::Element& propertyElement) const 
+{
+    for (int i=0; i < objects.size(); ++i)
+        const_cast<T&>(*objects[i]).updateXMLNode(propertyElement);
+}
+
+
+template <class T> void 
+ObjectProperty<T>::setValueAsObject(const Object& obj, int index=-1) {
+    if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
+        index = 0;
+    T* newObjT = dynamic_cast<T*>(obj.clone());
+    if (newObjT == NULL) 
+        throw OpenSim::Exception
+            ("ObjectProperty<T>::setValueAsObject(): the supplied object"
+            + obj.getName() + " was of type " + obj.getConcreteClassName()
+            + " which can't be stored in this " + objectClassName
+            + " property " + this->getName(),
+            __FILE__, __LINE__);
+
+    objects[index] = newObjT;
+}
+
+//==============================================================================
+//                    ABSTRACT PROPERTY TEMPLATE METHODS
 //==============================================================================
 // TODO: these are defined here in order to provide support for the old
 // deprecated property system under the AbstractProperty umbrella. Move to

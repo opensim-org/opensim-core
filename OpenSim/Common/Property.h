@@ -1,5 +1,5 @@
-#ifndef OPENSIM_PROPERTY2_H_
-#define OPENSIM_PROPERTY2_H_
+#ifndef OPENSIM_PROPERTY_H_
+#define OPENSIM_PROPERTY_H_
 // Property.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -45,6 +45,9 @@
 #include <typeinfo>
 
 namespace OpenSim {
+
+template <class T> class SimpleProperty;
+template <class T> class ObjectProperty;
 
 //==============================================================================
 //                                PROPERTY
@@ -289,10 +292,12 @@ protected:
 };
 
 
-
 //==============================================================================
-//                    TYPE HELPER SPECIALIZATIONS
+//                        TYPE HELPER SPECIALIZATIONS
 //==============================================================================
+// Declarations are here so they can be used in declarations of SimpleProperty
+// and ObjectProperty but some definitions must be delayed until after
+// SimpleProperty and ObjectProperty are declared.
 
 /** This is the generic definition of Property::TypeHelper to be used 
 whenever T does not have a specialization, meaning that T must be a type 
@@ -304,17 +309,19 @@ template <class T> struct Property<T>::TypeHelper {
     static bool isEqual(const T& a, const T& b) {return a==b;}
 };
 
-
+/** TypeHelper specialization for bool. **/
 template<> struct Property<bool>::TypeHelper {
     static SimpleProperty<bool>* create(const std::string& name, bool isOne);
     static const char* name() {return "bool";}
     static bool isEqual(bool a, bool b) {return a==b;}
 };
+/** TypeHelper specialization for int. **/
 template<> struct Property<int>::TypeHelper {
     static SimpleProperty<int>* create(const std::string& name, bool isOne);
     static const char* name() {return "int";}
     static bool isEqual(int a, int b) {return a==b;}
 };
+/** TypeHelper specialization for std::string. **/
 template<> struct Property<std::string>::TypeHelper {
     static SimpleProperty<std::string>* 
     create(const std::string& name, bool isOne);
@@ -327,14 +334,16 @@ template<> struct Property<std::string>::TypeHelper {
     {   return a==b; }
 };
 
-// Floating point values' isEqual() operator returns true if all the numbers
-// are equal to within a tolerance. We also say NaN==NaN, which is not standard
-// IEEE floating point behavior.
+/** TypeHelper specialization for double. Note that isEqual() operator here
+returns true if values are equal to within a tolerance. We also say NaN==NaN, 
+which is not standard IEEE floating point behavior. **/
 template<> struct Property<double>::TypeHelper {
     static SimpleProperty<double>* create(const std::string& name, bool isOne);
     static const char* name() {return "double";}
     OSIMCOMMON_API static bool isEqual(double a, double b);
 };
+/** TypeHelper specialization for SimTK::Vec3; see double specialization
+for information on floating point comparison. **/
 template<> struct Property<SimTK::Vec3>::TypeHelper  {
     static SimpleProperty<SimTK::Vec3>* 
     create(const std::string& name, bool isOne);
@@ -342,6 +351,8 @@ template<> struct Property<SimTK::Vec3>::TypeHelper  {
     OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
                                        const SimTK::Vec3& b);
 };
+/** TypeHelper specialization for SimTK::Vector; see double specialization
+for information on floating point comparison. **/
 template<> struct Property<SimTK::Vector>::TypeHelper  {
     static SimpleProperty<SimTK::Vector>* 
     create(const std::string& name, bool isOne);
@@ -349,6 +360,8 @@ template<> struct Property<SimTK::Vector>::TypeHelper  {
     OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
                                        const SimTK::Vector& b);
 };
+/** TypeHelper specialization for SimTK::Transform; see double specialization
+for information on floating point comparison. **/
 template<> struct Property<SimTK::Transform>::TypeHelper  {
     static SimpleProperty<SimTK::Transform>* 
     create(const std::string& name, bool isOne);
@@ -470,10 +483,6 @@ public:
                 + this->getName() + " is not an Object property."); 
     }
 
-    // This is the Property<T> interface implementation.
-
-
-
     static bool isA(const AbstractProperty& prop) 
     {   return dynamic_cast<const SimpleProperty*>(&prop) != NULL; }
 
@@ -498,6 +507,7 @@ public:
     }
 
 private:
+    // This is the Property<T> interface implementation.
     // Base class checks the index.
     const T& getValueVirtual(int index) const   FINAL_11 
     {   return values[index]; }
@@ -604,99 +614,23 @@ public:
     ObjectProperty* clone() const FINAL_11 
     {   return new ObjectProperty(*this); }
 
-    std::string toString() const                        FINAL_11 {
-        if (objects.empty()) return "(No Objects)";
-        std::string out;
-        if (!this->isOneValueProperty()) out += '(';
-        for (int i=0; i < objects.size(); ++i) {
-            if (i != 0) out += ' ';
-            out += objects[i]->getConcreteClassName();
-        }
-        if (!this->isOneValueProperty()) out += ')';
-        return out;
-    }
+    // Implementation of these methods must be deferred until Object has been
+    // declared; see Object.h.
+    std::string toString() const FINAL_11;
+    bool isAcceptableObjectTag(const std::string& objectTypeTag) const FINAL_11;
+    bool isEqualTo(const AbstractProperty& other) const FINAL_11;
+    void readFromXMLElement
+       (SimTK::Xml::Element& propertyElement,
+        int                  versionNumber) FINAL_11;
+    void writeToXMLElement
+       (SimTK::Xml::Element& propertyElement) const FINAL_11;
+    void setValueAsObject(const Object& obj, int index=-1) FINAL_11;
 
     bool isUnnamedProperty() const FINAL_11 {return isUnnamed;}
     bool isObjectProperty() const FINAL_11 {return true;}
-    bool isAcceptableObjectTag(const std::string& objectTypeTag) const FINAL_11 
-    {   return Object::isObjectTypeDerivedFrom<T>(objectTypeTag); }
 
     int getNumValues() const FINAL_11 {return objects.size();}
     void clearValues() FINAL_11 {objects.clear();}
-
-    bool isEqualTo(const AbstractProperty& other) const FINAL_11 {
-        // Check here rather than in base class because the old
-        // Property_Deprecated implementation can't copy this flag right.
-        if (this->getUseDefault() != other.getUseDefault())
-            return false;
-        assert(size() == other.size()); // base class checked
-        const ObjectProperty& otherO = ObjectProperty::getAs(other);
-        for (int i=0; i<objects.size(); ++i)
-            if (!(objects[i] == otherO.objects[i]))
-                return false;
-        return true;
-    }
-
-    // Property element is a compound element, consisting of subelements
-    // each of which is one of the object values.
-    void readFromXMLElement
-       (SimTK::Xml::Element& propertyElement,
-        int                  versionNumber) FINAL_11
-    {
-        clearValues();
-		// LOOP THROUGH PROPERTY ELEMENT'S CHILD ELEMENTS
-        // Each element is expected to be an Object of some type given
-        // by the element's tag; that type must be derived from O or we
-        // can't store it in this property.
-		int objectsFound = 0;
-		SimTK::Xml::element_iterator iter = propertyElement.element_begin();
-		for (; iter != propertyElement.element_end(); ++iter) {
-            const SimTK::String& objTypeTag = iter->getElementTag();
-
-            if (!Object::isObjectTypeDerivedFrom<T>(objTypeTag)) {
-                std::cerr << "Object type " << objTypeTag  
-                          << " wrong for " << objectClassName
-                          << " property " << this->getName()
-                          << "; ignoring.\n";
-                continue;                        
-            }
-			++objectsFound;
-
-            if (objectsFound > this->getMaxListSize())
-                continue; // ignore this one
-
-			// Create an Object of the element tag's type.
-			Object* object = Object::newInstanceOfType(objTypeTag);
-            assert(object); // we just checked above
-			object->updateFromXMLNode(*iter, versionNumber);
-
-            T* objectT = dynamic_cast<T*>(object);
-            assert(objectT); // should have worked by construction
-            adoptHeapValueVirtual(objectT); // don't copy
-		}
-
-        if (objectsFound < this->getMinListSize()) {
-            std::cerr << "Got " << objectsFound 
-                      << " object values for Property "
-                      << this->getName() << " but the minimum is " 
-                      << this->getMinListSize() << ". Continuing anyway.\n"; 
-        }
-        if (objectsFound > this->getMaxListSize()) {
-            std::cerr << "Got " << objectsFound
-                      << " object values for Property "
-                      << this->getName() << " but the maximum is " 
-                      << this->getMaxListSize() << ". Ignoring the rest.\n"; 
-        }
-    }
-
-    // Each object value serializes itself into a subelement of the given
-    // property element.
-    void writeToXMLElement
-       (SimTK::Xml::Element& propertyElement) const FINAL_11 
-    {
-        for (int i=0; i < objects.size(); ++i)
-            const_cast<T&>(*objects[i]).updateXMLNode(propertyElement);
-    }
 
     const Object& getValueAsObject(int index=-1) const FINAL_11 {
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
@@ -708,21 +642,6 @@ public:
         if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
             index = 0;
         return *objects[index];
-    }
-
-    void setValueAsObject(const Object& obj, int index=-1) FINAL_11 {
-        if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
-            index = 0;
-        T* newObjT = dynamic_cast<T*>(obj.clone());
-        if (newObjT == NULL) 
-            throw OpenSim::Exception
-               ("ObjectProperty<T>::setValueAsObject(): the supplied object"
-                + obj.getName() + " was of type " + obj.getConcreteClassName()
-                + " which can't be stored in this " + objectClassName
-                + " property " + this->getName(),
-                __FILE__, __LINE__);
-
-        objects[index] = newObjT;
     }
 
     static bool isA(const AbstractProperty& prop) 
@@ -808,4 +727,4 @@ TypeHelper::create(const std::string& name, bool isOne)
 //=============================================================================
 //=============================================================================
 
-#endif // OPENSIM_PROPERTY2_H_
+#endif // OPENSIM_PROPERTY_H_

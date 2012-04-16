@@ -48,8 +48,6 @@ namespace OpenSim {
 
 class Object;
 template <class T> class Property;
-template <class S> class SimpleProperty;
-template <class O> class ObjectProperty;
 
 //==============================================================================
 //                            ABSTRACT PROPERTY
