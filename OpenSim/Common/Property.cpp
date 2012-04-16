@@ -47,7 +47,6 @@ using namespace std;
 // Doubles compare equal if they are close enough, and they compare equal
 // if they are both NaN. Vec3, Vector, and Array<double> properties must all
 // be implemented in terms of this method.
-template <>
 bool Property<double>::TypeHelper::
 isEqual(double a, double b) {
     if (a == b)
@@ -62,7 +61,6 @@ isEqual(double a, double b) {
 }
 
 
-template <>
 bool Property<SimTK::Vec3>::TypeHelper::
 isEqual(const SimTK::Vec3& a, const SimTK::Vec3& b) {
     for (int i=0; i < 3; ++i)
@@ -73,7 +71,6 @@ isEqual(const SimTK::Vec3& a, const SimTK::Vec3& b) {
 
 
 // SimTK::Vector
-template <>
 bool Property<SimTK::Vector>::TypeHelper::
 isEqual(const SimTK::Vector& a, const SimTK::Vector& b) {
     if (a.size() != b.size())
@@ -85,7 +82,6 @@ isEqual(const SimTK::Vector& a, const SimTK::Vector& b) {
 }
 
 // SimTK::Transform
-template <>
 bool Property<SimTK::Transform>::TypeHelper::
 isEqual(const SimTK::Transform& a, const SimTK::Transform& b) {
     // Check position vectors for equality, elementwise to a tolerance.
