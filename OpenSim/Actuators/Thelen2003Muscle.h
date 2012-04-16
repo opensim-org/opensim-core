@@ -2,48 +2,43 @@
 #define __Thelen2003Muscle_h__
 
 // Thelen2003Muscle.h
+/*    Author: Matthew Millard
 /*
- * Copyright (c)  2012, Stanford University. All rights reserved. 
-* Use of the OpenSim software in source form is permitted provided that the following
-* conditions are met:
-* 	1. The software is used only for non-commercial research and education. It may not
-*     be used in relation to any commercial activity.
-* 	2. The software is not distributed or redistributed.  Software distribution is allowed 
-*     only through https://simtk.org/home/opensim.
-* 	3. Use of the OpenSim software or derivatives must be acknowledged in all publications,
-*      presentations, or documents describing work in which OpenSim or derivatives are used.
-* 	4. Credits to developers may not be removed from executables
-*     created from modifications of the source.
-* 	5. Modifications of source code must retain the above copyright notice, this list of
-*     conditions and the following disclaimer. 
-* 
-*  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-*  EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
-*  OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-*  SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
-*  INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
-*  TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; 
-*  HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-*  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
-*  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+ * Permission is hereby granted, free of charge, to any person obtaining a    *
+ * copy of this software and associated documentation files (the "Software"), *
+ * to deal in the Software without restriction, including without limitation  *
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,   *
+ * and/or sell copies of the Software, and to permit persons to whom the      *
+ * Software is furnished to do so, subject to the following conditions:       *
+ *                                                                            *
+ * The above copyright notice and this permission notice shall be included in *
+ * all copies or substantial portions of the Software.                        *
+ *                                                                            *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR *
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,   *
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL    *
+ * THE AUTHORS, CONTRIBUTORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,    *
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR      *
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE  *
+ * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
+ * -------------------------------------------------------------------------- */
 
 
 // INCLUDE
-#include "osimActuatorsDLL.h"
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/MuscleFirstOrderActivationDynamicModel.h>
+#include <OpenSim/Simulation/Model/MuscleFixedWidthPennationModel.h>
 
 #ifdef SWIG
-	#ifdef OSIMACTUATORS_API
-		#undef OSIMACTUATORS_API
-		#define OSIMACTUATORS_API
-	#endif
+    #ifdef OSIMACTUATORS_API
+        #undef OSIMACTUATORS_API
+        #define OSIMACTUATORS_API
+    #endif
 #endif
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
 /**
  * Implementation of a two state (activation and fiber-length) Muscle model by:
  * DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
@@ -53,100 +48,172 @@ namespace OpenSim {
  * @author Matt Millard
  * @author Ajay Seth
  * @author Peter Loan
- * @version 3.0
- *
  */
 class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle {
 OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle, ActivationFiberLengthMuscle);
 
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
+
 public:
-	Thelen2003Muscle();
-	Thelen2003Muscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
-	Thelen2003Muscle(const Thelen2003Muscle &aMuscle);
-	virtual ~Thelen2003Muscle();
+//=============================================================================
+// Construction
+//=============================================================================
 
-#ifndef SWIG
-	Thelen2003Muscle& operator=(const Thelen2003Muscle &aMuscle);
-#endif
-	void copyData(const Thelen2003Muscle &aMuscle);
+    Thelen2003Muscle();
+    Thelen2003Muscle(const std::string &aName,double aMaxIsometricForce,
+                    double aOptimalFiberLength,double aTendonSlackLength,
+                    double aPennationAngle);
+    Thelen2003Muscle(const Thelen2003Muscle &aMuscle);
+    virtual ~Thelen2003Muscle();
 
-#ifndef SWIG
+    #ifndef SWIG
+        Thelen2003Muscle& operator=(const Thelen2003Muscle &aMuscle);
+        #endif
+            void copyData(const Thelen2003Muscle &aMuscle);
+        #ifndef SWIG
+    #endif
 
-#endif
+//==============================================================================
+// Get and Set Properties
+//==============================================================================
+    // Properties
+    virtual double getActivationTimeConstant() const;
+    virtual double getActivationMinimumValue() const;
+    virtual double getDeactivationTimeConstant() const;
+    //virtual double getVmax() const;
+    virtual double getFmaxTendonStrain() const;
+    virtual double getFmaxFiberStrain() const;
+    virtual double getKshapeActive() const;
+    virtual double getKshapePassive() const;
+    virtual double getAf() const;
+    virtual double getFlen() const;
+    virtual double getForceVelocityExtrapolationThreshold() const;
 
-	//--------------------------------------------------------------------------
-	// GET
-	//--------------------------------------------------------------------------
-	// Properties
-	double getActivationTimeConstant() const { return getPropertyValue<double>("activation_time_constant"); }
-	double getDeactivationTimeConstant() const { return getPropertyValue<double>("deactivation_time_constant"); }
-	double getVmax() const { return getPropertyValue<double>("Vmax"); }
-	double getVmax0() const { return getPropertyValue<double>("Vmax0"); }
-	double getFmaxTendonStrain() const { return getPropertyValue<double>("FmaxTendonStrain"); }
-	double getFmaxMuscleStrain() const { return getPropertyValue<double>("FmaxMuscleStrain"); }
-	double getKshapeActive() const { return getPropertyValue<double>("KshapeActive"); }
-	double getKshapePassive() const { return getPropertyValue<double>("KshapePassive"); }
-	double getDamping() const { return getPropertyValue<double>("damping"); }
-	double getAf() const { return getPropertyValue<double>("Af"); }
-	double getFlen() const { return getPropertyValue<double>("Flen"); }
-	void setActivationTimeConstant(double aActivationTimeConstant);
-	void setDeactivationTimeConstant(double aDeactivationTimeConstant);
-	void setVmax(double aVmax);
-	void setVmax0(double aVmax0);
-	void setFmaxTendonStrain(double aFmaxTendonStrain);
-	void setFmaxMuscleStrain(double aFmaxMuscleStrain);
-	void setKshapeActive(double aKShapeActive);
-	void setKshapePassive(double aKshapePassive);
-	void setDamping(double aDamping);
-	void setAf(double aAf);
-	void setFlen(double aFlen);
+    virtual bool setActivationTimeConstant(double aActivationTimeConstant);
+    virtual bool setActivationMinimumValue(double aActivationMinValue);
+    virtual bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
+    //virtual bool setVmax(double aVmax);
+    virtual bool setFmaxTendonStrain(double aFmaxTendonStrain);
+    virtual bool setFmaxFiberStrain(double aFmaxMuscleStrain);
+    virtual bool setKshapeActive(double aKShapeActive);
+    virtual bool setKshapePassive(double aKshapePassive);
+    virtual bool setAf(double aAf);
+    virtual bool setFlen(double aFlen);;
+    virtual bool setForceVelocityExtrapolationThreshold(double aFvThresh);
 
-	// Computed quantities
-	//--------------------------------------------------------------------------
-	// FORCE-LENGTH-VELOCITY PROPERTIES
-	//--------------------------------------------------------------------------
+//==============================================================================
+// Public Computations
+//==============================================================================
+    //Ajay: this is old. Can I stop calling it?
+    virtual double computeActuation(const SimTK::State& s) const;
 
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	double computeActuation(const SimTK::State& s) const;
-	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
-	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
-	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
-	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
-	
-	double computeIsometricForce(SimTK::State& s, double activation) const;
+
+    /** Compute initial fiber length (velocity) such that muscle fiber and 
+        tendon are in static equilibrium and update the state
+        
+        Part of the Muscle.h interface
+    */
+    void computeInitialFiberEquilibrium(SimTK::State& s) const; /*virtual*/
+    double computeIsometricForce(   SimTK::State& s, 
+                                    double activation) const;/*virtual*/
 
 protected:
-	/** calculate muscle's position related values such fiber and tendon lengths,
-	normalized lengths, pennation angle, etc... */
-	virtual void calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const;
+//==============================================================================
+// Protected Computations
+//==============================================================================
 
-	/** calculate muscle's velocity related values such fiber and tendon velocities,
-		normalized velocities, pennation angular velocity, etc... */
-	virtual void  calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const;
+    /**calculate muscle's position related values such fiber and tendon lengths,
+    normalized lengths, pennation angle, etc... */
+    void calcMuscleLengthInfo(const SimTK::State& s, 
+                              MuscleLengthInfo& mli) const; /*virtual*/ 
 
-	/** calculate muscle's active and passive force-length, force-velocity, 
-	    tendon force, relationships and their related values */
-	virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const;
 
-	/** Calculate activation rate */
-	virtual double calcActivationRate(const SimTK::State& s) const;
+    /** calculate muscle's velocity related values such fiber and tendon 
+        velocities,normalized velocities, pennation angular velocity, etc... */
+    virtual void  calcFiberVelocityInfo(const SimTK::State& s, 
+                                      FiberVelocityInfo& fvi) const; /*virtual*/ 
+
+    /** calculate muscle's active and passive force-length, force-velocity, 
+        tendon force, relationships and their related values */
+    virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, 
+                                    MuscleDynamicsInfo& mdi) const; /*virtual*/ 
+
+    /** Calculate activation rate */
+    double calcActivationRate(const SimTK::State& s) const; /*virtual*/
+
+    void createSystem(SimTK::MultibodySystem& system) const;
+
 
 private:
-	void setNull();
-	void setupProperties();
-//=============================================================================
-};	// END of class Thelen2003Muscle
-//=============================================================================
-//=============================================================================
+    void setNull();
+    void setupProperties();
 
+    //=====================================================================
+    // Private Utility Class Members
+    //      -Computes activation dynamics and fiber kinematics
+    //=====================================================================
+
+    //Activation Dynamics
+    mutable MuscleFirstOrderActivationDynamicModel *actMdl;
+
+    //Fiber and Tendon Kinematics
+    mutable MuscleFixedWidthPennationModel *penMdl;
+
+    //=====================================================================
+    // Private Accessor names
+    //=====================================================================
+    //This is so we can get some compiler checking on these string names
+
+
+    //=====================================================================
+    // Private Computation
+    //      -Computes curve values, derivatives and integrals
+    //=====================================================================
+
+    //Initialization
+    SimTK::Vector initMuscleState(SimTK::State& s, double aActivation,
+                             double aSolTolerance, int aMaxIterations) const;
+
+    //Stiffness related functions
+    double calcFm(double ma, double fal, double fv, double fpe, double fiso) const;
+
+
+    double calcDFmDlce(double lce, double a,  double fv, 
+                      double fiso, double ofl) const;
+
+    double calcDFmATDlce(double lce, double phi, double cosphi, 
+    double Fm, double d_Fm_d_lce, double penHeight) const;
+
+    double calcDFseDlce(double tl, double lce, double phi, double cosphi, 
+                                    double fiso, double tsl, double vol) const;
+
+    double calcDFseDtl(double tl, double fiso, double tsl) const;
+    
+    
+    //Tendon related helper functions
+    double calcfse(double tlN) const;
+    double calcDfseDtlN(double tlN) const;
+    double calcfsefisoPE(double tlN) const;
+
+    //Active force length functions
+    double calcfal( double lceN) const;
+    double calcDfalDlceN( double lceN) const;
+
+    //Parallel element functions    
+    double calcfpe(double lceN) const;
+    double calcDfpeDlceN(double lceN) const;
+    double calcfpefisoPE(double lceN) const;    
+
+    //Force velocity functions      
+    double calcdlceN(double act,double fal, double actFalFv) const;
+    double calcfv(double aFse, double aFpe, double aFal,
+                  double aCosPhi, double aAct) const;
+    SimTK::Vector calcfvInv(double aAct,  double aFal, double dlceN, 
+                            double tolerance, int maxIterations) const;
+    double calcDdlceDaFalFv(double aAct, double fal, 
+                            double aFalFv) const;
+
+
+};    
 } // end of namespace OpenSim
 
 #endif // __Thelen2003Muscle_h__
