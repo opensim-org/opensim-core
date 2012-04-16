@@ -634,7 +634,7 @@ public:
 
     mutable SimTK::Vector m_tmpXV; //A temporary variable   
 
-    FunctionData::FunctionData(const SimTK::Function& func):m_func(func)
+    FunctionData(const SimTK::Function& func):m_func(func)
     {};
 };
 
