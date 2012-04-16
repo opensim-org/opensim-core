@@ -54,8 +54,27 @@ namespace OpenSim {
 /** A %Property\<T> is a serializable (name, list-of-values) pair, where each 
 value is of type T. The number of values allowed in the list is an attribute of
 the property; most allow either just one or an arbitrary number, but some 
-have other restrictions. Properties are maintained in %OpenSim's Object base
-class that is used for all serializable objects.
+have other restrictions. 
+
+Properties are maintained in a PropertyTable by %OpenSim's Object base class 
+that is used for all serializable objects. Do not create %Property objects 
+directly; instead, use the methods provided by the %OpenSim Object base class 
+to create them:
+@code
+    Object::addProperty<T>()            // exactly one value required
+    Object::addOptionalProperty<T>()    // zero or one value
+    Object::addListProperty<T>()        // zero or more values
+@endcode
+These implicitly define the number of elements allowed as shown above. You 
+can narrow the range for a list property by calling setAllowableListSize() on
+the property after it is created, like this:
+@code
+    // Only 0,1,2 or 3 integer values allowed for this property's value list.
+    addListProperty<int>("my_int_property", "a comment")
+        .setAllowableListSize(0,3);
+@endcode
+(The above works because the addProperty() methods return a reference to the
+newly created %Property.)
 
 Type T must be a serializable type. Serializable types come in two categories:
   - simple types (like int or string) for which serialization instructions 
@@ -130,8 +149,7 @@ attributes:
 
 The "used default value" flag specifies that the value stored with this 
 property was taken from a default object and not subsequently changed. A 
-property with this flag set is not be written out when a model
-is serialized. **/
+property with this flag set is not written out when a model is serialized. **/
 
 template <class T>
 class Property : public AbstractProperty {

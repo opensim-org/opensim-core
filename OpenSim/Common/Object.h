@@ -201,7 +201,10 @@ class OSIMCOMMON_API Object
 public:
     /** Return the name of this class as a string; i.e., "Object". See 
     getConcreteClassName() if you want the class name of the underlying concrete 
-    object instead. **/
+    object instead. Note that this method is automatically supplied for 
+    every class declaration that derives from Object via the standard macro
+    provided for that purpose. See introductory text for this Object class
+    for more information. **/
     static const std::string& getClassName() 
     {   static std::string name ("Object"); return name; }
 
@@ -230,29 +233,20 @@ public:
 	/** Create a new heap-allocated copy of the concrete object to which this 
     %Object refers. It is up to the caller to delete the returned object
     when no longer needed. Every concrete object deriving from %Object 
-    must implement this pure virtual method. The implementation typically looks
-    like this:
-    @code
-        class Concrete : public Object {
-            ...
-            // Invoke copy constructor to duplicate this object.
-            Concrete* clone() const override {return new Concrete(*this);}
-        };
-    @endcode
-    Note that the return type should be a pointer to the \e concrete object;
-    that still overrides the base class method because the return type is
-    covariant with (that is, derives from) %Object.
-
-    (If your compiler doesn't yet support the C++11 "override" keyword, you
-    can leave that out or use the provided \c OVERRIDE_11 macro that will 
-    expand to \c override for compilers that support it.) **/
+    implements this pure virtual method automatically, via the declaration
+    macro it invokes (e.g., OpenSim_DECLARE_CONCRETE_OBJECT()). Note that the 
+    concrete class overrides modify the return type to be a pointer to the
+    \e concrete object; that still overrides the base class method because the 
+    return type is covariant with (that is, derives from) %Object. **/
 	virtual Object* clone() const = 0;
 
     /** Returns the class name of the concrete %Object-derived class of the
     actual object referenced by this %Object, as a string. This is the 
-    string that is used as the tag for this concrete object in an XML file. 
-    See getClassName() to get the class name of the referencing (possibly
-    abstract) class rather than the concrete object.
+    string that is used as the tag for this concrete object in an XML file.
+    Every concrete class derived from %Object automatically overrides this
+    method via the declaration macro it uses. See getClassName() to get the 
+    class name of the referencing (possibly abstract) class rather than the 
+    concrete object.
     @see getClassName() **/
     virtual const std::string& getConcreteClassName() const = 0;
 
