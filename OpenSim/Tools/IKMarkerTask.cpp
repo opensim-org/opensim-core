@@ -46,7 +46,6 @@ using namespace OpenSim;
  */
 IKMarkerTask::IKMarkerTask()
 {
-	setType("IKMarkerTask");
 }
 
 //_____________________________________________________________________________
@@ -56,15 +55,6 @@ IKMarkerTask::IKMarkerTask()
 IKMarkerTask::IKMarkerTask(const IKMarkerTask &aIKMarkerTask) :
    IKTask(aIKMarkerTask)
 {
-}
-
-//_____________________________________________________________________________
-/**
- * Copy method
- */
-Object* IKMarkerTask::copy() const
-{
-	return new IKMarkerTask(*this);
 }
 
 //=============================================================================

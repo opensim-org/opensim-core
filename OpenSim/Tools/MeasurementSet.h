@@ -51,8 +51,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMTOOLS_API MeasurementSet :	public Set<Measurement>
-{
+class OSIMTOOLS_API MeasurementSet : public Set<Measurement> {
+OpenSim_DECLARE_CONCRETE_OBJECT(MeasurementSet, Set<Measurement>);
+
 private:
 	void setNull();
 public:

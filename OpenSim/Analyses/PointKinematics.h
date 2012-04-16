@@ -66,8 +66,9 @@ class Body;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMANALYSES_API PointKinematics : public Analysis 
-{
+class OSIMANALYSES_API PointKinematics : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(PointKinematics, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -104,10 +105,9 @@ protected:
 public:
 	PointKinematics(Model *aModel=0);
 	PointKinematics(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
 	PointKinematics(const PointKinematics &aObject);
-	virtual Object* copy() const;
 	virtual ~PointKinematics();
+
 private:
 	void setNull();
 	void setupProperties();

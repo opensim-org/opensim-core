@@ -85,7 +85,7 @@ PropertyDbl::PropertyDbl(const PropertyDbl &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyDbl* PropertyDbl::copy() const
+PropertyDbl* PropertyDbl::clone() const
 {
 	PropertyDbl* prop = new PropertyDbl(*this);
 	return prop;

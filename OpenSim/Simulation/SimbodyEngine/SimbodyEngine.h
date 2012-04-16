@@ -72,8 +72,8 @@ class JointSet;
  * @authors Frank C. Anderson, Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API SimbodyEngine  : public Object
-{
+class OSIMSIMULATION_API SimbodyEngine  : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SimbodyEngine, Object);
 
 //=============================================================================
 // DATA
@@ -97,7 +97,7 @@ public:
 	SimbodyEngine();
 	SimbodyEngine(const std::string &aFileName);
 	SimbodyEngine(const SimbodyEngine& aEngine);
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	SimbodyEngine& operator=(const SimbodyEngine &aEngine);
 #endif

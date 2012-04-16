@@ -67,8 +67,8 @@ class SimbodyEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API MovingPathPoint : public PathPoint  
-{
+class OSIMSIMULATION_API MovingPathPoint : public PathPoint {
+OpenSim_DECLARE_CONCRETE_OBJECT(MovingPathPoint, PathPoint);
 
 //=============================================================================
 // DATA
@@ -110,7 +110,6 @@ public:
 	MovingPathPoint();
 	MovingPathPoint(const MovingPathPoint &aPoint);
 	virtual ~MovingPathPoint();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	MovingPathPoint& operator=(const MovingPathPoint &aPoint);
@@ -144,8 +143,6 @@ public:
 #endif
    virtual void scale(const SimTK::State& s, const SimTK::Vec3& aScaleFactors);
 
-
-	OPENSIM_DECLARE_DERIVED(MovingPathPoint, PathPoint);
 private:
 	void setNull();
 	void setupProperties();

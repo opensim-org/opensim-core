@@ -98,7 +98,6 @@ setNull()
 {
 	//generateProperties();
 	setupProperties();
-	setType("Control");
 }
 //_____________________________________________________________________________
 /**

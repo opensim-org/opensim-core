@@ -52,8 +52,8 @@ namespace OpenSim {
  * @author Matt DeMers
  * @version 1.0
  */
-class OSIMSIMULATION_API ConstantDistanceConstraint : public Constraint  
-{
+class OSIMSIMULATION_API ConstantDistanceConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConstantDistanceConstraint, Constraint);
 
 //=============================================================================
 // DATA
@@ -95,7 +95,7 @@ public:
 	ConstantDistanceConstraint(const ConstantDistanceConstraint &aConstraint);
 	ConstantDistanceConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2, double& distance);
 	virtual ~ConstantDistanceConstraint();
-	virtual Object* copy() const;
+	
 	ConstantDistanceConstraint& operator=(const ConstantDistanceConstraint &aConstraint);
 	void copyData(const ConstantDistanceConstraint &aConstraint);
 

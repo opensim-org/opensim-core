@@ -91,6 +91,7 @@ void Property_Deprecated::
 setNull()
 {
 	_propertyType = Property_Deprecated::None;
+    _matchName = false;
 }
 
 

@@ -35,8 +35,6 @@
 #include <OpenSim/Common/Array.h>
 #include <OpenSim/Common/VectorFunctionUncoupledNxN.h>
 
-//extern template class OSIMCOMMON_API Array<double>;
-
 //=============================================================================
 //=============================================================================
 /**
@@ -56,110 +54,106 @@
 */
 namespace OpenSim { 
 
-	class ExampleVectorFunctionUncoupledNxN : public VectorFunctionUncoupledNxN
+class ExampleVectorFunctionUncoupledNxN : public VectorFunctionUncoupledNxN {
+    OpenSim_DECLARE_CONCRETE_OBJECT(ExampleVectorFunctionUncoupledNxN, 
+                                    VectorFunctionUncoupledNxN);
+	//==========================================================================
+	// DATA
+	//==========================================================================
+protected:
+
+
+
+	//==========================================================================
+	// METHODS
+	//==========================================================================
+public:
+	//--------------------------------------------------------------------------
+	// CONSTRUCTION
+	//--------------------------------------------------------------------------
+	ExampleVectorFunctionUncoupledNxN():
+	VectorFunctionUncoupledNxN(1)
 	{
-		//=============================================================================
-		// DATA
-		//=============================================================================
-	protected:
+		setNull();
+	}
+	ExampleVectorFunctionUncoupledNxN(int aN):
+	VectorFunctionUncoupledNxN(aN)
+	{
+		setNull();
+	}
+	ExampleVectorFunctionUncoupledNxN(const ExampleVectorFunctionUncoupledNxN &aVectorFunction) :
+	VectorFunctionUncoupledNxN(aVectorFunction)
+	{
+		setNull();
 
+		// ASSIGN
+		setEqual(aVectorFunction);
+	}
+	virtual ~ExampleVectorFunctionUncoupledNxN() {}
 
+private:
+	void setNull(){}
+	void setEqual(const ExampleVectorFunctionUncoupledNxN &aVectorFunction){}
 
-		//=============================================================================
-		// METHODS
-		//=============================================================================
-	public:
-		//--------------------------------------------------------------------------
-		// CONSTRUCTION
-		//--------------------------------------------------------------------------
-		ExampleVectorFunctionUncoupledNxN():
-		  VectorFunctionUncoupledNxN(1)
-		  {
-			  setNull();
-		  };
-		  ExampleVectorFunctionUncoupledNxN(int aN):
-		  VectorFunctionUncoupledNxN(aN)
-		  {
-			  setNull();
-		  };
-		  ExampleVectorFunctionUncoupledNxN(const ExampleVectorFunctionUncoupledNxN &aVectorFunction) :
-		  VectorFunctionUncoupledNxN(aVectorFunction)
-		  {
-			  setNull();
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+public:
+	ExampleVectorFunctionUncoupledNxN&
+	operator=(const ExampleVectorFunctionUncoupledNxN& source) {
+        if (&source != this) {
+		    // BASE CLASS
+		    Super::operator=(source);
 
-			  // ASSIGN
-			  setEqual(aVectorFunction);
-		  };
-		  virtual ~ExampleVectorFunctionUncoupledNxN() {};
-		  virtual Object* copy() const{
-			  ExampleVectorFunctionUncoupledNxN *func =
-				  new ExampleVectorFunctionUncoupledNxN(*this);
-			  return(func);
-		  };
-	private:
-		void setNull(){
-			setType("ExampleVectorFunctionUncoupledNxN");
-		};
-		void setEqual(const ExampleVectorFunctionUncoupledNxN &aVectorFunction){};
-
-		//--------------------------------------------------------------------------
-		// OPERATORS
-		//--------------------------------------------------------------------------
-	public:
-		ExampleVectorFunctionUncoupledNxN&
-			operator=(const ExampleVectorFunctionUncoupledNxN &aVectorFunction){
-				// BASE CLASS
-				VectorFunctionUncoupledNxN::operator=(aVectorFunction);
-
-				// DATA
-				setEqual(aVectorFunction);
-
-				return(*this);
-		};
-
-		//--------------------------------------------------------------------------
-		// SET AND GET
-		//--------------------------------------------------------------------------
-	public:
-
-		//--------------------------------------------------------------------------
-		// EVALUATE
-		//--------------------------------------------------------------------------
-		virtual void calcValue(const double *aX,double *rY, int aSize){
-			int N = getNX();
-
-			// COMMON PART
-			int i;
-			double sum;
-			double scale = 0.01;
-			for(sum=0.0,i=0;i<N;i++) {
-				sum += (double)i;
-			}
-			sum *= scale;
-
-			// UNIQUE PART
-			// Uncoupled-- each aY depends only on its corresponding aX.
-			double root;
-			for(i=0;i<N;i++) {
-				root = scale * (double)i;
-				// sin test function
-				rY[i] = sum * sin(aX[i] - root);
-				// parabolic test function
-				//rY[i] = sum *aX[i]*aX[i]*aX[i] - sum*root*root*root; 
-			}
-		};
-		virtual void calcValue(const Array<double> &aX,Array<double> &rY){
-			calcValue(&aX[0],&rY[0], aX.getSize());
-		};
-		virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
-			const Array<int> &aDerivWRT){
-				std::cout<<"\nExampleVectorFunctionUncoupledNxN.evalute(x,y,derivWRT): not implemented.\n";
-		};
-
-		//=============================================================================
+		    // DATA
+		    setEqual(source);
+        }
+		return *this;
 	};
 
-}; //namespace
+	//--------------------------------------------------------------------------
+	// SET AND GET
+	//--------------------------------------------------------------------------
+public:
+
+	//--------------------------------------------------------------------------
+	// EVALUATE
+	//--------------------------------------------------------------------------
+	virtual void calcValue(const double *aX,double *rY, int aSize){
+		int N = getNX();
+
+		// COMMON PART
+		int i;
+		double sum;
+		double scale = 0.01;
+		for(sum=0.0,i=0;i<N;i++) {
+			sum += (double)i;
+		}
+		sum *= scale;
+
+		// UNIQUE PART
+		// Uncoupled-- each aY depends only on its corresponding aX.
+		double root;
+		for(i=0;i<N;i++) {
+			root = scale * (double)i;
+			// sin test function
+			rY[i] = sum * sin(aX[i] - root);
+			// parabolic test function
+			//rY[i] = sum *aX[i]*aX[i]*aX[i] - sum*root*root*root; 
+		}
+	}
+	virtual void calcValue(const Array<double> &aX,Array<double> &rY){
+		calcValue(&aX[0],&rY[0], aX.getSize());
+	}
+	virtual void calcDerivative(const Array<double> &aX,Array<double> &rY,
+		const Array<int> &aDerivWRT){
+			std::cout<<"\nExampleVectorFunctionUncoupledNxN.evalute(x,y,derivWRT): not implemented.\n";
+	}
+
+	//=============================================================================
+};
+
+} //namespace
 //=============================================================================
 //=============================================================================
 

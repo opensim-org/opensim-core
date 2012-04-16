@@ -104,8 +104,6 @@ WrapObject::WrapObject(const WrapObject& aWrapObject) :
  */
 void WrapObject::setNull()
 {
-	setType("WrapObject");
-
 	_quadrant = allQuadrants;
 }
 
@@ -123,7 +121,7 @@ void WrapObject::setupProperties()
 	const SimTK::Vec3 defaultTranslations(0.0);
 	_translationProp.setName("translation");
 	_translationProp.setValue(defaultTranslations);
-	//_translationProp.setAllowableArraySize(3);
+	//_translationProp.setAllowableListSize(3);
 	_propertySet.append(&_translationProp);
 
 	_activeProp.setName("active");

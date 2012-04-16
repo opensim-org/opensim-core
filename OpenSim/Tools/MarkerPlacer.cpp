@@ -105,19 +105,6 @@ MarkerPlacer::MarkerPlacer(const MarkerPlacer &aMarkerPlacer) :
 	copyData(aMarkerPlacer);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this marker placement params and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this MarkerPlacer.
- */
-Object* MarkerPlacer::copy() const
-{
-	MarkerPlacer *markerPlacementParams = new MarkerPlacer(*this);
-	return(markerPlacementParams);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -148,8 +135,6 @@ void MarkerPlacer::copyData(const MarkerPlacer &aMarkerPlacer)
  */
 void MarkerPlacer::setNull()
 {
-	setType("MarkerPlacer");
-
 	_apply = true;
 	_coordinateFileName = "";
 
@@ -196,7 +181,7 @@ void MarkerPlacer::setupProperties()
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
-	_timeRangeProp.setAllowableArraySize(2);
+	_timeRangeProp.setAllowableListSize(2);
 	_propertySet.append(&_timeRangeProp);
 
 	_outputMotionFileNameProp.setComment("Name of the motion file (.mot) written after marker relocation (optional).");
@@ -372,7 +357,7 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	if(_printResultFiles) {
 		if (!_outputModelFileNameProp.getUseDefault())
 		{
-			aModel->copy()->print(aPathToSubject + _outputModelFileName);
+			aModel->print(aPathToSubject + _outputModelFileName);
 			cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
 		}
 

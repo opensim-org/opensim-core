@@ -57,8 +57,9 @@ class Model;
  */
 
 template <class T>
-class OSIMSIMULATION_API ModelComponentSet : public Set<T>
-{
+class ModelComponentSet : public Set<T> {
+OpenSim_DECLARE_CONCRETE_OBJECT_T(ModelComponentSet, T, Set<T>);
+
 protected:
     Model* _model;
 
@@ -96,15 +97,7 @@ public:
     ModelComponentSet(const ModelComponentSet<T>& source) : Set<T>(source)
     {
     }
-    /**
-     * Create a duplicate of this set.
-     */
-    Object* copy() const
-    {
-	    ModelComponentSet<T>* retObj = new ModelComponentSet<T>();
-	    *retObj = *this;
-	    return retObj;
-    }
+
 #ifndef SWIG
     /**
      * Get this Model this set is part of.
@@ -131,7 +124,7 @@ public:
 #ifndef SWIG
 	bool append(T& aObject)
     {
-        return Set<T>::append((T*) aObject.copy());
+        return Set<T>::append(aObject.clone());
     }
 #endif
     /**
@@ -170,7 +163,7 @@ protected:
         for (int i = 0; i < Set<T>::getSize(); i++)
             static_cast<ModelComponent&>(Set<T>::get(i)).setup(model);
 		
-		Set<T>::setup(); // make sure group members are populated
+		Super::setup(); // make sure group members are populated
     }
 
     /**

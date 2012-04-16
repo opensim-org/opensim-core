@@ -49,9 +49,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API FreeJoint : public Joint  
-{
+class OSIMSIMULATION_API FreeJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(FreeJoint, Joint);
 
+private:
 	static const int _numMobilities = 6;
 //=============================================================================
 // DATA
@@ -92,7 +93,6 @@ public:
 
 	FreeJoint(const FreeJoint &aJoint);
 	virtual ~FreeJoint();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	FreeJoint& operator=(const FreeJoint &aJoint);
@@ -105,8 +105,6 @@ public:
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
-
-	OPENSIM_DECLARE_DERIVED(FreeJoint, Joint);
 
 protected:
     void createSystem(SimTK::MultibodySystem& system) const;

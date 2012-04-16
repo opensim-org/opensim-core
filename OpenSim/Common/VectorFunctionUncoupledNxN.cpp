@@ -99,7 +99,6 @@ VectorFunctionUncoupledNxN(const VectorFunctionUncoupledNxN &aVectorFunction) :
 void VectorFunctionUncoupledNxN::
 setNull()
 {
-	setType("VectorFunctionUncoupledNxN");
 }
 
 //_____________________________________________________________________________

@@ -52,8 +52,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API GCVSplineSet : public FunctionSet
-{
+class OSIMCOMMON_API GCVSplineSet : public FunctionSet {
+OpenSim_DECLARE_CONCRETE_OBJECT(GCVSplineSet, FunctionSet);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -70,6 +71,7 @@ public:
 	GCVSplineSet(const char *aFileName);
 	GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance=0.0);
 	virtual ~GCVSplineSet();
+
 private:
 	void setNull();
 	void construct(int aDegree,const Storage *aStore,double aErrorVariance);

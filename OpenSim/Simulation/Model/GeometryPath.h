@@ -65,8 +65,9 @@ class PointForceDirection;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API GeometryPath : public ModelComponent  
-{
+class OSIMSIMULATION_API GeometryPath : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(GeometryPath, ModelComponent);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -100,7 +101,6 @@ public:
 	GeometryPath();
 	GeometryPath(const GeometryPath &aPath);
 	virtual ~GeometryPath();
-	virtual Object* copy() const;
 
 	void setName(const std::string &aName);
 #ifndef SWIG
@@ -180,8 +180,8 @@ public:
 		return &_displayer; 
 	}
 	virtual void updateDisplayer(const SimTK::State& s);
-	OPENSIM_DECLARE_DERIVED(GeometryPath, Object);
-	// Update the geometry attached to the path (location of path points and connecting segments
+
+    // Update the geometry attached to the path (location of path points and connecting segments
 	//  all in global/interial frame)
 	virtual void updateGeometry(const SimTK::State& s);
 

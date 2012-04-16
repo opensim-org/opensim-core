@@ -99,18 +99,7 @@ FreeJoint::FreeJoint(const FreeJoint &aJoint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* FreeJoint::copy() const
-{
-	FreeJoint *joint = new FreeJoint(*this);
-	return(joint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one FreeJoint to another.
@@ -129,7 +118,6 @@ void FreeJoint::copyData(const FreeJoint &aJoint)
  */
 void FreeJoint::setNull()
 {
-	setType("FreeJoint");
 	constructCoordinates();
 	// We know we have three rotations followed by three translations
 	// Replace default names _coord_? with more meaningful names

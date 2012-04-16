@@ -71,7 +71,6 @@ WrapObjectSet::WrapObjectSet(const WrapObjectSet& aWrapObjectSet):
  */
 void WrapObjectSet::setNull()
 {
-	setType("WrapObjectSet");
 }
 
 //=============================================================================

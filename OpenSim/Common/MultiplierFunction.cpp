@@ -96,17 +96,6 @@ MultiplierFunction::MultiplierFunction(const MultiplierFunction &aFunction) :
 {
 	setEqual(aFunction);
 }
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* MultiplierFunction::copy() const
-{
-	MultiplierFunction *function = new MultiplierFunction(*this);
-	return function;
-}
 
 
 //=============================================================================
@@ -118,7 +107,6 @@ Object* MultiplierFunction::copy() const
  */
 void MultiplierFunction::setNull()
 {
-	setType("MultiplierFunction");
 	setupProperties();
 }
 //_____________________________________________________________________________

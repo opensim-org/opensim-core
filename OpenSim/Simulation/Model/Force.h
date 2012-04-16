@@ -48,9 +48,10 @@ class ForceAdapter;
  * @author Peter Eastman
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Force : public ModelComponent
-{
-	protected:
+class OSIMSIMULATION_API Force : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Force, ModelComponent);
+
+protected:
 	/** ID for the force in Simbody. */
 	SimTK::ForceIndex _index;
 
@@ -71,7 +72,7 @@ public:
 	Force& operator=(const Force &aForce);
 #endif
 	void copyData(const Force &aForce);
-	virtual Object* copy() const = 0;
+
 	/**
 	 * Methods to query a Force for the value actually applied during simulation
 	 * The names of the quantities (column labels) is returned by this first function
@@ -98,7 +99,6 @@ public:
 	 * also implement the getGeometryPath() mathod
 	 */
 	virtual bool hasGeometryPath() const { return false;};
-	OPENSIM_DECLARE_DERIVED(Force, Object);
 
 protected:
 	/**
@@ -130,24 +130,15 @@ protected:
 	 */
 	virtual double computePotentialEnergy(const SimTK::State& state) const;
 	/**
-	 * Apply a force to a particular body.  This method applies only a force, not a torque, which is
-	 * equivalent to applying the force at the body's center of mass.
+	 * Apply a force at a particular point (a "station") on a given body. Note
+     * that the point Vec3(0) is the body origin, not necessarily the center
+     * of mass whose location is maintained relative to the body origin.
+     * Although this applies a pure force to the given point, that will also
+     * result in a torque acting on the body when looking at the resultant at
+     * some other point.
 	 *
-	 * This method may only be called from inside computeForce().  Invoking it at any other time
-	 * will produce an exception.
-	 *
-	 * @param aBody    the body to apply the force to
-	 * @param aForce   the force to apply, specified in the inertial frame
-	 * @param bodyForces  the current set of system bodyForces this force is added to
-	 */
-	void applyForce(const SimTK::State &s, const OpenSim::Body &aBody,
-					const SimTK::Vec3& aForce, SimTK::Vector_<SimTK::SpatialVec> &bodyForces) const;
-	/**
-	 * Apply a force to a particular body.  Based on what point the force is applied at, this method
-	 * automatically determines the torque produced by the force and applies that as well.
-	 *
-	 * This method may only be called from inside computeForce().  Invoking it at any other time
-	 * will produce an exception.
+	 * This method may only be called from inside computeForce(). Invoking it 
+     * at any other time will produce an exception.
 	 *
 	 * @param aBody    the body to apply the force to
 	 * @param aPoint   the point at which to apply the force, specifieid in the body's frame

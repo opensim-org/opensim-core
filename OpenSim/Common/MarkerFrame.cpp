@@ -102,7 +102,6 @@ MarkerFrame::~MarkerFrame()
  */
 void MarkerFrame::setNull()
 {
-	setType("MarkerFrame");
 }
 
 //=============================================================================

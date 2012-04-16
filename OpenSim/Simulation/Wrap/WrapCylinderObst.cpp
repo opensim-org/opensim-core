@@ -72,19 +72,6 @@ _length(_lengthProp.getValueDbl())
 	copyData(aWrapCylinderObst);
 }
 
-//_____________________________________________________________________________
-/**
-* Copy this WrapCylinderObst and return a pointer to the copy.
-* The copy constructor for this class is used.
-*
-* @return Pointer to a copy of this WrapCylinderObst.
-*/
-Object* WrapCylinderObst::copy() const
-{
-	WrapCylinderObst *wrapCylinderObst = new WrapCylinderObst(*this);
-	return(wrapCylinderObst);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -94,7 +81,6 @@ Object* WrapCylinderObst::copy() const
 */
 void WrapCylinderObst::setNull()
 {
-	setType("WrapCylinderObst");
 	_wrapDirection = righthand;
 	if(!circle_wrap_pts_inited) initCircleWrapPts();
 }

@@ -161,8 +161,8 @@ int main()
 		// Create a new elastic foundation force between the floor and cube.
 		OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce();
 		OpenSim::ElasticFoundationForce::ContactParameters contactParams;
-		contactParams.updGeometry().append("cube");
-		contactParams.updGeometry().append("floor");
+		contactParams.updGeometry().appendValue("cube");
+		contactParams.updGeometry().appendValue("floor");
 		contactParams.setStiffness(1.0e8);
 		contactParams.setDissipation(0.01);
 		contactParams.setDynamicFriction(0.25);

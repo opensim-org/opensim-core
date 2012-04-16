@@ -57,9 +57,9 @@ class ForceSet;
  *
  * @author Jeff Reinbolt
  */
-class OSIMANALYSES_API StaticOptimization : public Analysis 
-{
-	OPENSIM_DECLARE_DERIVED(StaticOptimization, Analysis);
+class OSIMANALYSES_API StaticOptimization : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(StaticOptimization, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -100,10 +100,9 @@ protected:
 //=============================================================================
 public:
 	StaticOptimization(Model *aModel=0);
-	// Copy constrctor and virtual copy 
 	StaticOptimization(const StaticOptimization &aObject);
-	virtual Object* copy() const;
 	virtual ~StaticOptimization();
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

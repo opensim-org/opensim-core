@@ -43,8 +43,9 @@ namespace OpenSim {
  *
  * @author Peter Eastman
  */
-class OSIMSIMULATION_API ContactGeometry : public ModelComponent
-{
+class OSIMSIMULATION_API ContactGeometry : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(ContactGeometry, ModelComponent);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -79,8 +80,18 @@ protected:
 public:
 	ContactGeometry(const ContactGeometry& geom);
 	~ContactGeometry();
+
+    #ifndef SWIG
+    ContactGeometry& operator=(const ContactGeometry& source) {
+        if (&source != this) {
+            Super::operator=(source);
+            copyData(source);
+        }
+        return *this;
+    }
+    #endif
+
 	void copyData(const ContactGeometry& geom);
-	virtual Object* copy() const = 0;
 
 	// ACCESSORS
 	/**

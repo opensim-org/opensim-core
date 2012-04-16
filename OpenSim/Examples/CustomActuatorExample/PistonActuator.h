@@ -50,8 +50,9 @@ namespace OpenSim {
 class Body;
 class Model;
 
-class PistonActuator : public Actuator
-{
+class PistonActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(PistonActuator, Actuator);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -105,7 +106,7 @@ public:
 	PistonActuator( std::string aBodyNameA="", std::string abodyNameB="");
 	PistonActuator( const PistonActuator &aPistonActuator);
 	virtual ~PistonActuator();
-	virtual Object* copy() const;
+
 	void copyData(const PistonActuator &aPistonActuator);
 private:
 	void setNull();
@@ -177,8 +178,6 @@ public:
 	// XML
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-	OPENSIM_DECLARE_DERIVED(PistonActuator, Actuator);
 
 //=============================================================================
 };	// END of class PistonActuator

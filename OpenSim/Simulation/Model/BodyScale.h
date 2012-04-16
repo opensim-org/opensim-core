@@ -49,9 +49,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API BodyScale : public Object  
-{
-	OPENSIM_DECLARE_DERIVED(BodyScale,Object);
+class OSIMSIMULATION_API BodyScale : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(BodyScale, Object);
 
 //=============================================================================
 // DATA
@@ -70,7 +69,6 @@ public:
 	BodyScale();
 	BodyScale(const BodyScale &aBodyScale);
 	virtual ~BodyScale();
-	virtual Object* copy() const;
 
 	void copyData(const BodyScale &aBodyScale);
 

@@ -94,19 +94,6 @@ ControlSetController::ControlSetController(const ControlSetController &aControll
 	setNull();
 	copyData(aController);
 }
-//_____________________________________________________________________________
-/**
- * Copy this ControlSetController and return a pointer to the copy.
- * The copy constructor for this class is used.  This method is called
- * when a description of this controller is read in from an XML file.
- *
- * @return Pointer to a copy of this ControlSetController.
- */
-Object* ControlSetController::copy() const
-{
-      ControlSetController *object = new ControlSetController(*this);
-      return object;
-}
 
 
 //_____________________________________________________________________________
@@ -116,7 +103,6 @@ Object* ControlSetController::copy() const
 void ControlSetController::setNull()
 {
     setupProperties();
-	setType("ControlSetController");
 
 	_model = NULL;
     _controlSet = NULL;

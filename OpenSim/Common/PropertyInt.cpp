@@ -85,7 +85,7 @@ PropertyInt::PropertyInt(const PropertyInt &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyInt* PropertyInt::copy() const
+PropertyInt* PropertyInt::clone() const
 {
 	PropertyInt *property = new PropertyInt(*this);
 	return(property);

@@ -60,8 +60,8 @@ class Model;
  * @author Peter Loan
  * @version 1.0
  */
-class  OSIMTOOLS_API ModelScaler : public Object  
-{
+class OSIMTOOLS_API ModelScaler : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(ModelScaler, Object);
 
 //=============================================================================
 // DATA
@@ -118,7 +118,6 @@ public:
 	ModelScaler();
 	ModelScaler(const ModelScaler &aModelScaler);
 	virtual ~ModelScaler();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	ModelScaler& operator=(const ModelScaler &aModelScaler);

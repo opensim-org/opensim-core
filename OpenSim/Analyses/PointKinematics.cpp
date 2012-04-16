@@ -147,17 +147,7 @@ _pointName(_pointNameProp.getValueStr())
 	// COPY TYPE AND NAME
 	*this = aPointKinematics;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* PointKinematics::copy() const
-{
-	PointKinematics *object = new PointKinematics(*this);
-	return(object);
 
-}
 //_____________________________________________________________________________
 /**
  * SetNull().
@@ -174,8 +164,6 @@ setNull()
 
 	// OTHER VARIABLES
 
-	// TYPE
-	setType("PointKinematics");
 	//?_body
 	setName("PointKinematics");
 

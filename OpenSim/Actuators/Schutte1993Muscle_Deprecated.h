@@ -52,8 +52,10 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Schutte1993Muscle_Deprecated : public ActivationFiberLengthMuscle_Deprecated  
-{
+class OSIMACTUATORS_API Schutte1993Muscle_Deprecated 
+:   public ActivationFiberLengthMuscle_Deprecated {
+OpenSim_DECLARE_CONCRETE_OBJECT(Schutte1993Muscle_Deprecated, 
+                                ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
 // METHODS
@@ -66,11 +68,9 @@ public:
 	Schutte1993Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	Schutte1993Muscle_Deprecated(const Schutte1993Muscle_Deprecated &aMuscle);
 	virtual ~Schutte1993Muscle_Deprecated();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	Schutte1993Muscle_Deprecated& operator=(const Schutte1993Muscle_Deprecated &aMuscle);
-
 #endif
     void copyData(const Schutte1993Muscle_Deprecated &aMuscle);
 
@@ -93,14 +93,12 @@ public:
 	virtual double computeActuation( const SimTK::State& s ) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
-	virtual Function* getActiveForceLengthCurve() const;
-	virtual bool setActiveForceLengthCurve(Function* aActiveForceLengthCurve);
-	virtual Function* getPassiveForceLengthCurve() const;
-	virtual bool setPassiveForceLengthCurve(Function* aPassiveForceLengthCurve);
-	virtual Function* getTendonForceLengthCurve() const;
-	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
-
-	OPENSIM_DECLARE_DERIVED(Schutte1993Muscle_Deprecated, ActivationFiberLengthMuscle_Deprecated);
+	virtual const Function& getActiveForceLengthCurve() const;
+	virtual bool setActiveForceLengthCurve(const Function& aActiveForceLengthCurve);
+	virtual const Function& getPassiveForceLengthCurve() const;
+	virtual bool setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve);
+	virtual const Function& getTendonForceLengthCurve() const;
+	virtual bool setTendonForceLengthCurve(const Function& aTendonForceLengthCurve);
 
 protected:
 	// Model Component Interface

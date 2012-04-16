@@ -59,8 +59,8 @@ class Model;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMTOOLS_API GenericModelMaker : public Object  
-{
+class OSIMTOOLS_API GenericModelMaker : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(GenericModelMaker, Object);
 
 //=============================================================================
 // DATA
@@ -84,7 +84,6 @@ public:
 	GenericModelMaker();
 	GenericModelMaker(const GenericModelMaker &aGenericModelMaker);
 	virtual ~GenericModelMaker();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	GenericModelMaker& operator=(const GenericModelMaker &aGenericModelMaker);

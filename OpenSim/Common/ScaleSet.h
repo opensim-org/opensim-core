@@ -47,8 +47,9 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMCOMMON_API ScaleSet : public Set<Scale>
-{
+class OSIMCOMMON_API ScaleSet : public Set<Scale> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ScaleSet, Set<Scale>);
+
 private:
 	void setNull();
 public:
@@ -58,6 +59,7 @@ public:
 	ScaleSet();
 	ScaleSet(const std::string& scalesFileName);
 	~ScaleSet(void);
+
 #ifndef SWIG
 	ScaleSet& operator=(const ScaleSet &aScaleSet);
 #endif

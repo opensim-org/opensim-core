@@ -117,19 +117,6 @@ PrescribedController::~PrescribedController()
 
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this PrescribedController and return a pointer to the copy.
- * The copy constructor for this class is used.  This method is called
- * when a description of this controller is read in from an XML file.
- *
- * @return Pointer to a copy of this PrescribedController.
- */
-Object* PrescribedController::copy() const
-{
-      PrescribedController *object = new PrescribedController(*this);
-      return object;
-}
 
 //=============================================================================
 // CONSTRUCTION
@@ -141,7 +128,6 @@ Object* PrescribedController::copy() const
 void PrescribedController::setNull()
 {
 	setupProperties();
-	setType("PrescribedController");
 }
 
 //_____________________________________________________________________________

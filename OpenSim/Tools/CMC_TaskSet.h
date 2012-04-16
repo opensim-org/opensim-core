@@ -49,8 +49,8 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMC_TaskSet : public Set<TrackingTask> 
-{
+class OSIMTOOLS_API CMC_TaskSet : public Set<TrackingTask> {
+OpenSim_DECLARE_CONCRETE_OBJECT(CMC_TaskSet, Set<TrackingTask>);
 
 //=============================================================================
 // MEMBER VARIABLES
@@ -101,8 +101,14 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	CMC_TaskSet();
-	CMC_TaskSet(const std::string &aFileName);
+	explicit CMC_TaskSet(const std::string &aFileName);
 	virtual ~CMC_TaskSet();
+
+    CMC_TaskSet& operator=(const CMC_TaskSet&) {
+        throw OpenSim::Exception("CMC_TaskSet::operator=() not implemented");
+        return *this;
+    }
+
 private:
 	void setNull();
 	void setupProperties();

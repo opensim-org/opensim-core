@@ -65,10 +65,9 @@ LinearSpring::~LinearSpring()
  * @param aBody Body upon which spring forces are to be applied.
  */
 LinearSpring::LinearSpring(const Body &aBody, double startTime, double endTime) : Force(),
-	_body(aBody), _startTime(startTime), _endTime(endTime)
+	_bodyp(&aBody), _startTime(startTime), _endTime(endTime)
 {
 	setNull();
-	setType("LinearSpring");
 	_model = const_cast<OpenSim::Model *>(&aBody.getModel());
 }
 
@@ -353,8 +352,8 @@ void LinearSpring::computeTargetFunctions(SimTK::State &s, const Storage &aQStor
 
 		// Get global position and velocity
 		_pointFunction->calcValue(&t[0],&pLocal[0],3);
-		getModel().getSimbodyEngine().getPosition(s, _body, pLocal, pGlobal);
-		getModel().getSimbodyEngine().getVelocity(s, _body, pLocal, vGlobal);
+		getModel().getSimbodyEngine().getPosition(s, getBody(), pLocal, pGlobal);
+		getModel().getSimbodyEngine().getVelocity(s, getBody(), pLocal, vGlobal);
 
 		// Append to storage
 		pGlobalStore.append(t[0],3,&pGlobal[0]);
@@ -458,8 +457,8 @@ void LinearSpring::computeForce(const SimTK::State& s,
 		}
 
 		// GET GLOBAL POSITION AND VELOCITY
-		getModel().getSimbodyEngine().getPosition(s, _body, pLocal, pGlobal);
-		getModel().getSimbodyEngine().getVelocity(s, _body, pLocal, vGlobal);
+		getModel().getSimbodyEngine().getPosition(s, getBody(), pLocal, pGlobal);
+		getModel().getSimbodyEngine().getVelocity(s, getBody(), pLocal, vGlobal);
 
 		if (vGlobal.norm() > 1000){
 			SimTK::Vector u = s.getU();
@@ -487,7 +486,7 @@ void LinearSpring::computeForce(const SimTK::State& s,
  //cout<<"linear spring t=" << s.getTime() << " force=" << force << endl;
 		if(force.norm() >= _threshold) {
 			//cout<<"applying force = "<<force[0]<<", "<<force[1]<<", "<<force[2]<<endl;
-			applyForceToPoint(s, _body, pLocal, force, bodyForces);
+			applyForceToPoint(s, getBody(), pLocal, force, bodyForces);
 			//if(_recordAppliedLoads) _appliedForceStore->append(aT,_force);
 		}
 
@@ -548,10 +547,10 @@ void LinearSpring::computePointFunction(SimTK::State &s, const Storage &aQStore,
 		s.setU(SimTK::Vector(nu,&u[0]));
 
 		// Position in local frame (i.e. with respect to body's origin, not center of mass)
-		getModel().getSimbodyEngine().getPosition(s,_body,origin,originGlobal);
+		getModel().getSimbodyEngine().getPosition(s,getBody(),origin,originGlobal);
 		aPGlobal.calcValue(&t[0], &pGlobal[0], 3);
 		pLocal=pGlobal-originGlobal; //Mtx::Subtract(1,3,&pGlobal[0],&originGlobal[0],&pLocal[0]);
-		getModel().getSimbodyEngine().transform(s, getModel().getGroundBody(),&pLocal[0],_body,&pLocal[0]);
+		getModel().getSimbodyEngine().transform(s, getModel().getGroundBody(),&pLocal[0],getBody(),&pLocal[0]);
 		pStore.append(t[0],3,&pLocal[0]);
 	}
 

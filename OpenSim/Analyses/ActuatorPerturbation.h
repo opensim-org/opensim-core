@@ -53,8 +53,9 @@ namespace OpenSim {
 
 class Model;
 
-class OSIMANALYSES_API ActuatorPerturbation : public Object 
-{
+class OSIMANALYSES_API ActuatorPerturbation : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPerturbation, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -85,7 +86,6 @@ public:
     ActuatorPerturbation(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 
 	virtual ~ActuatorPerturbation();
-    virtual Object* copy() const;
 
 protected:
     /** Model. */

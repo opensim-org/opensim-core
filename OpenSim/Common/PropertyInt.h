@@ -70,7 +70,7 @@ public:
 	PropertyInt();
 	PropertyInt(const std::string &aName,int aValue);
 	PropertyInt(const PropertyInt &aProperty);
-	/*virtual*/ PropertyInt* copy() const;
+	/*virtual*/ PropertyInt* clone() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

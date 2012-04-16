@@ -59,8 +59,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API VectorFunction : public Object
-{
+class OSIMCOMMON_API VectorFunction : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(VectorFunction, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -85,7 +86,7 @@ public:
 	VectorFunction(int aNX, int aNY);
 	VectorFunction(const VectorFunction &aVectorFunction);
 	virtual ~VectorFunction();
-	virtual Object* copy() const = 0;
+
 private:
 	void setNull();
 	void setEqual(const VectorFunction &aVectorFunction);

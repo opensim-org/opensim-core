@@ -44,8 +44,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMTOOLS_API MarkerPairSet :	public Set<MarkerPair>
-{
+class OSIMTOOLS_API MarkerPairSet :	public Set<MarkerPair> {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkerPairSet, Set<MarkerPair>);
+
 private:
 	void setNull();
 public:

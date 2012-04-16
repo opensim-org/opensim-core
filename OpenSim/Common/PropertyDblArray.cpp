@@ -100,7 +100,7 @@ PropertyDblArray::PropertyDblArray(const PropertyDblArray &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyDblArray* PropertyDblArray::copy() const
+PropertyDblArray* PropertyDblArray::clone() const
 {
 	PropertyDblArray *property = new PropertyDblArray(*this);
 	return(property);

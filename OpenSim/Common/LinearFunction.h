@@ -50,8 +50,9 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMCOMMON_API LinearFunction : public Function
-{
+class OSIMCOMMON_API LinearFunction : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(LinearFunction, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -70,7 +71,6 @@ public:
 	LinearFunction(Array<double> coefficients);
 	LinearFunction(const LinearFunction &aSpline);
 	virtual ~LinearFunction();
-	virtual Object* copy() const;
 
 private:
 	void setNull();
@@ -99,8 +99,6 @@ public:
 	// EVALUATION
 	//--------------------------------------------------------------------------
     virtual SimTK::Function* createSimTKFunction() const;
-
-	OPENSIM_DECLARE_DERIVED(LinearFunction, Function);
 
 //=============================================================================
 };	// END class LinearFunction

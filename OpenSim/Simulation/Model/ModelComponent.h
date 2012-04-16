@@ -265,8 +265,9 @@ public:
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API ModelComponent : public Object
-{
+class OSIMSIMULATION_API ModelComponent : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(ModelComponent, Object);
+
 protected:
 	/** The model this component belongs to. */
 	Model* _model;
@@ -284,7 +285,7 @@ public:
 	// Construct ModelComponent from a specific node in an XML document
 	ModelComponent(SimTK::Xml::Element& aNode);
 	// Construct ModelComponent with its contents copied from another ModelComponent
-	ModelComponent(const ModelComponent& copy);
+	ModelComponent(const ModelComponent& source);
 	// Destructor
     virtual ~ModelComponent();
 
@@ -409,7 +410,8 @@ public:
 		else{
 			std::stringstream msg;
 			msg << "ModelComponent::getCacheVariable: ERR- name not found.\n "
-				<< "for component '"<< getName() << "' of type " << getType();
+				<< "for component '"<< getName() << "' of type " 
+                << getConcreteClassName();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}
 	}
@@ -435,7 +437,8 @@ public:
 		else{
 			std::stringstream msg;
 			msg << "ModelComponent::updCacheVariable: ERR- '" << name << "' name not found.\n "
-				<< "for component '"<< getName() << "' of type " << getType();
+				<< "for component '"<< getName() << "' of type " 
+                << getConcreteClassName();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}
 	}
@@ -462,7 +465,8 @@ public:
 		else{
 			std::stringstream msg;
 			msg << "ModelComponent::markCacheVariableValid: ERR- name not found.\n "
-				<< "for component '"<< getName() << "' of type " << getType();
+				<< "for component '"<< getName() << "' of type " 
+                << getConcreteClassName();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}
 	}
@@ -495,7 +499,8 @@ public:
 		else{
 			std::stringstream msg;
 			msg << "ModelComponent::markCacheVariableInvalid: ERR- name not found.\n "
-				<< "for component '"<< getName() << "' of type " << getType();
+				<< "for component '"<< getName() << "' of type " 
+                << getConcreteClassName();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}
 	}
@@ -521,7 +526,8 @@ public:
 		else{
 			std::stringstream msg;
 			msg << "ModelComponent::isCacheVariableValid: ERR- name not found.\n "
-				<< "for component '"<< getName() << "' of type " << getType();
+				<< "for component '"<< getName() << "' of type " 
+                << getConcreteClassName();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}
 	}
@@ -548,7 +554,8 @@ public:
 		else{
 			std::stringstream msg;
 			msg << "ModelComponent::setCacheVariable: ERR- name not found.\n "
-				<< "for component '"<< getName() << "' of type " << getType();
+				<< "for component '"<< getName() << "' of type " 
+                << getConcreteClassName();
 			throw( Exception(msg.str(),__FILE__,__LINE__) );
 		}	
 	}

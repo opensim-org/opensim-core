@@ -118,19 +118,6 @@ Delp1990Muscle_Deprecated::Delp1990Muscle_Deprecated(const Delp1990Muscle_Deprec
 	copyData(aMuscle);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Delp1990Muscle_Deprecated.
- */
-Object* Delp1990Muscle_Deprecated::copy() const
-{
-	Delp1990Muscle_Deprecated *musc = new Delp1990Muscle_Deprecated(*this);
-	return(musc);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -158,7 +145,6 @@ void Delp1990Muscle_Deprecated::copyData(const Delp1990Muscle_Deprecated &aMuscl
  */
 void Delp1990Muscle_Deprecated::setNull()
 {
-	setType("Delp1990Muscle_Deprecated");
 }
 
 //_____________________________________________________________________________

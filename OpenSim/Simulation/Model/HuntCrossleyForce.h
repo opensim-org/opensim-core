@@ -43,8 +43,9 @@ class Model;
  *
  * @author Peter Eastman
  */
-class OSIMSIMULATION_API HuntCrossleyForce : public Force
-{
+class OSIMSIMULATION_API HuntCrossleyForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce, Force);
+
 //=============================================================================
 // MEMBER CLASSES
 //=============================================================================
@@ -58,8 +59,8 @@ public:
     HuntCrossleyForce();
     HuntCrossleyForce(const HuntCrossleyForce& copy);
     HuntCrossleyForce(ContactParameters* params);
+
 	void copyData(const HuntCrossleyForce& copy);
-	Object* copy() const;
 
     ContactParametersSet& updContactParametersSet();
     const ContactParametersSet& getContactParametersSet();
@@ -101,18 +102,22 @@ private:
 //=============================================================================
 //=============================================================================
 
-class OSIMSIMULATION_API HuntCrossleyForce::ContactParameters : public Object
-{
+class OSIMSIMULATION_API HuntCrossleyForce::ContactParameters : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce::ContactParameters, Object);
+
 private:
     void setupProperties();
 public:
     ContactParameters();
     ContactParameters(const ContactParameters& copy);
-    ContactParameters(double stiffness, double dissipation, double staticFriction, double dynamicFriction, double viscousFriction);
+    ContactParameters(double stiffness, double dissipation, 
+                      double staticFriction, double dynamicFriction, 
+                      double viscousFriction);
+
 	void copyData(const ContactParameters& copy);
-	Object* copy() const;
-    const Array<std::string>& getGeometry() const;
-    Array<std::string>& updGeometry();
+
+    const Property<std::string>& getGeometry() const;
+    Property<std::string>& updGeometry();
     void addGeometry(const std::string& name);
     double getStiffness() const;
     void setStiffness(double stiffness);
@@ -126,18 +131,22 @@ public:
     void setViscousFriction(double friction);
 };
 
-class OSIMSIMULATION_API HuntCrossleyForce::ContactParametersSet :	public Set<HuntCrossleyForce::ContactParameters>
-{
-private:
-	void setNull();
+class OSIMSIMULATION_API HuntCrossleyForce::ContactParametersSet 
+:   public Set<HuntCrossleyForce::ContactParameters> {
+OpenSim_DECLARE_CONCRETE_OBJECT(HuntCrossleyForce::ContactParametersSet, 
+                                Set<HuntCrossleyForce::ContactParameters>);
+
 public:
 	ContactParametersSet();
 	ContactParametersSet(const ContactParametersSet& copy);
 	~ContactParametersSet(void);
-	Object* copy() const;
-#ifndef SWIG
+
+    #ifndef SWIG
 	ContactParametersSet& operator=(const ContactParametersSet &copy);
-#endif
+    #endif
+
+private:
+	void setNull();
 };
 
 } // end of namespace OpenSim

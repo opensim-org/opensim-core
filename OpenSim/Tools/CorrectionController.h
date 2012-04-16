@@ -53,8 +53,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMTOOLS_API CorrectionController : public TrackingController
-{
+class OSIMTOOLS_API CorrectionController : public TrackingController {
+OpenSim_DECLARE_CONCRETE_OBJECT(CorrectionController, TrackingController);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -83,7 +84,6 @@ public:
 	CorrectionController(const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	CorrectionController(const CorrectionController &aController);
 	virtual ~CorrectionController();
-	virtual Object* copy() const;
 
 private:
 	void setNull();

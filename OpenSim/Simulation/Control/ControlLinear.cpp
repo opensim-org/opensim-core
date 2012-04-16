@@ -96,16 +96,6 @@ ControlLinear::ControlLinear(const ControlLinear &aControl) :
 	setNull();
 	copyData(aControl);
 }
-//_____________________________________________________________________________
-/**
- * Construct a copy of this control.
- */
-Object* ControlLinear::
-copy() const
-{
-	return(new ControlLinear(*this));
-}
-
 
 //=============================================================================
 // CONSTRUCTION/DESTRUCTION
@@ -117,7 +107,6 @@ copy() const
 void ControlLinear::
 setNull()
 {
-	setType("ControlLinear");
 	setupProperties();
 }
 //_____________________________________________________________________________
@@ -606,7 +595,7 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
 
 	// NO NODE
 	if(lower<0) {
-		aNodes.insert(0, (ControlLinearNode*)node.copy() );
+		aNodes.insert(0, node.clone() );
 
 	// CHECK NODE
 	} else {
@@ -628,12 +617,12 @@ setControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT,double aValue)
 
 			// NOT EQUAL
 			} else {
-				aNodes.insert(upper, (ControlLinearNode*)node.copy() );
+				aNodes.insert(upper, node.clone());
 			}
 
 		// AT END OF ARRAY
 		} else {
-			aNodes.append( (ControlLinearNode*)node.copy() );
+			aNodes.append(node.clone());
 		}
 	}
 }

@@ -76,18 +76,6 @@ SimmMotionEvent::SimmMotionEvent(const SimmMotionEvent &aEvent) :
 	copyData(aEvent);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this SimmMotionEvent and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this SimmMotionEvent.
- */
-Object* SimmMotionEvent::copy() const
-{
-	SimmMotionEvent *event = new SimmMotionEvent(*this);
-	return(event);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -98,7 +86,6 @@ Object* SimmMotionEvent::copy() const
  */
 void SimmMotionEvent::setNull()
 {
-	setType("SimmMotionEvent");
 }
 
 //_____________________________________________________________________________

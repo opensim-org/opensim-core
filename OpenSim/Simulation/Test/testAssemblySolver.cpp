@@ -39,8 +39,7 @@
 #include <OpenSim/Simulation/Model/ConstraintSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
-#include "SimTKmath.h"
+#include "Simbody.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -90,12 +89,12 @@ void testAssembleModelWithConstraints(string modelFile)
 
 	// Verify that the reaction forces at the constraints are not rediculously large
 	// They should sum to body-weight (more or less)
-	model.getMultibodySystem().realize(state, SimTK::Stage::Acceleration);
+	model.getMultibodySystem().realize(state, Stage::Acceleration);
 
 	const ConstraintSet &constraints = model.getConstraintSet();
 
-	SimTK::Vector_<SimTK::SpatialVec> constraintBodyForces(constraints.getSize());
-	SimTK::Vector mobilityForces(0);
+	Vector_<SpatialVec> constraintBodyForces(constraints.getSize());
+	Vector mobilityForces(0);
 
 	double totalYforce = 0;
 	

@@ -71,7 +71,6 @@ PathWrapSet::PathWrapSet(const PathWrapSet& aPathWrapSet):
  */
 void PathWrapSet::setNull()
 {
-	setType("PathWrapSet");
 }
 
 //=============================================================================

@@ -58,8 +58,9 @@ class Function;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API FunctionThresholdCondition : public Condition  
-{
+class OSIMSIMULATION_API FunctionThresholdCondition : public Condition {
+OpenSim_DECLARE_CONCRETE_OBJECT(FunctionThresholdCondition, Condition);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -83,7 +84,6 @@ public:
 	FunctionThresholdCondition();
 	FunctionThresholdCondition(const FunctionThresholdCondition &aFunctionThresholdCondition);
 	virtual ~FunctionThresholdCondition();
-	virtual Object* copy() const;
 
 	FunctionThresholdCondition& operator=(const FunctionThresholdCondition &aFunctionThresholdCondition);
 	void copyData(const FunctionThresholdCondition &aFunctionThresholdCondition);

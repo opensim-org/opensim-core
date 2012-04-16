@@ -55,8 +55,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PiecewiseLinearFunction : public Function
-{
+class OSIMCOMMON_API PiecewiseLinearFunction : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(PiecewiseLinearFunction, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -86,7 +87,7 @@ public:
 		const std::string &aName="");
 	PiecewiseLinearFunction(const PiecewiseLinearFunction &aFunction);
 	virtual ~PiecewiseLinearFunction();
-	virtual Object* copy() const;
+
 	virtual void init(Function* aFunction);
 
 private:
@@ -133,8 +134,6 @@ public:
 
 private:
    void calcCoefficients();
-
-	OPENSIM_DECLARE_DERIVED(PiecewiseLinearFunction, Function)
 
 //=============================================================================
 };	// END class PiecewiseLinearFunction

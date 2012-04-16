@@ -107,7 +107,6 @@ void setupProperties()
 
 void setNull()
 {
-	setType("ControllableSpring");
 	setupProperties();
 }
 

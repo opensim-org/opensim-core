@@ -128,18 +128,7 @@ CustomJoint::CustomJoint(const CustomJoint &aJoint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* CustomJoint::copy() const
-{
-	CustomJoint *joint = new CustomJoint(*this);
-	return(joint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one CustomJoint to another.
@@ -158,7 +147,6 @@ void CustomJoint::copyData(const CustomJoint &aJoint)
  */
 void CustomJoint::setNull()
 {
-	setType("CustomJoint");
 }
 
 //_____________________________________________________________________________

@@ -130,8 +130,7 @@ setNull()
  *
  * @return Copy of this object.
  */
-PropertyGroup* PropertyGroup::
-copy() const
+PropertyGroup* PropertyGroup::clone() const
 {
 	PropertyGroup *propertyGroup = new PropertyGroup(*this);
 	return(propertyGroup);

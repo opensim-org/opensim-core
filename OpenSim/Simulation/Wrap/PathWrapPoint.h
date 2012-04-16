@@ -62,8 +62,8 @@ class WrapObject;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrapPoint : public PathPoint  
-{
+class OSIMSIMULATION_API PathWrapPoint : public PathPoint {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapPoint, PathPoint);
 
 //=============================================================================
 // DATA
@@ -86,7 +86,7 @@ public:
 	PathWrapPoint();
 	PathWrapPoint(const PathWrapPoint &aPoint);
 	virtual ~PathWrapPoint();
-	virtual Object* copy() const;
+
 	void copyData(const PathWrapPoint &aPoint);
 
 #ifndef SWIG
@@ -99,8 +99,6 @@ public:
 	void setWrapLength(double aLength) { _wrapPathLength = aLength; }
 	virtual WrapObject* getWrapObject() const { return _wrapObject; }
 	void setWrapObject(WrapObject* aWrapObject) { _wrapObject = aWrapObject; }
-
-	OPENSIM_DECLARE_DERIVED(PathWrapPoint, PathPoint);
 
 private:
 	void setNull();

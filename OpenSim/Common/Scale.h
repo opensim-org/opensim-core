@@ -50,9 +50,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API Scale : public Object
-{
-	OPENSIM_DECLARE_DERIVED(Scale,Object);
+class OSIMCOMMON_API Scale : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(Scale, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -81,7 +81,6 @@ public:
 	Scale(const Scale &aMarker);
 	Scale( const std::string& scaleFileName);
 	virtual ~Scale(void);
-	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

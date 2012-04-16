@@ -48,8 +48,9 @@ namespace OpenSim {
  * @author Peter Loan, Ajay Seth
  * @version 1.0
  */
-class OSIMCOMMON_API Constant : public Function
-{
+class OSIMCOMMON_API Constant : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(Constant, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -68,7 +69,6 @@ public:
 	Constant(double value);
 	Constant(const Constant &aSpline);
 	virtual ~Constant();
-	virtual Object* copy() const;
 
 private:
 	void setNull();
@@ -98,9 +98,6 @@ public:
 	}
 	const double getValue() const { return _value; }
     SimTK::Function* createSimTKFunction() const;
-
-	OPENSIM_DECLARE_DERIVED(Constant, Function);
-
 //=============================================================================
 };	// END class Constant
 //=============================================================================

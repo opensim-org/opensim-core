@@ -70,7 +70,7 @@ public:
 	PropertyStr(const std::string &aName,
 		const std::string &aValue);
 	PropertyStr(const PropertyStr &aProperty);
-	/*virtual*/ PropertyStr* copy() const;
+	/*virtual*/ PropertyStr* clone() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

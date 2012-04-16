@@ -97,7 +97,6 @@ TrackingTask::TrackingTask(const TrackingTask& aTask) :
 void TrackingTask::
 setNull()
 {
-	setType("TrackingTask");
 	setName(DEFAULT_NAME);
 	setupProperties();
 
@@ -288,7 +287,7 @@ void TrackingTask::setTaskFunctions(Function *aF0,
 	if(_pTrk[1]!=NULL) { delete _pTrk[1];  _pTrk[1]=NULL; }
 	if(_pTrk[2]!=NULL) { delete _pTrk[2];  _pTrk[2]=NULL; }
 
-	if(aF0!=NULL) _pTrk[0] = (Function*)aF0->copy();
-	if(aF1!=NULL) _pTrk[1] = (Function*)aF1->copy();
-	if(aF2!=NULL) _pTrk[2] = (Function*)aF2->copy();
+	if(aF0!=NULL) _pTrk[0] = aF0->clone();
+	if(aF1!=NULL) _pTrk[1] = aF1->clone();
+	if(aF2!=NULL) _pTrk[2] = aF2->clone();
 }

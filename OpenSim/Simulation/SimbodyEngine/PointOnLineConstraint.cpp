@@ -116,18 +116,7 @@ PointOnLineConstraint::PointOnLineConstraint(const PointOnLineConstraint &aConst
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* PointOnLineConstraint::copy() const
-{
-	PointOnLineConstraint *constraint = new PointOnLineConstraint(*this);
-	return(constraint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one PointOnLineConstraint to another.
@@ -150,7 +139,6 @@ void PointOnLineConstraint::copyData(const PointOnLineConstraint &aConstraint)
  */
 void PointOnLineConstraint::setNull()
 {
-	setType("PointOnLineConstraint");
 }
 
 //_____________________________________________________________________________

@@ -85,7 +85,6 @@ AbstractTool::AbstractTool():
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr()),
 	_toolOwnsModel(true)
 {
-	setType("AbstractTool");
 	setNull();
 }
 
@@ -119,7 +118,6 @@ AbstractTool::AbstractTool(const string &aFileName, bool aUpdateFromXMLNode):
 	_toolOwnsModel(true)
 {
     _analysisSet.setMemoryOwner(false);
-	setType("AbstractTool");
 	setNull();
 	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
@@ -470,7 +468,7 @@ addAnalysisSetToModel()
 	_analysisCopies.setMemoryOwner(false);
 	for(int i=0;i<size;i++) {
 		if(!&_analysisSet.get(i)) continue;
-		Analysis *analysis = (Analysis*)_analysisSet.get(i).copy();
+		Analysis *analysis = _analysisSet.get(i).clone();
 		_model->addAnalysis(analysis);
 		_analysisCopies.append(analysis);
 	}
@@ -499,7 +497,7 @@ addControllerSetToModel()
 	_controllerCopies.setMemoryOwner(false);
 	for(int i=0;i<size;i++) {
 		if(!&_controllerSet.get(i)) continue;
-		Controller *controller = (Controller*)_controllerSet.get(i).copy();
+		Controller *controller = _controllerSet.get(i).clone();
 		_model->addController(controller);
 		_controllerCopies.append(controller);
 	}

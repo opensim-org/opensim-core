@@ -113,17 +113,6 @@ _expressionStr(_expressionStrProp.getValueStr())
 	// COPY TYPE AND NAME
 	*this = aSymbolicExpressionReporter;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* SymbolicExpressionReporter::copy() const
-{
-	SymbolicExpressionReporter *object = new SymbolicExpressionReporter(*this);
-	return(object);
-
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -135,8 +124,6 @@ Object* SymbolicExpressionReporter::copy() const
 void SymbolicExpressionReporter::
 setNull()
 {
-	// TYPE
-	setType("SymbolicExpressionReporter");
 	// NAME
 	setName("SymbolicExpressionReporter");
 

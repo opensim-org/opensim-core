@@ -68,8 +68,8 @@ class GeometrySet;
  * @author Ayman Habib
  */
 
-class OSIMCOMMON_API VisibleObject: public Object
-{
+class OSIMCOMMON_API VisibleObject: public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(VisibleObject, Object);
 
 //=============================================================================
 // DATA
@@ -114,7 +114,6 @@ public:
 	VisibleObject(const std::string &aFileName);
 	VisibleObject(const VisibleObject &aVisibleObject);
 	virtual ~VisibleObject();
-	virtual Object* copy() const;
 
 private:
 	void setNull();

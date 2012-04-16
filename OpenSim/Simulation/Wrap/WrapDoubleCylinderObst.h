@@ -32,8 +32,8 @@ class WrapResult;
  * @author Brian Garner, derivded from Peter Loan
  * @version 0.1
  */
-class OSIMSIMULATION_API WrapDoubleCylinderObst : public WrapObject
-{
+class OSIMSIMULATION_API WrapDoubleCylinderObst : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapDoubleCylinderObst, WrapObject);
 
 //=============================================================================
 // DATA
@@ -91,7 +91,7 @@ public:
 	WrapDoubleCylinderObst();
 	WrapDoubleCylinderObst(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
 	virtual ~WrapDoubleCylinderObst();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	WrapDoubleCylinderObst& operator=(const WrapDoubleCylinderObst& aWrapDoubleCylinderObst);
 #endif

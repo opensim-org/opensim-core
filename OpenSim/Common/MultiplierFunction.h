@@ -51,8 +51,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API MultiplierFunction : public Function
-{
+class OSIMCOMMON_API MultiplierFunction : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(MultiplierFunction, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -78,7 +79,7 @@ public:
 	MultiplierFunction(Function* aFunction, double aScaleFactor);
 	MultiplierFunction(const MultiplierFunction &aFunction);
 	virtual ~MultiplierFunction();
-	virtual Object* copy() const;
+
 	virtual void init(Function* aFunction);
 
 private:
@@ -111,9 +112,6 @@ public:
 	int getArgumentSize() const;
 	int getMaxDerivativeOrder() const;
 	SimTK::Function* createSimTKFunction() const;
-
-private:
-	OPENSIM_DECLARE_DERIVED(MultiplierFunction, Function)
 
 //=============================================================================
 };	// END class MultiplierFunction

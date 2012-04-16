@@ -79,8 +79,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API GCVSpline : public Function
-{
+class OSIMCOMMON_API GCVSpline : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(GCVSpline, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -132,7 +133,7 @@ public:
 		const std::string &aName="",double aErrorVariance=0.0);
 	GCVSpline(const GCVSpline &aSpline);
 	virtual ~GCVSpline();
-	virtual Object* copy() const;
+
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 private:
 	void setNull();
@@ -175,8 +176,6 @@ public:
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
-
-	OPENSIM_DECLARE_DERIVED(GCVSpline, Function);
 
 //=============================================================================
 };	// END class GCVSpline

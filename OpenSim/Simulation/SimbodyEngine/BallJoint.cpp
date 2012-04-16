@@ -96,18 +96,7 @@ BallJoint::BallJoint(const BallJoint &aJoint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* BallJoint::copy() const
-{
-	BallJoint *joint = new BallJoint(*this);
-	return(joint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one BallJoint to another.
@@ -126,7 +115,6 @@ void BallJoint::copyData(const BallJoint &aJoint)
  */
 void BallJoint::setNull()
 {
-	setType("BallJoint");
 	constructCoordinates();
 }
 

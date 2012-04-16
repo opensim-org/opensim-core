@@ -98,7 +98,6 @@ ActivationFiberLengthMuscle_Deprecated::~ActivationFiberLengthMuscle_Deprecated(
  */
 void ActivationFiberLengthMuscle_Deprecated::setNull()
 {
-	setType("ActivationFiberLengthMuscle_Deprecated");
 }
 
 //_____________________________________________________________________________

@@ -158,18 +158,6 @@ Coordinate::Coordinate(const Coordinate &aCoordinate) :
 	copyData(aCoordinate);
 }
 
-/**
- * Copy this coordinate and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Coordinate.
- */
-Object* Coordinate::copy() const
-{
-	Coordinate *gc = new Coordinate(*this);
-	return(gc);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -201,8 +189,6 @@ void Coordinate::copyData(const Coordinate &aCoordinate)
  */
 void Coordinate::setNull(void)
 {
-	setType("Coordinate");
-
 	_joint = NULL;
 	_lockFunction = NULL;
 
@@ -220,7 +206,7 @@ void Coordinate::setNull(void)
  */
 void Coordinate::setupProperties(void)
 {
-	_motionTypeNameProp.setComment("Cooridnate can describe rotational, translational, or coupled values. Defaults to rotational.");
+	_motionTypeNameProp.setComment("Coordinate can describe rotational, translational, or coupled values. Defaults to rotational.");
 	_motionTypeNameProp.setName("motion_type");
 	_motionTypeNameProp.setValue("rotational");
 	_propertySet.append(&_motionTypeNameProp);
@@ -639,22 +625,26 @@ OpenSim::Function* Coordinate::getPrescribedFunction() const
  */
 void Coordinate::setPrescribedFunction(const OpenSim::Function& function)
 {
-	_prescribedFunction = (Function*)function.copy();
+	_prescribedFunction = function.clone();
 }
 
 //_____________________________________________________________________________
 /**
- *  Determine if the the coordinate is dependent on other coordinates or not.
- *  If so return true, false otherwise.
+ * Determine if the the coordinate is dependent on other coordinates or not,
+ * by checking to see whether there is a CoordinateCouplerConstraint relating
+ * it to another coordinate. If so return true, false otherwise.
+ * TODO: note that this will fail to detect any other kind of constraint that
+ * might couple coordinates together.
  */
  bool Coordinate::isDependent(const SimTK::State& s) const
 {
 	for(int i=0; i<_model->getConstraintSet().getSize(); i++){
-		Constraint& aConstraint = _model->getConstraintSet().get(i);
-		if(aConstraint.getType() == "CoordinateCouplerConstraint"){
-			CoordinateCouplerConstraint& coupler = dynamic_cast<CoordinateCouplerConstraint&>(aConstraint);
-			if (coupler.getDependentCoordinateName() == getName())
-				return !coupler.isDisabled(s);
+		Constraint& constraint = _model->getConstraintSet().get(i);
+        CoordinateCouplerConstraint* couplerp = 
+            dynamic_cast<CoordinateCouplerConstraint*>(&constraint);
+		if(couplerp) {
+			if (couplerp->getDependentCoordinateName() == getName())
+				return !couplerp->isDisabled(s);
 		}
 	}
 	return false;

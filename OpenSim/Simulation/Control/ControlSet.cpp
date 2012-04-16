@@ -146,7 +146,6 @@ ControlSet::ControlSet(const Storage& aStorage, int numControls, int startIndex)
 void ControlSet::
 setNull()
 {
-	setType("ControlSet");
 	setName("Control Set");
 	setupProperties();
 	_ptcMap.setSize(0);
@@ -161,19 +160,6 @@ setupProperties()
 {
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this ControlSet and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ControlSet.
- */
-Object* ControlSet::
-copy() const
-{
-	ControlSet *controlSet = new ControlSet(*this);
-	return(controlSet);
-}
 
 //=============================================================================
 // OPERATORS
@@ -269,7 +255,7 @@ getControlList(const char *aType,Array<int> &rList,bool aForModelControls) const
 		Control& control = get(i);
 		if(aForModelControls) if(!control.getIsModelControl()) continue;
 
-		if(control.getType()==aType) {
+		if(control.getConcreteClassName()==aType) {
 			rList.append(i);
 		}
 	}

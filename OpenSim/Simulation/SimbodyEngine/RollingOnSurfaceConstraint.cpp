@@ -94,18 +94,7 @@ RollingOnSurfaceConstraint::RollingOnSurfaceConstraint(const RollingOnSurfaceCon
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* RollingOnSurfaceConstraint::copy() const
-{
-	RollingOnSurfaceConstraint *constraint = new RollingOnSurfaceConstraint(*this);
-	return(constraint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one RollingOnSurfaceConstraint to another.
@@ -131,7 +120,6 @@ void RollingOnSurfaceConstraint::copyData(const RollingOnSurfaceConstraint &aCon
  */
 void RollingOnSurfaceConstraint::setNull()
 {
-	setType("RollingOnSurfaceConstraint");
 	_defaultUnilateralConditions = std::vector<bool>(4, false);
 }
 

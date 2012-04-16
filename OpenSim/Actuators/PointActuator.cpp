@@ -89,19 +89,6 @@ PointActuator::PointActuator(const PointActuator &anActuator) :
 	setNull();
 	copyData(anActuator);
 }
-//_____________________________________________________________________________
-/**
- * Copy this actuator and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this actuator.
- */
-Object* PointActuator::
-copy() const
-{
-	PointActuator *force = new PointActuator(*this);
-	return force;
-}
 
 
 //=============================================================================
@@ -114,7 +101,6 @@ copy() const
 void PointActuator::
 setNull()
 {
-	setType("PointActuator");
 	setupProperties();
 }
 
@@ -125,10 +111,11 @@ setNull()
 void PointActuator::
 setupProperties()
 {
-	addProperty<string>("body",
-		"",
+    // Allow this to be filled in later.
+	addOptionalProperty<string>("body",
 		"");
-	SimTK::Vec3 origin(0.0);
+
+	const SimTK::Vec3 origin(0.0);
 	addProperty<SimTK::Vec3>("point",
 		"",
 		origin);
@@ -154,7 +141,8 @@ void PointActuator::
 copyData(const PointActuator &aPointActuator)
 {
 	// MEMBER VARIABLES
-	setPropertyValue("body", aPointActuator.getPropertyValue<string>("body"));
+	setPropertyValue("body", aPointActuator.getProperty<string>("body"));
+
 	setPropertyValue("point", aPointActuator.getPropertyValue<SimTK::Vec3>("point"));
 	setPropertyValue("point_is_global", aPointActuator.getPropertyValue<bool>("point_is_global"));
 	setPropertyValue("direction", aPointActuator.getPropertyValue<SimTK::Vec3>("direction"));

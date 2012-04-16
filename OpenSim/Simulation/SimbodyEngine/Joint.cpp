@@ -153,7 +153,6 @@ void Joint::copyData(const Joint &aJoint)
  */
 void Joint::setNull()
 {
-	setType("Joint");
 	_parentBody = NULL;
 	_body = NULL;
 }

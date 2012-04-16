@@ -115,7 +115,6 @@ CMC_Task::CMC_Task(const CMC_Task &aTask) :
 void CMC_Task::
 setNull()
 {
-	setType("rdTaskObject");
 	setName(DEFAULT_NAME);
 	setupProperties();
 
@@ -240,15 +239,15 @@ copyData(const CMC_Task &aTask)
 		// position
 		if(_pTrk[i]!=NULL) {delete _pTrk[i];  _pTrk[i]=NULL; }
 		func = aTask.getTaskFunction(i);
-		if(func!=NULL) _pTrk[i] = (Function *)func->copy();
+		if(func!=NULL) _pTrk[i] = func->clone();
 		// velocity
 		if(_vTrk[i]!=NULL) {delete _vTrk[i];  _vTrk[i]=NULL; }
 		func = aTask.getTaskFunctionForVelocity(i);
-		if(func!=NULL) _vTrk[i] = (Function*)func->copy();
+		if(func!=NULL) _vTrk[i] = func->clone();
 		// acceleration
 		if(_aTrk[i]!=NULL) {delete _aTrk[i];  _aTrk[i]=NULL; }
 		func = aTask.getTaskFunctionForAcceleration(i);
-		if(func!=NULL) _aTrk[i] = (Function*)func->copy();
+		if(func!=NULL) _aTrk[i] = func->clone();
 	}
 }
 
@@ -615,9 +614,9 @@ setTaskFunctionsForVelocity(OpenSim::Function *aF0, OpenSim::Function *aF1, Open
 	if(_vTrk[1]!=NULL) { delete _vTrk[1];  _vTrk[1]=NULL; }
 	if(_vTrk[2]!=NULL) { delete _vTrk[2];  _vTrk[2]=NULL; }
 
-	if(aF0!=NULL) _vTrk[0] = (Function*)aF0->copy();
-	if(aF1!=NULL) _vTrk[1] = (Function*)aF1->copy();
-	if(aF2!=NULL) _vTrk[2] = (Function*)aF2->copy();
+	if(aF0!=NULL) _vTrk[0] = aF0->clone();
+	if(aF1!=NULL) _vTrk[1] = aF1->clone();
+	if(aF2!=NULL) _vTrk[2] = aF2->clone();
 }
 //_____________________________________________________________________________
 /**
@@ -655,9 +654,9 @@ setTaskFunctionsForAcceleration(
 	if(_aTrk[1]!=NULL) { delete _aTrk[1];  _aTrk[1]=NULL; }
 	if(_aTrk[2]!=NULL) { delete _aTrk[2];  _aTrk[2]=NULL; }
 
-	if(aF0!=NULL) _aTrk[0] = (Function*)aF0->copy();
-	if(aF1!=NULL) _aTrk[1] = (Function*)aF1->copy();
-	if(aF2!=NULL) _aTrk[2] = (Function*)aF2->copy();
+	if(aF0!=NULL) _aTrk[0] = aF0->clone();
+	if(aF1!=NULL) _aTrk[1] = aF1->clone();
+	if(aF2!=NULL) _aTrk[2] = aF2->clone();
 }
 //_____________________________________________________________________________
 /**

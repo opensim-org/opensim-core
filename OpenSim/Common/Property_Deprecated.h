@@ -49,8 +49,16 @@ class Object;
 #ifdef SWIG
 	#ifdef OSIMCOMMON_API
 		#undef OSIMCOMMON_API
-		#define OSIMCOMMON_API
 	#endif
+    #define OSIMCOMMON_API
+	#ifdef OVERRIDE_11
+		#undef OVERRIDE_11
+	#endif
+    #define OVERRIDE_11
+	#ifdef FINAL_11
+		#undef FINAL_11
+	#endif
+    #define FINAL_11 
 #endif
 
 //=============================================================================
@@ -95,12 +103,23 @@ class Object;
 
 class OSIMCOMMON_API Property_Deprecated : public AbstractProperty
 {
+public:
+	/** Enumeration of recognized types. */
+	enum PropertyType
+	{
+		None=0, Bool, Int, Dbl, Str, Obj, ObjPtr,
+		BoolArray, IntArray, DblArray, StrArray, ObjArray,
+		DblVec, DblVec3,
+		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
+	};
+
 //=============================================================================
 // DATA
 //=============================================================================
 private:
 	/** Type of the property. */
 	PropertyType _propertyType;
+	bool         _matchName;
 
 //=============================================================================
 // METHODS
@@ -113,20 +132,51 @@ public:
 	Property_Deprecated(PropertyType aType,const std::string &aName);
 	Property_Deprecated(const Property_Deprecated &aProperty);
 
+	//--------------------------------------------------------------------------
     // Implement the AbstractProperty interface.
 	virtual ~Property_Deprecated() {}
-    bool equals(const AbstractProperty& other) const /*override*/ {
+    bool isEqualTo(const AbstractProperty& other) const OVERRIDE_11 {
         return operator==(dynamic_cast<const Property_Deprecated&>(other));
     }
-    PropertyType getPropertyType() const /*override*/ {return _propertyType;}
 
-    // Most property types don't contain any objects. For those this method
-    // can do nothing. Any property types containing objects must override.
-    void setSubPropertiesUseDefault(bool shouldUseDefault) /*override*/ {}
+    /** Return the enum value corresponding to the concrete property. **/
+	virtual PropertyType getPropertyType() const {return _propertyType;}
 
-    // Property_Deprecated does not implement AbstractProperty::copy(); that 
+    /** By default deprecated PropertyObj properties will ignore the name
+    associated with the read-in object. This forces the name to match one
+    specified for the property. Note that this is handled differently in
+    the new Property system. */
+	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
+	bool getMatchName() const { return _matchName; }
+    // Property_Deprecated does not implement AbstractProperty::clone(); that 
     // is left to concrete Property_Deprecated objects like PropertyInt.
-	Property_Deprecated* copy() const /*override*/ = 0;
+	Property_Deprecated* clone() const OVERRIDE_11 = 0;
+
+    virtual void readFromXMLElement
+       (SimTK::Xml::Element& propertyElement,
+        int                  versionNumber) OVERRIDE_11
+    {assert(!"Property_Deprecated::readFromXMLElement not implemented yet");}
+
+    virtual void writeToXMLElement
+       (SimTK::Xml::Element& propertyElement) const OVERRIDE_11
+    {assert(!"Property_Deprecated::writeToXMLElement not implemented yet");}
+
+    // Override for array types.
+    virtual int getNumValues() const OVERRIDE_11 {return 1;}
+    virtual void clearValues() OVERRIDE_11 {assert(!"implemented");}
+
+    virtual bool isUnnamedProperty() const OVERRIDE_11 {return false;}
+    virtual bool isObjectProperty() const OVERRIDE_11 {return false;}
+    virtual bool isAcceptableObjectTag
+        (const std::string& objectTypeTag) const OVERRIDE_11 {return false;}
+    virtual const Object& getValueAsObject(int index=-1) const OVERRIDE_11
+    {   Property_PROPERTY_TYPE_MISMATCH(); }
+    virtual Object& updValueAsObject(int index=-1) OVERRIDE_11
+    {   Property_PROPERTY_TYPE_MISMATCH(); }
+    virtual void setValueAsObject(const Object& obj, int index=-1) OVERRIDE_11
+    {   Property_PROPERTY_TYPE_MISMATCH(); }
+
+	//--------------------------------------------------------------------------
 
 	void setNull();
 

@@ -74,19 +74,6 @@ BodyScale::BodyScale(const BodyScale &aBodyScale) :
 	copyData(aBodyScale);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this BodyScale and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this BodyScale.
- */
-Object* BodyScale::copy() const
-{
-	BodyScale *bodyScale = new BodyScale(*this);
-	return(bodyScale);
-}
-
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
@@ -107,7 +94,6 @@ void BodyScale::copyData(const BodyScale &aBodyScale)
  */
 void BodyScale::setNull()
 {
-	setType("BodyScale");
 }
 //_____________________________________________________________________________
 /**

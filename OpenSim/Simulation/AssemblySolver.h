@@ -58,8 +58,9 @@ class CoordinateReference;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API AssemblySolver: public Solver
-{
+class OSIMSIMULATION_API AssemblySolver: public Solver {
+OpenSim_DECLARE_CONCRETE_OBJECT(AssemblySolver, Solver);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -71,8 +72,9 @@ protected:
 	// Weight for built-in constraints to be satisfied
 	double _constraintWeight;
 
-	// The coordinates reference value and weighting
-	SimTK::Array_<CoordinateReference> &_coordinateReferences;
+	// The coordinates reference value and weighting. This is just a reference;
+    // don't delete it. It's kept as a pointer just to allow assignment.
+	SimTK::Array_<CoordinateReference>* _coordinateReferencesp;
 
 	// Underlying SimTK::Assembler that will perform the assembly
 	SimTK::Assembler *_assembler;
@@ -86,15 +88,16 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~AssemblySolver();
 
 	/** Construct an Assembly solver with the coordinate references as the goal
 	    of the assembly and (optional)constraint weight. Defual is infitinet
 		constraint weighting (i.e. rigidly enforced) during assembly. */
 	AssemblySolver(const Model &model, 
-					SimTK::Array_<CoordinateReference> &coordinateReferences,
+				   SimTK::Array_<CoordinateReference> &coordinateReferences,
 				   double constraintWeight = SimTK::Infinity);
-	
+
+	virtual ~AssemblySolver();
+
 	/** Set the unitless accuracy of the assembly solution, which is dictates to how
 	    many significant digits the solution should be resolved to.*/
 	void setAccuracy(double accuracy) {_accuracy = accuracy; }
@@ -107,10 +110,12 @@ public:
 	
 	/** Specify which coordinates to match, each with a desired value and a
 	    relative weighting. */
-	const SimTK::Array_<CoordinateReference>& getCoordinateReferences() const {return _coordinateReferences; };
-	/** Once a set of coordinates has been specified its reference value and weight
-		can be updated directly */
-	void updateCoordinateReference(const std::string &coordName, double value, double weight=1.0);
+	const SimTK::Array_<CoordinateReference>& getCoordinateReferences() const
+    {   return *_coordinateReferencesp; };
+	/** Once a set of coordinates has been specified its reference value and 
+        weight can be updated directly */
+	void updateCoordinateReference(const std::string &coordName, double value, 
+                                   double weight=1.0);
 
 	/** Assemble a model configuration that meets the assembly conditions  
 	    (desired values and constraints) starting from an initial state that  

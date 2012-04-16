@@ -89,20 +89,6 @@ SpringGeneralizedForce(const SpringGeneralizedForce &aForce) :
 	setViscosity(aForce.getViscosity());
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this force and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this force.
- */
-Object* SpringGeneralizedForce::
-copy() const
-{
-	SpringGeneralizedForce *force = new SpringGeneralizedForce(*this);
-	return force;
-}
-
 
 //=============================================================================
 // CONSTRUCTION
@@ -114,7 +100,6 @@ copy() const
 void SpringGeneralizedForce::
 setNull()
 {
-	setType("SpringGeneralizedForce");
 	setupProperties();
 }
 
@@ -127,9 +112,10 @@ setNull()
 void SpringGeneralizedForce::
 setupProperties()
 {
-	addProperty<string>("coordinate",
-		"",
+    // Allow this to be specified later.
+	addOptionalProperty<string>("coordinate",
 		"");
+
 	addProperty<double>("stiffness",
 		"",
 		0.0);
@@ -161,7 +147,9 @@ operator=(const SpringGeneralizedForce &aForce)
 	Force::operator =(aForce);
 
 	// MEMBER VARIABLES
-	setPropertyValue("coordinate", aForce.getPropertyValue<string>("coordinate"));
+    // We allow this to be unspecified so we might not get a value here.
+	setPropertyValue("coordinate", aForce.getProperty<string>("coordinate"));
+
 	setStiffness(aForce.getStiffness());
 	setRestLength(aForce.getRestLength());
 	setViscosity(aForce.getViscosity());

@@ -138,7 +138,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 					const double &accuracy)
 {
 	cout << "\n******************************************************" << endl;
-	cout << " Test " << aMuscle.getType() << " Muscle Actuator Type." <<endl;
+	cout << " Test " << aMuscle.getConcreteClassName() << " Muscle Actuator Type." <<endl;
 	cout << "******************************************************" << endl;
 	using SimTK::Vec3;
 
@@ -175,7 +175,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	model.addBody(&ball);
 
 	//Attach the muscle
-	const string &actuatorType = aMuscle.getType();
+	const string &actuatorType = aMuscle.getConcreteClassName();
 	aMuscle.setName("muscle");
 	aMuscle.addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
 	aMuscle.addNewPathPoint("muscle-ball", ball, Vec3(-ballRadius,0,0));
@@ -202,7 +202,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	if(control != NULL){
 		muscleController.setActuators(model.updActuators());
 		// Set the indiviudal muscle control functions for the prescribed muscle controller
-		muscleController.prescribeControlForActuator("muscle", ((Function *)control->copy()));
+		muscleController.prescribeControlForActuator("muscle", control->clone());
 
 		// Add the control set controller to the model
 		model.addController(&muscleController);

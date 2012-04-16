@@ -45,8 +45,8 @@ namespace OpenSim {
  * @author Ayman Habib & Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API TrackingTask : public Object
-{
+class OSIMTOOLS_API TrackingTask : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(TrackingTask, Object);
 
 //=============================================================================
 // DATA
@@ -91,7 +91,7 @@ public:
 	TrackingTask();
 	TrackingTask(const TrackingTask &aTaskObject);
 	virtual ~TrackingTask();
-	virtual Object* copy() const = 0;
+
 private:
 	void setNull();
 	void setupProperties();

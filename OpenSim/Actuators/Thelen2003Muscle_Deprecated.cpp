@@ -95,18 +95,6 @@ Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated
 	copyData(aMuscle);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Thelen2003Muscle_Deprecated.
- */
-Object* Thelen2003Muscle_Deprecated::copy() const
-{
-	Thelen2003Muscle_Deprecated *musc = new Thelen2003Muscle_Deprecated(*this);
-	return(musc);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -139,7 +127,6 @@ void Thelen2003Muscle_Deprecated::copyData(const Thelen2003Muscle_Deprecated &aM
  */
 void Thelen2003Muscle_Deprecated::setNull()
 {
-	setType("Thelen2003Muscle_Deprecated");
 }
 
 //_____________________________________________________________________________

@@ -28,15 +28,15 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include "Joint.h"
 #include "Coordinate.h"
 #include <OpenSim/Simulation/Model/Model.h>
+
+#include <string>
 
 namespace OpenSim {
 
@@ -49,9 +49,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API BallJoint : public Joint  
-{
+class OSIMSIMULATION_API BallJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(BallJoint, Joint);
 
+private:
 	static const int _numMobilities = 3;
 //=============================================================================
 // DATA
@@ -75,10 +76,9 @@ public:
 
 	BallJoint(const BallJoint &aJoint);
 	virtual ~BallJoint();
-	virtual Object* copy() const;
+
 	BallJoint& operator=(const BallJoint &aJoint);
 	void copyData(const BallJoint &aJoint);
-
 
 	virtual int numCoordinates() const {return _numMobilities;};
 

@@ -62,19 +62,6 @@ _length(_lengthProp.getValueDbl())
 	copyData(aWrapSphereObst);
 }
 
-//_____________________________________________________________________________
-/**
-* Copy this WrapSphereObst and return a pointer to the copy.
-* The copy constructor for this class is used.
-*
-* @return Pointer to a copy of this WrapSphereObst.
-*/
-Object* WrapSphereObst::copy() const
-{
-	WrapSphereObst *wrapSphereObst = new WrapSphereObst(*this);
-	return(wrapSphereObst);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -84,7 +71,6 @@ Object* WrapSphereObst::copy() const
 */
 void WrapSphereObst::setNull()
 {
-	setType("WrapSphereObst");
 }
 
 //_____________________________________________________________________________

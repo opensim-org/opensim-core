@@ -56,8 +56,9 @@ class Coordinate;
 class ForceSet;
 class Model;
 
-class OSIMACTUATORS_API CoordinateActuator : public Actuator
-{
+class OSIMACTUATORS_API CoordinateActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -76,7 +77,7 @@ public:
 	CoordinateActuator( std::string aCoordinateName="");
 	CoordinateActuator( const CoordinateActuator &aGenForce);
 	virtual ~CoordinateActuator();
-	virtual Object* copy() const;
+
 	void copyData(const CoordinateActuator &aGenForce);
 private:
 	void setNull();
@@ -148,8 +149,6 @@ public:
 	// XML
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-	OPENSIM_DECLARE_DERIVED(CoordinateActuator, Actuator);
 
 protected:
 	// Setup method to initialize coordinate reference

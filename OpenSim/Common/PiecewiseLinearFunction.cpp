@@ -121,17 +121,6 @@ PiecewiseLinearFunction::PiecewiseLinearFunction(const PiecewiseLinearFunction &
 {
 	setEqual(aFunction);
 }
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* PiecewiseLinearFunction::copy() const
-{
-	PiecewiseLinearFunction *function = new PiecewiseLinearFunction(*this);
-	return(function);
-}
 
 
 //=============================================================================
@@ -143,7 +132,6 @@ Object* PiecewiseLinearFunction::copy() const
  */
 void PiecewiseLinearFunction::setNull()
 {
-	setType("PiecewiseLinearFunction");
 	setupProperties();
 }
 //_____________________________________________________________________________

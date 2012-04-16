@@ -106,7 +106,6 @@ CMC_TaskSet::CMC_TaskSet(const string &aFileName) :
 void CMC_TaskSet::
 setNull()
 {
-	setType("CMC_TaskSet");
 	setupProperties();
 
 	_model = NULL;

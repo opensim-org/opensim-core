@@ -137,18 +137,6 @@ Body::Body(const Body &aBody) :
 	//cout<<_mass<<endl;
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Body.
- */
-Object* Body::copy() const
-{
-	Body *body = new Body(*this);
-	return(body);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -211,7 +199,6 @@ void Body::copyData(const AbstractBody &aBody)
  */
 void Body::setNull()
 {
-	setType("Body");
 	_model = NULL;
 }
 
@@ -229,7 +216,7 @@ void Body::setupProperties()
 	const SimTK::Vec3 defaultMC(0.0, 0.0, 0.0);
 	_massCenterProp.setName("mass_center");
 	_massCenterProp.setValue(defaultMC);
-	//_massCenterProp.setAllowableArraySize(3);
+	//_massCenterProp.setAllowableListSize(3);
 	_propertySet.append(&_massCenterProp);
 
 	// Ixx

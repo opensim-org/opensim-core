@@ -65,8 +65,9 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API RRATool: public AbstractTool
-{
+class OSIMTOOLS_API RRATool: public AbstractTool {
+OpenSim_DECLARE_CONCRETE_OBJECT(RRATool, AbstractTool);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -145,7 +146,7 @@ public:
 	RRATool();
 	RRATool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	RRATool(const RRATool &aObject);
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();

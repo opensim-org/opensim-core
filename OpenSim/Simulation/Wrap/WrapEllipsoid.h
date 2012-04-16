@@ -63,8 +63,8 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapEllipsoid : public WrapObject
-{
+class OSIMSIMULATION_API WrapEllipsoid : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapEllipsoid, WrapObject);
 
 //=============================================================================
 // DATA
@@ -84,7 +84,7 @@ public:
 	WrapEllipsoid();
 	WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid);
 	virtual ~WrapEllipsoid();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	WrapEllipsoid& operator=(const WrapEllipsoid& aWrapEllipsoid);
 #endif
@@ -99,7 +99,7 @@ public:
 	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;
 #endif
-	OPENSIM_DECLARE_DERIVED(WrapEllipsoid, WrapObject);
+
 protected:
 	void setupProperties();
 

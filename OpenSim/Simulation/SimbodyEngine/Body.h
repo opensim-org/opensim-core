@@ -58,8 +58,8 @@ class WrapObjectSet;
  * @author Frank C. Anderson, Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API Body : public ModelComponent  
-{
+class OSIMSIMULATION_API Body : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(Body, ModelComponent);
 
 //=============================================================================
 // DATA
@@ -115,11 +115,11 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~Body();
 	Body();
 	Body(const std::string &aName,double aMass,const SimTK::Vec3& aMassCenter,const SimTK::Inertia& aInertia);
 	Body(const Body &aBody);
-	virtual Object* copy() const;
+	virtual ~Body();
+
 #ifndef SWIG
 	Body& operator=(const Body &aBody);
 #endif
@@ -147,8 +147,6 @@ public:
 
 	WrapObject* getWrapObject(const std::string& aName) const;
 	const WrapObjectSet& getWrapObjectSet() const { return _wrapObjectSet; }
-
-	OPENSIM_DECLARE_DERIVED(Body, Object);
 
 	/** Assemble body interial properties: mass, center of mass location, moment of inertia
 	    about the origin of the body and return as a SimTK::MassProperties */

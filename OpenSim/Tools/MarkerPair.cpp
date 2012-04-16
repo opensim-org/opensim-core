@@ -83,18 +83,7 @@ MarkerPair::MarkerPair(const std::string &aName1, const std::string &aName2) :
 	_markerNames.append(aName1);
 	_markerNames.append(aName2);
 }
-//_____________________________________________________________________________
-/**
- * Copy this MarkerPair and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this MarkerPair.
- */
-Object* MarkerPair::copy() const
-{
-	MarkerPair *markerPair = new MarkerPair(*this);
-	return(markerPair);
-}
+
 
 void MarkerPair::copyData(const MarkerPair &aMarkerPair)
 {
@@ -112,7 +101,6 @@ void MarkerPair::copyData(const MarkerPair &aMarkerPair)
 void MarkerPair::setNull()
 {
 	setupProperties();
-	setType("MarkerPair");
 }
 //_____________________________________________________________________________
 /**

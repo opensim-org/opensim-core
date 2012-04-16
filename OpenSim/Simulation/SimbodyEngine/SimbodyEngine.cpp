@@ -103,18 +103,6 @@ SimbodyEngine::SimbodyEngine(const SimbodyEngine& aEngine) :
 	setup(*_model);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this engine and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this SimbodyEngine.
- */
-Object* SimbodyEngine::copy() const
-{
-	SimbodyEngine *object = new SimbodyEngine(*this);
-	return object;
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -138,7 +126,6 @@ void SimbodyEngine::copyData(const SimbodyEngine &aEngine)
  */
 void SimbodyEngine::setNull()
 {
-	setType("SimbodyEngine");
     _model = NULL;
 }
     

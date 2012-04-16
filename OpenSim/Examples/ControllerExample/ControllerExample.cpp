@@ -77,10 +77,10 @@ double desiredModelZAcceleration( double t ) {
  * the tug-of-war model.
  */
 class TugOfWarController : public Controller {
+OpenSim_DECLARE_CONCRETE_OBJECT(TugOfWarController, Controller);
 
 // This section contains methods that can be called in this controller class.
 public:
-
 	/**
 	 * Constructor
 	 *

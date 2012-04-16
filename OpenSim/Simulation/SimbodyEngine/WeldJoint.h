@@ -46,9 +46,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API WeldJoint : public Joint  
-{
+class OSIMSIMULATION_API WeldJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(WeldJoint, Joint);
 
+private:
 	static const int _numMobilities = 0;
 //=============================================================================
 // DATA
@@ -69,7 +70,7 @@ public:
 	WeldJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false);
 	virtual ~WeldJoint();
-	virtual Object* copy() const;
+
 	WeldJoint& operator=(const WeldJoint &aJoint);
 	void copyData(const WeldJoint &aJoint);
 	virtual void setup(Model& aModel);
@@ -78,8 +79,6 @@ public:
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
-
-	OPENSIM_DECLARE_DERIVED(WeldJoint, Joint);
 
 protected:
     void createSystem(SimTK::MultibodySystem& system) const;

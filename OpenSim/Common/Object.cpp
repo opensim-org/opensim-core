@@ -45,7 +45,12 @@
 #include "IO.h"
 #include "OldVersionException.h"
 
+#include "Simbody.h"
+
 #include <fstream>
+#include <vector>
+#include <map>
+#include <algorithm>
 
 using namespace OpenSim;
 using namespace std;
@@ -56,20 +61,14 @@ using SimTK::Transform;
 //=============================================================================
 // STATICS
 //=============================================================================
-ArrayPtrs<Object> Object::_Types;
+ArrayPtrs<Object>           Object::_registeredTypes;
+std::map<string,Object*>    Object::_mapTypesToDefaultObjects;
+std::map<string,string>     Object::_renamedTypesMap;
 
-StringsToObjects Object::_mapTypesToDefaultObjects;
-bool Object::_serializeAllDefaults=false;
+bool                        Object::_serializeAllDefaults=false;
+const string                Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
+int                         Object::_debugLevel = 0;
 
-#include <vector>
-#include <algorithm>  // Include algorithms
-
-//============================================================================
-// CONSTANTS
-//============================================================================
-const string Object::DEFAULT_NAME(ObjectDEFAULT_NAME);
-int Object::_debugLevel = 0;
-Array<std::string> Object::_deprecatedTypes;
 //=============================================================================
 // CONSTRUCTOR(S)
 //=============================================================================
@@ -79,9 +78,6 @@ Array<std::string> Object::_deprecatedTypes;
  */
 Object::~Object()
 {
-	//delete _document;
-	if (_debugLevel==4)
-		std::cout << "deleting object of type:" << getType() << " named:" << getName() << endl;
 }
 
 //_____________________________________________________________________________
@@ -184,21 +180,6 @@ Object::Object(SimTK::Xml::Element& aNode)
 	updateFromXMLNode(aNode, -1);
 }
 
-//_____________________________________________________________________________
-/**
- * Construct and return a copy of this object.
- *
- * The object is allocated using the new operator, so the caller is
- * responsible for deleting the returned object.
- *
- * @return Copy of this object.
- */
-Object* Object::
-copy() const
-{
-	Object *object = new Object(*this);
-	return(object);
-}
 
  //=============================================================================
 // CONSTRUCTION METHODS
@@ -213,7 +194,6 @@ setNull()
 	_propertySet.clear();
     _propertyTable.clear();
 
-	_type           = "Object";
 	_name           = "";
     _description    = "";
 	_authors        = "";
@@ -271,11 +251,12 @@ init()
 Object& Object::
 operator=(const Object& source)
 {
-	setType(source.getType());
-	setName(source.getName());
-	setDescription(source.getDescription());
-	setAuthors(source.getAuthors());
-	setReferences(source.getReferences());
+    if (&source != this) {
+	    setName(source.getName());
+	    setDescription(source.getDescription());
+	    setAuthors(source.getAuthors());
+	    setReferences(source.getReferences());
+    }
 	return *this;
 }
 
@@ -288,11 +269,11 @@ operator=(const Object& source)
 bool Object::
 operator==(const Object& other) const
 {
-	if (getType()        != other.getType())        return false;
-	if (getName()        != other.getName())        return false;
-	if (getDescription() != other.getDescription()) return false;
-	if (getAuthors()     != other.getAuthors())     return false;
-	if (getReferences()  != other.getReferences())  return false;
+	if (getConcreteClassName()  != other.getConcreteClassName()) return false;
+	if (getName()               != other.getName())         return false;
+	if (getDescription()        != other.getDescription())  return false;
+	if (getAuthors()            != other.getAuthors())      return false;
+	if (getReferences()         != other.getReferences())   return false;
 
     // Must have the same number of properties, in the same order.
     const int numProps = getNumProperties();
@@ -325,34 +306,6 @@ operator<(const Object& other) const
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// TYPE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the type of this object.
- *
- * @param aType Type of this object represented as a string.  In most all
- * cases, the type should be the name of the class.
- */
-void Object::
-setType(const string &aType)
-{
-	_type = aType;
-}
-//_____________________________________________________________________________
-/**
- * Get the type of this object.
- *
- * @return The type of the object.  In most all cases, the type should be the
- * the name of the class.
- */
-const string& Object::
-getType() const
-{
-	return(_type);
-}
-
 //-----------------------------------------------------------------------------
 // NAME
 //-----------------------------------------------------------------------------
@@ -498,29 +451,19 @@ updPropertyByName(const std::string& name) {
 //-----------------------------------------------------------------------------
 // REGISTER TYPE
 //-----------------------------------------------------------------------------
-void Object::
-RenameType(const std::string& oldTypeName, const Object& newTypeObject)
-{
-	Object* objectCopy = newTypeObject.copy();
-	if (objectCopy != NULL){
-		objectCopy->setType(oldTypeName);
-		RegisterType(*objectCopy);
-		if (_deprecatedTypes.findIndex(oldTypeName)==-1)
-			_deprecatedTypes.append(oldTypeName);
-	}
-}
 
 //_____________________________________________________________________________
-/**
+/*
  * Register a supported object type.  A global list of all supported objects
  * (i.e., objects derived from Object) is kept mainly for two purposes:
  *
  * ---- Object Deserialization ----
- * Once a type is registered, that type can be read from XML files
+ * Once a type T is registered, that type can be read from XML files
  * assuming that the type has implemented the following methods:
  *	1)	copy constructor
- *	2)	virtual Object* copy() const,
- *	3)	<class>& operator=() (where the class name is substituted for <class>),
+ *	2)	virtual T* clone() const
+ *  3)  static const char* getClassName()
+ *	4)	T& operator=() 
  *
  * ---- Initialization by Default Object ----
  * When objects are deserialized, they are constructed based on the registered
@@ -539,48 +482,116 @@ RenameType(const std::string& oldTypeName, const Object& newTypeObject)
  * the specified object.
  * @see isValidDefault()
  */
-void Object::
-RegisterType(const Object &aObject)
+/*static*/ void Object::
+registerType(const Object& aObject)
 {
 	// GET TYPE
-	const string &type = aObject.getType();
+	const string& type = aObject.getConcreteClassName();
 	if(type.empty()) {
-		printf("Object.RegisterType: ERR- no type name has been set.\n");
+		printf("Object.registerType: ERR- no type name has been set.\n");
 		return;
 	}
 	if (_debugLevel>=2) {
-		cout << "Object.RegisterType: " << type << " .\n";
+		cout << "Object.registerType: " << type << " .\n";
 	}
 
 	// REPLACE IF A MATCHING TYPE IS ALREADY REGISTERED
-	int i;
-	for(i=0;i<_Types.getSize();i++) {
-		Object *object = _Types.get(i);
-		if(object->getType() == type) {
+	for(int i=0; i <_registeredTypes.size(); ++i) {
+		Object *object = _registeredTypes.get(i);
+		if(object->getConcreteClassName() == type) {
 			if(_debugLevel>=2) {
-				cout<<"Object.RegisterType: replacing registered object of type ";
+				cout<<"Object.registerType: replacing registered object of type ";
 				cout<<type;
 				cout<<"\n\twith a new default object of the same type."<<endl;
 			}
-			_Types.set(i,aObject.copy());
-			_Types.get(i)->setName(DEFAULT_NAME);
-			_mapTypesToDefaultObjects[aObject.getType()]= _Types.get(i);
+            Object* defaultObj = aObject.clone();
+            defaultObj->setName(DEFAULT_NAME);
+			_registeredTypes.set(i,defaultObj);
+			_mapTypesToDefaultObjects[type]= defaultObj;
 			return;
 		} 
 	}
 
-	// APPEND
-	Object *defaultObj = aObject.copy();
-	defaultObj->setType(aObject.getType());	// Since the copy overwrites type
-	_Types.append(defaultObj);
-	// Object is registered for first time
-	//if (defaultObj->getAuthors()!="")
-	//	cout << "This software include component "<<aObject.getType()<< " developed by "<< defaultObj->getAuthors() << endl;
-
-	_mapTypesToDefaultObjects[aObject.getType()]= defaultObj;
-	_Types.getLast()->setName(DEFAULT_NAME);
+	// REGISTERING FOR THE FIRST TIME -- APPEND
+	Object* defaultObj = aObject.clone();
+    defaultObj->setName(DEFAULT_NAME);
+	_registeredTypes.append(defaultObj);
+	_mapTypesToDefaultObjects[type]= defaultObj;
 }
 
+/*static*/ void Object::
+renameType(const std::string& oldTypeName, const std::string& newTypeName)
+{
+    std::map<std::string,Object*>::const_iterator p = 
+        _mapTypesToDefaultObjects.find(newTypeName);
+
+    if (p == _mapTypesToDefaultObjects.end())
+        throw OpenSim::Exception(
+            "Object::renameType(): illegal attempt to rename object type "
+            + oldTypeName + " to " + newTypeName + " which is unregistered.",
+            __FILE__, __LINE__);
+
+    _renamedTypesMap[oldTypeName] = newTypeName;
+}
+
+/*static*/ const Object* Object::
+getDefaultInstanceOfType(const std::string& objectTypeTag) {
+    std::map<std::string,Object*>::const_iterator p = 
+        _mapTypesToDefaultObjects.find(objectTypeTag);
+    if (p != _mapTypesToDefaultObjects.end())
+        return p->second;
+    // Couldn't find it. Check to see if it has been renamed.
+    std::map<std::string,std::string>::const_iterator newName =
+        _renamedTypesMap.find(objectTypeTag);
+    if (newName == _renamedTypesMap.end())
+        return NULL; // no object with this tag known
+
+    // If it was in the renamedTypes table then there must be a 
+    // corresponding registered type or something terrible has happened!
+    p = _mapTypesToDefaultObjects.find(newName->second);
+    SimTK_ASSERT2_ALWAYS(p != _mapTypesToDefaultObjects.end(),
+        "Object::getDefaultInstanceOfType(): "
+        "Found tag '%s' renamed to unregistered tag '%s'.", 
+        objectTypeTag.c_str(), newName->second.c_str());
+
+    return p->second;
+}
+
+/*
+ * Create a new instance of the type indicated by objectTypeTag.
+ * The instance is initialized to the default Object of corresponding type.
+ * Note that renaming of old types may occur; the returned object will have
+ * the current type tag.
+ */
+/*static*/ Object* Object::
+newInstanceOfType(const std::string& objectTypeTag)
+{
+    const Object* defaultObj = getDefaultInstanceOfType(objectTypeTag);
+    if (defaultObj)
+        return defaultObj->clone();
+
+	cerr << "Object::newInstanceOfType(): object type '" << objectTypeTag 
+         << "' is not a registered Object!" << endl;
+
+    return NULL;
+}
+
+/*
+ * getRegisteredTypenames() is a utility to retrieve all the typenames 
+ * registered so far. This is done by traversing the registered objects map, 
+ * so only concrete classes are dealt with. The result returned in rTypeNames 
+ * should not be cached while more dlls are loaded as they get stale
+ * instead the list should be constructed whenever in doubt.
+ */
+/*static*/ void Object::
+getRegisteredTypenames(Array<std::string>& rTypeNames)
+{
+	std::map<string,Object*>::const_iterator p = 
+        _mapTypesToDefaultObjects.begin();
+    for (; p != _mapTypesToDefaultObjects.end(); ++p)
+        rTypeNames.append(p->first);
+	// Renamed type names don't appear in the registeredTypes map.
+}
 
 //=============================================================================
 // XML
@@ -605,23 +616,6 @@ UpdateFromXMLNodeSimpleProperty(Property_Deprecated* aProperty,
 }
 
 template<class T> static void 
-UpdateFromXMLNodeSimpleProperty2(AbstractProperty*    aAbstractProperty, 
-                                 SimTK::Xml::Element& aNode, 
-                                 const string&        aName)
-{
-	aAbstractProperty->setUseDefault(true);
-
-	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
-	if (iter == aNode.element_end()) return;	// Not found
-
-	Property2<T> *aProperty = dynamic_cast<Property2<T> *>(aAbstractProperty);
-	T value;
-	iter->getValueAs(value); // fails for Nan, infinity, -infinity, true/false
-    aProperty->setValue(value);
-    aProperty->setUseDefault(false);
-}
-
-template<class T> static void 
 UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty, 
                                SimTK::Xml::Element& aNode, 
                                const string&        aName)
@@ -639,77 +633,6 @@ UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty,
 	for(unsigned i=0; i< value.size(); i++) osimValue[i]=value[i];
 	aProperty->setValue(osimValue);
     aProperty->setUseDefault(false);
-}
-
-template<class T> static void 
-UpdateFromXMLNodeArrayProperty2(AbstractProperty*    aAbstractProperty, 
-                                SimTK::Xml::Element& aNode, 
-                                const string&        aName)
-{
-	aAbstractProperty->setUseDefault(true);
-
-	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
-	if (iter == aNode.element_end()) return;	// Not found
-
-	Property2< OpenSim::Array<T> > *aProperty = 
-        dynamic_cast<Property2< OpenSim::Array<T> > *>(aAbstractProperty);
-	SimTK::Array_<T> value;
-	iter->getValueAs(value);
-
-	OpenSim::Array<T> osimValue;
-	osimValue.setSize(value.size());
-	for(unsigned i=0; i< value.size(); i++) osimValue[i]=value[i];
-	aProperty->setValue(osimValue);
-    aProperty->setUseDefault(false);
-}
-
-static void 
-UpdateFromXMLNodeVec3Property2(AbstractProperty*    aAbstractProperty, 
-                               SimTK::Xml::Element& aNode, 
-                               const string&        aName)
-{
-	aAbstractProperty->setUseDefault(true);
-
-	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
-	if (iter == aNode.element_end()) return;	// Not found
-
-	Property2<Vec3> *aProperty = 
-        dynamic_cast<Property2<Vec3> *>(aAbstractProperty);
-	SimTK::Array_<double> value;
-	iter->getValueAs(value);
-
-	Vec3 &propertyValues = aProperty->updValue();
-	propertyValues[0]=value[0];
-	propertyValues[1]=value[1];
-	propertyValues[2]=value[2];
-	aProperty->setUseDefault(false);
-}
-
-// Although we use a SimTK::Transform internally (a Rotation matrix and a
-// position vector), in the XML file this is represented as three rotation
-// angles (in body fixed X-Y-Z sequence) followed by the position vector.
-static void 
-UpdateFromXMLNodeTransformProperty2(AbstractProperty*    aAbstractProperty, 
-                                    SimTK::Xml::Element& aNode, 
-                                    const string&        aName)
-{
-	aAbstractProperty->setUseDefault(true);
-	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
-	if (iter == aNode.element_end()) return;	// Not found
-
-	Property2<SimTK::Transform> *prop = 
-        dynamic_cast<Property2<SimTK::Transform> *>(aAbstractProperty);
-    SimTK::Transform& X = prop->updValue(); // result goes here
-
-	SimTK::Vec6 value;
-	iter->getValueAs(value);
-    const Vec3& anglesXYZ = value.getSubVec<3>(0); // body fixed, x-y-z sequence
-    const Vec3& pos       = value.getSubVec<3>(3);
-
-    X.updP() = pos;
-    X.updR().setRotationToBodyFixedXYZ(anglesXYZ);
-
-	prop->setUseDefault(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -750,40 +673,6 @@ InitializeObjectFromXMLNode(Property_Deprecated*                aProperty,
 	//aObject->updateFromXMLNode();
 }
 
-void Object::	// Populate Object from XML node corresponding to Obj property
-InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber)
-{
-	SimTK::String toString;
-	rObjectElement->writeToString(toString);
-	// If object is from non-inlined, detect it and set attributes
-	// However we need to do that on the finalized object as copying
-	// does not keep track of XML related issues
-	//DOMElement *refNode;
-	//XMLDocument *childDocument;
-	std::string file = "";
-	file = rObjectElement->getOptionalAttributeValueAs<std::string>("file", file);
-
-	bool inlinedObject = (file == ""); // otherwise object is described in file and it has root element
-
-	aAbstractProperty->setUseDefault(false);
-
-	// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
-	// Used to call a special copy method that took DOMElement* but 
-	// that ended up causing XML to be parsed twice.  Got rid of that
-	// copy method! - Eran, Feb/07
-	
-	// Set inlining attributes on final object
-	if (!inlinedObject){
-		XMLDocument* newDoc = new XMLDocument(file);
-		aObject->_inlined=false;
-		SimTK::Xml::Element e = newDoc->getRootDataElement();
-		aObject->updateFromXMLNode(e, newDoc->getDocumentVersion());
-	}
-	else
-		aObject->updateFromXMLNode(*rObjectElement, versionNumber);
-	//aObject->updateFromXMLNode();
-}
-
 template<class T> static void 
 UpdateXMLNodeSimpleProperty(const Property_Deprecated*  aProperty, 
                             SimTK::Xml::Element&        dParentNode, 
@@ -797,39 +686,12 @@ UpdateXMLNodeSimpleProperty(const Property_Deprecated*  aProperty,
 }
 
 template<class T> static void 
-UpdateXMLNodeSimpleProperty2(const AbstractProperty*    aAbstractProperty,
-                             SimTK::Xml::Element&       dParentNode, 
-                             const string&              aName)
-{
-	const Property2<T> *aProperty = dynamic_cast<const Property2<T> *>(aAbstractProperty);
-	const T &value = aProperty->getValue();
-	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
-		SimTK::Xml::Element elt(aProperty->getName(), value);
-		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
-	} 
-}
-
-template<class T> static void 
 UpdateXMLNodeArrayProperty(const Property_Deprecated*   aProperty,  
                            SimTK::Xml::Element&         dParentNode, 
                            const string&                aName)
 {
 
 	const Array<T> &value = aProperty->getValueArray<T>();
-	
-	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
-		SimTK::Xml::Element elt(aProperty->getName(), value);
-		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
-	} 
-}
-
-template<class T> static void 
-UpdateXMLNodeArrayProperty2(const AbstractProperty*     aAbstractProperty,  
-                            SimTK::Xml::Element&        dParentNode, 
-                            const string&               aName)
-{
-	const Property2< Array<T> > *aProperty = dynamic_cast<const Property2< Array<T> > *>(aAbstractProperty);
-	const Array<T> &value = aProperty->getValue();
 	
 	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
 		SimTK::Xml::Element elt(aProperty->getName(), value);
@@ -852,24 +714,6 @@ UpdateXMLNodeVec(const Property_Deprecated*     aProperty,
 }
 
 static void 
-UpdateXMLNodeVec3(const AbstractProperty*   aAbstractProperty, 
-                  SimTK::Xml::Element&      dParentNode, 
-                  const string&             aName)
-{
-	const Property2<Vec3> *aProperty = dynamic_cast<const Property2<Vec3> *>(aAbstractProperty);
-	const Vec3 &vector = aProperty->getValue();
-	const Array<double> values(0.0, 3);
-	values[0] = vector[0];
-	values[1] = vector[1];
-	values[2] = vector[2];
-	
-	if(!aAbstractProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
-		SimTK::Xml::Element elt(aAbstractProperty->getName(), values);
-		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
-	} 
-}
-
-static void 
 UpdateXMLNodeTransform(const Property_Deprecated*   aProperty, 
                        SimTK::Xml::Element&         dParentNode, 
                        const string&                aName)
@@ -882,25 +726,6 @@ UpdateXMLNodeTransform(const Property_Deprecated*   aProperty,
 		SimTK::Xml::Element elt(aProperty->getName(), arr);
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
 	//} 
-}
-
-
-static void 
-UpdateXMLNodeTransformProperty2(const AbstractProperty *aAbstractProperty, 
-                                SimTK::Xml::Element& dParentNode, 
-                                const string &aName)
-{
-	const Property2<SimTK::Transform> *prop = 
-        dynamic_cast<const Property2<SimTK::Transform> *>(aAbstractProperty);
-	const SimTK::Transform& X = prop->getValue();
-    SimTK::Vector rotTrans(6);
-    rotTrans(0,3) = SimTK::Vector(X.R().convertRotationToBodyFixedXYZ());
-    rotTrans(3,3) = SimTK::Vector(X.p()); // translations
-	
-	if(!aAbstractProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
-		SimTK::Xml::Element elt(aAbstractProperty->getName(), rotTrans);
-		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
-	} 
 }
 
 
@@ -919,6 +744,20 @@ try {
 	updateDefaultObjectsFromXMLNode(); // May need to pass in aNode
 
 	// LOOP THROUGH PROPERTIES
+	for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
+		AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
+
+		if(_debugLevel>=4) {
+			cout << "Object.updateFromXMLNode: ("
+                 << getConcreteClassName()<<":"<<getName()
+                 <<") updating property " << prop.getName() << endl;
+		}
+
+        prop.readFromXMLParentElement(aNode, versionNumber);
+    }
+
+    // LOOP THROUGH DEPRECATED PROPERTIES
+    // TODO: get rid of this
 	for(int i=0;i<_propertySet.getSize();i++) {
 
 		Property_Deprecated *property = _propertySet.get(i);
@@ -929,7 +768,9 @@ try {
 		// NAME
 		string name = property->getName();
 		if(_debugLevel>=4) {
-			cout << "Object.updateFromXMLNode: ("<<getType()<<":"<<getName()<<") updating property " << name << endl;
+			cout << "Object.updateFromXMLNode: ("
+                 << getConcreteClassName()<<":"<<getName()
+                 << ") updating property " << name << endl;
 		}
 
 		SimTK::String valueString;
@@ -942,12 +783,14 @@ try {
 
 		// Bool
 		case(Property_Deprecated::Bool) : 
+	        property->setUseDefault(true);
 			iter= aNode.element_begin(name);
 			if (iter == aNode.element_end()) break;	// Not found
 			iter->getValueAs(valueString); // true/false
 			lowerCaseValueString = valueString.toLower();
 			property->setValue(lowerCaseValueString=="true"?true:false);
 			//UpdateFromXMLNodeSimpleProperty<bool>(property, aNode, name);
+	        property->setUseDefault(false);
 			break;
 		// Int
 		case(Property_Deprecated::Int) :
@@ -955,6 +798,7 @@ try {
 			break;
 		// Double
 		case(Property_Deprecated::Dbl) :
+	        property->setUseDefault(true);
 			iter= aNode.element_begin(name);
 			if (iter == aNode.element_end()) continue;	// Not found
 			iter->getValueAs(valueString); // special values
@@ -967,6 +811,7 @@ try {
 				property->setValue(SimTK::NaN);
 			else
 				UpdateFromXMLNodeSimpleProperty<double>(property, aNode, name);
+	        property->setUseDefault(false);
 			break;
 		// Str
 		case(Property_Deprecated::Str) : 
@@ -1004,7 +849,8 @@ try {
 		case(Property_Deprecated::Obj) : {
 			property->setUseDefault(true);
 			Object &object = property->getValueObj();
-			SimTK::Xml::element_iterator iter = aNode.element_begin(object.getType());
+			SimTK::Xml::element_iterator iter = 
+                aNode.element_begin(object.getConcreteClassName());
 			if (iter == aNode.element_end()) 
                 continue;	// No element of this object type found.
 
@@ -1041,12 +887,6 @@ try {
 			//	break;
 			//}
 
-			if(type==Property_Deprecated::ObjArray) {
-				// CLEAR EXISTING OBJECT ARRAY
-				// Eran: Moved after elmt check above so that values set by constructor are kept if
-				// property is not specified in the xml file
-				property->clearObjArray();
-			}
 
 			// Call parseFileAttribute to take care of the case where a file attribute points to
 			// an external XML file.  Essentially this will make elmt point to the top level
@@ -1061,6 +901,15 @@ try {
 			const SimTK::Xml::element_iterator propElementIter = aNode.element_begin(name);
 			if (propElementIter==aNode.element_end()) 
                 break;
+
+			if(type==Property_Deprecated::ObjArray) {
+				// CLEAR EXISTING OBJECT ARRAY
+				// Eran: Moved after elmt check above so that values set by constructor are kept if
+				// property is not specified in the xml file
+				property->clearObjArray();
+			}
+
+			property->setUseDefault(false);
 
 			// LOOP THROUGH PROPERTY ELEMENT'S CHILD ELEMENTS
             // Each element is expected to be an Object of some type given
@@ -1103,221 +952,6 @@ try {
 		}
 	}
 
-	for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
-		AbstractProperty* abstractProperty = 
-            &_propertyTable.updAbstractPropertyByIndex(i);
-
-		// TYPE
-		AbstractProperty::PropertyType type = abstractProperty->getPropertyType();	
-
-		// NAME
-		string name = abstractProperty->getName();
-		if(_debugLevel>=4) {
-			cout << "Object.updateFromXMLNode: ("<<getType()<<":"<<getName()<<") updating property " << name << endl;
-		}
-
-		SimTK::String valueString;
-		SimTK::String lowerCaseValueString;
-		SimTK::Xml::element_iterator iter;
-		SimTK::Array_<SimTK::String> value;
-		OpenSim::Array<bool> osimValue;
-
-		// VALUE
-		switch(type) {
-
-		// Bool
-		case(AbstractProperty::Bool) : {
-			Property2<bool> *propertyBool = dynamic_cast<Property2<bool> *>(abstractProperty);
-			iter= aNode.element_begin(name);
-			if (iter == aNode.element_end()) break;	// Not found
-			iter->getValueAs(valueString); // true/false
-			lowerCaseValueString = valueString.toLower();
-			propertyBool->setValue(lowerCaseValueString=="true"?true:false);
-			//UpdateFromXMLNodeSimpleProperty<bool>(property, aNode, name);
-			break; }
-		// Int
-		case(AbstractProperty::Int) :
-			UpdateFromXMLNodeSimpleProperty2<int>(abstractProperty, aNode, name);
-			break;
-		// Double
-		case(AbstractProperty::Dbl) : {
-			Property2<double> *propertyDbl = dynamic_cast<Property2<double> *>(abstractProperty);
-			iter= aNode.element_begin(name);
-			if (iter == aNode.element_end()) continue;	// Not found
-			iter->getValueAs(valueString); // special values
-			lowerCaseValueString = valueString.toLower();
-			if (lowerCaseValueString=="infinity")
-				propertyDbl->setValue(SimTK::Infinity);
-			else if (lowerCaseValueString=="-infinity")
-				propertyDbl->setValue(-SimTK::Infinity);
-			else if (lowerCaseValueString=="nan")
-				propertyDbl->setValue(SimTK::NaN);
-			else
-				UpdateFromXMLNodeSimpleProperty2<double>(propertyDbl, aNode, name);
-			break; }
-		// Str
-		case(AbstractProperty::Str) :
-			UpdateFromXMLNodeSimpleProperty2<string>(abstractProperty, aNode, name);
-			break;
-		// BoolArray
-		case(AbstractProperty::BoolArray) : {
-			Property2< Array<bool> > *propertyBoolArray = dynamic_cast<Property2< Array<bool> > *>(abstractProperty);
-			// Parse as a String array then map true/false to boolean values
-			propertyBoolArray->setUseDefault(true);
-			iter = aNode.element_begin(name);
-			if (iter == aNode.element_end()) continue;	// Not found
-			iter->getValueAs(value);
-			//cout << value << endl;
-			osimValue.setSize(value.size());
-			for(unsigned i=0; i< value.size(); i++) osimValue[i]=(value[i]=="true");
-			propertyBoolArray->setValue(osimValue);
-			propertyBoolArray->setUseDefault(false);
-			break; }
-		// IntArray
-		case(AbstractProperty::IntArray) :
-			UpdateFromXMLNodeArrayProperty2<int>(abstractProperty,aNode,name);
-			break;
-		// DblArray
-		case(AbstractProperty::DblArray) :
-			UpdateFromXMLNodeArrayProperty2<double>(abstractProperty,aNode,name);
-			break;
-		case(AbstractProperty::DblVec3) :
-			UpdateFromXMLNodeVec3Property2(abstractProperty,aNode,name);
-			break;
-		case(AbstractProperty::Transform) :
-			UpdateFromXMLNodeTransformProperty2(abstractProperty,aNode,name);
-			break;
-		// StrArray
-		case(AbstractProperty::StrArray) :
-			UpdateFromXMLNodeArrayProperty2<string>(abstractProperty,aNode,name);
-			break;
-
-		// Obj
-		case(AbstractProperty::Obj) : {
-			Property2<Object> *propertyObj = static_cast<Property2<Object> *>(abstractProperty);
-			propertyObj->setUseDefault(true);
-			Object &object = propertyObj->updValue();
-			SimTK::Xml::element_iterator iter = aNode.element_begin(object.getType());
-			if (iter == aNode.element_end()) continue;	// Not found
-			if (propertyObj->getMatchName()){
-					while(object.getName() != iter->getOptionalAttributeValueAs<std::string>("name", dName) &&
-						 iter != aNode.element_end()){
-							iter++;
-				}
-					if (iter != aNode.element_end())
-						InitializeObjectFromXMLNode2(propertyObj, iter, &object, versionNumber);
-					}
-			else
-				InitializeObjectFromXMLNode2(propertyObj, iter, &object, versionNumber);
-			break; }
-
-		// ObjArray AND ObjPtr (handled very similarly)
-		case(AbstractProperty::ObjArray) : {
-			Property2< ArrayPtrs<Object> > *propertyObjArray = dynamic_cast<Property2< ArrayPtrs<Object> > *>(abstractProperty);
-			propertyObjArray->setUseDefault(true);
-			ArrayPtrs<Object> &objArray = propertyObjArray->updValue();
-			objArray.setSize(0);
-
-			// GET ENCLOSING ELEMENT
-			//DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			//if(elmt==NULL) {
-			//	if (_debugLevel>=4) {
-			//		cout<<"Object.updateFromXMLNode: ERR- failed to find element ";
-			//		cout<<name<<endl;
-			//	}
-			//	break;
-			//}
-
-			// Call parseFileAttribute to take care of the case where a file attribute points to
-			// an external XML file.  Essentially this will make elmt point to the top level
-			// element of the other file
-			//{
-			//	DOMElement *refNode;
-			//	XMLDocument *childDocument;
-			//	parseFileAttribute(elmt, refNode, childDocument, elmt);
-			//}
-
-			// LOOP THROUGH CHILD NODES
-			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
-			if (propElementIter==aNode.element_end()) break;
-			Object *object = NULL;
-			int objectsFound = 0;
-			SimTK::Xml::element_iterator iter = propElementIter->element_begin();
-			while(iter != propElementIter->element_end()){
-				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
-				// to process element nodes
-				//std::cout << "Create Object of type " << iter->getElementTag() << std::endl;
-				object = newInstanceOfType(iter->getElementTag());
-				if(!object) { std::cerr << "Object type " << iter->getElementTag() << " not recognized" << std::endl; iter++; continue; }
-				//if(!property->isValidObject(object)) throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
-				objectsFound++;
-
-				// add code to check if object is valid
-				objArray.append(object);
-				
-				//object->_document = _document;	// Propagate _document ptr.
-				object->updateFromXMLNode(*iter, versionNumber);
-				iter++;
-			}
-			break; }
-		case(AbstractProperty::ObjPtr) : {
-			Property2<Object *> *propertyObjPtr = static_cast<Property2<Object *> *>(abstractProperty);
-			propertyObjPtr->setUseDefault(true);
-
-			// GET ENCLOSING ELEMENT
-			//DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
-			//if(elmt==NULL) {
-			//	if (_debugLevel>=4) {
-			//		cout<<"Object.updateFromXMLNode: ERR- failed to find element ";
-			//		cout<<name<<endl;
-			//	}
-			//	break;
-			//}
-
-			// Call parseFileAttribute to take care of the case where a file attribute points to
-			// an external XML file.  Essentially this will make elmt point to the top level
-			// element of the other file
-			//{
-			//	DOMElement *refNode;
-			//	XMLDocument *childDocument;
-			//	parseFileAttribute(elmt, refNode, childDocument, elmt);
-			//}
-
-			// LOOP THROUGH CHILD NODES
-			const SimTK::Xml::element_iterator& propElementIter =  aNode.element_begin(name);
-			if (propElementIter==aNode.element_end()) break;
-			Object *object = NULL;
-			int objectsFound = 0;
-			SimTK::Xml::element_iterator iter = propElementIter->element_begin();
-			while(iter != propElementIter->element_end()){
-				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
-				// to process element nodes
-				//std::cout << "Create Object of type " << iter->getElementTag() << std::endl;
-				object = newInstanceOfType(iter->getElementTag());
-				if(!object) { std::cerr << "Object type " << iter->getElementTag() << " not recognized" << std::endl; iter++; continue; }
-				//if(!property->isValidObject(object)) throw XMLParsingException("Unexpected object of type "+objectType+" found under "+name+" tag.",objElmt,__FILE__,__LINE__);
-				objectsFound++;
-
-				if(objectsFound > 1){
-					//throw XMLParsingException("Found multiple objects under "+name+" tag, but expected only one.",objElmt,__FILE__,__LINE__);
-				}
-				else{
-					propertyObjPtr->setValue(object);
-				}
-				
-				//object->_document = _document;	// Propagate _document ptr.
-				object->updateFromXMLNode(*iter, versionNumber);
-				iter++;
-			}
-				
-			break; }
-
-		// NOT RECOGNIZED
-		default :
-			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
-			break;
-		}
-	}
 
 	} catch (const Exception &ex) {
 		// Important to catch exceptions here so we can restore current working directory...
@@ -1336,7 +970,7 @@ try {
  *
  * This method looks for an element with a tag name "defaults" and reads
  * the objects in that element and registers them using the method
- * Object::RegisterType().
+ * Object::registerType().
  */
 void Object::
 updateDefaultObjectsFromXMLNode()
@@ -1356,11 +990,11 @@ updateDefaultObjectsFromXMLNode()
 		SimTK::String stg = elts[it].getElementTag();
 
 		// GET DEFAULT OBJECT
-		Object *defaultObject = _mapTypesToDefaultObjects[stg];
+		const Object *defaultObject = getDefaultInstanceOfType(stg);
 		if(defaultObject==NULL) continue;
 
 		// GET ELEMENT
-		const string &type = defaultObject->getType();
+		const string& type = defaultObject->getConcreteClassName();
 		SimTK::Xml::element_iterator iterDefaultType=
             iterDefault->element_begin(type);
 		if(iterDefaultType==iterDefault->element_end()) continue;
@@ -1369,11 +1003,11 @@ updateDefaultObjectsFromXMLNode()
 		// Used to call a special copy method that took DOMElement* but 
 		// that ended up causing XML to be parsed twice.  Got rid of that
 		// copy method! - Eran, Feb/07
-		Object *object = defaultObject->copy();
+		Object *object = defaultObject->clone();
 		object->updateFromXMLNode(*iterDefaultType, 
                                   _document->getDocumentVersion());
 		object->setName(DEFAULT_NAME);
-		RegisterType(*object);
+		registerType(*object);
 		_document->addDefaultObject(object); // object will be owned by _document
 	} 
 }
@@ -1415,17 +1049,34 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 	}
 	
 	// GENERATE XML NODE for object
-	SimTK::Xml::Element myObjectElement(getType());
-	myObjectElement.setAttributeValue("name", getName());
+	SimTK::Xml::Element myObjectElement(getConcreteClassName());
+	if (!getName().empty())
+        myObjectElement.setAttributeValue("name", getName());
 	aParent.insertNodeAfter(aParent.node_end(), myObjectElement);
-
-	//SimTK::String elemAsString;
-	//aParent.writeToString(elemAsString);
 
 	// DEFAULT OBJECTS
 	//updateDefaultObjectsXMLNode(aParent);
 	if (_document) _document->writeDefaultObjects(myObjectElement);
+
+
 	// LOOP THROUGH PROPERTIES
+	for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
+		AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
+	    
+        // Don't write out if this is just a default value.
+        if (!prop.getUseDefault() || Object::getSerializeAllDefaults()) {
+		    if(_debugLevel>=4)
+			    cout << "Object.updateXMLNode: ("
+                     << getConcreteClassName()<<":"<<getName()
+                     << ") writing property " 
+                     << prop.getName() << endl;
+
+            prop.writeToXMLParentElement(myObjectElement);
+        }
+    }
+
+    // LOOP THROUGH DEPRECATED PROPERTIES
+    // TODO: get rid of this
 	for(int i=0;i<_propertySet.getSize();i++) {
 
 		//_document->writeToString(elemAsString);
@@ -1560,145 +1211,8 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			break;
 		}
 	}
-
-	for(int i=0;i<_propertyTable.getNumProperties();i++) {
-
-		//_document->writeToString(elemAsString);
-
-		AbstractProperty* abstractProperty = 
-            &_propertyTable.updAbstractPropertyByIndex(i);
-
-		// Add comment if any
-		if (!abstractProperty->getComment().empty()) {
-			myObjectElement.insertNodeAfter(myObjectElement.node_end(), SimTK::Xml::Comment(abstractProperty->getComment()));
-		}
-		// TYPE
-		AbstractProperty::PropertyType type = abstractProperty->getPropertyType();
-
-		// NAME
-		string name = abstractProperty->getName();
-
-		string stringValue="";
-		
-		// VALUE
-		switch(type) {
-
-		// Bool
-		case(AbstractProperty::Bool) :
-			UpdateXMLNodeSimpleProperty2<bool>(abstractProperty, myObjectElement, name);
-			break;
-		// Int
-		case(AbstractProperty::Int) :
-			UpdateXMLNodeSimpleProperty2<int>(abstractProperty, myObjectElement, name);
-			break;
-		// Dbl
-		case(AbstractProperty::Dbl) : {
-			Property2<double> *propertyDbl = dynamic_cast<Property2<double> *>(abstractProperty);
-			if (SimTK::isFinite(propertyDbl->getValue()))
-				UpdateXMLNodeSimpleProperty2<double>(propertyDbl, myObjectElement, name);
-			else {
-				if (propertyDbl->getValue() == SimTK::Infinity)
-					stringValue="infinity";
-				else if (propertyDbl->getValue() == -SimTK::Infinity)
-					stringValue="-infinity";
-				else if (SimTK::isNaN(propertyDbl->getValue()))
-					stringValue="NaN";
-				if(!propertyDbl->getUseDefault()) {
-					SimTK::Xml::Element elt(propertyDbl->getName(), stringValue);
-					myObjectElement.insertNodeAfter(myObjectElement.node_end(), elt);
-				}
-			} 
-			break; }
-		// Str
-		case(AbstractProperty::Str) :
-			UpdateXMLNodeSimpleProperty2<string>(abstractProperty, myObjectElement, name);
-			break;
-		// BoolArray
-		case(AbstractProperty::BoolArray) :
-			UpdateXMLNodeArrayProperty2<bool>(abstractProperty,myObjectElement,name);
-			break;
-		// IntArray
-		case(AbstractProperty::IntArray) :
-			UpdateXMLNodeArrayProperty2<int>(abstractProperty,myObjectElement,name);
-			break;
-		// DblArray
-		case(AbstractProperty::DblArray) :
-			UpdateXMLNodeArrayProperty2<double>(abstractProperty,myObjectElement,name);
-			break;
-		// DblVec3
-		case(AbstractProperty::DblVec3) :
-			UpdateXMLNodeVec3(abstractProperty,myObjectElement,name);
-			break;
-		// Transform
-		case(AbstractProperty::Transform) :
-			UpdateXMLNodeTransformProperty2(abstractProperty,myObjectElement,name);
-			break;
-		// StrArray
-		case(AbstractProperty::StrArray) :
-			UpdateXMLNodeArrayProperty2<string>(abstractProperty,myObjectElement,name);
-			break;
-
-		// Obj
-		case(AbstractProperty::Obj) : {
-			Property2<Object> *propertyObj = static_cast<Property2<Object> *>(abstractProperty);
-			Object &object = propertyObj->updValue();
-			object.updateXMLNode(myObjectElement);
-			/*
-			if(propObj->getMatchName()) {
-				
-				// Find the first element with correct tag & name attribute
-				string objName = object.getName();
-				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType(), &objName);
-			} else {
-				// Find the first element with correct tag (name not important)
-				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType());
-			}
-
-			if(!elmt && !property->getUseDefault()) {
-				elmt = XMLNode::InsertNewElementWithComment(myObjectElement, object.getType(), object.getName(), property->getComment(), aNodeIndex);
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
-			}
-
-			if(elmt) {
-				// If it's not inlined, hopefully calling updateXMLNode will be enough...
-				// (it probably won't touch the referring element, only the offline document)
-				if(object.getInlined()) object.setXMLNode(elmt);
-				else object._refNode = elmt;
-				object.updateXMLNode(myObjectElement);
-			}*/
-			break; }
-
-		// ObjArray AND ObjPtr (handled very similarly)
-		case(AbstractProperty::ObjArray) : {
-			Property2< ArrayPtrs<Object> > *propertyObjArray = dynamic_cast<Property2< ArrayPtrs<Object> > *>(abstractProperty);
-			// Set all the XML nodes to NULL, and then update them all
-			// in order, with index=0 so each new one is added to the end
-			// of the list (more efficient than inserting each one into
-			// the proper slot).
-			SimTK::Xml::Element objectArrayElement(propertyObjArray->getName());
-			myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectArrayElement);
-			ArrayPtrs<Object> &objArray = propertyObjArray->updValue();
-			for(int j=0; j < objArray.getSize(); j++)
-				objArray.get(j)->updateXMLNode(objectArrayElement);
-			break; }
-		case(AbstractProperty::ObjPtr) : {
-			Property2<Object *> *propertyObjPtr = static_cast<Property2<Object *> *>(abstractProperty);
-			Object *object = propertyObjPtr->updValue();
-			SimTK::Xml::Element objectBaseElement(propertyObjPtr->getName());
-			myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectBaseElement);
-			if(object) { // Add node for base classHEREHEREHERE
-				object->updateXMLNode(objectBaseElement);
-			}
-			break; }
-
-		// NOT RECOGNIZED
-		default :
-			cout<<"Object.UpdateObject: WARN- unrecognized property type."<<endl;
-			break;
-		}
-	}
 }
+
 //_____________________________________________________________________________
 /**
  * Update the XML node for defaults object.
@@ -1900,20 +1414,20 @@ PrintPropertyInfo(ostream &aOStream,
 {
 	// NO CLASS
 	if(aClassName=="") {
-		int size = _Types.getSize();
+		int size = _registeredTypes.getSize();
 		aOStream<<"REGISTERED CLASSES ("<<size<<")\n";
 		Object *obj;
 		for(int i=0;i<size;i++) {
-			obj = _Types.get(i);
+			obj = _registeredTypes.get(i);
 			if(obj==NULL) continue;
-			aOStream<<obj->getType()<<endl;
+			aOStream<<obj->getConcreteClassName()<<endl;
 		}
 		aOStream<<"\n\nUse '-PropertyInfo ClassName' to list the properties of a particular class.\n\n";
 		return;
 	}
 
 	// FIND CLASS
-	Object* object = _mapTypesToDefaultObjects[aClassName];
+	const Object* object = getDefaultInstanceOfType(aClassName);
 	if(object==NULL) {
 		aOStream<<"\nA class with the name '"<<aClassName<<"' was not found.\n";
 		aOStream<<"\nUse '-PropertyInfo' without specifying a class name to print a listing of all registered classes.\n";
@@ -1922,7 +1436,7 @@ PrintPropertyInfo(ostream &aOStream,
 
 	// NO PROPERTY
 	PropertySet propertySet = object->getPropertySet();
-	Property_Deprecated* property;
+	const Property_Deprecated* property;
 	const AbstractProperty* abstractProperty;
 	if((aPropertyName=="")||(aPropertyName=="*")) {
 		int propertySetSize = propertySet.getSize();
@@ -2038,46 +1552,7 @@ makeObjectFromFile(const std::string &aFileName)
 	return 0;
 }
 
-/**
- * Create a new instance of the type indicated by aType.
- * The instance is initialized to the default Object of corresponding type.
- */
-Object* Object::
-newInstanceOfType(const std::string &aType)
-{
-	StringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.find(aType);
-	Object* newObj=0;
-	if (find_Iter != _mapTypesToDefaultObjects.end()){
-		Object* defaultObject = find_Iter->second;
-		// This object has proper type;
-		if(defaultObject)
-			newObj = defaultObject->copy();
-		else
-			cerr << "Object::newInstanceOfType '"+aType+"' was not found!" << endl;
-	}
-	if (newObj==0){
-		cout << "Cant create a new instance of object type (" << aType << ") likely a typo in xml/osim file" << endl;
-	}
-	return (newObj);
-}
 
-/**
- * getRegisteredTypenames is a utility to retrieve all the typenames registered so far.
- * This is done by traversing the registered objects map, so only concrete classes are dealt with.
- * The result returned in rTypeNames should not be cached while more dlls are loaded as they get stale
- * instead the list should be constructed whenever in doubt
- */
-void Object::
-getRegisteredTypenames(Array<std::string>& rTypeNames)
-{
-	StringsToObjects::const_iterator find_Iter = _mapTypesToDefaultObjects.begin();
-	while (find_Iter != _mapTypesToDefaultObjects.end()){
-		std::string nextTypeName = find_Iter->first;
-		if (_deprecatedTypes.findIndex(nextTypeName)==-1)
-			rTypeNames.append(nextTypeName);
-		find_Iter++;
-	}
-}
 
 
 void Object::updateFromXMLDocument()
@@ -2088,17 +1563,6 @@ void Object::updateFromXMLDocument()
 	updateFromXMLNode(e, _document->getDocumentVersion());
 }
 
-const std::string& Object::
-getPropertyTypeAsString(const std::string &name) const
-{
-	return _propertyTable.getPropertyTypeAsString(name);
-}
-
-const std::string& Object::
-getPropertyComment(const std::string &name) const
-{
-	return _propertyTable.getPropertyComment(name);
-}
 
 /** 
     * The following code accounts for an object made up to call 

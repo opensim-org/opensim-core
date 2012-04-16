@@ -56,8 +56,8 @@ namespace OpenSim {
  *
  * @contributor Peter Loan
  */
-class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle  
-{
+class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle {
+OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle, ActivationFiberLengthMuscle);
 
 //=============================================================================
 // METHODS
@@ -70,7 +70,6 @@ public:
 	Thelen2003Muscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	Thelen2003Muscle(const Thelen2003Muscle &aMuscle);
 	virtual ~Thelen2003Muscle();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	Thelen2003Muscle& operator=(const Thelen2003Muscle &aMuscle);
@@ -123,8 +122,6 @@ public:
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	
 	double computeIsometricForce(SimTK::State& s, double activation) const;
-
-	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle, ActivationFiberLengthMuscle);
 
 protected:
 	/** calculate muscle's position related values such fiber and tendon lengths,

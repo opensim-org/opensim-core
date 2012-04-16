@@ -82,18 +82,6 @@ Measurement::Measurement(const Measurement &aMeasurement) :
 	setupProperties();
 	copyData(aMeasurement);
 }
-//_____________________________________________________________________________
-/**
- * Copy this measurement and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Measurement.
- */
-Object* Measurement::copy() const
-{
-	Measurement *measurement = new Measurement(*this);
-	return(measurement);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -117,7 +105,6 @@ void Measurement::copyData(const Measurement &aMeasurement)
  */
 void Measurement::setNull()
 {
-	setType("Measurement");
 }
 
 //_____________________________________________________________________________
@@ -146,8 +133,8 @@ void Measurement::setupProperties()
  */
 void Measurement::registerTypes()
 {
-	Object::RegisterType(MarkerPair());
-	Object::RegisterType(BodyScale());
+	Object::registerType(MarkerPair());
+	Object::registerType(BodyScale());
 }
 
 //=============================================================================

@@ -41,8 +41,9 @@ class ControlSet;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API ForwardTool: public AbstractTool
-{
+class OSIMTOOLS_API ForwardTool: public AbstractTool {
+OpenSim_DECLARE_CONCRETE_OBJECT(ForwardTool, AbstractTool);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -82,7 +83,7 @@ public:
 	ForwardTool();
 	ForwardTool(const std::string &aFileName,bool aUpdateFromXMLNode=true,bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	ForwardTool(const ForwardTool &aObject);
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();

@@ -73,7 +73,6 @@ ContactGeometry::~ContactGeometry()
 
 void ContactGeometry::setNull()
 {
-    setType("ContactGeometry");
     _body = NULL;
 }
 
@@ -93,12 +92,12 @@ void ContactGeometry::setupProperties()
 	_propertySet.append(&_orientationInBodyProp);
 }
 
-void ContactGeometry::copyData(const ContactGeometry& geom)
+void ContactGeometry::copyData(const ContactGeometry& source)
 {
-    _body = geom._body;
-    _bodyName = geom._bodyName;
-    _locationInBody = geom._locationInBody;
-    _orientationInBody = geom._orientationInBody;
+    _body = source._body;
+    _bodyName = source._bodyName;
+    _locationInBody = source._locationInBody;
+    _orientationInBody = source._orientationInBody;
 }
 
 const Vec3& ContactGeometry::getLocation() const

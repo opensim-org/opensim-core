@@ -79,15 +79,6 @@ ControlConstant::ControlConstant(const ControlConstant &aControl) :
 	setNull();
 	copyData(aControl);
 }
-//_____________________________________________________________________________
-/**
- * Construct a copy of this control.
- */
-Object* ControlConstant::
-copy() const
-{
-	return(new ControlConstant(*this));
-}
 
 
 //=============================================================================
@@ -100,7 +91,6 @@ copy() const
 void ControlConstant::
 setNull()
 {
-	setType("ControlConstant");
 	setupProperties();
 	_x = 0.0;
 }

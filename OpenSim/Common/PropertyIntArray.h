@@ -76,7 +76,7 @@ public:
 	PropertyIntArray(const std::string &aName,
 		int aSize,const int aArray[]);
 	PropertyIntArray(const PropertyIntArray &aProperty);
-	/*virtual*/ PropertyIntArray* copy() const;
+	/*virtual*/ PropertyIntArray* clone() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

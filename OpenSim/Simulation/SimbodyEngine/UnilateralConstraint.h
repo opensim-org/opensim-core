@@ -65,8 +65,9 @@ class SimbodyEngine;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API UnilateralConstraint : public Constraint  
-{
+class OSIMSIMULATION_API UnilateralConstraint : public Constraint {
+OpenSim_DECLARE_ABSTRACT_OBJECT(UnilateralConstraint, Constraint);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -85,12 +86,9 @@ public:
 	UnilateralConstraint();
 	UnilateralConstraint(const UnilateralConstraint &aUnilateralConstraint);
 	virtual ~UnilateralConstraint();
-	virtual Object* copy() const = 0;
 
 	UnilateralConstraint& operator=(const UnilateralConstraint &aUnilateralConstraint);
 	void copyData(const UnilateralConstraint &aUnilateralConstraint);
-
-	OPENSIM_DECLARE_DERIVED(UnilateralConstraint, Constraint);
 
 	virtual int getNumConstraintEquations() {return _numConstraintEquations;};
 

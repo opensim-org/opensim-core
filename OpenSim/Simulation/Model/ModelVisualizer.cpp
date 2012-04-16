@@ -235,7 +235,7 @@ void DefaultGeometry::generateDecorations
                 matter.getMobilizedBody(body.getIndex()).getBodyTransform(state);
             const WrapObjectSet& wrapObjects = body.getWrapObjectSet();
             for (int j = 0; j < wrapObjects.getSize(); j++) {
-                const string& type = wrapObjects[j].getType();
+                const string type = wrapObjects[j].getConcreteClassName();
                 if (type == "WrapCylinder") {
                     const WrapCylinder* cylinder = 
                         dynamic_cast<const WrapCylinder*>(&wrapObjects[j]);

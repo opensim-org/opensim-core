@@ -33,6 +33,7 @@
 
 
 using namespace OpenSim;
+using namespace SimTK;
 using namespace std;
 
 //_____________________________________________________________________________
@@ -79,6 +80,62 @@ bool PropertyTable::equals(const PropertyTable& other) const {
     return true;
 }
 
+int PropertyTable::adoptProperty(AbstractProperty* prop)
+{
+    assert(prop);
+    const int          nxtIndex = properties.size();
+    const std::string& name     = prop->getName();
+
+    if (!name.empty()) {
+        if (hasProperty(name))
+            throw OpenSim::Exception
+               ("PropertyTable::adoptProperty(): Property " 
+                + name + " already in table.");
+        propertyIndex[name] = nxtIndex;
+    }
+
+    properties.push_back(prop);
+    return nxtIndex;
+}
+
+const AbstractProperty& PropertyTable::
+getAbstractPropertyByIndex(int index) const {
+    if (!(0 <= index && index < getNumProperties()))
+        throw OpenSim::Exception
+            ("PropertyTable::getAbstractPropertyByIndex(): index " 
+            + String(index) + " out of range (" 
+            + String(getNumProperties()) + " properties in table).");        
+    return *properties[index]; 
+}
+
+AbstractProperty& PropertyTable::
+updAbstractPropertyByIndex(int index) {
+    if (!(0 <= index && index < getNumProperties()))
+        throw OpenSim::Exception
+            ("PropertyTable::updAbstractPropertyByIndex(): index " 
+            + String(index) + " out of range (" 
+            + String(getNumProperties()) + " properties in table).");        
+    return *properties[index]; 
+}
+
+const AbstractProperty& PropertyTable::
+getAbstractPropertyByName(const std::string& name) const {
+    const AbstractProperty* p = getPropertyPtr(name);
+    if (p == NULL) throw OpenSim::Exception
+        ("PropertyTable::getAbstractPropertyByName(): Property " 
+        + name + " not found.");
+    return *p;
+}
+
+AbstractProperty& PropertyTable::
+updAbstractPropertyByName(const std::string& name) {
+    AbstractProperty* p = updPropertyPtr(name);
+    if (p == NULL) throw OpenSim::Exception
+        ("PropertyTable::updAbstractPropertyByName(): Property " 
+        + name + " not found.");
+    return *p;
+}
+
 // Private method to look up the property by name in the map to find its index
 // in the property array and return that. If the name isn't there, return -1.
 // This private method is reused in the implementation of any method that
@@ -95,7 +152,7 @@ void PropertyTable::replaceProperties
    (const SimTK::Array_<AbstractProperty*>& source) {
     deleteProperties();
     for (unsigned i=0; i < source.size(); ++i) {
-        properties.push_back(source[i]->copy());
+        properties.push_back(source[i]->clone());
         propertyIndex[source[i]->getName()] = i;
     }
 }

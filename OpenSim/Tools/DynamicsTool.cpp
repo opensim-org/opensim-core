@@ -63,7 +63,6 @@ DynamicsTool::DynamicsTool() : Tool(),
 	_excludedForces(_excludedForcesProp.getValueStrArray()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
-	setType("DynamicsTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -82,7 +81,6 @@ DynamicsTool::DynamicsTool(const string &aFileName, bool aLoadModel) :
 	_excludedForces(_excludedForcesProp.getValueStrArray()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
-	setType("DynamicsTool");
 	setNull();
 	updateFromXMLDocument();
 
@@ -103,7 +101,6 @@ DynamicsTool::DynamicsTool(const DynamicsTool &aTool) : Tool(aTool),
 	_excludedForces(_excludedForcesProp.getValueStrArray()),
 	_externalLoadsFileName(_externalLoadsFileNameProp.getValueStr())
 {
-	setType("DynamicsTool");
 	setNull();
 	*this = aTool;
 }

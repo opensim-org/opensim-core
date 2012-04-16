@@ -73,7 +73,6 @@ CoordinateSet::CoordinateSet(const CoordinateSet& aCoordinateSet):
  */
 void CoordinateSet::setNull()
 {
-	setType("CoordinateSet");
 }
 	
 /**

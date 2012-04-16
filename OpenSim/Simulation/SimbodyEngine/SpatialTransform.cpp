@@ -106,7 +106,6 @@ SpatialTransform::SpatialTransform(const SpatialTransform& aSpatialTransform):
  */
 void SpatialTransform::setNull()
 {
-	setType("SpatialTransform");
 	_owningJoint = NULL;
 }
 
@@ -157,19 +156,6 @@ void SpatialTransform::constructTransformAxes()
 	}
 }
 
-
-//_____________________________________________________________________________
-/**
- * Copy this SpatialTransform and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::SpatialTransform.
- */
-Object* SpatialTransform::copy() const
-{
-	SpatialTransform *spatialTransform = new SpatialTransform(*this);
-	return(spatialTransform);
-}
 
 //_____________________________________________________________________________
 /**
@@ -360,7 +346,7 @@ void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
 				mf->setScale(scaleFactor);
 				// Make a copy of the original function and delete the original
 				// (so its node will be removed from the XML document).
-				mf->setFunction((Function*)function.copy());
+				mf->setFunction(function.clone());
 				transform->setFunction(mf);
 			}
 		}

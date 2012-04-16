@@ -76,18 +76,6 @@ PathWrapPoint::PathWrapPoint(const PathWrapPoint &aPoint) :
 	copyData(aPoint);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle via point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this PathWrapPoint.
- */
-Object* PathWrapPoint::copy() const
-{
-	PathWrapPoint *pt = new PathWrapPoint(*this);
-	return(pt);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -111,8 +99,6 @@ void PathWrapPoint::copyData(const PathWrapPoint &aPoint)
  */
 void PathWrapPoint::setNull()
 {
-	setType("PathWrapPoint");
-
 	_wrapPath.setSize(0);
 	_wrapPathLength = 0.0;
 }

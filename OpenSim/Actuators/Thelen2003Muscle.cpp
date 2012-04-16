@@ -91,19 +91,6 @@ Thelen2003Muscle::Thelen2003Muscle(const Thelen2003Muscle &aMuscle) :
 	copyData(aMuscle);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Thelen2003Muscle.
- */
-Object* Thelen2003Muscle::copy() const
-{
-	Thelen2003Muscle *musc = new Thelen2003Muscle(*this);
-	return(musc);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -134,7 +121,6 @@ void Thelen2003Muscle::copyData(const Thelen2003Muscle &aMuscle)
  */
 void Thelen2003Muscle::setNull()
 {
-	setType("Thelen2003Muscle");
 }
 
 //_____________________________________________________________________________

@@ -46,7 +46,6 @@ JointReactionReference::JointReactionReference() : Reference_<double>(),
 	_forceWeights(_forceWeightsProp.getValueDblVec()),
 	_momentWeights(_momentWeightsProp.getValueDblVec())
 {
-	setType("JointReactionReference");
 	setupProperties();
 	setNull();	
 
@@ -59,24 +58,15 @@ JointReactionReference::JointReactionReference(const JointReactionReference& aJo
 	_forceWeights(_forceWeightsProp.getValueDblVec()),
 	_momentWeights(_momentWeightsProp.getValueDblVec())
 {
-	setType("JointReactionReference");
 	setName(aJointReactionReference.getName());
 	setupProperties();
 	setNull();
 	copyData(aJointReactionReference);
 }
 
-// copy()
-Object* JointReactionReference::copy() const
-{
-	JointReactionReference *aJointReactionReference = new JointReactionReference(*this);
-	return(aJointReactionReference);
-}
-
 // Utility to set a default state to all members before serializing
 void JointReactionReference::setNull()
 {
-	setType("JointReactionReference");
 	//setName("JointReactionReference");
 	
 	_momentWeights = Vec3(1.0, 1.0, 1.0);

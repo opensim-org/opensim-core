@@ -61,8 +61,8 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMC_Task : public TrackingTask
-{
+class OSIMTOOLS_API CMC_Task : public TrackingTask {
+OpenSim_DECLARE_ABSTRACT_OBJECT(CMC_Task, TrackingTask);
 
 //=============================================================================
 // DATA
@@ -142,7 +142,7 @@ public:
 	CMC_Task();
 	CMC_Task(const CMC_Task &aTaskObject);
 	virtual ~CMC_Task();
-	virtual Object* copy() const = 0;
+
 private:
 	void setNull();
 	void setupProperties();

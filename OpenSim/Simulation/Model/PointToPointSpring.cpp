@@ -115,18 +115,6 @@ PointToPointSpring::PointToPointSpring(const PointToPointSpring &aForce) :
 	}
 
 }
-//_____________________________________________________________________________
-/**
- * Copy this force and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this force.
- */
-Object* PointToPointSpring::copy() const
-{
-	PointToPointSpring *force = new PointToPointSpring(*this);
-	return force;
-}
 
 
 //=============================================================================
@@ -138,7 +126,6 @@ Object* PointToPointSpring::copy() const
  */
 void PointToPointSpring::setNull()
 {
-	setType("PointToPointSpring");
 	setupProperties();
 }
 

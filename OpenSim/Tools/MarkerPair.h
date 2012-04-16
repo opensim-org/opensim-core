@@ -30,11 +30,12 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include "osimToolsDLL.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/PropertyStrArray.h>
+
+#include <iostream>
+#include <cmath>
 
 //=============================================================================
 //=============================================================================
@@ -47,9 +48,8 @@
  */
 namespace OpenSim { 
 
-class OSIMTOOLS_API MarkerPair : public Object  
-{
-OPENSIM_DECLARE_DERIVED(MarkerPair,Object);
+class OSIMTOOLS_API MarkerPair : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkerPair, Object);
 
 //=============================================================================
 // DATA
@@ -71,7 +71,6 @@ public:
 	MarkerPair(const MarkerPair &aMarkerPair);
 	MarkerPair(const std::string &aName1, const std::string &aName2);
 	virtual ~MarkerPair();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	MarkerPair& operator=(const MarkerPair &aMarkerPair);

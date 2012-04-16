@@ -54,8 +54,9 @@ class ScaleSet;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API Constraint : public ModelComponent  
-{
+class OSIMSIMULATION_API Constraint : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Constraint, ModelComponent);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -78,7 +79,6 @@ public:
 	Constraint();
 	Constraint(const Constraint &aConstraint);
 	virtual ~Constraint();
-	virtual Object* copy() const = 0;
 
 #ifndef SWIG
 	Constraint& operator=(const Constraint &aConstraint);
@@ -114,8 +114,6 @@ public:
 	virtual void setContactPointForInducedAccelerations(const SimTK::State &s, SimTK::Vec3 point){
 		throw Exception("This constraint does not implement setContactPointForInducedAccelerations");
 	}
-
-	OPENSIM_DECLARE_DERIVED(Constraint, Object);
 
 protected:
 	virtual void setup(Model& aModel);

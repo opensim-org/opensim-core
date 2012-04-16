@@ -101,7 +101,7 @@ PropertyTransform::PropertyTransform(const PropertyTransform &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyTransform* PropertyTransform::copy() const
+PropertyTransform* PropertyTransform::clone() const
 {
 	PropertyTransform *property = new PropertyTransform(*this);
 	return(property);

@@ -82,7 +82,7 @@ Force::Force(const Force &aForce) : ModelComponent(aForce)
 void Force::copyData(const Force &aForce)
 {
 	//_isDisabled = aForce._isDisabled;
-	setPropertyValue("isDisabled", aForce.getPropertyValue<bool>("isDisabled"));
+	setPropertyValue("isDisabled", aForce.getProperty<bool>("isDisabled"));
 
 	// A copy is no longer a live Force with an underlying SimTK::Force
 	// The system must be created, at which time the Force will be assigned an index
@@ -96,7 +96,6 @@ void Force::copyData(const Force &aForce)
  */
 void Force::setNull(void)
 {
-	setType("Force");
 }
 
 //_____________________________________________________________________________
@@ -211,12 +210,6 @@ double Force::computePotentialEnergy(const SimTK::State& state) const
 //-----------------------------------------------------------------------------
 // METHODS TO APPLY FORCES AND TORQUES
 //-----------------------------------------------------------------------------
-void Force::applyForce(const SimTK::State &s, const OpenSim::Body &aBody, 
-							 const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
-{
-	_model->getMatterSubsystem().getMobilizedBody(SimTK::MobilizedBodyIndex(aBody.getIndex())).applyBodyForce(s, SimTK::SpatialVec(Vec3(0), aForce), bodyForces);
-}
-
 void Force::applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const Vec3& aPoint, 
 									const Vec3& aForce, Vector_<SpatialVec> &bodyForces) const
 {

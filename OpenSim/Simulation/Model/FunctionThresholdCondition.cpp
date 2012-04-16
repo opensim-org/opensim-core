@@ -98,19 +98,6 @@ void FunctionThresholdCondition::copyData(const FunctionThresholdCondition &aCon
 	_threshold = aCondition._threshold;
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this Condition and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Condition.
- */
-Object* FunctionThresholdCondition::copy() const
-{
-	FunctionThresholdCondition *condition = new FunctionThresholdCondition(*this);
-	return(condition);
-}
-
 
 //_____________________________________________________________________________
 /**
@@ -118,7 +105,6 @@ Object* FunctionThresholdCondition::copy() const
  */
 void FunctionThresholdCondition::setNull(void)
 {
-	setType("FunctionThresholdCondition");
 }
 
 //_____________________________________________________________________________

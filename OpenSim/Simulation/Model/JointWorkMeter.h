@@ -46,8 +46,9 @@ class Model;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API JointWorkMeter : public ModelComponent  
-{
+class OSIMSIMULATION_API JointWorkMeter : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(JointWorkMeter, ModelComponent);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -70,13 +71,10 @@ public:
 	// copy
 	JointWorkMeter(const JointWorkMeter &aActuatorWorkMeter);
 	~JointWorkMeter();
-	Object* copy() const;
 
 #ifndef SWIG
 	JointWorkMeter& operator=(const JointWorkMeter &aActuatorWorkMeter);
 #endif
-
-	OPENSIM_DECLARE_DERIVED(JointWorkMeter, Object);
 
 	double getWork(const SimTK::State& state) const;
 

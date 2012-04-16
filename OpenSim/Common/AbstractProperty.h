@@ -46,6 +46,11 @@
 
 namespace OpenSim {
 
+class Object;
+template <class T> class Property;
+template <class S> class SimpleProperty;
+template <class O> class ObjectProperty;
+
 //==============================================================================
 //                            ABSTRACT PROPERTY
 //==============================================================================
@@ -53,32 +58,89 @@ namespace OpenSim {
 do not know the type of the value. Values may be simple types like int or 
 string, or may be serializable objects derived from the %OpenSim Object class.
 
-AbstractProperty is an abstract base class that provides the functionality
+%AbstractProperty is an abstract base class that provides the functionality
 common to all properties that does not involve knowledge of the value
-type. AbstractProperty::TypeHelper<T> is specialized to provide useful 
-type-specific information.
+type. Property\<T> derives from %AbstractProperty to represent properties 
+where the type is known.
+
+@see Property, Object
 
 @author Cassidy Kelly, Ajay Seth, Michael Sherman
 **/
-class OSIMCOMMON_API AbstractProperty
-{
+class OSIMCOMMON_API AbstractProperty {
 public:
-    // TODO: this enumeration should not be necessary.
-	/** Enumeration of recognized types. */
-	enum PropertyType
-	{
-		None=0, Bool, Int, Dbl, Str, Obj, ObjPtr,
-		BoolArray, IntArray, DblArray, StrArray, ObjArray,
-		DblVec, DblVec3,
-		Transform // 3 BodyFixed X,Y,Z Rotations followed by 3 Translations
-	};
+    // Constructors are protected.
 
-	AbstractProperty();
-	AbstractProperty(const std::string& name, 
-                     const std::string& typeAsString, 
-                     const std::string& comment);
+    /** Require that the number of values n in the value list of this property
+    be in the range aMin <= n <= aMax. */
+	void setAllowableListSize(int aMin, int aMax) 
+    {   assert(0 <= aMin && aMin <= aMax); 
+       _minListSize = aMin; _maxListSize = aMax; }
+
+    /** Require that the number of values n in the value list of this property
+    be exactly n=aNum values. **/
+	void setAllowableListSize(int aNum) 
+    {   assert(aNum >= 1); _minListSize = _maxListSize = aNum; }
 	
     // Default copy constructor and copy assignment operator.
+
+	/** Return all heap space used by this property. **/
+    virtual ~AbstractProperty() {}
+
+    /** Return a new instance of this concrete property object, containing
+    new copies of this property's values. The new property object is
+    allocated on the heap and it is up to the caller to delete it when done. **/
+	virtual AbstractProperty* clone() const = 0;
+
+    /** For relatively simple types, return the current value of this property 
+    in a string suitable for displaying to a user in the GUI. Objects just
+    return something like "(Object)". **/
+    // TODO: replace this with something more reasonable
+    virtual std::string toString() const = 0;
+
+    /** Return true if this is an "object property", meaning that its values
+    are all concrete objects of types that ultimately derive from the %OpenSim
+    serializable base class Object. If this returns true then it is safe to 
+    call getValueAsObject(). Otherwise this property contains only simple types
+    like "int" or "std::string", and you'll need to know the actual type in
+    order to access the values. **/
+    virtual bool isObjectProperty() const = 0;
+
+    /** An unnamed property is a one-object property whose name was given as
+    null or as the contained object's type tag. In that case getName() will
+    return the object type tag, and the XML representation will just be the
+    object, with name attribute ignored if there is one. **/
+    virtual bool isUnnamedProperty() const = 0;
+
+    /** Compare this property with another one; this is primarily used 
+    for testing. The properties must be of the identical concrete type, and
+    their names and other base class attributes must
+    be identical (including the comment). If they both have the "use default"
+    flag set then we consider the values identical without looking. Otherwise,
+    we delegate to the concrete property to determine if the values are equal; 
+    the meaning is determined by the concrete property depending on its type. 
+    Floating point values should be compared to a tolerance, and should be 
+    considered equal if both are the same infinity or both are NaN (the latter
+    in contrast to normal IEEE floating point behavior, where NaN!=NaN). **/
+    bool equals(const AbstractProperty& other) const
+    {   if (!isSamePropertyClass(other)) return false;       
+        if (getName() != other.getName()) return false;
+        if (getComment() != other.getComment()) return false;
+        if (getMinListSize() != other.getMinListSize()) return false;
+        if (getMaxListSize() != other.getMaxListSize()) return false;
+     
+        if (size() != other.size()) return false;
+        // Note: we're delegating comparison of the "use default" flags
+        // because only the new Property system copies them correctly, so
+        // only it should compare them.
+        return isEqualTo(other); // delegate to concrete property
+    }
+
+    /** Return true if the \a other property is an object of exactly the same 
+    concrete class as this one. **/
+    bool isSamePropertyClass(const AbstractProperty& other) const
+    {   return typeid(*this) == typeid(other); }
+
 
     #ifndef SWIG
     /** See the equals() method for the meaning of this operator. **/
@@ -86,233 +148,218 @@ public:
     {   return equals(other); }
     #endif
 
+    /**@name                 Container interface
+    A property can be viewed as a random-access container of values. These
+    methods provide a subset of the usual container methods modeled after
+    std::vector. Note that any methods involving the actual property value type
+    T must be templatized; they will be delegated to the concrete Property\<T>
+    for resolution. **/
+    /**@{**/
+    /** Return the number of values currently in this property's value list. **/
+    int size() const {return getNumValues();}
+    /** Return true if this property's value list is currently empty. **/
+    bool empty() const {return size()==0;}
+    /** Empty the value list for this property; fails if zero is not an 
+    allowable size for this property. **/
+    void clear();
+
+    // Implementation of these non-virtual templatized methods must be 
+    // deferred until the concrete property declarations are known. 
+    // See Object.h.
+
+    /** Return one of the values in this property as type T; this works only 
+    if the underlying concrete property stores type T and if the indexed 
+    element is present, otherwise throws an exception. **/
+    template <class T> const T& getValue(int index=-1) const;
+    /** Return a writable reference to one of the values in this property as 
+    type T; this works only if the underlying concrete property is actually of 
+    type T and the indexed element is present. Otherwise it throws an exception. **/
+    template <class T> T& updValue(int index=-1);
+    /** Append a new value of type T to the end of the list of values currently
+    contained in this property. This works only if the underlying concrete
+    property is of type T, the property holds a variable-length list, and the
+    list isn't already of maximum size. 
+    @returns The index assigned to this value in the list. **/
+    template <class T> int appendValue(const T& value);
+    /**@}**/
+
     /** This method sets the "use default" flag for this property and the 
     properties of any objects it contains to the given value. **/
-    void setAllPropertiesUseDefault(bool shouldUseDefault) {
-        setUseDefault(shouldUseDefault);
-        setSubPropertiesUseDefault(shouldUseDefault);
-    }
+    void setAllPropertiesUseDefault(bool shouldUseDefault);
 
+    /** Given an XML parent element expected to contain a value for this
+    property as an immediate child element, find that property element and set
+    the property value from it. If no such property element can be found, the
+    "use default value" attribute of this property will be set on return; that
+    is not an error. However, if the property element is found but is 
+    malformed or unsuitable in some way, an exception will be thrown with
+    a message explaining what is wrong. **/
+    void readFromXMLParentElement(SimTK::Xml::Element& parent,
+                                  int                  versionNumber);
 
-    // This is the interface that any concrete Property class must implement.
-    //--------------------------------------------------------------------------
-	/** Return all heap space used by this property. **/
-    virtual ~AbstractProperty() {}
-    /** Return a new instance of this concrete property object. This is
-    allocated on the heap and it is up to the caller to delete it when done. **/
-	virtual AbstractProperty* copy() const = 0;
-    /** The meaning of equals() is determined by the concrete property
-    depending on its type. Floating point values should be compared to a
-    tolerance, and should be considered equal if both are the same infinity
-    or both are NaN (the latter in contrast to normal IEEE floating point 
-    behavior, where NaN!=NaN). **/
-	virtual bool equals(const AbstractProperty& other) const = 0;
-    /** If this concrete property contains Objects (which may themselves 
-    contain properties), then this method should call the 
-    setAllPropertiesUseDefault() method on each contained object, providing
-    the same flag as is passed here in \a shouldUseDefault. **/
-    virtual void setSubPropertiesUseDefault(bool shouldUseDefault) = 0;
-    /** Return the enum value corresponding to the concrete property. **/
-	virtual PropertyType getPropertyType() const = 0;
-    /** For relatively simple types, return the current value of this property 
-    in a string suitable for displaying to a user in the GUI. Objects just
-    return something like "(Object)". **/
-    virtual std::string toString() const = 0;
+    /** Given an XML parent element, append a single child element representing
+    the serialized form of this property. **/
+    void writeToXMLParentElement(SimTK::Xml::Element& parent);
 
-    /** Return the current value as type T; this works only if the underlying
-    concrete property stores type T otherwise throws an exception. **/
-    template <class T> const T& getValue() const;
-    /** Return writable access to the current value as type T; this works only
-    if the underlying concrete property is actually of type T. Otherwise it
-    throws an exception. **/
-    template <class T> T& updValue();
-    //--------------------------------------------------------------------------
 
     /** Set the property name. **/
-	void setName(const std::string& aName){ _name = aName; }
+	void setName(const std::string& name){ _name = name; }
 	/** Comment to be associated with property, shown for default objects only
 	for efficiency. */
 	void setComment(const std::string& aComment){ _comment = aComment; }
-	/** Flag indicating whether or not this property uses some
-	default property for initializing its value. */
+	/** Flag indicating whether or the value of this property was simply
+    taken from a default object and thus should not be written out when
+    serializing. **/
 	void setUseDefault(bool aTrueFalse) { _useDefault = aTrueFalse; }
-    /** TODO: what is this? */
-	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
-    /** For an array property, require that the number of elements n in the
-    array be aMin <= n <= aMax. */
-	void setAllowableArraySize(int aMin, int aMax) 
-    {   assert(0 <= aMin && aMin <= aMax); 
-       _minArraySize = aMin; _maxArraySize = aMax; }
-    /** For an array property, require that the number of elements n in the
-    array be exactly n=aNum. **/
-	void setAllowableArraySize(int aNum) 
-    {   assert(aNum >= 1); _minArraySize = _maxArraySize = aNum; }
 
 	const std::string& getName() const { return _name; }
-	const std::string& getTypeAsString() const { return _typeAsString; }
 	const std::string& getComment() const { return _comment; }
 	bool getUseDefault() const { return _useDefault; }
-	bool getMatchName() const { return _matchName; }
 
-    int getMinArraySize() { return _minArraySize; }
-	int getMaxArraySize() { return _maxArraySize; }
+    int getMinListSize() const { return _minListSize; }
+	int getMaxListSize() const { return _maxListSize; }
 
-    /** Provides type-specific methods used to implement generic functionality
-    at the AbstractProperty level. This class must be specialized for any 
-    type T that is used in a Property<T> instantiation, unless T is an 
-    Object or something derived from Object. **/
-    template <class T> struct TypeHelper {
-        static const char* name() {return "Obj";}
-        static PropertyType getPropertyType() {return Obj;}
-        static bool isEqual(const T& a, const T& b) {return a==b;}
-        static void setSubPropertiesUseDefault(bool shouldUseDefault, T& obj)
-        {   obj.setAllPropertiesUseDefault(shouldUseDefault); }
-        static std::string formatForDisplay(const T&) {return "(Object)";}
-    };
+    /** This is an "optional" property if its value list can contain at most
+    one value. This is the kind of property created by the
+    Object::addOptionalProperty\<T> method, for any type T. **/
+    bool isOptionalProperty() const
+    {   return getMinListSize()==0 && getMaxListSize()==1; }
+
+    /** This is a "list" property if its value list can contain more than
+    one value. This is the kind of property created by the
+    Object::addListProperty\<T> method, for any type T. **/
+    bool isListProperty() const
+    {   return getMaxListSize()>1; }
+
+    /** This is a "one-value" property if its value list must always contain
+    exactly one value. This is the kind of property created by the
+    Object::addProperty\<T> method, for any type T. **/
+    bool isOneValueProperty() const
+    {   return getMinListSize()==1 && getMaxListSize()==1; }
+
+    /** This is a "one-object" property if it is a "one-value" property and
+    it contains an Object-derived value. This is the kind of property created
+    by the Object::addProperty\<T> method when T is a type derived from
+    %OpenSim's Object serializable base class. One-object properties have
+    a special, compact representation in XML. **/
+    bool isOneObjectProperty() const 
+    {   return isOneValueProperty() && isObjectProperty(); }
+
 
 protected:
-    /** This is for use by the concrete property types that derive from
-    AbstractProperty to provide a string we can use to represent the type
-    without us having to know what it is in the base class. */
-    void setTypeAsString(const char* typeName) 
-    {   _typeAsString = std::string(typeName); }
+	AbstractProperty();
+	AbstractProperty(const std::string& name, 
+                     const std::string& comment);
 
+    // This is the remainder of the interface that a concrete Property class
+    // must implement, hidden from AbstractProperty users.
+    //--------------------------------------------------------------------------
+    /** The base class equals() method will have already done a lot of checking
+    prior to calling this method, including verifying that both values are 
+    non-default and that the value lists are the same size; the concrete 
+    property need only compare the values.**/
+	virtual bool isEqualTo(const AbstractProperty& other) const = 0;
+
+
+
+    /** Read in a new value for this property from the XML element 
+    \a propertyElement. The element is expected to have the form
+    @code
+        <propertyName> value(s) </propertyName>
+    @endcode
+    where the values may be simple (like int or double) or may be objects
+    contained in child elements for which the object type name serves as
+    the element tag. Note that although the XML file may contain an abbreviated
+    representation for one-object properties, it will have been canonicalized
+    into the above form for the purpose of reading, so concrete properties may
+    assume the above form always.
+    
+    The format for the property value (and any of its contained objects) is 
+    assumed to be the one that was in use when the given ".osim" file version
+    number was current; if necessary the in-memory version will be updated to 
+    the now-current format. 
+    
+    If this is an object property, the contained objects will be asked 
+    recursively to read themselves in from the same document. However, any 
+    object that has the "file" attribute will read in its contents from that 
+    file rather than from the supplied XML document, and the version number
+    will be taken from that file rather than the argument supplied here. **/
+    virtual void readFromXMLElement
+       (SimTK::Xml::Element& propertyElement,
+        int                  versionNumber) = 0;
+
+    /** Output a serialized representation of this property by writing its
+    value to the given XML property element. If the "use default value" 
+    attribute is set for this property (meaning we don't have a meaningful 
+    value for it) then you should not call this method unless you are trying 
+    to serialize the defaults. Note that this method unconditionally 
+    serializes the property; it does not check to see whether it should. 
+    
+    This method is not called for the special case of a one-object property,
+    in which case only the object is written to the XML file (without the
+    property element). In all other cases (simple property or property 
+    containing an array of objects), the format is
+    @code
+        <propertyName> value(s) </propertyName>
+    @endcode
+    and that is the only format produced here since the empty-valued property
+    element is supplied (with the property name as its tag). **/
+    virtual void writeToXMLElement
+       (SimTK::Xml::Element& propertyElement) const = 0;
+
+
+    /** How may values are currently stored in this property? If this is an
+    object property you can use this with getValueAsObject() to iterate over
+    the contained objects. **/
+    virtual int getNumValues() const = 0;
+
+    /** If the concrete property allows it, clear the value list. **/
+    virtual void clearValues() = 0;
+
+
+    /** Return true if the given string is the XML tag name for one of the
+    Object-derived types that is allowed by this property. If so, we expect that
+    an element with that tag could be deserialized into a value element of this
+    property. This always returns false for a simple property. **/
+    virtual bool isAcceptableObjectTag
+       (const std::string& objectTypeTag) const = 0;
+
+    /** For an object property, the values can be obtained as references to
+    the abstract base class Object from which all the objects derive. If the
+    property can hold a list of values you must provide an index to select
+    the value, otherwise it is optional but if supplied must be 0. This will
+    throw an exception if this is not an object property, that is, if it is
+    a simple property, because its values can't be represented as an Object in
+    that case.
+
+    @param[in] index    If supplied must be 0 <= index < getNumValues().
+    @returns const reference to the value as an Object 
+    @see updValueAsObject(), getValue\<T>() **/
+    virtual const Object& getValueAsObject(int index=-1) const = 0;
+    /** Get writable access to an existing object value. Note that you can't 
+    use this to install a different concrete object; see setValueAsObject()
+    if you want to do that. 
+    @param[in] index    If supplied must be 0 <= index < getNumValues().
+    @returns writable reference to the value as an Object
+    @see getValueAsObject(), updValue\<T>() **/
+    virtual Object& updValueAsObject(int index=-1) = 0;
+    /** Set the indicated value element to a new copy of the supplied object.
+    If you already have a heap-allocated object you're willing to give up and
+    want to avoid the extra copy, use adoptValueObject(). **/
+    virtual void setValueAsObject(const Object& obj, int index=-1) = 0;
+    //--------------------------------------------------------------------------
 
 private:
 	void setNull();
 
 	std::string _name;
-	std::string _typeAsString;
 	std::string _comment;
 	bool        _useDefault;
-	bool        _matchName;
-	int         _minArraySize; // minimum # elements for property of array type
-	int         _maxArraySize; // maximum # elements for property of array type
+
+	int         _minListSize; // minimum # values for property
+	int         _maxListSize; // maximum # value for property
 };
 
-
-template<> struct AbstractProperty::TypeHelper<bool> {
-    static const char* name() {return "bool";}
-    static PropertyType getPropertyType() {return Bool;}
-    static bool isEqual(bool a, bool b) {return a==b;}
-    static void setSubPropertiesUseDefault(bool, bool&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(bool);
-};
-template<> struct AbstractProperty::TypeHelper<int> {
-    static const char* name() {return "int";}
-    static PropertyType getPropertyType() {return Int;}
-    static bool isEqual(int a, int b) {return a==b;}
-    static void setSubPropertiesUseDefault(bool, int&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(int);
-};
-template<> struct AbstractProperty::TypeHelper<std::string> {
-    static const char* name() {return "string";}
-    static PropertyType getPropertyType() {return Str;}
-    OSIMCOMMON_API static bool isEqual(const std::string& a, 
-                                       const std::string& b);
-    static void setSubPropertiesUseDefault(bool, std::string&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const std::string&);
-};
-
-template<> struct AbstractProperty::TypeHelper< Array<bool> > {
-    static const char* name() {return "Array<bool>";}
-    static PropertyType getPropertyType() {return BoolArray;}
-    OSIMCOMMON_API static bool isEqual(const Array<bool>& a, 
-                                       const Array<bool>& b);
-    static void setSubPropertiesUseDefault(bool, Array<bool>&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const Array<bool>&);
-};
-template<> struct AbstractProperty::TypeHelper< Array<int> > {
-    static const char* name() {return "Array<int>";} 
-    static PropertyType getPropertyType() {return IntArray;}
-    OSIMCOMMON_API static bool isEqual(const Array<int>& a, 
-                                       const Array<int>& b);
-    static void setSubPropertiesUseDefault(bool, Array<int>&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const Array<int>&);
-};
-template<> struct AbstractProperty::TypeHelper< Array<std::string> > {
-    static const char* name() {return "Array<string>";} 
-    static PropertyType getPropertyType() {return StrArray;}
-    OSIMCOMMON_API static bool isEqual(const Array<std::string>& a, 
-                                       const Array<std::string>& b);
-    static void setSubPropertiesUseDefault(bool, Array<std::string>&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const Array<std::string>&);
-};
-
-// Floating point values' isEqual() operator returns true if all the numbers
-// are equal to within a tolerance. We also say NaN==NaN, which is not standard
-// IEEE floating point behavior.
-template<> struct AbstractProperty::TypeHelper<double> {
-    static const char* name() {return "double";}
-    static PropertyType getPropertyType() {return Dbl;}
-    OSIMCOMMON_API static bool isEqual(double a, double b);
-    static void setSubPropertiesUseDefault(bool, double&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(double);
-};
-template<> struct AbstractProperty::TypeHelper<SimTK::Vec3>  {
-    static const char* name() {return "Vec3";}
-    static PropertyType getPropertyType() {return DblVec3;}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
-                                       const SimTK::Vec3& b);
-    static void setSubPropertiesUseDefault(bool, SimTK::Vec3&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Vec3&);
-};
-template<> struct AbstractProperty::TypeHelper<SimTK::Vector>  {
-    static const char* name() {return "Vector";}
-    static PropertyType getPropertyType() {return DblVec;}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
-                                       const SimTK::Vector& b);
-    static void setSubPropertiesUseDefault(bool, SimTK::Vector&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Vector&);
-};
-template<> struct AbstractProperty::TypeHelper<SimTK::Transform>  {
-    static const char* name() {return "Transform";}
-    static PropertyType getPropertyType() {return AbstractProperty::Transform;}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
-                                       const SimTK::Transform& b);
-    static void setSubPropertiesUseDefault(bool, SimTK::Transform&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const SimTK::Transform&);
-};
-
-template<> struct AbstractProperty::TypeHelper< Array<double> >  {
-    static const char* name() {return "Array<double>";}
-    static PropertyType getPropertyType() {return DblArray;}
-    OSIMCOMMON_API static bool isEqual(const Array<double>& a, 
-                                       const Array<double>& b);
-    static void setSubPropertiesUseDefault(bool, Array<double>&) {}
-    OSIMCOMMON_API static std::string formatForDisplay(const  Array<double>&);
-};
-
-
-// Partial specializations for Object* derivations and ArrayPtr<Object>. These
-// must be fully defined in this header file since we don't know type O yet.
-template <class O> struct AbstractProperty::TypeHelper<O*> {
-    static const char* name() {return "ObjPtr";} 
-    static PropertyType getPropertyType() {return ObjPtr;}
-    static bool isEqual(const O* a, const O* b) {return *a==*b;}
-    static void setSubPropertiesUseDefault(bool shouldUseDefault, O* obj)
-    {   obj->setAllPropertiesUseDefault(shouldUseDefault); }
-    static std::string formatForDisplay(const O*)
-    {   return "(ObjectPointer)"; }
-};
-template<class O> struct AbstractProperty::TypeHelper< ArrayPtrs<O> > {
-    static const char* name() {return "ObjArray";} 
-    static PropertyType getPropertyType() {return ObjArray;}
-    static bool isEqual(const ArrayPtrs<O>& a, const ArrayPtrs<O>& b) {
-        if (a.getSize() != b.getSize()) return false;
-        for (int i=0; i < a.getSize(); ++i)
-            if (!TypeHelper<O*>::isEqual(a.get(i),b.get(i)))
-                return false;
-        return true;
-    }
-    static void setSubPropertiesUseDefault(bool shouldUseDefault, 
-                                           ArrayPtrs<O>& objs) {
-       for (int i=0; i < objs.getSize(); ++i)
-           objs.get(i)->setAllPropertiesUseDefault(shouldUseDefault);
-    }
-    static std::string formatForDisplay(const ArrayPtrs<O>&)
-    {   return "(Array of objects)"; }  
-};
 
 }; //namespace
 //=============================================================================

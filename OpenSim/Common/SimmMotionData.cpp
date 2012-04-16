@@ -202,18 +202,6 @@ SimmMotionData::SimmMotionData(const SimmMotionData &aData) :
 	copyData(aData);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this SimmMotionData and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this SimmMotionData.
- */
-Object* SimmMotionData::copy() const
-{
-	SimmMotionData *data = new SimmMotionData(*this);
-	return(data);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -224,7 +212,6 @@ Object* SimmMotionData::copy() const
  */
 void SimmMotionData::setNull()
 {
-	setType("SimmMotionData");
 }
 
 //_____________________________________________________________________________

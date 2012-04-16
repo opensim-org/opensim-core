@@ -124,18 +124,7 @@ ConstantDistanceConstraint::ConstantDistanceConstraint(OpenSim::Body& body1, Sim
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* ConstantDistanceConstraint::copy() const
-{
-	ConstantDistanceConstraint *constraint = new ConstantDistanceConstraint(*this);
-	return(constraint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one ConstantDistanceConstraint to another.
@@ -159,7 +148,6 @@ void ConstantDistanceConstraint::copyData(const ConstantDistanceConstraint &aCon
  */
 void ConstantDistanceConstraint::setNull()
 {
-	setType("ConstantDistanceConstraint");
 }
 
 //_____________________________________________________________________________

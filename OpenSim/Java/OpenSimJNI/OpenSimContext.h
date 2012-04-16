@@ -70,6 +70,7 @@ class Measurement;
 
 
 class /*OSIMSIMULATION_API*/ OpenSimContext : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimContext, Object);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -80,6 +81,7 @@ private:
 
 public:
     OpenSimContext(SimTK::State* s, Model* model);
+
     void setState( SimTK::State* s) { _configState = s; }
     void setModel( Model* m) { _model = m; }
 
@@ -254,16 +256,43 @@ public:
 // This class allows access to property values using template-free
 // methods. Note that this will work regardless of whether the given
 // AbstractProperty is the deprecated kind or the new one.
+//
+// An AbstractProperty represents a (name, list-of-values) pair, possibly
+// with restrictions on the minimum and maximum list length. Basic container
+// methods size(), resize(), clear(), and empty() are available; use resize()
+// before assigning a value to an indexed element.
+//
+// For properties that contain objects, you can obtain the values directly
+// from the base class via non-templatized methods.
 class PropertyHelper {
-    static bool getValueBool(const AbstractProperty& p) 
-    {   return p.getValue<bool>(); }
-    static bool& updValueBool(AbstractProperty& p) 
-    {   return p.updValue<bool>(); }
-    static int getValueInt(const AbstractProperty& p) 
-    {   return p.getValue<int>(); }
-    static int& updValueInt(AbstractProperty& p) 
-    {   return p.updValue<int>(); }
-    // etc.
+    static bool getValueBool(const AbstractProperty& p, int index=-1) 
+    {   return p.getValue<bool>(index); }
+    static void setValueBool(bool v, AbstractProperty& p, int index=-1) 
+    {   p.updValue<bool>(index) = v; }
+    static void appendValueBool(bool v, AbstractProperty& p) 
+    {   p.appendValue<bool>(v); }
+
+    static int getValueInt(const AbstractProperty& p, int index=-1) 
+    {   return p.getValue<int>(index); }
+    static void setValueInt(int v, AbstractProperty& p, int index=-1) 
+    {   p.updValue<int>(index) = v; }
+    static void appendValueInt(int v, AbstractProperty& p) 
+    {   p.appendValue<int>(v); }
+
+    static double getValueDouble(const AbstractProperty& p, int index=-1) 
+    {   return p.getValue<double>(index); }
+    static void setValueDouble(double v, AbstractProperty& p, int index=-1) 
+    {   p.updValue<double>(index) = v; }
+    static void appendValueDouble(double v, AbstractProperty& p) 
+    {   p.appendValue<double>(v); }
+
+    static std::string getValueString(const AbstractProperty& p, int index=-1) 
+    {   return p.getValue<std::string>(index); }
+    static void setValueString(const std::string& v, 
+                               AbstractProperty& p, int index=-1) 
+    {   p.updValue<std::string>(index) = v; }
+    static void appendValueString(const std::string& v, AbstractProperty& p) 
+    {   p.appendValue<std::string>(v); }
 };
 
 } // namespace OpenSim

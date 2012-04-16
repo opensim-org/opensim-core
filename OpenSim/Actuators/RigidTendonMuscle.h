@@ -59,8 +59,9 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMACTUATORS_API RigidTendonMuscle : public Muscle  
-{
+class OSIMACTUATORS_API RigidTendonMuscle : public Muscle {
+OpenSim_DECLARE_CONCRETE_OBJECT(RigidTendonMuscle, Muscle);
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -72,13 +73,10 @@ public:
 	/** Convenicencec Contructor */
 	RigidTendonMuscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	RigidTendonMuscle(const RigidTendonMuscle &aRigidTendonMuscle);
-	virtual Object* copy() const;
 
 	void setName(const std::string &aName);
 
 	RigidTendonMuscle& operator=(const RigidTendonMuscle &aRigidTendonMuscle);
-
-	OPENSIM_DECLARE_DERIVED(RigidTendonMuscle, Muscle);
 
 	/** activation level for this muscle */
 	void setActivation(SimTK::State& s, double activation) const {setExcitation(s, activation); }

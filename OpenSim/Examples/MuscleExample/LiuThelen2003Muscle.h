@@ -56,8 +56,8 @@ namespace OpenSim {
  * will need to implement more functions than are declared in this header
  * file. See Muscle.h for a complete list.
  */
-class LiuThelen2003Muscle : public Thelen2003Muscle_Deprecated  
-{
+class LiuThelen2003Muscle : public Thelen2003Muscle_Deprecated {
+OpenSim_DECLARE_CONCRETE_OBJECT(LiuThelen2003Muscle, Thelen2003Muscle_Deprecated);
 
 //=============================================================================
 // DATA
@@ -82,7 +82,6 @@ public:
 		double aTendonSlackLength, double aPennationAngle, double aFatigueFactor, double aRecoveryFactor);
 	LiuThelen2003Muscle(const LiuThelen2003Muscle &aMuscle);
 	virtual ~LiuThelen2003Muscle();
-	virtual Object* copy() const;
 
 	// Defaults
 	virtual double getDefaultActiveMotorUnits() const;
@@ -123,11 +122,6 @@ public:
 	virtual double computeActuation(const SimTK::State& s) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 	virtual void equilibrate(SimTK::State& state) const;
-
-
-	// This macro allows the OpenSim GUI to check Actuator
-	// objects to see if they are instances of this muscle class.
-	OPENSIM_DECLARE_DERIVED(LiuThelen2003Muscle, Actuator);
 	
 protected:
 	virtual void createSystem(SimTK::MultibodySystem& system) const;

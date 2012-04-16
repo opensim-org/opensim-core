@@ -93,18 +93,7 @@ PinJoint::PinJoint(const PinJoint &aJoint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* PinJoint::copy() const
-{
-	PinJoint *joint = new PinJoint(*this);
-	return(joint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one PinJoint to another.
@@ -122,7 +111,6 @@ void PinJoint::copyData(const PinJoint &aJoint)
  */
 void PinJoint::setNull()
 {
-	setType("PinJoint");
 	constructCoordinates();
 	_coordinateSet[0].setMotionType(Coordinate::Rotational);
 }

@@ -119,17 +119,7 @@ JointLoadOptimization::JointLoadOptimization(const JointLoadOptimization &aJoint
 	// COPY TYPE AND NAME
 	*this = aJointLoadOptimization;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* JointLoadOptimization::copy() const
-{
-	JointLoadOptimization *object = new JointLoadOptimization(*this);
-	return(object);
 
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -194,7 +184,6 @@ setNull()
 	
 
 	//Array<double> zeros = {0,0,0};
-	setType("JointLoadOptimization");
 	setName("JointLoadOptimization");
 }
 //_____________________________________________________________________________
@@ -263,14 +252,9 @@ setupProperties()
 	_jointTaskSetProp.setComment(
 		"A set of joint reaction references used to define which joint loads to minimize and"
 		"their relative weights in the objective function.");
-	//_jointTaskSet.setType("JointTaskSet");
+
 	_jointTaskSetProp.setName("JointTaskSet");
 	_propertySet.append(&_jointTaskSetProp);
-
-
-
-
-
 
 }
 
@@ -755,8 +739,7 @@ begin(SimTK::State& s )
 
 	// Make a working copy of the model
 	delete _modelWorkingCopy;
-	_modelWorkingCopy =  dynamic_cast<Model*>(_model->copy());
-	//_modelWorkingCopy = _model->clone();
+	_modelWorkingCopy = _model->clone();
 	_modelWorkingCopy->initSystem();
 
 	// Replace model force set with only generalized forces
@@ -771,7 +754,7 @@ begin(SimTK::State& s )
 		} else {
 			ForceSet& as = _modelWorkingCopy->updForceSet();
 			// Keep a copy of forces that are not muscles to restore them back.
-			ForceSet* saveForces = (ForceSet*)as.copy();
+			ForceSet* saveForces = as.clone();
 			// Generate an force set consisting of a coordinate actuator for every unconstrained degree of freedom
 			_forceSet = CoordinateActuator::CreateForceSetOfCoordinateActuatorsForModel(sWorkingCopyTemp,*_modelWorkingCopy,1,false);
 			_ownsForceSet = false;
@@ -782,7 +765,7 @@ begin(SimTK::State& s )
 			for(int i=0; i<saveForces->getSize(); i++){
 				const Force& f=saveForces->get(i);
 				if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
-					as.append((Force*)saveForces->get(i).copy());
+					as.append(saveForces->get(i).clone());
 			}
 		}
 

@@ -119,8 +119,6 @@ ExternalLoads::ExternalLoads(const ExternalLoads &otherExternalLoads) :
  */
 void ExternalLoads::setNull()
 {
-	// TYPE
-	setType("ExternalLoads");
 	// NAME
 	//setName("ExternalLoads");
 
@@ -129,18 +127,6 @@ void ExternalLoads::setNull()
 	_storages.clear();
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this ExternalLoads and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ExternalLoads.
- */
-Object* ExternalLoads::copy() const
-{
-	ExternalLoads *actSet = new ExternalLoads(*this);
-	return(actSet);
-}
 
 //_____________________________________________________________________________
 /**
@@ -386,7 +372,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	// assign a name to the new data source
 	newDataSource->setName(exForce.getPropertyValue<string>("data_source_name") + "_transformedP");
 
-	ExternalForce *exF_transformedPoint = (ExternalForce *)exForce.copy();
+	ExternalForce *exF_transformedPoint = exForce.clone();
 	exF_transformedPoint->setName(exForce.getName()+"_transformedP");
 	exF_transformedPoint->setPointExpressedInBodyName(exForce.getAppliedToBodyName());
 	exF_transformedPoint->setDataSource(newDataSource);

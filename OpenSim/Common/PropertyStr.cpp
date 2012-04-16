@@ -84,7 +84,7 @@ PropertyStr::PropertyStr(const PropertyStr &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyStr* PropertyStr::copy() const
+PropertyStr* PropertyStr::clone() const
 {
 	PropertyStr *property = new PropertyStr(*this);
 	return(property);

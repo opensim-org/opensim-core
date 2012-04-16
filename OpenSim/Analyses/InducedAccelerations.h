@@ -70,8 +70,9 @@ class CoordinateSet;
 class ConstraintSet;
 class ExternalForce;
 
-class OSIMANALYSES_API InducedAccelerations : public Analysis 
-{
+class OSIMANALYSES_API InducedAccelerations : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(InducedAccelerations, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -163,8 +164,6 @@ public:
 	//-------------------------------------------------------------------------
 	virtual ~InducedAccelerations();
 
-	/** Clone of object */
-	virtual Object* copy() const;
 private:
 	/** Zero data and set pointers to Null */
 	void setNull();

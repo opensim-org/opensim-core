@@ -74,7 +74,7 @@ public:
 	PropertyTransform(const std::string &aName,
 		const Array<double> &aArray);
 	PropertyTransform(const PropertyTransform &aProperty);
-	/*virtual*/ PropertyTransform* copy() const;
+	/*virtual*/ PropertyTransform* clone() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

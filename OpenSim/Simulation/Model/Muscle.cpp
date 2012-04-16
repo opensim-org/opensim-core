@@ -116,7 +116,6 @@ void Muscle::copyData(const Muscle &aMuscle)
  */
 void Muscle::setNull()
 {
-	setType("Muscle");
 }
 
 //_____________________________________________________________________________
@@ -611,21 +610,24 @@ double Muscle::getStress(const SimTK::State& s) const
 	normalized lengths, pennation angle, etc... */
 void Muscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const
 {
-	throw Exception("ERROR- "+getType()+"::calcMuscleLengthInfo() NOT IMPLEMENTED.");
+	throw Exception("ERROR- "+getConcreteClassName()
+        + "::calcMuscleLengthInfo() NOT IMPLEMENTED.");
 }
 
 /* calculate muscle's velocity related values such fiber and tendon velocities,
 	normalized velocities, pennation angular velocity, etc... */
 void Muscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
 {
-	throw Exception("ERROR- "+getType()+"::calcFiberVelocityInfo() NOT IMPLEMENTED.");
+	throw Exception("ERROR- "+getConcreteClassName()
+        + "::calcFiberVelocityInfo() NOT IMPLEMENTED.");
 }
 
 /* calculate muscle's active and passive force-length, force-velocity, 
 	tendon force, relationships and their related values */
 void Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
 {
-	throw Exception("ERROR- "+getType()+"::calcMuscleDynamicsInfo() NOT IMPLEMENTED.");
+	throw Exception("ERROR- "+getConcreteClassName()
+        + "::calcMuscleDynamicsInfo() NOT IMPLEMENTED.");
 }
 
 //=============================================================================
@@ -644,7 +646,9 @@ void Muscle::computeForce(const SimTK::State& s,
 	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.
 	if (getForce(s) < -SimTK::SqrtEps) {
-		string msg = getType()+"::computeForce, muscle force < 0 for muscle '" + getName() +"' ";
+		string msg = getConcreteClassName()
+            + "::computeForce, muscle force < 0 for muscle '" 
+            + getName() +"' ";
 		cout << msg << " at time = " << s.getTime() << endl;
 		//throw Exception(msg);
     }

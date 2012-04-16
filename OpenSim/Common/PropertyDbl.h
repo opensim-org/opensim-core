@@ -70,7 +70,7 @@ public:
 	PropertyDbl();
 	PropertyDbl(const std::string &aName,double aValue);
 	PropertyDbl(const PropertyDbl &aProperty);
-	virtual PropertyDbl* copy() const;
+	virtual PropertyDbl* clone() const;
 	virtual ~PropertyDbl() { };
 
 	//--------------------------------------------------------------------------

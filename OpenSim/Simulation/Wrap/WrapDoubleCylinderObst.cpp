@@ -83,18 +83,6 @@ _activeState(0)
 	copyData(aWrapDoubleCylinderObst);
 }
 
-//_____________________________________________________________________________
-/**
-* Copy this WrapDoubleCylinderObst and return a pointer to the copy.
-* The copy constructor for this class is used.
-*
-* @return Pointer to a copy of this WrapDoubleCylinderObst.
-*/
-Object* WrapDoubleCylinderObst::copy() const
-{
-	WrapDoubleCylinderObst *aWrapDoubleCylinderObst = new WrapDoubleCylinderObst(*this);
-	return(aWrapDoubleCylinderObst);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -105,7 +93,6 @@ Object* WrapDoubleCylinderObst::copy() const
 */
 void WrapDoubleCylinderObst::setNull()
 {
-	setType("WrapDoubleCylinderObst");
 	_wrapUcylDirection = righthand;
 	_wrapVcylDirection = righthand;
 }
@@ -134,7 +121,7 @@ void WrapDoubleCylinderObst::setupProperties()
 	const SimTK::Vec3 defaultTranslations(0.0);
 	_translationVcylProp.setName("translationVcyl");
 	_translationVcylProp.setValue(defaultTranslations);
-	//_translationProp.setAllowableArraySize(3);
+	//_translationProp.setAllowableListSize(3);
 	_propertySet.append(&_translationVcylProp);
 
 	_lengthProp.setName("length");

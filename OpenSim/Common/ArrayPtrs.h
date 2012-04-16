@@ -54,7 +54,7 @@
  *
  * The capacity of the class grows as needed.  To use this template for a
  * class of type T, class T should implement the following methods:
- * default constructor, copy constructor, T* copy(),
+ * default constructor, copy constructor, T* clone(),
  * assignment operator (=), equality operator (==), less than
  * operator (<), and the output operator (<<).
  *
@@ -209,7 +209,7 @@ ArrayPtrs<T>& operator=(const ArrayPtrs<T> &aArray)
 	if(_array!=NULL) delete[] _array;
 	_array = new T*[_capacity];
 	for(i=0;i<_size;i++) {
-		if(aArray._array[i]!=NULL)  _array[i] = (T*)aArray._array[i]->copy();
+		if(aArray._array[i]!=NULL)  _array[i] = aArray._array[i]->clone();
 	}
 
 	// TAKE OWNERSHIP OF MEMORY
@@ -542,6 +542,9 @@ int getSize() const
 {
 	return(_size);
 }
+
+/** Alternate name for getSize(). **/
+int size() const {return getSize();}
 
 //-----------------------------------------------------------------------------
 // INDEX

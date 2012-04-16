@@ -84,19 +84,6 @@ WrapSphere::WrapSphere(const WrapSphere& aWrapSphere) :
 	copyData(aWrapSphere);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this WrapSphere and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this WrapSphere.
- */
-Object* WrapSphere::copy() const
-{
-	WrapSphere *wrapSPhere = new WrapSphere(*this);
-	return(wrapSPhere);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -106,7 +93,6 @@ Object* WrapSphere::copy() const
  */
 void WrapSphere::setNull()
 {
-	setType("WrapSphere");
 }
 
 //_____________________________________________________________________________

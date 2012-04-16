@@ -133,18 +133,7 @@ WeldConstraint::WeldConstraint(const WeldConstraint &aConstraint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* WeldConstraint::copy() const
-{
-	WeldConstraint *constraint = new WeldConstraint(*this);
-	return(constraint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one WeldConstraint to another.
@@ -168,7 +157,6 @@ void WeldConstraint::copyData(const WeldConstraint &aConstraint)
  */
 void WeldConstraint::setNull()
 {
-	setType("WeldConstraint");
 }
 
 //_____________________________________________________________________________

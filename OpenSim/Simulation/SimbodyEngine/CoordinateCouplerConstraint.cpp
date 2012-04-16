@@ -149,18 +149,7 @@ CoordinateCouplerConstraint::CoordinateCouplerConstraint(const CoordinateCoupler
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* CoordinateCouplerConstraint::copy() const
-{
-	CoordinateCouplerConstraint *constraint = new CoordinateCouplerConstraint(*this);
-	return(constraint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one CoordinateCouplerConstraint to another.
@@ -182,7 +171,6 @@ void CoordinateCouplerConstraint::copyData(const CoordinateCouplerConstraint &aC
  */
 void CoordinateCouplerConstraint::setNull()
 {
-	setType("CoordinateCouplerConstraint");
 }
 
 //_____________________________________________________________________________

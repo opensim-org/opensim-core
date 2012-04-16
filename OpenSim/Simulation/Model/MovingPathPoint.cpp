@@ -95,19 +95,6 @@ MovingPathPoint::MovingPathPoint(const MovingPathPoint &aPoint) :
 	copyData(aPoint);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle via point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this MovingPathPoint.
- */
-Object* MovingPathPoint::copy() const
-{
-	MovingPathPoint *pt = new MovingPathPoint(*this);
-	return(pt);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -195,8 +182,6 @@ void MovingPathPoint::init(const PathPoint& aPoint)
  */
 void MovingPathPoint::setNull()
 {
-	setType("MovingPathPoint");
-
 	_xCoordinate = NULL;
 	_yCoordinate = NULL;
 	_zCoordinate = NULL;
@@ -439,7 +424,7 @@ void MovingPathPoint::scale(const SimTK::State& s, const SimTK::Vec3& aScaleFact
 		} else {
 			// Make a copy of the original function and delete the original
 			// (so its node will be removed from the XML document).
-			mf = new MultiplierFunction((Function*)_xLocation->copy(), aScaleFactors[0]);
+			mf = new MultiplierFunction(_xLocation->clone(), aScaleFactors[0]);
 			delete _xLocation;
 			setXFunction(s, *mf);
 		}
@@ -455,7 +440,7 @@ void MovingPathPoint::scale(const SimTK::State& s, const SimTK::Vec3& aScaleFact
 		} else {
 			// Make a copy of the original function and delete the original
 			// (so its node will be removed from the XML document).
-			mf = new MultiplierFunction((Function*)_yLocation->copy(), aScaleFactors[1]);
+			mf = new MultiplierFunction(_yLocation->clone(), aScaleFactors[1]);
 			delete _yLocation;
 			setYFunction(s, *mf);
 		}
@@ -469,7 +454,7 @@ void MovingPathPoint::scale(const SimTK::State& s, const SimTK::Vec3& aScaleFact
 		if (mf) {
 			mf->setScale(mf->getScale() * aScaleFactors[2]);
 		} else {
-			mf = new MultiplierFunction((Function*)_zLocation->copy(), aScaleFactors[2]);
+			mf = new MultiplierFunction(_zLocation->clone(), aScaleFactors[2]);
 			delete _zLocation;
 			setZFunction(s, *mf);
 		}

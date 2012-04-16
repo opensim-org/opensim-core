@@ -47,14 +47,15 @@ class Model;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API Solver: public Object
-{
+class OSIMSIMULATION_API Solver: public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Solver, Object);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
-protected:
-	// The model handed to the solver to operate on
-	const Model &_model;
+private:
+	// The model handed to the solver to operate on; just a reference.
+	const Model* _modelp;
 
 //=============================================================================
 // METHODS
@@ -63,8 +64,12 @@ protected:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~Solver() {};
-	Solver(const Model &model) : _model(model) {} ;
+	virtual ~Solver() {}
+	explicit Solver(const Model &model) : _modelp(&model) {}
+
+    // default copy constructor and copy assignment
+
+    const Model& getModel() const {return *_modelp;}
 
 private:
 

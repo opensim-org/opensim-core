@@ -67,6 +67,8 @@ public:
 // Excluding this from Doxygen until it has better documentation! -Sam Hamner
     /// @cond
 class OSIMCOMMON_API XYFunctionInterface : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(XYFunctionInterface, Object);
+
 public:
 	enum FunctionType
 	{
@@ -98,9 +100,10 @@ private:
 	double _scaleFactor;  // = 1.0 unless function is a MultiplierFunction
 
 public:
-   static bool isXYFunction(Function* f);
+    static bool isXYFunction(Function* f);
 	XYFunctionInterface(Function* f);
-	int getNumberOfPoints() const;
+
+    int getNumberOfPoints() const;
 	const double* getXValues() const;
 	const double* getYValues() const;
 	double getX(int aIndex) const;

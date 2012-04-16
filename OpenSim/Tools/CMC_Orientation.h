@@ -51,8 +51,8 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMC_Orientation : public CMC_Task
-{
+class OSIMTOOLS_API CMC_Orientation : public CMC_Task {
+OpenSim_DECLARE_ABSTRACT_OBJECT(CMC_Orientation, CMC_Task);
 
 //=============================================================================
 // DATA

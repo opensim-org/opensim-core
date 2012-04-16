@@ -50,8 +50,8 @@ class CoordinateSet;
  * @author Frank C. Anderson, Peter Loan, Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API Joint : public ModelComponent  
-{
+class OSIMSIMULATION_API Joint : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Joint, ModelComponent);
 
 //=============================================================================
 // DATA
@@ -115,7 +115,6 @@ public:
 	Joint& operator=(const Joint &aJoint);
 #endif
 	void copyData(const Joint &aJoint);
-	virtual Object* copy() const = 0;
 
 	// GET & SET
 	// Relating to the joint's body
@@ -207,8 +206,6 @@ public:
 	* @param aScaleSet Set of XYZ scale factors for the bodies.
 	*/
 	virtual void scale(const ScaleSet& aScaleSet);
-
-	OPENSIM_DECLARE_DERIVED(Joint, Object);
 
 	void updateName(const std::string &aName);
 

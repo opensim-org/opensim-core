@@ -70,7 +70,7 @@ public:
 	PropertyBool();
 	PropertyBool(const std::string &aName,bool aValue);
 	PropertyBool(const PropertyBool &aProperty);
-	/*virtual*/ PropertyBool* copy() const;
+	/*virtual*/ PropertyBool* clone() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

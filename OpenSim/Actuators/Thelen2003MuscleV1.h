@@ -46,8 +46,10 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Thelen2003MuscleV1 : public ActivationFiberLengthMuscle_Deprecated  
-{
+class OSIMACTUATORS_API Thelen2003MuscleV1 
+:   public ActivationFiberLengthMuscle_Deprecated {
+OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003MuscleV1, 
+                                ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
 // DATA
@@ -192,7 +194,6 @@ public:
 	Thelen2003MuscleV1(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	Thelen2003MuscleV1(const Thelen2003MuscleV1 &aMuscle);
 	virtual ~Thelen2003MuscleV1();
-	virtual Object* copy() const;
 
 	//MM accessor functions for all of the internal variables necessary to create
 	//standard dimensionless muscle fiber plots
@@ -221,14 +222,10 @@ public:
     void useDefaultThelen();
 
 
-#ifndef SWIG
+    #ifndef SWIG
 	Thelen2003MuscleV1& operator=(const Thelen2003MuscleV1 &aMuscle);
-#endif
+    #endif
 	void copyData(const Thelen2003MuscleV1 &aMuscle);
-
-#ifndef SWIG
-
-#endif
 
 	//--------------------------------------------------------------------------
 	// GET
@@ -280,7 +277,6 @@ public:
 	double calcMusclePE(const SimTK::State& s, double aNormFiberLength, double aFiberRestLength ,double aMaxIsometricForce) const;
 	double calcMuscleW(const SimTK::State& s,  double aNormFiberLength, double aFiberRestLength, double aNormFiberVelocity, double aMaxFiberVelocity, double aMaxIsometricForce) const;
 	*/
-	OPENSIM_DECLARE_DERIVED(Thelen2003MuscleV1, ActivationFiberLengthMuscle_Deprecated);
 
 private:
 	void setNull();

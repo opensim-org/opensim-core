@@ -89,19 +89,6 @@ CoordinateActuator::CoordinateActuator(const CoordinateActuator &aGenForce) :
 	setNull();
 	copyData(aGenForce);
 }
-//_____________________________________________________________________________
-/**
- * Copy this actuator and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this actuator.
- */
-Object* CoordinateActuator::
-copy() const
-{
-	CoordinateActuator *force = new CoordinateActuator(*this);
-	return force;
-}
 
 
 //=============================================================================
@@ -113,7 +100,6 @@ copy() const
  */
 void CoordinateActuator::setNull()
 {
-	setType("CoordinateActuator");
 	setupProperties();
 }
 
@@ -123,8 +109,7 @@ void CoordinateActuator::setNull()
  */
 void CoordinateActuator::setupProperties()
 {
-	addProperty<string>("coordinate",
-		"",
+	addOptionalProperty<string>("coordinate",
 		"");
 	addProperty<double>("optimal_force",
 		"",
@@ -138,7 +123,7 @@ void CoordinateActuator::setupProperties()
 void CoordinateActuator::copyData(const CoordinateActuator &aGenForce)
 {
 	// MEMBER VARIABLES
-	setPropertyValue("coordinate", aGenForce.getPropertyValue<string>("coordinate"));
+	setPropertyValue("coordinate", aGenForce.getProperty<string>("coordinate"));
 	setCoordinate(aGenForce.getCoordinate());
 	setOptimalForce(aGenForce.getOptimalForce());
 }
@@ -360,7 +345,8 @@ bool CoordinateActuator::check() const
 	if(!isCoordinateValid()) {
 		printf("CoordinateActuator.check: ERROR- %s actuates ",
 			getName().c_str());
-		printf("an invalid generalized coordinate (%s).\n", getPropertyValue<string>("coordinate").c_str());
+		printf("an invalid generalized coordinate (%s).\n", 
+            getPropertyValue<string>("coordinate").c_str());
 		return(false);
 	}
 

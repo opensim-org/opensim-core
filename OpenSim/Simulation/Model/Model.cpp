@@ -62,6 +62,7 @@
 #include "Actuator.h"
 #include "MarkerSet.h"
 #include "ContactGeometrySet.h"
+#include "ComponentSet.h"
 
 #include <iostream>
 #include <string>
@@ -97,8 +98,8 @@ Model::Model() :
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
-	_componentSetProp(PropertyObj("UserComponents", ModelComponentSet<ModelComponent>())),
-    _componentSet((ModelComponentSet<ModelComponent>&)_componentSetProp.getValueObj()),
+	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
+    _componentSet((ComponentSet&)_componentSetProp.getValueObj()),
     _markerSetProp(PropertyObj("", MarkerSet())),
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
@@ -137,8 +138,8 @@ Model::Model(const string &aFileName) :
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
-	_componentSetProp(PropertyObj("UserComponents", ModelComponentSet<ModelComponent>())),
-    _componentSet((ModelComponentSet<ModelComponent>&)_componentSetProp.getValueObj()),
+	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
+    _componentSet((ComponentSet&)_componentSetProp.getValueObj()),
     _markerSetProp(PropertyObj("", MarkerSet())),
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
@@ -183,8 +184,8 @@ Model::Model(const Model &aModel) :
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
     _constraintSetProp(PropertyObj("", ConstraintSet())),
     _constraintSet((ConstraintSet&)_constraintSetProp.getValueObj()),
-	_componentSetProp(PropertyObj("UserComponents", ModelComponentSet<ModelComponent>())),
-    _componentSet((ModelComponentSet<ModelComponent>&)_componentSetProp.getValueObj()),
+	_componentSetProp(PropertyObj("MiscComponents", ComponentSet())),
+    _componentSet((ComponentSet&)_componentSetProp.getValueObj()),
     _markerSetProp(PropertyObj("", MarkerSet())),
     _markerSet((MarkerSet&)_markerSetProp.getValueObj()),
     _contactGeometrySetProp(PropertyObj("", ContactGeometrySet())),
@@ -296,7 +297,6 @@ void Model::copyData(const Model &aModel)
  */
 void Model::setNull()
 {
-	setType("Model");
     _useVisualizer = false;
     _displayHints.clear();
     _allControllersEnabled = true;
@@ -314,9 +314,6 @@ void Model::setNull()
 	_assemblySolver = NULL;
 
 	_validationLog="";
-
-	_componentSet.setType("ComponentSet");
-	_componentSet.setName("MiscComponents");
 
 	_modelComponents.setMemoryOwner(false);
 }
@@ -1060,8 +1057,10 @@ double Model::getStateVariable(const SimTK::State& state, const std::string &nam
 	}
 	else{
 		std::stringstream msg;
-		msg << "Model::getStateVariable: ERR- variable name '" << name << "' not found.\n " 
-			 << getName() << " of type " << getType() << " has " << getNumStateVariables() << " states.";
+		msg << "Model::getStateVariable: ERR- variable name '" 
+            << name << "' not found.\n " 
+			<< getName() << " of type " << getConcreteClassName() 
+            << " has " << getNumStateVariables() << " states.";
 		throw( Exception(msg.str(),__FILE__,__LINE__) );
 		return SimTK::NaN;
 	}
@@ -1408,7 +1407,7 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 	for (i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		// Eran: we make a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-		Marker* marker = (Marker*)aMarkerSet.get(i).copy();
+		Marker* marker = aMarkerSet.get(i).clone();
 		const string& bodyName = marker->getBodyName();
 		if (getBodySet().contains(bodyName))
 		{
@@ -1454,7 +1453,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			{
 				_markerSet.remove(&modelMarker);
 				// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
-				_markerSet.append((Marker*)updatingMarker.copy());
+				_markerSet.append(updatingMarker.clone());
 			}
 			else
 			{
@@ -1468,7 +1467,7 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 			 */
 			// Eran: we append a *copy* since both _markerSet and aMarkerSet own their elements (so they will delete them)
 			if (getBodySet().contains(updatingBodyName))
-				_markerSet.append((Marker*)updatingMarker.copy());
+				_markerSet.append(updatingMarker.clone());
 		}
 	}
 
@@ -1717,7 +1716,7 @@ void Model::formQStorage(const Storage& originalStorage, Storage& qStorage) {
 }
 void Model::disownAllComponents()
 {
-	_componentSet.setMemoryOwner(false);
+	updMiscModelComponentSet().setMemoryOwner(false);
 	updBodySet().setMemoryOwner(false);
 	updConstraintSet().setMemoryOwner(false);
 	updForceSet().setMemoryOwner(false);

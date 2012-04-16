@@ -67,7 +67,6 @@ ContactSphere::ContactSphere(const ContactSphere& geom) :
 
 void ContactSphere::setNull()
 {
-    setType("ContactSphere");
 }
 
 void ContactSphere::setupProperties()
@@ -76,11 +75,6 @@ void ContactSphere::setupProperties()
 	_propertySet.append(&_radiusProp);
 }
 
-Object* ContactSphere::copy() const
-{
-	ContactSphere* copy = new ContactSphere(*this);
-	return copy;
-}
 
 double ContactSphere::getRadius() const
 {

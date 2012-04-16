@@ -41,9 +41,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMTOOLS_API IKCoordinateTask : public IKTask
-{
-	OPENSIM_DECLARE_DERIVED(IKCoordinateTask, IKTask);
+class OSIMTOOLS_API IKCoordinateTask : public IKTask {
+OpenSim_DECLARE_CONCRETE_OBJECT(IKCoordinateTask, IKTask);
+
 public:
 	enum ValueType { DefaultValue, ManualValue, FromFile };
 
@@ -57,7 +57,6 @@ protected:
 public:
 	IKCoordinateTask();
 	IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask);
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	IKCoordinateTask& operator=(const IKCoordinateTask &aIKCoordinateTask);

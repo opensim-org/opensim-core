@@ -75,10 +75,10 @@ public:
 	PropertyObjPtr(const PropertyObjPtr<T> &aProperty)
 		: Property_Deprecated(aProperty)
 	{
-		_value = aProperty._value ? (T*)aProperty._value->copy() : 0;
+		_value = aProperty._value ? aProperty._value->clone() : 0;
 	}
 
-	PropertyObjPtr* copy() const OVERRIDE_11
+	PropertyObjPtr* clone() const OVERRIDE_11
 	{
 		return new PropertyObjPtr<T>(*this);
 	}
@@ -88,9 +88,15 @@ public:
 		delete _value; 
 	}
 
-    void setSubPropertiesUseDefault(bool shouldUseDefault) OVERRIDE_11
-    {   _value->setAllPropertiesUseDefault(shouldUseDefault); }
-
+    virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
+    virtual bool isAcceptableObjectTag
+        (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
+    virtual const Object& getValueAsObject(int index=-1) const OVERRIDE_11
+    {   assert(index <= 0); return *_value; }
+    virtual Object& updValueAsObject(int index=-1) OVERRIDE_11
+    {   assert(index <= 0); return *_value; }
+    virtual void setValueAsObject(const Object& obj, int index=-1) OVERRIDE_11
+    {   assert(index <= 0); setValue(obj.clone()); }
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -100,7 +106,7 @@ public:
 	{
 		Property_Deprecated::operator =(aProperty);
 		delete _value;
-		_value = aProperty._value ? (T*)aProperty._value->copy() : 0;
+		_value = aProperty._value ? aProperty._value->clone() : 0;
 		return *this;
 	}
 

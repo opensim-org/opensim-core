@@ -93,19 +93,6 @@ VectorFunctionForActuators(const VectorFunctionForActuators &aVectorFunction) :
 	// ASSIGN
 	setEqual(aVectorFunction);
 }
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* VectorFunctionForActuators::
-copy() const
-{
-	VectorFunctionForActuators *func =
-		new VectorFunctionForActuators(*this);
-	return(func);
-}
 
 
 //=============================================================================
@@ -118,7 +105,6 @@ copy() const
 void VectorFunctionForActuators::
 setNull()
 {
-	setType("VectorFunctionForActuators");
 	_ti = 0.0;
 	_tf = 0.0;
 	_CMCActuatorSystem    = NULL;

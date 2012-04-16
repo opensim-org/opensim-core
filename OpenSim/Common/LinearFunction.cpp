@@ -86,17 +86,6 @@ LinearFunction::LinearFunction(const LinearFunction &aLinearFunction) :
 	copyData(aLinearFunction);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* LinearFunction::copy() const
-{
-	LinearFunction *aLinearFunction = new LinearFunction(*this);
-	return(aLinearFunction);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -107,7 +96,6 @@ Object* LinearFunction::copy() const
  */
 void LinearFunction::setNull()
 {
-	setType("LinearFunction");
 }
 
 //_____________________________________________________________________________

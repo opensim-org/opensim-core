@@ -111,19 +111,6 @@ PistonActuator::PistonActuator(const PistonActuator &anActuator) :
 	setNull();
 	copyData(anActuator);
 }
-//_____________________________________________________________________________
-/**
- * Copy this actuator and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this actuator.
- */
-Object* PistonActuator::
-copy() const
-{
-	PistonActuator *force = new PistonActuator(*this);
-	return force;
-}
 
 
 //=============================================================================
@@ -136,7 +123,6 @@ copy() const
 void PistonActuator::
 setNull()
 {
-	setType("PistonActuator");
 	setupProperties();
 }
 

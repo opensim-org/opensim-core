@@ -58,8 +58,8 @@ class Storage;
  *
  * @author Peter Eastman, Matt DeMers
  */
-class OSIMSIMULATION_API PrescribedForce : public Force
-{
+class OSIMSIMULATION_API PrescribedForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedForce, Force);
 
 //=============================================================================
 // DATA
@@ -79,11 +79,10 @@ public:
 	 *
 	 * @param body     the body to apply the force to
 	 */
-	PrescribedForce(OpenSim::Body* body=0);
+	explicit PrescribedForce(OpenSim::Body* body=0);
 	PrescribedForce(const PrescribedForce& force);
-	PrescribedForce(SimTK::Xml::Element& aNode);
+	explicit PrescribedForce(SimTK::Xml::Element& aNode);
 	~PrescribedForce();
-	virtual Object* copy() const;
 
 	// Copy properties from XML into member variables
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
@@ -191,7 +190,6 @@ public:
 #ifndef SWIG
 	PrescribedForce& operator=(const PrescribedForce &aJoint);
 #endif
-	OPENSIM_DECLARE_DERIVED(PrescribedForce, Force);
 
 protected:
 

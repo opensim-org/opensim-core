@@ -97,7 +97,6 @@ SMC_Joint::SMC_Joint(const SMC_Joint &aTask) :
 void SMC_Joint::
 setNull()
 {
-	setType("SMC_Joint");
 	setupProperties();
 	_s = 100.0;
 }
@@ -126,19 +125,6 @@ copyData(const SMC_Joint &aTask)
 	_s = aTask._s;
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this track object and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this track object.
- */
-Object* SMC_Joint::
-copy() const
-{
-	SMC_Joint *object = new SMC_Joint(*this);
-	return(object);
-}
 
 //=============================================================================
 // OPERATORS

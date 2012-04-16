@@ -46,8 +46,9 @@ class Coordinate;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API MomentArmSolver: public Solver
-{
+class OSIMSIMULATION_API MomentArmSolver: public Solver {
+OpenSim_DECLARE_CONCRETE_OBJECT(MomentArmSolver, Solver);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -60,12 +61,12 @@ private:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
-	virtual ~MomentArmSolver() {};
+	explicit MomentArmSolver(const Model &model);
+	virtual ~MomentArmSolver() {}
 
-	MomentArmSolver(const Model &model);
 	/** Solve for the effective moment-arm about the specified coordinate based 
-	    on the geometric distribution of forces described by the list of 
-		PointForceDirections. */
+    on the geometric distribution of forces described by the list of 
+    PointForceDirections. */
 	double solve(const SimTK::State &s, const Coordinate &aCoord, 
 		const Array<PointForceDirection *> &pfds);
 

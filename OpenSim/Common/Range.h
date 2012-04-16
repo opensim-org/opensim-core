@@ -44,8 +44,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API Range : public Object
-{
+class OSIMCOMMON_API Range : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(Range, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -69,8 +70,7 @@ public:
 	//--------------------------------------------------------------------------
 	Range();
 	Range(const Range &aRange);
-	virtual ~Range(void);
-	virtual Object* copy() const;
+	virtual ~Range();
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -91,8 +91,6 @@ public:
 
 	const double getMax() const;
 	void setMax(const double aMax);
-
-
 };
 
 }; //namespace

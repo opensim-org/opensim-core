@@ -56,8 +56,8 @@ class Model;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API CoordinateCouplerConstraint : public Constraint  
-{
+class OSIMSIMULATION_API CoordinateCouplerConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateCouplerConstraint, Constraint);
 
 //=============================================================================
 // DATA
@@ -91,7 +91,7 @@ public:
 	CoordinateCouplerConstraint();
 	CoordinateCouplerConstraint(const CoordinateCouplerConstraint &aConstraint);
 	virtual ~CoordinateCouplerConstraint();
-	virtual Object* copy() const;
+
 	CoordinateCouplerConstraint& operator=(const CoordinateCouplerConstraint &aConstraint);
 	void copyData(const CoordinateCouplerConstraint &aConstraint);
 
@@ -101,13 +101,11 @@ public:
 	void setDependentCoordinateName(const std::string &aCoordName) { _dependentCoordName = aCoordName; }
 	const std::string& getDependentCoordinateName() const { return _dependentCoordName; }
 	Function& getFunction() const {return *_function; }
-	void setFunction(const Function &aFunction)  { _function = (Function*) aFunction.copy(); }
+	void setFunction(const Function &aFunction) {_function = aFunction.clone();}
 	void setFunction(Function *aFunction)  { _function = aFunction; }
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
-
-	OPENSIM_DECLARE_DERIVED(CoordinateCouplerConstraint, Constraint);
 
 protected:
 	virtual void setup(Model& aModel);

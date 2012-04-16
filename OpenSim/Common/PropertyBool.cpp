@@ -83,7 +83,7 @@ PropertyBool::PropertyBool(const PropertyBool &aProperty)
  *
  * @return Copy of this property.
  */
-PropertyBool* PropertyBool::copy() const
+PropertyBool* PropertyBool::clone() const
 {
 	PropertyBool* prop = new PropertyBool(*this);
 	return prop;

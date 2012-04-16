@@ -102,18 +102,6 @@ StepFunction::StepFunction(const StepFunction &aStepFunction) :
 	copyData(aStepFunction);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* StepFunction::copy() const
-{
-	StepFunction *aStepFunction = new StepFunction(*this);
-	return(aStepFunction);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -123,7 +111,6 @@ Object* StepFunction::copy() const
  */
 void StepFunction::setNull()
 {
-	setType("StepFunction");
 }
 
 //_____________________________________________________________________________

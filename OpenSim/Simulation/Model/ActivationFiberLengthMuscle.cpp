@@ -80,7 +80,6 @@ ActivationFiberLengthMuscle::ActivationFiberLengthMuscle(const ActivationFiberLe
  */
 void ActivationFiberLengthMuscle::setNull()
 {
-	setType("ActivationFiberLengthMuscle");
 }
 
 //_____________________________________________________________________________

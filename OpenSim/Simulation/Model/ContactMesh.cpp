@@ -91,19 +91,12 @@ ContactMesh::ContactMesh(const ContactMesh& geom) :
 
 void ContactMesh::setNull()
 {
-    setType("ContactMesh");
 }
 
 void ContactMesh::setupProperties()
 {
 	_filenameProp.setName("filename");
 	_propertySet.append(&_filenameProp);
-}
-
-Object* ContactMesh::copy() const
-{
-	ContactMesh* copy = new ContactMesh(*this);
-	return copy;
 }
 
 const std::string& ContactMesh::getFilename() const

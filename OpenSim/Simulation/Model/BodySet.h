@@ -53,8 +53,9 @@ class ScaleSet;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API BodySet :	public ModelComponentSet<Body>
-{
+class OSIMSIMULATION_API BodySet :	public ModelComponentSet<Body> {
+OpenSim_DECLARE_CONCRETE_OBJECT(BodySet, ModelComponentSet<Body>);
+
 private:
 	void setNull();
 public:
@@ -64,10 +65,10 @@ public:
 	~BodySet(void);
 	void setup(Model& aModel);
 	// Somehow the following function is not exported from base template
-    BodySet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true) :
-        ModelComponentSet<Body>(model, aFileName, aUpdateFromXMLNode)
-    {
-    }
+    BodySet(Model& model, const std::string &aFileName, 
+            bool aUpdateFromXMLNode = true) 
+    :   Super(model, aFileName, aUpdateFromXMLNode) {}
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

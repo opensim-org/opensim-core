@@ -119,7 +119,6 @@ GCVSplineSet(int aDegree,const Storage *aStore,double aErrorVariance)
 void GCVSplineSet::
 setNull()
 {
-	setType("GCVSplineSet");
 }
 //_____________________________________________________________________________
 /**

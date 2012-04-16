@@ -67,8 +67,8 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * 
  */
-class OSIMSIMULATION_API Muscle : public PathActuator  
-{
+class OSIMSIMULATION_API Muscle : public PathActuator {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Muscle, PathActuator);
 
 //=============================================================================
 // PUBLIC METHODS
@@ -309,16 +309,13 @@ public:
 	Muscle(const Muscle &aMuscle);
 	/** Free memory used to generate display geometry */
 	virtual ~Muscle();
-	virtual Object* copy() const = 0;	// Needed by operator= and to put Actuators in Arrays
+
 #ifndef SWIG
 	Muscle& operator=(const Muscle &aMuscle);
 #endif
 
-
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-	OPENSIM_DECLARE_DERIVED(Muscle, PathActuator);
 
 private:
 	void setNull();

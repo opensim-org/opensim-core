@@ -52,8 +52,9 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API Tool: public Object
-{
+class OSIMTOOLS_API Tool : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Tool, Object);
+
 public:
 	/** Perturbation types. See setPerturbation(). */
 	enum VerboseLevel {Quiet=0, Progress=1, DetailedProgress=2, Debug=3};
@@ -91,7 +92,7 @@ public:
 	*/
 	Tool() : _inputsDir(_inputsDirProp.getValueStr()),
 		_resultsDir(_resultsDirProp.getValueStr())
-		{ setType("Tool");  setNull(); };
+		{ setNull(); };
 	
 	/**
 	* Construct from file
@@ -104,7 +105,6 @@ public:
 	Tool(const std::string &aFileName, bool aUpdateFromXMLNode = true):
 		Object(aFileName, false), _inputsDir(_inputsDirProp.getValueStr()),
 		_resultsDir(_resultsDirProp.getValueStr()) {
-			setType("Tool");
 			setNull();
 			if(aUpdateFromXMLNode) updateFromXMLDocument();
 		};
@@ -160,12 +160,15 @@ public:
 	*
 	* @return Reference to this object.
 	*/
-	Tool& operator=(const Tool &aTool) 
-		{	Object::operator=(aTool);	
-			_resultsDir = aTool._resultsDir; 
-			_inputsDir = aTool._inputsDir;
-			_verboseLevel = aTool._verboseLevel;
-			return(*this);};
+	Tool& operator=(const Tool& source) {
+        if (&source != this) {
+            Super::operator=(source);	
+			_resultsDir   = source._resultsDir; 
+			_inputsDir    = source._inputsDir;
+			_verboseLevel = source._verboseLevel;
+        }
+		return *this;
+    }
 
 #endif
 

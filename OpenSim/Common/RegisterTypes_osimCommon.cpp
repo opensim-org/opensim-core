@@ -65,26 +65,26 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
 	//cout<<"RegisterTypes_osimCommon  \n";
 
-	Object::RegisterType( FunctionSet() );
-	Object::RegisterType( GCVSplineSet() );
-	Object::RegisterType( ScaleSet() );
+	Object::registerType( FunctionSet() );
+	Object::registerType( GCVSplineSet() );
+	Object::registerType( ScaleSet() );
 
-	Object::RegisterType( GCVSpline() );
-	Object::RegisterType( VectorGCVSplineR1R3() );
-	Object::RegisterType( Scale() );
-	Object::RegisterType( NaturalCubicSpline() );
-	Object::RegisterType( Constant() );
-	Object::RegisterType( Sine() );
-	Object::RegisterType( StepFunction() );
-	Object::RegisterType( LinearFunction() );
-	Object::RegisterType( PiecewiseLinearFunction() );
-	Object::RegisterType( MultiplierFunction() );
-	Object::RegisterType( DisplayGeometry() );
-	Object::RegisterType( GeometrySet() );
-	Object::RegisterType( VisibleObject() );
-	Object::RegisterType( ObjectGroup() );
+	Object::registerType( GCVSpline() );
+	Object::registerType( VectorGCVSplineR1R3() );
+	Object::registerType( Scale() );
+	Object::registerType( NaturalCubicSpline() );
+	Object::registerType( Constant() );
+	Object::registerType( Sine() );
+	Object::registerType( StepFunction() );
+	Object::registerType( LinearFunction() );
+	Object::registerType( PiecewiseLinearFunction() );
+	Object::registerType( MultiplierFunction() );
+	Object::registerType( DisplayGeometry() );
+	Object::registerType( GeometrySet() );
+	Object::registerType( VisibleObject() );
+	Object::registerType( ObjectGroup() );
 
 	// To support old type name of "natCubicSpline"
-	Object::RenameType("natCubicSpline", NaturalCubicSpline());
+	Object::renameType("natCubicSpline", "NaturalCubicSpline");
 }
 

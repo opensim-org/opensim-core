@@ -100,12 +100,13 @@ const SimTK::Vec3 mtpInFoot(0.098032, -0.038000, 0);
 const SimTK::Vec3 mtpInToes(-0.035902, 0.051347, 0);
 //==========================================================================================================
 
-class MultidimensionalFunction : public OpenSim::Function
-{
+class MultidimensionalFunction : public OpenSim::Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(MultidimensionalFunction, OpenSim::Function);
+
 public:
 	MultidimensionalFunction() {};
 	virtual ~MultidimensionalFunction() {};
-	virtual Object* copy() const { return new MultidimensionalFunction; }
+
 	virtual double calcValue(const SimTK::Vector& x) const
 	{
 		return 2*x[0]*x[0] + x[1];

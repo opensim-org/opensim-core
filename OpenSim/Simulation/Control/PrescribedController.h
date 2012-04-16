@@ -52,8 +52,8 @@
 namespace OpenSim { 
 
 
-class OSIMSIMULATION_API PrescribedController : public Controller
-{
+class OSIMSIMULATION_API PrescribedController : public Controller {
+OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedController, Controller);
 
 //=============================================================================
 // DATA
@@ -107,10 +107,6 @@ public:
 	 * instance of the subclass is deleted from memory.
 	 */
 	virtual ~PrescribedController();
-
-    virtual Object* copy() const;
-
-	OPENSIM_DECLARE_DERIVED(PrescribedController, Controller);
 
 private:
 	/**

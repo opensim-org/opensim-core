@@ -100,7 +100,6 @@ CMC_Joint::CMC_Joint(const CMC_Joint &aTask) :
 void CMC_Joint::
 setNull()
 {
-	setType("CMC_Joint");
 	setupProperties();
 
 	_nTrk = 1;
@@ -138,19 +137,7 @@ copyData(const CMC_Joint &aTask)
 	_limit = aTask._limit;
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this track object and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this track object.
- */
-Object* CMC_Joint::
-copy() const
-{
-	CMC_Joint *object = new CMC_Joint(*this);
-	return(object);
-}
+
 //_____________________________________________________________________________
 /**
  * Update work variables

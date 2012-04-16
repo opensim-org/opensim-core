@@ -60,8 +60,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API VectorFunctionUncoupledNxN : public VectorFunction
-{
+class OSIMCOMMON_API VectorFunctionUncoupledNxN : public VectorFunction {
+OpenSim_DECLARE_ABSTRACT_OBJECT(VectorFunctionUncoupledNxN, VectorFunction);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -80,7 +81,7 @@ public:
 	VectorFunctionUncoupledNxN(int aN);
 	VectorFunctionUncoupledNxN(const VectorFunctionUncoupledNxN &aFunction);
 	virtual ~VectorFunctionUncoupledNxN();
-	virtual Object* copy() const = 0;
+
 private:
 	void setNull();
 	void setEqual(const VectorFunctionUncoupledNxN &aVectorFunction);
@@ -108,8 +109,6 @@ public:
 	virtual void evaluate( const SimTK::State& s, const Array<double> &aX, Array<double> &rF, const Array<int> &aDerivWRT){
 		std::cout << "VectorFunctionUncoupledNxN UNIMPLEMENTED: evaluate( const SimTK::State&, const Array<double>&a, Array<double>&, const Array<int>&)" << std::endl;
 	}
-
-	OPENSIM_DECLARE_DERIVED(VectorFunctionUncoupledNxN, VectorFunction)
 
 //=============================================================================
 };	// END class VectorFunctionUncoupledNxN

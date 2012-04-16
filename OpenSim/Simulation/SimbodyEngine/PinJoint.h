@@ -49,9 +49,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API PinJoint : public Joint  
-{
+class OSIMSIMULATION_API PinJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(PinJoint, Joint);
 
+private:
 	static const int _numMobilities = 1;
 //=============================================================================
 // DATA
@@ -73,7 +74,7 @@ public:
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
 					bool reverse=false);
 	virtual ~PinJoint();
-	virtual Object* copy() const;
+
 	PinJoint& operator=(const PinJoint &aJoint);
 	void copyData(const PinJoint &aJoint);
 

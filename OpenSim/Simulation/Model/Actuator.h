@@ -58,8 +58,9 @@ class Coordinate;
  * @author Ajay Seth
  * @version 2.0
  */
- class OSIMSIMULATION_API Actuator_ : public Force
-{
+class OSIMSIMULATION_API Actuator_ : public Force {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator_, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -78,7 +79,6 @@ public:
 	Actuator_();
 	Actuator_(const Actuator_ &aActuator);
 	virtual ~Actuator_();
-	virtual Object* copy() const = 0;
 
 private:
 	void setNull();
@@ -138,8 +138,9 @@ public:
  * @author Ajay Seth
  * @version 2.0
  */
-class OSIMSIMULATION_API Actuator : public Actuator_
-{
+class OSIMSIMULATION_API Actuator : public Actuator_ {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Actuator_);
+
 protected:
 
 	StateFunction* _overrideForceFunction;
@@ -159,8 +160,6 @@ public:
 	/** Assignment operator */
 	Actuator& operator=(const Actuator &aActuator);
 #endif
-
-	virtual Object* copy() const = 0;	// Needed by operator= and to put Actuators in Arrays
 
 	/** Convenience method to set controls given scalar (double) valued control */
 	//virtual void setControl(const SimTK::State &s, double control) const;
@@ -242,8 +241,6 @@ public:
     * set override force function back to default (constant) 
     */
     void resetOverrideForceFunction();
-
-	OPENSIM_DECLARE_DERIVED(Actuator, Force);
 
 protected:
 	// ModelComponent Interface

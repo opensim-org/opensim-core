@@ -110,7 +110,6 @@ ControllerSet::ControllerSet(const ControllerSet &aControllerSet) :
 void ControllerSet::setNull()
 {
 	// TYPE
-	setType("ControllerSet");
     _actuatorSet = NULL;
     _controlStore = NULL;
 
@@ -121,19 +120,6 @@ void ControllerSet::setNull()
    setName("ControllerSet");
 
 
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this ControllerSet and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ControllerSet.
- */
-Object* ControllerSet::copy() const
-{
-	ControllerSet *conSet = new ControllerSet(*this);
-	return(conSet);
 }
 
 //_____________________________________________________________________________

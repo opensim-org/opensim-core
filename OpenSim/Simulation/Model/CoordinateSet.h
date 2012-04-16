@@ -46,15 +46,17 @@ class Model;
  * @version 2.0
  */
 
-class OSIMSIMULATION_API CoordinateSet : public ModelComponentSet<Coordinate>
-{
+class OSIMSIMULATION_API CoordinateSet : public ModelComponentSet<Coordinate> {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateSet, ModelComponentSet<Coordinate>);
+
 private:
 	void setNull();
 public:
 	CoordinateSet();
-	CoordinateSet(Model& model): ModelComponentSet<Coordinate>(model) {};
-	CoordinateSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode=true):
-	ModelComponentSet<Coordinate>(model, aFileName, aUpdateFromXMLNode) {};
+	CoordinateSet(Model& model) : Super(model) {}
+	CoordinateSet(Model& model, const std::string &aFileName, 
+                  bool aUpdateFromXMLNode=true)
+    :   Super(model, aFileName, aUpdateFromXMLNode) {}
 	CoordinateSet(const CoordinateSet& aCoordinateSet);
 	~CoordinateSet(void);
 

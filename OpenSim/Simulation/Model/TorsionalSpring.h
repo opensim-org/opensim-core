@@ -53,8 +53,9 @@ namespace OpenSim {
 class Model;
 class Body;
 
-class OSIMSIMULATION_API TorsionalSpring : public Force 
-{
+class OSIMSIMULATION_API TorsionalSpring : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(TorsionalSpring, Force);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -74,7 +75,8 @@ protected:
 	/** If the magnitude of the torque is below this threshold, no torque
 	is applied. */
 	double _threshold;
-	const Body &_body;
+
+	const Body* _bodyp; // just a reference; use ptr to allow assignment
 
 	/** Start time for the force. */
 	double _startTime;
@@ -87,7 +89,6 @@ protected:
 public:
 	TorsionalSpring(const Body &aBody, double startTime, double endTime);
 	virtual ~TorsionalSpring();
-	virtual Object* copy() const {throw Exception("TorsionalSpring::copy() not implmented."); };
 
 private:
 	void setNull();
@@ -110,6 +111,8 @@ public:
 	void getBValue(SimTK::Vec3& aB);
 	void setThreshold(double aThreshold);
 	double getThreshold() const;
+
+    const Body& getBody() const {return *_bodyp;}
 
 	//--------------------------------------------------------------------------
 	// UTILITY

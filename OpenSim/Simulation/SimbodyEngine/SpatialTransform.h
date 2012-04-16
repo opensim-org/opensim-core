@@ -49,9 +49,11 @@ class CustomJoint;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API SpatialTransform :	public Object
-{
-	static const int _numTransformAxes = 6;
+class OSIMSIMULATION_API SpatialTransform :	public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SpatialTransform, Object);
+
+private:
+    static const int _numTransformAxes = 6;
 
 protected:
 	/** Define the individual transform axes (6) that specify the spatial transform. */
@@ -85,7 +87,6 @@ public:
 	SpatialTransform(const SpatialTransform& aSpatialTransform);
 	~SpatialTransform(void);
 
-	virtual Object* copy() const;
 	void copyData(const SpatialTransform &aSpatialTransform);
 
 	// SETUP

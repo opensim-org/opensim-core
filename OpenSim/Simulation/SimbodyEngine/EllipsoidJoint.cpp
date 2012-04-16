@@ -98,18 +98,7 @@ EllipsoidJoint::EllipsoidJoint(const EllipsoidJoint &aJoint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* EllipsoidJoint::copy() const
-{
-	EllipsoidJoint *joint = new EllipsoidJoint(*this);
-	return(joint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one EllipsoidJoint to another.
@@ -128,7 +117,6 @@ void EllipsoidJoint::copyData(const EllipsoidJoint &aJoint)
  */
 void EllipsoidJoint::setNull()
 {
-	setType("EllipsoidJoint");
 	constructCoordinates();
 }
 

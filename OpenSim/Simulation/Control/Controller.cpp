@@ -125,7 +125,6 @@ Controller::~Controller()
 void Controller::setNull()
 {
 	setupProperties();
-	setType("Controller");
     _actuatorSet.setMemoryOwner(false);
 
 	// MODEL

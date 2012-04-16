@@ -71,7 +71,6 @@ PathPointSet::PathPointSet(const PathPointSet& aPathPointSet):
  */
 void PathPointSet::setNull()
 {
-	setType("PathPointSet");
 }
 
 //=============================================================================

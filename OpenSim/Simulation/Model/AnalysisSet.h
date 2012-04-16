@@ -52,8 +52,9 @@ namespace OpenSim {
 
 class Model;
 
-class OSIMSIMULATION_API AnalysisSet : public Set<Analysis>
-{
+class OSIMSIMULATION_API AnalysisSet : public Set<Analysis> {
+OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisSet, Set<Analysis>);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -82,7 +83,7 @@ public:
 	AnalysisSet(const std::string &aFileName);
 	AnalysisSet(const AnalysisSet &aSet);
 	virtual ~AnalysisSet();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
     void setupProperties();

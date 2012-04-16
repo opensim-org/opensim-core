@@ -87,19 +87,6 @@ ObjectGroup::ObjectGroup(const ObjectGroup &aGroup) :
 	copyData(aGroup);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle group and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this group.
- */
-Object* ObjectGroup::copy() const
-{
-	ObjectGroup *grp = new ObjectGroup(*this);
-	return(grp);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -121,7 +108,6 @@ void ObjectGroup::copyData(const ObjectGroup &aGroup)
  */
 void ObjectGroup::setNull()
 {
-	setType("ObjectGroup");
 	_memberObjects.setSize(0);
 }
 

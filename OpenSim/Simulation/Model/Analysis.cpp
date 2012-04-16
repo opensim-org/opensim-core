@@ -101,7 +101,6 @@ Analysis::Analysis(const string &aFileName, bool aUpdateFromXMLNode):
     _endTime(_endTimeProp.getValueDbl()),
 	_statesStore(NULL)
 {
-	setType("Analysis");
 	setNull();
 	SimTK::Xml::Element e = updDocument()->getRootDataElement(); 
 	if(aUpdateFromXMLNode) updateFromXMLNode(e, getDocument()->getDocumentVersion());
@@ -151,21 +150,8 @@ Analysis::Analysis(const Analysis &aAnalysis):
    _inDegrees(_inDegreesProp.getValueBool()),
    _statesStore(NULL)
 {
-	setType("Analysis");
 	setNull();
 	*this = aAnalysis;
-}
-
-//_____________________________________________________________________________
-/**
- * virtual copy constructor
- */
-Object* Analysis::
-copy() const
-{
-
-	Analysis *object = new Analysis(*this);
-	return(object);
 }
 
 //_____________________________________________________________________________

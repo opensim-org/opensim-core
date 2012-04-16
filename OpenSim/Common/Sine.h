@@ -49,8 +49,9 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMCOMMON_API Sine : public Function
-{
+class OSIMCOMMON_API Sine : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(Sine, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -84,14 +85,9 @@ public:
 			_amplitude = aFunc._amplitude;  _omega = aFunc._omega;  _phase = aFunc._phase; 
 	};
 	virtual ~Sine() {};
-	virtual Object* copy() const {
-		Sine *func = new Sine(*this);
-		return(func);
-	};
 
 private:
 	void setupProperties() {
-		setType("Sine");
 		_amplitudeProp.setName("amplitude");
 		_amplitudeProp.setComment("amplitude of the sinusoidal function");
 		_amplitudeProp.setValue(1);
@@ -145,8 +141,6 @@ public:
    
 	int getArgumentSize() const {return 1;}
 	int getMaxDerivativeOrder() const {return 10;}
-
-	OPENSIM_DECLARE_DERIVED(Sine, Function);
 
 //=============================================================================
 };	// END class Sine

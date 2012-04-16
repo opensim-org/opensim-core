@@ -66,8 +66,8 @@ class WrapObject;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathPoint : public Object  
-{
+class OSIMSIMULATION_API PathPoint : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathPoint, Object);
 
 //=============================================================================
 // DATA
@@ -104,7 +104,6 @@ public:
 	PathPoint();
 	PathPoint(const PathPoint &aPoint);
 	virtual ~PathPoint();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	PathPoint& operator=(const PathPoint &aPoint);
@@ -150,7 +149,6 @@ public:
 	static PathPoint* makePathPointOfType(PathPoint* aPoint, const std::string& aNewTypeName);
 	static void deletePathPoint(PathPoint* aPoint) { if (aPoint) delete aPoint; }
 
-	OPENSIM_DECLARE_DERIVED(PathPoint, Object);
 protected:
 
 private:

@@ -57,8 +57,8 @@ namespace OpenSim {
 
 class ControlSet;
 
-class OSIMSIMULATION_API ControlSetController : public Controller
-{
+class OSIMSIMULATION_API ControlSetController : public Controller {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControlSetController, Controller);
 
 //=============================================================================
 // DATA
@@ -101,9 +101,7 @@ public:
 	 * instance of the subclass is deleted from memory.
 	 */
 	virtual ~ControlSetController();
-    virtual Object* copy() const;
 
-	
 	const ControlSet *getControlSet() {return _controlSet;} 
 	ControlSet *updControlSet() {return _controlSet;}
 

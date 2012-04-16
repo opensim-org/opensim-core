@@ -66,21 +66,7 @@ _max(_propMax.getValueDbl())
 	// ASSIGN
 	*this = aRange;
 }
-//_____________________________________________________________________________
-/**
- * Construct and return a copy of this object.
- *
- * The object is allocated using the new operator, so the caller is
- * responsible for deleting the returned object.
- *
- * @return Copy of this object.
- */
-Object* Range::
-copy() const
-{
-	Object *object = new Range(*this);
-	return(object);
-}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -144,7 +130,6 @@ void Range::setMax(const double aMax)
 
 void Range::setNull()
 {
-	setType("Range");
 	setName("");
 	setupProperties();
 }

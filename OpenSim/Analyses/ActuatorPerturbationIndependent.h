@@ -55,15 +55,14 @@
  */
 namespace OpenSim { 
 
-class OSIMANALYSES_API ActuatorPerturbationIndependent :
-	public ActuatorPerturbation  
-{
+class OSIMANALYSES_API ActuatorPerturbationIndependent 
+:   public ActuatorPerturbation {
+OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPerturbationIndependent, 
+                                ActuatorPerturbation);
+
 //=============================================================================
 // DATA
 //=============================================================================
-public:
-
-
 protected:
 	/** Splines used to fit the unperturbed forces. */
 	GCVSplineSet *_unperturbedForceSplines;

@@ -76,8 +76,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API VectorGCVSplineR1R3 : public VectorFunction
-{
+class OSIMCOMMON_API VectorGCVSplineR1R3 : public VectorFunction {
+OpenSim_DECLARE_CONCRETE_OBJECT(VectorGCVSplineR1R3, VectorFunction);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -105,7 +106,7 @@ public:
 		double aErrorVariance=0.0);
 	VectorGCVSplineR1R3(const VectorGCVSplineR1R3 &aVectorSpline);
 	virtual ~VectorGCVSplineR1R3();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setEqual(const VectorGCVSplineR1R3 &aSpline);

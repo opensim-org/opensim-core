@@ -47,8 +47,8 @@ namespace OpenSim {
  * @author Ayman Habib & Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API MuscleStateTrackingTask : public StateTrackingTask
-{
+class OSIMTOOLS_API MuscleStateTrackingTask : public StateTrackingTask {
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleStateTrackingTask, StateTrackingTask);
 
 //=============================================================================
 // DATA
@@ -65,8 +65,6 @@ public:
 	MuscleStateTrackingTask();
 	MuscleStateTrackingTask(const MuscleStateTrackingTask &aTaskObject);
 	virtual ~MuscleStateTrackingTask();
-
-	Object* copy() const;
 
 private:
 	void setNull();

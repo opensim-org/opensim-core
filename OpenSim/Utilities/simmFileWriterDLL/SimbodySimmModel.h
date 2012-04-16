@@ -69,8 +69,8 @@ class Function;
  * @authors Peter Loan
  * @version 1.0
  */
-class OSIMSIMMFILEWRITER_API SimbodySimmModel : public Object
-{
+class OSIMSIMMFILEWRITER_API SimbodySimmModel : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SimbodySimmModel, Object);
 
 //=============================================================================
 // DATA
@@ -108,7 +108,7 @@ public:
 	SimbodySimmModel();
 	SimbodySimmModel(const Model* aModel);
 	SimbodySimmModel(const SimbodySimmModel& aModel);
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	SimbodySimmModel& operator=(const SimbodySimmModel &aModel);
 #endif

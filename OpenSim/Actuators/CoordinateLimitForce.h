@@ -61,8 +61,9 @@
  */
 namespace OpenSim { 
 
-class OSIMACTUATORS_API CoordinateLimitForce : public Force 
-{
+class OSIMACTUATORS_API CoordinateLimitForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateLimitForce, Force);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -98,7 +99,7 @@ public:
 	// Copy constructor
 	CoordinateLimitForce(const CoordinateLimitForce &aForce);
 	virtual ~CoordinateLimitForce();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();
@@ -164,8 +165,6 @@ public:
 	// Model Component
 	//--------------------------------------------------------------------------
 	virtual void setup(Model& aModel);
-
-	OPENSIM_DECLARE_DERIVED(CoordinateLimitForce,Force);
 
 //=============================================================================
 };	// END of class CoordinateLimitForce

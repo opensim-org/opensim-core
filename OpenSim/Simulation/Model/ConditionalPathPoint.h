@@ -64,20 +64,18 @@ class SimbodyEngine;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API ConditionalPathPoint : public PathPoint  
-{
+class OSIMSIMULATION_API ConditionalPathPoint : public PathPoint {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConditionalPathPoint, PathPoint);
 
 //=============================================================================
 // DATA
 //=============================================================================
-private:
-
 protected:
-   PropertyDblArray _rangeProp;
-   Array<double> &_range;
+    PropertyDblArray _rangeProp;
+    Array<double> &_range;
 
-	PropertyStr _coordinateNameProp;
-   std::string &_coordinateName;
+    PropertyStr _coordinateNameProp;
+    std::string &_coordinateName;
 
 	const Coordinate* _coordinate;
 
@@ -91,12 +89,11 @@ public:
 	ConditionalPathPoint();
 	ConditionalPathPoint(const ConditionalPathPoint &aPoint);
 	virtual ~ConditionalPathPoint();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	ConditionalPathPoint& operator=(const ConditionalPathPoint &aPoint);
 #endif
-   void copyData(const ConditionalPathPoint &aPoint);
+    void copyData(const ConditionalPathPoint &aPoint);
 	virtual void init(const PathPoint& aPoint);
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
@@ -111,7 +108,6 @@ public:
 	virtual bool isActive(const SimTK::State& s) const;
 	virtual void setup(const Model& aModel, GeometryPath& aPath);
 #endif
-	OPENSIM_DECLARE_DERIVED(ConditionalPathPoint, PathPoint);
 private:
 	void setNull();
 	void setupProperties();

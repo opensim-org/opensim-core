@@ -75,7 +75,7 @@ public:
 	PropertyBoolArray(const std::string &aName,
 		int aSize,const bool aArray[]);
 	PropertyBoolArray(const PropertyBoolArray &aProperty);
-	virtual PropertyBoolArray* copy() const;
+	virtual PropertyBoolArray* clone() const;
 	virtual ~PropertyBoolArray() { };
 
 	//--------------------------------------------------------------------------

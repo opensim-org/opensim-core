@@ -83,21 +83,7 @@ _apply(_propApply.getValueBool())
 	setNull();
 	updateFromXMLDocument();
 }
-//_____________________________________________________________________________
-/**
- * Construct and return a copy of this object.
- *
- * The object is allocated using the new operator, so the caller is
- * responsible for deleting the returned object.
- *
- * @return Copy of this object.
- */
-Object* Scale::
-copy() const
-{
-	Object *object = new Scale(*this);
-	return(object);
-}
+
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -124,7 +110,6 @@ operator=(const Scale &aScale)
 
 void Scale::setNull()
 {
-	setType("Scale");
 	setName("");
 	setupProperties();
 }
@@ -140,7 +125,7 @@ setupProperties()
 	// scale factors
 	_propScaleFactors.setName("scales");
 	_propScaleFactors.setValue(one3);
-	//_propScaleFactors.setAllowableArraySize(3);
+	//_propScaleFactors.setAllowableListSize(3);
 	_propertySet.append( &_propScaleFactors );
 
 	// segment name

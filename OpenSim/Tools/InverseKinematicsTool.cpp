@@ -84,7 +84,6 @@ InverseKinematicsTool::InverseKinematicsTool() : Tool(),
 	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
 	_reportMarkerLocations(_reportMarkerLocationsProp.getValueBool())
 {
-	setType("InverseKinematicsTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -110,7 +109,6 @@ InverseKinematicsTool::InverseKinematicsTool(const string &aFileName, bool aLoad
 	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
 	_reportMarkerLocations(_reportMarkerLocationsProp.getValueBool())
 {
-	setType("InverseKinematicsTool");
 	setNull();
 	updateFromXMLDocument();
 
@@ -139,19 +137,8 @@ InverseKinematicsTool::InverseKinematicsTool(const InverseKinematicsTool &aTool)
 	_outputMotionFileName(_outputMotionFileNameProp.getValueStr()),
 	_reportMarkerLocations(_reportMarkerLocationsProp.getValueBool())
 {
-	setType("InverseKinematicsTool");
 	setNull();
 	*this = aTool;
-}
-
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor.
- */
-Object* InverseKinematicsTool::copy() const
-{
-	InverseKinematicsTool *object = new InverseKinematicsTool(*this);
-	return(object);
 }
 
 //_____________________________________________________________________________
@@ -202,7 +189,7 @@ void InverseKinematicsTool::setupProperties()
 	_timeRangeProp.setComment("Time range over which the inverse kinematics problem is solved.");
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
-	_timeRangeProp.setAllowableArraySize(2);
+	_timeRangeProp.setAllowableListSize(2);
 	_propertySet.append(&_timeRangeProp);
 
 	_reportErrorsProp.setComment("Flag (true or false) indicating whether or not to report marker "
@@ -228,7 +215,7 @@ void InverseKinematicsTool::setupProperties()
  */
 void InverseKinematicsTool::registerTypes()
 {
-	Object::RegisterType(InverseKinematicsTool());
+	Object::registerType(InverseKinematicsTool());
 }
 //=============================================================================
 // OPERATORS

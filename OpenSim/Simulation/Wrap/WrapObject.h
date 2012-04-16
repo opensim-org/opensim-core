@@ -66,8 +66,8 @@ class Model;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapObject : public Object
-{
+class OSIMSIMULATION_API WrapObject : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(WrapObject, Object);
 
 //=============================================================================
 // DATA
@@ -129,7 +129,7 @@ public:
 	WrapObject();
 	WrapObject(const WrapObject& aWrapObject);
 	virtual ~WrapObject();
-	virtual Object* copy() const = 0;
+
 #ifndef SWIG
 	WrapObject& operator=(const WrapObject& aWrapObject);
 #endif
@@ -158,7 +158,6 @@ public:
 	// Visible Object Support
 	virtual VisibleObject* getDisplayer() const { return &_displayer; };
 	virtual void updateGeometry() {};
-	OPENSIM_DECLARE_DERIVED(WrapObject, Object);
 
 protected:
 	void setupProperties();

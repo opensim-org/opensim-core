@@ -71,7 +71,6 @@ BodyScaleSet::BodyScaleSet(const BodyScaleSet& aBodyScaleSet):
  */
 void BodyScaleSet::setNull()
 {
-	setType("BodyScaleSet");
 }
 
 //=============================================================================

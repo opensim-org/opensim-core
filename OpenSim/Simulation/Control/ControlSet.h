@@ -53,8 +53,8 @@ namespace OpenSim {
 
 class ControlLinear;
 
-class OSIMSIMULATION_API ControlSet : public Set<Control>
-{
+class OSIMSIMULATION_API ControlSet : public Set<Control> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControlSet, Set<Control>);
 
 //=============================================================================
 // DATA
@@ -77,7 +77,7 @@ public:
 	ControlSet(const std::string &aFileName);
 	ControlSet(const ControlSet &aSet);
 	virtual ~ControlSet();
-	virtual Object* copy() const;
+
 	// Constructor from a storage, useful for connecting result files to 
 	// analyses that expect ControlSets. Default arguments 
 	ControlSet(const Storage& aStorage, int nControlsToConvert=0, int aStartIndex=0);
@@ -85,7 +85,6 @@ private:
 	void setNull();
 	void setupProperties();
 	OpenSim::ControlLinear* ExtractControl(const Storage& storage,int index);
-
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

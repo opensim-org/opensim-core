@@ -55,8 +55,9 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API AnalyzeTool: public AbstractTool
-{
+class OSIMTOOLS_API AnalyzeTool : public AbstractTool {
+OpenSim_DECLARE_CONCRETE_OBJECT(AnalyzeTool, AbstractTool);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -93,8 +94,8 @@ public:
 	AnalyzeTool();
 	AnalyzeTool(const std::string &aFileName, bool aLoadModelAndInput=true) SWIG_DECLARE_EXCEPTION;
 	AnalyzeTool(const AnalyzeTool &aObject);
-	AnalyzeTool(Model& aModel);
-	virtual Object* copy() const;
+	explicit AnalyzeTool(Model& aModel);
+
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 private:
 	void setNull();

@@ -43,10 +43,11 @@ namespace OpenSim {
  * - Added constructor from a file for use in GUI. -Ayman 02/20/07
  */
 
-class OSIMTOOLS_API IKTaskSet : public Set<IKTask>
-{
+class OSIMTOOLS_API IKTaskSet : public Set<IKTask> {
+OpenSim_DECLARE_CONCRETE_OBJECT(IKTaskSet, Set<IKTask>);
+
 public:
-	IKTaskSet() { setType("IKTaskSet"); }
+	IKTaskSet() {}
 	IKTaskSet(const IKTaskSet &aIKTaskSet) : Set<IKTask>(aIKTaskSet) { }
 	IKTaskSet(const std::string &aFileName) : Set<IKTask>(aFileName) { }
 	void createMarkerWeightSet(Set<MarkerWeight>& aWeights){

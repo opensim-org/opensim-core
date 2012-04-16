@@ -48,7 +48,6 @@ IKTask::IKTask() :
 	_apply(_applyProp.getValueBool()),
    _weight(_weightProp.getValueDbl())
 {
-	setType("IKTask");
 	_apply = true;
 	_weight = 0;
 	setupProperties();

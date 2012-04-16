@@ -53,8 +53,8 @@ class Function;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API ExternalForce : public Force
-{
+class OSIMSIMULATION_API ExternalForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(ExternalForce, Force);
 
 //=============================================================================
 // DATA
@@ -114,9 +114,8 @@ public:
 	ExternalForce(const ExternalForce& force);
 	ExternalForce(SimTK::Xml::Element& aNode);
 	~ExternalForce();
-	virtual Object* copy() const;
 
-	// Copy properties from XML into member variables
+    // Copy properties from XML into member variables
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 	// ACCESS METHODS
@@ -181,7 +180,6 @@ public:
 #ifndef SWIG
 	ExternalForce& operator=(const ExternalForce &aForce);
 #endif
-	OPENSIM_DECLARE_DERIVED(ExternalForce, Force);
 
 protected:
 

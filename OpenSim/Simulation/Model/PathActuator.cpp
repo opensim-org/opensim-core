@@ -78,19 +78,6 @@ PathActuator::PathActuator(const PathActuator &aPathActuator) :
 	setNull();
 	copyData(aPathActuator);
 }
-//_____________________________________________________________________________
-/**
- * Copy this actuator and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this actuator.
- */
-Object* PathActuator::
-copy() const
-{
-	PathActuator *force = new PathActuator(*this);
-	return force;
-}
 
 
 //=============================================================================
@@ -102,7 +89,6 @@ copy() const
  */
 void PathActuator::setNull()
 {
-	setType("PathActuator");
 	setupProperties();
 }
 

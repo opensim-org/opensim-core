@@ -61,30 +61,30 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
 	//cout<<"RegisterTypes_osimActuators\n";
 
-	Object::RegisterType( CoordinateActuator() );
-	Object::RegisterType( PointActuator() );
-	Object::RegisterType( TorqueActuator() );
-	Object::RegisterType( PointToPointActuator() );
+	Object::registerType( CoordinateActuator() );
+	Object::registerType( PointActuator() );
+	Object::registerType( TorqueActuator() );
+	Object::registerType( PointToPointActuator() );
 
-	Object::RegisterType( Thelen2003Muscle() );
-	Object::RegisterType( Thelen2003Muscle_Deprecated() );
-	Object::RegisterType( Thelen2003MuscleV1() ); //MM
-	Object::RegisterType( Schutte1993Muscle_Deprecated() );
-	Object::RegisterType( Delp1990Muscle_Deprecated() );
-	Object::RegisterType( CoordinateLimitForce() );
-	Object::RegisterType( SpringGeneralizedForce() );
-	Object::RegisterType( RigidTendonMuscle() );
+	Object::registerType( Thelen2003Muscle() );
+	Object::registerType( Thelen2003Muscle_Deprecated() );
+	Object::registerType( Thelen2003MuscleV1() ); //MM
+	Object::registerType( Schutte1993Muscle_Deprecated() );
+	Object::registerType( Delp1990Muscle_Deprecated() );
+	Object::registerType( CoordinateLimitForce() );
+	Object::registerType( SpringGeneralizedForce() );
+	Object::registerType( RigidTendonMuscle() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization
 	// This has to be done after the new Type is registered
-	Object::RenameType("GeneralizedForce", CoordinateActuator());
-	Object::RenameType("Force", PointActuator());
-	Object::RenameType("Torque", TorqueActuator());
-	Object::RenameType("Schutte1993Muscle", Schutte1993Muscle_Deprecated());
-	Object::RenameType("Delp1990Muscle", Delp1990Muscle_Deprecated());
+	Object::renameType("GeneralizedForce", "CoordinateActuator");
+	Object::renameType("Force", "PointActuator");
+	Object::renameType("Torque", "TorqueActuator");
+	Object::renameType("Schutte1993Muscle", "Schutte1993Muscle_Deprecated");
+	Object::renameType("Delp1990Muscle", "Delp1990Muscle_Deprecated");
 
-	//Object::RenameType("Thelen2003Muscle", Thelen2003Muscle_Deprecated());
+	//Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
 }
 
 osimActuatorsInstantiator::osimActuatorsInstantiator()

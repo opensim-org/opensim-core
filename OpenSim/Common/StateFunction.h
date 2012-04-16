@@ -52,8 +52,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API StateFunction : public Object
-{
+class OSIMCOMMON_API StateFunction : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(StateFunction, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -68,8 +69,7 @@ public:
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 	StateFunction(){};
-	virtual ~StateFunction() { };
-	virtual Object* copy() const = 0;
+	virtual ~StateFunction() {}
 
 private:
 
@@ -93,8 +93,6 @@ public:
      * @param s     reference to a SimTK State 
      */
     virtual double calcValue(const SimTK::State& s) const = 0;
-
-	OPENSIM_DECLARE_DERIVED(StateFunction, Object);
 
 //=============================================================================
 };	// END class StateFunction

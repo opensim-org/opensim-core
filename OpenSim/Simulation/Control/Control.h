@@ -79,8 +79,8 @@
  */
 namespace OpenSim { 
 
-class OSIMSIMULATION_API Control : public Object
-{
+class OSIMSIMULATION_API Control : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Control, Object);
 
 //=============================================================================
 // MEMBER VARIABLES
@@ -116,9 +116,10 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	Control(const char *aName="UNKOWN");
+	Control(const char *aName="UNKNOWN");
 	Control(const Control &aControl);
 	virtual ~Control();
+
 private:
 	void setNull();
 protected:

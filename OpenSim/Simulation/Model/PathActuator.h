@@ -51,8 +51,9 @@ class Coordinate;
 class ForceSet;
 class Model;
 
-class OSIMSIMULATION_API PathActuator : public Actuator
-{
+class OSIMSIMULATION_API PathActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathActuator, Actuator);
+
 //=============================================================================
 // METHODS
 //=============================================================================
@@ -63,7 +64,7 @@ public:
 	PathActuator();
 	PathActuator( const PathActuator &aGenForce);
 	virtual ~PathActuator();
-	virtual Object* copy() const;
+
 	void copyData(const PathActuator &aGenForce);
 private:
 	void setNull();
@@ -138,8 +139,6 @@ public:
 	//--------------------------------------------------------------------------
 	virtual VisibleObject* getDisplayer() const;
 	virtual void updateDisplayer(const SimTK::State& s);
-
-	OPENSIM_DECLARE_DERIVED(PathActuator, Actuator);
 
 protected:
 	// Setup method to initialize coordinate reference

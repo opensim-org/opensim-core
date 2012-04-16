@@ -74,11 +74,18 @@ public:
 	:   Property_Deprecated(ObjArray, aName), _array(aArray) {}
 	PropertyObjArray(const PropertyObjArray<T> &aProperty) 
     :   Property_Deprecated(aProperty) { _array = aProperty._array; }
-	/*virtual*/ PropertyObjArray* copy() const { return new PropertyObjArray<T>(*this); }
+	/*virtual*/ PropertyObjArray* clone() const { return new PropertyObjArray<T>(*this); }
 
-    void setSubPropertiesUseDefault(bool shouldUseDefault) OVERRIDE_11
-    {   for (int i=0; i < _array.getSize(); ++i)
-            _array.get(i)->setAllPropertiesUseDefault(shouldUseDefault); }
+
+    virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
+    virtual bool isAcceptableObjectTag
+        (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
+    virtual const Object& getValueAsObject(int index) const OVERRIDE_11
+    {  return *const_cast<PropertyObjArray*>(this)->getValueObjPtr(index); }
+    virtual Object& updValueAsObject(int index) OVERRIDE_11
+    {   return *getValueObjPtr(index); }
+    virtual void setValueAsObject(const Object& obj, int index) OVERRIDE_11
+    {   _array.set(index, dynamic_cast<T*>(obj.clone())); }
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -104,7 +111,9 @@ public:
 	// VALUE
 	virtual Object* getValueObjPtr(int index) { return (Object*)_array.get(index); }
 	virtual void appendValue(Object *obj) { 
-		if(!isValidObject(obj)) throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "+obj->getType(),__FILE__,__LINE__);
+		if(!isValidObject(obj)) 
+            throw Exception("PropertyObjArray: ERR- Attempting to append invalid object of type "
+            + obj->getConcreteClassName(), __FILE__,__LINE__);
 		_array.append(static_cast<T*>(obj));
 	}
 	virtual void clearObjArray() { _array.setSize(0); }

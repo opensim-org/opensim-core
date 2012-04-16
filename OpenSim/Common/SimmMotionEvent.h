@@ -31,12 +31,13 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <math.h>
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
 #include "PropertyDblVec.h"
+
+#include <iostream>
+#include <cmath>
 
 namespace OpenSim {
 
@@ -48,8 +49,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMCOMMON_API SimmMotionEvent : public Object  
-{
+class OSIMCOMMON_API SimmMotionEvent : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SimmMotionEvent, Object);
 
 //=============================================================================
 // DATA
@@ -71,7 +72,7 @@ public:
 	SimmMotionEvent();
 	SimmMotionEvent(const SimmMotionEvent &aEvent);
 	virtual ~SimmMotionEvent();
-	virtual Object* copy() const;
+
 	SimmMotionEvent& operator=(const SimmMotionEvent &aEvent);
 
 	void copyData(const SimmMotionEvent &aEvent);

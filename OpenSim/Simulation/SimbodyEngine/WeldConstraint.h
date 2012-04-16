@@ -49,8 +49,8 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API WeldConstraint : public Constraint  
-{
+class OSIMSIMULATION_API WeldConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(WeldConstraint, Constraint);
 
 //=============================================================================
 // DATA
@@ -104,7 +104,7 @@ public:
 
 	WeldConstraint(const WeldConstraint &aConstraint);
 	virtual ~WeldConstraint();
-	virtual Object* copy() const;
+
 	WeldConstraint& operator=(const WeldConstraint &aConstraint);
 	void copyData(const WeldConstraint &aConstraint);
 

@@ -115,7 +115,6 @@ VectorGCVSplineR1R3(const VectorGCVSplineR1R3 &aVectorSpline) :
 void VectorGCVSplineR1R3::
 setNull()
 {
-	setType("VectorGCVSplineR1R3");
 	_splineY0 = NULL;
 	_splineY1 = NULL;
 	_splineY2 = NULL;
@@ -139,19 +138,6 @@ setEqual(const VectorGCVSplineR1R3 &aVectorSpline)
 	if (aVectorSpline.getSplineY1()==NULL) _splineY1=NULL;	else _splineY1=new GCVSpline(*aVectorSpline.getSplineY1());
 	if (aVectorSpline.getSplineY2()==NULL) _splineY2=NULL;	else _splineY2=new GCVSpline(*aVectorSpline.getSplineY2());
 
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* VectorGCVSplineR1R3::
-copy() const
-{
-	VectorGCVSplineR1R3 *func = new VectorGCVSplineR1R3(*this);
-	return(func);
 }
 
 

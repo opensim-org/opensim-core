@@ -50,8 +50,8 @@ namespace OpenSim {
  * @author Ko Sasaki
  * @version 1.0
  */
-class OSIMTOOLS_API SMC_Joint : public CMC_Joint
-{
+class OSIMTOOLS_API SMC_Joint : public CMC_Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(SMC_Joint, CMC_Joint);
 
 //=============================================================================
 // DATA
@@ -72,7 +72,7 @@ public:
 	SMC_Joint(const std::string &aCoordinateName = "");
 	SMC_Joint(const SMC_Joint &aTask);
 	virtual ~SMC_Joint();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();

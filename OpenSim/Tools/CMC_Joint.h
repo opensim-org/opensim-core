@@ -51,8 +51,8 @@ class Coordinate;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMC_Joint : public CMC_Task
-{
+class OSIMTOOLS_API CMC_Joint : public CMC_Task {
+OpenSim_DECLARE_CONCRETE_OBJECT(CMC_Joint, CMC_Task);
 
 //=============================================================================
 // DATA
@@ -80,7 +80,7 @@ public:
 	CMC_Joint(const std::string &aCoordinateName = "");
 	CMC_Joint(const CMC_Joint &aTask);
 	virtual ~CMC_Joint();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();

@@ -69,6 +69,7 @@ class Controller;
 class ControllerSet;
 class ModelDisplayHints;
 class ModelVisualizer;
+class ComponentSet;
 
 #ifdef SWIG
 	#ifdef OSIMSIMULATION_API
@@ -101,8 +102,8 @@ method, in which case it will allocate an maintain a ModelVisualizer.
 @see ModelComponent, ModelVisualizer, SimTK::System
 **/
 
-class OSIMSIMULATION_API Model  : public ModelComponent
-{
+class OSIMSIMULATION_API Model  : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(Model, ModelComponent);
 
 //=============================================================================
 // METHODS
@@ -133,14 +134,6 @@ public:
 	@returns        Reference to this object. **/
 	Model& operator=(const Model& source);
     #endif
-
-	/**
-	 * Dynamic casting across JNI is messy. This method does the upCasting on C++ side
-	 */
-	Model* clone()
-	{
-		return static_cast<Model*>(this->copy()); 
-	}
 
 	/**
 	 * Perform some set up functions that happen after the
@@ -481,8 +474,10 @@ public:
      * Get the subset of misc ModelComponents in the model
      * @return The set of misc ModelComponents
      */
-	const ModelComponentSet<ModelComponent>& getMiscModelComponentSet() const { return _componentSet; };
-	ModelComponentSet<ModelComponent>& updMiscModelComponentSet() { return _componentSet; };
+	const ComponentSet& getMiscModelComponentSet() const 
+    {   return _componentSet; };
+	ComponentSet& updMiscModelComponentSet() 
+    {   return _componentSet; };
 
 	/**
 	 * Get the number of analyses in the model.
@@ -727,19 +722,11 @@ public:
     /**@{**/
 
 	/** Destructor. */
-	/*virtual*/ ~Model();
+	~Model();
 
 	/** Override of the default implementation to account for versioning. */
 	/*virtual*/ void updateFromXMLNode(SimTK::Xml::Element& aNode, 
                                        int versionNumber=-1);
-
-	/**
-	 * Copy this Model and return a pointer to the copy.
-	 * The copy constructor for this class is used.
-	 *
-	 * @return Pointer to a copy of this Model.
-	 */
-    /*virtual*/ Model* copy() const {return new Model(*this);}
     /**@}**/
 
     //--------------------------------------------------------------------------
@@ -852,7 +839,7 @@ private:
 
     // Array containg the acceleration due to gravity.
     PropertyDblVec3 _gravityProp;
-    SimTK::Vec3 &_gravity;
+    SimTK::Vec3& _gravity;
 
 	// Forces.
 	PropertyObj _forceSetProp;
@@ -860,19 +847,19 @@ private:
 
     // Set containing the bodies in this model.
     PropertyObj _bodySetProp;
-    BodySet &_bodySet;
+    BodySet& _bodySet;
 
     // Set containing the constraints in this model.
     PropertyObj _constraintSetProp;
-    ConstraintSet &_constraintSet;
+    ConstraintSet& _constraintSet;
 
     // Set of markers for this model.
     PropertyObj _markerSetProp;
-    MarkerSet &_markerSet;
+    MarkerSet& _markerSet;
 
     // Set of ContactGeometry objects for this model.
     PropertyObj _contactGeometrySetProp;
-    ContactGeometrySet &_contactGeometrySet;
+    ContactGeometrySet& _contactGeometrySet;
 
 	// Set containing the Model controllers
     PropertyObj _controllerSetProp;
@@ -880,7 +867,7 @@ private:
 
 	// Set containing the user defined components in this model.
     PropertyObj _componentSetProp;
-    ModelComponentSet<ModelComponent> &_componentSet;
+    ComponentSet& _componentSet;
 
     // Other Model data structures that are derived from the properties
     // or added programmatically.

@@ -110,17 +110,7 @@ _statesStore(aStatesReporter._statesStore)
 	// COPY TYPE AND NAME
 	*this = aStatesReporter;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* StatesReporter::copy() const
-{
-	StatesReporter *object = new StatesReporter(*this);
-	return(object);
 
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -132,8 +122,6 @@ Object* StatesReporter::copy() const
 void StatesReporter::
 setNull()
 {
-	// TYPE
-	setType("StatesReporter");
 	// NAME
 	setName("StatesReporter");
 }

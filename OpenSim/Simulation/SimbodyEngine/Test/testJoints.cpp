@@ -108,13 +108,14 @@ const SimTK::Vec3 mtpInToes(-0.035902, 0.051347, 0);
 //==========================================================================================================
 
 // Class for testing joints with coupled coordinates
-class MultidimensionalFunction : public OpenSim::Function
-{
+class MultidimensionalFunction : public OpenSim::Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(MultidimensionalFunction, OpenSim::Function);
+
 public:
 	MultidimensionalFunction() {};
 	virtual ~MultidimensionalFunction() {};
-	virtual Object* copy() const { return new MultidimensionalFunction; }
-	virtual double calcValue(const SimTK::Vector& x) const
+
+    virtual double calcValue(const SimTK::Vector& x) const
 	{
 		return 2*x[0]*x[0] + x[1];
 	}
@@ -149,9 +150,10 @@ public:
 // CompoundJoint necessary for testing equivalent body force calculations
 // for joints comprised by more than one mobilized body.
 //=============================================================================
-class  CompoundJoint : public Joint  
-{
+class CompoundJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(CompoundJoint, Joint);
 
+private:
 	static const int _numMobilities = 3;
 
 //=============================================================================
@@ -166,8 +168,6 @@ public:
 			Joint(name, parent, locationInParent,orientationInParent,
 					body, locationInBody, orientationInBody, reverse)
 		{ _body->setJoint(*this); }
-
-	virtual Object* copy() const { return new CompoundJoint(); }
 
 	virtual int numCoordinates() const {return _numMobilities;};
 

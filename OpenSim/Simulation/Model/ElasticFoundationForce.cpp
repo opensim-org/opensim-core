@@ -65,7 +65,7 @@ void ElasticFoundationForce::createSystem(SimTK::MultibodySystem& system) const
     for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
-        for (int j = 0; j < params.getGeometry().getSize(); ++j)
+        for (int j = 0; j < params.getGeometry().size(); ++j)
         {
 	        if (!_model->updContactGeometrySet().contains(params.getGeometry()[j]))
             {
@@ -88,8 +88,6 @@ void ElasticFoundationForce::createSystem(SimTK::MultibodySystem& system) const
 
 void ElasticFoundationForce::setupProperties()
 {
-    setType("ElasticFoundationForce");
-
 	addProperty<ContactParametersSet>("contact_parameters",
 		"",
 		ContactParametersSet());
@@ -104,18 +102,6 @@ void ElasticFoundationForce::copyData(const ElasticFoundationForce& copy)
 	setPropertyValue("transition_velocity", copy.getPropertyValue<double>("transition_velocity"));
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this force and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Force.
- */
-Object* ElasticFoundationForce::copy() const
-{
-	ElasticFoundationForce *force = new ElasticFoundationForce(*this);
-	return(force);
-}
 
 ElasticFoundationForce::ContactParametersSet& ElasticFoundationForce::updContactParametersSet()
 {
@@ -154,7 +140,9 @@ ElasticFoundationForce::ContactParameters::ContactParameters(const ContactParame
     copyData(copy);
 }
 
-ElasticFoundationForce::ContactParameters::ContactParameters(double stiffness, double dissipation, double staticFriction, double dynamicFriction, double viscousFriction)
+ElasticFoundationForce::ContactParameters::ContactParameters
+   (double stiffness, double dissipation, double staticFriction, 
+    double dynamicFriction, double viscousFriction)
 {
     setupProperties();
 	setPropertyValue("stiffness", stiffness);
@@ -166,7 +154,8 @@ ElasticFoundationForce::ContactParameters::ContactParameters(double stiffness, d
 
 void ElasticFoundationForce::ContactParameters::copyData(const ContactParameters& copy)
 {
-	setPropertyValue("geometry", copy.getPropertyValue< Array<std::string> >("geometry"));
+	setPropertyValue("geometry", copy.getProperty<std::string>("geometry"));
+
 	setPropertyValue("stiffness", copy.getPropertyValue<double>("stiffness"));
 	setPropertyValue("dissipation", copy.getPropertyValue<double>("dissipation"));
 	setPropertyValue("static_friction", copy.getPropertyValue<double>("static_friction"));
@@ -174,18 +163,10 @@ void ElasticFoundationForce::ContactParameters::copyData(const ContactParameters
 	setPropertyValue("viscous_friction", copy.getPropertyValue<double>("viscous_friction"));
 }
 
-Object* ElasticFoundationForce::ContactParameters::copy() const
-{
-	ContactParameters *cps = new ContactParameters(*this);
-	return(cps);
-}
-
 void ElasticFoundationForce::ContactParameters::setupProperties()
 {
-    setType("ElasticFoundationForce::ContactParameters");
-	addProperty< Array<std::string> >("geometry",
-		"",
-		Array<std::string>());
+	addListProperty<std::string>("geometry",
+		"Names of geometry objects affected by these parameters.");
 	addProperty<double>("stiffness",
 		"",
 		0.0);
@@ -203,19 +184,19 @@ void ElasticFoundationForce::ContactParameters::setupProperties()
 		0.0);
 }
 
-const Array<std::string>& ElasticFoundationForce::ContactParameters::getGeometry() const
+const Property<std::string>& ElasticFoundationForce::ContactParameters::getGeometry() const
 {
-    return getPropertyValue< Array<std::string> >("geometry");
+    return getProperty<std::string>("geometry");
 }
 
-Array<std::string>& ElasticFoundationForce::ContactParameters::updGeometry()
+Property<std::string>& ElasticFoundationForce::ContactParameters::updGeometry()
 {
-    return updPropertyValue< Array<std::string> >("geometry");
+    return updProperty<std::string>("geometry");
 }
 
 void ElasticFoundationForce::ContactParameters::addGeometry(const std::string& name)
 {
-    updPropertyValue< Array<std::string> >("geometry").append(name);
+    updGeometry().appendValue(name);
 }
 
 double ElasticFoundationForce::ContactParameters::getStiffness() const
@@ -270,7 +251,6 @@ void ElasticFoundationForce::ContactParameters::setViscousFriction(double fricti
 
 void ElasticFoundationForce::ContactParametersSet::setNull()
 {
-	setType("ElasticFoundationForce::ContactParametersSet");
 }
 
 ElasticFoundationForce::ContactParametersSet::ContactParametersSet()
@@ -295,11 +275,6 @@ ElasticFoundationForce::ContactParametersSet& ElasticFoundationForce::ContactPar
 	return (*this);
 }
 
-Object* ElasticFoundationForce::ContactParametersSet::copy() const
-{
-	ContactParametersSet *cpsSet = new ContactParametersSet(*this);
-	return(cpsSet);
-}
 
 //=============================================================================
 // Reporting
@@ -317,7 +292,7 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
 	for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
-        for (int j = 0; j < params.getGeometry().getSize(); ++j)
+        for (int j = 0; j < params.getGeometry().size(); ++j)
         {
 			ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
 			std::string bodyName = geom.getBodyName();
@@ -353,7 +328,7 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
 	for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
-        for (int j = 0; j < params.getGeometry().getSize(); ++j)
+        for (int j = 0; j < params.getGeometry().size(); ++j)
         {
 			ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
 			std::string bodyName = geom.getBodyName();

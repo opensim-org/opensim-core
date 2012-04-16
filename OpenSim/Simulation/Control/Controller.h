@@ -57,8 +57,9 @@ class Model;
  *
  * @author Ajay Seth
  */
-class OSIMSIMULATION_API Controller : public ModelComponent
-{
+class OSIMSIMULATION_API Controller : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Controller, ModelComponent);
+
 //=============================================================================
 // DATA
 //=============================================================================

@@ -156,19 +156,7 @@ CMC::CMC(Model *aModel,CMC_TaskSet *aTaskSet) :
 	_pErrStore->setColumnLabels(labels);
 	_stressTermWeightStore = new Storage(1000,"StressTermWeight");
 }
-//_____________________________________________________________________________
-/**
- * Copy this CMC controller and return a pointer to the copy.
- * The copy constructor for this class is used.  This method is called
- * when a description of this controller is read in from an XML file.
- *
- * @return Pointer to a copy of this CMC controller.
- */
-Object* CMC::copy() const
-{
-	CMC *object = new CMC(*this);
-	return object;
-}
+
 void CMC::copyData( const CMC &aCmc ) 
 {
    TrackingController::copyData( aCmc );
@@ -219,7 +207,6 @@ CMC::~CMC()
 void CMC::
 setNull()
 {
-    setType("CMC");
 	_optimizer = NULL;
 	_target = NULL;
 	_taskSet = NULL;

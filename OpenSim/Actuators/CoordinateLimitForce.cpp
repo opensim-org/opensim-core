@@ -93,17 +93,6 @@ CoordinateLimitForce::CoordinateLimitForce(const CoordinateLimitForce &aForce) :
 	setNull();
 	copyData(aForce);
 }
-//_____________________________________________________________________________
-/**
- * Copy this actuator and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this actuator.
- */
-Object* CoordinateLimitForce::copy() const
-{
-	return new CoordinateLimitForce(*this);
-}
 
 
 //=============================================================================
@@ -115,7 +104,6 @@ Object* CoordinateLimitForce::copy() const
  */
 void CoordinateLimitForce::setNull()
 {
-	setType("CoordinateLimitForce");
 	setupProperties();
 
 	_coord = NULL;
@@ -130,9 +118,9 @@ void CoordinateLimitForce::setNull()
  */
 void CoordinateLimitForce::setupProperties()
 {
-	addProperty<string>("coordinate",
-		"",
+	addOptionalProperty<string>("coordinate",
 		"");
+
 	addProperty<double>("upper_stiffness",
 		"Stiffness of the passive limit force when coordinate exceeds upper limit."
 		" Note, rotational stiffness expected in N*m/degree.",
@@ -163,7 +151,9 @@ void CoordinateLimitForce::setupProperties()
  */
 void CoordinateLimitForce::copyData(const CoordinateLimitForce &aForce)
 {
-	setPropertyValue("coordinate", aForce.getPropertyValue<string>("coordinate"));
+    // We allow the coordinate to be missing so we might not get a value here.
+	setPropertyValue("coordinate", aForce.getProperty<string>("coordinate"));
+
 	setPropertyValue("upper_stiffness", aForce.getPropertyValue<double>("upper_stiffness"));
 	setPropertyValue("upper_limit", aForce.getPropertyValue<double>("upper_limit"));
 	setPropertyValue("lower_stiffness", aForce.getPropertyValue<double>("lower_stiffness"));

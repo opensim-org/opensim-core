@@ -98,7 +98,7 @@ PropertyIntArray::PropertyIntArray(const PropertyIntArray &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyIntArray* PropertyIntArray::copy() const
+PropertyIntArray* PropertyIntArray::clone() const
 {
 	PropertyIntArray *property = new PropertyIntArray(*this);
 	return(property);

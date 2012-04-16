@@ -73,19 +73,6 @@ MuscleStateTrackingTask::MuscleStateTrackingTask(const MuscleStateTrackingTask& 
 	copyData(aTask);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this task and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this MuscleStateTrackingTask.
- */
-Object* MuscleStateTrackingTask::copy() const
-{
-	MuscleStateTrackingTask *task = new MuscleStateTrackingTask(*this);
-	return(task);
-}
-
 
 //=============================================================================
 // CONSTRUCTION
@@ -97,7 +84,6 @@ Object* MuscleStateTrackingTask::copy() const
 void MuscleStateTrackingTask::
 setNull()
 {
-	setType("MuscleStateTrackingTask");
 	setName(DEFAULT_NAME);
 	setupProperties();
 	_nTrk = 1;

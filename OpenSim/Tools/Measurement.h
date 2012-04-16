@@ -61,9 +61,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMTOOLS_API Measurement : public Object  
-{
-	OPENSIM_DECLARE_DERIVED(Measurement,Object);
+class OSIMTOOLS_API Measurement : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(Measurement, Object);
 
 //=============================================================================
 // DATA
@@ -88,7 +87,6 @@ public:
 	Measurement();
 	Measurement(const Measurement &aMeasurement);
 	virtual ~Measurement();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	Measurement& operator=(const Measurement &aMeasurement);

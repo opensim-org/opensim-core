@@ -173,18 +173,7 @@ GCVSpline(const GCVSpline &aSpline) :
 {
 	setEqual(aSpline);
 }
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* GCVSpline::
-copy() const
-{
-	GCVSpline *spline = new GCVSpline(*this);
-	return(spline);
-}
+
 
 //=============================================================================
 // CONSTRUCTION
@@ -196,7 +185,6 @@ copy() const
 void GCVSpline::
 setNull()
 {
-	setType("GCVSpline");
 	setupProperties();
 }
 //_____________________________________________________________________________

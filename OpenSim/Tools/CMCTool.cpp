@@ -93,7 +93,6 @@ CMCTool::CMCTool() :
 	_printLevel(_printLevelProp.getValueInt()),
 	_verbose(_verboseProp.getValueBool())
 {
-	setType("CMCTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -123,7 +122,6 @@ CMCTool::CMCTool(const string &aFileName, bool aLoadModel) :
 	_printLevel(_printLevelProp.getValueInt()),
 	_verbose(_verboseProp.getValueBool())
 {
-	setType("CMCTool");
 	setNull();
 	updateFromXMLDocument();
 	if(aLoadModel){
@@ -193,22 +191,8 @@ CMCTool(const CMCTool &aTool) :
 	_printLevel(_printLevelProp.getValueInt()),
 	_verbose(_verboseProp.getValueBool())
 {
-	setType("CMCTool");
 	setNull();
 	*this = aTool;
-}
-
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor.
- *
- * @return Copy of this object.
- */
-Object* CMCTool::
-copy() const
-{
-	CMCTool *object = new CMCTool(*this);
-	return(object);
 }
 
 //_____________________________________________________________________________
@@ -899,7 +883,7 @@ addNecessaryAnalyses()
 	// Add Actuation if necessary
 	Actuation *act = NULL;
 	for(int i=0; i<as.getSize(); i++) 
-		if(as.get(i).getType() == "Actuation") { act = (Actuation*)&as.get(i); break; }
+		if(as.get(i).getConcreteClassName() == "Actuation") { act = (Actuation*)&as.get(i); break; }
 	if(!act) {
 		std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
 		act = new Actuation(_model);
@@ -912,7 +896,7 @@ addNecessaryAnalyses()
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
 	for(int i=0; i<as.getSize(); i++) 
-		if(as.get(i).getType() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
+		if(as.get(i).getConcreteClassName() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
 	if(!kin) {
 		std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
 		kin = new Kinematics(_model);
@@ -957,7 +941,7 @@ initializeControlSetUsingConstraints(
             if( index == -1 ) {
                  cout << "Cannot find control constraint for: " << rControlSet.get(i).getName() << endl;
             } else {
-                rControlSet.set(i, (Control*)aControlConstraints->get(index).copy() );
+                rControlSet.set(i, aControlConstraints->get(index).clone() );
             }
         }
 	}

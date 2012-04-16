@@ -59,9 +59,9 @@ class ForceSet;
  *
  * @author Matt DeMers
  */
-class OSIMANALYSES_API JointLoadOptimization : public Analysis 
-{
-	OPENSIM_DECLARE_DERIVED(JointLoadOptimization, Analysis);
+class OSIMANALYSES_API JointLoadOptimization : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(JointLoadOptimization, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -135,10 +135,9 @@ protected:
 //=============================================================================
 public:
 	JointLoadOptimization(Model *aModel=0);
-	// Copy constrctor and virtual copy 
 	JointLoadOptimization(const JointLoadOptimization &aObject);
-	virtual Object* copy() const;
 	virtual ~JointLoadOptimization();
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

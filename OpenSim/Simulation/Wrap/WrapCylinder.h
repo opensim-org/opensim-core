@@ -56,8 +56,8 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapCylinder : public WrapObject
-{
+class OSIMSIMULATION_API WrapCylinder : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapCylinder, WrapObject);
 
 //=============================================================================
 // DATA
@@ -79,7 +79,7 @@ public:
 	WrapCylinder();
 	WrapCylinder(const WrapCylinder& aWrapCylinder);
 	virtual ~WrapCylinder();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	WrapCylinder& operator=(const WrapCylinder& aWrapCylinder);
 #endif

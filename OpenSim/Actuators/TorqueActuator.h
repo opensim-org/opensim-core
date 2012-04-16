@@ -56,8 +56,9 @@ namespace OpenSim {
 class Body;
 class Model;
 
-class OSIMACTUATORS_API TorqueActuator : public Actuator
-{
+class OSIMACTUATORS_API TorqueActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(TorqueActuator, Actuator);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -78,7 +79,7 @@ public:
 	TorqueActuator( std::string aBodyNameA="", std::string abodyNameB="");
 	TorqueActuator( const TorqueActuator &aTorqueActuator);
 	virtual ~TorqueActuator();
-	virtual Object* copy() const;
+
 	void copyData(const TorqueActuator &aTorqueActuator);
 private:
 	void setNull();
@@ -150,8 +151,6 @@ public:
 	// XML
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-	OPENSIM_DECLARE_DERIVED(TorqueActuator, Actuator);
 
 //=============================================================================
 };	// END of class TorqueActuator

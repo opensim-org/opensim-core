@@ -79,9 +79,6 @@ ActuatorPerturbation(Model *aModel) :
 {
 	setNull();
     _model = aModel;
-
-	// BASE-CLASS MEMBER VARIABLES
-	setType("ActuatorPerturbation");
 }
 
 /**
@@ -118,15 +115,7 @@ ActuatorPerturbation::ActuatorPerturbation(const std::string &aFileName, bool aU
 	setNull();
 	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor.
- */
-Object* ActuatorPerturbation::
-copy() const
-{
-	return(new ActuatorPerturbation(*this));
-}
+
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================

@@ -51,8 +51,9 @@ class FunctionSet;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API InverseDynamicsSolver: public Solver
-{
+class OSIMSIMULATION_API InverseDynamicsSolver: public Solver {
+OpenSim_DECLARE_CONCRETE_OBJECT(InverseDynamicsSolver, Solver);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -65,7 +66,7 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~InverseDynamicsSolver() {};
+	virtual ~InverseDynamicsSolver() {}
 
 	/** Construct an InverseDynamics solver with the coordinate references as the goal
 	    of the InverseDynamics and (optional)constraint weight. Defual is infitinet

@@ -53,8 +53,9 @@ namespace OpenSim {
  * @see ArrayPtrs
  * @author Frank C. Anderson
  */
-template<class T> class Set : public Object
-{
+template<class T> class Set : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT_T(Set, T, Object);
+
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // DATA
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -73,6 +74,7 @@ ArrayPtrs<ObjectGroup> &_objectGroups;
 // METHODS
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 public:
+
 //=============================================================================
 // DESTRUCTOR & CONSTRUCTORS
 //=============================================================================
@@ -83,6 +85,7 @@ public:
 virtual ~Set()
 {
 }
+
 //_____________________________________________________________________________
 /**
  * Default constructor.
@@ -92,7 +95,6 @@ Set() :
 	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
 	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
-	setType("Set");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -106,7 +108,6 @@ Set(const std::string &aFileName, bool aUpdateFromXMLNode = true) :
 	_objects((ArrayPtrs<T>&)_propObjects.getValueObjArray()),
 	_objectGroups((ArrayPtrs<ObjectGroup>&)_propObjectGroups.getValueObjArray())
 {
-	setType("Set");
 	setNull();
 	if(aUpdateFromXMLNode) updateFromXMLDocument();
 }
@@ -124,18 +125,6 @@ Set(const Set<T> &aSet) :
 	setNull();
 	_objects = aSet._objects;
 	_objectGroups = aSet._objectGroups;
-}
-//_____________________________________________________________________________
-/**
- * Copy.
- */
-virtual Object*
-copy() const
-{
-	Set<T> *retObj = new Set<T>();
-	*retObj = *this;
-
-	return(retObj);
 }
 
 
@@ -492,7 +481,7 @@ virtual bool append(T *aObject)
 #ifndef SWIG
 virtual bool append(const T& aObject)
 {
-	return append((T*) aObject.copy());
+	return append(aObject.clone());
 }
 #endif
 //-----------------------------------------------------------------------------
@@ -538,7 +527,7 @@ virtual bool insert(int aIndex,T *aObject)
  */
 virtual bool insert(int aIndex, const T& aObject)
 {
-	return insert(aIndex, (T*) aObject.copy());
+	return insert(aIndex, aObject.clone());
 }
 #endif
 //-----------------------------------------------------------------------------
@@ -644,7 +633,7 @@ virtual bool set(int aIndex, T *aObject, bool preserveGroups = false)
  */
 virtual bool set(int aIndex, const T& aObject, bool preserveGroups = false)
 {
-    return set(aIndex, (T*) aObject.copy(), preserveGroups);
+    return set(aIndex, aObject.clone(), preserveGroups);
 }
 #endif
 //_____________________________________________________________________________

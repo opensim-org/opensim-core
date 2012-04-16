@@ -76,7 +76,7 @@ public:
 	PropertyDblArray(const std::string &aName,
 		int aSize,const double aArray[]);
 	PropertyDblArray(const PropertyDblArray &aProperty);
-	/*virtual*/ PropertyDblArray* copy() const;
+	/*virtual*/ PropertyDblArray* clone() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

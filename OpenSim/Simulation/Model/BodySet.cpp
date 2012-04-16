@@ -49,14 +49,12 @@ BodySet::~BodySet(void)
 /**
  * Default constructor of a BodySet.
  */
-BodySet::BodySet() :
-	ModelComponentSet<Body>()
+BodySet::BodySet()
 {
 	setNull();
 }
 
-BodySet::BodySet(Model& model) :
-	ModelComponentSet<Body>(model)
+BodySet::BodySet(Model& model) : Super(model)
 {
 	setNull();
 }
@@ -65,8 +63,7 @@ BodySet::BodySet(Model& model) :
 /**
  * Copy constructor of a BodySet.
  */
-BodySet::BodySet(const BodySet& aAbsBodySet):
-	ModelComponentSet<Body>(aAbsBodySet)
+BodySet::BodySet(const BodySet& aAbsBodySet) : Super(aAbsBodySet)
 {
 	setNull();
 	*this = aAbsBodySet;
@@ -80,7 +77,6 @@ BodySet::BodySet(const BodySet& aAbsBodySet):
  */
 void BodySet::setNull()
 {
-	setType("BodySet");
 }
 
 /**
@@ -88,11 +84,8 @@ void BodySet::setNull()
  */
 void BodySet::setup(Model& aModel)
 {
-	// Base class
-	Set<Body>::setup();
-
 	// Do members
-	ModelComponentSet<Body>::setup(aModel);
+	Super::setup(aModel);
 
 }
 

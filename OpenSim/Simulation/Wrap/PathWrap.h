@@ -63,8 +63,8 @@ class GeometryPath;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API PathWrap : public Object
-{
+class OSIMSIMULATION_API PathWrap : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrap, Object);
 
 //=============================================================================
 // DATA
@@ -80,21 +80,21 @@ public:
 
 protected:
 	PropertyStr _wrapObjectNameProp;
-   std::string &_wrapObjectName;
+    std::string &_wrapObjectName;
 
 	PropertyStr _methodNameProp;   // currently used only for ellipsoid wrapping
 	std::string& _methodName;
 	WrapMethod _method;
 
-   PropertyIntArray _rangeProp;
-   Array<int> &_range;
+    PropertyIntArray _rangeProp;
+    Array<int> &_range;
 
 	WrapObject* _wrapObject;
 	GeometryPath* _path;
 
 	WrapResult _previousWrap;  // results from previous wrapping
 
-   PathWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
+    PathWrapPoint _wrapPoints[2]; // the two muscle points created when the muscle wraps
 
 //=============================================================================
 // METHODS
@@ -106,7 +106,7 @@ public:
 	PathWrap();
 	PathWrap(const PathWrap& aPathWrap);
 	virtual ~PathWrap();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	PathWrap& operator=(const PathWrap& aPathWrap);
 	virtual void setup(const Model& aModel, GeometryPath& aPath);

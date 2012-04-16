@@ -32,13 +32,13 @@ class WrapResult;
  * @author Brian Garner, derivded from Peter Loan
  * @version 0.1
  */
-class OSIMSIMULATION_API WrapSphereObst : public WrapObject
-{
+class OSIMSIMULATION_API WrapSphereObst : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapSphereObst, WrapObject);
 
 //=============================================================================
 // DATA
 //=============================================================================
-
+private:
 	PropertyDbl _radiusProp;
 	double& _radius;
 
@@ -55,7 +55,7 @@ public:
 	WrapSphereObst();
 	WrapSphereObst(const WrapSphereObst& aWrapSphereObst);
 	virtual ~WrapSphereObst();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	WrapSphereObst& operator=(const WrapSphereObst& aWrapSphereObst);
 #endif

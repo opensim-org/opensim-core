@@ -50,8 +50,8 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API PointConstraint : public Constraint  
-{
+class OSIMSIMULATION_API PointConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(PointConstraint, Constraint);
 
 //=============================================================================
 // DATA
@@ -89,7 +89,7 @@ public:
 	PointConstraint(const PointConstraint &aConstraint);
 	PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody1, OpenSim::Body& body2, SimTK::Vec3& locationBody2);
 	virtual ~PointConstraint();
-	virtual Object* copy() const;
+
 	PointConstraint& operator=(const PointConstraint &aConstraint);
 	void copyData(const PointConstraint &aConstraint);
 

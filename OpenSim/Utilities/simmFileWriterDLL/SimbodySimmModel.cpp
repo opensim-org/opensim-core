@@ -101,30 +101,31 @@ SimbodySimmModel::SimbodySimmModel()
 SimbodySimmModel::SimbodySimmModel(const Model* aModel)
 {
 	setNull();
-   setup(aModel);
+    setup(aModel);
 }
 
 //_____________________________________________________________________________
 /**
  * Copy constructor.
  */
-SimbodySimmModel::SimbodySimmModel(const SimbodySimmModel& aModel)
+SimbodySimmModel::SimbodySimmModel(const SimbodySimmModel& source)
+:   SimbodySimmModel::Super(source)
 {
 	setNull();
-   copyData(aModel);
+    copyData(source);
 }
 
 //_____________________________________________________________________________
 /**
- * Copy this engine and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this SimbodySimmModel.
+ * Copy assignment.
  */
-Object* SimbodySimmModel::copy() const
-{
-	SimbodySimmModel *object = new SimbodySimmModel(*this);
-	return object;
+SimbodySimmModel& SimbodySimmModel::operator=(const SimbodySimmModel& source) {
+    if (&source != this) {
+        Super::operator=(source);
+	    setNull();
+        copyData(source);
+    }
+    return *this;
 }
 
 //_____________________________________________________________________________
@@ -145,7 +146,6 @@ void SimbodySimmModel::copyData(const SimbodySimmModel &aModel)
  */
 void SimbodySimmModel::setNull()
 {
-	setType("SimbodySimmModel");
 	_model = NULL;
 	_maxFunctionUserNumber = 0;
 	_uniqueJointNumber = 0;
@@ -1057,14 +1057,11 @@ bool SimbodySimmModel::writeMuscle(Muscle& aMuscle, const ForceSet& aActuatorSet
 		aStream << "timescale " << szh->getTimeScale() << endl;
 		aStream << "muscle_model 4" << endl;
 
-		if (szh->getActiveForceLengthCurve())
-			aStream << "active_force_length_curve f" << addMuscleFunction(szh->getActiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+		aStream << "active_force_length_curve f" << addMuscleFunction(&szh->getActiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
 
-		if (szh->getPassiveForceLengthCurve())
-			aStream << "passive_force_length_curve f" << addMuscleFunction(szh->getPassiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+		aStream << "passive_force_length_curve f" << addMuscleFunction(&szh->getPassiveForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
 
-		if (szh->getTendonForceLengthCurve())
-			aStream << "tendon_force_length_curve f" << addMuscleFunction(szh->getTendonForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
+		aStream << "tendon_force_length_curve f" << addMuscleFunction(&szh->getTendonForceLengthCurve(), Coordinate::Translational, Coordinate::Translational) << endl;
 	}
 	else if (dynamic_cast<Thelen2003Muscle*>(&aMuscle))
 	{

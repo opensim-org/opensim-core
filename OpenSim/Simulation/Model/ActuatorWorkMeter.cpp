@@ -99,7 +99,6 @@ ActuatorWorkMeter::ActuatorWorkMeter(const ActuatorWorkMeter &aActuatorWorkMeter
  */
 void ActuatorWorkMeter::setNull(void)
 {
-	setType("ActuatorWorkMeter");
 }
 
 //_____________________________________________________________________________
@@ -114,12 +113,6 @@ void ActuatorWorkMeter::setupProperties(void)
 	addProperty<double>("initial_actuator_work",
 		"The initial amount of work.",
 		0.0);
-}
-
-Object* ActuatorWorkMeter::copy() const
-{
-	ActuatorWorkMeter *meter = new ActuatorWorkMeter(*this);
-	return(meter);
 }
 
 //_____________________________________________________________________________

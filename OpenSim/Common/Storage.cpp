@@ -286,18 +286,7 @@ Storage(const Storage &aStorage,int aStateIndex,int aN,
 			_columnLabels.append(aStorage.getColumnLabels()[aStateIndex+1+i]);
 	}
 }
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* Storage::
-copy() const
-{
-	Storage *store = new Storage(*this);
-	return(store);
-}
+
 
 /**
  * Assignment operator.

@@ -55,8 +55,8 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMPLUGIN_API CoupledBushingForce : public Force  
-{
+class OSIMPLUGIN_API CoupledBushingForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoupledBushingForce, Force);
 
 //=============================================================================
 // DATA
@@ -131,7 +131,7 @@ public:
 				  SimTK::Mat66 stiffnessMat, SimTK::Mat66 dampingMat);
 	CoupledBushingForce(const CoupledBushingForce &aForce);
 	virtual ~CoupledBushingForce();
-	virtual Object* copy() const;
+
 	CoupledBushingForce& operator=(const CoupledBushingForce &aForce);
 	void copyData(const CoupledBushingForce &aForce);
 

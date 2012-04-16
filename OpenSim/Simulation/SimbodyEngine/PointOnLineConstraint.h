@@ -50,8 +50,8 @@ namespace OpenSim {
  * @author Samuel Hamner
  * @version 1.0
  */
-class OSIMSIMULATION_API PointOnLineConstraint : public Constraint  
-{
+class OSIMSIMULATION_API PointOnLineConstraint : public Constraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(PointOnLineConstraint, Constraint);
 
 //=============================================================================
 // DATA
@@ -94,7 +94,7 @@ public:
 	PointOnLineConstraint(OpenSim::Body& lineBody, SimTK::Vec3 lineDirection, SimTK::Vec3 pointOnLine,
 		OpenSim::Body& followerBody, SimTK::Vec3 followerPoint);
 	virtual ~PointOnLineConstraint();
-	virtual Object* copy() const;
+
 	PointOnLineConstraint& operator=(const PointOnLineConstraint &aConstraint);
 	void copyData(const PointOnLineConstraint &aConstraint);
 

@@ -56,8 +56,9 @@ class Model;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API Condition : public Object  
-{
+class OSIMSIMULATION_API Condition : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(Condition, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -80,7 +81,6 @@ public:
 	Condition();
 	Condition(const Condition &aCondition);
 	virtual ~Condition();
-	virtual Object* copy() const;
 
 	Condition& operator=(const Condition &aCondition);
 	void copyData(const Condition &aCondition);

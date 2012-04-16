@@ -31,8 +31,6 @@
 
 
 // INCLUDE
-#include <iostream>
-#include <string>
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "Storage.h"
@@ -40,6 +38,9 @@
 #include "ArrayPtrs.h"
 #include "SimmMotionEvent.h"
 #include "Units.h"
+
+#include <iostream>
+#include <string>
 
 namespace OpenSim {
 
@@ -51,8 +52,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMCOMMON_API SimmMotionData : public Object
-{
+class OSIMCOMMON_API SimmMotionData : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(SimmMotionData, Object);
 
 //=============================================================================
 // DATA
@@ -93,7 +94,7 @@ public:
 	SimmMotionData(Storage& aData);
 	SimmMotionData(const SimmMotionData &aData);
 	virtual ~SimmMotionData();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	SimmMotionData& operator=(const SimmMotionData &aData);
 #endif

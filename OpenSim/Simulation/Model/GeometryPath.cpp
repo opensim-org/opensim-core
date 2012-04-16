@@ -110,18 +110,6 @@ GeometryPath::GeometryPath(const GeometryPath &aPath) :
 	copyData(aPath);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this path and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this GeometryPath.
- */
-Object* GeometryPath::copy() const
-{
-	GeometryPath *path = new GeometryPath(*this);
-	return path;
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -145,8 +133,6 @@ void GeometryPath::copyData(const GeometryPath &aPath)
  */
 void GeometryPath::setNull()
 {
-	setType("GeometryPath");
-
 }
 
 //_____________________________________________________________________________

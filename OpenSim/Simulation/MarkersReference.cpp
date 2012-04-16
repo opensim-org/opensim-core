@@ -46,7 +46,6 @@ MarkersReference::MarkersReference() : Reference_<SimTK::Vec3>(),
 		_defaultWeight(_defaultWeightProp.getValueDbl()),
 		_markerData(NULL)
 {
-	setType("MarkersReference");
 }
 
 MarkersReference::MarkersReference(const std::string markerFile, Units modelUnits) : Reference_<SimTK::Vec3>(), 
@@ -56,7 +55,6 @@ MarkersReference::MarkersReference(const std::string markerFile, Units modelUnit
 		_defaultWeight(_defaultWeightProp.getValueDbl()),
 		_markerData(NULL)
 {
-	setType("MarkersReference");
 	loadMarkersFile(markerFile, modelUnits);
 }
 
@@ -72,7 +70,6 @@ MarkersReference::MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeig
 		_defaultWeight(_defaultWeightProp.getValueDbl()),
 		_markerData(NULL)
 {
-	setType("MarkersReference");
 	if (aMarkerWeightSet!=NULL) _markerWeightSet= *aMarkerWeightSet;
 	populateFromMarkerData(aMarkerData);
 }

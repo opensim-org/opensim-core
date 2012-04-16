@@ -57,8 +57,8 @@
  */
 namespace OpenSim { 
 
-class OSIMSIMULATION_API ControlLinear : public Control
-{
+class OSIMSIMULATION_API ControlLinear : public Control {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControlLinear, Control);
 
 //=============================================================================
 // MEMBER DATA
@@ -99,7 +99,7 @@ public:
 	ControlLinear();
 	ControlLinear(const ControlLinear &aControl);
 	virtual ~ControlLinear();
-	virtual Object* copy() const;
+
 	void copyData(const ControlLinear &aControl);
 protected:
 	virtual void setupProperties();
@@ -175,13 +175,13 @@ public:
 	// Insert methods that allocate and insert a copy.
 	// These are called from GUI to work around early garbage collection
 	void insertNewValueNode(int index, const ControlLinearNode& newNode) {
-		_xNodes.insert(index, (ControlLinearNode*) newNode.copy());
+		_xNodes.insert(index, newNode.clone());
 	}
 	void insertNewMinNode(int index, const ControlLinearNode& newNode) {
-		_minNodes.insert(index, (ControlLinearNode*) newNode.copy());
+		_minNodes.insert(index, newNode.clone());
 	}
 	void insertNewMaxNode(int index, const ControlLinearNode& newNode) {
-		_maxNodes.insert(index, (ControlLinearNode*) newNode.copy());
+		_maxNodes.insert(index, newNode.clone());
 	}
 	// Convenience methods
 	virtual const double getFirstTime() const;
@@ -200,7 +200,6 @@ private:
 	double getControlValue(ArrayPtrs<ControlLinearNode> &aNodes,double aT);
 	double extrapolateBefore(const ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
 	double extrapolateAfter(ArrayPtrs<ControlLinearNode> &aNodes,double aT) const;
-	OPENSIM_DECLARE_DERIVED(ControlLinear, Control);
 
 //=============================================================================
 };	// END of class ControlLinear

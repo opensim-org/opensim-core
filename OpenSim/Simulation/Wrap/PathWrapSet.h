@@ -51,8 +51,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API PathWrapSet :	public Set<PathWrap>
-{
+class OSIMSIMULATION_API PathWrapSet : public Set<PathWrap> {
+OpenSim_DECLARE_CONCRETE_OBJECT(PathWrapSet, Set<PathWrap>);
+
 private:
 	void setNull();
 public:

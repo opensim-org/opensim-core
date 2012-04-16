@@ -90,18 +90,6 @@ WrapTorus::WrapTorus(const WrapTorus& aWrapTorus) :
 	copyData(aWrapTorus);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this WrapTorus and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this WrapTorus.
- */
-Object* WrapTorus::copy() const
-{
-	WrapTorus *wrapTorus = new WrapTorus(*this);
-	return(wrapTorus);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -112,7 +100,6 @@ Object* WrapTorus::copy() const
  */
 void WrapTorus::setNull()
 {
-	setType("WrapTorus");
 }
 
 //_____________________________________________________________________________

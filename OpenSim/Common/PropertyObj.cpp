@@ -63,7 +63,7 @@ PropertyObj(const string &aName,const Object &aValue) :
 	Property_Deprecated(Property_Deprecated::Obj,aName)
 {
 	setName(aName);
-	_value = aValue.copy();
+	_value = aValue.clone();
 	_value->setName(aName);
 }
 //_____________________________________________________________________________
@@ -85,7 +85,7 @@ PropertyObj() :
 PropertyObj::PropertyObj(const PropertyObj &aProperty) :
 	Property_Deprecated(aProperty)
 {
-	_value = aProperty.getValueObj().copy();
+	_value = aProperty.getValueObj().clone();
 }
 //_____________________________________________________________________________
 /**
@@ -95,7 +95,7 @@ PropertyObj::PropertyObj(const PropertyObj &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyObj* PropertyObj::copy() const
+PropertyObj* PropertyObj::clone() const
 {
 	PropertyObj *property = new PropertyObj(*this);
 	return(property);
@@ -120,7 +120,7 @@ operator=(const PropertyObj &aProperty)
 {
 	Property_Deprecated::operator =(aProperty);
 	if(_value!=NULL) { delete _value;  _value=NULL; }
-	_value = aProperty.getValueObj().copy();
+	_value = aProperty.getValueObj().clone();
 	return(*this);
 }
 

@@ -116,17 +116,7 @@ Analysis(aMuscleAnalysisV1)
 	setStandardMuscleCurves();
 	*this = aMuscleAnalysisV1;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* MuscleAnalysisV1::copy() const
-{
-	MuscleAnalysisV1 *object = new MuscleAnalysisV1(*this);
-	return(object);
 
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -138,7 +128,6 @@ Object* MuscleAnalysisV1::copy() const
 void MuscleAnalysisV1::
 setNull()
 {
-	setType("MuscleAnalysisV1");
 	setName("MuscleAnalysisV1");
 	setupProperties();
 	constructDescription();

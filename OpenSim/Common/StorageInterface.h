@@ -44,17 +44,16 @@ namespace OpenSim {
 
 class StateVector;
 
-class OSIMCOMMON_API StorageInterface : public Object
-{
+class OSIMCOMMON_API StorageInterface : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(StorageInterface, Object);
+
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	// make this constructor explicit so you don't get implicit casting of int to StorageInterface
-	StorageInterface(const std::string &aFileName) SWIG_DECLARE_EXCEPTION{};
+	explicit StorageInterface(const std::string &aFileName) SWIG_DECLARE_EXCEPTION{};
 	StorageInterface(const StorageInterface& aStorageInterface) {};
-	virtual Object* copy() const=0;
-	virtual ~StorageInterface(){};
+	virtual ~StorageInterface() {}
 
 #ifndef SWIG
 	StorageInterface& operator=(const StorageInterface &aStorageInterface)

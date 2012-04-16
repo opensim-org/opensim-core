@@ -97,18 +97,6 @@ ContDerivMuscle_Deprecated::ContDerivMuscle_Deprecated(const ContDerivMuscle_Dep
 	copyData(aMuscle);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ContDerivMuscle_Deprecated.
- */
-Object* ContDerivMuscle_Deprecated::copy() const
-{
-	ContDerivMuscle_Deprecated *musc = new ContDerivMuscle_Deprecated(*this);
-	return(musc);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -140,7 +128,6 @@ void ContDerivMuscle_Deprecated::copyData(const ContDerivMuscle_Deprecated &aMus
  */
 void ContDerivMuscle_Deprecated::setNull()
 {
-	setType("ContDerivMuscle_Deprecated");
 }
 
 //_____________________________________________________________________________

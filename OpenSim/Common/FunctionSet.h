@@ -52,8 +52,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API FunctionSet : public Set<Function>
-{
+class OSIMCOMMON_API FunctionSet : public Set<Function> {
+OpenSim_DECLARE_CONCRETE_OBJECT(FunctionSet, Set<Function>);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -68,6 +69,7 @@ public:
 	FunctionSet();
 	FunctionSet(const std::string &aFileName);
 	virtual ~FunctionSet();
+
 private:
 	void setNull();
 

@@ -159,18 +159,7 @@ void TransformAxis::setup(Joint& aJoint)
 		}
 	}
 }
-//_____________________________________________________________________________
-/**
- * Copy this dof and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this TransformAxis.
- */
-Object* TransformAxis::copy() const
-{
-	TransformAxis *transform = new TransformAxis(*this);
-	return(transform);
-}
+
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -183,7 +172,6 @@ Object* TransformAxis::copy() const
 void TransformAxis::setNull()
 {
     _joint = NULL;
-	setType("TransformAxis");
 }
 
 //_____________________________________________________________________________
@@ -318,7 +306,7 @@ void TransformAxis::setFunction(OpenSim::Function* aFunction)
 
 void TransformAxis::setFunction(const OpenSim::Function& aFunction)
 {
-	_function = (Function*) aFunction.copy();
+	_function = aFunction.clone();
 }
 
 

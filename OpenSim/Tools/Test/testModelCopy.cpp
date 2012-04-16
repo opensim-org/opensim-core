@@ -72,7 +72,7 @@ void testCopyModel(string fileName)
 	ASSERT ((defaultState.getZ()-defaultStateOfCopy.getZ()).norm() < 1e-7);
 	
 	//  Now delete original model and make sure copy can stand
-	Model *newModel = (Model*)modelCopy->copy();
+	Model *newModel = modelCopy->clone();
 	// Compare state again
 	delete modelCopy;
 	SimTK::State& defaultStateOfCopy2 = newModel->initSystem();

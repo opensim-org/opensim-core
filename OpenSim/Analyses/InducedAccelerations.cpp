@@ -140,17 +140,7 @@ InducedAccelerations::InducedAccelerations(const InducedAccelerations &aInducedA
 	// COPY TYPE AND NAME
 	*this = aInducedAccelerations;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* InducedAccelerations::copy() const
-{
-	InducedAccelerations *object = new InducedAccelerations(*this);
-	return(object);
 
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -186,7 +176,6 @@ operator=(const InducedAccelerations &aInducedAccelerations)
  */
 void InducedAccelerations::setNull()
 {
-	setType("InducedAccelerations");
 	setupProperties();
 
 	_forceThreshold = 6.00;
@@ -506,7 +495,7 @@ void InducedAccelerations::setupStorage()
 void InducedAccelerations::setModel(Model &aModel)
 {
 	// SET THE MODEL for this analysis to be a copy
-	Analysis::setModel(aModel); //*dynamic_cast<Model*>(aModel.copy()));
+	Analysis::setModel(aModel); //*aModel.clone());
 }
 
 
@@ -721,8 +710,8 @@ int InducedAccelerations::record(const SimTK::State& s)
 
 		}// End of if to select contributor 
 
-		// cout << "Constraint 0 is of "<< _constraintSet[0].getType() << " and should be " << constraintOn[0] << " and is actually " <<  (_constraintSet[0].isDisabled(s_analysis) ? "off" : "on") << endl;
-		// cout << "Constraint 1 is of "<< _constraintSet[1].getType() << " and should be " << constraintOn[1] << " and is actually " <<  (_constraintSet[1].isDisabled(s_analysis) ? "off" : "on") << endl;
+		// cout << "Constraint 0 is of "<< _constraintSet[0].getConcreteClassName() << " and should be " << constraintOn[0] << " and is actually " <<  (_constraintSet[0].isDisabled(s_analysis) ? "off" : "on") << endl;
+		// cout << "Constraint 1 is of "<< _constraintSet[1].getConcreteClassName() << " and should be " << constraintOn[1] << " and is actually " <<  (_constraintSet[1].isDisabled(s_analysis) ? "off" : "on") << endl;
 
 		// After setting the state of the model and applying forces
 		// Compute the derivative of the multibody system (speeds and accelerations)
@@ -826,7 +815,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 void InducedAccelerations::initialize(const SimTK::State& s)
 {	
 	// Go forward with a copy of the model so Analysis can add to model if necessary
-	_model = dynamic_cast<Model*>(_model->copy());
+	_model = _model->clone();
 
 	SimTK::State s_copy = s;
 	double time = s_copy.getTime();

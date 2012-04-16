@@ -94,19 +94,6 @@ TorqueActuator::TorqueActuator(const TorqueActuator &anActuator) :
 	setNull();
 	copyData(anActuator);
 }
-//_____________________________________________________________________________
-/**
- * Copy this actuator and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this actuator.
- */
-Object* TorqueActuator::
-copy() const
-{
-	TorqueActuator *force = new TorqueActuator(*this);
-	return force;
-}
 
 
 //=============================================================================
@@ -119,7 +106,6 @@ copy() const
 void TorqueActuator::
 setNull()
 {
-	setType("TorqueActuator");
 	setupProperties();
 }
 
@@ -130,12 +116,12 @@ setNull()
 void TorqueActuator::
 setupProperties()
 {
-	addProperty<string>("bodyA",
-		"Name of Body to which the Body actuator is applied.",
-		"");
-	addProperty<string>("bodyB",
-		"Name of Body to which the equal and opposite torque is applied.",
-		"");
+    // Allow the bodies to be specified later.
+	addOptionalProperty<string>("bodyA",
+		"Name of Body to which the torque actuator is applied.");
+	addOptionalProperty<string>("bodyB",
+		"Name of Body to which the equal and opposite torque is applied.");
+
 	addProperty<bool>("torque_is_global",
 		"",
 		true);
@@ -156,10 +142,14 @@ void TorqueActuator::
 copyData(const TorqueActuator &aTorqueActuator)
 {
 	// MEMBER VARIABLES
-	setPropertyValue("bodyA", aTorqueActuator.getPropertyValue<string>("bodyA"));
-	setPropertyValue("bodyB", aTorqueActuator.getPropertyValue<string>("bodyB"));
-	setPropertyValue("torque_is_global", aTorqueActuator.getPropertyValue<bool>("torque_is_global"));
-	setPropertyValue("axis", aTorqueActuator.getPropertyValue<SimTK::Vec3>("axis"));
+    // We allow these to be unspecified so we might not get values here.
+	setPropertyValue("bodyA", aTorqueActuator.getProperty<string>("bodyA"));
+	setPropertyValue("bodyB", aTorqueActuator.getProperty<string>("bodyB"));
+
+	setPropertyValue("torque_is_global", 
+        aTorqueActuator.getPropertyValue<bool>("torque_is_global"));
+	setPropertyValue("axis", 
+        aTorqueActuator.getPropertyValue<SimTK::Vec3>("axis"));
 
 	setOptimalForce(aTorqueActuator.getOptimalForce());
 	setBodyA(aTorqueActuator.getBodyA());

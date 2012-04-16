@@ -84,18 +84,6 @@ PathPoint::PathPoint(const PathPoint &aPoint) :
 	copyData(aPoint);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this PathPoint.
- */
-Object* PathPoint::copy() const
-{
-	PathPoint *pt = new PathPoint(*this);
-	return(pt);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -132,8 +120,6 @@ void PathPoint::init(const PathPoint& aPoint)
  */
 void PathPoint::setNull()
 {
-	setType("PathPoint");
-
 	_body = NULL;
 	_path = NULL;
 }
@@ -147,7 +133,7 @@ void PathPoint::setupProperties()
 	const SimTK::Vec3 defaultLocation(0.0);
 	_locationProp.setName("location");
 	_locationProp.setValue(defaultLocation);
-	//_locationProp.setAllowableArraySize(3);
+	//_locationProp.setAllowableListSize(3);
 	_propertySet.append(&_locationProp);
 
 	_bodyNameProp.setName("body");
@@ -285,7 +271,7 @@ PathPoint* PathPoint::makePathPointOfType(PathPoint* aPoint, const string& aNewT
 	if (aPoint != NULL) {
 		Object* newObject = Object::newInstanceOfType(aNewTypeName);
 		if (newObject) {
-			newPoint = PathPoint::safeDownCast(newObject);
+			newPoint = dynamic_cast<PathPoint*>(newObject);
 			if (newPoint) {
 				// Copy the contents from aPoint.
 				newPoint->init(*aPoint);

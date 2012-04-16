@@ -86,19 +86,6 @@ Marker::Marker(const Marker &aMarker) :
 	_displayer.setOwner(this);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this Marker and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this Marker.
- */
-Object* Marker::copy() const
-{
-	Marker *marker = new Marker(*this);
-	return(marker);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -124,7 +111,6 @@ void Marker::copyData(const Marker &aMarker)
  */
 void Marker::setNull()
 {
-	setType("Marker");
 	setVirtual(true);
 	_body = 0;
 }
@@ -143,7 +129,7 @@ void Marker::setupProperties()
 	const SimTK::Vec3 defaultAttachment(0.0);
 	_offsetProp.setName("location");
 	_offsetProp.setValue(defaultAttachment);
-	//_offsetProp.setAllowableArraySize(3);
+	//_offsetProp.setAllowableListSize(3);
 	_propertySet.append(&_offsetProp);
 
 	_fixedProp.setComment("Flag (true or false) specifying whether or not a marker "

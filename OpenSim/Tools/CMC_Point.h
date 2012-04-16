@@ -53,8 +53,8 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMC_Point : public CMC_Task
-{
+class OSIMTOOLS_API CMC_Point : public CMC_Task {
+OpenSim_DECLARE_CONCRETE_OBJECT(CMC_Point, CMC_Task);
 
 //=============================================================================
 // DATA
@@ -81,7 +81,7 @@ public:
 	CMC_Point(const SimTK::Vec3 &aPoint = SimTK::Vec3(0));
 	CMC_Point(const CMC_Point &aTask);
 	virtual ~CMC_Point();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();

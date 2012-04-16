@@ -89,19 +89,6 @@ Ligament::Ligament(const Ligament &aLigament) : Force(aLigament)
 	copyData(aLigament);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this ligament and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ligament.
- */
-Object* Ligament::copy() const
-{
-	Ligament *lig = new Ligament(*this);
-	return lig;
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -116,7 +103,8 @@ void Ligament::copyData(const Ligament &aLigament)
 	setPropertyValue("GeometryPath", aLigament.getPropertyValue<GeometryPath>("GeometryPath"));
 	setPropertyValue("resting_length", aLigament.getPropertyValue<double>("resting_length"));
 	setPropertyValue("pcsa_force", aLigament.getPropertyValue<double>("pcsa_force"));
-	setPropertyValue("force_length_curve", (Function*)Object::SafeCopy(aLigament.getPropertyValue<Function *>("force_length_curve")));
+	setPropertyValue("force_length_curve", 
+        aLigament.getPropertyValue<Function>("force_length_curve"));
 }
 
 //_____________________________________________________________________________
@@ -125,8 +113,6 @@ void Ligament::copyData(const Ligament &aLigament)
  */
 void Ligament::setNull()
 {
-	setType("Ligament");
-
 	_model = NULL;
 }
 
@@ -156,8 +142,9 @@ void Ligament::setupProperties()
 	int forceLengthCurvePoints = 13;
 	double forceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
 	double forceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
-	NaturalCubicSpline *forceLengthCurve = new NaturalCubicSpline(forceLengthCurvePoints, forceLengthCurveX, forceLengthCurveY);
-	addProperty<Function *>("force_length_curve",
+	NaturalCubicSpline forceLengthCurve
+       (forceLengthCurvePoints, forceLengthCurveX, forceLengthCurveY);
+	addProperty<Function>("force_length_curve",
 		"Function representing the force-length behavior of the ligament",
 		forceLengthCurve);
 }
@@ -275,7 +262,7 @@ bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
  * @param aForceLengthCurve Pointer to a force-length curve (Function).
  * @return Whether the force-length curve was successfully changed.
  */
-bool Ligament::setForceLengthCurve(Function* aForceLengthCurve)
+bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 {
 	setPropertyValue("force_length_curve", aForceLengthCurve);
 	return true;
@@ -360,13 +347,15 @@ void Ligament::computeForce(const SimTK::State& s,
 		return;
 
 	double strain = (path.getLength(s) - restingLength) / restingLength;
-	double force = getForceLengthCurve()->calcValue(SimTK::Vector(1, strain)) * pcsaForce;
+	double force = getForceLengthCurve().calcValue(SimTK::Vector(1, strain)) 
+                                                                   * pcsaForce;
 
 	OpenSim::Array<PointForceDirection*> PFDs;
 	path.getPointForceDirections(s, &PFDs);
 
 	for (int i=0; i < PFDs.getSize(); i++) {
-		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), force*PFDs[i]->direction(), bodyForces);
+		applyForceToPoint(s, PFDs[i]->body(), PFDs[i]->point(), 
+                          force*PFDs[i]->direction(), bodyForces);
 	}
 }
 

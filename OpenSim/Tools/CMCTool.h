@@ -64,8 +64,9 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMTOOLS_API CMCTool: public AbstractTool
-{
+class OSIMTOOLS_API CMCTool: public AbstractTool {
+OpenSim_DECLARE_CONCRETE_OBJECT(CMCTool, AbstractTool);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -142,7 +143,7 @@ public:
 	CMCTool();
 	CMCTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	CMCTool(const CMCTool &aObject);
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();

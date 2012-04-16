@@ -96,17 +96,7 @@ InverseDynamics::InverseDynamics(const InverseDynamics &aInverseDynamics):
 	// COPY TYPE AND NAME
 	*this = aInverseDynamics;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* InverseDynamics::copy() const
-{
-	InverseDynamics *object = new InverseDynamics(*this);
-	return(object);
 
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -148,7 +138,6 @@ setNull()
 	_forceSet = NULL;
 	_numCoordinateActuators = 0;
 
-	setType("InverseDynamics");
 	setName("InverseDynamics");
 }
 //_____________________________________________________________________________
@@ -434,7 +423,7 @@ begin(SimTK::State& s )
 
 	// Make a working copy of the model
 	delete _modelWorkingCopy;
-	_modelWorkingCopy = dynamic_cast<Model*>(_model->copy());
+	_modelWorkingCopy = _model->clone();
 	_modelWorkingCopy->updAnalysisSet().setSize(0);
 	//_modelWorkingCopy = _model->clone();
 	//_modelWorkingCopy = new Model(*_model);
@@ -451,7 +440,7 @@ begin(SimTK::State& s )
 		} else {
 			ForceSet& as = _modelWorkingCopy->updForceSet();
 			// Keep a copy of forces that are not muscles to restore them back.
-			ForceSet* saveForces = (ForceSet*)as.copy();
+			ForceSet* saveForces = as.clone();
 			// Generate an force set consisting of a coordinate actuator for every unconstrained degree of freedom
 			_forceSet = CoordinateActuator::CreateForceSetOfCoordinateActuatorsForModel(sWorkingCopyTemp,*_modelWorkingCopy,1,false);
 		    _numCoordinateActuators = _forceSet->getSize();
@@ -460,7 +449,7 @@ begin(SimTK::State& s )
 			for(int i=0; i<saveForces->getSize(); i++){
 				const Force& f=saveForces->get(i);
 				if ((dynamic_cast<const Muscle*>(&saveForces->get(i)))==NULL)
-					as.append((Force*)saveForces->get(i).copy());
+					as.append(saveForces->get(i).clone());
 			}
 		}
 	    _modelWorkingCopy->setAllControllersEnabled(false);

@@ -50,8 +50,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMCOMMON_API MarkerData : public Object
-{
+class OSIMCOMMON_API MarkerData : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkerData, Object);
 
 //=============================================================================
 // DATA
@@ -78,8 +78,9 @@ private:
 	//--------------------------------------------------------------------------
 public:
 	MarkerData();
-	MarkerData(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
+	explicit MarkerData(const std::string& aFileName) SWIG_DECLARE_EXCEPTION;
 	virtual ~MarkerData();
+
 	void findFrameRange(double aStartTime, double aEndTime, int& rStartFrame, int& rEndFrame) const;
 	void averageFrames(double aThreshold = -1.0, double aStartTime = -SimTK::Infinity, double aEndTime = SimTK::Infinity);
 	const std::string& getFileName() const { return _fileName; }

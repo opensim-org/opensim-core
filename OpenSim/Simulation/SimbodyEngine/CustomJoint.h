@@ -49,8 +49,8 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMSIMULATION_API CustomJoint : public Joint  
-{
+class OSIMSIMULATION_API CustomJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(CustomJoint, Joint);
 
 //=============================================================================
 // DATA
@@ -80,7 +80,7 @@ public:
 			 Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false);
 	CustomJoint(const CustomJoint &aJoint);
 	virtual ~CustomJoint();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	CustomJoint& operator=(const CustomJoint &aJoint);
 #endif
@@ -97,7 +97,6 @@ public:
 
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-	OPENSIM_DECLARE_DERIVED(CustomJoint, Joint);
 
 protected:
 

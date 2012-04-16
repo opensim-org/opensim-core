@@ -96,20 +96,6 @@ ConstantController::ConstantController(const ConstantController &aController) :
     setupProperties();
 	copyData(aController);
 }
-//_____________________________________________________________________________
-/**
- * Copy this ConstantController and return a pointer to the copy.
- * The copy constructor for this class is used.  This method is called
- * when a description of this controller is read in from an XML file.
- *
- * @return Pointer to a copy of this ConstantController.
- */
-Object* ConstantController::copy() const
-{
-      ConstantController *object = new ConstantController(*this);
-      return object;
-}
-
 
 
 //_____________________________________________________________________________
@@ -119,7 +105,6 @@ Object* ConstantController::copy() const
 void ConstantController::
 setNull()
 {
-	setType("ConstantController");
     _controlConstant = 0.0;
 
 	// MODEL

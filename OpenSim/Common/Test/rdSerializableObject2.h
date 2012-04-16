@@ -49,133 +49,125 @@
 */
 namespace OpenSim { 
 
-	class rdSerializableObject2 : public Object
+class rdSerializableObject2 : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(rdSerializableObject2, Object);
+
+	//=============================================================================
+	// MEMBER DATA
+	//=============================================================================
+
+	//=============================================================================
+	// METHODS
+	//=============================================================================
+public:
+	rdSerializableObject2(){
+		setNull();
+		setupSerializedMembers();
+	}
+	rdSerializableObject2(const std::string &aFileName) :
+	Object(aFileName,false)
 	{
+		setNull();
+		setupSerializedMembers();
+		updateFromXMLDocument();
+	}
+	rdSerializableObject2(const rdSerializableObject2 &aObject){
+		setNull();
+		setupSerializedMembers();
+		*this = aObject;
+	}
 
-		//=============================================================================
-		// MEMBER DATA
-		//=============================================================================
+private:
+	void setNull(){
+	};
+	void setupSerializedMembers(){
+		// Bool
+		PropertyBool pBool("Test_Bool2",false);
+		_propertySet.append(pBool.clone());
 
-		//=============================================================================
-		// METHODS
-		//=============================================================================
-	public:
-		rdSerializableObject2(){
-			setNull();
-			setupSerializedMembers();
-		};
-		rdSerializableObject2(const std::string &aFileName) :
-		Object(aFileName,false)
-		{
-			setNull();
-			setupSerializedMembers();
-			updateFromXMLDocument();
-		};
-		rdSerializableObject2(const rdSerializableObject2 &aObject){
-			setNull();
-			setupSerializedMembers();
-			*this = aObject;
-		};
-		virtual Object* copy() const{
-			rdSerializableObject2 *object = new rdSerializableObject2(*this);
-			return(object);
-		};
-	private:
-		void setNull(){
-			setType("rdSerializableObject2");
-		};
-		void setupSerializedMembers(){
-			// Bool
-			PropertyBool pBool("Test_Bool2",false);
-			_propertySet.append(pBool.copy());
-
-			// DblArray
-			Array<double> dblArray(0.1);
-			dblArray.setSize(3);
-			PropertyDblArray pDblArray("Test_DblArray2",dblArray);
-			_propertySet.append(pDblArray.copy());
-		};
-
-		//--------------------------------------------------------------------------
-		// OPERATORS
-		//--------------------------------------------------------------------------
-	public:
-		rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
-			Object::operator=(aObject);
-            updPropertyByIndex(0).updValue<bool>()=
-                aObject.getPropertyByIndex(0).getValue<bool>();
-            updPropertyByIndex(1).updValue< Array<double> >()=
-                aObject.getPropertyByIndex(1).getValue< Array<double> >();
-			return(*this);
-		};
-
-		//=============================================================================
+		// DblArray
+		Array<double> dblArray(0.1);
+		dblArray.setSize(3);
+		PropertyDblArray pDblArray("Test_DblArray2",dblArray);
+		_propertySet.append(pDblArray.clone());
 	};
 
-	class rdSerializableObject3 : public Object
-	{
-
-		//=============================================================================
-		// MEMBER DATA
-		//=============================================================================
-
-		//=============================================================================
-		// METHODS
-		//=============================================================================
-	public:
-		rdSerializableObject3(){
-			setNull();
-			setupSerializedMembers();
-		};
-		rdSerializableObject3(const std::string &aFileName) :
-		Object(aFileName,false)
-		{
-			setNull();
-			setupSerializedMembers();
-			updateFromXMLDocument();
-		};
-		rdSerializableObject3(const rdSerializableObject3 &aObject){
-			setNull();
-			setupSerializedMembers();
-			*this = aObject;
-		};
-		virtual Object* copy() const{
-			rdSerializableObject3 *object = new rdSerializableObject3(*this);
-			return(object);
-		};
-	private:
-		void setNull(){
-			setType("rdSerializableObject3");
-		};
-		void setupSerializedMembers(){
-			// Bool
-			PropertyBool pBool("Test_Bool2",false);
-			_propertySet.append(pBool.copy());
-
-			// DblArray
-			Array<double> dblArray(0.1);
-			dblArray.setSize(3);
-			PropertyDblArray pDblArray("Test_DblArray2",dblArray);
-			_propertySet.append(pDblArray.copy());
-		};
-
-		//--------------------------------------------------------------------------
-		// OPERATORS
-		//--------------------------------------------------------------------------
-	public:
-		rdSerializableObject3& operator=(const rdSerializableObject3 &aObject){
-			Object::operator=(aObject);
-            updPropertyByIndex(0).updValue<bool>()=
-                aObject.getPropertyByIndex(0).getValue<bool>();
-            updPropertyByIndex(1).updValue< Array<double> >()=
-                aObject.getPropertyByIndex(1).getValue< Array<double> >();
-			return(*this);
-		};
-
-		//=============================================================================
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+public:
+	rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
+		Object::operator=(aObject);
+        updPropertyByIndex(0).updValue<bool>()=
+            aObject.getPropertyByIndex(0).getValue<bool>();
+        updPropertyByIndex(1).updValue< Array<double> >()=
+            aObject.getPropertyByIndex(1).getValue< Array<double> >();
+		return(*this);
 	};
 
-}; //namespace
+	//=============================================================================
+};
+
+class rdSerializableObject3 : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(rdSerializableObject3, Object);
+
+	//=============================================================================
+	// MEMBER DATA
+	//=============================================================================
+
+	//=============================================================================
+	// METHODS
+	//=============================================================================
+public:
+	rdSerializableObject3(){
+		setNull();
+		setupSerializedMembers();
+	}
+	rdSerializableObject3(const std::string &aFileName) :
+	Object(aFileName,false)
+	{
+		setNull();
+		setupSerializedMembers();
+		updateFromXMLDocument();
+	}
+	rdSerializableObject3(const rdSerializableObject3 &aObject){
+		setNull();
+		setupSerializedMembers();
+		*this = aObject;
+	}
+
+private:
+	void setNull(){
+	}
+	void setupSerializedMembers(){
+		// Bool
+		PropertyBool pBool("Test_Bool2",false);
+		_propertySet.append(pBool.clone());
+
+		// DblArray
+		Array<double> dblArray(0.1);
+		dblArray.setSize(3);
+		PropertyDblArray pDblArray("Test_DblArray2",dblArray);
+		_propertySet.append(pDblArray.clone());
+	}
+
+	//--------------------------------------------------------------------------
+	// OPERATORS
+	//--------------------------------------------------------------------------
+public:
+	rdSerializableObject3& operator=(const rdSerializableObject3 &aObject){
+		Object::operator=(aObject);
+        updPropertyByIndex(0).updValue<bool>()=
+            aObject.getPropertyByIndex(0).getValue<bool>();
+        updPropertyByIndex(1).updValue< Array<double> >()=
+            aObject.getPropertyByIndex(1).getValue< Array<double> >();
+		return(*this);
+	}
+
+	//=============================================================================
+};
+
+} //namespace
 
 //=============================================================================
 //=============================================================================

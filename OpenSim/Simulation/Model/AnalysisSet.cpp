@@ -50,7 +50,6 @@ using namespace std;
 AnalysisSet::AnalysisSet() :
  _enable(_enableProp.getValueBool())
 {
-	setType("AnalysisSet");
 	setNull();
 }
 /**
@@ -71,7 +70,6 @@ AnalysisSet::~AnalysisSet()
 AnalysisSet::AnalysisSet(Model *aModel) :
  _enable(_enableProp.getValueBool())
 {
-	setType("AnalysisSet");
 	setNull();
 	_model = aModel;
 }
@@ -85,7 +83,6 @@ AnalysisSet::AnalysisSet(const string &aFileName) :
 	Set<Analysis>(aFileName, false),
  _enable(_enableProp.getValueBool())
 {
-	setType("AnalysisSet");
 	setNull();
 	updateFromXMLDocument();
 }
@@ -100,18 +97,6 @@ AnalysisSet::AnalysisSet(const AnalysisSet &aSet) :
     _enable(_enableProp.getValueBool())
 {
 	setNull();
-}
-//_____________________________________________________________________________
-/**
- * Copy this analysis set.
- *
- * @return Copy of this analysis set.
- */
-Object* AnalysisSet::
-copy() const
-{
-	AnalysisSet *set = new AnalysisSet(*this);
-	return(set);
 }
 
 

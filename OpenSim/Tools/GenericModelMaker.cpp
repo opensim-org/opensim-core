@@ -78,18 +78,6 @@ GenericModelMaker::GenericModelMaker(const GenericModelMaker &aGenericModelMaker
 	copyData(aGenericModelMaker);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this GenericModelMaker and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this GenericModelMaker.
- */
-Object* GenericModelMaker::copy() const
-{
-	GenericModelMaker *genericModelMaker = new GenericModelMaker(*this);
-	return(genericModelMaker);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -112,7 +100,6 @@ void GenericModelMaker::copyData(const GenericModelMaker &aGenericModelMaker)
  */
 void GenericModelMaker::setNull()
 {
-	setType("GenericModelMaker");
 }
 
 //_____________________________________________________________________________
@@ -138,7 +125,7 @@ void GenericModelMaker::setupProperties()
  */
 void GenericModelMaker::registerTypes()
 {
-	//Object::RegisterType(Marker());
+	//Object::registerType(Marker());
 }
 
 //=============================================================================

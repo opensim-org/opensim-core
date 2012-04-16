@@ -47,19 +47,6 @@ namespace OpenSim {
    }
 
 
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-
-   Object*  ForcePerturbationFunction::copy() const {
-
-       ForcePerturbationFunction *object = new ForcePerturbationFunction(*this);
-       return(object);
-    }
-
-
    void  ForcePerturbationFunction::setUnperturbedForce( GCVSpline* forceSpline) { _unperturbedForce = forceSpline; }
 
    double ForcePerturbationFunction::calcValue( const SimTK::State& s)  const {

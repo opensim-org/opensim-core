@@ -52,8 +52,8 @@ class Muscle;
  */
 
 //=============================================================================
-class OSIMSIMULATION_API ForceSet : public ModelComponentSet<Force>
-{
+class OSIMSIMULATION_API ForceSet : public ModelComponentSet<Force> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ForceSet, ModelComponentSet<Force>);
 
 //=============================================================================
 // DATA
@@ -78,7 +78,7 @@ public:
 	ForceSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true);
 	ForceSet(const ForceSet &aForceSet);
 	virtual ~ForceSet();
-	virtual Object* copy() const;
+
 	void copyData(const ForceSet &aAbsForceSet);
 
 private:

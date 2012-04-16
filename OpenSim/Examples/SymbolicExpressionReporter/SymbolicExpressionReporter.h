@@ -57,8 +57,9 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMEXPPLUGIN_API SymbolicExpressionReporter : public Analysis 
-{
+class OSIMEXPPLUGIN_API SymbolicExpressionReporter : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(SymbolicExpressionReporter, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -82,7 +83,7 @@ public:
 	SymbolicExpressionReporter(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	SymbolicExpressionReporter(const SymbolicExpressionReporter &aObject);
-	virtual Object* copy() const;
+
 	virtual ~SymbolicExpressionReporter();
 private:
 	void setNull();

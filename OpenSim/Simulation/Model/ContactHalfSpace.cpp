@@ -59,14 +59,8 @@ ContactHalfSpace::ContactHalfSpace(const ContactHalfSpace& geom) :
 
 void ContactHalfSpace::setNull()
 {
-    setType("ContactHalfSpace");
 }
 
-Object* ContactHalfSpace::copy() const
-{
-	ContactHalfSpace* copy = new ContactHalfSpace(*this);
-	return copy;
-}
 
 SimTK::ContactGeometry ContactHalfSpace::createSimTKContactGeometry()
 {

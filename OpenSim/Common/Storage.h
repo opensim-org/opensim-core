@@ -67,8 +67,8 @@ namespace OpenSim {
 typedef std::map<std::string, std::string, std::less<std::string> > MapKeysToValues;
 
 //static std::string[] simmReservedKeys;
-class OSIMCOMMON_API Storage : public StorageInterface
-{
+class OSIMCOMMON_API Storage : public StorageInterface {
+OpenSim_DECLARE_CONCRETE_OBJECT(Storage, StorageInterface);
 
 //=============================================================================
 // DATA
@@ -122,8 +122,6 @@ public:
 	Storage(const Storage &aStorage,bool aCopyData=true);
 	Storage(const Storage &aStorage,int aStateIndex,int aN,
 		const char *aDelimiter="\t");
-
-	virtual Object* copy() const;
 	virtual ~Storage();
 
 #ifndef SWIG

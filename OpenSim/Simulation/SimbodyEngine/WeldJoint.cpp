@@ -93,18 +93,7 @@ WeldJoint::WeldJoint(const WeldJoint &aJoint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* WeldJoint::copy() const
-{
-	WeldJoint *joint = new WeldJoint(*this);
-	return(joint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one WeldJoint to another.
@@ -122,7 +111,6 @@ void WeldJoint::copyData(const WeldJoint &aJoint)
  */
 void WeldJoint::setNull()
 {
-	setType("WeldJoint");
 	constructCoordinates();
 }
 

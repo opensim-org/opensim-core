@@ -90,7 +90,6 @@ Function::Function(const Function &aFunction) :
 void Function::
 setNull()
 {
-	setType("Function");
 }
 
 //=============================================================================
@@ -122,12 +121,9 @@ Function* Function::makeFunctionOfType(Function* aFunction, const string& aNewTy
 	if (aFunction != NULL) {
 		Object* newObject = Object::newInstanceOfType(aNewTypeName);
 		if (newObject) {
-			newFunction = Function::safeDownCast(newObject);
+			newFunction = dynamic_cast<Function*>(newObject);
 			if (newFunction) {
 				newFunction->init(aFunction);
-				// newFunction's type will usually be written over by aFunction's type,
-				// so set it back here.
-				newFunction->setType(aNewTypeName);
 			}
 		}
 	}

@@ -50,8 +50,10 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API ContDerivMuscle_Deprecated : public ActivationFiberLengthMuscle_Deprecated  
-{
+class OSIMACTUATORS_API ContDerivMuscle_Deprecated 
+:   public ActivationFiberLengthMuscle_Deprecated {
+OpenSim_DECLARE_CONCRETE_OBJECT(ContDerivMuscle_Deprecated, 
+                                ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
 // DATA
@@ -112,7 +114,6 @@ public:
 	ContDerivMuscle_Deprecated();
 	ContDerivMuscle_Deprecated(const ContDerivMuscle_Deprecated &aMuscle);
 	virtual ~ContDerivMuscle_Deprecated();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	ContDerivMuscle_Deprecated& operator=(const ContDerivMuscle_Deprecated &aMuscle);
@@ -169,8 +170,6 @@ public:
 	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-
-	OPENSIM_DECLARE_DERIVED(ContDerivMuscle_Deprecated, ActivationFiberLengthMuscle_Deprecated);
 
 protected:
 	// Model Component Interface

@@ -109,17 +109,7 @@ Analysis(aMuscleAnalysis)
 	setNull();
 	*this = aMuscleAnalysis;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* MuscleAnalysis::copy() const
-{
-	MuscleAnalysis *object = new MuscleAnalysis(*this);
-	return(object);
 
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -131,7 +121,6 @@ Object* MuscleAnalysis::copy() const
 void MuscleAnalysis::
 setNull()
 {
-	setType("MuscleAnalysis");
 	setName("MuscleAnalysis");
 	setupProperties();
 	constructDescription();

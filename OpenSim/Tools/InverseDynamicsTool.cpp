@@ -74,7 +74,6 @@ InverseDynamicsTool::InverseDynamicsTool() : DynamicsTool(),
 	_jointsForReportingBodyForces(_jointsForReportingBodyForcesProp.getValueStrArray()),
 	_outputBodyForcesAtJointsFileName(_outputBodyForcesAtJointsFileNameProp.getValueStr())
 {
-	setType("InverseDynamicsTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -94,7 +93,6 @@ InverseDynamicsTool::InverseDynamicsTool(const string &aFileName, bool aLoadMode
 	_jointsForReportingBodyForces(_jointsForReportingBodyForcesProp.getValueStrArray()),
 	_outputBodyForcesAtJointsFileName(_outputBodyForcesAtJointsFileNameProp.getValueStr())
 {
-	setType("InverseDynamicsTool");
 	setNull();
 	updateFromXMLDocument();
 
@@ -117,19 +115,8 @@ InverseDynamicsTool::InverseDynamicsTool(const InverseDynamicsTool &aTool) :
 	_jointsForReportingBodyForces(_jointsForReportingBodyForcesProp.getValueStrArray()),
 	_outputBodyForcesAtJointsFileName(_outputBodyForcesAtJointsFileNameProp.getValueStr())
 {
-	setType("InverseDynamicsTool");
 	setNull();
 	*this = aTool;
-}
-
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor.
- */
-Object* InverseDynamicsTool::copy() const
-{
-	InverseDynamicsTool *object = new InverseDynamicsTool(*this);
-	return(object);
 }
 
 //_____________________________________________________________________________
@@ -191,7 +178,7 @@ void InverseDynamicsTool::setupProperties()
  */
 void InverseDynamicsTool::registerTypes()
 {
-	Object::RegisterType(InverseDynamicsTool());
+	Object::registerType(InverseDynamicsTool());
 }
 //=============================================================================
 // OPERATORS

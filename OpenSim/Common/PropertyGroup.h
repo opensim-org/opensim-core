@@ -80,7 +80,7 @@ public:
 	PropertyGroup(std::string& aName);
 	PropertyGroup(const PropertyGroup &aGroup);
 	virtual ~PropertyGroup();
-	virtual PropertyGroup* copy() const;
+	virtual PropertyGroup* clone() const;
 
 #ifndef SWIG
 	PropertyGroup& operator=(const PropertyGroup &aGroup);

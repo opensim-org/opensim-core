@@ -57,8 +57,8 @@ class SimbodyEngine;
  * @author Peter Loan, Frank C. Anderson, Jeffrey A. Reinbolt, Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API TransformAxis : public Object  
-{
+class OSIMSIMULATION_API TransformAxis : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(TransformAxis, Object);
 
 //=============================================================================
 // DATA
@@ -96,7 +96,6 @@ public:
 	//TransformAxis(const std::string &aName, const Array<std::string> &coordNames, const SimTK::Vec3& aAxis, bool isRotation=false);
 	TransformAxis(const TransformAxis &anAxis);
 	virtual ~TransformAxis();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	TransformAxis& operator=(const TransformAxis &anAxis);
@@ -142,7 +141,6 @@ public:
     virtual void setup(Joint& aJoint);
 
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-	OPENSIM_DECLARE_DERIVED(TransformAxis, Object);
 
 protected:
 

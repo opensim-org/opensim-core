@@ -49,11 +49,14 @@ class Model;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API JointSet :	public ModelComponentSet<Joint>
-{
+class OSIMSIMULATION_API JointSet :	public ModelComponentSet<Joint> {
+OpenSim_DECLARE_CONCRETE_OBJECT(JointSet, ModelComponentSet<Joint>);
+
 private:
 	void setNull();
-    void createSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const std::map<Body*, int>& bodyMap, std::vector<bool>& hasProcessed) const;
+    void createSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, 
+                                 const std::map<Body*, int>& bodyMap, 
+                                 std::vector<bool>& hasProcessed) const;
 protected:
     void createSystem(SimTK::MultibodySystem& system) const;
 public:
@@ -67,10 +70,10 @@ public:
 	void populate(Model& aModel);
 
 	// Somehow the following function is not exported from base template
-    JointSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true) :
-        ModelComponentSet<Joint>(model, aFileName, aUpdateFromXMLNode)
-    {
-    }
+    JointSet(Model& model, const std::string &aFileName, 
+             bool aUpdateFromXMLNode = true)
+    :   Super(model, aFileName, aUpdateFromXMLNode) {}
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

@@ -46,8 +46,9 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API CoordinateReference : public Reference_<double>
-{
+class OSIMSIMULATION_API CoordinateReference : public Reference_<double> {
+OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateReference, Reference_<double>);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -71,18 +72,16 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~CoordinateReference() {};
 
-	/* Create a CooridinateReference
+	/** Create a CoordinateReference
 	* @param name of the reference to be found in the model and
 	* @param referenceFunction that specifies the value of the coordinate
 	*        to be matched at a given time
 	*/
 	CoordinateReference();
 	CoordinateReference(const std::string name, Function &ReferenceFunction);
-
 	CoordinateReference& operator=(const CoordinateReference &aRef);
-
+	virtual ~CoordinateReference() {}
 
 	//--------------------------------------------------------------------------
 	// Reference Interface
@@ -115,7 +114,7 @@ public:
 	/** Set the coordinate value as a function of time. */
 	void setValueFunction(const OpenSim::Function& function)
 	{
-		_coordinateValueFunction = (Function*)function.copy();
+		_coordinateValueFunction = function.clone();
 	}
 
 //=============================================================================

@@ -44,8 +44,9 @@ class Model;
  *
  * @author Peter Eastman
  */
-class OSIMSIMULATION_API ElasticFoundationForce : public Force
-{
+class OSIMSIMULATION_API ElasticFoundationForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce, Force);
+
 //=============================================================================
 // MEMBER CLASSES
 //=============================================================================
@@ -59,8 +60,9 @@ public:
     ElasticFoundationForce();
     ElasticFoundationForce(const ElasticFoundationForce& copy);
     ElasticFoundationForce(ContactParameters* params);
-	void copyData(const ElasticFoundationForce& copy);
-	Object* copy() const;
+
+    void copyData(const ElasticFoundationForce& copy);
+
 	/**
 	 * Create a SimTK::Force which implements this Force.
 	 */
@@ -97,18 +99,21 @@ private:
 //=============================================================================
 //=============================================================================
 
-class OSIMSIMULATION_API ElasticFoundationForce::ContactParameters : public Object
-{
+class OSIMSIMULATION_API ElasticFoundationForce::ContactParameters 
+:   public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce::ContactParameters, 
+                                Object);
+
 private:
 	void setupProperties();
 public:
     ContactParameters();
     ContactParameters(const ContactParameters& copy);
     ContactParameters(double stiffness, double dissipation, double staticFriction, double dynamicFriction, double viscousFriction);
+
 	void copyData(const ContactParameters& copy);
-	Object* copy() const;
-    const Array<std::string>& getGeometry() const;
-    Array<std::string>& updGeometry();
+    const Property<std::string>& getGeometry() const;
+    Property<std::string>& updGeometry();
     void addGeometry(const std::string& name);
     double getStiffness() const;
     void setStiffness(double stiffness);
@@ -122,15 +127,17 @@ public:
     void setViscousFriction(double friction);
 };
 
-class OSIMSIMULATION_API ElasticFoundationForce::ContactParametersSet :	public Set<ElasticFoundationForce::ContactParameters>
-{
+class OSIMSIMULATION_API ElasticFoundationForce::ContactParametersSet 
+:   public Set<ElasticFoundationForce::ContactParameters> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ElasticFoundationForce::ContactParametersSet, 
+                                Set<ElasticFoundationForce::ContactParameters>);
 private:
 	void setNull();
 public:
 	ContactParametersSet();
 	ContactParametersSet(const ContactParametersSet& copy);
 	~ContactParametersSet(void);
-	Object* copy() const;
+
 #ifndef SWIG
 	ContactParametersSet& operator=(const ContactParametersSet &copy);
 #endif

@@ -59,8 +59,8 @@ class Storage;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMTOOLS_API MarkerPlacer : public Object  
-{
+class OSIMTOOLS_API MarkerPlacer : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkerPlacer, Object);
 
 //=============================================================================
 // DATA
@@ -120,7 +120,7 @@ public:
 	MarkerPlacer();
 	MarkerPlacer(const MarkerPlacer &aMarkerPlacementParams);
 	virtual ~MarkerPlacer();
-	virtual Object* copy() const;
+
 	void copyData(const MarkerPlacer &aMarkerPlacementParams);
 
 #ifndef SWIG

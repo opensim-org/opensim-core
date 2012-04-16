@@ -39,11 +39,13 @@
 
 namespace OpenSim { 
 
-class OSIMCOMMON_API GeometrySet :	public Set<DisplayGeometry> 
-{
+class OSIMCOMMON_API GeometrySet :	public Set<DisplayGeometry> {
+OpenSim_DECLARE_CONCRETE_OBJECT(GeometrySet, Set<DisplayGeometry>);
+
 public:
-	GeometrySet(){ setType("GeometrySet"); };
-	virtual ~GeometrySet() {};
+	GeometrySet() {}
+	virtual ~GeometrySet() {}
+
 #ifndef SWIG
 	GeometrySet& operator=(const GeometrySet& aGeometrySet) { 
 		Set<DisplayGeometry>::operator=(aGeometrySet);

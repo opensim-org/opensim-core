@@ -57,8 +57,8 @@
  */
 namespace OpenSim { 
 
-class OSIMSIMULATION_API ControlLinearNode : public Object
-{
+class OSIMSIMULATION_API ControlLinearNode : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControlLinearNode, Object);
 
 //=============================================================================
 // MEMBER DATA
@@ -86,7 +86,7 @@ protected:
 public:
 	ControlLinearNode(double aT=0.0,double aValue=0.0);
 	ControlLinearNode(const ControlLinearNode &aNode);
-	virtual Object* copy() const;
+
 	virtual ~ControlLinearNode();
 private:
 	void setNull();

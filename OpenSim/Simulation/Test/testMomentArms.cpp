@@ -255,7 +255,7 @@ void testMomentArmDefinitionForModel(const string &filename, const string &coord
 	Array<string> coupledCoordNames;
 	for(int i=0; i<osimModel.getConstraintSet().getSize(); i++){
 		OpenSim::Constraint& aConstraint = osimModel.getConstraintSet().get(i);
-		if(aConstraint.getType() == "CoordinateCouplerConstraint"){
+		if(aConstraint.getConcreteClassName() == "CoordinateCouplerConstraint"){
 			CoordinateCouplerConstraint& coupler = dynamic_cast<CoordinateCouplerConstraint&>(aConstraint);
 			Array<string> coordNames = coupler.getIndependentCoordinateNames();
 			coordNames.append(coupler.getDependentCoordinateName());

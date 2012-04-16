@@ -72,11 +72,18 @@ public:
 	PropertyObj(const std::string &aName,const Object &aValue);
 	PropertyObj(const PropertyObj &aProperty);
 
-	PropertyObj* copy() const OVERRIDE_11;
+	PropertyObj* clone() const OVERRIDE_11;
 	virtual ~PropertyObj();
-    void setSubPropertiesUseDefault(bool shouldUseDefault) OVERRIDE_11
-    {   _value->setAllPropertiesUseDefault(shouldUseDefault); }
 
+    virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
+    virtual bool isAcceptableObjectTag
+        (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
+    virtual const Object& getValueAsObject(int index=-1) const OVERRIDE_11
+    {   assert(index <= 0); return getValueObj(); }
+    virtual Object& updValueAsObject(int index=-1) OVERRIDE_11
+    {   assert(index <= 0); return getValueObj(); }
+    virtual void setValueAsObject(const Object& obj, int index=-1) OVERRIDE_11
+    {   assert(index <= 0); delete _value; _value=obj.clone(); }
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

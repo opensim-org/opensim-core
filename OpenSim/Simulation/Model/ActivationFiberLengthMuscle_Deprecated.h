@@ -56,8 +56,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 2.0
  */
-class OSIMSIMULATION_API ActivationFiberLengthMuscle_Deprecated : public Muscle  
-{
+class OSIMSIMULATION_API ActivationFiberLengthMuscle_Deprecated 
+:   public Muscle {
+OpenSim_DECLARE_ABSTRACT_OBJECT(ActivationFiberLengthMuscle_Deprecated, Muscle);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -83,7 +85,6 @@ public:
 	ActivationFiberLengthMuscle_Deprecated();
 	ActivationFiberLengthMuscle_Deprecated(const ActivationFiberLengthMuscle_Deprecated &aMuscle);
 	virtual ~ActivationFiberLengthMuscle_Deprecated();
-	virtual Object* copy() const = 0;
 
 #ifndef SWIG
 	ActivationFiberLengthMuscle_Deprecated& operator=(const ActivationFiberLengthMuscle_Deprecated &aMuscle);
@@ -153,8 +154,6 @@ public:
 	virtual Array<std::string> getStateVariableNames() const;
 	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
-	OPENSIM_DECLARE_DERIVED(ActivationFiberLengthMuscle_Deprecated, Muscle);
-
 private:
 	void setNull();
 	void setupProperties();
@@ -176,11 +175,11 @@ protected:
 
 	virtual double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
 	{
-		throw Exception("ERROR- "+getType()+"::calcActiveForce() NOT IMPLEMENTED.");
+		throw Exception("ERROR- "+getConcreteClassName()+"::calcActiveForce() NOT IMPLEMENTED.");
 	}
 	virtual double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
 	{
-		throw Exception("ERROR- "+getType()+"::calcPassiveForce() NOT IMPLEMENTED.");
+		throw Exception("ERROR- "+getConcreteClassName()+"::calcPassiveForce() NOT IMPLEMENTED.");
 	}
 //=============================================================================
 };	// END of class ActivationFiberLengthMuscle_Deprecated

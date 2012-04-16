@@ -122,17 +122,6 @@ NaturalCubicSpline::NaturalCubicSpline(const NaturalCubicSpline &aSpline) :
 {
 	setEqual(aSpline);
 }
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* NaturalCubicSpline::copy() const
-{
-	NaturalCubicSpline *spline = new NaturalCubicSpline(*this);
-	return(spline);
-}
 
 
 //=============================================================================
@@ -144,7 +133,6 @@ Object* NaturalCubicSpline::copy() const
  */
 void NaturalCubicSpline::setNull()
 {
-	setType("NaturalCubicSpline");
 	setupProperties();
 }
 //_____________________________________________________________________________

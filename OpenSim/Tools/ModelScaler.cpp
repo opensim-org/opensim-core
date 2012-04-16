@@ -103,19 +103,6 @@ ModelScaler::ModelScaler(const ModelScaler &aModelScaler) :
 	copyData(aModelScaler);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this scaling params and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ModelScaler.
- */
-Object* ModelScaler::copy() const
-{
-	ModelScaler *scalingParams = new ModelScaler(*this);
-	return(scalingParams);
-}
-
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
@@ -145,8 +132,6 @@ void ModelScaler::copyData(const ModelScaler &aModelScaler)
  */
 void ModelScaler::setNull()
 {
-	setType("ModelScaler");
-
 	_apply = true;
 
 	_printResultFiles = true;
@@ -188,7 +173,7 @@ void ModelScaler::setupProperties()
 	const double defaultTimeRange[] = {-1.0, -1.0};
 	_timeRangeProp.setName("time_range");
 	_timeRangeProp.setValue(2, defaultTimeRange);
-	_timeRangeProp.setAllowableArraySize(2);
+	_timeRangeProp.setAllowableListSize(2);
 	_propertySet.append(&_timeRangeProp);
 
 	_preserveMassDistProp.setComment("Flag (true or false) indicating whether or not to preserve relative mass between segments.");
@@ -210,8 +195,8 @@ void ModelScaler::setupProperties()
  */
 void ModelScaler::registerTypes()
 {
-	Object::RegisterType(Measurement());
-	//Object::RegisterType(Scale());
+	Object::registerType(Measurement());
+	//Object::registerType(Scale());
 	Measurement::registerTypes();
 }
 

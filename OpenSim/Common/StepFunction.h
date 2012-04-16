@@ -52,8 +52,9 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMCOMMON_API StepFunction : public Function
-{
+class OSIMCOMMON_API StepFunction : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(StepFunction, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -81,7 +82,6 @@ public:
 	StepFunction(double startTime, double endTime, double startValue=0.0, double endValue=1.0);
 	StepFunction(const StepFunction &aSpline);
 	virtual ~StepFunction();
-	virtual Object* copy() const;
 
 private:
 	void setNull();
@@ -132,8 +132,6 @@ public:
 	// EVALUATION
 	//--------------------------------------------------------------------------
     virtual SimTK::Function* createSimTKFunction() const;
-
-	OPENSIM_DECLARE_DERIVED(StepFunction, Function);
 
 //=============================================================================
 };	// END class StepFunction

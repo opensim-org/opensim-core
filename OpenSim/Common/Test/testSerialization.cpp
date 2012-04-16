@@ -25,8 +25,7 @@
 *  OR BUSINESS INTERRUPTION) OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include <iostream>
-#include <string>
+
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Common/PropertyInt.h>
 #include <OpenSim/Common/PropertyIntArray.h>
@@ -37,25 +36,74 @@
 #include <OpenSim/Common/Exception.h>
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Object.h>
+#include <OpenSim/Common/Set.h>
+
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "rdSerializableObject.h"
-#include "rdSerializableObject2.h"
 #include "SimTKcommon.h"
 
+#include <iostream>
+#include <string>
+
+#include "rdSerializableObject.h"
+#include "rdSerializableObject2.h"
+
 using namespace OpenSim;
+using namespace SimTK;
 using namespace std;
+
+class rdObjSet : public Set<rdSerializableObject> {
+OpenSim_DECLARE_CONCRETE_OBJECT(rdObjSet, Set<rdSerializableObject>);
+};
 
 int main()
 {
+    stringstream ss(" hell there 1.234e5  -infinity");
+    stringstream sout;
+    while (true) {
+        SimTK::String token;
+        readUnformatted(ss, token);
+        if (ss.fail()) break;
+        cout << "'" << token << "'\n";
+    }
+    ss.clear();
+    ss.seekg(0, ios::beg);
+    SimTK::Array_<SimTK::String> arrTokens;
+    readUnformatted(ss, arrTokens);
+    cout << arrTokens << endl;
+
+    writeUnformatted(sout, true);
+    sout << " ";
+    writeUnformatted(sout, false);
+    cout << "'" << sout.str() << "'\n";
+    sout.seekg(0, ios::beg);
+    while (true) {
+        bool res;
+        if (!readUnformatted(sout, res))
+            break;
+        cout << res << "\n";
+    }
+   
+
 	try {
 		// TYPE REGISTRATION
-		Object::RegisterType(rdSerializableObject());
-		Object::RegisterType(rdSerializableObject2());
+		Object::registerType(rdSerializableObject());
+		Object::registerType(rdSerializableObject2());
+		Object::registerType(rdSerializableObject3());
+
+        rdObjSet objSet;
+        const Set<rdSerializableObject>& baseSet = objSet;
+
+        SimTK_TEST(objSet.getClassName() == "rdObjSet");
+        SimTK_TEST(baseSet.getClassName() == "Set<rdSerializableObject>");
+        SimTK_TEST(baseSet.getConcreteClassName() == "rdObjSet");
 
 		// OBJECT 1
 		rdSerializableObject obj1;
 		obj1.setName("TestObject");
 		obj1.print("obj1.xml");
+
+        //Xml xx("obj1.xml");
+        //cerr << xx;
 
 		// OBJECT 2
 		rdSerializableObject obj2("obj1.xml");
@@ -98,7 +146,7 @@ int main()
 		string& str2 = ((PropertyStr*) propSet2.get(6))->getValueStr();
 		int cmp=str1.compare(str2);
 		if (cmp!=0) {
-			throw Exception("String property",__FILE__,__LINE__);
+			throw OpenSim::Exception("String property",__FILE__,__LINE__);
 		}
 
         for (int i=0; i < obj1.getNumProperties(); ++i) {
@@ -107,8 +155,8 @@ int main()
         }
 		
 	}
-    catch(const Exception& e) {
-        e.print(cerr);
+    catch(const std::exception& e) {
+        cerr << "EXCEPTION: " << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;

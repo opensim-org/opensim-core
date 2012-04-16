@@ -70,7 +70,7 @@ public:
 	//void setWeight(double weight) {_weight = weight; }
 	void setWeights(Array<double> weightArray) {_weights = weightArray;}
 	Array<double> getWeights() const {return _weights; };
-	virtual Object* copy() const {
+	virtual JointReactionWeight* clone() const {
 			JointReactionWeight *jWeight = new JointReactionWeight(*this);
 			return(jWeight);
 	}
@@ -90,8 +90,9 @@ public:
  */
 class IKTaskSet;
 
-class OSIMSIMULATION_API JointReactionReference : public Reference_<double>
-{
+class OSIMSIMULATION_API JointReactionReference : public Reference_<double> {
+OpenSim_DECLARE_CONCRETE_OBJECT(JointReactionReference, Reference_<double>);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -152,11 +153,10 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~JointReactionReference() {};
 
 	JointReactionReference();
 	JointReactionReference(const JointReactionReference& aJointReactionReference);
-	virtual Object* copy() const;
+	virtual ~JointReactionReference() {}
 
 	//JointReactionReference(const std::string jointName, const SimTK::Array_<double> weights);
 

@@ -76,9 +76,9 @@ namespace OpenSim {
  * @author Katherine Holzbaur, Frank C. Anderson
  * @version 1.0
  */
-//class OSIMANALYSES_API MuscleAnalysisV1 : public Analysis 
-class OSIMANALYSES_API MuscleAnalysisV1 : public Analysis 
-{
+class OSIMANALYSES_API MuscleAnalysisV1 : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleAnalysisV1, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -189,10 +189,9 @@ private:
 public:
 	MuscleAnalysisV1(Model *aModel=0);
 	MuscleAnalysisV1(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
 	MuscleAnalysisV1(const MuscleAnalysisV1 &aObject);
-	virtual Object* copy() const;
 	virtual ~MuscleAnalysisV1();
+
 private:
 	void setNull();
 	void setupProperties();
@@ -262,8 +261,6 @@ public:
 	virtual int
 		printResults(const std::string &aBaseName,const std::string &aDir="",
 		double aDT=-1.0,const std::string &aExtension=".sto");
-
-	OPENSIM_DECLARE_DERIVED(MuscleAnalysisV1,Analysis)
 //=============================================================================
 };	// END of class MuscleAnalysisV1
 

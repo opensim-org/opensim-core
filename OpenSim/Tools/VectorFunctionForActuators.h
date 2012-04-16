@@ -57,9 +57,10 @@
  */
 namespace OpenSim { 
 
-class VectorFunctionForActuators :
-	public VectorFunctionUncoupledNxN
-{
+class VectorFunctionForActuators : public VectorFunctionUncoupledNxN {
+OpenSim_DECLARE_CONCRETE_OBJECT(VectorFunctionForActuators, 
+                                VectorFunctionUncoupledNxN);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -91,7 +92,7 @@ public:
 	VectorFunctionForActuators(const VectorFunctionForActuators &aFunction);
 	VectorFunctionForActuators();
 	virtual ~VectorFunctionForActuators();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setEqual(const VectorFunctionForActuators &aVectorFunction);

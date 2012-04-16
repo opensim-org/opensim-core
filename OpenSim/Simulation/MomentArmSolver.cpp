@@ -65,7 +65,7 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 
 	double angle = aCoord.getValue(s_ma);
 
-	_model.getMultibodySystem().realize(s_ma, SimTK::Stage::Instance);
+	getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Instance);
 
 	// Calculate coupling matrix C to determine the influence of other coordinates 
 	// (mobilities) on the coordinate of interest due to constraints
@@ -75,11 +75,11 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
 	// affected by constraints respond
     aCoord.setSpeedValue(s_ma, 1);
 
-	_model.getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
+	getModel().getMultibodySystem().realize(s_ma, SimTK::Stage::Velocity);
 
 
     // Satisfy all the velocity constraints.
-    _model.getMultibodySystem().projectU(s_ma, 1e-10);
+    getModel().getMultibodySystem().projectU(s_ma, 1e-10);
 	
 	
 	// Now calculate C. by checking how speeds of other coordinates change
@@ -92,18 +92,18 @@ double MomentArmSolver::solve(const State &s, const Coordinate &aCoord,
     s_ma.updU() = 0;
 	
 	// Get the body forces equivalent of the point forces of the path
-	Vector_<SpatialVec> bodyForces(_model.getNumBodies(), SpatialVec(0));
+	Vector_<SpatialVec> bodyForces(getModel().getNumBodies(), SpatialVec(0));
 			
 	// Apply body forces along the geometry described by pfds due to a tension of 1N
 	for(int i=0; i < pfds.getSize(); i++) {
-		_model.getMatterSubsystem().addInStationForce(s_ma, SimTK::MobilizedBodyIndex(pfds[i]->body().getIndex()), 
+		getModel().getMatterSubsystem().addInStationForce(s_ma, SimTK::MobilizedBodyIndex(pfds[i]->body().getIndex()), 
 												   pfds[i]->point(), pfds[i]->direction(), bodyForces);
 	}
 
 	// Convert body spatial forces F to equivalent mobility forces f based on 
     // geometry (no dynamics required): f = ~J(q) * F.
 	Vector generalizedForces;
-	_model.getMultibodySystem().getMatterSubsystem()
+	getModel().getMultibodySystem().getMatterSubsystem()
         .multiplyBySystemJacobianTranspose(s_ma, bodyForces, generalizedForces);
 
 	// Moment-arm is the effective torque (since tension is 1) at the 

@@ -48,8 +48,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-	class OSIMCOMMON_API MarkerFrame : public Object
-{
+class OSIMCOMMON_API MarkerFrame : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkerFrame, Object);
 
 //=============================================================================
 // DATA
@@ -72,6 +72,7 @@ public:
 	MarkerFrame(int aNumMarkers, int aFrameNumber, double aTime, Units& aUnits);
 	MarkerFrame(const MarkerFrame& aFrame);
 	virtual ~MarkerFrame();
+
 	void addMarker(const SimTK::Vec3& aCoords);
 	SimTK::Vec3 getMarker(int aIndex) const { return _markers[aIndex]; }
     SimTK::Vec3& updMarker(int aIndex) { return _markers[aIndex]; }

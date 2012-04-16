@@ -30,12 +30,14 @@
 // INCLUDES
 //============================================================================
 #include "AbstractProperty.h"
+#include "Property.h"
 #include "Object.h"
-#include "Function.h"
 
 #include <string>
+#include <limits>
 
 using namespace OpenSim;
+using namespace SimTK;
 using namespace std;
 
 
@@ -55,12 +57,10 @@ AbstractProperty::AbstractProperty()
  * Constructor.
  */
 AbstractProperty::AbstractProperty(const std::string& name, 
-                                   const std::string& typeAsString, 
                                    const std::string& comment)
 {
     setNull();
 	_name = name;
-	_typeAsString = typeAsString;
 	_comment = comment;
 }
 
@@ -72,210 +72,162 @@ AbstractProperty::AbstractProperty(const std::string& name,
 void AbstractProperty::setNull()
 {
 	_name = "unknown";
-	_typeAsString = "none";
     _comment = "";
 	_useDefault = false;
-	_matchName = false;
-	_minArraySize = 0;
-	_maxArraySize = INT_MAX;
+	_minListSize = 0;
+	_maxListSize = std::numeric_limits<int>::max();
 }
 
-//=============================================================================
-// TYPE HELPER SPECIALIZATIONS
-//=============================================================================
-string AbstractProperty::TypeHelper<bool>::
-formatForDisplay(bool v) {
-    return v ? "true" : "false";
+void AbstractProperty::clear() {
+    clearValues();
 }
 
-string AbstractProperty::TypeHelper<int>::
-formatForDisplay(int v) {
-    char intString[32];
-	sprintf(intString, "%d", v);
-	return intString;
+// Set the use default flag for this property, and propagate that through
+// any contained Objects.
+void AbstractProperty::setAllPropertiesUseDefault(bool shouldUseDefault) {
+    setUseDefault(shouldUseDefault);
+    if (!isObjectProperty())
+        return;
+    for (int i=0; i < size(); ++i)
+        updValueAsObject(i).setAllPropertiesUseDefault(shouldUseDefault);
 }
 
-// Strings are compared exactly here but could conceivably by made fancier
-// so make sure that Array<string>::isEqual() is defined in terms of this one.
-bool AbstractProperty::TypeHelper<string>::
-isEqual(const string& a, const std::string& b) {
-    return a == b;
-}
-string AbstractProperty::TypeHelper<string>::
-formatForDisplay(const string& s) {
-    return s;
-}
-
-// Doubles compare equal if they are close enough, and they compare equal
-// if they are both NaN. Vec3, Vector, and Array<double> properties must all
-// be implemented in terms of this method.
-bool AbstractProperty::TypeHelper<double>::
-isEqual(double a, double b) {
-    if (a == b)
-        return true; // catch exact match and Infinities
-
-    if (SimTK::isNaN(a) && SimTK::isNaN(b))
-        return true; // we define NaN==NaN to be true here
-
-    // Floating point need only match to a tolerance.
-    // TODO: why is this the right number??
-    return std::abs(a - b) <= 1e-7;
-}
-
-// All formatForDisplay() methods involving doubles must be implemented using
-// this method.
-string AbstractProperty::TypeHelper<double>::
-formatForDisplay(double v) {
-    if (SimTK::isFinite(v)) {
-	    char dbl[256];
-        sprintf(dbl, "%g", v);
-        return dbl;
+// Implement the policy that locates a property value's element within its 
+// parent element and then ask the concrete property to deserialize itself from
+// that element.
+void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
+                                                int           versionNumber)
+{
+    // If this property has a real name (that is, doesn't use the object type
+    // tag as a name), look for the first element whose tag is
+    // that name and read it if found. That is, we're looking for
+    //      <propName> ... </propName>
+    if (!isUnnamedProperty()) {
+        Xml::element_iterator propElt = parent.element_begin(getName());
+        if (propElt != parent.element_end()) {
+            readFromXMLElement(*propElt, versionNumber);
+            setUseDefault(false);
+            return;
+        }
     }
 
-    if (SimTK::isNaN(v)) return "NaN";
-	if (v ==  SimTK::Infinity) return "infinity";
-	if (v == -SimTK::Infinity) return "-infinity";
-	return "UnrecognizedNonFinite???";
-}
+    // Didn't find a property element by its name (or it didn't have one).
+    // There is still hope: If this is an object property, restricted to 
+    // contain exactly one Object, then it is allowed to have an alternate
+    // form.
 
-bool AbstractProperty::TypeHelper<SimTK::Vec3>::
-isEqual(const SimTK::Vec3& a, const SimTK::Vec3& b) {
-    for (int i=0; i < 3; ++i)
-        if (!TypeHelper<double>::isEqual(a[i],b[i]))
-            return false;
-    return true;
-}
-
-string AbstractProperty::TypeHelper<SimTK::Vec3>::
-formatForDisplay(const SimTK::Vec3& v) {
-	string str = "(";
-	for(int i=0; i < 3; ++i) {
-        if (i>0) str += " ";
-        str += TypeHelper<double>::formatForDisplay(v[i]);
+    if (!isOneObjectProperty()) {
+        setUseDefault(true); // no special format allowed
+        return;
     }
-	str += ")";
-	return str;
-}
 
-// SimTK::Vector
-bool AbstractProperty::TypeHelper<SimTK::Vector>::
-isEqual(const SimTK::Vector& a, const SimTK::Vector& b) {
-    if (a.size() != b.size())
-        return false;
-    for (int i=0; i < a.size(); ++i)
-        if (!TypeHelper<double>::isEqual(a[i],b[i]))
-            return false;
-    return true;
-}
-string AbstractProperty::TypeHelper<SimTK::Vector>::
-formatForDisplay(const SimTK::Vector& v) {
-	string str = "(";
-	for(int i=0; i < v.size(); ++i) {
-        if (i>0) str += " ";
-        str += TypeHelper<double>::formatForDisplay(v[i]);
+    // The property contains just a single object so we can look for the 
+    // abbreviated form: 
+    //      <ObjectTypeTag name=propName> contents </ObjectTypeTag>
+    // In case this is an unnamed property, only the type has to be right in
+    // the source XML file, and any name (or no name attribute) is acceptable.
+
+    // If the current property does have a property name, we select the first
+    // element that has that as the value of its name attribute; then it is
+    // an error if the type tag is not acceptable. On the other hand, if there
+    // is no property name, we select the first element that has an acceptable
+    // type; we don't care about its name attribute in that case.
+    // As a final loophole, if we fail to find a matching name, but there is
+    // an unnamed object in the file whose type is acceptable, we'll use that
+    // rather than report an error. That allows us to add a name to a 
+    // formerly unnamed one-object property in the code yet still read old 
+    // files that contain unnamed objects.
+
+    // If we find a promising element, we'll canonicalize by adding a parent
+    // property element temporarily to produce:
+    //     <propName> 
+    //         <ObjectTypeTag name=propName> contents </ObjectTypeTag> 
+    //     </propName>
+    // or
+    //     <Unnamed> 
+    //         <ObjectTypeTag> contents </ObjectTypeTag> 
+    //     </Unnamed>
+    // and then delegate to the concrete property the job of reading in the
+    // property value.
+    Xml::element_iterator prev = parent.element_end();
+    Xml::element_iterator iter = parent.element_begin();
+    if (isUnnamedProperty()) {
+        for (; iter != parent.element_end(); prev=iter++) 
+            if (isAcceptableObjectTag(iter->getElementTag()))
+                break; // Found a good tag; name doesn't matter.
+    } else { // this property has a name
+        // First pass: look for an object with that name attribute
+        for (; iter != parent.element_end(); prev=iter++) 
+            if (iter->getOptionalAttributeValue("name") == getName()) {
+                // Found the right name; tag must be acceptable.
+                if (!isAcceptableObjectTag(iter->getElementTag())) {
+                    throw OpenSim::Exception
+                        ("Found XML element with expected property name=" + getName()
+                        + " in parent element " + parent.getElementTag()
+                        + " but its tag " + iter->getElementTag()
+                        + " was not an acceptable type for this property.");
+                    return;
+                }
+                break;
+            }
+        if (iter == parent.element_end()) {
+            // Second pass: look for an unnamed object with the right type
+            prev = parent.element_end();
+            iter = parent.element_begin();
+            for (; iter != parent.element_end(); prev=iter++) {
+                if (   iter->getOptionalAttributeValue("name").empty()
+                    && isAcceptableObjectTag(iter->getElementTag()))
+                    break; // Found a good tag; we'll ignore the name
+            }
+        }
     }
-	str += ")";
-	return str;
-}
 
-// SimTK::Transform
-bool AbstractProperty::TypeHelper<SimTK::Transform>::
-isEqual(const SimTK::Transform& a, const SimTK::Transform& b) {
-    // Check position vectors for equality, elementwise to a tolerance.
-    if (!TypeHelper<SimTK::Vec3>::isEqual(a.p(), b.p()))
-        return false;
-    // Check rotation matrix to equality within angle tolerance.
-    // TODO: is this angle reasonable?
-    if (!a.R().isSameRotationToWithinAngle(b.R(), 1e-7))
-        return false;
-
-    return true;
-}
-string AbstractProperty::TypeHelper<SimTK::Transform>::
-formatForDisplay(const SimTK::Transform& X) {
-    SimTK::Vector rotTrans(6);
-    rotTrans(0,3) = SimTK::Vector(X.R().convertRotationToBodyFixedXYZ());
-    rotTrans(3,3) = SimTK::Vector(X.p()); // translations
-    return TypeHelper<SimTK::Vector>::formatForDisplay(rotTrans);
-}
-
-// OpenSim::Array<bool>
-bool AbstractProperty::TypeHelper< OpenSim::Array<bool> >::
-isEqual(const OpenSim::Array<bool>& a, const OpenSim::Array<bool>& b) {
-    if (a.getSize() != b.getSize())
-        return false;
-    for (int i=0; i < a.getSize(); ++i)
-        if (a[i] != b[i])
-            return false;
-    return true;
-}
-string AbstractProperty::TypeHelper< OpenSim::Array<bool> >::
-formatForDisplay(const OpenSim::Array<bool>& a) {
-	string str = "(";
-	for(int i=0; i < a.getSize(); ++i) {
-        if (i>0) str += " ";
-        str += TypeHelper<bool>::formatForDisplay(a[i]);
+    if (iter == parent.element_end()) {
+        // Couldn't find an acceptable element for this one-object property.
+        setUseDefault(true);
+        return;
     }
-	str += ")";
-	return str;
+
+    // Found a match. Borrow the object node briefly and canonicalize it 
+    // into a conventional <propName> object </propName> structure.
+    Xml::Element dummy(isUnnamedProperty() ? "Unnamed" : getName());
+    dummy.insertNodeAfter(dummy.node_end(), parent.removeNode(iter));
+    readFromXMLElement(dummy, versionNumber);
+    // Now put the node back where we found it.
+    parent.insertNodeBefore(prev, 
+                            dummy.removeNode(dummy.element_begin()));
+    setUseDefault(false);
 }
 
-bool AbstractProperty::TypeHelper< OpenSim::Array<int> >::
-isEqual(const OpenSim::Array<int>& a, const OpenSim::Array<int>& b) {
-    if (a.getSize() != b.getSize())
-        return false;
-    for (int i=0; i < a.getSize(); ++i)
-        if (a[i] != b[i])
-            return false;
-    return true;
-}
-string AbstractProperty::TypeHelper< OpenSim::Array<int> >::
-formatForDisplay(const OpenSim::Array<int>& a) {
-	string str = "(";
-	for(int i=0; i < a.getSize(); ++i) {
-        if (i>0) str += " ";
-        str += TypeHelper<int>::formatForDisplay(a[i]);
+
+void AbstractProperty::writeToXMLParentElement(Xml::Element& parent) {
+	// Add comment if any.
+	if (!getComment().empty())
+		parent.insertNodeAfter(parent.node_end(), Xml::Comment(getComment()));
+
+    if (!isOneObjectProperty()) {
+        // Concrete property will be represented by an Xml element of
+        // the form <propName> value(s) </propName>.
+        assert(!getName().empty());
+        Xml::Element propElement(getName());
+        writeToXMLElement(propElement);
+        parent.insertNodeAfter(parent.node_end(), propElement);
+        return;
     }
-	str += ")";
-	return str;
+
+    // This is a one-object property. It will be represented by an Xml
+    // element 
+    //      <ObjectTypeTag name=propName ...> value </ObjectTypeTag>
+    // (if the property has a name), or 
+    //      <ObjectTypeTag ...> value </ObjectTypeTag> 
+    // otherwise.
+
+    Object& obj = updValueAsObject();
+
+    // If this is a named property then the lone object must have its
+    // name attribute set to the property name.
+    obj.setName(isUnnamedProperty() ? "" : getName());
+
+    obj.updateXMLNode(parent);
 }
 
-bool AbstractProperty::TypeHelper< OpenSim::Array<double> >::
-isEqual(const OpenSim::Array<double>& a, const OpenSim::Array<double>& b) {
-    if (a.getSize() != b.getSize())
-        return false;
-    for (int i=0; i < a.getSize(); ++i)
-        if (!TypeHelper<double>::isEqual(a[i],b[i]))
-            return false;
-    return true;
-}
-string AbstractProperty::TypeHelper< OpenSim::Array<double> >::
-formatForDisplay(const OpenSim::Array<double>& a) {
-	string str = "(";
-	for(int i=0; i < a.getSize(); ++i) {
-        if (i>0) str += " ";
-        str += TypeHelper<double>::formatForDisplay(a[i]);
-    }
-	str += ")";
-	return str;
-}
-
-bool AbstractProperty::TypeHelper< OpenSim::Array<string> >::
-isEqual(const OpenSim::Array<string>& a, const OpenSim::Array<string>& b) {
-    if (a.getSize() != b.getSize())
-        return false;
-    for (int i=0; i < a.getSize(); ++i)
-        if (!TypeHelper<string>::isEqual(a[i],b[i]))
-            return false;
-    return true;
-}
-string AbstractProperty::TypeHelper< OpenSim::Array<string> >::
-formatForDisplay(const OpenSim::Array<string>& a) {
-	string str = "(";
-	for(int i=0; i < a.getSize(); ++i) {
-        if (i>0) str += " ";
-        str += TypeHelper<string>::formatForDisplay(a[i]);
-    }
-	str += ")";
-	return str;
-}

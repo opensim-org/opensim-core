@@ -57,11 +57,8 @@ class Model;
  * @author Frank C. Anderson, Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API Analysis: public Object
-{
-	OPENSIM_DECLARE_DERIVED(Analysis, Object);
-public:
-
+class OSIMSIMULATION_API Analysis: public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Analysis, Object);
 
 //=============================================================================
 // DATA
@@ -116,7 +113,7 @@ public:
 	 *
 	 * @param aModel Model on which the analysis is to be performed.
 	 */
-	Analysis(Model *aModel=0);
+	explicit Analysis(Model *aModel=0);
 
 	/**
 	 * Construct an object from file.
@@ -136,7 +133,6 @@ public:
 	Analysis(const Analysis &aAnalysis);
 
 	virtual ~Analysis();
-	virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

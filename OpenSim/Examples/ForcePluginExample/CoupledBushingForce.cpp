@@ -117,18 +117,6 @@ CoupledBushingForce::CoupledBushingForce(const CoupledBushingForce &aForce) :
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* CoupledBushingForce::copy() const
-{
-	CoupledBushingForce *Force = new CoupledBushingForce(*this);
-	return(Force);
-}
-//_____________________________________________________________________________
-/**
  * Copy data members from one CoupledBushingForce to another.
  *
  * @param aForce CoupledBushingForce to be copied.
@@ -153,7 +141,6 @@ void CoupledBushingForce::copyData(const CoupledBushingForce &aForce)
  */
 void CoupledBushingForce::setNull()
 {
-	setType("CoupledBushingForce");
 	_b1 = NULL;
 	_b2 = NULL;
 	setupProperties();

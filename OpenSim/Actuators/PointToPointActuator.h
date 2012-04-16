@@ -56,8 +56,9 @@ namespace OpenSim {
 class Body;
 class Model;
 
-class OSIMACTUATORS_API PointToPointActuator : public Actuator
-{
+class OSIMACTUATORS_API PointToPointActuator : public Actuator {
+OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointActuator, Actuator);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -80,7 +81,7 @@ public:
 	PointToPointActuator( std::string aBodyNameA="", std::string abodyNameB="");
 	PointToPointActuator( const PointToPointActuator &aPointToPointActuator);
 	virtual ~PointToPointActuator();
-	virtual Object* copy() const;
+
 	void copyData(const PointToPointActuator &aPointToPointActuator);
 private:
 	void setNull();
@@ -158,8 +159,6 @@ public:
 	// XML
 	//--------------------------------------------------------------------------
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-	OPENSIM_DECLARE_DERIVED(PointToPointActuator, Actuator);
 
 //=============================================================================
 };	// END of class PointToPointActuator

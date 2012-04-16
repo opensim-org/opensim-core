@@ -58,8 +58,9 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMANALYSES_API StatesReporter : public Analysis 
-{
+class OSIMANALYSES_API StatesReporter : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(StatesReporter, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -75,10 +76,9 @@ protected:
 public:
 	StatesReporter(Model *aModel=0);
 	StatesReporter(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
 	StatesReporter(const StatesReporter &aObject);
-	virtual Object* copy() const;
 	virtual ~StatesReporter();
+
 private:
 	void setNull();
 	void constructDescription();

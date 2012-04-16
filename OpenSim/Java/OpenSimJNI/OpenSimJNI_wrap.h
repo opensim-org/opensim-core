@@ -17,7 +17,8 @@ public:
     void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
     SwigDirector_AnalysisWrapper(JNIEnv *jenv, OpenSim::Model *aModel = 0);
     virtual ~SwigDirector_AnalysisWrapper();
-    virtual OpenSim::Object *copy() const;
+    virtual OpenSim::Analysis *clone() const;
+    virtual std::string const &getConcreteClassName() const;
     virtual OpenSim::VisibleObject const *getDisplayer() const;
     virtual OpenSim::VisibleObject *updDisplayer();
     virtual void updateFromXMLNode(SimTK::Xml::Element &node, int versionNumber);
@@ -34,10 +35,10 @@ public:
     virtual int printResults(std::string const &aBaseName, std::string const &aDir = "", double aDT = -1.0, std::string const &aExtension = ".sto");
 public:
     bool swig_overrides(int n) {
-      return (n < 19 ? swig_override[n] : false);
+      return (n < 20 ? swig_override[n] : false);
     }
 protected:
-    bool swig_override[19];
+    bool swig_override[20];
 };
 
 class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public Swig::Director {
@@ -45,6 +46,7 @@ class SwigDirector_SimtkLogCallback : public OpenSim::SimtkLogCallback, public S
 public:
     void swig_connect_director(JNIEnv *jenv, jobject jself, jclass jcls, bool swig_mem_own, bool weak_global);
     SwigDirector_SimtkLogCallback(JNIEnv *jenv);
+    virtual ~SwigDirector_SimtkLogCallback();
     virtual void log(std::string const &str);
 public:
     bool swig_overrides(int n) {

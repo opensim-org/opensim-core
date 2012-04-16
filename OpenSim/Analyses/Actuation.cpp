@@ -117,17 +117,7 @@ Analysis(aActuation)
 	// COPY TYPE AND NAME
 	*this = aActuation;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* Actuation::copy() const
-{
-	Actuation *object = new Actuation(*this);
-	return(object);
 
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -139,8 +129,6 @@ Object* Actuation::copy() const
 void Actuation::
 setNull()
 {
-	// TYPE
-	setType("Actuation");
 	// NAME
 	setName("Actuation");
 

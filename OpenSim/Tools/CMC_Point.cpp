@@ -93,7 +93,6 @@ CMC_Point::CMC_Point(const CMC_Point &aTask) :
 void CMC_Point::
 setNull()
 {
-	setType("CMC_Point");
 	setupProperties();
 
 	_nTrk = 3;
@@ -123,19 +122,7 @@ copyData(const CMC_Point &aTask)
 	setPoint(aTask.getPoint());
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this track object and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this track object.
- */
-Object* CMC_Point::
-copy() const
-{
-	CMC_Point *object = new CMC_Point(*this);
-	return(object);
-}
+
 //_____________________________________________________________________________
 /**
  * Update work variables

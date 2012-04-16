@@ -58,8 +58,9 @@ class Model;
  * @author Frank C. Anderson, Ajay Seth, Jeffrey A. Reinbolt
  * @version 1.0
  */
-class OSIMSIMULATION_API Coordinate : public ModelComponent  
-{
+class OSIMSIMULATION_API Coordinate : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(Coordinate, ModelComponent);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -150,7 +151,7 @@ public:
 	Coordinate(const std::string &aName, MotionType aMotionType, double aRangeMin, double aRangeMax);	
 	Coordinate(const Coordinate &aCoordinate);
 	virtual ~Coordinate();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	Coordinate& operator=(const Coordinate &aCoordinate);
 #endif
@@ -227,8 +228,6 @@ public:
 	SimTK::MobilizedBodyIndex getBodyIndex() const { return _bodyIndex; };
 
 	virtual Array<std::string> getStateVariableNames() const;
-
-	OPENSIM_DECLARE_DERIVED(Coordinate, Object); 
 
 	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 

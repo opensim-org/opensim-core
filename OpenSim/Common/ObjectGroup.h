@@ -57,8 +57,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMCOMMON_API ObjectGroup : public Object  
-{
+class OSIMCOMMON_API ObjectGroup : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(ObjectGroup, Object);
 
 //=============================================================================
 // DATA
@@ -82,7 +82,6 @@ public:
 	ObjectGroup(const std::string& aName);
 	ObjectGroup(const ObjectGroup &aGroup);
 	virtual ~ObjectGroup();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	ObjectGroup& operator=(const ObjectGroup &aGroup);
@@ -95,8 +94,6 @@ public:
 	void replace(const Object* aOldObject, Object* aNewObject);
 	void setup(ArrayPtrs<Object>& aObjects);
 	const Array<Object*>& getMembers() const { return _memberObjects; }
-
-	OPENSIM_DECLARE_DERIVED(ObjectGroup, Object);
 
 private:
 	void setNull();

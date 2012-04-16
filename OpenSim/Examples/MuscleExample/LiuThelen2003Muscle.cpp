@@ -114,18 +114,6 @@ LiuThelen2003Muscle::LiuThelen2003Muscle(const LiuThelen2003Muscle &aMuscle) :
 	copyData(aMuscle);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this muscle point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this LiuThelen2003Muscle.
- */
-Object* LiuThelen2003Muscle::copy() const
-{
-	LiuThelen2003Muscle *musc = new LiuThelen2003Muscle(*this);
-	return(musc);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -148,7 +136,6 @@ void LiuThelen2003Muscle::copyData(const LiuThelen2003Muscle &aMuscle)
  */
 void LiuThelen2003Muscle::setNull()
 {
-	setType("LiuThelen2003Muscle");
 }
 
 //_____________________________________________________________________________

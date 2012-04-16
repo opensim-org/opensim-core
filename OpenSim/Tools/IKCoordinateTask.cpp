@@ -49,7 +49,6 @@ IKCoordinateTask::IKCoordinateTask() :
 	_valueType(_valueTypeProp.getValueStr()),
    _value(_valueProp.getValueDbl())
 {
-	setType("IKCoordinateTask");
 	_valueType = ValueTypeToString(DefaultValue);
 	_value = 0;
 	setupProperties();
@@ -67,15 +66,6 @@ IKCoordinateTask::IKCoordinateTask(const IKCoordinateTask &aIKCoordinateTask) :
 	_valueType = aIKCoordinateTask._valueType;
 	_value = aIKCoordinateTask._value;
 	setupProperties();
-}
-
-//_____________________________________________________________________________
-/**
- * Copy method
- */
-Object* IKCoordinateTask::copy() const
-{
-	return new IKCoordinateTask(*this);
 }
 
 //_____________________________________________________________________________

@@ -52,9 +52,9 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMANALYSES_API Kinematics : public Analysis 
-{
-	OPENSIM_DECLARE_DERIVED(Kinematics, Analysis);
+class OSIMANALYSES_API Kinematics : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(Kinematics, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -81,10 +81,9 @@ protected:
 public:
 	Kinematics(Model *aModel=0);
 	Kinematics(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
 	Kinematics(const Kinematics &aObject);
-	virtual Object* copy() const;
 	virtual ~Kinematics();
+
 private:
 	void setNull();
 	void setupProperties();

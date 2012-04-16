@@ -64,8 +64,8 @@ class GeometryPath;
  *
  * @version 1.0
  */
-class OSIMSIMULATION_API Ligament : public Force  
-{
+class OSIMSIMULATION_API Ligament : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, Force);
 
 //=============================================================================
 // METHODS
@@ -77,7 +77,6 @@ public:
 	Ligament();
 	Ligament(const Ligament &aLigament);
 	virtual ~Ligament();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	Ligament& operator=(const Ligament &aLigament);
@@ -96,8 +95,9 @@ public:
 	virtual bool setRestingLength(double aRestingLength);
 	virtual double getMaxIsometricForce() const { return getPropertyValue<double>("pcsa_force"); }
 	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
-	virtual Function* getForceLengthCurve() const { return getPropertyValue<Function *>("force_length_curve"); }
-	virtual bool setForceLengthCurve(Function* aForceLengthCurve);
+	virtual const Function& getForceLengthCurve() const 
+    {   return getPropertyValue<Function>("force_length_curve"); }
+	virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
@@ -120,10 +120,6 @@ public:
 	//--------------------------------------------------------------------------
 	virtual VisibleObject* getDisplayer() const;
 	virtual void updateDisplayer(const SimTK::State& s);
-
-	// This macro allows the OpenSim GUI to check Force
-	// objects to see if they are instances of this ligament class.
-	OPENSIM_DECLARE_DERIVED(Ligament, Force);
 
 protected:
 	virtual void setup(Model& aModel);

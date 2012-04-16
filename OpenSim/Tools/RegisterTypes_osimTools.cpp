@@ -75,42 +75,42 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 {
 	//cout<<"RegisterTypes_osimTools\n";
 
-	Object::RegisterType( ScaleTool() );
-	//Object::RegisterType( IKTool() );
-	Object::RegisterType( CMCTool() );
-	Object::RegisterType( RRATool() );
-	Object::RegisterType( ForwardTool() );
-	Object::RegisterType( AnalyzeTool() );
+	Object::registerType( ScaleTool() );
+	//Object::registerType( IKTool() );
+	Object::registerType( CMCTool() );
+	Object::registerType( RRATool() );
+	Object::registerType( ForwardTool() );
+	Object::registerType( AnalyzeTool() );
 
-	Object::RegisterType( GenericModelMaker() );
-	Object::RegisterType( IKCoordinateTask() );
-	Object::RegisterType( IKMarkerTask() );
-	Object::RegisterType( IKTaskSet() );
-	//Object::RegisterType( IKTrial() );
-	//Object::RegisterType( IKTrialSet() );
-	Object::RegisterType( MarkerPair() );
-	Object::RegisterType( MarkerPairSet() );
-	Object::RegisterType( MarkerPlacer() );
-	Object::RegisterType( Measurement() );
-	Object::RegisterType( MeasurementSet() );
-	Object::RegisterType( ModelScaler() );
+	Object::registerType( GenericModelMaker() );
+	Object::registerType( IKCoordinateTask() );
+	Object::registerType( IKMarkerTask() );
+	Object::registerType( IKTaskSet() );
+	//Object::registerType( IKTrial() );
+	//Object::registerType( IKTrialSet() );
+	Object::registerType( MarkerPair() );
+	Object::registerType( MarkerPairSet() );
+	Object::registerType( MarkerPlacer() );
+	Object::registerType( Measurement() );
+	Object::registerType( MeasurementSet() );
+	Object::registerType( ModelScaler() );
 
-	Object::RegisterType( CorrectionController() );
-	Object::RegisterType( CMC() );
-	Object::RegisterType( CMC_Joint() );
-	Object::RegisterType( CMC_Point() );
-	Object::RegisterType( MuscleStateTrackingTask() );
-	Object::RegisterType( CMC_TaskSet() );
+	Object::registerType( CorrectionController() );
+	Object::registerType( CMC() );
+	Object::registerType( CMC_Joint() );
+	Object::registerType( CMC_Point() );
+	Object::registerType( MuscleStateTrackingTask() );
+	Object::registerType( CMC_TaskSet() );
 
-	Object::RegisterType( SMC_Joint() );
-	Object::RegisterType( InverseKinematicsTool() );
-	Object::RegisterType( InverseDynamicsTool() );
+	Object::registerType( SMC_Joint() );
+	Object::registerType( InverseKinematicsTool() );
+	Object::registerType( InverseDynamicsTool() );
 	// Old versions
-	Object::RenameType("rdCMC_Joint", CMC_Joint());
-	Object::RenameType("rdCMC_Point", CMC_Point());
-	Object::RenameType("rdCMC_TaskSet", CMC_TaskSet());
+	Object::RenameType("rdCMC_Joint",   "CMC_Joint");
+	Object::RenameType("rdCMC_Point",   "CMC_Point");
+	Object::RenameType("rdCMC_TaskSet", "CMC_TaskSet");
 
-	Object::RenameType("IKTool", InverseKinematicsTool());
+	Object::RenameType("IKTool", "InverseKinematicsTool");
 
 }
 

@@ -58,8 +58,9 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMANALYSES_API ForceReporter : public Analysis 
-{
+class OSIMANALYSES_API ForceReporter : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(ForceReporter, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -82,8 +83,8 @@ public:
 	ForceReporter(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	ForceReporter(const ForceReporter &aObject);
-	virtual Object* copy() const;
 	virtual ~ForceReporter();
+
 private:
 	void setNull();
 	void constructDescription();

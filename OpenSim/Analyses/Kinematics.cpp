@@ -122,17 +122,7 @@ Kinematics::Kinematics(const Kinematics &aKinematics):
 	// COPY TYPE AND NAME
 	*this = aKinematics;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* Kinematics::copy() const
-{
-	Kinematics *object = new Kinematics(*this);
-	return(object);
 
-}
 //_____________________________________________________________________________
 /**
  * Set all member variables to their null or default values.
@@ -142,7 +132,6 @@ setNull()
 {
 	setupProperties();
 
-	setType("Kinematics");
 	setName("Kinematics");
 	_pStore=_vStore=_aStore=0;
 	_coordinates.setSize(1);

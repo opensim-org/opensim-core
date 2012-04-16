@@ -49,9 +49,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API SliderJoint : public Joint  
-{
+class OSIMSIMULATION_API SliderJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(SliderJoint, Joint);
 
+private:
 	static const int _numMobilities = 1;
 //=============================================================================
 // DATA
@@ -73,7 +74,7 @@ public:
 					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, 
 				    bool reverse=false);
 	virtual ~SliderJoint();
-	virtual Object* copy() const;
+
 	SliderJoint& operator=(const SliderJoint &aJoint);
 	void copyData(const SliderJoint &aJoint);
 	virtual void setup(Model& aModel);

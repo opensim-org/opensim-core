@@ -77,21 +77,7 @@ ControlLinearNode::ControlLinearNode(const ControlLinearNode &aControl) :
 	setNull();
 	*this = aControl;
 }
-//_____________________________________________________________________________
-/**
- * Construct and return a copy of this object.
- *
- * The object is allocated using the new operator, so the caller is
- * responsible for deleting the returned object.
- *
- * @return Copy of this object.
- */
-Object* ControlLinearNode::
-copy() const
-{
-	ControlLinearNode *object = new ControlLinearNode(*this);
-	return(object);
-}
+
 
 ControlLinearNode::~ControlLinearNode()
 {
@@ -106,7 +92,6 @@ ControlLinearNode::~ControlLinearNode()
 void ControlLinearNode::
 setNull()
 {
-	setType("ControlLinearNode");
 	setupProperties();
 }
 //_____________________________________________________________________________

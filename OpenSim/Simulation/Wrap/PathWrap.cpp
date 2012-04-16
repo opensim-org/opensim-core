@@ -83,18 +83,6 @@ PathWrap::PathWrap(const PathWrap& aPathWrap) :
 	copyData(aPathWrap);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this PathWrap and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this PathWrap.
- */
-Object* PathWrap::copy() const
-{
-	PathWrap *pathWrap = new PathWrap(*this);
-	return(pathWrap);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -105,8 +93,6 @@ Object* PathWrap::copy() const
  */
 void PathWrap::setNull()
 {
-	setType("PathWrap");
-
 	_method = hybrid;
 
 	resetPreviousWrap();
@@ -128,7 +114,7 @@ void PathWrap::setupProperties()
 	const int defaultRange[] = {-1, -1};
 	_rangeProp.setName("range");
 	_rangeProp.setValue(2, defaultRange);
-	_rangeProp.setAllowableArraySize(2);
+	_rangeProp.setAllowableListSize(2);
 	_propertySet.append(&_rangeProp);
 }
 

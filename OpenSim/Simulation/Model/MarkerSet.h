@@ -55,8 +55,9 @@ class Body;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API MarkerSet :	public Set<Marker>
-{
+class OSIMSIMULATION_API MarkerSet : public Set<Marker> {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkerSet, Set<Marker>);
+
 private:
 	void setNull();
 public:
@@ -64,8 +65,8 @@ public:
 	MarkerSet(const std::string& aMarkersFileName) SWIG_DECLARE_EXCEPTION;
 	MarkerSet(const MarkerSet& aMarkerSet);
 	~MarkerSet(void);
-	virtual Object* copy() const;
-	void setup(Model& aModel);
+
+    void setup(Model& aModel);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

@@ -67,8 +67,9 @@ class Model;
  * @author Matt DeMers, Ajay Seth, Frank C. Anderson
  * @version 1.0
  */
-class OSIMANALYSES_API JointReaction : public Analysis 
-{
+class OSIMANALYSES_API JointReaction : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(JointReaction, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -154,11 +155,11 @@ public:
 	//-------------------------------------------------------------------------
 	// CONSTRUCTION
 	//-------------------------------------------------------------------------
-	virtual ~JointReaction();
 	JointReaction(Model *aModel=0);
 	JointReaction(const std::string &aFileName);
 	JointReaction(const JointReaction &aObject);
-	virtual Object* copy() const;
+	virtual ~JointReaction();
+
 private:
 	void setNull();
 	void setupProperties();

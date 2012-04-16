@@ -120,19 +120,6 @@ ScaleTool::ScaleTool(const ScaleTool &aSubject) :
 	copyData(aSubject);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this subject and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ScaleTool.
- */
-Object* ScaleTool::copy() const
-{
-	ScaleTool *subject = new ScaleTool(*this);
-	return(subject);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -159,7 +146,6 @@ void ScaleTool::copyData(const ScaleTool &aSubject)
  */
 void ScaleTool::setNull()
 {
-	setType("ScaleTool");
 }
 
 //_____________________________________________________________________________
@@ -206,9 +192,9 @@ void ScaleTool::setupProperties()
  */
 void ScaleTool::registerTypes()
 {
-	Object::RegisterType(GenericModelMaker());
-	Object::RegisterType(ModelScaler());
-	Object::RegisterType(MarkerPlacer());
+	Object::registerType(GenericModelMaker());
+	Object::registerType(ModelScaler());
+	Object::registerType(MarkerPlacer());
 	GenericModelMaker::registerTypes();
 	ModelScaler::registerTypes();
 }

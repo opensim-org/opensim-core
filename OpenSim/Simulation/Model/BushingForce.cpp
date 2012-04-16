@@ -97,18 +97,7 @@ BushingForce::BushingForce(const BushingForce &aForce) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* BushingForce::copy() const
-{
-	BushingForce *Force = new BushingForce(*this);
-	return(Force);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one BushingForce to another.
@@ -136,7 +125,6 @@ void BushingForce::copyData(const BushingForce &aForce)
  */
 void BushingForce::setNull()
 {
-	setType("BushingForce");
 	setupProperties();
 }
 

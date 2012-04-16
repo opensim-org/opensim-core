@@ -88,7 +88,6 @@ Actuator_::~Actuator_()
  */
 void Actuator_::setNull()
 {
-	setType("Actuator_");
 }
 
 // Create the underlying computational system component(s) that support the
@@ -235,7 +234,6 @@ void Actuator::setupProperties()
  */
 void Actuator::setNull()
 {
-	setType("Actuator");
 }
 
 /**

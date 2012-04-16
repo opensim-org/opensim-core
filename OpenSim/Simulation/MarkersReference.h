@@ -40,8 +40,9 @@ namespace OpenSim {
 
 class Units;
 
-class OSIMSIMULATION_API MarkerWeight : public Object
-{
+class OSIMSIMULATION_API MarkerWeight : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkerWeight, Object);
+
 private:
 	PropertyDbl _weightProp;
 	double &_weight;
@@ -54,17 +55,23 @@ public:
 	{   setName(name); _weight = weight; }
 
 	//Copy
-	MarkerWeight(const MarkerWeight &aWeight) 
-    :   Object(aWeight), _weight(_weightProp.getValueDbl()) 
-    {   _weight = aWeight._weight; }
+	MarkerWeight(const MarkerWeight& source) 
+    :   Object(source), _weight(_weightProp.getValueDbl()) 
+    {   _weight = source._weight; }
 
+    #ifndef SWIG
+	MarkerWeight& operator=(const MarkerWeight& source) {
+        if (&source != this) {
+            Super::operator=(source);
+            _weight = source._weight;
+        }
+        return *this;
+    }
+    #endif
 
 	void setWeight(double weight) {_weight = weight; }
 	double getWeight() const {return _weight; };
-	virtual Object* copy() const {
-			MarkerWeight *mWeight = new MarkerWeight(*this);
-			return(mWeight);
-	}
+
 }; // end of MarkerWeight class
 
 
@@ -81,8 +88,9 @@ public:
  */
 class IKTaskSet;
 
-class OSIMSIMULATION_API MarkersReference : public Reference_<SimTK::Vec3>
-{
+class OSIMSIMULATION_API MarkersReference : public Reference_<SimTK::Vec3> {
+OpenSim_DECLARE_CONCRETE_OBJECT(MarkersReference, Reference_<SimTK::Vec3>);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -119,8 +127,6 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~MarkersReference() {};
-
 	MarkersReference();
 
 	// Convenience load markers from a file
@@ -129,9 +135,10 @@ public:
 	MarkersReference(MarkerData& aMarkerData, const Set<MarkerWeight>* aMarkerWeightSet=NULL);
 
 	MarkersReference& operator=(const MarkersReference &aRef) {Reference_<SimTK::Vec3>::operator=(aRef); copyData(aRef); return(*this); };
+    
+    virtual ~MarkersReference() {}
 
 	void copyData(const MarkersReference &aRef) {
-        setType("MarkersReference");
 		_markersFile = aRef._markersFile;
 		setMarkerWeightSet(aRef._markerWeightSet);
 		_defaultWeight = aRef._defaultWeight;  

@@ -37,8 +37,9 @@ namespace OpenSim {
  *
  * @author Peter Eastman
  */
-class OSIMSIMULATION_API ContactMesh : public ContactGeometry
-{
+class OSIMSIMULATION_API ContactMesh : public ContactGeometry {
+OpenSim_DECLARE_CONCRETE_OBJECT(ContactMesh, ContactGeometry);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -75,7 +76,21 @@ public:
 	 */
     ContactMesh(const std::string& filename, const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body, const std::string& name);
 	ContactMesh(const ContactMesh& geom);
-	Object* copy() const;
+
+    #ifndef SWIG
+    ContactMesh& operator=(const ContactMesh& source) {
+        if (&source != this) {
+            Super::operator=(source);
+            copyData(source);
+        }
+        return *this;
+    }
+    #endif
+
+    void copyData(const ContactMesh& source) {
+        _geometry = source._geometry;
+        _filename = source._filename;
+    }
     SimTK::ContactGeometry createSimTKContactGeometry();
 
 	// ACCESSORS

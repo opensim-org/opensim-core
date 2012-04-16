@@ -83,8 +83,9 @@ class CMC_TaskSet;
  * @version 1.0
  */
 
-class OSIMTOOLS_API CMC : public TrackingController
-{
+class OSIMTOOLS_API CMC : public TrackingController {
+OpenSim_DECLARE_CONCRETE_OBJECT(CMC, TrackingController);
+
 //=============================================================================
 // MEMBER VARIABLES	
 //=============================================================================
@@ -155,13 +156,13 @@ public:
     CMC(const CMC& aCmc);
     CMC(const std::string& aFileName, bool aUpdateFromXMLNode = true);
 	virtual ~CMC();
+
 	void setNull();
 
 #ifndef SWIG
     CMC&  operator=(const CMC &aCmc);
 #endif
     void copyData(const CMC &aCmc);
-    virtual Object* copy() const;
 
 	//--------------------------------------------------------------------------
 	// GET AND SET

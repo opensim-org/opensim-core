@@ -55,8 +55,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API PiecewiseConstantFunction : public Function
-{
+class OSIMCOMMON_API PiecewiseConstantFunction : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(PiecewiseConstantFunction, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -75,60 +76,58 @@ protected:
 // METHODS
 //=============================================================================
 public:
-       //--------------------------------------------------------------------------
-       // CONSTRUCTION
-       //--------------------------------------------------------------------------
-       PiecewiseConstantFunction();
-       PiecewiseConstantFunction(int aN,const double *aTimes,const double *aValues,
-             const std::string &aName="");
-       PiecewiseConstantFunction(const PiecewiseConstantFunction &aFunction);
-       virtual ~PiecewiseConstantFunction();
-       virtual Object* copy() const;
-       virtual void init(Function* aFunction);
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+    PiecewiseConstantFunction();
+    PiecewiseConstantFunction(int aN,const double *aTimes,const double *aValues,
+            const std::string &aName="");
+    PiecewiseConstantFunction(const PiecewiseConstantFunction &aFunction);
+    virtual ~PiecewiseConstantFunction();
+
+    virtual void init(Function* aFunction);
 
 private:
-       void setNull();
-       void setupProperties();
-       void setEqual(const PiecewiseConstantFunction &aFunction);
+    void setNull();
+    void setupProperties();
+    void setEqual(const PiecewiseConstantFunction &aFunction);
 
-       //--------------------------------------------------------------------------
-       // OPERATORS
-       //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-       PiecewiseConstantFunction& operator=(const PiecewiseConstantFunction &aFunction);
+    PiecewiseConstantFunction& operator=(const PiecewiseConstantFunction &aFunction);
 #endif
-       //--------------------------------------------------------------------------
-       // SET AND GET
-       //--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // SET AND GET
+    //--------------------------------------------------------------------------
 public:
-       int getSize() const;
-       const Array<double>& getX() const;
-       const Array<double>& getY() const;
-       virtual const double* getXValues() const;
-       virtual const double* getYValues() const;
-       virtual int getNumberOfPoints() const { return _x.getSize(); }
-       virtual double getX(int aIndex) const;
-       virtual double getY(int aIndex) const;
-       virtual double getZ(int aIndex) const { return 0.0; }
-       virtual void setX(int aIndex, double aValue);
-       virtual void setY(int aIndex, double aValue);
-       virtual bool deletePoint(int aIndex);
-       virtual bool deletePoints(const Array<int>& indices);
-       virtual int addPoint(double aX, double aY);
+    int getSize() const;
+    const Array<double>& getX() const;
+    const Array<double>& getY() const;
+    virtual const double* getXValues() const;
+    virtual const double* getYValues() const;
+    virtual int getNumberOfPoints() const { return _x.getSize(); }
+    virtual double getX(int aIndex) const;
+    virtual double getY(int aIndex) const;
+    virtual double getZ(int aIndex) const { return 0.0; }
+    virtual void setX(int aIndex, double aValue);
+    virtual void setY(int aIndex, double aValue);
+    virtual bool deletePoint(int aIndex);
+    virtual bool deletePoints(const Array<int>& indices);
+    virtual int addPoint(double aX, double aY);
 
-       //--------------------------------------------------------------------------
-       // EVALUATION
-       //--------------------------------------------------------------------------
-       virtual double evaluateTotalFirstDerivative(double aX,double aDxdt) const;
-       virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const;
+    //--------------------------------------------------------------------------
+    // EVALUATION
+    //--------------------------------------------------------------------------
+    virtual double evaluateTotalFirstDerivative(double aX,double aDxdt) const;
+    virtual double evaluateTotalSecondDerivative(double aX,double aDxdt,double aD2xdt2) const;
     double calcValue(const SimTK::Vector& x) const;
     double calcDerivative(const std::vector<int>& derivComponents, const SimTK::Vector& x) const;
     int getArgumentSize() const;
     int getMaxDerivativeOrder() const;
     SimTK::Function* createSimTKFunction() const;
-
-       OPENSIM_DECLARE_DERIVED(PiecewiseConstantFunction, Function)
 
 //=============================================================================
 };     // END class PiecewiseConstantFunction

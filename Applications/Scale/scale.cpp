@@ -61,8 +61,8 @@ int main(int argc,char **argv)
 	IO::SetDigitsPad(4);
 
 	// REGISTER TYPES
-	Object::RegisterType(VisibleObject());
-	Object::RegisterType(ScaleTool());
+	Object::registerType(VisibleObject());
+	Object::registerType(ScaleTool());
 	ScaleTool::registerTypes();
 
 	// PARSE COMMAND LINE

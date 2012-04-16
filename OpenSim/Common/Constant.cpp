@@ -87,18 +87,6 @@ Constant::Constant(const Constant &aConstant) :
 	copyData(aConstant);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* Constant::copy() const
-{
-	Constant *aConstant = new Constant(*this);
-	return(aConstant);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -108,7 +96,6 @@ Object* Constant::copy() const
  */
 void Constant::setNull()
 {
-	setType("Constant");
 }
 
 //_____________________________________________________________________________

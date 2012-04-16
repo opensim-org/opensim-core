@@ -64,7 +64,6 @@ Set<Scale>()
 
 void ScaleSet::setNull()
 {
-	setType("ScaleSet");
 	setName("ScaleSet");
 }
 

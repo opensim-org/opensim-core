@@ -47,7 +47,6 @@ AnalyzeTool::AnalyzeTool() :
     _loadModelAndInput(false),
 	_printResultFiles(true)
 {
-	setType("AnalyzeTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -68,7 +67,6 @@ AnalyzeTool::AnalyzeTool(const string &aFileName, bool aLoadModelAndInput) :
     _loadModelAndInput(aLoadModelAndInput),
 	_printResultFiles(true)
 {
-	setType("AnalyzeTool");
 	setNull();
 	updateFromXMLDocument();
 
@@ -101,7 +99,6 @@ AnalyzeTool::AnalyzeTool(Model& aModel) :
     _loadModelAndInput(false),
 	_printResultFiles(true)
 {
-	setType("AnalyzeTool");
 	setNull();
 	setModel(aModel);
 	// By default add a muscleAnalysis and a MomentArmAnalysis and turn them off if they
@@ -165,21 +162,10 @@ AnalyzeTool(const AnalyzeTool &aTool) :
 	_lowpassCutoffFrequency(_lowpassCutoffFrequencyProp.getValueDbl()),
     _loadModelAndInput(false)
 {
-	setType("AnalyzeTool");
 	setNull();
 	*this = aTool;
 }
 
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor.
- */
-Object* AnalyzeTool::
-copy() const
-{
-	AnalyzeTool *object = new AnalyzeTool(*this);
-	return(object);
-}
 
 //_____________________________________________________________________________
 /**

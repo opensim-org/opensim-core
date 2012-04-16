@@ -92,7 +92,6 @@ void UnilateralConstraint::copyData(const UnilateralConstraint &aUnilateralConst
  */
 void UnilateralConstraint::setNull(void)
 {
-	setType("UnilateralConstraint");
 }
 
 //_____________________________________________________________________________

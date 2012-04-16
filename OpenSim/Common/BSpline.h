@@ -43,11 +43,6 @@
 #include "PropertyDblArray.h"
 #include "Function.h"
 
-
-
-//template class OSIMCOMMON_API Array<double>;
-
-
 //=============================================================================
 //=============================================================================
 /**
@@ -60,8 +55,9 @@
 /******************************************************************************************************/
 namespace OpenSim { 
 
-class OSIMCOMMON_API BSpline : public Function
-{
+class OSIMCOMMON_API BSpline : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(BSpline, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -87,13 +83,18 @@ public :
 	BSpline();											// constructor
 	BSpline(int, int, int, int);						// assignment constructor
 	virtual ~BSpline();									// destructor
-	//virtual Object* copy() const;						// returns a copy of this object
 
 	void createComponents(int, int, int);				// create the b-spline components
 	void createParametricKnots();						// create the parametric knot vector
 	void createBlendingFunction();						// create the blending function
 	void createCurvePoints();							// create the curve points
 	void createControlPoints();							// create the control points
+
+    // sherm 20120413: I added this stub for compilation but I don't think
+    // this class is fully implemented.
+    SimTK::Function* createSimTKFunction() const
+    {   throw OpenSim::Exception 
+            ("BSpline::createSimTKFunction() not implemented"); }
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
@@ -144,8 +145,6 @@ public:
 	//--------------------------------------------------------------------------
 	// EVALUATION
 	//--------------------------------------------------------------------------
-
-	OPENSIM_DECLARE_DERIVED(BSpline, Function);
 
 //=============================================================================
 };	// END class BSpline

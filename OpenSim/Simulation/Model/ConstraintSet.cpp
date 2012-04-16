@@ -53,8 +53,7 @@ ConstraintSet::ConstraintSet()
 	setNull();
 }
 
-ConstraintSet::ConstraintSet(Model& model) :
-	ModelComponentSet<Constraint>(model)
+ConstraintSet::ConstraintSet(Model& model) : Super(model)
 {
 	setNull();
 }
@@ -63,8 +62,8 @@ ConstraintSet::ConstraintSet(Model& model) :
 /**
  * Copy constructor of a ConstraintSet.
  */
-ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet):
-	ModelComponentSet<Constraint>(aAbsConstraintSet)
+ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet)
+:   Super(aAbsConstraintSet)
 {
 	setNull();
 	*this = aAbsConstraintSet;
@@ -78,7 +77,6 @@ ConstraintSet::ConstraintSet(const ConstraintSet& aAbsConstraintSet):
  */
 void ConstraintSet::setNull()
 {
-	setType("ConstraintSet");
 }
 
 /**
@@ -86,12 +84,7 @@ void ConstraintSet::setNull()
  */
 void ConstraintSet::setup(Model& aModel)
 {
-	// Base class
-	Set<Constraint>::setup();
-
-	// Do members
-	ModelComponentSet<Constraint>::setup(aModel);
-
+	Super::setup(aModel);
 }
 //=============================================================================
 // OPERATORS
@@ -107,7 +100,7 @@ ConstraintSet& ConstraintSet::operator=(const ConstraintSet &aConstraintSet)
 {
 	Set<Constraint>::operator=(aConstraintSet);
 
-	return (*this);
+	return *this;
 }
 #endif
 

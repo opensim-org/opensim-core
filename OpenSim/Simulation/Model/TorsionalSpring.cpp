@@ -66,10 +66,9 @@ TorsionalSpring::~TorsionalSpring()
  * @param aBody Body to which external torques are to be applied.
  */
 TorsionalSpring::TorsionalSpring(const Body &aBody, double startTime, double endTime) : Force(),
-	_body(aBody), _startTime(startTime), _endTime(endTime)
+	_bodyp(&aBody), _startTime(startTime), _endTime(endTime)
 {
 	setNull();
-	setType("TorsionalSpring");
 	_model = const_cast<OpenSim::Model *>(&aBody.getModel());
 
 }
@@ -324,9 +323,9 @@ void TorsionalSpring::computeTargetFunctions(SimTK::State &s, const Storage &aQS
 		_model->getMultibodySystem().realize(s, SimTK::Stage::Velocity );
 
 		// Get global position and velocity
-		_model->getSimbodyEngine().getDirectionCosines(s, _body, dirCos);
+		_model->getSimbodyEngine().getDirectionCosines(s, getBody(), dirCos);
 		_model->getSimbodyEngine().convertDirectionCosinesToAngles(dirCos,&ang[0],&ang[1],&ang[2]);
-		_model->getSimbodyEngine().getAngularVelocity(s, _body, angVel);
+		_model->getSimbodyEngine().getAngularVelocity(s, getBody(), angVel);
 
 		// Append to storage
 		angStore.append(t,ang);
@@ -398,7 +397,7 @@ void TorsionalSpring::computeForce(const SimTK::State& s,
 		_targetPosition->calcValue(&time, eulerAngle, 3);
 
 		_model->getSimbodyEngine().convertAnglesToDirectionCosines(eulerAngle[0], eulerAngle[1], eulerAngle[2], nomDirCos);
-		_model->getSimbodyEngine().getDirectionCosines(s, _body, curDirCos);
+		_model->getSimbodyEngine().getDirectionCosines(s, getBody(), curDirCos);
 		Mtx::Transpose(3,3,curDirCos,curDirCos);
 		Mtx::Multiply(3,3,3,curDirCos,nomDirCos,difDirCos);
 		_model->getSimbodyEngine().convertDirectionCosinesToAngles(difDirCos,&difAng[0],&difAng[1],&difAng[2]);
@@ -411,11 +410,11 @@ void TorsionalSpring::computeForce(const SimTK::State& s,
 		double difQDot[3];
 		double eulerTransform[9];
 		_targetVelocity->calcValue(&time, &nomAngVel[0], 3); //NEEDS TO BE IN GLOBAL COORDS
-		_model->getSimbodyEngine().getAngularVelocity(s, _body, curAngVel);  //EXPRESSED IN GLOBAL COORDS
+		_model->getSimbodyEngine().getAngularVelocity(s, getBody(), curAngVel);  //EXPRESSED IN GLOBAL COORDS
 		difAngVel=curAngVel-nomAngVel;
 //		Mtx::Subtract(3,1,nomAngVel,curAngVel,difAngVel);
-		_model->getSimbodyEngine().transform(s,_model->getGroundBody(), difAngVel,_body, difAngVel);
-		_model->getSimbodyEngine().formEulerTransform(s, _body, eulerTransform);
+		_model->getSimbodyEngine().transform(s,_model->getGroundBody(), difAngVel,getBody(), difAngVel);
+		_model->getSimbodyEngine().formEulerTransform(s, getBody(), eulerTransform);
 		Mtx::Multiply(3,3,1,eulerTransform,&difAngVel[0],difQDot);
 		
 		// Calculate torque to apply to body, expressed in global reference frame
@@ -426,7 +425,7 @@ void TorsionalSpring::computeForce(const SimTK::State& s,
 		for(i=0;i<3;i++)
 			torque[i] = scaleFactor*(-_k[i]*difAng[i] - _b[i]*difQDot[i]);
 		Mtx::Multiply(3,3,1,eulerTransform,&torque[0],&torque[0]);
-		_model->getSimbodyEngine().transform(s, _body,torque,_model->getGroundBody(),torque);
+		_model->getSimbodyEngine().transform(s, getBody(),torque,_model->getGroundBody(),torque);
 
 		// Apply torque to body
 		//if(fabs(Mtx::Magnitude(3,torque)) >= _threshold) {
@@ -438,7 +437,7 @@ void TorsionalSpring::computeForce(const SimTK::State& s,
 //	 cout<<"torsional spring t=" << s.getTime() << " torque=" << torque << endl;
 		if(torque.norm() >= _threshold) {
 			//cout<<"applying torque = "<<torque[0]<<", "<<torque[1]<<", "<<torque[2]<<endl;
-			applyTorque(s, _body, torque, bodyForces);
+			applyTorque(s, getBody(), torque, bodyForces);
 			//if(_recordAppliedLoads) _appliedTorqueStore->append(aT,3,&_torque[0]);
 		}
 

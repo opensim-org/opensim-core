@@ -57,8 +57,9 @@ namespace OpenSim {
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMANALYSES_API Actuation : public Analysis 
-{
+class OSIMANALYSES_API Actuation : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(Actuation, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -82,10 +83,9 @@ protected:
 public:
 	Actuation(Model *aModel=0);
 	Actuation(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
 	Actuation(const Actuation &aObject);
-	virtual Object* copy() const;
 	virtual ~Actuation();
+
 private:
 	void setNull();
 	void constructDescription();

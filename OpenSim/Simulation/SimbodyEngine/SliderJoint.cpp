@@ -93,18 +93,7 @@ SliderJoint::SliderJoint(const SliderJoint &aJoint) :
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* SliderJoint::copy() const
-{
-	SliderJoint *joint = new SliderJoint(*this);
-	return(joint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one SliderJoint to another.
@@ -122,7 +111,6 @@ void SliderJoint::copyData(const SliderJoint &aJoint)
  */
 void SliderJoint::setNull()
 {
-	setType("SliderJoint");
 	constructCoordinates();
 	_coordinateSet[0].setMotionType(Coordinate::Translational);
 }

@@ -117,17 +117,7 @@ BodyKinematics::BodyKinematics(const BodyKinematics &aBodyKinematics):
 	// COPY TYPE AND NAME
 	*this = aBodyKinematics;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* BodyKinematics::copy() const
-{
-	BodyKinematics *object = new BodyKinematics(*this);
-	return(object);
 
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -169,7 +159,6 @@ setNull()
 
 	// OTHER VARIABLES
 
-	setType("BodyKinematics");
 	//?_body
 	setName("BodyKinematics");
 }

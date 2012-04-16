@@ -40,7 +40,7 @@
 #include "osimCommonDLL.h"
 #include "Object.h"
 #include "PropertyDbl.h"
-#include "Property2.h"
+#include "Property.h"
 #include "SimTKmath.h"
 
 
@@ -62,8 +62,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API Function : public Object
-{
+class OSIMCOMMON_API Function : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Function, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -81,7 +82,6 @@ public:
 	Function();
 	Function(const Function &aFunction);
 	virtual ~Function();
-	virtual Object* copy() const = 0;
 	virtual void init(Function* aFunction) { }
 
 private:
@@ -134,7 +134,6 @@ public:
     virtual int getMaxDerivativeOrder() const;
     virtual SimTK::Function* createSimTKFunction() const = 0;
 
-	OPENSIM_DECLARE_DERIVED(Function, Object);
 protected:
     /**
      * This should be called whenever this object has been modified.  It clears the internal SimTK::Function object

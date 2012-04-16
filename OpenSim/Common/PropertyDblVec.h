@@ -75,20 +75,20 @@ public:
 	/** Default constructor */
 	PropertyDblVec_() : Property_Deprecated(DblVec, "DblVec_PropertyName")
 		{ sprintf(_typeAsString, "DblVec%i", M);
-		  setAllowableArraySize(M);	  
+		  setAllowableListSize(M);	  
 		};
 	/** Construct from name and value */
 	PropertyDblVec_(const std::string &aName, const SimTK::Vec<M>& aVec)
     :   Property_Deprecated(DblVec, aName) 
 		{ sprintf(_typeAsString, "DblVec%i", M);  setValue(aVec);
-		  setAllowableArraySize(M);
+		  setAllowableListSize(M);
 
 		};
 	/** Construct from name and value as an Array<double> */
 	PropertyDblVec_(const std::string &aName, const Array<double> &anArray)
     :   Property_Deprecated(DblVec, aName)
 		{ sprintf(_typeAsString, "DblVec%i", M);  setValue(anArray);
-		  setAllowableArraySize(M);
+		  setAllowableListSize(M);
 		};
 	/** Copy constructor */
 	PropertyDblVec_(const PropertyDblVec_ &aProperty)
@@ -96,7 +96,7 @@ public:
 		{ setValue(aProperty._vec);};
 
 	/* Return a copy of this property */
-	/*virtual*/ PropertyDblVec_* copy() const {
+	/*virtual*/ PropertyDblVec_* clone() const {
 		PropertyDblVec_* prop = new PropertyDblVec_<M>(*this);
 		return prop;
 	};

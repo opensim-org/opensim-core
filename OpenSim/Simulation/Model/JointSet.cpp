@@ -79,7 +79,6 @@ JointSet::JointSet(const JointSet& aJointSet):
  */
 void JointSet::setNull()
 {
-	setType("JointSet");
 }
 
 /**

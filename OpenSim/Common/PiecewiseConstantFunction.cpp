@@ -113,17 +113,6 @@ PiecewiseConstantFunction::PiecewiseConstantFunction(const PiecewiseConstantFunc
 {
        setEqual(aFunction);
 }
-//_____________________________________________________________________________
-/**
- * Copy this object.
- *
- * @return Pointer to a copy of this object.
- */
-Object* PiecewiseConstantFunction::copy() const
-{
-       PiecewiseConstantFunction *function = new PiecewiseConstantFunction(*this);
-       return(function);
-}
 
 
 //=============================================================================
@@ -135,7 +124,6 @@ Object* PiecewiseConstantFunction::copy() const
  */
 void PiecewiseConstantFunction::setNull()
 {
-       setType("PiecewiseConstantFunction");
        setupProperties();
 }
 //_____________________________________________________________________________

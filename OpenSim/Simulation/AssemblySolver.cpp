@@ -41,9 +41,10 @@ namespace OpenSim {
  *
  * @param model to assemble
  */
-	AssemblySolver::AssemblySolver(const Model &model, SimTK::Array_<CoordinateReference> &coordinateReferences,
-				   double constraintWeight) : Solver(model),
-				   _coordinateReferences(coordinateReferences)
+AssemblySolver::AssemblySolver
+   (const Model &model, SimTK::Array_<CoordinateReference> &coordinateReferences,
+	double constraintWeight) : Solver(model),
+    _coordinateReferencesp(&coordinateReferences)
 {
 	_assembler = NULL;
 	
@@ -53,17 +54,19 @@ namespace OpenSim {
 	_accuracy = 1e-4;
 
 	// Get model coordinates
-	const CoordinateSet &modelCoordSet = _model.getCoordinateSet();
+	const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
 
 	SimTK::Array_<CoordinateReference>::iterator p;
 
 	// Cycle through coordinate references
-	for(p = _coordinateReferences.begin(); p!=_coordinateReferences.end(); p++) {
+	for(p = _coordinateReferencesp->begin(); 
+        p != _coordinateReferencesp->end(); p++) 
+    {
 		if(p){
 			//Find if any references that are empty and throw them away
 			if(p->getName() == "" || p->getName() == "unknown"){
 				//Get rid of the corresponding reference too
-				p = _coordinateReferences.erase(p);
+				p = _coordinateReferencesp->erase(p);
 			}
 			// Otherwise an error if the coordinate does not exist for this model
 			else if ( !modelCoordSet.contains(p->getName())){
@@ -76,9 +79,10 @@ namespace OpenSim {
 AssemblySolver::~AssemblySolver()
 {
 	SimTK::Array_<CoordinateReference>::iterator p;
-	for(p = _coordinateReferences.begin(); p!=_coordinateReferences.end(); p++)
+	for(p = _coordinateReferencesp->begin(); 
+        p != _coordinateReferencesp->end(); p++)
 	{ 
-		p = _coordinateReferences.erase(p);
+		p = _coordinateReferencesp->erase(p);
 		--p;
 	}
 
@@ -93,7 +97,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 {
 	// wipe-out the previous SimTK::Assembler
 	delete _assembler;
-	_assembler = new SimTK::Assembler(_model.getMultibodySystem());
+	_assembler = new SimTK::Assembler(getModel().getMultibodySystem());
 	_assembler->setAccuracy(_accuracy);
 
 	// Define weights on constraints. Note can be spefified SimTK::Infinity to strictly enforce constraint
@@ -104,12 +108,13 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 	_coordinateAssemblyConditions.clear();
 
 	// Get model coordinates
-	const CoordinateSet &modelCoordSet = _model.getCoordinateSet();
+	const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
 
 	SimTK::Array_<CoordinateReference>::iterator p;
 
 	// Cycle through coordinate references
-	for(p = _coordinateReferences.begin(); p!=_coordinateReferences.end(); p++) {
+	for(p = _coordinateReferencesp->begin(); 
+        p != _coordinateReferencesp->end(); p++) {
 		if(p){
 			CoordinateReference *coordRef = p;
 			const Coordinate &coord = modelCoordSet.get(coordRef->getName());
@@ -120,7 +125,7 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 				coord.setLocked(s, false);
 				
 				//Get rid of the corresponding reference too
-				_coordinateReferences.erase(p);
+				_coordinateReferencesp->erase(p);
 				p--; //decrement since erase automatically points to next in the list
 			}
 			else{
@@ -135,7 +140,8 @@ void AssemblySolver::setupGoals(SimTK::State &s)
 		}
 	}
 
-	unsigned int nqrefs = _coordinateReferences.size(), nqgoals = _coordinateAssemblyConditions.size();
+	unsigned int nqrefs  = _coordinateReferencesp->size(), 
+                 nqgoals = _coordinateAssemblyConditions.size();
 	//Should have a one-to-one matched arrays
 	if(nqrefs != nqgoals)
 		throw Exception("AsemblySolver::setupGoals() has a mismatch between number of references and goals.");
@@ -148,7 +154,8 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 	SimTK::Array_<CoordinateReference>::iterator p;
 
 	// Cycle through coordinate references
-	for(p = _coordinateReferences.begin(); p!=_coordinateReferences.end(); p++) {
+	for(p = _coordinateReferencesp->begin(); 
+        p != _coordinateReferencesp->end(); p++) {
 		if(p->getName() == coordName){
 			p->setValueFunction(*new Constant(value));
 			p->setWeight(weight);
@@ -162,10 +169,11 @@ void AssemblySolver::updateCoordinateReference(const std::string &coordName, dou
 		weights that define the goals, based on the passed in state. */
 void AssemblySolver::updateGoals(const SimTK::State &s)
 {
-	unsigned int nqrefs = _coordinateReferences.size();
+	unsigned int nqrefs = _coordinateReferencesp->size();
 	for(unsigned int i=0; i<nqrefs; i++){
 		//update goal values from reference.
-		_coordinateAssemblyConditions[i]->setValue(_coordinateReferences[i].getValue(s));
+		_coordinateAssemblyConditions[i]->setValue
+           ((*_coordinateReferencesp)[i].getValue(s));
 		//_assembler->setAssemblyConditionWeight(_coordinateAssemblyConditions[i]->
 	}
 }
@@ -204,7 +212,7 @@ void AssemblySolver::assemble(SimTK::State &state)
 		state.updU() = s.getU();
 
 		// Get model coordinates
-		const CoordinateSet &modelCoordSet = _model.getCoordinateSet();
+		const CoordinateSet &modelCoordSet = getModel().getCoordinateSet();
 		// Make sure the locks in orignal state are restored
 		for(int i=0; i< modelCoordSet.getSize(); ++i){
 			bool isLocked = modelCoordSet[i].getLocked(state);

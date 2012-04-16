@@ -61,8 +61,9 @@ class Model;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API DynamicsTool: public Tool
-{
+class OSIMTOOLS_API DynamicsTool: public Tool {
+OpenSim_DECLARE_ABSTRACT_OBJECT(DynamicsTool, Tool);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -102,7 +103,6 @@ public:
 	DynamicsTool();
 	DynamicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	DynamicsTool(const DynamicsTool &aTool);
-	virtual OpenSim::Object* copy() const = 0;
 
 	/** Modify model to exclude specified forces by disabling those identified by name or group */
 	void disableModelForces(Model &model, SimTK::State &s, const Array<std::string> &forcesByNameOrGroup);

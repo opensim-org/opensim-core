@@ -40,8 +40,9 @@ namespace OpenSim {
  *
  * @author Peter Eastman
  */
-class OSIMSIMULATION_API ContactHalfSpace : public ContactGeometry
-{
+class OSIMSIMULATION_API ContactHalfSpace : public ContactGeometry {
+OpenSim_DECLARE_CONCRETE_OBJECT(ContactHalfSpace, ContactGeometry);
+
 public:
 //=============================================================================
 // METHODS
@@ -71,7 +72,7 @@ public:
      */
     ContactHalfSpace(const SimTK::Vec3& location, const SimTK::Vec3& orientation, Body& body, const std::string& name);
 	ContactHalfSpace(const ContactHalfSpace& geom);
-	Object* copy() const;
+
     SimTK::ContactGeometry createSimTKContactGeometry();
 private:
     // INITIALIZATION

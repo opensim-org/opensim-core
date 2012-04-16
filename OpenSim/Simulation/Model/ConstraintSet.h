@@ -57,16 +57,18 @@ class Model;
  * @version 1.0
  */
 
-class OSIMSIMULATION_API ConstraintSet : public ModelComponentSet<Constraint>
-{
+class OSIMSIMULATION_API ConstraintSet : public ModelComponentSet<Constraint> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConstraintSet, ModelComponentSet<Constraint>);
+
 private:
 	void setNull();
 public:
 	ConstraintSet();
 	ConstraintSet(Model& model);
 
-    ConstraintSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode=true):
-	ModelComponentSet<Constraint>(model, aFileName, aUpdateFromXMLNode) {};
+    ConstraintSet(Model& model, const std::string &aFileName, 
+                  bool aUpdateFromXMLNode=true)
+	:   Super(model, aFileName, aUpdateFromXMLNode) {}
 	ConstraintSet(const ConstraintSet& aAbsConstraintSet);
 	~ConstraintSet(void);
 	void setup(Model& aModel);

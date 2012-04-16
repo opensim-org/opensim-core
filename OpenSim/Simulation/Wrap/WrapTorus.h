@@ -56,9 +56,10 @@ class WrapResult;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API WrapTorus : public WrapObject
-{
+class OSIMSIMULATION_API WrapTorus : public WrapObject {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapTorus, WrapObject);
 
+private:
 	struct CircleCallback {
 		double p1[3], p2[3], r;
 	};
@@ -83,7 +84,7 @@ public:
 	WrapTorus();
 	WrapTorus(const WrapTorus& aWrapTorus);
 	virtual ~WrapTorus();
-	virtual Object* copy() const;
+
 #ifndef SWIG
 	WrapTorus& operator=(const WrapTorus& aWrapTorus);
 #endif

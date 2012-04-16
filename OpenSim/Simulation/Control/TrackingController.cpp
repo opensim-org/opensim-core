@@ -114,7 +114,6 @@ TrackingController::~TrackingController()
 void TrackingController::setNull()
 {
 	setupProperties();
-	setType("TrackingController");
 	_desiredStatesStorage = NULL;
 	_trackingTasks = NULL;
 }

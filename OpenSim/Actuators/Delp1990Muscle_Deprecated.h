@@ -55,8 +55,10 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Delp1990Muscle_Deprecated : public ActivationFiberLengthMuscle_Deprecated  
-{
+class OSIMACTUATORS_API Delp1990Muscle_Deprecated 
+:   public ActivationFiberLengthMuscle_Deprecated {
+OpenSim_DECLARE_CONCRETE_OBJECT(Delp1990Muscle_Deprecated, 
+                                ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
 // DATA
@@ -107,7 +109,6 @@ public:
 	Delp1990Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	Delp1990Muscle_Deprecated(const Delp1990Muscle_Deprecated &aMuscle);
 	virtual ~Delp1990Muscle_Deprecated();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	Delp1990Muscle_Deprecated& operator=(const Delp1990Muscle_Deprecated &aMuscle);
@@ -147,8 +148,6 @@ public:
 	virtual bool setTendonForceLengthCurve(Function* aTendonForceLengthCurve);
 	virtual Function* getForceVelocityCurve() const;
 	virtual bool setForceVelocityCurve(Function* aForceVelocityCurve);
-
-	OPENSIM_DECLARE_DERIVED(Delp1990Muscle_Deprecated, ActivationFiberLengthMuscle_Deprecated);
 
 protected:
 	// Model Component Interface

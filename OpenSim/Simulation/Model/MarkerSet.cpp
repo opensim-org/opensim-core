@@ -87,19 +87,6 @@ Set<Marker>(aMarkerSet)
  */
 void MarkerSet::setNull()
 {
-	setType("MarkerSet");
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this MarkerSet and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this MarkerSet.
- */
-Object* MarkerSet::copy() const
-{
-	return new MarkerSet(*this);
 }
 
 /**

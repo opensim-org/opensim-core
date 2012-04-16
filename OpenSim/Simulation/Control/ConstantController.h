@@ -69,8 +69,8 @@ class Storage;
 // the osimSimulation project.  The terms "public Object" tell C++
 // that the ConstantController class is a subclass (child) of the Object class
 // in OpenSim.
-class OSIMSIMULATION_API ConstantController : public Controller
-{
+class OSIMSIMULATION_API ConstantController : public Controller {
+OpenSim_DECLARE_CONCRETE_OBJECT(ConstantController, Controller);
 
 //=============================================================================
 // DATA
@@ -118,7 +118,6 @@ public:
 	 * instance of the subclass is deleted from memory.
 	 */
 	virtual ~ConstantController();
-    virtual Object* copy() const;
 	
 private:
 	// A "private" method is one that can be called only by this class,

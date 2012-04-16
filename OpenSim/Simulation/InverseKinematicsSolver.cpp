@@ -51,7 +51,7 @@ InverseKinematicsSolver::InverseKinematicsSolver(const Model &model, MarkersRefe
 	_markerAssemblyCondition = NULL;
 
 	// Do some consistency checking for markers
-	const MarkerSet &modelMarkerSet = _model.getMarkerSet();
+	const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
 
 	if(modelMarkerSet.getSize() < 1){
 		std::cout << "InverseKinematicsSolver: Model has no markers!"  << std::endl;
@@ -211,7 +211,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 	SimTK::Array_<double> markerWeights;  
 	_markersReference.getWeights(s, markerWeights);
 	// get markers defined by the model 
-	const MarkerSet &modelMarkerSet = _model.getMarkerSet();
+	const MarkerSet &modelMarkerSet = getModel().getMarkerSet();
 	
 	int index = 0;
 	//Loop through all markers in the reference
@@ -220,7 +220,7 @@ void InverseKinematicsSolver::setupGoals(SimTK::State &s)
 		index = modelMarkerSet.getIndex(markerNames[i], index);
 		if(index >= 0){
 			Marker &marker = modelMarkerSet[index];
-			const SimTK::MobilizedBody &mobod = _model.getMatterSubsystem().getMobilizedBody(marker.getBody().getIndex());
+			const SimTK::MobilizedBody &mobod = getModel().getMatterSubsystem().getMobilizedBody(marker.getBody().getIndex());
 			_markerAssemblyCondition->addMarker(marker.getName(), mobod, marker.getOffset(), markerWeights[i]);
 			//cout << "IKSolver Marker: " << markerNames[i] << " " << marker.getName() << "  weight: " << markerWeights[i] << endl;
 		}

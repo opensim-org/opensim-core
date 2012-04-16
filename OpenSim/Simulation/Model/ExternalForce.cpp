@@ -111,7 +111,6 @@ ExternalForce::ExternalForce(const ExternalForce& force) :
 
 void ExternalForce::setNull()
 {
-	setType("ExternalForce");
 	_dataSource = NULL;
 	_appliedToBody = NULL;
 	_forceExpressedInBody = NULL;
@@ -124,7 +123,9 @@ void ExternalForce::copyData(const ExternalForce& orig)
 	setPropertyValue("force_expressed_in_body", orig.getPropertyValue<string>("force_expressed_in_body"));
 	setPropertyValue("point_expressed_in_body", orig.getPropertyValue<string>("point_expressed_in_body"));
 
-	setPropertyValue("data_source_name", orig.getPropertyValue<string>("data_source_name"));
+    // Optional property -- might get an empty value list.
+	setPropertyValue("data_source_name", orig.getProperty<string>("data_source_name"));
+
 	setPropertyValue("force_identifier", orig.getPropertyValue<string>("force_identifier"));
 	setPropertyValue("point_identifier", orig.getPropertyValue<string>("point_identifier"));
 	setPropertyValue("torque_identifier", orig.getPropertyValue<string>("torque_identifier"));
@@ -133,19 +134,6 @@ void ExternalForce::copyData(const ExternalForce& orig)
 		_dataSource = orig._dataSource;
 }
 
-
-//_____________________________________________________________________________
-/**
- * Copy this force and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this force.
- */
-Object* ExternalForce::copy() const
-{
-	ExternalForce *force = new ExternalForce(*this);
-	return force;
-}
 
 //-----------------------------------------------------------------------------
 // UPDATE FROM XML NODE
@@ -195,7 +183,9 @@ void ExternalForce::setupProperties()
 	addProperty<string>("torque_identifier",
 		"Identifier (string) to locate the torque to be applied in the data source.",
 		"");
-	addProperty<string>("data_source_name",
+
+    // Optional so that <data_source_name/> is allowed.
+	addOptionalProperty<string>("data_source_name",
 		"Name of the data source (Storage) that will supply the force data.",
 		"");
 }
@@ -220,10 +210,12 @@ void ExternalForce::setup(Model& model)
 	const string &appliedToBodyName = getPropertyValue<string>("applied_to_body");
 	const string &forceExpressedInBodyName = getPropertyValue<string>("force_expressed_in_body");
 	const string &pointExpressedInBodyName = getPropertyValue<string>("point_expressed_in_body");
-	const string &dataSourceName = getPropertyValue<string>("data_source_name");
 	const string &forceIdentifier = getPropertyValue<string>("force_identifier");
 	const string &pointIdentifier = getPropertyValue<string>("point_identifier");
 	const string &torqueIdentifier = getPropertyValue<string>("torque_identifier");
+
+    // This might not have been supplied in which case it will have size()==0.
+	const Property<string>& dataSourceProp = getProperty<string>("data_source_name");
 
 	_appliesForce = appliesForce();
 	_specifiesPoint = specifiesPoint();
@@ -251,8 +243,11 @@ void ExternalForce::setup(Model& model)
 	if(_dataSource == NULL){
 		throw(Exception("ExternalForce: Data source has not been set." ));
 	}
-	else if(_dataSource->getName() != dataSourceName){
-		throw(Exception("ExternalForce: Data source "+dataSourceName+" specified by name, but "+_dataSource->getName()+" was set." ));
+	else if(dataSourceProp.size()) {
+        const string& dataSourceName = dataSourceProp.getValue();
+        if (_dataSource->getName() != dataSourceName)
+		    throw(Exception("ExternalForce: Data source "+dataSourceName
+              +" specified by name, but "+_dataSource->getName()+" was set." ));
 	}
 
 	// temporary data arrays
@@ -373,20 +368,21 @@ void ExternalForce::computeForce(const SimTK::State& state,
 
 	if (_appliesForce) {
 		Vec3 force = getForceAtTime(time);
-		engine.transform(state, *_forceExpressedInBody, force, engine.getGroundBody(), force);
-		if (!_specifiesPoint) {
-			applyForce(state, *_appliedToBody, force, bodyForces);
- 
-	    }else {
-			Vec3 point = getPointAtTime(time);
-			engine.transformPosition(state, *_pointExpressedInBody, point, *_appliedToBody, point);
-			applyForceToPoint(state, *_appliedToBody, point, force, bodyForces);
+		engine.transform(state, *_forceExpressedInBody, force, 
+                                engine.getGroundBody(), force);
+        Vec3 point(0); // Default is body origin.
+		if (_specifiesPoint) {
+			point = getPointAtTime(time);
+			engine.transformPosition(state, *_pointExpressedInBody, point, 
+                                            *_appliedToBody,        point);
 		}
+		applyForceToPoint(state, *_appliedToBody, point, force, bodyForces);
 	}
 
 	if (_appliesTorque) {
 		Vec3 torque = getTorqueAtTime(time);
-		engine.transform(state, *_forceExpressedInBody, torque, engine.getGroundBody(), torque);
+		engine.transform(state, *_forceExpressedInBody, torque, 
+                                engine.getGroundBody(), torque);
 		applyTorque(state, *_appliedToBody, torque, bodyForces);
 	}
 }

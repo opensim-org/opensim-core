@@ -51,8 +51,9 @@ namespace OpenSim {
 class Model;
 class Body;
 
-class OSIMSIMULATION_API LinearSpring : public Force 
-{
+class OSIMSIMULATION_API LinearSpring : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(LinearSpring, Force);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -79,7 +80,7 @@ protected:
 	force is applied. */
 	double _threshold;
 
-	const Body &_body;
+	const Body* _bodyp; // just a reference; use ptr to allow assignment
 
 	/** Start time for the force. */
 	double _startTime;
@@ -92,7 +93,6 @@ protected:
 public:
 	LinearSpring(const Body &aBody, double start, double stop);	
 	virtual ~LinearSpring();
-	virtual Object* copy() const {throw Exception("LinearSping::copy() not implmented."); };
 
 protected:
 	virtual void setup(Model& aModel) {Force::setup(aModel);} ;
@@ -120,6 +120,8 @@ public:
 	void getBValue(SimTK::Vec3& aB) const;
 	void setThreshold(double aThreshold);
 	double getThreshold() const;
+
+    const Body& getBody() const {return *_bodyp;}
 
 	//--------------------------------------------------------------------------
 	// UTILITY

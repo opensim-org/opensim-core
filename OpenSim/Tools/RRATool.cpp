@@ -91,7 +91,6 @@ RRATool::RRATool() :
 	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_verbose(_verboseProp.getValueBool())
 {
-	setType("RRATool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -120,7 +119,6 @@ RRATool::RRATool(const string &aFileName, bool aLoadModel) :
 	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_verbose(_verboseProp.getValueBool())
 {
-	setType("RRATool");
 	setNull();
 	updateFromXMLDocument();
 	if(aLoadModel){
@@ -187,23 +185,10 @@ RRATool(const RRATool &aTool) :
 	_outputModelFile(_outputModelFileProp.getValueStr()),
 	_verbose(_verboseProp.getValueBool())
 {
-	setType("RRATool");
 	setNull();
 	*this = aTool;
 }
 
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor.
- *
- * @return Copy of this object.
- */
-Object* RRATool::
-copy() const
-{
-	RRATool *object = new RRATool(*this);
-	return(object);
-}
 
 //_____________________________________________________________________________
 /**
@@ -1171,7 +1156,7 @@ addNecessaryAnalyses()
 	// Add Actuation if necessary
 	Actuation *act = NULL;
 	for(int i=0; i<as.getSize(); i++) 
-		if(as.get(i).getType() == "Actuation") { act = (Actuation*)&as.get(i); break; }
+		if(as.get(i).getConcreteClassName() == "Actuation") { act = (Actuation*)&as.get(i); break; }
 	if(!act) {
 		std::cout << "No Actuation analysis found in analysis set -- adding one" << std::endl;
 		act = new Actuation(_model);
@@ -1184,7 +1169,7 @@ addNecessaryAnalyses()
 	// NOTE: also checks getPrintResultFiles() so that the Kinematics analysis added from the GUI does not count
 	Kinematics *kin = NULL;
 	for(int i=0; i<as.getSize(); i++) 
-		if(as.get(i).getType() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
+		if(as.get(i).getConcreteClassName() == "Kinematics" && as.get(i).getPrintResultFiles()) { kin = (Kinematics*)&as.get(i); break; }
 	if(!kin) {
 		std::cout << "No Kinematics analysis found in analysis set -- adding one" << std::endl;
 		kin = new Kinematics(_model);
@@ -1230,7 +1215,7 @@ initializeControlSetUsingConstraints(
             if( index == -1 ) {
                  cout << "Cannot find control constraint for: " << rControlSet.get(i).getName() << endl;
             } else {
-                rControlSet.set(i, (Control*)aControlConstraints->get(index).copy() );
+                rControlSet.set(i, aControlConstraints->get(index).clone() );
             }
         }
 	}

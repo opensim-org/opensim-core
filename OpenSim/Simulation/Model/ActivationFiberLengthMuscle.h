@@ -59,8 +59,9 @@ namespace OpenSim {
  * @author Peter Loan
  * @author Frank C. Anderson
  */
-class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle  
-{
+class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle {
+OpenSim_DECLARE_ABSTRACT_OBJECT(ActivationFiberLengthMuscle, Muscle);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -126,8 +127,6 @@ public:
 
 	virtual Array<std::string> getStateVariableNames() const;
 	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
-
-	OPENSIM_DECLARE_DERIVED(ActivationFiberLengthMuscle, Muscle);
 
 private:
 	void setNull();

@@ -98,7 +98,6 @@ ActuatorPerturbationIndependent(Model *aModel) :
 void ActuatorPerturbationIndependent::
 setNull()
 {
-	setType("ActuatorPerturbationIndependent");
 	_unperturbedForceSplines = NULL;
 	_unperturbedForceStorage = NULL;
 	_perturbedForceStorage = new Storage();

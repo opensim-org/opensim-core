@@ -56,8 +56,8 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMTOOLS_API ScaleTool : public Object  
-{
+class OSIMTOOLS_API ScaleTool : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(ScaleTool, Object);
 
 //=============================================================================
 // DATA
@@ -101,7 +101,6 @@ public:
 	ScaleTool(const std::string &aFileName) SWIG_DECLARE_EXCEPTION;
 	ScaleTool(const ScaleTool &aSubject);
 	virtual ~ScaleTool();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	ScaleTool& operator=(const ScaleTool &aSubject);

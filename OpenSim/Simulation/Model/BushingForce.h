@@ -51,8 +51,8 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API BushingForce : public Force  
-{
+class OSIMSIMULATION_API BushingForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(BushingForce, Force);
 
 //=============================================================================
 // METHODS
@@ -65,7 +65,7 @@ public:
 				  SimTK::Vec3 transStiffness, SimTK::Vec3 rotStiffness, SimTK::Vec3 transDamping, SimTK::Vec3 rotDamping );
 	BushingForce(const BushingForce &aForce);
 	virtual ~BushingForce();
-	virtual Object* copy() const;
+
 	BushingForce& operator=(const BushingForce &aForce);
 	void copyData(const BushingForce &aForce);
 

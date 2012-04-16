@@ -52,8 +52,7 @@ ContactGeometrySet::ContactGeometrySet()
 	setNull();
 }
 
-ContactGeometrySet::ContactGeometrySet(Model& model) :
-	ModelComponentSet<ContactGeometry>(model)
+ContactGeometrySet::ContactGeometrySet(Model& model) : Super(model)
 {
 	setNull();
 }
@@ -66,8 +65,9 @@ ContactGeometrySet::ContactGeometrySet(Model& model) :
  * @param aFileName Name of the file.
  * @param aUpdateFromXMLNode a flag indicating if UpdateFromXMLNode needs to be called.
  */
-ContactGeometrySet::ContactGeometrySet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode) :
-	ModelComponentSet<ContactGeometry>(model, aFileName, false)
+ContactGeometrySet::ContactGeometrySet
+   (Model& model, const std::string &aFileName, bool aUpdateFromXMLNode)
+:   Super(model, aFileName, false)
 {
 	setNull();
 
@@ -78,8 +78,9 @@ ContactGeometrySet::ContactGeometrySet(Model& model, const std::string &aFileNam
 /**
  * Copy constructor of a ContactGeometrySet.
  */
-ContactGeometrySet::ContactGeometrySet(const ContactGeometrySet& aContactGeometrySet):
-	ModelComponentSet<ContactGeometry>(aContactGeometrySet)
+ContactGeometrySet::ContactGeometrySet
+   (const ContactGeometrySet& aContactGeometrySet)
+:   Super(aContactGeometrySet)
 {
 	setNull();
 	*this = aContactGeometrySet;
@@ -93,7 +94,6 @@ ContactGeometrySet::ContactGeometrySet(const ContactGeometrySet& aContactGeometr
  */
 void ContactGeometrySet::setNull()
 {
-	setType("ContactGeometrySet");
 }
 
 /**

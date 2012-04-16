@@ -92,19 +92,6 @@ WrapEllipsoid::WrapEllipsoid(const WrapEllipsoid& aWrapEllipsoid) :
 	copyData(aWrapEllipsoid);
 }
 
-//_____________________________________________________________________________
-/**
-* Copy this WrapEllipsoid and return a pointer to the copy.
-* The copy constructor for this class is used.
-*
-* @return Pointer to a copy of this WrapEllipsoid.
-*/
-Object* WrapEllipsoid::copy() const
-{
-	WrapEllipsoid *wrapEllipsoid = new WrapEllipsoid(*this);
-	return(wrapEllipsoid);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -114,7 +101,6 @@ Object* WrapEllipsoid::copy() const
 */
 void WrapEllipsoid::setNull()
 {
-	setType("WrapEllipsoid");
 }
 
 //_____________________________________________________________________________

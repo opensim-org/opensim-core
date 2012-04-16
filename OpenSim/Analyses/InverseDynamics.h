@@ -57,9 +57,9 @@ class ForceSet;
  *
  * @author Eran
  */
-class OSIMANALYSES_API InverseDynamics : public Analysis 
-{
-	OPENSIM_DECLARE_DERIVED(InverseDynamics, Analysis);
+class OSIMANALYSES_API InverseDynamics : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(InverseDynamics, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -92,11 +92,10 @@ protected:
 //=============================================================================
 public:
 	InverseDynamics(Model *aModel=0);
-	// Copy constrctor and virtual copy 
 	InverseDynamics(const InverseDynamics &aObject);
-	virtual Object* copy() const;
 	virtual ~InverseDynamics();
-	//--------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG

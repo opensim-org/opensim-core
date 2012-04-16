@@ -71,7 +71,6 @@ MeasurementSet::MeasurementSet(const MeasurementSet& aSimmMeasurementSet):
  */
 void MeasurementSet::setNull()
 {
-	setType("MeasurementSet");
 }
 
 //=============================================================================

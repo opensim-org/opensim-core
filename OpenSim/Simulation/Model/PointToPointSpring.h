@@ -49,8 +49,9 @@
  */
 namespace OpenSim { 
 
-class OSIMSIMULATION_API PointToPointSpring : public Force
-{
+class OSIMSIMULATION_API PointToPointSpring : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointSpring, Force);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -72,7 +73,7 @@ public:
 		                std::string body2Name, SimTK::Vec3 point2, double stiffness, double restlength );
 	PointToPointSpring( const PointToPointSpring &aPointToPointSpring);
 	virtual ~PointToPointSpring();
-	virtual Object* copy() const;
+
 	void copyData(const PointToPointSpring &aPointToPointSpring);
 
 	//--------------------------------------------------------------------------
@@ -148,8 +149,6 @@ public:
 	*  Provide the value(s) to be reported that correspond to the labels
 	*/
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
-
-	OPENSIM_DECLARE_DERIVED(PointToPointSpring, Force);
 
 //=============================================================================
 };	// END of class PointToPointSpring

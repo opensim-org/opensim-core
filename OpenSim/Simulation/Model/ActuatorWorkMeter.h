@@ -49,8 +49,9 @@ class Model;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API ActuatorWorkMeter : public ModelComponent  
-{
+class OSIMSIMULATION_API ActuatorWorkMeter : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorWorkMeter, ModelComponent);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -73,13 +74,10 @@ public:
 	// copy
 	ActuatorWorkMeter(const ActuatorWorkMeter &aActuatorWorkMeter);
 	virtual ~ActuatorWorkMeter();
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	ActuatorWorkMeter& operator=(const ActuatorWorkMeter &aActuatorWorkMeter);
 #endif
-
-	OPENSIM_DECLARE_DERIVED(ActuatorWorkMeter, Object);
 
 	virtual double getWork(const SimTK::State& state) const;
 

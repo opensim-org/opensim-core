@@ -41,8 +41,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMTOOLS_API IKTask : public Object
-{
+class OSIMTOOLS_API IKTask : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(IKTask, Object);
+
 protected:
 	// whether or not this task will be used
 	PropertyBool _applyProp;
@@ -54,7 +55,6 @@ protected:
 public:
 	IKTask();
 	IKTask(const IKTask &aIKTask);
-	virtual Object* copy() const = 0;
 
 #ifndef SWIG
 	IKTask& operator=(const IKTask &aIKTask);

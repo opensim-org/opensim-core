@@ -63,8 +63,10 @@ class Model;
  */
 
 //=============================================================================
-class OSIMSIMULATION_API ExternalLoads : public ModelComponentSet<ExternalForce>
-{
+class OSIMSIMULATION_API ExternalLoads 
+:   public ModelComponentSet<ExternalForce> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ExternalLoads, 
+                                ModelComponentSet<ExternalForce>);
 
 //=============================================================================
 // DATA
@@ -102,7 +104,7 @@ public:
 	ExternalLoads(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode = true)  SWIG_DECLARE_EXCEPTION;
 	ExternalLoads(const ExternalLoads &aExternalLoads);
 	virtual ~ExternalLoads();
-	virtual Object* copy() const;
+
 	void copyData(const ExternalLoads &otherExternalLoads);
 
 	/** Override of the default implementation to account for versioning. */

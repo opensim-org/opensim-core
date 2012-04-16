@@ -92,7 +92,6 @@ _dependents(0)
 	setNull();
 
 	// MEMBER VARIABLES
-	setType("VisibleObject");
 	setName("");
 }
 
@@ -199,15 +198,7 @@ void VisibleObject::setNull()
 
 
 }
-/**
- * virtual copy constructor
- */
-Object* VisibleObject::copy() const
-{
 
-	VisibleObject *object = new VisibleObject(*this);
-	return(object);
-}
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.

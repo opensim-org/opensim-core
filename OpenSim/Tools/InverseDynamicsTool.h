@@ -62,8 +62,9 @@ class JointSet;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API InverseDynamicsTool: public DynamicsTool
-{
+class OSIMTOOLS_API InverseDynamicsTool: public DynamicsTool {
+OpenSim_DECLARE_CONCRETE_OBJECT(InverseDynamicsTool, DynamicsTool);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -101,7 +102,6 @@ public:
 	InverseDynamicsTool();
 	InverseDynamicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	InverseDynamicsTool(const InverseDynamicsTool &aObject);
-	virtual OpenSim::Object* copy() const;
 
 	/* Register types to be used when reading an InverseDynamicsTool object from xml file. */
 	static void registerTypes();

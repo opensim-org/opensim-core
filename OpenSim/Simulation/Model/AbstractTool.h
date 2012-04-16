@@ -62,8 +62,9 @@ class Body;
  * @author Frank C. Anderson
  * @version 1.0
  */
-class OSIMSIMULATION_API AbstractTool: public Object
-{
+class OSIMSIMULATION_API AbstractTool: public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT(AbstractTool, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -206,9 +207,6 @@ public:
 	* @see AbstractTool(const char *aFileName)
 	*/
 	AbstractTool(const AbstractTool &aObject);
-	//Object* copy() const;
-
-	OPENSIM_DECLARE_DERIVED(AbstractTool, Object);
 
 private:
 	// Keep pointers to analyses being added to model so that they can be removed later

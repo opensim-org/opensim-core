@@ -98,7 +98,6 @@ JointWorkMeter::JointWorkMeter(const JointWorkMeter &aJointWorkMeter) :
  */
 void JointWorkMeter::setNull(void)
 {
-	setType("JointWorkMeter");
 }
 
 //_____________________________________________________________________________
@@ -113,12 +112,6 @@ void JointWorkMeter::setupProperties(void)
 	addProperty<double>("initial_joint_work",
 		"The initial amount of work.",
 		0.0);
-}
-
-Object* JointWorkMeter::copy() const
-{
-	JointWorkMeter *meter = new JointWorkMeter(*this);
-	return(meter);
 }
 
 //_____________________________________________________________________________

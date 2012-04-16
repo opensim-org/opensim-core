@@ -43,18 +43,18 @@ static osimAnalysesInstantiator instantiator;
  */
 OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 {
-	Object::RegisterType( Kinematics() );
-	Object::RegisterType( Actuation() );
-	Object::RegisterType( PointKinematics() );
-	Object::RegisterType( BodyKinematics() );
-	Object::RegisterType( MuscleAnalysis() );
-	Object::RegisterType( MuscleAnalysisV1() );
-	//Object::RegisterType( InverseDynamics() );
-	Object::RegisterType( JointReaction() );
-	Object::RegisterType( StaticOptimization() );
-	Object::RegisterType( ForceReporter() );
-	Object::RegisterType( StatesReporter() );
-	Object::RegisterType( InducedAccelerations() );
+	Object::registerType( Kinematics() );
+	Object::registerType( Actuation() );
+	Object::registerType( PointKinematics() );
+	Object::registerType( BodyKinematics() );
+	Object::registerType( MuscleAnalysis() );
+	Object::registerType( MuscleAnalysisV1() );
+	//Object::registerType( InverseDynamics() );
+	Object::registerType( JointReaction() );
+	Object::registerType( StaticOptimization() );
+	Object::registerType( ForceReporter() );
+	Object::registerType( StatesReporter() );
+	Object::registerType( InducedAccelerations() );
 }
 
 osimAnalysesInstantiator::osimAnalysesInstantiator() 

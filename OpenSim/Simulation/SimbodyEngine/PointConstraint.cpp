@@ -106,18 +106,7 @@ PointConstraint::PointConstraint(OpenSim::Body& body1, SimTK::Vec3& locationBody
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy this body and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this OpenSim::Body.
- */
-Object* PointConstraint::copy() const
-{
-	PointConstraint *constraint = new PointConstraint(*this);
-	return(constraint);
-}
+
 //_____________________________________________________________________________
 /**
  * Copy data members from one PointConstraint to another.
@@ -140,7 +129,6 @@ void PointConstraint::copyData(const PointConstraint &aConstraint)
  */
 void PointConstraint::setNull()
 {
-	setType("PointConstraint");
 }
 
 //_____________________________________________________________________________

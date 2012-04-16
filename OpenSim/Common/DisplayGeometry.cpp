@@ -109,8 +109,6 @@ _opacity(_propOpacity.getValueDbl())
 void DisplayGeometry::
 setNull()
 {
-
-	setType("DisplayGeometry");
 	setName("");
 
 	setupProperties();
@@ -158,13 +156,6 @@ void DisplayGeometry::setupProperties()
 	_propOpacity.setName("opacity");
 	_propOpacity.setComment("Display opacity between 0.0 and 1.0");
 	_propertySet.append(&_propOpacity);
-
-}
-
-Object* DisplayGeometry::copy() const
-{
-	DisplayGeometry *geometry = new DisplayGeometry(*this);
-	return(geometry);
 
 }
 

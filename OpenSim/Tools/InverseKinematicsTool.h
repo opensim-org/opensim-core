@@ -61,8 +61,9 @@ class Storage;
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMTOOLS_API InverseKinematicsTool: public Tool
-{
+class OSIMTOOLS_API InverseKinematicsTool: public Tool {
+OpenSim_DECLARE_CONCRETE_OBJECT(InverseKinematicsTool, Tool);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -124,7 +125,6 @@ public:
 	InverseKinematicsTool();
 	InverseKinematicsTool(const std::string &aFileName, bool aLoadModel=true) SWIG_DECLARE_EXCEPTION;
 	InverseKinematicsTool(const InverseKinematicsTool &aObject);
-	virtual OpenSim::Object* copy() const;
 
 	/* Register types to be used when reading an InverseKinematicsTool object from xml file. */
 	static void registerTypes();

@@ -91,19 +91,6 @@ _length(_lengthProp.getValueDbl())
 	copyData(aWrapCylinder);
 }
 
-//_____________________________________________________________________________
-/**
-* Copy this WrapCylinder and return a pointer to the copy.
-* The copy constructor for this class is used.
-*
-* @return Pointer to a copy of this WrapCylinder.
-*/
-Object* WrapCylinder::copy() const
-{
-	WrapCylinder *wrapCylinder = new WrapCylinder(*this);
-	return(wrapCylinder);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -113,7 +100,6 @@ Object* WrapCylinder::copy() const
 */
 void WrapCylinder::setNull()
 {
-	setType("WrapCylinder");
 }
 
 //_____________________________________________________________________________

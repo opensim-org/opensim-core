@@ -49,9 +49,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API EllipsoidJoint : public Joint  
-{
+class OSIMSIMULATION_API EllipsoidJoint : public Joint {
+OpenSim_DECLARE_CONCRETE_OBJECT(EllipsoidJoint, Joint);
 
+private:
 	static const int _numMobilities = 3;
 //=============================================================================
 // DATA
@@ -74,7 +75,7 @@ public:
 				SimTK::Vec3 ellipsoidRadii, bool reverse=false);
 	EllipsoidJoint(const EllipsoidJoint &aJoint);
 	virtual ~EllipsoidJoint();
-	virtual Object* copy() const;
+
 	EllipsoidJoint& operator=(const EllipsoidJoint &aJoint);
 	void copyData(const EllipsoidJoint &aJoint);
 

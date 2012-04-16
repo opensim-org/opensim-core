@@ -63,8 +63,10 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-class OSIMSIMULATION_API RollingOnSurfaceConstraint : public UnilateralConstraint  
-{
+class OSIMSIMULATION_API RollingOnSurfaceConstraint 
+:   public UnilateralConstraint {
+OpenSim_DECLARE_CONCRETE_OBJECT(RollingOnSurfaceConstraint, 
+                                UnilateralConstraint);
 
 //=============================================================================
 // DATA
@@ -114,7 +116,7 @@ public:
 	RollingOnSurfaceConstraint();
 	RollingOnSurfaceConstraint(const RollingOnSurfaceConstraint &aConstraint);
 	virtual ~RollingOnSurfaceConstraint();
-	virtual Object* copy() const;
+
 	RollingOnSurfaceConstraint& operator=(const RollingOnSurfaceConstraint &aConstraint);
 	void copyData(const RollingOnSurfaceConstraint &aConstraint);
 	virtual void setup(Model& aModel);

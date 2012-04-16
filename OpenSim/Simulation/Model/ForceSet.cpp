@@ -110,8 +110,6 @@ ForceSet::ForceSet(const ForceSet &aForceSet) :
  */
 void ForceSet::setNull()
 {
-	// TYPE
-	setType("ForceSet");
 	// NAME
 	//setName("ForceSet");
 
@@ -121,19 +119,6 @@ void ForceSet::setNull()
 	_actuators.setMemoryOwner(false);
 
 	_muscles.setMemoryOwner(false);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy this ForceSet and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ForceSet.
- */
-Object* ForceSet::copy() const
-{
-	ForceSet *actSet = new ForceSet(*this);
-	return(actSet);
 }
 
 //_____________________________________________________________________________

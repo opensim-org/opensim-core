@@ -39,13 +39,12 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMTOOLS_API IKMarkerTask : public IKTask
-{
-	OPENSIM_DECLARE_DERIVED(IKMarkerTask, IKTask);
+class OSIMTOOLS_API IKMarkerTask : public IKTask {
+OpenSim_DECLARE_CONCRETE_OBJECT(IKMarkerTask, IKTask);
+
 public:
 	IKMarkerTask();
 	IKMarkerTask(const IKMarkerTask &aIKMarkerTask);
-	virtual Object* copy() const;
 
 #ifndef SWIG
 	IKMarkerTask& operator=(const IKMarkerTask &aIKMarkerTask);

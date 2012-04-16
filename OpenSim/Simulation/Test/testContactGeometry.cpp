@@ -154,7 +154,7 @@ int testBouncingBall(bool useMesh)
 	osimModel->setGravity(gravity_vec);
 
 	osimModel->setName("TestContactGeomtery_Ball");
-	osimModel->copy()->print("TestContactGeomtery_Ball.osim");
+	osimModel->clone()->print("TestContactGeomtery_Ball.osim");
 
 	Kinematics* kin = new Kinematics(osimModel);
 	osimModel->addAnalysis(kin);
@@ -291,7 +291,7 @@ int testBallToBallContact(bool useElasticFoundation, bool useMesh1, bool useMesh
 	osimModel->setGravity(gravity_vec);
 
 	osimModel->setName(prefix);
-	osimModel->copy()->print(prefix+".osim");
+	osimModel->clone()->print(prefix+".osim");
 
 	Kinematics* kin = new Kinematics(osimModel);
 	osimModel->addAnalysis(kin);

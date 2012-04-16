@@ -95,19 +95,6 @@ PointToPointActuator::PointToPointActuator(const PointToPointActuator &anActuato
 	setNull();
 	copyData(anActuator);
 }
-//_____________________________________________________________________________
-/**
- * Copy this actuator and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this actuator.
- */
-Object* PointToPointActuator::
-copy() const
-{
-	PointToPointActuator *force = new PointToPointActuator(*this);
-	return force;
-}
 
 
 //=============================================================================
@@ -120,7 +107,6 @@ copy() const
 void PointToPointActuator::
 setNull()
 {
-	setType("PointToPointActuator");
 	setupProperties();
 }
 
@@ -131,22 +117,22 @@ setNull()
 void PointToPointActuator::
 setupProperties()
 {
-	addProperty<string>("bodyA",
-		"Name of Body to which the Body actuator is applied.",
-		"");
-	addProperty<string>("bodyB",
-		"Name of Body to which the equal and opposite torque is applied.",
-		"");
+    // Allow these to be filled in later.
+	addOptionalProperty<string>("bodyA",
+		"Name of Body to which the Body actuator is applied.");
+	addOptionalProperty<string>("bodyB",
+		"Name of Body to which the equal and opposite torque is applied.");
+
 	addProperty<bool>("points_are_global",
 		"bool to indicate whether or not the points are expressed in global frame",
 		false);
-	SimTK::Vec3 x(0.0, 0.0, 0.0);
+	const SimTK::Vec3 origin(0.0);
 	addProperty<SimTK::Vec3>("pointA",
 		"Point of application on body A.",
-		x);
+		origin);
 	addProperty<SimTK::Vec3>("pointB",
 		"Point of application on body B.",
-		x);
+		origin);
 	addProperty<double>("optimal_force",
 		"",
 		1.0);
@@ -161,11 +147,16 @@ void PointToPointActuator::
 copyData(const PointToPointActuator &aPointToPointActuator)
 {
 	// MEMBER VARIABLES
-	setPropertyValue("bodyA", aPointToPointActuator.getPropertyValue<string>("bodyA"));
-	setPropertyValue("bodyB", aPointToPointActuator.getPropertyValue<string>("bodyB"));
-	setPropertyValue("points_are_global", aPointToPointActuator.getPropertyValue<bool>("points_are_global"));
-	setPropertyValue("pointA", aPointToPointActuator.getPropertyValue<SimTK::Vec3>("pointA"));
-	setPropertyValue("pointB", aPointToPointActuator.getPropertyValue<SimTK::Vec3>("pointB"));
+    // Bodies are allowed to be unspecified, so we might not get values here.
+	setPropertyValue("bodyA", aPointToPointActuator.getProperty<string>("bodyA"));
+	setPropertyValue("bodyB", aPointToPointActuator.getProperty<string>("bodyB"));
+
+	setPropertyValue("points_are_global", 
+        aPointToPointActuator.getPropertyValue<bool>("points_are_global"));
+	setPropertyValue("pointA", 
+        aPointToPointActuator.getPropertyValue<SimTK::Vec3>("pointA"));
+	setPropertyValue("pointB", 
+        aPointToPointActuator.getPropertyValue<SimTK::Vec3>("pointB"));
 
 	setOptimalForce(aPointToPointActuator.getOptimalForce());
 	setBodyA(aPointToPointActuator.getBodyA());

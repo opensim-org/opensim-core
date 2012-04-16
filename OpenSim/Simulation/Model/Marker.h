@@ -60,8 +60,9 @@ class VisibleObject;
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMSIMULATION_API Marker : public Object
-{
+class OSIMSIMULATION_API Marker : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(Marker, Object);
+
 class Body;
 
 //=============================================================================
@@ -103,7 +104,7 @@ public:
 	Marker();
 	Marker(const Marker &aMarker);
 	virtual ~Marker();
-	virtual Object* copy() const;
+
     static void deleteMarker(Marker* aMarker) { if (aMarker) delete aMarker; }
 
 #ifndef SWIG
@@ -146,8 +147,6 @@ public:
 	{
 		_virtual=aTrueFalse;
 	}
-
-	OPENSIM_DECLARE_DERIVED(Marker, Object);
 private:
 	void setNull();
 	void setupProperties();

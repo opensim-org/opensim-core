@@ -52,8 +52,9 @@ namespace OpenSim {
  * @author Ayman Habib
  * @version 1.0
  */
-class OSIMCOMMON_API DisplayGeometry: public Object
-{
+class OSIMCOMMON_API DisplayGeometry: public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(DisplayGeometry, Object);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -104,8 +105,8 @@ public:
 	DisplayGeometry();
 	DisplayGeometry(const std::string &aFileName);
 	DisplayGeometry(const DisplayGeometry &aDisplayGeometry);
-	virtual ~DisplayGeometry() {};
-	virtual Object* copy() const;
+	virtual ~DisplayGeometry() {}
+
 private:
 	void setNull();
 	void copyData(const DisplayGeometry &aDisplayGeometry);
@@ -169,8 +170,6 @@ public:
 
 	double getOpacity() const { return _opacity; };
 	void setOpacity(const double& aOpacity) { _opacity=aOpacity; };
-
-	OPENSIM_DECLARE_DERIVED(DisplayGeometry, Object);
 
 //=============================================================================
 };	// END of class DisplayGeometry

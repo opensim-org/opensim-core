@@ -51,8 +51,8 @@ class Storage;
  */
 
 //=============================================================================
-class OSIMSIMULATION_API ControllerSet : public ModelComponentSet<Controller>
-{
+class OSIMSIMULATION_API ControllerSet : public ModelComponentSet<Controller> {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControllerSet, ModelComponentSet<Controller>);
 
 //=============================================================================
 // METHODS
@@ -66,7 +66,7 @@ public:
 	ControllerSet(const ControllerSet &aControllerSet);
 	ControllerSet(Model& model, const std::string &aFileName,  bool aUpdateFromXMLNode = true);
 	virtual ~ControllerSet();
-	virtual Object* copy() const;
+
 	void copyData(const ControllerSet &aAbsControllerSet);
 private:
 	void setNull();

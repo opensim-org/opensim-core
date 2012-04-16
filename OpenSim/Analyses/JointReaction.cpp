@@ -128,17 +128,7 @@ JointReaction::JointReaction(const JointReaction &aJointReaction):
 	// COPY TYPE AND NAME
 	*this = aJointReaction;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* JointReaction::copy() const
-{
-	JointReaction *object = new JointReaction(*this);
-	return(object);
 
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================
@@ -174,7 +164,6 @@ operator=(const JointReaction &aJointReaction)
 void JointReaction::
 setNull()
 {
-	setType("JointReaction");
 	setupProperties();
 
 	// Property Default Values that are set if the associated fields are

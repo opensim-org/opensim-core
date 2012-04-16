@@ -102,7 +102,6 @@ VectorFunction::VectorFunction(const VectorFunction &aVectorFunction) :
 void VectorFunction::
 setNull()
 {
-	setType("VectorFunction");
 	_nX = 0;
 	_nY = 0;
 }

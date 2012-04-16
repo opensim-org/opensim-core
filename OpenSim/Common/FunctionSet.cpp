@@ -97,7 +97,6 @@ FunctionSet::FunctionSet(const string &aFileName) :
 void FunctionSet::
 setNull()
 {
-	setType("FunctionSet");
 }
 
 //=============================================================================

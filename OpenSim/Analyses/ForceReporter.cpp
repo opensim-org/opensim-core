@@ -112,17 +112,7 @@ ForceReporter::ForceReporter(const ForceReporter &aForceReporter):
 	// COPY TYPE AND NAME
 	*this = aForceReporter;
 }
-//_____________________________________________________________________________
-/**
- * Clone
- *
- */
-Object* ForceReporter::copy() const
-{
-	ForceReporter *object = new ForceReporter(*this);
-	return(object);
 
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -133,8 +123,6 @@ Object* ForceReporter::copy() const
  */
 void ForceReporter::setNull()
 {
-	// TYPE
-	setType("ForceReporter");
 	// NAME
 	setName("ForceReporter");
 
@@ -443,7 +431,8 @@ void ForceReporter::tidyForceNames()
 			bool validNameFound=false;
 			char pad[100];
 			// Make up a candidate name
-			sprintf(pad, "%s%d", forces.get(i).getType().c_str(), j++);
+			sprintf(pad, "%s%d", 
+                    forces.get(i).getConcreteClassName().c_str(), j++);
 			while(!validNameFound){
 				validNameFound = (forceNames.findIndex(string(pad))== -1);
 				if (!validNameFound){

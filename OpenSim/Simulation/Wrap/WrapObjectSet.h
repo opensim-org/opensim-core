@@ -51,8 +51,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API WrapObjectSet :	public Set<WrapObject>
-{
+class OSIMSIMULATION_API WrapObjectSet : public Set<WrapObject> {
+OpenSim_DECLARE_CONCRETE_OBJECT(WrapObjectSet, Set<WrapObject>);
+
 private:
 	void setNull();
 public:

@@ -108,7 +108,8 @@ XYFunctionInterface::XYFunctionInterface(Function* f) :
 		return;
 	}
 
-	throw Exception("Object " + getName() + " of type " + getType() + " is not an XYFunction.");
+	throw Exception("Object " + getName() + " of type " + 
+        getConcreteClassName() + " is not an XYFunction.");
 }
 
 int XYFunctionInterface::getNumberOfPoints() const

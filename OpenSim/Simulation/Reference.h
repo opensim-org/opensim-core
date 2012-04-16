@@ -48,8 +48,9 @@ namespace OpenSim {
  * @author Ajay Seth
  * @version 1.0
  */
-template<class T> class Reference_ : public Object
-{
+template<class T> class Reference_ : public Object {
+OpenSim_DECLARE_ABSTRACT_OBJECT_T(Reference_, T, Object);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -67,12 +68,16 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	virtual ~Reference_() {};
+	virtual ~Reference_() {}
 	
-	Reference_() {setType("Reference_"); }
-	Reference_(std::string name) { setType("Reference_"); setName(name); }
+	Reference_() {}
+	Reference_(std::string name) { setName(name); }
 
-	Reference_& operator=(const Reference_ &aRef) {Object::operator=(aRef); return(*this); };
+	Reference_& operator=(const Reference_& source) {
+        if (&source != this)
+            Super::operator=(source); 
+        return *this;
+    }
 
 	//--------------------------------------------------------------------------
 	// Reference Interface

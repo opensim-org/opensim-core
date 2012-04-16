@@ -85,19 +85,6 @@ ConditionalPathPoint::ConditionalPathPoint(const ConditionalPathPoint &aPoint) :
 	copyData(aPoint);
 }
 
-//_____________________________________________________________________________
-/**
- * Copy this conditional point and return a pointer to the copy.
- * The copy constructor for this class is used.
- *
- * @return Pointer to a copy of this ConditionalPathPoint.
- */
-Object* ConditionalPathPoint::copy() const
-{
-	ConditionalPathPoint *pt = new ConditionalPathPoint(*this);
-	return(pt);
-}
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
@@ -157,7 +144,6 @@ void ConditionalPathPoint::init(const PathPoint& aPoint)
  */
 void ConditionalPathPoint::setNull()
 {
-	setType("ConditionalPathPoint");
 }
 
 //_____________________________________________________________________________
@@ -185,7 +171,7 @@ void ConditionalPathPoint::setupProperties()
 	const double defaultRange[] = {0.0, 0.0};
 	_rangeProp.setName("range");
 	_rangeProp.setValue(2, defaultRange);
-	_rangeProp.setAllowableArraySize(2);
+	_rangeProp.setAllowableListSize(2);
 	_propertySet.append(&_rangeProp);
 
 	_coordinateNameProp.setName("coordinate");

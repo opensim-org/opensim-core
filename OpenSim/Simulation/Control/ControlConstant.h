@@ -50,8 +50,8 @@
  */
 namespace OpenSim { 
 
-class OSIMSIMULATION_API ControlConstant : public Control
-{
+class OSIMSIMULATION_API ControlConstant : public Control {
+OpenSim_DECLARE_CONCRETE_OBJECT(ControlConstant, Control);
 
 //=============================================================================
 // MEMBER DATA
@@ -71,7 +71,7 @@ public:
 	ControlConstant(double aX=0.0,const char *aName="UNKOWN");
 	ControlConstant(const ControlConstant &aControl);
 	virtual ~ControlConstant();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void copyData(const ControlConstant &aControl);
@@ -114,8 +114,6 @@ public:
 	virtual void setControlValueMin(double aT,double aX);
 	virtual double getControlValueMax(double aT=0.0);
 	virtual void setControlValueMax(double aT,double aX);
-
-	OPENSIM_DECLARE_DERIVED(ControlConstant, Control);
 
 //=============================================================================
 };	// END of class ControlConstant

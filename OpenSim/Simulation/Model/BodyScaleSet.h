@@ -44,8 +44,9 @@ namespace OpenSim {
  * @version 1.0
  */
 
-class OSIMSIMULATION_API BodyScaleSet :	public Set<BodyScale>
-{
+class OSIMSIMULATION_API BodyScaleSet :	public Set<BodyScale> {
+OpenSim_DECLARE_CONCRETE_OBJECT(BodyScaleSet, Set<BodyScale>);
+
 private:
 	void setNull();
 public:

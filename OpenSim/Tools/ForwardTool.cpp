@@ -70,7 +70,6 @@ ForwardTool::ForwardTool() :
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setType("ForwardTool");
 	setNull();
 }
 //_____________________________________________________________________________
@@ -87,7 +86,6 @@ ForwardTool::ForwardTool(const string &aFileName,bool aUpdateFromXMLNode,bool aL
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setType("ForwardTool");
 	setNull();
 
 	if(aUpdateFromXMLNode) updateFromXMLDocument();
@@ -141,20 +139,8 @@ ForwardTool(const ForwardTool &aTool) :
 	_statesFileName(_statesFileNameProp.getValueStr()),
 	_useSpecifiedDt(_useSpecifiedDtProp.getValueBool())
 {
-	setType("ForwardTool");
 	setNull();
 	*this = aTool;
-}
-
-//_____________________________________________________________________________
-/**
- * Virtual copy constructor.
- */
-Object* ForwardTool::
-copy() const
-{
-	ForwardTool *object = new ForwardTool(*this);
-	return(object);
 }
 
 //_____________________________________________________________________________

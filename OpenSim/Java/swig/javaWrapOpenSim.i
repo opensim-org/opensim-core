@@ -46,6 +46,7 @@
 
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
+#include <OpenSim/Simulation/Model/ComponentSet.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/Model/PrescribedForce.h>
 #include <OpenSim/Simulation/Model/ExternalForce.h>
@@ -525,9 +526,9 @@ static bool trace=false;
 %include <OpenSim/Simulation/osimSimulationDLL.h>
 %include <OpenSim/Simulation/Model/ModelComponent.h>
 %template(SetModelComponents) OpenSim::Set<OpenSim::ModelComponent>;
-//%template(ArrayPtrsModelComponent) OpenSim::ArrayPtrs<OpenSim::ModelComponent>;
-
 %include <OpenSim/Simulation/Model/ModelComponentSet.h>
+%template(ModelComponentSetModelComponent) OpenSim::ModelComponentSet<OpenSim::ModelComponent>;
+%include <OpenSim/Simulation/Model/ComponentSet.h>
 
 %template(SetMuscles) OpenSim::Set<OpenSim::Muscle>;
 

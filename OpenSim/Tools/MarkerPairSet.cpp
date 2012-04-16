@@ -71,7 +71,6 @@ MarkerPairSet::MarkerPairSet(const MarkerPairSet& aSimmMarkerPairSet):
  */
 void MarkerPairSet::setNull()
 {
-	setType("MarkerPairSet");
 }
 
 //=============================================================================

@@ -50,8 +50,10 @@ namespace OpenSim {
  * @author Peter Loan
  * @version 1.0
  */
-class OSIMACTUATORS_API Thelen2003Muscle_Deprecated : public ActivationFiberLengthMuscle_Deprecated  
-{
+class OSIMACTUATORS_API Thelen2003Muscle_Deprecated 
+:   public ActivationFiberLengthMuscle_Deprecated {
+OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle_Deprecated, 
+                                ActivationFiberLengthMuscle_Deprecated);
 
 //=============================================================================
 // DATA
@@ -69,16 +71,12 @@ public:
 	Thelen2003Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
 	Thelen2003Muscle_Deprecated(const Thelen2003Muscle_Deprecated &aMuscle);
 	virtual ~Thelen2003Muscle_Deprecated();
-	virtual Object* copy() const;
 
-#ifndef SWIG
+    #ifndef SWIG
 	Thelen2003Muscle_Deprecated& operator=(const Thelen2003Muscle_Deprecated &aMuscle);
-#endif
+    #endif
 	void copyData(const Thelen2003Muscle_Deprecated &aMuscle);
 
-#ifndef SWIG
-
-#endif
 
 	//--------------------------------------------------------------------------
 	// GET
@@ -133,8 +131,6 @@ public:
 	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
-
-	OPENSIM_DECLARE_DERIVED(Thelen2003Muscle_Deprecated, ActivationFiberLengthMuscle_Deprecated);
 
 private:
 	void setNull();

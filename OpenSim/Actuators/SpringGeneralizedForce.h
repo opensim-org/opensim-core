@@ -54,8 +54,9 @@ namespace OpenSim {
 
 class Coordinate;
 
-class OSIMACTUATORS_API SpringGeneralizedForce : public Force 
-{
+class OSIMACTUATORS_API SpringGeneralizedForce : public Force {
+OpenSim_DECLARE_CONCRETE_OBJECT(SpringGeneralizedForce, Force);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -71,7 +72,7 @@ public:
 	SpringGeneralizedForce(std::string aCoordinateName="");
 	SpringGeneralizedForce(const SpringGeneralizedForce &aForce);
 	~SpringGeneralizedForce();
-	virtual Object* copy() const;
+
 private:
 	void setNull();
 	void setupProperties();
@@ -122,8 +123,6 @@ protected:
 
 	// Setup method to initialize coordinate reference
 	virtual void setup(Model& aModel);
-
-	OPENSIM_DECLARE_DERIVED(SpringGeneralizedForce, Force);
 
 	//=============================================================================
 };	// END of class SpringGeneralizedForce

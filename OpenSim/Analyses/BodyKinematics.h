@@ -52,8 +52,9 @@ class Model;
  * @version 1.0
  */
 
-class OSIMANALYSES_API BodyKinematics : public Analysis 
-{
+class OSIMANALYSES_API BodyKinematics : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(BodyKinematics, Analysis);
+
 //=============================================================================
 // DATA
 //=============================================================================
@@ -85,9 +86,9 @@ public:
 	BodyKinematics(const std::string &aFileName);
 	// Copy constrctor and virtual copy 
 	BodyKinematics(const BodyKinematics &aObject);
-	virtual Object* copy() const;
 	virtual ~BodyKinematics();
-	//--------------------------------------------------------------------------
+
+    //--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 #ifndef SWIG

@@ -98,7 +98,7 @@ PropertyBoolArray::PropertyBoolArray(const PropertyBoolArray &aProperty) :
  *
  * @return Copy of this property.
  */
-PropertyBoolArray* PropertyBoolArray::copy() const
+PropertyBoolArray* PropertyBoolArray::clone() const
 {
 	PropertyBoolArray *prop = new PropertyBoolArray(*this);
 	return prop;

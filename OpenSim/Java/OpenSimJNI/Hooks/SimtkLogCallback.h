@@ -29,13 +29,14 @@
 
 #include <OpenSim/Common/LogCallback.h>
 #include <OpenSim/Common/LogManager.h>
-#include <stdio.h>
+#include <cstdio>
 
 namespace OpenSim {
 
 class SimtkLogCallback : public LogCallback
 {
 public:
+    virtual ~SimtkLogCallback() {}
 	virtual void log(const std::string &str) { }
 
 	void addToLogManager() {

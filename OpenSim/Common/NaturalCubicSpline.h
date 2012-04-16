@@ -53,8 +53,9 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API NaturalCubicSpline : public Function
-{
+class OSIMCOMMON_API NaturalCubicSpline : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(NaturalCubicSpline, Function);
+
 //=============================================================================
 // MEMBER VARIABLES
 //=============================================================================
@@ -86,7 +87,7 @@ public:
 		const std::string &aName="");
 	NaturalCubicSpline(const NaturalCubicSpline &aSpline);
 	virtual ~NaturalCubicSpline();
-	virtual Object* copy() const;
+
 	virtual void init(Function* aFunction);
 
 private:
@@ -133,9 +134,6 @@ public:
 
 private:
 	void calcCoefficients();
-
-	OPENSIM_DECLARE_DERIVED(NaturalCubicSpline, Function)
-
 //=============================================================================
 };	// END class NaturalCubicSpline
 
