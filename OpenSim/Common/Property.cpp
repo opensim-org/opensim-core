@@ -101,7 +101,7 @@ isEqual(const SimTK::Transform& a, const SimTK::Transform& b) {
 
 // Try a few instantiations so we catch bugs now.
 
-template SimpleProperty<int>;
-template SimpleProperty<double>;
-template SimpleProperty<std::string>;
-template ObjectProperty<Object>;
+template class SimpleProperty<int>;
+template class SimpleProperty<double>;
+template class SimpleProperty<std::string>;
+template class ObjectProperty<Object>;
