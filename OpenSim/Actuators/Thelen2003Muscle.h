@@ -1,5 +1,5 @@
-#ifndef __Thelen2003Muscle_h__
-#define __Thelen2003Muscle_h__
+#ifndef OPENSIM_Thelen2003Muscle_h__
+#define OPENSIM_Thelen2003Muscle_h__
 
 // Thelen2003Muscle.h
 /*    Author: Matthew Millard
@@ -216,4 +216,4 @@ private:
 };    
 } // end of namespace OpenSim
 
-#endif // __Thelen2003Muscle_h__
+#endif // OPENSIM_Thelen2003Muscle_h__
