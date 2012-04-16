@@ -539,7 +539,7 @@ private:
 // unformatted would not know to convert to X-Y-Z body fixed Euler angles
 // followed by the position vector.
 
-template <> bool SimpleProperty<SimTK::Transform>::
+template <> inline bool SimpleProperty<SimTK::Transform>::
 readSimplePropertyFromStream(std::istream& in)
 {   
     SimTK::Array_<SimTK::Vec6,int> rotTrans;
@@ -557,7 +557,7 @@ readSimplePropertyFromStream(std::istream& in)
     return true;
 }
 
-template <> void SimpleProperty<SimTK::Transform>::
+template <> inline void SimpleProperty<SimTK::Transform>::
 writeSimplePropertyToStream(std::ostream& o) const
 {   
     SimTK::Array_<SimTK::Vec6> rotTrans;

@@ -1065,7 +1065,7 @@ private:
 // These methods of ObjectProperty are defined here because they depend on 
 // methods of Object. See Property.h for ObjectProperty's declaration.
 
-template <class T> std::string 
+template <class T> inline std::string 
 ObjectProperty<T>::toString() const {
     if (objects.empty()) return "(No Objects)";
     std::string out;
@@ -1078,13 +1078,13 @@ ObjectProperty<T>::toString() const {
     return out;
 }
 
-template <class T> bool 
+template <class T> inline bool 
 ObjectProperty<T>::isAcceptableObjectTag
    (const std::string& objectTypeTag) const { 
     return Object::isObjectTypeDerivedFrom<T>(objectTypeTag); 
 }
 
-template <class T> bool 
+template <class T> inline bool 
 ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
     // Check here rather than in base class because the old
     // Property_Deprecated implementation can't copy this flag right.
@@ -1101,7 +1101,7 @@ ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
 
 // Property element is a compound element, consisting of subelements
 // each of which is one of the object values.
-template <class T> void 
+template <class T> inline void 
 ObjectProperty<T>::readFromXMLElement
     (SimTK::Xml::Element& propertyElement,
     int                  versionNumber)
@@ -1154,7 +1154,7 @@ ObjectProperty<T>::readFromXMLElement
 
 // Each object value serializes itself into a subelement of the given
 // property element.
-template <class T> void 
+template <class T> inline void 
 ObjectProperty<T>::writeToXMLElement
     (SimTK::Xml::Element& propertyElement) const 
 {
@@ -1163,7 +1163,7 @@ ObjectProperty<T>::writeToXMLElement
 }
 
 
-template <class T> void 
+template <class T> inline void 
 ObjectProperty<T>::setValueAsObject(const Object& obj, int index) {
     if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
         index = 0;
@@ -1186,7 +1186,8 @@ ObjectProperty<T>::setValueAsObject(const Object& obj, int index) {
 // deprecated property system under the AbstractProperty umbrella. Move to
 // Property.h when the deprecated code is removed.
 
-template <class T> const T& AbstractProperty::getValue(int index) const {
+template <class T> inline const T& AbstractProperty::
+getValue(int index) const {
     //TODO: temporary support for obsolete properties
     const Property_Deprecated* pd = 
         dynamic_cast<const Property_Deprecated*>(this);
@@ -1200,7 +1201,8 @@ template <class T> const T& AbstractProperty::getValue(int index) const {
     return p->getValue(index);
 }
 
-template <class T> T& AbstractProperty::updValue(int index) {
+template <class T> inline T& AbstractProperty::
+updValue(int index) {
     //TODO: temporary support for obsolete properties
     Property_Deprecated* pd = dynamic_cast<Property_Deprecated*>(this);
     if (pd) return pd->getValue<T>();
@@ -1213,7 +1215,8 @@ template <class T> T& AbstractProperty::updValue(int index) {
     return p->updValue(index);
 }
 
-template <class T> int AbstractProperty::appendValue(const T& value) {
+template <class T> inline int AbstractProperty::
+appendValue(const T& value) {
     // Not supported for deprecated properties
 
     Property<T>* p = dynamic_cast<Property<T>*>(this);
