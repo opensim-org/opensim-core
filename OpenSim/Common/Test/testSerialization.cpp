@@ -55,6 +55,27 @@ class rdObjSet : public Set<rdSerializableObject> {
 OpenSim_DECLARE_CONCRETE_OBJECT(rdObjSet, Set<rdSerializableObject>);
 };
 
+static void indent(int nSpaces) {
+    for (int i=0; i<nSpaces; ++i) cout << " ";
+}
+
+// Recursively dump out contents of an object and its properties.
+static void dumpObj(const Object& obj, int nSpaces) {
+    indent(nSpaces);
+    cout << obj.getConcreteClassName() << " Object " 
+         << (obj.getName().empty()?"NONAME":obj.getName())
+         << endl;
+    for (int p=0; p < obj.getNumProperties(); ++p) {
+        const AbstractProperty& ap = obj.getPropertyByIndex(p); 
+        indent(nSpaces+2);
+        cout << ap.getName() << "=" << ap.toString() << endl;
+        if (ap.isObjectProperty()) {
+            for (int i=0; i < ap.size(); ++i)
+                dumpObj(ap.getValueAsObject(i), nSpaces+4);
+        }
+    }
+}
+
 int main()
 {
     stringstream ss(" hell there 1.234e5  -infinity");
@@ -153,6 +174,9 @@ int main()
             const AbstractProperty& ap = obj1.getPropertyByIndex(i); 
             std::cout << ap.getName() << "=" << ap.toString() << std::endl;
         }
+
+        cout << "\nDUMPOBJ(obj1)" << endl;
+        dumpObj(obj1, 0);
 		
 	}
     catch(const std::exception& e) {

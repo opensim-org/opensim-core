@@ -161,6 +161,29 @@ public:
     allowable size for this property. **/
     void clear();
 
+    /** For an object property, the values can be obtained as references to
+    the abstract base class Object from which all the objects derive. If the
+    property can hold a list of values you must provide an index to select
+    the value, otherwise it is optional but if supplied must be 0. This will
+    throw an exception if this is not an object property, that is, if it is
+    a simple property, because its values can't be represented as an Object in
+    that case.
+
+    @param[in] index    If supplied must be 0 <= index < getNumValues().
+    @returns const reference to the value as an Object 
+    @see updValueAsObject(), getValue\<T>() **/
+    virtual const Object& getValueAsObject(int index=-1) const = 0;
+    /** Get writable access to an existing object value. Note that you can't 
+    use this to install a different concrete object; see setValueAsObject()
+    if you want to do that. 
+    @param[in] index    If supplied must be 0 <= index < getNumValues().
+    @returns writable reference to the value as an Object
+    @see getValueAsObject(), updValue\<T>() **/
+    virtual Object& updValueAsObject(int index=-1) = 0;
+    /** Set the indicated value element to a new copy of the supplied object.
+    If you already have a heap-allocated object you're willing to give up and
+    want to avoid the extra copy, use adoptValueObject(). **/
+    virtual void setValueAsObject(const Object& obj, int index=-1) = 0;
     // Implementation of these non-virtual templatized methods must be 
     // deferred until the concrete property declarations are known. 
     // See Object.h.
@@ -258,8 +281,6 @@ protected:
     property need only compare the values.**/
 	virtual bool isEqualTo(const AbstractProperty& other) const = 0;
 
-
-
     /** Read in a new value for this property from the XML element 
     \a propertyElement. The element is expected to have the form
     @code
@@ -322,29 +343,6 @@ protected:
     virtual bool isAcceptableObjectTag
        (const std::string& objectTypeTag) const = 0;
 
-    /** For an object property, the values can be obtained as references to
-    the abstract base class Object from which all the objects derive. If the
-    property can hold a list of values you must provide an index to select
-    the value, otherwise it is optional but if supplied must be 0. This will
-    throw an exception if this is not an object property, that is, if it is
-    a simple property, because its values can't be represented as an Object in
-    that case.
-
-    @param[in] index    If supplied must be 0 <= index < getNumValues().
-    @returns const reference to the value as an Object 
-    @see updValueAsObject(), getValue\<T>() **/
-    virtual const Object& getValueAsObject(int index=-1) const = 0;
-    /** Get writable access to an existing object value. Note that you can't 
-    use this to install a different concrete object; see setValueAsObject()
-    if you want to do that. 
-    @param[in] index    If supplied must be 0 <= index < getNumValues().
-    @returns writable reference to the value as an Object
-    @see getValueAsObject(), updValue\<T>() **/
-    virtual Object& updValueAsObject(int index=-1) = 0;
-    /** Set the indicated value element to a new copy of the supplied object.
-    If you already have a heap-allocated object you're willing to give up and
-    want to avoid the extra copy, use adoptValueObject(). **/
-    virtual void setValueAsObject(const Object& obj, int index=-1) = 0;
     //--------------------------------------------------------------------------
 
 private:
