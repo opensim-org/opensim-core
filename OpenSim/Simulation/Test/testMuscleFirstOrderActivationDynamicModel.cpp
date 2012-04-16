@@ -24,7 +24,7 @@
 //=============================================================================
 
 #include "Simbody.h"
-#include "OpenSim\OpenSim.h"
+#include "OpenSim/OpenSim.h"
 #include <OpenSim/Simulation/Model/MuscleFirstOrderActivationDynamicModel.h>
 //"MuscleFirstOrderActivationDynamicModel.h"
 //#include <SimTKcommon/Testing.h>
