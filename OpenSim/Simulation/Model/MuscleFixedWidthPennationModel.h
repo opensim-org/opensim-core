@@ -74,9 +74,9 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
         constant, the height of the parallelogram is also constant.*/
         double m_parallelogramHeight;
         /**The optimal fiber length (in meters)*/
-        double m_optimalFiberLength;
+        const double m_optimalFiberLength;
         /**The optimal pennation angle (in radians)*/
-        double m_optimalPennationAngle;
+        const double m_optimalPennationAngle ;
 
     public:
         /**        
@@ -132,17 +132,38 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
         /**
             @returns height of the paralleogram (m)
         */
-        double getParallelogramHeight();
+        double getParallelogramHeight() const;
 
         /**
             @returns optimal fiber length (m) 
         */
-        double getOptimalFiberLength();
+        double getOptimalFiberLength() const;
 
         /**
             @returns the optimal pennation angle (radians) 
         */
-        double getOptimalPennationAngle();
+        double getOptimalPennationAngle() const;
+
+        /**
+
+        @param fiberLength  The length of the fiber (meters)
+        @param cosPennationAngle The cosine of the pennation angle (unitless)
+        @returns The projected length of the fiber along the tendon axis
+        */
+        double calcFiberLengthAlongTendon(double fiberLength, 
+                                          double cosPennationAngle) const;
+
+        /**
+        @param fiberLength  The length of the fiber (meters)
+        @param fiberVelocity The stretch velocity of the fiber (meters/s)
+        @param sinPennationAngle The sine of the pennation angle (unitless)
+        @param cosPennationAngle The cosine of the pennation angle (unitless)
+        @param pennationAngularVelocity The angular velocity of the pennation
+                                        angle.
+        */
+        double calcFiberVelocityAlongTendon(double fiberLength, 
+            double fiberVelocity, double sinPennationAngle, 
+            double cosPennationAngle, double pennationAngularVelocity) const;
 
         /**
         This function calculates the pennation angle of the fiber given its
@@ -184,7 +205,7 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
         \endverbatim
 
         */
-        double calcPennationAngle(double fiberLength, std::string& caller);
+        double calcPennationAngle(double fiberLength, std::string& caller) const;
         
         /**
         This function computes the angular velocity of the fiber.
@@ -237,7 +258,7 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
         double calcPennationAngularVelocity(double tanPennationAngle,
                                             double fiberLength,  
                                             double fiberVelocity,
-                                            std::string &caller);
+                                            std::string &caller) const;
 
         /**
         This function computes the length of the tendon given the length of 
@@ -278,7 +299,7 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
         */
         double calcTendonLength(double cosPennationAngle,
                                 double fiberLength, 
-                                double muscleLength);
+                                double muscleLength) const;
 
         /**
         This function computes the lengthening velocity (or stretch velocity) of
@@ -339,7 +360,7 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
                                   double pennationAngularVelocity,
                                   double fiberLength,    
                                   double fiberVelocity,
-                                  double muscleVelocity);
+                                  double muscleVelocity) const;
 
        
 
@@ -385,7 +406,7 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
 
         */
         double calc_DpennationAngle_DfiberLength(double fiberLength,                                            
-                                                std::string& caller);
+                                                std::string& caller) const;
                 
         /**
         The partial derivative of tendon length with respect to fiber length.
@@ -443,7 +464,7 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
                                             double sinPennationAngle,
                                             double cosPennationAngle,
                                             double DpennationAngle_DfiberLength,                                           
-                                            std::string& caller);
+                                            std::string& caller) const;
 
 
     };
