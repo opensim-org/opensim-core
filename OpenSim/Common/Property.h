@@ -291,6 +291,74 @@ protected:
 
 
 //==============================================================================
+//                    TYPE HELPER SPECIALIZATIONS
+//==============================================================================
+
+/** This is the generic definition of Property::TypeHelper to be used 
+whenever T does not have a specialization, meaning that T must be a type 
+derived from class Object. Any non-Object type that is to be used as a property 
+type \e must provide a specialization of this class. **/
+template <class T> struct Property<T>::TypeHelper {
+    static ObjectProperty<T>* create(const std::string& name, bool isOne);
+    static const char* name() {return "Obj";}
+    static bool isEqual(const T& a, const T& b) {return a==b;}
+};
+
+
+template<> struct Property<bool>::TypeHelper {
+    static SimpleProperty<bool>* create(const std::string& name, bool isOne);
+    static const char* name() {return "bool";}
+    static bool isEqual(bool a, bool b) {return a==b;}
+};
+template<> struct Property<int>::TypeHelper {
+    static SimpleProperty<int>* create(const std::string& name, bool isOne);
+    static const char* name() {return "int";}
+    static bool isEqual(int a, int b) {return a==b;}
+};
+template<> struct Property<std::string>::TypeHelper {
+    static SimpleProperty<std::string>* 
+    create(const std::string& name, bool isOne);
+    static void destructIfNeeded(std::string& value) {}
+    static std::string& derefIfNeeded(std::string& value) {return value;}
+    static const std::string& cloneIfNeeded(const std::string& value) 
+    {   return value; }
+    static const char* name() {return "string";}
+    static bool isEqual(const std::string& a, const std::string& b)
+    {   return a==b; }
+};
+
+// Floating point values' isEqual() operator returns true if all the numbers
+// are equal to within a tolerance. We also say NaN==NaN, which is not standard
+// IEEE floating point behavior.
+template<> struct Property<double>::TypeHelper {
+    static SimpleProperty<double>* create(const std::string& name, bool isOne);
+    static const char* name() {return "double";}
+    OSIMCOMMON_API static bool isEqual(double a, double b);
+};
+template<> struct Property<SimTK::Vec3>::TypeHelper  {
+    static SimpleProperty<SimTK::Vec3>* 
+    create(const std::string& name, bool isOne);
+    static const char* name() {return "Vec3";}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
+                                       const SimTK::Vec3& b);
+};
+template<> struct Property<SimTK::Vector>::TypeHelper  {
+    static SimpleProperty<SimTK::Vector>* 
+    create(const std::string& name, bool isOne);
+    static const char* name() {return "Vector";}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
+                                       const SimTK::Vector& b);
+};
+template<> struct Property<SimTK::Transform>::TypeHelper  {
+    static SimpleProperty<SimTK::Transform>* 
+    create(const std::string& name, bool isOne);
+    static const char* name() {return "Transform";}
+    OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
+                                       const SimTK::Transform& b);
+};
+
+
+//==============================================================================
 //                             SIMPLE PROPERTY
 //==============================================================================
 /** This subclass of Property<T> is used when type T=S is a "simple" type, 
@@ -698,82 +766,43 @@ private:
 };
 
 
-
 //==============================================================================
-//                    TYPE HELPER SPECIALIZATIONS
+//                        TYPE HELPER IMPLEMENTATION
 //==============================================================================
+// These had to wait for SimpleProperty and ObjectProperty.
 
-/** This is the generic definition of Property::TypeHelper to be used 
-whenever T does not have a specialization, meaning that T must be a type 
-derived from class Object. Any non-Object type that is to be used as a property 
-type \e must provide a specialization of this class. **/
-template <class T> struct Property<T>::TypeHelper {
-    static ObjectProperty<T>* create(const std::string& name, bool isOne) 
-    {   return new ObjectProperty<T>(name, isOne); }
-    static const char* name() {return "Obj";}
-    static bool isEqual(const T& a, const T& b) {return a==b;}
-};
+template <class T> 
+inline ObjectProperty<T>* Property<T>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new ObjectProperty<T>(name, isOne); }
 
+inline SimpleProperty<bool>* Property<bool>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<bool>(name, isOne); }
 
-template<> struct Property<bool>::TypeHelper {
-    static SimpleProperty<bool>* create(const std::string& name, bool isOne) 
-    {   return new SimpleProperty<bool>(name, isOne); }
-    static const char* name() {return "bool";}
-    static bool isEqual(bool a, bool b) {return a==b;}
-};
-template<> struct Property<int>::TypeHelper {
-    static SimpleProperty<int>* create(const std::string& name, bool isOne) 
-    {   return new SimpleProperty<int>(name, isOne); }
-    static const char* name() {return "int";}
-    static bool isEqual(int a, int b) {return a==b;}
-};
-template<> struct Property<std::string>::TypeHelper {
-    static SimpleProperty<std::string>* 
-    create(const std::string& name, bool isOne) 
-    {   return new SimpleProperty<std::string>(name, isOne); }
-    static void destructIfNeeded(std::string& value) {}
-    static std::string& derefIfNeeded(std::string& value) {return value;}
-    static const std::string& cloneIfNeeded(const std::string& value) 
-    {   return value; }
-    static const char* name() {return "string";}
-    static bool isEqual(const std::string& a, const std::string& b)
-    {   return a==b; }
-};
+inline SimpleProperty<int>* Property<int>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<int>(name, isOne); }
 
-// Floating point values' isEqual() operator returns true if all the numbers
-// are equal to within a tolerance. We also say NaN==NaN, which is not standard
-// IEEE floating point behavior.
-template<> struct Property<double>::TypeHelper {
-    static SimpleProperty<double>* create(const std::string& name, bool isOne) 
-    {   return new SimpleProperty<double>(name, isOne); }
-    static const char* name() {return "double";}
-    OSIMCOMMON_API static bool isEqual(double a, double b);
-};
-template<> struct Property<SimTK::Vec3>::TypeHelper  {
-    static SimpleProperty<SimTK::Vec3>* 
-    create(const std::string& name, bool isOne) 
-    {   return new SimpleProperty<SimTK::Vec3>(name, isOne); }
-    static const char* name() {return "Vec3";}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Vec3& a, 
-                                       const SimTK::Vec3& b);
-};
-template<> struct Property<SimTK::Vector>::TypeHelper  {
-    static SimpleProperty<SimTK::Vector>* 
-    create(const std::string& name, bool isOne) 
-    {   return new SimpleProperty<SimTK::Vector>(name, isOne); }
-    static const char* name() {return "Vector";}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Vector& a, 
-                                       const SimTK::Vector& b);
-};
-template<> struct Property<SimTK::Transform>::TypeHelper  {
-    static SimpleProperty<SimTK::Transform>* 
-    create(const std::string& name, bool isOne) 
-    {   return new SimpleProperty<SimTK::Transform>(name, isOne); }
-    static const char* name() {return "Transform";}
-    OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
-                                       const SimTK::Transform& b);
-};
+inline SimpleProperty<std::string>* Property<std::string>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<std::string>(name, isOne); }
 
+inline SimpleProperty<double>* Property<double>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<double>(name, isOne); }
+
+inline SimpleProperty<SimTK::Vec3>* Property<SimTK::Vec3>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<SimTK::Vec3>(name, isOne); }
+
+inline SimpleProperty<SimTK::Vector>* Property<SimTK::Vector>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<SimTK::Vector>(name, isOne); }
+
+inline SimpleProperty<SimTK::Transform>* Property<SimTK::Transform>::
+TypeHelper::create(const std::string& name, bool isOne) 
+{   return new SimpleProperty<SimTK::Transform>(name, isOne); }
 
 }; //namespace
 //=============================================================================
