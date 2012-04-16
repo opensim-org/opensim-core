@@ -405,7 +405,7 @@ public:
         assert(size() == other.size()); // base class checked
         const SimpleProperty& otherS = SimpleProperty::getAs(other);
         for (int i=0; i<values.size(); ++i)
-            if (!TypeHelper::isEqual(values[i], otherS.values[i]))
+            if (!Property<T>::TypeHelper::isEqual(values[i], otherS.values[i]))
                 return false;
         return true;
     }
