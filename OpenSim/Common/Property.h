@@ -52,7 +52,6 @@ template <class T> class ObjectProperty;
 //==============================================================================
 //                                PROPERTY
 //==============================================================================
-// TODO: rename Property2 to Property
 
 /** A %Property\<T> is a serializable (name, list-of-values) pair, where each 
 value is of type T. The number of values allowed in the list is an attribute of

@@ -1164,7 +1164,7 @@ ObjectProperty<T>::writeToXMLElement
 
 
 template <class T> void 
-ObjectProperty<T>::setValueAsObject(const Object& obj, int index=-1) {
+ObjectProperty<T>::setValueAsObject(const Object& obj, int index) {
     if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
         index = 0;
     T* newObjT = dynamic_cast<T*>(obj.clone());
