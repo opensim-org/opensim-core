@@ -438,8 +438,8 @@ int main(int argc, char* argv[])
                 heightVel(i) = fibVel(i)*sin(penAng(i)) + 
                                fibLen(i)*cos(penAng(i))*penAngVel(i);
                 if(abs(heightVel(i)) > maxErr)
-                    maxErr = heightVel(i);
-
+                    maxErr = abs(heightVel(i));
+              
                 SimTK_TEST_EQ_TOL(heightVel(i), 0, bigTol);
             }
             printf("    :passed with a max. error < big. tol (%fe-8 < %fe-8) \n"
