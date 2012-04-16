@@ -52,9 +52,9 @@ namespace OpenSim {
  *
  * @author Matt Millard
  * @author Ajay Seth
+ * @author Peter Loan
  * @version 3.0
  *
- * @contributor Peter Loan
  */
 class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle {
 OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle, ActivationFiberLengthMuscle);

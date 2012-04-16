@@ -118,9 +118,9 @@ standard "boilerplate" macros:
   OpenSim_DECLARE_ABSTRACT_OBJECT  (ClassName, SuperclassName);
   OpenSim_DECLARE_ABSTRACT_OBJECT_T(ClassName, T, SuperclassName);
 @endcode
-("Superclass" means the immediate class from which the class derives; that is
-the name standardized in Java. It is also called the "Parent" class but we'll 
-call it "Super" which is more specific.) The "_T" variants of the above macros 
+("Superclass" means the immediate class from which the class derives; that
+terminology is borrowed from Java. It is often called the "Parent" class but 
+we'll use "Super" which is more precise.) The "_T" variants of the above macros 
 are used for objects that are templatized, like Set\<T>. 
 
 These macros provide a standardized set of declarations for every object, 
