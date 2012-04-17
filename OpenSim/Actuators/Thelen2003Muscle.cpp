@@ -28,7 +28,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <iostream>
 
-#include <SimTKcommon\internal\ExceptionMacros.h>
+#include <SimTKcommon/internal/ExceptionMacros.h>
 
 //=============================================================================
 // STATICS
@@ -957,6 +957,8 @@ SimTK::Vector Thelen2003Muscle::
         results[5] = fse*fiso;
     }else{ //If the solution diverged
         
+    	std::string muscleName = getName();
+
         //Check for the fiber length singularity
         if(lce < 0 + SimTK::Eps){
             results[0] = 2.0;
@@ -969,7 +971,7 @@ SimTK::Vector Thelen2003Muscle::
             printf("Initialization failed: fiber length approaching 0, \n"
                    "                       for %s, a Thelen2003Muscle \n"
                    "                       with an error of %f", 
-                   getName(), ferr);
+                   muscleName.c_str(), ferr);
         //Check for a pennation angle singularity   
         }else if(phi > SimTK::Pi/2 - SimTK::Eps){
             results[0] = 3.0;
@@ -982,7 +984,7 @@ SimTK::Vector Thelen2003Muscle::
             printf("Initialization failed: pennation angle approaching Pi/2, \n"
                    "                       for %s, a Thelen2003Muscle \n"
                    "                       with an error of %f", 
-                   getName(), ferr);
+                   muscleName.c_str(), ferr);
 
         //Not enough iterations
         }else{ 
@@ -996,7 +998,7 @@ SimTK::Vector Thelen2003Muscle::
             printf("Initialization failed: solution did not converge in %i, \n"
                    "                       for %s, a Thelen2003Muscle \n"
                    "                       with an error of %f", 
-                   iter,getName(),ferr);
+                   iter, muscleName.c_str() ,ferr);
 
         }
  

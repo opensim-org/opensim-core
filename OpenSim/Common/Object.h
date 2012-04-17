@@ -1090,7 +1090,7 @@ ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
     // Property_Deprecated implementation can't copy this flag right.
     if (this->getUseDefault() != other.getUseDefault())
         return false;
-    assert(size() == other.size()); // base class checked
+    assert(this->size() == other.size()); // base class checked
     const ObjectProperty& otherO = ObjectProperty::getAs(other);
     for (int i=0; i<objects.size(); ++i)
         if (!(objects[i] == otherO.objects[i]))
