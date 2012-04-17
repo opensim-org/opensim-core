@@ -90,10 +90,10 @@ void ActivationFiberLengthMuscle::setupProperties()
 {
 	addProperty<double>("default_activation",
 		"Assumed activation level if none is assigned.",
-		0.0);
+		1.0);
 	addProperty<double>("default_fiber_length",
 		"Assumed fiber length, unless otherwise assigned.",
-		0.0);
+		getOptimalFiberLength());
 }
 
 void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aMuscle)
