@@ -75,8 +75,9 @@ public:
 	PropertyBoolArray(const std::string &aName,
 		int aSize,const bool aArray[]);
 	PropertyBoolArray(const PropertyBoolArray &aProperty);
-	virtual PropertyBoolArray* clone() const;
-	virtual ~PropertyBoolArray() { };
+	PropertyBoolArray* clone() const OVERRIDE_11 ;
+
+    int getNumValues() const OVERRIDE_11 {return getArraySize();}
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

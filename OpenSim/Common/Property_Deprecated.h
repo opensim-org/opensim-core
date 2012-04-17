@@ -155,11 +155,11 @@ public:
     virtual void readFromXMLElement
        (SimTK::Xml::Element& propertyElement,
         int                  versionNumber) OVERRIDE_11
-    {assert(!"Property_Deprecated::readFromXMLElement not implemented yet");}
+    {assert(!"Property_Deprecated::readFromXMLElement not implemented");}
 
     virtual void writeToXMLElement
        (SimTK::Xml::Element& propertyElement) const OVERRIDE_11
-    {assert(!"Property_Deprecated::writeToXMLElement not implemented yet");}
+    {assert(!"Property_Deprecated::writeToXMLElement not implemented");}
 
     // Override for array types.
     virtual int getNumValues() const OVERRIDE_11 {return 1;}

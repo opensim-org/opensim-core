@@ -76,7 +76,9 @@ public:
 	PropertyDblArray(const std::string &aName,
 		int aSize,const double aArray[]);
 	PropertyDblArray(const PropertyDblArray &aProperty);
-	/*virtual*/ PropertyDblArray* clone() const;
+	PropertyDblArray* clone() const OVERRIDE_11;
+
+    int getNumValues() const OVERRIDE_11 {return getArraySize();}
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

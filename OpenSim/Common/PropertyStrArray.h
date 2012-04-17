@@ -76,7 +76,9 @@ public:
 	PropertyStrArray(const std::string &aName,
 		int aSize,const std::string aArray[]);
 	PropertyStrArray(const PropertyStrArray &aProperty);
-	/*virtual*/ PropertyStrArray* clone() const;
+	PropertyStrArray* clone() const OVERRIDE_11;
+
+    int getNumValues() const OVERRIDE_11 {return getArraySize();}
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

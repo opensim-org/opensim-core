@@ -74,9 +74,10 @@ public:
 	:   Property_Deprecated(ObjArray, aName), _array(aArray) {}
 	PropertyObjArray(const PropertyObjArray<T> &aProperty) 
     :   Property_Deprecated(aProperty) { _array = aProperty._array; }
-	/*virtual*/ PropertyObjArray* clone() const { return new PropertyObjArray<T>(*this); }
+	PropertyObjArray* clone() const OVERRIDE_11
+    {   return new PropertyObjArray<T>(*this); }
 
-
+    virtual int getNumValues() const OVERRIDE_11 {return getArraySize();}
     virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
     virtual bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
