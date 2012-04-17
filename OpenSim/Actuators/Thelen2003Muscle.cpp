@@ -38,7 +38,7 @@ using namespace OpenSim;
 using namespace SimTK;
 
 static const char* ActivationMinimumValueName 
-                            = "activation_minimum_value";
+                            = "activation_minimum_value"; //New
 static const char* ActivationTimeConstantName   
                             ="activation_time_constant";
 static const char* DeactivationTimeConstantName 
@@ -46,15 +46,12 @@ static const char* DeactivationTimeConstantName
             
 //static strichar*                     ="Vmax";
 static const char* FmaxTendonStrainName         ="FmaxTendonStrain";
-static const char* FmaxFiberStrainName          ="FmaxFiberStrain";
-static const char* KshapeActiveName             ="KShapeActive";
-static const char* KshapePassiveName            ="KShapePassive";
+static const char* FmaxFiberStrainName          ="FmaxMuscleStrain"; 
+static const char* KshapeActiveName             ="KshapeActive";
+static const char* KshapePassiveName            ="KshapePassive";
 static const char* AfName                       ="Af";
 static const char* FlenName                     ="Flen";
-static const char* PennationMaximumValueDegreesName   
-                           ="pennation_maximum_value_degrees";
-static const char* FvLinearExtrapName             
-                                        = "fv_linear_extrap_threshold";
+static const char* FvLinearExtrapName  = "fv_linear_extrap_threshold"; //New
 
 
 
