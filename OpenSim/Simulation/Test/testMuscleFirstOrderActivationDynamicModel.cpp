@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 	
 
 	try {
-            SimTK_START_TEST("Testing MuscleCurveFunctionFactory");
+            SimTK_START_TEST("Testing MuscleFirstOrderDynamicModel");
 
             /*
             Test conditions:
