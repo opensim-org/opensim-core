@@ -1105,13 +1105,13 @@ OpenSim_OBJECT_JAVA_DEFS(ConcreteClass, SuperClass);
 // For nontemplate classes, the class name is identical to the supplied
 // ConcreteClass argument.
 #define OpenSim_OBJECT_NONTEMPLATE_DEFS(ConcreteClass, SuperClass)             \
-static std::string& getClassName()                                             \
+static const std::string& getClassName()                                             \
 {   static std::string name(#ConcreteClass); return name; }
 
 // For template classes ConcreteClass<TemplateArg>, we construct the class
 // name by assembling the pieces.
 #define OpenSim_OBJECT_TEMPLATE_DEFS(ConcreteClass, TArg, SuperClass)          \
-static std::string& getClassName()                                             \
+static const std::string& getClassName()                                             \
 {   static std::string name = #ConcreteClass "<"                               \
                               + Object_GetClassName<TArg>::name()              \
                               + ">";                                           \
