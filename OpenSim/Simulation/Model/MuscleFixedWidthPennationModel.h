@@ -69,14 +69,7 @@ known.
 */
 class OSIMSIMULATION_API MuscleFixedWidthPennationModel
 {
-    private:
-        /**The height of the parallelogram (in meters). Since the width is 
-        constant, the height of the parallelogram is also constant.*/
-        double m_parallelogramHeight;
-        /**The optimal fiber length (in meters)*/
-        const double m_optimalFiberLength;
-        /**The optimal pennation angle (in radians)*/
-        const double m_optimalPennationAngle ;
+
 
     public:
         /**        
@@ -128,6 +121,7 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
         ///obviously wrong values
         MuscleFixedWidthPennationModel();
 
+        
 
         /**
             @returns height of the paralleogram (m)
@@ -466,7 +460,14 @@ class OSIMSIMULATION_API MuscleFixedWidthPennationModel
                                             double DpennationAngle_DfiberLength,                                           
                                             std::string& caller) const;
 
-
+    private:
+        /**The height of the parallelogram (in meters). Since the width is 
+        constant, the height of the parallelogram is also constant.*/
+        double m_parallelogramHeight;
+        /**The optimal fiber length (in meters)*/
+        double m_optimalFiberLength;
+        /**The optimal pennation angle (in radians)*/
+        double m_optimalPennationAngle ;
     };
 }
 #endif //OPENSIM_MUSCLEFIXEDWIDTHPENNATIONMODEL_H_

@@ -154,25 +154,8 @@ double MuscleFirstOrderActivationDynamicModel::
                 if(derivComponents[0] == 0){
                     double activation = x(0);
                     double excitation = x(1);      
-                    /*
-                    int epsMult = 2;
-                    if((excitation >= -SimTK::Eps*epsMult) 
-                                                        && (excitation < 0))
-                        excitation = 0;
+                   
                     
-                    if((excitation <= (1+SimTK::Eps*epsMult)) 
-                                                        && (excitation > 1))
-                        excitation = 1;
-
-                    if((activation >= (m_minA-SimTK::Eps*epsMult)) 
-                                                    && (activation < m_minA))
-                        activation = m_minA;
-
-                    if((activation <= (1+SimTK::Eps*epsMult)) 
-                                                    && (activation > 1))
-                        activation = 1;
-                    */
-                    /*
                     SimTK_ERRCHK1_ALWAYS(excitation >= 0 && excitation <= 1,
                     "MuscleFirstOrderActivationDynamicModel::calcDerivative",
                     "%s: Excitation must be bounded by 0 and 1",m_name.c_str());
@@ -181,7 +164,7 @@ double MuscleFirstOrderActivationDynamicModel::
                     "MuscleFirstOrderActivationDynamicModel::calcDerivative",
                     "%s: Activation must be between minA and 1 (%f and 1)",
                         m_name.c_str(), m_minA);
-                    */
+                    
 
                     double aS = activation/(1-m_minA);
                     double tau = 0;

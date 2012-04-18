@@ -55,6 +55,8 @@ MuscleFixedWidthPennationModel::
     m_parallelogramHeight = optimalFiberLength * sin(optimalPennationAngle);
 }
 
+
+
 double MuscleFixedWidthPennationModel::getParallelogramHeight() const
 {
     return m_parallelogramHeight;

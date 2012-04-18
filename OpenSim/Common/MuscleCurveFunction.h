@@ -64,117 +64,15 @@ namespace OpenSim {
 //    class MuscleCurveFunction : public SimTK::Function_<double>
 
     {
-    private:
-       
-
-        /**Array of spline fit functions X(u) for each Bezier elbow*/
-        SimTK::Array_<SimTK::Spline> _arraySplineUX;        
-        /**Spline fit of the integral of the curve y(x)*/
-        SimTK::Spline _splineYintX;
-        /**Bezier X1,...,Xn control point locations. Control points are 
-        stored in 6x1 vectors in the order above*/
-        const SimTK::Matrix _mX;
-        /**Bezier Y1,...,Yn control point locations. Control points are 
-        stored in 6x1 vectors in the order above*/
-        const SimTK::Matrix _mY;
-        /**The number of quintic Bezier curves that describe the relation*/
-        int _numBezierSections;
-
-        /**The minimum value of the domain*/
-        const double _x0;
-        /**The maximum value of the domain*/
-        const double _x1;
-        /**The minimum value of the range*/
-        const double _y0;
-        /**The maximum value of the range*/
-        const double _y1;
-        /**The slope at _x0*/
-        const double _dydx0;
-        /**The slope at _x1*/
-        const double _dydx1;
-        /**This is the users */
-        const bool _computeIntegral;
-
-        /**This variable, when true, indicates that the user wants the integral
-        from left to right (x0 to x1). If it is false, the integral from right
-        to left (x1 to x0) is computed*/
-        const bool _intx0x1;
-        /**The name of the function**/
-        const std::string _name;
-            
-        /**No human should be constructing a MuscleCurveFunction, so the
-        constructor is made private so that mere mortals cannot look at it. 
-        MuscleCurveFunctionFactory should be used to create MuscleCurveFunctions
-        and that's why its a friend*/
-        friend class MuscleCurveFunctionFactory;
-
-       //MuscleCurveFunction();
-       /**
-       Creates a set of quintic Bezier Curve.
-
-       @param mX         The matrix of quintic Bezier x point locations (6xn).
-                         Each column vector is the 6 control points required
-                         for each quintic Bezier curve. For C0 continuity 
-                         adjacent columns must share the last and first control
-                         points. For C1 continuity the last 2 and first two
-                         control points of adjacent curves should be on the same
-                         curve.
-
-       @param mY         The matrix of quintic Bezier y point locations (6xn).
-                        
-       @param x0         The minimum x value. This is used for the linear 
-                         extrapolation of the Bezier curve. This parameter is
-                         explicitly asked for, rather than computed, to prevent
-                         rounding error from reducing the accuracy of the 
-                         linear extrapolation.
-       @param x1         The maximum x value. This is used for the linear 
-                         extrapolation and is required for the same reasons 
-                         as x0. 
-       @param y0         The value of y(x) at x=x0. This is used for the linear 
-                         extrapolation and is required for the same reasons 
-                         as x0.
-       @param y1         The value of y(x) at x=x1.  This is used for the linear 
-                         extrapolation and is required for the same reasons 
-                         as x0.
-       @param dydx0      The value of dy/dx at x=x0.  This is used for the linear 
-                         extrapolation and is required for the same reasons 
-                         as x0.
-       @param dydx1      The value of dy/dx at x=x1. This is used for the linear 
-                         extrapolation and is required for the same reasons 
-                         as x0.
-
-       @param computeIntegral  If this is true, the integral is numerically
-                               calculated and splined. If false, this integral
-                               is not computed, and a call to .calcIntegral will
-                               throw an exception
-
-       @param intx0x1       If this is true, the integral of the curve will be
-                            computed from x0-x1, with an initial condition of 0
-                            at x0. If this flag is false, the integral will be 
-                            computed from x1-x0 with the initial condition at 
-                            x1 of 0.
-
-       @param name          The name of the data this MuscleCurveFunction 
-
-       <B>Computational Costs</B>
-       Generating the integral curve is not cheap, and so should only be used 
-       when if it will be evaluated during a simulation. 
-       \verbatim     
-        Computatonal Cost Per Bezier Section:
-            Without Integral :   4,100 flops
-            With Integral    : 174,100 flops
-       \endverbatim
-
-              */
-       MuscleCurveFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY, 
-          double x0, double x1,double y0, double y1,double dydx0, double dydx1,
-          bool computeIntegral, bool intx0x1, const std::string& name);      
+     
 
        public:
 
         ///The default constructor, which populates the member data fields with
         ///NaN's
         MuscleCurveFunction();
+
+
 
        /**Calculates the value of the curve this object represents.
 
@@ -373,6 +271,109 @@ namespace OpenSim {
        ///@endcond
 
     private:
+       
+        /**Array of spline fit functions X(u) for each Bezier elbow*/
+        SimTK::Array_<SimTK::Spline> _arraySplineUX;        
+        /**Spline fit of the integral of the curve y(x)*/
+        SimTK::Spline _splineYintX;
+        /**Bezier X1,...,Xn control point locations. Control points are 
+        stored in 6x1 vectors in the order above*/
+        SimTK::Matrix _mX;
+        /**Bezier Y1,...,Yn control point locations. Control points are 
+        stored in 6x1 vectors in the order above*/
+        SimTK::Matrix _mY;
+        /**The number of quintic Bezier curves that describe the relation*/
+        int _numBezierSections;
+
+        /**The minimum value of the domain*/
+        double _x0;
+        /**The maximum value of the domain*/
+        double _x1;
+        /**The minimum value of the range*/
+        double _y0;
+        /**The maximum value of the range*/
+        double _y1;
+        /**The slope at _x0*/
+        double _dydx0;
+        /**The slope at _x1*/
+        double _dydx1;
+        /**This is the users */
+        bool _computeIntegral;
+
+        /**This variable, when true, indicates that the user wants the integral
+        from left to right (x0 to x1). If it is false, the integral from right
+        to left (x1 to x0) is computed*/
+        bool _intx0x1;
+        /**The name of the function**/
+        std::string _name;
+            
+        /**No human should be constructing a MuscleCurveFunction, so the
+        constructor is made private so that mere mortals cannot look at it. 
+        MuscleCurveFunctionFactory should be used to create MuscleCurveFunctions
+        and that's why its a friend*/
+        friend class MuscleCurveFunctionFactory;
+
+       //MuscleCurveFunction();
+       /**
+       Creates a set of quintic Bezier Curve.
+
+       @param mX         The matrix of quintic Bezier x point locations (6xn).
+                         Each column vector is the 6 control points required
+                         for each quintic Bezier curve. For C0 continuity 
+                         adjacent columns must share the last and first control
+                         points. For C1 continuity the last 2 and first two
+                         control points of adjacent curves should be on the same
+                         curve.
+
+       @param mY         The matrix of quintic Bezier y point locations (6xn).
+                        
+       @param x0         The minimum x value. This is used for the linear 
+                         extrapolation of the Bezier curve. This parameter is
+                         explicitly asked for, rather than computed, to prevent
+                         rounding error from reducing the accuracy of the 
+                         linear extrapolation.
+       @param x1         The maximum x value. This is used for the linear 
+                         extrapolation and is required for the same reasons 
+                         as x0. 
+       @param y0         The value of y(x) at x=x0. This is used for the linear 
+                         extrapolation and is required for the same reasons 
+                         as x0.
+       @param y1         The value of y(x) at x=x1.  This is used for the linear 
+                         extrapolation and is required for the same reasons 
+                         as x0.
+       @param dydx0      The value of dy/dx at x=x0.  This is used for the linear 
+                         extrapolation and is required for the same reasons 
+                         as x0.
+       @param dydx1      The value of dy/dx at x=x1. This is used for the linear 
+                         extrapolation and is required for the same reasons 
+                         as x0.
+
+       @param computeIntegral  If this is true, the integral is numerically
+                               calculated and splined. If false, this integral
+                               is not computed, and a call to .calcIntegral will
+                               throw an exception
+
+       @param intx0x1       If this is true, the integral of the curve will be
+                            computed from x0-x1, with an initial condition of 0
+                            at x0. If this flag is false, the integral will be 
+                            computed from x1-x0 with the initial condition at 
+                            x1 of 0.
+
+       @param name          The name of the data this MuscleCurveFunction 
+
+       <B>Computational Costs</B>
+       Generating the integral curve is not cheap, and so should only be used 
+       when if it will be evaluated during a simulation. 
+       \verbatim     
+        Computatonal Cost Per Bezier Section:
+            Without Integral :   4,100 flops
+            With Integral    : 174,100 flops
+       \endverbatim
+
+              */
+       MuscleCurveFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY, 
+          double x0, double x1,double y0, double y1,double dydx0, double dydx1,
+          bool computeIntegral, bool intx0x1, const std::string& name); 
 
         /**
         This function will print cvs file of the column vector col0 and the 
@@ -427,11 +428,7 @@ namespace OpenSim {
        returning*/
        /*virtual*/ 
        int getMaxDerivativeOrder() const;
-
-        
-
-        
-
+               
     };
 
 }

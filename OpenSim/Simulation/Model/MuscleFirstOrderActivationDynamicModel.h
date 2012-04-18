@@ -147,13 +147,6 @@ namespace OpenSim {
             //Given that the guts of the interface are private, that is good
             //enough justification for me, for now.
 
-        private:
-            const double m_ta; //activation time constant
-            const double m_td; //deactivation time constant
-            const double m_minA; //minimum activation level
-            double m_minAS; //scaled version of m_minA
-            std::string m_name;
-
         public:
         /**
         @param tauActivation The first order time constant associated with
@@ -196,6 +189,7 @@ namespace OpenSim {
         ///Default constructor. Sets data members to NAN and other error
         ///causing values
         MuscleFirstOrderActivationDynamicModel();
+
 
         /**
         @param excitation The excitation signal being sent to the muscle 
@@ -278,6 +272,12 @@ namespace OpenSim {
            */ 
            int getMaxDerivativeOrder() const;  /*virtual*/ 
 
+    private:
+            double m_ta; //activation time constant
+            double m_td; //deactivation time constant
+            double m_minA; //minimum activation level
+            double m_minAS; //scaled version of m_minA
+            std::string m_name;
 
     };
 

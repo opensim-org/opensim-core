@@ -97,8 +97,8 @@ Thelen2003Muscle(const std::string &aName,  double aMaxIsometricForce,
  */
 Thelen2003Muscle::~Thelen2003Muscle()
 {
-    delete actMdl;
-    delete penMdl;
+    //delete actMdl;
+    //delete penMdl;
 }
 
 //_____________________________________________________________________________
@@ -107,8 +107,8 @@ Thelen2003Muscle::~Thelen2003Muscle()
  */
 void Thelen2003Muscle::setNull()
 {
-    actMdl = NULL;
-    penMdl = NULL;
+    //actMdl = NULL;
+    //penMdl = NULL;
 }
 
 //_____________________________________________________________________________
@@ -175,28 +175,37 @@ void Thelen2003Muscle::copyData(const Thelen2003Muscle &aMuscle)
 
 }
 
- void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
+ void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const 
 {
     Super::createSystem(system);
 
-    actMdl = NULL;
-    double activationTimeConstant  = getActivationTimeConstant();
-    double deactivationTimeConstant= getDeactivationTimeConstant();
-    double activationMinValue      = getActivationMinimumValue();
-    actMdl = new MuscleFirstOrderActivationDynamicModel(
-                 activationTimeConstant, 
-                 deactivationTimeConstant, 
-                 activationMinValue, getName());
-       
-    
+    //const cast *this so you can initialize the member variables actMdl and
+    //penMdl
+    Thelen2003Muscle* mthis =  const_cast<Thelen2003Muscle*>(this);
 
-    penMdl = NULL;
-    std::string caller(getName());
-    caller.append("_Thelen2003Muscle::createSystem");
-    double optimalFiberLength = getOptimalFiberLength();
-    double pennationAngle     = getPennationAngleAtOptimalFiberLength();
-    penMdl = new MuscleFixedWidthPennationModel(optimalFiberLength,
-                                                pennationAngle, caller);
+    //Appropriately set the properties of the activation model
+        double activationTimeConstant  = getActivationTimeConstant();
+        double deactivationTimeConstant= getDeactivationTimeConstant();
+        double activationMinValue      = getActivationMinimumValue();
+
+
+        MuscleFirstOrderActivationDynamicModel tmp1(activationTimeConstant, 
+                                                    deactivationTimeConstant, 
+                                                    activationMinValue, 
+                                                    getName());
+    mthis->actMdl = tmp1; 
+
+    //Appropriately set the properties of the pennation model
+        std::string caller(getName());
+        caller.append("_Thelen2003Muscle::createSystem");
+        double optimalFiberLength = getOptimalFiberLength();
+        double pennationAngle     = getPennationAngleAtOptimalFiberLength();
+
+        MuscleFixedWidthPennationModel tmp2( optimalFiberLength,
+                                            pennationAngle, 
+                                            caller);
+
+    mthis->penMdl = tmp2;
  }
 
 
@@ -492,13 +501,13 @@ void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s,
     mli.fiberLength       = getStateVariable(s, STATE_FIBER_LENGTH_NAME);   
     mli.normFiberLength   = mli.fiberLength/optFiberLength;
 
-    mli.pennationAngle    = penMdl->calcPennationAngle(mli.fiberLength,caller);
+    mli.pennationAngle    = penMdl.calcPennationAngle(mli.fiberLength,caller);
     mli.cosPennationAngle = cos(mli.pennationAngle);
     mli.sinPennationAngle = sin(mli.pennationAngle);
 
     mli.fiberLengthAlongTendon = mli.fiberLength*mli.cosPennationAngle;
     
-    mli.tendonLength      = penMdl->calcTendonLength(mli.cosPennationAngle,
+    mli.tendonLength      = penMdl.calcTendonLength(mli.cosPennationAngle,
                                                    mli.fiberLength,mclLength);
     mli.normTendonLength  = mli.tendonLength / tendonSlackLen;
     mli.tendonStrain      = mli.normTendonLength -  1.0;
@@ -583,15 +592,15 @@ void Thelen2003Muscle::calcFiberVelocityInfo(const SimTK::State& s,
     //7. Compute the other related velocity components
     //double dlceAT = penMdl.
     double tanPhi = tan(phi);
-    double dphidt    = penMdl->calcPennationAngularVelocity(tanPhi,lce,
+    double dphidt    = penMdl.calcPennationAngularVelocity(tanPhi,lce,
                                                             dlce   ,caller);
     double dmcldt = getLengtheningSpeed(s);
-    double dtl       = penMdl->calcTendonVelocity(cosphi,sinphi,dphidt,
+    double dtl       = penMdl.calcTendonVelocity(cosphi,sinphi,dphidt,
                                                     lce,  dlce,dmcldt);
 
     //Populate the struct;
     fvi.fiberVelocity               = dlce;
-    fvi.fiberVelocityAlongTendon    = penMdl->calcFiberVelocityAlongTendon(lce,
+    fvi.fiberVelocityAlongTendon    = penMdl.calcFiberVelocityAlongTendon(lce,
                                                     dlce,sinphi,cosphi, dphidt);
     fvi.normFiberVelocity           = dlceN;
 
@@ -627,7 +636,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         double tendonSlackLen = getTendonSlackLength();
         double optFiberLen    = getOptimalFiberLength();
         double fiso           = getMaxIsometricForce();
-        double penHeight      = penMdl->getParallelogramHeight();
+        double penHeight      = penMdl.getParallelogramHeight();
 
     //Prep strings that will be useful to make sensible exception messages
         std::string muscleName = getName();
@@ -741,7 +750,7 @@ double Thelen2003Muscle::calcActivationRate(const SimTK::State& s) const
 {    
     double excitation = getExcitation(s);
     double activation = getActivation(s);
-    double dadt = actMdl->calcDerivative(activation,excitation);
+    double dadt = actMdl.calcDerivative(activation,excitation);
     return dadt;
 }  
 

@@ -164,6 +164,7 @@ MuscleCurveFunction::
         _numBezierSections = (int)SimTK::NaN;
  }
 
+
  /*Detailed Computational Costs
  ________________________________________________________________________
     If x is in the Bezier Curve

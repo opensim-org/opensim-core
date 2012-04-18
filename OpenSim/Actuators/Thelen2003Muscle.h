@@ -124,23 +124,23 @@ protected:
     /**calculate muscle's position related values such fiber and tendon lengths,
     normalized lengths, pennation angle, etc... */
     void calcMuscleLengthInfo(const SimTK::State& s, 
-                              MuscleLengthInfo& mli) const; /*virtual*/ 
+                              MuscleLengthInfo& mli) const OVERRIDE_11;
 
 
     /** calculate muscle's velocity related values such fiber and tendon 
         velocities,normalized velocities, pennation angular velocity, etc... */
-    virtual void  calcFiberVelocityInfo(const SimTK::State& s, 
-                                      FiberVelocityInfo& fvi) const; /*virtual*/ 
+    void  calcFiberVelocityInfo(const SimTK::State& s, 
+                                      FiberVelocityInfo& fvi) const OVERRIDE_11; 
 
     /** calculate muscle's active and passive force-length, force-velocity, 
         tendon force, relationships and their related values */
-    virtual void  calcMuscleDynamicsInfo(const SimTK::State& s, 
-                                    MuscleDynamicsInfo& mdi) const; /*virtual*/ 
+    void  calcMuscleDynamicsInfo(const SimTK::State& s, 
+                                    MuscleDynamicsInfo& mdi) const OVERRIDE_11;
 
     /** Calculate activation rate */
-    double calcActivationRate(const SimTK::State& s) const; /*virtual*/
+    double calcActivationRate(const SimTK::State& s) const OVERRIDE_11; 
 
-    void createSystem(SimTK::MultibodySystem& system) const;
+    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 
 private:
@@ -153,10 +153,10 @@ private:
     //=====================================================================
 
     //Activation Dynamics
-    mutable MuscleFirstOrderActivationDynamicModel *actMdl;
+    MuscleFirstOrderActivationDynamicModel actMdl;
 
     //Fiber and Tendon Kinematics
-    mutable MuscleFixedWidthPennationModel *penMdl;
+    MuscleFixedWidthPennationModel penMdl;
 
     //=====================================================================
     // Private Accessor names
