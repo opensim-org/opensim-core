@@ -415,6 +415,25 @@ updPropertyByIndex(int propertyIndex) {
     return _propertyTable.updAbstractPropertyByIndex(propertyIndex);
 }
 
+bool Object::
+hasProperty(const std::string& name) const {
+    if (name.empty())
+        throw OpenSim::Exception
+           ("Object::hasProperty(name): name cannot be empty. For looking up a "
+            "one-object, nameless property by object class name, use the other "
+            " signature hasProperty<T>() with T the expected object type.");
+
+    if (_propertyTable.hasProperty(name))
+        return true;
+
+    // TODO: remove deprecated code from here ...
+    if (_propertySet.contains(name))
+        return true;
+    // ... to here.
+
+    return false;
+}
+
 const AbstractProperty& Object::
 getPropertyByName(const std::string& name) const {
     const AbstractProperty* p = _propertyTable.getPropertyPtr(name);
@@ -1357,23 +1376,11 @@ print(const string &aFileName)
 //-----------------------------------------------------------------------------
 // PRINT PROPERTY INFORMATION
 //-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Print property information for registered classes.  This method will
- * print the comment field of a property to an output stream. Input is a
- * class name and property name.  If the property name is the empty string,
- * information for all properties in the class is printed.  If the class
- * name is empty, information in all properties of all registered classes
- * is printed.
- *
- * @param aOStream Output stream to which info is printed.
- * @param aClassNameDotPropertyName A string combining the class name
- * and property name. The two names should be seperated by a period
- * (ClassName.PropertyName).  If no property is specified, the information
- * for all properties in the class is printed.  If no class is specified,
- * the information for the properties of all registered classes is
- * printed.
- */
+// Print property information for registered classes. This is used by OpenSim 
+// tools to provide a nice "help" capability for objects.
+
+// This signature accepts "className.propertyName", splits out the individual
+// segments and calls the other signature.
 void Object::
 PrintPropertyInfo(ostream &aOStream,
 						const string &aClassNameDotPropertyName)
@@ -1387,33 +1394,17 @@ PrintPropertyInfo(ostream &aOStream,
 	if(delimPos!=string::npos) {
 		propertyName = compoundName.substr(delimPos+1);
 	}
-	//cout<<"PrintPropertyInfo:  className="<<className<<" propName="<<propertyName<<endl;
 
 	PrintPropertyInfo(aOStream,className,propertyName);
 }
-//_____________________________________________________________________________
-/**
- * Print property information for registered classes.  This method will
- * print the comment field of a property to an output stream. Input is a
- * class name and property name.  If the property name is the empty string,
- * information for all properties in the class is printed.  If the class
- * name is empty, information in all properties of all registered classes
- * is printed.
- *
- * @param aOStream Output stream to which info is printed.
- * @param aClassName Class for which to print properties.  If an empty
- * string, the property information for all registered classes is
- * printed.
- * @pram aPropertyName Property for which to print information.  If an
- * empty string, information for all properties in the specified class
- * is printed.
- */
+
+// This is the real method.
 void Object::
 PrintPropertyInfo(ostream &aOStream,
 				  const string &aClassName,const string &aPropertyName)
 {
-	// NO CLASS
 	if(aClassName=="") {
+	    // NO CLASS
 		int size = _registeredTypes.getSize();
 		aOStream<<"REGISTERED CLASSES ("<<size<<")\n";
 		Object *obj;
@@ -1434,35 +1425,20 @@ PrintPropertyInfo(ostream &aOStream,
 		return;
 	}
 
-	// NO PROPERTY
 	PropertySet propertySet = object->getPropertySet();
-	const Property_Deprecated* property;
+	const Property_Deprecated* prop;
 	const AbstractProperty* abstractProperty;
 	if((aPropertyName=="")||(aPropertyName=="*")) {
+	    // NO PROPERTY
 		int propertySetSize = propertySet.getSize();
 		int propertyTableSize = object->_propertyTable.getNumProperties();
 		int size = propertySetSize + propertyTableSize;
 		aOStream<<"\nPROPERTIES FOR "<<aClassName<<" ("<<size<<")\n";
 		string comment;
 		int i;
-		for(i=0;i<propertySetSize;i++) {
-			property = object->_propertySet.get(i);
-			if(property==NULL) continue;
-			if(aPropertyName=="") {
-				aOStream<<i+1<<". "<<property->getName()<<endl;
-			} else {
-				aOStream<<"\n"<<i+1<<". "<<property->getName()<<"\n";
-				comment = property->getComment();
-				if(!comment.empty()) {
-					string formattedComment = IO::formatText(comment,"\t",80);
-					aOStream<<"\t"<<formattedComment<<"\n";
-				}
-			}
-		}
-
-        for(;i<size;i++) {
+        for(i=0;i<propertyTableSize;i++) {
 			abstractProperty = 
-                &object->_propertyTable.getAbstractPropertyByIndex(i-propertySetSize);
+                &object->_propertyTable.getAbstractPropertyByIndex(i);
 			if(abstractProperty==NULL) continue;
 			if(aPropertyName=="") {
 				aOStream<<i+1<<". "<<abstractProperty->getName()<<endl;
@@ -1475,29 +1451,51 @@ PrintPropertyInfo(ostream &aOStream,
 				}
 			}
 		}
-		aOStream<<"\n\nUse '-PropertyInfo ClassName.PropertyName' to print info for a particular property.\n";
+
+		for(;i<size;i++) {
+			prop = object->_propertySet.get(i-propertyTableSize);
+			if(prop==NULL) continue;
+			if(aPropertyName=="") {
+				aOStream<<i+1<<". "<<prop->getName()<<endl;
+			} else {
+				aOStream<<"\n"<<i+1<<". "<<prop->getName()<<"\n";
+				comment = prop->getComment();
+				if(!comment.empty()) {
+					string formattedComment = IO::formatText(comment,"\t",80);
+					aOStream<<"\t"<<formattedComment<<"\n";
+				}
+			}
+		}
+
+		aOStream << "\n\nUse '-PropertyInfo ClassName.PropertyName' to print "
+                    "info for a particular property.\n";
 		if(aPropertyName!="*") {
-			aOStream<<"Use '-PropertyInfo ClassName.*' to print info for all properties in a class.\n";
+			aOStream << "Use '-PropertyInfo ClassName.*' to print info for all "
+                        "properties in a class.\n";
 		}
 		return;
 	}
 
 	// FIND PROPERTY
 	try {
-		property = propertySet.get(aPropertyName);
+		prop = propertySet.get(aPropertyName);
 		// OUTPUT
 		//aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
-		aOStream<<endl<<aClassName<<"."<<aPropertyName<<"\n"<<property->getComment()<<"\n";
+		aOStream << "\n" << aClassName << "." << aPropertyName << "\n"
+                 << prop->getComment() << "\n";
 	} catch(...) {
 		try {
 			abstractProperty = object->_propertyTable.getPropertyPtr(aPropertyName);
 			// OUTPUT
 			//aOStream<<"\nPROPERTY INFO FOR "<<aClassName<<"\n";
-			aOStream<<endl<<aClassName<<"."<<aPropertyName<<"\n"<<abstractProperty->getComment()<<"\n";
+			aOStream << "\n" <<aClassName << "." << aPropertyName <<"\n"
+                     << abstractProperty->getComment()<<"\n";
 		} catch (...) {
-			aOStream<<"\nPrintPropertyInfo: no property with the name "<<aPropertyName;
-			aOStream<<" was found in class "<<aClassName<<".\n";
-			aOStream<<"Omit the property name to get a listing of all properties in a class.\n";
+			aOStream << "\nPrintPropertyInfo: no property with the name "
+                     << aPropertyName;
+			aOStream << " was found in class " << aClassName << ".\n";
+			aOStream << "Omit the property name to get a listing of all "
+                        "properties in a class.\n";
 			return;
 		}
 	}

@@ -140,38 +140,56 @@ protected:
 	 * This method may only be called from inside computeForce(). Invoking it 
      * at any other time will produce an exception.
 	 *
-	 * @param aBody    the body to apply the force to
-	 * @param aPoint   the point at which to apply the force, specifieid in the body's frame
-	 * @param aForce   the force to apply, specified in the inertial (ground) frame
-	 * @param bodyForces  the current set of system bodyForces this force is added to
+     * @param state      state used only to determine which element of 
+     *                      \a bodyForces to modify
+	 * @param body       the body to apply the force to
+	 * @param point      the point at which to apply the force, specifieid in 
+     *                      the body's frame
+	 * @param force      the force to apply, specified in the inertial 
+     *                      (ground) reference frame
+	 * @param bodyForces the set of system bodyForces to which this force 
+     *                      is added
 	 */
-	void applyForceToPoint(const SimTK::State &s, const OpenSim::Body &aBody, const SimTK::Vec3& aPoint,
-						   const SimTK::Vec3& aForce, SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
+	void applyForceToPoint(const SimTK::State&                state, 
+                           const OpenSim::Body&               body, 
+                           const SimTK::Vec3&                 point,
+						   const SimTK::Vec3&                 force, 
+                           SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
 	/**
 	 * Apply a torque to a particular body.
 	 *
-	 * This method may only be called from inside computeForce().  Invoking it at any other time
-	 * will produce an exception.
+	 * This method may only be called from inside computeForce(). Invoking it 
+     * at any other time will produce an exception.
 	 *
-	 * @param aBody    the body to apply the force to
-	 * @param aTorque  the torque to apply, specified in the inertial frame
-	 * @param bodyForces  the current set of system bodyForces this force is added to
+     * @param state      state used only to determine which element of 
+     *                      \a bodyForces to modify
+	 * @param body       the body to apply the force to
+	 * @param torque     the torque to apply, specified in the inertial frame
+	 * @param bodyForces the set of system bodyForces to which this force 
+     *                      is added
 	 */
-	void applyTorque(const SimTK::State &s, const OpenSim::Body &aBody,
-					 const SimTK::Vec3& aTorque, SimTK::Vector_<SimTK::SpatialVec> &bodyForces) const;
+	void applyTorque(const SimTK::State&                state, 
+                     const OpenSim::Body&               body,
+					 const SimTK::Vec3&                 torque, 
+                     SimTK::Vector_<SimTK::SpatialVec>& bodyForces) const;
 	/**
 	 * Apply a generalized force.
 	 *
-	 * This method may only be called from inside computeForce().  Invoking it at any other time
-	 * will produce an exception.
+	 * This method may only be called from inside computeForce(). Invoking it 
+     * at any other time will produce an exception.
 	 *
-	 * @param aCoord  the generalized coordinate to apply the force to
-	 * @param aForce  the force to apply
-	 * @param generalizedForces  the current set of system generalizedForces this force is added to
+     * @param state              state used only to determine which element of 
+     *                              \a generalizedForces to modify
+	 * @param coord              the generalized coordinate to to which the 
+     *                              force should be applied
+	 * @param force              the (scalar) force to apply
+	 * @param generalizedForces  the set of system generalizedForces to which
+     *                              the force is to be added
 	 */
-	void applyGeneralizedForce(const SimTK::State &s, const Coordinate &aCoord,
-							   double aForce, SimTK::Vector &generalizedForces) const;
-
+	void applyGeneralizedForce(const SimTK::State&  state, 
+                               const Coordinate&    coord,
+							   double               force, 
+                               SimTK::Vector&       generalizedForces) const;
 
 private:
 

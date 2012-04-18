@@ -132,22 +132,29 @@ public:
 	Property_Deprecated(PropertyType aType,const std::string &aName);
 	Property_Deprecated(const Property_Deprecated &aProperty);
 
-	//--------------------------------------------------------------------------
-    // Implement the AbstractProperty interface.
-	virtual ~Property_Deprecated() {}
-    bool isEqualTo(const AbstractProperty& other) const OVERRIDE_11 {
-        return operator==(dynamic_cast<const Property_Deprecated&>(other));
-    }
 
     /** Return the enum value corresponding to the concrete property. **/
 	virtual PropertyType getPropertyType() const {return _propertyType;}
+
+    /** Return true if this is an array property. **/
+    virtual bool isArrayProperty() const {return false;}
 
     /** By default deprecated PropertyObj properties will ignore the name
     associated with the read-in object. This forces the name to match one
     specified for the property. Note that this is handled differently in
     the new Property system. */
 	void setMatchName(bool aMatchName) { _matchName = aMatchName; }
+    /** Return the value of the matchName flag for this (deprecated) 
+    property. **/
 	bool getMatchName() const { return _matchName; }
+
+	//--------------------------------------------------------------------------
+    // Implement the AbstractProperty interface.
+
+    bool isEqualTo(const AbstractProperty& other) const OVERRIDE_11 {
+        return operator==(dynamic_cast<const Property_Deprecated&>(other));
+    }
+
     // Property_Deprecated does not implement AbstractProperty::clone(); that 
     // is left to concrete Property_Deprecated objects like PropertyInt.
 	Property_Deprecated* clone() const OVERRIDE_11 = 0;

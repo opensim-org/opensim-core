@@ -74,6 +74,9 @@ public:
 	:   Property_Deprecated(ObjArray, aName), _array(aArray) {}
 	PropertyObjArray(const PropertyObjArray<T> &aProperty) 
     :   Property_Deprecated(aProperty) { _array = aProperty._array; }
+
+    bool isArrayProperty() const OVERRIDE_11 {return true;}
+
 	PropertyObjArray* clone() const OVERRIDE_11
     {   return new PropertyObjArray<T>(*this); }
 

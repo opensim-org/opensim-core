@@ -199,31 +199,8 @@ class OSIMCOMMON_API Object
 // PUBLIC METHODS
 //------------------------------------------------------------------------------
 public:
-    /** Return the name of this class as a string; i.e., "Object". See 
-    getConcreteClassName() if you want the class name of the underlying concrete 
-    object instead. Note that this method is automatically supplied for 
-    every class declaration that derives from Object via the standard macro
-    provided for that purpose. See introductory text for this Object class
-    for more information. **/
-    static const std::string& getClassName() 
-    {   static std::string name ("Object"); return name; }
+    // Constructors are protected.
 
-	/** 
-     * Constructor from a file, normally called from other constructors that 
-     * take a file as input. 
-     */
-	Object(const std::string& fileName, 
-           bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
-
-	/**
-	 * Copy constructor for Object, used by Arrays of Objects
-	 */
-	Object(const Object &aObject);
-
-	/**
-	 * Constructor Object from an Xml element that describes this Object. Assumes latest XML file format
-	 */
-	explicit Object(SimTK::Xml::Element& aElement);
 
 	/**
 	 * Virtual destructor for cleanup
@@ -319,14 +296,22 @@ public:
 
 
 	//--------------------------------------------------------------------------
+	// PUBLIC ACCESS TO PROPERTIES
+	//--------------------------------------------------------------------------
     /** @name              Public access to properties
     Methods in this section are for public access to the properties maintained
-    by this OpenSim %Object. These are returned as AbstractProperty objects
-    which support various type-independent property services. If you know the
-    type you can use templatized methods to deal with the value directly. **/
+    by this OpenSim %Object. Methods for dealing with properties using their
+    base class AbstractProperty support various type-independent property 
+    services. That is particularly useful for %Object-containing properties
+    since the objects can be obtained without knowing their concrete types.
+    For simple types (e.g. int, std::string) you can only obtain the values if
+    you know the expected type. For simple types, or when you know the 
+    expected %Object type, you can use the templatized methods to deal with 
+    the concrete values. **/
     /**@{**/
     /** Determine how many properties are stored with this %Object. These
     are numbered 0..n-1 in the order they were created. **/
+    // Note: new properties come first, deprecated ones afterwards.
     int getNumProperties() const;
     /** Get a const reference to a property by its index number, returned as
     an AbstractProperty. **/
@@ -334,6 +319,10 @@ public:
     /** Get a writable reference to a property by its index number, returned as
     an AbstractProperty. **/
     AbstractProperty& updPropertyByIndex(int propertyIndex);
+
+    /** Return true if this %Object has a property of any type with the 
+    given \a name, which must not be empty. **/
+    bool hasProperty(const std::string& name) const;
     /** Get a const reference to a property by its name, returned as
     an AbstractProperty. An exception is thrown if no property by this name
     is present in this %Object. **/
@@ -342,6 +331,95 @@ public:
     an AbstractProperty.  An exception is thrown if no property by this name
     is present in this %Object. **/
     AbstractProperty& updPropertyByName(const std::string& name);
+
+    /** Return true if this %Object contains an unnamed, one-object property
+    that contains objects of the given template type T. The type must match
+    exactly the type used when this property was created with 
+    addProperty<T>(). **/
+    template <class T> bool hasProperty() const;
+
+	/** Get property \a name of known type Property\<T> as a const reference; 
+    the property must exist. If this is a nameless, one-object property then 
+    the name can be empty (the default if you leave it off altogether) and the
+    property will be looked up by the object class name of template type T 
+    instead. **/
+	template <class T> const Property<T>& 
+    getProperty(const std::string& name = "") const;
+
+	/** Get property \a name of known type Property\<T> as a writable reference;
+    the property must exist.  If this is a nameless, one-object property then the 
+    name can be empty and the property will be looked up by the object class 
+    name of template type T instead. **/
+	template <class T> Property<T>& 
+    updProperty(const std::string& name = "");
+
+    /** Obtain a const reference to the value of known type T that is stored
+    in the property named \a name, which must exist. **/
+	template <class T> const T& 
+    getPropertyValue(const std::string& name = "") const;
+
+    /** Obtain a writable reference to the value of known type T that is stored
+    in the property named \a name, which must exist. **/
+	template <class T> T& 
+    updPropertyValue(const std::string& name = "");
+
+    /** Assign a new value list to a list- or single-valued Property, using an 
+    arbitrary Container\<T> as long as the container supports a size() method 
+    and indexing with operator[]. An exception is thrown if the number of
+    values in \a valueList is inappropriate for this property. **/
+    template <class T, template<class> class Container> void
+    setPropertyValue(const std::string& name, 
+                     const Container<T>& valueList);
+    /** Abbreviation permitted for unnamed property. **/
+    template <class T, template<class> class Container> void
+    setPropertyValue(const Container<T>& valueList)
+    {   return setPropertyValue("", valueList); }
+
+    /** Assign a new value list to a list- or single-valued Property by copying
+    the value list of the given \c source Property, along with the flag 
+    indicating whether the value is just the default. An exception is thrown if 
+    the number of values in \a source is inappropriate for this property. **/
+    template <class T> void
+    setPropertyValue(const std::string& name, 
+                     const Property<T>& source);
+    /** Abbreviation permitted for unnamed property. **/
+    template <class T> void
+    setPropertyValue(const Property<T>& source)
+    {   return setPropertyValue("", source); }
+
+    /** Set the value of the property named \a name, which must exist and be
+    a property of type T. **/
+	template <class T> void 
+    setPropertyValue(const std::string& name, const T& value);
+    /** Abbreviation permitted for unnamed property. **/
+	template <class T> void 
+    setPropertyValue(const T& value)
+    {   setPropertyValue("", value); }
+
+
+    /** Dump formatted property information to a given output stream, useful
+    for creating a "help" facility for registered objects. Object name, 
+    property name, and property comment are output. Input is a
+    class name and property name. If the property name is the empty string or
+    just "*", then information for all properties in the class is printed. If 
+    the class name is empty, information in all properties of all registered 
+    classes is printed.
+    @param          os 
+        Output stream to which info is printed.
+    @param          classNameDotPropertyName 
+        A string combining the class name and property name. The two names 
+        should be separated by a period (ClassName.PropertyName). If 
+        PropertyName is empty or "*", the information for all properties in the 
+        class is printed. If ClassName is empty, the information for the 
+        properties of all registered classes is printed.
+    **/
+	static void PrintPropertyInfo(std::ostream&      os,
+					              const std::string& classNameDotPropertyName);
+    /** Same as the other signature but the class name and property name are
+    provided as two separate strings. **/
+	static void PrintPropertyInfo(std::ostream&         os,
+					              const std::string&    className,
+                                  const std::string&    propertyName);
     /**@}**/
 	//--------------------------------------------------------------------------
 
@@ -349,7 +427,15 @@ public:
 	//--------------------------------------------------------------------------
 	// REGISTRATION OF TYPES AND DEFAULT OBJECTS
 	//--------------------------------------------------------------------------
-	/** Register an instance of a class; if the class is already registered it
+	/** @name          Registration of types and default objects
+    Methods in this section deal with the requirement that all %OpenSim 
+    types derived from %Object must be registered and a default instance
+    provided. This enables reading these objects from XML files. You can also
+    recognize now-obsolete names for objects and have them quietly mapped to
+    their modern names using the renameType() method. **/
+    /**@{**/
+
+    /** Register an instance of a class; if the class is already registered it
     will be replaced. This is normally called as part of the static
     intialization of a dynamic library (DLL). The supplied object's concrete
     class name will be used as a key, and a \e copy (via clone()) of the 
@@ -392,16 +478,16 @@ public:
     }
 
 	/** Create a new instance of the concrete %Object type whose class name is 
-    given as 
-    \a concreteClassName. The instance is initialized to the default object of 
-    corresponding type, possibly after renaming to the current class name. 
-    Writes a message to stderr and returns null if the tag isn't registered. **/
+    given as \a concreteClassName. The instance is initialized to the default 
+    object of corresponding type, possibly after renaming to the current class 
+    name. Writes a message to stderr and returns null if the tag isn't 
+    registered. **/
 	static Object* newInstanceOfType(const std::string& concreteClassName);
 
 	/** Retrieve all the typenames registered so far. This is done by traversing
     the registered objects map, so only concrete classes that have registered 
     instances are returned; renamed types will not appear. The result returned 
-    in \c typeNames should not be cached while more shared libraries or plugins 
+    in \a typeNames should not be cached while more shared libraries or plugins 
     are loaded, because more types may be registered as a result. Instead the 
     list should be reconstructed whenever in doubt. **/
 	static void getRegisteredTypenames(Array<std::string>& typeNames);
@@ -419,11 +505,17 @@ public:
             if (obj) rArray.append(obj);
         }
 	}
+    /**@}**/
 
 	//--------------------------------------------------------------------------
 	// XML
 	//--------------------------------------------------------------------------
-	/** Create an %OpenSim object whose type is based on the tag at the root 
+	/** @name                  XML reading and writing
+    These methods deal with writing out in-memory objects to XML files
+    (serializing) and reading XML files to reconstruct in-memory objects
+    (deserializing). **/
+    /**@{**/
+    /** Create an %OpenSim object whose type is based on the tag at the root 
     node of the XML file passed in. This is useful since the constructor of 
     %Object doesn't have the proper type info. This works by using the defaults 
     table so that %Object does not need to know about its derived classes. It 
@@ -475,43 +567,56 @@ public:
 	std::string getDocumentFileName() const;
 	void setAllPropertiesUseDefault(bool aUseDefault);
 
+	/** Write this %Object into an XML file of the given name; conventionally
+    the suffix to use is ".osim". This is useful for writing out a Model that
+    has been created programmatically, and also very useful for testing and
+    debugging. **/
+    bool print(const std::string& fileName);
+    /**@}**/
+
 	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
-	bool print(const std::string &aFileName);
-	static void PrintPropertyInfo(std::ostream &aOStream,
-					const std::string &aClassNameDotPropertyName);
-	static void PrintPropertyInfo(std::ostream &aOStream,
-					const std::string &aClassName,const std::string &aPropertyName);
-
-	/* Static functions to specify and query if all registered objects are written 
-	 * to the defaults section of output files rather than only those 
-	 * explicitly specified by the user in input files */
-	static void setSerializeAllDefaults(bool aBoolean)
-	{
-		_serializeAllDefaults = aBoolean;
-	}
-	static bool getSerializeAllDefaults()
-	{
-		return _serializeAllDefaults;
-	}
-
-	static bool isKindOf(const char *type) 
-	{ 
-		return (strcmp("Object",type)==0);
-	} 
-	virtual bool isA(const char *type) const
-	{ 
-		return this->isKindOf(type); 
-	} 
-
-
+	// ADVANCED/OBSCURE/QUESTIONABLE/BUGGY
 	//--------------------------------------------------------------------------
     /** @name                      Advanced/Obscure
     Methods in this section are for specialized purposes not of interest to
     most OpenSim API users. For example, some of these are services needed by
     the OpenSim GUI which is written in Java. **/
     /**@{**/
+    /** Return the name of this class as a string; i.e., "Object". See 
+    getConcreteClassName() if you want the class name of the underlying concrete 
+    object instead. Note that this method is automatically supplied for 
+    every class declaration that derives from Object via the standard macro
+    provided for that purpose. See introductory text for this Object class
+    for more information. **/
+    static const std::string& getClassName() 
+    {   static std::string name ("Object"); return name; }
+
+	/** Static function to control whether all registered objects and
+    their properties are written to the defaults section of output files rather
+    than only those values for which the default was explicitly overwritten
+    when read in from an input file or set programmatically. **/
+	static void setSerializeAllDefaults(bool shouldSerializeDefaults)
+	{
+		_serializeAllDefaults = shouldSerializeDefaults;
+	}
+    /** Report the value of the "serialize all defaults" flag. **/
+	static bool getSerializeAllDefaults()
+	{
+		return _serializeAllDefaults;
+	}
+    /** Returns true if the passed-in string is "Object"; each %Object-derived
+    class defines a method of this name for its own class name. **/
+	static bool isKindOf(const char *type) 
+	{ 
+		return (strcmp("Object",type)==0);
+	} 
+    /** The default implementation returns true only if the supplied string
+    is "Object"; each %Object-derived class overrides this to match its own
+    class name. **/
+	virtual bool isA(const char *type) const
+	{ 
+		return this->isKindOf(type); 
+	} 
 
     /** Set the debug level to get verbose output. Zero means no debugging. **/
 	static void setDebugLevel(int newLevel) {
@@ -548,23 +653,29 @@ public:
     /**@}**/
 	//--------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 // PROTECTED METHODS
-//--------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 protected:
 	/** The default constructor is only for use by constructors of 
-    derived types. Sets type string to "Object" and initializes all base class
-    data members to innocuous values. **/
+    derived types. Initializes all base class data members to innocuous 
+    values. **/
 	Object();
 
-	/** Get property \a name of known type T as a const reference; the property
-    must exist. **/
-	template <class T> const Property<T>& 
-    getProperty(const std::string& name) const;
-	/** Get property \a name of known type T as a writable reference; the 
-    property must exist. **/
-	template <class T> Property<T>& 
-    updProperty(const std::string& name);
+	/** Constructor from a file, to be called from other constructors that 
+    take a file as input. **/
+	explicit Object(const std::string& fileName, 
+           bool aUpdateFromXMLNode = true) SWIG_DECLARE_EXCEPTION;
+
+	/** Copy constructor is invoked automatically by derived classes with
+    default copy constructors; otherwise it must be invoked explicitly. **/
+	Object(const Object& source);
+
+	/** Construct the base class portion of an %Object from a given Xml 
+    element that describes this Object. Assumes latest XML file format; there
+    is no provision for version numbering. **/
+	explicit Object(SimTK::Xml::Element& aElement);
+
 
     /** Define a new single-value property of known type T, with the given 
     \a name, associated \a comment, and initial \a value. The name must be
@@ -630,33 +741,6 @@ protected:
     addListProperty(const std::string&  name, 
                     const std::string&  comment,
                     const Container<T>& valueList);
-
-    /** Assign a new value list to a list- or single-valued Property, using an 
-    arbitrary Container\<T> as long as the container supports a size() method 
-    and indexing with operator[]. An exception is thrown if the number of
-    values in \a valueList is inappropriate for this property. **/
-    template <class T, template<class> class Container> void
-    setPropertyValue(const std::string& name, 
-                     const Container<T>& valueList);
-
-    /** Assign a new value list to a list- or single-valued Property by copying
-    the value list of the given \c source Property, along with the flag 
-    indicating whether the value is just the default. An exception is thrown if 
-    the number of values in \a source is inappropriate for this property. **/
-    template <class T> void
-    setPropertyValue(const std::string& name, 
-                     const Property<T>& source);
-
-    /** Obtain a const reference to the value of known type T that is stored
-    in the property named \a name, which must exist. **/
-	template <class T> const T& getPropertyValue(const std::string& name) const;
-    /** Obtain a writable reference to the value of known type T that is stored
-    in the property named \a name, which must exist. **/
-	template <class T> T& updPropertyValue(const std::string& name);
-    /** Set the value of the property named \a name, which must exist and be
-    a property of type T. **/
-	template <class T> void 
-    setPropertyValue(const std::string& name, const T& value);
 
 //--------------------------------------------------------------------------
 // PRIVATE METHODS
@@ -743,18 +827,44 @@ private:
 };	// END of class Object
 
 
+
 //==============================================================================
-//                         OBJECT TEMPLATE METHODS
+//                   OBJECT TEMPLATE METHOD IMPLEMENTATION
 //==============================================================================
+// This only works for the new properties -- it won't see deprecated ones.
+template <class T> bool Object::
+hasProperty() const {
+    // Look it up by T's object class name if that's allowed.
+    if (Property<T>::TypeHelper::IsObjectType) {
+        return _propertyTable.hasProperty
+            (Property<T>::TypeHelper::getTypeName());
+    }
+
+    throw OpenSim::Exception
+       ("hasProperty<T>(): nameless property lookup by object class name "
+        "only allowed when T is an Object-derived type, but T=" 
+        + std::string(SimTK::NiceTypeName<T>::name()) + ". For lookup by "
+        "property name instead, use hasProperty(\"prop_name\").");
+	return false;
+}
+
 template <class T> const Property<T>& Object::
-getProperty(const std::string& name) const
-{
+getProperty(const std::string& name) const {
+    // Look it up by T's object class name if no name is given.
+    if (Property<T>::TypeHelper::IsObjectType && name.empty()) {
+        return _propertyTable.getProperty<T>
+            (Property<T>::TypeHelper::getTypeName());
+    }
 	return _propertyTable.getProperty<T>(name);
 }
 
 template <class T> Property<T>& Object::
-updProperty(const std::string& name)
-{
+updProperty(const std::string& name) {
+    // Look it up by T's object class name if no name is given.
+    if (Property<T>::TypeHelper::IsObjectType && name.empty()) {
+        return _propertyTable.updProperty<T>
+            (Property<T>::TypeHelper::getTypeName());
+    }
 	return _propertyTable.updProperty<T>(name);
 }
 
@@ -902,6 +1012,8 @@ setPropertyValue(const std::string& name, const T& value)
     else 
 	    prop.updValue() = value;
 }
+
+
 
 //==============================================================================
 //                  DERIVED OBJECT BOILERPLATE MACROS
@@ -1191,7 +1303,11 @@ getValue(int index) const {
     //TODO: temporary support for obsolete properties
     const Property_Deprecated* pd = 
         dynamic_cast<const Property_Deprecated*>(this);
-    if (pd) return pd->getValue<T>();
+    if (pd) {
+        return pd->isArrayProperty()
+            ? pd->getValueArray<T>()[index]
+            : pd->getValue<T>();
+    }
 
     const Property<T>* p = dynamic_cast<const Property<T>*>(this);
     if (p == NULL)
@@ -1205,7 +1321,11 @@ template <class T> inline T& AbstractProperty::
 updValue(int index) {
     //TODO: temporary support for obsolete properties
     Property_Deprecated* pd = dynamic_cast<Property_Deprecated*>(this);
-    if (pd) return pd->getValue<T>();
+    if (pd) {
+        return pd->isArrayProperty()
+            ? pd->getValueArray<T>()[index]
+            : pd->getValue<T>();
+    }
 
     Property<T>* p = dynamic_cast<Property<T>*>(this);
     if (p == NULL)
@@ -1217,7 +1337,16 @@ updValue(int index) {
 
 template <class T> inline int AbstractProperty::
 appendValue(const T& value) {
-    // Not supported for deprecated properties
+    //TODO: temporary support for obsolete properties
+    Property_Deprecated* pd = dynamic_cast<Property_Deprecated*>(this);
+    if (pd) {
+        if (!pd->isArrayProperty())
+            throw Exception
+               ("AbstractProperty::appendValue(): deprecated property "
+                + getName() + " is not an Array property; can't append.");
+        pd->getValueArray<T>().append(value);
+        return pd->getNumValues()-1;
+    }
 
     Property<T>* p = dynamic_cast<Property<T>*>(this);
     if (p == NULL)

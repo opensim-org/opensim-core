@@ -100,10 +100,12 @@ public:
 		Object::operator=(aObject);
         updPropertyByIndex(0).updValue<bool>()=
             aObject.getPropertyByIndex(0).getValue<bool>();
-        updPropertyByIndex(1).updValue< Array<double> >()=
-            aObject.getPropertyByIndex(1).getValue< Array<double> >();
+        AbstractProperty& prop = updPropertyByIndex(1);
+        for (int i=0; i < prop.size(); ++i)
+            prop.updValue<double>(i)= 
+                aObject.getPropertyByIndex(1).getValue<double>(i);
 		return(*this);
-	};
+	}
 
 	//=============================================================================
 };
@@ -159,8 +161,10 @@ public:
 		Object::operator=(aObject);
         updPropertyByIndex(0).updValue<bool>()=
             aObject.getPropertyByIndex(0).getValue<bool>();
-        updPropertyByIndex(1).updValue< Array<double> >()=
-            aObject.getPropertyByIndex(1).getValue< Array<double> >();
+        AbstractProperty& prop = updPropertyByIndex(1);
+        for (int i=0; i < prop.size(); ++i)
+            prop.updValue<double>(i)= 
+                aObject.getPropertyByIndex(1).getValue<double>(i);
 		return(*this);
 	}
 

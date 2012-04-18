@@ -175,6 +175,29 @@ int main()
             std::cout << ap.getName() << "=" << ap.toString() << std::endl;
         }
 
+        // Should be able to find new and deprecated properties by name.
+        SimTK_TEST(obj1.hasProperty("Test_Obj")); // deprecated
+        SimTK_TEST(obj1.hasProperty("Test_Obj_2")); // new
+        SimTK_TEST(!obj1.hasProperty("No_Such_Property"));
+
+        // Now check new property system's handing of nameless, one-object
+        // property (of type T=rdSerializableObject3).
+
+        SimTK_TEST(obj1.hasProperty<rdSerializableObject3>());
+        SimTK_TEST(obj1.hasProperty("rdSerializableObject3"));
+
+        // Should be able to access property or its value (the object) as no 
+        // name or by the type name, and the result should be the same.
+
+        // Compare properties.
+        SimTK_TEST(obj1.getProperty<rdSerializableObject3>()
+                   == obj1.getProperty<rdSerializableObject3>
+                                    ("rdSerializableObject3"));
+        // Compare values.
+        SimTK_TEST(obj1.getPropertyValue<rdSerializableObject3>()
+                   == obj1.getPropertyValue<rdSerializableObject3>
+                                    ("rdSerializableObject3"));
+
         cout << "\nDUMPOBJ(obj1)" << endl;
         dumpObj(obj1, 0);
 		

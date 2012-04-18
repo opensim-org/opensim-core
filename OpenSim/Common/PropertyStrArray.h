@@ -76,6 +76,9 @@ public:
 	PropertyStrArray(const std::string &aName,
 		int aSize,const std::string aArray[]);
 	PropertyStrArray(const PropertyStrArray &aProperty);
+
+    bool isArrayProperty() const OVERRIDE_11 {return true;}
+
 	PropertyStrArray* clone() const OVERRIDE_11;
 
     int getNumValues() const OVERRIDE_11 {return getArraySize();}

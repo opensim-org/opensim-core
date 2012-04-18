@@ -75,7 +75,10 @@ public:
 	PropertyBoolArray(const std::string &aName,
 		int aSize,const bool aArray[]);
 	PropertyBoolArray(const PropertyBoolArray &aProperty);
-	PropertyBoolArray* clone() const OVERRIDE_11 ;
+	
+    bool isArrayProperty() const OVERRIDE_11 {return true;}
+    
+    PropertyBoolArray* clone() const OVERRIDE_11 ;
 
     int getNumValues() const OVERRIDE_11 {return getArraySize();}
 
