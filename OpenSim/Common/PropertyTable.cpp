@@ -58,7 +58,8 @@ PropertyTable::~PropertyTable()
 // Copy assignment has to clone the source properties.
 PropertyTable& PropertyTable::operator=(const PropertyTable& source)
 {
-	replaceProperties(source.properties);
+    if (&source != this)
+	    replaceProperties(source.properties);
 	return *this;
 }
 
@@ -86,14 +87,15 @@ int PropertyTable::adoptProperty(AbstractProperty* prop)
     const int          nxtIndex = properties.size();
     const std::string& name     = prop->getName();
 
-    if (!name.empty()) {
-        if (hasProperty(name))
-            throw OpenSim::Exception
-               ("PropertyTable::adoptProperty(): Property " 
-                + name + " already in table.");
-        propertyIndex[name] = nxtIndex;
-    }
+    // Unnamed property should have had its Object class name used as its name.
+    assert(!name.empty());
 
+    if (hasProperty(name))
+        throw OpenSim::Exception
+            ("PropertyTable::adoptProperty(): Property " 
+            + name + " already in table.");
+
+    propertyIndex[name] = nxtIndex;
     properties.push_back(prop);
     return nxtIndex;
 }

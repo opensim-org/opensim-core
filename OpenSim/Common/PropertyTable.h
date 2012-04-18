@@ -40,6 +40,7 @@
 namespace OpenSim {
 
 //==============================================================================
+//                              PROPERTY TABLE
 //==============================================================================
 /**
  * A property table is the container that an OpenSim Object uses to hold its
@@ -50,11 +51,14 @@ namespace OpenSim {
  * those are deleted when the table is deleted.
  *
  * Duplicate property names are not allowed in the same property table. Some
- * properties are unnamed, however; any number of those may be present but
- * of course they can't be looked up by name. Ordinal still works.
+ * properties are unnamed, however; that is only allowed when the property
+ * holds a single object, and we use the object class name as though it were
+ * the property's name (and they can still be looked up by ordinal also). That
+ * means no Object can contain two unnamed properties holding the same type of
+ * object since that would appear as a duplicate name.
  *
  * @author Cassidy Kelly, Michael Sherman
- * @see AbstractProperty, Property
+ * @see AbstractProperty, Property, Object
  */
 class OSIMCOMMON_API PropertyTable {
 //==============================================================================
@@ -88,10 +92,9 @@ public:
     #endif
 
     /** Add a new property to this table, taking over ownership of the
-    supplied heap-allocated property. If the property has a name, throws an 
-    exception if there is already a property with the same name in the 
-    table. Returns this index (ordinal) that can be used to retrieve this
-    property quickly; that's the only way to get to unnamed properties. **/ 
+    supplied heap-allocated property. Throws an exception if there is already 
+    a property with the same name in the table. Returns an index (ordinal) 
+    that can be used to retrieve this property quickly. **/ 
     int adoptProperty(AbstractProperty* prop);
 
     /** Return a const reference to a property of known type T from the 
@@ -175,8 +178,7 @@ private:
 
 	// The properties, in the order they were added.
     SimTK::Array_<AbstractProperty*>    properties;
-    // For named properties only, a mapping from property name to its index 
-    // in the properties array.
+    // A mapping from property name to its index in the properties array.
 	std::map<std::string, int>          propertyIndex;
 
 //==============================================================================
