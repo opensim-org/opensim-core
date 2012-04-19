@@ -1155,7 +1155,8 @@ int main(int argc, char* argv[])
                 double kiso = 42.79679348815859;
                 double c    = 1.0;//0.75;    
             MuscleCurveFunction tendonCurve = MuscleCurveFunctionFactory::
-                           createTendonForceLengthCurve(e0,kiso,c,true,"test");
+                           createTendonForceLengthCurve(e0,kiso,c,true,
+                           "test_tendonCurve");
             SimTK::Matrix tendonCurveSample=tendonCurve.calcSampledMuscleCurve(6);
             //tendonCurve.printMuscleCurveToCSVFile(filePath);
 
@@ -1213,7 +1214,7 @@ int main(int argc, char* argv[])
                 double cf       = 0.65;
             MuscleCurveFunction fiberFLCurve = MuscleCurveFunctionFactory::
                                     createFiberForceLengthCurve(e0f,kisof,cf,
-                                    true,"test");
+                                    true,"test_fiberForceLength");
 
             SimTK::Matrix fiberFLCurveSample 
                             = fiberFLCurve.calcSampledMuscleCurve(6);
@@ -1275,7 +1276,8 @@ int main(int argc, char* argv[])
                 double kce  = -8.389863790885878;
                 double cce  = 0.1;//0.0;
             MuscleCurveFunction fiberCECurve = MuscleCurveFunctionFactory::
-               createFiberCompressiveForceLengthCurve(lmax,kce,cce,true,"test");
+               createFiberCompressiveForceLengthCurve(lmax,kce,cce,true,
+                                "test_fiberCompressiveForceLengthCurve");
             //fiberCECurve.printMuscleCurveToFile("C:/mjhmilla/Stanford/dev"
             //    "/OpenSim_LOCALPROJECTS/MuscleLibrary_Bench_20120210/build");
         SimTK::Matrix fiberCECurveSample 
@@ -1337,7 +1339,8 @@ int main(int argc, char* argv[])
                 double kphi  = 8.389863790885878;
                 double cphi  = 0.0;  
             MuscleCurveFunction fiberCEPhiCurve = MuscleCurveFunctionFactory::          
-          createFiberCompressiveForcePennationCurve(phi0,kphi,cphi,true,"test");          
+          createFiberCompressiveForcePennationCurve(phi0,kphi,cphi,true,
+                                    "test_fiberCompressiveForcePennationCurve");          
         
             SimTK::Matrix fiberCEPhiCurveSample 
                             = fiberCEPhiCurve.calcSampledMuscleCurve(6);
@@ -1401,7 +1404,7 @@ int main(int argc, char* argv[])
                 double ccosPhi  = 0.5;
             MuscleCurveFunction fiberCECosPhiCurve = MuscleCurveFunctionFactory::
             createFiberCompressiveForceCosPennationCurve(cosPhi0,kcosPhi,ccosPhi
-                                                                ,true,"test");
+                         ,true,"test_fiberCompressiveForceCosPennationCurve");
 
             SimTK::Matrix fiberCECosPhiCurveSample 
                             = fiberCECosPhiCurve.calcSampledMuscleCurve(6);
@@ -1473,7 +1476,8 @@ int main(int argc, char* argv[])
 
             MuscleCurveFunction fiberFVCurve = MuscleCurveFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
-                                concCurviness,  eccCurviness,false,"test");
+                                concCurviness,  eccCurviness,false,
+                                "test_fiberForceVelocityCurve");
             //fiberFVCurve.printMuscleCurveToFile(filePath);
 
             SimTK::Matrix fiberFVCurveSample 
@@ -1563,7 +1567,8 @@ int main(int argc, char* argv[])
 
             MuscleCurveFunction fiberFVInvCurve = MuscleCurveFunctionFactory::
                 createFiberForceVelocityInverseCurve(fmaxE, dydxC, dydxIso, dydxE, 
-                     concCurviness,  eccCurviness,false,"test");
+                     concCurviness,  eccCurviness,false,
+                     "test_fiberForceVelocityInverseCurve");
             //fiberFVInvCurve.printMuscleCurveToFile(filePath);
 
             SimTK::Matrix fiberFVInvCurveSample 
@@ -1676,16 +1681,17 @@ int main(int argc, char* argv[])
             cout << endl;
             cout <<"**************************************************"<<endl;
             cout <<"FIBER ACTIVE FORCE LENGTH CURVE TESTING        "<<endl;
-            double lce0 = 0.5;
+            double lce0 = 0.4;
             double lce1 = 0.75;
             double lce2 = 1;
-            double lce3 = 1.5;
-            double shoulderVal  = 0.1;
+            double lce3 = 1.6;
+            double shoulderVal  = 0.05;
             double plateauSlope = 0.75;//0.75;
             double curviness    = 0.75;
             MuscleCurveFunction fiberfalCurve = MuscleCurveFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
-                              shoulderVal, plateauSlope, curviness,false,"test");
+                              shoulderVal, plateauSlope, curviness,false,
+                              "test_fiberActiveForceLengthCurve");
             //fiberfalCurve.printMuscleCurveToCSVFile(filePath);
 
 

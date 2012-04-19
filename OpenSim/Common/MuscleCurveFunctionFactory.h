@@ -187,22 +187,24 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                is numerically calculated and splined. If false, 
                                this integral is not computed, and a call to 
                                .calcIntegral will throw an exception
-        @param muscleName The name of the muscle this curve applies to. This 
-                          muscle name will have the name of the curve appended
-                          to it (e.g. "bicep_fiberActiveForceLengthCurve") so
-                          that if this curve ever causes an exception, a 
+
+        @param curveName The name of the muscle this curve applies to. This 
+                          curve name should have the name of the muscle and the
+                          curve in it (e.g. "bicep_fiberActiveForceLengthCurve") 
+                          sothat if this curve ever causes an exception, a 
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
+
         @return MuscleCurveFunction object
 
-                \image html falCurve.png
+        \image html falCurve.png
 
        
         <B>Conditions:</B>
         \verbatim
             0 < lce0 < lce1 < lce2 < lce3 
             shoulderVal >= 0
-            plateauSlope > 0
+            0 <= plateauSlope < (1/(lce3-lce2))
             0 <= curviness <= 1
         \endverbatim
 
@@ -234,7 +236,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double lce0, double lce1, double lce2, double lce3, 
             double minActiveForceLengthValue, double plateauSlope, 
             double curviness, bool computeIntegral, 
-            const std::string& muscleName);   
+            const std::string& curveName);   
 
         /**
         This function will generate a C2 continous (continuous to the second 
@@ -301,10 +303,10 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 MuscleCurveFunction::calcIntegral() will throw 
                                 an exception
 
-        @param muscleName The name of the muscle this curve applies to. This 
-                          muscle name will have the name of the curve appended
-                          to it (e.g. "bicep_fiberForceVelocityCurve") so
-                          that if this curve ever causes an exception, a 
+        @param curveName The name of the muscle this curve applies to. This 
+                          curve name should have the name of the muscle and the
+                          curve in it (e.g. "bicep_fiberForceVelocityCurve") 
+                          sothat if this curve ever causes an exception, a 
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
@@ -346,7 +348,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction createFiberForceVelocityCurve(
             double fmaxE, double dydxC, double dydxIso, double dydxE, 
             double concCurviness, double eccCurviness,
-            bool computeIntegral, const std::string& muscleName);
+            bool computeIntegral, const std::string& curveName);
 
         /**
         This function will generate a C2 continuous (continuous to the 2nd
@@ -357,7 +359,10 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         curve simply call this function with EXACTLY the same parameter values
         that you used to generate the force velocity curve. See the parameter
         descriptions for createFiberForceVelocityCurve, as the parameters for
-        the inverse function are identical.
+        the inverse function are identical. The curve name should be different,
+        however, because this is an inverse curve 
+        (e.g. "bicep_fiberForceVelocityInverseCurve")
+        
 
         \image html fvInvCurve.png
 
@@ -397,11 +402,11 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-        @param muscleName The name of the muscle this curve applies to. This 
-                          muscle name will have the name of the curve appended
-                          to it 
-                          (e.g. "bicep_fiberCompressiveForcePennationCurve") so
-                          that if this curve ever causes an exception, a 
+        @param curveName The name of the muscle this curve applies to. This 
+                          curve name should have the name of the muscle and the
+                          curve in it 
+                          (e.g. "bicep_fiberCompressiveForcePennationCurve") 
+                          sothat if this curve ever causes an exception, a 
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
@@ -437,7 +442,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction 
             createFiberCompressiveForcePennationCurve(
                 double phi0, double kiso, double curviness, 
-                bool computeIntegral, const std::string& muscleName);
+                bool computeIntegral, const std::string& curveName);
 
         /**
         This element will generate a C2 continuous (continuous to the 2nd
@@ -473,11 +478,11 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-        @param muscleName The name of the muscle this curve applies to. This 
-                          muscle name will have the name of the curve appended
-                          to it 
-                          (e.g. "bicep_fiberCompressiveForceCosPennationCurve") 
-                          so that if this curve ever causes an exception, a 
+        @param curveName The name of the muscle this curve applies to. This 
+                          curve name should have the name of the muscle and the
+                          curve in it 
+                     (e.g. "bicep_fiberCompressiveForceCosPennationCurve") 
+                          sothat if this curve ever causes an exception, a 
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
@@ -517,7 +522,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         static MuscleCurveFunction 
             createFiberCompressiveForceCosPennationCurve(
                 double cosPhi0, double kiso, double curviness, 
-                bool computeIntegral, const std::string& muscleName);
+                bool computeIntegral, const std::string& curveName);
 
 
         /**
@@ -551,11 +556,11 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-         @param muscleName The name of the muscle this curve applies to. This 
-                          muscle name will have the name of the curve appended
-                          to it 
+         @param curveName The name of the muscle this curve applies to. This 
+                          curve name should have the name of the muscle and the
+                          curve in it 
                           (e.g. "bicep_fiberCompressiveForceLengthCurve") 
-                          so that if this curve ever causes an exception, a 
+                          sothat if this curve ever causes an exception, a 
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
@@ -590,7 +595,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction 
             createFiberCompressiveForceLengthCurve(double l0, double kiso, 
-            double curviness, bool computeIntegral, const std::string& muscleName);
+            double curviness,bool computeIntegral,const std::string& curveName);
 
          /**
         This function will generate a C2 continuous curve that fits a fiber's 
@@ -616,11 +621,10 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-         @param muscleName The name of the muscle this curve applies to. This 
-                          muscle name will have the name of the curve appended
-                          to it 
-                          (e.g. "bicep_fiberForceLengthCurve") 
-                          so that if this curve ever causes an exception, a 
+         @param curveName The name of the muscle this curve applies to. This 
+                          curve name should have the name of the muscle and the
+                          curve in it (e.g. "bicep_fiberForceLengthCurve") 
+                          sothat if this curve ever causes an exception, a 
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
@@ -657,7 +661,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction createFiberForceLengthCurve(double e0, 
                         double kiso, double curviness,
-                        bool computeIntegral, const std::string& muscleName);
+                        bool computeIntegral, const std::string& curveName);
 
         /**
         Will generate a C2 continous (continuous to the second derivative) 
@@ -687,11 +691,10 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                                 this integral is not computed, and a call to 
                                 .calcIntegral will throw an exception
 
-         @param muscleName The name of the muscle this curve applies to. This 
-                          muscle name will have the name of the curve appended
-                          to it 
-                          (e.g. "bicep_tendonForceLengthCurve") 
-                          so that if this curve ever causes an exception, a 
+         @param curveName The name of the muscle this curve applies to. This 
+                          curve name should have the name of the muscle and the
+                          curve in it (e.g. "bicep_tendonForceLengthCurve") 
+                          sothat if this curve ever causes an exception, a 
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
@@ -728,7 +731,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         */
         static MuscleCurveFunction 
            createTendonForceLengthCurve(double e0,double kiso,double curviness,
-           bool computeIntegral, const std::string& muscleName);
+           bool computeIntegral, const std::string& curveName);
 
         
 
