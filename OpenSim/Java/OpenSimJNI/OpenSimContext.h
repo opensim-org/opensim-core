@@ -200,9 +200,15 @@ public:
 
 }; // class OpenSimContext
 
+// Concrete class to be used on the GUI side
+class OpenSimJavaObject : public Object {
+OpenSim_DECLARE_CONCRETE_OBJECT(OpenSimJavaObject, Object);
+};
+
 // Class used as base class for Java classes deriving from Analysis (used to be callback)
 // It lives on the C++ side so that it gets access to SimTK::State.
 class AnalysisWrapper : public Analysis {
+OpenSim_DECLARE_CONCRETE_OBJECT(AnalysisWrapper, Analysis);
 	double* statesCache;
 	int		statesCacheSize;
 	double  simulationTime;
@@ -234,11 +240,11 @@ public:
 
 
 // Class to handle interrupts
-class InterruptCallback : public Analysis {
+class InterruptCallback : public AnalysisWrapper {
 	bool _throwException;
 public:
 	InterruptCallback(Model *aModel=0):
-	  Analysis(aModel),
+	  AnalysisWrapper(aModel),
 	  _throwException(false){};
 
 	void interrupt() {

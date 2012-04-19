@@ -143,7 +143,7 @@ void OpenSimContext::updateDisplayer(Force& f) {
 }
 
 void OpenSimContext::copyMuscle(Muscle& from, Muscle& to) {
-  to.copy(from);
+  to = from;
   _configState->invalidateAll(SimTK::Stage::Position);
   _model->getMultibodySystem().realize(*_configState, SimTK::Stage::Velocity);
   to.updGeometryPath().updateGeometry(*_configState);

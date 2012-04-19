@@ -522,11 +522,6 @@ public:
     uses the defaults table to get an instance. **/
 	static Object* makeObjectFromFile(const std::string& fileName);
 
-	/** Use this method only if you're deserializing from a file and the object
-    is at the top level; that is, primarily in constructors that take a file
-    name as input. **/
-	void updateFromXMLDocument();
-
 	/** Use this method to deserialize an object from a SimTK::Xml::Element. The 
     element is assumed to be in the format consistent with the passed-in 
     \a versionNumber. **/
@@ -552,16 +547,24 @@ public:
     there was already a document associated with this object it is
     deleted. **/
 	void setInlined(bool aInlined, const std::string &aFileName="");
+
+protected:
+	/** Use this method only if you're deserializing from a file and the object
+    is at the top level; that is, primarily in constructors that take a file
+    name as input. **/
+	void updateFromXMLDocument();
     /** Unconditionally set the XMLDocument associated with this object.
     Use carefully -- if there was already a document its heap space is
     lost here. **/
     void setDocument(XMLDocument* doc) {_document=doc;}
+
     /** Get a const pointer to the document (if any) associated with this
     object. **/
     const XMLDocument* getDocument() const {return _document;}
     /** Get a writable pointer to the document (if any) associated with this
     object. **/
     XMLDocument* updDocument() {return _document;}
+public:
     /** If there is a document associated with this object then return the
     file name maintained by the document. Otherwise return an empty string. **/
 	std::string getDocumentFileName() const;
@@ -1100,7 +1103,7 @@ template <> struct Object_GetClassName<SimTK::Vec3>
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \
 typedef SuperClass Super;                                                      \
-OpenSim_OBJECT_JAVA_DEFS(ConcreteClass, SuperClass);
+OpenSim_OBJECT_JAVA_DEFS(ConcreteClass);
 
 // For nontemplate classes, the class name is identical to the supplied
 // ConcreteClass argument.
@@ -1134,34 +1137,18 @@ ConcreteClass* clone() const OVERRIDE_11 = 0;                                  \
 const std::string& getConcreteClassName() const OVERRIDE_11 = 0;               \
 private:
 
-// Add public static method declaration in class derived from a
-// parent to assist in downcasting objects of the parent type to the 
-// derived type as well as support dynamic casting across JNI.
-// TODO: (sherm 20120415) I'm not sure if any or all of these methods are
-// still needed -- Ayman?
-#define OpenSim_OBJECT_JAVA_DEFS(thisClass,parentclass) \
-	typedef parentclass Parent; \
+// Add public static method declaration in class to assist in downcasting arbitrary objects 
+// to the new type to support dynamic casting across JNI.
+#define OpenSim_OBJECT_JAVA_DEFS(thisClass) \
   public: \
-  static bool isKindOf(const char *type) \
-  { \
-    if (strcmp(#thisClass,type)==0) \
-      { \
-      return true; \
-      } \
-    return Parent::isKindOf(type); \
-  } \
-  virtual bool isA(const char *type) const \
-  { \
-    return this->thisClass::isKindOf(type); \
-  } \
   static thisClass* safeDownCast(OpenSim::Object *obj) \
   { \
       return dynamic_cast<thisClass *>(obj); \
   } \
-  virtual void copy(const Object &aObject) \
+  virtual void assign(Object &aObject) \
   { \
-	  if (aObject.isA(#thisClass)) { \
-		  *this = *((const thisClass*)(&aObject)); \
+	  if (safeDownCast(&aObject)!=0) { \
+		  *this = *((thisClass*)(&aObject)); \
      } else { \
 	  throw OpenSim::Exception(std::string(#thisClass)+ \
               "::copy() called with object (name = " + aObject.getName() \
