@@ -55,6 +55,7 @@
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 
 #include <OpenSim/Simulation/Model/Actuator.h>
+#include <OpenSim/Simulation/Model/ModelVisualizer.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Control.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
@@ -191,7 +192,6 @@ static bool trace=false;
 %include "typemaps.i"
 %include "std_string.i"
 
-
 %typemap(javacode) OpenSim::Object %{
   public boolean equals(Object obj) {
     boolean equal = false;
@@ -263,15 +263,6 @@ static bool trace=false;
       return originalModelPath + java.io.File.separator;
     else return "";
   }
-%}
-
-%typemap(javacode) OpenSim::Property %{
-  public void setValueDbl(Double dbl) {
-	setValue(dbl.doubleValue());
-  };
-  public void setValue(Boolean bool) {
-	setValue(bool.booleanValue());
-  };
 %}
 
 %typemap(javacode) OpenSim::Array<std::string> %{
@@ -619,7 +610,6 @@ static bool trace=false;
 %template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
 %template(ModelComponentSetConstraints) OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
-
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
 
