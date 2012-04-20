@@ -384,23 +384,3 @@ void CoordinateActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versi
 	setCoordinate(_coord);
 }	
 
-/** 
- * Methods to query a Force for the value actually applied during simulation
- * The names of the quantities (column labels) is returned by this first function
- * getRecordLabels()
- */
-OpenSim::Array<std::string> CoordinateActuator::getRecordLabels() const {
-	OpenSim::Array<std::string> labels("");
-	labels.append(getName());
-	return labels;
-}
-/**
- * Given SimTK::State object extract all the values necessary to report forces, application location
- * frame, etc. used in conjunction with getRecordLabels and should return same size Array
- */
-OpenSim::Array<double> CoordinateActuator::getRecordValues(const SimTK::State& state) const {
-	OpenSim::Array<double> values(1);
-	values.append(getForce(state));
-	return values;
-};
-

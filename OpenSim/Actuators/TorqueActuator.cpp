@@ -103,8 +103,7 @@ TorqueActuator::TorqueActuator(const TorqueActuator &anActuator) :
 /**
  * Set the data members of this actuator to their null values.
  */
-void TorqueActuator::
-setNull()
+void TorqueActuator::setNull()
 {
 	setupProperties();
 }
@@ -113,8 +112,7 @@ setNull()
 /**
  * Connect properties to local pointers.
  */
-void TorqueActuator::
-setupProperties()
+void TorqueActuator::setupProperties()
 {
     // Allow the bodies to be specified later.
 	addOptionalProperty<string>("bodyA",
@@ -138,8 +136,7 @@ setupProperties()
 /**
  * Copy the member data of the specified actuator.
  */
-void TorqueActuator::
-copyData(const TorqueActuator &aTorqueActuator)
+void TorqueActuator::copyData(const TorqueActuator &aTorqueActuator)
 {
 	// MEMBER VARIABLES
     // We allow these to be unspecified so we might not get values here.
@@ -169,8 +166,7 @@ copyData(const TorqueActuator &aTorqueActuator)
  *
  * @return  aBodyID ID (or number, or index) of the generalized Body.
  */
-TorqueActuator& TorqueActuator::
-operator=(const TorqueActuator &aTorqueActuator)
+TorqueActuator& TorqueActuator::operator=(const TorqueActuator &aTorqueActuator)
 {
 	// BASE CLASS
 	Actuator::operator =(aTorqueActuator);
@@ -405,24 +401,4 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 	setBodyA(_bodyA);
 	setBodyB(_bodyB);
 }	
-
-/** 
- * Methods to query a Force for the value actually applied during simulation
- * The names of the quantities (column labels) is returned by this first function
- * getRecordLabels()
- */
-OpenSim::Array<std::string> TorqueActuator::getRecordLabels() const {
-	OpenSim::Array<std::string> labels("");
-	labels.append(getName());
-	return labels;
-}
-/**
- * Given SimTK::State object extract all the values necessary to report forces, application location
- * frame, etc. used in conjunction with getRecordLabels and should return same size Array
- */
-OpenSim::Array<double> TorqueActuator::getRecordValues(const SimTK::State& state) const {
-	OpenSim::Array<double> values(1);
-	values.append(getForce(state));
-	return values;
-};
 

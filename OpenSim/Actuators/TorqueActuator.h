@@ -135,17 +135,6 @@ public:
 
 	// Setup method to initialize Body reference
 	void setup(Model& aModel);
-	/** 
-	 * Methods to query a Force for the value actually applied during simulation
-	 * The names of the quantities (column labels) is returned by this first function
-	 * getRecordLabels()
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
-	/**
-	 * Given SimTK::State object extract all the values necessary to report forces, application location
-	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
-	 */
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 	//--------------------------------------------------------------------------
 	// XML
