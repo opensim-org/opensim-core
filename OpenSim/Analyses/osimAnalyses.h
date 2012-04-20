@@ -37,7 +37,6 @@
 #include "BodyKinematics.h"
 #include "MuscleAnalysis.h"
 #include "MuscleAnalysisV1.h"//MM
-//#include "InverseDynamics.h"
 #include "JointReaction.h"
 #include "StaticOptimization.h"
 #include "StatesReporter.h"
