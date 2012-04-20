@@ -417,6 +417,7 @@ void InducedAccelerations::setupStorage()
 		_storeInducedAccelerations[i]->setName(_coordSet.get(i).getName());
 		_storeInducedAccelerations[i]->setDescription(getDescription());
 		_storeInducedAccelerations[i]->setColumnLabels(coordAccLabels);
+		_storeInducedAccelerations[i]->setInDegrees(getInDegrees());
 		_coordIndAccs.append(new Array<double>(0, coordAccLabels.getSize()));
 	}
 
