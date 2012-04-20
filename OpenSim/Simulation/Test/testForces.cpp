@@ -1,7 +1,7 @@
 // testForces.cpp
 // Author:  Ajay Seth
 /*
-* Copyright (c) 2005-2010, Stanford University. All rights reserved. 
+* Copyright (c) 2011, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -34,7 +34,8 @@
 //		3. ElasticFoundationForce
 //		4. HuntCrossleyForce
 //		5. CoordinateLimitForce
-//		6. ExternalForce
+//		6. RotationalCoordinateLimitForce
+//		7. ExternalForce
 //		
 //     Add tests here as Forces are added to OpenSim
 //
@@ -61,10 +62,12 @@ void testBushingForce();
 void testElasticFoundation();
 void testHuntCrossleyForce();
 void testCoordinateLimitForce();
+void testCoordinateLimitForceRotational();
 
 int main()
 {
 	try {
+		
 		testExternalForce();
 		cout << "external force passed" << endl;
 
@@ -82,6 +85,9 @@ int main()
 
 		testCoordinateLimitForce();
 		cout << "coordinate limit force passed" << endl;
+
+		testCoordinateLimitForceRotational();
+		cout << "rotational coordinate limit force passed" << endl;
 	}
     catch (const std::exception& e) {
         cerr << "EXCEPTION: " << e.what() << endl;
@@ -315,7 +321,6 @@ void testElasticFoundation()
 
 	// Setup OpenSim model
 	Model *osimModel = new Model("BouncingBallModelEF.osim");
-    osimModel->print("XXX.osim");
 	
 	// Create the force reporter
 	ForceReporter* reporter = new ForceReporter(osimModel);
@@ -494,12 +499,12 @@ void testCoordinateLimitForce()
 	osimModel->setGravity(gravity_vec);
 
 	// Define the parameters of the Coordinate Limit Force
-	double K_upper = 10.0;
-	double K_lower = 100.0;
+	double K_upper = 200.0;
+	double K_lower = 1000.0;
 	double damping = 0.01;
-	double trans = 0.001;
+	double trans = 0.05;
 	CoordinateLimitForce limitForce("ball_h", positionRange[1],  K_upper, 
-			 positionRange[0], K_lower,  damping, trans);
+			 positionRange[0], K_lower,  damping, trans, true);
 
 	osimModel->addForce(&limitForce);
 
@@ -524,15 +529,27 @@ void testCoordinateLimitForce()
 
 	SimTK::State &osim_state = osimModel->initSystem();
 
-	double dh = 0.1;
-	double start_h = positionRange[1] + dh;
+	double dh = 0.2;
+	double start_h = positionRange[1];
+	double start_v = 2.0;
 	const Coordinate &q_h = osimModel->getCoordinateSet()[0];
 	q_h.setValue(osim_state, start_h);
+	q_h.setSpeedValue(osim_state, start_v);
+
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration );
+
+	CoordinateLimitForce *clf = dynamic_cast<CoordinateLimitForce *>(&osimModel->getForceSet()[0]);
 
 	// initial energy of the system;
-	double energy = 0.5*K_upper*dh*dh + mass*(-gravity_vec[1])*start_h;
+	double clfPE = clf->computePotentialEnergy(osim_state);
+	double constStiffnessPE = 0.5*K_upper*dh*dh;
+	ASSERT(clfPE < constStiffnessPE);
+	double energy0 = clfPE + mass*(-gravity_vec[1])*start_h + 0.5*mass*start_v*start_v;
+	// system KE + PE including strain energy in CLF
+	double eSys0 = osimModel->getMultibodySystem().calcEnergy(osim_state);
 
-    osimModel->getMultibodySystem().realize(osim_state, Stage::Position );
+	// instantaneous power dissipation
+	double clfPowerDissipation = clf->getPowerDissipation(osim_state);
 
 	//==========================================================================
 	// Compute the force and torque at the specified times.
@@ -542,11 +559,11 @@ void testCoordinateLimitForce()
     Manager manager(*osimModel,  integrator);
     manager.setInitialTime(0.0);
 
-	double final_t = 2.0;
-	double nsteps = 10;
+	double final_t = 1.0;
+	double nsteps = 20;
 	double dt = final_t/nsteps;
 
-	for(int i = 0; i <=nsteps; i++){
+	for(int i = 1; i <=nsteps; i++){
 		manager.setFinalTime(dt*i);
 		manager.integrate(osim_state);
 		osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
@@ -555,7 +572,20 @@ void testCoordinateLimitForce()
 		double v = q_h.getSpeedValue(osim_state);
 
 		//Now check that the force reported by spring
-		Array<double> model_force = osimModel->getForceSet()[0].getRecordValues(osim_state);
+		Array<double> model_force = clf->getRecordValues(osim_state);
+
+		double ediss = clf->getDissipatedEnergy(osim_state);
+		double clfE = clf->computePotentialEnergy(osim_state) + ediss;
+
+		// EK + EM of mass alone
+		double eMass = 0.5*mass*v*v - mass*gravity_vec[1]*h;
+		double eSpringGuess = energy0-eMass;
+		double e = eMass+clfE; 
+		// system KE + PE including strain energy in CLF
+		double eSys = osimModel->getMultibodySystem().calcEnergy(osim_state)+ ediss;
+
+		ASSERT_EQUAL(1.0, e/energy0, integ_accuracy, "CoordinateLimitForce Failed to conserve energy");
+		ASSERT_EQUAL(1.0, eSys/eSys0, integ_accuracy, "CoordinateLimitForce Failed to conserve system energy");
 
 		// get the forces applied to the ball by the limit force
 		double analytical_force = 0;
@@ -565,17 +595,9 @@ void testCoordinateLimitForce()
 		else if( h < (positionRange[0]-trans)){
 			ASSERT_EQUAL(K_lower*(positionRange[0]-h)-damping*v, model_force[0], 1e-4);
 		}
-		else{
-			// Verify no force is being applied by limiting force when not exceeding limits 
-			ASSERT_EQUAL(0., model_force[0], 1e-5);
-			//also that the kinetic & potential energy of the system is going down due to damping at limits;
-			double e = 0.5*mass*v*v - mass*gravity_vec[1]*h;
-			
-			if (damping == 0.0){
-				ASSERT_EQUAL(e, energy, 1e-4);
-			}else{
-				ASSERT(e < energy);
-			}
+		else if( (h < positionRange[1]) && (h > positionRange[0])){
+			// Verify no force is being applied when within limits 
+			ASSERT_EQUAL(0.0, model_force[0], 1e-5);
 		}
 
 		manager.setInitialTime(dt*i);
@@ -586,6 +608,132 @@ void testCoordinateLimitForce()
 	// Save the forces
 	reporter->getForceStorage().print("limit_forces.mot");
 }
+
+void testCoordinateLimitForceRotational()
+{
+	using namespace SimTK;
+
+	double mass = 1;
+	double edge = 0.2;
+
+	// Setup OpenSim model
+	Model *osimModel = new Model;
+	osimModel->setName("RotationalCoordinateLimitForceTest");
+	//OpenSim bodies
+    OpenSim::Body& ground = osimModel->getGroundBody();
+	OpenSim::Body block("block", mass ,Vec3(0),  mass*SimTK::Inertia::brick(edge,edge,edge));
+	block.addDisplayGeometry("box.vtp");
+	block.scale(Vec3(edge), false);
+
+	// Add joints
+	PinJoint pin("", ground, Vec3(0), Vec3(0,0,0), block, Vec3(0,-edge,0), Vec3(0,0,0));
+
+	// NOTE: Angular limits are in degrees NOT radians
+	double positionRange[2] = {-30, 90};
+	// Rename coordinates for a slider joint
+	CoordinateSet &pin_coords = pin.getCoordinateSet();
+	pin_coords[0].setName("theta");
+	pin_coords[0].setRange(positionRange);
+	pin_coords[0].setMotionType(Coordinate::Rotational);
+
+	osimModel->addBody(&block);
+
+	osimModel->setGravity(Vec3(0));
+
+	// Define the parameters of the Coordinate Limit Force
+	// For rotational coordinates, these are in Nm/degree
+	double K_upper = 10.0;
+	double K_lower = 20.0;
+	double damping = 0.1;
+	double trans = 0.05;
+	CoordinateLimitForce limitForce("theta", positionRange[1],  K_upper, 
+			 positionRange[0], K_lower,  damping, trans, true);
+
+	osimModel->addForce(&limitForce);
+
+	// BAD: have to set memoryOwner to false or program will crash when this test is complete.
+	osimModel->disownAllComponents();
+
+	// Create the force reporter
+	ForceReporter* reporter = new ForceReporter(osimModel);
+	osimModel->addAnalysis(reporter);
+
+	SimTK::State &osim_state = osimModel->initSystem();
+
+	// Start 2 degrees beyond the upper limit
+	double start_q = SimTK_DEGREE_TO_RADIAN*positionRange[1] + SimTK::Pi/90;
+	double start_v = 0.0;
+	const Coordinate &coord = osimModel->getCoordinateSet()[0];
+	coord.setValue(osim_state, start_q);
+	coord.setSpeedValue(osim_state, start_v);
+
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration );
+
+	CoordinateLimitForce *clf = dynamic_cast<CoordinateLimitForce *>(&osimModel->getForceSet()[0]);
+
+	//Now check that the force reported by spring
+	Array<double> model_force = clf->getRecordValues(osim_state);
+
+	ASSERT_EQUAL(model_force[0]/(-2*K_upper), 1.0, integ_accuracy);
+
+	double clfPE = clf->computePotentialEnergy(osim_state);
+	double constSpringPE = 0.5*(K_upper*2.0)*2.0*SimTK_DEGREE_TO_RADIAN;
+	ASSERT_EQUAL(clfPE/constSpringPE, 1.0, 0.001, "Specified upper rotational stiffness not met.");
+	ASSERT(clfPE < constSpringPE);
+
+	//Now test lower bound
+	start_q = SimTK_DEGREE_TO_RADIAN*positionRange[0] - SimTK::Pi/90;
+	coord.setValue(osim_state, start_q);
+	osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration );
+	model_force = clf->getRecordValues(osim_state);
+
+	ASSERT_EQUAL(model_force[0]/(2*K_lower), 1.0, integ_accuracy);
+
+	clfPE = clf->computePotentialEnergy(osim_state);
+	constSpringPE = 0.5*(K_lower*2.0)*2.0*SimTK_DEGREE_TO_RADIAN;
+	ASSERT_EQUAL(clfPE/constSpringPE, 1.0, 0.001);
+	ASSERT(clfPE < constSpringPE);
+
+	// total system energy prior to simulation
+	double eSys0 = osimModel->getMultibodySystem().calcEnergy(osim_state);
+
+	//==========================================================================
+	// Perform a simulation an monitor energy conservation
+
+    RungeKuttaMersonIntegrator integrator(osimModel->getMultibodySystem() );
+	integrator.setAccuracy(1e-8);
+    Manager manager(*osimModel,  integrator);
+    manager.setInitialTime(0.0);
+
+	double final_t = 1.0;
+	double nsteps = 20;
+	double dt = final_t/nsteps;
+
+	for(int i = 1; i <=nsteps; i++){
+		manager.setFinalTime(dt*i);
+		manager.integrate(osim_state);
+		osimModel->getMultibodySystem().realize(osim_state, Stage::Acceleration);
+
+		double q = coord.getValue(osim_state);
+		double u = coord.getSpeedValue(osim_state);
+
+		double ediss = clf->getDissipatedEnergy(osim_state);
+		// system KE + PE including strain energy in CLF
+		double eSys = osimModel->getMultibodySystem().calcEnergy(osim_state)+ ediss;
+		double EKsys = osimModel->getMultibodySystem().calcKineticEnergy(osim_state);
+
+		ASSERT_EQUAL(eSys/eSys0, 1.0, integ_accuracy);
+
+		manager.setInitialTime(dt*i);
+	}
+
+	manager.getStateStorage().print("rotational_coordinte_limit_force_states.sto");
+
+	// Save the forces
+	reporter->getForceStorage().print("rotational_limit_forces.mot");
+}
+
+
 
 void testExternalForce()
 {
