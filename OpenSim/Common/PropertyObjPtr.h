@@ -88,6 +88,7 @@ public:
 		delete _value; 
 	}
 
+    virtual int getNumValues() const OVERRIDE_11 {return _value?1:0;}
     virtual bool isObjectProperty() const OVERRIDE_11 {return true;}
     virtual bool isAcceptableObjectTag
         (const std::string& objectTypeTag) const OVERRIDE_11 {return true;}
