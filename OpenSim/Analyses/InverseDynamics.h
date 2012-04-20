@@ -51,6 +51,8 @@ namespace OpenSim {
 class Model;
 class ForceSet;
 
+/** @cond **/ // hide from Doxygen
+
 /**
  * A class for performing and recording Inverse Dynamics forces/moments
  * on a motion trajectory.
@@ -145,6 +147,8 @@ public:
 
 //=============================================================================
 };	// END of class InverseDynamics
+
+/** @endcond **/
 
 }; //namespace
 //=============================================================================
