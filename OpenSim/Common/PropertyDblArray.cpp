@@ -141,10 +141,10 @@ operator=(const PropertyDblArray &aProperty)
  *
  * @return Type of the property.
  */
-const char* PropertyDblArray::
-getTypeAsString() const
+std::string PropertyDblArray::
+getTypeName() const
 {
-	return("DblArray");
+	return("double");
 }
 
 //-----------------------------------------------------------------------------

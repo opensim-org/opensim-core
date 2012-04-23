@@ -142,8 +142,8 @@ operator=(const PropertyTransform &aProperty)
  *
  * @return Type of the property.
  */
-const char* PropertyTransform::
-getTypeAsString() const
+std::string PropertyTransform::
+getTypeName() const
 {
 	return("Transform");
 }

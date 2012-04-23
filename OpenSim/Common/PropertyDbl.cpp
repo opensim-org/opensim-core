@@ -126,10 +126,10 @@ operator=(const PropertyDbl &aProperty)
  *
  * @return Type of the property.
  */
-const char* PropertyDbl::
-getTypeAsString() const
+std::string PropertyDbl::
+getTypeName() const
 {
-	return("Dbl");
+	return "double";
 }
 
 //-----------------------------------------------------------------------------

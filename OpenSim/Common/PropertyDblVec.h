@@ -117,8 +117,8 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	/** Get the type of this property as a string. */
-	virtual const char* getTypeAsString() const{
-		return(_typeAsString);
+	virtual std::string getTypeName() const OVERRIDE_11 {
+		return "double";
 	};
 
 	// VALUE

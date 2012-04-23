@@ -126,10 +126,10 @@ operator=(const PropertyInt &aProperty)
  *
  * @return Type of the property.
  */
-const char* PropertyInt::
-getTypeAsString() const
+std::string PropertyInt::
+getTypeName() const
 {
-	return("Int");
+	return("int");
 }
 
 //-----------------------------------------------------------------------------

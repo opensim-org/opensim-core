@@ -171,7 +171,7 @@ operator<(const Property_Deprecated &aProperty) const
  * @return Reference to the output stream.
 ostream& operator<<(ostream &aOut,const Property_Deprecated &aProperty)
 {
-	aOut << aProperty.getTypeAsString() << " " << aProperty.getName();
+	aOut << aProperty.getTypeName() << " " << aProperty.getName();
 	return(aOut);
 }
  */
@@ -180,20 +180,6 @@ ostream& operator<<(ostream &aOut,const Property_Deprecated &aProperty)
 //=============================================================================
 // GET AND SET
 //=============================================================================
-//-----------------------------------------------------------------------------
-// TYPE AS STRING
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Get the type of this property as a string.
- *
- * @return Type of the property.
- */
-const char* Property_Deprecated::
-getTypeAsString() const
-{
-	return("None");
-}
 
 //-----------------------------------------------------------------------------
 // TYPE

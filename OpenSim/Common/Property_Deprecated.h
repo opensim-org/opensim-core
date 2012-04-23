@@ -99,7 +99,7 @@ class Object;
 #endif
 
 #define Property_PROPERTY_TYPE_MISMATCH() \
-	throw Exception(std::string(__FUNCTION__)+": Property type mismatch. This property is of type "+getTypeAsString()+".",__FILE__,__LINE__);
+	throw Exception(std::string(__FUNCTION__)+": Property type mismatch. This property is of type "+getTypeName()+".",__FILE__,__LINE__);
 
 class OSIMCOMMON_API Property_Deprecated : public AbstractProperty
 {
@@ -196,7 +196,7 @@ public:
 	virtual bool operator==(const Property_Deprecated &aProperty) const;
 	virtual bool operator<(const Property_Deprecated &aProperty) const;
 	friend std::ostream& operator<<(std::ostream &aOut,const Property_Deprecated &aProperty) {
-		aOut << aProperty.getTypeAsString() << " " << aProperty.getName();
+		aOut << aProperty.getTypeName() << " " << aProperty.getName();
 		return(aOut);
 	};
 #endif
@@ -208,11 +208,11 @@ public:
 	// TYPE
 	void setType(PropertyType aType);
 	PropertyType getType() const;
-	virtual const char* getTypeAsString() const;
+	virtual std::string getTypeName() const OVERRIDE_11 =0;
 
 	// VALUE
 	// Textual representation
-	virtual std::string toString() const=0;
+	virtual std::string toString() const OVERRIDE_11 =0;
 
 	// These methods have been given default implementations, rather than being made pure virtual
 	// so that all classes derived from Property will not have to implement each method.

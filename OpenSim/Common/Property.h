@@ -169,6 +169,10 @@ public:
     done with it. **/
     Property* clone() const OVERRIDE_11 = 0;
 
+    /** Use TypeHelper's getTypeName() to satisfy this pure virtual. **/
+    // See below for implementation.
+    std::string getTypeName() const FINAL_11;
+
     const T& operator[](int i) const {return getValue(i);}
     T& operator[](int i) {return updValue(i);}
 
@@ -372,6 +376,14 @@ template<> struct Property<SimTK::Transform>::TypeHelper  {
     OSIMCOMMON_API static bool isEqual(const SimTK::Transform& a, 
                                        const SimTK::Transform& b);
 };
+
+//==============================================================================
+//                    PROPERTY<T> INLINE IMPLEMENTATION
+//==============================================================================
+template <class T> inline std::string
+Property<T>::getTypeName() const {
+    return TypeHelper::getTypeName();
+}
 
 // Hide SimpleProperty and ObjectProperty from Doxygen; users don't need
 // to know about these.

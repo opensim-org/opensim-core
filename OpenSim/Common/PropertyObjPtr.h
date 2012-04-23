@@ -124,7 +124,8 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	// TYPE
-	virtual const char* getTypeAsString() const { return "ObjPtr"; }
+	virtual std::string getTypeName() const OVERRIDE_11
+    {   return T::getClassName(); }
 	// VALUE
 	virtual bool isValidObject(const Object *aValue) const { return dynamic_cast<const T*>(aValue)!=0; }
 	virtual void setValue(Object *aValue) { delete _value; _value = dynamic_cast<T*>(aValue); }

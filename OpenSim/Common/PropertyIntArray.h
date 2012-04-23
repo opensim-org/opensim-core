@@ -94,7 +94,7 @@ public:
 	//--------------------------------------------------------------------------
 public:
 	// TYPE
-	virtual const char* getTypeAsString() const;
+	virtual std::string getTypeName() const OVERRIDE_11;
 	// VALUE
 	virtual void setValue(const Array<int> &aArray);
 	virtual void setValue(int aSize,const int aArray[]);

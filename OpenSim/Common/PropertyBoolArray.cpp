@@ -139,10 +139,10 @@ operator=(const PropertyBoolArray &aProperty)
  *
  * @return Type of the property.
  */
-const char* PropertyBoolArray::
-getTypeAsString() const
+std::string PropertyBoolArray::
+getTypeName() const
 {
-	return("BoolArray");
+	return "bool";
 }
 
 //-----------------------------------------------------------------------------

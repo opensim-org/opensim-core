@@ -68,7 +68,8 @@ static void dumpObj(const Object& obj, int nSpaces) {
     for (int p=0; p < obj.getNumProperties(); ++p) {
         const AbstractProperty& ap = obj.getPropertyByIndex(p); 
         indent(nSpaces+2);
-        cout << ap.getName() << "=" << ap.toString() << endl;
+        cout << ap.getName() << "=" << ap.toString() 
+            << " typeName=" << ap.getTypeName() << endl;
         if (ap.isObjectProperty()) {
             for (int i=0; i < ap.size(); ++i)
                 dumpObj(ap.getValueAsObject(i), nSpaces+4);

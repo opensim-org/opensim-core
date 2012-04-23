@@ -124,10 +124,10 @@ operator=(const PropertyBool &aProperty)
  *
  * @return Type of the property.
  */
-const char* PropertyBool::
-getTypeAsString() const
+std::string PropertyBool::
+getTypeName() const
 {
-	return("Bool");
+	return "bool";
 }
 
 //-----------------------------------------------------------------------------

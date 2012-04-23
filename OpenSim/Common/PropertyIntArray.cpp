@@ -139,10 +139,10 @@ operator=(const PropertyIntArray &aProperty)
  *
  * @return Type of the property.
  */
-const char* PropertyIntArray::
-getTypeAsString() const
+std::string PropertyIntArray::
+getTypeName() const
 {
-	return("IntArray");
+	return("int");
 }
 
 //-----------------------------------------------------------------------------

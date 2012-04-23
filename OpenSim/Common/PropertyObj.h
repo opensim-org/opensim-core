@@ -97,7 +97,8 @@ public:
 public:
 	virtual bool isValidObject(const Object *obj) const { return true; } // TODO: make this class templated and do type checking
 	// TYPE
-	virtual const char* getTypeAsString() const;
+	virtual std::string getTypeName() const OVERRIDE_11 
+    {   return "Object"; }
 	// VALUE
 	// Got rid of setValue(Obj) since it would be dangerous to do so given that users of
 	// PropertyObj would continue to hold a reference to the (deleted) object - Eran.

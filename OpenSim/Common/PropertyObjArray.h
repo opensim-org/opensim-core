@@ -107,7 +107,8 @@ public:
 public:
 	virtual bool isValidObject(const Object *obj) const { return dynamic_cast<const T*>(obj)!=0; }
 	// TYPE
-	virtual const char* getTypeAsString() const { return "ObjArray"; }
+	virtual std::string getTypeName() const OVERRIDE_11
+    {   return T::getClassName(); }
 	// VALUE as String
 	virtual std::string toString() const {return "(Array of objects)";}
 	// SIZE

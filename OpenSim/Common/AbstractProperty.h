@@ -96,6 +96,12 @@ public:
     // TODO: replace this with something more reasonable
     virtual std::string toString() const = 0;
 
+    /** This returns a string representation of this property's value type 
+    which will be the same as T::getClassName() for Object-derived types T, and
+    some reasonably nice name for simple types, including at least "bool",
+    "int", "double", "string", "Vec3", "Vector", and "Transform". **/
+    virtual std::string getTypeName() const = 0;
+
     /** Return true if this is an "object property", meaning that its values
     are all concrete objects of types that ultimately derive from the %OpenSim
     serializable base class Object. If this returns true then it is safe to 
