@@ -46,6 +46,8 @@
 
 #include "RigidTendonMuscle.h"
 
+#include "ActiveForceLengthCurve.h"
+
 using namespace OpenSim;
 using namespace std;
 
@@ -74,6 +76,8 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::registerType( CoordinateLimitForce() );
 	Object::registerType( SpringGeneralizedForce() );
 	Object::registerType( RigidTendonMuscle() );
+
+    Object::RegisterType( ActiveForceLengthCurve() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

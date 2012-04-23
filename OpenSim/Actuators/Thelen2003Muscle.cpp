@@ -734,10 +734,13 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         tol = sqrt(SimTK::Eps);
     }
     
-    if(abs(tmp) > tol)
-        printf("%s: d/dt(system energy-work) > tol, (%f > %f) at time %f",
-                fcnName.c_str(), tmp, tol, (double)s.getTime());
+    /*if(abs(tmp) > tol)
+        printf("\n%s: d/dt(system energy-work) > tol, (%f > %f) at time %f\n",
+                fcnName.c_str(), tmp, tol, (double)s.getTime());*/
 
+    SimTK_ERRCHK1_ALWAYS(abs(tmp) > tol, fcnName.c_str(),
+        "%s: Energy is not being conserved! d/dt(KE+PE-W) > tol >> 0", 
+        muscleName.c_str());
 }
 
 //==============================================================================
@@ -974,9 +977,9 @@ SimTK::Vector Thelen2003Muscle::
             results[4] = 0.0;
             results[5] = 0.0;
 
-            printf("Initialization failed: fiber length approaching 0, \n"
+            printf("\nInitialization failed: fiber length approaching 0, \n"
                    "                       for %s, a Thelen2003Muscle \n"
-                   "                       with an error of %f", 
+                   "                       with an error of %f\n", 
                    muscleName.c_str(), ferr);
         //Check for a pennation angle singularity   
         }else if(phi > SimTK::Pi/2 - SimTK::Eps){
@@ -987,9 +990,9 @@ SimTK::Vector Thelen2003Muscle::
             results[4] = 0.0;
             results[5] = 0.0;
 
-            printf("Initialization failed: pennation angle approaching Pi/2, \n"
+            printf("\nInitialization failed: pennation angle approaching Pi/2, \n"
                    "                       for %s, a Thelen2003Muscle \n"
-                   "                       with an error of %f", 
+                   "                       with an error of %f\n", 
                    muscleName.c_str(), ferr);
 
         //Not enough iterations
@@ -1001,9 +1004,9 @@ SimTK::Vector Thelen2003Muscle::
             results[4] = fpe*fiso;
             results[5] = fse*fiso;
 
-            printf("Initialization failed: solution did not converge in %i, \n"
+            printf("\nInitialization failed: solution did not converge in %i, \n"
                    "                       for %s, a Thelen2003Muscle \n"
-                   "                       with an error of %f", 
+                   "                       with an error of %f\n", 
                    iter, muscleName.c_str() ,ferr);
 
         }
