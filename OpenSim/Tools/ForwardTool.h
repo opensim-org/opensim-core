@@ -14,8 +14,6 @@
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Model/AbstractTool.h>
-#include <OpenSim/Simulation/Model/LinearSpring.h>
-#include <OpenSim/Simulation/Model/TorsionalSpring.h>
 
 #include "osimToolsDLL.h"
 

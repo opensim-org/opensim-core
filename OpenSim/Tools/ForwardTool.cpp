@@ -314,9 +314,9 @@ bool ForwardTool::run()
 
 		cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
         manager.integrate(s);
-	} catch (char *str) { // e.g. may get InterruptedException
-        printf("ForwardTool::run() caught exception \n"  );
-        cout << "Caught some other exception: " << str << "\n";
+	} catch(std::exception &x) {
+        cout << "ForwardTool::run() caught exception \n";
+        cout << x.what() << endl;
 		completed = false;
 		IO::chDir(saveWorkingDirectory);
 	}
