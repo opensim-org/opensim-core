@@ -738,7 +738,7 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
         printf("\n%s: d/dt(system energy-work) > tol, (%f > %f) at time %f\n",
                 fcnName.c_str(), tmp, tol, (double)s.getTime());*/
 
-    SimTK_ERRCHK1_ALWAYS(abs(tmp) > tol, fcnName.c_str(),
+    SimTK_ERRCHK1_ALWAYS(abs(tmp) < tol, fcnName.c_str(),
         "%s: Energy is not being conserved! d/dt(KE+PE-W) > tol >> 0", 
         muscleName.c_str());
 }
