@@ -41,6 +41,7 @@
 
 using namespace OpenSim;
 using namespace SimTK;
+using namespace std;
 
 //______________________________________________________________________________
 /**
@@ -48,7 +49,7 @@ using namespace SimTK;
  */
 int main()
 {
-    std::clock_t startTime = std::clock();
+    clock_t startTime = clock();
 
 	try {
 
@@ -111,7 +112,7 @@ int main()
 
 		// Define the initial and final simulation times
 		double initialTime = 0.0;
-		double finalTime = 4.0;
+		double finalTime = 4.00;
 
 		/////////////////////////////////////////////
 		// DEFINE CONSTRAINTS IMPOSED ON THE MODEL //
@@ -131,24 +132,16 @@ int main()
 		///////////////////////////////////////
 		// DEFINE FORCES ACTING ON THE MODEL //
 		///////////////////////////////////////
-		// GRAVITY
 
+		// GRAVITY
 		// Define the acceleration due to gravity
 		osimModel.setGravity(Vec3(0,-9.80665,0));
 
 		// MUSCLE FORCES
-
-		// Create two new muscles
-		double maxIsometricForce = 1000.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0, activation = 0.0001, deactivation = 1.0;
-		// Create new muscle 1 using the Shutte 1993 muscle model 
-		// Note: activation/deactivation parameters are set differently between the models.
+		// Create two new muscles with identical properties
+		double maxIsometricForce = 1000.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0; 
 		Thelen2003Muscle *muscle1 = new Thelen2003Muscle("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-		muscle1->setActivationTimeConstant(activation);
-		muscle1->setDeactivationTimeConstant(deactivation);
-		// Create new muscle 2 using the Thelen 2003 muscle model
 		Thelen2003Muscle *muscle2 = new Thelen2003Muscle("muscle2",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-		muscle2->setActivationTimeConstant(activation);
-		muscle2->setDeactivationTimeConstant(deactivation);
 
 		// Specify the paths for the two muscles
 		// Path for muscle 1
@@ -216,6 +209,7 @@ int main()
 		// DEFINE CONTROLS FOR THE MODEL //
 		///////////////////////////////////
 		// Create a prescribed controller that simply applies controls as function of time
+		// For muscles, controls are normalized motor-neuron excitations
 		PrescribedController *muscleController = new PrescribedController();
 		muscleController->setActuators(osimModel.updActuators());
 		// Define linear functions for the control values for the two muscles
@@ -223,13 +217,15 @@ int main()
 		Array<double> slopeAndIntercept2(0.0, 2);
 		// muscle1 control has slope of -1 starting 1 at t = 0
 		slopeAndIntercept1[0] = -1.0/(finalTime-initialTime);  slopeAndIntercept1[1] = 1.0;
-		// muscle2 control has slope of 1 starting 0.05 at t = 0
-		slopeAndIntercept2[0] = 1.0/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
+		// muscle2 control has slope of 0.95 starting 0.05 at t = 0
+		slopeAndIntercept2[0] = 0.95/(finalTime-initialTime);  slopeAndIntercept2[1] = 0.05;
 		
 		// Set the indiviudal muscle control functions for the prescribed muscle controller
 		muscleController->prescribeControlForActuator("muscle1", new LinearFunction(slopeAndIntercept1));
 		muscleController->prescribeControlForActuator("muscle2", new LinearFunction(slopeAndIntercept2));
 
+		// Add the muscle controller to the model
+		osimModel.addController(muscleController);
 
 		// Define the default states for the two muscles
 		// Activation
@@ -242,6 +238,8 @@ int main()
 		//////////////////////////
 		// PERFORM A SIMULATION //
 		//////////////////////////
+
+		//osimModel.setUseVisualizer(true);
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
@@ -268,17 +266,17 @@ int main()
 		Manager manager(osimModel,  integrator);
 
 		// Print out details of the model
-		osimModel.printDetailedInfo(si, std::cout);
+		osimModel.printDetailedInfo(si, cout);
 
 		// Print out the initial position and velocity states
 		si.getQ().dump("Initial q's"); // block positions
 		si.getU().dump("Initial u's"); // block velocities
-		std::cout << "Initial time: " << si.getTime() << std::endl;
+		cout << "Initial time: " << si.getTime() << endl;
 
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
-		std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+		cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
 		manager.integrate(si);
 
 		//////////////////////////////
@@ -289,9 +287,7 @@ int main()
 		// Save the states
 		Storage statesDegrees(manager.getStateStorage());
 		statesDegrees.print("tugOfWar_states.sto");
-		osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-		statesDegrees.setWriteSIMMHeader(true);
-		statesDegrees.print("tugOfWar_states_degrees.mot");
+
 		// Save the forces
 		reporter->getForceStorage().print("tugOfWar_forces.mot");
 
@@ -301,23 +297,23 @@ int main()
 	}
     catch (OpenSim::Exception ex)
     {
-        std::cout << ex.getMessage() << std::endl;
+        cerr << ex.getMessage() << endl;
         return 1;
     }
-    catch (std::exception ex)
+	catch (const std::exception &ex)
     {
-        std::cout << ex.what() << std::endl;
+        cerr << ex.what() << endl;
         return 1;
     }
     catch (...)
     {
-        std::cout << "UNRECOGNIZED EXCEPTION" << std::endl;
+        cerr << "UNRECOGNIZED EXCEPTION" << endl;
         return 1;
     }
 
-    std::cout << "main() routine time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
+    cout << "main() routine time = " << 1.e3*(clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
 
-    std::cout << "OpenSim example completed successfully.\n";
+    cout << "OpenSim example completed successfully." << endl;
 
 	return 0;
 }
