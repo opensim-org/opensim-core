@@ -54,6 +54,7 @@ PropertyStr(const string &aName,const string &aValue) :
 	Property_Deprecated(Property_Deprecated::Str,aName)
 {
 	_value = aValue;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**
@@ -64,6 +65,7 @@ PropertyStr() :
 	Property_Deprecated(Property_Deprecated::Str,"StringPropertyName")
 {
 	_value = PropertyStr::getDefaultStr();
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**

@@ -54,6 +54,7 @@ PropertyBool::PropertyBool(const string &aName,bool aValue)
 :   Property_Deprecated(Property_Deprecated::Bool,aName)
 {
 	_value = aValue;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**
@@ -63,6 +64,7 @@ PropertyBool::PropertyBool()
 :   Property_Deprecated(Property_Deprecated::Bool,"BoolPropertyName")
 {
 	_value = false;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**

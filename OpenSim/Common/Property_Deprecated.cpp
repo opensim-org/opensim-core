@@ -114,6 +114,7 @@ operator=(const Property_Deprecated& aProperty)
 {
     AbstractProperty::operator=(aProperty);
     _propertyType = aProperty._propertyType;
+    _matchName = aProperty._matchName;
 
 	return *this;
 }

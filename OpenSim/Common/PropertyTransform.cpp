@@ -57,6 +57,7 @@ PropertyDblArray(aName, OpenSim::Array<double>(0., 6)),
 {
 	setType(Transform);
 	getRotationsAndTranslationsAsArray6(&_array[0]);
+    setAllowableListSize(6);
 }
 //_____________________________________________________________________________
 /**
@@ -71,6 +72,7 @@ PropertyDblArray(aName, aArray)
 	assert(aArray.getSize()==6);
 	_transform.updR().setRotationToBodyFixedXYZ(SimTK::Vec3::getAs(&aArray[0]));
 	_transform.updP() = SimTK::Vec3::getAs(&aArray[3]);
+    setAllowableListSize(6);
 }
 //_____________________________________________________________________________
 /**
@@ -81,6 +83,7 @@ PropertyTransform() :
 	PropertyDblArray("TransformPropertyName", OpenSim::Array<double>(0., 6))
 {
 	setType(Transform);
+    setAllowableListSize(6);
 }
 //_____________________________________________________________________________
 /**

@@ -70,6 +70,7 @@ public:
 	PropertyObjPtr() : Property_Deprecated(ObjPtr, "ObjPtrPropertyName")
 	{
 		_value = 0;
+        setAllowableListSize(0,1);
 	}
 
 	PropertyObjPtr(const PropertyObjPtr<T> &aProperty)

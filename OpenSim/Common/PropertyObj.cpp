@@ -65,6 +65,7 @@ PropertyObj(const string &aName,const Object &aValue) :
 	setName(aName);
 	_value = aValue.clone();
 	_value->setName(aName);
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**
@@ -75,6 +76,7 @@ PropertyObj() :
 	Property_Deprecated(Property_Deprecated::Obj,"Object")
 {
 	_value = 0;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**

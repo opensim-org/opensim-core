@@ -55,6 +55,7 @@ PropertyDbl(const string &aName,double aValue) :
 	Property_Deprecated(Property_Deprecated::Dbl,aName)
 {
 	_value = aValue;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**
@@ -65,6 +66,7 @@ PropertyDbl() :
 	Property_Deprecated(Property_Deprecated::Dbl,"DblPropertyName")
 {
 	_value = 0.0;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**

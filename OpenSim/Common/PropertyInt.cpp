@@ -55,6 +55,7 @@ PropertyInt(const string &aName,int aValue) :
 Property_Deprecated(Property_Deprecated::Int,aName)
 {
 	_value = aValue;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**
@@ -65,6 +66,7 @@ PropertyInt() :
 Property_Deprecated(Property_Deprecated::Int,"IntPropertyName")
 {
 	_value = 0;
+    setAllowableListSize(1,1);
 }
 //_____________________________________________________________________________
 /**
