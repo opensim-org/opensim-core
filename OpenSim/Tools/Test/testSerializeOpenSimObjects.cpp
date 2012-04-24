@@ -54,6 +54,15 @@ static void dumpObj(const Object& obj, int nSpaces) {
         const AbstractProperty& ap = obj.getPropertyByIndex(p); 
         indent(nSpaces+2);
         cout << ap.getName() << "=" << ap.toString() << endl;
+        // Check return values from Property API for debugging purposes
+        bool t1 = ap.isListProperty();
+        bool t2 = ap.isObjectProperty();
+        bool t3 = ap.isOneObjectProperty();
+        bool t4 = ap.isOneValueProperty();
+        string ts = ap.getTypeName();
+        indent(nSpaces+2);
+        cout << "isList, isObject, isOneObject, isOneValue, typeName = " <<
+            t1 <<", "<< t2 <<", "<< t3 <<", "<< t4 <<", "<< ts << endl;
         if (ap.isObjectProperty()) {
             for (int i=0; i < ap.size(); ++i)
                 dumpObj(ap.getValueAsObject(i), nSpaces+4);
