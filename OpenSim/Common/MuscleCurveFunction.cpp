@@ -610,7 +610,11 @@ void MuscleCurveFunction::printMuscleCurveToCSVFile(const std::string& path) con
     }
 
             std::string fname = _name;
+            SimTK_ERRCHK_ALWAYS(fname.length() > 0,
+                "MuscleCurveFunction::printMuscleCurveToCSVFile",
+                "Muscle Curve name is empty!");
             fname.append(".csv");
+
             printMatrixToFile(results,colNames,path,fname);
 }
 /**
@@ -626,7 +630,10 @@ void MuscleCurveFunction::
 	
     ofstream datafile;
     std::string fullpath = path;
-    fullpath.append("/");
+    
+    if(fullpath.length() > 0)
+        fullpath.append("/");
+    
     fullpath.append(filename);
 
 	datafile.open(fullpath.c_str(),std::ios::out);

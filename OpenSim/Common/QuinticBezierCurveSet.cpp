@@ -198,7 +198,29 @@ SimTK::Matrix QuinticBezierCurveSet::
     xyPts(5,0) = x1;
     xyPts(5,1) = y1;
 
+    /*
+    //New mid point control code, which spreads the curve out more gradually    
+    double deltaX   = (xC-xyPts(0,0));    
+    double deltaY   = (yC-xyPts(0,1));
+    double sinCPi   = sin(curviness*SimTK::Pi);
+
     //First two midpoints
+    xyPts(1,0) = x0 + (curviness - 0.25*sinCPi)*deltaX;
+    xyPts(1,1) = y0 + (curviness - 0.25*sinCPi)*deltaY;
+    xyPts(2,0) = x0 + (curviness + 0.25*sinCPi)*deltaX;
+    xyPts(2,1) = y0 + (curviness + 0.25*sinCPi)*deltaY;
+
+    //Second two midpoints
+    deltaX   = (xC-xyPts(5,0));    
+    deltaY   = (yC-xyPts(5,1));
+
+    xyPts(3,0) = xyPts(5,0) + (curviness - 0.25*sinCPi)*deltaX;
+    xyPts(3,1) = xyPts(5,1) + (curviness - 0.25*sinCPi)*deltaY;
+    xyPts(4,0) = xyPts(5,0) + (curviness + 0.25*sinCPi)*deltaX;
+    xyPts(4,1) = xyPts(5,1) + (curviness + 0.25*sinCPi)*deltaY;
+    */
+    
+    //Original code - leads to 2 localized corners
     xyPts(1,0) = x0 + curviness*(xC-xyPts(0,0));
     xyPts(1,1) = y0 + curviness*(yC-xyPts(0,1));
     xyPts(2,0) = xyPts(1,0);
@@ -209,7 +231,7 @@ SimTK::Matrix QuinticBezierCurveSet::
     xyPts(3,1) = xyPts(5,1) + curviness*(yC-xyPts(5,1));
     xyPts(4,0) = xyPts(3,0);
     xyPts(4,1) = xyPts(3,1);
-
+    
     return xyPts;
 }
 

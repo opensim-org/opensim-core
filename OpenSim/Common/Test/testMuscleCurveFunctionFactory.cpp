@@ -364,8 +364,11 @@ bool isVectorMonotonic(SimTK::Vector y, int multEPS)
         for(int i =1; i <y.nelt(); i++){
             if(y(i) > y(i-1)+SimTK::Eps*multEPS){
                 isMonotonic = false;
-                printf("Monotonicity broken at idx %i, since %fe-10 > %fe-10",
-                        i,y(i)*1e10,y(i-1)*1e10);
+                //printf("Monotonicity broken at idx %i, since %fe-16 > %fe-16\n",
+                //        i,y(i)*1e16,y(i-1)*1e16);
+                printf("Monotonicity broken at idx %i, since "
+                    "y(i)-y(i-1) < tol, (%f*SimTK::Eps < SimTK::Eps*%i) \n",
+                        i,((y(i)-y(i-1))/SimTK::Eps), multEPS);
             }
         }
     }
@@ -373,8 +376,9 @@ bool isVectorMonotonic(SimTK::Vector y, int multEPS)
         for(int i =1; i <y.nelt(); i++){
             if(y(i) < y(i-1)-SimTK::Eps*multEPS){
                 isMonotonic = false;
-                printf("Monotonicity broken at idx %i, since %f < %f",
-                        i,y(i),y(i-1));
+                printf("Monotonicity broken at idx %i, since "
+                    "y(i)-y(i-1) < -tol, (%f*SimTK::Eps < -SimTK::Eps*%i) \n",
+                        i,((y(i)-y(i-1))/SimTK::Eps), multEPS);
             }
         }
     }
@@ -861,6 +865,8 @@ void testMuscleCurveDerivatives(MuscleCurveFunction mcf,SimTK::Matrix mcfSample,
    
     SimTK::Matrix numSample(mcfSample.nrow(),maxDer);  
     SimTK::Matrix relError(mcfSample.nrow(),maxDer);
+    
+
     double bigTol = sqrt(SimTK::Eps);
 
     for(int i=0; i < maxDer; i++){
@@ -889,13 +895,21 @@ void testMuscleCurveDerivatives(MuscleCurveFunction mcf,SimTK::Matrix mcfSample,
     errAbsMax = 0;
     double absTol = 5*tol;
 
+    bool flagError12=false;
+    SimTK::Vector tolExceeded12V(mcfSample.nrow());
+    tolExceeded12V = 0;
+    
     int tolExceeded12 = 0;
     int tolExceeded34 = 0;
     for(int j=0;j<maxDer;j++){
+        
         for(int i=0; i<mcfSample.nrow(); i++){
             if(relError(i,j) > tol && mcfSample(i,j+2) > tol){
-                if(j <= 1)
+                if(j <= 1){
                     tolExceeded12++;
+                    tolExceeded12V(i)=1;
+                    flagError12=true;
+                }
                 if(j>=2)
                     tolExceeded34++;                
             }
@@ -906,8 +920,11 @@ void testMuscleCurveDerivatives(MuscleCurveFunction mcf,SimTK::Matrix mcfSample,
             //This is a harder test: here we're comparing absolute error
             //so the tolerance margin is a little higher
             if(relError(i,j) > absTol && mcfSample(i,j+2) <= tol){
-                if(j <= 1)
+                if(j <= 1){
                     tolExceeded12++;
+                    tolExceeded12V(i)=1;
+                    flagError12=true;
+                }
                 if(j>=2)
                     tolExceeded34++;                           
             }
@@ -915,24 +932,28 @@ void testMuscleCurveDerivatives(MuscleCurveFunction mcf,SimTK::Matrix mcfSample,
             if(mcfSample(i,j+2) < tol)
             if(errAbsMax(j) < abs(relError(i,j)))
                     errAbsMax(j) = abs(relError(i,j));
-            
+         
+        
         }
+
+        if(flagError12 == true){
+            printf("Derivative %i Rel Error Exceeded:\n",j);
+            printf("x        dx_relErr dx_calcVal dx_sample"
+                    " dx2_relErr dx2_calcVal dx2_sample\n");
+            for(int i=0; i<mcfSample.nrow(); i++){
+                if(tolExceeded12V(i) == 1){
+                   printf("%f %f %f  %f %f   %f    %f",
+                    mcfSample(i,0),relError(i,0),mcfSample(i,2),numSample(i,0),
+                                  relError(i,1),mcfSample(i,3),numSample(i,1));
+                    
+                }
+            }
+        }
+        flagError12=false;
+        tolExceeded12V = 0;
     }
     
-    if(tolExceeded12 > 0){
-        cout << "XrelError" << endl;
-        SimTK::Matrix XrelError(relError.nrow(), 1+6);
-        XrelError(0) = mcfSample(0);
-        //1st derivative error, value, and numerical value
-        XrelError(1) = relError(0);
-        XrelError(2) = mcfSample(2);
-        XrelError(3) = numSample(0);
-        //2nd derivative error, value, and numerical value
-        XrelError(4) = relError(1);
-        XrelError(5) = mcfSample(3);
-        XrelError(6) = numSample(1);
-        cout << XrelError << endl;
-    }
+
 
 
 
@@ -1127,7 +1148,7 @@ int main(int argc, char* argv[])
         cout <<"          TESTING QuinticBezierCurveSet           "<<endl;
         cout <<"  (a class that MuscleCurveFunctionFactory uses)  "<<endl;
         cout <<"**************************************************"<<endl;
-
+        
         testQuinticBezier_DU_DYDX();
         testQuinticBezier_Exceptions();
 
@@ -1274,7 +1295,7 @@ int main(int argc, char* argv[])
 
                 double lmax = 0.6;
                 double kce  = -8.389863790885878;
-                double cce  = 0.1;//0.0;
+                double cce  = 0.5;//0.0;
             MuscleCurveFunction fiberCECurve = MuscleCurveFunctionFactory::
                createFiberCompressiveForceLengthCurve(lmax,kce,cce,true,
                                 "test_fiberCompressiveForceLengthCurve");
@@ -1334,7 +1355,7 @@ int main(int argc, char* argv[])
             cout <<"**************************************************"<<endl;
             cout <<"FIBER COMPRESSIVE FORCE PHI CURVE TESTING      "<<endl;
 
-                double phi0 = (SimTK::Pi/2)*(8.0/9.0);
+                double phi0 = (SimTK::Pi/2)*(1.0/2.0);
                 double phi1 = SimTK::Pi/2;
                 double kphi  = 8.389863790885878;
                 double cphi  = 0.0;  
@@ -1478,7 +1499,7 @@ int main(int argc, char* argv[])
                 createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
                                 concCurviness,  eccCurviness,false,
                                 "test_fiberForceVelocityCurve");
-            //fiberFVCurve.printMuscleCurveToFile(filePath);
+            //fiberFVCurve.printMuscleCurveToCSVFile(filePath);
 
             SimTK::Matrix fiberFVCurveSample 
                             = fiberFVCurve.calcSampledMuscleCurve(6);
@@ -1812,7 +1833,7 @@ int main(int argc, char* argv[])
 
 	
 
-    cout << "\nThelen_Bench_1 completed successfully.\n";
+    cout << "\ntest of MuscleCurveFunctionFactory completed successfully.\n";
 	return 0;
 }
 
