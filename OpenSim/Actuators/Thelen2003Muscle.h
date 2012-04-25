@@ -151,6 +151,7 @@ private:
     // Private Utility Class Members
     //      -Computes activation dynamics and fiber kinematics
     //=====================================================================
+    //bool initializedModel;
 
     //Activation Dynamics
     MuscleFirstOrderActivationDynamicModel actMdl;

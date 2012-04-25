@@ -99,6 +99,7 @@ Thelen2003Muscle::~Thelen2003Muscle()
 {
     //delete actMdl;
     //delete penMdl;
+    
 }
 
 //_____________________________________________________________________________
@@ -109,6 +110,7 @@ void Thelen2003Muscle::setNull()
 {
     //actMdl = NULL;
     //penMdl = NULL;
+    //initializedModel = false;
 }
 
 //_____________________________________________________________________________
@@ -173,6 +175,8 @@ void Thelen2003Muscle::copyData(const Thelen2003Muscle &aMuscle)
     setPropertyValue(FvLinearExtrapName,
         aMuscle.getPropertyValue<double>(FvLinearExtrapName));
 
+    //initializedModel = aMuscle.initializedModel;
+
 }
 
  void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const 
@@ -206,6 +210,7 @@ void Thelen2003Muscle::copyData(const Thelen2003Muscle &aMuscle)
                                             caller);
 
     mthis->penMdl = tmp2;
+    
  }
 
 
@@ -249,6 +254,8 @@ void Thelen2003Muscle::setupProperties()
     
     addProperty<double>(FvLinearExtrapName
         ,"fv threshold where linear extrapolation is used",0.95);
+
+   
 }
 
 //=============================================================================
@@ -451,7 +458,8 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     //according to their relative stiffness.
     double activation = getActivation(s);
     double tol = 1e-10;  //Should this be user settable?
-    int maxIter = 100;  //Should this be user settable?    
+    int maxIter = 100;  //Should this be user settable?
+
     SimTK::Vector soln = initMuscleState(s,activation, tol, maxIter);
 
     int flag_status    = (int)soln[0];
@@ -480,10 +488,13 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     //3: iterations
     //4: fiber length (m)
     //5: passive force (N)
-    //6: tendon force (N)                   
+    //6: tendon force (N)  
+    
+    //Thelen2003Muscle* mthis =  const_cast<Thelen2003Muscle*>(this);
+    //mthis->initializedModel = true;
     setForce(s,tendonForce);
     setFiberLength(s,fiberLength);
-       
+ 
 }
 
 void Thelen2003Muscle::calcMuscleLengthInfo(const SimTK::State& s, 
@@ -727,20 +738,27 @@ void Thelen2003Muscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     double dTdnPEdt = fse*fiso*dtl;
     double dFibWdt  = mdi.fiberPower;
     double dBoundaryWdt = -mdi.musclePower;
-    double tmp = dFibPEdt+dTdnPEdt-dFibWdt-dBoundaryWdt;
-    double tol = sqrt(SimTK::Eps);
-    
-    if(abs(dFibPEdt) > tol || abs(tmp) >= tol){
-        tol = sqrt(SimTK::Eps);
-    }
+    double ddt_KEPEmW = dFibPEdt+dTdnPEdt-dFibWdt-dBoundaryWdt;
+    SimTK::Vector userVec(1);
+    userVec(0) = ddt_KEPEmW;  
+    mdi.userDefinedDynamicsExtras = userVec;
+
+    //double tol = sqrt(SimTK::Eps);    
+    //if(abs(dFibPEdt) > tol || abs(tmp) >= tol){
+    //    tol = sqrt(SimTK::Eps);
+    //}
     
     /*if(abs(tmp) > tol)
         printf("\n%s: d/dt(system energy-work) > tol, (%f > %f) at time %f\n",
                 fcnName.c_str(), tmp, tol, (double)s.getTime());*/
-
-    SimTK_ERRCHK1_ALWAYS(abs(tmp) < tol, fcnName.c_str(),
-        "%s: Energy is not being conserved! d/dt(KE+PE-W) > tol >> 0", 
-        muscleName.c_str());
+ 
+    /*SimTK_ERRCHK1( ((abs(tmp) < tol) && initializedModel)||!initializedModel, 
+            fcnName.c_str(),
+            "%\ns: Energy is not being conserved! d/dt(KE+PE-W) > tol >> 0 \n"
+            "    Try tightening the integrator tolerances and re-simulating\n", 
+            muscleName.c_str());
+    */
+   
 }
 
 //==============================================================================
@@ -768,6 +786,10 @@ SimTK::Vector Thelen2003Muscle::
     initMuscleState(SimTK::State& s, double aActivation, 
                               double aSolTolerance, int aMaxIterations) const
 {
+    
+
+   
+
     //results vector format
     //1: flag (0 = diverged (not enough iterations), 1=converged, 
     //         2= no solution due to singularity:length 0, 
