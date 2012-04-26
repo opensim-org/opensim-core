@@ -271,6 +271,7 @@ public:
 // For properties that contain objects, you can obtain the values directly
 // from the base class via non-templatized methods.
 class PropertyHelper {
+public:
     static bool getValueBool(const AbstractProperty& p, int index=-1) 
     {   return p.getValue<bool>(index); }
     static void setValueBool(bool v, AbstractProperty& p, int index=-1) 
