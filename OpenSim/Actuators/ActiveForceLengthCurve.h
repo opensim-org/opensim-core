@@ -246,7 +246,8 @@ public:
 
     /**
     Calculates the value of the curve evaluated at 'normFiberLength'. Note that
-    if the curve is out of date is rebuilt (which will cost ~20,500 flops). 
+    if the curve is out of date it is rebuilt 
+    (at a cost of ~20,500 flops). 
 
     @param normFiberLength : the normalized length of the muscle fiber
     @return the value of the active force length curve 
@@ -262,13 +263,13 @@ public:
 
     /**
     Calculates the derivative of the active force length multiplier w.r.t. 
-    normalized fiber length. Note that  if the curve is out of date is rebuilt 
+    normalized fiber length. Note that if the curve is out of date it is rebuilt 
     (which will cost ~20,500 flops). 
 
     @param normFiberLength : the normalized length of the muscle fiber
     @param order           : the order of the derivative. Only values of 0,1 and
                              2 are acceptable.
-    @return the first derivative active force length curve w.r.t. normalized 
+    @return the derivative active force length curve w.r.t. normalized 
             fiber length
     
     <B>Computational Costs</B>       

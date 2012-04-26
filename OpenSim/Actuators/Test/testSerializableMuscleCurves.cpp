@@ -19,8 +19,12 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim\Actuators\ActiveForceLengthCurve.h>//"ActiveForceLengthCurve.h"
-#include <OpenSim\Actuators\ForceVelocityCurve.h>    //"ForceVelocityCurve.h"
+#include <OpenSim\Actuators\ActiveForceLengthCurve.h>
+    //"ActiveForceLengthCurve.h"
+#include <OpenSim\Actuators\ForceVelocityCurve.h>
+    //"ForceVelocityCurve.h"
+#include <OpenSim\Actuators\ForceVelocityInverseCurve.h>
+    //"ForceVelocityInverseCurve.h"
 
 #include <SimTKsimbody.h>
 #include <ctime>
@@ -33,6 +37,7 @@ using namespace SimTK;
 
 void testActiveForceLengthCurve();
 void testForceVelocityCurve();
+void testForceVelocityInverseCurve();
 
 int main(int argc, char* argv[])
 {
@@ -42,6 +47,7 @@ int main(int argc, char* argv[])
             SimTK_START_TEST("Testing Serializable Curves");
             testActiveForceLengthCurve();
             testForceVelocityCurve();
+            testForceVelocityInverseCurve();
             SimTK_END_TEST();
     }
     catch (OpenSim::Exception ex)
@@ -71,10 +77,11 @@ int main(int argc, char* argv[])
 
 void testActiveForceLengthCurve()
 {
+
         //cout <<"**************************************************"<<endl;
-        cout <<"____________________________________________________"<<endl;
+        cout <<"________________________________________________________"<<endl;
         cout <<"1. Testing: ActiveForceLengthCurve "<<endl;       
-        cout <<"____________________________________________________"<<endl;
+        cout <<"________________________________________________________"<<endl;
 
         cout <<"    a. default construction" <<endl;
         ActiveForceLengthCurve falCurve1;
@@ -93,7 +100,9 @@ void testActiveForceLengthCurve()
         //These next few lines are just to read the object in, and repopulate
         //falCurve2 with the properties from the file ... and its a little 
         //awkward to use.
-     
+
+        //cout << "b.*Uncomment, test makeObjectFromFile once in OpenSim"<<endl;        
+        
         
         Object* tmpObj = Object::
                        makeObjectFromFile("default_ActiveForceLengthCurve.xml");
@@ -101,7 +110,8 @@ void testActiveForceLengthCurve()
         delete tmpObj;
         
         SimTK_TEST(falCurve2 == falCurve1);        
-        remove("default_ActiveForceLengthCurve.xml");        
+        remove("default_ActiveForceLengthCurve.xml");  
+        
 
         falCurve2.setMaxActiveFiberLength(2);
         falCurve2.setTransitionFiberLength(0.8);
@@ -111,7 +121,8 @@ void testActiveForceLengthCurve()
 
         cout <<"    c. assignment operator" <<endl;
         falCurve2=falCurve1;
-                
+        
+        
         SimTK_TEST(falCurve1==falCurve2);
 
         falCurve2.setMaxActiveFiberLength(2);
@@ -124,7 +135,7 @@ void testActiveForceLengthCurve()
         ActiveForceLengthCurve falCurve2p5(falCurve2);
         SimTK_TEST(falCurve2==falCurve2p5);
 
-        cout << "Passed: default construction, serialization" << endl;
+        cout << "*Passed: default construction, limited serialization" << endl;
         cout << "         assignment operator, copy constructor" << endl;
 
         //cout <<"**************************************************"<<endl;
@@ -177,24 +188,27 @@ void testActiveForceLengthCurve()
 
         cout << "Passed: Testing Services for connectivity" << endl;                            
 
-        ///cout <<"**************************************************"<<endl;
+        //cout <<"**************************************************"<<endl;
         cout <<"Service correctness is tested by underlying utility class"<<endl;
         cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
         //cout <<"**************************************************"<<endl;
 
-        cout <<"**************************************************"<<endl;
+        //cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING ActiveForceLengthCurve          "<<endl;
         cout <<"                    COMPLETED                     "<<endl;
-        cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;
+        //cout <<"**************************************************"<<endl;
 
 }
 
 void testForceVelocityCurve()
 {
-        
-        cout <<"____________________________________________________"<<endl;
+
+        cout <<"________________________________________________________"<<endl;
         cout <<"1. Testing ForceVelocityCurve"<<endl;       
-        cout <<"____________________________________________________"<<endl;
+        cout <<"________________________________________________________"<<endl;
+
 
         cout <<"    a. default construction" <<endl;
         ForceVelocityCurve fvCurve1;
@@ -208,23 +222,24 @@ void testForceVelocityCurve()
         fvCurve2.setEccentricCurviness(0.5);
         fvCurve2.setEccentricMinSlope(0);
         fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
-        fvCurve2.setIsometricMaxSlope(10);      
+        fvCurve2.setIsometricMaxSlope(10);
 
 
         //These next few lines are just to read the object in, and repopulate
         //fvCurve2 with the properties from the file ... and its a little 
-        //awkward to use.     
+        //awkward to use.
+
+        //cout << "b.*Uncomment, test makeObjectFromFile once in OpenSim"<<endl;        
+        
         
         Object* tmpObj = Object::          
                        makeObjectFromFile("default_ForceVelocityCurve.xml");
-        fvCurve2 = *dynamic_cast<ForceVelocityCurve*>(tmpObj);
-        
+        fvCurve2 = *dynamic_cast<ForceVelocityCurve*>(tmpObj);        
         delete tmpObj;
-
         SimTK_TEST(fvCurve2 == fvCurve1);       
-
         remove("default_ForceVelocityCurve.xml");
-              
+        
+
         fvCurve2.setConcentricCurviness(0.5);
         fvCurve2.setConcentricMinSlope(0);
         fvCurve2.setEccentricCurviness(0.5);
@@ -307,13 +322,147 @@ void testForceVelocityCurve()
         cout << "Passed: Testing Services for connectivity" << endl;                            
 
         //cout <<"**************************************************"<<endl;
-        cout <<"Service correctness is tested by underlying utility class"<<endl;
+       cout <<"Service correctness is tested by underlying utility class"<<endl;
         cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
         //cout <<"**************************************************"<<endl;
 
-        cout <<"**************************************************"<<endl;
+        //cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING ForceVelocityCurve              "<<endl;
         cout <<"                    COMPLETED                     "<<endl;
-        cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;
+        //cout <<"**************************************************"<<endl;
+
+}
+
+void testForceVelocityInverseCurve()
+{
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;    
+        cout <<"1. Testing ForceVelocityInverseCurve"<<endl;       
+        cout <<"________________________________________________________"<<endl;
+
+        cout <<"    a. default construction" <<endl;
+        ForceVelocityInverseCurve fvCurve1;
+        fvCurve1.print("default_ForceVelocityInverseCurve.xml");
+
+        cout <<"    b. serialization & deserialization" <<endl;
+        ForceVelocityInverseCurve fvCurve2;
+        //change all of the properties to something other than the default
+        fvCurve2.setConcentricCurviness(0.5);
+        fvCurve2.setConcentricMinSlope(0.05);
+        fvCurve2.setEccentricCurviness(0.5);
+        fvCurve2.setEccentricMinSlope(0.06);
+        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
+        fvCurve2.setIsometricMaxSlope(10);
+
+
+        //These next few lines are just to read the object in, and repopulate
+        //fvCurve2 with the properties from the file ... and its a little 
+        //awkward to use.
+
+        //cout << "b.*Uncomment, test makeObjectFromFile once in OpenSim"<<endl;        
+        
+        Object* tmpObj = Object::          
+                    makeObjectFromFile("default_ForceVelocityInverseCurve.xml");
+        fvCurve2 = *dynamic_cast<ForceVelocityInverseCurve*>(tmpObj);        
+        delete tmpObj;
+        SimTK_TEST(fvCurve2 == fvCurve1);       
+        remove("default_ForceVelocityInverseCurve.xml");
+        
+
+        fvCurve2.setConcentricCurviness(0.5);
+        fvCurve2.setConcentricMinSlope(0.05);
+        fvCurve2.setEccentricCurviness(0.5);
+        fvCurve2.setEccentricMinSlope(0.06);
+        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
+        fvCurve2.setIsometricMaxSlope(10);
+
+        cout <<"    c. assignment operator" <<endl;
+        fvCurve2=fvCurve1;
+        
+        
+        SimTK_TEST(fvCurve1==fvCurve2);
+
+        fvCurve2.setConcentricCurviness(0.5);
+        fvCurve2.setConcentricMinSlope(0.05);
+        fvCurve2.setEccentricCurviness(0.5);
+        fvCurve2.setEccentricMinSlope(0.06);
+        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
+        fvCurve2.setIsometricMaxSlope(10);
+
+        cout <<"    d. copy constructor" <<endl;
+        ForceVelocityInverseCurve fvCurve2p5(fvCurve2);
+        SimTK_TEST(fvCurve2==fvCurve2p5);
+
+        cout << "*Passed: default construction, limited serialization" << endl;
+        cout << "         assignment operator, copy constructor" << endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"2. Testing API constructor" << endl;
+        ForceVelocityInverseCurve fvCurve3(0.1,5,0.1,1.8,0.1,0.75,"testMuscle");
+        double falVal  = fvCurve3.calcValue(1.0);
+        double dfalVal = fvCurve3.calcDerivative(1.0,1);
+        cout << "Passed: Testing API constructor" << endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"3. Testing get/set methods:" << endl;
+
+        fvCurve2.setConcentricCurviness(0.5);
+        fvCurve2.setConcentricMinSlope(0.05);
+        fvCurve2.setEccentricCurviness(0.5);
+        fvCurve2.setEccentricMinSlope(0.06);
+        fvCurve2.setMaxEccentricVelocityForceMultiplier(2.0);
+        fvCurve2.setIsometricMaxSlope(10);
+
+        SimTK_TEST(fvCurve2.getConcentricCurviness()                    == 0.5);
+        SimTK_TEST(fvCurve2.getConcentricMinSlope()                     ==0.05);
+        SimTK_TEST(fvCurve2.getEccentricCurviness()                     == 0.5);
+        SimTK_TEST(fvCurve2.getEccentricMinSlope()                      ==0.06);
+        SimTK_TEST(fvCurve2.getMaxEccentricVelocityForceMultiplier()    == 2.0);
+        SimTK_TEST(fvCurve2.getIsometricMaxSlope()                      ==  10);
+
+        cout << "Passed: Testing get/set methods" << endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"4. Testing Services for connectivity:" << endl;        
+        ForceVelocityInverseCurve fvCurve4;
+        fvCurve4.setName("fvInvCurve");
+
+        cout <<"    a. calcValue" << endl;
+            double tol = sqrt(SimTK::Eps);
+            double value = fvCurve4.calcValue(1.0);
+            SimTK_TEST_EQ_TOL(value, 0, tol);
+        cout <<"    b. calcDerivative" << endl;
+            double dvalue= fvCurve4.calcDerivative(1.0,1);
+            SimTK_TEST_EQ_TOL(dvalue, 1.0/5.0, tol);
+
+        cout <<"    c. getCurveDomain" << endl;
+            SimTK::Vec2 tmp = fvCurve4.getCurveDomain();
+            SimTK_TEST(tmp(0) == 0 &&
+                       tmp(1) == 1.8);
+
+        cout <<"    d. printMuscleCurveToCSVFile" << endl;
+            fvCurve4.setConcentricCurviness(0.5);
+            fvCurve4.setEccentricCurviness(1.0);
+            fvCurve4.printMuscleCurveToCSVFile("");
+            std::string fname = fvCurve4.getName();
+            fname.append(".csv");
+            remove(fname.c_str());
+
+        cout << "Passed: Testing Services for connectivity" << endl;                            
+
+        //cout <<"**************************************************"<<endl;
+       cout <<"Service correctness is tested by underlying utility class"<<endl;
+       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+        //cout <<"**************************************************"<<endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;
+        cout <<"          TESTING ForceVelocityInverseCurve             "<<endl;
+        cout <<"                    COMPLETED                     "<<endl;
+        cout <<"________________________________________________________"<<endl;
+        //cout <<"**************************************************"<<endl;
 
 }
