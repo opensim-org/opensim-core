@@ -20,11 +20,9 @@
  * -------------------------------------------------------------------------- */
 
 #include <OpenSim\Actuators\ActiveForceLengthCurve.h>
-    //"ActiveForceLengthCurve.h"
 #include <OpenSim\Actuators\ForceVelocityCurve.h>
-    //"ForceVelocityCurve.h"
 #include <OpenSim\Actuators\ForceVelocityInverseCurve.h>
-    //"ForceVelocityInverseCurve.h"
+#include <OpenSim\Actuators\TendonForceLengthCurve.h>
 
 #include <SimTKsimbody.h>
 #include <ctime>
@@ -38,6 +36,7 @@ using namespace SimTK;
 void testActiveForceLengthCurve();
 void testForceVelocityCurve();
 void testForceVelocityInverseCurve();
+void testTendonForceLengthCurve();
 
 int main(int argc, char* argv[])
 {
@@ -48,6 +47,7 @@ int main(int argc, char* argv[])
             testActiveForceLengthCurve();
             testForceVelocityCurve();
             testForceVelocityInverseCurve();
+            testTendonForceLengthCurve();
             SimTK_END_TEST();
     }
     catch (OpenSim::Exception ex)
@@ -461,6 +461,125 @@ void testForceVelocityInverseCurve()
         //cout <<"**************************************************"<<endl;
         cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING ForceVelocityInverseCurve             "<<endl;
+        cout <<"                    COMPLETED                     "<<endl;
+        cout <<"________________________________________________________"<<endl;
+        //cout <<"**************************************************"<<endl;
+
+}
+
+
+void testTendonForceLengthCurve()
+{
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;    
+        cout <<"1. Testing TendonForceLengthCurve"<<endl;       
+        cout <<"________________________________________________________"<<endl;
+
+        cout <<"    a. default construction" <<endl;
+        TendonForceLengthCurve fseCurve1;
+        fseCurve1.print("default_TendonForceLengthCurve.xml");
+
+        cout <<"    b. serialization & deserialization" <<endl;
+        TendonForceLengthCurve fseCurve2;
+        //change all of the properties to something other than the default
+        fseCurve2.setStrainAtOneNormForce(0.10);
+        fseCurve2.setStiffnessAtOneNormForce(50.0);
+        fseCurve2.setCurviness(0.8);
+
+
+        //These next few lines are just to read the object in, and repopulate
+        //fvCurve2 with the properties from the file ... and its a little 
+        //awkward to use.
+
+        cout << "b.*Uncomment, test makeObjectFromFile once in OpenSim"<<endl;        
+        
+        Object* tmpObj = Object::          
+                    makeObjectFromFile("default_TendonForceLengthCurve.xml");
+        fseCurve2 = *dynamic_cast<TendonForceLengthCurve*>(tmpObj);        
+        delete tmpObj;
+        SimTK_TEST(fseCurve2 == fseCurve1);       
+        remove("default_TendonForceLengthCurve.xml");
+        
+
+        fseCurve2.setStrainAtOneNormForce(0.10);
+        fseCurve2.setStiffnessAtOneNormForce(50.0);
+        fseCurve2.setCurviness(0.8);
+
+        cout <<"    c. assignment operator" <<endl;
+        fseCurve2=fseCurve1;
+                
+        SimTK_TEST(fseCurve1==fseCurve2);
+
+        fseCurve2.setStrainAtOneNormForce(0.10);
+        fseCurve2.setStiffnessAtOneNormForce(50.0);
+        fseCurve2.setCurviness(0.8);
+
+        cout <<"    d. copy constructor" <<endl;
+        TendonForceLengthCurve fseCurve2p5(fseCurve2);
+        SimTK_TEST(fseCurve2==fseCurve2p5);
+
+        cout << "*Passed: default construction, limited serialization" << endl;
+        cout << "         assignment operator, copy constructor" << endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"2. Testing API constructor" << endl;
+        TendonForceLengthCurve fseCurve3(0.10,50,0.75,"testMuscle");
+        double falVal  = fseCurve3.calcValue(0.02);
+        double dfalVal = fseCurve3.calcDerivative(0.02,1);
+        cout << "Passed: Testing API constructor" << endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"3. Testing get/set methods:" << endl;
+
+        fseCurve2.setStrainAtOneNormForce(0.10);
+        fseCurve2.setStiffnessAtOneNormForce(50.0);
+        fseCurve2.setCurviness(0.8);
+
+        SimTK_TEST(fseCurve2.getStrainAtOneNormForce()      == 0.10);
+        SimTK_TEST(fseCurve2.getStiffnessAtOneNormForce()   == 50.0);
+        SimTK_TEST(fseCurve2.getCurviness()                 == 0.80);
+        
+        cout << "Passed: Testing get/set methods" << endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"4. Testing Services for connectivity:" << endl;        
+        TendonForceLengthCurve fseCurve4;
+        fseCurve4.setName("fseCurve");
+
+        cout <<"    a. calcValue" << endl;
+            double tol = sqrt(SimTK::Eps);
+            double value = fseCurve4.calcValue(0.0);
+            SimTK_TEST_EQ_TOL(value, 0, tol);
+        cout <<"    b. calcDerivative" << endl;
+            double dvalue= fseCurve4.calcDerivative(0.0,1);
+            SimTK_TEST_EQ_TOL(dvalue, 0, tol);
+
+        cout <<"    c. getCurveDomain" << endl;
+            SimTK::Vec2 tmp = fseCurve4.getCurveDomain();
+            SimTK_TEST(tmp(0) == 1.0 &&
+                       tmp(1) == 1.04);
+
+        cout <<"    d. printMuscleCurveToCSVFile" << endl;
+            SimTK_TEST(fseCurve2.getStrainAtOneNormForce()      == 0.10);
+            SimTK_TEST(fseCurve2.getStiffnessAtOneNormForce()   == 50.0);
+            SimTK_TEST(fseCurve2.getCurviness()                 == 0.80);
+
+            fseCurve4.printMuscleCurveToCSVFile("");
+            std::string fname = fseCurve4.getName();
+            fname.append(".csv");
+            remove(fname.c_str());
+
+        cout << "Passed: Testing Services for connectivity" << endl;                            
+
+        //cout <<"**************************************************"<<endl;
+       cout <<"Service correctness is tested by underlying utility class"<<endl;
+       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+        //cout <<"**************************************************"<<endl;
+
+        //cout <<"**************************************************"<<endl;
+        cout <<"________________________________________________________"<<endl;
+        cout <<"          TESTING TendonForceLengthCurve             "<<endl;
         cout <<"                    COMPLETED                     "<<endl;
         cout <<"________________________________________________________"<<endl;
         //cout <<"**************************************************"<<endl;
