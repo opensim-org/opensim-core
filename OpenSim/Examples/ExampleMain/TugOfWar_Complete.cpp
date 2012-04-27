@@ -1,6 +1,6 @@
 // main.cpp
 
-/* Copyright (c)  2009 Stanford University
+/* Copyright (c)  2012 Stanford University
  * Use of the OpenSim software in source form is permitted provided that the following
  * conditions are met:
  *   1. The software is used only for non-commercial research and education. It may not
@@ -31,7 +31,7 @@
  *  muscles pulling on a block.
  */
 
-// Author:  Jeff Reinbolt, Ayman Habib, Ajay Seth, Jack Middleton, Samuel Hamner
+// Author:  Jeff Reinbolt, Ayman Habib, Ajay Seth, Samuel Hamner
 
 //==============================================================================
 //==============================================================================
@@ -112,34 +112,36 @@ int main()
 
 		// Define the initial and final simulation times
 		double initialTime = 0.0;
-		double finalTime = 4.00;
+		double finalTime = 3.00;
 
 		/////////////////////////////////////////////
 		// DEFINE CONSTRAINTS IMPOSED ON THE MODEL //
 		/////////////////////////////////////////////
 
-		// Specify properties of a point on a line constraint to limit the block's motion
-		Vec3 lineDirection(1,0,-1);
-		Vec3 pointOnLine(1,0,-1);
-		Vec3 pointOnFollowerBody(0,-0.05,0);
+		// Specify properties of a constant distance constraint to limit the block's motion
+		double distance = 0.2;
+		Vec3 pointOnGround(0, blockSideLength/2 ,0);
+		Vec3 pointOnBlock(0, 0, 0);
 
-		// Create a new point on a line constraint
-		PointOnLineConstraint *lineConstraint = new PointOnLineConstraint(ground, lineDirection, pointOnLine, *block, pointOnFollowerBody);
+		// Create a new constant distance constraint
+		ConstantDistanceConstraint *constDist = new ConstantDistanceConstraint(ground, 
+										pointOnGround, *block, pointOnBlock, distance);
 
 		// Add the new point on a line constraint to the model
-		osimModel.addConstraint(lineConstraint);
+		osimModel.addConstraint(constDist);
 
 		///////////////////////////////////////
 		// DEFINE FORCES ACTING ON THE MODEL //
 		///////////////////////////////////////
 
 		// GRAVITY
-		// Define the acceleration due to gravity
-		osimModel.setGravity(Vec3(0,-9.80665,0));
+		// Obtaine the default acceleration due to gravity
+		Vec3 gravity = osimModel.getGravity();
+	
 
 		// MUSCLE FORCES
 		// Create two new muscles with identical properties
-		double maxIsometricForce = 1000.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0; 
+		double maxIsometricForce = 1000.0, optimalFiberLength = 0.25, tendonSlackLength = 0.1, pennationAngle = 0.0; 
 		Thelen2003Muscle *muscle1 = new Thelen2003Muscle("muscle1",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 		Thelen2003Muscle *muscle2 = new Thelen2003Muscle("muscle2",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
 
@@ -156,7 +158,6 @@ int main()
 		osimModel.addForce(muscle2);
 
 		// CONTACT FORCE
-
 		// Define contact geometry
 		// Create new floor contact halfspace
 		ContactHalfSpace *floor = new ContactHalfSpace(SimTK::Vec3(0), SimTK::Vec3(0, 0, -0.5*SimTK_PI), ground, "floor");
@@ -168,11 +169,11 @@ int main()
 		osimModel.addContactGeometry(cube);
 
 		// Contact parameters
-		double stiffness = 1.0e8, dissipation = 0.01, friction = 0.25;
+		double stiffness = 1.0e7, dissipation = 0.1, friction = 0.2, viscosity=0.01;
 
 		// Define contact parameters for elastic foundation force
 		OpenSim::ElasticFoundationForce::ContactParameters *contactParams = 
-			new OpenSim::ElasticFoundationForce::ContactParameters(stiffness, dissipation, friction, 0, 0);
+			new OpenSim::ElasticFoundationForce::ContactParameters(stiffness, dissipation, friction, friction, viscosity);
 		contactParams->addGeometry("cube");
 		contactParams->addGeometry("floor");
 		
@@ -184,23 +185,19 @@ int main()
 		osimModel.addForce(contactForce);
 
 		// PRESCRIBED FORCE
-
-		// Specify properties of a force function to be applied to the block
-		double time[2] = {0, finalTime};					// time nodes for linear function
-		double fXofT[2] = {0,  -blockMass*9.80665*3.0};		// force values at t1 and t2
-		double pXofT[2] = {0, 0.1};							// point in x values at t1 and t2
-
-		// Create a new linear functions for the force and point components
-		PiecewiseLinearFunction *forceX = new PiecewiseLinearFunction(2, time, fXofT);
-		PiecewiseLinearFunction *pointX = new PiecewiseLinearFunction(2, time, pXofT);
-
-		// Create a new prescribed force applied to the block
+		// Create a new prescribed force to be applied to the block
 		PrescribedForce *prescribedForce = new PrescribedForce(block);
 		prescribedForce->setName("prescribedForce");
 
+		// Specify properties of the force function to be applied to the block
+		double time[2] = {0, finalTime};					// time nodes for linear function
+		double fXofT[2] = {0,  -blockMass*gravity[1]*3.0};	// force values at t1 and t2
+
+		// Create linear function for the force components
+		PiecewiseLinearFunction *forceX = new PiecewiseLinearFunction(2, time, fXofT);
 		// Set the force and point functions for the new prescribed force
 		prescribedForce->setForceFunctions(forceX, new Constant(0.0), new Constant(0.0));
-		prescribedForce->setPointFunctions(pointX, new Constant(0.0), new Constant(0.0));
+		prescribedForce->setPointFunctions(new Constant(0.0), new Constant(0.0), new Constant(0.0));
 
 		// Add the new prescribed force to the model
 		osimModel.addForce(prescribedForce);
@@ -227,75 +224,79 @@ int main()
 		// Add the muscle controller to the model
 		osimModel.addController(muscleController);
 
+		///////////////////////////////////
+		// SPECIFY MODEL DEFAULT STATES  //
+		///////////////////////////////////
 		// Define the default states for the two muscles
 		// Activation
 		muscle1->setDefaultActivation(slopeAndIntercept1[1]);
 		muscle2->setDefaultActivation(slopeAndIntercept2[1]);
 		// Fiber length
-		muscle2->setDefaultFiberLength(0.1);
-		muscle1->setDefaultFiberLength(0.1);
+		muscle2->setDefaultFiberLength(optimalFiberLength);
+		muscle1->setDefaultFiberLength(optimalFiberLength);
+
+		// Save the model to a file
+		osimModel.print("tugOfWar_model.osim");
 
 		//////////////////////////
 		// PERFORM A SIMULATION //
 		//////////////////////////
 
-		//osimModel.setUseVisualizer(true);
+		osimModel.setUseVisualizer(true);
 
 		// Initialize the system and get the default state
 		SimTK::State& si = osimModel.initSystem();
 
 		// Define non-zero (defaults are 0) states for the free joint
 		CoordinateSet& modelCoordinateSet = osimModel.updCoordinateSet();
-		modelCoordinateSet[3].setValue(si, blockSideLength); // set x-translation value
-		modelCoordinateSet[3].setSpeedValue(si, 0.1); // set x-speed value
-		modelCoordinateSet[4].setValue(si, blockSideLength/2+0.01); // set y-translation value 
+		modelCoordinateSet[3].setValue(si, distance); // set x-translation value
+		modelCoordinateSet[5].setValue(si, 0.0); // set z-translation value
+		modelCoordinateSet[3].setSpeedValue(si, 0.0); // set x-speed value
+		double h_start = blockMass*gravity[1]/(stiffness*blockSideLength*blockSideLength);
+		modelCoordinateSet[4].setValue(si, h_start); // set y-translation which is height
+		
+		cout << "Start height = "<< h_start << endl;
+
+		osimModel.getMultibodySystem().realize(si, Stage::Velocity);
 
 		// Compute initial conditions for muscles
 		osimModel.equilibrateMuscles(si);
 
-		// Create the integrator, force reporter, and manager for the simulation.
-		// Create the integrator
-		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
-		integrator.setAccuracy(1.0e-4);
+		double mfv1 = muscle1->getFiberVelocity(si);
+		double mfv2 = muscle2->getFiberVelocity(si);
 
-		// Create the force reporter
+		// Create the force reporter for obtaining the forces applied to the model
+		// during a forward simulation
 		ForceReporter* reporter = new ForceReporter(&osimModel);
 		osimModel.addAnalysis(reporter);
+
+		// Create the integrator for integrating system dynamics
+		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
+		integrator.setAccuracy(1.0e-6);
 		
-		// Create the manager
+		// Create the manager managing the forward integration and its outputs
 		Manager manager(osimModel,  integrator);
 
 		// Print out details of the model
 		osimModel.printDetailedInfo(si, cout);
 
-		// Print out the initial position and velocity states
-		si.getQ().dump("Initial q's"); // block positions
-		si.getU().dump("Initial u's"); // block velocities
-		cout << "Initial time: " << si.getTime() << endl;
-
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
-		cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
+		cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<endl;
 		manager.integrate(si);
 
 		//////////////////////////////
 		// SAVE THE RESULTS TO FILE //
 		//////////////////////////////
-
-		// Save the simulation results
-		// Save the states
+		// Save the model states from forward integration
 		Storage statesDegrees(manager.getStateStorage());
 		statesDegrees.print("tugOfWar_states.sto");
 
 		// Save the forces
 		reporter->getForceStorage().print("tugOfWar_forces.mot");
-
-		// Save the model to a file
-		osimModel.print("tugOfWar_model.osim");
-
 	}
-    catch (OpenSim::Exception ex)
+    catch (const OpenSim::Exception &ex)
     {
         cerr << ex.getMessage() << endl;
         return 1;

@@ -52,9 +52,9 @@
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1000</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>0.1</optimal_fiber_length>
+					<optimal_fiber_length>0.25</optimal_fiber_length>
 					<!--Resting length of the tendon-->
-					<tendon_slack_length>0.2</tendon_slack_length>
+					<tendon_slack_length>0.1</tendon_slack_length>
 					<!--Angle between tendon and fibers at optimal fiber length-->
 					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths per second-->
@@ -66,7 +66,7 @@
 					<!--Assumed activation level if none is assigned.-->
 					<default_activation>1</default_activation>
 					<!--Assumed fiber length, unless otherwise assigned.-->
-					<default_fiber_length>0.1</default_fiber_length>
+					<default_fiber_length>0.25</default_fiber_length>
 					<!--time constant for ramping up muscle activation-->
 					<activation_time_constant>0.015</activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -135,9 +135,9 @@
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>1000</max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>0.1</optimal_fiber_length>
+					<optimal_fiber_length>0.25</optimal_fiber_length>
 					<!--Resting length of the tendon-->
-					<tendon_slack_length>0.2</tendon_slack_length>
+					<tendon_slack_length>0.1</tendon_slack_length>
 					<!--Angle between tendon and fibers at optimal fiber length-->
 					<pennation_angle_at_optimal>0</pennation_angle_at_optimal>
 					<!--Maximum contraction velocity of the fibers, in optimal fiberlengths per second-->
@@ -149,7 +149,7 @@
 					<!--Assumed activation level if none is assigned.-->
 					<default_activation>0.05</default_activation>
 					<!--Assumed fiber length, unless otherwise assigned.-->
-					<default_fiber_length>0.1</default_fiber_length>
+					<default_fiber_length>0.25</default_fiber_length>
 					<!--time constant for ramping up muscle activation-->
 					<activation_time_constant>0.015</activation_time_constant>
 					<!--time constant for ramping down of muscle activation-->
@@ -179,11 +179,11 @@
 							<ElasticFoundationForce::ContactParameters>
 								<!--Names of geometry objects affected by these parameters.-->
 								<geometry>cube floor</geometry>
-								<stiffness>100000000</stiffness>
-								<dissipation>0.01</dissipation>
-								<static_friction>0.25</static_friction>
-								<dynamic_friction>0</dynamic_friction>
-								<viscous_friction>0</viscous_friction>
+								<stiffness>10000000</stiffness>
+								<dissipation>0.1</dissipation>
+								<static_friction>0.2</static_friction>
+								<dynamic_friction>0.2</dynamic_friction>
+								<viscous_friction>0.01</viscous_friction>
 							</ElasticFoundationForce::ContactParameters>
 						</objects>
 						<groups />
@@ -202,8 +202,8 @@
 					<!--Three functions describing the force to be applied.-->
 					<forceFunctions>
 						<PiecewiseLinearFunction>
-							<x> 0 4</x>
-							<y> 0 -588.399</y>
+							<x> 0 3</x>
+							<y> 0 588.399</y>
 						</PiecewiseLinearFunction>
 						<Constant>
 							<value>0</value>
@@ -214,10 +214,9 @@
 					</forceFunctions>
 					<!--Three functions describing the location at which the force is applied.-->
 					<pointFunctions>
-						<PiecewiseLinearFunction>
-							<x> 0 4</x>
-							<y> 0 0.1</y>
-						</PiecewiseLinearFunction>
+						<Constant>
+							<value>0</value>
+						</Constant>
 						<Constant>
 							<value>0</value>
 						</Constant>
@@ -453,14 +452,14 @@
 		<!--Constraints in the model.-->
 		<ConstraintSet>
 			<objects>
-				<PointOnLineConstraint>
+				<ConstantDistanceConstraint>
 					<isDisabled>false</isDisabled>
-					<line_body>ground</line_body>
-					<line_direction_vec> 1 0 -1</line_direction_vec>
-					<point_on_line> 1 0 -1</point_on_line>
-					<follower_body>block</follower_body>
-					<point_on_follower> 0 -0.05 0</point_on_follower>
-				</PointOnLineConstraint>
+					<body_1>ground</body_1>
+					<body_2>block</body_2>
+					<location_body_1> 0 0.05 0</location_body_1>
+					<location_body_2> 0 0 0</location_body_2>
+					<constant_distance>0.2</constant_distance>
+				</ConstantDistanceConstraint>
 			</objects>
 			<groups />
 		</ConstraintSet>
@@ -498,10 +497,10 @@
 					<FunctionSet name="ControlFunctions">
 						<objects>
 							<LinearFunction>
-								<coefficients> -0.25 1</coefficients>
+								<coefficients> -0.333333 1</coefficients>
 							</LinearFunction>
 							<LinearFunction>
-								<coefficients> 0.2375 0.05</coefficients>
+								<coefficients> 0.316667 0.05</coefficients>
 							</LinearFunction>
 						</objects>
 						<groups />

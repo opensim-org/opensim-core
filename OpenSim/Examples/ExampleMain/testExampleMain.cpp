@@ -40,11 +40,11 @@ int main()
 {
 	try {
 		Storage result1("tugOfWar_states.sto"), standard1("std_tugOfWar_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(1., 24), __FILE__, __LINE__, "tugOfWar states failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.1, 24), __FILE__, __LINE__, "tugOfWar states failed");
 		cout << "tugOfWar states passed\n";
 
 		Storage result3("tugOfWar_forces.mot"), standard3("std_tugOfWar_forces.mot");
-		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(1000., 24), __FILE__, __LINE__, "tugOfWar forces failed");
+		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(1.0, 24), __FILE__, __LINE__, "tugOfWar forces failed");
 		cout << "tugOfWar forces passed\n";
 	}
 	catch (const Exception& e) {
