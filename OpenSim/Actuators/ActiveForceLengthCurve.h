@@ -113,12 +113,21 @@ public:
         ~20,500 flops
     \endverbatim    
 
-    <B> Example </B>
-
+    <B> Default Parameter Values </B>
     \verbatim
-      ActiveForceLengthCurve falCurve(0.5, 0.75, 1.5,
-                                     0.75,  0.5,"test_ActiveForceLengthMuscle");
+        minActiveNormFiberLength ....... 0.4
+        transitionNormFiberLength ...... 0.75
+        maxActiveNormFiberLength ....... 1.6
+        shallowAscendingSlope .......... 0.75
+        minValue ....................... 0.05
     \endverbatim
+
+    <B> Example </B>
+    @code
+        ActiveForceLengthCurve falCurve3(0.5, 0.75,1.5,0.75,0.01,"soleus");
+        double falVal  = falCurve3.calcValue(1.0);
+        double dfalVal = falCurve3.calcDerivative(1.0,1);
+    @endcode
 
     */
     ActiveForceLengthCurve( double minActiveNormFiberLength, 

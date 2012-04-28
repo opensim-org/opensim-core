@@ -125,9 +125,22 @@ public:
             ~8,200 flops
         \endverbatim
 
+        <B> Default Parameter Values </B>
+        \verbatim
+            concentricMinSlope ...................  = 0.1 
+            isometricMaxSlope  ...................  = 5
+            eccentricMinSlope  ...................  = 0.1
+            maxEccentricVelocityForceMultiplier...  = 1.8
+            concentricCurviness ..................  = 0.1
+            eccentricCurviness  ..................  = 0.75
+        \endverbatim
+
     <B> Example </B>
-
-
+    @code
+        ForceVelocityInverseCurve fvInvCurve3(0.1,5,0.1,1.8,0.1,0.75,"soleus");
+        double fvInvVal  = fvInvCurve3.calcValue(1.0);
+        double dfvInvVal = fvInvCurve3.calcDerivative(1.0,1);
+    @endcode
 
     */
     ForceVelocityInverseCurve( double concentricMinSlope, 

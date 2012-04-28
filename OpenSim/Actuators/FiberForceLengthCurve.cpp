@@ -18,7 +18,7 @@
  * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE  *
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
-#include "TendonForceLengthCurve.h"
+#include "FiberForceLengthCurve.h"
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -32,26 +32,26 @@ static const char* CurvinessName                = "curviness";
 // CONSTRUCTION, COPY CONSTRUCTION, ASSIGNMENT
 //=============================================================================
 
-TendonForceLengthCurve::TendonForceLengthCurve():m_curveUpToDate(false)
+FiberForceLengthCurve::FiberForceLengthCurve():m_curveUpToDate(false)
 {
         setNull();
         addProperties();
 }
 
-TendonForceLengthCurve::~TendonForceLengthCurve()
+FiberForceLengthCurve::~FiberForceLengthCurve()
 {
 }
 
-TendonForceLengthCurve::TendonForceLengthCurve(
-    const TendonForceLengthCurve& source)                                   
+FiberForceLengthCurve::FiberForceLengthCurve(
+    const FiberForceLengthCurve& source)                                   
 {
         setNull();
         addProperties();
         copyData(source);   
 }
 
-TendonForceLengthCurve& TendonForceLengthCurve::
-                                operator=(const TendonForceLengthCurve &source)
+FiberForceLengthCurve& FiberForceLengthCurve::
+                                operator=(const FiberForceLengthCurve &source)
 {
     if(&source != this){
         ModelComponent::operator=(source);
@@ -60,7 +60,7 @@ TendonForceLengthCurve& TendonForceLengthCurve::
     return(*this);
 }
 
-TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce, 
+FiberForceLengthCurve::FiberForceLengthCurve( double strainAtOneNormForce, 
                                                 double stiffnessAtOneNormForce,
                                                 double curviness,
                                                 const std::string muscleName)
@@ -69,7 +69,7 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
 
 
     std::string curveName = muscleName;
-    curveName.append("_TendonForceLengthCurve");
+    curveName.append("_FiberForceLengthCurve");
 
     setNull();
     addProperties();
@@ -83,29 +83,29 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
 }
 
 
-void TendonForceLengthCurve::setNull()
+void FiberForceLengthCurve::setNull()
 {
     m_curveUpToDate =false;
 }
 
-void TendonForceLengthCurve::addProperties()
+void FiberForceLengthCurve::addProperties()
 {   
-    setName("default_TendonForceLengthCurve");
+    setName("default_FiberForceLengthCurve");
 
     addProperty<double>(StrainAtOneNormForceName, 
-        "tendon strain at a tension of 1 normalized force",
-        0.04);
+        "Fiber strain at a tension of 1 normalized force",
+        0.6);
 
     addProperty<double>(StiffnessAtOneNormForceName, 
-        "tendon stiffness at a tension of 1 normalized force",
-        42);
+        "Fiber stiffness at a tension of 1 normalized force",
+        8.4);
 
     addProperty<double>(CurvinessName, 
-        "tendon curve bend, from linear to maximum bend (0-1)",
-        0.75);
+        "Fiber curve bend, from linear to maximum bend (0-1)",
+        0.65);
 }
 
-void TendonForceLengthCurve::copyData(const TendonForceLengthCurve &source)
+void FiberForceLengthCurve::copyData(const FiberForceLengthCurve &source)
 {
     if(&source != this){
         setPropertyValue(StrainAtOneNormForceName,
@@ -124,7 +124,7 @@ void TendonForceLengthCurve::copyData(const TendonForceLengthCurve &source)
 }
 
 
-void TendonForceLengthCurve::buildCurve()
+void FiberForceLengthCurve::buildCurve()
 {
     if(m_curveUpToDate == false){
         
@@ -134,7 +134,7 @@ void TendonForceLengthCurve::buildCurve()
 
         //Here's where you call the MuscleCurveFunctionFactory
         MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
-                                    createTendonForceLengthCurve(   e0,
+                                    createFiberForceLengthCurve(   e0,
                                                                     kiso,
                                                                     c,
                                                                     true,
@@ -150,21 +150,21 @@ void TendonForceLengthCurve::buildCurve()
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
 //=============================================================================
-void TendonForceLengthCurve::setup(Model& aModel)
+void FiberForceLengthCurve::setup(Model& aModel)
 {
     ModelComponent::setup(aModel);
 }
 
-void TendonForceLengthCurve::initState(SimTK::State& s) const
+void FiberForceLengthCurve::initState(SimTK::State& s) const
 {
     ModelComponent::initState(s);
 }
 
-void TendonForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
+void FiberForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
 {
     Super::createSystem(system);
 
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
     mthis->buildCurve();
 }
 
@@ -173,23 +173,23 @@ void TendonForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // GET & SET METHODS
 //=============================================================================
-double TendonForceLengthCurve::getStrainAtOneNormForce()
+double FiberForceLengthCurve::getStrainAtOneNormForce()
 {
     return getPropertyValue<double>(StrainAtOneNormForceName);
 }
 
-double TendonForceLengthCurve::getStiffnessAtOneNormForce()
+double FiberForceLengthCurve::getStiffnessAtOneNormForce()
 {
     return getPropertyValue<double>(StiffnessAtOneNormForceName);
 }
 
-double TendonForceLengthCurve::getCurviness()
+double FiberForceLengthCurve::getCurviness()
 {
     return getPropertyValue<double>(CurvinessName);
 }
 
 
-void TendonForceLengthCurve::
+void FiberForceLengthCurve::
     setStrainAtOneNormForce(double aStrainAtOneNormForce)
 {
     if(aStrainAtOneNormForce != getStrainAtOneNormForce() )
@@ -200,7 +200,7 @@ void TendonForceLengthCurve::
     }
 }
 
-void TendonForceLengthCurve::
+void FiberForceLengthCurve::
         setStiffnessAtOneNormForce(double aStiffnessAtOneNormForce)
 {
     if(aStiffnessAtOneNormForce != getStiffnessAtOneNormForce() )
@@ -211,7 +211,7 @@ void TendonForceLengthCurve::
     }
 }
 
-void TendonForceLengthCurve::setCurviness(double aCurviness)
+void FiberForceLengthCurve::setCurviness(double aCurviness)
 {
     if(aCurviness != getCurviness() )
     {
@@ -226,51 +226,51 @@ void TendonForceLengthCurve::setCurviness(double aCurviness)
 // SERVICES
 //=============================================================================
 
-double TendonForceLengthCurve::
+double FiberForceLengthCurve::
     calcValue(double aNormLength) const
 {
     if(m_curveUpToDate == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
+        FiberForceLengthCurve* mthis = 
+            const_cast<FiberForceLengthCurve*>(this);    
         mthis->buildCurve();    
     }
 
     return m_curve.calcValue(aNormLength);
 }
 
-double TendonForceLengthCurve::
+double FiberForceLengthCurve::
     calcDerivative(double aNormLength, int order) const
 {
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
-        "TendonForceLengthCurve::calcDerivative",
+        "FiberForceLengthCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
     
     if(m_curveUpToDate == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
+        FiberForceLengthCurve* mthis = 
+            const_cast<FiberForceLengthCurve*>(this);    
         mthis->buildCurve();    
     }
 
     return m_curve.calcDerivative(aNormLength,order);
 }
 
-SimTK::Vec2 TendonForceLengthCurve::getCurveDomain() const
+SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
 {
     if(m_curveUpToDate == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
+        FiberForceLengthCurve* mthis = 
+            const_cast<FiberForceLengthCurve*>(this);    
         mthis->buildCurve();    
     }
 
     return m_curve.getCurveDomain();
 }
 
-void TendonForceLengthCurve::
+void FiberForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {
     if(m_curveUpToDate == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
+        FiberForceLengthCurve* mthis = 
+            const_cast<FiberForceLengthCurve*>(this);    
         mthis->buildCurve();    
     }
 

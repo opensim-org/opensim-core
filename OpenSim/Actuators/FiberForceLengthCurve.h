@@ -1,5 +1,5 @@
-#ifndef OPENSIM_TendonForceLengthCurve_h__
-#define OPENSIM_TendonForceLengthCurve_h__
+#ifndef OPENSIM_FiberForceLengthCurve_h__
+#define OPENSIM_FiberForceLengthCurve_h__
 
 /* Author: Matthew Millard
 /*
@@ -41,52 +41,52 @@
 namespace OpenSim {
 
 /**
- This class serves as a serializable TendonForceLengthCurve, for use in 
- muscle models. 
+ This class serves as a serializable FiberForceLengthCurve, commonly used
+ to model the parallel elastic element, for use in muscle models. 
  
- \image html fig_SerializableCurve_TendonForceLengthCurve.png
+ \image html fig_SerializableCurve_FiberForceLengthCurve.png
  
   @author Matt Millard
 
  */
-class OSIMACTUATORS_API TendonForceLengthCurve : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, ModelComponent);
+class OSIMACTUATORS_API FiberForceLengthCurve : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, ModelComponent);
 
-//class OSIMACTUATORS_API TendonForceLengthCurve : public ModelComponent {
-//OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, ModelComponent);
+//class OSIMACTUATORS_API FiberForceLengthCurve : public ModelComponent {
+//OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, ModelComponent);
 
 public:
 
     ///Default constructor
-    TendonForceLengthCurve();
+    FiberForceLengthCurve();
     ///Default destructor
-    ~TendonForceLengthCurve();
+    ~FiberForceLengthCurve();
     ///Default constructor
-    TendonForceLengthCurve(const TendonForceLengthCurve& source);
+    FiberForceLengthCurve(const FiberForceLengthCurve& source);
 
     /**
-     Constructs a C2 continuous tendon force length curve. This curve has the 
+     Constructs a C2 continuous fiber force length curve. This curve has the 
      advantage of being C2 continuous which results in faster simulations when
-     compared to the popular method of using a linearly extrapolated 
-     exponential curve to parameterize the tendon force length curve, which 
-     is only C0 continuous. Details to appear in Millard et al 2012.
+     compared to the popular method of using a linearly extrapolated exponential
+     curve to parameterize the fiber force length curve, which is only C0 
+     continuous. Details to appear in Millard et al. 2012.
      
     
         @param strainAtOneNormForce
-                    The tendon strain at which the tendon develops 1 unit of 
+                    The fiber strain at which the fiber develops 1 unit of 
                     normalized force. The definition of strain used for this 
                     quantity is consistent with the Cauchy or engineering 
                     definition of strain: strain = (l-l0)/l0, where l is length,
                     and l0 is resting length. In this context 
-                    strainAtOneNormForce = 0.04 means that 
-                    the tendon will develop a tension of 1 normalized force when 
-                    it is strained by 4% of its resting length, or 
-                    equivalently is stretched to 1.04 times its resting length.
+                    strainAtOneNormForce = 0.6 means that the fiber will 
+                    develop a tension of 1 normalized force when it is strained 
+                    by 60% of its resting length, or equivalently is stretched 
+                    to 1.60 times its resting length.
 
         @param stiffnessAtOneNormForce     
-                        The normalized stiffness (or slope) of the tendon curve 
-                        when the tendon is strained by strainAtOneNormForce
-                        under a load of 1 normalized unit of force.
+                The normalized stiffness (or slope) of the fiber curve when the 
+                fiber is strained by strainAtOneNormForce under a load of 1 
+                normalized unit of force.
 
         @param curviness    
                 A dimensionless parameter between [0-1] that controls how 
@@ -99,7 +99,7 @@ public:
         @param muscleName
                 The name of the muscle this curve belongs to. This name is used
                 to create the name of this curve, which is formed simply by 
-                appending "_TendonForceLengthCurve" to the string in muscleName.
+                appending "_FiberForceLengthCurve" to the string in muscleName.
                 This name is used for making intelligible error messages and 
                 also for naming the XML version of this curve when it is 
                 serialized.
@@ -116,7 +116,7 @@ public:
             ~174,100 flops
         \endverbatim
 
-         <B>Default Parameters</B>
+    <B> Default Parameter Values </B>
 
          The default curve has parameters that closely approximate the linearly 
          extrapolated exponential curve that is more commonly used in the 
@@ -124,32 +124,26 @@ public:
          Parameters to Simulate Dynamic Contractions in Older Adults. 
          ASME J.Biomech. Eng., 125, 75-77). Although the linearily extrapolated 
          exponential curve is popular, this curve is not C1 continuous at the 
-         engagement point, and neither end points are C2 continuous across the 
-         extrapolation. This lack of smoothness and incurrs a high simulation 
-         cost during numerical integration. This curve is formed 
-         using a quintic Bezier curve, is C2 continuous reducing the required 
-         simulation time (paper yet to appear).
-
+         engagement point. This lack of smoothness and incurrs a high simulation 
+         cost during numerical integration. This curve is formed using a quintic
+         Bezier curve, is C2 continuous reducing the required simulation time 
+         (Millard et al. 2012, yet to appear).
 
          \verbatim
-             strainAtOneNormForce    = 0.04, 
-             stiffnessAtOneNormForce = 42 
-             curviness               = 0.75)
+             strainAtOneNormForce    = 0.60, 
+             stiffnessAtOneNormForce = 8.4 
+             curviness               = 0.65)
          \endverbatim
 
 
         <B>Example:</B>
         @code
-            TendonForceLengthCurve fseCurve3(0.10,50,0.75,"soleus");
-            double fseVal  = fseCurve3.calcValue(0.02);
-            double dfselVal = fseCurve3.calcDerivative(0.02,1);
-
+            FiberForceLengthCurve fpeCurve3(0.10,50,0.75,"soleus");
+            double fpeVal  = fpeCurve3.calcValue(0.02);
+            double dfpeVal = fpeCurve3.calcDerivative(0.02,1);
         @endcode
-
-
-
     */
-    TendonForceLengthCurve( double strainAtOneNormForce, 
+    FiberForceLengthCurve( double strainAtOneNormForce, 
                             double stiffnessAtOneNormForce,
                             double curviness,
                             const std::string muscleName);
@@ -158,30 +152,30 @@ public:
 
    #ifndef SWIG
         ///default assignment operator
-        TendonForceLengthCurve& operator=(const TendonForceLengthCurve &source);
+        FiberForceLengthCurve& operator=(const FiberForceLengthCurve &source);
         #endif
             ///a function that copies all of the properties and data members
             ///of this class
-            void copyData(const TendonForceLengthCurve &source);
+            void copyData(const FiberForceLengthCurve &source);
         #ifndef SWIG
     #endif
 
     /**
-    @returns    The tendon strain at which the tendon develops 1 unit of 
+    @returns    The fiber strain at which the Fiber fevelops 1 unit of 
                 normalized force. The definition of strain used for this 
                 quantity is consistent with the Cauchy or engineering 
                 definition of strain: strain = (l-l0)/l0, where l is length,
                 and l0 is resting length. In this context 
-                strainAtOneNormForce = 0.04 means that 
-                the tendon will develop a tension of 1 normalized force when 
-                it is strained by 4% of its resting length, or 
-                equivalently is stretched to 1.04 times its resting length.
+                strainAtOneNormForce = 0.6 means that 
+                the fiber will develop a tension of 1 normalized force when 
+                it is strained by 60% of its resting length, or 
+                equivalently is stretched to 1.6 times its resting length.
     */
      double getStrainAtOneNormForce();
 
      /**
-     @returns   The normalized stiffness (or slope) of the tendon curve 
-                when the tendon is strained by strainAtOneNormForce
+     @returns   The normalized stiffness (or slope) of the fiber curve 
+                when the fiber is strained by strainAtOneNormForce
                 under a load of 1 normalized unit of force.
      */
      double getStiffnessAtOneNormForce();
@@ -198,22 +192,22 @@ public:
 
      /**
     @param aStrainAtOneNormForce     
-                The tendon strain at which the tendon develops 1 unit of 
+                The fiber strain at which the fiber develops 1 unit of 
                 normalized force. The definition of strain used for this 
                 quantity is consistent with the Cauchy or engineering 
                 definition of strain: strain = (l-l0)/l0, where l is length,
                 and l0 is resting length. In this context 
-                strainAtOneNormForce = 0.04 means that 
-                the tendon will develop a tension of 1 normalized force when 
-                it is strained by 4% of its resting length, or 
-                equivalently is stretched to 1.04 times its resting length.
+                strainAtOneNormForce = 0.6 means that 
+                the fiber will develop a tension of 1 normalized force when 
+                it is strained by 60% of its resting length, or 
+                equivalently is stretched to 1.6 times its resting length.
     */
      void setStrainAtOneNormForce(double aStrainAtOneNormForce);
 
      /**
      @param aStiffnessAtOneNormForce
-                The normalized stiffness (or slope) of the tendon curve 
-                when the tendon is strained by strainAtOneNormForce
+                The normalized stiffness (or slope) of the fiber curve 
+                when the fiber is strained by strainAtOneNormForce
                 under a load of 1 normalized unit of force.
      */
      void setStiffnessAtOneNormForce(double aStiffnessAtOneNormForce);
@@ -231,17 +225,17 @@ public:
 
     /**
     Calculates the value of the curve evaluated at the desired normalized fiber
-    length. Note that if the curve is out of date it is rebuilt (at a cost of 
-    ~20,500 flops). 
+    length. Note that if the curve is out of date it is rebuilt 
+    (at a cost of ~20,500 flops). 
 
     @param aNormLength: 
                 The normalized fiber length used to evaluate the tendon force 
                 length curve for the corresponding normalized force. Here 
                 aNormLength = l/l0, where l is the length of the fiber and l0 
                 is the resting length of the fiber.  Thus normalized length of 
-                1.0 means the fiber is at its resting length.
-        
-    @return the value of the normalized force generated by the tendon
+                1.0 means the fiber is at its resting length.      
+
+    @return the value of the normalized force generated by the fiber
 
     <B>Computational Costs</B>
     \verbatim
@@ -253,7 +247,7 @@ public:
     double calcValue(double aNormLength) const;
 
     /**
-    Calculates the derivative of the tendon force length curve w.r.t. 
+    Calculates the derivative of the fiber force length curve w.r.t. 
     to the normalized fiber length. Note that if the curve is out of date it is 
     rebuilt (at a cost of ~20,500 flops).
 
@@ -267,9 +261,9 @@ public:
     @param order: the order of the derivative. Only values of 0,1 and 2 are 
                   acceptable.
 
-    @return the derivative of the normalized tendon force length curve w.r.t. 
-            normalized tendon length
-    
+    @return the derivative of the normalized fiber force length curve w.r.t. 
+        normalized fiber length
+
     <B>Computational Costs</B>       
     \verbatim
         x in curve domain  : ~391 flops
@@ -293,7 +287,7 @@ public:
     SimTK::Vec2 getCurveDomain() const;
 
     /**This function will generate a csv file with a name that matches the 
-       curve name (e.g. "bicepfemoris_TendonForceLengthCurve.csv");
+       curve name (e.g. "bicepfemoris_FiberForceLengthCurve.csv");
        Note that  if the curve is out of date is rebuilt 
        (which will cost ~20,500 flops).
        
@@ -328,7 +322,7 @@ public:
        function to begin reading from the 1st row, and the 0th index (csvread
        is 0 indexed). This is necessary to skip reading in the text header
        \verbatim
-        data=csvread('bicepfemoris_fiberTendonForceLengthCurve.csv',1,0);
+        data=csvread('bicepfemoris_fiberFiberForceLengthCurve.csv',1,0);
        \endverbatim
 
        */
@@ -391,4 +385,4 @@ private:
 
 }
 
-#endif //OPENSIM_TendonForceLengthCurve_h__
+#endif //OPENSIM_FiberForceLengthCurve_h__

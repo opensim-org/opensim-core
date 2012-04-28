@@ -69,7 +69,7 @@ public:
 
     /**
      Constructs a C2 continuous force velocity curve. The force velocity
-     curve requries 5 different properties and a name in order to 
+     curve requries 6 different properties and a name in order to 
      construct a curve:
 
      @param concentricMinSlope 
@@ -167,6 +167,16 @@ public:
         <B>Computational Costs</B>
         \verbatim 
             ~8,200 flops
+        \endverbatim
+
+        <B> Default Parameter Values </B>
+        \verbatim
+            concentricMinSlope ...................  = 0.1 
+            isometricMaxSlope  ...................  = 5
+            eccentricMinSlope  ...................  = 0.1
+            maxEccentricVelocityForceMultiplier...  = 1.8
+            concentricCurviness ..................  = 0.1
+            eccentricCurviness  ..................  = 0.75
         \endverbatim
 
     <B> Example </B>

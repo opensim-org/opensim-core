@@ -50,6 +50,7 @@
 #include "ForceVelocityCurve.h"
 #include "ForceVelocityInverseCurve.h"
 #include "TendonForceLengthCurve.h"
+#include "FiberForceLengthCurve.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -84,6 +85,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::RegisterType( ForceVelocityCurve() );
     Object::RegisterType( ForceVelocityInverseCurve() );
     Object::RegisterType( TendonForceLengthCurve() );
+    Object::RegisterType( FiberForceLengthCurve() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization
