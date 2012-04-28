@@ -55,6 +55,7 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 	Object::registerType( ForceReporter() );
 	Object::registerType( StatesReporter() );
 	Object::registerType( InducedAccelerations() );
+	Object::RegisterType( ProbeReporter() );
 }
 
 osimAnalysesInstantiator::osimAnalysesInstantiator() 
