@@ -62,8 +62,8 @@
 #include "Actuator.h"
 #include "MarkerSet.h"
 #include "ContactGeometrySet.h"
+#include "ProbeSet.h"
 #include "ComponentSet.h"
-
 #include <iostream>
 #include <string>
 #include <cmath>
@@ -93,6 +93,8 @@ Model::Model() :
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_forceSetProp(PropertyObj("", ForceSet())),
 	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
+	_probeSetProp(PropertyObj("", ProbeSet())),
+	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
     _gravity(_gravityProp.getValueDblVec()),
     _bodySetProp(PropertyObj("", BodySet())),
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
@@ -133,6 +135,8 @@ Model::Model(const string &aFileName) :
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_forceSetProp(PropertyObj("", ForceSet())),
 	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
+	_probeSetProp(PropertyObj("", ProbeSet())),
+	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
     _gravity(_gravityProp.getValueDblVec()),
     _bodySetProp(PropertyObj("", BodySet())),
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
@@ -179,6 +183,8 @@ Model::Model(const Model &aModel) :
 	_forceUnitsStr(_forceUnitsStrProp.getValueStr()),
 	_forceSetProp(PropertyObj("", ForceSet())),
 	_forceSet((ForceSet&)_forceSetProp.getValueObj()),
+	_probeSetProp(PropertyObj("", ProbeSet())),
+	_probeSet((ProbeSet&)_probeSetProp.getValueObj()),
     _gravity(_gravityProp.getValueDblVec()),
     _bodySetProp(PropertyObj("", BodySet())),
     _bodySet((BodySet&)_bodySetProp.getValueObj()),
@@ -281,6 +287,7 @@ void Model::copyData(const Model &aModel)
 	_lengthUnitsStr = aModel._lengthUnitsStr;
 	_forceUnitsStr = aModel._forceUnitsStr;
 	_forceSet = aModel._forceSet;
+	_probeSet = aModel._probeSet;
 	_analysisSet = aModel._analysisSet;
     _gravity = aModel._gravity;
     _bodySet=aModel._bodySet;
@@ -330,9 +337,6 @@ void Model::setupProperties()
 	_publicationsStrProp.setName("publications");
 	_propertySet.append(&_publicationsStrProp);
 
-	_forceSetProp.setName("ForceSet");
-	_propertySet.append(&_forceSetProp);
-
 	_lengthUnitsStrProp.setName("length_units");
 	_lengthUnitsStrProp.setValue("meters");
 	_propertySet.append(&_lengthUnitsStrProp);
@@ -349,21 +353,35 @@ void Model::setupProperties()
 
     // Note: PropertyObj tag names come from the object's type (e.g. _bodySetProp below will automatically be associated with <BodySet> tag)
     // don't need to call _bodySetProp.setName()...
+	_bodySetProp.setName("BodySet");
     _bodySetProp.setComment("Bodies in the model.");
     _propertySet.append(&_bodySetProp);
 
+	_constraintSetProp.setName("ConstraintSet");
     _constraintSetProp.setComment("Constraints in the model.");
     _propertySet.append(&_constraintSetProp);
 
+	_forceSetProp.setName("ForceSet");
+	_forceSetProp.setComment("Forces in the model.");
+	_propertySet.append(&_forceSetProp);
+
+	_markerSetProp.setName("MarkerSet");
     _markerSetProp.setComment("Markers in the model.");
     _propertySet.append(&_markerSetProp);
 
-    _contactGeometrySetProp.setComment("ContactGeometry components in the model.");
+	_contactGeometrySetProp.setName("ContactGeometrySet");
+    _contactGeometrySetProp.setComment("ContactGeometries  in the model.");
     _propertySet.append(&_contactGeometrySetProp);
 
-    _controllerSetProp.setComment("Controller components in the model.");
+	_controllerSetProp.setName("ControllerSet");
+    _controllerSetProp.setComment("Controllers in the model.");
     _propertySet.append(&_controllerSetProp);
 
+	_probeSetProp.setName("ProbeSet");
+	_probeSetProp.setComment("Probes in the model.");
+    _propertySet.append(&_probeSetProp);
+
+	_componentSetProp.setName("ComponentSet");
 	_componentSetProp.setComment("Additional components in the model.");
     _propertySet.append(&_componentSetProp);
 }
@@ -382,6 +400,8 @@ SimTK::State& Model::initSystem()
 	_modelComponents.setSize(0);	// Make sure we start on a clean slate
 	_stateVariableNames.setSize(0);
 	_stateVariableSystemIndices.setSize(0);
+	tidyProbeNames();
+
 	setup();
 	createSystem();
 
@@ -546,24 +566,31 @@ void Model::createSystem(SimTK::MultibodySystem& system) const
 			throw Exception("Body: "+body.getName()+" has no Joint... Model initialization aborted.");
 	}
 
+	// Constraints add their parts to the System.
     static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished createSystem for Constraints." << endl;
 
+	// Contact Geometries add their parts to the System.
 	static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished createSystem for Contact Geometry." << endl;
 
-    // Add extra constraints for coordinates.
+    // Coordinates add their parts to the System.
 	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished adding constraints for Coordinates." << endl;
 
+	// Forces add their parts to the System.
     static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished createSystem for Forces." << endl;
 
-	// controllers add their parts to the System.
+	// Probes add their parts to the System.
+	static_cast<const ModelComponentSet<Probe>&>(getProbeSet()).createSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished createSystem for Probes." << endl;
+
+	// Controllers add their parts to the System.
     static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished createSystem for Controllers." << endl;
 
-	// additional user added/create Components
+	// Misc ModelComponents add their parts to the System.
 	_componentSet.createSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished createSystem for user added Components." << endl;
 }
@@ -622,6 +649,16 @@ void Model::addForce(OpenSim::Force *aForce)
 
 //_____________________________________________________________________________
 /**
+ * Add a probe to the Model.
+ */
+void Model::addProbe(OpenSim::Probe *aProbe)
+{
+	updProbeSet().append(aProbe);
+	updProbeSet().setup(*this);
+}
+
+//_____________________________________________________________________________
+/**
  * Add a contact geometry to the Model.
  */
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
@@ -666,6 +703,7 @@ void Model::setup()
     updMarkerSet().setup(*this);
     updContactGeometrySet().setup(*this);
 	updForceSet().setup(*this);
+	updProbeSet().setup(*this);
 	updControllerSet().setup(*this);
 
 	_componentSet.setup(*this);
@@ -758,6 +796,7 @@ void Model::initState(SimTK::State& state) const
     _contactGeometrySet.initState(state);
     _jointSet.initState(state);
     _forceSet.initState(state);
+	_probeSet.initState(state);
 	_controllerSet.initState(state);
 	_componentSet.initState(state);
 
@@ -806,6 +845,7 @@ void Model::setDefaultsFromState(const SimTK::State& state)
     _contactGeometrySet.setDefaultsFromState(state);
     _jointSet.setDefaultsFromState(state);
     _forceSet.setDefaultsFromState(state);
+	_probeSet.setDefaultsFromState(state);
 	_controllerSet.setDefaultsFromState(state);
 	_componentSet.setDefaultsFromState(state);
 }
@@ -821,6 +861,7 @@ void Model::generateDecorations
     _contactGeometrySet.generateDecorations(fixed,hints,state,appendToThis);
     _jointSet.generateDecorations(fixed,hints,state,appendToThis);
     _forceSet.generateDecorations(fixed,hints,state,appendToThis);
+	_probeSet.generateDecorations(fixed,hints,state,appendToThis);
 	_controllerSet.generateDecorations(fixed,hints,state,appendToThis);
 	_componentSet.generateDecorations(fixed,hints,state,appendToThis);
 }
@@ -986,6 +1027,17 @@ int Model::getNumSpeeds() const
 {
 	return _coordinateSet.getSize();
 }
+
+/**
+ * Get the total number of probes in the model.
+ *
+ * @return Number of probes.
+ */
+int Model::getNumProbes() const
+{
+	return _probeSet.getSize();
+}
+
 //_____________________________________________________________________________
 /**
  * Get the subset of Forces in the model which are actuators
@@ -1234,7 +1286,7 @@ void Model::printBasicInfo(std::ostream &aOStream) const
 	aOStream<<"           actuators: "<<getActuators().getSize()<<std::endl;
 	aOStream<<"             muscles: "<<getMuscles().getSize()<<std::endl;
 	aOStream<<"            analyses: "<<getNumAnalyses()<<std::endl;
-	//aOStream<<"              probes: "<<getProbeSet().getSize()<<std::endl;
+	aOStream<<"              probes: "<<getProbeSet().getSize()<<std::endl;
 	aOStream<<"              bodies: "<<getBodySet().getSize()<<std::endl;
 	aOStream<<"              joints: "<<((OpenSim::Model*)this)->getJointSet().getSize()<<std::endl;
 	aOStream<<"         constraints: "<<getConstraintSet().getSize()<<std::endl;
@@ -1720,6 +1772,7 @@ void Model::disownAllComponents()
 	updBodySet().setMemoryOwner(false);
 	updConstraintSet().setMemoryOwner(false);
 	updForceSet().setMemoryOwner(false);
+	updProbeSet().setMemoryOwner(false);
 	updContactGeometrySet().setMemoryOwner(false);
 	updControllerSet().setMemoryOwner(false);
 	updAnalysisSet().setMemoryOwner(false);
@@ -1807,4 +1860,35 @@ const Object& Model::getObjectByTypeAndName(const std::string& typeString, const
 	throw Exception("Model::getObjectByTypeAndName: no object of type "+typeString+
 		" and name "+nameString+" was found in the model.");
 
+}
+
+
+void Model::tidyProbeNames()
+{
+	Array<string> probeNames("");
+	const ProbeSet& probes = getProbeSet();
+	probes.getNames(probeNames);
+	// Make sure names are unique and non-empty. If empty assign names AutoProbexxx
+	int nP = probeNames.getSize();
+	//cout << "number of probes = " << nP << endl;
+	for(int i=0; i<nP; i++){
+		int j=1;
+		if (probeNames[i]==""){
+			bool validNameFound=false;
+			char pad[100];
+			// Make up a candidate name
+			sprintf(pad, "%s%d", probes.get(i).getConcreteClassName().c_str(), j++);
+			while(!validNameFound){
+				validNameFound = (probeNames.findIndex(string(pad))== -1);
+				if (!validNameFound){
+					sprintf(pad, "%s%d", probes.get(i).getConcreteClassName().c_str(), j++);
+					//sprintf(pad, "Probe%d", j++);
+				}
+			}
+			string newName(pad);
+			updProbeSet()[i].setName(newName);
+			probeNames.set(i, newName);
+			cout << "Changing blank name for probe to " << newName << endl;
+		}
+	}
 }

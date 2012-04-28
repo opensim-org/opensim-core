@@ -57,6 +57,8 @@ class ConstraintSet;
 class CoordinateSet;
 class Force;
 class ForceSet;
+class Probe;
+class ProbeSet;
 class MarkerSet;
 class Muscle;
 class ContactGeometry;
@@ -328,6 +330,7 @@ public:
 	void addBody(Body *aBody);
 	void addConstraint(Constraint *aConstraint);
 	void addForce(Force *aForce);
+	void addProbe(Probe *aProbe);
 	void addContactGeometry(ContactGeometry *aContactGeometry);
 
 	//--------------------------------------------------------------------------
@@ -453,6 +456,12 @@ public:
 	 */
 	int getNumSpeeds() const;
 
+	/**
+	 * Get the total number of probes in the model.
+	 * @return Number of probes.
+	 */
+	int getNumProbes() const;
+
     /**
      * Get the subset of Forces in the model which are actuators
      * @return The set of Actuators
@@ -469,6 +478,13 @@ public:
 
     const ForceSet& getForceSet() const { return _forceSet; };
     ForceSet& updForceSet() { return _forceSet; };
+
+	/**
+     * Get the subset of Probes in the model
+     * @return The set of Probes
+     */
+	const ProbeSet& getProbeSet() const { return _probeSet; };
+    ProbeSet& updProbeSet() { return _probeSet; };
 
 	/**
      * Get the subset of misc ModelComponents in the model
@@ -779,6 +795,7 @@ private:
 	void createGroundBodyIfNecessary();
     void setDefaultProperties();
 	void createSystem();
+	void tidyProbeNames();
 
 	// Copy only the model-defining data members from source.
 	void copyData(const Model& source);
@@ -844,6 +861,10 @@ private:
 	// Forces.
 	PropertyObj _forceSetProp;
 	ForceSet& _forceSet;
+
+	// Probes.
+	PropertyObj _probeSetProp;
+	ProbeSet& _probeSet;
 
     // Set containing the bodies in this model.
     PropertyObj _bodySetProp;
