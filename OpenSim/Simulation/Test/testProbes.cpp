@@ -53,7 +53,7 @@
 #include <OpenSim/Simulation/Model/ActuatorPowerProbe.h>
 #include <OpenSim/Simulation/Model/ForceProbe.h>
 #include <OpenSim/Simulation/Model/JointPowerProbe.h>
-#include <OpenSim/Simulation/Model/MuscleMetabolicRateProbeBhargava2004.h>
+//#include <OpenSim/Simulation/Model/MuscleMetabolicRateProbeBhargava2004.h>
 #include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/ForceReporter.h>
