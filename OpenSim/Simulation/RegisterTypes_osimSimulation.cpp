@@ -62,6 +62,14 @@
 #include "Model/BushingForce.h"
 #include "Model/ExternalLoads.h"
 #include "Model/PathActuator.h"
+#include "Model/ProbeSet.h"
+#include "Model/ActuatorPowerProbe.h"
+#include "Model/ForceProbe.h"
+#include "Model/JointPowerProbe.h"
+#include "Model/SystemEnergyProbe.h"
+//#include "Model/MuscleMetabolicRateProbeBhargava2004.h"	// coming soon
+//#include "Model/MetabolicMuscle.h"						// coming soon
+//#include "Model/MetabolicMuscleSet.h"						// coming soon
 
 #include "Control/ControlSet.h"
 #include "Control/ControlSetController.h"
@@ -192,6 +200,15 @@ OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 
 	Object::registerType( BushingForce() );
 	Object::registerType( PathActuator() );
+	Object::RegisterType( ProbeSet() );
+	Object::RegisterType( ActuatorPowerProbe() );
+	Object::RegisterType( ForceProbe() );
+	Object::RegisterType( JointPowerProbe() );
+	Object::RegisterType( SystemEnergyProbe() );
+	///Object::RegisterType( MuscleMetabolicRateProbeBhargava2004() );	// coming soon
+	///Object::RegisterType( MetabolicMuscle() );						// coming soon
+	///Object::RegisterType( MetabolicMuscleSet() );					// coming soon
+
 
 	// OLD Versions
 	// Associate an instance with old name to help deserialization.
