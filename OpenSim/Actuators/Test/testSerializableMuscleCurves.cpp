@@ -19,11 +19,11 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim\Actuators\ActiveForceLengthCurve.h>
-#include <OpenSim\Actuators\ForceVelocityCurve.h>
-#include <OpenSim\Actuators\ForceVelocityInverseCurve.h>
-#include <OpenSim\Actuators\TendonForceLengthCurve.h>
-#include <OpenSim\Actuators\FiberForceLengthCurve.h>
+#include <OpenSim/Actuators/ActiveForceLengthCurve.h>
+#include <OpenSim/Actuators/ForceVelocityCurve.h>
+#include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
+#include <OpenSim/Actuators/TendonForceLengthCurve.h>
+#include <OpenSim/Actuators/FiberForceLengthCurve.h>
 
 #include <SimTKsimbody.h>
 #include <ctime>
