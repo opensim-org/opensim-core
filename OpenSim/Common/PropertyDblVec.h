@@ -174,6 +174,10 @@ public:
 	};
 	// SIZE
 	virtual int getArraySize() const { return M; }
+
+    virtual bool isArrayProperty() const {return true;}
+
+    virtual int getNumValues() const OVERRIDE_11 {return M;}
 //=============================================================================
 };	// END of class PropertyDblVec_
 
