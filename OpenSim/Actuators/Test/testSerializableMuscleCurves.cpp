@@ -24,6 +24,7 @@
 #include <OpenSim/Actuators/ForceVelocityInverseCurve.h>
 #include <OpenSim/Actuators/TendonForceLengthCurve.h>
 #include <OpenSim/Actuators/FiberForceLengthCurve.h>
+#include <OpenSim/Actuators/FiberCompressiveForceLengthCurve.h>
 
 #include <SimTKsimbody.h>
 #include <ctime>
@@ -39,6 +40,7 @@ void testForceVelocityCurve();
 void testForceVelocityInverseCurve();
 void testTendonForceLengthCurve();
 void testFiberForceLengthCurve();
+void testFiberCompressiveForceLengthCurve();
 
 int main(int argc, char* argv[])
 {
@@ -51,6 +53,7 @@ int main(int argc, char* argv[])
             testForceVelocityInverseCurve();
             testTendonForceLengthCurve();
             testFiberForceLengthCurve();
+            testFiberCompressiveForceLengthCurve();
             SimTK_END_TEST();
     }
     catch (OpenSim::Exception ex)
@@ -184,7 +187,7 @@ void testActiveForceLengthCurve()
         SimTK_TEST(falCurve4.getMaxActiveFiberLength()  == p3);
         SimTK_TEST(falCurve4.getShallowAscendingSlope() == p4);
         SimTK_TEST(falCurve4.getMinValue()              == p5);
-
+        cout << "Passed" << endl;
         //====================================================================
 
         cout <<"5. Testing Services for connectivity:" << endl;        
@@ -338,6 +341,7 @@ void testForceVelocityCurve()
         SimTK_TEST(fvCurve4.getMaxEccentricVelocityForceMultiplier() == p4);
         SimTK_TEST(fvCurve4.getConcentricCurviness()    == p5);
         SimTK_TEST(fvCurve4.getEccentricCurviness()     == p6);
+        cout << "Passed" << endl;
         //====================================================================
 
         cout <<"5. Testing Services for connectivity:" << endl;        
@@ -487,7 +491,7 @@ void testForceVelocityInverseCurve()
         SimTK_TEST(fvCurve4.getMaxEccentricVelocityForceMultiplier() == p4);
         SimTK_TEST(fvCurve4.getConcentricCurviness()    == p5);
         SimTK_TEST(fvCurve4.getEccentricCurviness()     == p6);
-
+        cout << "Passed" << endl;
 //====================================================================
         cout <<"5. Testing serivices for connectivity:" << endl;     
 
@@ -616,6 +620,7 @@ void testTendonForceLengthCurve()
             SimTK_TEST(fseCurve4.getStrainAtOneNormForce()      == p1);
             SimTK_TEST(fseCurve4.getStiffnessAtOneNormForce()   == p2);
             SimTK_TEST(fseCurve4.getCurviness()                 == p3);
+        cout << "Passed" << endl;
         //====================================================================
         cout <<"5. Testing default curve values at end points,"
                " and services" << endl;
@@ -755,7 +760,7 @@ void testFiberForceLengthCurve()
         SimTK_TEST(fpeCurve4.getCurviness()                 == p3);
 
         fpeCurve4.setName("fpeCurve");
-
+        cout << "Passed" << endl;
         //====================================================================
         cout <<"5. Testing default curve values at end points,"
                " and services" << endl;
@@ -802,6 +807,197 @@ void testFiberForceLengthCurve()
 
         cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING FiberForceLengthCurve             "<<endl;
+        cout <<"                    COMPLETED                     "<<endl;
+        cout <<"________________________________________________________"<<endl;
+
+}
+
+void testFiberCompressiveForceLengthCurve()
+{
+
+        cout <<"________________________________________________________"<<endl;    
+        cout <<"1. Testing FiberCompressiveForceLengthCurve"<<endl;       
+        cout <<"________________________________________________________"<<endl;
+
+        cout <<"    a. default construction" <<endl;
+        FiberCompressiveForceLengthCurve fceCurve1;
+        fceCurve1.print("default_FiberCompressiveForceLengthCurve.xml");
+
+        cout <<"    b. serialization & deserialization" <<endl;
+        FiberCompressiveForceLengthCurve fceCurve2;
+        //change all of the properties to something other than the default
+        fceCurve2.setNormLengthAtZeroForce(0.7);
+        fceCurve2.setStiffnessAtZeroLength(-10.0);
+        fceCurve2.setCurviness(0.1);
+
+
+        //These next few lines are just to read the object in, and repopulate
+        //fvCurve2 with the properties from the file ... and its a little 
+        //awkward to use.
+
+        //cout << "b.*Uncomment, test makeObjectFromFile once in OpenSim"<<endl;        
+        
+        Object* tmpObj = Object::          
+             makeObjectFromFile("default_FiberCompressiveForceLengthCurve.xml");
+        fceCurve2 = *dynamic_cast<FiberCompressiveForceLengthCurve*>(tmpObj);        
+        delete tmpObj;
+        SimTK_TEST(fceCurve2 == fceCurve1);       
+        remove("default_FiberCompressiveForceLengthCurve.xml");
+        
+
+        //change all of the properties to something other than the default
+        fceCurve2.setNormLengthAtZeroForce(0.7);
+        fceCurve2.setStiffnessAtZeroLength(-10.0);
+        fceCurve2.setCurviness(0.1);
+
+        cout <<"    c. assignment operator" <<endl;
+        fceCurve2=fceCurve1;
+                
+        SimTK_TEST(fceCurve1==fceCurve2);
+
+        //change all of the properties to something other than the default
+        fceCurve2.setNormLengthAtZeroForce(0.7);
+        fceCurve2.setStiffnessAtZeroLength(-10.0);
+        fceCurve2.setCurviness(0.1);
+
+        cout <<"    d. copy constructor" <<endl;
+        FiberCompressiveForceLengthCurve fceCurve2p5(fceCurve2);
+        SimTK_TEST(fceCurve2==fceCurve2p5);
+
+        cout << "*Passed: default construction, limited serialization" << endl;
+        cout << "         assignment operator, copy constructor" << endl;
+
+        //====================================================================
+        cout <<"2. Testing API constructor" << endl;
+        FiberCompressiveForceLengthCurve fceCurve3(0.80,-10,0.1,"testMuscle");
+        double fceVal  = fceCurve3.calcValue(0.02);
+        double dfceVal = fceCurve3.calcDerivative(0.02,1);
+        cout << "Passed: Testing API constructor" << endl;
+
+        //====================================================================
+        cout <<"3. Testing get/set methods:" << endl;
+
+        //change all of the properties to something other than the default
+        fceCurve2.setNormLengthAtZeroForce(0.7);
+        fceCurve2.setStiffnessAtZeroLength(-10.0);
+        fceCurve2.setCurviness(0.1);
+
+        SimTK_TEST(fceCurve2.getNormLengthAtZeroForce()     == 0.70);
+        SimTK_TEST(fceCurve2.getStiffnessAtZeroLength()     == -10.0);
+        SimTK_TEST(fceCurve2.getCurviness()                 == 0.10);
+        
+        cout << "Passed: Testing get/set methods" << endl;
+
+        //====================================================================
+        double p1 = 0.58564173314080115;
+        double p2 = -8.0;
+        double p3 = 0.1;
+
+        printf("4a. Testing default property values: \n\t%f,\n\t%f,\n\t%f\n",
+            p1,p2,p3);      
+        FiberCompressiveForceLengthCurve fceCurve4;
+        fceCurve4.setName("fceCurve");
+
+        SimTK_TEST(fceCurve4.getNormLengthAtZeroForce()     == p1);
+        SimTK_TEST(fceCurve4.getStiffnessAtZeroLength()     == p2);
+        SimTK_TEST(fceCurve4.getCurviness()                 == p3);
+        cout << "Passed" << endl;
+
+        //solve for the paramters that will yield a value of 0.05 at a 
+        //fiber length of  0.5
+
+        double len0 = fceCurve4.getNormLengthAtZeroForce();
+        double desLen = 0.5;
+        double desVal = 0.05;
+        double tol = 1e-12;
+        /*
+        double step = 0.1;
+        int maxIter = 100;
+        int iter = 0;
+       
+        double err      = abs(desVal - fceCurve4.calcValue(desLen));
+        double errLeft  = 1;
+        double errRight = 1;
+
+        while(abs(err) > tol && iter < maxIter){
+            fceCurve4.setNormLengthAtZeroForce(len0 - step);
+            errLeft = desVal - fceCurve4.calcValue(desLen);
+            
+            fceCurve4.setNormLengthAtZeroForce(len0 + step);
+            errRight = desVal - fceCurve4.calcValue(desLen);
+
+            if(abs(errLeft) < abs(err) || abs(errRight) < abs(err)){
+                if(abs(errLeft) < abs(errRight)){
+                    err = abs(errLeft);
+                    len0 = len0-step;
+                }else{
+                    err = abs(errRight);
+                    len0 = len0+step;
+                }
+            }
+            step = step/2;
+            iter = iter+1;
+        }
+        */
+        //printf("NormLengthAtZeroForce %f will yield %f at %f\n",
+        //        len0,desVal,desLen);
+        
+        tol = sqrt(SimTK::Eps);        
+        printf("4b. Checking that at %f the curve value is %f\n",desLen,desVal);
+        SimTK_TEST_EQ_TOL(fceCurve4.calcValue(desLen), desVal, tol);
+        cout << "Passed" << endl;
+
+        fceCurve4.setName("fceCurve");
+
+        //====================================================================
+        cout <<"5. Testing default curve values at end points,"
+               " and services" << endl;
+
+        cout <<"    a. calcValue" << endl;
+            double l0 = p1;
+            double l1 = 0;
+            double dydx = p2;
+
+        cout <<"    a. calcValue" << endl;
+            tol = sqrt(SimTK::Eps);
+            double value = fceCurve4.calcValue(l0);
+            SimTK_TEST_EQ_TOL(value, 0, tol);
+            value = fceCurve4.calcValue(l1);
+            SimTK_TEST_EQ_TOL(value, 1, tol);
+        cout <<"    b. calcDerivative" << endl;
+            double dvalue= fceCurve4.calcDerivative(l0,1);
+            SimTK_TEST_EQ_TOL(dvalue, 0, tol);
+            dvalue= fceCurve4.calcDerivative(l1,1);
+            SimTK_TEST_EQ_TOL(dvalue, dydx, tol);
+            
+            //look at the second derivative
+            dvalue= fceCurve4.calcDerivative(l0,2);
+            SimTK_TEST_EQ_TOL(dvalue, 0, tol);
+            dvalue= fceCurve4.calcDerivative(l1,2);
+            SimTK_TEST_EQ_TOL(dvalue, 0, tol);
+
+        cout <<"    c. getCurveDomain" << endl;
+            SimTK::Vec2 tmp = fceCurve4.getCurveDomain();
+            SimTK_TEST(tmp(0) == l1 &&
+                       tmp(1) == l0);
+
+
+
+
+        cout <<"    d. printMuscleCurveToCSVFile" << endl;            
+
+            fceCurve4.printMuscleCurveToCSVFile("");
+            std::string fname = fceCurve4.getName();
+            fname.append(".csv");
+            remove(fname.c_str());
+
+        cout << "Passed: Testing Services for connectivity" << endl;                            
+
+       cout <<"Service correctness is tested by underlying utility class"<<endl;
+       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+
+        cout <<"________________________________________________________"<<endl;
+        cout <<"          TESTING FiberCompressiveForceLengthCurve      "<<endl;
         cout <<"                    COMPLETED                     "<<endl;
         cout <<"________________________________________________________"<<endl;
 
