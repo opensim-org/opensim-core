@@ -45,7 +45,7 @@ using namespace std;
  */
 ProbeReporter::~ProbeReporter()
 {
-	deleteStorage();
+    deleteStorage();
 }
 //_____________________________________________________________________________
 /**
@@ -54,16 +54,16 @@ ProbeReporter::~ProbeReporter()
  * @param aModel Model for which the Probes are to be recorded.
  */
 ProbeReporter::ProbeReporter(Model *aModel) : Analysis(aModel),
-	_probeStore(1000,"ModelProbes")
+    _probeStore(1000,"ModelProbes")
 {
-	// NULL
-	setNull();
+    // NULL
+    setNull();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 
-	// STORAGE
-	allocateStorage();
+    // STORAGE
+    allocateStorage();
 
 }
 //_____________________________________________________________________________
@@ -76,18 +76,18 @@ ProbeReporter::ProbeReporter(Model *aModel) : Analysis(aModel),
  * @param aFileName File name of the document.
  */
 ProbeReporter::ProbeReporter(const std::string &aFileName): Analysis(aFileName, false),
-	_probeStore(1000,"ModelProbes")
+    _probeStore(1000,"ModelProbes")
 {
-	setNull();
+    setNull();
 
-	// Serialize from XML
-	updateFromXMLDocument();
+    // Serialize from XML
+    updateFromXMLDocument();
 
-	// DESCRIPTION
-	constructDescription();
+    // DESCRIPTION
+    constructDescription();
 
-	// STORAGE
-	allocateStorage();
+    // STORAGE
+    allocateStorage();
 }
 
 // Copy constrctor and virtual copy 
@@ -97,12 +97,12 @@ ProbeReporter::ProbeReporter(const std::string &aFileName): Analysis(aFileName, 
  *
  */
 ProbeReporter::ProbeReporter(const ProbeReporter &aProbeReporter):
-	Analysis(aProbeReporter),
-	_probeStore(aProbeReporter._probeStore)
+    Analysis(aProbeReporter),
+    _probeStore(aProbeReporter._probeStore)
 {
-	setNull();
-	// COPY TYPE AND NAME
-	*this = aProbeReporter;
+    setNull();
+    // COPY TYPE AND NAME
+    *this = aProbeReporter;
 }
 
 
@@ -115,8 +115,8 @@ ProbeReporter::ProbeReporter(const ProbeReporter &aProbeReporter):
  */
 void ProbeReporter::setNull()
 {
-	// NAME
-	setName("ProbeReporter");
+    // NAME
+    setName("ProbeReporter");
 }
 
 
@@ -125,14 +125,14 @@ void ProbeReporter::setNull()
 //--------------------------------------------------------------------------
 ProbeReporter& ProbeReporter::operator=(const ProbeReporter &aProbeReporter)
 {
-	// BASE CLASS
-	Super::operator=(aProbeReporter);
+    // BASE CLASS
+    Super::operator=(aProbeReporter);
 
-	// STORAGE
-	deleteStorage();
-	allocateStorage();
+    // STORAGE
+    deleteStorage();
+    allocateStorage();
 
-	return (*this);
+    return (*this);
 }
 //_____________________________________________________________________________
 /**
@@ -140,8 +140,8 @@ ProbeReporter& ProbeReporter::operator=(const ProbeReporter &aProbeReporter)
  */
 void ProbeReporter::setModel(Model& aModel)
 {
-	// BASE CLASS
-	Super::setModel(aModel);
+    // BASE CLASS
+    Super::setModel(aModel);
 }
 
 //_____________________________________________________________________________
@@ -150,11 +150,11 @@ void ProbeReporter::setModel(Model& aModel)
  */
 void ProbeReporter::allocateStorage()
 {
-	// ACCELERATIONS
-	_probeStore.setDescription(getDescription());
-	// Keep references to all storages in a list for uniform access from GUI
-	_storageList.append(&_probeStore);
-	_storageList.setMemoryOwner(false);
+    // ACCELERATIONS
+    _probeStore.setDescription(getDescription());
+    // Keep references to all storages in a list for uniform access from GUI
+    _storageList.append(&_probeStore);
+    _storageList.setMemoryOwner(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -166,21 +166,21 @@ void ProbeReporter::allocateStorage()
  */
 void ProbeReporter::constructDescription()
 {
-	char descrip[1024];
+    char descrip[1024];
 
-	strcpy(descrip,"\nThis file contains the probes on a model ");
-	strcat(descrip,"during a simulation.\n");
+    strcpy(descrip,"\nThis file contains the probes on a model ");
+    strcat(descrip,"during a simulation.\n");
 
-	strcat(descrip,"\nThe units used are dependent on the type of probe component");
+    strcat(descrip,"\nThe units used are dependent on the type of probe component");
 
-	if(getInDegrees()) {
-		strcat(descrip,"\nAngles are in degrees.");
-	} else {
-		strcat(descrip,"\nAngles are in radians.");
-	}
-	strcat(descrip,"\n\n");
+    if(getInDegrees()) {
+        strcat(descrip,"\nAngles are in degrees.");
+    } else {
+        strcat(descrip,"\nAngles are in radians.");
+    }
+    strcat(descrip,"\n\n");
 
-	setDescription(descrip);
+    setDescription(descrip);
 }
 
 //-----------------------------------------------------------------------------
@@ -192,25 +192,25 @@ void ProbeReporter::constructDescription()
  */
 void ProbeReporter::constructColumnLabels(const SimTK::State& s)
 {
-	if (_model)
-	{
-		// ASSIGN
-		Array<string> columnLabels;
-		columnLabels.append("time");
-		int nP=_model->getProbeSet().getSize();
+    if (_model)
+    {
+        // ASSIGN
+        Array<string> columnLabels;
+        columnLabels.append("time");
+        int nP=_model->getProbeSet().getSize();
 
-		for(int i=0 ; i<nP ; i++) {
-			Probe& p = _model->getProbeSet().get(i);
+        for(int i=0 ; i<nP ; i++) {
+            Probe& p = _model->getProbeSet().get(i);
 
-			if (p.isDisabled()) continue; // Skip over disabled probes
+            if (p.isDisabled()) continue; // Skip over disabled probes
 
-			// Get column names for the probe after the operation
-			Array<string> probeLabels = p.getRecordLabels();
-			columnLabels.append(probeLabels);
-		}
-		
-		_probeStore.setColumnLabels(columnLabels);
-	}
+            // Get column names for the probe after the operation
+            Array<string> probeLabels = p.getRecordLabels();
+            columnLabels.append(probeLabels);
+        }
+        
+        _probeStore.setColumnLabels(columnLabels);
+    }
 }
 
 
@@ -223,7 +223,7 @@ void ProbeReporter::constructColumnLabels(const SimTK::State& s)
  */
 void ProbeReporter::deleteStorage()
 {
-	//if(_probeStore!=NULL) { delete _probeStore;  _probeStore=NULL; }
+    //if(_probeStore!=NULL) { delete _probeStore;  _probeStore=NULL; }
 }
 
 //=============================================================================
@@ -235,31 +235,31 @@ void ProbeReporter::deleteStorage()
  */
 int ProbeReporter::record(const SimTK::State& s)
 {
-	if(_model==NULL) return(-1);
+    if(_model==NULL) return(-1);
 
-	// MAKE SURE ALL ProbeReporter QUANTITIES ARE VALID
+    // MAKE SURE ALL ProbeReporter QUANTITIES ARE VALID
     _model->getMultibodySystem().realize(s, SimTK::Stage::Report );
 
-	StateVector nextRow = StateVector(s.getTime());
+    StateVector nextRow = StateVector(s.getTime());
 
-	// NUMBER OF Probes
-	const ProbeSet& probes = _model->getProbeSet();
-	int nP = probes.getSize();
+    // NUMBER OF Probes
+    const ProbeSet& probes = _model->getProbeSet();
+    int nP = probes.getSize();
 
-	for(int i=0 ; i<nP ; i++) {
-		Probe& nextProbe = (Probe&)probes[i];
+    for(int i=0 ; i<nP ; i++) {
+        Probe& nextProbe = (Probe&)probes[i];
 
-		if (nextProbe.isDisabled()) continue;
+        if (nextProbe.isDisabled()) continue;
 
-		// Get probe values after the probe operation
-		Array<double> values = nextProbe.getRecordValues(s);
-		nextRow.getData().append(values);
+        // Get probe values after the probe operation
+        Array<double> values = nextProbe.getRecordValues(s);
+        nextRow.getData().append(values);
 
-	}
+    }
 
-	_probeStore.append(nextRow);
+    _probeStore.append(nextRow);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -279,21 +279,21 @@ int ProbeReporter::record(const SimTK::State& s)
 int ProbeReporter::
 begin(SimTK::State& s)
 {
-	if(!proceed()) return(0);
+    if(!proceed()) return(0);
 
-	//tidyProbeNames();
-	// LABELS
-	constructColumnLabels(s);
-	// RESET STORAGE
-	_probeStore.reset(s.getTime());
+    //tidyProbeNames();
+    // LABELS
+    constructColumnLabels(s);
+    // RESET STORAGE
+    _probeStore.reset(s.getTime());
 
-	// RECORD
-	int status = 0;
-	if(_probeStore.getSize()<=0) {
-		status = record(s);
-	}
+    // RECORD
+    int status = 0;
+    if(_probeStore.getSize()<=0) {
+        status = record(s);
+    }
 
-	return(status);
+    return(status);
 }
 //_____________________________________________________________________________
 /**
@@ -314,11 +314,11 @@ begin(SimTK::State& s)
 int ProbeReporter::
 step(const SimTK::State& s, int stepNumber )
 {
-	if(!proceed( stepNumber )) return(0);
+    if(!proceed( stepNumber )) return(0);
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 //_____________________________________________________________________________
 /**
@@ -337,11 +337,11 @@ step(const SimTK::State& s, int stepNumber )
 int ProbeReporter::
 end(SimTK::State& s )
 {
-	if (!proceed()) return 0;
+    if (!proceed()) return 0;
 
-	record(s);
+    record(s);
 
-	return(0);
+    return(0);
 }
 
 
@@ -367,16 +367,16 @@ end(SimTK::State& s )
  */
 int ProbeReporter::
 printResults(const string &aBaseName,const string &aDir,double aDT,
-				 const string &aExtension)
+                 const string &aExtension)
 {
-	if(!getOn()) {
-		printf("ProbeReporter.printResults: Off- not printing.\n");
-		return(0);
-	}
+    if(!getOn()) {
+        printf("ProbeReporter.printResults: Off- not printing.\n");
+        return(0);
+    }
 
-	std::string prefix=aBaseName+"_"+getName()+"_";
-	Storage::printResult(&_probeStore, prefix+"probes", aDir, aDT, aExtension);
+    std::string prefix=aBaseName+"_"+getName()+"_";
+    Storage::printResult(&_probeStore, prefix+"probes", aDir, aDT, aExtension);
 
-	return(0);
+    return(0);
 }
 

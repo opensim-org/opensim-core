@@ -46,7 +46,7 @@ using namespace OpenSim;
  */
 JointPowerProbe::JointPowerProbe() 
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -55,8 +55,8 @@ JointPowerProbe::JointPowerProbe()
  */
 JointPowerProbe::JointPowerProbe(Array<string> joint_names)
 {
-	setNull();
-	setPropertyValue("joint_names", joint_names);
+    setNull();
+    setPropertyValue("joint_names", joint_names);
 }
 
 //_____________________________________________________________________________
@@ -77,8 +77,8 @@ JointPowerProbe::~JointPowerProbe()
 JointPowerProbe::JointPowerProbe(const JointPowerProbe &aJointPowerProbe) :
    Probe(aJointPowerProbe)
 {
-	setNull();
-	copyData(aJointPowerProbe);
+    setNull();
+    copyData(aJointPowerProbe);
 }
 
 
@@ -90,8 +90,8 @@ JointPowerProbe::JointPowerProbe(const JointPowerProbe &aJointPowerProbe) :
  */
 void JointPowerProbe::copyData(const JointPowerProbe &aProbe)
 {
-	Super::copyData(aProbe);
-	setPropertyValue("joint_names", aProbe.getProperty<string>("joint_names"));
+    Super::copyData(aProbe);
+    setPropertyValue("joint_names", aProbe.getProperty<string>("joint_names"));
 }
 
 //_____________________________________________________________________________
@@ -100,7 +100,7 @@ void JointPowerProbe::copyData(const JointPowerProbe &aProbe)
  */
 void JointPowerProbe::setNull(void)
 {
-	setupProperties();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -109,12 +109,12 @@ void JointPowerProbe::setNull(void)
  */
 void JointPowerProbe::setupProperties(void)
 {
-	Array<string> tmp("");
-	addListProperty<string>("joint_names",
-		"Specify a list of model Joints whose work should be calculated. "
-		"If multiple Joints are given, the probe value will be the summation"
-		" of all joint powers.",
-		tmp);
+    Array<string> tmp("");
+    addListProperty<string>("joint_names",
+        "Specify a list of model Joints whose work should be calculated. "
+        "If multiple Joints are given, the probe value will be the summation"
+        " of all joint powers.",
+        tmp);
 }
 
 
@@ -130,9 +130,9 @@ void JointPowerProbe::setupProperties(void)
 #ifndef SWIG
 JointPowerProbe& JointPowerProbe::operator=(const JointPowerProbe &aJointPowerProbe)
 {
-	// BASE CLASS
-	Super::operator=(aJointPowerProbe);
-	return(*this);
+    // BASE CLASS
+    Super::operator=(aJointPowerProbe);
+    return(*this);
 }
 #endif
 
@@ -145,7 +145,7 @@ JointPowerProbe& JointPowerProbe::operator=(const JointPowerProbe &aJointPowerPr
  */
 const Property<string>& JointPowerProbe::getJointNames() const
 {
-	return getProperty<string>("joint_names");
+    return getProperty<string>("joint_names");
 }
 
 //_____________________________________________________________________________
@@ -154,7 +154,7 @@ const Property<string>& JointPowerProbe::getJointNames() const
  */
 void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
 {
-	setPropertyValue<string>("joint_names", aJointNames);
+    setPropertyValue<string>("joint_names", aJointNames);
 }
 
 
@@ -172,18 +172,18 @@ void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
  */
 void JointPowerProbe::setup(Model& aModel)
 {
-	Super::setup(aModel);
+    Super::setup(aModel);
 
-	// check that each Joints in the joint_names array exists in the model
-	int nA = getJointNames().size();
-	for (int i=0; i<nA; i++) {
-		string jointName = getJointNames()[i];
-		int k = _model->getJointSet().getIndex(jointName);
-		if (k<0) {
-			string errorMessage = getConcreteClassName() + ": Invalid Joint '" + jointName + "' specified in <joint_names>.";
-			throw (Exception(errorMessage.c_str()));
-		}
-	}
+    // check that each Joints in the joint_names array exists in the model
+    int nA = getJointNames().size();
+    for (int i=0; i<nA; i++) {
+        string jointName = getJointNames()[i];
+        int k = _model->getJointSet().getIndex(jointName);
+        if (k<0) {
+            string errorMessage = getConcreteClassName() + ": Invalid Joint '" + jointName + "' specified in <joint_names>.";
+            throw (Exception(errorMessage.c_str()));
+        }
+    }
 }
 
 
@@ -199,23 +199,23 @@ void JointPowerProbe::setup(Model& aModel)
  */
 Vector JointPowerProbe::computeProbeValue(const State& s) const
 {
-	int nA = getJointNames().size();
-	Vector TotalP(1);
-	TotalP(0) = 0;				// Initialize at zero
+    int nA = getJointNames().size();
+    Vector TotalP(1);
+    TotalP(0) = 0;				// Initialize at zero
 
-	// Loop through each joint in the list of joint_names
-	for (int i=0; i<nA; i++)
-	{
-		string jointName = getJointNames()[i];
-		int k = _model->getJointSet().getIndex(jointName);
+    // Loop through each joint in the list of joint_names
+    for (int i=0; i<nA; i++)
+    {
+        string jointName = getJointNames()[i];
+        int k = _model->getJointSet().getIndex(jointName);
 
-		// Get the "Joint" power from the Joint object
-		double jointPower = _model->getJointSet().get(k).calcPower(s);
-		
-		// Append to total "Joint" power
-		TotalP(0) += jointPower;
-	}
+        // Get the "Joint" power from the Joint object
+        double jointPower = _model->getJointSet().get(k).calcPower(s);
+        
+        // Append to total "Joint" power
+        TotalP(0) += jointPower;
+    }
 
-	return(TotalP);
+    return(TotalP);
 }
 

@@ -53,7 +53,7 @@ class Force;
 
 class OSIMSIMULATION_API ForceProbe : public Probe 
 {
-	OpenSim_DECLARE_CONCRETE_OBJECT(ForceProbe, Probe);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ForceProbe, Probe);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -63,55 +63,55 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// Constructor(s) and Setup
-	//--------------------------------------------------------------------------
-	/** Default constructor */
-	ForceProbe();
-	/** Convenience constructor */
-	ForceProbe(Array<std::string> force_names);
-	/** Copy constructor */
-	ForceProbe(const ForceProbe &aForceProbe);
-	/** Destructor */
-	virtual ~ForceProbe();
-	void copyData(const ForceProbe &aProbe);
-	
+    //--------------------------------------------------------------------------
+    // Constructor(s) and Setup
+    //--------------------------------------------------------------------------
+    /** Default constructor */
+    ForceProbe();
+    /** Convenience constructor */
+    ForceProbe(Array<std::string> force_names);
+    /** Copy constructor */
+    ForceProbe(const ForceProbe &aForceProbe);
+    /** Destructor */
+    virtual ~ForceProbe();
+    void copyData(const ForceProbe &aProbe);
+    
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 public:
 
-	//--------------------------------------------------------------------------
-	// Operators
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Operators
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	ForceProbe& operator=(const ForceProbe &aObject);
+    ForceProbe& operator=(const ForceProbe &aObject);
 #endif
 
 
-	//--------------------------------------------------------------------------
-	// Get and Set
-	//--------------------------------------------------------------------------
-	/** Returns the name(s) of the Forces being probed */
-	const Property<std::string>& getForceNames() const;
+    //--------------------------------------------------------------------------
+    // Get and Set
+    //--------------------------------------------------------------------------
+    /** Returns the name(s) of the Forces being probed */
+    const Property<std::string>& getForceNames() const;
 
-	/** Sets the name(s) of the Forces being probed */
-	void setForceNames(const Array<std::string>& aForceNames);
-
-
-	//-----------------------------------------------------------------------------
-	// Computation
-	//-----------------------------------------------------------------------------
-	/** Compute the Force upon which the Probe operation will be based on. */
-	virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+    /** Sets the name(s) of the Forces being probed */
+    void setForceNames(const Array<std::string>& aForceNames);
 
 
-	//--------------------------------------------------------------------------
-	// ModelComponent Interface
-	//--------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
+    // Computation
+    //-----------------------------------------------------------------------------
+    /** Compute the Force upon which the Probe operation will be based on. */
+    virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+
+
+    //--------------------------------------------------------------------------
+    // ModelComponent Interface
+    //--------------------------------------------------------------------------
 protected:
-	virtual void setup(Model& aModel);
+    virtual void setup(Model& aModel);
 
 
 //=============================================================================

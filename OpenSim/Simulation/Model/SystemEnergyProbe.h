@@ -51,7 +51,7 @@ class Model;
  */
 class OSIMSIMULATION_API SystemEnergyProbe : public Probe  
 {
-	OpenSim_DECLARE_CONCRETE_OBJECT(SystemEnergyProbe, Probe);
+    OpenSim_DECLARE_CONCRETE_OBJECT(SystemEnergyProbe, Probe);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -61,62 +61,62 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// Constructor(s) and Setup
-	//--------------------------------------------------------------------------
-	/** Default constructor */
-	SystemEnergyProbe();
-	/** Convenience constructor */
-	SystemEnergyProbe(bool computeKE, bool computePE);
-	/** Copy constructor */
-	SystemEnergyProbe(const SystemEnergyProbe &aSystemEnergyProbe);
-	/** Destructor */
-	virtual ~SystemEnergyProbe();
-	void copyData(const SystemEnergyProbe &aProbe);
+    //--------------------------------------------------------------------------
+    // Constructor(s) and Setup
+    //--------------------------------------------------------------------------
+    /** Default constructor */
+    SystemEnergyProbe();
+    /** Convenience constructor */
+    SystemEnergyProbe(bool computeKE, bool computePE);
+    /** Copy constructor */
+    SystemEnergyProbe(const SystemEnergyProbe &aSystemEnergyProbe);
+    /** Destructor */
+    virtual ~SystemEnergyProbe();
+    void copyData(const SystemEnergyProbe &aProbe);
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 public:
 
-	//--------------------------------------------------------------------------
-	// Operators
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Operators
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	SystemEnergyProbe& operator=(const SystemEnergyProbe &aSystemEnergyProbe);
+    SystemEnergyProbe& operator=(const SystemEnergyProbe &aSystemEnergyProbe);
 #endif
 
 
-	//--------------------------------------------------------------------------
-	// Get and Set
-	//--------------------------------------------------------------------------
-	/** Returns whether kinetic energy is to be included in the system energy computation. */
-	bool getComputeKineticEnergy() const;
+    //--------------------------------------------------------------------------
+    // Get and Set
+    //--------------------------------------------------------------------------
+    /** Returns whether kinetic energy is to be included in the system energy computation. */
+    bool getComputeKineticEnergy() const;
 
-	/** Returns whether kinetic energy is to be included in the system energy computation. */
-	bool getComputePotentialEnergy() const;
+    /** Returns whether kinetic energy is to be included in the system energy computation. */
+    bool getComputePotentialEnergy() const;
 
-	/** Sets whether kinetic energy is to be included in the system energy computation. */
-	void setComputeKineticEnergy(bool c);
+    /** Sets whether kinetic energy is to be included in the system energy computation. */
+    void setComputeKineticEnergy(bool c);
 
-	/** Sets whether potential energy is to be included in the system energy computation. */
-	void setComputePotentialEnergy(bool c);
-
-
-	//-----------------------------------------------------------------------------
-	// Computation
-	//-----------------------------------------------------------------------------
-	/** Compute the System energy which the Probe operation will be based on. */
-	virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+    /** Sets whether potential energy is to be included in the system energy computation. */
+    void setComputePotentialEnergy(bool c);
 
 
-	//--------------------------------------------------------------------------
-	// ModelComponent Interface
-	//--------------------------------------------------------------------------
+    //-----------------------------------------------------------------------------
+    // Computation
+    //-----------------------------------------------------------------------------
+    /** Compute the System energy which the Probe operation will be based on. */
+    virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+
+
+    //--------------------------------------------------------------------------
+    // ModelComponent Interface
+    //--------------------------------------------------------------------------
 protected:
-	virtual void setup(Model& aModel);
-	
+    virtual void setup(Model& aModel);
+    
 
 //=============================================================================
 };	// END of class SystemEnergyProbe

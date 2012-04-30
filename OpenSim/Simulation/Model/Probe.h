@@ -50,12 +50,12 @@ class Model;
  */
 class OSIMSIMULATION_API Probe : public ModelComponent
 {
-	OpenSim_DECLARE_ABSTRACT_OBJECT(Probe, ModelComponent);
+    OpenSim_DECLARE_ABSTRACT_OBJECT(Probe, ModelComponent);
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
-	SimTK::Measure afterOperationValue;
+    SimTK::Measure afterOperationValue;
 
 
 
@@ -63,67 +63,67 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	
-	Probe();
-	Probe(const Probe &aProbe);
-	virtual ~Probe();
+    
+    Probe();
+    Probe(const Probe &aProbe);
+    virtual ~Probe();
 
-	/**
-	 * deserialization from XML, necessary so that derived classes can (de)serialize
-	 */
-	//Probe(SimTK::Xml::Element& aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
+    /**
+     * deserialization from XML, necessary so that derived classes can (de)serialize
+     */
+    //Probe(SimTK::Xml::Element& aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
 
 #ifndef SWIG
-	Probe& operator=(const Probe &aProbe);
+    Probe& operator=(const Probe &aProbe);
 #endif
 
-	void copyData(const Probe &aProbe);
-		
+    void copyData(const Probe &aProbe);
+        
 
-	/** Returns trus if the Probe is disabled or false if the probe is enabled. */
-	virtual bool isDisabled() const;
-	/** Set the Probe as disabled (true) or enabled (false). */
-	virtual void setDisabled(bool isDisabled);
+    /** Returns trus if the Probe is disabled or false if the probe is enabled. */
+    virtual bool isDisabled() const;
+    /** Set the Probe as disabled (true) or enabled (false). */
+    virtual void setDisabled(bool isDisabled);
 
-	/** Return the operation being performed on the probe value. */
-	virtual std::string getOperation() const;
-	/** Set the operation being performed on the probe value. */
-	virtual void setOperation(std::string operation);
+    /** Return the operation being performed on the probe value. */
+    virtual std::string getOperation() const;
+    /** Set the operation being performed on the probe value. */
+    virtual void setOperation(std::string operation);
 
-	/** Return the operation parameter for the operation. */
-	virtual double getOperationParameter() const;
-	/** Set the operation parameter for the operation. */
-	virtual void setOperationParameter(double operation_parameter);
+    /** Return the operation parameter for the operation. */
+    virtual double getOperationParameter() const;
+    /** Set the operation parameter for the operation. */
+    virtual void setOperationParameter(double operation_parameter);
 
 
 protected:
-	virtual void setup(Model& model);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
+    virtual void setup(Model& model);
+    virtual void createSystem(SimTK::MultibodySystem& system) const;
     virtual void setDefaultsFromState(const SimTK::State& state);
 
 
 public:
 
-	/**Computes the probe value (this is the value of the probe prior to any operation being performed on it.
-	   Probe value is computed at the SimTK Report Stage
-	   This method must be overridden for each subclass Probe.
+    /**Computes the probe value (this is the value of the probe prior to any operation being performed on it.
+       Probe value is computed at the SimTK Report Stage
+       This method must be overridden for each subclass Probe.
 
        @param state System state   
        @return		The SimTK::Vector of probe values
     */
-	virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const=0;
+    virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const=0;
 
-	/**Returns the column labels for the probe values for reporting. */
-	virtual Array<std::string> getRecordLabels() const;
+    /**Returns the column labels for the probe values for reporting. */
+    virtual Array<std::string> getRecordLabels() const;
 
-	/**Returns the probe values after being operated on. */
-	virtual Array<double> getRecordValues(const SimTK::State& state) const;
+    /**Returns the probe values after being operated on. */
+    virtual Array<double> getRecordValues(const SimTK::State& state) const;
 
 
 private:
 
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 //=============================================================================
 };	// END of class Probe

@@ -56,7 +56,7 @@ ForceProbe::~ForceProbe()
  */
 ForceProbe::ForceProbe() : Probe()
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -65,8 +65,8 @@ ForceProbe::ForceProbe() : Probe()
  */
 ForceProbe::ForceProbe(Array<string> force_names) : Probe()
 {
-	setNull();
-	setPropertyValue("force_names", force_names);
+    setNull();
+    setPropertyValue("force_names", force_names);
 }
 
 
@@ -78,8 +78,8 @@ ForceProbe::ForceProbe(Array<string> force_names) : Probe()
  */
 ForceProbe::ForceProbe(const ForceProbe &aForceProbe) : Probe(aForceProbe)
 {
-	setNull();
-	copyData(aForceProbe);
+    setNull();
+    copyData(aForceProbe);
 }
 
 
@@ -91,8 +91,8 @@ ForceProbe::ForceProbe(const ForceProbe &aForceProbe) : Probe(aForceProbe)
  */
 void ForceProbe::copyData(const ForceProbe &aProbe)
 {
-	Super::copyData(aProbe);
-	setPropertyValue("force_names", aProbe.getProperty<string>("force_names"));
+    Super::copyData(aProbe);
+    setPropertyValue("force_names", aProbe.getProperty<string>("force_names"));
 }
 
 //_____________________________________________________________________________
@@ -101,7 +101,7 @@ void ForceProbe::copyData(const ForceProbe &aProbe)
  */
 void ForceProbe::setNull()
 {
-	setupProperties();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -110,13 +110,13 @@ void ForceProbe::setNull()
  */
 void ForceProbe::setupProperties()
 {
-	// force_names
-	Array<string> tmp("");
-	addListProperty<string>("force_names",
-		"Specify a list of model Forces whose impulse should be calculated. "
-		"If multiple Forces are given, the probe value will be the summation"
-		" of all forces, and the integral will be the summation of all impulses.",
-		tmp);
+    // force_names
+    Array<string> tmp("");
+    addListProperty<string>("force_names",
+        "Specify a list of model Forces whose impulse should be calculated. "
+        "If multiple Forces are given, the probe value will be the summation"
+        " of all forces, and the integral will be the summation of all impulses.",
+        tmp);
 }
 
 
@@ -132,9 +132,9 @@ void ForceProbe::setupProperties()
 #ifndef SWIG
 ForceProbe& ForceProbe::operator=(const ForceProbe &aObject)
 {
-	// BASE CLASS
-	Super::operator=(aObject);
-	return(*this);
+    // BASE CLASS
+    Super::operator=(aObject);
+    return(*this);
 }
 #endif
 
@@ -148,7 +148,7 @@ ForceProbe& ForceProbe::operator=(const ForceProbe &aObject)
  */
 const Property<string>& ForceProbe::getForceNames() const
 {
-	return getProperty<string>("force_names");
+    return getProperty<string>("force_names");
 }
 
 //_____________________________________________________________________________
@@ -157,7 +157,7 @@ const Property<string>& ForceProbe::getForceNames() const
  */
 void ForceProbe::setForceNames(const Array<string>& aForceNames)
 {
-	setPropertyValue<string>("force_names", aForceNames);
+    setPropertyValue<string>("force_names", aForceNames);
 }
 
 
@@ -175,18 +175,18 @@ void ForceProbe::setForceNames(const Array<string>& aForceNames)
  */
 void ForceProbe::setup(Model& aModel)
 {
-	Super::setup(aModel);
+    Super::setup(aModel);
 
-	// check that each Force in the force_names array exists in the model
-	int nF = getForceNames().size();
-	for (int i=0; i<nF; i++) {
-		string forceName = getForceNames()[i];
-		int k = _model->getForceSet().getIndex(forceName);
-		if (k<0) {
-			string errorMessage = getConcreteClassName() + ": Invalid Force '" + forceName + "' specified in <force_names>.";
-			throw (Exception(errorMessage.c_str()));
-		}
-	}
+    // check that each Force in the force_names array exists in the model
+    int nF = getForceNames().size();
+    for (int i=0; i<nF; i++) {
+        string forceName = getForceNames()[i];
+        int k = _model->getForceSet().getIndex(forceName);
+        if (k<0) {
+            string errorMessage = getConcreteClassName() + ": Invalid Force '" + forceName + "' specified in <force_names>.";
+            throw (Exception(errorMessage.c_str()));
+        }
+    }
 }
 
 
@@ -200,32 +200,32 @@ void ForceProbe::setup(Model& aModel)
  */
 Vector ForceProbe::computeProbeValue(const State& s) const
 {
-	int nF = getForceNames().size();
-	Vector TotalF(1);
-	TotalF(0) = 0;				// Initialize at zero
+    int nF = getForceNames().size();
+    Vector TotalF(1);
+    TotalF(0) = 0;				// Initialize at zero
 
-	// Loop through each force in the list of force_names
-	for (int i=0; i<nF; i++)
-	{
-		double Ftmp = 0.0;
-		string forceName = getForceNames()[i];
-		int k = _model->getForceSet().getIndex(forceName);
+    // Loop through each force in the list of force_names
+    for (int i=0; i<nF; i++)
+    {
+        double Ftmp = 0.0;
+        string forceName = getForceNames()[i];
+        int k = _model->getForceSet().getIndex(forceName);
 
-		// Get the "Force" force from the Force object method getRecordValues(s)
-		Array<double> forceValues = _model->getForceSet().get(k).getRecordValues(s);
-		
-		// For body forces (which have 6 output forces), we give a warning
-		if(forceValues.getSize() != 1) {
-			cout << "Warning: Force [" << forceName << "] does not have a single output (it has " << forceValues.getSize() << "). Summing together.." << endl;
-			for (int j=0; j<forceValues.getSize(); j++)
-				Ftmp += forceValues.get(j);
-		}
-		else 
-			Ftmp = forceValues.get(0);
+        // Get the "Force" force from the Force object method getRecordValues(s)
+        Array<double> forceValues = _model->getForceSet().get(k).getRecordValues(s);
+        
+        // For body forces (which have 6 output forces), we give a warning
+        if(forceValues.getSize() != 1) {
+            cout << "Warning: Force [" << forceName << "] does not have a single output (it has " << forceValues.getSize() << "). Summing together.." << endl;
+            for (int j=0; j<forceValues.getSize(); j++)
+                Ftmp += forceValues.get(j);
+        }
+        else 
+            Ftmp = forceValues.get(0);
 
-		// Append to total "Force" force
-		TotalF(0) += Ftmp;
-	}
+        // Append to total "Force" force
+        TotalF(0) += Ftmp;
+    }
 
-	return(TotalF);
+    return(TotalF);
 }

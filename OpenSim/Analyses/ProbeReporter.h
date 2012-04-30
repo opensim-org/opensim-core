@@ -46,10 +46,10 @@
 
 
 #ifdef SWIG
-	#ifdef OSIMANALYSES_API
-		#undef OSIMANALYSES_API
-		#define OSIMANALYSES_API
-	#endif
+    #ifdef OSIMANALYSES_API
+        #undef OSIMANALYSES_API
+        #define OSIMANALYSES_API
+    #endif
 #endif
 //=============================================================================
 //=============================================================================
@@ -63,66 +63,66 @@ namespace OpenSim {
  */
 class OSIMANALYSES_API ProbeReporter : public Analysis 
 {
-	OpenSim_DECLARE_CONCRETE_OBJECT(ProbeReporter, Analysis);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ProbeReporter, Analysis);
 //=============================================================================
 // DATA
 //=============================================================================
 protected:
 
-	/** Probe storage. */
-	Storage _probeStore;
+    /** Probe storage. */
+    Storage _probeStore;
 
 //=============================================================================
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// Constructor(s) and Setup
-	//--------------------------------------------------------------------------
-	ProbeReporter(Model *aModel=0);
-	ProbeReporter(const std::string &aFileName);
-	// Copy constrctor and virtual copy 
-	ProbeReporter(const ProbeReporter &aObject);
-	virtual ~ProbeReporter();
-	
+    //--------------------------------------------------------------------------
+    // Constructor(s) and Setup
+    //--------------------------------------------------------------------------
+    ProbeReporter(Model *aModel=0);
+    ProbeReporter(const std::string &aFileName);
+    // Copy constrctor and virtual copy 
+    ProbeReporter(const ProbeReporter &aObject);
+    virtual ~ProbeReporter();
+    
 private:
-	void setNull();
-	void constructDescription();
-	void constructColumnLabels(const SimTK::State& s);
-	void allocateStorage();
-	void deleteStorage();
+    void setNull();
+    void constructDescription();
+    void constructColumnLabels(const SimTK::State& s);
+    void allocateStorage();
+    void deleteStorage();
 
 public:
 
-	//--------------------------------------------------------------------------
-	// Operators
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Operators
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	ProbeReporter& operator=(const ProbeReporter &aActuation);
+    ProbeReporter& operator=(const ProbeReporter &aActuation);
 #endif
 
-	//--------------------------------------------------------------------------
-	// Get and Set
-	//--------------------------------------------------------------------------
-	// STORAGE
-	const Storage& getProbeStorage() const
-	{
-		return _probeStore;
-	};
-	Storage& updProbeStorage()
-	{
-		return _probeStore;
-	}
+    //--------------------------------------------------------------------------
+    // Get and Set
+    //--------------------------------------------------------------------------
+    // STORAGE
+    const Storage& getProbeStorage() const
+    {
+        return _probeStore;
+    };
+    Storage& updProbeStorage()
+    {
+        return _probeStore;
+    }
 
-	// MODEL
-	virtual void setModel(Model& aModel);
+    // MODEL
+    virtual void setModel(Model& aModel);
 
-	//--------------------------------------------------------------------------
-	// Analysis
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Analysis
+    //--------------------------------------------------------------------------
 
 //#ifndef SWIG
-	virtual int
+    virtual int
         begin(SimTK::State& s );
     virtual int
         step(const SimTK::State& s, int setNumber );
@@ -132,13 +132,13 @@ protected:
     virtual int
         record(const SimTK::State& s );
 //#endif
-	//--------------------------------------------------------------------------
-	// IO
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // IO
+    //--------------------------------------------------------------------------
 public:
-	virtual int
-		printResults(const std::string &aBaseName,const std::string &aDir="",
-		double aDT=-1.0,const std::string &aExtension=".sto");
+    virtual int
+        printResults(const std::string &aBaseName,const std::string &aDir="",
+        double aDT=-1.0,const std::string &aExtension=".sto");
 
 //=============================================================================
 };	// END of class ProbeReporter

@@ -46,7 +46,7 @@ using namespace OpenSim;
  */
 SystemEnergyProbe::SystemEnergyProbe() 
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -55,9 +55,9 @@ SystemEnergyProbe::SystemEnergyProbe()
  */
 SystemEnergyProbe::SystemEnergyProbe(bool computeKE, bool computePE)
 {
-	setNull();
-	setPropertyValue("compute_kinetic_energy", computeKE);
-	setPropertyValue("compute_potential_energy", computePE);
+    setNull();
+    setPropertyValue("compute_kinetic_energy", computeKE);
+    setPropertyValue("compute_potential_energy", computePE);
 }
 
 //_____________________________________________________________________________
@@ -78,8 +78,8 @@ SystemEnergyProbe::~SystemEnergyProbe()
 SystemEnergyProbe::SystemEnergyProbe(const SystemEnergyProbe &aSystemEnergyProbe) :
    Probe(aSystemEnergyProbe)
 {
-	setNull();
-	copyData(aSystemEnergyProbe);
+    setNull();
+    copyData(aSystemEnergyProbe);
 }
 
 
@@ -91,10 +91,10 @@ SystemEnergyProbe::SystemEnergyProbe(const SystemEnergyProbe &aSystemEnergyProbe
  */
 void SystemEnergyProbe::copyData(const SystemEnergyProbe &aProbe)
 {
-	Super::copyData(aProbe);
+    Super::copyData(aProbe);
 
-	setPropertyValue("compute_kinetic_energy", aProbe.getPropertyValue<bool>("compute_kinetic_energy"));
-	setPropertyValue("compute_potential_energy", aProbe.getPropertyValue<bool>("compute_potential_energy"));
+    setPropertyValue("compute_kinetic_energy", aProbe.getPropertyValue<bool>("compute_kinetic_energy"));
+    setPropertyValue("compute_potential_energy", aProbe.getPropertyValue<bool>("compute_potential_energy"));
 }
 
 //_____________________________________________________________________________
@@ -103,7 +103,7 @@ void SystemEnergyProbe::copyData(const SystemEnergyProbe &aProbe)
  */
 void SystemEnergyProbe::setNull(void)
 {
-	setupProperties();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -112,13 +112,13 @@ void SystemEnergyProbe::setNull(void)
  */
 void SystemEnergyProbe::setupProperties(void)
 {
-	addProperty<bool>("compute_kinetic_energy",
-		"Specify whether kinetic energy is to be included in the system energy computation (true/false).",
-		true);
+    addProperty<bool>("compute_kinetic_energy",
+        "Specify whether kinetic energy is to be included in the system energy computation (true/false).",
+        true);
 
-	addProperty<bool>("compute_potential_energy",
-		"Specify whether potential energy is to be included in the system energy computation (true/false).",
-		true);
+    addProperty<bool>("compute_potential_energy",
+        "Specify whether potential energy is to be included in the system energy computation (true/false).",
+        true);
 }
 
 
@@ -134,9 +134,9 @@ void SystemEnergyProbe::setupProperties(void)
 #ifndef SWIG
 SystemEnergyProbe& SystemEnergyProbe::operator=(const SystemEnergyProbe &aSystemEnergyProbe)
 {
-	// BASE CLASS
-	Super::operator=(aSystemEnergyProbe);
-	return(*this);
+    // BASE CLASS
+    Super::operator=(aSystemEnergyProbe);
+    return(*this);
 }
 #endif
 
@@ -150,7 +150,7 @@ SystemEnergyProbe& SystemEnergyProbe::operator=(const SystemEnergyProbe &aSystem
  */
 bool SystemEnergyProbe::getComputeKineticEnergy() const
 {
-	return getPropertyValue<bool>("compute_kinetic_energy");
+    return getPropertyValue<bool>("compute_kinetic_energy");
 }
 
 //_____________________________________________________________________________
@@ -159,7 +159,7 @@ bool SystemEnergyProbe::getComputeKineticEnergy() const
  */
 bool SystemEnergyProbe::getComputePotentialEnergy() const
 {
-	return getPropertyValue<bool>("compute_kinetic_energy");
+    return getPropertyValue<bool>("compute_kinetic_energy");
 }
 
 //_____________________________________________________________________________
@@ -168,7 +168,7 @@ bool SystemEnergyProbe::getComputePotentialEnergy() const
  */
 void SystemEnergyProbe::setComputeKineticEnergy(bool c)
 {
-	return setPropertyValue<bool>("compute_kinetic_energy", c);
+    return setPropertyValue<bool>("compute_kinetic_energy", c);
 }
 
 //_____________________________________________________________________________
@@ -177,7 +177,7 @@ void SystemEnergyProbe::setComputeKineticEnergy(bool c)
  */
 void SystemEnergyProbe::setComputePotentialEnergy(bool c)
 {
-	return setPropertyValue<bool>("compute_potential_energy", c);
+    return setPropertyValue<bool>("compute_potential_energy", c);
 }
 
 
@@ -194,7 +194,7 @@ void SystemEnergyProbe::setComputePotentialEnergy(bool c)
  */
 void SystemEnergyProbe::setup(Model& aModel)
 {
-	Super::setup(aModel);
+    Super::setup(aModel);
 }
 
 
@@ -210,15 +210,15 @@ void SystemEnergyProbe::setup(Model& aModel)
  */
 Vector SystemEnergyProbe::computeProbeValue(const State& s) const
 {
-	Vector TotalP(1);
-	TotalP(0) = 0;
-	
-	if (getComputeKineticEnergy())
-		TotalP(0) += _model->getMultibodySystem().calcKineticEnergy(s);
+    Vector TotalP(1);
+    TotalP(0) = 0;
+    
+    if (getComputeKineticEnergy())
+        TotalP(0) += _model->getMultibodySystem().calcKineticEnergy(s);
 
-	if (getComputePotentialEnergy())
-		TotalP(0) += _model->getMultibodySystem().calcPotentialEnergy(s);
-	
-	return(TotalP);
+    if (getComputePotentialEnergy())
+        TotalP(0) += _model->getMultibodySystem().calcPotentialEnergy(s);
+    
+    return(TotalP);
 }
 

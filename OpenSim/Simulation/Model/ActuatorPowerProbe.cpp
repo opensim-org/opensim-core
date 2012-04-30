@@ -46,7 +46,7 @@ using namespace OpenSim;
  */
 ActuatorPowerProbe::ActuatorPowerProbe() 
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -55,8 +55,8 @@ ActuatorPowerProbe::ActuatorPowerProbe()
  */
 ActuatorPowerProbe::ActuatorPowerProbe(Array<string> actuator_names)
 {
-	setNull();
-	setPropertyValue("actuator_names", actuator_names);
+    setNull();
+    setPropertyValue("actuator_names", actuator_names);
 }
 
 //_____________________________________________________________________________
@@ -77,8 +77,8 @@ ActuatorPowerProbe::~ActuatorPowerProbe()
 ActuatorPowerProbe::ActuatorPowerProbe(const ActuatorPowerProbe &aActuatorPowerProbe) :
    Probe(aActuatorPowerProbe)
 {
-	setNull();
-	copyData(aActuatorPowerProbe);
+    setNull();
+    copyData(aActuatorPowerProbe);
 }
 
 
@@ -90,8 +90,8 @@ ActuatorPowerProbe::ActuatorPowerProbe(const ActuatorPowerProbe &aActuatorPowerP
  */
 void ActuatorPowerProbe::copyData(const ActuatorPowerProbe &aProbe)
 {
-	Super::copyData(aProbe);
-	setPropertyValue("actuator_names", aProbe.getProperty<string>("actuator_names"));
+    Super::copyData(aProbe);
+    setPropertyValue("actuator_names", aProbe.getProperty<string>("actuator_names"));
 }
 
 //_____________________________________________________________________________
@@ -100,7 +100,7 @@ void ActuatorPowerProbe::copyData(const ActuatorPowerProbe &aProbe)
  */
 void ActuatorPowerProbe::setNull(void)
 {
-	setupProperties();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -109,12 +109,12 @@ void ActuatorPowerProbe::setNull(void)
  */
 void ActuatorPowerProbe::setupProperties(void)
 {
-	Array<string> tmp("");
-	addListProperty<string>("actuator_names",
-		"Specify a list of model Actuators whose work should be calculated. "
-		"If multiple Actuators are given, the probe value will be the summation"
-		" of all actuator powers.",
-		tmp);
+    Array<string> tmp("");
+    addListProperty<string>("actuator_names",
+        "Specify a list of model Actuators whose work should be calculated. "
+        "If multiple Actuators are given, the probe value will be the summation"
+        " of all actuator powers.",
+        tmp);
 }
 
 
@@ -130,9 +130,9 @@ void ActuatorPowerProbe::setupProperties(void)
 #ifndef SWIG
 ActuatorPowerProbe& ActuatorPowerProbe::operator=(const ActuatorPowerProbe &aActuatorPowerProbe)
 {
-	// BASE CLASS
-	Super::operator=(aActuatorPowerProbe);
-	return(*this);
+    // BASE CLASS
+    Super::operator=(aActuatorPowerProbe);
+    return(*this);
 }
 #endif
 
@@ -145,7 +145,7 @@ ActuatorPowerProbe& ActuatorPowerProbe::operator=(const ActuatorPowerProbe &aAct
  */
 const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 {
-	return getProperty<string>("actuator_names");
+    return getProperty<string>("actuator_names");
 }
 
 //_____________________________________________________________________________
@@ -154,7 +154,7 @@ const Property<string>& ActuatorPowerProbe::getActuatorNames() const
  */
 void ActuatorPowerProbe::setActuatorNames(const Array<string>& aActuatorNames)
 {
-	setPropertyValue<string>("actuator_names", aActuatorNames);
+    setPropertyValue<string>("actuator_names", aActuatorNames);
 }
 
 
@@ -172,18 +172,18 @@ void ActuatorPowerProbe::setActuatorNames(const Array<string>& aActuatorNames)
  */
 void ActuatorPowerProbe::setup(Model& aModel)
 {
-	Super::setup(aModel);
+    Super::setup(aModel);
 
-	// check that each Actuator in the actuator_names array exists in the model
-	int nA = getActuatorNames().size();
-	for (int i=0; i<nA; i++) {
-		string actName = getActuatorNames()[i];
-		int k = _model->getActuators().getIndex(actName);
-		if (k<0) {
-			string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
-			throw (Exception(errorMessage.c_str()));
-		}
-	}
+    // check that each Actuator in the actuator_names array exists in the model
+    int nA = getActuatorNames().size();
+    for (int i=0; i<nA; i++) {
+        string actName = getActuatorNames()[i];
+        int k = _model->getActuators().getIndex(actName);
+        if (k<0) {
+            string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
+            throw (Exception(errorMessage.c_str()));
+        }
+    }
 }
 
 
@@ -199,23 +199,23 @@ void ActuatorPowerProbe::setup(Model& aModel)
  */
 Vector ActuatorPowerProbe::computeProbeValue(const State& s) const
 {
-	int nA = getActuatorNames().size();
-	Vector TotalP(1);
-	TotalP(0) = 0;				// Initialize at zero
+    int nA = getActuatorNames().size();
+    Vector TotalP(1);
+    TotalP(0) = 0;				// Initialize at zero
 
-	// Loop through each actuator in the list of actuator_names
-	for (int i=0; i<nA; i++)
-	{
-		string actName = getActuatorNames()[i];
-		int k = _model->getActuators().getIndex(actName);
+    // Loop through each actuator in the list of actuator_names
+    for (int i=0; i<nA; i++)
+    {
+        string actName = getActuatorNames()[i];
+        int k = _model->getActuators().getIndex(actName);
 
-		// Get the "Actuator" power from the Actuator object
-		double actPower = _model->getActuators().get(k).getPower(s);
-		
-		// Append to total "Actuator" power
-		TotalP(0) += actPower;
-	}
+        // Get the "Actuator" power from the Actuator object
+        double actPower = _model->getActuators().get(k).getPower(s);
+        
+        // Append to total "Actuator" power
+        TotalP(0) += actPower;
+    }
 
-	return(TotalP);
+    return(TotalP);
 }
 

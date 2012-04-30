@@ -36,10 +36,10 @@
 #include <OpenSim/Simulation/Model/ModelComponentSet.h>
 
 #ifdef SWIG
-	#ifdef OSIMSIMULATION_API
-		#undef OSIMSIMULATION_API
-		#define OSIMSIMULATION_API
-	#endif
+    #ifdef OSIMSIMULATION_API
+        #undef OSIMSIMULATION_API
+        #define OSIMSIMULATION_API
+    #endif
 #endif
 
 namespace OpenSim {
@@ -60,23 +60,23 @@ class Model;
 
 class OSIMSIMULATION_API ProbeSet : public ModelComponentSet<Probe>
 {
-	OpenSim_DECLARE_CONCRETE_OBJECT(ProbeSet, ModelComponentSet<Probe>);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ProbeSet, ModelComponentSet<Probe>);
 private:
-	void setNull();
+    void setNull();
 public:
-	ProbeSet();
-	ProbeSet(Model& model);
+    ProbeSet();
+    ProbeSet(Model& model);
 
     ProbeSet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode=true):
-	ModelComponentSet<Probe>(model, aFileName, aUpdateFromXMLNode) {};
-	ProbeSet(const ProbeSet& aAbsProbeSet);
-	~ProbeSet(void);
-	void setup(Model& aModel);
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
+    ModelComponentSet<Probe>(model, aFileName, aUpdateFromXMLNode) {};
+    ProbeSet(const ProbeSet& aAbsProbeSet);
+    ~ProbeSet(void);
+    void setup(Model& aModel);
+    //--------------------------------------------------------------------------
+    // OPERATORS
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	ProbeSet& operator=(const ProbeSet &aAbsProbeSet);
+    ProbeSet& operator=(const ProbeSet &aAbsProbeSet);
 #endif
 
 

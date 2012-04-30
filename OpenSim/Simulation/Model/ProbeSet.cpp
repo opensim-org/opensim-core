@@ -51,13 +51,13 @@ ProbeSet::~ProbeSet(void)
  */
 ProbeSet::ProbeSet()
 {
-	setNull();
+    setNull();
 }
 
 ProbeSet::ProbeSet(Model& model) :
-	ModelComponentSet<Probe>(model)
+    ModelComponentSet<Probe>(model)
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -65,10 +65,10 @@ ProbeSet::ProbeSet(Model& model) :
  * Copy constructor of a ProbeSet.
  */
 ProbeSet::ProbeSet(const ProbeSet& aAbsProbeSet):
-	ModelComponentSet<Probe>(aAbsProbeSet)
+    ModelComponentSet<Probe>(aAbsProbeSet)
 {
-	setNull();
-	*this = aAbsProbeSet;
+    setNull();
+    *this = aAbsProbeSet;
 }
 
 //=============================================================================
@@ -79,7 +79,7 @@ ProbeSet::ProbeSet(const ProbeSet& aAbsProbeSet):
  */
 void ProbeSet::setNull()
 {
-	
+    
 }
 
 /**
@@ -87,11 +87,11 @@ void ProbeSet::setNull()
  */
 void ProbeSet::setup(Model& aModel)
 {
-	// Base class
-	Set<Probe>::setup();
+    // Base class
+    Set<Probe>::setup();
 
-	// Do members
-	ModelComponentSet<Probe>::setup(aModel);
+    // Do members
+    ModelComponentSet<Probe>::setup(aModel);
 
 }
 //=============================================================================
@@ -106,9 +106,9 @@ void ProbeSet::setup(Model& aModel)
 #ifndef SWIG
 ProbeSet& ProbeSet::operator=(const ProbeSet &aProbeSet)
 {
-	Set<Probe>::operator=(aProbeSet);
+    Set<Probe>::operator=(aProbeSet);
 
-	return (*this);
+    return (*this);
 }
 #endif
 

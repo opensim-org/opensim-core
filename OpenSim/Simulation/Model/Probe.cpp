@@ -66,7 +66,7 @@ public:
             " derivOrder %d seen but only 0 allowed.", derivOrder);
  
         Vector tmp = m_probe.computeProbeValue(s);
-		value = tmp(0);
+        value = tmp(0);
 
     }
 private:
@@ -85,9 +85,9 @@ namespace OpenSim {
 /**
  * Default constructor.
  */
-	Probe::Probe():ModelComponent() 
+    Probe::Probe():ModelComponent() 
 {
-	setNull();
+    setNull();
 }
 
 //_____________________________________________________________________________
@@ -106,8 +106,8 @@ Probe::~Probe()
  */
 Probe::Probe(const Probe &aProbe) : ModelComponent(aProbe)
 {
-	setNull();
-	copyData(aProbe);
+    setNull();
+    copyData(aProbe);
 }
 
 //=============================================================================
@@ -121,10 +121,10 @@ Probe::Probe(const Probe &aProbe) : ModelComponent(aProbe)
  */
 void Probe::copyData(const Probe &aProbe)
 {
-	setPropertyValue("isDisabled", aProbe.getPropertyValue<bool>("isDisabled"));
-	setPropertyValue("operation", aProbe.getPropertyValue<string>("operation"));
-	setPropertyValue("operation_parameter", aProbe.getPropertyValue<double>("operation_parameter"));
-	afterOperationValue = aProbe.afterOperationValue;
+    setPropertyValue("isDisabled", aProbe.getPropertyValue<bool>("isDisabled"));
+    setPropertyValue("operation", aProbe.getPropertyValue<string>("operation"));
+    setPropertyValue("operation_parameter", aProbe.getPropertyValue<double>("operation_parameter"));
+    afterOperationValue = aProbe.afterOperationValue;
 }
 
 
@@ -134,7 +134,7 @@ void Probe::copyData(const Probe &aProbe)
  */
 void Probe::setNull(void)
 {
-	setupProperties();
+    setupProperties();
 }
 
 //_____________________________________________________________________________
@@ -143,19 +143,19 @@ void Probe::setNull(void)
  */
 void Probe::setupProperties(void)
 {
-	addProperty<bool>("isDisabled",
-		"Flag indicating whether the Probe is disabled or not. Disabled"
-		" means that the Probe will not be reported using the ProbeReporter.",
-		false);
+    addProperty<bool>("isDisabled",
+        "Flag indicating whether the Probe is disabled or not. Disabled"
+        " means that the Probe will not be reported using the ProbeReporter.",
+        false);
 
-	addProperty<string>("operation",
-		"The operation to perform on the probe value: "
-		"''(no operation, just return the probe value), 'integrate', 'differentiate', 'scale'",
-		"");
+    addProperty<string>("operation",
+        "The operation to perform on the probe value: "
+        "''(no operation, just return the probe value), 'integrate', 'differentiate', 'scale'",
+        "");
 
-	addProperty<double>("operation_parameter",
-		"For 'integrate', this represents the initial condition, for 'scale', this represents the scale factor.",
-		0.0);
+    addProperty<double>("operation_parameter",
+        "For 'integrate', this represents the initial condition, for 'scale', this represents the scale factor.",
+        0.0);
 }
 
 //_____________________________________________________________________________
@@ -164,7 +164,7 @@ void Probe::setupProperties(void)
  */
 void Probe::setup(Model& model)
 {
-	ModelComponent::setup(model);
+    ModelComponent::setup(model);
 }
 
 //_____________________________________________________________________________
@@ -173,58 +173,58 @@ void Probe::setup(Model& model)
  */
 void Probe::createSystem(MultibodySystem& system) const
 {
-	ModelComponent::createSystem(system);
+    ModelComponent::createSystem(system);
 
-	Probe* mutableThis = const_cast<Probe*>(this);
+    Probe* mutableThis = const_cast<Probe*>(this);
 
-	// Create a Measure of the value to be probed (operand).
-	ProbeMeasure<SimTK::Real> beforeOperationValue(system, *this);  
-	//Measure::Constant beforeOperationValue(system, 1);		// debug
+    // Create a Measure of the value to be probed (operand).
+    ProbeMeasure<SimTK::Real> beforeOperationValue(system, *this);  
+    //Measure::Constant beforeOperationValue(system, 1);		// debug
 
 
-	//cout << beforeOperationValue << endl;
-	//std::system("pause");
+    //cout << beforeOperationValue << endl;
+    //std::system("pause");
 
-	// Assign the correct (operation) Measure subclass to the operand
-	// ----------------------------------------------------------------
+    // Assign the correct (operation) Measure subclass to the operand
+    // ----------------------------------------------------------------
 
-	// Return the original probe value (no operation)
-	if (getOperation() == "")
-		mutableThis->afterOperationValue = beforeOperationValue;
+    // Return the original probe value (no operation)
+    if (getOperation() == "")
+        mutableThis->afterOperationValue = beforeOperationValue;
 
-	// Integrate the probe value
-	// -----------------------------
-	else if (getOperation() == "integrate") {
-		Measure::Constant initCond(system, getOperationParameter());		// initial condition
-		mutableThis->afterOperationValue = Measure::Integrate(system, beforeOperationValue, initCond);
-	}
+    // Integrate the probe value
+    // -----------------------------
+    else if (getOperation() == "integrate") {
+        Measure::Constant initCond(system, getOperationParameter());		// initial condition
+        mutableThis->afterOperationValue = Measure::Integrate(system, beforeOperationValue, initCond);
+    }
 
-	// Differentiate the probe value
-	// -----------------------------
-	else if (getOperation() == "differentiate")
-		mutableThis->afterOperationValue = Measure::Differentiate(system, beforeOperationValue);
+    // Differentiate the probe value
+    // -----------------------------
+    else if (getOperation() == "differentiate")
+        mutableThis->afterOperationValue = Measure::Differentiate(system, beforeOperationValue);
 
-	// Scale the probe value
-	// -----------------------------
-	else if (getOperation() == "scale")
-		mutableThis->afterOperationValue = Measure::Scale(system, getOperationParameter(), beforeOperationValue);
+    // Scale the probe value
+    // -----------------------------
+    else if (getOperation() == "scale")
+        mutableThis->afterOperationValue = Measure::Scale(system, getOperationParameter(), beforeOperationValue);
 
-	// Get the minimum of the probe value
-	// ----------------------------------
-	//else if (getOperation() == "minimum")
-	//	mutableThis->afterOperationValue = Measure::Minimum(system, beforeOperationValue);
+    // Get the minimum of the probe value
+    // ----------------------------------
+    //else if (getOperation() == "minimum")
+    //	mutableThis->afterOperationValue = Measure::Minimum(system, beforeOperationValue);
 
-	// Get the maximum of the probe value
-	// ----------------------------------
-	//else if (getOperation() == "maximum")
-	//	mutableThis->afterOperationValue = Measure::Maximum(system, beforeOperationValue);
+    // Get the maximum of the probe value
+    // ----------------------------------
+    //else if (getOperation() == "maximum")
+    //	mutableThis->afterOperationValue = Measure::Maximum(system, beforeOperationValue);
 
-	// Throw exception (invalid operation)
-	// -------------------------------------
-	else {
-		string errorMessage = getConcreteClassName() + ": Invalid probe operation. Currently supports '', 'integrate', 'differentiate', and 'scale'.";
-		throw (Exception(errorMessage.c_str()));
-	}
+    // Throw exception (invalid operation)
+    // -------------------------------------
+    else {
+        string errorMessage = getConcreteClassName() + ": Invalid probe operation. Currently supports '', 'integrate', 'differentiate', and 'scale'.";
+        throw (Exception(errorMessage.c_str()));
+    }
 
 }
 
@@ -234,11 +234,11 @@ void Probe::createSystem(MultibodySystem& system) const
  */
 void Probe::setDefaultsFromState(const State& state)
 {
-	ModelComponent::setDefaultsFromState(state);
+    ModelComponent::setDefaultsFromState(state);
 
     setPropertyValue("isDisabled", isDisabled());
-	setPropertyValue("operation", getOperation());
-	setPropertyValue("operation_parameter", getOperation());
+    setPropertyValue("operation", getOperation());
+    setPropertyValue("operation_parameter", getOperation());
 }
 
 
@@ -253,12 +253,12 @@ void Probe::setDefaultsFromState(const State& state)
  */
 Probe& Probe::operator=(const Probe &aProbe)
 {
-	// BASE CLASS
-	Object::operator=(aProbe);
+    // BASE CLASS
+    Object::operator=(aProbe);
 
-	copyData(aProbe);
+    copyData(aProbe);
 
-	return(*this);
+    return(*this);
 }
 
 //=============================================================================
@@ -272,7 +272,7 @@ Probe& Probe::operator=(const Probe &aProbe)
  */
 bool Probe::isDisabled() const
 {
-	return getPropertyValue<bool>("isDisabled");
+    return getPropertyValue<bool>("isDisabled");
 }
 
 //_____________________________________________________________________________
@@ -283,7 +283,7 @@ bool Probe::isDisabled() const
  */
 string Probe::getOperation() const
 {
-	return getPropertyValue<string>("operation");
+    return getPropertyValue<string>("operation");
 }
 
 //_____________________________________________________________________________
@@ -294,7 +294,7 @@ string Probe::getOperation() const
  */
 double Probe::getOperationParameter() const
 {
-	return getPropertyValue<double>("operation_parameter");
+    return getPropertyValue<double>("operation_parameter");
 }
 
 //_____________________________________________________________________________
@@ -304,7 +304,7 @@ double Probe::getOperationParameter() const
  */
 void Probe::setDisabled(bool isDisabled) 
 {
-	setPropertyValue("isDisabled", isDisabled);
+    setPropertyValue("isDisabled", isDisabled);
 }
 
 //_____________________________________________________________________________
@@ -314,7 +314,7 @@ void Probe::setDisabled(bool isDisabled)
  */
 void Probe::setOperation(string operation) 
 {
-	setPropertyValue("operation", operation);
+    setPropertyValue("operation", operation);
 }
 
 
@@ -325,7 +325,7 @@ void Probe::setOperation(string operation)
  */
 void Probe::setOperationParameter(double operation_parameter) 
 {
-	setPropertyValue("operation_parameter", operation_parameter);
+    setPropertyValue("operation_parameter", operation_parameter);
 }
 
 
@@ -340,18 +340,18 @@ void Probe::setOperationParameter(double operation_parameter)
  */
 Array<string> Probe::getRecordLabels() const 
 {
-	Array<string> labels;
-	if (getOperation() == "")
-		labels.append(getName());
-	else if (getOperation() == "scale") {
-		char n[10];
-		sprintf(n, "%f", getOperationParameter());
-		labels.append(getName()+"_"+getOperation()+"_"+n+"X");
-	}
-	else
-		labels.append(getName()+"_"+getOperation());
+    Array<string> labels;
+    if (getOperation() == "")
+        labels.append(getName());
+    else if (getOperation() == "scale") {
+        char n[10];
+        sprintf(n, "%f", getOperationParameter());
+        labels.append(getName()+"_"+getOperation()+"_"+n+"X");
+    }
+    else
+        labels.append(getName()+"_"+getOperation());
 
-	return labels;
+    return labels;
 }
 
 //_____________________________________________________________________________
@@ -360,10 +360,10 @@ Array<string> Probe::getRecordLabels() const
  */
 Array<double> Probe::getRecordValues(const State& s) const 
 {
-	Array<double> values;
-	values.append(afterOperationValue.getValue(s));
+    Array<double> values;
+    values.append(afterOperationValue.getValue(s));
 
-	return values;
+    return values;
 }
 
 

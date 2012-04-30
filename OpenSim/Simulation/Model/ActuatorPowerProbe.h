@@ -1,5 +1,5 @@
-#ifndef __ActuatorPowerProbe_h__
-#define __ActuatorPowerProbe_h__
+#ifndef OPENSIM_ACTUATOR_POWER_PROBE_H_
+#define OPENSIM_ACTUATOR_POWER_PROBE_H_
 
 // ActuatorPowerProbe.h
 // Author: Ajay Seth, Tim Dorn
@@ -52,7 +52,7 @@ class Model;
  */
 class OSIMSIMULATION_API ActuatorPowerProbe : public Probe  
 {
-	OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPowerProbe, Probe);
+    OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPowerProbe, Probe);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -62,57 +62,57 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// Constructor(s) and Setup
-	//--------------------------------------------------------------------------
-	/** Default constructor */
-	ActuatorPowerProbe();
-	/** Convenience constructor */
-	ActuatorPowerProbe(Array<std::string> actuator_names);
-	/** Copy constructor */
-	ActuatorPowerProbe(const ActuatorPowerProbe &aActuatorPowerProbe);
-	/** Destructor */
-	virtual ~ActuatorPowerProbe();
-	void copyData(const ActuatorPowerProbe &aProbe);
+    //--------------------------------------------------------------------------
+    // Constructor(s) and Setup
+    //--------------------------------------------------------------------------
+    /** Default constructor */
+    ActuatorPowerProbe();
+    /** Convenience constructor */
+    ActuatorPowerProbe(Array<std::string> actuator_names);
+    /** Copy constructor */
+    ActuatorPowerProbe(const ActuatorPowerProbe &aActuatorPowerProbe);
+    /** Destructor */
+    virtual ~ActuatorPowerProbe();
+    void copyData(const ActuatorPowerProbe &aProbe);
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 public:
 
-	//--------------------------------------------------------------------------
-	// Operators
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Operators
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	ActuatorPowerProbe& operator=(const ActuatorPowerProbe &aActuatorPowerProbe);
+    ActuatorPowerProbe& operator=(const ActuatorPowerProbe &aActuatorPowerProbe);
 #endif
 
 
-	//--------------------------------------------------------------------------
-	// Get and Set
-	//--------------------------------------------------------------------------
-	/** Returns the names of the Actuators being probed. */
-	const Property<std::string>& getActuatorNames() const;
+    //--------------------------------------------------------------------------
+    // Get and Set
+    //--------------------------------------------------------------------------
+    /** Returns the names of the Actuators being probed. */
+    const Property<std::string>& getActuatorNames() const;
 
-	/** Sets the names of the Actuators being probed. */
-	void setActuatorNames(const Array<std::string>& aActuatorNames);
-
-
-
-	//-----------------------------------------------------------------------------
-	// Computation
-	//-----------------------------------------------------------------------------
-	/** Compute the Actuator power upon which the Probe operation will be based on. */
-	virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+    /** Sets the names of the Actuators being probed. */
+    void setActuatorNames(const Array<std::string>& aActuatorNames);
 
 
-	//--------------------------------------------------------------------------
-	// ModelComponent Interface
-	//--------------------------------------------------------------------------
+
+    //-----------------------------------------------------------------------------
+    // Computation
+    //-----------------------------------------------------------------------------
+    /** Compute the Actuator power upon which the Probe operation will be based on. */
+    virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+
+
+    //--------------------------------------------------------------------------
+    // ModelComponent Interface
+    //--------------------------------------------------------------------------
 protected:
-	virtual void setup(Model& aModel);
-	
+    virtual void setup(Model& aModel);
+    
 
 //=============================================================================
 };	// END of class ActuatorPowerProbe
@@ -121,6 +121,6 @@ protected:
 
 } // end of namespace OpenSim
 
-#endif // __ActuatorPowerProbe_h__
+#endif // OPENSIM_ACTUATOR_POWER_PROBE_H_
 
 

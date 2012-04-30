@@ -51,7 +51,7 @@ class Model;
  */
 class OSIMSIMULATION_API JointPowerProbe : public Probe  
 {
-	OpenSim_DECLARE_CONCRETE_OBJECT(JointPowerProbe, Probe);
+    OpenSim_DECLARE_CONCRETE_OBJECT(JointPowerProbe, Probe);
 //=============================================================================
 // DATA
 //=============================================================================
@@ -61,57 +61,57 @@ protected:
 // METHODS
 //=============================================================================
 public:
-	//--------------------------------------------------------------------------
-	// Constructor(s) and Setup
-	//--------------------------------------------------------------------------
-	/** Default constructor */
-	JointPowerProbe();
-	/** Convenience constructor */
-	JointPowerProbe(Array<std::string> joint_names);
-	/** Copy constructor */
-	JointPowerProbe(const JointPowerProbe &aJointPowerProbe);
-	/** Destructor */
-	virtual ~JointPowerProbe();
-	void copyData(const JointPowerProbe &aProbe);
+    //--------------------------------------------------------------------------
+    // Constructor(s) and Setup
+    //--------------------------------------------------------------------------
+    /** Default constructor */
+    JointPowerProbe();
+    /** Convenience constructor */
+    JointPowerProbe(Array<std::string> joint_names);
+    /** Copy constructor */
+    JointPowerProbe(const JointPowerProbe &aJointPowerProbe);
+    /** Destructor */
+    virtual ~JointPowerProbe();
+    void copyData(const JointPowerProbe &aProbe);
 
 private:
-	void setNull();
-	void setupProperties();
+    void setNull();
+    void setupProperties();
 
 public:
 
-	//--------------------------------------------------------------------------
-	// Operators
-	//--------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Operators
+    //--------------------------------------------------------------------------
 #ifndef SWIG
-	JointPowerProbe& operator=(const JointPowerProbe &aJointPowerProbe);
+    JointPowerProbe& operator=(const JointPowerProbe &aJointPowerProbe);
 #endif
 
 
-	//--------------------------------------------------------------------------
-	// Get and Set
-	//--------------------------------------------------------------------------
-	/** Returns the names of the Joints being probed. */
-	const Property<std::string>& getJointNames() const;
+    //--------------------------------------------------------------------------
+    // Get and Set
+    //--------------------------------------------------------------------------
+    /** Returns the names of the Joints being probed. */
+    const Property<std::string>& getJointNames() const;
 
-	/** Sets the names of the Joints being probed. */
-	void setJointNames(const Array<std::string>& aJointNames);
-
-
-
-	//-----------------------------------------------------------------------------
-	// Computation
-	//-----------------------------------------------------------------------------
-	/** Compute the Joint power upon which the Probe operation will be based on. */
-	virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+    /** Sets the names of the Joints being probed. */
+    void setJointNames(const Array<std::string>& aJointNames);
 
 
-	//--------------------------------------------------------------------------
-	// ModelComponent Interface
-	//--------------------------------------------------------------------------
+
+    //-----------------------------------------------------------------------------
+    // Computation
+    //-----------------------------------------------------------------------------
+    /** Compute the Joint power upon which the Probe operation will be based on. */
+    virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+
+
+    //--------------------------------------------------------------------------
+    // ModelComponent Interface
+    //--------------------------------------------------------------------------
 protected:
-	virtual void setup(Model& aModel);
-	
+    virtual void setup(Model& aModel);
+    
 
 //=============================================================================
 };	// END of class JointPowerProbe
