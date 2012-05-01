@@ -109,7 +109,7 @@ useful to know that both the slope and the curviness parameter may need to be
 altered to achieve the desired shape.
 
 
-\image html quinticCornerSections.png
+\image html fig_MuscleCurveFunctionFactory_quinticCornerSections.png
 
 
 
@@ -197,7 +197,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
         @return MuscleCurveFunction object
 
-        \image html falCurve.png
+        \image html fig_MuscleCurveFunctionFactory_falCurve.png
 
        
         <B>Conditions:</B>
@@ -312,7 +312,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
         @return MuscleCurveFunction object
         
-                \image html fvCurve.png
+                \image html fig_MuscleCurveFunctionFactory_fvCurve.png
 
 
         <B>Conditions:</B>
@@ -364,7 +364,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         (e.g. "bicep_fiberForceVelocityInverseCurve")
         
 
-        \image html fvInvCurve.png
+        \image html fig_MuscleCurveFunctionFactory_fvInvCurve.png
 
         */
         static MuscleCurveFunction createFiberForceVelocityInverseCurve(
@@ -412,7 +412,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
         @return MuscleCurveFunction object
 
-        \image html fcphiCurve.png
+        \image html fig_MuscleCurveFunctionFactory_fcphiCurve.png
 
         <B>Conditions:</B>
         \verbatim
@@ -487,8 +487,8 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           end user to help them debug their model.
 
         @return MuscleCurveFunction object
-
-        \image html fcCosPhiCurve.png
+        
+        \image html fig_MuscleCurveFunctionFactory_fcCosPhiCurve.png
 
 
         <B>Conditions:</B>
@@ -566,7 +566,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
         @return MuscleCurveFunction object
 
-        \image html fpeCurve.png
+        \image html fig_MuscleCurveFunctionFactory_fpeCurve.png
 
         <B>Conditions:</B>
         \verbatim
@@ -631,7 +631,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         @return MuscleCurveFunction object
 
 
-        \image html fcLengthCurve.png
+        \image html fig_MuscleCurveFunctionFactory_fcLengthCurve.png
 
         <B>Conditions:</B>
         \verbatim
@@ -700,7 +700,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
         @return MuscleCurveFunction
 
-        \image html fseCurve.png
+        \image html fig_MuscleCurveFunctionFactory_fseCurve.png
 
         <B>Conditions:</B>
         \verbatim
