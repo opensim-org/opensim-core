@@ -43,7 +43,7 @@ parallelogram to shear while maintaining a constant height. The constant area
 property is intended to mimic the constant volume property of muscle, which 
 arises because muscle is nearly all water.
 
-\image html fixedwidthparallelogrampennation.png
+\image html fig_MuscleFixedWidthPennationModel.png
 
 This class has been coded to eliminate duplicate calculations. Thus if a 
 function depends on pennationAngle, or cos(pennationAngle), it will request
