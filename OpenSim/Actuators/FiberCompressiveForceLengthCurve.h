@@ -1,5 +1,5 @@
-#ifndef OPENSIM_FiberForceLengthCurve_h__
-#define OPENSIM_FiberForceLengthCurve_h__
+#ifndef OPENSIM_FiberCompressiveForceLengthCurve_h__
+#define OPENSIM_FiberCompressiveForceLengthCurve_h__
 
 /* Author: Matthew Millard
 /*
@@ -41,73 +41,68 @@
 namespace OpenSim {
 
 /**
- This class serves as a serializable FiberForceLengthCurve, commonly used
- to model the parallel elastic element, for use in muscle models. 
+ This class serves as a serializable FiberCompressiveForceLengthCurve, 
+ which is used to ensure that the fiber cannot generate force at, nor shorten
+ beyond a minimum normalized length.
  
- \image html fig_SerializableCurve_FiberForceLengthCurve.png
+ \image html fig_FiberCompressiveForceLengthCurve.png
  
   @author Matt Millard
 
  */
-class OSIMACTUATORS_API FiberForceLengthCurve : public ModelComponent {
-OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, ModelComponent);
+class OSIMACTUATORS_API FiberCompressiveForceLengthCurve : public ModelComponent {
+OpenSim_DECLARE_CONCRETE_OBJECT(FiberCompressiveForceLengthCurve, 
+                                ModelComponent);
 
-//class OSIMACTUATORS_API FiberForceLengthCurve : public ModelComponent {
-//OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, ModelComponent);
+//class OSIMACTUATORS_API FiberCompressiveForceLengthCurve : public ModelComponent {
+//OpenSim_DECLARE_CONCRETE_OBJECT(FiberCompressiveForceLengthCurve, ModelComponent);
 
 public:
 
     ///Default constructor
-    FiberForceLengthCurve();
+    FiberCompressiveForceLengthCurve();
     ///Default destructor
-    ~FiberForceLengthCurve();
+    ~FiberCompressiveForceLengthCurve();
     ///Default constructor
-    FiberForceLengthCurve(const FiberForceLengthCurve& source);
+    FiberCompressiveForceLengthCurve(
+        const FiberCompressiveForceLengthCurve& source);
 
     /**
-     Constructs a C2 continuous fiber force length curve. This curve has the 
-     advantage of being C2 continuous which results in faster simulations when
-     compared to the popular method of using a linearly extrapolated exponential
-     curve to parameterize the fiber force length curve, which is only C0 
-     continuous. Details to appear in Millard et al. 2012.
+     Constructs a C2 continuous compressive fiber force length curve. This curve
+     is used in the fiber model as a means of ensuring that the fiber cannot
+     generate a tensile force at, nor shorten beyond, some minimum length.
+     Details to appear in Millard et al. 2012.
      
+        @param normLengthAtZeroForce
+                The normalized fiber length at which the compressive element
+                begins to engage. Normalized length is defined as 
+                length_norm = l/l0, where l is the length of the fiber,
+                and l0 is the resting length of the fiber.
     
-        @param strainAtOneNormForce
-                    The fiber strain at which the fiber develops 1 unit of 
-                    normalized force. The definition of strain used for this 
-                    quantity is consistent with the Cauchy or engineering 
-                    definition of strain: strain = (l-l0)/l0, where l is length,
-                    and l0 is resting length. In this context 
-                    strainAtOneNormForce = 0.6 means that the fiber will 
-                    develop a tension of 1 normalized force when it is strained 
-                    by 60% of its resting length, or equivalently is stretched 
-                    to 1.60 times its resting length.
-
-        @param stiffnessAtOneNormForce     
-                The normalized stiffness (or slope) of the fiber curve when the 
-                fiber is strained by strainAtOneNormForce under a load of 1 
-                normalized unit of force.
+        @param stiffnessAtZeroLength
+                This is the stiffness of the compressive elastic force length
+                spring when the fiber reaches a normalized length of 0.        
 
         @param curviness    
                 A dimensionless parameter between [0-1] that controls how 
                 the curve is drawn: 0 will create a curve that is
                 very close to a straight line segment while a value of 1 will 
                 create a curve that smoothly fills the corner formed by the 
-                linear extrapolation of 'stiffnessAtOneNormForce' and the
+                linear extrapolation of 'stiffnessAtZeroLength' and the
                 x axis as shown in the figure.
 
         @param muscleName
                 The name of the muscle this curve belongs to. This name is used
                 to create the name of this curve, which is formed simply by 
-                appending "_FiberForceLengthCurve" to the string in muscleName.
-                This name is used for making intelligible error messages and 
-                also for naming the XML version of this curve when it is 
-                serialized.
+                appending "_FiberCompressiveForceLengthCurve" to the string in 
+                muscleName. This name is used for making intelligible error 
+                messages and also for naming the XML version of this curve when 
+                it is serialized.
 
       <B>Conditions:</B>
         \verbatim
-            strainAtOneNormForce > 0
-            stiffnessAtOneNormForce > 1/strainAtOneNormForce
+            normLengthAtZeroForce > 0
+            stiffnessAtZeroLength < -1/normLengthAtZeroForce
             0 <= curviness <= 1
         \endverbatim
 
@@ -118,33 +113,17 @@ public:
 
     <B> Default Parameter Values </B>
 
-         The default curve has parameters that closely approximate the linearly 
-         extrapolated exponential curve that is more commonly used in the 
-         literature (Thelen, DG (2003). Adjustment of Muscle Mechanics Model 
-         Parameters to Simulate Dynamic Contractions in Older Adults. 
-         ASME J.Biomech. Eng., 125, 75-77). Although the linearily extrapolated 
-         exponential curve is popular, this curve is not C1 continuous at the 
-         engagement point. This lack of smoothness and incurrs a high simulation 
-         cost during numerical integration. This curve is formed using a quintic
-         Bezier curve, is C2 continuous reducing the required simulation time 
-         (Millard et al. 2012, yet to appear).
-
          \verbatim
-             strainAtOneNormForce    = 0.60, 
-             stiffnessAtOneNormForce = 8.4 
-             curviness               = 0.65)
+             normLengthAtZeroForce   = 0.6 
+             stiffnessAtZeroLength   = -8.4, 
+             curviness               = 0.5)
          \endverbatim
 
+    <B>Example:</B>
 
-        <B>Example:</B>
-        @code
-            FiberForceLengthCurve fpeCurve3(0.10,50,0.75,"soleus");
-            double fpeVal  = fpeCurve3.calcValue(0.02);
-            double dfpeVal = fpeCurve3.calcDerivative(0.02,1);
-        @endcode
     */
-    FiberForceLengthCurve( double strainAtOneNormForce, 
-                            double stiffnessAtOneNormForce,
+    FiberCompressiveForceLengthCurve( double normLengthAtZeroForce, 
+                            double stiffnessAtZeroLength,
                             double curviness,
                             const std::string muscleName);
 
@@ -152,33 +131,30 @@ public:
 
    #ifndef SWIG
         ///default assignment operator
-        FiberForceLengthCurve& operator=(const FiberForceLengthCurve &source);
+        FiberCompressiveForceLengthCurve& 
+            operator=(const FiberCompressiveForceLengthCurve &source);
         #endif
             ///a function that copies all of the properties and data members
             ///of this class
-            void copyData(const FiberForceLengthCurve &source);
+            void copyData(const FiberCompressiveForceLengthCurve &source);
         #ifndef SWIG
     #endif
 
+               
+             
     /**
-    @returns    The fiber strain at which the Fiber fevelops 1 unit of 
-                normalized force. The definition of strain used for this 
-                quantity is consistent with the Cauchy or engineering 
-                definition of strain: strain = (l-l0)/l0, where l is length,
-                and l0 is resting length. In this context 
-                strainAtOneNormForce = 0.6 means that 
-                the fiber will develop a tension of 1 normalized force when 
-                it is strained by 60% of its resting length, or 
-                equivalently is stretched to 1.6 times its resting length.
+    @returns    The normalized fiber length at which the compressive element
+                begins to engage. Normalized length is defined as 
+                length_norm = l/l0, where l is the length of the fiber,
+                and l0 is the resting length of the fiber.    
     */
-     double getStrainAtOneNormForce();
+     double getNormLengthAtZeroForce();
 
      /**
-     @returns   The normalized stiffness (or slope) of the fiber curve 
-                when the fiber is strained by strainAtOneNormForce
-                under a load of 1 normalized unit of force.
+     @returns   This is the stiffness of the compressive elastic force length
+                spring when the fiber reaches a normalized length of 0.  
      */
-     double getStiffnessAtOneNormForce();
+     double getStiffnessAtZeroLength();
 
      /**
      @returns   A dimensionless parameter between [0-1] that controls how 
@@ -191,26 +167,23 @@ public:
      double getCurviness();
 
      /**
-    @param aStrainAtOneNormForce     
-                The fiber strain at which the fiber develops 1 unit of 
-                normalized force. The definition of strain used for this 
-                quantity is consistent with the Cauchy or engineering 
-                definition of strain: strain = (l-l0)/l0, where l is length,
-                and l0 is resting length. In this context 
-                strainAtOneNormForce = 0.6 means that 
-                the fiber will develop a tension of 1 normalized force when 
-                it is strained by 60% of its resting length, or 
-                equivalently is stretched to 1.6 times its resting length.
+    @param aNormLengthAtZeroForce
+            Sets the normalized fiber length at which the compressive element
+            begins to engage. Normalized length is defined as 
+            length_norm = l/l0, where l is the length of the fiber,
+            and l0 is the resting length of the fiber. This length must be 
+            greater than 0.
+
     */
-     void setStrainAtOneNormForce(double aStrainAtOneNormForce);
+     void setNormLengthAtZeroForce(double aNormLengthAtZeroForce);
 
      /**
-     @param aStiffnessAtOneNormForce
-                The normalized stiffness (or slope) of the fiber curve 
-                when the fiber is strained by strainAtOneNormForce
-                under a load of 1 normalized unit of force.
+     @param aStiffnessAtZeroLength
+            Sets the stiffness of the compressive elastic force length
+            spring when the fiber reaches a normalized length of 0. This 
+            stiffness must be less than -1/normLengthAtZeroForce
      */
-     void setStiffnessAtOneNormForce(double aStiffnessAtOneNormForce);
+     void setStiffnessAtZeroLength(double aStiffnessAtZeroLength);
 
      /**
      @param aCurviness  
@@ -229,11 +202,11 @@ public:
     (at a cost of ~20,500 flops). 
 
     @param aNormLength: 
-                The normalized fiber length used to evaluate the fiber force 
-                length curve for the corresponding normalized force. Here 
-                aNormLength = l/l0, where l is the length of the fiber and l0 
-                is the resting length of the fiber.  Thus normalized length of 
-                1.0 means the fiber is at its resting length.      
+                The normalized fiber length used to evaluate the fiber 
+                compressive force length curve for the corresponding normalized 
+                force. Here aNormLength = l/l0, where l is the length of the fiber and 
+                l0 is the resting length of the fiber.  Thus normalized length 
+                of 1.0 means the fiber is at its resting length.      
 
     @return the value of the normalized force generated by the fiber
 
@@ -252,8 +225,8 @@ public:
     rebuilt (at a cost of ~20,500 flops).
 
     @param aNormLength: 
-                The normalized fiber length used to evaluate the fiber force 
-                length curve for the corresponding normalized force. Here 
+                The normalized fiber length used to evaluate the compressive 
+                fiber force length curve for the corresponding normalized force. Here 
                 aNormLength = l/l0, where l is the length of the fiber and l0 
                 is the resting length of the fiber.  Thus normalized length of 
                 1.0 means the fiber is at its resting length.
@@ -287,7 +260,7 @@ public:
     SimTK::Vec2 getCurveDomain() const;
 
     /**This function will generate a csv file with a name that matches the 
-       curve name (e.g. "bicepfemoris_FiberForceLengthCurve.csv");
+       curve name (e.g. "bicepfemoris_FiberCompressiveForceLengthCurve.csv");
        Note that  if the curve is out of date is rebuilt 
        (which will cost ~20,500 flops).
        
@@ -322,7 +295,7 @@ public:
        function to begin reading from the 1st row, and the 0th index (csvread
        is 0 indexed). This is necessary to skip reading in the text header
        \verbatim
-        data=csvread('bicepfemoris_fiberFiberForceLengthCurve.csv',1,0);
+        data=csvread('bicepfemoris_fiberCompressiveForceLengthCurve.csv',1,0);
        \endverbatim
 
        */
@@ -385,4 +358,4 @@ private:
 
 }
 
-#endif //OPENSIM_FiberForceLengthCurve_h__
+#endif //OPENSIM_FiberCompressiveForceLengthCurve_h__
