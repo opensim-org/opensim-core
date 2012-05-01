@@ -99,7 +99,7 @@ public:
                 also for naming the XML version of this curve when it is 
                 serialized.
 
-      \image html fig_SerializableCurve_ActiveForceLengthCurve.png
+      \image html fig_ActiveForceLengthCurve.png
         
     <B>Conditions:</B>
     \verbatim

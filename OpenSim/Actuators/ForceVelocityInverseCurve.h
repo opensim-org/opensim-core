@@ -44,7 +44,7 @@ namespace OpenSim {
  This class serves as a serializable ForceVelocityInverseCurve, for use in 
  equilibrium muscle models. 
  
- \image html fig_SerializableCurve_ForceVelocityInverseCurve.png
+ \image html fig_ForceVelocityInverseCurve.png
 
  
   @author Matt Millard

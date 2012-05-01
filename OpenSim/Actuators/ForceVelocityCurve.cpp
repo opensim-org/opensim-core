@@ -26,7 +26,7 @@ using namespace std;
 
 static const char* ConcentricMinSlopeName   ="min_concentric_slope";
 static const char* IsometricMaxSlopeName    ="isometric_slope";
-static const char* EccentricMinSlopeName    ="max_eccentric_slope";
+static const char* EccentricMinSlopeName    ="min_eccentric_slope";
 
 static const char* MaxEccentricVelocityForceMultiplierName 
                                     = "max_eccentric_velocity_force_multiplier";

@@ -44,7 +44,7 @@ namespace OpenSim {
  This class serves as a serializable TendonForceLengthCurve, for use in 
  muscle models. 
  
- \image html fig_SerializableCurve_TendonForceLengthCurve.png
+ \image html fig_TendonForceLengthCurve.png
  
   @author Matt Millard
 

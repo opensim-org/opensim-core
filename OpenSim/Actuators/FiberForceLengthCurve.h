@@ -44,7 +44,7 @@ namespace OpenSim {
  This class serves as a serializable FiberForceLengthCurve, commonly used
  to model the parallel elastic element, for use in muscle models. 
  
- \image html fig_SerializableCurve_FiberForceLengthCurve.png
+ \image html fig_FiberForceLengthCurve.png
  
   @author Matt Millard
 

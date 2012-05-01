@@ -44,7 +44,7 @@ namespace OpenSim {
  This class serves as a serializable ForceVelocityCurve, for use in 
  muscle models. 
  
- \image html fig_SerializableCurve_ForceVelocityCurve.png
+ \image html fig_ForceVelocityCurve.png
 
  
   @author Matt Millard
