@@ -150,8 +150,8 @@ void Probe::setupProperties(void)
 
     addProperty<string>("operation",
         "The operation to perform on the probe value: "
-        "''(no operation, just return the probe value), 'integrate', 'differentiate', 'scale'",
-        "");
+        "'value'(no operation, just return the probe value), 'integrate', 'differentiate', 'scale'",
+        "value");
 
     addProperty<double>("operation_parameter",
         "For 'integrate', this represents the initial condition, for 'scale', this represents the scale factor.",
@@ -189,7 +189,7 @@ void Probe::createSystem(MultibodySystem& system) const
     // ----------------------------------------------------------------
 
     // Return the original probe value (no operation)
-    if (getOperation() == "")
+    if (getOperation() == "value")
         mutableThis->afterOperationValue = beforeOperationValue;
 
     // Integrate the probe value
@@ -222,7 +222,7 @@ void Probe::createSystem(MultibodySystem& system) const
     // Throw exception (invalid operation)
     // -------------------------------------
     else {
-        string errorMessage = getConcreteClassName() + ": Invalid probe operation. Currently supports '', 'integrate', 'differentiate', and 'scale'.";
+        string errorMessage = getConcreteClassName() + ": Invalid probe operation. Currently supports 'value', 'integrate', 'differentiate', and 'scale'.";
         throw (Exception(errorMessage.c_str()));
     }
 
@@ -341,9 +341,7 @@ void Probe::setOperationParameter(double operation_parameter)
 Array<string> Probe::getRecordLabels() const 
 {
     Array<string> labels;
-    if (getOperation() == "")
-        labels.append(getName());
-    else if (getOperation() == "scale") {
+    if (getOperation() == "scale") {
         char n[10];
         sprintf(n, "%f", getOperationParameter());
         labels.append(getName()+"_"+getOperation()+"_"+n+"X");
