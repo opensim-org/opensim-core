@@ -208,16 +208,15 @@ void SystemEnergyProbe::setup(Model& aModel)
 /**
  * Compute the System energy which the Probe operation will be based on.
  */
-Vector SystemEnergyProbe::computeProbeValue(const State& s) const
+double SystemEnergyProbe::computeProbeValue(const State& s) const
 {
-    Vector TotalP(1);
-    TotalP(0) = 0;
+    double TotalP = 0;
     
     if (getComputeKineticEnergy())
-        TotalP(0) += _model->getMultibodySystem().calcKineticEnergy(s);
+        TotalP += _model->getMultibodySystem().calcKineticEnergy(s);
 
     if (getComputePotentialEnergy())
-        TotalP(0) += _model->getMultibodySystem().calcPotentialEnergy(s);
+        TotalP += _model->getMultibodySystem().calcPotentialEnergy(s);
     
     return(TotalP);
 }

@@ -197,11 +197,10 @@ void JointPowerProbe::setup(Model& aModel)
 /**
  * Compute the Joint power upon which the Probe operation will be based on.
  */
-Vector JointPowerProbe::computeProbeValue(const State& s) const
+double JointPowerProbe::computeProbeValue(const State& s) const
 {
     int nA = getJointNames().size();
-    Vector TotalP(1);
-    TotalP(0) = 0;				// Initialize at zero
+    double TotalP = 0;				// Initialize at zero
 
     // Loop through each joint in the list of joint_names
     for (int i=0; i<nA; i++)
@@ -213,7 +212,7 @@ Vector JointPowerProbe::computeProbeValue(const State& s) const
         double jointPower = _model->getJointSet().get(k).calcPower(s);
         
         // Append to total "Joint" power
-        TotalP(0) += jointPower;
+        TotalP += jointPower;
     }
 
     return(TotalP);

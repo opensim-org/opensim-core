@@ -42,9 +42,9 @@ class Model;
 //==============================================================================
 /**
  * This class represents a Probe which will can perform an "operation" on any model value.
- * Each subclass represents a different type of Probe. The actual "operation" is done by a
- * SimTK::Measure. In creating child class Probes, the user must override the
- * computeProbeValue() method.
+ * This model value must be a scalar value. Each Probe subclass represents a different 
+ * type of Probe. The actual "operation" is done by a SimTK::Measure. 
+ * In creating child class Probes, the user must override the computeProbeValue() method.
  *
  * @author Tim Dorn
  */
@@ -67,11 +67,6 @@ public:
     Probe();
     Probe(const Probe &aProbe);
     virtual ~Probe();
-
-    /**
-     * deserialization from XML, necessary so that derived classes can (de)serialize
-     */
-    //Probe(SimTK::Xml::Element& aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
 
 #ifndef SWIG
     Probe& operator=(const Probe &aProbe);
@@ -104,14 +99,14 @@ protected:
 
 public:
 
-    /**Computes the probe value (this is the value of the probe prior to any operation being performed on it.
-       Probe value is computed at the SimTK Report Stage
+    /**Computes the probe value (this is the scalar value of the probe prior to any operation being performed on it.
+       Probe value is computed at the SimTK::Report Stage.
        This method must be overridden for each subclass Probe.
 
        @param state System state   
        @return		The SimTK::Vector of probe values
     */
-    virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const=0;
+    virtual double computeProbeValue(const SimTK::State& state) const=0;
 
     /**Returns the column labels for the probe values for reporting. */
     virtual Array<std::string> getRecordLabels() const;

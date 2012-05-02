@@ -104,7 +104,7 @@ public:
     // Computation
     //-----------------------------------------------------------------------------
     /** Compute the Actuator power upon which the Probe operation will be based on. */
-    virtual SimTK::Vector computeProbeValue(const SimTK::State& state) const;
+    virtual double computeProbeValue(const SimTK::State& state) const;
 
 
     //--------------------------------------------------------------------------

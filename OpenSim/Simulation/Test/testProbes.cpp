@@ -54,7 +54,7 @@
 #include <OpenSim/Simulation/Model/ForceProbe.h>
 #include <OpenSim/Simulation/Model/JointPowerProbe.h>
 //#include <OpenSim/Simulation/Model/MuscleMetabolicRateProbeBhargava2004.h>
-//#include <OpenSim/Simulation/Model/MuscleMetabolicRateProbeUmberger2002.h>
+//#include <OpenSim/Simulation/Model/MuscleMetabolicRateProbeUmberger2003.h>
 #include <OpenSim/Simulation/Model/SystemEnergyProbe.h>
 #include <OpenSim/Analyses/ProbeReporter.h>
 #include <OpenSim/Analyses/ForceReporter.h>
@@ -295,14 +295,14 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
     //    MuscleMetabolicRateProbeBhargava2004 metabolicEnergyProbeBhargava(metabolicRateProbeBhargava);   // use copy constructor
     //    metabolicEnergyProbeBhargava.setOperation("integrate");
     //    
-    //    // MuscleMetabolicRateProbeUmberger2002 Energy Rate Probe
-    //    MuscleMetabolicRateProbeUmberger2002 metabolicRateProbeUmberger(true, true, false, true);
+    //    // MuscleMetabolicRateProbeUmberger2003 Energy Rate Probe
+    //    MuscleMetabolicRateProbeUmberger2003 metabolicRateProbeUmberger(true, true, false, true);
     //    
     //    metabolicRateProbeUmberger.setMetabolicMuscleSet(mms);
     //    metabolicRateProbeUmberger.setOperation("value");
     //    
-    //    // MuscleMetabolicRateProbeUmberger2002 Energy Probe
-    //    MuscleMetabolicRateProbeUmberger2002 metabolicEnergyProbeUmberger(metabolicRateProbeUmberger);   // use copy constructor
+    //    // MuscleMetabolicRateProbeUmberger2003 Energy Probe
+    //    MuscleMetabolicRateProbeUmberger2003 metabolicEnergyProbeUmberger(metabolicRateProbeUmberger);   // use copy constructor
     //    metabolicEnergyProbeUmberger.setOperation("integrate");
     //    
     //    cout << "ADDING MUSCLE METABOLIC PROBES" << endl;

@@ -198,11 +198,10 @@ void ForceProbe::setup(Model& aModel)
 /**
  * Compute the Force upon which the Probe operation will be based on.
  */
-Vector ForceProbe::computeProbeValue(const State& s) const
+double ForceProbe::computeProbeValue(const State& s) const
 {
     int nF = getForceNames().size();
-    Vector TotalF(1);
-    TotalF(0) = 0;				// Initialize at zero
+    double TotalF = 0;		// Initialize at zero
 
     // Loop through each force in the list of force_names
     for (int i=0; i<nF; i++)
@@ -224,7 +223,7 @@ Vector ForceProbe::computeProbeValue(const State& s) const
             Ftmp = forceValues.get(0);
 
         // Append to total "Force" force
-        TotalF(0) += Ftmp;
+        TotalF += Ftmp;
     }
 
     return(TotalF);

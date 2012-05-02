@@ -197,11 +197,10 @@ void ActuatorPowerProbe::setup(Model& aModel)
 /**
  * Compute the Actuator power upon which the Probe operation will be based on.
  */
-Vector ActuatorPowerProbe::computeProbeValue(const State& s) const
+double ActuatorPowerProbe::computeProbeValue(const State& s) const
 {
     int nA = getActuatorNames().size();
-    Vector TotalP(1);
-    TotalP(0) = 0;				// Initialize at zero
+    double TotalP = 0;			// Initialize at zero
 
     // Loop through each actuator in the list of actuator_names
     for (int i=0; i<nA; i++)
@@ -213,7 +212,7 @@ Vector ActuatorPowerProbe::computeProbeValue(const State& s) const
         double actPower = _model->getActuators().get(k).getPower(s);
         
         // Append to total "Actuator" power
-        TotalP(0) += actPower;
+        TotalP += actPower;
     }
 
     return(TotalP);

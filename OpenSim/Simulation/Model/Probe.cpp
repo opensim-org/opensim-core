@@ -65,10 +65,9 @@ public:
             "ProbeMeasure::Implementation::calcCachedValueVirtual():"
             " derivOrder %d seen but only 0 allowed.", derivOrder);
  
-        Vector tmp = m_probe.computeProbeValue(s);
-        value = tmp(0);
-
+        value = m_probe.computeProbeValue(s);
     }
+
 private:
     const OpenSim::Probe& m_probe;
 };
