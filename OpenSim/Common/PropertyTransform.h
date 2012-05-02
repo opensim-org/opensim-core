@@ -97,10 +97,10 @@ public:
 #endif
 	virtual void setValue(int aSize,const double aArray[]);
 	void getRotationsAndTranslationsAsArray6(double aArray[]) const;
-/*
-	virtual void setValue(const Array<double> &aArray) const{
+
+	virtual void setValue(const Array<double> &aArray){
 		setValue(6, &aArray[0]);
-	};*/
+	};
 	// VALUE as String
 	virtual std::string toString() const;
 
