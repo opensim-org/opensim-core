@@ -29,24 +29,23 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <string>
-#include <math.h>
-#include <float.h>
-#include <time.h>
-#include <assert.h>
-#include <SimTKcommon/internal/Exception.h>
 #include <OpenSim/Common/GCVSplineSet.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/MarkerSet.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
-#include <SimTKsimbody.h>
+#include <Simbody.h>
 
 #include "SimbodyEngine.h"
 #include "Coordinate.h"
 
+#include <iostream>
+#include <string>
+#include <cmath>
+#include <cfloat>
+#include <ctime>
+#include <cassert>
 
 //=============================================================================
 // STATICS

@@ -355,19 +355,19 @@ bool MarkerPlacer::processModel(SimTK::State& s, Model* aModel, const string& aP
 	//_outputStorage->print("statesReporterOutputWithMarkers.sto");
 
 	if(_printResultFiles) {
-		if (!_outputModelFileNameProp.getUseDefault())
+		if (!_outputModelFileNameProp.getValueIsDefault())
 		{
 			aModel->print(aPathToSubject + _outputModelFileName);
 			cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
 		}
 
-		if (!_outputMarkerFileNameProp.getUseDefault())
+		if (!_outputMarkerFileNameProp.getValueIsDefault())
 		{
 			aModel->writeMarkerFile(aPathToSubject + _outputMarkerFileName);
 			cout << "Wrote marker file " << _outputMarkerFileName << " from model " << aModel->getName() << endl;
 		}
 		
-		if (!_outputMotionFileNameProp.getUseDefault())
+		if (!_outputMotionFileNameProp.getValueIsDefault())
 		{
 			_outputStorage->print(aPathToSubject + _outputMotionFileName, 
 				"w", "File generated from solving marker data for model "+aModel->getName());

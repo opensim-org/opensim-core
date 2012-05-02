@@ -1,9 +1,9 @@
-#ifndef __Force_h__
-#define __Force_h__
+#ifndef OPENSIM_FORCE_H_
+#define OPENSIM_FORCE_H_
 // Force.h
 // Author: Peter Eastman, Ajay Seth
 /*
- * Copyright (c)  2009 Stanford University. All rights reserved.
+ * Copyright (c)  2009-12 Stanford University. All rights reserved.
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -31,7 +31,7 @@
 #include "OpenSim/Simulation/osimSimulationDLL.h"
 #include <OpenSim/Common/PropertyBool.h>
 #include "OpenSim/Simulation/Model/ModelComponent.h"
-#include <SimTKsimbody.h>
+#include <Simbody.h>
 
 namespace OpenSim {
 
@@ -40,80 +40,104 @@ class Body;
 class Coordinate;
 class ForceAdapter;
 
+
 /**
- * This abstract class represents a force applied to bodies or generalized coordinates during a simulation.
- * Each subclass represents a different type of force.  The actual force computation is done by a SimTK::Force,
- * which is created by createSystem().
+ * This abstract class represents a force applied to bodies or generalized 
+ * coordinates during a simulation. Each subclass represents a different type 
+ * of force. The actual force computation is done by a SimTK::Force, which is 
+ * created by createSystem().
  *
  * @author Peter Eastman
  * @author Ajay Seth
  */
 class OSIMSIMULATION_API Force : public ModelComponent {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Force, ModelComponent);
-
-protected:
-	/** ID for the force in Simbody. */
-	SimTK::ForceIndex _index;
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-	Force();
-	Force(const Force &aForce);
-	virtual ~Force();
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    /** A Force element is active (enabled) by default. **/
+	OpenSim_DECLARE_PROPERTY(isDisabled, bool,
+		"Flag indicating whether the force is disabled or not. Disabled means"
+		" that the force is not active in subsequent dynamics realizations.");
+    /**@}**/
 
-	/**
-	 * deserialization from XML, necessary so that derived classes can (de)serialize
-	 */
-	Force(SimTK::Xml::Element& aNode): ModelComponent(aNode) {setNull(); setupProperties(); };
+//=============================================================================
+// PUBLIC METHODS
+//=============================================================================
+
+    // Constructors are protected; has default destructor.
+
+    /** Implements a copy constructor just so it can invalidate the 
+    SimTK::Force index after copying. **/
+	Force(const Force &aForce);
 
 #ifndef SWIG
+    /** Implements a copy assignment operator just so it can invalidate the 
+    SimTK::Force index after the assignment. **/
 	Force& operator=(const Force &aForce);
 #endif
-	void copyData(const Force &aForce);
 
 	/**
-	 * Methods to query a Force for the value actually applied during simulation
-	 * The names of the quantities (column labels) is returned by this first function
-	 * getRecordLabels()
+	 * Methods to query a Force for the value actually applied during 
+     * simulation. The names of the quantities (column labels) is returned by 
+     * this first function getRecordLabels().
 	 */
 	virtual OpenSim::Array<std::string> getRecordLabels() const {
 		return OpenSim::Array<std::string>();
 	}
 	/**
-	 * Given SimTK::State object extract all the values necessary to report forces, application location
-	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+	 * Given SimTK::State object extract all the values necessary to report 
+     * forces, application location frame, etc. used in conjunction with 
+     * getRecordLabels and should return same size Array.
 	 */
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const {
 		return OpenSim::Array<double>();
 	};
 
-	/** return if the Force is disabled or not */
+	/** Return if the Force is disabled or not. */
 	virtual bool isDisabled(const SimTK::State &s) const;
-	/** Set the Force as disabled (true) or not (false)*/
+	/** Set the Force as disabled (true) or not (false). */
 	virtual void setDisabled(SimTK::State &s, bool disabled);
 
-	/** return a flag indicating whether the Force is applied along a Path
-	 *  if you override this method to return true for a specific subclass, it must
-	 * also implement the getGeometryPath() mathod
-	 */
+	/** Return a flag indicating whether the Force is applied along a Path. If
+    you override this method to return true for a specific subclass, it must
+	also implement the getGeometryPath() method. **/
 	virtual bool hasGeometryPath() const { return false;};
 
 protected:
-	/**
-	 * Subclasses should override these methods appropriately.
-	 */
-//    virtual void setup(Model& model);
-	virtual void initState(SimTK::State& state) const;
+	/** Default constructor sets up Force-level properties; can only be
+    called from a derived class constructor. **/
+    Force();
 
-	/**
-	 * Default is to create a ForceAdapter which is a SimTK::Force::Custom
-	 * as the udnerlying computational component. Subclasses override to
-	 * employ other SimTK::Forces.
-	 */
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
+	/** Deserialization from XML, necessary so that derived classes can 
+    (de)serialize. **/
+	Force(SimTK::Xml::Element& node) : Super(node) 
+    {   setNull(); constructProperties(); }
+
+    //--------------------------------------------------------------------------
+    // ModelComponent interface.
+    //--------------------------------------------------------------------------
+
+	/** Subclass should override; be sure to invoke Force::initState() at the
+    beginning of the overriding method. **/
+	virtual void initState(SimTK::State& state) const OVERRIDE_11;
+
+	/** Default is to create a ForceAdapter which is a SimTK::Force::Custom
+	as the underlying computational component. Subclasses override to employ 
+    other SimTK::Forces; be sure to invoke Force::createSystem() at the
+    beginning of the overriding method. **/
+	virtual void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	/** Subclass should override; be sure to invoke 
+    Force::setDefaultsFromState() at the beginning of the overriding method. **/
+    virtual void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11;
+    
+    //--------------------------------------------------------------------------
+    // Force interface.
+    //--------------------------------------------------------------------------
 
 	/**
 	 * Subclasses must implement this method to compute the forces that should be applied to bodies
@@ -191,10 +215,14 @@ protected:
 							   double               force, 
                                SimTK::Vector&       generalizedForces) const;
 
-private:
+protected:
+	/** ID for the force in Simbody. */
+	SimTK::ForceIndex   _index;
 
+private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
+	void copyData(const Force &aForce);
 
 	friend class ForceAdapter;
 
@@ -205,6 +233,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __Force_h__
+#endif // OPENSIM_FORCE_H_
 
 

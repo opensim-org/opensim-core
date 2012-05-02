@@ -1,5 +1,5 @@
-#ifndef OPENSIM_ForceVelocityCurve_h__
-#define OPENSIM_ForceVelocityCurve_h__
+#ifndef OPENSIM_FORCE_VELOCITY_CURVE_H_
+#define OPENSIM_FORCE_VELOCITY_CURVE_H_
 
 /* Author: Matthew Millard
 /*
@@ -39,33 +39,60 @@
 #endif
 
 namespace OpenSim {
-
+//==============================================================================
+//                         FORCE VELOCITY CURVE
+//==============================================================================
 /**
  This class serves as a serializable ForceVelocityCurve, for use in 
  muscle models. 
  
  \image html fig_ForceVelocityCurve.png
 
- 
   @author Matt Millard
 
  */
 class OSIMACTUATORS_API ForceVelocityCurve : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(ForceVelocityCurve, ModelComponent);
-    
-//    class ForceVelocityCurve : public ModelComponent {
-//OpenSim_DECLARE_CONCRETE_OBJECT(ForceVelocityCurve, ModelComponent);
-
-
-
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(min_concentric_slope, double,
+        "curve slope at the maximum normalized "
+        "concentric contraction velocity (-1)");
 
-    ///Default constructor
+    OpenSim_DECLARE_PROPERTY(isometric_slope, double, 
+        "curve slope at isometric (normalized fiber velocity of 0)");
+
+    OpenSim_DECLARE_PROPERTY(min_eccentric_slope, double, 
+        "curve slope at the maximum normalized "
+        "eccentric contraction velocity (1)");
+
+    OpenSim_DECLARE_PROPERTY(max_eccentric_velocity_force_multiplier, double, 
+        "curve value at the maximum normalized "
+        "eccentric contraction velocity");
+
+    OpenSim_DECLARE_PROPERTY(concentric_curviness, double,
+        "concentric curve bend, from "
+        "linear to maximum bend  (0-1)");
+
+    OpenSim_DECLARE_PROPERTY(eccentric_curviness, double,
+        "eccentric curve bend, from "
+        "linear to maximum bend  (0-1)");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** Default constructor creates an object with a default name that doesn't
+    yet define a curve. **/
     ForceVelocityCurve();
-    ///Default destructor
-    ~ForceVelocityCurve();
-    ///Default constructor
-    ForceVelocityCurve(const ForceVelocityCurve& source);
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
     /**
      Constructs a C2 continuous force velocity curve. The force velocity
@@ -190,19 +217,8 @@ public:
                         double maxEccentricVelocityForceMultiplier,
                         double concentricCurviness,
                         double eccentricCurviness,
-                        const std::string muscleName);
+                        const std::string& muscleName);
 
-
-
-   #ifndef SWIG
-        ///default assignment operator
-        ForceVelocityCurve& operator=(const ForceVelocityCurve &source);
-        #endif
-            ///a function that copies all of the properties and data members
-            ///of this class
-            void copyData(const ForceVelocityCurve &source);
-        #ifndef SWIG
-    #endif
 
     /**
     @returns    The slope of the force velocity curve at the maximum
@@ -387,7 +403,10 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
-protected:
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
     /*
     This object extends the ModelComponent interface so that we can make use
     of the 'createSystem' function, which we are using to create the 
@@ -401,9 +420,9 @@ protected:
     */
 
     ///ModelComponent Interface required function
-  	void setup(Model& aModel) OVERRIDE_11;
+    void setup(Model& aModel) OVERRIDE_11;
     ///ModelComponent Interface required function
-	void initState(SimTK::State& s) const OVERRIDE_11;
+    void initState(SimTK::State& s) const OVERRIDE_11;
     /**
     ModelComponent is being used for this one function, which is called just
     prior to a simulation beginning. This is the ideal time to actually
@@ -415,17 +434,16 @@ protected:
         necessary
 
     */
-	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
     ///ModelComponent Interface required function
-    void setDefaultsFromState(const SimTK::State& state){};
+    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11 {};
     
 
-private:
-  void setNull();
-  void addProperties();
+    void setNull();
+    void constructProperties();
 
-  /**
+    /**
         This function will take all of the current parameter values and use 
         them to build a curve.
 
@@ -435,13 +453,13 @@ private:
         \endverbatim
 
     */
-  void buildCurve();
+    void buildCurve();
 
 
-  MuscleCurveFunction m_curve;
-  bool m_curveUpToDate;
+    MuscleCurveFunction m_curve;
+    bool                m_curveUpToDate;
 };
 
 }
 
-#endif //OPENSIM_ForceVelocityCurve_h__
+#endif // OPENSIM_FORCE_VELOCITY_CURVE_H_

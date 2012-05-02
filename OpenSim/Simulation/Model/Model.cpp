@@ -758,24 +758,24 @@ void Model::cleanup()
 
 void Model::setDefaultProperties()
 {
-	if (_creditsStrProp.getUseDefault()){
+	if (_creditsStrProp.getValueIsDefault()){
 		_creditsStr = "Model authors names..";
 	}
-	if (_publicationsStrProp.getUseDefault()){
+	if (_publicationsStrProp.getValueIsDefault()){
 		_publicationsStr = "List of publications related to model...";
 	}
 
 	// Initialize the length and force units from the strings specified in the model file.
 	// If they were not specified, use meters and Newtons.
 
-    if (_lengthUnitsStrProp.getUseDefault()){
+    if (_lengthUnitsStrProp.getValueIsDefault()){
 		_lengthUnits = Units(Units::Meters);
 		_lengthUnitsStr = _lengthUnits.getLabel();
 	}
 	else
 		_lengthUnits = Units(_lengthUnitsStr);
 
-	if (_forceUnitsStrProp.getUseDefault()){
+	if (_forceUnitsStrProp.getValueIsDefault()){
 		_forceUnits = Units(Units::Newtons);
 		_forceUnitsStr = _forceUnits.getLabel();
 	}
@@ -1453,7 +1453,7 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
 
 	// First remove all existing markers from the model.
 	_markerSet.clearAndDestroy();
-	_markerSetProp.setUseDefault(false);
+	_markerSetProp.setValueIsDefault(false);
 
 	// Now add the markers from aMarkerSet whose body names match bodies in the engine.
 	for (i = 0; i < aMarkerSet.getSize(); i++)
@@ -1484,7 +1484,7 @@ int Model::replaceMarkerSet(const SimTK::State& s, MarkerSet& aMarkerSet)
  */
 void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 {
-	_markerSetProp.setUseDefault(false);
+	_markerSetProp.setValueIsDefault(false);
 	for (int i = 0; i < aMarkerSet.getSize(); i++)
 	{
 		Marker& updatingMarker = aMarkerSet.get(i);

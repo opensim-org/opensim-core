@@ -136,21 +136,21 @@ public:
 	void setApply(bool aApply) 
 	{ 
 		_apply = aApply; 
-		_applyProp.setUseDefault(false); 
+		_applyProp.setValueIsDefault(false); 
 	}
 
 	const std::string &getStaticPoseFileName() const { return _markerFileName; }
 	void setStaticPoseFileName(const std::string &aFileName) 
 	{
 		_markerFileName = aFileName;
-		_markerFileNameProp.setUseDefault(false);
+		_markerFileNameProp.setValueIsDefault(false);
 	}
 
    const Array<double> &getTimeRange() const { return _timeRange; }
    void setTimeRange(const Array<double> &timeRange) 
 	{
 		_timeRange = timeRange; 
-		_timeRangeProp.setUseDefault(false); 
+		_timeRangeProp.setValueIsDefault(false); 
 	}
 
 	IKTaskSet &getIKTaskSet() { return _ikTaskSet; }
@@ -159,35 +159,35 @@ public:
 	void setCoordinateFileName(const std::string& aCoordinateFileName)
 	{
 		_coordinateFileName = aCoordinateFileName;
-		_coordinateFileNameProp.setUseDefault(false);
+		_coordinateFileNameProp.setValueIsDefault(false);
 	}
     
 	double getMaxMarkerMovement() const { return _maxMarkerMovement; }
 	void setMaxMarkerMovement(double aMaxMarkerMovement)
 	{
 		_maxMarkerMovement=aMaxMarkerMovement;
-		_maxMarkerMovementProp.setUseDefault(false);
+		_maxMarkerMovementProp.setValueIsDefault(false);
 	}
 
 	const std::string& getOutputModelFileName() const { return _outputModelFileName; }
 	void setOutputModelFileName(const std::string& aOutputModelFileName)
 	{
 		_outputModelFileName = aOutputModelFileName;
-		_outputModelFileNameProp.setUseDefault(false);
+		_outputModelFileNameProp.setValueIsDefault(false);
 	}
 
 	const std::string& getOutputMarkerFileName() const { return _outputMarkerFileName; }
 	void setOutputMarkerFileName(const std::string& outputMarkerFileName)
 	{
 		_outputMarkerFileName = outputMarkerFileName;
-		_outputMarkerFileNameProp.setUseDefault(false);
+		_outputMarkerFileNameProp.setValueIsDefault(false);
 	}
 
 	const std::string& getOutputMotionFileName() const { return _outputMotionFileName; }
 	void setOutputMotionFileName(const std::string& outputMotionFileName)
 	{
 		_outputMotionFileName = outputMotionFileName;
-		_outputMotionFileNameProp.setUseDefault(false);
+		_outputMotionFileNameProp.setValueIsDefault(false);
 	}
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }

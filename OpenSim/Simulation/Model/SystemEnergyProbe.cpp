@@ -1,7 +1,7 @@
 // SystemEnergyProbe.cpp
 // Authors: Tim Dorn
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2012, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -26,165 +26,89 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//=============================================================================
-// INCLUDES and STATICS
-//=============================================================================
+//==============================================================================
+// INCLUDE
+//==============================================================================
 #include "SystemEnergyProbe.h"
-
 
 using namespace std;
 using namespace SimTK;
 using namespace OpenSim;
 
 
-//=============================================================================
-// CONSTRUCTOR(S) AND SETUP
-//=============================================================================
+//==============================================================================
+// CONSTRUCTORS
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
+// Default constructor.
 SystemEnergyProbe::SystemEnergyProbe() 
 {
     setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Convenience constructor.
- */
+// Convenience constructor.
 SystemEnergyProbe::SystemEnergyProbe(bool computeKE, bool computePE)
 {
     setNull();
-    setPropertyValue("compute_kinetic_energy", computeKE);
-    setPropertyValue("compute_potential_energy", computePE);
-}
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-SystemEnergyProbe::~SystemEnergyProbe()
-{
+    constructProperties();
+    setProperty_compute_kinetic_energy(computeKE);
+    setProperty_compute_potential_energy(computePE);
 }
 
 
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aSystemEnergyProbe SystemEnergyProbe to be copied.
- */
-SystemEnergyProbe::SystemEnergyProbe(const SystemEnergyProbe &aSystemEnergyProbe) :
-   Probe(aSystemEnergyProbe)
-{
-    setNull();
-    copyData(aSystemEnergyProbe);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one SystemEnergyProbe to another.
- *
- * @param aProbe SystemEnergyProbe to be copied.
- */
-void SystemEnergyProbe::copyData(const SystemEnergyProbe &aProbe)
-{
-    Super::copyData(aProbe);
-
-    setPropertyValue("compute_kinetic_energy", aProbe.getPropertyValue<bool>("compute_kinetic_energy"));
-    setPropertyValue("compute_potential_energy", aProbe.getPropertyValue<bool>("compute_potential_energy"));
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this SystemEnergyProbe to their null values.
- */
+// Set the data members of this SystemEnergyProbe to their null values.
 void SystemEnergyProbe::setNull(void)
 {
-    setupProperties();
+    // no data members
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void SystemEnergyProbe::setupProperties(void)
+// Allocate and initialize properties.
+void SystemEnergyProbe::constructProperties(void)
 {
-    addProperty<bool>("compute_kinetic_energy",
-        "Specify whether kinetic energy is to be included in the system energy computation (true/false).",
-        true);
-
-    addProperty<bool>("compute_potential_energy",
-        "Specify whether potential energy is to be included in the system energy computation (true/false).",
-        true);
+    constructProperty_compute_kinetic_energy(true);
+    constructProperty_compute_potential_energy(true);
 }
 
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-SystemEnergyProbe& SystemEnergyProbe::operator=(const SystemEnergyProbe &aSystemEnergyProbe)
-{
-    // BASE CLASS
-    Super::operator=(aSystemEnergyProbe);
-    return(*this);
-}
-#endif
-
-
-
-//=============================================================================
+//==============================================================================
 // GET AND SET
-//=============================================================================
-/**
- * Returns whether kinetic energy is to be included in the system energy computation.
- */
+//==============================================================================
+// Returns whether KE is to be included in the system energy computation.
 bool SystemEnergyProbe::getComputeKineticEnergy() const
 {
-    return getPropertyValue<bool>("compute_kinetic_energy");
+    return getProperty_compute_kinetic_energy();
 }
 
 //_____________________________________________________________________________
-/**
- * Returns whether kinetic energy is to be included in the system energy computation.
- */
+// Returns whether PE is to be included in the system energy computation.
 bool SystemEnergyProbe::getComputePotentialEnergy() const
 {
-    return getPropertyValue<bool>("compute_kinetic_energy");
+    return getProperty_compute_potential_energy();
 }
 
 //_____________________________________________________________________________
-/**
- * Sets whether kinetic energy is to be included in the system energy computation.
- */
+// Sets whether KE is to be included in the system energy computation.
 void SystemEnergyProbe::setComputeKineticEnergy(bool c)
 {
-    return setPropertyValue<bool>("compute_kinetic_energy", c);
+    return setProperty_compute_kinetic_energy(c);
 }
 
 //_____________________________________________________________________________
-/**
- * Sets whether potential energy is to be included in the system energy computation.
- */
+// Sets whether PE is to be included in the system energy computation.
 void SystemEnergyProbe::setComputePotentialEnergy(bool c)
 {
-    return setPropertyValue<bool>("compute_potential_energy", c);
+    return setProperty_compute_potential_energy(c);
 }
 
-
-
-//=============================================================================
+//==============================================================================
 // MODEL COMPONENT METHODS
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Perform some set up functions that happen after the
@@ -197,17 +121,11 @@ void SystemEnergyProbe::setup(Model& aModel)
     Super::setup(aModel);
 }
 
-
-
-
-
-//=============================================================================
+//==============================================================================
 // COMPUTATION
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
-/**
- * Compute the System energy which the Probe operation will be based on.
- */
+// Compute the System energy which the Probe operation will be based on.
 double SystemEnergyProbe::computeProbeValue(const State& s) const
 {
     double TotalP = 0;

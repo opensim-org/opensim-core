@@ -26,89 +26,50 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include "ActivationFiberLengthMuscle.h"
 #include "Model.h"
 
-
-//=============================================================================
-// STATICS
-//=============================================================================
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
 
+
+//==============================================================================
+// STATIC INITIALIZATION
+//==============================================================================
 const string ActivationFiberLengthMuscle::STATE_ACTIVATION_NAME = "activation";
 const string ActivationFiberLengthMuscle::STATE_FIBER_LENGTH_NAME = "fiber_length";
 
 
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-ActivationFiberLengthMuscle::ActivationFiberLengthMuscle() : Muscle()
-{
-	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMuscle ActivationFiberLengthMuscle to be copied.
- */
-ActivationFiberLengthMuscle::ActivationFiberLengthMuscle(const ActivationFiberLengthMuscle &aMuscle) : Muscle(aMuscle)
-{
-	setNull();
-	setupProperties();
-	copyData(aMuscle);
-}
+//==============================================================================
+// CONSTRUCTORS
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, and copy
+// assignment operator.
 
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
 //_____________________________________________________________________________
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-/**
- * Set the data members of this ActivationFiberLengthMuscle to their null values.
- */
-void ActivationFiberLengthMuscle::setNull()
+// Default constructor.
+ActivationFiberLengthMuscle::ActivationFiberLengthMuscle()
 {
+	constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void ActivationFiberLengthMuscle::setupProperties()
+// Allocate and initialize properties.
+void ActivationFiberLengthMuscle::constructProperties()
 {
-	addProperty<double>("default_activation",
-		"Assumed activation level if none is assigned.",
-		1.0);
-	addProperty<double>("default_fiber_length",
-		"Assumed fiber length, unless otherwise assigned.",
-		getOptimalFiberLength());
-}
-
-void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aMuscle)
-{
-	setPropertyValue<double>("default_activation", aMuscle.getPropertyValue<double>("default_activation"));
-	setPropertyValue<double>("default_fiber_length", aMuscle.getPropertyValue<double>("default_fiber_length"));
+	constructProperty_default_activation(1.0);
+	constructProperty_default_fiber_length(getOptimalFiberLength());
 }
 
 //_____________________________________________________________________________
-/**
- * allocate and initialize the SimTK state for this acuator.
- */
+// Allocate Simbody System resources for this actuator.
  void ActivationFiberLengthMuscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	Muscle::createSystem(system);   // invoke superclass implementation
+	Super::createSystem(system);   // invoke superclass implementation
 
 	addStateVariable(STATE_ACTIVATION_NAME);
 	// Fiber length should be a position stage state variable.
@@ -128,7 +89,7 @@ void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aM
 
  void ActivationFiberLengthMuscle::initState( SimTK::State& s) const
 {
-    Muscle::initState(s);   // invoke superclass implementation
+    Super::initState(s);   // invoke superclass implementation
 
 	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
 
@@ -138,23 +99,23 @@ void ActivationFiberLengthMuscle::copyData(const ActivationFiberLengthMuscle &aM
 
 void ActivationFiberLengthMuscle::setDefaultsFromState(const SimTK::State& state)
 {
-	Muscle::setDefaultsFromState(state);    // invoke superclass implementation
+	Super::setDefaultsFromState(state);    // invoke superclass implementation
 
     setDefaultActivation(getStateVariable(state, STATE_ACTIVATION_NAME));
     setDefaultFiberLength(getStateVariable(state, STATE_FIBER_LENGTH_NAME));
 }
 
 double ActivationFiberLengthMuscle::getDefaultActivation() const {
-    return getPropertyValue<double>("default_activation");
+    return getProperty_default_activation();
 }
 void ActivationFiberLengthMuscle::setDefaultActivation(double activation) {
-    setPropertyValue<double>("default_activation", activation);
+    setProperty_default_activation(activation);
 }
 double ActivationFiberLengthMuscle::getDefaultFiberLength() const {
-    return getPropertyValue<double>("default_fiber_length");
+    return getProperty_default_fiber_length();
 }
 void ActivationFiberLengthMuscle::setDefaultFiberLength(double length) {
-    setPropertyValue<double>("default_fiber_length", length);
+    setProperty_default_fiber_length(length);
 }
 
 //_____________________________________________________________________________
@@ -182,7 +143,9 @@ Array<std::string> ActivationFiberLengthMuscle::getStateVariableNames() const
  * @param aStateName The name of the state to set.
  * @param aValue The value to set the state to.
  */
-void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const
+void ActivationFiberLengthMuscle::
+setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, 
+                      double aValue) const
 {
 	double& cacheVariable = updCacheVariable<double>(s, aStateName + "_deriv");
 	cacheVariable = aValue;
@@ -196,7 +159,8 @@ void ActivationFiberLengthMuscle::setStateVariableDeriv(const SimTK::State& s, c
  * @param aStateName the name of the state to get.
  * @return The value of the state.
  */
-double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const
+double ActivationFiberLengthMuscle::
+getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const
 {
 	return getCacheVariable<double>(s, aStateName + "_deriv");
 }
@@ -207,7 +171,8 @@ double ActivationFiberLengthMuscle::getStateVariableDeriv(const SimTK::State& s,
  *
  * @param s  system state
  */
-SimTK::Vector ActivationFiberLengthMuscle::computeStateVariableDerivatives(const SimTK::State &s) const
+SimTK::Vector ActivationFiberLengthMuscle::
+computeStateVariableDerivatives(const SimTK::State &s) const
 {
 	SimTK::Vector derivs(getNumStateVariables());
 	derivs[0] = getActivationRate(s);
@@ -217,30 +182,9 @@ SimTK::Vector ActivationFiberLengthMuscle::computeStateVariableDerivatives(const
 }
 
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @param aMuscle The muscle from which to copy its data
- * @return Reference to this object.
- */
-ActivationFiberLengthMuscle& ActivationFiberLengthMuscle::operator=(const ActivationFiberLengthMuscle &aMuscle)
-{
-	// base class
-	Muscle::operator=(aMuscle);
-
-	copyData(aMuscle);
-
-	return(*this);
-}
-
-
-//=============================================================================
+//==============================================================================
 // GET
-//=============================================================================
+//==============================================================================
 //-----------------------------------------------------------------------------
 // STATE VALUES
 //-----------------------------------------------------------------------------
@@ -266,9 +210,9 @@ double ActivationFiberLengthMuscle::getActivationRate(const SimTK::State& s) con
 }
 
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
+//==============================================================================
 
 //_____________________________________________________________________________
 /**
@@ -279,17 +223,18 @@ double ActivationFiberLengthMuscle::getActivationRate(const SimTK::State& s) con
  *
  * @param aScaleSet XYZ scale factors for the bodies.
  */
-void ActivationFiberLengthMuscle::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
+void ActivationFiberLengthMuscle::
+postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath &path = updPropertyValue<GeometryPath>("GeometryPath");
+	GeometryPath& path = updProperty_GeometryPath();
 
 	path.postScale(s, aScaleSet);
 
 	if (path.getPreScaleLength(s) > 0.0)
 		{
 			double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-			updPropertyValue<double>("optimal_fiber_length") *= scaleFactor;
-			updPropertyValue<double>("tendon_slack_length") *= scaleFactor;
+			updProperty_optimal_fiber_length() *= scaleFactor;
+			updProperty_tendon_slack_length() *= scaleFactor;
 			path.setPreScaleLength(s, 0.0) ;
 		}
 }
@@ -313,9 +258,9 @@ void ActivationFiberLengthMuscle::computeInitialFiberEquilibrium(SimTK::State& s
 	//cout << getName() << "'s Equilibrium fiber-length is: " << getFiberLength(s) << endl;
 }
 
-//=============================================================================
+//==============================================================================
 // FORCE APPLICATION
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Apply the muscle's force at its points of attachment to the bodies.
@@ -364,16 +309,19 @@ void ActivationFiberLengthMuscle::computeForce(const SimTK::State& s,
  * @todo Reimplement this methods with more accurate representation of the
  * force-velocity curve.
  */
-double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const
+double ActivationFiberLengthMuscle::
+computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, 
+                                                    double aActivation) const
 {
 	double isometricForce = computeIsometricForce(s, aActivation);
 
-	const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
-	const double &maxContractionVelocity = getPropertyValue<double>("max_contraction_velocity");
+	const double &optimalFiberLength = getProperty_optimal_fiber_length();
+	const double &pennationAngleAtOptimal = getProperty_pennation_angle_at_optimal();
+	const double &maxContractionVelocity = getProperty_max_contraction_velocity();
 
 	double normalizedLength = getFiberLength(s) / optimalFiberLength;
-	double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
+	double normalizedVelocity = -cos(pennationAngleAtOptimal) 
+        * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
 	
 	// force-length
 	double fLength = exp(-17.33 * fabs(pow(normalizedLength-1.0,3)));
@@ -386,7 +334,8 @@ double ActivationFiberLengthMuscle::computeIsokineticForceAssumingInfinitelyStif
 	return isometricForce * normalizedForceVelocity;
 }
 
-SimTK::SystemYIndex ActivationFiberLengthMuscle::getStateVariableSystemIndex(const string &stateVariableName) const
+SimTK::SystemYIndex ActivationFiberLengthMuscle::
+getStateVariableSystemIndex(const string &stateVariableName) const
 {
 	unsigned int start = stateVariableName.find(".");
 	unsigned int end = stateVariableName.length();

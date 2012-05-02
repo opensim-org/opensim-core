@@ -35,12 +35,14 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include "PointActuator.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 
+#include "PointActuator.h"
+
 using namespace OpenSim;
 using namespace std;
+using SimTK::Vec3;
 
 
 //=============================================================================
@@ -49,133 +51,45 @@ using namespace std;
 
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTORS
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-PointActuator::~PointActuator()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-PointActuator::PointActuator( string aBodyName) :
-	Actuator(),
-	_body(NULL)
-{
-	// NULL
-	setNull();
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
 
-	// MEMBER VARIABLES
-	setPropertyValue("body", aBodyName);
-
-	if (_model) {
-		_body = &_model->updBodySet().get(aBodyName);
-	} 
-}
 //_____________________________________________________________________________
 /**
- * Copy constructor.
- *
- * @param aForce Force to be copied.
+ * Also serves as default constructor.
  */
-PointActuator::PointActuator(const PointActuator &anActuator) :
-	Actuator(anActuator),
-	_body(NULL)
+PointActuator::PointActuator(const string& bodyName)
 {
 	setNull();
-	copyData(anActuator);
-}
+    constructProperties();
 
+	if (!bodyName.empty())
+	    setProperty_body(bodyName);
+}
 
 //=============================================================================
 // CONSTRUCTION
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the data members of this actuator to their null values.
- */
-void PointActuator::
-setNull()
+// Set the data members of this actuator to their null values.
+void PointActuator::setNull()
 {
-	setupProperties();
+    // no data members
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void PointActuator::
-setupProperties()
+// Allocate and initialize properties.
+void PointActuator::constructProperties()
 {
-    // Allow this to be filled in later.
-	addOptionalProperty<string>("body",
-		"");
-
-	const SimTK::Vec3 origin(0.0);
-	addProperty<SimTK::Vec3>("point",
-		"",
-		origin);
-	addProperty<bool>("point_is_global",
-		"",
-		false);
-	addProperty<SimTK::Vec3>("direction",
-		"",
-		origin);
-	addProperty<bool>("force_is_global",
-		"",
-		false);
-	addProperty<double>("optimal_force",
-		"",
-		1.0);
+	constructProperty_body();
+	constructProperty_point(Vec3(0)); // origin
+	constructProperty_point_is_global(false);
+	constructProperty_direction(Vec3(1,0,0)); // arbitrary
+	constructProperty_force_is_global(false);
+	constructProperty_optimal_force(1.0);
 }
-
-//_____________________________________________________________________________
-/**
- * Copy the member data of the specified actuator.
- */
-void PointActuator::
-copyData(const PointActuator &aPointActuator)
-{
-	// MEMBER VARIABLES
-	setPropertyValue("body", aPointActuator.getProperty<string>("body"));
-
-	setPropertyValue("point", aPointActuator.getPropertyValue<SimTK::Vec3>("point"));
-	setPropertyValue("point_is_global", aPointActuator.getPropertyValue<bool>("point_is_global"));
-	setPropertyValue("direction", aPointActuator.getPropertyValue<SimTK::Vec3>("direction"));
-	setPropertyValue("force_is_global", aPointActuator.getPropertyValue<bool>("force_is_global"));
-
-	setOptimalForce(aPointActuator.getOptimalForce());
-	setBody(aPointActuator.getBody());
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return  aBodyID ID (or number, or index) of the generalized Body.
- */
-PointActuator& PointActuator::
-operator=(const PointActuator &aPointActuator)
-{
-	// BASE CLASS
-	Actuator::operator =(aPointActuator);
-
-	copyData(aPointActuator);
-
-	return(*this);
-}
-
 
 //=============================================================================
 // GET AND SET
@@ -184,24 +98,16 @@ operator=(const PointActuator &aPointActuator)
 // BodyID
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the generalized Body to which the Body actuator is applied.
- *
- * @param aBody Pointer to the generalized Body.
- */
+// Set the generalized Body to which the Body actuator is applied, and set
+// the body name property to match.
 void PointActuator::setBody(Body* aBody)
 {
 	_body = aBody;
 	if(aBody)
-		setPropertyValue("body", aBody->getName());
+		setProperty_body(aBody->getName());
 }
 //_____________________________________________________________________________
-/**
- * Get the generalized Body to which the Body actuator
- * is applied.
- *
- * @return Pointer to the Body
- */
+// Get the generalized Body to which the Body actuator is applied.
 Body* PointActuator::getBody() const
 {
 	return _body;
@@ -211,34 +117,23 @@ Body* PointActuator::getBody() const
 // OPTIMAL FORCE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
-/**
- * Set the optimal force of the force.
- *
- * @param aOptimalForce Optimal force.
- */
+//Set the optimal force of the force.
+
 void PointActuator::setOptimalForce(double aOptimalForce)
 {
-	setPropertyValue("optimal_force", aOptimalForce);
+	setProperty_optimal_force(aOptimalForce);
 }
 //_____________________________________________________________________________
-/**
- * Get the optimal force of the force.
- *
- * @return Optimal force.
- */
+// Get the optimal force of the force.
 double PointActuator::getOptimalForce() const
 {
-	return getPropertyValue<double>("optimal_force");
+	return getProperty_optimal_force();
 }
 //_____________________________________________________________________________
-/**
- * Get the stress of the force.
- *
- * @return Stress.
- */
+// Get the stress of the force.
 double PointActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/getPropertyValue<double>("optimal_force")); 
+	return std::abs(getForce(s) / getOptimalForce()); 
 }
 
 
@@ -250,12 +145,12 @@ double PointActuator::getStress( const SimTK::State& s) const
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double  PointActuator::computeActuation( const SimTK::State& s ) const
+double PointActuator::computeActuation( const SimTK::State& s ) const
 {
 	if(_model==NULL) return 0;
 
 	// FORCE
-	return( getControl(s) * getPropertyValue<double>("optimal_force")) ;
+	return getControl(s) * getOptimalForce();
 }
 
 
@@ -285,64 +180,45 @@ void PointActuator::computeForce(const SimTK::State& s,
     setForce(s,  force );
 
 	
-	SimTK::Vec3 forceVec = force*SimTK::UnitVec3(getPropertyValue<SimTK::Vec3>("direction"));
-	SimTK::Vec3 lpoint = getPropertyValue<SimTK::Vec3>("point");
-	if (!getPropertyValue<bool>("force_is_global"))
-		engine.transform(s, *_body, forceVec, engine.getGroundBody(), forceVec);
-	if (getPropertyValue<bool>("point_is_global"))
-			engine.transformPosition(s, engine.getGroundBody(), lpoint, *_body, lpoint);
+	Vec3 forceVec = force*SimTK::UnitVec3(getProperty_direction());
+	Vec3 lpoint = getProperty_point();
+	if (!getProperty_force_is_global())
+		engine.transform(s, *_body, forceVec, 
+                         engine.getGroundBody(), forceVec);
+	if (getProperty_point_is_global())
+        engine.transformPosition(s, engine.getGroundBody(), lpoint, 
+                                 *_body, lpoint);
 	applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
 
 	// get the velocity of the actuator in ground
-	SimTK::Vec3 velocity(0);
+	Vec3 velocity(0);
 	engine.getVelocity(s, *_body, lpoint, velocity);
 
-	// the speed of the point is the "speed" of the actuator used to compute power
+	// the speed of the point is the "speed" of the actuator used to compute 
+    // power
 	setSpeed(s, velocity.norm());
 }
 //_____________________________________________________________________________
 /**
  * setup sets the actual Body reference _body
  */
-void PointActuator::setup(Model& aModel)
+void PointActuator::setup(Model& model)
 {
+	Super::setup(model);
+
 	string errorMessage;
 
-	const string &bodyName = getPropertyValue<string>("body");
+	const string& bodyName = getProperty_body();
 
-	Actuator::setup(aModel);
-
-	if (!aModel.updBodySet().contains(bodyName)) {
-		errorMessage = "PointActuator: Unknown body (" + bodyName + ") specified in Actuator " + getName();
-		throw (Exception(errorMessage.c_str()));
+	if (!model.updBodySet().contains(bodyName)) {
+		errorMessage = "PointActuator: Unknown body (" + bodyName 
+                        + ") specified in Actuator " + getName();
+		throw OpenSim::Exception(errorMessage);
 	}
 
-	if (_model) {
-		_body = &_model->updBodySet().get(bodyName);
-	}
+    _body = &model.updBodySet().get(bodyName);
 }
 
-
-//=============================================================================
-// CHECK
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Check that this point actuator actuator is valid.
- *
- * @return True if valid, false if invalid.
- */
-bool PointActuator::check() const
-{
-	// BodyID
-	if( _body != NULL) {
-		printf("PointActuator.check: ERROR- %s actuates ",
-			getName().c_str());
-		printf("an invalid Body (%s).\n", getPropertyValue<string>("body").c_str());
-		return(false);
-	}
-	return(true);
-}
 
 //=============================================================================
 // XML
@@ -369,12 +245,16 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			XMLDocument::renameChildNode(aNode, "body_B", "body"); // body_B -> body
 			XMLDocument::renameChildNode(aNode, "point_B", "point"); // point_B -> point
 			XMLDocument::renameChildNode(aNode, "direction_A", "direction"); // direction_A -> direction
-			setPropertyValue("force_is_global", true);
+			setProperty_force_is_global(true);
 			converting = true;
 		}
 	}
-	Actuator::updateFromXMLNode(aNode, versionNumber);
-	if (converting) updPropertyValue<SimTK::Vec3>("direction") *= -1.0;
-	setBody(_body);
+	Super::updateFromXMLNode(aNode, versionNumber);
+	if (converting) updProperty_direction(0) *= -1.0;
+
+	if (_model && !getProperty_body().empty()) {
+        const std::string& bodyName = getProperty_body();
+		_body = &_model->updBodySet().get(bodyName);
+    }
 }	
 

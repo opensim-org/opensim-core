@@ -1,5 +1,5 @@
-#ifndef __Actuator_h__
-#define __Actuator_h__
+#ifndef OPENSIM_ACTUATOR_H_
+#define OPENSIM_ACTUATOR_H_
 
 // Actuator.h
 // Author: Ajay Seth
@@ -50,16 +50,19 @@ class StateFunction;
 class Coordinate;
 
 //=============================================================================
+//                   ACTUATOR_ (vector of control values)
 //=============================================================================
 /**
  * Base class for an actuator (e.g., a torque motor, muscle, ...) that requires
  * external input (controls) to generate force.
  *
  * @author Ajay Seth
- * @version 2.0
  */
 class OSIMSIMULATION_API Actuator_ : public Force {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator_, Force);
+//=============================================================================
+// NO PROPERTIES
+//=============================================================================
 
 //=============================================================================
 // DATA
@@ -77,19 +80,12 @@ protected:
 	//--------------------------------------------------------------------------
 public:
 	Actuator_();
-	Actuator_(const Actuator_ &aActuator);
-	virtual ~Actuator_();
+
+    // default destructor, copy constructor, copy assignment
 
 private:
 	void setNull();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-	Actuator_& operator=(const Actuator_ &aActuator);
-#endif
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
@@ -130,36 +126,43 @@ public:
 };	// END of class Actuator_
 //=============================================================================
 
+
+//==============================================================================
+//                       ACTUATOR (scalar control value)
+//==============================================================================
+
 /**
  * Derived class for an actuator (e.g., a torque motor, muscle, ...) that 
- * requires excactly one external input (control) to generate a scalar
+ * requires exactly one external input (control) to generate a scalar
  * value force, such as a torque/force magnitude or a tension.
  *
  * @author Ajay Seth
- * @version 2.0
  */
 class OSIMSIMULATION_API Actuator : public Actuator_ {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator, Actuator_);
-
-protected:
-
-	StateFunction* _overrideForceFunction;
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-	//-------------------------------------------------------------------------
-	// CONSTRUCTION
-	//-------------------------------------------------------------------------
-	Actuator();
-	Actuator(const Actuator &aActuator);
-	virtual ~Actuator();
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    /** Default is -Infinity (no limit). **/
+	OpenSim_DECLARE_PROPERTY(min_control, double,
+		"Minimum allowed value for control signal. Used primarily when solving "
+        "for control values.");
+    /** Default is Infinity (no limit). **/
+	OpenSim_DECLARE_PROPERTY(max_control, double,
+		"Maximum allowed value for control signal. Used primarily when solving "
+        "for control values.");
+    /**@}**/
 
-#ifndef SWIG
-	/** Assignment operator */
-	Actuator& operator=(const Actuator &aActuator);
-#endif
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+	Actuator();
+
+    // default destructor, copy constructor, copy assignment
 
 	/** Convenience method to set controls given scalar (double) valued control */
 	//virtual void setControl(const SimTK::State &s, double control) const;
@@ -180,10 +183,12 @@ public:
 	virtual double getOptimalForce() const;
 
 	// manage bounds on Control
-	void setMinControl(const double& aMinControl) { setPropertyValue<double>("min_control", aMinControl); }
-	double getMinControl() const { return getPropertyValue<double>("min_control"); }
-	void setMaxControl(const double& aMaxControl) {	setPropertyValue<double>("max_control", aMaxControl); }
-	double getMaxControl() const { return getPropertyValue<double>("max_control"); }
+	void setMinControl(const double& aMinControl) 
+    {   setProperty_min_control(aMinControl); }
+	double getMinControl() const { return getProperty_min_control(); }
+	void setMaxControl(const double& aMaxControl) 
+    {   setProperty_max_control(aMaxControl); }
+	double getMaxControl() const { return getProperty_max_control(); }
 
     ///--------------------------------------------------------------------------
     /// Overriding forces
@@ -269,9 +274,12 @@ protected:
 		return values;
 	}
 
+protected:
+	StateFunction* _overrideForceFunction;
+
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 //=============================================================================
 };	// END of class Actuator
@@ -279,6 +287,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __Actuator_h__
+#endif // OPENSIM_ACTUATOR_H_
 
 

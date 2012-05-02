@@ -138,9 +138,9 @@ updAbstractPropertyByName(const std::string& name) {
     return *p;
 }
 
-// Private method to look up the property by name in the map to find its index
+// Look up the property by name in the map to find its index
 // in the property array and return that. If the name isn't there, return -1.
-// This private method is reused in the implementation of any method that
+// This method is reused in the implementation of any method that
 // takes a property by name.
 int PropertyTable::findPropertyIndex(const std::string& name) const {
     const std::map<std::string, int>::const_iterator 

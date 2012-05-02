@@ -339,6 +339,8 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 
     // Check muscle is setup correctly 
     const PathActuator &muscle = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
+    model.getMultibodySystem().realize(si, SimTK::Stage::Position);
+   
     double length = muscle.getLength(si);
     double trueLength = startX + xSinG - anchorWidth/2;
     ASSERT_EQUAL(trueLength, length, 0.01*accuracy);

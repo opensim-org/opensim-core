@@ -1,9 +1,9 @@
-#ifndef __CustomJoint_h__
-#define __CustomJoint_h__
+#ifndef OPENSIM_CUSTOM_JOINT_H_
+#define OPENSIM_CUSTOM_JOINT_H_
 // CustomJoint.h
 // Author: Frank C. Anderson, Ajay Seth
 /*
- * Copyright (c)  2007, Stanford University. All rights reserved. 
+ * Copyright (c)  2007-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -30,92 +30,93 @@
 
 
 // INCLUDE
-#include <string>
 #include <OpenSim/Simulation/osimSimulationDLL.h>
 #include <OpenSim/Common/PropertyObj.h>
 #include <OpenSim/Common/ScaleSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SpatialTransform.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include "Joint.h"
+#include <string>
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                              CUSTOM JOINT
+//==============================================================================
 /**
  * A class implementing a custom joint.  The underlying joint in Simbody
- * is a custom mobilizer.
+ * is a Function-based mobilizer.
  *
- * @author Frank C. Anderson
- * @version 1.0
+ * @author Frank C. Anderson, Ajay Seth
  */
 class OSIMSIMULATION_API CustomJoint : public Joint {
 OpenSim_DECLARE_CONCRETE_OBJECT(CustomJoint, Joint);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
 
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-	/** Spatial transform  defining how the child body moves with respect
+	/** Spatial transform defining how the child body moves with respect
 	to the parent body as a function of the generalized coordinates.
 	Motion over 6 (independent) spatial axes must be defined. */
-	PropertyObj _spatialTransformProp;
-	SpatialTransform &_spatialTransform;
+    OpenSim_DECLARE_UNNAMED_PROPERTY(SpatialTransform,
+        "Defines how the child body moves with respect to the parent as "
+        "a function of the generalized coordinates.");
+    /**@}**/
 
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 	// CONSTRUCTION
 	CustomJoint();
 	
 	// Construct joint with supplied coordinates and transdorm axes
-	CustomJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-			 Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-			 SpatialTransform &aSpatialTransform, bool reverse=false);
+	CustomJoint(const std::string& name, Body& parent, 
+                SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+			    Body& body, SimTK::Vec3 locationInBody, 
+                SimTK::Vec3 orientationInBody,
+			    SpatialTransform& aSpatialTransform, bool reverse=false);
 
 	// Construct joint with default (empty) coordinates and axes
-	CustomJoint(const std::string &name, Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-			 Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse=false);
-	CustomJoint(const CustomJoint &aJoint);
-	virtual ~CustomJoint();
+	CustomJoint(const std::string& name, Body& parent, 
+                SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
+			    Body& body, SimTK::Vec3 locationInBody, 
+                SimTK::Vec3 orientationInBody, bool reverse=false);
+	
+    // default destructor, copy constructor, copy assignment
 
-#ifndef SWIG
-	CustomJoint& operator=(const CustomJoint &aJoint);
-#endif
-	void copyData(const CustomJoint &aJoint);
-
-
-	virtual int numCoordinates() const {return _coordinateSet.getSize();};
+	int numCoordinates() const {return _coordinateSet.getSize();};
 
 	// Transforms
-	virtual SpatialTransform& getSpatialTransform() const { return _spatialTransform; }
+	const SpatialTransform& getSpatialTransform() const
+    {   return getProperty_SpatialTransform(); }
+    SpatialTransform& updSpatialTransform() 
+    {   return updProperty_SpatialTransform(); }
 
 	// SCALE
-	virtual void scale(const ScaleSet& aScaleSet);
+	void scale(const ScaleSet& aScaleSet);
 
 	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-protected:
-
-	/** Construct coordinates according to the mobilities of the Joint */
-	void constructCoordinates();
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
+        OVERRIDE_11;
 
 private:
-	void setNull();
-	void setupProperties();
+	void setup(Model& aModel) OVERRIDE_11;
+	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
-//=============================================================================
+	void constructProperties();
+    void constructCoordinates();
+
+//==============================================================================
 };	// END of class CustomJoint
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __CustomJoint_h__
+#endif // OPENSIM_CUSTOM_JOINT_H_
 
 

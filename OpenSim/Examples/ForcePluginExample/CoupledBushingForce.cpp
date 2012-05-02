@@ -123,7 +123,6 @@ CoupledBushingForce::CoupledBushingForce(const CoupledBushingForce &aForce) :
  */
 void CoupledBushingForce::copyData(const CoupledBushingForce &aForce)
 {
-	Force::copyData(aForce);
 	_body1Name = aForce._body1Name;
 	_body2Name = aForce._body2Name;
 	_locationInBody1 = aForce._locationInBody1;

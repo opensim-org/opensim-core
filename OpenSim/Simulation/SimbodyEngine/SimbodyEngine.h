@@ -235,15 +235,7 @@ private:
 //=============================================================================
 
 } // end of namespace OpenSim
-/*
-//=============================================================================
-// STATIC METHOD FOR CREATING THIS MODEL
-//=============================================================================
-extern "C" {
-OSIMSIMULATION_API OpenSim::Model* CreateModel();
-OSIMSIMULATION_API OpenSim::Model* CreateModel_File(const std::string &aModelFile);
-}
-*/
+
 #endif // __SimbodyEngine_h__
 
 

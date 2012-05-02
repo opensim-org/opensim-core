@@ -1,10 +1,10 @@
-#ifndef __ActuatorWorkMeter_h__
-#define __ActuatorWorkMeter_h__
+#ifndef OPENSIM_ACTUATOR_WORK_METER_H_
+#define OPENSIM_ACTUATOR_WORK_METER_H_
 
 // ActuatorWorkMeter.h
 // Author: Ajay Seth
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -39,6 +39,7 @@ namespace OpenSim {
 class Model;
 
 //==============================================================================
+//                         ACTUATOR WORK METER
 //==============================================================================
 /**
  * ActuatorWorkMeter is a ModelComponent for computing the Work generated(+)
@@ -47,37 +48,36 @@ class Model;
  * this class. 
  *
  * @author Ajay Seth
- * @version 1.0
  */
 class OSIMSIMULATION_API ActuatorWorkMeter : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorWorkMeter, ModelComponent);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
-protected:
-
-	Actuator* _actuator;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-//--------------------------------------------------------------------------
-// CONSTRUCTION
-//--------------------------------------------------------------------------
 public:
-	// default 
-	ActuatorWorkMeter();
-	// convenience
-	ActuatorWorkMeter(const Actuator &actuator, double initialWork=0);
-	// copy
-	ActuatorWorkMeter(const ActuatorWorkMeter &aActuatorWorkMeter);
-	virtual ~ActuatorWorkMeter();
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(actuator_name, std::string,
+		"The name of the actuator whose work use will be calculated.");
+    OpenSim_DECLARE_PROPERTY(initial_actuator_work, double,
+        "Initial value for work; normally zero.");
+    /**@}**/
 
-#ifndef SWIG
-	ActuatorWorkMeter& operator=(const ActuatorWorkMeter &aActuatorWorkMeter);
-#endif
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    //--------------------------------------------------------------------------
+    // CONSTRUCTION
+    //--------------------------------------------------------------------------
+
+	/** Default constructor **/
+    ActuatorWorkMeter();
+	/** Convenience constructor **/
+	explicit ActuatorWorkMeter(const Actuator& actuator, double initialWork=0);
+    
+    // Uses default (compiler-generated) destructor, copy constructor, and copy
+    // assignment operator.
 
 	virtual double getWork(const SimTK::State& state) const;
 
@@ -93,15 +93,22 @@ protected:
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
-//=============================================================================
+//==============================================================================
+// DATA
+//==============================================================================
+	// A ReferencePtr is initialized to zero on construction, and also after
+    // copy construction and copy assignment. A value is assigned in setup().
+    SimTK::ReferencePtr<Actuator> _actuator;
+
+//==============================================================================
 };	// END of class ActuatorWorkMeter
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __ActuatorWorkMeter_h__
+#endif // OPENSIM_ACTUATOR_WORK_METER_H_
 
 

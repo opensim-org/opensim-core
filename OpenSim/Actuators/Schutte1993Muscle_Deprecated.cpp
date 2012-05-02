@@ -1,7 +1,7 @@
 
 // Author: Peter Loan, Jeff Reinbolt
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -47,22 +47,21 @@ using namespace OpenSim;
 /**
  * Default constructor.
  */
-Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated() :
-   ActivationFiberLengthMuscle_Deprecated()
+Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated()
 {
-	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
 /**
  * Constructor.
  */
-Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle) :
-   ActivationFiberLengthMuscle_Deprecated()
+Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated
+   (const std::string& aName, double aMaxIsometricForce,
+    double aOptimalFiberLength, double aTendonSlackLength,
+    double aPennationAngle)
 {
-	setNull();
-	setupProperties();
+	constructProperties();
 	setName(aName);
 	setMaxIsometricForce(aMaxIsometricForce);
 	setOptimalFiberLength(aOptimalFiberLength);
@@ -70,77 +69,18 @@ Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated(const std::string &aN
 	setPennationAngleAtOptimalFiberLength(aPennationAngle);
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Schutte1993Muscle_Deprecated::~Schutte1993Muscle_Deprecated()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMuscle Schutte1993Muscle_Deprecated to be copied.
- */
-Schutte1993Muscle_Deprecated::Schutte1993Muscle_Deprecated(const Schutte1993Muscle_Deprecated &aMuscle) :
-   ActivationFiberLengthMuscle_Deprecated(aMuscle)
-{
-	setNull();
-	setupProperties();
-	copyData(aMuscle);
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Copy data members from one Schutte1993Muscle_Deprecated to another.
- *
- * @param aMuscle Schutte1993Muscle_Deprecated to be copied.
- */
-void Schutte1993Muscle_Deprecated::copyData(const Schutte1993Muscle_Deprecated &aMuscle)
+// Allocate and initialize properties.
+void Schutte1993Muscle_Deprecated::constructProperties()
 {
-	setPropertyValue("time_scale", aMuscle.getPropertyValue<double>("time_scale"));
-	setPropertyValue("activation1", aMuscle.getPropertyValue<double>("activation1"));
-	setPropertyValue("activation2", aMuscle.getPropertyValue<double>("activation2"));
-	setPropertyValue("damping", aMuscle.getPropertyValue<double>("damping"));
-	setPropertyValue("tendon_force_length_curve", 
-        aMuscle.getPropertyValue<Function>("tendon_force_length_curve"));
-	setPropertyValue("active_force_length_curve", 
-        aMuscle.getPropertyValue<Function>("active_force_length_curve"));
-	setPropertyValue("passive_force_length_curve", 
-        aMuscle.getPropertyValue<Function>("passive_force_length_curve"));
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this Schutte1993Muscle_Deprecated to their null values.
- */
-void Schutte1993Muscle_Deprecated::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void Schutte1993Muscle_Deprecated::setupProperties()
-{
-	addProperty<double>("time_scale",
-		"Scale factor for normalizing time",
-		0.1);
-	addProperty<double>("activation1",
-		"Parameter used in time constant of ramping up of muscle force",
-		7.667);
-	addProperty<double>("activation2",
-		"Parameter used in time constant of ramping up and ramping down of muscle force",
-		1.459854);
-	addProperty<double>("damping",
-		"Damping factor related to maximum contraction velocity",
-		0.1);
+	constructProperty_time_scale(0.1);
+	constructProperty_activation1(7.667);
+	constructProperty_activation2(1.459854);
+	constructProperty_damping(0.1);
 
 	int tendonForceLengthCurvePoints = 17;
 	double tendonForceLengthCurveX[] = {-10.00000000, -0.00200000, -0.00100000,  0.00000000,  0.00131000,  0.00281000,  0.00431000,  0.00581000,  0.00731000,  0.00881000,  0.01030000,  0.01180000,  0.01230000,  9.20000000,  9.20100000,  9.20200000, 20.00000000};
@@ -148,9 +88,7 @@ void Schutte1993Muscle_Deprecated::setupProperties()
 	NaturalCubicSpline tendonForceLengthCurve
        (tendonForceLengthCurvePoints, tendonForceLengthCurveX, 
         tendonForceLengthCurveY);
-	addProperty<Function>("tendon_force_length_curve",
-		"Function representing force-length behavior of tendon",
-		tendonForceLengthCurve);
+	constructProperty_tendon_force_length_curve(tendonForceLengthCurve);
 
 	int activeForceLengthCurvePoints = 21;
 	double activeForceLengthCurveX[] = {-5.30769200, -4.30769200, -1.92307700, -0.88461500, -0.26923100,  0.23076900,  0.46153800,  0.52725000,  0.62875000,  0.71875000,  0.86125000,  1.04500000,  1.21750000,  1.43875000,  1.50000000,  1.61538500,  2.00000000,  2.96153800,  3.69230800,  5.46153800,  9.90190200};
@@ -158,9 +96,7 @@ void Schutte1993Muscle_Deprecated::setupProperties()
 	NaturalCubicSpline activeForceLengthCurve
        (activeForceLengthCurvePoints, activeForceLengthCurveX, 
         activeForceLengthCurveY);
-	addProperty<Function>("active_force_length_curve",
-		"Function representing active force-length behavior of muscle fibers",
-		activeForceLengthCurve);
+	constructProperty_active_force_length_curve(activeForceLengthCurve);
 
 	int passiveForceLengthCurvePoints = 13;
 	double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
@@ -168,9 +104,7 @@ void Schutte1993Muscle_Deprecated::setupProperties()
 	NaturalCubicSpline passiveForceLengthCurve
        (passiveForceLengthCurvePoints, passiveForceLengthCurveX, 
         passiveForceLengthCurveY);
-	addProperty<Function>("passive_force_length_curve",
-		"Function representing passive force-length behavior of muscle fibers",
-		passiveForceLengthCurve);
+	constructProperty_passive_force_length_curve(passiveForceLengthCurve);
 }
 
 //_____________________________________________________________________________
@@ -183,32 +117,11 @@ void Schutte1993Muscle_Deprecated::setupProperties()
 void Schutte1993Muscle_Deprecated::setup(Model& aModel)
 {
 	// Base class
-	ActivationFiberLengthMuscle_Deprecated::setup(aModel);
+	Super::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)
 		return;
-}
-
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Schutte1993Muscle_Deprecated& Schutte1993Muscle_Deprecated::operator=(const Schutte1993Muscle_Deprecated &aMuscle)
-{
-	// BASE CLASS
-	ActivationFiberLengthMuscle_Deprecated::operator=(aMuscle);
-
-	copyData(aMuscle);
-
-	return(*this);
 }
 
 
@@ -227,7 +140,7 @@ Schutte1993Muscle_Deprecated& Schutte1993Muscle_Deprecated::operator=(const Schu
  */
 bool Schutte1993Muscle_Deprecated::setTimeScale(double aTimeScale)
 {
-	setPropertyValue("time_scale", aTimeScale);
+	setProperty_time_scale(aTimeScale);
 	return true;
 }
 
@@ -243,7 +156,7 @@ bool Schutte1993Muscle_Deprecated::setTimeScale(double aTimeScale)
  */
 bool Schutte1993Muscle_Deprecated::setActivation1(double aActivation1)
 {
-	setPropertyValue("activation1", aActivation1);
+	setProperty_activation1(aActivation1);
 	return true;
 }
 
@@ -259,7 +172,7 @@ bool Schutte1993Muscle_Deprecated::setActivation1(double aActivation1)
  */
 bool Schutte1993Muscle_Deprecated::setActivation2(double aActivation2)
 {
-	setPropertyValue("activation2", aActivation2);
+	setProperty_activation2(aActivation2);
 	return true;
 }
 
@@ -277,7 +190,7 @@ bool Schutte1993Muscle_Deprecated::setActivation2(double aActivation2)
  */
 bool Schutte1993Muscle_Deprecated::setDamping(double aDamping)
 {
-	setPropertyValue("damping", aDamping);
+	setProperty_damping(aDamping);
 	return true;
 }
 
@@ -307,9 +220,9 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
 
 	/* Compute normalized muscle state derivatives */
 	if (excitation >= activation) 
-       activationDeriv = (excitation - activation) * (getPropertyValue<double>("activation1") * excitation + getPropertyValue<double>("activation2"));
+       activationDeriv = (excitation - activation) * (getProperty_activation1() * excitation + getProperty_activation2());
 	else
-      activationDeriv = (excitation - activation) * getPropertyValue<double>("activation2");
+      activationDeriv = (excitation - activation) * getProperty_activation2();
 
 	pennation_angle = calcPennation(normFiberLength, 1.0, _pennationAngleAtOptimal);
 	ca = cos(pennation_angle);
@@ -335,7 +248,7 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
          double new_fiber_length = sqrt(h*h + w*w) / _optimalFiberLength;
          double new_pennation_angle = calcPennation(new_fiber_length, 1.0, _pennationAngleAtOptimal);
          double new_ca = cos(new_pennation_angle);
-         fiberLengthDeriv = getLengtheningSpeed(s) * getPropertyValue<double>("time_scale") / _optimalFiberLength * new_ca;
+         fiberLengthDeriv = getLengtheningSpeed(s) * getProperty_time_scale() / _optimalFiberLength * new_ca;
       }
 	} else {
       double velocity_dependent_force = tendonForce / ca - passiveForce;
@@ -344,8 +257,8 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
 	}
 
 	/* Un-normalize the muscle state derivatives and forces. */
-	setActivationDeriv(s,  activationDeriv / getPropertyValue<double>("time_scale"));
-	setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / getPropertyValue<double>("time_scale"));
+	setActivationDeriv(s,  activationDeriv / getProperty_time_scale());
+	setFiberLengthDeriv(s, fiberLengthDeriv * _optimalFiberLength / getProperty_time_scale());
 
 	tendonForce = tendonForce * _maxIsometricForce;
 	setForce(s, tendonForce);
@@ -366,7 +279,7 @@ double Schutte1993Muscle_Deprecated::computeActuation(const SimTK::State& s) con
  */
 const Function& Schutte1993Muscle_Deprecated::getActiveForceLengthCurve() const
 {
-	return getPropertyValue<Function>("active_force_length_curve");
+	return getProperty_active_force_length_curve();
 }
 
 //_____________________________________________________________________________
@@ -379,7 +292,7 @@ const Function& Schutte1993Muscle_Deprecated::getActiveForceLengthCurve() const
 bool Schutte1993Muscle_Deprecated::
 setActiveForceLengthCurve(const Function& aActiveForceLengthCurve)
 {
-	setPropertyValue("active_force_length_curve", aActiveForceLengthCurve);
+	setProperty_active_force_length_curve(aActiveForceLengthCurve);
 	return true;
 }
 
@@ -391,7 +304,7 @@ setActiveForceLengthCurve(const Function& aActiveForceLengthCurve)
  */
 const Function& Schutte1993Muscle_Deprecated::getPassiveForceLengthCurve() const
 {
-	return getPropertyValue<Function>("passive_force_length_curve");
+	return getProperty_passive_force_length_curve();
 }
 
 //_____________________________________________________________________________
@@ -404,7 +317,7 @@ const Function& Schutte1993Muscle_Deprecated::getPassiveForceLengthCurve() const
 bool Schutte1993Muscle_Deprecated::
 setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve)
 {
-	setPropertyValue("passive_force_length_curve", aPassiveForceLengthCurve);
+	setProperty_passive_force_length_curve(aPassiveForceLengthCurve);
 	return true;
 }
 
@@ -416,7 +329,7 @@ setPassiveForceLengthCurve(const Function& aPassiveForceLengthCurve)
  */
 const Function& Schutte1993Muscle_Deprecated::getTendonForceLengthCurve() const
 {
-	return getPropertyValue<Function>("tendon_force_length_curve");
+	return getProperty_tendon_force_length_curve();
 }
 
 //_____________________________________________________________________________
@@ -429,7 +342,7 @@ const Function& Schutte1993Muscle_Deprecated::getTendonForceLengthCurve() const
 bool Schutte1993Muscle_Deprecated::
 setTendonForceLengthCurve(const Function& aTendonForceLengthCurve)
 {
-	setPropertyValue("tendon_force_length_curve", aTendonForceLengthCurve);
+	setProperty_tendon_force_length_curve(aTendonForceLengthCurve);
 	return true;
 }
 
@@ -473,11 +386,11 @@ double Schutte1993Muscle_Deprecated::calcTendonForce(const SimTK::State& s, doub
 double Schutte1993Muscle_Deprecated::calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const
 {
    double flcomponent =   0.0;
-   if (getProperty<Function>("passive_force_length_curve").getUseDefault())
+   if (getProperty_passive_force_length_curve().getValueIsDefault())
 	   flcomponent = exp(8.0*(aNormFiberLength - 1.0)) / exp(4.0);
    else
 	   flcomponent = getPassiveForceLengthCurve().calcValue(SimTK::Vector(1, aNormFiberLength) );
-   return flcomponent + getPropertyValue<double>("damping") * aNormFiberVelocity;
+   return flcomponent + getProperty_damping() * aNormFiberVelocity;
 }
 
 //_________ ____________________________________________________________________
@@ -499,23 +412,23 @@ double Schutte1993Muscle_Deprecated::calcFiberVelocity(const SimTK::State& s, do
 	double b, c, fiber_velocity;
 	double kv = 0.15, slope_k = 0.13, fmax = 1.4;
 
-   if (aVelocityDependentForce < -getPropertyValue<double>("damping"))
+   if (aVelocityDependentForce < -getProperty_damping())
 	{
-      fiber_velocity = aVelocityDependentForce / getPropertyValue<double>("damping");
+      fiber_velocity = aVelocityDependentForce / getProperty_damping();
 	}
    else if (aVelocityDependentForce < aActivation * aActiveForce)
    {
-      c = kv * (aVelocityDependentForce - aActivation * aActiveForce) / getPropertyValue<double>("damping");
+      c = kv * (aVelocityDependentForce - aActivation * aActiveForce) / getProperty_damping();
       b = -kv * (aVelocityDependentForce / kv + aActivation * aActiveForce +
-			getPropertyValue<double>("damping")) / getPropertyValue<double>("damping");
+			getProperty_damping()) / getProperty_damping();
       fiber_velocity = (-b - sqrt(b * b - 4 * c)) / 2.0;
    }
    else
    {
-      c = -(slope_k * kv / ((getPropertyValue<double>("damping") * (kv + 1)))) *
+      c = -(slope_k * kv / ((getProperty_damping() * (kv + 1)))) *
 	      (aVelocityDependentForce - aActivation * aActiveForce);
-      b = -(aVelocityDependentForce / getPropertyValue<double>("damping")
-			-fmax * aActivation * aActiveForce / getPropertyValue<double>("damping") - slope_k * kv / (kv + 1));
+      b = -(aVelocityDependentForce / getProperty_damping()
+			-fmax * aActivation * aActiveForce / getProperty_damping() - slope_k * kv / (kv + 1));
 		fiber_velocity = (-b + sqrt(b * b - 4 * c)) / 2.0;
 	}
 

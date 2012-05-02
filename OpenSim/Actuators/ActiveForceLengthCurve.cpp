@@ -24,57 +24,31 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-static const char* MinActiveNormFiberLengthName ="min_norm_active_fiber_length";
-static const char* TransitionNormFiberLengthName="transition_norm_fiber_length";
-static const char* MaxActiveNormFiberLengthName ="max_norm_active_fiber_length";
-static const char* ShallowAscendingSlopeName    ="shallow_ascending_slope";
-static const char* MinimumValueName             ="minimum_value";
-
 //=============================================================================
-// CONSTRUCTION, COPY CONSTRUCTION, ASSIGNMENT
+// CONSTRUCTION
 //=============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, 
+// copy assignment.
 
-ActiveForceLengthCurve::ActiveForceLengthCurve():m_curveUpToDate(false)
+// Default constructor.
+ActiveForceLengthCurve::ActiveForceLengthCurve()
 {
-        setNull();
-        addProperties();
+    setNull();
+    constructProperties();
+    setName("default_ActiveForceLengthCurve");
 }
 
-ActiveForceLengthCurve::~ActiveForceLengthCurve()
-{
-}
-
-ActiveForceLengthCurve::ActiveForceLengthCurve(
-    const ActiveForceLengthCurve& source)                                   
-{
-        setNull();
-        addProperties();
-        copyData(source);   
-}
-
-ActiveForceLengthCurve& ActiveForceLengthCurve::
-                                operator=(const ActiveForceLengthCurve &source)
-{
-    if(&source != this){
-        ModelComponent::operator=(source);
-        copyData(source);        
-    }
-    return(*this);
-}
-
+// Constructor with enough info to maek the curve.
 ActiveForceLengthCurve::ActiveForceLengthCurve(double minActiveNormFiberLength, 
                                                double transitionNormFiberLength,
                                                double maxActiveNormFiberLength,
                                                double shallowAscendingSlope,
                                                double minValue,
-                                               const std::string muscleName)
-                                               :m_curveUpToDate(false)
+                                               const std::string& muscleName)
 {
-    std::string curveName = muscleName;
-    curveName.append("_ActiveForceLengthCurve");
-
     setNull();
-    addProperties();
+    constructProperties();
+    setName(muscleName + "_ActiveForceLengthCurve");
 
     setMinActiveFiberLength(minActiveNormFiberLength);
     setTransitionFiberLength(transitionNormFiberLength);
@@ -85,59 +59,19 @@ ActiveForceLengthCurve::ActiveForceLengthCurve(double minActiveNormFiberLength,
     buildCurve();
 }
 
-
 void ActiveForceLengthCurve::setNull()
 {
-    m_curveUpToDate =false;
+    m_curveUpToDate = false;
 }
 
-void ActiveForceLengthCurve::addProperties()
+void ActiveForceLengthCurve::constructProperties()
 {
-
-    setName("default_ActiveForceLengthCurve");
-
-    addProperty<double>(MinActiveNormFiberLengthName, 
-        "normalized fiber length which the steep ascending limb starts",0.4);
-
-    addProperty<double>(TransitionNormFiberLengthName, 
-        "normalized fiber length which the steep ascending limb transitions"
-        " to the shallow ascending limb",0.75);
-
-    addProperty<double>(MaxActiveNormFiberLengthName, 
-        "normalized fiber length which the descending limb ends",1.6);
-
-    addProperty<double>(ShallowAscendingSlopeName, 
-        "slope of the shallow ascending limb",0.75);
-
-    addProperty<double>(MinimumValueName, 
-        "minimum value of the active force length curve",0.05);
-    
+    constructProperty_min_norm_active_fiber_length(0.4);
+    constructProperty_transition_norm_fiber_length(0.75);
+    constructProperty_max_norm_active_fiber_length(1.6);
+    constructProperty_shallow_ascending_slope(0.75);
+    constructProperty_minimum_value(0.05); 
 }
-
-void ActiveForceLengthCurve::copyData(const ActiveForceLengthCurve &source)
-{
-    if(&source != this){
-        setPropertyValue(MinActiveNormFiberLengthName,
-            source.getPropertyValue<double>(MinActiveNormFiberLengthName));
-
-        setPropertyValue(TransitionNormFiberLengthName,
-            source.getPropertyValue<double>(TransitionNormFiberLengthName));
-
-        setPropertyValue(MaxActiveNormFiberLengthName,
-            source.getPropertyValue<double>(MaxActiveNormFiberLengthName));
-
-        setPropertyValue(ShallowAscendingSlopeName,
-            source.getPropertyValue<double>(ShallowAscendingSlopeName));
-
-        setPropertyValue(MinimumValueName,
-            source.getPropertyValue<double>(MinimumValueName));
-
-        m_curveUpToDate = source.m_curveUpToDate;
-        
-        m_curve = source.m_curve;
-    }
-}
-
 
 void ActiveForceLengthCurve::buildCurve()
 {
@@ -171,12 +105,12 @@ void ActiveForceLengthCurve::buildCurve()
 //=============================================================================
 void ActiveForceLengthCurve::setup(Model& aModel)
 {
-    ModelComponent::setup(aModel);
+    Super::setup(aModel);
 }
 
 void ActiveForceLengthCurve::initState(SimTK::State& s) const
 {
-    ModelComponent::initState(s);
+    Super::initState(s);
 }
 
 void ActiveForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
@@ -196,27 +130,27 @@ void ActiveForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
 
 double ActiveForceLengthCurve::getMinActiveFiberLength() const
 {
-    return getPropertyValue<double>(MinActiveNormFiberLengthName);
+    return getProperty_min_norm_active_fiber_length();
 }
 
 double ActiveForceLengthCurve::getTransitionFiberLength() const
 {
-    return getPropertyValue<double>(TransitionNormFiberLengthName);
+    return getProperty_transition_norm_fiber_length();
 }
 
 double ActiveForceLengthCurve::getMaxActiveFiberLength() const
 {
-    return getPropertyValue<double>(MaxActiveNormFiberLengthName);
+    return getProperty_max_norm_active_fiber_length();
 }
 
 double ActiveForceLengthCurve::getShallowAscendingSlope() const
 {
-    return getPropertyValue<double>(ShallowAscendingSlopeName);
+    return getProperty_shallow_ascending_slope();
 }
 
 double ActiveForceLengthCurve::getMinValue() const
 {
-    return getPropertyValue<double>(MinimumValueName);
+    return getProperty_minimum_value();
 }
 
 
@@ -226,8 +160,7 @@ void ActiveForceLengthCurve::
 {
     if(minActiveNormFiberLength != getMinActiveFiberLength())
     {
-        setPropertyValue(MinActiveNormFiberLengthName,
-                         minActiveNormFiberLength);
+        setProperty_min_norm_active_fiber_length(minActiveNormFiberLength);
         m_curveUpToDate = false;
     }
 }
@@ -237,8 +170,7 @@ void ActiveForceLengthCurve::
 {    
     if(transitionNormFiberLength != getTransitionFiberLength())
     {
-        setPropertyValue(TransitionNormFiberLengthName,
-                          transitionNormFiberLength);
+        setProperty_transition_norm_fiber_length(transitionNormFiberLength);
         m_curveUpToDate = false;
     }
 }
@@ -247,7 +179,7 @@ void ActiveForceLengthCurve::
     setMaxActiveFiberLength(double maxActiveNormFiberLength)
 {
     if(maxActiveNormFiberLength != getMaxActiveFiberLength()){
-        setPropertyValue(MaxActiveNormFiberLengthName,maxActiveNormFiberLength);
+        setProperty_max_norm_active_fiber_length(maxActiveNormFiberLength);
         m_curveUpToDate = false;
     }
 }
@@ -256,7 +188,7 @@ void ActiveForceLengthCurve::
     setShallowAscendingSlope(double aSlopeValue)
 {
     if(aSlopeValue != getShallowAscendingSlope()){
-        setPropertyValue(ShallowAscendingSlopeName, aSlopeValue);
+        setProperty_shallow_ascending_slope(aSlopeValue);
         m_curveUpToDate = false;
     }
 }
@@ -264,7 +196,7 @@ void ActiveForceLengthCurve::
 void ActiveForceLengthCurve::setMinValue(double minimumValue)
 {    
     if(minimumValue != getMinValue()){
-        setPropertyValue(MinimumValueName, minimumValue);
+        setProperty_minimum_value(minimumValue);
         m_curveUpToDate = false;
     }
 }

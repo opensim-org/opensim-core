@@ -170,7 +170,7 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject)
 		model = new Model(_fileName);
 		model->initSystem();
 
-		if (!_markerSetFileNameProp.getUseDefault()) {
+		if (!_markerSetFileNameProp.getValueIsDefault()) {
 			cout << "Loading marker set from '" << aPathToSubject+_markerSetFileName+"'" << endl;
 			MarkerSet *markerSet = new MarkerSet(aPathToSubject + _markerSetFileName);
 			model->updateMarkerSet(*markerSet);

@@ -80,7 +80,7 @@ public:
 
 	void setAxisNames(const Array<std::string> &aAxisNames) { 
 		_axisNames = aAxisNames;
-		_axisNamesProp.setUseDefault(false);
+		_axisNamesProp.setValueIsDefault(false);
 	}
 
 protected:

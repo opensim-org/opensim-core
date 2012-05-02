@@ -1,10 +1,10 @@
-#ifndef __ActivationFiberLengthMuscle_Deprecated_h__
-#define __ActivationFiberLengthMuscle_Deprecated_h__
+#ifndef OPENSIM_ACTIVATION_FIBER_LENGTH_MUSCLE_DEPRECATED_H_
+#define OPENSIM_ACTIVATION_FIBER_LENGTH_MUSCLE_DEPRECATED_H_
 
 // ActivationFiberLengthMuscle_Deprecated.h
 // Author: Ajay Seth
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -42,8 +42,9 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//               ACTIVATION FIBER LENGTH MUSCLE (DEPRECATED)
+//==============================================================================
 /**
  * A base class representing a muscle-tendon actuator. It adds states to the 
  * Muscle class, but does not implement all of the necessary methods,
@@ -51,44 +52,34 @@ namespace OpenSim {
  * in this class, and the force-generating behavior should be defined in
  * the derived classes.
  *
- * @author Peter Loan
- * @author Frank C. Anderson
- * @author Ajay Seth
- * @version 2.0
+ * @author Peter Loan, Frank C. Anderson, Ajay Seth
  */
 class OSIMSIMULATION_API ActivationFiberLengthMuscle_Deprecated 
 :   public Muscle {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ActivationFiberLengthMuscle_Deprecated, Muscle);
 
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+public:
+//================================================================================
+// PROPERTIES
+//================================================================================
+    /** @name Property declarations
+    There are no serializable properties associated with this class. **/
+    /**@{**/
+    /**@}**/
 
-	// Defaults for state variables.
-    double _defaultActivation;
-    double _defaultFiberLength;
 
-	static const int STATE_ACTIVATION;
-	static const int STATE_FIBER_LENGTH;
-
-	static const std::string STATE_ACTIVATION_NAME;
-	static const std::string STATE_FIBER_LENGTH_NAME;
-
-//=============================================================================
-// METHODS
-//=============================================================================
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
 	ActivationFiberLengthMuscle_Deprecated();
-	ActivationFiberLengthMuscle_Deprecated(const ActivationFiberLengthMuscle_Deprecated &aMuscle);
-	virtual ~ActivationFiberLengthMuscle_Deprecated();
 
-#ifndef SWIG
-	ActivationFiberLengthMuscle_Deprecated& operator=(const ActivationFiberLengthMuscle_Deprecated &aMuscle);
-#endif
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
+
 	virtual void equilibrate(SimTK::State& state) const;
 
     //--------------------------------------------------------------------------
@@ -154,9 +145,6 @@ public:
 	virtual Array<std::string> getStateVariableNames() const;
 	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
-private:
-	void setNull();
-	void setupProperties();
 
 protected:
 	virtual void createSystem(SimTK::MultibodySystem& system) const;
@@ -181,13 +169,33 @@ protected:
 	{
 		throw Exception("ERROR- "+getConcreteClassName()+"::calcPassiveForce() NOT IMPLEMENTED.");
 	}
-//=============================================================================
+
+	static const int STATE_ACTIVATION;
+	static const int STATE_FIBER_LENGTH;
+
+	static const std::string STATE_ACTIVATION_NAME;
+	static const std::string STATE_FIBER_LENGTH_NAME;
+
+
+//==============================================================================
+// DATA
+//==============================================================================
+protected:
+	// Defaults for state variables.
+    double _defaultActivation;
+    double _defaultFiberLength;
+
+
+private:
+	void setNull();
+	void constructProperties();
+//==============================================================================
 };	// END of class ActivationFiberLengthMuscle_Deprecated
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __Muscle_h__
+#endif // OPENSIM_ACTIVATION_FIBER_LENGTH_MUSCLE_DEPRECATED_H_
 
 

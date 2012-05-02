@@ -1,10 +1,10 @@
-#ifndef __SpatialTransform_h__
-#define __SpatialTransform_h__
+#ifndef OPENSIM_SPATIAL_TRANSFORM_H_
+#define OPENSIM_SPATIAL_TRANSFORM_H_
 
 // SpatialTransform.h
 // Author: Ajay Seth
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -39,85 +39,98 @@ namespace OpenSim {
 
 class CustomJoint;
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                           SPATIAL TRANSFORM
+//==============================================================================
 /**
  * A class encapsulating the spatial transformation bewteen two bodies that 
  * defines the behaviour of a custom joint.
  *
  * @authors Ajay Seth
- * @version 1.0
  */
 
 class OSIMSIMULATION_API SpatialTransform :	public Object {
 OpenSim_DECLARE_CONCRETE_OBJECT(SpatialTransform, Object);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	/** Define the individual transform axes (6) that specify the spatial 
+    transform; each is a TransformAxis object. **/
+    OpenSim_DECLARE_PROPERTY(rotation1, TransformAxis,
+		"3 Axes for rotations are listed first.");
+	OpenSim_DECLARE_PROPERTY(rotation2, TransformAxis,
+		"");
+	OpenSim_DECLARE_PROPERTY(rotation3, TransformAxis,
+		"");
+	OpenSim_DECLARE_PROPERTY(translation1, TransformAxis,
+		"3 Axes for translations are listed next.");
+	OpenSim_DECLARE_PROPERTY(translation2, TransformAxis,
+		"");
+	OpenSim_DECLARE_PROPERTY(translation3, TransformAxis,
+		"");
+    /**@}**/
 
-private:
-    static const int _numTransformAxes = 6;
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    SpatialTransform();
 
-protected:
-	/** Define the individual transform axes (6) that specify the spatial transform. */
-	PropertyObj _rotation1Prop;
-	TransformAxis &_rotation1;
+    // default destructor, copy constructor, copy assignment
 
-	PropertyObj _rotation2Prop;
-	TransformAxis &_rotation2;
+	/** This tells the SpatialTransform the CustomJoint to which it belongs;
+    this is not copied on copy construction or assignment. **/
+	void setup(CustomJoint& owningJoint);
 
-	PropertyObj _rotation3Prop;
-	TransformAxis &_rotation3;
+	/** Make sure axes are not parallel. **/
+	void constructIndependentAxes(int nAxes, int startIndex);
 
-	PropertyObj _translation1Prop;
-	TransformAxis &_translation1;
+	// Spatial Transform specific methods
 
-	PropertyObj _translation2Prop;
-	TransformAxis &_translation2;
+    /** Construct a list of all unique coordinate names used by any of the
+    contained TransformAxis objects. **/
+	OpenSim::Array<std::string> getCoordinateNames() const;
+    /** For each axis, construct a list of the coordinate indices that dictate
+    motion along that axis. **/
+	std::vector<std::vector<int> > getCoordinateIndices() const;
+    /** Create a new SimTK::Function corresponding to each axis; these are
+    heap allocated and it is up to the caller to delete them. **/
+	std::vector<const SimTK::Function*> getFunctions() const;
+    /** Get the axis direction associated with each TransformAxis. **/
+	std::vector<SimTK::Vec3> getAxes() const;
 
-	PropertyObj _translation3Prop;
-	TransformAxis &_translation3;
+	// SCALE
+	void scale(const SimTK::Vec3 scaleFactors);
 
-	CustomJoint *_owningJoint;
+    /** Select one of the 6 axis, numbered 0-5 with rotation first, then
+    translation. **/
+	const TransformAxis& getTransformAxis(int whichAxis) const;
+    /** Same, but returns a writable reference to the TransformAxis. **/
+	TransformAxis& updTransformAxis(int whichAxis);
+
+    #ifndef SWIG
+    /** Same as getTransformAxis(). **/
+	const TransformAxis& operator[](int whichAxis) const
+    {   return getTransformAxis(whichAxis); }
+    /** Same as updTransformAxis(). **/
+	TransformAxis& operator[](int whichAxis) 
+    {   return updTransformAxis(whichAxis); }
+    #endif
 
 private:
 	void setNull();
-	void setupProperties();
-	void constructTransformAxes();
+	void constructProperties();
 
-public:
-	SpatialTransform();
-	SpatialTransform(const SpatialTransform& aSpatialTransform);
-	~SpatialTransform(void);
+    static const int NumTransformAxes = 6;
 
-	void copyData(const SpatialTransform &aSpatialTransform);
-
-	// SETUP
-	void setup(CustomJoint &aJoint);
-
-	// Spatial Transform specific methods
-	virtual OpenSim::Array<std::string> getCoordinateNames();
-	virtual	std::vector<std::vector<int> > getCooridinateIndices();
-	virtual std::vector<const SimTK::Function*> getFunctions();
-	virtual std::vector<SimTK::Vec3> getAxes();
-
-	// SCALE
-	virtual void scale(const SimTK::Vec3 scaleFactors);
-
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-#ifndef SWIG
-	TransformAxis& operator[](int aIndex) const;
-	SpatialTransform& operator=(const SpatialTransform &aSpatialTransform);
-#endif
-	TransformAxis& getTransformAxis(int aIndex) const;
-private:
-	// Make sure axes are not parallel
-	void constructIndepndentAxes(int nAxes, int startIndex);
-	friend class CustomJoint;
-//=============================================================================
+//==============================================================================
 };	// END of class SpatialTransform
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __SpatialTransform_h__
+#endif // OPENSIM_SPATIAL_TRANSFORM_H_

@@ -26,12 +26,11 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "SpatialTransform.h"
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/MultiplierFunction.h>
 #include <OpenSim/Common/LinearFunction.h>
 
-#define ASSERT(cond) {if (!(cond)) throw(exception());}
+#include "SpatialTransform.h"
 
 using namespace std;
 using namespace OpenSim;
@@ -41,61 +40,15 @@ using namespace SimTK;
 //=============================================================================
 // DESTRUCTOR AND CONSTRUCTORS
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-SpatialTransform::~SpatialTransform(void)
-{
-}
 
 //_____________________________________________________________________________
-/**
+/*
  * Default constructor of a SpatialTransform.
  */
-SpatialTransform::SpatialTransform() :
-	Object(),
-	_rotation1Prop(PropertyObj("rotation1", TransformAxis(Array<string>(), Vec3(1,0,0)))),
-	_rotation1((TransformAxis &)_rotation1Prop.getValueObj()),
-	_rotation2Prop(PropertyObj("rotation2", TransformAxis(Array<string>(), Vec3(0,1,0)))),
-	_rotation2((TransformAxis &)_rotation2Prop.getValueObj()),
-	_rotation3Prop(PropertyObj("rotation3", TransformAxis(Array<string>(), Vec3(0,0,1)))),
-    _rotation3((TransformAxis &)_rotation3Prop.getValueObj()),
-	_translation1Prop(PropertyObj("translation1", TransformAxis(Array<string>(), Vec3(1,0,0)))),
-	_translation1((TransformAxis &)_translation1Prop.getValueObj()),
-	_translation2Prop(PropertyObj("translation2", TransformAxis(Array<string>(), Vec3(0,1,0)))),
-	_translation2((TransformAxis &)_translation2Prop.getValueObj()),
-	_translation3Prop(PropertyObj("translation3", TransformAxis(Array<string>(), Vec3(0,0,1)))),
-	_translation3((TransformAxis &)_translation3Prop.getValueObj())
+SpatialTransform::SpatialTransform()
 {
 	setNull();
-	setupProperties();
-	constructTransformAxes();
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor of a SpatialTransform.
- */
-SpatialTransform::SpatialTransform(const SpatialTransform& aSpatialTransform):
-	Object(aSpatialTransform),
-	_rotation1Prop(PropertyObj("rotation1", TransformAxis(Array<string>(), Vec3(1,0,0)))),
-	_rotation1((TransformAxis &)_rotation1Prop.getValueObj()),
-	_rotation2Prop(PropertyObj("rotation2", TransformAxis(Array<string>(), Vec3(0,1,0)))),
-	_rotation2((TransformAxis &)_rotation2Prop.getValueObj()),
-	_rotation3Prop(PropertyObj("rotation3", TransformAxis(Array<string>(), Vec3(0,0,1)))),
-    _rotation3((TransformAxis &)_rotation3Prop.getValueObj()),
-	_translation1Prop(PropertyObj("translation1", TransformAxis(Array<string>(), Vec3(1,0,0)))),
-	_translation1((TransformAxis &)_translation1Prop.getValueObj()),
-	_translation2Prop(PropertyObj("translation2", TransformAxis(Array<string>(), Vec3(0,1,0)))),
-	_translation2((TransformAxis &)_translation2Prop.getValueObj()),
-	_translation3Prop(PropertyObj("translation3", TransformAxis(Array<string>(), Vec3(0,0,1)))),
-	_translation3((TransformAxis &)_translation3Prop.getValueObj())
-{
-	setNull();
-	setupProperties();
-	constructTransformAxes();
-	copyData(aSpatialTransform);
+	constructProperties();
 }
 
 //=============================================================================
@@ -106,170 +59,83 @@ SpatialTransform::SpatialTransform(const SpatialTransform& aSpatialTransform):
  */
 void SpatialTransform::setNull()
 {
-	_owningJoint = NULL;
 }
 
 //_____________________________________________________________________________
 /**
- * Connect properties to local pointers.
+ * Initialize properties.
  */
-void SpatialTransform::setupProperties()
+void SpatialTransform::constructProperties()
 {
-	_rotation1Prop.setComment("3 Axes for rotations are listed first.");
-	_rotation1Prop.setName("rotation1");
-	_rotation1Prop.setMatchName(true);
-	_propertySet.append(&_rotation1Prop);
-
-	_rotation2Prop.setName("rotation2");
-	_rotation2Prop.setMatchName(true);
-	_propertySet.append(&_rotation2Prop);
-
-	_rotation3Prop.setName("rotation3");
-	_rotation3Prop.setMatchName(true);
-	_propertySet.append(&_rotation3Prop);
-
-	_translation1Prop.setComment("3 Axes for translations are listed next.");
-	_translation1Prop.setName("translation1");
-	_translation1Prop.setMatchName(true);
-	_propertySet.append(&_translation1Prop);
-
-	_translation2Prop.setName("translation2");
-	_translation2Prop.setMatchName(true);
-	_propertySet.append(&_translation2Prop);
-
-	_translation3Prop.setName("translation3");
-	_translation3Prop.setMatchName(true);
-	_propertySet.append(&_translation3Prop);
+	constructProperty_rotation1(TransformAxis(Array<string>(), Vec3(1,0,0)));
+	constructProperty_rotation2(TransformAxis(Array<string>(), Vec3(0,1,0)));
+	constructProperty_rotation3(TransformAxis(Array<string>(), Vec3(0,0,1)));
+	constructProperty_translation1(TransformAxis(Array<string>(), Vec3(1,0,0)));
+	constructProperty_translation2(TransformAxis(Array<string>(), Vec3(0,1,0)));
+	constructProperty_translation3(TransformAxis(Array<string>(), Vec3(0,0,1)));
 }
 
 
-/**
- * Construct the individual TransformAxes of this SpatialTransform 
- */
-void SpatialTransform::constructTransformAxes()
+const TransformAxis& SpatialTransform::getTransformAxis(int whichAxis) const
 {
-	for(int i =0; i < _numTransformAxes; i++){
-		if( &operator[](i) == NULL){
-			throw Exception("SpatialTransform: NULL axis found");
-		}
-		//operator[](i).setFunction(new OpenSim::Constant(0));
-	}
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy the contents of the one SpatialTransform (i.e. the axes) to another.
- *
- * @param aSpatialTransform SpatialTransform to be copied.
- */
-void SpatialTransform::copyData(const SpatialTransform &aSpatialTransform)
-{
-	//for(int i=0; i<_numTransformAxes; i++)
-	//	operator[](i) = aSpatialTransform[i];
-	_rotation1 = aSpatialTransform._rotation1;
-	_rotation2 = aSpatialTransform._rotation2;
-	_rotation3 = aSpatialTransform._rotation3;
-	_translation1 = aSpatialTransform._translation1;
-	_translation2 = aSpatialTransform._translation2;
-	_translation3 = aSpatialTransform._translation3;
-
-	/*_rotation1Prop = aSpatialTransform._rotation1Prop;
-	_rotation2Prop = aSpatialTransform._rotation2Prop;
-	_rotation3Prop = aSpatialTransform._rotation3Prop;
-	_translation1Prop = aSpatialTransform._translation1Prop;
-	_translation2Prop = aSpatialTransform._translation2Prop;
-	_translation3Prop = aSpatialTransform._translation3Prop;
-	*/
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-SpatialTransform& SpatialTransform::operator=(const SpatialTransform &aSpatialTransform)
-{
-	Object::operator=(aSpatialTransform);
-	copyData(aSpatialTransform);
-
-	return (*this);
-}
-
-TransformAxis& SpatialTransform::getTransformAxis(int aIndex) const
-{
-	return operator[](aIndex);
-}
-
-TransformAxis& SpatialTransform::operator[](int aIndex) const
-{
-	 switch(aIndex){
-		case(0) : 	
-			return _rotation1;
-			break;
-		case(1) :
-			return _rotation2;
-			break;
-		case(2) :
-			return _rotation3;
-			break;
-		case(3) :
-			return _translation1;
-			break;
-		case(4) :
-			return _translation2;
-			break;
-		case(5) :
-			return _translation3;
-			break;
-		default :
-			throw(Exception("SpatialTransform: Attempting to access beyond 6 axes."));
+	 switch(whichAxis){
+		case 0: return getProperty_rotation1();
+		case 1: return getProperty_rotation2();
+		case 2: return getProperty_rotation3();
+		case 3: return getProperty_translation1();
+		case 4: return getProperty_translation2();
+		case 5: return getProperty_translation3();
+		default:
+			throw Exception("SpatialTransform: Attempting to access beyond 6 axes.");
 	 }
 }
 
+TransformAxis& SpatialTransform::updTransformAxis(int whichAxis)
+{
+	 switch(whichAxis){
+		case 0: return updProperty_rotation1();
+		case 1: return updProperty_rotation2();
+		case 2: return updProperty_rotation3();
+		case 3: return updProperty_translation1();
+		case 4: return updProperty_translation2();
+		case 5: return updProperty_translation3();
+		default:
+			throw Exception("SpatialTransform: Attempting to access beyond 6 axes.");
+	 }
+}
 
 // SETUP
-void SpatialTransform::setup(CustomJoint &aJoint)
+void SpatialTransform::setup(CustomJoint& owningJoint)
 {
-	_owningJoint = &aJoint;
-	
 	// define default function for TransformAxes that have none specified
-	for(int i=0; i<_numTransformAxes; i++){
-		// Exception if a transform does not exist
-		if(&operator[](i) == NULL){
-			throw Exception("SpatialTransform: 6 TransformAxes were not specified.");
-		}
+	for(int i=0; i < NumTransformAxes; ++i) {
+        TransformAxis& transform = updTransformAxis(i);
 
 		// Call the transform axis setup function.
-		operator[](i).setup(*((Joint*)(&aJoint)));
+		transform.setup(*((Joint*)(&owningJoint)));
 
 		// check if it has a function
-		if(!operator[](i).hasFunction()){
+		if(!transform.hasFunction()){
 			// does it have a coordinate?
-			if(operator[](i).getCoordinateNames().getSize() == 1)
-				operator[](i).setFunction(new LinearFunction());
-			else if(operator[](i).getCoordinateNames().getSize() > 1)
+			if(transform.getCoordinateNames().size() == 1)
+				transform.setFunction(new LinearFunction());
+			else if(transform.getCoordinateNames().size() > 1)
 				throw Exception("TransformAxis: an appropriate multicoordinate function was not supplied");
 			else
-				operator[](i).setFunction(new Constant());
+				transform.setFunction(new Constant());
 		}
 	}
 }
 
 // Spatial Transform specific methods
-OpenSim::Array<string> SpatialTransform::getCoordinateNames()
+OpenSim::Array<string> SpatialTransform::getCoordinateNames() const
 {
 	OpenSim::Array<string> coordinateNames;
 
-	for(int i=0; i<_numTransformAxes; i++){
-		TransformAxis *transform = &operator[](i);
-		for(int j = 0; j < transform->getCoordinateNames().getSize(); j++){
-			string name = transform->getCoordinateNames()[j];
+	for(int i=0; i < NumTransformAxes; i++){
+		const TransformAxis& transform = getTransformAxis(i);
+		for(int j = 0; j < transform.getCoordinateNames().size(); j++){
+			string name = transform.getCoordinateNames()[j];
 			if(coordinateNames.findIndex(name) < 0)
 				coordinateNames.append(name);
 		}
@@ -277,18 +143,18 @@ OpenSim::Array<string> SpatialTransform::getCoordinateNames()
 	return coordinateNames;
 }
 
-std::vector<std::vector<int> > SpatialTransform::getCooridinateIndices()
+std::vector<std::vector<int> > SpatialTransform::getCoordinateIndices() const
 {
 	std::vector<std::vector<int> > coordIndices(6);
 	Array<string> coordinateNames = getCoordinateNames();
 
-	for(int i=0; i<_numTransformAxes; i++){
-		TransformAxis *transform = &operator[](i);
+	for(int i=0; i < NumTransformAxes; i++){
+		const TransformAxis& transform = getTransformAxis(i);
 		// Get the number of coordinates that dictate motion along this axis
-		int ncoords = transform->getCoordinateNames().getSize();
+		int ncoords = transform.getCoordinateNames().size();
 		std::vector<int> findex(ncoords);
 		for(int j=0; j< ncoords; j++){
-			int ind = coordinateNames.findIndex(transform->getCoordinateNames()[j]);
+			int ind = coordinateNames.findIndex(transform.getCoordinateNames()[j]);
 			if (ind > -1)
 				findex[j] = ind;
 		}
@@ -297,19 +163,19 @@ std::vector<std::vector<int> > SpatialTransform::getCooridinateIndices()
 	
 	return coordIndices;
 }
-std::vector<const SimTK::Function*> SpatialTransform::getFunctions()
+std::vector<const SimTK::Function*> SpatialTransform::getFunctions() const
 {
-	std::vector<const SimTK::Function*> functions(_numTransformAxes);
-	for(int i=0; i<_numTransformAxes; i++){
-		functions[i] = operator[](i).getFunction().createSimTKFunction();
+	std::vector<const SimTK::Function*> functions(NumTransformAxes);
+	for(int i=0; i < NumTransformAxes; i++){
+		functions[i] = getTransformAxis(i).getFunction().createSimTKFunction();
 	}
 	return functions;
 }
-std::vector<SimTK::Vec3> SpatialTransform::getAxes()
+std::vector<SimTK::Vec3> SpatialTransform::getAxes() const
 {
-	std::vector<SimTK::Vec3> axes(_numTransformAxes);
-	for(int i=0; i<_numTransformAxes; i++){
-		axes[i] = operator[](i).getAxis();
+	std::vector<SimTK::Vec3> axes(NumTransformAxes);
+	for(int i=0; i<NumTransformAxes; i++){
+		axes[i] = getTransformAxis(i).getAxis();
 	}
 
 	return axes;
@@ -319,10 +185,10 @@ std::vector<SimTK::Vec3> SpatialTransform::getAxes()
 void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
 {
 	// Scale the spatial transform functions of translations only
-	for (int i = 3; i < _numTransformAxes; i++) {
-		TransformAxis *transform = &operator[](i);
-        if (transform->hasFunction()) {
-			Function& function = transform->getFunction();
+	for (int i = 3; i < NumTransformAxes; i++) {
+		TransformAxis& transform = updTransformAxis(i);
+        if (transform.hasFunction()) {
+			Function& function = transform.updFunction();
 			// If the function is a linear function with coefficients of 1.0 and 0.0, do
 			// not scale it because this transform axis represents a degree of freedom.
 			LinearFunction* lf = dynamic_cast<LinearFunction*>(&function);
@@ -332,7 +198,7 @@ void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
 					continue;
 			}
 			SimTK::Vec3 axis;
-            transform->getAxis(axis);
+            transform.getAxis(axis);
             double scaleFactor = ~axis * scaleFactors;
 			// If the function is already a MultiplierFunction, just update its scale factor.
 			// Otherwise, make a MultiplierFunction from it and make the transform axis use
@@ -347,33 +213,34 @@ void SpatialTransform::scale(const SimTK::Vec3 scaleFactors)
 				// Make a copy of the original function and delete the original
 				// (so its node will be removed from the XML document).
 				mf->setFunction(function.clone());
-				transform->setFunction(mf);
+				transform.setFunction(mf);
 			}
 		}
 	}
 }
 /**
- * constructIndepndentAxes checks if the TransformAxis at indices startIndex, startIndex+1, startIndex+2 
+ * constructIndependentAxes checks if the TransformAxis at indices startIndex, 
+ * startIndex+1, startIndex+2 
  * are independent and fixes them otherwise. It assumes that the first nAxes are ok
  */
-void SpatialTransform::constructIndepndentAxes(int nAxes, int startIndex)
+void SpatialTransform::constructIndependentAxes(int nAxes, int startIndex)
 {
 	if (nAxes == 3 || nAxes==0)	return;		// Nothing to do
-	Vec3 v1 = operator[](0+startIndex).getAxis();
-	Vec3 v2 = operator[](1+startIndex).getAxis();
-	Vec3 v3 = operator[](2+startIndex).getAxis();
+	Vec3 v1 = getTransformAxis(0+startIndex).getAxis();
+	Vec3 v2 = getTransformAxis(1+startIndex).getAxis();
+	Vec3 v3 = getTransformAxis(2+startIndex).getAxis();
 	if (nAxes ==2){ // Easy, make third axis the cross of the first 2.
 		SimTK::Vec3 cross= (v1 % v2);
 		cross.normalize();
-		operator[](2+startIndex).setAxis(cross);
+		updTransformAxis(2+startIndex).setAxis(cross);
 	}
 	else {	// only v1 was specified, check if v2 is collinear if so, exchange v2, v3
 		if (fabs(fabs(~v1 * v2) -1) < 1e-4){
-			operator[](1+startIndex).setAxis(v3);
+			updTransformAxis(1+startIndex).setAxis(v3);
 		}
-		v2 = operator[](1+startIndex).getAxis();
+		v2 = getTransformAxis(1+startIndex).getAxis();
 		SimTK::Vec3 cross= (v2 % v1);
 		cross.normalize();
-		operator[](2+startIndex).setAxis(cross);	
+		updTransformAxis(2+startIndex).setAxis(cross);	
 	}
 }

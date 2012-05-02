@@ -1,7 +1,7 @@
 // RigidTendonMuscle.cpp
 // Author: Ajay Seth
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -26,43 +26,48 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
-#include "RigidTendonMuscle.h"
+//==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 
-//=============================================================================
+#include "RigidTendonMuscle.h"
+
+//==============================================================================
 // STATICS
-//=============================================================================
+//==============================================================================
 using namespace std;
 using namespace OpenSim;
-using SimTK::Vec3;
+using SimTK::Vec3; using SimTK::square; using SimTK::Eps; using SimTK::State;
+using SimTK::Vector;
 
 static int counter=0;
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
+//==============================================================================
+// CONSTRUCTOR
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-RigidTendonMuscle::RigidTendonMuscle() : Muscle()
+// Default constructor.
+RigidTendonMuscle::RigidTendonMuscle()
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-RigidTendonMuscle::RigidTendonMuscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle) :
-   Muscle()
+// Convenience Constructor.
+RigidTendonMuscle::RigidTendonMuscle(   const std::string& aName,
+                                        double aMaxIsometricForce,
+                                        double aOptimalFiberLength,
+                                        double aTendonSlackLength,
+                                        double aPennationAngle)
 {
 	setNull();
-	setupProperties();
+	constructProperties();
+
 	setName(aName);
 	setMaxIsometricForce(aMaxIsometricForce);
 	setOptimalFiberLength(aOptimalFiberLength);
@@ -71,46 +76,23 @@ RigidTendonMuscle::RigidTendonMuscle(const std::string &aName,double aMaxIsometr
 }
 
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aRigidTendonMuscle RigidTendonMuscle to be copied.
- */
-RigidTendonMuscle::RigidTendonMuscle(const RigidTendonMuscle &aRigidTendonMuscle) : Muscle(aRigidTendonMuscle)
-{
-	setNull();
-	setupProperties();
-}
-
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this RigidTendonMuscle to their null values.
- */
+// Set the data members of this RigidTendonMuscle to their null values.
 void RigidTendonMuscle::setNull()
 {
+    // no data members
 }
 
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void RigidTendonMuscle::setupProperties()
+// Allocate and initialize properties.
+void RigidTendonMuscle::constructProperties()
 {
 	int activeForceLengthCurvePoints = 21;
 	double activeForceLengthCurveX[] = {-5.30769200, -4.30769200, -1.92307700, -0.88461500, -0.26923100,  0.23076900,  0.46153800,  0.52725000,  0.62875000,  0.71875000,  0.86125000,  1.04500000,  1.21750000,  1.43875000,  1.50000000,  1.61538500,  2.00000000,  2.96153800,  3.69230800,  5.46153800,  9.90190200};
 	double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
 	NaturalCubicSpline activeForceLengthCurve
        (activeForceLengthCurvePoints, activeForceLengthCurveX, activeForceLengthCurveY);
-	addProperty<Function>("active_force_length_curve",
-		"Function representing active force-length behavior of muscle fibers",
-		activeForceLengthCurve);
+	constructProperty_active_force_length_curve(activeForceLengthCurve);
 
 	int passiveForceLengthCurvePoints = 13;
 	double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
@@ -118,9 +100,7 @@ void RigidTendonMuscle::setupProperties()
 	NaturalCubicSpline passiveForceLengthCurve
        (passiveForceLengthCurvePoints, passiveForceLengthCurveX, 
         passiveForceLengthCurveY);
-	addProperty<Function>("passive_force_length_curve",
-		"Function representing passive force-length behavior of muscle fibers",
-		passiveForceLengthCurve);
+	constructProperty_passive_force_length_curve(passiveForceLengthCurve);
 
 	int forceVelocityLengthCurvePoints = 42;
 	double forceVelocityLengthCurveX[] = {-1.00100000000, -1.00000000000, -0.95000000000, -0.90000000000, -0.85000000000, -0.80000000000, -0.75000000000, -0.70000000000, -0.65000000000, -0.60000000000, -0.55000000000, -0.50000000000, -0.45000000000, -0.40000000000, -0.35000000000, -0.30000000000, -0.25000000000, -0.20000000000, -0.15000000000, -0.10000000000, -0.05000000000, 0.000000000000,
@@ -130,68 +110,39 @@ void RigidTendonMuscle::setupProperties()
 	NaturalCubicSpline forceVelocityLengthCurve
        (forceVelocityLengthCurvePoints, forceVelocityLengthCurveX, 
         forceVelocityLengthCurveY);
-	addProperty<Function>("force_velocity_curve",
-		"Function representing force-velocity behavior of muscle fibers",
-		forceVelocityLengthCurve);
+	constructProperty_force_velocity_curve(forceVelocityLengthCurve);
 }
-
-//_____________________________________________________________________________
-/**
- * Set the name of the RigidTendonMuscle. This method overrides the one in Object
- * so that the path points can be [re]named accordingly.
- *
- * @param aName The new name of the RigidTendonMuscle.
- */
-void RigidTendonMuscle::setName(const string &aName)
-{
-	// base class
-	Muscle::setName(aName);
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @param aRigidTendonMuscle The RigidTendonMuscle from which to copy its data
- * @return Reference to this object.
- */
-RigidTendonMuscle& RigidTendonMuscle::operator=(const RigidTendonMuscle &aRigidTendonMuscle)
-{
-	// base class
-	Muscle::operator=(aRigidTendonMuscle);
-	return(*this);
-}
-
 
 //-----------------------------------------------------------------------------
 // FORCE
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 
-//=============================================================================
+//==============================================================================
 // CALCULATIONS
-//=============================================================================
+//==============================================================================
 /* calculate muscle's position related values such fiber and tendon lengths,
 	normalized lengths, pennation angle, etc... */
-void RigidTendonMuscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const
+void RigidTendonMuscle::
+calcMuscleLengthInfo(const State& s, MuscleLengthInfo& mli) const
 {
 	mli.tendonLength = getTendonSlackLength();
 	double zeroPennateLength = getLength(s) - mli.tendonLength;
 	zeroPennateLength = zeroPennateLength < 0 ? 0 : zeroPennateLength;
 
-	mli.fiberLength = sqrt(zeroPennateLength*zeroPennateLength + _muscleWidth*_muscleWidth) + SimTK::Eps;
+	mli.fiberLength = sqrt(square(zeroPennateLength) + square(_muscleWidth))
+                        + Eps;
 	
 	mli.cosPennationAngle = zeroPennateLength/mli.fiberLength;
 	mli.pennationAngle = acos(mli.cosPennationAngle);
 	
 	mli.normFiberLength = mli.fiberLength/getOptimalFiberLength();
 
-	mli.fiberActiveForceLengthMultiplier = getPropertyValue<Function>("active_force_length_curve").calcValue(SimTK::Vector(1, mli.normFiberLength));
-	mli.fiberPassiveForceLengthMultiplier = getPropertyValue<Function>("passive_force_length_curve").calcValue(SimTK::Vector(1, mli.normFiberLength));
+    const Vector arg(1, mli.normFiberLength);
+	mli.fiberActiveForceLengthMultiplier = 
+        getProperty_active_force_length_curve(0).calcValue(arg);
+	mli.fiberPassiveForceLengthMultiplier = 
+        getProperty_passive_force_length_curve(0).calcValue(arg);
 
 	mli.normTendonLength = 1.0;
 	mli.tendonStrain = 0.0;
@@ -201,29 +152,37 @@ void RigidTendonMuscle::calcMuscleLengthInfo(const SimTK::State& s, MuscleLength
 
 /* calculate muscle's velocity related values such fiber and tendon velocities,
 	normalized velocities, pennation angular velocity, etc... */
-void RigidTendonMuscle::calcFiberVelocityInfo(const SimTK::State& s, FiberVelocityInfo& fvi) const
+void RigidTendonMuscle::calcFiberVelocityInfo(const State& s, FiberVelocityInfo& fvi) const
 {
 	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 	fvi.fiberVelocity = getGeometryPath().getLengtheningSpeed(s);
-	fvi.normFiberVelocity = fvi.fiberVelocity/(getOptimalFiberLength()*getMaxContractionVelocity());
-	fvi.fiberForceVelocityMultiplier = getPropertyValue<Function>("force_velocity_curve").calcValue(SimTK::Vector(1, fvi.normFiberVelocity));
+	fvi.normFiberVelocity = fvi.fiberVelocity / 
+                            (getOptimalFiberLength()*getMaxContractionVelocity());
+	fvi.fiberForceVelocityMultiplier = 
+        getProperty_force_velocity_curve(0).calcValue(Vector(1, fvi.normFiberVelocity));
 }
 
 /* calculate muscle's active and passive force-length, force-velocity, 
 	tendon force, relationships and their related values */
-void RigidTendonMuscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& mdi) const
+void RigidTendonMuscle::
+calcMuscleDynamicsInfo(const State& s, MuscleDynamicsInfo& mdi) const
 {
 	const MuscleLengthInfo &mli = getMuscleLengthInfo(s);
 	const FiberVelocityInfo &fvi = getFiberVelocityInfo(s);
 
 	mdi.activation = getControl(s);
-	double normActiveForce = mdi.activation * mli.fiberActiveForceLengthMultiplier * fvi.fiberForceVelocityMultiplier;
+	double normActiveForce = mdi.activation 
+                             * mli.fiberActiveForceLengthMultiplier 
+                             * fvi.fiberForceVelocityMultiplier;
 	mdi.activeFiberForce =  getMaxIsometricForce()*normActiveForce;
-	mdi.passiveFiberForce = getMaxIsometricForce()*mli.fiberPassiveForceLengthMultiplier;
+	mdi.passiveFiberForce = getMaxIsometricForce()
+                            * mli.fiberPassiveForceLengthMultiplier;
 
-	mdi.normTendonForce = (normActiveForce+mli.fiberPassiveForceLengthMultiplier)*mli.cosPennationAngle;
+	mdi.normTendonForce = (normActiveForce+mli.fiberPassiveForceLengthMultiplier)
+                          * mli.cosPennationAngle;
 
-	mdi.fiberPower = -(mdi.activeFiberForce + mdi.passiveFiberForce)*fvi.fiberVelocity;
+	mdi.fiberPower = -(mdi.activeFiberForce + mdi.passiveFiberForce)
+                      * fvi.fiberVelocity;
 	mdi.tendonPower = 0;
 	mdi.musclePower = -getMaxIsometricForce()*mdi.normTendonForce*getSpeed(s);
 }
@@ -236,26 +195,29 @@ void RigidTendonMuscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDyna
 /**
  * Compute the actuation (i.e. activation causing tenson) of this muscle. 
  */
-double RigidTendonMuscle::computeActuation(const SimTK::State& s) const
+double RigidTendonMuscle::computeActuation(const State& s) const
 {
 	const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
 	double force = getFiberForce(s)*mli.cosPennationAngle;
-	// store force in the system cache so if needed again it won't have to be recalculated
+	// store force in the system cache so if needed again it won't have to be
+    // recalculated
 	setForce(s, force);
 
 	return(force);
 }
 
 
-double RigidTendonMuscle::computeIsometricForce(SimTK::State& s, double activation) const
+double RigidTendonMuscle::computeIsometricForce(State& s, double activation) const
 {
 	const double &aNormFiberLength = getNormalizedFiberLength(s);
 
+    const Vector arg(1, aNormFiberLength);
 	double activeForceLength = 
-        getPropertyValue<Function>("active_force_length_curve").calcValue(SimTK::Vector(1, aNormFiberLength));
+        getProperty_active_force_length_curve(0).calcValue(arg);
 	double passiveForceLength = 
-        getPropertyValue<Function>("passive_force_length_curve").calcValue(SimTK::Vector(1, aNormFiberLength));
+        getProperty_passive_force_length_curve(0).calcValue(arg);
 
-	//Isometric means velocity is zero, so velocity "factor" is 1
-	return (activation*activeForceLength + passiveForceLength)*cos(getPennationAngle(s));
+	// Isometric means velocity is zero, so velocity "factor" is 1
+	return (activation*activeForceLength + passiveForceLength)
+           * cos(getPennationAngle(s));
 }

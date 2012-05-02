@@ -105,7 +105,8 @@ from XML and write themselves to XML. The available Property types are
   -# Properties containing lists of either of the previous 2 categories
 
 It is important to note that Objects and Properties together form a recursive
-tree structure that is the representation of an %OpenSim Model. 
+tree structure that is the representation of an %OpenSim Model. See the
+documentation for the OpenSim::Property class for more information.
 
 <h3>%Object declaration</h3>
 
@@ -126,6 +127,7 @@ are used for objects that are templatized, like Set\<T>.
 These macros provide a standardized set of declarations for every object, 
 including
 @code
+    typedef ClassName      Self;                // for all classes
     typedef SuperclassName Super;               // for all classes
     static const std::string& getClassName();   // for all classes
     const std::string& getConcreteClassName();  // for concrete classes only
@@ -192,6 +194,7 @@ are marked as being default values, allowing us to avoid writing
 them back out when serializing.
 
 @author Frank C. Anderson, Ayman Habib, Ajay Seth, Michael Sherman 
+@see OpenSim::Property
 **/
 class OSIMCOMMON_API Object  
 {
@@ -338,64 +341,25 @@ public:
     addProperty<T>(). **/
     template <class T> bool hasProperty() const;
 
-	/** Get property \a name of known type Property\<T> as a const reference; 
-    the property must exist. If this is a nameless, one-object property then 
-    the name can be empty (the default if you leave it off altogether) and the
-    property will be looked up by the object class name of template type T 
-    instead. **/
+	/** Get property of known type Property\<T> as a const reference; 
+    the property must be present and have the right type. **/
 	template <class T> const Property<T>& 
-    getProperty(const std::string& name = "") const;
+    getProperty(const PropertyIndex& index) const;
 
-	/** Get property \a name of known type Property\<T> as a writable reference;
-    the property must exist.  If this is a nameless, one-object property then the 
-    name can be empty and the property will be looked up by the object class 
-    name of template type T instead. **/
+	/** Get property of known type Property\<T> as a writable reference;
+    the property must be present and have the right type. **/
 	template <class T> Property<T>& 
-    updProperty(const std::string& name = "");
+    updProperty(const PropertyIndex& index);
 
-    /** Obtain a const reference to the value of known type T that is stored
-    in the property named \a name, which must exist. **/
-	template <class T> const T& 
-    getPropertyValue(const std::string& name = "") const;
-
-    /** Obtain a writable reference to the value of known type T that is stored
-    in the property named \a name, which must exist. **/
-	template <class T> T& 
-    updPropertyValue(const std::string& name = "");
-
-    /** Assign a new value list to a list- or single-valued Property, using an 
-    arbitrary Container\<T> as long as the container supports a size() method 
-    and indexing with operator[]. An exception is thrown if the number of
-    values in \a valueList is inappropriate for this property. **/
-    template <class T, template<class> class Container> void
-    setPropertyValue(const std::string& name, 
-                     const Container<T>& valueList);
-    /** Abbreviation permitted for unnamed property. **/
-    template <class T, template<class> class Container> void
-    setPropertyValue(const Container<T>& valueList)
-    {   return setPropertyValue("", valueList); }
-
-    /** Assign a new value list to a list- or single-valued Property by copying
-    the value list of the given \c source Property, along with the flag 
-    indicating whether the value is just the default. An exception is thrown if 
-    the number of values in \a source is inappropriate for this property. **/
-    template <class T> void
-    setPropertyValue(const std::string& name, 
-                     const Property<T>& source);
-    /** Abbreviation permitted for unnamed property. **/
-    template <class T> void
-    setPropertyValue(const Property<T>& source)
-    {   return setPropertyValue("", source); }
-
-    /** Set the value of the property named \a name, which must exist and be
-    a property of type T. **/
-	template <class T> void 
-    setPropertyValue(const std::string& name, const T& value);
-    /** Abbreviation permitted for unnamed property. **/
-	template <class T> void 
-    setPropertyValue(const T& value)
-    {   setPropertyValue("", value); }
-
+    /** When an object is initialized using the current values of its 
+    properties, it can set a flag indicating that it is up to date. This 
+    flag is automatically cleared when any property is modified. This allows 
+    objects to avoid expensive reinitialization if it is unnecessary. Note
+    that use of this flag is entirely optional; most %Object classes don't
+    have any expensive initialization to worry about. **/
+    void setObjectIsUpToDateWithProperties(bool isUpToDate)
+    {   _objectIsUpToDate = isUpToDate; }
+    bool isObjectUpToDateWithProperties() const {return _objectIsUpToDate;}
 
     /** Dump formatted property information to a given output stream, useful
     for creating a "help" facility for registered objects. Object name, 
@@ -693,7 +657,7 @@ protected:
     @returns Reference to the new Property object stored in this object's
              property table. 
     @see addOptionalProperty(), addListProperty() **/
-	template <class T> Property<T>& 
+	template <class T> PropertyIndex 
     addProperty(const std::string& name, 
                 const std::string& comment, 
                 const T&           value);
@@ -705,7 +669,7 @@ protected:
     @returns Reference to the new Property object stored in this object's
              property table. 
     @see addProperty(), addListProperty() **/
-    template <class T> Property<T>& 
+    template <class T> PropertyIndex 
     addOptionalProperty(const std::string& name,
                         const std::string& comment);
 
@@ -716,34 +680,58 @@ protected:
     @returns Reference to the new Property object stored in this object's
              property table. 
     @see addProperty(), addListProperty() **/
-    template <class T> Property<T>& 
+    template <class T> PropertyIndex
     addOptionalProperty(const std::string& name,
                         const std::string& comment,
                         const T& value);
 
     /** Define a new list-valued property of known type T, with the given 
-    \a name, associated \a comment, and a zero-length initial value. The
+    \a name, associated \a comment, minimum (==0) and maximum (>0) allowable
+    list lengths, and a zero-length initial value. The
     property must have a name (the empty string is not acceptable), and that
     name must be unique within this %Object's property table.
-    @returns Reference to the new Property object stored in this object's
-             property table. 
+    @returns The PropertyIndex of this property in the proprty table for this
+             object. 
     @see addProperty(), addOptionalProperty() **/
-	template <class T> Property<T>& 
+	template <class T> PropertyIndex
     addListProperty(const std::string& name, 
-                    const std::string& comment);
+                    const std::string& comment,
+                    int minSize, int maxSize);
 
     /** Define a new list-valued property as above, but assigning an initial
     value via some templatized container class that supports size() and 
-    indexing.
-    @returns Reference to the new Property object stored in this object's
-             property table. 
+    indexing. Here the minimum size may be greater than zero, provided that
+    the initial value has at least that many element (and no more than the
+    allowed maximum).
+    @returns The PropertyIndex of this property in the proprty table for this
+             object. 
     @see addProperty(), addOptionalProperty() **/
-    //TODO: this should only require that the container have a forward
-    //iterator.
-	template <class T, template<class> class Container> Property<T>& 
+	template <class T, template<class> class Container> PropertyIndex 
     addListProperty(const std::string&  name, 
                     const std::string&  comment,
+                    int minSize, int maxSize,
                     const Container<T>& valueList);
+
+    /** Look up a property by name and return its PropertyIndex if it is
+    found. If no property of that name is present, the returned index
+    will be invalid; check with isValid(). **/
+    // Note: only works for new properties.
+    PropertyIndex getPropertyIndex(const std::string& name) const
+    {   const int ix = _propertyTable.findPropertyIndex(name); 
+        if (ix >= 0) return PropertyIndex(ix);
+        return PropertyIndex();
+    }
+
+    /** Look up an unnamed property by the type of object it contains,
+    and return its PropertyIndex if it is found. If no unnamed property of that
+    type is present, the returned index will be invalid; check with 
+    isValid(). **/
+    // Note: only works for new properties.
+    template <class T> PropertyIndex getPropertyIndex() const
+    {   const int ix = _propertyTable.findPropertyIndex(T::getClassName()); 
+        if (ix >= 0) return PropertyIndex(ix);
+        return PropertyIndex();
+    }
 
 //--------------------------------------------------------------------------
 // PRIVATE METHODS
@@ -807,9 +795,6 @@ private:
     //     troubleshooting.
 	static int      _debugLevel;
 
-	// Property table for serializable properties of this and derived classes.
-	PropertyTable   _propertyTable;
-
 	// The name of this object.
 	std::string     _name;
 	// A short description of the object.
@@ -819,6 +804,12 @@ private:
 	std::string     _authors;
 	// List of references that should be cited when using this concrete object.
 	std::string     _references;
+
+	// Property table for serializable properties of this and derived classes.
+	PropertyTable   _propertyTable;
+    // This flag is cleared automatically whenever a property is changed. It 
+    // is initialized to false and is only set manually.
+    bool            _objectIsUpToDate;
 
 	// The XML document, if any, associated with this object.
 	XMLDocument     *_document;
@@ -852,28 +843,20 @@ hasProperty() const {
 }
 
 template <class T> const Property<T>& Object::
-getProperty(const std::string& name) const {
-    // Look it up by T's object class name if no name is given.
-    if (Property<T>::TypeHelper::IsObjectType && name.empty()) {
-        return _propertyTable.getProperty<T>
-            (Property<T>::TypeHelper::getTypeName());
-    }
-	return _propertyTable.getProperty<T>(name);
+getProperty(const PropertyIndex& index) const {
+	return _propertyTable.getProperty<T>(index);
 }
 
 template <class T> Property<T>& Object::
-updProperty(const std::string& name) {
-    // Look it up by T's object class name if no name is given.
-    if (Property<T>::TypeHelper::IsObjectType && name.empty()) {
-        return _propertyTable.updProperty<T>
-            (Property<T>::TypeHelper::getTypeName());
-    }
-	return _propertyTable.updProperty<T>(name);
+updProperty(const PropertyIndex& index) {
+    _objectIsUpToDate = false; // property may be changed
+	return _propertyTable.updProperty<T>(index);
 }
 
-template <class T> Property<T>& Object::
-addProperty(const std::string& name, const std::string& comment, 
-            const T& value)
+template <class T> PropertyIndex Object::
+addProperty(const std::string& name, 
+            const std::string& comment,
+            const T&           value)
 {
     // Restrict to exactly one value. If there is no name, this will throw
     // an exception if T is a simple (non-object) type.
@@ -884,13 +867,13 @@ addProperty(const std::string& name, const std::string& comment,
 
     // Note that an unnamed, one-object property will use the object class name
     // as a name for lookup purposes.
-	_propertyTable.adoptProperty(p);
-    return *p;
+	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
-template <class T> Property<T>& Object::
-addOptionalProperty(const std::string& name, const std::string& comment, 
-                    const T& value)
+template <class T> PropertyIndex Object::
+addOptionalProperty(const std::string& name, 
+                    const std::string& comment, 
+                    const T&    value)
 {
     if (name.empty())
         throw OpenSim::Exception(
@@ -902,12 +885,12 @@ addOptionalProperty(const std::string& name, const std::string& comment,
     p->setComment(comment);
     p->appendValue(value);
 
-	_propertyTable.adoptProperty(p);
-    return *p;
+	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
-template <class T> Property<T>& Object::
-addOptionalProperty(const std::string& name, const std::string& comment)
+template <class T> PropertyIndex Object::
+addOptionalProperty(const std::string& name, 
+                    const std::string& comment)
 {
     if (name.empty())
         throw OpenSim::Exception(
@@ -918,30 +901,38 @@ addOptionalProperty(const std::string& name, const std::string& comment)
     p->setAllowableListSize(0,1);
     p->setComment(comment);
 
-	_propertyTable.adoptProperty(p);
-    return *p;
+	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
-template <class T> Property<T>& Object::
+template <class T> PropertyIndex Object::
 addListProperty(const std::string& name, 
-                const std::string& comment)
+                const std::string& comment,
+                int minSize, int maxSize)
 {
     if (name.empty())
         throw OpenSim::Exception(
             "Object::addListProperty(): a list property must have a name. "
             "(Object " + getName() + ").");
 
-    // No array size restrictions.
-    Property<T>* p = Property<T>::TypeHelper::create(name, false);
-    p->setName(name); p->setComment(comment);
+    if (minSize > 0)
+        throw OpenSim::Exception(
+            "Object::addListProperty(): list property " + name 
+            + " has a minimum list size of " + SimTK::String(minSize)
+            + " so must be given an initial value of at least that size "
+              "(Object " + getName() + ").");
 
-	_propertyTable.adoptProperty(p);
-    return *p;
+
+    Property<T>* p = Property<T>::TypeHelper::create(name, false);
+    p->setAllowableListSize(minSize, maxSize);
+    p->setComment(comment);
+
+	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
-template <class T, template<class> class Container> Property<T>& Object::
+template <class T, template<class> class Container> PropertyIndex Object::
 addListProperty(const std::string&  name, 
                 const std::string&  comment,
+                int minSize, int maxSize,
                 const Container<T>& valueList)
 {
     if (name.empty())
@@ -949,71 +940,20 @@ addListProperty(const std::string&  name,
             "Object::addListProperty(): a list property must have a name. "
             "(Object " + getName() + ").");
 
-    // No array size restrictions.
+    if (valueList.size() < minSize || valueList.size() > maxSize)
+        throw OpenSim::Exception(
+            "Object::addListProperty(): list property " + name 
+            + " has allowable list size " + SimTK::String(minSize) + ".."
+            + SimTK::String(maxSize) + " but initial value had size "
+            + SimTK::String(valueList.size()) + ".");
+
     Property<T>* p = Property<T>::TypeHelper::create(name, false);
-    p->setName(name); p->setComment(comment);
+    p->setAllowableListSize(minSize, maxSize);
+    p->setComment(comment);
     for (int i=0; i < (int)valueList.size(); ++i)
         p->appendValue(valueList[i]);
 
-	_propertyTable.adoptProperty(p);
-    return *p;
-}
-
-
-template <class T, template<class> class Container> void Object::
-setPropertyValue(const std::string& name, 
-                 const Container<T>& valueList)
-{
-    const int sz = (int)valueList.size();
-    Property<T>& dest = updProperty<T>(name);
-    if (sz < dest.getMinListSize() || sz > dest.getMaxListSize())
-        throw OpenSim::Exception(
-            "Object::setListPropertyValue(): supplied list length "
-            + SimTK::String(sz) + " out of range for property " + dest.getName());
-    dest.clear();
-    for (int i=0; i < sz; ++i)
-        dest.appendValue(valueList[i]);
-}
-
-template <class T> void Object::
-setPropertyValue(const std::string& name, 
-                 const Property<T>& source)
-{
-    const int sz = source.size();
-    Property<T>& dest = updProperty<T>(name);
-    if (sz < dest.getMinListSize() || sz > dest.getMaxListSize())
-        throw OpenSim::Exception(
-            "Object::setListPropertyValue(): number of values ("
-            + SimTK::String(sz) + ") in source property " + source.getName()
-            + " out of range for property " + dest.getName());
-    dest.clear();
-
-    for (int i=0; i < sz; ++i)
-        dest.appendValue(source.getValue(i));
-
-    dest.setUseDefault(source.getUseDefault());
-}
-
-template <class T> const T& Object::
-getPropertyValue(const std::string& name) const
-{
-	return getProperty<T>(name).getValue();
-}
-
-template <class T> T& Object::
-updPropertyValue(const std::string& name)
-{
-	return updProperty<T>(name).updValue();
-}
-
-template <class T> void Object::
-setPropertyValue(const std::string& name, const T& value)
-{
-    Property<T>& prop = updProperty<T>(name);
-    if (prop.empty())
-        prop.appendValue(value);
-    else 
-	    prop.updValue() = value;
+	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
 
 
@@ -1102,7 +1042,8 @@ template <> struct Object_GetClassName<SimTK::Vec3>
 
 #define OpenSim_OBJECT_ANY_DEFS(ConcreteClass, SuperClass)                     \
 public:                                                                        \
-typedef SuperClass Super;                                                      \
+typedef ConcreteClass Self;                                                    \
+typedef SuperClass    Super;                                                   \
 OpenSim_OBJECT_JAVA_DEFS(ConcreteClass);
 
 // For nontemplate classes, the class name is identical to the supplied
@@ -1163,7 +1104,7 @@ private:
 //==============================================================================
 // These methods of ObjectProperty are defined here because they depend on 
 // methods of Object. See Property.h for ObjectProperty's declaration.
-
+/** @cond **/ // Not for Doxygen.
 template <class T> inline std::string 
 ObjectProperty<T>::toString() const {
     if (objects.empty()) return "(No Objects)";
@@ -1187,7 +1128,7 @@ template <class T> inline bool
 ObjectProperty<T>::isEqualTo(const AbstractProperty& other) const {
     // Check here rather than in base class because the old
     // Property_Deprecated implementation can't copy this flag right.
-    if (this->getUseDefault() != other.getUseDefault())
+    if (this->getValueIsDefault() != other.getValueIsDefault())
         return false;
     assert(this->size() == other.size()); // base class checked
     const ObjectProperty& otherO = ObjectProperty::getAs(other);
@@ -1234,7 +1175,7 @@ ObjectProperty<T>::readFromXMLElement
 
         T* objectT = dynamic_cast<T*>(object);
         assert(objectT); // should have worked by construction
-        adoptHeapValueVirtual(objectT); // don't copy
+        adoptAndAppendValueVirtual(objectT); // don't copy
 	}
 
     if (objectsFound < this->getMinListSize()) {
@@ -1264,7 +1205,7 @@ ObjectProperty<T>::writeToXMLElement
 
 template <class T> inline void 
 ObjectProperty<T>::setValueAsObject(const Object& obj, int index) {
-    if (index < 0 && this->getMinListSize()==1 && this->getMaxListSize()==1)
+    if (index < 0 && this->getMaxListSize()==1)
         index = 0;
     T* newObjT = dynamic_cast<T*>(obj.clone());
     if (newObjT == NULL) 
@@ -1272,11 +1213,11 @@ ObjectProperty<T>::setValueAsObject(const Object& obj, int index) {
             ("ObjectProperty<T>::setValueAsObject(): the supplied object"
             + obj.getName() + " was of type " + obj.getConcreteClassName()
             + " which can't be stored in this " + objectClassName
-            + " property " + this->getName(),
-            __FILE__, __LINE__);
+            + " property " + this->getName());
 
     objects[index] = newObjT;
 }
+/** @endcond **/
 
 //==============================================================================
 //                    ABSTRACT PROPERTY TEMPLATE METHODS

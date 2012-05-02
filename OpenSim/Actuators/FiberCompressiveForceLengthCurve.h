@@ -1,5 +1,5 @@
-#ifndef OPENSIM_FiberCompressiveForceLengthCurve_h__
-#define OPENSIM_FiberCompressiveForceLengthCurve_h__
+#ifndef OPENSIM_FIBER_COMPRESSIVE_FORCE_LENGTH_CURVE_H_
+#define OPENSIM_FIBER_COMPRESSIVE_FORCE_LENGTH_CURVE_H_
 
 /* Author: Matthew Millard
 /*
@@ -22,10 +22,8 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Actuators/osimActuatorsDLL.h>
-
-
 // INCLUDE
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <simbody/internal/common.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/MuscleCurveFunctionFactory.h>
@@ -39,6 +37,9 @@
 #endif
 
 namespace OpenSim {
+//==============================================================================
+//                   FIBER COMPRESSIVE FORCE LENGTH CURVE
+//==============================================================================
 
 /**
  This class serves as a serializable FiberCompressiveForceLengthCurve, 
@@ -53,19 +54,30 @@ namespace OpenSim {
 class OSIMACTUATORS_API FiberCompressiveForceLengthCurve : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(FiberCompressiveForceLengthCurve, 
                                 ModelComponent);
-
-//class OSIMACTUATORS_API FiberCompressiveForceLengthCurve : public ModelComponent {
-//OpenSim_DECLARE_CONCRETE_OBJECT(FiberCompressiveForceLengthCurve, ModelComponent);
-
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(norm_length_at_zero_force, double, 
+        "Normalized fiber length at zero force");
+    OpenSim_DECLARE_PROPERTY(stiffness_at_zero_length, double, 
+        "Fiber stiffness at zero length");
+    OpenSim_DECLARE_PROPERTY(curviness, double, 
+        "Fiber curve bend, from linear to maximum bend (0-1)");
+    /**@}**/
 
-    ///Default constructor
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** Default constructor creates an object with a default name that doesn't
+    yet define a curve. **/
     FiberCompressiveForceLengthCurve();
-    ///Default destructor
-    ~FiberCompressiveForceLengthCurve();
-    ///Default constructor
-    FiberCompressiveForceLengthCurve(
-        const FiberCompressiveForceLengthCurve& source);
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
     /**
      Constructs a C2 continuous compressive fiber force length curve. This curve
@@ -125,20 +137,9 @@ public:
     FiberCompressiveForceLengthCurve( double normLengthAtZeroForce, 
                             double stiffnessAtZeroLength,
                             double curviness,
-                            const std::string muscleName);
+                            const std::string& muscleName);
 
 
-
-   #ifndef SWIG
-        ///default assignment operator
-        FiberCompressiveForceLengthCurve& 
-            operator=(const FiberCompressiveForceLengthCurve &source);
-        #endif
-            ///a function that copies all of the properties and data members
-            ///of this class
-            void copyData(const FiberCompressiveForceLengthCurve &source);
-        #ifndef SWIG
-    #endif
 
                
              
@@ -301,7 +302,10 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
-protected:
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
     /*
     This object extends the ModelComponent interface so that we can make use
     of the 'createSystem' function, which we are using to create the 
@@ -315,9 +319,9 @@ protected:
     */
 
     ///ModelComponent Interface required function
-  	void setup(Model& aModel) OVERRIDE_11;
+    void setup(Model& aModel) OVERRIDE_11;
     ///ModelComponent Interface required function
-	void initState(SimTK::State& s) const OVERRIDE_11;
+    void initState(SimTK::State& s) const OVERRIDE_11;
     /**
     ModelComponent is being used for this one function, which is called just
     prior to a simulation beginning. This is the ideal time to actually
@@ -329,17 +333,15 @@ protected:
         necessary
 
     */
-	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
     ///ModelComponent Interface required function
-    void setDefaultsFromState(const SimTK::State& state){};
+    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11 {};
     
+    void setNull();
+    void constructProperties();
 
-private:
-  void setNull();
-  void addProperties();
-
-  /**
+    /**
         This function will take all of the current parameter values and use 
         them to build a curve.
 
@@ -349,13 +351,12 @@ private:
         \endverbatim
 
     */
-  void buildCurve();
+    void buildCurve();
 
-
-  MuscleCurveFunction m_curve;
-  bool m_curveUpToDate;
+    MuscleCurveFunction   m_curve;
+    bool                  m_curveUpToDate;
 };
 
 }
 
-#endif //OPENSIM_FiberCompressiveForceLengthCurve_h__
+#endif // OPENSIM_FIBER_COMPRESSIVE_FORCE_LENGTH_CURVE_H_

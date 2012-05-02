@@ -232,7 +232,7 @@ Model* ScaleTool::createModel()
 	cout << "Processing subject " << getName() << endl;
 
 	/* Make the generic model. */
-	if (!_genericModelMakerProp.getUseDefault())
+	if (!_genericModelMakerProp.getValueIsDefault())
 	{
 		Model *model = _genericModelMaker.processModel(_pathToSubject);
 		if (!model)

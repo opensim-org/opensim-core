@@ -236,19 +236,19 @@ void Marker::updateFromMarker(const Marker &aMarker)
 	{
 		const Vec3& off = aMarker.getOffset();
 		setOffset(off);
-		_offsetProp.setUseDefault(false);
+		_offsetProp.setValueIsDefault(false);
 	}
 
 	if (!aMarker.getFixedUseDefault())
 	{
 		_fixed = aMarker.getFixed();
-		_fixedProp.setUseDefault(false);
+		_fixedProp.setValueIsDefault(false);
 	}
 
 	if (!aMarker.getBodyNameUseDefault())
 	{	
 		_bodyName = aMarker.getBodyName();
-		_bodyNameProp.setUseDefault(false);
+		_bodyNameProp.setValueIsDefault(false);
 	}
 }
 
@@ -346,7 +346,7 @@ bool Marker::setBodyName(const string& aName)
  */
 const string& Marker::getBodyName() const
 {
-	//if (_bodyNameProp.getUseDefault())
+	//if (_bodyNameProp.getValueIsDefault())
 	//	return NULL;
 
 	return _bodyName;
@@ -360,7 +360,7 @@ const string& Marker::getBodyName() const
  */
 bool Marker::setBodyNameUseDefault(bool aValue)
 {
-	_bodyNameProp.setUseDefault(aValue);
+	_bodyNameProp.setValueIsDefault(aValue);
 
 	return true;
 }

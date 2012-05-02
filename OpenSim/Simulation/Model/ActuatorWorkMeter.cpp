@@ -1,7 +1,7 @@
 // ActuatorWorkMeter.cpp
 // Author: Frank C. Anderson, Ajay Seth
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -29,21 +29,21 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "ActuatorWorkMeter.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
+
+#include "ActuatorWorkMeter.h"
 
 //=============================================================================
 // STATICS
 //=============================================================================
 using namespace std;
-//using namespace SimTK;
 using namespace OpenSim;
 
 static const string WORK_STATE_NAME = "work";
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTORS
 //=============================================================================
 //_____________________________________________________________________________
 /**
@@ -52,67 +52,40 @@ static const string WORK_STATE_NAME = "work";
 ActuatorWorkMeter::ActuatorWorkMeter() 
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
 /**
  * Convenience constructor.
  */
-ActuatorWorkMeter::ActuatorWorkMeter(const Actuator &actuator, double initialWork)
+ActuatorWorkMeter::ActuatorWorkMeter(const Actuator& actuator, 
+                                     double initialWork)
 {
 	setNull();
-	setupProperties();
-	setPropertyValue("actuator_name", actuator.getName());
-	setPropertyValue("initial_actuator_work", initialWork);
+	constructProperties();
+
+	setProperty_actuator_name(actuator.getName());
+	setProperty_initial_actuator_work(initialWork);
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-ActuatorWorkMeter::~ActuatorWorkMeter()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aActuatorWorkMeter ActuatorWorkMeter to be copied.
- */
-ActuatorWorkMeter::ActuatorWorkMeter(const ActuatorWorkMeter &aActuatorWorkMeter) :
-   ModelComponent(aActuatorWorkMeter)
-{
-	setNull();
-	setupProperties();
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
-
-
 //_____________________________________________________________________________
-/**
- * Set the data members of this ActuatorWorkMeter to their null values.
- */
+// Set the data members of this ActuatorWorkMeter to their null values.
 void ActuatorWorkMeter::setNull(void)
 {
+    // No data members.
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void ActuatorWorkMeter::setupProperties(void)
+// Connect properties to local pointers.
+void ActuatorWorkMeter::constructProperties(void)
 {
-	addProperty<string>("actuator_name",
-		"The actuator name whos work use will be calculated.",
-		"Unassigned");
-	addProperty<double>("initial_actuator_work",
-		"The initial amount of work.",
-		0.0);
+	constructProperty_actuator_name("Unassigned");
+	constructProperty_initial_actuator_work(0.0);
 }
 
 //_____________________________________________________________________________
@@ -124,13 +97,15 @@ void ActuatorWorkMeter::setupProperties(void)
  */
 void ActuatorWorkMeter::setup(Model& aModel)
 {
-	const string& actName = getPropertyValue<string>("actuator_name");
-	ModelComponent::setup(aModel);
+	Super::setup(aModel);
+
+	const string& actName = getProperty_actuator_name();
 	int k = _model->getActuators().getIndex(actName);
 	if( k >=0 )
 		_actuator = &_model->getActuators().get(k);
 	else{
-		string errorMessage = "ActuatorWorkMeter: Invalid actuator '" + actName + "' specified in Actuator.";
+		string errorMessage = "ActuatorWorkMeter: Invalid actuator '" 
+                              + actName + "' specified in Actuator.";
 		throw (Exception(errorMessage.c_str()));
 	}
 }
@@ -140,7 +115,7 @@ void ActuatorWorkMeter::setup(Model& aModel)
 //=============================================================================
 void ActuatorWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 {
-	ModelComponent::createSystem(system);
+	Super::createSystem(system);
 
 	// Assign a name to the state variable to access the work value stored in the state
 	string stateName = _actuator->getName()+"."+WORK_STATE_NAME;
@@ -153,7 +128,8 @@ void ActuatorWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // The state variable derivative (power) to be integrated
 //=============================================================================
-SimTK::Vector ActuatorWorkMeter::computeStateVariableDerivatives(const SimTK::State& s) const
+SimTK::Vector ActuatorWorkMeter::
+computeStateVariableDerivatives(const SimTK::State& s) const
 {
 	SimTK::Vector derivs(1, _actuator->getPower(s));
 	double force = _actuator->getForce(s);
@@ -163,31 +139,17 @@ SimTK::Vector ActuatorWorkMeter::computeStateVariableDerivatives(const SimTK::St
 	return derivs;
 }
 
- void ActuatorWorkMeter::initState( SimTK::State& s) const
+ void ActuatorWorkMeter::initState(SimTK::State& s) const
 {
-	setStateVariable(s, getStateVariableNames()[0], getPropertyValue<double>("initial_actuator_work"));
+	setStateVariable(s, getStateVariableNames()[0], 
+        getProperty_initial_actuator_work());
 }
 
 void ActuatorWorkMeter::setDefaultsFromState(const SimTK::State& state)
 {
-    setPropertyValue("initial_actuator_work", getWork(state));
+    setProperty_initial_actuator_work(getWork(state));
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-ActuatorWorkMeter& ActuatorWorkMeter::operator=(const ActuatorWorkMeter &aActuatorWorkMeter)
-{
-	// BASE CLASS
-	Object::operator=(aActuatorWorkMeter);
-	return(*this);
-}
 
 //=============================================================================
 // GET AND SET

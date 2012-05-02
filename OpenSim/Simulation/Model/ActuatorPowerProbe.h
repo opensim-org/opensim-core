@@ -4,7 +4,7 @@
 // ActuatorPowerProbe.h
 // Author: Ajay Seth, Tim Dorn
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -40,54 +40,45 @@ namespace OpenSim {
 
 class Model;
 
-//==============================================================================
-//==============================================================================
+//===============================================================================
+//                         ACTUATOR POWER PROBE
+//===============================================================================
 /**
  * ActuatorPowerProbe is a ModelComponent Probe for computing an operation on a 
  * actuator power or sum of actuator powers in the model during a simulation.
  * E.g. Work is the integral of power with respect to time.
  *
  * @author Ajay Seth, Tim Dorn
- * @version 1.0
  */
-class OSIMSIMULATION_API ActuatorPowerProbe : public Probe  
-{
-    OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPowerProbe, Probe);
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+class OSIMSIMULATION_API ActuatorPowerProbe : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(ActuatorPowerProbe, Probe);
 
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_LIST_PROPERTY(actuator_names, std::string,
+        "Specify a list of model Actuators whose work should be calculated. "
+        "If multiple Actuators are given, the probe value will be the summation"
+        " of all actuator powers.");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
     /** Default constructor */
     ActuatorPowerProbe();
     /** Convenience constructor */
-    ActuatorPowerProbe(Array<std::string> actuator_names);
-    /** Copy constructor */
-    ActuatorPowerProbe(const ActuatorPowerProbe &aActuatorPowerProbe);
-    /** Destructor */
-    virtual ~ActuatorPowerProbe();
-    void copyData(const ActuatorPowerProbe &aProbe);
+    explicit ActuatorPowerProbe(Array<std::string> actuator_names);
 
-private:
-    void setNull();
-    void setupProperties();
-
-public:
-
-    //--------------------------------------------------------------------------
-    // Operators
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    ActuatorPowerProbe& operator=(const ActuatorPowerProbe &aActuatorPowerProbe);
-#endif
-
+    // Uses default (compiler-generated) destructor, copy constructor, and copy
+    // assignment operator.
 
     //--------------------------------------------------------------------------
     // Get and Set
@@ -96,28 +87,31 @@ public:
     const Property<std::string>& getActuatorNames() const;
 
     /** Sets the names of the Actuators being probed. */
-    void setActuatorNames(const Array<std::string>& aActuatorNames);
+    void setActuatorNames(const Array<std::string>& actuatorNames);
 
-
-
-    //-----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Computation
-    //-----------------------------------------------------------------------------
-    /** Compute the Actuator power upon which the Probe operation will be based on. */
-    virtual double computeProbeValue(const SimTK::State& state) const;
+    //--------------------------------------------------------------------------
+    /** Compute the Actuator power upon which the Probe operation will be based. */
+    double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
 
 
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-protected:
-    virtual void setup(Model& aModel);
+    void setup(Model& aModel) OVERRIDE_11;
     
+    void setNull();
+    void constructProperties();
 
-//=============================================================================
+//==============================================================================
 };	// END of class ActuatorPowerProbe
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 

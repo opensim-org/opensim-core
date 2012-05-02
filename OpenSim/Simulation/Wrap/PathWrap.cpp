@@ -218,7 +218,7 @@ void PathWrap::setStartPoint( const SimTK::State& s, int aIndex)
 	if ((aIndex != _range[0]) && (aIndex == -1 || _range[1] == -1 || (aIndex >= 1 && aIndex <= _range[1])))
 	{
 		_range[0] = aIndex;
-		_rangeProp.setUseDefault(false);
+		_rangeProp.setValueIsDefault(false);
 	}
 }
 
@@ -227,7 +227,7 @@ void PathWrap::setEndPoint( const SimTK::State& s, int aIndex)
 	if ((aIndex != _range[1]) && (aIndex == -1 || _range[0] == -1 || (aIndex >= _range[0] && aIndex <= _path->getPathPointSet().getSize())))
 	{
 		_range[1] = aIndex;
-		_rangeProp.setUseDefault(false);
+		_rangeProp.setValueIsDefault(false);
 	}
 }
 

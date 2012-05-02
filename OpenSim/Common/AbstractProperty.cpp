@@ -60,8 +60,8 @@ AbstractProperty::AbstractProperty(const std::string& name,
                                    const std::string& comment)
 {
     setNull();
-	_name = name;
-	_comment = comment;
+	_name       = name;
+	_comment    = comment;
 }
 
 
@@ -71,11 +71,11 @@ AbstractProperty::AbstractProperty(const std::string& name,
  */
 void AbstractProperty::setNull()
 {
-	_name = "unknown";
-    _comment = "";
-	_useDefault = false;
-	_minListSize = 0;
-	_maxListSize = std::numeric_limits<int>::max();
+	_name           = "";
+    _comment        = "";
+	_valueIsDefault = false;
+	_minListSize    = 0;
+	_maxListSize    = std::numeric_limits<int>::max();
 }
 
 void AbstractProperty::clear() {
@@ -85,7 +85,7 @@ void AbstractProperty::clear() {
 // Set the use default flag for this property, and propagate that through
 // any contained Objects.
 void AbstractProperty::setAllPropertiesUseDefault(bool shouldUseDefault) {
-    setUseDefault(shouldUseDefault);
+    setValueIsDefault(shouldUseDefault);
     if (!isObjectProperty())
         return;
     for (int i=0; i < size(); ++i)
@@ -106,7 +106,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
         Xml::element_iterator propElt = parent.element_begin(getName());
         if (propElt != parent.element_end()) {
             readFromXMLElement(*propElt, versionNumber);
-            setUseDefault(false);
+            setValueIsDefault(false);
             return;
         }
     }
@@ -117,7 +117,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
     // form.
 
     if (!isOneObjectProperty()) {
-        setUseDefault(true); // no special format allowed
+        setValueIsDefault(true); // no special format allowed
         return;
     }
 
@@ -184,7 +184,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
 
     if (iter == parent.element_end()) {
         // Couldn't find an acceptable element for this one-object property.
-        setUseDefault(true);
+        setValueIsDefault(true);
         return;
     }
 
@@ -196,7 +196,7 @@ void AbstractProperty::readFromXMLParentElement(Xml::Element& parent,
     // Now put the node back where we found it.
     parent.insertNodeBefore(prev, 
                             dummy.removeNode(dummy.element_begin()));
-    setUseDefault(false);
+    setValueIsDefault(false);
 }
 
 

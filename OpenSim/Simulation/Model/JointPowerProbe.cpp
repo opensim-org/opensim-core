@@ -1,7 +1,7 @@
 // JointPowerProbe.cpp
 // Authors: Frank C. Anderson, Ajay Seth, Tim Dorn
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -27,10 +27,9 @@
  */
 
 //=============================================================================
-// INCLUDES and STATICS
+// INCLUDE
 //=============================================================================
 #include "JointPowerProbe.h"
-
 
 using namespace std;
 using namespace SimTK;
@@ -40,101 +39,39 @@ using namespace OpenSim;
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
 //=============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
+// Default constructor.
 JointPowerProbe::JointPowerProbe() 
 {
     setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Convenience constructor.
- */
-JointPowerProbe::JointPowerProbe(Array<string> joint_names)
+// Convenience constructor.
+JointPowerProbe::JointPowerProbe(const Array<string>& joint_names)
 {
     setNull();
-    setPropertyValue("joint_names", joint_names);
+    constructProperties();
+    setProperty_joint_names(joint_names);
 }
 
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-JointPowerProbe::~JointPowerProbe()
+// Set the data members of this JointPowerProbe to their null values.
+void JointPowerProbe::setNull()
 {
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aJointPowerProbe JointPowerProbe to be copied.
- */
-JointPowerProbe::JointPowerProbe(const JointPowerProbe &aJointPowerProbe) :
-   Probe(aJointPowerProbe)
-{
-    setNull();
-    copyData(aJointPowerProbe);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one JointPowerProbe to another.
- *
- * @param aProbe JointPowerProbe to be copied.
- */
-void JointPowerProbe::copyData(const JointPowerProbe &aProbe)
-{
-    Super::copyData(aProbe);
-    setPropertyValue("joint_names", aProbe.getProperty<string>("joint_names"));
+    // no data members
 }
 
 //_____________________________________________________________________________
-/**
- * Set the data members of this JointPowerProbe to their null values.
- */
-void JointPowerProbe::setNull(void)
+// Allocate and initialize properties.
+void JointPowerProbe::constructProperties()
 {
-    setupProperties();
+    constructProperty_joint_names();
 }
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void JointPowerProbe::setupProperties(void)
-{
-    Array<string> tmp("");
-    addListProperty<string>("joint_names",
-        "Specify a list of model Joints whose work should be calculated. "
-        "If multiple Joints are given, the probe value will be the summation"
-        " of all joint powers.",
-        tmp);
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-JointPowerProbe& JointPowerProbe::operator=(const JointPowerProbe &aJointPowerProbe)
-{
-    // BASE CLASS
-    Super::operator=(aJointPowerProbe);
-    return(*this);
-}
-#endif
 
 
 //=============================================================================
@@ -145,7 +82,7 @@ JointPowerProbe& JointPowerProbe::operator=(const JointPowerProbe &aJointPowerPr
  */
 const Property<string>& JointPowerProbe::getJointNames() const
 {
-    return getProperty<string>("joint_names");
+    return getProperty_joint_names();
 }
 
 //_____________________________________________________________________________
@@ -154,7 +91,7 @@ const Property<string>& JointPowerProbe::getJointNames() const
  */
 void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
 {
-    setPropertyValue<string>("joint_names", aJointNames);
+    setProperty_joint_names(aJointNames);
 }
 
 
@@ -180,8 +117,9 @@ void JointPowerProbe::setup(Model& aModel)
         string jointName = getJointNames()[i];
         int k = _model->getJointSet().getIndex(jointName);
         if (k<0) {
-            string errorMessage = getConcreteClassName() + ": Invalid Joint '" + jointName + "' specified in <joint_names>.";
-            throw (Exception(errorMessage.c_str()));
+            string errorMessage = getConcreteClassName() + ": Invalid Joint '" 
+                    + jointName + "' specified in <joint_names>.";
+            throw OpenSim::Exception(errorMessage);
         }
     }
 }
@@ -194,9 +132,7 @@ void JointPowerProbe::setup(Model& aModel)
 // COMPUTATION
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Compute the Joint power upon which the Probe operation will be based on.
- */
+// Compute the Joint power upon which the Probe operation will be based on.
 double JointPowerProbe::computeProbeValue(const State& s) const
 {
     int nA = getJointNames().size();

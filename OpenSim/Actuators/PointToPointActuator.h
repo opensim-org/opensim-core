@@ -1,9 +1,9 @@
-#ifndef _PointToPointActuator_h_
-#define _PointToPointActuator_h_
+#ifndef OPENSIM_POINT_TO_POINT_ACTUATOR_H_
+#define OPENSIM_POINT_TO_POINT_ACTUATOR_H_
 // PointToPointActuator.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2009, Stanford University. All rights reserved. 
+* Copyright (c)  2009-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -37,10 +37,16 @@
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "SimTKsimbody.h"
 
+#include "Simbody.h"
+
+namespace OpenSim { 
+
+class Body;
+class Model;
 
 //=============================================================================
+//                     POINT TO POINT ACTUATOR
 //=============================================================================
 /**
  * A class that implements a force actuator acting between two points on two bodies.
@@ -49,105 +55,120 @@
  * the control is simply the force to be applied to the model.
  *
  * @author Matt DeMers
- * @version 2.0
  */
-namespace OpenSim { 
-
-class Body;
-class Model;
-
 class OSIMACTUATORS_API PointToPointActuator : public Actuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointActuator, Actuator);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(bodyA, std::string,
+		"Name of Body to which the point-to-point actuator is applied.");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(bodyB, std::string,
+		"Name of Body to which the equal and opposite force is applied.");
+    /** The default is points_are_global=false. **/
+    OpenSim_DECLARE_PROPERTY(points_are_global, bool, 
+        "Interpret points in Ground frame if true; otherwise, corresponding "
+        "body's frame.");
+    /** The default location for pointA is bodyA's origin. **/
+	OpenSim_DECLARE_PROPERTY(pointA, SimTK::Vec3,
+        "Point of application on body A.");
+    /** The default location for pointB is bodyB's origin. **/
+	OpenSim_DECLARE_PROPERTY(pointB, SimTK::Vec3,
+        "Point of application on body B.");
+    /** The default for optimal force is 1. **/
+	OpenSim_DECLARE_PROPERTY(optimal_force, double,
+        "The maximum force produced by this actuator when fully activated.");
+	/**@}**/
 
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+	/** Default constructor leaves body names unspecified. **/
+    PointToPointActuator();
+	/** Construct with specified body names. **/
+	PointToPointActuator(const std::string& bodyNameA, 
+                         const std::string& bodyNameB);
+	
+    /** Set the 'pointA' property to the supplied value; frame is interpreted
+    according to the 'points_are_global' property. **/
+	void setPointA(const SimTK::Vec3& pointAPos) 
+    {   setProperty_pointA(pointAPos); } ;
+    /** Return the current value of the 'pointA' property. **/
+	const SimTK::Vec3& getPointA() const 
+    {   return getProperty_pointA(); };
+    /** Set the 'pointB' property to the supplied value; frame is interpreted
+    according to the 'points_are_global' property. **/
+	void setPointB(const SimTK::Vec3& pointBPos) 
+    {   setProperty_pointB(pointBPos); } ;
+    /** Return the current value of the 'pointB' property. **/
+	const SimTK::Vec3& getPointB() const 
+    {   return getProperty_pointB(); };
+
+    /** Set the 'points_are_global' property that determines how to interpret
+    the 'pointA' and 'pointB' location vectors: if not global (Ground frame) 
+    then they are in the local frame of 'bodyA' and 'bodyB' respectively. **/
+	void setPointsAreGlobal(bool isGlobal) 
+    {   setProperty_points_are_global(isGlobal); };
+    /** Return the current value of the 'points_are_global' property. **/
+	bool getPointsAreGlobal() const
+    {   return getProperty_points_are_global(); };
+
+	/** Set the 'optimal_force' property. **/
+	void setOptimalForce(double optimalForce)
+    {   setProperty_optimal_force(optimalForce); }
+    /** Get the current value of the 'optimal_force' property. **/
+	double getOptimalForce() const OVERRIDE_11 // Part of Actuator interface.
+    {   return getProperty_optimal_force(); }
+
+    // default destructor, copy constructor, copy assignment
+
+private:
+	void constructProperties();
+
+	// Set the bodies to which this actuator applies; setting these pointers
+    // also sets the corresponding body name properties.
+	void setBodyA(Body* bodyp);
+	void setBodyB(Body* bodyp);
+    Body* getBodyA() const {return _bodyA;}
+    Body* getBodyB() const {return _bodyB;}    
+
+	//--------------------------------------------------------------------------
+	// Implement Force interface
+	//--------------------------------------------------------------------------
+	void computeForce(const SimTK::State& state, 
+					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+					  SimTK::Vector& mobilityForces) const OVERRIDE_11;
+
+	//--------------------------------------------------------------------------
+	// Implement Actuator interface (also see getOptimalForce() above)
+	//--------------------------------------------------------------------------	
+	double computeActuation( const SimTK::State& s) const OVERRIDE_11;
+	// Return the stress, defined as abs(force/optimal_force).
+	double getStress( const SimTK::State& s ) const OVERRIDE_11;
+
+	//--------------------------------------------------------------------------
+	// Implement ModelComponent interface
+	//--------------------------------------------------------------------------
+	// Setup method initializes Body reference pointers to match the names.
+	void setup(Model& aModel) OVERRIDE_11;
+
+	//--------------------------------------------------------------------------
+	// Implement Object interface.
+	//--------------------------------------------------------------------------
+	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
+        OVERRIDE_11;
 //=============================================================================
 // DATA
 //=============================================================================
-protected:
-	/** Corresponding Body to which the force actuator is applied. */
-    Body *_bodyA;
+    // Note: reference pointers are automatically set to null on construction 
+    // and also on copy construction and copy assignment.
 
-	/** Corresponding Body to which the equal and force torque is applied. */
-    Body *_bodyB;
-
-	// INTERNAL WORKING VARIABLES
-
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-public:
-	PointToPointActuator( std::string aBodyNameA="", std::string abodyNameB="");
-	PointToPointActuator( const PointToPointActuator &aPointToPointActuator);
-	virtual ~PointToPointActuator();
-
-	void copyData(const PointToPointActuator &aPointToPointActuator);
-private:
-	void setNull();
-	void setupProperties();
-	
-
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-	PointToPointActuator& operator=(const PointToPointActuator &aGenForce);
-#endif
-
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// GENERALIZED Body
-	void setBodyA(Body* aBody);
-	void setBodyB(Body* aBody);
-	Body* getBodyA() const;
-	Body* getBodyB() const;
-
-	// Force points of application
-	void setPointA(SimTK::Vec3 aPosition) { setPropertyValue("pointA", aPosition); } ;
-	SimTK::Vec3 getPointA() const { return getPropertyValue<SimTK::Vec3>("pointA"); };
-	void setPointB(SimTK::Vec3 aPosition) { setPropertyValue("pointB", aPosition); } ;
-	SimTK::Vec3 getPointB() const { return getPropertyValue<SimTK::Vec3>("pointB"); };
-
-	// flag for reference frame
-	void setPointsAreGlobal(bool aBool) {setPropertyValue("points_are_global", aBool); };
-	bool getPointsAreGlobal() {return getPropertyValue<bool>("points_are_global"); };
-
-	// OPTIMAL FORCE
-	void setOptimalForce(double aOptimalForce);
-	double getOptimalForce() const;
-	// STRESS
-#ifndef SWIG
-	double getStress( const SimTK::State& s ) const;
-
-	//--------------------------------------------------------------------------
-	// APPLICATION
-	//--------------------------------------------------------------------------
-	virtual void computeForce( const SimTK::State& state, 
-							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							   SimTK::Vector& mobilityForces) const;
-
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	
-	virtual double  computeActuation( const SimTK::State& s) const;
-
-#endif
-	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	virtual bool check() const;
-
-	// Setup method to initialize Body reference
-	void setup(Model& aModel);
-
-	//--------------------------------------------------------------------------
-	// XML
-	//--------------------------------------------------------------------------
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+	// The bodies on which this point-to-point actuator acts.
+    SimTK::ReferencePtr<Body> _bodyA, _bodyB;
 
 //=============================================================================
 };	// END of class PointToPointActuator

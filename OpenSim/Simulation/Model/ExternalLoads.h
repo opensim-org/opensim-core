@@ -1,10 +1,10 @@
-#ifndef __ExternalLoads_h__
-#define __ExternalLoads_h__
+#ifndef OPENSIM_EXTERNAL_LOADS_H_
+#define OPENSIM_EXTERNAL_LOADS_H_
 
 // ExternalLoads.h
 // Author: Ajay Seth, Ayman Habib 
 /*
- * Copyright (c)  2009, Stanford University. All rights reserved. 
+ * Copyright (c)  2009-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -59,7 +59,6 @@ class Model;
  * then use multiple ExternalLoads.
  *
  * @authors Ajay Seth, Ayman Habib 
- * @version 1.0
  */
 
 //=============================================================================
@@ -151,6 +150,6 @@ public:
 } // end of namespace OpenSim
 
 
-#endif // __ExternalLoads_h__
+#endif // OPENSIM_EXTERNAL_LOADS_H_
 
 

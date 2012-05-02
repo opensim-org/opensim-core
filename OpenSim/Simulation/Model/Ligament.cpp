@@ -45,80 +45,18 @@ using namespace OpenSim;
 using SimTK::Vec3;
 
 //=============================================================================
-// CONSTANTS
-//=============================================================================
-
-//=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-Ligament::Ligament() : Force()
+// Default constructor.
+Ligament::Ligament()
 {
-	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Destructor.
- * Delete any variables allocated using the "new" operator.  You will not
- * necessarily have any of these.
- */
-Ligament::~Ligament()
-{
-	VisibleObject* disp;
-	if ((disp = getDisplayer())){
-		 // Free up allocated geometry objects
-		disp->freeGeometry();
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aLigament Ligament to be copied.
- */
-Ligament::Ligament(const Ligament &aLigament) : Force(aLigament)
-{
-	setNull();
-	setupProperties();
-	copyData(aLigament);
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one ligament to another.
- *
- * @param aLigament Ligament to be copied.
- */
-void Ligament::copyData(const Ligament &aLigament)
-{
-	setPropertyValue("GeometryPath", aLigament.getPropertyValue<GeometryPath>("GeometryPath"));
-	setPropertyValue("resting_length", aLigament.getPropertyValue<double>("resting_length"));
-	setPropertyValue("pcsa_force", aLigament.getPropertyValue<double>("pcsa_force"));
-	setPropertyValue("force_length_curve", 
-        aLigament.getPropertyValue<Function>("force_length_curve"));
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this ligament to their null values.
- */
-void Ligament::setNull()
-{
-	_model = NULL;
-}
-
-//_____________________________________________________________________________
-/**
- * Set up the properties for the ligament.
+/*
+ * Construct and initialize the properties for the ligament.
  * 
  * You should give each property a meaningful name and an informative comment.
  * The name you give each property is the tag that will be used in the XML
@@ -128,25 +66,19 @@ void Ligament::setNull()
  * All properties are added to the property set. Once added, they can be
  * read in and written to file.
  */
-void Ligament::setupProperties()
+void Ligament::constructProperties()
 {
-	addProperty<GeometryPath>("GeometryPath",
-		"the set of points defining the path of the ligament",
-		GeometryPath());
-	addProperty<double>("resting_length",
-		"resting length of the ligament",
-		0.0);
-	addProperty<double>("pcsa_force",
-		"force magnitude that scales the force-length curve",
-		0.0);
+	constructProperty_GeometryPath(GeometryPath());
+	constructProperty_resting_length(0.0);
+	constructProperty_pcsa_force(0.0);
+
 	int forceLengthCurvePoints = 13;
 	double forceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
 	double forceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
 	NaturalCubicSpline forceLengthCurve
        (forceLengthCurvePoints, forceLengthCurveX, forceLengthCurveY);
-	addProperty<Function>("force_length_curve",
-		"Function representing the force-length behavior of the ligament",
-		forceLengthCurve);
+
+	constructProperty_force_length_curve(forceLengthCurve);
 }
 
 //_____________________________________________________________________________
@@ -158,8 +90,8 @@ void Ligament::setupProperties()
  */
 void Ligament::setup(Model& aModel)
 {
-	GeometryPath &path = updPropertyValue<GeometryPath>("GeometryPath");
-	const double &restingLength = getPropertyValue<double>("resting_length");
+	GeometryPath& path = updProperty_GeometryPath();
+	const double& restingLength = getProperty_resting_length();
 
 	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
 	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
@@ -183,33 +115,15 @@ void Ligament::setup(Model& aModel)
  */
  void Ligament::createSystem(SimTK::MultibodySystem& system) const
 {
-	Force::createSystem(system);
+	Super::createSystem(system);
 }
 
 
 void Ligament::initState( SimTK::State& s) const
 {
-	Force::initState(s);
+	Super::initState(s);
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this ligament.
- */
-Ligament& Ligament::operator=(const Ligament &aLigament)
-{
-	// BASE CLASS
-	Force::operator=(aLigament);
-
-	copyData(aLigament);
-
-	return *this;
-}
 
 //=============================================================================
 // GET AND SET
@@ -226,7 +140,7 @@ Ligament& Ligament::operator=(const Ligament &aLigament)
  */
 double Ligament::getLength(const SimTK::State& s) const
 {
-	return getPropertyValue<GeometryPath>("GeometryPath").getLength(s);
+	return getGeometryPath().getLength(s);
 }
 
 //_____________________________________________________________________________
@@ -238,7 +152,7 @@ double Ligament::getLength(const SimTK::State& s) const
  */
 bool Ligament::setRestingLength(double aRestingLength)
 {
-	setPropertyValue("resting_length", aRestingLength);
+	setProperty_resting_length(aRestingLength);
 	return true;
 }
 
@@ -251,7 +165,7 @@ bool Ligament::setRestingLength(double aRestingLength)
  */
 bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
 {
-	setPropertyValue("pcsa_force", aMaxIsometricForce);
+	setProperty_pcsa_force(aMaxIsometricForce);
 	return true;
 }
 
@@ -264,7 +178,7 @@ bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
  */
 bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 {
-	setPropertyValue("force_length_curve", aForceLengthCurve);
+	setProperty_force_length_curve(aForceLengthCurve);
 	return true;
 }
 //=============================================================================
@@ -280,7 +194,7 @@ bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
  */
 void Ligament::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").preScale(s, aScaleSet);
+	updGeometryPath().preScale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -292,7 +206,7 @@ void Ligament::preScale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	updPropertyValue<GeometryPath>("GeometryPath").scale(s, aScaleSet);
+	updGeometryPath().scale(s, aScaleSet);
 }
 
 //_____________________________________________________________________________
@@ -305,8 +219,8 @@ void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
  */
 void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath &path = updPropertyValue<GeometryPath>("GeometryPath");
-	double &restingLength = updPropertyValue<double>("resting_length");
+	GeometryPath& path          = updGeometryPath();
+	double&       restingLength = updProperty_resting_length();
 
 	path.postScale(s, aScaleSet);
 
@@ -339,9 +253,9 @@ void Ligament::computeForce(const SimTK::State& s,
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
-	const GeometryPath &path = getPropertyValue<GeometryPath>("GeometryPath");
-	const double &restingLength = getPropertyValue<double>("resting_length");
-	const double &pcsaForce = getPropertyValue<double>("pcsa_force");
+	const GeometryPath& path = getGeometryPath();
+	const double& restingLength = getProperty_resting_length();
+	const double& pcsaForce = getProperty_pcsa_force();
 
 	if (path.getLength(s) <= restingLength)
 		return;

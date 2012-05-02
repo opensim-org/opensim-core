@@ -27,8 +27,7 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <string>
-#include <iostream>
+
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimSimulation.h"
 
@@ -110,6 +109,9 @@
 #include "SimbodyEngine/Coordinate.h"
 #include "SimbodyEngine/SpatialTransform.h"
 
+#include <string>
+#include <iostream>
+#include <exception>
 
 using namespace std;
 using namespace OpenSim;
@@ -123,105 +125,111 @@ static osimSimulationInstantiator instantiator;
  */
 OSIMSIMULATION_API void RegisterTypes_osimSimulation()
 {
-	//cout<<"RegisterTypes_osimSimulation\n";
+  try {
 
-	Object::registerType( AnalysisSet() );
-	Object::registerType( Model() );
-	Object::registerType( BodyScale() );
-	Object::registerType( BodyScaleSet() );
-	Object::registerType( BodySet() );
-	Object::registerType( ConstraintSet() );
-	Object::registerType( CoordinateSet() );
-	Object::registerType( ForceSet() );
-	Object::registerType( ExternalLoads() );
+    Object::registerType( AnalysisSet() );
+    Object::registerType( Model() );
+    Object::registerType( BodyScale() );
+    Object::registerType( BodyScaleSet() );
+    Object::registerType( BodySet() );
+    Object::registerType( ConstraintSet() );
+    Object::registerType( CoordinateSet() );
+    Object::registerType( ForceSet() );
+    Object::registerType( ExternalLoads() );
 
-	Object::registerType( JointSet() );
-	Object::registerType( Marker() );
-	Object::registerType( MarkerSet() );
-	Object::registerType( PathPoint() );
-	Object::registerType( PathPointSet() );
-	Object::registerType( ConditionalPathPoint() );
-	Object::registerType( MovingPathPoint() );
-	Object::registerType( GeometryPath() );
+    Object::registerType( JointSet() );
+    Object::registerType( Marker() );
+    Object::registerType( MarkerSet() );
+    Object::registerType( PathPoint() );
+    Object::registerType( PathPointSet() );
+    Object::registerType( ConditionalPathPoint() );
+    Object::registerType( MovingPathPoint() );
+    Object::registerType( GeometryPath() );
 
-	Object::registerType( ControlSet() );
-	Object::registerType( ControlConstant() );
-	Object::registerType( ControlLinear() );
-	Object::registerType( ControlLinearNode() );
+    Object::registerType( ControlSet() );
+    Object::registerType( ControlConstant() );
+    Object::registerType( ControlLinear() );
+    Object::registerType( ControlLinearNode() );
 
-	Object::registerType( PathWrap() );
-	Object::registerType( PathWrapSet() );
-	Object::registerType( WrapCylinder() );
-	Object::registerType( WrapEllipsoid() );
-	Object::registerType( WrapSphere() );
-	Object::registerType( WrapTorus() );
-	Object::registerType( WrapObjectSet() );
-	Object::registerType( WrapCylinderObst() );
-	Object::registerType( WrapSphereObst() );
-	Object::registerType( WrapDoubleCylinderObst() );
+    Object::registerType( PathWrap() );
+    Object::registerType( PathWrapSet() );
+    Object::registerType( WrapCylinder() );
+    Object::registerType( WrapEllipsoid() );
+    Object::registerType( WrapSphere() );
+    Object::registerType( WrapTorus() );
+    Object::registerType( WrapObjectSet() );
+    Object::registerType( WrapCylinderObst() );
+    Object::registerType( WrapSphereObst() );
+    Object::registerType( WrapDoubleCylinderObst() );
 
-	// CURRENT RELEASE
-	Object::registerType( SimbodyEngine() );
-	Object::registerType( OpenSim::Body() );
-	Object::registerType( WeldConstraint() );
-	Object::registerType( PointConstraint() );
-	Object::registerType( ConstantDistanceConstraint() );
-	Object::registerType( CoordinateCouplerConstraint() );
-	Object::registerType( CustomJoint() );
-	Object::registerType( WeldJoint() );
-	Object::registerType( EllipsoidJoint() );
-	Object::registerType( FreeJoint() );
-	Object::registerType( BallJoint() );
-	Object::registerType( PinJoint() );
-	Object::registerType( SliderJoint() );
-	Object::registerType( TransformAxis() );
-	Object::registerType( Coordinate() );
-	Object::registerType( SpatialTransform() );
+    // CURRENT RELEASE
+    Object::registerType( SimbodyEngine() );
+    Object::registerType( OpenSim::Body() );
+    Object::registerType( WeldConstraint() );
+    Object::registerType( PointConstraint() );
+    Object::registerType( ConstantDistanceConstraint() );
+    Object::registerType( CoordinateCouplerConstraint() );
+    Object::registerType( CustomJoint() );
+    Object::registerType( WeldJoint() );
+    Object::registerType( EllipsoidJoint() );
+    Object::registerType( FreeJoint() );
+    Object::registerType( BallJoint() );
+    Object::registerType( PinJoint() );
+    Object::registerType( SliderJoint() );
+    Object::registerType( TransformAxis() );
+    Object::registerType( Coordinate() );
+    Object::registerType( SpatialTransform() );
 
-	Object::registerType( ContactGeometrySet() );
-	Object::registerType( ContactHalfSpace() );
-	Object::registerType( ContactMesh() );
-	Object::registerType( ContactSphere() );
-	Object::registerType( HuntCrossleyForce() );
-	Object::registerType( ElasticFoundationForce() );
-	Object::registerType( HuntCrossleyForce::ContactParameters() );
-	Object::registerType( HuntCrossleyForce::ContactParametersSet() );
-	Object::registerType( ElasticFoundationForce::ContactParameters() );
-	Object::registerType( ElasticFoundationForce::ContactParametersSet() );
-	Object::registerType( PointOnLineConstraint() );
-	Object::registerType( RollingOnSurfaceConstraint() );
-	Object::registerType( Ligament() );
-	Object::registerType( PrescribedForce() );
-	Object::registerType( ExternalForce() );
-	Object::registerType( PointToPointSpring() );
-	Object::registerType( BushingForce() );
+    Object::registerType( ContactGeometrySet() );
+    Object::registerType( ContactHalfSpace() );
+    Object::registerType( ContactMesh() );
+    Object::registerType( ContactSphere() );
+    Object::registerType( HuntCrossleyForce() );
+    Object::registerType( ElasticFoundationForce() );
+    Object::registerType( HuntCrossleyForce::ContactParameters() );
+    Object::registerType( HuntCrossleyForce::ContactParametersSet() );
+    Object::registerType( ElasticFoundationForce::ContactParameters() );
+    Object::registerType( ElasticFoundationForce::ContactParametersSet() );
+    Object::registerType( PointOnLineConstraint() );
+    Object::registerType( RollingOnSurfaceConstraint() );
+    Object::registerType( Ligament() );
+    Object::registerType( PrescribedForce() );
+    Object::registerType( ExternalForce() );
+    Object::registerType( PointToPointSpring() );
+    Object::registerType( BushingForce() );
 
     Object::registerType( ControlSetController() );
-	Object::registerType( PrescribedController() );
+    Object::registerType( PrescribedController() );
 
-	Object::registerType( BushingForce() );
-	Object::registerType( PathActuator() );
-	Object::RegisterType( ProbeSet() );
-	Object::RegisterType( ActuatorPowerProbe() );
-	Object::RegisterType( ForceProbe() );
-	Object::RegisterType( JointPowerProbe() );
-	Object::RegisterType( SystemEnergyProbe() );
-	///Object::RegisterType( MuscleMetabolicRateProbeUmberger2003() );	// coming soon
-	///Object::RegisterType( MuscleMetabolicRateProbeBhargava2004() );	// coming soon
-	///Object::RegisterType( MetabolicMuscle() );						// coming soon
-	///Object::RegisterType( MetabolicMuscleSet() );					// coming soon
+    Object::registerType( BushingForce() );
+    Object::registerType( PathActuator() );
+    Object::RegisterType( ProbeSet() );
+    Object::RegisterType( ActuatorPowerProbe() );
+    Object::RegisterType( ForceProbe() );
+    Object::RegisterType( JointPowerProbe() );
+    Object::RegisterType( SystemEnergyProbe() );
+    ///Object::RegisterType( MuscleMetabolicRateProbeUmberger2003() );	// coming soon
+    ///Object::RegisterType( MuscleMetabolicRateProbeBhargava2004() );	// coming soon
+    ///Object::RegisterType( MetabolicMuscle() );						// coming soon
+    ///Object::RegisterType( MetabolicMuscleSet() );					// coming soon
 
 
-	// OLD Versions
-	// Associate an instance with old name to help deserialization.
-	// This has to be done after the new Type is registered.
-	Object::renameType("ActuatorSet",       "ForceSet");
-	Object::renameType("MuscleWrap",        "PathWrap");
-	Object::renameType("MuscleWrapSet",     "PathWrapSet");
-	Object::renameType("MusclePoint",       "PathPoint");
-	Object::renameType("MuscleViaPoint",    "ConditionalPathPoint");
-	Object::renameType("MovingMusclePoint", "MovingPathPoint");
-	Object::renameType("MusclePointSet",    "PathPointSet");
+    // OLD Versions
+    // Associate an instance with old name to help deserialization.
+    // This has to be done after the new Type is registered.
+    Object::renameType("ActuatorSet",       "ForceSet");
+    Object::renameType("MuscleWrap",        "PathWrap");
+    Object::renameType("MuscleWrapSet",     "PathWrapSet");
+    Object::renameType("MusclePoint",       "PathPoint");
+    Object::renameType("MuscleViaPoint",    "ConditionalPathPoint");
+    Object::renameType("MovingMusclePoint", "MovingPathPoint");
+    Object::renameType("MusclePointSet",    "PathPointSet");
+
+  } catch (const std::exception& e) {
+    std::cerr 
+        << "ERROR during osimSimulation Object registration:\n"
+        << e.what() << "\n";
+  }
 }
 
 

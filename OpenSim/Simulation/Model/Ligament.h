@@ -61,42 +61,52 @@ class GeometryPath;
 /**
  * A class implementing a ligament. The path of the ligament is
  * stored in a GeometryPath object.
- *
- * @version 1.0
  */
 class OSIMSIMULATION_API Ligament : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(Ligament, Force);
-
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
 public:
-	Ligament();
-	Ligament(const Ligament &aLigament);
-	virtual ~Ligament();
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath, 
+		"the set of points defining the path of the ligament");
+    OpenSim_DECLARE_PROPERTY(resting_length, double,
+		"resting length of the ligament");
+	OpenSim_DECLARE_PROPERTY(pcsa_force, double,
+		"force magnitude that scales the force-length curve");
+	OpenSim_DECLARE_PROPERTY(force_length_curve, Function,
+		"Function representing the force-length behavior of the ligament");
+    /**@}**/
 
-#ifndef SWIG
-	Ligament& operator=(const Ligament &aLigament);
-#endif
-   void copyData(const Ligament &aLigament);
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+	Ligament();
+
+    // Uses default (compiler-generated) destructor, copy constructor, and copy
+    // assignment operator.
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	const GeometryPath& getGeometryPath() const { return getPropertyValue<GeometryPath>("GeometryPath"); }
-	GeometryPath& updGeometryPath() { return updPropertyValue<GeometryPath>("GeometryPath"); }
+	const GeometryPath& getGeometryPath() const 
+    {   return getProperty_GeometryPath(); }
+	GeometryPath& updGeometryPath() 
+    {   return updProperty_GeometryPath(); }
 	virtual bool hasGeometryPath() const { return true;};
 	virtual double getLength(const SimTK::State& s) const;
-	virtual double getRestingLength() const { return getPropertyValue<double>("resting_length"); }
+	virtual double getRestingLength() const 
+    {   return getProperty_resting_length(); }
 	virtual bool setRestingLength(double aRestingLength);
-	virtual double getMaxIsometricForce() const { return getPropertyValue<double>("pcsa_force"); }
+	virtual double getMaxIsometricForce() const 
+    {   return getProperty_pcsa_force(); }
 	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
 	virtual const Function& getForceLengthCurve() const 
-    {   return getPropertyValue<Function>("force_length_curve"); }
+    {   return getProperty_force_length_curve(); }
 	virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
 
 	//--------------------------------------------------------------------------
@@ -122,13 +132,13 @@ public:
 	virtual void updateDisplayer(const SimTK::State& s);
 
 protected:
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void initState(SimTK::State& s) const;
+    // Implement ModelComponent interface.
+	void setup(Model& aModel) OVERRIDE_11;
+	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void initState(SimTK::State& s) const OVERRIDE_11;
 
 private:
-	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 //=============================================================================
 };	// END of class Ligament

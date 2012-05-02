@@ -66,7 +66,7 @@ static osimActuatorsInstantiator instantiator;
  */
 OSIMACTUATORS_API void RegisterTypes_osimActuators()
 {
-	//cout<<"RegisterTypes_osimActuators\n";
+  try {
 
 	Object::registerType( CoordinateActuator() );
 	Object::registerType( PointActuator() );
@@ -99,6 +99,12 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 	Object::renameType("Delp1990Muscle", "Delp1990Muscle_Deprecated");
 
 	//Object::RenameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+
+  } catch (const std::exception& e) {
+    std::cerr 
+        << "ERROR during osimActuators Object registration:\n"
+        << e.what() << "\n";
+  }
 }
 
 osimActuatorsInstantiator::osimActuatorsInstantiator()

@@ -1,7 +1,7 @@
 // Actuator.cpp
 // Author: Ajay Seth
 /*
- * Copyright (c)  2010, Stanford University. All rights reserved. 
+ * Copyright (c)  2010-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -29,15 +29,16 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Actuator.h"
 #include <OpenSim/Common/Object.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Common/StateFunction.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Control/Controller.h>
-#include "SimTKsimbody.h"
-#include "ForceAdapter.h"
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
+
+#include "Actuator.h"
+#include "ForceAdapter.h"
+#include "Simbody.h"
 #include <sstream>
 #include <limits>
 
@@ -50,34 +51,14 @@ using namespace SimTK;
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Construct an actuator  of  controls.
+ * Construct an actuator of controls.
  *
  */
-Actuator_::Actuator_() : Force()
+Actuator_::Actuator_()
 {
 	setNull();
 }
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aActuator Actuator to copy.
- */
-Actuator_::Actuator_(const Actuator_ &aAct) : Force(aAct)
-{
-	setNull();
 
-	// ASSIGN
-	*this = aAct;
-}
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Actuator_::~Actuator_()
-{
-}
 
 //=============================================================================
 // CONSTRUCTION METHODS
@@ -88,6 +69,7 @@ Actuator_::~Actuator_()
  */
 void Actuator_::setNull()
 {
+    _controlIndex = -1;
 }
 
 // Create the underlying computational system component(s) that support the
@@ -118,21 +100,6 @@ void Actuator_::updateGeometry()
 {
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Actuator_& Actuator_::operator=(const Actuator_ &aAct)
-{
-	// BASE CLASS
-	Force::operator=(aAct);
-	return(*this);
-}
 // CONTROLS
 //_____________________________________________________________________________
 /**
@@ -187,46 +154,21 @@ void Actuator_::addInControls(const Vector& actuatorControls, Vector& modelContr
 //_____________________________________________________________________________
 
 /** Default constructor */
-Actuator::Actuator() : Actuator_(),
-    _overrideForceFunction(0)
+Actuator::Actuator()
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
-/**
- * Copy constructor.
- *
- * @param aActuator Actuator to copy.
- */
-Actuator::Actuator(const Actuator &aAct) : Actuator_(aAct),
-    _overrideForceFunction(0)
-{
-	setNull();
-	setupProperties();
-	setPropertyValue("min_control", aAct.getPropertyValue<double>("min_control"));
-	setPropertyValue("max_control", aAct.getPropertyValue<double>("max_control"));
-}
 
 /**
- * Destructor.
+ * Set up the serializable member variables. This involves constructing and
+ * initializing properties.
  */
-Actuator::~Actuator()
+void Actuator::constructProperties()
 {
-}
-
-/**
- * Set up the serializable member variables.  This involves generating
- * properties and connecting local variables to those properties.
- */
-void Actuator::setupProperties()
-{
-	addProperty<double>("min_control",
-		"Minimum allowed value for control signal. Used primarily when solving for control values",
-		-Infinity);
-	addProperty<double>("max_control",
-		"Maximum allowed value for control signal. Used primarily when solving for control values",
-		Infinity);
+	constructProperty_min_control(-Infinity);
+	constructProperty_max_control( Infinity);
 }
 
 /**
@@ -234,22 +176,7 @@ void Actuator::setupProperties()
  */
 void Actuator::setNull()
 {
-}
-
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Actuator& Actuator::operator=(const Actuator &aAct)
-{
-	// BASE CLASS
-	Actuator_::operator=(aAct);
-
-	setPropertyValue("min_control", aAct.getPropertyValue<double>("min_control"));
-	setPropertyValue("max_control", aAct.getPropertyValue<double>("max_control"));
-
-	return(*this);
+    _overrideForceFunction = NULL;
 }
 
 // Create the underlying computational system component(s) that support the
@@ -258,7 +185,8 @@ void Actuator::createSystem(SimTK::MultibodySystem& system) const
 {
 	Actuator_::createSystem(system);
 
-	// Add modeling flag to compute actuation with dynamic or by-pass with override force provided
+	// Add modeling flag to compute actuation with dynamic or by-pass with 
+    // override force provided
 	addModelingOption("override_force", 1);
 
 	// Cache the computed force and speed of the scalar valued actuator
@@ -362,5 +290,5 @@ StateFunction* Actuator::updOverrideForceFunction() {
 }
 
 void Actuator::resetOverrideForceFunction() {
-     _overrideForceFunction = 0;
+     _overrideForceFunction = NULL;
 }

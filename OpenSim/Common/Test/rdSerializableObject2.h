@@ -71,41 +71,47 @@ public:
 		setupSerializedMembers();
 		updateFromXMLDocument();
 	}
-	rdSerializableObject2(const rdSerializableObject2 &aObject){
-		setNull();
-		setupSerializedMembers();
-		*this = aObject;
-	}
+	//rdSerializableObject2(const rdSerializableObject2 &aObject){
+	//	setNull();
+	//	setupSerializedMembers();
+	//	*this = aObject;
+	//}
+
+    OpenSim_DECLARE_PROPERTY(Test_Bool2, bool, "obj2's bool prop");
+    OpenSim_DECLARE_LIST_PROPERTY(Test_DblArray2, double, 
+        "obj2's double array prop");
 
 private:
 	void setNull(){
 	};
 	void setupSerializedMembers(){
 		// Bool
-		PropertyBool pBool("Test_Bool2",false);
-		_propertySet.append(pBool.clone());
+		//PropertyBool pBool("Test_Bool2",false);
+		//_propertySet.append(pBool.clone());
+        constructProperty_Test_Bool2(false);
 
 		// DblArray
 		Array<double> dblArray(0.1);
 		dblArray.setSize(3);
-		PropertyDblArray pDblArray("Test_DblArray2",dblArray);
-		_propertySet.append(pDblArray.clone());
+		//PropertyDblArray pDblArray("Test_DblArray2",dblArray);
+		//_propertySet.append(pDblArray.clone());
+        constructProperty_Test_DblArray2(dblArray);
 	};
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
-	rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
-		Object::operator=(aObject);
-        updPropertyByIndex(0).updValue<bool>()=
-            aObject.getPropertyByIndex(0).getValue<bool>();
-        AbstractProperty& prop = updPropertyByIndex(1);
-        for (int i=0; i < prop.size(); ++i)
-            prop.updValue<double>(i)= 
-                aObject.getPropertyByIndex(1).getValue<double>(i);
-		return(*this);
-	}
+	//rdSerializableObject2& operator=(const rdSerializableObject2 &aObject){
+	//	Object::operator=(aObject);
+ //       updPropertyByIndex(0).updValue<bool>()=
+ //           aObject.getPropertyByIndex(0).getValue<bool>();
+ //       AbstractProperty& prop = updPropertyByIndex(1);
+ //       for (int i=0; i < prop.size(); ++i)
+ //           prop.updValue<double>(i)= 
+ //               aObject.getPropertyByIndex(1).getValue<double>(i);
+	//	return(*this);
+	//}
 
 	//=============================================================================
 };

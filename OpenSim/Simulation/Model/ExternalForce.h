@@ -1,5 +1,5 @@
-#ifndef __ExternalForce_h__
-#define __ExternalForce_h__
+#ifndef OPENSIM_EXTERNAL_FORCE_H_
+#define OPENSIM_EXTERNAL_FORCE_H_
 // ExternalForce.h
 // Author: Ajay Seth
 /*
@@ -55,11 +55,176 @@ class Function;
  */
 class OSIMSIMULATION_API ExternalForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(ExternalForce, Force);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(applied_to_body, std::string,
+		"Name of the body the force is applied to.");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(force_expressed_in_body, std::string,
+		"Name of the body the force is expressed in (default is ground).");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(point_expressed_in_body, std::string,
+		"Name of the body the point is expressed in (default is ground).");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(force_identifier, std::string,
+		"Identifier (string) to locate the force to be applied in the data source.");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(point_identifier, std::string,
+		"Identifier (string) to locate the point to be applied in the data source.");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(torque_identifier, std::string,
+		"Identifier (string) to locate the torque to be applied in the data source.");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(data_source_name, std::string,
+		"Name of the data source (Storage) that will supply the force data.");
+    /**@}**/
 
-//=============================================================================
-// DATA
-//=============================================================================
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+	/**
+	 * Default Construct of an ExternalForce. 
+	 * By default ExternalForce has data source identified by name.
+	 * By setup() time, Tool or modeler must setDataSource() on this Force for
+	 * it to be able to apply any force. Otherwise, an exception is thrown.
+	 * 
+	 */
+	ExternalForce();
+	/**
+	 * Convenience Constructor of an ExternalForce. 
+	 * 
+ 	 * @param dataSource		a storage containing the pertinent force data through time
+	 * @param forceIdentifier   string used to access the force data in the dataSource
+	 * @param pointIdentifier   string used to access the point of application of the force in dataSource
+	 * @param torqueIdentifier  string used to access the force data in the dataSource
+	 * @param appliedToBodyName			string used to specify the body to which the force is applied
+	 * @param forceExpressedInBodyName  string used to define in which body the force is expressed
+	 * @param pointExpressedInBodyName  string used to define the body in which the the point is expressed
+	 */
+	ExternalForce(const Storage& dataSource, 
+                  const std::string& forceIdentifier="force", 
+                  const std::string& PointIdentifier="point", 
+                  const std::string& torqueIdentifier="torque",
+		          const std::string& appliedToBodyName="", 
+                  const std::string& forceExpressedInBodyName="ground", 
+                  const std::string& pointExpressedInBodyName="ground");
+	explicit ExternalForce(SimTK::Xml::Element& aNode);
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
+
+    // Copy properties from XML into member variables
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+
+	// ACCESS METHODS
+	/**
+	 *  Associate the data source from which the force, point and/or torque data
+	 *  is to be extracted.
+	 */
+	void setDataSource(const Storage *dataSource);
+
+    /** Get the name of the data source for the force data. **/ 
+	const std::string& getDataSourceName() const 
+    {   return getProperty_data_source_name(); }
+
+	/**
+	 *  Specify or obtain the body to which the force will be applied
+	 */
+	void setAppliedToBodyName(const std::string &applyToName) 
+    {   setProperty_applied_to_body(applyToName); }
+	const std::string& getAppliedToBodyName() const 
+    {   return getProperty_applied_to_body(); }
+
+	/**
+	 *  Specify or obtain the body in which the point of application is expressed
+	 */
+	void setPointExpressedInBodyName(const std::string &pointInBodyName) 
+    {   setProperty_point_expressed_in_body(pointInBodyName); }
+	const std::string& getPointExpressedInBodyName() const 
+    {   return getProperty_point_expressed_in_body(); }
+
+	/**
+	 *  Specify or obtain the body in which the force is expressed
+	 */
+	void setForceExpressedInBodyName(const std::string &forceInBodyName) 
+    {   setProperty_force_expressed_in_body(forceInBodyName); }
+	const std::string& getForceExpressedInBodyName() const 
+    {   return getProperty_force_expressed_in_body(); }
+
+	/**
+	 * Identifiers
+	 */
+	void setForceIdentifier(const std::string aForceIdentifier) 
+    {   setProperty_force_identifier(aForceIdentifier); }
+	void setPointIdentifier(const std::string aPointIdentifier) 
+    {   setProperty_point_identifier(aPointIdentifier); }
+	void setTorqueIdentifier(const std::string aTorqueIdentifier) 
+    {   setProperty_torque_identifier(aTorqueIdentifier); }
+
+	const std::string& getForceIdentifier() const 
+    {   return getProperty_force_identifier(); }
+	const std::string& getPointIdentifier() const 
+    {   return getProperty_point_identifier(); }
+	const std::string& getTorqueIdentifier() const 
+    {   return getProperty_torque_identifier(); }
+	/**
+	 * Convenience methods to access external forces at a given time
+	 */
+	SimTK::Vec3 getForceAtTime(double aTime) const;
+	SimTK::Vec3 getPointAtTime(double aTime) const;
+	SimTK::Vec3 getTorqueAtTime(double aTime) const;
+
+	/**
+	 * Methods used for reporting.
+	 * First identify the labels for individual components
+	 */
+	virtual OpenSim::Array<std::string> getRecordLabels() const;
+	/**
+	 * Given SimTK::State object extract all the values necessary to report 
+     * forces, application location frame, etc. used in conjunction with 
+     * getRecordLabels and should return same size Array.
+	 */
+	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
+	/**
+	 * Methods to query the force properties to find out if it's a body vs. 
+     * point force and/or if it applies a torque. 
+	 */
+	bool appliesForce() const { 
+        const std::string &forceIdentifier = getProperty_force_identifier(); 
+        return !((forceIdentifier.find_first_not_of(" \t")==std::string::npos) 
+                  || (forceIdentifier == "Unassigned"));
+    }
+	bool specifiesPoint() const { 
+        const std::string &pointIdentifier = getProperty_point_identifier(); 
+        return !((pointIdentifier.find_first_not_of(" \t")==std::string::npos) 
+                  || (pointIdentifier == "Unassigned"));
+    }
+	bool appliesTorque() const { 
+        const std::string &torqueIdentifier = getProperty_torque_identifier(); 
+        return !((torqueIdentifier.find_first_not_of(" \t")==std::string::npos) 
+                  || (torqueIdentifier == "Unassigned"));
+    }
+
+
+protected:
+
+	/**  ModelComponent interface */ 
+	virtual void setup(Model& model);
+	/**
+	 * Compute the force.
+	 */
+	virtual void computeForce(const SimTK::State& state, 
+							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+							  SimTK::Vector& generalizedForces) const;
+
 private:
+	void setNull();
+	void constructProperties();
+
+
+//==============================================================================
+// DATA
+//==============================================================================
 
 	/** Pointer to the body that force is applied to */
 	Body *_appliedToBody;
@@ -84,123 +249,11 @@ private:
 	SimTK::Array_<Function*> _pointFunctions;
 
 	friend class ExternalLoads;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-public:
-	// CONSTRUCTION
-	/**
-	 * Default Construct of an ExternalForce. 
-	 * By default ExternalForce has data source identified by name.
-	 * By setup() time, Tool or modeler must setDataSource() on this Force for
-	 * it to be able to apply any force. Otherwise, an exception is thrown.
-	 * 
-	 */
-	ExternalForce();
-	/**
-	 * Convenience Constructor of an ExternalForce. 
-	 * 
- 	 * @param dataSource		a storage containing the pertinent force data through time
-	 * @param forceIdentifier   string used to access the force data in the dataSource
-	 * @param pointIdentifier   string used to access the point of application of the force in dataSource
-	 * @param torqueIdentifier  string used to access the force data in the dataSource
-	 * @param appliedToBodyName			string used to specify the body to which the force is applied
-	 * @param forceExpressedInBodyName  string used to define in which body the force is expressed
-	 * @param pointExpressedInBodyName  string used to define the body in which the the point is expressed
-	 */
-	ExternalForce(const Storage &dataSource, std::string forceIdentifier="force", std::string PointIdentifier="point", std::string torqueIdentifier="torque",
-		std::string appliedToBodyName="", std::string forceExpressedInBodyName="ground", std::string pointExpressedInBodyName="ground");
-	ExternalForce(const ExternalForce& force);
-	ExternalForce(SimTK::Xml::Element& aNode);
-	~ExternalForce();
-
-    // Copy properties from XML into member variables
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
-
-	// ACCESS METHODS
-	/**
-	 *  Associate the data source from which the force, point and/or torque data
-	 *  is to be extracted.
-	 */
-	void setDataSource(const Storage *dataSource);
-
-	/**
-	 *  Specify or obtain the body to which the force will be applied
-	 */
-	void setAppliedToBodyName(const std::string &applyToName) { setPropertyValue("applied_to_body", applyToName); }
-	const std::string& getAppliedToBodyName() const { return getPropertyValue<std::string>("applied_to_body"); }
-
-	/**
-	 *  Specify or obtain the body in which the point of application is expressed
-	 */
-	void setPointExpressedInBodyName(const std::string &pointInBodyName) { setPropertyValue("point_expressed_in_body", pointInBodyName); }
-	const std::string& getPointExpressedInBodyName() const { return getPropertyValue<std::string>("point_expressed_in_body"); }
-
-	/**
-	 *  Specify or obtain the body in which the force is expressed
-	 */
-	void setForceExpressedInBodyName(const std::string &forceInBodyName) { setPropertyValue("force_expressed_in_body", forceInBodyName); }
-	const std::string& getForceExpressedInBodyName() const { return getPropertyValue<std::string>("force_expressed_in_body"); }
-
-	/**
-	 * Identifiers
-	 */
-	void setForceIdentifier(const std::string aForceIdentifier) { setPropertyValue("force_identifier", aForceIdentifier); }
-	void setPointIdentifier(const std::string aPointIdentifier) { setPropertyValue("point_identifier", aPointIdentifier); }
-	void setTorqueIdentifier(const std::string aTorqueIdentifier) { setPropertyValue("torque_identifier", aTorqueIdentifier); }
-
-	const std::string& getForceIdentifier() const { return getPropertyValue<std::string>("force_identifier"); }
-	const std::string& getPointIdentifier() const { return getPropertyValue<std::string>("point_identifier"); }
-	const std::string& getTorqueIdentifier() const { return getPropertyValue<std::string>("torque_identifier"); }
-	/**
-	 * Convenience methods to access external forces at a given time
-	 */
-	SimTK::Vec3 getForceAtTime(double aTime) const;
-	SimTK::Vec3 getPointAtTime(double aTime) const;
-	SimTK::Vec3 getTorqueAtTime(double aTime) const;
-
-	/**
-	 * Methods used for reporting.
-	 * First identify the labels for individual components
-	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const;
-	/**
-	 * Given SimTK::State object extract all the values necessary to report forces, application location
-	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
-	 */
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
-	/**
-	 * Methods to query the force properties to find out if it's a body vs. point force and/or if it applies a torque 
-	 */
-	bool appliesForce() const { const std::string &forceIdentifier = getPropertyValue<std::string>("force_identifier"); return !((forceIdentifier.find_first_not_of(" \t")==std::string::npos) || (forceIdentifier == "Unassigned"));};
-	bool specifiesPoint() const { const std::string &pointIdentifier = getPropertyValue<std::string>("point_identifier"); return !((pointIdentifier.find_first_not_of(" \t")==std::string::npos) || (pointIdentifier == "Unassigned"));};
-	bool appliesTorque() const { const std::string &torqueIdentifier = getPropertyValue<std::string>("torque_identifier"); return !((torqueIdentifier.find_first_not_of(" \t")==std::string::npos) || (torqueIdentifier == "Unassigned"));};
-
-#ifndef SWIG
-	ExternalForce& operator=(const ExternalForce &aForce);
-#endif
-
-protected:
-
-	/**  ModelComponent interface */ 
-	virtual void setup(Model& model);
-	/**
-	 * Compute the force.
-	 */
-	virtual void computeForce(const SimTK::State& state, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const;
-
-private:
-	void setNull();
-	void setupProperties();
-	void copyData(const ExternalForce& orig);
-//=============================================================================
+//==============================================================================
 };	// END of class ExternalForce
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __ExternalForce_h__
+#endif // OPENSIM_EXTERNAL_FORCE_H_

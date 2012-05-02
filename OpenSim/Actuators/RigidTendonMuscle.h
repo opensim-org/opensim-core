@@ -1,10 +1,10 @@
-#ifndef __RigidTendonMuscle_h__
-#define __RigidTendonMuscle_h__
+#ifndef OPENSIM_RIGID_TENDON_MUSCLE_H_
+#define OPENSIM_RIGID_TENDON_MUSCLE_H_
 
 // RigidTendonMuscle.h
 // Author: Ajay Seth
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -44,8 +44,9 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                          RIGID TENDON MUSCLE
+//==============================================================================
 /**
  * A class implementing a RigidTendonMuscle actuator with no states.
  * The path information for a RigidTendonMuscle is contained
@@ -57,26 +58,36 @@ namespace OpenSim {
  * with no excitation-to-activation dynamics and excitation=activation.
  *
  * @author Ajay Seth
- * @version 1.0
  */
 class OSIMACTUATORS_API RigidTendonMuscle : public Muscle {
 OpenSim_DECLARE_CONCRETE_OBJECT(RigidTendonMuscle, Muscle);
-
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
+		"Function representing active force-length behavior of muscle fibers");
+	OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
+		"Function representing passive force-length behavior of muscle fibers");
+	OpenSim_DECLARE_PROPERTY(force_velocity_curve, Function,
+		"Function representing force-velocity behavior of muscle fibers");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 	RigidTendonMuscle();
-	/** Convenicencec Contructor */
-	RigidTendonMuscle(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
-	RigidTendonMuscle(const RigidTendonMuscle &aRigidTendonMuscle);
+	RigidTendonMuscle(const std::string&    name,
+                      double                maxIsometricForce,
+                      double                optimalFiberLength,
+                      double                tendonSlackLength,
+                      double                pennationAngle);
 
-	void setName(const std::string &aName);
-
-	RigidTendonMuscle& operator=(const RigidTendonMuscle &aRigidTendonMuscle);
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
 	/** activation level for this muscle */
 	void setActivation(SimTK::State& s, double activation) const {setExcitation(s, activation); }
@@ -109,17 +120,17 @@ protected:
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
 protected:
 
-//=============================================================================
+//==============================================================================
 };	// END of class RigidTendonMuscle
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __RigidTendonMuscle_h__
+#endif // OPENSIM_RIGID_TENDON_MUSCLE_H_
 
 

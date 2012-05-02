@@ -1,9 +1,9 @@
-#ifndef _CoordinateActuator_h_
-#define _CoordinateActuator_h_
+#ifndef OPENSIM_COORDINATE_ACTUATOR_H_
+#define OPENSIM_COORDINATE_ACTUATOR_H_
 // CoordinateActuator.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2005-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -37,116 +37,118 @@
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "SimTKsimbody.h"
+#include "Simbody.h"
 
 
-//=============================================================================
-//=============================================================================
-/**
- * A class that supports the application of a coordinate actuator to a model.
- * This actuator has no states; the control is simply the force to
- * be applied to the model.
- *
- * @author Frank C. Anderson
- * @version 1.0
- */
 namespace OpenSim { 
 
 class Coordinate;
 class ForceSet;
 class Model;
 
+//==============================================================================
+//                           COORDINATE ACTUATOR
+//==============================================================================
+/**
+ * A class that supports the application of a coordinate actuator to a model.
+ * This actuator has no states; the control is simply the force to
+ * be applied to the model.
+ *
+ * @author Frank C. Anderson
+ */
 class OSIMACTUATORS_API CoordinateActuator : public Actuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(CoordinateActuator, Actuator);
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-	/** Corresponding generalized coordinate to which the coordinate actuator
-    is applied. */
-    mutable Coordinate *_coord;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
 public:
-	CoordinateActuator( std::string aCoordinateName="");
-	CoordinateActuator( const CoordinateActuator &aGenForce);
-	virtual ~CoordinateActuator();
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
+		"Name of the generalized coordinate to which the actuator applies.");
+	OpenSim_DECLARE_PROPERTY(optimal_force, double,
+		"The maximum generalized force produced by this actuator.");
+    /**@}**/
 
-	void copyData(const CoordinateActuator &aGenForce);
-private:
-	void setNull();
-	void setupProperties();
-	
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** Default constructor leaves coordinate name unspecified, or you can
+    provide it. **/
+	explicit CoordinateActuator(const std::string& coordinateName="");
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-	CoordinateActuator& operator=(const CoordinateActuator &aGenForce);
-#endif
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// GENERALIZED COORDINATE
-	void setCoordinate(Coordinate* aCoordinate);
-	Coordinate* getCoordinate() const;
-	// OPTIMAL FORCE
-	void setOptimalForce(double aOptimalForce);
-	double getOptimalForce() const;
-	// STRESS
-#ifndef SWIG
-	double getStress( const SimTK::State& s ) const;
-
-	//--------------------------------------------------------------------------
-	// APPLICATION
-	//--------------------------------------------------------------------------
-	virtual void computeForce( const SimTK::State& state, 
-							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							   SimTK::Vector& mobilityForces) const;
-
-	//--------------------------------------------------------------------------
-	// COMPUTATIONS
-	//--------------------------------------------------------------------------
-	virtual double  computeActuation( const SimTK::State& s) const;
+	/** Set the 'optimal_force' property. **/
+	void setOptimalForce(double optimalForce);
+    /** Get the current setting of the 'optimal_force' property. **/
+	double getOptimalForce() const OVERRIDE_11; // part of Actuator interface
 
 	//--------------------------------------------------------------------------
 	// UTILITY
 	//--------------------------------------------------------------------------
-	static ForceSet *CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
-#endif
-	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	virtual bool check() const;
-	virtual bool isCoordinateValid() const;
+	static ForceSet* CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel,double aOptimalForce = 1,bool aIncludeLockedAndConstrainedCoordinates = true);
 
-	virtual double getSpeed( const SimTK::State& s) const;
+	bool isCoordinateValid() const;
+	double getSpeed( const SimTK::State& s) const;
+
+    /** Set the reference pointer to point to the given Coordinate and set
+    the 'coordinate' name property also. **/
+    void setCoordinate(Coordinate* aCoordinate);
+    /** Get a pointer to the Coordinate to which this actuator refers. **/
+	Coordinate* getCoordinate() const;
+
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
+	//--------------------------------------------------------------------------
+	// Implement Force interface
+	//--------------------------------------------------------------------------
+	void computeForce(const SimTK::State& state, 
+					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+					  SimTK::Vector& mobilityForces) const OVERRIDE_11;
+
 
 	//--------------------------------------------------------------------------
-	// XML
+	// Implement Actuator interface (also see getOptimalForce() above)
 	//--------------------------------------------------------------------------
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+	double  computeActuation( const SimTK::State& s) const OVERRIDE_11;
+	// Return the stress, defined as abs(force/optimal_force).
+	double getStress( const SimTK::State& s ) const OVERRIDE_11;
 
-protected:
-	// Setup method to initialize coordinate reference
-	virtual void setup(Model &aModel);
-	virtual void createSystem( SimTK::MultibodySystem& system) const ;
 
-//=============================================================================
+	//--------------------------------------------------------------------------
+	// Implement ModelComponent interface
+	//--------------------------------------------------------------------------
+	void setup(Model &aModel) OVERRIDE_11;
+	void createSystem( SimTK::MultibodySystem& system) const OVERRIDE_11;
+
+	//--------------------------------------------------------------------------
+	// Implement Object interface.
+	//--------------------------------------------------------------------------
+	void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1)
+        OVERRIDE_11;
+
+	void setNull();
+	void constructProperties();
+
+
+    // Note: reference pointers are automatically set to null on construction 
+    // and also on copy construction and copy assignment.
+
+	// Corresponding generalized coordinate to which the coordinate actuator
+    // is applied.
+    SimTK::ReferencePtr<Coordinate> _coord;
+//==============================================================================
 };	// END of class CoordinateActuator
 
 }; //namespace
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
-#endif // __CoordinateActuator_h__
+#endif // OPENSIM_COORDINATE_ACTUATOR_H_
 
 

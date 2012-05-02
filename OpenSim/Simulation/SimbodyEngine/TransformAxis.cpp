@@ -1,7 +1,8 @@
 // TransformAxis.cpp
-// Author: Peter Loan, Frank C. Anderson, Jeffrey A. Reinbolt, Ajay Seth
+// Authors: Peter Loan, Frank C. Anderson, Jeffrey A. Reinbolt, Ajay Seth,
+//          Michael Sherman
 /*
- * Copyright (c)  2006-2007, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-2012, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -30,101 +31,45 @@
 // INCLUDES
 //=============================================================================
 #include <OpenSim/Common/XMLDocument.h>
+#include <OpenSim/Common/Function.h>
+#include <OpenSim/Simulation/Model/Model.h>
+
 #include "TransformAxis.h"
 #include "Joint.h"
 #include "Coordinate.h"
 #include "SimbodyEngine.h"
-#include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/Function.h>
 
 //=============================================================================
-// STATICS
+// USING
 //=============================================================================
 using namespace std;
 using namespace OpenSim;
+using SimTK::Vec3; using SimTK::State; using SimTK::Vector; using SimTK::Xml;
 
 //=============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-TransformAxis::TransformAxis() :
-	Object(),
-    _function(_functionProp.getValueObjPtrRef()),
-    _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec())
-{
+// Default constructor.
+TransformAxis::TransformAxis() {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Constructor.
- */
-	TransformAxis::TransformAxis(const Array<string> &coordNames, const SimTK::Vec3& aAxis) :
-    Object(),
-	_function(_functionProp.getValueObjPtrRef()),
-    _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec())
-{
+// Constructor with coordinate names and axis.
+TransformAxis::TransformAxis(const Array<string>& coordNames, 
+                             const Vec3&          axis) {
 	setNull();
-	setupProperties();
+	constructProperties();
 	setCoordinateNames(coordNames);
-	setAxis(aAxis);
+	setAxis(axis);
 }
-/**
- * Constructor from XML node
- */
-TransformAxis::TransformAxis(SimTK::Xml::Element& aNode) :
-    _function(_functionProp.getValueObjPtrRef()),
-    _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec())
-{
+// Constructor from XML node.
+TransformAxis::TransformAxis(Xml::Element& aNode) {
 	setNull();
-	setupProperties();
+	constructProperties();
 	updateFromXMLNode(aNode);
-}
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-TransformAxis::~TransformAxis()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param anAxis TransformAxis to be copied.
- */
-TransformAxis::TransformAxis(const TransformAxis &anAxis) :
-    Object(anAxis),
-    _function(_functionProp.getValueObjPtrRef()),
-    _coordinateNames((Array<std::string>&)_coordinateNamesProp.getValueStrArray()),
-	_axis(_axisProp.getValueDblVec())
-{
-	setNull();
-	setupProperties();
-	copyData(anAxis);
-}
-//_____________________________________________________________________________
-/**
- * Copy data members from one TransformAxis to another.
- *
- * @param anAxis TransformAxis to be copied.
- */
-void TransformAxis::copyData(const TransformAxis &anAxis)
-{
-	setFunction((OpenSim::Function*)Object::SafeCopy(anAxis._function));
-    _coordinateNames.setSize(0);
-	_coordinateNames.append(anAxis._coordinateNames);
-    _joint = anAxis._joint;
-    _axis = anAxis._axis;
 }
 
 //_____________________________________________________________________________
@@ -134,28 +79,32 @@ void TransformAxis::copyData(const TransformAxis &anAxis)
  * @param aEngine dynamics engine containing this dof.
  * @param aJoint joint containing this dof.
  */
-void TransformAxis::setup(Joint& aJoint)
+void TransformAxis::setup(const Joint& aJoint)
 {
 	string errorMessage;
 
 	_joint = &aJoint;
 
-	// Look up the coordinates by name
-	int nc = _coordinateNames.getSize();
-	SimTK::Vector workX(nc, 0.0);
+	// Look up the coordinates by name.
+    const Property<string>& coordNames = getProperty_coordinates();
+	int nc = coordNames.size();
 	CoordinateSet& coords = _joint->getCoordinateSet();
 
-	for(int i =0; i< nc; i++){
-		try{
-			// If coordinate is not in the set an excpetion is thrown
-			Coordinate& coord = coords.get(_coordinateNames.get(i));
-		}
-		catch(Exception &){
-			// no coordinate is OK, unless the transform for this axis is governed by a function.
-			if (hasFunction()){
-				errorMessage += "Invalid coordinate (" + _coordinateNames.get(i) + ") specified for TransformAxis " + getName() + " in joint " + aJoint.getName();
-				throw (Exception(errorMessage));
-			}
+    // If a Function has been assigned then we have to insist that any 
+    // specified coordinates actually exist in this joint.
+    // TODO: (sherm 20120418) Why do we allow unrecognized coordinate names
+    // if there is no Function?
+
+    if (!hasFunction())
+        return; // no need to check
+
+	for(int i=0; i< nc; ++i) {
+        if (!coords.contains(coordNames[i])) {
+			errorMessage += "Invalid coordinate (" 
+                            + coordNames[i] 
+                            + ") specified for TransformAxis " 
+                            + getName() + " in joint " + aJoint.getName();
+			throw (Exception(errorMessage));
 		}
 	}
 }
@@ -175,146 +124,76 @@ void TransformAxis::setNull()
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void TransformAxis::setupProperties()
-{
-    _functionProp.setName("function");
-    _propertySet.append(&_functionProp);
-
-    _coordinateNamesProp.setName("coordinates");
-    _propertySet.append(&_coordinateNamesProp);
-
-	// Transformation axis
-	const SimTK::Vec3 defaultAxis(1.0, 0.0, 0.0);
-	_axisProp.setName("axis");
-	_axisProp.setValue(defaultAxis);
-	_propertySet.append(&_axisProp);
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-TransformAxis& TransformAxis::operator=(const TransformAxis &anAxis)
-{
-	// BASE CLASS
-	Object::operator=(anAxis);
-
-	copyData(anAxis);
-
-	return(*this);
+// Define properties.
+void TransformAxis::constructProperties() {
+    constructProperty_coordinates();
+    constructProperty_axis(Vec3(1,0,0)); // use x-axis by default
+    constructProperty_function();
 }
 
 //=============================================================================
 // GET AND SET
 //=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Set the transformation axis.
- *
- * @param aAxis Transformation axis.
- */
-void TransformAxis::
-setAxis(const SimTK::Vec3& aAxis)
-{
-	_axis = aAxis;
-}
-//_____________________________________________________________________________
-/**
- * Get the transformation axis.
- *
- * @param rAxis Transformation axis is returned here.
- */
-void TransformAxis::
-getAxis(SimTK::Vec3& rAxis) const
-{
-	rAxis = _axis;
-}
-
 //_____________________________________________________________________________
 /**
  * Get the current value of the transform.
  *
  * @return Current value of the transform.
  */
-double TransformAxis::getValue(const SimTK::State& s )
+double TransformAxis::getValue(const State& s )
 {
-	int nc = _coordinateNames.getSize();
-	SimTK::Vector workX(nc, 0.0);
+    const Property<string>& coordNames = getCoordinateNames();
+	const int nc = coordNames.size();
 	CoordinateSet& coords = _joint->getCoordinateSet();
 
-	for(int i =0; i< nc; i++){
-		workX[i] = coords.get(_coordinateNames.get(i)).getValue(s);
-	}
+	Vector workX(nc, 0.0);
+	for (int i=0; i < nc; ++i)
+		workX[i] = coords.get(coordNames[i]).getValue(s);
 
-	return _function->calcValue(workX);
-}
-
-//=============================================================================
-// GET AND SET
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the names of the generalized coordinates that disctate the motion
- * of freedom.
- *
- * @param coordNames Names of the generalized coordinates.
- */
-void TransformAxis::setCoordinateNames(const Array<string>& coordNames)
-{
-	_coordinateNames = coordNames;
+	return getFunction().calcValue(workX);
 }
 
 //_____________________________________________________________________________
-/**
- * Utility to return the function that this dof uses.
- *
- * @return Function used by this dof.
- */
-OpenSim::Function& TransformAxis::getFunction() const
+const OpenSim::Function& TransformAxis::getFunction() const
 {
-    if (_function == NULL)
+    const Property<Function>& function = getProperty_function();
+    if (function.empty())
         throw Exception("TransformAxis::getFunction(): no Function is defined");
-	return *_function;
+	return function.getValue();
 }
 
-bool TransformAxis::hasFunction() const
+OpenSim::Function& TransformAxis::updFunction()
 {
-    return (_function != NULL);
+    Property<Function>& function = updProperty_function();
+    if (function.empty())
+        throw Exception("TransformAxis::getFunction(): no Function is defined");
+	return function.updValue();
 }
 
 //_____________________________________________________________________________
-/**
- * Utility to change the function that this dof uses.
- *
- * @param aFunction the function to change to.
- */
-void TransformAxis::setFunction(OpenSim::Function* aFunction)
+// This method takes over ownership.
+void TransformAxis::setFunction(OpenSim::Function* func)
 {
-    if (_function != NULL)
-        delete _function;
-	_function = aFunction;
+    Property<Function>& prop = updProperty_function();
+    prop.clear();
+    prop.adoptAndAppendValue(func);
 }
 
-void TransformAxis::setFunction(const OpenSim::Function& aFunction)
+// This method makes a copy.
+void TransformAxis::setFunction(const OpenSim::Function& func)
 {
-	_function = aFunction.clone();
+    updProperty_function() = func;
 }
 
 
-void TransformAxis::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void TransformAxis::updateFromXMLNode
+   (Xml::Element& node, int versionNumber)
 {
-	// Version before refactoring spatialTransform
-	//if (_node!=NULL){
-	//	renameChildNode("coordinate", "coordinates");
-	//}
-	Object::updateFromXMLNode(aNode, versionNumber);
+	// Version before refactoring spatialTransform.
+    // TODO: this is handled in CustomJoint's updateFromXMLNode() method
+    // but should be dealt with here. Can't do it both places, though.
+
+    //XMLDocument::renameChildNode(node, "coordinate", "coordinates");
+
+	Super::updateFromXMLNode(node, versionNumber);
 }

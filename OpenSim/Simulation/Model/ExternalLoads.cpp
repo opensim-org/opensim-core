@@ -285,14 +285,15 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 
 	nt = lastIndex-startIndex+1;
 
-	// Construct a new storage to conatan the re-expressed point data for the new external force
+	// Construct a new storage to contain the re-expressed point data for the 
+    // new external force.
 	Storage *newDataSource = new Storage(nt);
 	Array<string> labels;
 	labels.append("time");
 
-	const string &forceIdentifier = exForce.getPropertyValue<string>("force_identifier");
-	const string &pointIdentifier = exForce.getPropertyValue<string>("point_identifier");
-	const string &torqueIdentifier = exForce.getPropertyValue<string>("torque_identifier");
+	const string &forceIdentifier = exForce.getForceIdentifier();
+	const string &pointIdentifier = exForce.getPointIdentifier();
+	const string &torqueIdentifier = exForce.getTorqueIdentifier();
 
 	labels.append(forceIdentifier + ".x");
 	labels.append(forceIdentifier + ".y");
@@ -370,7 +371,7 @@ ExternalForce* ExternalLoads::transformPointExpressedInGroundToAppliedBody(const
 	}
 
 	// assign a name to the new data source
-	newDataSource->setName(exForce.getPropertyValue<string>("data_source_name") + "_transformedP");
+	newDataSource->setName(exForce.getDataSourceName() + "_transformedP");
 
 	ExternalForce *exF_transformedPoint = exForce.clone();
 	exF_transformedPoint->setName(exForce.getName()+"_transformedP");

@@ -193,7 +193,7 @@ public:
 #ifndef SWIG
 Set<T>& operator=(const Set<T> &aSet)
 {	
-	Object::operator=(aSet);
+	Super::operator=(aSet);
 	_objects = aSet._objects;
 	_objectGroups = aSet._objectGroups;
 

@@ -1,6 +1,6 @@
 // Thelen2003Muscle_Deprecated.cpp
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -25,32 +25,30 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include "Thelen2003Muscle_Deprecated.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
-//=============================================================================
+//==============================================================================
 // STATICS
-//=============================================================================
+//==============================================================================
 using namespace std;
 using namespace OpenSim;
 
-//=============================================================================
+//==============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated() :
-   ActivationFiberLengthMuscle_Deprecated()
+Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated()
 {
-	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -58,144 +56,46 @@ Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated() :
  * Constructor.
  */
 Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated
-   (const std::string &aName,double aMaxIsometricForce,
-    double aOptimalFiberLength,double aTendonSlackLength,
-    double aPennationAngle) 
-:   ActivationFiberLengthMuscle_Deprecated()
+   (const std::string& name, double maxIsometricForce,
+    double optimalFiberLength, double tendonSlackLength,
+    double pennationAngle) 
+:   Super()
 {
-	setNull();
-	setupProperties();
-	setName(aName);
-	setMaxIsometricForce(aMaxIsometricForce);
-	setOptimalFiberLength(aOptimalFiberLength);
-	setTendonSlackLength(aTendonSlackLength);
-	setPennationAngleAtOptimalFiberLength(aPennationAngle);
+	constructProperties();
+
+	setName(name);
+	setMaxIsometricForce(maxIsometricForce);
+	setOptimalFiberLength(optimalFiberLength);
+	setTendonSlackLength(tendonSlackLength);
+	setPennationAngleAtOptimalFiberLength(pennationAngle);
 }
+
 
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-Thelen2003Muscle_Deprecated::~Thelen2003Muscle_Deprecated()
+// Allocate and initialize properties.
+void Thelen2003Muscle_Deprecated::constructProperties()
 {
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMuscle Thelen2003Muscle_Deprecated to be copied.
- */
-Thelen2003Muscle_Deprecated::Thelen2003Muscle_Deprecated
-   (const Thelen2003Muscle_Deprecated &aMuscle) 
-:   ActivationFiberLengthMuscle_Deprecated(aMuscle)
-{
-	setNull();
-	setupProperties();
-	copyData(aMuscle);
+	constructProperty_activation_time_constant(0.01);
+	constructProperty_deactivation_time_constant(0.04);
+	constructProperty_Vmax(10.0);
+	constructProperty_Vmax0(5.0);
+	constructProperty_FmaxTendonStrain(0.033);
+	constructProperty_FmaxMuscleStrain(0.6);
+	constructProperty_KshapeActive(0.5);
+	constructProperty_KshapePassive(4.0);
+	constructProperty_damping(0.05);
+	constructProperty_Af(0.3);
+	constructProperty_Flen(1.8);
 }
 
 
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one Thelen2003Muscle_Deprecated to another.
- *
- * @param aMuscle Thelen2003Muscle_Deprecated to be copied.
- */
-void Thelen2003Muscle_Deprecated::copyData(const Thelen2003Muscle_Deprecated &aMuscle)
-{
-	setPropertyValue("activation_time_constant", aMuscle.getPropertyValue<double>("activation_time_constant"));
-	setPropertyValue("deactivation_time_constant", aMuscle.getPropertyValue<double>("deactivation_time_constant"));
-	setPropertyValue("Vmax", aMuscle.getPropertyValue<double>("Vmax"));
-	setPropertyValue("Vmax0", aMuscle.getPropertyValue<double>("Vmax0"));
-	setPropertyValue("FmaxTendonStrain", aMuscle.getPropertyValue<double>("FmaxTendonStrain"));
-	setPropertyValue("FmaxMuscleStrain", aMuscle.getPropertyValue<double>("FmaxMuscleStrain"));
-	setPropertyValue("KshapeActive", aMuscle.getPropertyValue<double>("KshapeActive"));
-	setPropertyValue("KshapePassive", aMuscle.getPropertyValue<double>("KshapePassive"));
-	setPropertyValue("damping", aMuscle.getPropertyValue<double>("damping"));
-	setPropertyValue("Af", aMuscle.getPropertyValue<double>("Af"));
-	setPropertyValue("Flen", aMuscle.getPropertyValue<double>("Flen"));
-
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this Thelen2003Muscle_Deprecated to their null values.
- */
-void Thelen2003Muscle_Deprecated::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void Thelen2003Muscle_Deprecated::setupProperties()
-{
-	addProperty<double>("activation_time_constant",
-		"time constant for ramping up of muscle activation",
-		0.01);
-	addProperty<double>("deactivation_time_constant",
-		"time constant for ramping down of muscle activation",
-		0.04);
-	addProperty<double>("Vmax",
-		"maximum contraction velocity at full activation in fiber lengths per second",
-		10.0);
-	addProperty<double>("Vmax0",
-		"maximum contraction velocity at low activation in fiber lengths per second",
-		5.0);
-	addProperty<double>("FmaxTendonStrain",
-		"tendon strain due to maximum isometric muscle force",
-		0.033);
-	addProperty<double>("FmaxMuscleStrain",
-		"passive muscle strain due to maximum isometric muscle force",
-		0.6);
-	addProperty<double>("KshapeActive",
-		"shape factor for Gaussian active muscle force-length relationship",
-		0.5);
-	addProperty<double>("KshapePassive",
-		"exponential shape factor for passive force-length relationship",
-		4.0);
-	addProperty<double>("damping",
-		"passive damping in the force-velocity relationship",
-		0.05);
-	addProperty<double>("Af",
-		"force-velocity shape factor",
-		0.3);
-	addProperty<double>("Flen",
-		"maximum normalized lengthening force",
-		1.8);
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Thelen2003Muscle_Deprecated& Thelen2003Muscle_Deprecated::operator=(const Thelen2003Muscle_Deprecated &aMuscle)
-{
-	// BASE CLASS
-	ActivationFiberLengthMuscle_Deprecated::operator=(aMuscle);
-	copyData(aMuscle);
-
-	return(*this);
-}
-
-
-//=============================================================================
+//==============================================================================
 // GET
-//=============================================================================
+//==============================================================================
 
-//=============================================================================
+//==============================================================================
 // COMPUTATION
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Compute the actuation for the muscle. This function assumes
@@ -203,7 +103,8 @@ Thelen2003Muscle_Deprecated& Thelen2003Muscle_Deprecated::operator=(const Thelen
  *
  * This function is based on muscle_deriv_func9 from derivs.c (old pipeline code)
  */
-double  Thelen2003Muscle_Deprecated::computeActuation(const SimTK::State& s) const
+double Thelen2003Muscle_Deprecated::
+computeActuation(const SimTK::State& s) const
 {
 	double tendonForce;
 	double passiveForce;
@@ -227,9 +128,9 @@ double  Thelen2003Muscle_Deprecated::computeActuation(const SimTK::State& s) con
 
 	/* Compute normalized muscle state derivatives */
 	if (excitation >= activation) {
-	  activationDeriv = (excitation - activation) / getActivationTimeConstant();
+        activationDeriv = (excitation - activation) / getActivationTimeConstant();
 	} else {
-	  activationDeriv = (excitation - activation) / getDeactivationTimeConstant();
+        activationDeriv = (excitation - activation) / getDeactivationTimeConstant();
 	}
 
 	pennation_angle = calcPennation( normFiberLength, 1.0, _pennationAngleAtOptimal);
@@ -300,7 +201,8 @@ double  Thelen2003Muscle_Deprecated::computeActuation(const SimTK::State& s) con
  * @param aNormTendonLength Normalized length of the tendon.
  * @return The force in the tendon.
  */
-double Thelen2003Muscle_Deprecated::calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
+double Thelen2003Muscle_Deprecated::
+calcTendonForce(const SimTK::State& s, double aNormTendonLength) const
 {
 	double norm_resting_length = _tendonSlackLength / _optimalFiberLength;
 	double tendon_strain =  (aNormTendonLength - norm_resting_length) / norm_resting_length;
@@ -346,7 +248,8 @@ double Thelen2003Muscle_Deprecated::calcTendonForce(const SimTK::State& s, doubl
  * @param aNormFiberLength Normalized length of the muscle fiber.
  * @return The passive force in the muscle fibers.
  */
-double Thelen2003Muscle_Deprecated::calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
+double Thelen2003Muscle_Deprecated::
+calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
 	double passive_force;
 
@@ -371,7 +274,8 @@ double Thelen2003Muscle_Deprecated::calcPassiveForce(const SimTK::State& s, doub
  * @param aNormFiberLength Normalized length of the muscle fiber.
  * @return The active force in the muscle fibers.
  */
-double Thelen2003Muscle_Deprecated::calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
+double Thelen2003Muscle_Deprecated::
+calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
 {
 	double x=-(aNormFiberLength-1.)*(aNormFiberLength-1.)/getKshapeActive();
 	return exp(x);
@@ -396,7 +300,8 @@ double Thelen2003Muscle_Deprecated::calcActiveForce(const SimTK::State& s, doubl
  * @param aVelocityDependentForce Force value that depends on fiber velocity.
  * @return The velocity of the muscle fibers.
  */
-double Thelen2003Muscle_Deprecated::calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const
+double Thelen2003Muscle_Deprecated::
+calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const
 {
 	double epsilon=1.e-6;
 

@@ -1,8 +1,8 @@
-#ifndef __Muscle_h__
-#define __Muscle_h__
+#ifndef OPENSIM_MUSCLE_H_
+#define OPENSIM_MUSCLE_H_
 
 // Muscle.h
-// Author: Peter Loan, Frank C. Anderson, Ajay Seth
+// Author: Peter Loan, Frank C. Anderson, Ajay Seth, Matt Millard
 /*
  * Copyright (c)  2012, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
@@ -58,23 +58,49 @@ namespace OpenSim {
  * add whatever states are necessary to describe the specific behavior of a
  * muscle.
  *
- * @version 2.0
- * @author Ajay Seth
- * @author Matt Millard
+ * @author Ajay Seth, Matt Millard
  *
- * @version 1.0
- * @author Peter Loan
- * @author Frank C. Anderson
- * 
+ * (Based on earlier work by Peter Loan and Frank C. Anderson.)
  */
 class OSIMSIMULATION_API Muscle : public PathActuator {
 OpenSim_DECLARE_ABSTRACT_OBJECT(Muscle, PathActuator);
+public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with the %Muscle class. 
+    Note that concrete muscles derived from this class inherit all these
+    properties. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(max_isometric_force, double,
+		"Maximum isometric force that the fibers can generate");
+	OpenSim_DECLARE_PROPERTY(optimal_fiber_length, double,
+		"Optimal length of the muscle fibers");
+	OpenSim_DECLARE_PROPERTY(tendon_slack_length, double,
+		"Resting length of the tendon");
+	OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
+		"Angle between tendon and fibers at optimal fiber length");
+	OpenSim_DECLARE_PROPERTY(max_contraction_velocity, double,
+		"Maximum contraction velocity of the fibers, in optimal fiberlengths/second");
+	OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,
+		"Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.");
+	OpenSim_DECLARE_PROPERTY(ignore_activation_dynamics, bool,
+		"Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.");
+    /**@}**/
 
 //=============================================================================
 // PUBLIC METHODS
 //=============================================================================
-public:
-	//--------------------------------------------------------------------------
+	/** @name Constructors and Destructor
+	 */ 
+	//@{
+	/** Default constructor. */
+	Muscle();
+
+    // default destructor, copy constructor and copy assignment
+    
+    //--------------------------------------------------------------------------
 	// MUSCLE PARAMETER ACCESSORS
 	//--------------------------------------------------------------------------
 	/** @name Muscle Parameters Access Methods
@@ -82,23 +108,23 @@ public:
 	//@{
 	/** get/set the maximum isometric force (in N) that the fibers can generate */
 	double getMaxIsometricForce() const; 
-	void setMaxIsometricForce(double aMaxIsometricForce);
+	void setMaxIsometricForce(double maxIsometricForce);
 
 	/** get/set the optimal length (in m) of the muscle fibers (lumped as a single fiber) */
 	double getOptimalFiberLength() const;
-	void setOptimalFiberLength(double aOptimalFiberLength);
+	void setOptimalFiberLength(double optimalFiberLength);
 
 	/** get/set the resting (slack) length (in m) of the tendon that is in series with the muscle fiber */
 	double getTendonSlackLength() const;
-	void setTendonSlackLength(double aTendonSlackLength);
+	void setTendonSlackLength(double tendonSlackLength);
 
 	/** get/set the angle (in radians) between fibers at their optimal fiber length and the tendon */
 	double getPennationAngleAtOptimalFiberLength() const;
-	void setPennationAngleAtOptimalFiberLength(double aPennationAngle);
+	void setPennationAngleAtOptimalFiberLength(double pennationAngle);
 	
 	/** get/set the maximum contraction velocity of the fibers, in optimal fiber-lengths per second */
 	double getMaxContractionVelocity() const;
-	void setMaxContractionVelocity(double aMaxContractionVelocity);
+	void setMaxContractionVelocity(double maxContractionVelocity);
 
 	// End of Muscle Parameter Accessors.
     //@} 
@@ -203,7 +229,7 @@ public:
 	double getExcitation(const SimTK::State& s) const;
 
 
-	/** TO BE DEPRECATED only for backward compatibility for now */
+	/** DEPRECATED: only for backward compatibility */
 	virtual void setActivation(SimTK::State& s, double activation) const = 0;
 
 	// End of Muscle's State Dependent Accessors.
@@ -223,7 +249,9 @@ public:
     //@} 
 
 
-
+//=============================================================================
+// PROTECTED METHODS
+//=============================================================================
 protected:
 	struct MuscleLengthInfo;
 	struct FiberVelocityInfo;
@@ -296,31 +324,17 @@ protected:
 	// End of Interfaces imposed by parent classes.
     //@} 
 
-public:
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-	/** @name Connstructors and Destructor
-	 */ 
-	//@{
-	/** Default constructor */
-	Muscle();
-	/** Copy constructor */
-	Muscle(const Muscle &aMuscle);
-	/** Free memory used to generate display geometry */
-	virtual ~Muscle();
-
-#ifndef SWIG
-	Muscle& operator=(const Muscle &aMuscle);
-#endif
-
-	/** Override of the default implementation to account for versioning. */
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 	void copyData(const Muscle &aMuscle);
+
+	//--------------------------------------------------------------------------
+	// Implement Object interface.
+	//--------------------------------------------------------------------------
+	/** Override of the default implementation to account for versioning. */
+	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
 
 //=============================================================================
@@ -701,4 +715,4 @@ protected:
 
 } // end of namespace OpenSim
 
-#endif // __Muscle_h__
+#endif // OPENSIM_MUSCLE_H_

@@ -1,10 +1,10 @@
-#ifndef __Schutte1993Muscle_Deprecated_h__
-#define __Schutte1993Muscle_Deprecated_h__
+#ifndef OPENSIM_SCHUTTE_1993_MUSCLE_DEPRECATED_H_
+#define OPENSIM_SCHUTTE_1993_MUSCLE_DEPRECATED_H_
 
 // Schutte1993Muscle_Deprecated.h
 // Author: Peter Loan
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -45,47 +45,67 @@
 namespace OpenSim {
 
 //=============================================================================
+//                SCHUTTE 1993 MUSCLE (DEPRECATED)
 //=============================================================================
 /**
  * A class implementing a SIMM muscle.
  *
  * @author Peter Loan
- * @version 1.0
  */
 class OSIMACTUATORS_API Schutte1993Muscle_Deprecated 
 :   public ActivationFiberLengthMuscle_Deprecated {
 OpenSim_DECLARE_CONCRETE_OBJECT(Schutte1993Muscle_Deprecated, 
                                 ActivationFiberLengthMuscle_Deprecated);
+public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. Other
+    properties are inherited from its superclass. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(time_scale, double,
+		"Scale factor for normalizing time");
+	OpenSim_DECLARE_PROPERTY(activation1, double,
+		"Parameter used in time constant of ramping up of muscle force");
+	OpenSim_DECLARE_PROPERTY(activation2, double,
+		"Parameter used in time constant of ramping up and ramping down of muscle force");
+	OpenSim_DECLARE_PROPERTY(damping, double,
+		"Damping factor related to maximum contraction velocity");
+	OpenSim_DECLARE_PROPERTY(tendon_force_length_curve, Function,
+		"Function representing force-length behavior of tendon");
+	OpenSim_DECLARE_PROPERTY(active_force_length_curve, Function,
+		"Function representing active force-length behavior of muscle fibers");
+	OpenSim_DECLARE_PROPERTY(passive_force_length_curve, Function,
+		"Function representing passive force-length behavior of muscle fibers");
+    /**@}**/
 
 //=============================================================================
-// METHODS
+// PUBLIC METHODS
 //=============================================================================
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
 public:
 	Schutte1993Muscle_Deprecated();
-	Schutte1993Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
-	Schutte1993Muscle_Deprecated(const Schutte1993Muscle_Deprecated &aMuscle);
-	virtual ~Schutte1993Muscle_Deprecated();
-
-#ifndef SWIG
-	Schutte1993Muscle_Deprecated& operator=(const Schutte1993Muscle_Deprecated &aMuscle);
-#endif
-    void copyData(const Schutte1993Muscle_Deprecated &aMuscle);
+	Schutte1993Muscle_Deprecated(const std::string& aName,
+                                 double             aMaxIsometricForce,
+                                 double             aOptimalFiberLength,
+                                 double             aTendonSlackLength,
+                                 double             aPennationAngle);
+	
+    // default destructor, copy constructor, copy assignment
 
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getTimeScale() const { return getPropertyValue<double>("time_scale"); }
-	virtual double getDamping() const { return getPropertyValue<double>("damping"); }
+	virtual double getTimeScale() const { return getProperty_time_scale(); }
+	virtual double getDamping() const { return getProperty_damping(); }
 	virtual bool setTimeScale(double aTimeScale);
 	virtual bool setActivation1(double aActivation1);
 	virtual bool setActivation2(double aActivation2);
-
 	virtual bool setDamping(double aDamping);
-	virtual double getDamping() { return getPropertyValue<double>("damping"); }
 
 	//--------------------------------------------------------------------------
 	// COMPUTATION
@@ -109,8 +129,7 @@ private:
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;
 	double calcTendonForce(const SimTK::State& s, double aNormTendonLength) const;
 
-	void setNull();
-	void setupProperties();
+	void constructProperties();
 //=============================================================================
 };	// END of class Schutte1993Muscle_Deprecated
 //=============================================================================
@@ -118,4 +137,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __Schutte1993Muscle_Deprecated_h__
+#endif // OPENSIM_SCHUTTE_1993_MUSCLE_DEPRECATED_H_

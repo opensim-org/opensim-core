@@ -1,5 +1,5 @@
-#ifndef OPENSIM_Thelen2003Muscle_h__
-#define OPENSIM_Thelen2003Muscle_h__
+#ifndef OPENSIM_THELEN_2003_MUSCLE_H_
+#define OPENSIM_THELEN_2003_MUSCLE_H_
 
 // Thelen2003Muscle.h
 /*    Author: Matthew Millard
@@ -38,7 +38,9 @@
 #endif
 
 namespace OpenSim {
-
+//==============================================================================
+//                          THELEN 2003 MUSCLE
+//==============================================================================
 /**
  * Implementation of a two state (activation and fiber-length) Muscle model by:
  * DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
@@ -51,54 +53,80 @@ namespace OpenSim {
  */
 class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle {
 OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle, ActivationFiberLengthMuscle);
-
-
 public:
-//=============================================================================
-// Construction
-//=============================================================================
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+        "time constant for ramping up muscle activation");
 
+    OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
+        "time constant for ramping down of muscle activation");
+
+    OpenSim_DECLARE_PROPERTY(FmaxTendonStrain, double,
+        "tendon strain at maximum isometric muscle force");
+
+    OpenSim_DECLARE_PROPERTY(FmaxMuscleStrain, double,
+        "passive muscle strain at maximum isometric muscle force");
+
+    OpenSim_DECLARE_PROPERTY(KshapeActive, double,
+        "shape factor for Gaussian active muscle force-length relationship");   
+
+    OpenSim_DECLARE_PROPERTY(KshapePassive, double,
+        "exponential shape factor for passive force-length relationship");   
+
+    OpenSim_DECLARE_PROPERTY(Af, double,
+        "force-velocity shape factor"); 
+
+    OpenSim_DECLARE_PROPERTY(Flen, double,
+        "maximum normalized lengthening force");
+
+    OpenSim_DECLARE_PROPERTY(activation_minimum_value, double,
+        "minimum activation value permitted");
+    
+    OpenSim_DECLARE_PROPERTY(fv_linear_extrap_threshold, double,
+        "fv threshold where linear extrapolation is used");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
     Thelen2003Muscle();
     Thelen2003Muscle(const std::string &aName,double aMaxIsometricForce,
                     double aOptimalFiberLength,double aTendonSlackLength,
                     double aPennationAngle);
-    Thelen2003Muscle(const Thelen2003Muscle &aMuscle);
-    virtual ~Thelen2003Muscle();
 
-    #ifndef SWIG
-        Thelen2003Muscle& operator=(const Thelen2003Muscle &aMuscle);
-        #endif
-            void copyData(const Thelen2003Muscle &aMuscle);
-        #ifndef SWIG
-    #endif
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
 //==============================================================================
 // Get and Set Properties
 //==============================================================================
     // Properties
-    virtual double getActivationTimeConstant() const;
-    virtual double getActivationMinimumValue() const;
-    virtual double getDeactivationTimeConstant() const;
-    //virtual double getVmax() const;
-    virtual double getFmaxTendonStrain() const;
-    virtual double getFmaxFiberStrain() const;
-    virtual double getKshapeActive() const;
-    virtual double getKshapePassive() const;
-    virtual double getAf() const;
-    virtual double getFlen() const;
-    virtual double getForceVelocityExtrapolationThreshold() const;
+    double getActivationTimeConstant() const;
+    double getActivationMinimumValue() const;
+    double getDeactivationTimeConstant() const;
+    double getFmaxTendonStrain() const;
+    double getFmaxMuscleStrain() const;
+    double getKshapeActive() const;
+    double getKshapePassive() const;
+    double getAf() const;
+    double getFlen() const;
+    double getForceVelocityExtrapolationThreshold() const;
 
-    virtual bool setActivationTimeConstant(double aActivationTimeConstant);
-    virtual bool setActivationMinimumValue(double aActivationMinValue);
-    virtual bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
-    //virtual bool setVmax(double aVmax);
-    virtual bool setFmaxTendonStrain(double aFmaxTendonStrain);
-    virtual bool setFmaxFiberStrain(double aFmaxMuscleStrain);
-    virtual bool setKshapeActive(double aKShapeActive);
-    virtual bool setKshapePassive(double aKshapePassive);
-    virtual bool setAf(double aAf);
-    virtual bool setFlen(double aFlen);;
-    virtual bool setForceVelocityExtrapolationThreshold(double aFvThresh);
+    bool setActivationTimeConstant(double aActivationTimeConstant);
+    bool setActivationMinimumValue(double aActivationMinValue);
+    bool setDeactivationTimeConstant(double aDeactivationTimeConstant);
+    bool setFmaxTendonStrain(double aFmaxTendonStrain);
+    bool setFmaxFiberStrain(double aFmaxMuscleStrain);
+    bool setKshapeActive(double aKShapeActive);
+    bool setKshapePassive(double aKshapePassive);
+    bool setAf(double aAf);
+    bool setFlen(double aFlen);;
+    bool setForceVelocityExtrapolationThreshold(double aFvThresh);
 
 //==============================================================================
 // Public Computations
@@ -145,7 +173,7 @@ protected:
 
 private:
     void setNull();
-    void setupProperties();
+    void constructProperties();
 
     //=====================================================================
     // Private Utility Class Members
@@ -217,4 +245,4 @@ private:
 };    
 } // end of namespace OpenSim
 
-#endif // OPENSIM_Thelen2003Muscle_h__
+#endif // OPENSIM_THELEN_2003_MUSCLE_H_

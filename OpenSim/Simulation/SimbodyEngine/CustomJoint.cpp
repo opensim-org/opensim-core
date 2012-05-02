@@ -29,14 +29,16 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include <iostream>
-#include <math.h>
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/LinearFunction.h>
-#include "CustomJoint.h"
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/Model.h>
+
+#include "CustomJoint.h"
+
+#include <iostream>
+#include <cmath>
 
 //=============================================================================
 // STATICS
@@ -50,113 +52,59 @@ using namespace OpenSim;
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Destructor.
- */
-CustomJoint::~CustomJoint()
-{
-}
-//_____________________________________________________________________________
-/**
  * Default constructor.
  */
-CustomJoint::CustomJoint() :
-	Joint(),
-	_spatialTransformProp(PropertyObj("", SpatialTransform())),
-	_spatialTransform((SpatialTransform&)_spatialTransformProp.getValueObj())
+CustomJoint::CustomJoint()
 {
-	setNull();
-	setupProperties();
+	constructProperties();
 }
 //_____________________________________________________________________________
 /**
- * Constructor.
+ * Constructor with specified SpatialTransform.
  */
-	CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody,
-					SpatialTransform &aSpatialTransform, bool reverse) :
-	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody,reverse),
-	_spatialTransformProp(PropertyObj("", SpatialTransform())),
-	_spatialTransform((SpatialTransform&)_spatialTransformProp.getValueObj())
+CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent, 
+                         SimTK::Vec3 locationInParent, 
+                         SimTK::Vec3 orientationInParent,
+					     OpenSim::Body& body, SimTK::Vec3 locationInBody, 
+                         SimTK::Vec3 orientationInBody,
+					     SpatialTransform& aSpatialTransform, bool reverse) 
+:	Super(name, parent, locationInParent,orientationInParent,
+			body, locationInBody, orientationInBody,reverse)
 {
-	setNull();
-	setupProperties();
-
-	_spatialTransform = aSpatialTransform;
-	_body->setJoint(*this);
-	constructCoordinates();
-	_spatialTransform.setup(*this);
-}
-
-//_____________________________________________________________________________
-/**
- * Convenience Constructor.
- */
-	CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent, SimTK::Vec3 locationInParent, SimTK::Vec3 orientationInParent,
-					OpenSim::Body& body, SimTK::Vec3 locationInBody, SimTK::Vec3 orientationInBody, bool reverse) :
-	Joint(name, parent, locationInParent,orientationInParent,
-			body, locationInBody, orientationInBody, reverse),
-	_spatialTransformProp(PropertyObj("", SpatialTransform())),
-	_spatialTransform((SpatialTransform&)_spatialTransformProp.getValueObj())
-{
-	setNull();
-	setupProperties();
+	constructProperties();
+	setProperty_SpatialTransform(aSpatialTransform);
 
 	_body->setJoint(*this);
 	constructCoordinates();
-	_spatialTransform.setup(*this);
+	updSpatialTransform().setup(*this);
 }
-
 
 //_____________________________________________________________________________
 /**
- * Copy constructor.
- *
- * @param aJoint CustomJoint to be copied.
+ * Convenience Constructor; use default SpatialTransform.
  */
-CustomJoint::CustomJoint(const CustomJoint &aJoint) :
-   Joint(aJoint),
-	_spatialTransformProp(PropertyObj("", SpatialTransform())),
-	_spatialTransform((SpatialTransform&)_spatialTransformProp.getValueObj())
+CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent, 
+                         SimTK::Vec3 locationInParent, 
+                         SimTK::Vec3 orientationInParent,
+					     OpenSim::Body& body, SimTK::Vec3 locationInBody, 
+                         SimTK::Vec3 orientationInBody, bool reverse) 
+:	Super(name, parent, locationInParent,orientationInParent,
+		  body, locationInBody, orientationInBody, reverse)
 {
-	setNull();
-	setupProperties();
-	copyData(aJoint);
+	constructProperties();
+
+	_body->setJoint(*this);
 	constructCoordinates();
-}
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one CustomJoint to another.
- *
- * @param aJoint CustomJoint to be copied.
- */
-void CustomJoint::copyData(const CustomJoint &aJoint)
-{
-	Joint::copyData(aJoint);
-	_spatialTransform = aJoint._spatialTransform;
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this CustomJoint to their null values.
- */
-void CustomJoint::setNull()
-{
+	updSpatialTransform().setup(*this);
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void CustomJoint::setupProperties()
+void CustomJoint::constructProperties()
 {
-	_spatialTransformProp.setName("SpatialTransform");
-	_propertySet.append(&_spatialTransformProp);
+    constructProperty_SpatialTransform(SpatialTransform());
 }
 
 //_____________________________________________________________________________
@@ -169,53 +117,36 @@ void CustomJoint::setupProperties()
 void CustomJoint::setup(Model& aModel)
 {
 	// Base class
-	Joint::setup(aModel);
+	Super::setup(aModel);
 
 	/* Set up spatial transform for this custom joint. */
-	_spatialTransform.setup(*this);
+	updSpatialTransform().setup(*this);
 
 	// Reorder the coordinates so that they match their order in the SpatialTransform.
-	{
-		int nc = getCoordinateSet().getSize();
+	int nc = getCoordinateSet().getSize();
 
-		// Form an array of pointers to the coordinates in the order that they are
-		// referenced in the SpatialTransform. All of the coordinate names should be
-		// valid because setup() has already been called on the SpatialTransform.
-		Array<Coordinate*> coords;
-		for (int i=0; i<6; i++) {
-			for (int j=0; j<_spatialTransform[i].getCoordinateNames().getSize(); j++) {
-				Coordinate* c = &(getCoordinateSet().get(_spatialTransform[i].getCoordinateNames().get(j)));
-				// If the coordinate is not already in the array, add it.
-				if (coords.findIndex(c) == -1)
-					coords.append(c);
-			}
+	// Form an array of pointers to the coordinates in the order that they are
+	// referenced in the SpatialTransform. All of the coordinate names should be
+	// valid because setup() has already been called on the SpatialTransform.
+	Array<Coordinate*> coords;
+	for (int i=0; i<6; i++) {
+        const TransformAxis& transform = getSpatialTransform()[i];
+		for (int j=0; j<transform.getCoordinateNames().size(); j++) {
+			Coordinate* c = &(getCoordinateSet().get(transform.getCoordinateNames()[j]));
+			// If the coordinate is not already in the array, add it.
+			if (coords.findIndex(c) == -1)
+				coords.append(c);
 		}
-		// Now remove all the coordinates from the set (without deleting),
-		// and add them back in in the right order.
-		bool currentOwnership = getCoordinateSet().getMemoryOwner();
-		getCoordinateSet().setMemoryOwner(false);
-		for (int i=0; i<nc; i++)
-			getCoordinateSet().remove(0);
-		getCoordinateSet().setMemoryOwner(currentOwnership);
-		for (int i=0; i<coords.getSize(); i++)
-			getCoordinateSet().append(coords[i]);
 	}
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-CustomJoint& CustomJoint::operator=(const CustomJoint &aJoint)
-{
-	Joint::operator=(aJoint);
-	copyData(aJoint);
-	return(*this);
+	// Now remove all the coordinates from the set (without deleting),
+	// and add them back in in the right order.
+	bool currentOwnership = getCoordinateSet().getMemoryOwner();
+	getCoordinateSet().setMemoryOwner(false);
+	for (int i=0; i<nc; i++)
+		getCoordinateSet().remove(0);
+	getCoordinateSet().setMemoryOwner(currentOwnership);
+	for (int i=0; i<coords.getSize(); i++)
+		getCoordinateSet().append(coords[i]);
 }
 
 
@@ -250,23 +181,23 @@ void CustomJoint::scale(const ScaleSet& aScaleSet)
 		}
 	}
 
-	_spatialTransform.scale(scaleFactors);
+	updSpatialTransform().scale(scaleFactors);
 }
 
 void CustomJoint::constructCoordinates()
 {
 	// In case we're making a copy, we need to restore "properties" from 
-	// _coorindateSet after we construct them anew
+	// _coordinateSet after we construct them anew
 	CoordinateSet savedCoordinates = _coordinateSet;
 
 	_coordinateSet.setSize(0);
 
 	// Check how many coordinates are required
-	int ncoords = _spatialTransform.getCoordinateNames().getSize();
+	int ncoords = getSpatialTransform().getCoordinateNames().getSize();
 
 	for(int i = 0; i< ncoords ; i++){
 		Coordinate *coord = new Coordinate();
-		std::string coordName = _spatialTransform.getCoordinateNames()[i];
+		std::string coordName = getSpatialTransform().getCoordinateNames()[i];
 		coord->setName(coordName);
 		int coordIndex = savedCoordinates.getIndex(coordName);
 		if (coordIndex!=-1){
@@ -293,7 +224,7 @@ void CustomJoint::constructCoordinates()
 //_____________________________________________________________________________
 void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 {
-	// CHILD TRANSFORM
+    // CHILD TRANSFORM
 	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
 	SimTK::Transform childTransform(rotation,_location);
 
@@ -303,13 +234,16 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 
 	// Some initializations
 	int numMobilities = _coordinateSet.getSize();  // Note- should check that all coordinates are used.
-	std::vector<std::vector<int> > coordinateIndices = _spatialTransform.getCooridinateIndices();
-	std::vector<const SimTK::Function*> functions = _spatialTransform.getFunctions();
-	std::vector<Vec3> axes = _spatialTransform.getAxes();
+	std::vector<std::vector<int> > coordinateIndices = 
+        getSpatialTransform().getCoordinateIndices();
+	std::vector<const SimTK::Function*> functions = 
+        getSpatialTransform().getFunctions();
+	std::vector<Vec3> axes = getSpatialTransform().getAxes();
 
 	SimTK::MobilizedBodyIndex parentIndex = getMobilizedBodyIndex(_parentBody);
 	if (!parentIndex.isValid())
-		throw(Exception("CustomJoint " + getName() + " has invalid parent body "+_parentBody->getName()));
+		throw(Exception("CustomJoint " + getName() + " has invalid parent body "
+                        +_parentBody->getName()));
 	int nu = numMobilities;
 	assert(nu > 0);
     assert(nu <= 6);
@@ -320,11 +254,12 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 	MobilizedBody::FunctionBased
 		simtkBody(system.updMatterSubsystem().updMobilizedBody(parentIndex),
 			parentTransform,SimTK::Body::Rigid(_body->getMassProperties()),
-			childTransform,numMobilities,functions,coordinateIndices,axes, (getReverse() ? MobilizedBody::Reverse : MobilizedBody::Forward));
+			childTransform,numMobilities,functions,coordinateIndices,axes, 
+            (getReverse() ? MobilizedBody::Reverse : MobilizedBody::Forward));
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 
     // Let the superclass do its construction.
-    Joint::createSystem(system);
+    Super::createSystem(system);    
 }
 
 //=============================================================================
@@ -333,7 +268,8 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 //_____________________________________________________________________________
 
 /** Override of the default implementation to account for versioning. */
-void CustomJoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void CustomJoint::
+updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	int documentVersion = versionNumber;
 	if ( documentVersion < XMLDocument::getLatestVersion()){
@@ -344,17 +280,20 @@ void CustomJoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumbe
 			// replace TransformAxisSet with SpatialTransform
 			/////renameChildNode("TransformAxisSet", "SpatialTransform");
 			// Check how many TransformAxes are defined
-			SimTK::Xml::element_iterator SpatialTransformNode = aNode.element_begin("TransformAxisSet");
-			if (SpatialTransformNode == aNode.element_end()) return;
+			SimTK::Xml::element_iterator spatialTransformNode = 
+                aNode.element_begin("TransformAxisSet");
+			if (spatialTransformNode == aNode.element_end()) return;
 
-			SimTK::Xml::element_iterator axesSetNode = SpatialTransformNode->element_begin("objects");
+			SimTK::Xml::element_iterator axesSetNode = 
+                spatialTransformNode->element_begin("objects");
 			/////if (axesSetNode != NULL)
-			/////	SpatialTransformNode->removeChild(axesSetNode);
-			/////DOMElement*grpNode = XMLNode::GetFirstChildElementByTagName(SpatialTransformNode,"groups");
+			/////	spatialTransformNode->removeChild(axesSetNode);
+			/////DOMElement*grpNode = XMLNode::GetFirstChildElementByTagName(spatialTransformNode,"groups");
 			/////if (grpNode != NULL)
-			/////	SpatialTransformNode->removeChild(grpNode);
+			/////	spatialTransformNode->removeChild(grpNode);
 			// (0, 1, 2 rotations & 3, 4, 5 translations then remove the is_rotation node)
-			SimTK::Array_<SimTK::Xml::Element> list = axesSetNode->getAllElements();
+			SimTK::Array_<SimTK::Xml::Element> list = 
+                axesSetNode->getAllElements();
 			unsigned int listLength = list.size();
 			int objectsFound = 0;
 			Array<int> translationIndices(-1, 0);
@@ -364,33 +303,43 @@ void CustomJoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumbe
 			// Add children for all six axes here
 			//////_node->removeChild(SpatialTransformNode);
 			
-			// Create a blank Spatial Transform and use it to populate the XML structure
+			// Create a blank Spatial Transform and use it to populate the 
+            // XML structure
 			for(int i=0; i<6; i++)
-				_spatialTransform[i].setFunction(new OpenSim::Constant(0));
+				updSpatialTransform()[i].setFunction(new OpenSim::Constant(0));
 			
 			Array<OpenSim::TransformAxis*> oldAxes;
 			for(unsigned int j=0;j<listLength;j++) {
-				// getChildNodes() returns all types of DOMNodes including comments, text, etc., but we only want
+				// getChildNodes() returns all types of DOMNodes including 
+                // comments, text, etc., but we only want
 				// to process element nodes
 				SimTK::Xml::Element objElmt = list[j];
 				string objectType = objElmt.getElementTag();
+                // (sherm) this is cleaning up old TransformAxis here but
+                // that should really be done in TransformAxis instead.
 				if (objectType == "TransformAxis"){
-					OpenSim::TransformAxis* readAxis = new OpenSim::TransformAxis(objElmt);
+					OpenSim::TransformAxis* readAxis = 
+                        new OpenSim::TransformAxis(objElmt);
 					assert(nextAxis <=5);
 					bool isRotation = false;
-					SimTK::Xml::element_iterator rotationNode = objElmt.element_begin("is_rotation");
+					SimTK::Xml::element_iterator rotationNode = 
+                        objElmt.element_begin("is_rotation");
 					if (rotationNode != objElmt.element_end()){
-						SimTK::String sValue = rotationNode->getValueAs<SimTK::String>();
+						SimTK::String sValue = 
+                            rotationNode->getValueAs<SimTK::String>();
 						bool value = (sValue.toLower() == "true");
 								isRotation = value;
 						objElmt.eraseNode(rotationNode);
 							}
-					SimTK::Xml::element_iterator coordinateNode = objElmt.element_begin("coordinate");
-					SimTK::String cooridnateName = coordinateNode->getValueAs<SimTK::String>();
+					SimTK::Xml::element_iterator coordinateNode = 
+                        objElmt.element_begin("coordinate");
+					SimTK::String coordinateName = 
+                        coordinateNode->getValueAs<SimTK::String>();
 					Array<std::string> names("");
-					names.append(cooridnateName);
+					names.append(coordinateName);
 					readAxis->setCoordinateNames(names);
-					SimTK::Xml::element_iterator axisNode = objElmt.element_begin("axis");
+					SimTK::Xml::element_iterator axisNode = 
+                        objElmt.element_begin("axis");
 					
 					SimTK::Vec3 axisVec= axisNode->getValueAs<SimTK::Vec3>();
 					readAxis->setAxis(axisVec);
@@ -411,25 +360,29 @@ void CustomJoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumbe
 			int nTranslations = translationIndices.getSize();
 			// Now copy coordinateName, Axis, Function into proper slot
 			for (int i=0; i<nRotations; i++){
-				_spatialTransform[i].copyData(*(axes[rotationIndices[i]]));
+				updSpatialTransform()[i] = *axes[rotationIndices[i]];
 			}
-			_spatialTransform.constructIndepndentAxes(nRotations, 0);
-			// Add Translations from old list then pad with default ones, make sure no singularity
+			updSpatialTransform().constructIndependentAxes(nRotations, 0);
+			// Add Translations from old list then pad with default ones, 
+            // make sure no singularity.
 			for (int i=0; i<nTranslations; i++){
-				_spatialTransform[i+3].copyData(*(axes[translationIndices[i]]));
+				updSpatialTransform()[i+3] = *axes[translationIndices[i]];
 			}
-			_spatialTransform.constructIndepndentAxes(nTranslations, 3);
+			updSpatialTransform().constructIndependentAxes(nTranslations, 3);
 		}
 	}
-	Joint::updateFromXMLNode(aNode, versionNumber);
+
+    // Delegate to superclass now.
+	Super::updateFromXMLNode(aNode, versionNumber);
+
 	// Fix coordinate type post deserialization
 	// Fix coordinate type post deserialization
 	for (int i=0; i<_coordinateSet.getSize(); i++){
 		OpenSim::Coordinate& nextCoord=_coordinateSet.get(i);
 		// Find TransformAxis for the coordinate and use it to set Coordinate's motionType
 		for(int axisIndex=0; axisIndex<6; axisIndex++){
-			TransformAxis& nextAxis = _spatialTransform[axisIndex];
-			const Array<std::string>& coordNames = nextAxis.getCoordinateNames();
+			const TransformAxis& nextAxis = getSpatialTransform()[axisIndex];
+			const Property<std::string>& coordNames = nextAxis.getCoordinateNames();
 			if (coordNames.findIndex(nextCoord.getName())!=-1){
 				_coordinateSet.get(i).setMotionType((axisIndex>2)? 
 						Coordinate::Translational : Coordinate::Rotational);
@@ -440,13 +393,14 @@ void CustomJoint::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumbe
 	// Axes should be independent otherwise Simbody throws an exception in createSystem
 	double tol = 1e-5;
     // Verify that none of the rotation axes are colinear
-	std::vector<SimTK::Vec3> axes=_spatialTransform.getAxes();
+	const std::vector<SimTK::Vec3> axes=getSpatialTransform().getAxes();
 	for(int startIndex=0; startIndex<=3; startIndex+=3){
         if(((axes[startIndex+0]%axes[startIndex+1]).norm() < tol)||
 			((axes[startIndex+0]%axes[startIndex+2]).norm() < tol)||
 			((axes[startIndex+1]%axes[startIndex+2]).norm() < tol)){
-				throw(Exception("CustomJoint " + getName() + " has colinear axes and so is not wel-defined. Please fix and retry loading.."));
+				throw(Exception("CustomJoint " + getName() + 
+                    " has colinear axes and so is not well-defined."
+                    " Please fix and retry loading.."));
 		}
 	}
-	//Object::updateFromXMLNode(aNode, versionNumber);
 }

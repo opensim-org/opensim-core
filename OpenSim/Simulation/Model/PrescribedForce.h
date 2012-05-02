@@ -1,9 +1,9 @@
-#ifndef __PrescribedForce_h__
-#define __PrescribedForce_h__
+#ifndef OPENSIM_PRESCRIBED_FORCE_H_
+#define OPENSIM_PRESCRIBED_FORCE_H_
 // Force.h
 // Author: Peter Eastman
 /*
- * Copyright (c)  2008, Stanford University. All rights reserved. 
+ * Copyright (c)  2008-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -34,147 +34,208 @@
 #include "OpenSim/Common/PropertyObj.h"
 #include "OpenSim/Common/Function.h"
 #include "OpenSim/Common/NaturalCubicSpline.h"
-#include "Force.h"
 #include "OpenSim/Common/FunctionSet.h"
+#include "Force.h"
 
 namespace OpenSim {
 
 class Model;
 class FunctionSet;
 class Storage;
-/**
- * This applies a force and/or torque to a body which is fully specified as a function of time.  It
- * is defined by three sets of functions, all of which are optional:
- *
- * - Three functions that specify a force to apply as a function of time.  If these functions are not
- * provided, no force is applied.
- *
- * - Three functions that specify the point at which the force should be applied.  The resulting torque
- * is automatically calculated and applied.  If these functions are not provided, the force is applied
- * at the body's center of mass, and therefore produces no torque.
- *
- * - Three functions that specify a torque to apply.  This is in addition to any torque resulting from
- * the force.  If these functions are not provided, no additional torque is applied.
- *
- * @author Peter Eastman, Matt DeMers
- */
+
+/** This applies to a body a force and/or torque that is fully specified as a 
+function of time. It is defined by three sets of functions, all of which are 
+optional:
+
+  - Three functions that specify the (x,y,z) components of a force vector
+    to apply (at a given point) as a function of time. If these functions are 
+    not provided, no force is applied.
+
+  - Three functions that specify the (x,y,z) components of a point location at 
+    which the force should be applied. If these functions are not provided, the 
+    force is applied at the body's origin (not necessarily the body's center 
+    of mass).
+
+  - Three functions that specify the (x,y,z) components of a pure torque 
+    vector to apply. This is in addition to any torque resulting from the 
+    applied force. If these functions are not provided, no additional torque 
+    is applied.
+
+@author Peter Eastman, Matt DeMers
+**/
 class OSIMSIMULATION_API PrescribedForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(PrescribedForce, Force);
-
-//=============================================================================
-// DATA
-//=============================================================================
-private:
-	OpenSim::Body *_body;
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-	// CONSTRUCTION
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations **/
+    /**@{**/
+    /** "body" property is a string containing the name of the body to which
+    the force will be applied. **/
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string,
+		"Name of the body the force is applied to.");
+    /** "pointIsGlobal" property is a flag indicating whether the point
+    calculated by the Functions in pointFunctions are returned in the global
+    frame rather than in the body frame which is the default. **/
+    OpenSim_DECLARE_PROPERTY(pointIsGlobal, bool,
+		"Flag indicating whether the point (specified in pointFunctions) "
+        "is in global frame.");
+    /** "forceIsGlobal" property is a flag indicating whether the force and
+    torque returned by the Functions in forceFunctions and torqueFunctions,
+    resp., are returned in the global frame (the default). Otherwise they
+    are returned in the body frame. **/
+    OpenSim_DECLARE_PROPERTY(forceIsGlobal, bool,
+		"Flag indicating whether the quantities (specified in "
+        "force/torqueFunctions) is in global frame.");
+    /** These are three functions providing the x,y,z measure numbers of the
+    force vector being applied to the body. The coordinate frame in which
+    this vector is interpreted depends on the "forceIsGlobal" property. **/
+    // Would have been better for this to be a list property. 
+    OpenSim_DECLARE_PROPERTY(forceFunctions, FunctionSet,
+		"Three functions describing the force to be applied.");
+    /** These are three functions providing the x,y,z measure numbers of the
+    point at which the force should be applied. The coordinate frame in which
+    this position vector is interpreted depends on the "pointIsGlobal" 
+    property. **/
+    // Would have been better for this to be a list property. 
+    OpenSim_DECLARE_PROPERTY(pointFunctions, FunctionSet,
+		"Three functions describing the location at which the force "
+        "is applied.");
+    /** These are three functions providing the x,y,z measure numbers of the
+    torque vector being applied to the body. The coordinate frame in which
+    this vector is interpreted depends on the "torqueIsGlobal" property. **/
+    // Would have been better for this to be a list property. 
+    OpenSim_DECLARE_PROPERTY(torqueFunctions, FunctionSet,
+		"Three functions describing the torque the PrescribedForce applies.");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 	/**
-	 * Construct a PrescribedForce.  By default, the force, torque, and point functions are all unspecified,
-	 * meaning that it applies no force or torque.  To specify them, call setForceFunctions(), setTorqueFunctions(),
+	 * Construct a PrescribedForce. By default, the force, torque, and point 
+     * functions are all unspecified, meaning that it applies no force or 
+     * torque.  To specify them, call setForceFunctions(), setTorqueFunctions(),
 	 * and setPointFunctions().
 	 *
 	 * @param body     the body to apply the force to
 	 */
 	explicit PrescribedForce(OpenSim::Body* body=0);
-	PrescribedForce(const PrescribedForce& force);
+    /** Construct from an XML element. **/
 	explicit PrescribedForce(SimTK::Xml::Element& aNode);
-	~PrescribedForce();
 
-	// Copy properties from XML into member variables
+    // default destructor, copy constructor, copy assignment
+
+	/** Copy in properties from XML. **/
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
-	void setBodyName(const std::string& aBodyName) { setPropertyValue("body", aBodyName); }
-	const std::string& getBodyName() const { return (getPropertyValue<std::string>("body")); }
+	void setBodyName(const std::string& aBodyName) { setProperty_body(aBodyName); }
+	const std::string& getBodyName() const { return getProperty_body(); }
 
 	/**
-	 * Set the functions which specify the force to apply.  By default the force is specified in inertial coordinates.
+	 * Set the functions which specify the force to apply.  By default the 
+     * force is specified in inertial coordinates.
 	 * This can be changed by calling setForceIsInGlobalFrame().
 	 *
-	 * All of the Function objects should have been allocated on the heap with the "new" operator.
-	 * This object takes over ownership of them, and will delete them when it is deleted itself.
+	 * All of the Function objects should have been allocated on the heap with 
+     * the "new" operator. This object takes over ownership of them, and will 
+     * delete them when it is deleted itself.
 	 *
-	 * @param forceX   a function of time which calculates the X component of the force to apply
-	 * @param forceY   a function of time which calculates the Y component of the force to apply
-	 * @param forceZ   a function of time which calculates the Z component of the force to apply
+	 * @param forceX   a function of time which calculates the X component of 
+     *                      the force to apply
+	 * @param forceY   a function of time which calculates the Y component of 
+     *                      the force to apply
+	 * @param forceZ   a function of time which calculates the Z component of 
+     *                      the force to apply
 	 */
 	void setForceFunctions(Function* forceX, Function* forceY, Function* forceZ);
-	const FunctionSet& getForceFunctions() const { return getPropertyValue<FunctionSet>("forceFunctions"); }
-	FunctionSet& updForceFunctions() { return updPropertyValue<FunctionSet>("forceFunctions"); }
+	const FunctionSet& getForceFunctions() const { return getProperty_forceFunctions(); }
+	FunctionSet& updForceFunctions() { return updProperty_forceFunctions(); }
 	void getForceFunctionNames(OpenSim::Array<std::string>& aFunctionNames) {
-			getPropertyValue<FunctionSet>("forceFunctions").getNames(aFunctionNames);
+			getForceFunctions().getNames(aFunctionNames);
 	}
 	void setForceFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 		const OpenSim::Storage& kineticsStore);
-	void clearForceFunctions() { updPropertyValue<FunctionSet>("forceFunctions").setSize(0); }
+	void clearForceFunctions() { updForceFunctions().setSize(0); }
 	/**
-	 * Set the functions which specify the point at which to apply the force.  By default the point is specified in
-	 * the body's local coordinates.  This can be changed by calling setPointIsInGlobalFrame().
+	 * Set the functions which specify the point at which to apply the force.  
+     * By default the point is specified in the body's local coordinates.  
+     * This can be changed by calling setPointIsInGlobalFrame().
 	 *
-	 * All of the Function objects should have been allocated on the heap with the "new" operator.
-	 * This object takes over ownership of them, and will delete them when it is deleted itself.
+	 * All of the Function objects should have been allocated on the heap with 
+     * the "new" operator. This object takes over ownership of them, and will 
+     * delete them when it is deleted itself.
 	 *
-	 * @param pointX   a function of time which calculates the X coordinate of the point at which to apply the force
-	 * @param pointY   a function of time which calculates the Y coordinate of the point at which to apply the force
-	 * @param pointZ   a function of time which calculates the Z coordinate of the point at which to apply the force
+	 * @param pointX   a function of time which calculates the X coordinate of 
+     *                      the point at which to apply the force
+	 * @param pointY   a function of time which calculates the Y coordinate of 
+     *                      the point at which to apply the force
+	 * @param pointZ   a function of time which calculates the Z coordinate of 
+     *                      the point at which to apply the force
 	 */
 	void setPointFunctions(Function* pointX, Function* pointY, Function* pointZ);
-	const FunctionSet& getPointFunctions() const { return getPropertyValue<FunctionSet>("pointFunctions"); }
-	FunctionSet& updPointFunctions() { return updPropertyValue<FunctionSet>("pointFunctions"); }
+	const FunctionSet& getPointFunctions() const { return getProperty_pointFunctions(); }
+	FunctionSet& updPointFunctions() { return updProperty_pointFunctions(); }
 	void getPointFunctionNames(OpenSim::Array<std::string>& aFunctionNames){
-			getPropertyValue<FunctionSet>("pointFunctions").getNames(aFunctionNames);
+			getPointFunctions().getNames(aFunctionNames);
 	}
 	void setPointFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 		const OpenSim::Storage& kineticsStore) ;
-	void clearPointFunctions() { updPropertyValue<FunctionSet>("pointFunctions").setSize(0); }
+	void clearPointFunctions() { updPointFunctions().setSize(0); }
 	/**
-	 * Set the functions which specify the torque to apply.  By default the torque is specified in inertial coordinates.
+	 * Set the functions which specify the torque to apply. By default the 
+     * torque is specified in inertial coordinates.
 	 * This can be changed by calling setForceIsInGlobalFrame().
 	 *
-	 * All of the Function objects should have been allocated on the heap with the "new" operator.
-	 * This object takes over ownership of them, and will delete them when it is deleted itself.
+	 * All of the Function objects should have been allocated on the heap with 
+     * the "new" operator. This object takes over ownership of them, and will 
+     * delete them when it is deleted itself.
 	 *
-	 * @param torqueX   a function of time which calculates the X component of the torque to apply
-	 * @param torqueY   a function of time which calculates the Y component of the torque to apply
-	 * @param torqueZ   a function of time which calculates the Z component of the torque to apply
+	 * @param torqueX   a function of time which calculates the X component of 
+     *                      the torque to apply
+	 * @param torqueY   a function of time which calculates the Y component of 
+     *                      the torque to apply
+	 * @param torqueZ   a function of time which calculates the Z component of 
+     *                      the torque to apply
 	 */
 	void setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ);
-	const FunctionSet& getTorqueFunctions() const { return getPropertyValue<FunctionSet>("torqueFunctions"); }
-	FunctionSet& updTorqueFunctions() { return updPropertyValue<FunctionSet>("torqueFunctions"); }
+	const FunctionSet& getTorqueFunctions() const { return getProperty_torqueFunctions(); }
+	FunctionSet& updTorqueFunctions() { return updProperty_torqueFunctions(); }
 	void getTorqueFunctionNames(OpenSim::Array<std::string>& aFunctionNames){
-		getPropertyValue<FunctionSet>("torqueFunctions").getNames(aFunctionNames);
+		getTorqueFunctions().getNames(aFunctionNames);
 	}
 	void setTorqueFunctionNames(const OpenSim::Array<std::string>& aFunctionNames, 
 		const OpenSim::Storage& kineticsStore);
-	void clearTorqueFunctions() { updPropertyValue<FunctionSet>("torqueFunctions").setSize(0); }
-	/**
-	 * Get whether the force and torque are specified in inertial coordinates or in the body's local coordinates.
-	 */
-	bool getForceIsInGlobalFrame() const;
-	/**
-	 * Set whether the force and torque are specified in inertial coordinates or in the body's local coordinates.
-	 */
-	void setForceIsInGlobalFrame(bool isGlobal);
-	/**
-	 * Get whether the point is specified in inertial coordinates or in the body's local coordinates.
-	 */
-	bool getPointIsInGlobalFrame() const;
-	/**
-	 * Set whether the point is specified in inertial coordinates or in the body's local coordinates.
-	 */
-	void setPointIsInGlobalFrame(bool isGlobal);
+	void clearTorqueFunctions() { updTorqueFunctions().setSize(0); }
 
-	/** Get the body that the prescribed force is acting upon */
-	const OpenSim::Body& getBody() const {return *_body; }
+	/** Get whether the force and torque are specified in inertial coordinates 
+    or in the body's local coordinates. **/
+    bool getForceIsInGlobalFrame() const {return getProperty_forceIsGlobal();}
+	/** Set whether the force and torque are specified in inertial coordinates 
+    or in the body's local coordinates. **/
+	void setForceIsInGlobalFrame(bool isGlobal) 
+    {   setProperty_forceIsGlobal(isGlobal); }
+	/** Get whether the point is specified in inertial coordinates or in the 
+    body's local coordinates. **/
+    bool getPointIsInGlobalFrame() const {return getProperty_pointIsGlobal();}
+	/** Set whether the point is specified in inertial coordinates or in the 
+    body's local coordinates. **/
+	void setPointIsInGlobalFrame(bool isGlobal)
+    {   setProperty_pointIsGlobal(isGlobal); }
 
-	/**
-	 * Conevenince methods to access prescribed force functions
-	 */
+	/** Get the body that the prescribed force is acting upon. **/
+	const OpenSim::Body& getBody() const {assert(_body); return *_body; }
+
+	/** Convenience method to evaluate the prescribed force functions at
+    an arbitrary time. Returns zero if there aren't three functions defined. **/
 	SimTK::Vec3 getForceAtTime(double aTime) const;
+	/** Convenience method to evaluate the prescribed force application point
+    functions at an arbitrary time. Returns zero if there aren't three 
+    functions defined. **/
 	SimTK::Vec3 getPointAtTime(double aTime) const;
+	/** Convenience method to evaluate the prescribed torque functions at
+    an arbitrary time. Returns zero if there aren't three functions defined. **/
 	SimTK::Vec3 getTorqueAtTime(double aTime) const;
 
 	/**
@@ -182,30 +243,32 @@ public:
 	 */
 	virtual OpenSim::Array<std::string> getRecordLabels() const;
 	/**
-	 * Given SimTK::State object extract all the values necessary to report forces, application location
-	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
+	 * Given SimTK::State object extract all the values necessary to report 
+     * forces, application location frame, etc. used in conjunction with 
+     * getRecordLabels() and should return same size Array.
 	 */
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const;
 
-#ifndef SWIG
-	PrescribedForce& operator=(const PrescribedForce &aJoint);
-#endif
 
 protected:
+	/** ModelComponent interface. **/ 
+	void setup(Model& model) OVERRIDE_11;
+	/** Force interface. **/
+	virtual void computeForce
+       (const SimTK::State&                state, 
+	    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+        SimTK::Vector&                     generalizedForces) const OVERRIDE_11;
 
-	/**  ModelComponent interface */ 
-	virtual void setup(Model& model);
-	/**
-	 * Compute the force.
-	 */
-	virtual void computeForce(const SimTK::State& state, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const;
+//==============================================================================
+// DATA
+//==============================================================================
+private:
+	OpenSim::Body *_body; // a shallow reference; don't delete
 
 private:
 	void setNull();
-	void setupProperties();
-	void copyData(const PrescribedForce& orig);
+	void constructProperties();
+
 //=============================================================================
 };	// END of class PrescribedForce
 //=============================================================================
@@ -213,4 +276,4 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __PrescribedForce_h__
+#endif // OPENSIM_PRESCRIBED_FORCE_H_

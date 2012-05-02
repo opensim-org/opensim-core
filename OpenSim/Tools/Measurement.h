@@ -102,7 +102,7 @@ public:
 	bool getApply() const { return _apply; }
 	void setApply(bool aApply) { 
 		_apply = aApply;
-		_applyProp.setUseDefault(false);
+		_applyProp.setValueIsDefault(false);
 	}
 
 	void applyScaleFactor(double aFactor, ScaleSet& aScaleSet);

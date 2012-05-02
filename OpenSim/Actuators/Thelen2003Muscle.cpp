@@ -22,13 +22,13 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "Thelen2003Muscle.h"
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
-#include <iostream>
-
 #include <SimTKcommon/internal/ExceptionMacros.h>
+
+#include "Thelen2003Muscle.h"
+#include <iostream>
 
 //=============================================================================
 // STATICS
@@ -37,35 +37,21 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-static const char* ActivationMinimumValueName 
-                            = "activation_minimum_value"; //New
-static const char* ActivationTimeConstantName   
-                            ="activation_time_constant";
-static const char* DeactivationTimeConstantName 
-                            ="deactivation_time_constant";
-            
-//static strichar*                     ="Vmax";
-static const char* FmaxTendonStrainName         ="FmaxTendonStrain";
-static const char* FmaxFiberStrainName          ="FmaxMuscleStrain"; 
-static const char* KshapeActiveName             ="KshapeActive";
-static const char* KshapePassiveName            ="KshapePassive";
-static const char* AfName                       ="Af";
-static const char* FlenName                     ="Flen";
-static const char* FvLinearExtrapName  = "fv_linear_extrap_threshold"; //New
-
-
-
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTORS
 //=============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
+
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-Thelen2003Muscle::Thelen2003Muscle() : ActivationFiberLengthMuscle()            
+Thelen2003Muscle::Thelen2003Muscle()          
 {    
     setNull();
-    setupProperties();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
@@ -73,113 +59,21 @@ Thelen2003Muscle::Thelen2003Muscle() : ActivationFiberLengthMuscle()
  * Constructor.
  */
 Thelen2003Muscle::
-Thelen2003Muscle(const std::string &aName,  double aMaxIsometricForce,
+Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
                   double aOptimalFiberLength,double aTendonSlackLength,
-                  double aPennationAngle) :ActivationFiberLengthMuscle()
+                  double aPennationAngle)
 {
-
     setNull();
-    setupProperties();
+    constructProperties();
     setName(aName);
     
     setMaxIsometricForce(aMaxIsometricForce);
     setOptimalFiberLength(aOptimalFiberLength);
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
-
 }
 
-
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-Thelen2003Muscle::~Thelen2003Muscle()
-{
-    //delete actMdl;
-    //delete penMdl;
-    
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this Thelen2003Muscle to their null values.
- */
-void Thelen2003Muscle::setNull()
-{
-    //actMdl = NULL;
-    //penMdl = NULL;
-    //initializedModel = false;
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMuscle Thelen2003Muscle to be copied.
- */
-Thelen2003Muscle::Thelen2003Muscle(const Thelen2003Muscle &aMuscle) :
-   ActivationFiberLengthMuscle(aMuscle)
-{
-    setNull();
-    setupProperties();
-    copyData(aMuscle);
-}
-
-
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one Thelen2003Muscle to another.
- *
- * @param aMuscle Thelen2003Muscle to be copied.
- */
-void Thelen2003Muscle::copyData(const Thelen2003Muscle &aMuscle)
-{
-    setPropertyValue(ActivationMinimumValueName,
-        aMuscle.getPropertyValue<double>(ActivationMinimumValueName));
-
-    setPropertyValue(ActivationTimeConstantName,
-        aMuscle.getPropertyValue<double>(ActivationTimeConstantName));
-
-    setPropertyValue(DeactivationTimeConstantName,
-        aMuscle.getPropertyValue<double>(DeactivationTimeConstantName));
-
-    //Now taken care of by Muscle.h
-    //setPropertyValue(VmaxName,
-    //    aMuscle.getPropertyValue<double>(VmaxName));
-
-    setPropertyValue(FmaxTendonStrainName,
-        aMuscle.getPropertyValue<double>(FmaxTendonStrainName));
-
-    setPropertyValue(FmaxFiberStrainName,
-        aMuscle.getPropertyValue<double>(FmaxFiberStrainName));
-
-    setPropertyValue(KshapeActiveName,
-        aMuscle.getPropertyValue<double>(KshapeActiveName));
-
-    setPropertyValue(KshapePassiveName,
-        aMuscle.getPropertyValue<double>(KshapePassiveName));
-
-    setPropertyValue(AfName,
-        aMuscle.getPropertyValue<double>(AfName));
-
-    setPropertyValue(FlenName,
-        aMuscle.getPropertyValue<double>(FlenName));
-
-
-    setPropertyValue(FvLinearExtrapName,
-        aMuscle.getPropertyValue<double>(FvLinearExtrapName));
-
-    //initializedModel = aMuscle.initializedModel;
-
-}
-
- void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const 
+void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const 
 {
     Super::createSystem(system);
 
@@ -209,115 +103,67 @@ void Thelen2003Muscle::copyData(const Thelen2003Muscle &aMuscle)
                                             pennationAngle, 
                                             caller);
 
-    mthis->penMdl = tmp2;
-    
+    mthis->penMdl = tmp2;    
  }
 
+//_____________________________________________________________________________
+// Set the data members of this muscle to their null values.
+void Thelen2003Muscle::setNull()
+{
+    // no data members
+}
 
 //_____________________________________________________________________________
 /**
  * Populate this objects properties
  */
-void Thelen2003Muscle::setupProperties()
+void Thelen2003Muscle::constructProperties()
 {
-
-    addProperty<double>(ActivationTimeConstantName, 
-        "time constant for ramping up muscle activation",0.015);
-
-    addProperty<double>(DeactivationTimeConstantName,
-        "time constant for ramping down of muscle activation",0.050);
-
-    //Now taken care of by Muscle.h
-    //addProperty<double>(VmaxName,"double",
-    //    "maximum contraction velocity at full activation in fiber "
-    //    "lengths per second",10);
-
-    addProperty<double>(FmaxTendonStrainName,"tendon strain"
-        " at maximum isometric muscle force",0.033);
-
-    addProperty<double>(FmaxFiberStrainName,"passive muscle strain"
-        " at maximum isometric muscle force",0.6);
-
-    addProperty<double>(KshapeActiveName,"shape factor for"
-        " Gaussian active muscle force-length relationship",0.45);   
-
-    addProperty<double>(KshapePassiveName,"exponential shape"
-        " factor for passive force-length relationship",5.0);   
-
-    addProperty<double>(AfName,"force-velocity shape factor",0.25); 
-
-    addProperty<double>(FlenName,"maximum normalized "
-        "lengthening force",1.8);
-
-    addProperty<double>(ActivationMinimumValueName,"minimum activation value"
-                                                   " permitted", 0.01);
-    
-    addProperty<double>(FvLinearExtrapName
-        ,"fv threshold where linear extrapolation is used",0.95);
-
-   
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Thelen2003Muscle& Thelen2003Muscle::
-                                   operator=(const Thelen2003Muscle &aMuscle)
-{
-    // BASE CLASS
-    ActivationFiberLengthMuscle::operator=(aMuscle);
-    copyData(aMuscle);
-    return(*this);
+    constructProperty_activation_time_constant(0.015);
+    constructProperty_deactivation_time_constant(0.050);
+    constructProperty_FmaxTendonStrain(0.033);
+    constructProperty_FmaxMuscleStrain(0.6);
+    constructProperty_KshapeActive(0.45);   
+    constructProperty_KshapePassive(5.0);   
+    constructProperty_Af(0.25); 
+    constructProperty_Flen(1.8);
+    constructProperty_activation_minimum_value(0.01);  
+    constructProperty_fv_linear_extrap_threshold(0.95);
 }
 
 //=============================================================================
 // GET
 //=============================================================================
 
-double Thelen2003Muscle::getActivationTimeConstant() const { 
-    return getPropertyValue<double>(ActivationTimeConstantName); }
+double Thelen2003Muscle::getActivationTimeConstant() const 
+{   return getProperty_activation_time_constant(); }
 
-double Thelen2003Muscle::getDeactivationTimeConstant() const { 
-    return getPropertyValue<double>(DeactivationTimeConstantName); }
+double Thelen2003Muscle::getDeactivationTimeConstant() const 
+{   return getProperty_deactivation_time_constant(); }
 
-//double Thelen2003Muscle::getVmax() const { 
- //   return getPropertyValue<double>(VmaxName); }
+double Thelen2003Muscle::getFmaxTendonStrain() const 
+{   return getProperty_FmaxTendonStrain(); }
 
-double Thelen2003Muscle::getFmaxTendonStrain() const { 
-    return getPropertyValue<double>(FmaxTendonStrainName); }
+double Thelen2003Muscle::getFmaxMuscleStrain()  const 
+{   return getProperty_FmaxMuscleStrain(); }
 
-double Thelen2003Muscle::getFmaxFiberStrain()  const { 
-    return getPropertyValue<double>(FmaxFiberStrainName); }
+double Thelen2003Muscle::getKshapeActive()  const 
+{   return getProperty_KshapeActive(); }
 
-double Thelen2003Muscle::getKshapeActive()  const { 
-    return getPropertyValue<double>(KshapeActiveName); }
+double Thelen2003Muscle::getKshapePassive() const 
+{   return getProperty_KshapePassive(); }
 
-double Thelen2003Muscle::getKshapePassive() const {
-    return getPropertyValue<double>(KshapePassiveName);
-}
+double Thelen2003Muscle::getAf() const 
+{   return getProperty_Af(); }
 
-double Thelen2003Muscle::getAf() const {
-    return getPropertyValue<double>(AfName);
-}
+double Thelen2003Muscle::getFlen() const 
+{   return getProperty_Flen(); }
 
-double Thelen2003Muscle::getFlen() const {
-    return getPropertyValue<double>(FlenName);
-}
+double Thelen2003Muscle::getActivationMinimumValue() const 
+{   return getProperty_activation_minimum_value(); }
 
-double Thelen2003Muscle::getActivationMinimumValue() const {
-    return getPropertyValue<double>(ActivationMinimumValueName);
-}
-
-
-double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const {
-    return getPropertyValue<double>(FvLinearExtrapName);
-}
+double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const 
+{   return getProperty_fv_linear_extrap_threshold(); }
 
 //=============================================================================
 // SET
@@ -325,86 +171,84 @@ double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const {
 
 bool Thelen2003Muscle::setActivationTimeConstant(double aActTimeConstant)
 {
-
     if(aActTimeConstant > 0){
-        setPropertyValue(ActivationTimeConstantName, aActTimeConstant);           
+        setProperty_activation_time_constant(aActTimeConstant);           
         return true;
-    }else{return false;}
+    }
+    return false;
 }
 
 bool Thelen2003Muscle::setActivationMinimumValue(double aActMinValue)
 {
-
     if(aActMinValue > 0 && aActMinValue < 1.0){
-        setPropertyValue(ActivationMinimumValueName,aActMinValue);
+        setProperty_activation_minimum_value(aActMinValue);
         return true;
-    }else{return false;}
+    }
+    return false;
 }
 
 bool Thelen2003Muscle::setDeactivationTimeConstant(double aDeActTimeConstant)
 {
-
     if(aDeActTimeConstant > 0){
-        setPropertyValue(DeactivationTimeConstantName,aDeActTimeConstant);       
+        setProperty_deactivation_time_constant(aDeActTimeConstant);       
         return true;
-    }else{return false;}
+    }
+    return false;
 }
-//Now taken care of by Muscle.h
-/*bool Thelen2003Muscle::setVmax(double aVmax)
-{
-    if(aVmax > 0){
-        setPropertyValue(VmaxName,aVmax);
-        return true;
-    }else{return false;}
-}*/
 
 bool Thelen2003Muscle::setFmaxTendonStrain(double aFmaxTendonStrain)
 {
     if(aFmaxTendonStrain > 0){
-        setPropertyValue(FmaxTendonStrainName,aFmaxTendonStrain);
+        setProperty_FmaxTendonStrain(aFmaxTendonStrain);
         return true;
-    }else{return false;}
+    }
+    return false;
 }
 
 bool Thelen2003Muscle::setFmaxFiberStrain(double aFmaxMuscleStrain)
 {
     if(aFmaxMuscleStrain > 0){
-        setPropertyValue(FmaxFiberStrainName,aFmaxMuscleStrain);
+        setProperty_FmaxMuscleStrain(aFmaxMuscleStrain);
         return true;
-    }else{return false;}
+    }
+    return false;
 }
 
 bool Thelen2003Muscle::setKshapeActive(double aKShapeActive)
 {
     if(aKShapeActive > 0){
-        setPropertyValue(KshapeActiveName,aKShapeActive);
+        setProperty_KshapeActive(aKShapeActive);
         return true; 
-    }else{return false;}
+    }
+    return false;
 }
 
 bool Thelen2003Muscle::setKshapePassive(double aKshapePassive)
 {
     if(aKshapePassive > 0){
-        setPropertyValue(KshapePassiveName,aKshapePassive);
+        setProperty_KshapePassive(aKshapePassive);
         return true;
-    }else{return false;}
+    }
+    return false;
 }
 
 
 bool Thelen2003Muscle::setAf(double aAf)
 {
     if(aAf > 0){
-        setPropertyValue(AfName,aAf);
+        setProperty_Af(aAf);
         return true;
-    }else{return false;}
+    }
+    return false;
 }
 
 bool Thelen2003Muscle::setFlen(double aFlen)
 {
     if(aFlen > 1.0){
-        setPropertyValue(FlenName,aFlen);
+        setProperty_Flen(aFlen);
         return true;
-    }else{return false;}
+    }
+    return false;
 }
   
 
@@ -413,10 +257,10 @@ bool Thelen2003Muscle::
                  setForceVelocityExtrapolationThreshold(double aFvThresh)
 {
     if(aFvThresh > 1.0/getFlen()){
-        setPropertyValue(FvLinearExtrapName, aFvThresh);
+        setProperty_fv_linear_extrap_threshold(aFvThresh);
         return true;
-    }else{return false;
     }
+    return false;
 }
 
 
@@ -1118,7 +962,7 @@ double Thelen2003Muscle::calcDFseDtl(double tl, double fiso, double tsl) const
 double Thelen2003Muscle::calcfse(const double tlN) const 
 {
     double x = tlN-1;
-    double e0 = getPropertyValue<double>(FmaxTendonStrainName);
+    double e0 = getFmaxTendonStrain();
     
     /*The paper reports etoe = 0.609e0, however, this is a severely rounded off
         The exact answer, to SimTK::Eps is   
@@ -1149,7 +993,7 @@ double Thelen2003Muscle::calcfse(const double tlN) const
 
 double Thelen2003Muscle::calcDfseDtlN(const double tlN) const {
     double x = tlN-1;
-    double e0 = getPropertyValue<double>(FmaxTendonStrainName);
+    double e0 = getFmaxTendonStrain();
     
     /*The paper reports etoe = 0.609e0, however, this is a severely rounded off
     result of the exact answer:    
@@ -1187,7 +1031,7 @@ double Thelen2003Muscle::calcfsefisoPE(double tendonStrain) const
 {
 
     double tendon_strain =  tendonStrain;
-    double fmaxTendonStrain = getPropertyValue<double>(FmaxTendonStrainName);       
+    double fmaxTendonStrain = getFmaxTendonStrain();       
 
     //Future optimization opportunity: precompute kToe, fToe, eToe and klin
     //when the muscle is initialized. Store these values rather than 
@@ -1262,13 +1106,13 @@ double Thelen2003Muscle::calcfsefisoPE(double tendonStrain) const
 //
 //==============================================================================
 double Thelen2003Muscle::calcfal(const double lceN) const{       
-    double kShapeActive = getPropertyValue<double>(KshapeActiveName);   
+    double kShapeActive = getKshapeActive();   
     double x=(lceN-1.)*(lceN-1.);
     double fal = exp(-x/kShapeActive);
     return fal;
 }
 double Thelen2003Muscle::calcDfalDlceN(const double lceN) const {
-    double kShapeActive = getPropertyValue<double>(KshapeActiveName);   
+    double kShapeActive = getKshapeActive();   
     double t1 = lceN - 0.10e1;
     double t2 = 0.1e1 / kShapeActive;
     double t4 = t1 * t1;
@@ -1284,8 +1128,8 @@ double Thelen2003Muscle::calcDfalDlceN(const double lceN) const {
 //=============================================================================
 double Thelen2003Muscle::calcfpe(const double lceN) const {
     double fpe = 0;
-    double e0 = getPropertyValue<double>(FmaxFiberStrainName);
-    double kpe = getPropertyValue<double>(KshapePassiveName);
+    double e0 = getFmaxMuscleStrain();
+    double kpe = getKshapePassive();
 
     //Compute the passive force developed by the muscle
     if(lceN > 1.0){
@@ -1298,8 +1142,8 @@ double Thelen2003Muscle::calcfpe(const double lceN) const {
 
 double Thelen2003Muscle::calcDfpeDlceN(const double lceN) const {
     double dfpe_d_lceN = 0;
-    double e0 = getPropertyValue<double>(FmaxFiberStrainName);
-    double kpe = getPropertyValue<double>(KshapePassiveName);
+    double e0 = getFmaxMuscleStrain();
+    double kpe = getKshapePassive();
 
     if(lceN > 1.0){
         double t1 = 0.1e1 / e0;
@@ -1312,8 +1156,8 @@ double Thelen2003Muscle::calcDfpeDlceN(const double lceN) const {
 
 double Thelen2003Muscle::calcfpefisoPE(double lceN) const
 {
-    double fmaxMuscleStrain = getPropertyValue<double>(FmaxFiberStrainName);
-    double kShapePassive = getPropertyValue<double>(KshapePassiveName);
+    double fmaxMuscleStrain = getFmaxMuscleStrain();
+    double kShapePassive = getKshapePassive();
 
     double musclePE = 0.0;
     //Compute the potential energy stored in the muscle
@@ -1356,12 +1200,12 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
     //The variable names have all been switched to closely match 
     //with the notation in Thelen 2003.
     double dlceN = 0.0;      //contractile element velocity    
-    double af   = getPropertyValue<double>(AfName);
+    double af   = getAf();
 
     double a    = act;
     double afl  = a*fal; //afl = a*fl
     double Fm   = actFalFv;     //Fm = a*fl*fv    
-    double flen = getPropertyValue<double>(FlenName);
+    double flen = getFlen();
     double Fmlen_afl = flen*afl;
 
     double dlcedFm = 0.0; //partial deriviative of contactile element
@@ -1373,7 +1217,7 @@ double Thelen2003Muscle::calcdlceN(double act,double fal,double actFalFv) const
     double Fm_asyC = 0;           //Concentric contraction asymptote
     double Fm_asyE = afl*flen;    
                                 //Eccentric contraction asymptote
-    double asyE_thresh = getPropertyValue<double>(FvLinearExtrapName);
+    double asyE_thresh = getForceVelocityExtrapolationThreshold();
 
     //If fv is in the appropriate region, use 
     //Thelen 2003 Eqns 6 & 7 to compute dlceN
@@ -1441,15 +1285,15 @@ double Thelen2003Muscle::calcDdlceDaFalFv(const double aAct,
     //The variable names have all been switched to closely match with 
     //the notation in Thelen 2003.
     double dlceN = 0.0;      //contractile element velocity    
-    double af   = getPropertyValue<double>(AfName);
+    double af   = getAf();
 
     double a    = aAct;
     double afl  = aAct*aFal;  //afl = a*fl
     double Fm   = aFalFv;    //Fm = a*fl*fv    
-    double flen = getPropertyValue<double>(FlenName);
+    double flen = getFlen();
     double Fmlen_afl = flen*aAct*aFal;
 
-    double dlcedFm = 0.0; //partial deriviative of contactile element 
+    double dlcedFm = 0.0; //partial derivative of contractile element 
                           //velocity w.r.t. Fm
 
     double b = 0;
@@ -1458,7 +1302,7 @@ double Thelen2003Muscle::calcDdlceDaFalFv(const double aAct,
     double Fm_asyC = 0;           //Concentric contraction asymptote
     double Fm_asyE = aAct*aFal*flen;    
                                 //Eccentric contraction asymptote
-    double asyE_thresh = getPropertyValue<double>(FvLinearExtrapName);
+    double asyE_thresh = getForceVelocityExtrapolationThreshold();
 
     //If fv is in the appropriate region, use 
     //Thelen 2003 Eqns 6 & 7 to compute dlceN

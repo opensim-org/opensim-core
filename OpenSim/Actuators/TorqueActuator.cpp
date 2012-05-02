@@ -1,7 +1,7 @@
 // TorqueActuator.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2009, Stanford University. All rights reserved. 
+* Copyright (c)  2009-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -30,156 +30,58 @@
  * Author: Ajay Seth
  */
 
-
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include <OpenSim/Common/XMLDocument.h>
-#include "TorqueActuator.h"
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 
+#include "TorqueActuator.h"
+
 using namespace OpenSim;
-using namespace std;
+using std::string;
+using SimTK::Vec3; using SimTK::Vector_; using SimTK::Vector; 
+using SimTK::SpatialVec; using SimTK::UnitVec3; using SimTK::State;
 
+//==============================================================================
+// CONSTRUCTOR(S)
+//==============================================================================
+// default destructor and copy construction & assignment
 
-//=============================================================================
-// STATICS
-//=============================================================================
-
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-TorqueActuator::~TorqueActuator()
+// Default constructor.
+TorqueActuator::TorqueActuator()
 {
+	constructProperties();
 }
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-TorqueActuator::TorqueActuator( string aBodyNameA, string aBodyNameB) :
-	Actuator(),
-	_bodyA(NULL),
-	_bodyB(NULL)
+// Constructor with given body names.
+TorqueActuator::TorqueActuator(const string& bodyNameA, 
+                               const string& bodyNameB)
 {
-	// NULL
-	setNull();
+	constructProperties();
 
-	// MEMBER VARIABLES
-	setPropertyValue("bodyA", aBodyNameA);
-	setPropertyValue("bodyB", aBodyNameB);
-
-	if (_model) {
-		_bodyA = &_model->updBodySet().get(aBodyNameA);
-		_bodyB = &_model->updBodySet().get(aBodyNameB);
-	} 
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aForce Force to be copied.
- */
-TorqueActuator::TorqueActuator(const TorqueActuator &anActuator) :
-	Actuator(anActuator),
-	_bodyA(NULL),
-	_bodyB(NULL)
-{
-	setNull();
-	copyData(anActuator);
-}
-
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Set the data members of this actuator to their null values.
- */
-void TorqueActuator::setNull()
-{
-	setupProperties();
+    if (!bodyNameA.empty()) setProperty_bodyA(bodyNameA);
+    if (!bodyNameB.empty()) setProperty_bodyB(bodyNameB);
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void TorqueActuator::setupProperties()
+// Construct and initialize properties.
+void TorqueActuator::constructProperties()
 {
-    // Allow the bodies to be specified later.
-	addOptionalProperty<string>("bodyA",
-		"Name of Body to which the torque actuator is applied.");
-	addOptionalProperty<string>("bodyB",
-		"Name of Body to which the equal and opposite torque is applied.");
-
-	addProperty<bool>("torque_is_global",
-		"",
-		true);
-	SimTK::Vec3 z(0.0, 0.0, 1.0 );
-	addProperty<SimTK::Vec3>("axis",
-		"",
-		z);
-	addProperty<double>("optimal_force",
-		"",
-		1.0);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy the member data of the specified actuator.
- */
-void TorqueActuator::copyData(const TorqueActuator &aTorqueActuator)
-{
-	// MEMBER VARIABLES
-    // We allow these to be unspecified so we might not get values here.
-	setPropertyValue("bodyA", aTorqueActuator.getProperty<string>("bodyA"));
-	setPropertyValue("bodyB", aTorqueActuator.getProperty<string>("bodyB"));
-
-	setPropertyValue("torque_is_global", 
-        aTorqueActuator.getPropertyValue<bool>("torque_is_global"));
-	setPropertyValue("axis", 
-        aTorqueActuator.getPropertyValue<SimTK::Vec3>("axis"));
-
-	setOptimalForce(aTorqueActuator.getOptimalForce());
-	setBodyA(aTorqueActuator.getBodyA());
-	setBodyB(aTorqueActuator.getBodyB());
+    constructProperty_bodyA();
+    constructProperty_bodyB();
+    constructProperty_torque_is_global(true);
+	constructProperty_axis(Vec3(0,0,1)); // z direction
+    constructProperty_optimal_force(1.0);
 }
 
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return  aBodyID ID (or number, or index) of the generalized Body.
- */
-TorqueActuator& TorqueActuator::operator=(const TorqueActuator &aTorqueActuator)
-{
-	// BASE CLASS
-	Actuator::operator =(aTorqueActuator);
-
-	copyData(aTorqueActuator);
-
-	return(*this);
-}
-
-
-//=============================================================================
+//==============================================================================
 // GET AND SET
-//=============================================================================
+//==============================================================================
 //-----------------------------------------------------------------------------
 // BodyID
 //-----------------------------------------------------------------------------
@@ -193,7 +95,7 @@ void TorqueActuator::setBodyA(Body* aBody)
 {
 	_bodyA = aBody;
 	if(aBody)
-		setPropertyValue("bodyA", aBody->getName());
+		setProperty_bodyA(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -206,100 +108,50 @@ void TorqueActuator::setBodyB(Body* aBody)
 {
 	_bodyB = aBody;
 	if(aBody)
-		setPropertyValue("bodyB", aBody->getName());
-}
-//_____________________________________________________________________________
-/**
- * Get the generalized Body to which the Body actuator
- * is applied.
- *
- * @return Pointer to the Body
- */
-Body* TorqueActuator::getBodyA() const
-{
-	return _bodyA;
-}
-//_____________________________________________________________________________
-/**
- * Get the generalized Body to which the equal and opposite Body actuation
- * is applied.
- *
- * @return Pointer to the Body
- */
-Body* TorqueActuator::getBodyB() const
-{
-	return _bodyB;
-}
-
-//-----------------------------------------------------------------------------
-// OPTIMAL FORCE
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Set the optimal force of the force.
- *
- * @param aOptimalForce Optimal force.
- */
-void TorqueActuator::setOptimalForce(double aOptimalForce)
-{
-	setPropertyValue("optimal_force", aOptimalForce);
-}
-//_____________________________________________________________________________
-/**
- * Get the optimal force of the force.
- *
- * @return Optimal force.
- */
-double TorqueActuator::getOptimalForce() const
-{
-	return getPropertyValue<double>("optimal_force");
-}
-//_____________________________________________________________________________
-/**
- * Get the stress of the force.
- *
- * @return Stress.
- */
-double TorqueActuator::getStress( const SimTK::State& s) const
-{
-	return fabs(getForce(s)/getPropertyValue<double>("optimal_force")); 
+		setProperty_bodyB(aBody->getName());
 }
 
 
-//=============================================================================
+//==============================================================================
 // COMPUTATIONS
-//=============================================================================
+//==============================================================================
+//_____________________________________________________________________________
+// Calculate the stress of the force.
+double TorqueActuator::getStress(const State& s) const
+{
+	return std::abs(getForce(s) / getOptimalForce()); 
+}
 //_____________________________________________________________________________
 /**
  * Compute all quantities necessary for applying the actuator force to the
  * model.
  */
-double TorqueActuator::computeActuation( const SimTK::State& s ) const
+double TorqueActuator::computeActuation(const State& s) const
 {
 	if(_model==NULL) return 0;
 
 	// FORCE
-	return ( getControl(s) * getPropertyValue<double>("optimal_force") );
+	return getControl(s) * getOptimalForce();
 }
 
 
 
-//=============================================================================
+//==============================================================================
 // APPLICATION
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Apply the actuator force to BodyA and BodyB.
  */
-void TorqueActuator::computeForce(const SimTK::State& s, 
-							      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							      SimTK::Vector& generalizedForces) const
+void TorqueActuator::computeForce(const State& s, 
+							      Vector_<SpatialVec>& bodyForces, 
+							      Vector& generalizedForces) const
 {
 	if(_model==NULL) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
-	const bool &torqueIsGlobal = getPropertyValue<bool>("torque_is_global");
-	const SimTK::Vec3 &axis = getPropertyValue<SimTK::Vec3>("axis");
+	const bool torqueIsGlobal = getTorqueIsGlobal();
+	const Vec3& axis = getAxis();
 	
     double force;
 
@@ -315,7 +167,7 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 	
 
     setForce(s, force );
-	SimTK::Vec3 torque = force*SimTK::UnitVec3(axis);
+	Vec3 torque = force*UnitVec3(axis);
 	
 	if (!torqueIsGlobal)
 		engine.transform(s, *_bodyA, torque, engine.getGroundBody(), torque);
@@ -327,7 +179,7 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 		applyTorque(s, *_bodyB, -torque, bodyForces);
 
 	// get the angular velocity of the body in ground
-	SimTK::Vec3 omega(0);
+	Vec3 omega(0);
 	engine.getAngularVelocity(s, *_bodyA, omega);
 	// the speed of the body about the axis the torque is applied is the "speed" of the actuator used to compute power
 	setSpeed(s, ~omega*axis);
@@ -336,41 +188,23 @@ void TorqueActuator::computeForce(const SimTK::State& s,
 /**
  * setup sets the actual Body references _bodyA and _bodyB
  */
-void TorqueActuator::setup(Model& aModel)
+void TorqueActuator::setup(Model& model)
 {
-	Actuator::setup( aModel);
+	Super::setup(model);
 
-	if (_model) {
-		_bodyA = &_model->updBodySet().get(getPropertyValue<string>("bodyA"));
-		_bodyB = &_model->updBodySet().get(getPropertyValue<string>("bodyB"));
-	}
+    if (getProperty_bodyA().empty() || getProperty_bodyB().empty())
+        throw OpenSim::Exception(
+            "TorqueActuator::setup(): body name properties were not set.");
+
+    // Look up the bodies by name in the Model, and record pointers to the
+    // corresponding body objects.
+	_bodyA = &updModel().updBodySet().get(getProperty_bodyA());
+	_bodyB = &updModel().updBodySet().get(getProperty_bodyB());
 }
 
-
-//=============================================================================
-// CHECK
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Check that this point actuator actuator is valid.
- *
- * @return True if valid, false if invalid.
- */
-bool TorqueActuator::check() const
-{
-	// BodyID
-	if( _bodyA != NULL) {
-		printf("TorqueActuator.check: ERROR- %s actuates ",
-			getName().c_str());
-		printf("an invalid Body (%s).\n", getPropertyValue<string>("bodyA").c_str());
-		return(false);
-	}
-	return(true);
-}
-
-//=============================================================================
+//==============================================================================
 // XML
-//=============================================================================
+//==============================================================================
 //-----------------------------------------------------------------------------
 // UPDATE FROM XML NODE
 //-----------------------------------------------------------------------------
@@ -396,9 +230,14 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			converting = true;
 		}
 	}
-	Actuator::updateFromXMLNode(aNode, versionNumber);
-	if (converting) updPropertyValue<SimTK::Vec3>("axis") *= -1.0;
-	setBodyA(_bodyA);
-	setBodyB(_bodyB);
+	Super::updateFromXMLNode(aNode, versionNumber);
+	if (converting) updProperty_axis(0) *= -1.0;
+
+    // Look up the bodies by name in the Model, and record pointers to the
+    // corresponding body objects.
+    if (!(getProperty_bodyA().empty()|| getProperty_bodyB().empty())) {
+	    _bodyA = &updModel().updBodySet().get(getProperty_bodyA());
+	    _bodyB = &updModel().updBodySet().get(getProperty_bodyB());
+    }
 }	
 

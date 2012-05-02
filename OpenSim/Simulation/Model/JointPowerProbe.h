@@ -49,16 +49,24 @@ class Model;
  * @author Ajay Seth, Tim Dorn
  * @version 1.0
  */
-class OSIMSIMULATION_API JointPowerProbe : public Probe  
-{
-    OpenSim_DECLARE_CONCRETE_OBJECT(JointPowerProbe, Probe);
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+class OSIMSIMULATION_API JointPowerProbe : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(JointPowerProbe, Probe);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. Others
+    are inherited from the superclass. **/
+    /**@{**/
+    OpenSim_DECLARE_LIST_PROPERTY(joint_names, std::string,
+        "Specify a list of model Joints whose work should be calculated. "
+        "If multiple Joints are given, the probe value will be the summation"
+        " of all joint powers.");
+    /**@}**/
 
 //=============================================================================
-// METHODS
+// PUBLIC METHODS
 //=============================================================================
 public:
     //--------------------------------------------------------------------------
@@ -67,26 +75,10 @@ public:
     /** Default constructor */
     JointPowerProbe();
     /** Convenience constructor */
-    JointPowerProbe(Array<std::string> joint_names);
-    /** Copy constructor */
-    JointPowerProbe(const JointPowerProbe &aJointPowerProbe);
-    /** Destructor */
-    virtual ~JointPowerProbe();
-    void copyData(const JointPowerProbe &aProbe);
+    JointPowerProbe(const Array<std::string>& joint_names);
 
-private:
-    void setNull();
-    void setupProperties();
-
-public:
-
-    //--------------------------------------------------------------------------
-    // Operators
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    JointPowerProbe& operator=(const JointPowerProbe &aJointPowerProbe);
-#endif
-
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
     //--------------------------------------------------------------------------
     // Get and Set
@@ -99,11 +91,12 @@ public:
 
 
 
-    //-----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
     // Computation
-    //-----------------------------------------------------------------------------
-    /** Compute the Joint power upon which the Probe operation will be based on. */
-    virtual double computeProbeValue(const SimTK::State& state) const;
+    //--------------------------------------------------------------------------
+    /** Compute the Joint power upon which the Probe operation will be 
+    based on. **/
+    double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
 
 
     //--------------------------------------------------------------------------
@@ -112,6 +105,9 @@ public:
 protected:
     virtual void setup(Model& aModel);
     
+private:
+    void setNull();
+    void constructProperties();
 
 //=============================================================================
 };	// END of class JointPowerProbe

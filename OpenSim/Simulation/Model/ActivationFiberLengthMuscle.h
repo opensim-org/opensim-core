@@ -1,5 +1,5 @@
-#ifndef __ActivationFiberLengthMuscle_h__
-#define __ActivationFiberLengthMuscle_h__
+#ifndef OPENSIM_ACTIVATION_FIBER_LENGTH_MUSCLE_H_
+#define OPENSIM_ACTIVATION_FIBER_LENGTH_MUSCLE_H_
 
 // ActivationFiberLengthMuscle.h
 // Author: Ajay Seth
@@ -42,8 +42,9 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                    ACTIVATION FIBER LENGTH MUSCLE
+//==============================================================================
 /**
  * A base class representing a two-state muscle-tendon actuator. 
  * It adds activation and fiber-length states and dynamics to the 
@@ -52,37 +53,37 @@ namespace OpenSim {
  * in the Muscle class, and the force-generating behavior should be defined in
  * the derived classes.
  *
- * @version 2.0
  * @author Ajay Seth
  *
- * @version 1.0 (was in base Muscle)
- * @author Peter Loan
- * @author Frank C. Anderson
+ * (Based on earlier work by Peter Loan and Frank C. Anderson.)
  */
 class OSIMSIMULATION_API ActivationFiberLengthMuscle : public Muscle {
 OpenSim_DECLARE_ABSTRACT_OBJECT(ActivationFiberLengthMuscle, Muscle);
 
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
+public:
+//===============================================================================
+// PROPERTIES
+//===============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(default_activation, double,
+		"Assumed activation level if none is assigned.");
+	OpenSim_DECLARE_PROPERTY(default_fiber_length, double,
+		"Assumed fiber length, unless otherwise assigned.");
+    /**@}**/
 
-	static const std::string STATE_ACTIVATION_NAME;
-	static const std::string STATE_FIBER_LENGTH_NAME;
 
-//=============================================================================
-// METHODS
-//=============================================================================
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-public:
 	ActivationFiberLengthMuscle();
-	ActivationFiberLengthMuscle(const ActivationFiberLengthMuscle &aMuscle);
 
-#ifndef SWIG
-	ActivationFiberLengthMuscle& operator=(const ActivationFiberLengthMuscle &aMuscle);
-#endif
+    // Uses default (compiler-generated) destructor, copy constructor, and copy
+    // assignment operator.
 
     //--------------------------------------------------------------------------
     // ActivationFiberLengthMuscle Parameters
@@ -99,15 +100,16 @@ public:
 	void setActivation(SimTK::State& s, double activation) const;
 	void setFiberLength(SimTK::State& s, double fiberLength) const;
 
+	virtual Array<std::string> getStateVariableNames() const;
+	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
 	//--------------------------------------------------------------------------
     // State Variable Derivative
     //--------------------------------------------------------------------------
 	double getActivationRate(const SimTK::State& s) const;
 
-
 	//--------------------------------------------------------------------------
-	// TO BE DEPPRECATED 
+	// DEPRECATED 
 	//--------------------------------------------------------------------------
 	virtual double computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s, double aActivation) const;
    
@@ -123,17 +125,6 @@ protected:
 	virtual void computeForce(const SimTK::State& state, 
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForce) const;
-public:
-
-	virtual Array<std::string> getStateVariableNames() const;
-	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
-
-private:
-	void setNull();
-	void setupProperties();
-	void copyData(const ActivationFiberLengthMuscle &aMuscle);
-
-protected:
 
 	/** Calculate activation rate */
 	virtual double calcActivationRate(const SimTK::State& s) const = 0;
@@ -155,13 +146,20 @@ protected:
 	/** State derivative access helper methods */
 	void setStateVariableDeriv(const SimTK::State& s, const std::string &aStateName, double aValue) const;
 	double getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) const;
-//=============================================================================
+
+	static const std::string STATE_ACTIVATION_NAME;
+	static const std::string STATE_FIBER_LENGTH_NAME;   
+
+private:
+	void constructProperties();
+
+//==============================================================================
 };	// END of class ActivationFiberLengthMuscle
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __Muscle_h__
+#endif // OPENSIM_ACTIVATION_FIBER_LENGTH_MUSCLE_H_
 
 

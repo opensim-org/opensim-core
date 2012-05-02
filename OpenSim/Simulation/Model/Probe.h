@@ -48,78 +48,90 @@ class Model;
  *
  * @author Tim Dorn
  */
-class OSIMSIMULATION_API Probe : public ModelComponent
-{
-    OpenSim_DECLARE_ABSTRACT_OBJECT(Probe, ModelComponent);
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-    SimTK::Measure afterOperationValue;
-
-
-
-//=============================================================================
-// METHODS
-//=============================================================================
+class OSIMSIMULATION_API Probe : public ModelComponent {
+OpenSim_DECLARE_ABSTRACT_OBJECT(Probe, ModelComponent);
 public:
-    
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    /** Enabled by default. **/
+    OpenSim_DECLARE_PROPERTY(isDisabled, bool,
+        "Flag indicating whether the Probe is disabled or not. Disabled"
+        " means that the Probe will not be reported using the ProbeReporter.");
+
+    OpenSim_DECLARE_PROPERTY(operation, std::string,
+        "The operation to perform on the probe value: "
+        "'value'(no operation, just return the probe value), 'integrate', "
+        "'differentiate', 'scale'");
+
+    OpenSim_DECLARE_PROPERTY(operation_parameter, double,
+        "For 'integrate' this is the initial condition, for 'scale' "
+        "this is the scale factor.");
+    /**@}**/
+
+//=============================================================================
+// PUBLIC METHODS
+//=============================================================================
     Probe();
-    Probe(const Probe &aProbe);
-    virtual ~Probe();
 
-#ifndef SWIG
-    Probe& operator=(const Probe &aProbe);
-#endif
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
-    void copyData(const Probe &aProbe);
-        
-
-    /** Returns trus if the Probe is disabled or false if the probe is enabled. */
-    virtual bool isDisabled() const;
+    /** Returns true if the Probe is disabled or false if the probe is enabled. */
+    bool isDisabled() const;
     /** Set the Probe as disabled (true) or enabled (false). */
-    virtual void setDisabled(bool isDisabled);
+    void setDisabled(bool isDisabled);
 
     /** Return the operation being performed on the probe value. */
-    virtual std::string getOperation() const;
+    std::string getOperation() const;
     /** Set the operation being performed on the probe value. */
-    virtual void setOperation(std::string operation);
+    void setOperation(std::string operation);
 
     /** Return the operation parameter for the operation. */
-    virtual double getOperationParameter() const;
+    double getOperationParameter() const;
     /** Set the operation parameter for the operation. */
-    virtual void setOperationParameter(double operation_parameter);
+    void setOperationParameter(double operation_parameter);
+
+    
+    /** Returns the column labels for the probe values for reporting. */
+    Array<std::string> getRecordLabels() const;
+
+    /** Returns the probe values after being operated on. */
+    Array<double> getRecordValues(const SimTK::State& state) const;
 
 
-protected:
-    virtual void setup(Model& model);
-    virtual void createSystem(SimTK::MultibodySystem& system) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
-
-
-public:
+    // This is the Probe interface that must be implemented by concrete Probe
+    // objects.
 
     /**Computes the probe value (this is the scalar value of the probe prior to any operation being performed on it.
        Probe value is computed at the SimTK::Report Stage.
        This method must be overridden for each subclass Probe.
 
-       @param state System state   
-       @return		The SimTK::Vector of probe values
-    */
+    @param  state   System state from which value is computed.  
+    @return         The SimTK::Vector of probe values. **/
     virtual double computeProbeValue(const SimTK::State& state) const=0;
 
-    /**Returns the column labels for the probe values for reporting. */
-    virtual Array<std::string> getRecordLabels() const;
-
-    /**Returns the probe values after being operated on. */
-    virtual Array<double> getRecordValues(const SimTK::State& state) const;
+protected:
+    // ModelComponent interface.
+    /** Concrete probes may override; be sure to invoke Super::setup()
+    at the beginning of the overriding method. **/
+    void setup(Model& model) OVERRIDE_11;
+    /** Concrete probes may override; be sure to invoke Super::createSystem()
+    at the beginning of the overriding method. **/
+    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 
 private:
-
     void setNull();
-    void setupProperties();
+    void constructProperties();
 
+//=============================================================================
+// DATA
+//=============================================================================
+    SimTK::Measure afterOperationValue;
 //=============================================================================
 };	// END of class Probe
 //=============================================================================

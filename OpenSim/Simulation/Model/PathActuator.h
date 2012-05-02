@@ -3,7 +3,7 @@
 // PathActuator.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2011, Stanford University. All rights reserved. 
+* Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -37,54 +37,51 @@
 
 //=============================================================================
 //=============================================================================
-/**
- * A class that applies controllable tension along a geometry path.
- * This actuator has no states; the control is simply the tension to
- * be applied along a geometry path (i.e. tensionable rope).
- *
- * @author Ajay Seth
- * @version 1.0
- */
+
 namespace OpenSim { 
 
 class Coordinate;
 class ForceSet;
 class Model;
 
+/**
+ * This is the base class for actuators that apply controllable tension along 
+ * a geometry path. %PathActuator has no states; the control is simply the 
+ * tension to be applied along a geometry path (i.e. tensionable rope).
+ *
+ * @author Ajay Seth
+ */
 class OSIMSIMULATION_API PathActuator : public Actuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(PathActuator, Actuator);
+public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with the %PathActuator
+    class. Note that objects derived from this class inherit these
+    properties. **/
+    /**@{**/
+    OpenSim_DECLARE_UNNAMED_PROPERTY(GeometryPath,
+		"The set of points defining the path of the muscle.");
+    OpenSim_DECLARE_PROPERTY(optimal_force, double,
+        "The maximum force this actuator can produce.");
+    /**@}**/
 
 //=============================================================================
-// METHODS
+// PUBLIC METHODS
 //=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
-public:
 	PathActuator();
-	PathActuator( const PathActuator &aGenForce);
-	virtual ~PathActuator();
 
-	void copyData(const PathActuator &aGenForce);
-private:
-	void setNull();
-	void setupProperties();
-	
-
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-	PathActuator& operator=(const PathActuator &aGenForce);
-#endif
+    // default destructor, copy constructor, copy assignment
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// Path
-	GeometryPath& updGeometryPath() { return updPropertyValue<GeometryPath>("GeometryPath"); }
-	const GeometryPath& getGeometryPath() const { return getPropertyValue<GeometryPath>("GeometryPath"); }
+	GeometryPath& updGeometryPath() { return updProperty_GeometryPath(); }
+	const GeometryPath& getGeometryPath() const 
+    {   return getProperty_GeometryPath(); }
 	virtual bool hasGeometryPath() const { return true;};
 
 	// OPTIMAL FORCE
@@ -97,7 +94,8 @@ public:
 
 	// Power: Since lengthening is positive and tension always shortens, positive power
 	// is when muscle is shortening under tension.
-	virtual double getPower(const SimTK::State& s) const { return -getForce(s)*getSpeed(s); }
+	virtual double getPower(const SimTK::State& s) const 
+    {   return -getForce(s)*getSpeed(s); }
 
 
 	// STRESS
@@ -145,6 +143,9 @@ protected:
 	virtual void setup(Model &aModel);
 
 
+private:
+	void setNull();
+	void constructProperties();
 
 //=============================================================================
 };	// END of class PathActuator

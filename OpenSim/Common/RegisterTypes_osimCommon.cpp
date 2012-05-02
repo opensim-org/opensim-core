@@ -28,8 +28,7 @@
  * POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include <string>
-#include <iostream>
+
 #include "Object.h"
 #include "VisibleObject.h"
 #include "RegisterTypes_osimCommon.h"
@@ -52,6 +51,10 @@
 #include "ObjectGroup.h"
 #include "StateFunction.h"
 
+#include <string>
+#include <iostream>
+#include <exception>
+
 using namespace OpenSim;
 using namespace std;
 
@@ -63,7 +66,7 @@ using namespace std;
  */
 OSIMCOMMON_API void RegisterTypes_osimCommon()
 {
-	//cout<<"RegisterTypes_osimCommon  \n";
+  try {
 
 	Object::registerType( FunctionSet() );
 	Object::registerType( GCVSplineSet() );
@@ -86,5 +89,11 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 
 	// To support old type name of "natCubicSpline"
 	Object::renameType("natCubicSpline", "NaturalCubicSpline");
+
+  } catch (const std::exception& e) {
+    std::cerr 
+        << "ERROR during osimCommon Object registration:\n"
+        << e.what() << "\n";
+  }
 }
 

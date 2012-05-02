@@ -1,5 +1,5 @@
-#ifndef OPENSIM_FiberForceLengthCurve_h__
-#define OPENSIM_FiberForceLengthCurve_h__
+#ifndef OPENSIM_FIBER_FORCE_LENGTH_CURVE_H_
+#define OPENSIM_FIBER_FORCE_LENGTH_CURVE_H_
 
 /* Author: Matthew Millard
 /*
@@ -22,14 +22,12 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Actuators/osimActuatorsDLL.h>
-
-
 // INCLUDE
-#include <simbody/internal/common.h>
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/MuscleCurveFunctionFactory.h>
 #include <OpenSim/Common/MuscleCurveFunction.h>
+#include <Simbody/internal/common.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -39,6 +37,9 @@
 #endif
 
 namespace OpenSim {
+//==============================================================================
+//                        FIBER FORCE LENGTH CURVE
+//==============================================================================
 
 /**
  This class serves as a serializable FiberForceLengthCurve, commonly used
@@ -51,18 +52,30 @@ namespace OpenSim {
  */
 class OSIMACTUATORS_API FiberForceLengthCurve : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, ModelComponent);
-
-//class OSIMACTUATORS_API FiberForceLengthCurve : public ModelComponent {
-//OpenSim_DECLARE_CONCRETE_OBJECT(FiberForceLengthCurve, ModelComponent);
-
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(strain_at_one_norm_force, double, 
+        "Fiber strain at a tension of 1 normalized force");
+    OpenSim_DECLARE_PROPERTY(stiffness_at_one_norm_force, double, 
+        "Fiber stiffness at a tension of 1 normalized force");
+    OpenSim_DECLARE_PROPERTY(curviness, double, 
+        "Fiber curve bend, from linear to maximum bend (0-1)");
+    /**@}**/
 
-    ///Default constructor
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** Default constructor creates an object with a default name that doesn't
+    yet define a curve. **/
     FiberForceLengthCurve();
-    ///Default destructor
-    ~FiberForceLengthCurve();
-    ///Default constructor
-    FiberForceLengthCurve(const FiberForceLengthCurve& source);
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
     /**
      Constructs a C2 continuous fiber force length curve. This curve has the 
@@ -143,22 +156,12 @@ public:
             double dfpeVal = fpeCurve3.calcDerivative(0.02,1);
         @endcode
     */
-    FiberForceLengthCurve( double strainAtOneNormForce, 
+    FiberForceLengthCurve(  double strainAtOneNormForce, 
                             double stiffnessAtOneNormForce,
                             double curviness,
-                            const std::string muscleName);
+                            const std::string& muscleName);
 
 
-
-   #ifndef SWIG
-        ///default assignment operator
-        FiberForceLengthCurve& operator=(const FiberForceLengthCurve &source);
-        #endif
-            ///a function that copies all of the properties and data members
-            ///of this class
-            void copyData(const FiberForceLengthCurve &source);
-        #ifndef SWIG
-    #endif
 
     /**
     @returns    The fiber strain at which the Fiber fevelops 1 unit of 
@@ -328,7 +331,10 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
-protected:
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
     /*
     This object extends the ModelComponent interface so that we can make use
     of the 'createSystem' function, which we are using to create the 
@@ -342,9 +348,9 @@ protected:
     */
 
     ///ModelComponent Interface required function
-  	void setup(Model& aModel) OVERRIDE_11;
+    void setup(Model& model) OVERRIDE_11;
     ///ModelComponent Interface required function
-	void initState(SimTK::State& s) const OVERRIDE_11;
+    void initState(SimTK::State& s) const OVERRIDE_11;
     /**
     ModelComponent is being used for this one function, which is called just
     prior to a simulation beginning. This is the ideal time to actually
@@ -356,17 +362,15 @@ protected:
         necessary
 
     */
-	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
     ///ModelComponent Interface required function
-    void setDefaultsFromState(const SimTK::State& state){};
+    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11 {};
     
+    void setNull();
+    void constructProperties();
 
-private:
-  void setNull();
-  void addProperties();
-
-  /**
+    /**
         This function will take all of the current parameter values and use 
         them to build a curve.
 
@@ -376,13 +380,12 @@ private:
         \endverbatim
 
     */
-  void buildCurve();
+    void buildCurve();
 
-
-  MuscleCurveFunction m_curve;
-  bool m_curveUpToDate;
+    MuscleCurveFunction   m_curve;
+    bool                  m_curveUpToDate;
 };
 
 }
 
-#endif //OPENSIM_FiberForceLengthCurve_h__
+#endif // OPENSIM_FIBER_FORCE_LENGTH_CURVE_H_

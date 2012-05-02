@@ -43,71 +43,74 @@ using namespace std;
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
+// Destructor.
 CoordinateLimitForce::~CoordinateLimitForce()
 {
 	delete upStep;
 	delete loStep;
 }
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-CoordinateLimitForce::CoordinateLimitForce() : Force()
+// Default constructor.
+CoordinateLimitForce::CoordinateLimitForce()
 {
 	setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Convenience constructor.
- */
-CoordinateLimitForce::CoordinateLimitForce(const string &coordName, double q_upper, 
+// Convenience constructor.
+CoordinateLimitForce::CoordinateLimitForce
+   (const string& coordName, double q_upper, 
 	double K_upper,	double q_lower, double K_lower, double damping, double dq, 
 	bool computeDissipationEnergy) : Force()
 {
 	setNull();
-	setPropertyValue("coordinate", coordName);
-	setPropertyValue("upper_stiffness", K_upper);
-	setPropertyValue("upper_limit", q_upper);
-	setPropertyValue("lower_stiffness", K_lower);
-	setPropertyValue("lower_limit", q_lower);
-	setPropertyValue("damping", damping);
-	setPropertyValue("transition", dq);
+    constructProperties();
 
-	setPropertyValue<bool>("compute_dissipation_energy", computeDissipationEnergy);
+	setProperty_coordinate(coordName);
+	setProperty_upper_stiffness(K_upper);
+	setProperty_upper_limit(q_upper);
+	setProperty_lower_stiffness(K_lower);
+	setProperty_lower_limit(q_lower);
+	setProperty_damping(damping);
+	setProperty_transition(dq);
+
+	setProperty_compute_dissipation_energy(computeDissipationEnergy);
 
 	setName(coordName + "_LimitForce");
-
 }
 
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aForce Actuator to be copied.
- */
-CoordinateLimitForce::CoordinateLimitForce(const CoordinateLimitForce &aForce) : Force(aForce)
+// Copy constructor. Careful -- we want to NaN out all the local fields
+// rather than copy them.
+CoordinateLimitForce::CoordinateLimitForce(const CoordinateLimitForce& source) 
+:   Super(source)
 {
-	setNull();
-	copyData(aForce);
+	setNull(); // don't delete the copied function pointers!
+	copyData(source);
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the data members of this actuator to their null values.
- */
+// Assignment operator. Careful -- we want to NaN out all the local fields
+// rather than copy them.
+CoordinateLimitForce& CoordinateLimitForce::
+operator=(const CoordinateLimitForce& source)
+{
+    if (&source != this) {
+	    Force::operator=(source);
+	    setNull(); // don't delete the copied function pointers!
+	    copyData(source);
+    }
+
+	return *this;
+}
+
+//_____________________________________________________________________________
+// Set the data members of this actuator to their null values. Note that we
+// also use this after copy construction or copy assignment; these should be
+// calculated at setup().
 void CoordinateLimitForce::setNull()
 {
-	setupProperties();
-
-	_coord = NULL;
 	upStep = NULL;
 	loStep = NULL;
 	
@@ -123,85 +126,42 @@ void CoordinateLimitForce::setNull()
 
 	// Damping in internal (SI) units of N/(m/s) or Nm/(rad/s)
 	_damp = SimTK::NaN;
+
+	_coord = NULL;
 }
 //_____________________________________________________________________________
-/**
- * Set up the serializable member variables.  This involves generating
- * properties and connecting local variables to those properties.
- */
-void CoordinateLimitForce::setupProperties()
+// Allocate and initialize properties.
+void CoordinateLimitForce::constructProperties()
 {
-	addProperty<string>("coordinate", "Coordinate (name) to be limited.", "UNASSIGNED");
-	addProperty<double>("upper_stiffness",
-		"Stiffness of the passive limit force when coordinate exceeds upper limit."
-		" Note, rotational stiffness expected in N*m/degree.",
-		1.0);
-	addProperty<double>("upper_limit",
-		"The upper limit of the coordinate range of motion (rotations in degrees).",
-		0.0);
-	addProperty<double>("lower_stiffness",
-		"Stiffness of the passive limit force when coordinate exceeds lower limit."
-		" Note, rotational stiffness expected in N*m/degree.",
-		1.0);
-	addProperty<double>("lower_limit",
-		"The lower limit of the coordinate range of motion (rotations in degrees).",
-		0.0);
-	addProperty<double>("damping",
-		"Damping factor on the coordinate's speed applied only when limit is exceeded"
-		" For translational has units N/(m/s) and rotational has Nm/(degree/s)",
-		0.001);
-	addProperty<double>("transition",
-		"Transition region width in the units of the coordinate (rotations in degrees)."
-		" Dictates the transition from zero to constant stiffness as coordinate exceeds its limit.",
-		0.1);
-	addProperty<bool>("compute_dissipation_energy", 
-		"Option to compute the dissipation energy due to damping in the CoordinateLimitForce."
-		"If true the dissipation power is automatically integrated to provide energy. Default is false.",
-		false);
+	constructProperty_coordinate("UNASSIGNED");
+	constructProperty_upper_stiffness(1.0);
+	constructProperty_upper_limit(0.0);
+	constructProperty_lower_stiffness(1.0);
+	constructProperty_lower_limit(0.0);
+	constructProperty_damping(0.001);
+	constructProperty_transition(0.1);
+	constructProperty_compute_dissipation_energy(false);
 }
 
 
 //_____________________________________________________________________________
-/**
- * Copy the member data of the specified actuator.
- */
-void CoordinateLimitForce::copyData(const CoordinateLimitForce &aForce)
+// Copy the member data of the specified actuator.
+// We don't want to copy any of our data members on copy construction or
+// copy assignment; they must be filled in later.
+// But property indices must get copied.
+void CoordinateLimitForce::copyData(const CoordinateLimitForce& source)
 {
-    // We allow the coordinate to be missing so we might not get a value here.
-	setPropertyValue("coordinate", aForce.getProperty<string>("coordinate"));
-
-	setPropertyValue("upper_stiffness", aForce.getPropertyValue<double>("upper_stiffness"));
-	setPropertyValue("upper_limit", aForce.getPropertyValue<double>("upper_limit"));
-	setPropertyValue("lower_stiffness", aForce.getPropertyValue<double>("lower_stiffness"));
-	setPropertyValue("lower_limit", aForce.getPropertyValue<double>("lower_limit"));
-	setPropertyValue("damping", aForce.getPropertyValue<double>("damping"));
-	setPropertyValue("transition", aForce.getPropertyValue<double>("transition"));
-	setPropertyValue<bool>("compute_dissipation_energy", aForce.getPropertyValue<bool>("compute_dissipation_energy"));
+	copyProperty_coordinate(source);
+	copyProperty_upper_stiffness(source);
+	copyProperty_upper_limit(source);
+	copyProperty_lower_stiffness(source);
+	copyProperty_lower_limit(source);
+	copyProperty_damping(source);
+	copyProperty_transition(source);
+	copyProperty_compute_dissipation_energy(source);
 }
 
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return  Reference to the altered object.
- */
-CoordinateLimitForce& CoordinateLimitForce::operator=(const CoordinateLimitForce &aForce)
-{
-	// BASE CLASS
-	Force::operator =(aForce);
-
-	// DATA
-	copyData(aForce);
-
-	return(*this);
-}
 
 
 //=============================================================================
@@ -209,37 +169,37 @@ CoordinateLimitForce& CoordinateLimitForce::operator=(const CoordinateLimitForce
 //=============================================================================
 void CoordinateLimitForce::setUpperStiffness(double aUpperStiffness)
 {
-	setPropertyValue("upper_stiffness", aUpperStiffness);
+	setProperty_upper_stiffness(aUpperStiffness);
 }
 
 void CoordinateLimitForce::setUpperLimit(double aUpperLimit)
 {
-	setPropertyValue("upper_limit", aUpperLimit);
+	setProperty_upper_limit(aUpperLimit);
 }
 
 void CoordinateLimitForce::setLowerStiffness(double aLowerStiffness)
 {
-	setPropertyValue("lower_stiffness", aLowerStiffness);
+	setProperty_lower_stiffness(aLowerStiffness);
 }
 
 void CoordinateLimitForce::setLowerLimit(double aLowerLimit)
 {
-	setPropertyValue("lower_limit", aLowerLimit);
+	setProperty_lower_limit(aLowerLimit);
 }
 
 void CoordinateLimitForce::setDamping(double aDamping)
 {
-	setPropertyValue("damping", aDamping);
+	setProperty_damping(aDamping);
 }
 
 void CoordinateLimitForce::setTransition(double aTransition)
 {
-	setPropertyValue("transition", aTransition);
+	setProperty_transition(aTransition);
 }
 
 void CoordinateLimitForce::setComputeDissipationEnergy(bool flag)
 {
-	setPropertyValue<bool>("compute_dissipation_energy", flag);
+	setProperty_compute_dissipation_energy(flag);
 }
 
 //_____________________________________________________________________________
@@ -248,31 +208,36 @@ void CoordinateLimitForce::setComputeDissipationEnergy(bool flag)
  */
 double CoordinateLimitForce::getUpperStiffness() const
 {
-	return getPropertyValue<double>("upper_stiffness");
+	return getProperty_upper_stiffness();
 }
 
 double CoordinateLimitForce::getUpperLimit() const
 {
-	return getPropertyValue<double>("upper_limit");
+	return getProperty_upper_limit();
 }
 
 double CoordinateLimitForce::getLowerStiffness() const
 {
-	return getPropertyValue<double>("lower_stiffness");
+	return getProperty_lower_stiffness();
 }
 double CoordinateLimitForce::getLowerLimit() const
 {
-	return getPropertyValue<double>("lower_limit");
+	return getProperty_lower_limit();
 }
 
 double CoordinateLimitForce::getDamping() const
 {
-	return getPropertyValue<double>("damping");
+	return getProperty_damping();
+}
+
+double CoordinateLimitForce::getTransition() const
+{
+	return getProperty_transition();
 }
 
 bool CoordinateLimitForce::isComputingDissipationEnergy() const
 {
-	return getPropertyValue<bool>("compute_dissipation_energy");
+	return getProperty_compute_dissipation_energy();
 }
 
 //_____________________________________________________________________________
@@ -284,18 +249,17 @@ bool CoordinateLimitForce::isComputingDissipationEnergy() const
  */
 void CoordinateLimitForce::setup(Model& aModel)
 {
-	string errorMessage;
-
-	const string &coordName = getPropertyValue<string>("coordinate");
-	const double &upperStiffness = getPropertyValue<double>("upper_stiffness");
-	const double &upperLimit = getPropertyValue<double>("upper_limit");
-	const double &lowerStiffness = getPropertyValue<double>("lower_stiffness");
-	const double &lowerLimit = getPropertyValue<double>("lower_limit");
-	const double &transition = getPropertyValue<double>("transition");
-	const double &damping = getPropertyValue<double>("damping");
-
-	// Base class
 	Super::setup(aModel);
+
+    string errorMessage;
+
+	const string& coordName = getProperty_coordinate();
+	const double& upperStiffness = getProperty_upper_stiffness();
+	const double& upperLimit = getProperty_upper_limit();
+	const double& lowerStiffness = getProperty_lower_stiffness();
+	const double& lowerLimit = getProperty_lower_limit();
+	const double& transition = getProperty_transition();
+	const double& damping = getProperty_damping();
 
 	// Look up the coordinate
 	if (!_model->updCoordinateSet().contains(coordName)) {
@@ -325,6 +289,7 @@ void CoordinateLimitForce::setup(Model& aModel)
 void CoordinateLimitForce::createSystem(SimTK::MultibodySystem& system) const
 {
 	Super::createSystem(system);
+
 	addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
 
 	if(isComputingDissipationEnergy()){
@@ -393,7 +358,7 @@ double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
 		return 0.0;
 	}
 	
-	const double &trans = _w*getPropertyValue<double>("transition");
+	const double &trans = _w*getProperty_transition();
 
 	if(delta >= trans){
 		// = 5/14*K*trans^2 - 1/2*K*trans^2 + 1/2*K*(delta)^2
@@ -426,7 +391,8 @@ double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 	}
 }
 
-SimTK::Vector CoordinateLimitForce::computeStateVariableDerivatives(const SimTK::State& s) const
+SimTK::Vector CoordinateLimitForce::
+computeStateVariableDerivatives(const SimTK::State& s) const
 {
 	return SimTK::Vector(1, getPowerDissipation(s));
 }

@@ -37,9 +37,12 @@
 #include "ForceSet.h"
 
 namespace OpenSim { 
+class Model;
+class Force;
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                               FORCE PROBE
+//==============================================================================
 /**
  * ForceProbe is a ModelComponent Probe for computing an operation on a 
  * force or sum of forces in the model during a simulation.
@@ -48,47 +51,35 @@ namespace OpenSim {
  * @author Tim Dorn
  */
 
-class Model;
-class Force;
 
-class OSIMSIMULATION_API ForceProbe : public Probe 
-{
-    OpenSim_DECLARE_CONCRETE_OBJECT(ForceProbe, Probe);
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-//=============================================================================
-// METHODS
-//=============================================================================
+class OSIMSIMULATION_API ForceProbe : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(ForceProbe, Probe);
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_LIST_PROPERTY(force_names, std::string,
+        "Specify a list of model Forces whose impulse should be calculated. "
+        "If multiple Forces are given, the probe value will be the summation"
+        " of all forces, and the integral will be the summation of all impulses.");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
     /** Default constructor */
     ForceProbe();
     /** Convenience constructor */
-    ForceProbe(Array<std::string> force_names);
-    /** Copy constructor */
-    ForceProbe(const ForceProbe &aForceProbe);
-    /** Destructor */
-    virtual ~ForceProbe();
-    void copyData(const ForceProbe &aProbe);
-    
-private:
-    void setNull();
-    void setupProperties();
+    const ForceProbe(const Array<std::string>& force_names);
 
-public:
-
-    //--------------------------------------------------------------------------
-    // Operators
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    ForceProbe& operator=(const ForceProbe &aObject);
-#endif
-
+    // Uses default (compiler-generated) destructor, copy constructor, and copy
+    // assignment operator.
 
     //--------------------------------------------------------------------------
     // Get and Set
@@ -97,7 +88,7 @@ public:
     const Property<std::string>& getForceNames() const;
 
     /** Sets the name(s) of the Forces being probed */
-    void setForceNames(const Array<std::string>& aForceNames);
+    void setForceNames(const Array<std::string>& forceNames);
 
 
     //-----------------------------------------------------------------------------
@@ -106,20 +97,21 @@ public:
     /** Compute the Force upon which the Probe operation will be based on. */
     virtual double computeProbeValue(const SimTK::State& state) const;
 
-
+private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-protected:
-    virtual void setup(Model& aModel);
+    void setup(Model& model) OVERRIDE_11;
 
+    void setNull();
+    void constructProperties();
 
-//=============================================================================
+//==============================================================================
 };	// END of class ForceProbe
 
 }; //namespace
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 
-#endif // #ifndef OPENSIM_FORCE_PROBE_H_
+#endif // OPENSIM_FORCE_PROBE_H_

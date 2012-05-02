@@ -118,13 +118,13 @@ public:
 	virtual void getOffset(double rOffset[]) const;
 	virtual bool setOffset(const SimTK::Vec3& aOffset);
 	virtual bool setOffset(const double aOffset[3]);
-	virtual bool getOffsetUseDefault() const { return _offsetProp.getUseDefault(); }
+	virtual bool getOffsetUseDefault() const { return _offsetProp.getValueIsDefault(); }
 	virtual bool getFixed() const { return _fixed; }
 	virtual bool setFixed(bool aFixed);
-	virtual bool getFixedUseDefault() const { return _fixedProp.getUseDefault(); }
+	virtual bool getFixedUseDefault() const { return _fixedProp.getValueIsDefault(); }
 	virtual const std::string& getBodyName() const;
 	virtual bool setBodyName(const std::string& aName);
-	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getUseDefault(); }
+	virtual bool getBodyNameUseDefault() const { return _bodyNameProp.getValueIsDefault(); }
 	virtual bool setBodyNameUseDefault(bool aValue);
 	virtual OpenSim::Body& getBody() const { return *_body; }
 	virtual void changeBody( OpenSim::Body& aBody );

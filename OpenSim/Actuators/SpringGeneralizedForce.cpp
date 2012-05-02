@@ -29,78 +29,39 @@
 */
 
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
-#include <OpenSim/Common/PropertyDbl.h>
-#include "SpringGeneralizedForce.h"
+//==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
+#include "SpringGeneralizedForce.h"
 
 using namespace OpenSim;
 using namespace std;
 
 
-//=============================================================================
+//==============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
+//==============================================================================
+
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-SpringGeneralizedForce::~SpringGeneralizedForce()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-SpringGeneralizedForce::
-SpringGeneralizedForce(string aCoordinateName) :
-	Force(),
-	_coord(NULL)
-{
-	// NULL
-	setNull();
-	setPropertyValue("coordinate", aCoordinateName);
-	if (_model) {
-		_coord = &_model->updCoordinateSet().get(aCoordinateName);
-	} 
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aforce force to be copied.
- */
-SpringGeneralizedForce::
-SpringGeneralizedForce(const SpringGeneralizedForce &aForce) :
-	Force(aForce),
-	_coord(NULL)
+// This also serves as the default constructor.
+SpringGeneralizedForce::SpringGeneralizedForce(const string& coordinateName)
 {
 	setNull();
+    constructProperties();
 
-	// MEMBER VARIABLES
-	setPropertyValue("coordinate", aForce.getPropertyValue<string>("coordinate"));
-	setStiffness(aForce.getStiffness());
-	setRestLength(aForce.getRestLength());
-	setViscosity(aForce.getViscosity());
+    if (!coordinateName.empty())
+	    setProperty_coordinate(coordinateName);
 }
 
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the data members of this force to their null values.
- */
-void SpringGeneralizedForce::
-setNull()
+// Set the data members of this force to their null values.
+void SpringGeneralizedForce::setNull()
 {
-	setupProperties();
+	// no data members that need initializing
 }
 
 	
@@ -109,52 +70,12 @@ setNull()
 /**
  * Set the data members of this force to their null values.
  */
-void SpringGeneralizedForce::
-setupProperties()
+void SpringGeneralizedForce::constructProperties()
 {
-    // Allow this to be specified later.
-	addOptionalProperty<string>("coordinate",
-		"");
-
-	addProperty<double>("stiffness",
-		"",
-		0.0);
-	addProperty<double>("rest_length",
-		"",
-		0.0);
-	addProperty<double>("viscosity",
-		"",
-		0.0);
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return  Reference to the altered object.
- */
-SpringGeneralizedForce& SpringGeneralizedForce::
-operator=(const SpringGeneralizedForce &aForce)
-{
-	// BASE CLASS
-	Force::operator =(aForce);
-
-	// MEMBER VARIABLES
-    // We allow this to be unspecified so we might not get a value here.
-	setPropertyValue("coordinate", aForce.getProperty<string>("coordinate"));
-
-	setStiffness(aForce.getStiffness());
-	setRestLength(aForce.getRestLength());
-	setViscosity(aForce.getViscosity());
-
-	return(*this);
+	constructProperty_coordinate();
+	constructProperty_stiffness(0.0);
+	constructProperty_rest_length(0.0);
+	constructProperty_viscosity(0.0);
 }
 
 //_____________________________________________________________________________
@@ -162,18 +83,16 @@ operator=(const SpringGeneralizedForce &aForce)
  * setup sets the _model pointer to proper value
  * _coordinate is actually set inside _createSystem
  */
-void SpringGeneralizedForce::setup(Model& aModel)
+void SpringGeneralizedForce::setup(Model& model)
 {
-	Force::setup( aModel);
+	Super::setup(model);
 
-	if (_model) {
-		_coord = &_model->updCoordinateSet().get(getPropertyValue<string>("coordinate"));
-	}
+    _coord = &model.updCoordinateSet().get(getProperty_coordinate());
 }
 
-//=============================================================================
+//==============================================================================
 // GET AND SET
-//=============================================================================
+//==============================================================================
 //-----------------------------------------------------------------------------
 // REST LENGTH
 //-----------------------------------------------------------------------------
@@ -186,7 +105,7 @@ void SpringGeneralizedForce::setup(Model& aModel)
 void SpringGeneralizedForce::
 setRestLength(double aRestLength)
 {
-	setPropertyValue("rest_length", aRestLength);
+	setProperty_rest_length(aRestLength);
 }
 //_____________________________________________________________________________
 /**
@@ -197,7 +116,7 @@ setRestLength(double aRestLength)
 double SpringGeneralizedForce::
 getRestLength() const
 {
-	return getPropertyValue<double>("rest_length");
+	return getProperty_rest_length();
 }
 
 //-----------------------------------------------------------------------------
@@ -214,7 +133,7 @@ getRestLength() const
 void SpringGeneralizedForce::
 setViscosity(double aViscosity)
 {
-	setPropertyValue("viscosity", aViscosity);
+	setProperty_viscosity(aViscosity);
 }
 //_____________________________________________________________________________
 /**
@@ -225,7 +144,7 @@ setViscosity(double aViscosity)
 double SpringGeneralizedForce::
 getViscosity() const
 {
-	return getPropertyValue<double>("viscosity");
+	return getProperty_viscosity();
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +161,7 @@ getViscosity() const
 void SpringGeneralizedForce::
 setStiffness(double aStiffness)
 {
-	setPropertyValue("stiffness", aStiffness);
+	setProperty_stiffness(aStiffness);
 }
 //_____________________________________________________________________________
 /**
@@ -254,18 +173,19 @@ double SpringGeneralizedForce::
 getStiffness() const
 {
 
-	return getPropertyValue<double>("stiffness");
+	return getProperty_stiffness();
 }
 
 
-//=============================================================================
+//==============================================================================
 // COMPUTATIONS
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Compute all quantities necessary for applying the spring force to the
  * model.
- * Force applied = -stiffness * (_coordinateValue - restLength) - viscosity * _coordinateSpeed
+ * Force applied = -stiffness * (_coordinateValue - restLength) 
+ *                   - viscosity * _coordinateSpeed
  */
 void SpringGeneralizedForce::computeForce(const SimTK::State& s, 
 							      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
@@ -282,11 +202,13 @@ void SpringGeneralizedForce::computeForce(const SimTK::State& s,
  */
  void  SpringGeneralizedForce::
 createSystem(SimTK::MultibodySystem& system) const {
+    Super::createSystem( system );
 
-     Force::createSystem( system );
-
-	if (_model) 
-		_coord = &_model->updCoordinateSet().get(getPropertyValue<string>("coordinate"));
+	if (_model) {
+        SpringGeneralizedForce* mthis = 
+            const_cast<SpringGeneralizedForce*>(this);
+		mthis->_coord = &_model->updCoordinateSet().get(getProperty_coordinate());
+    }
      
 }
 /** 
@@ -319,6 +241,7 @@ computeForceMagnitude(const SimTK::State& s) const
 {
 	double q = _coord->getValue(s);
 	double speed =  _coord->getSpeedValue(s);
-	double force = -getStiffness()*(q - getPropertyValue<double>("rest_length")) - getPropertyValue<double>("viscosity")*speed;
+	double force = -getStiffness()*(q - getProperty_rest_length()) 
+                        - getProperty_viscosity()*speed;
 	return force;
 }

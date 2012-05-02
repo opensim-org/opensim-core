@@ -63,84 +63,46 @@ const int LiuThelen2003Muscle::STATE_FATIGUED_MOTOR_UNITS = 3;
 /**
  * Default constructor.
  */
-LiuThelen2003Muscle::LiuThelen2003Muscle() :
-   Thelen2003Muscle_Deprecated(),
-   _defaultActiveMotorUnits(0.0),
-   _defaultFatiguedMotorUnits(0.0)
+LiuThelen2003Muscle::LiuThelen2003Muscle()
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
 /**
  * Constructor.
  */
-LiuThelen2003Muscle::LiuThelen2003Muscle(const std::string &aName, double aMaxIsometricForce,
-													  double aOptimalFiberLength, double aTendonSlackLength,
-													  double aPennationAngle, double aFatigueFactor,
-													  double aRecoveryFactor) :
-   Thelen2003Muscle_Deprecated(aName, aMaxIsometricForce, aOptimalFiberLength, aTendonSlackLength, aPennationAngle),
-   _defaultActiveMotorUnits(0.0),
-   _defaultFatiguedMotorUnits(0.0)
+LiuThelen2003Muscle::LiuThelen2003Muscle
+   (const std::string &aName, double aMaxIsometricForce,
+	double aOptimalFiberLength, double aTendonSlackLength,
+	double aPennationAngle, double aFatigueFactor,
+	double aRecoveryFactor) 
+:   Super(aName, aMaxIsometricForce, aOptimalFiberLength, aTendonSlackLength, 
+          aPennationAngle)
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 	setFatigueFactor(aFatigueFactor);
 	setRecoveryFactor(aRecoveryFactor);
 }
-
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-LiuThelen2003Muscle::~LiuThelen2003Muscle()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMuscle LiuThelen2003Muscle to be copied.
- */
-LiuThelen2003Muscle::LiuThelen2003Muscle(const LiuThelen2003Muscle &aMuscle) :
-   Thelen2003Muscle_Deprecated(aMuscle),
-   _defaultActiveMotorUnits(0.0),
-   _defaultFatiguedMotorUnits(0.0)
-{
-	setNull();
-	setupProperties();
-	copyData(aMuscle);
-}
-
 
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
 /**
- * Copy data members from one LiuThelen2003Muscle to another.
- *
- * @param aMuscle LiuThelen2003Muscle to be copied.
- */
-void LiuThelen2003Muscle::copyData(const LiuThelen2003Muscle &aMuscle)
-{
-	setPropertyValue("fatigue_factor", aMuscle.getPropertyValue<double>("fatigue_factor"));
-	setPropertyValue("recovery_factor", aMuscle.getPropertyValue<double>("recovery_factor"));
-}
-
-//_____________________________________________________________________________
-/**
  * Set the data members of this LiuThelen2003Muscle to their null values.
  */
 void LiuThelen2003Muscle::setNull()
 {
+   _defaultActiveMotorUnits = 0.0;
+   _defaultFatiguedMotorUnits = 0.0;
 }
 
 //_____________________________________________________________________________
 /**
- * Connect properties to local pointers.
+ * Construct and initialize properties.
  *
  * Properties should be given a meaningful name and an informative comment.
  * The name you give each property is the tag that will be used in the XML
@@ -150,20 +112,16 @@ void LiuThelen2003Muscle::setNull()
  * All properties are added to the property set. Once added, they can be
  * read in and written to files.
 */
-void LiuThelen2003Muscle::setupProperties()
+void LiuThelen2003Muscle::constructProperties()
 {
-	addProperty<double>("fatigue_factor",
-		"percentage of active motor units that fatigue in unit time",
-		0.0);
-	addProperty<double>("recovery_factor",
-		"percentage of fatigued motor units that recover in unit time",
-		0.0);
+    constructProperty_fatigue_factor(0.0);
+    constructProperty_recovery_factor(0.0);
 }
 
 //_____________________________________________________________________________
 void LiuThelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	Thelen2003Muscle_Deprecated::createSystem(system);
+	Super::createSystem(system);
 
 	addStateVariable("active_motor_units");
 	addStateVariable("fatigued_motor_units");
@@ -184,26 +142,6 @@ void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const
 	computeEquilibrium(state);
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-LiuThelen2003Muscle& LiuThelen2003Muscle::operator=(const LiuThelen2003Muscle &aMuscle)
-{
-	// BASE CLASS
-	Muscle::operator=(aMuscle);
-
-	copyData(aMuscle);
-
-	return(*this);
-}
-
-
 
 //=============================================================================
 // GET
@@ -221,7 +159,7 @@ LiuThelen2003Muscle& LiuThelen2003Muscle::operator=(const LiuThelen2003Muscle &a
  */
 bool LiuThelen2003Muscle::setFatigueFactor(double aFatigueFactor)
 {
-	setPropertyValue("fatigue_factor", aFatigueFactor);
+	setProperty_fatigue_factor(aFatigueFactor);
 	return true;
 }
 
@@ -237,7 +175,7 @@ bool LiuThelen2003Muscle::setFatigueFactor(double aFatigueFactor)
  */
 bool LiuThelen2003Muscle::setRecoveryFactor(double aRecoveryFactor)
 {
-	setPropertyValue("recovery_factor", aRecoveryFactor);
+	setProperty_recovery_factor(aRecoveryFactor);
 	return true;
 }
 
@@ -268,10 +206,11 @@ void LiuThelen2003Muscle::setDefaultFatiguedMotorUnits(double fatiguedMotorUnits
  *
  * @param s  system state
  */
-SimTK::Vector LiuThelen2003Muscle::computeStateVariableDerivatives(const SimTK::State& s) const
+SimTK::Vector LiuThelen2003Muscle::
+computeStateVariableDerivatives(const SimTK::State& s) const
 {
-	SimTK::Vector derivs = Thelen2003Muscle_Deprecated::computeStateVariableDerivatives(s);
-	derivs.resize(4);
+	SimTK::Vector derivs = Super::computeStateVariableDerivatives(s);
+	derivs.resizeKeep(4);
 	derivs[2] = getActiveMotorUnitsDeriv(s);
 	derivs[3] = getFatiguedMotorUnitsDeriv(s);
 	return derivs;
@@ -298,14 +237,14 @@ double LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 	double normState[4], normStateDeriv[4], norm_tendon_length, ca;
 	double norm_muscle_tendon_length, pennation_angle;
 
-	const double maxIsometricForce = getPropertyValue<double>("max_isometric_force");
-    const double optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double tendonSlackLength = getPropertyValue<double>("tendon_slack_length");
-	const double pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
-	const double activationTimeConstant = getPropertyValue<double>("activation_time_constant");
-	const double deactivationTimeConstant = getPropertyValue<double>("deactivation_time_constant");
-	const double vmax = getPropertyValue<double>("Vmax");
-	const double vmax0 = getPropertyValue<double>("Vmax0");
+	const double maxIsometricForce = getProperty_max_isometric_force();
+    const double optimalFiberLength = getProperty_optimal_fiber_length();
+	const double tendonSlackLength = getProperty_tendon_slack_length();
+	const double pennationAngleAtOptimal = getProperty_pennation_angle_at_optimal();
+	const double activationTimeConstant = getProperty_activation_time_constant();
+	const double deactivationTimeConstant = getProperty_deactivation_time_constant();
+	const double vmax = getProperty_Vmax();
+	const double vmax0 = getProperty_Vmax0();
 
 	// Normalize the muscle states.
 	normState[STATE_ACTIVATION] = getActivation(s);
@@ -396,9 +335,9 @@ double LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 double LiuThelen2003Muscle::
 computeIsometricForce(SimTK::State& s, double aActivation) const
 {
-	const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double &fatigueFactor = getPropertyValue<double>("fatigue_factor");
-	const double &recoveryFactor = getPropertyValue<double>("recovery_factor");
+	const double optimalFiberLength = getProperty_optimal_fiber_length();
+	const double fatigueFactor = getProperty_fatigue_factor();
+	const double recoveryFactor = getProperty_recovery_factor();
 
     if (optimalFiberLength < ROUNDOFF_ERROR) {
        return 0.0;
@@ -422,6 +361,6 @@ computeIsometricForce(SimTK::State& s, double aActivation) const
 	aActivation = getActiveMotorUnits(s);
 
 	// Now you can call the base class's function with the steady-state activation
-	return Thelen2003Muscle_Deprecated::computeIsometricForce(s, aActivation);
+	return Super::computeIsometricForce(s, aActivation);
 }
 

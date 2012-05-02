@@ -133,13 +133,13 @@ int main()
 
 		// OBJECT 3
 		rdSerializableObject obj3("obj1Defaults.xml");
-		Property_Deprecated* pObjArr = obj3.getPropertySet().get(11);
-		PropertyObjArray<OpenSim::Object>* objs = (PropertyObjArray<OpenSim::Object> *)pObjArr;
-		Object* dObj = objs->getValueObjPtr(1);
-		Property_Deprecated* p1 = dObj->getPropertySet().get(0);
-		Property_Deprecated* p2 = dObj->getPropertySet().get(1);
-		std::cout << (*p1) << std::endl;
-		std::cout << (*p2) << std::endl;
+		//Property_Deprecated* pObjArr = obj3.getPropertySet().get(11);
+		//PropertyObjArray<OpenSim::Object>* objs = (PropertyObjArray<OpenSim::Object> *)pObjArr;
+		//Object* dObj = objs->getValueObjPtr(1);
+		//Property_Deprecated* p1 = dObj->getPropertySet().get(0);
+		//Property_Deprecated* p2 = dObj->getPropertySet().get(1);
+		//std::cout << (*p1) << std::endl;
+		//std::cout << (*p2) << std::endl;
 		Object::setSerializeAllDefaults(true);
 		obj3.print("roundtripDefaults.xml");
 
@@ -187,21 +187,26 @@ int main()
         SimTK_TEST(obj1.hasProperty<rdSerializableObject3>());
         SimTK_TEST(obj1.hasProperty("rdSerializableObject3"));
 
-        // Should be able to access property or its value (the object) as no 
-        // name or by the type name, and the result should be the same.
+        // Check for correct object return type.
+        SimTK_TEST(obj1.getProperty_rdSerializableObject3()[0]
+                    .getConcreteClassName() == "rdSerializableObject3");
 
-        // Compare properties.
-        SimTK_TEST(obj1.getProperty<rdSerializableObject3>()
-                   == obj1.getProperty<rdSerializableObject3>
-                                    ("rdSerializableObject3"));
-        // Compare values.
-        SimTK_TEST(obj1.getPropertyValue<rdSerializableObject3>()
-                   == obj1.getPropertyValue<rdSerializableObject3>
-                                    ("rdSerializableObject3"));
-
-        cout << "\nDUMPOBJ(obj1)" << endl;
+        cout << "\n------------------------------------------" << endl;
+        cout << "DUMPOBJ(obj1)" << endl;
         dumpObj(obj1, 0);
-		
+
+        obj1.updProperty_Test_Str_2() = "DID THIS GET COPIED??";
+
+        rdSerializableObject copyOfObj1(obj1);
+        rdSerializableObject assignOfObj1;
+        assignOfObj1 = obj1;
+
+        cout << "\n------------------------------------------" << endl;
+        cout << "DUMPOBJ(copyOfObj1)" << endl;
+        dumpObj(copyOfObj1, 0);
+        cout << "\n------------------------------------------" << endl;
+        cout << "DUMPOBJ(assignOfObj1)" << endl;
+        dumpObj(assignOfObj1, 0);
 	}
     catch(const std::exception& e) {
         cerr << "EXCEPTION: " << e.what() << endl;

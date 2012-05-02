@@ -1,5 +1,5 @@
-#ifndef _PointToPointSpring_h_
-#define _PointToPointSpring_h_
+#ifndef OPENSIM_POINT_TO_POINT_SPRING_H_
+#define OPENSIM_POINT_TO_POINT_SPRING_H_
 // PointToPointSpring.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
@@ -32,49 +32,65 @@
  * Author: Ajay Seth
  */
 
-#include "Force.h"
 #include <OpenSim/Common/PropertyStr.h>
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/VisibleObject.h>
+#include "Force.h"
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                          POINT TO POINT SPRING
+//==============================================================================
 /**
  * A simple point to point spring with a resting length and stiffness.
  * Points are connected to bodies and are defined in the body frame.
  *
  * @author Ajay Seth
- * @version 1.0
  */
 namespace OpenSim { 
 
 class OSIMSIMULATION_API PointToPointSpring : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointToPointSpring, Force);
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-	/** how to display the Spring */
-	VisibleObject _displayer;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
 public:
-	// Default
-	PointToPointSpring();
-	// Convenience constructor for API users
-	PointToPointSpring( std::string body1Name, SimTK::Vec3 point1, 
-		                std::string body2Name, SimTK::Vec3 point2, double stiffness, double restlength );
-	PointToPointSpring( const PointToPointSpring &aPointToPointSpring);
-	virtual ~PointToPointSpring();
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(body1, std::string,
+		"Name of Body to which 1 end of the spring is attached.");
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(body2, std::string,
+		"Name of Body to which the 2nd end of the spring is attached.");
+	OpenSim_DECLARE_PROPERTY(point1, SimTK::Vec3,
+		"Force application point on body1.");
+	OpenSim_DECLARE_PROPERTY(point2, SimTK::Vec3,
+		"Force application point on body2.");
+	OpenSim_DECLARE_PROPERTY(stiffness, double,
+		"Spring stiffness.");
+	OpenSim_DECLARE_PROPERTY(rest_length, double,
+		"Spring resting length.");
+    /**@}**/
 
-	void copyData(const PointToPointSpring &aPointToPointSpring);
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+	/** Default constructor. **/
+	PointToPointSpring();
+    /** Convenience constructor for API users.
+    @param body1Name    name of the first body to which the spring is attached
+    @param point1       location where spring is attached on body1
+    @param body2Name    name of the second body to which the spring is attached
+    @param point2       location where spring is attached on body2 
+    @param stiffness    spring stiffness
+    @param restlength   the resting (zero force) length of the spring
+    **/
+	PointToPointSpring( std::string body1Name, SimTK::Vec3 point1, 
+		                std::string body2Name, SimTK::Vec3 point2, 
+                        double stiffness, double restlength );
+
+    // default destructor, copy constructor, copy assignment
 
 	//--------------------------------------------------------------------------
 	// Visible Object Support
@@ -83,19 +99,6 @@ public:
 	virtual void updateDisplayer(const SimTK::State& s);
 	virtual void updateGeometry(const SimTK::State& s);
 	
-private:
-	void setNull();
-	void setupProperties();
-	
-
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-	PointToPointSpring& operator=(const PointToPointSpring &aGenForce);
-#endif
-
 	//-----------------------------------------------------------------------------
 	// GET and SET Spring parameters
 	//-----------------------------------------------------------------------------
@@ -104,33 +107,35 @@ public:
 	* 
 	* @param std::string bodyName<1/2>
 	*/
-	void setBody1Name(std::string body1Name) {setPropertyValue("body1", body1Name);}
-	void setBody2Name(std::string body2Name) {setPropertyValue("body2", body2Name);}
-	std::string getBody1Name() const {return getPropertyValue<std::string>("body1");}
-	std::string getBody2Name() const {return getPropertyValue<std::string>("body2");}
+	void setBody1Name(const std::string& body1Name) 
+    {   setProperty_body1(body1Name); }
+	void setBody2Name(const std::string& body2Name) 
+    {   setProperty_body2(body2Name); }
+	const std::string& getBody1Name() const {return getProperty_body1();}
+	const std::string& getBody2Name() const {return getProperty_body2();}
 
 	/**
 	* Spring end points 
 	* 
 	* @param Vec3 point<1/2> 
 	*/
-	void setPoint1(SimTK::Vec3 aPosition) { setPropertyValue("point1", aPosition); }
-	SimTK::Vec3 getPoint1() const { return getPropertyValue<SimTK::Vec3>("point1"); }
-	void setPoint2(SimTK::Vec3 aPosition) { setPropertyValue("point2", aPosition); }
-	SimTK::Vec3 getPoint2() const { return getPropertyValue<SimTK::Vec3>("point2"); }
+	void setPoint1(SimTK::Vec3 aPosition) { setProperty_point1(aPosition); }
+	const SimTK::Vec3& getPoint1() const { return getProperty_point1(); }
+	void setPoint2(SimTK::Vec3 aPosition) { setProperty_point2(aPosition); }
+	const SimTK::Vec3& getPoint2() const { return getProperty_point2(); }
 
 	/**
 	* Spring stiffness
 	* @param stiffness 
 	*/
-	void setStiffness(double stiffness) {setPropertyValue("stiffness", stiffness);}
-	double getStiffness() const {return getPropertyValue<double>("stiffness");}
+	void setStiffness(double stiffness) {setProperty_stiffness(stiffness);}
+	double getStiffness() const {return getProperty_stiffness();}
 	/**
-	* Spring rest length
+	* Spring resting length
 	* @param restLength 
 	*/
-	void setRestlength(double restLength) {setPropertyValue("rest_length", restLength);}
-	double getRestlength() const {return getPropertyValue<double>("rest_length");}
+	void setRestlength(double restLength) {setProperty_rest_length(restLength);}
+	double getRestlength() const {return getProperty_rest_length();}
 
 	//-----------------------------------------------------------------------------
 	// Model setup and system creation
@@ -150,11 +155,19 @@ public:
 	*/
 	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
-//=============================================================================
+protected:
+	/** how to display the Spring */
+	VisibleObject _displayer;
+
+private:
+	void setNull();
+	void constructProperties();
+
+//==============================================================================
 };	// END of class PointToPointSpring
 
 }; //namespace
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
-#endif // __PointToPointSpring_h__
+#endif // OPENSIM_POINT_TO_POINT_SPRING_H_

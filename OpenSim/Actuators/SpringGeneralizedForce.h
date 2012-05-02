@@ -1,5 +1,5 @@
-#ifndef _SpringGeneralizedForce_h_
-#define _SpringGeneralizedForce_h_
+#ifndef OPENSIM_SPRING_GENERALIZED_FORCE_H_
+#define OPENSIM_SPRING_GENERALIZED_FORCE_H_
 // SpringGeneralizedForce.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //	AUTHOR: Frank C. Anderson
@@ -32,17 +32,17 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include "osimActuatorsDLL.h"
 #include <OpenSim/Common/PropertyDbl.h>
 #include <OpenSim/Common/Storage.h>
 #include <OpenSim/Simulation/Model/Force.h>
 #include <OpenSim/Simulation/SimbodyEngine/Joint.h>
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 /**
  * An force that exerts a generalized force based on spring-like
  * characteristics (stiffness and viscosity).  
@@ -56,43 +56,38 @@ class Coordinate;
 
 class OSIMACTUATORS_API SpringGeneralizedForce : public Force {
 OpenSim_DECLARE_CONCRETE_OBJECT(SpringGeneralizedForce, Force);
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-	/** Corresponding generalized coordinate to which the coordinate actuator
-       is applied. */
-    mutable Coordinate *_coord;
-
-//=============================================================================
-// METHODS
-//=============================================================================
 public:
-	SpringGeneralizedForce(std::string aCoordinateName="");
-	SpringGeneralizedForce(const SpringGeneralizedForce &aForce);
-	~SpringGeneralizedForce();
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(coordinate, std::string,
+		"Name of the coordinate to which this force is applied.");
+	OpenSim_DECLARE_PROPERTY(stiffness, double,
+		"Spring stiffness.");
+	OpenSim_DECLARE_PROPERTY(rest_length, double,
+		"Coordinate value at which spring produces no force.");
+	OpenSim_DECLARE_PROPERTY(viscosity, double,
+		"Damping constant.");
+    /**@}**/
 
-private:
-	void setNull();
-	void setupProperties();
-	double computeForceMagnitude(const SimTK::State& s) const;
 
-public:
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** This serves as default constructor or you can specify the coordinate
+    name. A name of "" is treated as though unspecified. **/
+	SpringGeneralizedForce(const std::string& coordinateName="");
 
-	void createSystem(SimTK::MultibodySystem& system) const;
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-	SpringGeneralizedForce&
-		operator=(const SpringGeneralizedForce &aForce);
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
 	//--------------------------------------------------------------------------
 	// GET AND SET
 	//--------------------------------------------------------------------------
-	// GENERALIZED COORDINATE
-	void setCoordinate(Coordinate* aCoordinate);
-	Coordinate* getCoordinate() const;
+
 	// STIFFNESS
 	void setStiffness(double aStiffness);
 	double getStiffness() const;
@@ -107,29 +102,50 @@ public:
 	 * The names of the quantities (column labels) is returned by this first function
 	 * getRecordLabels()
 	 */
-	virtual OpenSim::Array<std::string> getRecordLabels() const ;
+	OpenSim::Array<std::string> getRecordLabels() const ;
 	/**
 	 * Given SimTK::State object extract all the values necessary to report forces, application location
 	 * frame, etc. used in conjunction with getRecordLabels and should return same size Array
 	 */
-	virtual OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
+	OpenSim::Array<double> getRecordValues(const SimTK::State& state) const ;
 
 	//--------------------------------------------------------------------------
 	// COMPUTATIONS
 protected:
-	virtual void computeForce( const SimTK::State& state, 
-							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							   SimTK::Vector& mobilityForces) const;
+    // Force interface.
+	void computeForce(  const SimTK::State& state, 
+					    SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+					    SimTK::Vector& mobilityForces) const OVERRIDE_11;
+	
+    // ModelComponent interface.
+    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 	// Setup method to initialize coordinate reference
-	virtual void setup(Model& aModel);
+	void setup(Model& model) OVERRIDE_11;
 
-	//=============================================================================
+private:
+	void setNull();
+	void constructProperties();
+	double computeForceMagnitude(const SimTK::State& s) const;
+
+	// Set the Coordinate pointer, and set the corresponding name property
+    // to match.
+	void setCoordinate(Coordinate* coordinate);
+	Coordinate* getCoordinate() const;
+
+    // Note: reference pointers are automatically set to null on construction 
+    // and also on copy construction and copy assignment.
+
+    // Corresponding generalized coordinate to which the coordinate actuator
+    // is applied.
+    SimTK::ReferencePtr<Coordinate> _coord;
+
+	//==============================================================================
 };	// END of class SpringGeneralizedForce
 
 }; //namespace
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 
-#endif // #ifndef __SpringGeneralizedForce_h__
+#endif // OPENSIM_SPRING_GENERALIZED_FORCE_H_

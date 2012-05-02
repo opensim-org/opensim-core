@@ -279,7 +279,7 @@ bool VisibleObject::operator==(const VisibleObject &aObject)
  */
 void VisibleObject::setScaleFactors(const SimTK::Vec3& aScaleFactors)
 {
-	_propScaleFactors.setUseDefault(false);
+	_propScaleFactors.setValueIsDefault(false);
 	_scaleFactors=aScaleFactors;
 }
 //_____________________________________________________________________________

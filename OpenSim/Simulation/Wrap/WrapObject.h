@@ -142,9 +142,9 @@ public:
 	const double* getXYZBodyRotation() const { return &_xyzBodyRotation[0]; }
 	const double* getTranslation() const { return &_translation[0]; }
 	bool getActive() const { return _active; }
-	bool getActiveUseDefault() const { return _activeProp.getUseDefault(); }
+	bool getActiveUseDefault() const { return _activeProp.getValueIsDefault(); }
 	const char* getQuadrantName() const { return _quadrantName.c_str(); }
-	bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getUseDefault(); }
+	bool getQuadrantNameUseDefault() const { return _quadrantNameProp.getValueIsDefault(); }
 	void setQuadrantName(const std::string& aName);
         const SimTK::Transform& getTransform() const { return _pose; }
 	virtual const char* getWrapTypeName() const = 0;

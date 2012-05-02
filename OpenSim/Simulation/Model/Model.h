@@ -919,7 +919,7 @@ private:
     //--------------------------------------------------------------------------
 
     // If this flag is set when initSystem() is called, we'll allocate
-    // a ModelVisualizer for display. **/
+    // a ModelVisualizer for display.
     bool _useVisualizer;
 
     // Global flag used to disable all Controllers.

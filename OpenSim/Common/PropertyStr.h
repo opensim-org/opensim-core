@@ -96,7 +96,7 @@ public:
 	virtual std::string toString() const;
 
 	// Special method to reset the value
-	void clearValue() { _value = getDefaultStr(); setUseDefault(true); }
+	void clearValue() { _value = getDefaultStr(); setValueIsDefault(true); }
 	static const std::string& getDefaultStr();
 
 	bool isValidFileName() { return _value!="" && _value!=getDefaultStr(); }

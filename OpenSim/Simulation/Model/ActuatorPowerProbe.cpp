@@ -1,7 +1,7 @@
 // ActuatorPowerProbe.cpp
 // Authors: Frank C. Anderson, Ajay Seth, Tim Dorn
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2012, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -41,123 +41,53 @@ using namespace OpenSim;
 // CONSTRUCTOR(S) AND SETUP
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
+// Default constructor.
 ActuatorPowerProbe::ActuatorPowerProbe() 
 {
     setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Convenience constructor.
- */
+// Convenience constructor.
 ActuatorPowerProbe::ActuatorPowerProbe(Array<string> actuator_names)
 {
     setNull();
-    setPropertyValue("actuator_names", actuator_names);
-}
+    constructProperties();
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-ActuatorPowerProbe::~ActuatorPowerProbe()
-{
+    setProperty_actuator_names(actuator_names);
 }
 
 
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aActuatorPowerProbe ActuatorPowerProbe to be copied.
- */
-ActuatorPowerProbe::ActuatorPowerProbe(const ActuatorPowerProbe &aActuatorPowerProbe) :
-   Probe(aActuatorPowerProbe)
-{
-    setNull();
-    copyData(aActuatorPowerProbe);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one ActuatorPowerProbe to another.
- *
- * @param aProbe ActuatorPowerProbe to be copied.
- */
-void ActuatorPowerProbe::copyData(const ActuatorPowerProbe &aProbe)
-{
-    Super::copyData(aProbe);
-    setPropertyValue("actuator_names", aProbe.getProperty<string>("actuator_names"));
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this ActuatorPowerProbe to their null values.
- */
+// Set the data members of this ActuatorPowerProbe to their null values.
 void ActuatorPowerProbe::setNull(void)
 {
-    setupProperties();
+    // No data members.
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void ActuatorPowerProbe::setupProperties(void)
+// Connect properties to local pointers.
+void ActuatorPowerProbe::constructProperties(void)
 {
-    Array<string> tmp("");
-    addListProperty<string>("actuator_names",
-        "Specify a list of model Actuators whose work should be calculated. "
-        "If multiple Actuators are given, the probe value will be the summation"
-        " of all actuator powers.",
-        tmp);
+    constructProperty_actuator_names();
 }
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-ActuatorPowerProbe& ActuatorPowerProbe::operator=(const ActuatorPowerProbe &aActuatorPowerProbe)
-{
-    // BASE CLASS
-    Super::operator=(aActuatorPowerProbe);
-    return(*this);
-}
-#endif
-
 
 //=============================================================================
 // GET AND SET
 //=============================================================================
-/**
- * Returns the names of the Actuators being probed.
- */
+// Returns the names of the Actuators being probed.
 const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 {
-    return getProperty<string>("actuator_names");
+    return getProperty_actuator_names();
 }
 
 //_____________________________________________________________________________
-/**
- * Sets the names of the Actuators being probed.
- */
-void ActuatorPowerProbe::setActuatorNames(const Array<string>& aActuatorNames)
+// Sets the names of the Actuators being probed.
+void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
 {
-    setPropertyValue<string>("actuator_names", aActuatorNames);
+    setProperty_actuator_names(actuatorNames);
 }
-
-
 
 
 //=============================================================================
@@ -170,15 +100,15 @@ void ActuatorPowerProbe::setActuatorNames(const Array<string>& aActuatorNames)
  *
  * @param aModel OpenSim model containing this ActuatorPowerProbe.
  */
-void ActuatorPowerProbe::setup(Model& aModel)
+void ActuatorPowerProbe::setup(Model& model)
 {
-    Super::setup(aModel);
+    Super::setup(model);
 
     // check that each Actuator in the actuator_names array exists in the model
     int nA = getActuatorNames().size();
     for (int i=0; i<nA; i++) {
         string actName = getActuatorNames()[i];
-        int k = _model->getActuators().getIndex(actName);
+        int k = model.getActuators().getIndex(actName);
         if (k<0) {
             string errorMessage = getConcreteClassName() + ": Invalid Actuator '" + actName + "' specified in <actuator_names>.";
             throw (Exception(errorMessage.c_str()));

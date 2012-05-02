@@ -1,5 +1,5 @@
-#ifndef OPENSIM_TendonForceLengthCurve_h__
-#define OPENSIM_TendonForceLengthCurve_h__
+#ifndef OPENSIM_TENDON_FORCE_LENGTH_CURVE_H_
+#define OPENSIM_TENDON_FORCE_LENGTH_CURVE_H_
 
 /* Author: Matthew Millard
 /*
@@ -22,14 +22,12 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Actuators/osimActuatorsDLL.h>
-
-
 // INCLUDE
-#include <simbody/internal/common.h>
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/MuscleCurveFunctionFactory.h>
 #include <OpenSim/Common/MuscleCurveFunction.h>
+#include <Simbody/internal/common.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -39,6 +37,10 @@
 #endif
 
 namespace OpenSim {
+
+//==============================================================================
+//                       TENDON FORCE LENGTH CURVE
+//==============================================================================
 
 /**
  This class serves as a serializable TendonForceLengthCurve, for use in 
@@ -51,18 +53,30 @@ namespace OpenSim {
  */
 class OSIMACTUATORS_API TendonForceLengthCurve : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, ModelComponent);
-
-//class OSIMACTUATORS_API TendonForceLengthCurve : public ModelComponent {
-//OpenSim_DECLARE_CONCRETE_OBJECT(TendonForceLengthCurve, ModelComponent);
-
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(strain_at_one_norm_force, double,
+        "tendon strain at a tension of 1 normalized force");
+    OpenSim_DECLARE_PROPERTY(stiffness_at_one_norm_force, double, 
+        "tendon stiffness at a tension of 1 normalized force");
+    OpenSim_DECLARE_PROPERTY(curviness, double, 
+        "tendon curve bend, from linear to maximum bend (0-1)");
+    /**@}**/
 
-    ///Default constructor
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** Default constructor creates an object with a default name that doesn't
+    yet define a curve. **/
     TendonForceLengthCurve();
-    ///Default destructor
-    ~TendonForceLengthCurve();
-    ///Default constructor
-    TendonForceLengthCurve(const TendonForceLengthCurve& source);
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
     /**
      Constructs a C2 continuous tendon force length curve. This curve has the 
@@ -152,19 +166,8 @@ public:
     TendonForceLengthCurve( double strainAtOneNormForce, 
                             double stiffnessAtOneNormForce,
                             double curviness,
-                            const std::string muscleName);
+                            const std::string& muscleName);
 
-
-
-   #ifndef SWIG
-        ///default assignment operator
-        TendonForceLengthCurve& operator=(const TendonForceLengthCurve &source);
-        #endif
-            ///a function that copies all of the properties and data members
-            ///of this class
-            void copyData(const TendonForceLengthCurve &source);
-        #ifndef SWIG
-    #endif
 
     /**
     @returns    The tendon strain at which the tendon develops 1 unit of 
@@ -334,7 +337,10 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
-protected:
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
     /*
     This object extends the ModelComponent interface so that we can make use
     of the 'createSystem' function, which we are using to create the 
@@ -348,7 +354,7 @@ protected:
     */
 
     ///ModelComponent Interface required function
-  	void setup(Model& aModel) OVERRIDE_11;
+  	void setup(Model& model) OVERRIDE_11;
     ///ModelComponent Interface required function
 	void initState(SimTK::State& s) const OVERRIDE_11;
     /**
@@ -365,12 +371,11 @@ protected:
 	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
     ///ModelComponent Interface required function
-    void setDefaultsFromState(const SimTK::State& state){};
+    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11 {};
     
 
-private:
   void setNull();
-  void addProperties();
+  void constructProperties();
 
   /**
         This function will take all of the current parameter values and use 
@@ -384,11 +389,10 @@ private:
     */
   void buildCurve();
 
-
-  MuscleCurveFunction m_curve;
-  bool m_curveUpToDate;
+  MuscleCurveFunction   m_curve;
+  bool                  m_curveUpToDate;
 };
 
 }
 
-#endif //OPENSIM_TendonForceLengthCurve_h__
+#endif // OPENSIM_TENDON_FORCE_LENGTH_CURVE_H_

@@ -486,19 +486,19 @@ void SimbodySimmModel::convertBody(const OpenSim::Body& aBody, const MarkerSet* 
 		const CoordinateSet& coordinates = aBody.getModel().getCoordinateSet();
 
 		// Add the joint's transform axes to the SimbodySimmJoint.
-		SpatialTransform& dofs = cj->getSpatialTransform();
+		const SpatialTransform& dofs = cj->getSpatialTransform();
 		// Custom joints have the rotational DOFs specified first, but the translations are applied first
 		// so you want to process them first here.
 		static int order[] = {3, 4, 5, 0, 1, 2};
 		for (int i=0; i<6; i++) {
-			TransformAxis* ta = &dofs[order[i]];
-			if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if it has no coordinate names
+			const TransformAxis* ta = &dofs[order[i]];
+			if (ta->getCoordinateNames().size() > 0) { // transform axis is unused if it has no coordinate names
 				const Coordinate* coord = NULL;
 				const Coordinate* independentCoord = NULL;
 				const Function* constraintFunc = NULL;
 				Coordinate::MotionType motionType = (order[i]<3) ? Coordinate::Rotational : Coordinate::Translational;
-				if (ta->getCoordinateNames().getSize() > 0)
-					coord = &coordinates.get(ta->getCoordinateNames().get(0));
+				if (ta->getCoordinateNames().size() > 0)
+					coord = &coordinates.get(ta->getCoordinateNames()[0]);
 				if (coord)
 					constraintFunc = isDependent(coord, &independentCoord);
 				if (constraintFunc != NULL) {  // dof is constrained to a coordinate in another joint
@@ -599,17 +599,17 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 		return true;
 	} else if (aJoint.isA("CustomJoint")) {
 		const CustomJoint* cj = (CustomJoint*)(&aJoint);
-		SpatialTransform& dofs = cj->getSpatialTransform();
+		const SpatialTransform& dofs = cj->getSpatialTransform();
 
 		// Now see if the joint's "real" DOFs can be added.
 		for (int i=0; i<6; i++) {
-			TransformAxis* ta = &dofs[i];
+			const TransformAxis* ta = &dofs[i];
 			if (i >= 3) {
 				double axis[3];
 				ta->getAxis(axis);
 				for (int j=0; j<3; j++) {
 					if (EQUAL_WITHIN_ERROR(axis[j], 1.0)) {
-						if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if it has no coordinate names
+						if (ta->getCoordinateNames().size() > 0) { // transform axis is unused if it has no coordinate names
 							if (translationsUsed[i-3]) // this translation component already defined
 								return true;
 							if (translationsDone) // have already defined translations then rotation (can't add more translations)
@@ -621,7 +621,7 @@ bool SimbodySimmModel::isParentJointNeeded(const OpenSim::Joint& aJoint)
 					}
 				}
 			} else {
-				if (ta->getCoordinateNames().getSize() > 0) { // transform axis is unused if it has no coordinate names
+				if (ta->getCoordinateNames().size() > 0) { // transform axis is unused if it has no coordinate names
 					if (numRotations >= 3) // have already defined three rotations (can't add more)
 						return true;
 					numRotations++;

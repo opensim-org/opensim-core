@@ -78,83 +78,35 @@ private:
 namespace OpenSim {
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTOR
 //=============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-    Probe::Probe():ModelComponent() 
+// Default constructor.
+Probe::Probe()
 {
     setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-Probe::~Probe()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aProbe Probe to be copied.
- */
-Probe::Probe(const Probe &aProbe) : ModelComponent(aProbe)
-{
-    setNull();
-    copyData(aProbe);
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one Probe to another.
- *
- * @param aProbe Probe to be copied.
- */
-void Probe::copyData(const Probe &aProbe)
-{
-    setPropertyValue("isDisabled", aProbe.getPropertyValue<bool>("isDisabled"));
-    setPropertyValue("operation", aProbe.getPropertyValue<string>("operation"));
-    setPropertyValue("operation_parameter", aProbe.getPropertyValue<double>("operation_parameter"));
-    afterOperationValue = aProbe.afterOperationValue;
-}
-
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this Probe to their null values.
- */
+// Set the data members of this Probe to their null values.
 void Probe::setNull(void)
 {
-    setupProperties();
+    // no data members that need initializing
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void Probe::setupProperties(void)
+void Probe::constructProperties(void)
 {
-    addProperty<bool>("isDisabled",
-        "Flag indicating whether the Probe is disabled or not. Disabled"
-        " means that the Probe will not be reported using the ProbeReporter.",
-        false);
-
-    addProperty<string>("operation",
-        "The operation to perform on the probe value: "
-        "'value'(no operation, just return the probe value), 'integrate', 'differentiate', 'scale'",
-        "value");
-
-    addProperty<double>("operation_parameter",
-        "For 'integrate', this represents the initial condition, for 'scale', this represents the scale factor.",
-        0.0);
+    constructProperty_isDisabled(false);
+    constructProperty_operation("value"); // means "pass the value through"
+    constructProperty_operation_parameter(0.0);
 }
 
 //_____________________________________________________________________________
@@ -163,7 +115,7 @@ void Probe::setupProperties(void)
  */
 void Probe::setup(Model& model)
 {
-    ModelComponent::setup(model);
+    Super::setup(model);
 }
 
 //_____________________________________________________________________________
@@ -172,8 +124,10 @@ void Probe::setup(Model& model)
  */
 void Probe::createSystem(MultibodySystem& system) const
 {
-    ModelComponent::createSystem(system);
+    Super::createSystem(system);
 
+    // Make writable briefly so we can finalize the Probe to include 
+    // references to the allocated System resources.
     Probe* mutableThis = const_cast<Probe*>(this);
 
     // Create a Measure of the value to be probed (operand).
@@ -227,39 +181,6 @@ void Probe::createSystem(MultibodySystem& system) const
 
 }
 
-//_____________________________________________________________________________
-/**
- * Set defaults from state
- */
-void Probe::setDefaultsFromState(const State& state)
-{
-    ModelComponent::setDefaultsFromState(state);
-
-    setPropertyValue("isDisabled", isDisabled());
-    setPropertyValue("operation", getOperation());
-    setPropertyValue("operation_parameter", getOperation());
-}
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Probe& Probe::operator=(const Probe &aProbe)
-{
-    // BASE CLASS
-    Object::operator=(aProbe);
-
-    copyData(aProbe);
-
-    return(*this);
-}
-
 //=============================================================================
 // GET AND SET
 //=============================================================================
@@ -271,7 +192,7 @@ Probe& Probe::operator=(const Probe &aProbe)
  */
 bool Probe::isDisabled() const
 {
-    return getPropertyValue<bool>("isDisabled");
+    return getProperty_isDisabled();
 }
 
 //_____________________________________________________________________________
@@ -282,7 +203,7 @@ bool Probe::isDisabled() const
  */
 string Probe::getOperation() const
 {
-    return getPropertyValue<string>("operation");
+    return getProperty_operation();
 }
 
 //_____________________________________________________________________________
@@ -293,7 +214,7 @@ string Probe::getOperation() const
  */
 double Probe::getOperationParameter() const
 {
-    return getPropertyValue<double>("operation_parameter");
+    return getProperty_operation_parameter();
 }
 
 //_____________________________________________________________________________
@@ -303,7 +224,7 @@ double Probe::getOperationParameter() const
  */
 void Probe::setDisabled(bool isDisabled) 
 {
-    setPropertyValue("isDisabled", isDisabled);
+    setProperty_isDisabled(isDisabled);
 }
 
 //_____________________________________________________________________________
@@ -313,7 +234,7 @@ void Probe::setDisabled(bool isDisabled)
  */
 void Probe::setOperation(string operation) 
 {
-    setPropertyValue("operation", operation);
+    setProperty_operation(operation);
 }
 
 
@@ -324,7 +245,7 @@ void Probe::setOperation(string operation)
  */
 void Probe::setOperationParameter(double operation_parameter) 
 {
-    setPropertyValue("operation_parameter", operation_parameter);
+    setProperty_operation_parameter(operation_parameter);
 }
 
 

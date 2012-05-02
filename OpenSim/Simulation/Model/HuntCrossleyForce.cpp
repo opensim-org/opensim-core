@@ -34,28 +34,31 @@
 
 namespace OpenSim {
 
-HuntCrossleyForce::HuntCrossleyForce() : Force()
+//==============================================================================
+//                          HUNT CROSSLEY FORCE
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
+// Default constructor.
+HuntCrossleyForce::HuntCrossleyForce()
 {
-	setupProperties();
+	constructProperties();
 }
 
-HuntCrossleyForce::HuntCrossleyForce(const HuntCrossleyForce& copy) : Force(copy)
+// Take over ownership of supplied object.
+HuntCrossleyForce::HuntCrossleyForce(ContactParameters* params)
 {
-	setupProperties();
-    copyData(copy);
-}
-
-HuntCrossleyForce::HuntCrossleyForce(ContactParameters* params) : Force()
-{
-	setupProperties();
+	constructProperties();
     addContactParameters(params);
 }
 
 
 void HuntCrossleyForce::createSystem(SimTK::MultibodySystem& system) const
 {
-    const ContactParametersSet &contactParametersSet = getPropertyValue<ContactParametersSet>("contact_parameters");
-	const double &transitionVelocity = getPropertyValue<double>("transition_velocity");
+    const ContactParametersSet& contactParametersSet = 
+        getProperty_contact_parameters();
+	const double& transitionVelocity = getProperty_transition_velocity();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
     SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
@@ -70,7 +73,7 @@ void HuntCrossleyForce::createSystem(SimTK::MultibodySystem& system) const
 	        if (!_model->updContactGeometrySet().contains(params.getGeometry()[j]))
             {
                 std::string errorMessage = "Invalid ContactGeometry (" + params.getGeometry()[j] + ") specified in HuntCrossleyForce" + getName();
-		        throw (Exception(errorMessage.c_str()));
+		        throw Exception(errorMessage);
 	        }
 	        ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
             contacts.addBody(set, matter.updMobilizedBody(SimTK::MobilizedBodyIndex(geom.getBody().getIndex())), geom.createSimTKContactGeometry(), geom.getTransform());
@@ -84,112 +87,84 @@ void HuntCrossleyForce::createSystem(SimTK::MultibodySystem& system) const
 	mutableThis->_index = force.getForceIndex();
 }
 
-void HuntCrossleyForce::setupProperties()
+void HuntCrossleyForce::constructProperties()
 {
-	addProperty<ContactParametersSet>("contact_parameters",
-		"",
-		ContactParametersSet());
-	addProperty<double>("transition_velocity",
-		"",
-		0.01);
+	constructProperty_contact_parameters(ContactParametersSet());
+	constructProperty_transition_velocity(0.01);
 }
 
-void HuntCrossleyForce::copyData(const HuntCrossleyForce& copy)
+HuntCrossleyForce::ContactParametersSet& HuntCrossleyForce::
+updContactParametersSet()
 {
-    setPropertyValue("contact_parameters", copy.getPropertyValue<ContactParametersSet>("contact_parameters"));
-	setPropertyValue("transition_velocity", copy.getPropertyValue<double>("transition_velocity"));
+    return updProperty_contact_parameters();
 }
 
-
-HuntCrossleyForce::ContactParametersSet& HuntCrossleyForce::updContactParametersSet()
+const HuntCrossleyForce::ContactParametersSet& HuntCrossleyForce::
+getContactParametersSet()
 {
-    return updPropertyValue<ContactParametersSet>("contact_parameters");
+    return getProperty_contact_parameters();
 }
 
-const HuntCrossleyForce::ContactParametersSet& HuntCrossleyForce::getContactParametersSet()
+void HuntCrossleyForce::
+addContactParameters(HuntCrossleyForce::ContactParameters* params)
 {
-    return getPropertyValue<ContactParametersSet>("contact_parameters");
-}
-
-void HuntCrossleyForce::addContactParameters(HuntCrossleyForce::ContactParameters* params)
-{
-    updPropertyValue<ContactParametersSet>("contact_parameters").append(params);
+    updContactParametersSet().append(params);
 }
 
 double HuntCrossleyForce::getTransitionVelocity() const
 {
-    return getPropertyValue<double>("transition_velocity");
+    return getProperty_transition_velocity();
 }
 
 void HuntCrossleyForce::setTransitionVelocity(double velocity)
 {
-    setPropertyValue("transition_velocity", velocity);
+    setProperty_transition_velocity(velocity);
 }
 
+
+
+//==============================================================================
+//                HUNT CROSSLEY FORCE :: CONTACT PARAMETERS
+//==============================================================================
+
+// Default constructor.
 HuntCrossleyForce::ContactParameters::ContactParameters()
 {
-    setupProperties();
+    constructProperties();
 }
 
-HuntCrossleyForce::ContactParameters::ContactParameters(const ContactParameters& copy) :
-	Object(copy)
+// Constructor specifying material properties.
+HuntCrossleyForce::ContactParameters::ContactParameters
+   (double stiffness, double dissipation, double staticFriction, 
+    double dynamicFriction, double viscousFriction)
 {
-    setupProperties();
-    copyData(copy);
-}
-
-HuntCrossleyForce::ContactParameters::ContactParameters(double stiffness, double dissipation, double staticFriction, double dynamicFriction, double viscousFriction)
-{
-    setupProperties();
-	setPropertyValue("stiffness", stiffness);
-	setPropertyValue("dissipation", dissipation);
-	setPropertyValue("static_friction", staticFriction);
-	setPropertyValue("dynamic_friction", dynamicFriction);
-	setPropertyValue("viscous_friction", viscousFriction);
-}
-
-void HuntCrossleyForce::ContactParameters::copyData(const ContactParameters& copy)
-{
-	setPropertyValue("geometry", copy.getProperty<std::string>("geometry"));
-
-	setPropertyValue("stiffness", copy.getPropertyValue<double>("stiffness"));
-	setPropertyValue("dissipation", copy.getPropertyValue<double>("dissipation"));
-	setPropertyValue("static_friction", copy.getPropertyValue<double>("static_friction"));
-	setPropertyValue("dynamic_friction", copy.getPropertyValue<double>("dynamic_friction"));
-	setPropertyValue("viscous_friction", copy.getPropertyValue<double>("viscous_friction"));
+    constructProperties();
+	setProperty_stiffness(stiffness);
+	setProperty_dissipation(dissipation);
+	setProperty_static_friction(staticFriction);
+	setProperty_dynamic_friction(dynamicFriction);
+	setProperty_viscous_friction(viscousFriction);
 }
 
 
-void HuntCrossleyForce::ContactParameters::setupProperties()
+void HuntCrossleyForce::ContactParameters::constructProperties()
 {
-	addListProperty<std::string>("geometry",
-		"Names of geometry objects affected by these parameters.");
-
-	addProperty<double>("stiffness",
-		"",
-		0.0);
-	addProperty<double>("dissipation",
-		"",
-		0.0);
-	addProperty<double>("static_friction",
-		"",
-		0.0);
-	addProperty<double>("dynamic_friction",
-		"",
-		0.0);
-	addProperty<double>("viscous_friction",
-		"",
-		0.0);
+	constructProperty_geometry(); // a list of strings
+	constructProperty_stiffness(0.0);
+	constructProperty_dissipation(0.0);
+	constructProperty_static_friction(0.0);
+	constructProperty_dynamic_friction(0.0);
+	constructProperty_viscous_friction(0.0);
 }
 
 const Property<std::string>& HuntCrossleyForce::ContactParameters::getGeometry() const
 {
-    return getProperty<std::string>("geometry");
+    return getProperty_geometry();
 }
 
 Property<std::string>& HuntCrossleyForce::ContactParameters::updGeometry()
 {
-    return updProperty<std::string>("geometry");
+    return updProperty_geometry();
 }
 
 void HuntCrossleyForce::ContactParameters::addGeometry(const std::string& name)
@@ -199,56 +174,57 @@ void HuntCrossleyForce::ContactParameters::addGeometry(const std::string& name)
 
 double HuntCrossleyForce::ContactParameters::getStiffness() const
 {
-    return getPropertyValue<double>("stiffness");
+    return getProperty_stiffness();
 }
 
 void HuntCrossleyForce::ContactParameters::setStiffness(double stiffness)
 {
-    setPropertyValue("stiffness", stiffness);
+    setProperty_stiffness(stiffness);
 }
 
 double HuntCrossleyForce::ContactParameters::getDissipation() const
 {
-    return getPropertyValue<double>("dissipation");
+    return getProperty_dissipation();
 }
 
 void HuntCrossleyForce::ContactParameters::setDissipation(double dissipation)
 {
-    setPropertyValue("dissipation", dissipation);
+    setProperty_dissipation(dissipation);
 }
 
 double HuntCrossleyForce::ContactParameters::getStaticFriction() const
 {
-    return getPropertyValue<double>("static_friction");
+    return getProperty_static_friction();
 }
 
 void HuntCrossleyForce::ContactParameters::setStaticFriction(double friction)
 {
-    setPropertyValue("static_friction", friction);
+    setProperty_static_friction(friction);
 }
 
 double HuntCrossleyForce::ContactParameters::getDynamicFriction() const
 {
-    return getPropertyValue<double>("dynamic_friction");
+    return getProperty_dynamic_friction();
 }
 
 void HuntCrossleyForce::ContactParameters::setDynamicFriction(double friction)
 {
-    setPropertyValue("dynamic_friction", friction);
+    setProperty_dynamic_friction(friction);
 }
 
 double HuntCrossleyForce::ContactParameters::getViscousFriction() const
 {
-    return getPropertyValue<double>("viscous_friction");
+    return getProperty_viscous_friction();
 }
 
 void HuntCrossleyForce::ContactParameters::setViscousFriction(double friction)
 {
-    setPropertyValue("viscous_friction", friction);
+    setProperty_viscous_friction(friction);
 }
 
 void HuntCrossleyForce::ContactParametersSet::setNull()
 {
+    // no data members
 }
 
 HuntCrossleyForce::ContactParametersSet::ContactParametersSet()
@@ -256,22 +232,6 @@ HuntCrossleyForce::ContactParametersSet::ContactParametersSet()
     setNull();
 }
 
-HuntCrossleyForce::ContactParametersSet::ContactParametersSet(const ContactParametersSet& copy) :
-    Set<ContactParameters>(copy)
-{
-    setNull();
-    *this = copy;
-}
-
-HuntCrossleyForce::ContactParametersSet::~ContactParametersSet(void)
-{
-}
-
-HuntCrossleyForce::ContactParametersSet& HuntCrossleyForce::ContactParametersSet::operator=(const ContactParametersSet& copy)
-{
-	Set<ContactParameters>::operator=(copy);
-	return (*this);
-}
 
 //=============================================================================
 // Reporting
@@ -284,7 +244,8 @@ OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const
 {
 	OpenSim::Array<std::string> labels("");
 
-	const ContactParametersSet &contactParametersSet = getPropertyValue<ContactParametersSet>("contact_parameters");
+	const ContactParametersSet& contactParametersSet = 
+        getProperty_contact_parameters();
 
 	for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
@@ -307,27 +268,32 @@ OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const
 /**
  * Provide the value(s) to be reported that correspond to the labels
  */
-OpenSim::Array<double> HuntCrossleyForce::getRecordValues(const SimTK::State& state) const 
+OpenSim::Array<double> HuntCrossleyForce::
+getRecordValues(const SimTK::State& state) const 
 {
 	OpenSim::Array<double> values(1);
 
-	const ContactParametersSet &contactParametersSet = getPropertyValue<ContactParametersSet>("contact_parameters");
+	const ContactParametersSet& contactParametersSet = 
+        getProperty_contact_parameters();
 
-	const SimTK::HuntCrossleyForce &simtkForce = (SimTK::HuntCrossleyForce &)(_model->getForceSubsystem().getForce(_index));
+	const SimTK::HuntCrossleyForce& simtkForce = 
+        (SimTK::HuntCrossleyForce &)(_model->getForceSubsystem().getForce(_index));
 
 	SimTK::Vector_<SimTK::SpatialVec> bodyForces(0);
 	SimTK::Vector_<SimTK::Vec3> particleForces(0);
 	SimTK::Vector mobilityForces(0);
 
 	//get the net force added to the system contributed by the Spring
-	simtkForce.calcForceContribution(state, bodyForces, particleForces, mobilityForces);
+	simtkForce.calcForceContribution(state, bodyForces, particleForces, 
+                                     mobilityForces);
 
 	for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
         ContactParameters& params = contactParametersSet.get(i);
         for (int j = 0; j < params.getGeometry().size(); ++j)
         {
-			ContactGeometry& geom = _model->updContactGeometrySet().get(params.getGeometry()[j]);
+			ContactGeometry& geom = 
+                _model->updContactGeometrySet().get(params.getGeometry()[j]);
 			std::string bodyName = geom.getBodyName();
 	
 			SimTK::Vec3 forces = bodyForces(_model->getBodySet().get(bodyName).getIndex())[1];

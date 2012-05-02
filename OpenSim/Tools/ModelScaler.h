@@ -149,7 +149,7 @@ public:
 	bool getApply() const { return _apply; }
 	void setApply(bool aApply) { 
 		_apply = aApply; 
-		_applyProp.setUseDefault(false); 
+		_applyProp.setValueIsDefault(false); 
 	}
 
 	MeasurementSet& getMeasurementSet() { return _measurementSet; }
@@ -165,37 +165,37 @@ public:
 	const Array<double> &getTimeRange() const { return _timeRange; }
 	void setTimeRange(Array<double> timeRange) {
 		_timeRange = timeRange;
-		_timeRangeProp.setUseDefault(false);
+		_timeRangeProp.setValueIsDefault(false);
 	}
 
 	bool getPreserveMassDist() const { return _preserveMassDist; }
 	void setPreserveMassDist(bool preserveMassDist) {
 		_preserveMassDist = preserveMassDist;
-		_preserveMassDistProp.setUseDefault(false);
+		_preserveMassDistProp.setValueIsDefault(false);
 	}
 
 	Array<std::string>& getScalingOrder() { return _scalingOrder; }
 	void setScalingOrder(Array<std::string>& scalingOrder) {
 		_scalingOrder = scalingOrder;
-		_scalingOrderProp.setUseDefault(false);
+		_scalingOrderProp.setValueIsDefault(false);
 	}
 
 	const std::string& getMarkerFileName() const { return _markerFileName; }
 	void setMarkerFileName(const std::string& aMarkerFileName) {
 		_markerFileName = aMarkerFileName;
-		_markerFileNameProp.setUseDefault(false);
+		_markerFileNameProp.setValueIsDefault(false);
 	}
 
 	const std::string& getOutputModelFileName() const { return _outputModelFileName; }
 	void setOutputModelFileName(const std::string& aOutputModelFileName) {
 		_outputModelFileName = aOutputModelFileName;
-		_outputModelFileNameProp.setUseDefault(false);
+		_outputModelFileNameProp.setValueIsDefault(false);
 	}
 
 	const std::string& getOutputScaleFileName() const { return _outputScaleFileName; }
 	void setOutputScaleFileName(const std::string& aOutputScaleFileName) {
 		_outputScaleFileName = aOutputScaleFileName;
-		_outputScaleFileNameProp.setUseDefault(false);
+		_outputScaleFileNameProp.setValueIsDefault(false);
 	}
 
 	void setPrintResultFiles(bool aToWrite) { _printResultFiles = aToWrite; }

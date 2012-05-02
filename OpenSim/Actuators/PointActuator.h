@@ -1,9 +1,9 @@
-#ifndef _PointActuator_h_
-#define _PointActuator_h_
+#ifndef OPENSIM_POINT_ACTUATOR_H_
+#define OPENSIM_POINT_ACTUATOR_H_
 // PointActuator.h
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2009, Stanford University. All rights reserved. 
+* Copyright (c)  2009-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -38,10 +38,16 @@
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/PropertyBool.h>
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include "SimTKsimbody.h"
+#include "Simbody.h"
 
+
+namespace OpenSim { 
+
+class Body;
+class Model;
 
 //=============================================================================
+//                              POINT ACTUATOR
 //=============================================================================
 /**
  * A class that implements a point actuator acting on the model.
@@ -49,86 +55,85 @@
  * be applied to the model.
  *
  * @author Ajay Seth
- * @version 2.0
  */
-namespace OpenSim { 
-
-class Body;
-class Model;
-
 class OSIMACTUATORS_API PointActuator : public Actuator {
 OpenSim_DECLARE_CONCRETE_OBJECT(PointActuator, Actuator);
-
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-	/** Corresponding Body to which the point actuator is applied. */
-    Body *_body;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-	//--------------------------------------------------------------------------
-	// CONSTRUCTION
-	//--------------------------------------------------------------------------
 public:
-	PointActuator( std::string aBodyName="");
-	PointActuator( const PointActuator &aGenForce);
-	virtual ~PointActuator();
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	OpenSim_DECLARE_OPTIONAL_PROPERTY(body, std::string, 
+        "Name of Body to which this actuator is applied.");
+	OpenSim_DECLARE_PROPERTY(point, SimTK::Vec3,
+		"Location of application point; in body frame unless "
+        "point_is_global=true");
+    /** The default is point_is_global=false. **/
+	OpenSim_DECLARE_PROPERTY(point_is_global, bool,
+		"Interpret point in Ground frame if true; otherwise, body frame.");
+	OpenSim_DECLARE_PROPERTY(direction, SimTK::Vec3,
+		"Force application direction; in body frame unless "
+        "force_is_global=true.");
+    /** The default is force_is_global=false. **/
+	OpenSim_DECLARE_PROPERTY(force_is_global, bool,
+		"Interpret direction in Ground frame if true; otherwise, body frame.");
+	OpenSim_DECLARE_PROPERTY(optimal_force, double,
+		"The maximum force produced by this actuator when fully activated.");
+    /**@}**/
 
-	void copyData(const PointActuator &aGenForce);
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** Default constructor or construct with body name given. An empty 
+    name ("") is treated as though it were unspecified. **/
+	PointActuator(const std::string& bodyName="");
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
+
+	/** Set the 'optimal_force' property. **/
+	void setOptimalForce(double aOptimalForce);
+    /** Get the current value of the 'optimal_force' property. **/
+	double getOptimalForce() const OVERRIDE_11; // Part of Actuator interface.
+
 private:
 	void setNull();
-	void setupProperties();
-	
+	void constructProperties();
 
-	//--------------------------------------------------------------------------
-	// OPERATORS
-	//--------------------------------------------------------------------------
-public:
-#ifndef SWIG
-	PointActuator& operator=(const PointActuator &aGenForce);
-#endif
-
-	//--------------------------------------------------------------------------
-	// GET AND SET
-	//--------------------------------------------------------------------------
-	// GENERALIZED Body
+	// Set the body to which this actuator applies; setting this pointer
+    // also sets the corresponding body name property.
 	void setBody(Body* aBody);
 	Body* getBody() const;
-	// OPTIMAL FORCE
-	void setOptimalForce(double aOptimalForce);
-	double getOptimalForce() const;
-	// STRESS
-#ifndef SWIG
-	double getStress( const SimTK::State& s ) const;
 
 	//--------------------------------------------------------------------------
-	// APPLICATION
+	// Implement Force interface
 	//--------------------------------------------------------------------------
-	virtual void computeForce( const SimTK::State& state, 
-							   SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							   SimTK::Vector& mobilityForces) const;
+	void computeForce(const SimTK::State& state, 
+					  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+					  SimTK::Vector& mobilityForces) const OVERRIDE_11;
 
 	//--------------------------------------------------------------------------
-	// COMPUTATIONS
+	// Implement Actuator interface (also see getOptimalForce() above)
 	//--------------------------------------------------------------------------
-	virtual double computeActuation( const SimTK::State& s) const;
+	double computeActuation( const SimTK::State& s) const OVERRIDE_11;
+	double getStress( const SimTK::State& s ) const OVERRIDE_11;
 
-#endif
+    //--------------------------------------------------------------------------
+	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
-	// CHECK
-	//--------------------------------------------------------------------------
-	virtual bool check() const;
-
 	// Setup method to initialize Body reference
-	void setup(Model& aModel);
+	void setup(Model& model);
+    
+    //--------------------------------------------------------------------------
+	// Implement Object interface.
+	//--------------------------------------------------------------------------
+	void updateFromXMLNode(SimTK::Xml::Element& node, int versionNumber=-1)
+        OVERRIDE_11;
 
-	//--------------------------------------------------------------------------
-	// XML
-	//--------------------------------------------------------------------------
-	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
+	// Corresponding Body to which the point actuator is applied.
+    SimTK::ReferencePtr<Body> _body;
 
 //=============================================================================
 };	// END of class PointActuator
@@ -137,6 +142,6 @@ public:
 //=============================================================================
 //=============================================================================
 
-#endif // __PointActuator_h__
+#endif // OPENSIM_POINT_ACTUATOR_H_
 
 

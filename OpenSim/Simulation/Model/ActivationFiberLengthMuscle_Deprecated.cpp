@@ -1,7 +1,7 @@
 // ActivationFiberLengthMuscle_Deprecated.cpp
 // Author: Peter Loan, Ajay Seth
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -26,19 +26,19 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include "ActivationFiberLengthMuscle_Deprecated.h"
 #include "Model.h"
 
-
-//=============================================================================
-// STATICS
-//=============================================================================
 using namespace std;
 using namespace OpenSim;
 using SimTK::Vec3;
+
+//==============================================================================
+// STATICS
+//==============================================================================
 
 const int ActivationFiberLengthMuscle_Deprecated::STATE_ACTIVATION = 0;
 const int ActivationFiberLengthMuscle_Deprecated::STATE_FIBER_LENGTH = 1;
@@ -47,64 +47,35 @@ const string ActivationFiberLengthMuscle_Deprecated::STATE_ACTIVATION_NAME = "ac
 const string ActivationFiberLengthMuscle_Deprecated::STATE_FIBER_LENGTH_NAME = "fiber_length";
 
 
-//=============================================================================
+//==============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-ActivationFiberLengthMuscle_Deprecated::ActivationFiberLengthMuscle_Deprecated() : Muscle(),
-	_defaultActivation(0),
-	_defaultFiberLength(0)
+// Default constructor.
+ActivationFiberLengthMuscle_Deprecated::ActivationFiberLengthMuscle_Deprecated() 
 {
 	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMuscle ActivationFiberLengthMuscle_Deprecated to be copied.
- */
-ActivationFiberLengthMuscle_Deprecated::ActivationFiberLengthMuscle_Deprecated(const ActivationFiberLengthMuscle_Deprecated &aMuscle) : Muscle(aMuscle),
-	_defaultActivation(aMuscle._defaultActivation),
-	_defaultFiberLength(aMuscle._defaultFiberLength)
-{
-	setNull();
-	setupProperties();
-}
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-ActivationFiberLengthMuscle_Deprecated::~ActivationFiberLengthMuscle_Deprecated()
-{
-	VisibleObject* disp;
-	if ((disp = getDisplayer())){
-		 // Free up allocated geometry objects
-		disp->freeGeometry();
-	}
+	constructProperties();
 }
 
-//=============================================================================
+//==============================================================================
 // CONSTRUCTION METHODS
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
-//_____________________________________________________________________________
-//_____________________________________________________________________________
-/**
- * Set the data members of this ActivationFiberLengthMuscle_Deprecated to their null values.
- */
+// Set the data members of this ActivationFiberLengthMuscle_Deprecated to 
+// their null values.
 void ActivationFiberLengthMuscle_Deprecated::setNull()
 {
+    _defaultActivation = 0;
+    _defaultFiberLength = 0;
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void ActivationFiberLengthMuscle_Deprecated::setupProperties()
+// Allocate and initialize properties. (There aren't any here.)
+void ActivationFiberLengthMuscle_Deprecated::constructProperties()
 {
 }
 
@@ -232,28 +203,9 @@ SimTK::Vector ActivationFiberLengthMuscle_Deprecated::computeStateVariableDeriva
 }
 
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @param aMuscle The muscle from which to copy its data
- * @return Reference to this object.
- */
-ActivationFiberLengthMuscle_Deprecated& ActivationFiberLengthMuscle_Deprecated::operator=(const ActivationFiberLengthMuscle_Deprecated &aMuscle)
-{
-	// base class
-	Muscle::operator=(aMuscle);
-
-	return(*this);
-}
-
-
-//=============================================================================
+//==============================================================================
 // GET
-//=============================================================================
+//==============================================================================
 //-----------------------------------------------------------------------------
 // LENGTH
 //-----------------------------------------------------------------------------
@@ -407,12 +359,12 @@ double ActivationFiberLengthMuscle_Deprecated::getExcitation( const SimTK::State
  */
 double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) const
 {
-	return getForce(s) / getPropertyValue<double>("max_isometric_force");
+	return getForce(s) / getProperty_max_isometric_force();
 }
 
-//=============================================================================
+//==============================================================================
 // SCALING
-//=============================================================================
+//==============================================================================
 
 //_____________________________________________________________________________
 /**
@@ -425,15 +377,15 @@ double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) 
  */
 void ActivationFiberLengthMuscle_Deprecated::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath &path = updPropertyValue<GeometryPath>("GeometryPath");
+	GeometryPath &path = updProperty_GeometryPath();
 
 	path.postScale(s, aScaleSet);
 
 	if (path.getPreScaleLength(s) > 0.0)
 		{
 			double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-			updPropertyValue<double>("optimal_fiber_length") *= scaleFactor;
-			updPropertyValue<double>("tendon_slack_length") *= scaleFactor;
+			updProperty_optimal_fiber_length() *= scaleFactor;
+			updProperty_tendon_slack_length() *= scaleFactor;
 			path.setPreScaleLength(s, 0.0) ;
 		}
 }
@@ -442,9 +394,9 @@ void ActivationFiberLengthMuscle_Deprecated::postScale(const SimTK::State& s, co
 // COMPUTATIONS
 //--------------------------------------------------------------------------
 
-//=============================================================================
+//==============================================================================
 // FORCE APPLICATION
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Apply the muscle's force at its points of attachment to the bodies.
@@ -453,7 +405,7 @@ void ActivationFiberLengthMuscle_Deprecated::computeForce(const SimTK::State& s,
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
-	Muscle::computeForce(s, bodyForces, generalizedForces);
+	Super::computeForce(s, bodyForces, generalizedForces);
 
 	if( isForceOverriden(s) ) {
 		// Also define the state derivatives, since realize acceleration will
@@ -509,9 +461,9 @@ double ActivationFiberLengthMuscle_Deprecated::computeIsokineticForceAssumingInf
 {
 	double isometricForce = computeIsometricForce(s, aActivation);
 
-	const double &optimalFiberLength = getPropertyValue<double>("optimal_fiber_length");
-	const double &pennationAngleAtOptimal = getPropertyValue<double>("pennation_angle_at_optimal");
-	const double &maxContractionVelocity = getPropertyValue<double>("max_contraction_velocity");
+	const double &optimalFiberLength = getProperty_optimal_fiber_length();
+	const double &pennationAngleAtOptimal = getProperty_pennation_angle_at_optimal();
+	const double &maxContractionVelocity = getProperty_max_contraction_velocity();
 
 	double normalizedLength = getFiberLength(s) / optimalFiberLength;
 	double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);
@@ -533,9 +485,9 @@ SimTK::SystemYIndex ActivationFiberLengthMuscle_Deprecated::getStateVariableSyst
 	}
 }
 
-//=============================================================================
+//==============================================================================
 // GENERIC NORMALIZED FORCE-LENGTH-VELOCIY PROPERTIES
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Evaluate the normalized force-length-velocity curve for the Muscle_Deprecated.
@@ -595,9 +547,9 @@ double ActivationFiberLengthMuscle_Deprecated::calcPennation( double aFiberLengt
       return asin(value);
 }
 
-//=============================================================================
+//==============================================================================
 // CALCULATIONS
-//=============================================================================
+//==============================================================================
 /* calculate muscle's position related values such fiber and tendon lengths,
 	normalized lengths, pennation angle, etc... */
 void ActivationFiberLengthMuscle_Deprecated::calcMuscleLengthInfo(const SimTK::State& s, MuscleLengthInfo& mli) const

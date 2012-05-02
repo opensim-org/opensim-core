@@ -27,8 +27,7 @@
 */
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#include <string>
-#include <iostream>
+
 #include <OpenSim/Common/Object.h>
 #include "RegisterTypes_osimTools.h"
 
@@ -61,6 +60,10 @@
 #include "CorrectionController.h"
 #include "MuscleStateTrackingTask.h"
 
+#include <string>
+#include <iostream>
+#include <exception>
+
 using namespace std;
 using namespace OpenSim;
 
@@ -73,7 +76,7 @@ static osimToolsInstantiator instantiator;
  */
 OSIMTOOLS_API void RegisterTypes_osimTools()
 {
-	//cout<<"RegisterTypes_osimTools\n";
+  try {
 
 	Object::registerType( ScaleTool() );
 	//Object::registerType( IKTool() );
@@ -112,6 +115,11 @@ OSIMTOOLS_API void RegisterTypes_osimTools()
 
 	Object::RenameType("IKTool", "InverseKinematicsTool");
 
+  } catch (const std::exception& e) {
+    std::cerr 
+        << "ERROR during osimTools Object registration:\n"
+        << e.what() << "\n";
+  }
 }
 
 

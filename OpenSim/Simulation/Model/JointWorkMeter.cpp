@@ -26,92 +26,64 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
+//==============================================================================
 #include "JointWorkMeter.h"
 #include <OpenSim/Simulation/Model/Model.h>
 
-//=============================================================================
+//==============================================================================
 // STATICS
-//=============================================================================
+//==============================================================================
 using namespace std;
-//using namespace SimTK;
 using namespace OpenSim;
 
 static const string WORK_STATE_NAME = "work";
 
-//=============================================================================
+//==============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
+// Default constructor.
 JointWorkMeter::JointWorkMeter() 
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Convenience constructor.
- */
+// Convenience constructor.
 JointWorkMeter::JointWorkMeter(const Joint &joint, double initialWork)
 {
 	setNull();
-	setupProperties();
-	setPropertyValue("joint_name", joint.getName());
-	setPropertyValue("initial_joint_work", initialWork);
+	constructProperties();
+
+	setProperty_joint_name(joint.getName());
+	setProperty_initial_joint_work(initialWork);
 }
 
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-JointWorkMeter::~JointWorkMeter()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aJointWorkMeter JointWorkMeter to be copied.
- */
-JointWorkMeter::JointWorkMeter(const JointWorkMeter &aJointWorkMeter) :
-   ModelComponent(aJointWorkMeter)
-{
-	setNull();
-	setupProperties();
-}
-
-//=============================================================================
+//==============================================================================
 // CONSTRUCTION METHODS
-//=============================================================================
-
+//==============================================================================
 
 //_____________________________________________________________________________
-/**
- * Set the data members of this JointWorkMeter to their null values.
- */
-void JointWorkMeter::setNull(void)
+// Set the data members of this JointWorkMeter to their null values.
+void JointWorkMeter::setNull()
 {
+    // no data members
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void JointWorkMeter::setupProperties(void)
+void JointWorkMeter::constructProperties()
 {
-	addProperty<string>("joint_name",
-		"The joint name whos work use will be calculated.",
-		"Unassigned");
-	addProperty<double>("initial_joint_work",
-		"The initial amount of work.",
-		0.0);
+	constructProperty_joint_name("Unassigned");
+	constructProperty_initial_joint_work(0.0);
 }
 
 //_____________________________________________________________________________
@@ -123,23 +95,25 @@ void JointWorkMeter::setupProperties(void)
  */
 void JointWorkMeter::setup(Model& aModel)
 {
-	const string& jointName = getPropertyValue<string>("joint_name");
-	ModelComponent::setup(aModel);
+	Super::setup(aModel);
+
+	const string& jointName = getProperty_joint_name();
 	int k = _model->getJointSet().getIndex(jointName);
 	if( k >=0 )
 		_joint = &_model->getJointSet().get(k);
 	else{
-		string errorMessage = "JointWorkMeter: Invalid joint '" + jointName + "' specified.";
-		throw (Exception(errorMessage.c_str()));
+		string errorMessage = "JointWorkMeter: Invalid joint '" + jointName 
+                                + "' specified.";
+		throw OpenSim::Exception(errorMessage);
 	}
 }
 
-//=============================================================================
+//==============================================================================
 // Create the underlying system component(s)
-//=============================================================================
+//==============================================================================
 void JointWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 {
-	ModelComponent::createSystem(system);
+	Super::createSystem(system);
 
 	// Assign a name to the state variable to access the work value stored in the state
 	string stateName = _joint->getName()+"."+WORK_STATE_NAME;
@@ -149,10 +123,11 @@ void JointWorkMeter::createSystem(SimTK::MultibodySystem& system) const
 }
 
 
-//=============================================================================
+//==============================================================================
 // The state variable derivative (power) to be integrated
-//=============================================================================
-SimTK::Vector JointWorkMeter::computeStateVariableDerivatives(const SimTK::State& s) const
+//==============================================================================
+SimTK::Vector JointWorkMeter::
+computeStateVariableDerivatives(const SimTK::State& s) const
 {
 	SimTK::Vector derivs(1, _joint->calcPower(s));
 	double power = derivs[0];
@@ -162,33 +137,19 @@ SimTK::Vector JointWorkMeter::computeStateVariableDerivatives(const SimTK::State
 
  void JointWorkMeter::initState( SimTK::State& s) const
 {
-	setStateVariable(s, getStateVariableNames()[0], getPropertyValue<double>("initial_joint_work"));
+	setStateVariable(s, getStateVariableNames()[0], 
+        getProperty_initial_joint_work());
 }
 
 void JointWorkMeter::setDefaultsFromState(const SimTK::State& state)
 {
-    setPropertyValue("initial_joint_work", getWork(state));
+    setProperty_initial_joint_work(getWork(state));
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-JointWorkMeter& JointWorkMeter::operator=(const JointWorkMeter &aJointWorkMeter)
-{
-	// BASE CLASS
-	Object::operator=(aJointWorkMeter);
-	return(*this);
-}
 
-//=============================================================================
+//==============================================================================
 // GET AND SET
-//=============================================================================
+//==============================================================================
 //
 // Computed work is part of the state
 double JointWorkMeter::getWork(const SimTK::State& state) const

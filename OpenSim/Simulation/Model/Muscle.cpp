@@ -51,109 +51,51 @@ using SimTK::Vec3;
 
 static int counter=0;
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-Muscle::Muscle() : PathActuator()
+// Default constructor.
+Muscle::Muscle()
 {
-	setNull();
-	setupProperties();
+	constructProperties();
 	// override the value of default _minControl, _maxControl
 	setMinControl(0.0);
 	setMaxControl(1.0);
 }
 
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-Muscle::~Muscle()
-{
-	VisibleObject* disp;
-	if ((disp = getDisplayer())){
-		 // Free up allocated geometry objects
-		disp->freeGeometry();
-	}
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aMuscle Muscle to be copied.
- */
-Muscle::Muscle(const Muscle &aMuscle) : PathActuator(aMuscle)
-{
-	setNull();
-	setupProperties();
-	copyData(aMuscle);
-}
-
-//=============================================================================
-// CONSTRUCTION METHODS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Copy data members from one Muscle to another.
- *
- * @param aMuscle Muscle to be copied.
- */
-void Muscle::copyData(const Muscle &aMuscle)
-{
-	setPropertyValue("max_isometric_force", aMuscle.getPropertyValue<double>("max_isometric_force"));
-	setPropertyValue("optimal_fiber_length", aMuscle.getPropertyValue<double>("optimal_fiber_length"));
-	setPropertyValue("tendon_slack_length", aMuscle.getPropertyValue<double>("tendon_slack_length"));
-	setPropertyValue("pennation_angle_at_optimal", aMuscle.getPropertyValue<double>("pennation_angle_at_optimal"));
-	setPropertyValue("max_contraction_velocity", aMuscle.getPropertyValue<double>("max_contraction_velocity"));
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this Muscle to their null values.
- */
-void Muscle::setNull()
-{
-}
-
-//_____________________________________________________________________________
-/**
- * Override default implementation by object to intercept and fix the XML node
- * underneath the model to match current version
- */
+// Override default implementation by object to intercept and fix the XML node
+// underneath the model to match current version.
 void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	if ( versionNumber < XMLDocument::getLatestVersion()){
+	if ( versionNumber < XMLDocument::getLatestVersion()) {
 		if (Object::getDebugLevel()>=1)
 			cout << "Updating Muscle object to latest format..." << endl;
 		
 		if (versionNumber <= 20301){
-				SimTK::Xml::element_iterator pathIter = aNode.element_begin("GeometryPath");
-				if (pathIter != aNode.element_end()){
-					XMLDocument::renameChildNode(*pathIter, "MusclePointSet", "PathPointSet");
-					XMLDocument::renameChildNode(*pathIter, "MuscleWrapSet", "PathWrapSet");
-					}
-				else { // There was no GeometryPath, just MusclePointSet
-					XMLDocument::renameChildNode(aNode, "MusclePointSet", "PathPointSet");
-					XMLDocument::renameChildNode(aNode, "MuscleWrapSet", "PathWrapSet");
-					// Now create a "GeometryPath" node and move MusclePointSet & MuscleWrapSet under it
-					SimTK::Xml::Element myPathElement("GeometryPath");
-					SimTK::Xml::element_iterator  pathPointSetIter = aNode.element_begin("PathPointSet");
-					SimTK::Xml::Node moveNode = aNode.removeNode(pathPointSetIter);
-					myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
-					SimTK::Xml::element_iterator  pathWrapSetIter = aNode.element_begin("PathWrapSet");
-					moveNode = aNode.removeNode(pathWrapSetIter);
-					myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
-					aNode.insertNodeAfter(aNode.element_end(), myPathElement);
-					}
+			SimTK::Xml::element_iterator pathIter = 
+                                            aNode.element_begin("GeometryPath");
+			if (pathIter != aNode.element_end()) {
+				XMLDocument::renameChildNode(*pathIter, "MusclePointSet", "PathPointSet");
+				XMLDocument::renameChildNode(*pathIter, "MuscleWrapSet", "PathWrapSet");
+            } else { // There was no GeometryPath, just MusclePointSet
+				XMLDocument::renameChildNode(aNode, "MusclePointSet", "PathPointSet");
+				XMLDocument::renameChildNode(aNode, "MuscleWrapSet", "PathWrapSet");
+				// Now create a "GeometryPath" node and move MusclePointSet & MuscleWrapSet under it
+				SimTK::Xml::Element myPathElement("GeometryPath");
+				SimTK::Xml::element_iterator  pathPointSetIter = aNode.element_begin("PathPointSet");
+				SimTK::Xml::Node moveNode = aNode.removeNode(pathPointSetIter);
+				myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
+				SimTK::Xml::element_iterator  pathWrapSetIter = aNode.element_begin("PathWrapSet");
+				moveNode = aNode.removeNode(pathWrapSetIter);
+				myPathElement.insertNodeAfter(myPathElement.element_end(),moveNode);
+				aNode.insertNodeAfter(aNode.element_end(), myPathElement);
+            }
 			XMLDocument::renameChildNode(aNode, "pennation_angle", "pennation_angle_at_optimal");
-					}
-
+        }
 	}
 	// Call base class now assuming aNode has been corrected for current version
-	PathActuator::updateFromXMLNode(aNode, versionNumber);
+	Super::updateFromXMLNode(aNode, versionNumber);
 }
 
 
@@ -161,51 +103,15 @@ void Muscle::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 /**
  * Connect properties to local pointers.
  */
-void Muscle::setupProperties()
+void Muscle::constructProperties()
 {
-	addProperty<double>("max_isometric_force",
-		"Maximum isometric force that the fibers can generate",
-		1000.0);
-	addProperty<double>("optimal_fiber_length",
-		"Optimal length of the muscle fibers",
-		0.1);
-	addProperty<double>("tendon_slack_length",
-		"Resting length of the tendon",
-		0.2);
-	addProperty<double>("pennation_angle_at_optimal",
-		"Angle between tendon and fibers at optimal fiber length",
-		0.0);
-	addProperty<double>("max_contraction_velocity",
-		"Maximum contraction velocity of the fibers, in optimal fiberlengths per second",
-		10.0);
-
-	addProperty<bool>("ignore_tendon_compliance",
-		"Compute muscle dynamics ignoring tendon compliance. Tendon is assumed to be rigid.",
-		false);
-
-	addProperty<bool>("ignore_activation_dynamics",
-		"Compute muscle dynamics ignoring activation dynamics. Activation is equivalent to excitation.",
-		false);
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @param aMuscle The muscle from which to copy its data
- * @return Reference to this object.
- */
-Muscle& Muscle::operator=(const Muscle &aMuscle)
-{
-	// base class
-	PathActuator::operator=(aMuscle);
-
-	copyData(aMuscle);
-
-	return(*this);
+	constructProperty_max_isometric_force(1000.0);
+	constructProperty_optimal_fiber_length(0.1);
+	constructProperty_tendon_slack_length(0.2);
+	constructProperty_pennation_angle_at_optimal(0.0);
+	constructProperty_max_contraction_velocity(10.0);
+	constructProperty_ignore_tendon_compliance(false);
+	constructProperty_ignore_activation_dynamics(false);
 }
 
 
@@ -213,34 +119,34 @@ Muscle& Muscle::operator=(const Muscle &aMuscle)
 // MUSCLE PARAMETERS GETTERS AND SETTERS
 //--------------------------------------------------------------------------
 double Muscle::getMaxIsometricForce() const
-{ return getPropertyValue<double>("max_isometric_force"); }
+{   return getProperty_max_isometric_force(); }
 
 double Muscle::getOptimalFiberLength() const
-{ return getPropertyValue<double>("optimal_fiber_length"); }
+{   return getProperty_optimal_fiber_length(); }
 
 double Muscle::getTendonSlackLength() const 
-{ return getPropertyValue<double>("tendon_slack_length"); }
+{   return getProperty_tendon_slack_length(); }
 
 double Muscle::getPennationAngleAtOptimalFiberLength() const 
-{ return getPropertyValue<double>("pennation_angle_at_optimal"); }
+{   return getProperty_pennation_angle_at_optimal(); }
 
 double Muscle::getMaxContractionVelocity() const 
-{ return getPropertyValue<double>("max_contraction_velocity"); }
+{   return getProperty_max_contraction_velocity(); }
 
 void Muscle::setMaxIsometricForce(double aMaxIsometricForce)
-{ setPropertyValue("max_isometric_force", aMaxIsometricForce);}
+{   setProperty_max_isometric_force(aMaxIsometricForce); }
 
 void Muscle::setOptimalFiberLength(double aOptimalFiberLength) 
-{ setPropertyValue("optimal_fiber_length", aOptimalFiberLength);}
+{   setProperty_optimal_fiber_length(aOptimalFiberLength); }
 
 void Muscle::setTendonSlackLength(double aTendonSlackLength) 
-{ setPropertyValue("tendon_slack_length", aTendonSlackLength);}
+{   setProperty_tendon_slack_length(aTendonSlackLength); }
 
 void Muscle::setPennationAngleAtOptimalFiberLength(double aPennationAngle)
-{ setPropertyValue("pennation_angle_at_optimal", aPennationAngle);}
+{   setProperty_pennation_angle_at_optimal(aPennationAngle); }
 
 void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity) 
-{ setPropertyValue("max_contraction_velocity", aMaxContractionVelocity);}
+{   setProperty_max_contraction_velocity(aMaxContractionVelocity); }
 
 
 //=============================================================================
@@ -248,8 +154,9 @@ void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
 //=============================================================================
 void Muscle::setup(Model &aModel)
 {
-	PathActuator::setup(aModel);
-	_muscleWidth = getOptimalFiberLength()*sin(getPennationAngleAtOptimalFiberLength());
+	Super::setup(aModel);
+	_muscleWidth = getOptimalFiberLength()
+                    * sin(getPennationAngleAtOptimalFiberLength());
 
 	_maxIsometricForce = getMaxIsometricForce();
 	_optimalFiberLength = getOptimalFiberLength();
@@ -260,21 +167,24 @@ void Muscle::setup(Model &aModel)
 // Add Muscle's contributions to the underlying system
  void Muscle::createSystem(SimTK::MultibodySystem& system) const
 {
-	PathActuator::createSystem(system);
+	Super::createSystem(system);
 
 	addModelingOption("ignore_tendon_compliance", 1);
 	addModelingOption("ignore_activation_dynamics", 1);
 	
 	// Cache the calculated values for this muscle categorized by their realization stage 
-	addCacheVariable<Muscle::MuscleLengthInfo>("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Position);
-	addCacheVariable<Muscle::FiberVelocityInfo>("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
-	addCacheVariable<Muscle::MuscleDynamicsInfo>("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
+	addCacheVariable<Muscle::MuscleLengthInfo>
+       ("lengthInfo", MuscleLengthInfo(), SimTK::Stage::Position);
+	addCacheVariable<Muscle::FiberVelocityInfo>
+       ("velInfo", FiberVelocityInfo(), SimTK::Stage::Velocity);
+	addCacheVariable<Muscle::MuscleDynamicsInfo>
+       ("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
  }
 
 void Muscle::setDefaultsFromState(const SimTK::State& s)
 {
-    setPropertyValue<bool>("ignore_tendon_compliance", getIgnoreTendonCompliance(s));
-	setPropertyValue<bool>("ignore_activation_dynamics", getIgnoreActivationDynamics(s));
+    setProperty_ignore_tendon_compliance(getIgnoreTendonCompliance(s));
+	setProperty_ignore_activation_dynamics(getIgnoreActivationDynamics(s));
 }
 
 /* get/set flag to ignore tendon compliance when computing muscle dynamics */
@@ -557,7 +467,8 @@ Muscle::MuscleLengthInfo& Muscle::updMuscleLengthInfo(const SimTK::State& s) con
 	return updCacheVariable<MuscleLengthInfo>(s, "lengthInfo");
 }
 
-const Muscle::FiberVelocityInfo& Muscle::getFiberVelocityInfo(const SimTK::State& s) const
+const Muscle::FiberVelocityInfo& Muscle::
+getFiberVelocityInfo(const SimTK::State& s) const
 {
 	if(!isCacheVariableValid(s,"velInfo")){
 		FiberVelocityInfo& ufvi = updFiberVelocityInfo(s);
@@ -570,12 +481,14 @@ const Muscle::FiberVelocityInfo& Muscle::getFiberVelocityInfo(const SimTK::State
 	return getCacheVariable<FiberVelocityInfo>(s, "velInfo");
 }
 
-Muscle::FiberVelocityInfo& Muscle::updFiberVelocityInfo(const SimTK::State& s) const
+Muscle::FiberVelocityInfo& Muscle::
+updFiberVelocityInfo(const SimTK::State& s) const
 {
 	return updCacheVariable<FiberVelocityInfo>(s, "velInfo");
 }
 
-const Muscle::MuscleDynamicsInfo& Muscle::getMuscleDynamicsInfo(const SimTK::State& s) const
+const Muscle::MuscleDynamicsInfo& Muscle::
+getMuscleDynamicsInfo(const SimTK::State& s) const
 {
 	if(!isCacheVariableValid(s,"dynamicsInfo")){
 		MuscleDynamicsInfo& umdi = updMuscleDynamicsInfo(s);
@@ -587,7 +500,8 @@ const Muscle::MuscleDynamicsInfo& Muscle::getMuscleDynamicsInfo(const SimTK::Sta
 	}
 	return getCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
 }
-Muscle::MuscleDynamicsInfo& Muscle::updMuscleDynamicsInfo(const SimTK::State& s) const
+Muscle::MuscleDynamicsInfo& Muscle::
+updMuscleDynamicsInfo(const SimTK::State& s) const
 {
 	return updCacheVariable<MuscleDynamicsInfo>(s, "dynamicsInfo");
 }
@@ -599,7 +513,7 @@ Muscle::MuscleDynamicsInfo& Muscle::updMuscleDynamicsInfo(const SimTK::State& s)
  */
 double Muscle::getStress(const SimTK::State& s) const
 {
-	return getForce(s)/getPropertyValue<double>("max_isometric_force");
+	return getForce(s) / getMaxIsometricForce();
 }
 
 
@@ -638,10 +552,10 @@ void Muscle::calcMuscleDynamicsInfo(const SimTK::State& s, MuscleDynamicsInfo& m
  * Apply the muscle's force at its points of attachment to the bodies.
  */
 void Muscle::computeForce(const SimTK::State& s, 
-							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
-							  SimTK::Vector& generalizedForces) const
+						  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
+						  SimTK::Vector& generalizedForces) const
 {
-	PathActuator::computeForce(s, bodyForces, generalizedForces); // Calls compute actuation.
+	Super::computeForce(s, bodyForces, generalizedForces); // Calls compute actuation.
 
 	// NOTE: Force could be negative, in particular during CMC, when the optimizer is computing
 	// gradients, it will setForce(+1) and setForce(-1) to compute the derivative with respect to force.

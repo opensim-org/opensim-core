@@ -40,82 +40,64 @@ namespace OpenSim {
 // CONSTRUCTOR(S) AND DESTRUCTOR
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Default constructor.
- */
-	Force::Force():ModelComponent() 
+// Default constructor.
+Force::Force()
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 }
 
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-Force::~Force()
+// Copy constructor.
+Force::Force(const Force& source) : Super(source)
 {
+	copyData(source);
 }
 
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aForce Force to be copied.
- */
-Force::Force(const Force &aForce) : ModelComponent(aForce)
+// Copy assignment.
+Force& Force::operator=(const Force& source)
 {
-	setNull();
-	setupProperties();
-	copyData(aForce);
+	if (&source != this) {
+	    Super::operator=(source);
+	    copyData(source);
+    }
+	return *this;
 }
-
 //=============================================================================
 // CONSTRUCTION METHODS
 //=============================================================================
 //_____________________________________________________________________________
-/**
- * Copy data members from one Force to another.
- *
- * @param aForce Force to be copied.
- */
-void Force::copyData(const Force &aForce)
+// Perform copy construction or assignment on local data members; base class
+// (including properties) has already been copied.
+void Force::copyData(const Force& source)
 {
-	//_isDisabled = aForce._isDisabled;
-	setPropertyValue("isDisabled", aForce.getProperty<bool>("isDisabled"));
-
-	// A copy is no longer a live Force with an underlying SimTK::Force
-	// The system must be created, at which time the Force will be assigned an index
+    copyProperty_isDisabled(source);
+	// A copy is no longer a live Force with an underlying SimTK::Force. The
+	// system must be created, at which time the Force will be assigned an index
 	// corresponding to a valid system SimTK::Force.
 	_index.invalidate();
 }
 
 //_____________________________________________________________________________
-/**
- * Set the data members of this Force to their null values.
- */
-void Force::setNull(void)
+// Set the data members of this Force to their null values.
+void Force::setNull()
 {
+    // the lone data member (_index) knows how to initialize itself
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void Force::setupProperties(void)
+// Define properties.
+void Force::constructProperties()
 {
-	addProperty<bool>("isDisabled",
-		"Flag indicating whether the force is disabled or not.  Disabled"
-		" means that the force is not active in subsequent dynamics realizations.",
-		false);
+	constructProperty_isDisabled(false);
 }
 
-/**
- * Create an underlying SimTK::Force to represent the OpenSim::Force in the computational
- * system.  Create a SimTK::Force::Custom by default.
- */
+// Create an underlying SimTK::Force to represent the OpenSim::Force in the 
+// computational system.  Create a SimTK::Force::Custom by default.
 void Force::createSystem(SimTK::MultibodySystem& system) const
 {
+
 	ForceAdapter* adapter = new ForceAdapter(*this);
     SimTK::Force::Custom force(_model->updForceSubsystem(), adapter);
 
@@ -123,51 +105,37 @@ void Force::createSystem(SimTK::MultibodySystem& system) const
 	Force* mutableThis = const_cast<Force *>(this);
 	mutableThis->_index = force.getForceIndex();
 
-	// Keep track of the subystem the force is a part of in case subclasses want to 
-	// extend by adding states, etc...
-	mutableThis->setIndexOfSubsystemForAllocations(_model->updForceSubsystem().getMySubsystemIndex());
-	ModelComponent::createSystem(system);
+	// Keep track of the subystem the force is a part of in case subclasses
+	// want to extend by adding states, etc...
+	mutableThis->setIndexOfSubsystemForAllocations
+       (_model->updForceSubsystem().getMySubsystemIndex());
+
+    //TODO: this must *follow* the above
+	Super::createSystem(system);
 }
 
 
 void Force::initState(SimTK::State& s) const
 {
+	Super::initState(s);
+
 	SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 
 	// Otherwise we have to change the status of the constraint
-	if(getPropertyValue<bool>("isDisabled"))
+	if(getProperty_isDisabled())
 		simForce.disable(s);
 	else
 		simForce.enable(s);
 
-	ModelComponent::initState(s);
 }
 
 void Force::setDefaultsFromState(const SimTK::State& state)
 {
-    setPropertyValue("isDisabled", isDisabled(state));
+	Super::setDefaultsFromState(state);
 
-	ModelComponent::setDefaultsFromState(state);
+    setProperty_isDisabled(isDisabled(state));
 }
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-Force& Force::operator=(const Force &aForce)
-{
-	// BASE CLASS
-	Object::operator=(aForce);
-
-	copyData(aForce);
-
-	return(*this);
-}
 
 //_____________________________________________________________________________
 /**
@@ -186,7 +154,7 @@ void Force::setDisabled(SimTK::State& s, bool isDisabled)
 		else
 			simtkForce.enable(s);
 	}
-	setPropertyValue("isDisabled", isDisabled);
+	setProperty_isDisabled(isDisabled);
 }
 
 bool Force::isDisabled(const SimTK::State& s) const
@@ -195,7 +163,7 @@ bool Force::isDisabled(const SimTK::State& s) const
 		SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
 		return simtkForce.isDisabled(s);
 	}
-	return getPropertyValue<bool>("isDisabled");
+	return getProperty_isDisabled();
 }
 
 //-----------------------------------------------------------------------------

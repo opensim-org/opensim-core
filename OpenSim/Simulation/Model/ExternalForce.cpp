@@ -26,10 +26,9 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
-#include "ExternalForce.h"
+//==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/BodySet.h>
 #include <OpenSim/Common/Storage.h>
@@ -37,22 +36,21 @@
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
 
-//=============================================================================
-// STATICS
-//=============================================================================
+#include "ExternalForce.h"
+
+//==============================================================================
+// USING
+//==============================================================================
 using namespace OpenSim;
 using SimTK::Vec3;
 using namespace std;
-//=============================================================================
+
+//==============================================================================
 // CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-ExternalForce::~ExternalForce()
-{
-}
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
+
 //_____________________________________________________________________________
 /**
  * Default constructor.
@@ -60,28 +58,30 @@ ExternalForce::~ExternalForce()
 ExternalForce::ExternalForce() : Force()
 {
 	setNull();
-	setupProperties();
-	//updateFromXMLNode();
+	constructProperties();
 }
 
 /**
  * Convenience Constructor of an ExternalForce. 
  * 
  */
-ExternalForce::ExternalForce(const Storage &dataSource, string forceIdentifier, string pointIdentifier, string torqueIdentifier,
-		string appliedToBodyName, string forceExpressedInBodyName, string pointExpressedInBodyName) : Force()
+ExternalForce::ExternalForce
+   (const Storage &dataSource, const string& forceIdentifier, 
+    const string& pointIdentifier, const string& torqueIdentifier, 
+    const string& appliedToBodyName, const string& forceExpressedInBodyName, 
+    const string& pointExpressedInBodyName)
 {
 	setNull();
-	setupProperties();
+	constructProperties();
 	_dataSource = &dataSource;
 
-	setPropertyValue("applied_to_body", appliedToBodyName);
-	setPropertyValue("force_expressed_in_body", forceExpressedInBodyName);
-	setPropertyValue("point_expressed_in_body", pointExpressedInBodyName);
-	setPropertyValue("data_source_name", dataSource.getName());
-	setPropertyValue("force_identifier", forceIdentifier);
-	setPropertyValue("point_identifier", pointIdentifier);
-	setPropertyValue("torque_identifier", torqueIdentifier);
+	setProperty_applied_to_body(appliedToBodyName);
+	setProperty_force_expressed_in_body(forceExpressedInBodyName);
+	setProperty_point_expressed_in_body(pointExpressedInBodyName);
+	setProperty_data_source_name(dataSource.getName());
+	setProperty_force_identifier(forceIdentifier);
+	setProperty_point_identifier(pointIdentifier);
+	setProperty_torque_identifier(torqueIdentifier);
 }
 
 
@@ -89,24 +89,11 @@ ExternalForce::ExternalForce(const Storage &dataSource, string forceIdentifier, 
 /**
  * Constructor from XML file
  */
-ExternalForce::ExternalForce(SimTK::Xml::Element& aNode) :
-	Force(aNode)
+ExternalForce::ExternalForce(SimTK::Xml::Element& node) : Super(node)
 {
 	setNull();
-	setupProperties();
-	updateFromXMLNode(aNode);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- */
-ExternalForce::ExternalForce(const ExternalForce& force) :
-	Force(force)
-{
-	setNull();
-	setupProperties();
-	copyData(force);
+	constructProperties();
+	updateFromXMLNode(node);
 }
 
 void ExternalForce::setNull()
@@ -117,23 +104,6 @@ void ExternalForce::setNull()
 	_pointExpressedInBody = NULL; 
 }
 
-void ExternalForce::copyData(const ExternalForce& orig)
-{
-	setPropertyValue("applied_to_body", orig.getPropertyValue<string>("applied_to_body"));
-	setPropertyValue("force_expressed_in_body", orig.getPropertyValue<string>("force_expressed_in_body"));
-	setPropertyValue("point_expressed_in_body", orig.getPropertyValue<string>("point_expressed_in_body"));
-
-    // Optional property -- might get an empty value list.
-	setPropertyValue("data_source_name", orig.getProperty<string>("data_source_name"));
-
-	setPropertyValue("force_identifier", orig.getPropertyValue<string>("force_identifier"));
-	setPropertyValue("point_identifier", orig.getPropertyValue<string>("point_identifier"));
-	setPropertyValue("torque_identifier", orig.getPropertyValue<string>("torque_identifier"));
-
-	if(orig._dataSource)
-		_dataSource = orig._dataSource;
-}
-
 
 //-----------------------------------------------------------------------------
 // UPDATE FROM XML NODE
@@ -142,7 +112,8 @@ void ExternalForce::copyData(const ExternalForce& orig)
 /**
  * Update this object based on its XML node.
  */
-void ExternalForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void ExternalForce::
+updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	// Base class
 	Force::updateFromXMLNode(aNode, versionNumber);
@@ -153,7 +124,8 @@ void ExternalForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 	//	throw Exception("ExternalForce:: data source name must be assigned.");
 	//}
 
-	if(getPropertyValue<string>("force_identifier")=="" && getPropertyValue<string>("torque_identifier")=="")
+	if(    getProperty_force_identifier().empty() 
+        && getProperty_torque_identifier().empty())
 	{
 		throw Exception("ExternalForce:: no force or torque identified.");
 	}
@@ -163,59 +135,36 @@ void ExternalForce::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNum
 /**
  * Connect properties to local pointers.
  */
-void ExternalForce::setupProperties()
+void ExternalForce::constructProperties()
 {
-	addProperty<string>("applied_to_body",
-		"Name of the body the force is applied to.",
-		"");
-	addProperty<string>("force_expressed_in_body",
-		"Name of the body the force is expressed in (default is ground).",
-		"");
-	addProperty<string>("point_expressed_in_body",
-		"Name of the body the point is expressed in (default is ground).",
-		"");
-	addProperty<string>("force_identifier",
-		"Identifier (string) to locate the force to be applied in the data source.",
-		"");
-	addProperty<string>("point_identifier",
-		"Identifier (string) to locate the point to be applied in the data source.",
-		"");
-	addProperty<string>("torque_identifier",
-		"Identifier (string) to locate the torque to be applied in the data source.",
-		"");
-
-    // Optional so that <data_source_name/> is allowed.
-	addOptionalProperty<string>("data_source_name",
-		"Name of the data source (Storage) that will supply the force data.",
-		"");
-}
-
-ExternalForce& ExternalForce::operator=(const ExternalForce &aForce)
-{
-	Force::operator=(aForce);
-	copyData(aForce);
-	return(*this);
+	constructProperty_applied_to_body();
+	constructProperty_force_expressed_in_body();
+	constructProperty_point_expressed_in_body();
+	constructProperty_force_identifier();
+	constructProperty_point_identifier();
+	constructProperty_torque_identifier();
+	constructProperty_data_source_name();
 }
 
 void ExternalForce::setDataSource(const Storage *dataSource)
 { 
 	_dataSource = dataSource;
-	setPropertyValue("data_source_name", dataSource->getName());
+	setProperty_data_source_name(dataSource->getName());
 }
 
 void ExternalForce::setup(Model& model)
 {
 	Force::setup(model);
 
-	const string &appliedToBodyName = getPropertyValue<string>("applied_to_body");
-	const string &forceExpressedInBodyName = getPropertyValue<string>("force_expressed_in_body");
-	const string &pointExpressedInBodyName = getPropertyValue<string>("point_expressed_in_body");
-	const string &forceIdentifier = getPropertyValue<string>("force_identifier");
-	const string &pointIdentifier = getPropertyValue<string>("point_identifier");
-	const string &torqueIdentifier = getPropertyValue<string>("torque_identifier");
+	const string& appliedToBodyName = getProperty_applied_to_body();
+	const string& forceExpressedInBodyName = getProperty_force_expressed_in_body();
+	const string& pointExpressedInBodyName = getProperty_point_expressed_in_body();
+	const string& forceIdentifier = getProperty_force_identifier();
+	const string& pointIdentifier = getProperty_point_identifier();
+	const string& torqueIdentifier = getProperty_torque_identifier();
 
     // This might not have been supplied in which case it will have size()==0.
-	const Property<string>& dataSourceProp = getProperty<string>("data_source_name");
+	const Property<string>& dataSourceProp = getProperty_data_source_name();
 
 	_appliesForce = appliesForce();
 	_specifiesPoint = specifiesPoint();
@@ -443,7 +392,7 @@ Vec3 ExternalForce::getTorqueAtTime(double aTime) const
 OpenSim::Array<std::string> ExternalForce::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 
-	const string &appliedToBodyName = getPropertyValue<string>("applied_to_body");
+	const string& appliedToBodyName = getProperty_applied_to_body();
 
 	if (_appliesForce) {
 		labels.append(appliedToBodyName+"_"+getName()+"_Fx");

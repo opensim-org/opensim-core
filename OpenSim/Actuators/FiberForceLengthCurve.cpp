@@ -24,60 +24,31 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
-static const char* StrainAtOneNormForceName     = "strain_at_one_norm_force";
-static const char* StiffnessAtOneNormForceName  = "stiffness_at_one_norm_force";
-static const char* CurvinessName                = "curviness";
-
 //=============================================================================
-// CONSTRUCTION, COPY CONSTRUCTION, ASSIGNMENT
+// CONSTRUCTION
 //=============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, 
+// copy assignment.
 
-FiberForceLengthCurve::FiberForceLengthCurve():m_curveUpToDate(false)
+FiberForceLengthCurve::FiberForceLengthCurve()
 {
-        setNull();
-        addProperties();
+    setNull();
+    constructProperties();
+    setName("default_FiberForceLengthCurve");
 }
 
-FiberForceLengthCurve::~FiberForceLengthCurve()
-{
-}
-
-FiberForceLengthCurve::FiberForceLengthCurve(
-    const FiberForceLengthCurve& source)                                   
-{
-        setNull();
-        addProperties();
-        copyData(source);   
-}
-
-FiberForceLengthCurve& FiberForceLengthCurve::
-                                operator=(const FiberForceLengthCurve &source)
-{
-    if(&source != this){
-        ModelComponent::operator=(source);
-        copyData(source);        
-    }
-    return(*this);
-}
-
-FiberForceLengthCurve::FiberForceLengthCurve( double strainAtOneNormForce, 
+FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtOneNormForce, 
                                                 double stiffnessAtOneNormForce,
                                                 double curviness,
-                                                const std::string muscleName)
-                                                :m_curveUpToDate(false)
+                                                const std::string& muscleName)
 {
-
-
-    std::string curveName = muscleName;
-    curveName.append("_FiberForceLengthCurve");
-
     setNull();
-    addProperties();
+    constructProperties();
+    setName(muscleName + "_FiberForceLengthCurve");
 
-   setStrainAtOneNormForce(strainAtOneNormForce);
-   setStiffnessAtOneNormForce(stiffnessAtOneNormForce);
-   setCurviness(curviness);
-
+    setStrainAtOneNormForce(strainAtOneNormForce);
+    setStiffnessAtOneNormForce(stiffnessAtOneNormForce);
+    setCurviness(curviness);
 
     buildCurve();
 }
@@ -85,44 +56,16 @@ FiberForceLengthCurve::FiberForceLengthCurve( double strainAtOneNormForce,
 
 void FiberForceLengthCurve::setNull()
 {
-    m_curveUpToDate =false;
+    m_curveUpToDate = false;
 }
 
-void FiberForceLengthCurve::addProperties()
+void FiberForceLengthCurve::constructProperties()
 {   
-    setName("default_FiberForceLengthCurve");
 
-    addProperty<double>(StrainAtOneNormForceName, 
-        "Fiber strain at a tension of 1 normalized force",
-        0.6);
-
-    addProperty<double>(StiffnessAtOneNormForceName, 
-        "Fiber stiffness at a tension of 1 normalized force",
-        8.4);
-
-    addProperty<double>(CurvinessName, 
-        "Fiber curve bend, from linear to maximum bend (0-1)",
-        0.65);
+    constructProperty_strain_at_one_norm_force(0.6);
+    constructProperty_stiffness_at_one_norm_force(8.4);
+    constructProperty_curviness(0.65);
 }
-
-void FiberForceLengthCurve::copyData(const FiberForceLengthCurve &source)
-{
-    if(&source != this){
-        setPropertyValue(StrainAtOneNormForceName,
-            source.getPropertyValue<double>(StrainAtOneNormForceName));
-
-        setPropertyValue(StiffnessAtOneNormForceName,
-            source.getPropertyValue<double>(StiffnessAtOneNormForceName));
-
-        setPropertyValue(CurvinessName,
-            source.getPropertyValue<double>(CurvinessName));
-
-        m_curveUpToDate = source.m_curveUpToDate;
-        
-        m_curve = source.m_curve;
-    }
-}
-
 
 void FiberForceLengthCurve::buildCurve()
 {
@@ -150,14 +93,14 @@ void FiberForceLengthCurve::buildCurve()
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
 //=============================================================================
-void FiberForceLengthCurve::setup(Model& aModel)
+void FiberForceLengthCurve::setup(Model& model)
 {
-    ModelComponent::setup(aModel);
+    Super::setup(model);
 }
 
 void FiberForceLengthCurve::initState(SimTK::State& s) const
 {
-    ModelComponent::initState(s);
+    Super::initState(s);
 }
 
 void FiberForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
@@ -175,17 +118,17 @@ void FiberForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 double FiberForceLengthCurve::getStrainAtOneNormForce()
 {
-    return getPropertyValue<double>(StrainAtOneNormForceName);
+    return getProperty_strain_at_one_norm_force();
 }
 
 double FiberForceLengthCurve::getStiffnessAtOneNormForce()
 {
-    return getPropertyValue<double>(StiffnessAtOneNormForceName);
+    return getProperty_stiffness_at_one_norm_force();
 }
 
 double FiberForceLengthCurve::getCurviness()
 {
-    return getPropertyValue<double>(CurvinessName);
+    return getProperty_curviness();
 }
 
 
@@ -194,8 +137,7 @@ void FiberForceLengthCurve::
 {
     if(aStrainAtOneNormForce != getStrainAtOneNormForce() )
     {
-        setPropertyValue(StrainAtOneNormForceName,
-                         aStrainAtOneNormForce);
+        setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);
         m_curveUpToDate = false;
     }
 }
@@ -205,8 +147,7 @@ void FiberForceLengthCurve::
 {
     if(aStiffnessAtOneNormForce != getStiffnessAtOneNormForce() )
     {
-        setPropertyValue(StiffnessAtOneNormForceName,
-                         aStiffnessAtOneNormForce);
+        setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
         m_curveUpToDate = false;
     }
 }
@@ -215,8 +156,7 @@ void FiberForceLengthCurve::setCurviness(double aCurviness)
 {
     if(aCurviness != getCurviness() )
     {
-        setPropertyValue(CurvinessName,
-                         aCurviness);
+        setProperty_curviness(aCurviness);
         m_curveUpToDate = false;
     }
 }

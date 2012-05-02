@@ -29,7 +29,7 @@
 
 
 //=============================================================================
-// INCLUDES and STATICS
+// INCLUDE
 //=============================================================================
 #include "ForceProbe.h"
 
@@ -42,101 +42,48 @@ using namespace OpenSim;
 //=============================================================================
 // CONSTRUCTOR(S) AND SETUP
 //=============================================================================
-//_____________________________________________________________________________
-/**
- * Destructor.
- */
-ForceProbe::~ForceProbe()
-{
-}
+// Uses default (compiler-generated) destructor, copy constructor, and copy
+// assignment operator.
+
 
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-ForceProbe::ForceProbe() : Probe()
+ForceProbe::ForceProbe()
 {
     setNull();
+    constructProperties();
 }
 
 //_____________________________________________________________________________
 /** 
  * Convenience constructor
  */
-ForceProbe::ForceProbe(Array<string> force_names) : Probe()
+ForceProbe::ForceProbe(const Array<string>& force_names)
 {
     setNull();
-    setPropertyValue("force_names", force_names);
+    constructProperties();
+
+    setProperty_force_names(force_names);
 }
 
 
 //_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aObject ForceProbe to be copied.
- */
-ForceProbe::ForceProbe(const ForceProbe &aForceProbe) : Probe(aForceProbe)
-{
-    setNull();
-    copyData(aForceProbe);
-}
-
-
-//_____________________________________________________________________________
-/**
- * Copy data members from one ForceProbe to another.
- *
- * @param aProbe ForceProbe to be copied.
- */
-void ForceProbe::copyData(const ForceProbe &aProbe)
-{
-    Super::copyData(aProbe);
-    setPropertyValue("force_names", aProbe.getProperty<string>("force_names"));
-}
-
-//_____________________________________________________________________________
-/**
- * Set the data members of this ForceProbe to their null values.
- */
+// Set the data members of this ForceProbe to their null values.
 void ForceProbe::setNull()
 {
-    setupProperties();
+    // no data members
 }
 
 //_____________________________________________________________________________
 /**
  * Connect properties to local pointers.
  */
-void ForceProbe::setupProperties()
+void ForceProbe::constructProperties()
 {
-    // force_names
-    Array<string> tmp("");
-    addListProperty<string>("force_names",
-        "Specify a list of model Forces whose impulse should be calculated. "
-        "If multiple Forces are given, the probe value will be the summation"
-        " of all forces, and the integral will be the summation of all impulses.",
-        tmp);
+    constructProperty_force_names();
 }
-
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-ForceProbe& ForceProbe::operator=(const ForceProbe &aObject)
-{
-    // BASE CLASS
-    Super::operator=(aObject);
-    return(*this);
-}
-#endif
 
 
 //=============================================================================
@@ -148,16 +95,16 @@ ForceProbe& ForceProbe::operator=(const ForceProbe &aObject)
  */
 const Property<string>& ForceProbe::getForceNames() const
 {
-    return getProperty<string>("force_names");
+    return getProperty_force_names();
 }
 
 //_____________________________________________________________________________
 /**
  * Set the Force names that the ForceProbe is acting on.
  */
-void ForceProbe::setForceNames(const Array<string>& aForceNames)
+void ForceProbe::setForceNames(const Array<string>& forceNames)
 {
-    setPropertyValue<string>("force_names", aForceNames);
+    setProperty_force_names(forceNames);
 }
 
 
@@ -173,18 +120,19 @@ void ForceProbe::setForceNames(const Array<string>& aForceNames)
  *
  * @param aModel OpenSim model containing this ForceProbe.
  */
-void ForceProbe::setup(Model& aModel)
+void ForceProbe::setup(Model& model)
 {
-    Super::setup(aModel);
+    Super::setup(model);
 
     // check that each Force in the force_names array exists in the model
     int nF = getForceNames().size();
     for (int i=0; i<nF; i++) {
         string forceName = getForceNames()[i];
-        int k = _model->getForceSet().getIndex(forceName);
+        int k = model.getForceSet().getIndex(forceName);
         if (k<0) {
-            string errorMessage = getConcreteClassName() + ": Invalid Force '" + forceName + "' specified in <force_names>.";
-            throw (Exception(errorMessage.c_str()));
+            string errorMessage = getConcreteClassName() + ": Invalid Force '" 
+                                  + forceName + "' specified in <force_names>.";
+            throw OpenSim::Exception(errorMessage);
         }
     }
 }
@@ -226,5 +174,5 @@ double ForceProbe::computeProbeValue(const State& s) const
         TotalF += Ftmp;
     }
 
-    return(TotalF);
+    return TotalF;
 }

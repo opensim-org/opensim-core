@@ -78,6 +78,7 @@ int                         Object::_debugLevel = 0;
  */
 Object::~Object()
 {
+    delete _document;
 }
 
 //_____________________________________________________________________________
@@ -170,7 +171,9 @@ Object::Object(const Object &aObject)
 {
 	setNull();
 
-	// COPY TYPE AND NAME
+	// Use copy assignment operator to copy simple data members and the
+    // property table; XML document is not copied and the new object is
+    // marked "inlined", meaning it is not associated with an XML document.
 	*this = aObject;
 }
 
@@ -180,10 +183,37 @@ Object::Object(SimTK::Xml::Element& aNode)
 	updateFromXMLNode(aNode, -1);
 }
 
+//-----------------------------------------------------------------------------
+// COPY ASSIGNMENT
+//-----------------------------------------------------------------------------
+/**
+ * Assign this object to the values of another.  The XML-associated variable
+ * members are not copied-- the XML nodes and/or document must be generated
+ * anew for a copied object.
+ *
+ * @return Reference to this object.
+ * @see updateXMLNode()
+ */
+Object& Object::
+operator=(const Object& source)
+{
+    if (&source != this) {
+	    _name           = source._name;
+        _description    = source._description;
+        _authors        = source._authors;
+        _references     = source._references;
+        _propertyTable  = source._propertyTable;
+
+        delete _document; _document = NULL;
+        _inlined = true; // meaning: not associated to an XML document
+    }
+	return *this;
+}
+
 
  //=============================================================================
 // CONSTRUCTION METHODS
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Set all non-static member variables to their null or default values.
@@ -193,6 +223,7 @@ setNull()
 {
 	_propertySet.clear();
     _propertyTable.clear();
+    _objectIsUpToDate = false;
 
 	_name           = "";
     _description    = "";
@@ -231,33 +262,6 @@ init()
 
 	// CURRENTLY THERE ARE NO INITIALIZATIONS NEEDED.
 
-}
-
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assign this object to the values of another.  The XML-associated variable
- * members are not copied-- the XML nodes and/or document must be generated
- * anew for a copied object.
- *
- * @return Reference to this object.
- * @see updateXMLNode()
- */
-Object& Object::
-operator=(const Object& source)
-{
-    if (&source != this) {
-	    setName(source.getName());
-	    setDescription(source.getDescription());
-	    setAuthors(source.getAuthors());
-	    setReferences(source.getReferences());
-    }
-	return *this;
 }
 
 //-----------------------------------------------------------------------------
@@ -405,6 +409,9 @@ updPropertyByIndex(int propertyIndex) {
                         + SimTK::String(getNumProperties())
                         + " for Object " + getName());
 
+    // A property is being modified.
+    _objectIsUpToDate = false;
+
     // TODO: remove deprecated code from here ...
     if (propertyIndex >= _propertyTable.getNumProperties()) {
         const int setIndex = propertyIndex-_propertyTable.getNumProperties();
@@ -451,6 +458,9 @@ getPropertyByName(const std::string& name) const {
 
 AbstractProperty& Object::
 updPropertyByName(const std::string& name) {
+    // A property is being modified.
+    _objectIsUpToDate = false;
+
     AbstractProperty* p = _propertyTable.updPropertyPtr(name);
     if (p) return *p;
 
@@ -623,7 +633,7 @@ UpdateFromXMLNodeSimpleProperty(Property_Deprecated* aProperty,
                                 SimTK::Xml::Element& aNode, 
                                 const string&        aName)
 {
-	aProperty->setUseDefault(true);
+	aProperty->setValueIsDefault(true);
 
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
@@ -631,7 +641,7 @@ UpdateFromXMLNodeSimpleProperty(Property_Deprecated* aProperty,
 	T value;
 	iter->getValueAs(value); // fails for Nan, infinity, -infinity, true/false
     aProperty->setValue(value);
-    aProperty->setUseDefault(false);
+    aProperty->setValueIsDefault(false);
 }
 
 template<class T> static void 
@@ -639,7 +649,7 @@ UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty,
                                SimTK::Xml::Element& aNode, 
                                const string&        aName)
 {
-	aProperty->setUseDefault(true);
+	aProperty->setValueIsDefault(true);
 
 	SimTK::Xml::element_iterator iter = aNode.element_begin(aName);
 	if (iter == aNode.element_end()) return;	// Not found
@@ -651,7 +661,7 @@ UpdateFromXMLNodeArrayProperty(Property_Deprecated* aProperty,
 	osimValue.setSize(value.size());
 	for(unsigned i=0; i< value.size(); i++) osimValue[i]=value[i];
 	aProperty->setValue(osimValue);
-    aProperty->setUseDefault(false);
+    aProperty->setValueIsDefault(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -673,7 +683,7 @@ InitializeObjectFromXMLNode(Property_Deprecated*                aProperty,
 
 	bool inlinedObject = (file == ""); // otherwise object is described in file and it has root element
 
-	aProperty->setUseDefault(false);
+	aProperty->setValueIsDefault(false);
 
 	// CONSTRUCT THE OBJECT BASED ON THE ELEMENT
 	// Used to call a special copy method that took DOMElement* but 
@@ -698,7 +708,7 @@ UpdateXMLNodeSimpleProperty(const Property_Deprecated*  aProperty,
                             const string&               aName)
 {
 	const T &value = aProperty->getValue<T>();
-	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
+	if(!aProperty->getValueIsDefault()||Object::getSerializeAllDefaults()) {
 		SimTK::Xml::Element elt(aProperty->getName(), value);
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
 	} 
@@ -712,7 +722,7 @@ UpdateXMLNodeArrayProperty(const Property_Deprecated*   aProperty,
 
 	const Array<T> &value = aProperty->getValueArray<T>();
 	
-	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
+	if(!aProperty->getValueIsDefault()||Object::getSerializeAllDefaults()) {
 		SimTK::Xml::Element elt(aProperty->getName(), value);
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
 	} 
@@ -725,7 +735,7 @@ UpdateXMLNodeVec(const Property_Deprecated*     aProperty,
 {
 	const Array<double> &value = aProperty->getValueArray<double>();
 	
-	if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
+	if(!aProperty->getValueIsDefault()||Object::getSerializeAllDefaults()) {
 		SimTK::Xml::Element elt(aProperty->getName(), value);
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
 	} 
@@ -741,7 +751,7 @@ UpdateXMLNodeTransform(const Property_Deprecated*   aProperty,
 	// Get 6 raw numbers into an array and then use those to update the node
 	OpenSim::Array<double> arr(0, 6);
 	((PropertyTransform *)aProperty)->getRotationsAndTranslationsAsArray6(&arr[0]);
-	//if(!aProperty->getUseDefault()||Object::getSerializeAllDefaults()) {
+	//if(!aProperty->getValueIsDefault()||Object::getSerializeAllDefaults()) {
 		SimTK::Xml::Element elt(aProperty->getName(), arr);
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
 	//} 
@@ -802,14 +812,14 @@ try {
 
 		// Bool
 		case(Property_Deprecated::Bool) : 
-	        property->setUseDefault(true);
+	        property->setValueIsDefault(true);
 			iter= aNode.element_begin(name);
 			if (iter == aNode.element_end()) break;	// Not found
 			iter->getValueAs(valueString); // true/false
 			lowerCaseValueString = valueString.toLower();
 			property->setValue(lowerCaseValueString=="true"?true:false);
 			//UpdateFromXMLNodeSimpleProperty<bool>(property, aNode, name);
-	        property->setUseDefault(false);
+	        property->setValueIsDefault(false);
 			break;
 		// Int
 		case(Property_Deprecated::Int) :
@@ -817,7 +827,7 @@ try {
 			break;
 		// Double
 		case(Property_Deprecated::Dbl) :
-	        property->setUseDefault(true);
+	        property->setValueIsDefault(true);
 			iter= aNode.element_begin(name);
 			if (iter == aNode.element_end()) continue;	// Not found
 			iter->getValueAs(valueString); // special values
@@ -830,7 +840,7 @@ try {
 				property->setValue(SimTK::NaN);
 			else
 				UpdateFromXMLNodeSimpleProperty<double>(property, aNode, name);
-	        property->setUseDefault(false);
+	        property->setValueIsDefault(false);
 			break;
 		// Str
 		case(Property_Deprecated::Str) : 
@@ -839,7 +849,7 @@ try {
 		// BoolArray
 		case(Property_Deprecated::BoolArray) : 
 			// Parse as a String array then map true/false to boolean values
-			property->setUseDefault(true);
+			property->setValueIsDefault(true);
 			iter = aNode.element_begin(name);
 			if (iter == aNode.element_end()) continue;	// Not found
 			iter->getValueAs(value);
@@ -847,7 +857,7 @@ try {
 			osimValue.setSize(value.size());
 			for(unsigned i=0; i< value.size(); i++) osimValue[i]=(value[i]=="true");
 			property->setValue(osimValue);
-			property->setUseDefault(false);
+			property->setValueIsDefault(false);
 			break;
 		// IntArray
 		case(Property_Deprecated::IntArray) :
@@ -866,7 +876,7 @@ try {
 
 		// Obj
 		case(Property_Deprecated::Obj) : {
-			property->setUseDefault(true);
+			property->setValueIsDefault(true);
 			Object &object = property->getValueObj();
 			SimTK::Xml::element_iterator iter = 
                 aNode.element_begin(object.getConcreteClassName());
@@ -894,7 +904,7 @@ try {
 		// ObjArray AND ObjPtr (handled very similarly)
 		case(Property_Deprecated::ObjArray) : 
 		case(Property_Deprecated::ObjPtr) : {
-			property->setUseDefault(true);
+			property->setValueIsDefault(true);
 
 			// GET ENCLOSING ELEMENT
 			//DOMElement *elmt = XMLNode::GetFirstChildElementByTagName(_node,name);
@@ -928,7 +938,7 @@ try {
 				property->clearObjArray();
 			}
 
-			property->setUseDefault(false);
+			property->setValueIsDefault(false);
 
 			// LOOP THROUGH PROPERTY ELEMENT'S CHILD ELEMENTS
             // Each element is expected to be an Object of some type given
@@ -1083,7 +1093,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 		AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
 	    
         // Don't write out if this is just a default value.
-        if (!prop.getUseDefault() || Object::getSerializeAllDefaults()) {
+        if (!prop.getValueIsDefault() || Object::getSerializeAllDefaults()) {
 		    if(_debugLevel>=4)
 			    cout << "Object.updateXMLNode: ("
                      << getConcreteClassName()<<":"<<getName()
@@ -1135,7 +1145,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 					stringValue="-infinity";
 				else if (SimTK::isNaN(property->getValueDbl()))
 					stringValue="NaN";
-				if(!property->getUseDefault()) {
+				if(!property->getValueIsDefault()) {
 					SimTK::Xml::Element elt(property->getName(), stringValue);
 					myObjectElement.insertNodeAfter(myObjectElement.node_end(), elt);
 				}
@@ -1186,7 +1196,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType());
 			}
 
-			if(!elmt && !property->getUseDefault()) {
+			if(!elmt && !property->getValueIsDefault()) {
 				elmt = XMLNode::InsertNewElementWithComment(myObjectElement, object.getType(), object.getName(), property->getComment(), aNodeIndex);
 			} else if (elmt && !property->getComment().empty()) {
 				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());

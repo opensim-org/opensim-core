@@ -107,7 +107,7 @@ public:
 	void setModelFileName(const std::string& aFileName)
 	{
 		_fileName = aFileName;
-		_fileNameProp.setUseDefault(false);
+		_fileNameProp.setValueIsDefault(false);
 	}
 
 	const std::string& getMarkerSetFileName() const
@@ -118,7 +118,7 @@ public:
 	void setMarkerSetFileName(const std::string& aFileName)
 	{
 		_markerSetFileName = aFileName;
-		_markerSetFileNameProp.setUseDefault(false);
+		_markerSetFileNameProp.setValueIsDefault(false);
 	}
 
 private:

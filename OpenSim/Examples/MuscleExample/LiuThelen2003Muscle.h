@@ -1,10 +1,10 @@
-#ifndef __LiuThelen2003Muscle_h__
-#define __LiuThelen2003Muscle_h__
+#ifndef OPENSIM_LIU_THELEN_2003_MUSCLE_H_
+#define OPENSIM_LIU_THELEN_2003_MUSCLE_H_
 
 // LiuThelen2003Muscle.h
 // Authors: Peter Loan, Darryl Thelen
 /*
- * Copyright (c)  2009, Stanford University. All rights reserved. 
+ * Copyright (c)  2009-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -46,7 +46,6 @@ namespace OpenSim {
  * pp. 2344-2359, 2002.
  *
  * @author Peter Loan (based on Thelen2003Muscle by Darryl Thelen)
- * @version 1.0
  *
  * The muscle base class, Muscle, contains many pure virtual functions that
  * must be implemented in every derived class. Thelen2003Muscle implements
@@ -58,6 +57,18 @@ namespace OpenSim {
  */
 class LiuThelen2003Muscle : public Thelen2003Muscle_Deprecated {
 OpenSim_DECLARE_CONCRETE_OBJECT(LiuThelen2003Muscle, Thelen2003Muscle_Deprecated);
+public:
+//=============================================================================
+// PROPERTIES
+//=============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(fatigue_factor, double, 
+        "percentage of active motor units that fatigue in unit time");
+    OpenSim_DECLARE_PROPERTY(recovery_factor, double, 
+        "percentage of fatigued motor units that recover in unit time");
+    /**@}**/
 
 //=============================================================================
 // DATA
@@ -80,8 +91,8 @@ public:
 	LiuThelen2003Muscle();
 	LiuThelen2003Muscle(const std::string &aName, double aMaxIsometricForce, double aOptimalFiberLength,
 		double aTendonSlackLength, double aPennationAngle, double aFatigueFactor, double aRecoveryFactor);
-	LiuThelen2003Muscle(const LiuThelen2003Muscle &aMuscle);
-	virtual ~LiuThelen2003Muscle();
+
+    // default destructor, copy constructor, copy assignment
 
 	// Defaults
 	virtual double getDefaultActiveMotorUnits() const;
@@ -89,18 +100,13 @@ public:
 	virtual double getDefaultFatiguedMotorUnits() const;
 	virtual void setDefaultFatiguedMotorUnits(double fatiguedMotorUnits);
 
-#ifndef SWIG
-	LiuThelen2003Muscle& operator=(const LiuThelen2003Muscle &aMuscle);
-#endif
-	void copyData(const LiuThelen2003Muscle &aMuscle);
-
 	//--------------------------------------------------------------------------
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getFatigueFactor() const { return getPropertyValue<double>("fatigue_factor"); }
+	virtual double getFatigueFactor() const { return getProperty_fatigue_factor(); }
 	virtual bool setFatigueFactor(double aFatigueFactor);
-	virtual double getRecoveryFactor() const { return getPropertyValue<double>("recovery_factor"); }
+	virtual double getRecoveryFactor() const { return getProperty_recovery_factor(); }
 	virtual bool setRecoveryFactor(double aRecoveryFactor);
 
 	// Computed quantities
@@ -124,11 +130,12 @@ public:
 	virtual void equilibrate(SimTK::State& state) const;
 	
 protected:
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
+
 //=============================================================================
 };	// END of class LiuThelen2003Muscle
 //=============================================================================

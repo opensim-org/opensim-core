@@ -259,7 +259,7 @@ void ControlLinearNode::
 setValue(double aValue)
 {
 	_value = aValue;
-	_propValue.setUseDefault(false);
+	_propValue.setValueIsDefault(false);
 }
 //_____________________________________________________________________________
 /**

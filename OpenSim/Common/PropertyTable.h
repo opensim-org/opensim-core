@@ -163,13 +163,15 @@ public:
     otherwise throw an exception. The property is returned as an 
     AbstractProperty; see updProperty<T>() if you know the property type. **/
     AbstractProperty& updAbstractPropertyByName(const std::string& name);
+
+    /** Return the property's index if it is present, else -1. **/
+    int findPropertyIndex(const std::string& name) const;
+
  
 //==============================================================================
 // DATA
 //==============================================================================
 private:
-    // Return the property's index if it is present, else -1.
-    int findPropertyIndex(const std::string& name) const;
     // Make this properties array a deep copy of the source. Any existing
     // properties are deleted first. The index map is updated appropriately.
     void replaceProperties(const SimTK::Array_<AbstractProperty*>& source);

@@ -1,5 +1,5 @@
-#ifndef OPENSIM_JOINT_WORK_METER_H
-#define OPENSIM_JOINT_WORK_METER_H
+#ifndef OPENSIM_JOINT_WORK_METER_H_
+#define OPENSIM_JOINT_WORK_METER_H_
 
 // JointWorkMeter.h
 // Author: Ajay Seth
@@ -38,6 +38,7 @@ namespace OpenSim {
 class Model;
 
 //==============================================================================
+//                           JOINT WORK METER
 //==============================================================================
 /**
  * JointWorkMeter is a ModelComponent for computing the Work generated(+)
@@ -48,50 +49,54 @@ class Model;
  */
 class OSIMSIMULATION_API JointWorkMeter : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(JointWorkMeter, ModelComponent);
-
-//=============================================================================
-// DATA
-//=============================================================================
-
-protected:
-
-	Joint* _joint;
-
-//=============================================================================
-// METHODS
-//=============================================================================
-//--------------------------------------------------------------------------
-// CONSTRUCTION
-//--------------------------------------------------------------------------
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+	OpenSim_DECLARE_PROPERTY(joint_name, std::string,
+		"The joint name whos work use will be calculated.");
+	OpenSim_DECLARE_PROPERTY(initial_joint_work, double,
+		"The initial value for the work.");
+    /**@}**/
+
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 	// default 
 	JointWorkMeter();
 	// convenience
-	JointWorkMeter(const Joint &joint, double initialWork=0);
-	// copy
-	JointWorkMeter(const JointWorkMeter &aActuatorWorkMeter);
-	~JointWorkMeter();
+	explicit JointWorkMeter(const Joint &joint, double initialWork=0);
 
-#ifndef SWIG
-	JointWorkMeter& operator=(const JointWorkMeter &aActuatorWorkMeter);
-#endif
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
 	double getWork(const SimTK::State& state) const;
 
 protected:
 	// Model component interface
-	void setup(Model& aModel);
-	void createSystem(SimTK::MultibodySystem& system) const;
-	void initState(SimTK::State& state) const;
-    void setDefaultsFromState(const SimTK::State& state);
-	int getNumStateVariables() const { return 1; };
-	
-	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
+	void setup(Model& aModel) OVERRIDE_11;
+	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void initState(SimTK::State& state) const OVERRIDE_11;
+    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11;
+	int getNumStateVariables() const  OVERRIDE_11 { return 1; }	
+	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const
+         OVERRIDE_11;
 
 private:
 	void setNull();
-	void setupProperties();
+	void constructProperties();
 
+//=============================================================================
+// DATA
+//=============================================================================
+    // A ReferencePtr is automatically initialize to null at construction,
+    // and reset to null after copy construction or copy assignment. This is
+    // set in the setup() method.
+	SimTK::ReferencePtr<Joint> _joint;
 //=============================================================================
 };	// END of class JointWorkMeter
 //=============================================================================
@@ -99,6 +104,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // OPENSIM_JOINT_WORK_METER_H
+#endif // OPENSIM_JOINT_WORK_METER_H_
 
 

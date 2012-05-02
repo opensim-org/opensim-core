@@ -1,7 +1,7 @@
 // CoordinateActuator.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)  2005, Stanford University. All rights reserved. 
+* Copyright (c)  2005-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -31,130 +31,53 @@
  */
 
 
-//=============================================================================
+//==============================================================================
 // INCLUDES
-//=============================================================================
-#include "CoordinateActuator.h"
+//==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 
+#include "CoordinateActuator.h"
+
 using namespace OpenSim;
 using namespace std;
 
+//==============================================================================
+// CONSTRUCTOR
+//==============================================================================
+// Uses default (compiler-generated) destructor, copy constructor, copy 
+// assignment operator.
 
-//=============================================================================
-// STATICS
-//=============================================================================
-
-
-//=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Destructor.
- */
-CoordinateActuator::~CoordinateActuator()
-{
-}
-//_____________________________________________________________________________
-/**
- * Default constructor.
- */
-CoordinateActuator::CoordinateActuator( string aCoordinateName) :
-	Actuator(),
-	_coord(NULL)
-{
-	// NULL
-	setNull();
-
-	// MEMBER VARIABLES
-	setPropertyValue("coordinate", aCoordinateName);
-
-	if (_model) {
-		_coord = &_model->updCoordinateSet().get(aCoordinateName);
-	} 
-}
-//_____________________________________________________________________________
-/**
- * Copy constructor.
- *
- * @param aForce Force to be copied.
- */
-CoordinateActuator::CoordinateActuator(const CoordinateActuator &aGenForce) :
-	Actuator(aGenForce),
-	_coord(NULL)
+// Also serves as default constructor (with coordinateName="").
+CoordinateActuator::CoordinateActuator(const string& coordinateName)
 {
 	setNull();
-	copyData(aGenForce);
+    constructProperties();
+
+    if (!coordinateName.empty())
+	    setProperty_coordinate(coordinateName);
 }
-
-
-//=============================================================================
-// CONSTRUCTION
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Set the data members of this actuator to their null values.
- */
+// Set the data members of this actuator to their null values.
 void CoordinateActuator::setNull()
 {
-	setupProperties();
+	// no data members that need initializing
 }
 
 //_____________________________________________________________________________
-/**
- * Connect properties to local pointers.
- */
-void CoordinateActuator::setupProperties()
+// Allocate and initialize properties.
+void CoordinateActuator::constructProperties()
 {
-	addOptionalProperty<string>("coordinate",
-		"");
-	addProperty<double>("optimal_force",
-		"",
-		1.0);
-}
-
-//_____________________________________________________________________________
-/**
- * Copy the member data of the specified actuator.
- */
-void CoordinateActuator::copyData(const CoordinateActuator &aGenForce)
-{
-	// MEMBER VARIABLES
-	setPropertyValue("coordinate", aGenForce.getProperty<string>("coordinate"));
-	setCoordinate(aGenForce.getCoordinate());
-	setOptimalForce(aGenForce.getOptimalForce());
+	constructProperty_coordinate();
+	constructProperty_optimal_force(1.0);
 }
 
 
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//-----------------------------------------------------------------------------
-// ASSIGNMENT
-//-----------------------------------------------------------------------------
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return  aCoordinateID ID (or number, or index) of the generalized coordinate.
- */
-CoordinateActuator& CoordinateActuator::operator=(const CoordinateActuator &aGenForce)
-{
-	// BASE CLASS
-	Actuator::operator =(aGenForce);
-
-	copyData(aGenForce);
-
-	return(*this);
-}
-
-
-//=============================================================================
+//==============================================================================
 // GET AND SET
-//=============================================================================
+//==============================================================================
 //-----------------------------------------------------------------------------
 // CoordinateID
 //-----------------------------------------------------------------------------
@@ -164,11 +87,11 @@ CoordinateActuator& CoordinateActuator::operator=(const CoordinateActuator &aGen
  *
  * @param aCoordinate Pointer to the generalized coordinate.
  */
-void CoordinateActuator::setCoordinate(Coordinate* aCoordinate)
+void CoordinateActuator::setCoordinate(Coordinate* coordinate)
 {
-	_coord = aCoordinate;
-	if(aCoordinate)
-		setPropertyValue("coordinate", aCoordinate->getName());
+	_coord = coordinate;
+	if (coordinate)
+		setProperty_coordinate(coordinate->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -179,7 +102,7 @@ void CoordinateActuator::setCoordinate(Coordinate* aCoordinate)
  */
 Coordinate* CoordinateActuator::getCoordinate() const
 {
-	return(_coord);
+	return _coord;
 }
 
 //-----------------------------------------------------------------------------
@@ -191,9 +114,9 @@ Coordinate* CoordinateActuator::getCoordinate() const
  *
  * @param aOptimalForce Optimal force.
  */
-void CoordinateActuator::setOptimalForce(double aOptimalForce)
+void CoordinateActuator::setOptimalForce(double optimalForce)
 {
-	setPropertyValue("optimal_force", aOptimalForce);
+	setProperty_optimal_force(optimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -203,7 +126,7 @@ void CoordinateActuator::setOptimalForce(double aOptimalForce)
  */
 double CoordinateActuator::getOptimalForce() const
 {
-	return getPropertyValue<double>("optimal_force");
+	return getProperty_optimal_force();
 }
 //_____________________________________________________________________________
 /**
@@ -213,13 +136,13 @@ double CoordinateActuator::getOptimalForce() const
  */
 double CoordinateActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/getPropertyValue<double>("optimal_force")); 
+	return std::abs(getForce(s) / getOptimalForce()); 
 }
 
 
-//=============================================================================
+//==============================================================================
 // COMPUTATIONS
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Compute all quantities necessary for applying the actuator force to the
@@ -231,13 +154,13 @@ double CoordinateActuator::computeActuation( const SimTK::State& s ) const
 		return 0.0;
 
 	// FORCE
-	return( getControl(s) * getPropertyValue<double>("optimal_force") );
+	return getControl(s) * getOptimalForce();
 }
 
 
-//=============================================================================
+//==============================================================================
 // UTILITY
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  */
@@ -260,9 +183,9 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 	return &as;
 }
 
-//=============================================================================
+//==============================================================================
 // APPLICATION
-//=============================================================================
+//==============================================================================
 //_____________________________________________________________________________
 /**
  * Apply the actuator force to BodyA and BodyB.
@@ -304,12 +227,12 @@ getSpeed( const SimTK::State& s) const
  */
 void CoordinateActuator::setup(Model& aModel)
 {
+	Super::setup(aModel);
+
 	string errorMessage;
 
-	const string &coordName = getPropertyValue<string>("coordinate");
-
-	// Base class
-	Actuator::setup(aModel);
+    // This will fail if no coordinate has been specified.
+	const string& coordName = getProperty_coordinate();
 
 	// Look up the coordinate
 	if (!_model->updCoordinateSet().contains(coordName)) {
@@ -324,38 +247,13 @@ void CoordinateActuator::setup(Model& aModel)
 /**
  *  Create underlying SimTK::Force
  */
- void  CoordinateActuator::createSystem(SimTK::MultibodySystem& system) const {
+void CoordinateActuator::createSystem(SimTK::MultibodySystem& system) const {
 
-     Actuator::createSystem( system );
+     Super::createSystem( system );
 }
 
-
-//=============================================================================
-// CHECK
-//=============================================================================
 //_____________________________________________________________________________
-/**
- * Check that this coordinate actuator actuator is valid.
- *
- * @return True if valid, false if invalid.
- */
-bool CoordinateActuator::check() const
-{
-	// CoordinateID
-	if(!isCoordinateValid()) {
-		printf("CoordinateActuator.check: ERROR- %s actuates ",
-			getName().c_str());
-		printf("an invalid generalized coordinate (%s).\n", 
-            getPropertyValue<string>("coordinate").c_str());
-		return(false);
-	}
-
-	return(true);
-}
-//_____________________________________________________________________________
-/**
- * Is the.
- */
+// Is the coordinate valid?
 bool CoordinateActuator::isCoordinateValid() const
 {
 	if (_model == NULL || _coord == NULL)
@@ -364,9 +262,9 @@ bool CoordinateActuator::isCoordinateValid() const
 	return true;
 }
 
-//=============================================================================
+//==============================================================================
 // XML
-//=============================================================================
+//==============================================================================
 //-----------------------------------------------------------------------------
 // UPDATE FROM XML NODE
 //-----------------------------------------------------------------------------
@@ -380,7 +278,6 @@ bool CoordinateActuator::isCoordinateValid() const
  */
 void CoordinateActuator::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
-	Actuator::updateFromXMLNode(aNode, versionNumber);
-	setCoordinate(_coord);
+	Super::updateFromXMLNode(aNode, versionNumber);
 }	
 

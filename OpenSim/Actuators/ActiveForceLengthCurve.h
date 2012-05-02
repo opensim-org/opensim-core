@@ -1,5 +1,5 @@
-#ifndef OPENSIM_ActiveForceLengthCurve_h__
-#define OPENSIM_ActiveForceLengthCurve_h__
+#ifndef OPENSIM_ACTIVE_FORCE_LENGTH_CURVE_H_
+#define OPENSIM_ACTIVE_FORCE_LENGTH_CURVE_H_
 
 /* Author: Matthew Millard
 /*
@@ -22,14 +22,13 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.                                     *
  * -------------------------------------------------------------------------- */
 
-#include <OpenSim/Actuators/osimActuatorsDLL.h>
-
-
 // INCLUDE
-#include <simbody/internal/common.h>
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/MuscleCurveFunctionFactory.h>
 #include <OpenSim/Common/MuscleCurveFunction.h>
+
+#include <Simbody.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -39,6 +38,10 @@
 #endif
 
 namespace OpenSim {
+
+//==============================================================================
+//                        ACTIVE FORCE LENGTH CURVE
+//==============================================================================
 
 /**
  This class serves as a serializable ActiveForceLengthCurve, for use in 
@@ -50,18 +53,39 @@ namespace OpenSim {
  */
 class OSIMACTUATORS_API ActiveForceLengthCurve : public ModelComponent {
 OpenSim_DECLARE_CONCRETE_OBJECT(ActiveForceLengthCurve, ModelComponent);
-
-//class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle {
-//OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle, ActivationFiberLengthMuscle);
-
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(min_norm_active_fiber_length, double,
+        "normalized fiber length which the steep ascending limb starts");
 
-    ///Default constructor
+    OpenSim_DECLARE_PROPERTY(transition_norm_fiber_length, double, 
+        "normalized fiber length which the steep ascending limb transitions"
+        " to the shallow ascending limb");
+
+    OpenSim_DECLARE_PROPERTY(max_norm_active_fiber_length, double, 
+        "normalized fiber length which the descending limb ends");
+
+    OpenSim_DECLARE_PROPERTY(shallow_ascending_slope, double, 
+        "slope of the shallow ascending limb");
+
+    OpenSim_DECLARE_PROPERTY(minimum_value, double,
+        "minimum value of the active force length curve");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
+    /** Default constructor creates an object with a default name that doesn't
+    yet define a curve. **/
     ActiveForceLengthCurve();
-    ///Default destructor
-    ~ActiveForceLengthCurve();
-    ///Default constructor
-    ActiveForceLengthCurve(const ActiveForceLengthCurve& source);
+
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
     /**
      Constructs a C2 continuous active force length curve. The active force 
@@ -135,23 +159,9 @@ public:
                             double maxActiveNormFiberLength,
                             double shallowAscendingSlope,
                             double minValue,
-                            const std::string muscleName);
-    /** Copies all of the property values and data member values from source to
-        the present object
-        @param source ActiveForceLengthCurve.
-    */
+                            const std::string& muscleName);
 
-
-   #ifndef SWIG
-        ///default assignment operator
-        ActiveForceLengthCurve& operator=(const ActiveForceLengthCurve &source);
-        #endif
-            ///a function that copies all of the properties and data members
-            ///of this class
-            void copyData(const ActiveForceLengthCurve &source);
-        #ifndef SWIG
-    #endif
-
+    // uses default destructor, copy constructor, copy assignment
 
     /**
     @returns the normalized fiber length where the active force length 
@@ -346,7 +356,10 @@ public:
        */
        void printMuscleCurveToCSVFile(const std::string& path) const;
 
-protected:
+//==============================================================================
+// PRIVATE
+//==============================================================================
+private:
     /*
     This object extends the ModelComponent interface so that we can make use
     of the 'createSystem' function, which we are using to create the active
@@ -377,14 +390,12 @@ protected:
 	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
     ///ModelComponent Interface required function
-    void setDefaultsFromState(const SimTK::State& state){};
+    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11 {}
     
+    void setNull();
+    void constructProperties();
 
-private:
-  void setNull();
-  void addProperties();
-
-  /**
+    /**
         This function will take all of the current parameter values and use 
         them to build a curve.
 
@@ -394,13 +405,12 @@ private:
         \endverbatim
 
     */
-  void buildCurve();
+    void buildCurve();
 
-
-  MuscleCurveFunction m_curve;
-  bool m_curveUpToDate;
+    MuscleCurveFunction   m_curve;
+    bool                  m_curveUpToDate;
 };
 
 }
 
-#endif //OPENSIM_ActiveForceLengthCurve_h__
+#endif // OPENSIM_ACTIVE_FORCE_LENGTH_CURVE_H_

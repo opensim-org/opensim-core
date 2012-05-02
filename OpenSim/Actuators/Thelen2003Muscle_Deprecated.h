@@ -1,9 +1,9 @@
-#ifndef __Thelen2003Muscle_Deprecated_h__
-#define __Thelen2003Muscle_Deprecated_h__
+#ifndef OPENSIM_THELEN_2003_MUSCLE_DEPRECATED_H_
+#define OPENSIM_THELEN_2003_MUSCLE_DEPRECATED_H_
 
 // Thelen2003Muscle_Deprecated.h
 /*
- * Copyright (c)  2006, Stanford University. All rights reserved. 
+ * Copyright (c)  2006-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -42,80 +42,99 @@
 
 namespace OpenSim {
 
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//                   THELEN 2003 MUSCLE (DEPRECATED)
+//==============================================================================
 /**
  * A class implementing a SIMM muscle.
  *
  * @author Peter Loan
- * @version 1.0
  */
 class OSIMACTUATORS_API Thelen2003Muscle_Deprecated 
 :   public ActivationFiberLengthMuscle_Deprecated {
 OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle_Deprecated, 
                                 ActivationFiberLengthMuscle_Deprecated);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations 
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+		"time constant for ramping up of muscle activation");
+	OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
+		"time constant for ramping down of muscle activation");
+	OpenSim_DECLARE_PROPERTY(Vmax, double,
+		"maximum contraction velocity at full activation in fiber lengths/second");
+	OpenSim_DECLARE_PROPERTY(Vmax0, double,
+		"maximum contraction velocity at low activation in fiber lengths/second");
+	OpenSim_DECLARE_PROPERTY(FmaxTendonStrain, double,
+		"tendon strain due to maximum isometric muscle force");
+	OpenSim_DECLARE_PROPERTY(FmaxMuscleStrain, double,
+		"passive muscle strain due to maximum isometric muscle force");
+	OpenSim_DECLARE_PROPERTY(KshapeActive, double,
+		"shape factor for Gaussian active muscle force-length relationship");
+	OpenSim_DECLARE_PROPERTY(KshapePassive, double,
+		"exponential shape factor for passive force-length relationship");
+	OpenSim_DECLARE_PROPERTY(damping, double,
+		"passive damping in the force-velocity relationship");
+	OpenSim_DECLARE_PROPERTY(Af, double,
+		"force-velocity shape factor");
+	OpenSim_DECLARE_PROPERTY(Flen, double,
+		"maximum normalized lengthening force");
+	/**@}**/
 
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-//=============================================================================
-// METHODS
-//=============================================================================
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-public:
 	Thelen2003Muscle_Deprecated();
-	Thelen2003Muscle_Deprecated(const std::string &aName,double aMaxIsometricForce,double aOptimalFiberLength,double aTendonSlackLength,double aPennationAngle);
-	Thelen2003Muscle_Deprecated(const Thelen2003Muscle_Deprecated &aMuscle);
-	virtual ~Thelen2003Muscle_Deprecated();
-
-    #ifndef SWIG
-	Thelen2003Muscle_Deprecated& operator=(const Thelen2003Muscle_Deprecated &aMuscle);
-    #endif
-	void copyData(const Thelen2003Muscle_Deprecated &aMuscle);
-
-
-	//--------------------------------------------------------------------------
-	// GET
-	//--------------------------------------------------------------------------
+	Thelen2003Muscle_Deprecated(const std::string&  name,
+                                double              maxIsometricForce,
+                                double              optimalFiberLength,
+                                double              tendonSlackLength,
+                                double              pennationAngle);
+	
 	// Properties
-	double getActivationTimeConstant() const { return getPropertyValue<double>("activation_time_constant"); }
-	double getDeactivationTimeConstant() const { return getPropertyValue<double>("deactivation_time_constant"); }
-	double getVmax() const { return getPropertyValue<double>("Vmax"); }
-	double getVmax0() const { return getPropertyValue<double>("Vmax0"); }
-	double getFmaxTendonStrain() const { return getPropertyValue<double>("FmaxTendonStrain"); }
-	double getFmaxMuscleStrain() const { return getPropertyValue<double>("FmaxMuscleStrain"); }
-	double getKshapeActive() const { return getPropertyValue<double>("KshapeActive"); }
-	double getKshapePassive() const { return getPropertyValue<double>("KshapePassive"); }
-	double getDamping() const { return getPropertyValue<double>("damping"); }
-	double getAf() const { return getPropertyValue<double>("Af"); }
-	double getFlen() const { return getPropertyValue<double>("Flen"); }
+	double getActivationTimeConstant() const 
+    {   return getProperty_activation_time_constant(); }
+	double getDeactivationTimeConstant() const 
+    {   return getProperty_deactivation_time_constant(); }
+	double getVmax() const {return getProperty_Vmax();}
+	double getVmax0() const {return getProperty_Vmax0();}
+	double getFmaxTendonStrain() const {return getProperty_FmaxTendonStrain();}
+	double getFmaxMuscleStrain() const {return getProperty_FmaxMuscleStrain();}
+	double getKshapeActive() const {return getProperty_KshapeActive();}
+	double getKshapePassive() const {return getProperty_KshapePassive();}
+	double getDamping() const {return getProperty_damping();}
+	double getAf() const {return getProperty_Af();}
+	double getFlen() const {return getProperty_Flen();}
 
 	void setActivationTimeConstant(double aActivationTimeConstant)
-    {	setPropertyValue("activation_time_constant", aActivationTimeConstant); }
+    {	setProperty_activation_time_constant(aActivationTimeConstant); }
 	void setDeactivationTimeConstant(double aDeactivationTimeConstant)
-    {	setPropertyValue("deactivation_time_constant", aDeactivationTimeConstant); }
+    {	setProperty_deactivation_time_constant(aDeactivationTimeConstant); }
 	void setVmax(double aVmax)
-    {	setPropertyValue("Vmax", aVmax); }
+    {	setProperty_Vmax(aVmax); }
 	void setVmax0(double aVmax0)
-    {	setPropertyValue("Vmax0", aVmax0); }
+    {	setProperty_Vmax0(aVmax0); }
 	void setFmaxTendonStrain(double aFmaxTendonStrain)
-    {	setPropertyValue("FmaxTendonStrain", aFmaxTendonStrain); }
+    {	setProperty_FmaxTendonStrain(aFmaxTendonStrain); }
 	void setFmaxMuscleStrain(double aFmaxMuscleStrain)
-    {	setPropertyValue("FmaxMuscleStrain", aFmaxMuscleStrain); }
+    {	setProperty_FmaxMuscleStrain(aFmaxMuscleStrain); }
 	void setKshapeActive(double aKShapeActive)
-    {	setPropertyValue("KshapeActive", aKShapeActive); }
+    {	setProperty_KshapeActive(aKShapeActive); }
 	void setKshapePassive(double aKshapePassive)
-    {	setPropertyValue("KshapePassive", aKshapePassive); }
+    {	setProperty_KshapePassive(aKshapePassive); }
 	void setDamping(double aDamping)
-    {	setPropertyValue("damping", aDamping); }
+    {	setProperty_damping(aDamping); }
 	void setAf(double aAf)
-    {	setPropertyValue("Af", aAf); }
+    {	setProperty_Af(aAf); }
 	void setFlen(double aFlen)
-    {	setPropertyValue("Flen", aFlen); }
+    {	setProperty_Flen(aFlen); }
 
 	// Computed quantities
 	//--------------------------------------------------------------------------
@@ -133,13 +152,12 @@ public:
 	virtual double computeIsometricForce(SimTK::State& s, double activation) const;
 
 private:
-	void setNull();
-	void setupProperties();
-//=============================================================================
+	void constructProperties();
+//==============================================================================
 };	// END of class Thelen2003Muscle_Deprecated
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 
-#endif // __Thelen2003Muscle_Deprecated_h__
+#endif // OPENSIM_THELEN_2003_MUSCLE_DEPRECATED_H_

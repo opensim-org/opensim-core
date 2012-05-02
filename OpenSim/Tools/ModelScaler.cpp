@@ -328,13 +328,13 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
 			std::string savedCwd = IO::getCwd();
 			IO::chDir(aPathToSubject);
 
-			if (!_outputModelFileNameProp.getUseDefault())
+			if (!_outputModelFileNameProp.getValueIsDefault())
 			{
 				if (aModel->print(_outputModelFileName))
 					cout << "Wrote model file " << _outputModelFileName << " from model " << aModel->getName() << endl;
 			}
 
-			if (!_outputScaleFileNameProp.getUseDefault())
+			if (!_outputScaleFileNameProp.getValueIsDefault())
 			{
 				if (theScaleSet.print(_outputScaleFileName))
 					cout << "Wrote scale file " << _outputScaleFileName << " for model " << aModel->getName() << endl;

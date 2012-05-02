@@ -4,7 +4,7 @@
 // SystemEnergyProbe.h
 // Author: Tim Dorn
 /*
- * Copyright (c)  2011, Stanford University. All rights reserved. 
+ * Copyright (c)  2011-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -40,6 +40,7 @@ namespace OpenSim {
 class Model;
 
 //==============================================================================
+//                         SYSTEM ENERGY PROBE
 //==============================================================================
 /**
  * SystemEnergyProbe is a ModelComponent Probe for computing an operation on a 
@@ -47,20 +48,30 @@ class Model;
  * E.g. Work is the integral of power with respect to time.
  *
  * @author Tim Dorn
- * @version 1.0
  */
-class OSIMSIMULATION_API SystemEnergyProbe : public Probe  
-{
-    OpenSim_DECLARE_CONCRETE_OBJECT(SystemEnergyProbe, Probe);
-//=============================================================================
-// DATA
-//=============================================================================
-protected:
-
-//=============================================================================
-// METHODS
-//=============================================================================
+class OSIMSIMULATION_API SystemEnergyProbe : public Probe {
+OpenSim_DECLARE_CONCRETE_OBJECT(SystemEnergyProbe, Probe);
 public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. Others
+    are inherited from the superclass. **/
+    /**@{**/
+    /** Default is true. **/
+    OpenSim_DECLARE_PROPERTY(compute_kinetic_energy, bool,
+        "Specify whether kinetic energy is to be included in the system energy"
+        " computation (true/false).");
+    /** Default is true. **/
+    OpenSim_DECLARE_PROPERTY(compute_potential_energy, bool,
+        "Specify whether potential energy is to be included in the system"
+        " energy computation (true/false).");
+    /**@}**/
+
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
     //--------------------------------------------------------------------------
     // Constructor(s) and Setup
     //--------------------------------------------------------------------------
@@ -68,60 +79,51 @@ public:
     SystemEnergyProbe();
     /** Convenience constructor */
     SystemEnergyProbe(bool computeKE, bool computePE);
-    /** Copy constructor */
-    SystemEnergyProbe(const SystemEnergyProbe &aSystemEnergyProbe);
-    /** Destructor */
-    virtual ~SystemEnergyProbe();
-    void copyData(const SystemEnergyProbe &aProbe);
 
-private:
-    void setNull();
-    void setupProperties();
-
-public:
-
-    //--------------------------------------------------------------------------
-    // Operators
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    SystemEnergyProbe& operator=(const SystemEnergyProbe &aSystemEnergyProbe);
-#endif
-
+    // Uses default (compiler-generated) destructor, copy constructor, copy 
+    // assignment operator.
 
     //--------------------------------------------------------------------------
     // Get and Set
     //--------------------------------------------------------------------------
-    /** Returns whether kinetic energy is to be included in the system energy computation. */
+    /** Returns whether kinetic energy is to be included in the system energy 
+    computation. */
     bool getComputeKineticEnergy() const;
 
-    /** Returns whether kinetic energy is to be included in the system energy computation. */
+    /** Returns whether potential energy is to be included in the system energy 
+    computation. */
     bool getComputePotentialEnergy() const;
 
-    /** Sets whether kinetic energy is to be included in the system energy computation. */
+    /** Sets whether kinetic energy is to be included in the system energy 
+    computation. */
     void setComputeKineticEnergy(bool c);
 
-    /** Sets whether potential energy is to be included in the system energy computation. */
+    /** Sets whether potential energy is to be included in the system energy 
+    computation. */
     void setComputePotentialEnergy(bool c);
 
+private:
+//==============================================================================
+// PRIVATE
+//==============================================================================
 
-    //-----------------------------------------------------------------------------
-    // Computation
-    //-----------------------------------------------------------------------------
+    //--------------------------------------------------------------------------
+    // Implement the Probe interface.
+    //--------------------------------------------------------------------------
     /** Compute the System energy which the Probe operation will be based on. */
-    virtual double computeProbeValue(const SimTK::State& state) const;
-
+    double computeProbeValue(const SimTK::State& state) const OVERRIDE_11;
 
     //--------------------------------------------------------------------------
-    // ModelComponent Interface
+    // Implement the ModelComponent Interface
     //--------------------------------------------------------------------------
-protected:
-    virtual void setup(Model& aModel);
+    void setup(Model& aModel) OVERRIDE_11;
     
-
-//=============================================================================
+    void setNull();
+    void constructProperties();
+//==============================================================================
 };	// END of class SystemEnergyProbe
-//=============================================================================
-//=============================================================================
+//==============================================================================
+//==============================================================================
 
 } // end of namespace OpenSim
 

@@ -26,10 +26,12 @@
 *  WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <string>
-#include <iostream>
+
 #include <OpenSim/Common/Object.h>
 #include "osimAnalyses.h"	// Add headers for new Analyses in osimAnalyses.h rather than here so they are available to the API.
+#include <string>
+#include <iostream>
+#include <exception>
 
 using namespace OpenSim;
 using namespace std;
@@ -43,6 +45,8 @@ static osimAnalysesInstantiator instantiator;
  */
 OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 {
+  try {
+
 	Object::registerType( Kinematics() );
 	Object::registerType( Actuation() );
 	Object::registerType( PointKinematics() );
@@ -56,6 +60,12 @@ OSIMANALYSES_API void RegisterTypes_osimAnalyses()
 	Object::registerType( StatesReporter() );
 	Object::registerType( InducedAccelerations() );
 	Object::RegisterType( ProbeReporter() );
+
+  } catch (const std::exception& e) {
+    std::cerr 
+        << "ERROR during osimAnalyses Object registration:\n"
+        << e.what() << "\n";
+  }
 }
 
 osimAnalysesInstantiator::osimAnalysesInstantiator() 

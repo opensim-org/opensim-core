@@ -181,7 +181,7 @@ public:
 	virtual double getRangeMax() const { return _range[1]; }
 	virtual bool setRangeMin(double aMin);
 	virtual bool setRangeMax(double aMax);
-	virtual bool getRangeUseDefault() const { return _rangeProp.getUseDefault(); }
+	virtual bool getRangeUseDefault() const { return _rangeProp.getValueIsDefault(); }
 	
 	virtual double getDefaultValue() const { return _defaultValue; }
 	virtual bool setDefaultValue(double aDefaultValue);
@@ -191,21 +191,21 @@ public:
 
 	virtual double getInitialValue() const { return _initialValue; }
 	virtual void setInitialValue(double aInitialValue);
-	virtual bool getDefaultValueUseDefault() const { return _defaultValueProp.getUseDefault(); }
+	virtual bool getDefaultValueUseDefault() const { return _defaultValueProp.getValueIsDefault(); }
 	
 	// Clamping coordinate between a range of values
 	virtual bool getClamped(const SimTK::State& s) const;
 	virtual bool setClamped(SimTK::State& s, bool aClamped ) const;
 	virtual bool getDefaultClamped() const { return _clamped; }
     virtual void setDefaultClamped(bool aClamped ) { _clamped = aClamped; }
-	virtual bool getClampedUseDefault() const { return _clampedProp.getUseDefault(); }
+	virtual bool getClampedUseDefault() const { return _clampedProp.getValueIsDefault(); }
 	
 	//Locking for the coordinate to the current value
 	virtual bool getLocked(const SimTK::State& s) const;
 	virtual bool setLocked(SimTK::State& s, bool aLocked) const;
     virtual bool getDefaultLocked() const { return _locked; }
     virtual void setDefaultLocked(bool aLocked) { _locked = aLocked; }
-	virtual bool getLockedUseDefault() const { return _lockedProp.getUseDefault(); }
+	virtual bool getLockedUseDefault() const { return _lockedProp.getValueIsDefault(); }
 
 	//Prescribed motion for Coordinate
 	virtual bool isPrescribed(const SimTK::State& s) const;
