@@ -59,7 +59,7 @@ class Coordinate;
  * @version 2.0
  */
 class OSIMSIMULATION_API Actuator_ : public Force {
-OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator_, Object);
+OpenSim_DECLARE_ABSTRACT_OBJECT(Actuator_, Force);
 
 //=============================================================================
 // DATA
