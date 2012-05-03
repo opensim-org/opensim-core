@@ -232,7 +232,7 @@ void AssemblySolver::assemble(SimTK::State &state)
 			_assembler->getNumErrorEvals(), _assembler->getNumErrorJacobianEvals());
 		*/
 	}
-	catch (std::exception ex)
+	catch (const std::exception& ex)
     {
 		std::string msg = "AssemblySolver::assemble() Failed: ";
 		msg += ex.what();
@@ -273,7 +273,7 @@ void AssemblySolver::track(SimTK::State &s)
 			max(abs(_assembler->getInternalState().getQErr())));
 		*/
 	}
-	catch (SimTK::Exception::Base ex)
+	catch (const std::exception& ex)
     {
 		std::cout << "AssemblySolver::track() attempt Failed: " << ex.what() << std::endl;
 		throw Exception("AssemblySolver::track() attempt failed.");
