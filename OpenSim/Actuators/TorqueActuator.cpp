@@ -198,8 +198,8 @@ void TorqueActuator::setup(Model& model)
 
     // Look up the bodies by name in the Model, and record pointers to the
     // corresponding body objects.
-	_bodyA = &updModel().updBodySet().get(getProperty_bodyA());
-	_bodyB = &updModel().updBodySet().get(getProperty_bodyB());
+	_bodyA = model.updBodySet().get(getProperty_bodyA());
+	_bodyB = model.updBodySet().get(getProperty_bodyB());
 }
 
 //==============================================================================
@@ -232,12 +232,5 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 	}
 	Super::updateFromXMLNode(aNode, versionNumber);
 	if (converting) updProperty_axis(0) *= -1.0;
-
-    // Look up the bodies by name in the Model, and record pointers to the
-    // corresponding body objects.
-    if (!(getProperty_bodyA().empty()|| getProperty_bodyB().empty())) {
-	    _bodyA = &updModel().updBodySet().get(getProperty_bodyA());
-	    _bodyB = &updModel().updBodySet().get(getProperty_bodyB());
-    }
 }	
 
