@@ -34,7 +34,6 @@
 
 #include "Probe.h"
 #include "Model.h"
-#include "ForceSet.h"
 
 namespace OpenSim { 
 class Model;
@@ -76,7 +75,7 @@ public:
     /** Default constructor */
     ForceProbe();
     /** Convenience constructor */
-    const ForceProbe(const Array<std::string>& force_names);
+    ForceProbe(const Array<std::string>& force_names);
 
     // Uses default (compiler-generated) destructor, copy constructor, and copy
     // assignment operator.

@@ -32,6 +32,7 @@
 // INCLUDE
 //=============================================================================
 #include "ForceProbe.h"
+#include "ForceSet.h"
 
 
 using namespace std;
