@@ -168,7 +168,7 @@ void PointActuator::computeForce(const SimTK::State& s,
 {
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 
-	if(_model==NULL || _body == NULL) return;
+	if( !_model || !_body ) return;
 
     double force;
 

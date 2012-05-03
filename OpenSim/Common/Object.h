@@ -1232,9 +1232,11 @@ getValue(int index) const {
     const Property_Deprecated* pd = 
         dynamic_cast<const Property_Deprecated*>(this);
     if (pd) {
-        return pd->isArrayProperty()
-            ? pd->getValueArray<T>()[index]
-            : pd->getValue<T>();
+        if (pd->isArrayProperty()) {
+            return pd->getValueArray<T>()[index];
+        } else {
+            return pd->getValue<T>();
+        }
     }
 
     const Property<T>* p = dynamic_cast<const Property<T>*>(this);

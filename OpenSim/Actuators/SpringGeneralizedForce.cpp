@@ -191,7 +191,7 @@ void SpringGeneralizedForce::computeForce(const SimTK::State& s,
 							      SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							      SimTK::Vector& generalizedForces) const
 {
-	if(_model==NULL || _coord == NULL) return;
+	if( !_model || !_coord ) return;
 
 	// FORCE
 	applyGeneralizedForce(s, *_coord, computeForceMagnitude(s), generalizedForces);

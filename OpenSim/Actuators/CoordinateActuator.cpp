@@ -256,7 +256,7 @@ void CoordinateActuator::createSystem(SimTK::MultibodySystem& system) const {
 // Is the coordinate valid?
 bool CoordinateActuator::isCoordinateValid() const
 {
-	if (_model == NULL || _coord == NULL)
+	if ( !_model || !_coord )
 		return false;
 
 	return true;

@@ -162,7 +162,7 @@ void TorqueActuator::computeForce(const State& s,
     }
     setForce(s,  force );
 
-	if(_bodyA ==NULL)
+	if(!_bodyA)
 		return;
 	
 
@@ -175,7 +175,7 @@ void TorqueActuator::computeForce(const State& s,
 	applyTorque(s, *_bodyA, torque, bodyForces);
 
 	// if bodyB is not specified, use the ground body by default
-	if(_bodyB !=NULL)
+	if(!_bodyB)
 		applyTorque(s, *_bodyB, -torque, bodyForces);
 
 	// get the angular velocity of the body in ground

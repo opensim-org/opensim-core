@@ -161,7 +161,7 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 	if(_model==NULL) return;
 	const SimbodyEngine& engine = getModel().getSimbodyEngine();
 	
-	if(_bodyA ==NULL || _bodyB ==NULL)
+	if( !_bodyA || !_bodyB )
 		return;
 	
 	// Get pointA and pointB positions in both the global frame, and in 
