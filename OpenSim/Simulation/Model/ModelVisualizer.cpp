@@ -284,8 +284,8 @@ void DefaultGeometry::generateDecorations
 //==============================================================================
 
 void ModelVisualizer::show(const SimTK::State& state) const {
-    // Make sure we're realized at least through Position stage.
-    _model.getMultibodySystem().realize(state, SimTK::Stage::Position);
+    // Make sure we're realized at least through Velocity stage.
+    _model.getMultibodySystem().realize(state, SimTK::Stage::Velocity);
     getSimbodyVisualizer().report(state);
 }
 
