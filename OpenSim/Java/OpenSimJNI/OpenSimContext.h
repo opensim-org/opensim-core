@@ -300,6 +300,23 @@ public:
     {   p.updValue<std::string>(index) = v; }
     static void appendValueString(const std::string& v, AbstractProperty& p) 
     {   p.appendValue<std::string>(v); }
+
+    static double getValueTransform(const AbstractProperty& p, int index) 
+    {   
+        const PropertyTransform& pd = dynamic_cast<const PropertyTransform&>(p);
+        double array6[] = {0., 0., 0., 0., 0., 0.};
+        pd.getRotationsAndTranslationsAsArray6(array6);
+        return array6[index]; 
+    }
+    static void setValueTransform(double v, AbstractProperty& p, int index) 
+    {   
+        PropertyTransform& pd = dynamic_cast<PropertyTransform&>(p);
+        double array6[] = {0., 0., 0., 0., 0., 0.};
+        pd.getRotationsAndTranslationsAsArray6(array6);
+        array6[index] = v; 
+        pd.setValue(6, array6);
+    }
+
 };
 
 } // namespace OpenSim
