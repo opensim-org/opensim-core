@@ -118,9 +118,9 @@ public:
 			_dblvec[i] = anArray[i];
 	}
 	/** get writable reference to the value */
-	SimTK::Vec<M>& getValueDblVec() {return SimTK::Vec3::updAs(&_dblvec[0]); }
+	SimTK::Vec<M>& getValueDblVec() {return SimTK::Vec<M>::updAs(&_dblvec[0]); }
 	/** get const (read-only) reference to the value */
-	const SimTK::Vec<M>& getValueDblVec() const {return SimTK::Vec3::getAs(&_dblvec[0]); };
+	const SimTK::Vec<M>& getValueDblVec() const {return SimTK::Vec<M>::getAs(&_dblvec[0]); };
 	/** set value from double array */ // to be used by the serialization code
 	void setValue(int aSize, const double aArray[]) OVERRIDE_11 { 
 		assert(aSize == M);
