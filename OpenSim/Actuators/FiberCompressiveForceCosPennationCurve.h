@@ -172,8 +172,9 @@ public:
                 when it is serialized.
     
     <B> Optional Parameters </B>
-        The optional parameters are computed when functions
-        getStiffnessAtPerpendicularInUse(), and getCurvinessInUse() are called.
+        If the optional parameters have not yet been set, they are computed when
+        functions getStiffnessAtPerpendicularInUse(), and getCurvinessInUse()
+        are called. See the documentation for these functions for details
 
     <B>Conditions:</B>
         \verbatim
