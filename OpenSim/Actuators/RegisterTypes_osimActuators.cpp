@@ -52,6 +52,7 @@
 #include "TendonForceLengthCurve.h"
 #include "FiberForceLengthCurve.h"
 #include "FiberCompressiveForceLengthCurve.h"
+#include "FiberCompressiveForceCosPennationCurve.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -88,6 +89,7 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::RegisterType( TendonForceLengthCurve() );
     Object::RegisterType( FiberForceLengthCurve() );
     Object::RegisterType( FiberCompressiveForceLengthCurve() );
+    Object::RegisterType( FiberCompressiveForceCosPennationCurve() );
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

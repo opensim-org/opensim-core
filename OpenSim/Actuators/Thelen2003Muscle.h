@@ -42,14 +42,60 @@ namespace OpenSim {
 //                          THELEN 2003 MUSCLE
 //==============================================================================
 /**
- * Implementation of a two state (activation and fiber-length) Muscle model by:
- * DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
- * contractions in older adults. Journal of biomechanical engineering, 2003.
- * This a complete rewrite of a previous implementation by Peter Loan.
- *
- * @author Matt Millard
- * @author Ajay Seth
- * @author Peter Loan
+ Implementation of a two state (activation and fiber-length) Muscle model by:
+ DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
+ contractions in older adults. Journal of biomechanical engineering, 2003.
+ This a complete rewrite of a previous implementation by Peter Loan. 
+
+ The Thelen2003Muscle model uses a standard equilibrium muscle equation
+
+ \f[ (a(t) f_{AL}(l_{CE}) f_{V}(\dot{l}_{CE}) 
+ - f_{PE}(l_{CE}))\cos \phi - f_{SE}(l_{T}) = 0  \f]
+
+ Rearranging the above equation and solving for \f$ f_{V}(\dot{l}_{CE}) \f$ 
+ yields
+
+ \f[ f_{V}(\dot{l}_{CE}) = 
+ \frac{ \frac{f_{SE}(l_{T})}{\cos\phi} - f_{PE}(l_{CE}) }{ a(t) f_{AL}(l_{CE}) }
+ \f]
+
+ The force velocity curve is usually inverted to compute the fiber velocity,
+ 
+ \f[ \dot{l}_{CE} = f_{V}^{-1}( 
+ \frac{ \frac{f_{SE}(l_{T})}{\cos\phi} - f_{PE}(l_{CE}) }{ a(t) f_{AL}(l_{CE}) }
+ )
+ \f]
+
+ which is then integrated to simualate the musculotendon dynamics. In general, 
+ the previous equation has 4 singularity conditions:
+
+ -# \f$ a(t) \rightarrow 0 \f$
+ -# \f$ f_{AL}(l_{CE}) \rightarrow 0 \f$
+ -# \f$ \phi \rightarrow \frac{\pi}{2} \f$
+ -# \f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$
+
+ This implementation has been modified from the model presented in the journal
+ paper (marked with a *) to prevent some of these singularities:
+ 
+ -# *\f$ a(t) \rightarrow a_{min} > 0 \f$ : A modified activation dynamic 
+ equation is used - MuscleFirstOrderActivationDynamicModel - which smoothly 
+ approaches some minimum value that is greater than zero.
+ -# \f$ f_{AL}(l_{CE}) > 0 \f$ . The active force length curve of the Thelen 
+    muscle is a Gaussian, which is always greater than 0.
+ -# \f$ \phi \rightarrow \frac{\pi}{2} \f$ . This singularity cannot be removed 
+    without changing Eqn. 1, and still exists in the present Thelen2003Muscle
+    formulation.
+ -# *\f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or 
+ \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$: Equation 6 in Thelen 2003 has been modified so that \f$ V^M \f$ is linearly
+  extrapolated when \f$ F^M < 0\f$ (during a concentric contraction), and when
+  \f$ F^M > 0.95 F^M_{len}\f$ (during an eccentric contraction). These two 
+  modifications make the force velocity curve invertible. The original force
+  velocity curve as published by Thelen was not invertible.
+
+
+ @author Matt Millard
+ @author Ajay Seth
+ @author Peter Loan
  */
 class OSIMACTUATORS_API Thelen2003Muscle : public ActivationFiberLengthMuscle {
 OpenSim_DECLARE_CONCRETE_OBJECT(Thelen2003Muscle, ActivationFiberLengthMuscle);
