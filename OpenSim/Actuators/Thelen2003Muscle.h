@@ -42,10 +42,9 @@ namespace OpenSim {
 //                          THELEN 2003 MUSCLE
 //==============================================================================
 /**
- Implementation of a two state (activation and fiber-length) Muscle model by:
- DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
- contractions in older adults. Journal of biomechanical engineering, 2003.
- This a complete rewrite of a previous implementation by Peter Loan. 
+ Implementation of a two state (activation and fiber-length) Muscle model by 
+ Thelen 2003.\ This a complete rewrite of a previous implementation (present in
+ OpenSim 2.4 and earlier) contained numerous errors.
 
  The Thelen2003Muscle model uses a standard equilibrium muscle equation
 
@@ -72,10 +71,11 @@ namespace OpenSim {
  -# \f$ a(t) \rightarrow 0 \f$
  -# \f$ f_{AL}(l_{CE}) \rightarrow 0 \f$
  -# \f$ \phi \rightarrow \frac{\pi}{2} \f$
- -# \f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$
+ -# \f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or 
+    \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$
 
- This implementation has been modified from the model presented in the journal
- paper (marked with a *) to prevent some of these singularities:
+ This implementation has been slightly modified from the model presented in the 
+ journal paper (marked with a *) to prevent some of these singularities:
  
  -# *\f$ a(t) \rightarrow a_{min} > 0 \f$ : A modified activation dynamic 
  equation is used - MuscleFirstOrderActivationDynamicModel - which smoothly 
@@ -83,15 +83,20 @@ namespace OpenSim {
  -# \f$ f_{AL}(l_{CE}) > 0 \f$ . The active force length curve of the Thelen 
     muscle is a Gaussian, which is always greater than 0.
  -# \f$ \phi \rightarrow \frac{\pi}{2} \f$ . This singularity cannot be removed 
-    without changing Eqn. 1, and still exists in the present Thelen2003Muscle
-    formulation.
+    without changing the first equation, and still exists in the present 
+    Thelen2003Muscle formulation.
  -# *\f$ f_{V}(\dot{l}_{CE}) \le 0 \f$ or 
- \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$: Equation 6 in Thelen 2003 has been modified so that \f$ V^M \f$ is linearly
+ \f$ f_{V}(\dot{l}_{CE}) \ge F^M_{len}\f$: Equation 6 in Thelen 2003 has been 
+  modified so that \f$ V^M \f$ is linearly
   extrapolated when \f$ F^M < 0\f$ (during a concentric contraction), and when
   \f$ F^M > 0.95 F^M_{len}\f$ (during an eccentric contraction). These two 
   modifications make the force velocity curve invertible. The original force
   velocity curve as published by Thelen was not invertible.
 
+  <B> References </B>
+
+   DG Thelen, Adjustment of muscle mechanics model parameters to simulate dynamic 
+ contractions in older adults. Journal of biomechanical engineering, 2003.
 
  @author Matt Millard
  @author Ajay Seth
