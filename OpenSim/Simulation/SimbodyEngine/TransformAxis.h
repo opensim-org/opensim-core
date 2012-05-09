@@ -113,6 +113,15 @@ public:
     const Property<std::string>& getCoordinateNames() const 
     {   return getProperty_coordinates(); }
 
+    /** Copy the coordinate names into an OpenSim::Array for convenience. **/
+    // The GUI uses this.
+    Array<std::string> getCoordinateNamesInArray() const {
+        Array<std::string> coords;
+        for (int i=0; i < getProperty_coordinates().size(); ++i)
+            coords.append(getProperty_coordinates(i));
+        return coords;
+    }
+
     /** %Set the value of the "axis" property. **/
 	void setAxis(const SimTK::Vec3& axis) 
     {   setProperty_axis(axis); }
