@@ -441,7 +441,6 @@ private:
 
   MuscleCurveFunction m_curve;
 
-  bool m_curveUpToDate;
 };
 
 }

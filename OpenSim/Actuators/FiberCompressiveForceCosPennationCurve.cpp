@@ -33,7 +33,7 @@ static const double DegreesToRadians = SimTK::Pi/180.0;
 //=============================================================================
 
 FiberCompressiveForceCosPennationCurve::
-        FiberCompressiveForceCosPennationCurve():m_curveUpToDate(false)
+        FiberCompressiveForceCosPennationCurve()
 {
         setNull();
         constructProperties();
@@ -44,8 +44,7 @@ FiberCompressiveForceCosPennationCurve::
     FiberCompressiveForceCosPennationCurve(double engagementAngleInDegrees, 
                                            double stiffnessAtPerpendicular,
                                            double curviness,
-                                           const std::string& muscleName)
-                                           :m_curveUpToDate(false)
+                                           const std::string& muscleName)                                           
 {
     setNull();
     constructProperties();
@@ -60,8 +59,7 @@ FiberCompressiveForceCosPennationCurve::
 
 FiberCompressiveForceCosPennationCurve::
     FiberCompressiveForceCosPennationCurve(double engagementAngleInDegrees,                                           
-                                           const std::string& muscleName)
-                                           :m_curveUpToDate(false)
+                                           const std::string& muscleName)                                           
 {
     setNull();
     constructProperties();
@@ -73,8 +71,7 @@ FiberCompressiveForceCosPennationCurve::
 
 
 void FiberCompressiveForceCosPennationCurve::setNull()
-{
-    m_curveUpToDate =false;
+{    
     setObjectIsUpToDateWithProperties(false);
 }
 
@@ -90,7 +87,7 @@ void FiberCompressiveForceCosPennationCurve::constructProperties()
 
 void FiberCompressiveForceCosPennationCurve::buildCurve()
 {
-    if(m_curveUpToDate == false){
+    if(isObjectUpToDateWithProperties() == false){
           
         double angle =  getEngagementAngleInDegrees();
         double kiso  =  getStiffnessAtPerpendicularInUse();
@@ -106,8 +103,7 @@ void FiberCompressiveForceCosPennationCurve::buildCurve()
                                                             true,
                                                             getName());       
         this->m_curve = tmp;          
-    }
-    m_curveUpToDate = true;
+    }   
     setObjectIsUpToDateWithProperties(true);
 }
 

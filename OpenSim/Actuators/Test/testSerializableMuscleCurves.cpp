@@ -595,8 +595,8 @@ void testTendonForceLengthCurve()
         //====================================================================
         cout <<"2. Testing API constructor" << endl;
         TendonForceLengthCurve fseCurve3(0.10,50,0.75,"testMuscle");
-        double falVal  = fseCurve3.calcValue(0.02);
-        double dfalVal = fseCurve3.calcDerivative(0.02,1);
+        double fseVal  = fseCurve3.calcValue(1.0999);
+        double dfseVal = fseCurve3.calcDerivative(1.0999,1);
         cout << "Passed: Testing API constructor" << endl;
 
         //====================================================================
@@ -614,19 +614,26 @@ void testTendonForceLengthCurve()
 
         //====================================================================
         double p1 = 0.04;
-        double p2 = 42;
-        double p3 = 0.75;
+        double p2 = 42.796793488158812; //stiffness of fitted exponental curve
 
-        printf("4. Testing default property values: \n\t%f,\n\t%f,\n\t%f\n"
-            ,p1,p2,p3);
+        double p3 = 0.83401209498572515;//curviness that makes the Bezier curve
+                                        //have the same area as the fitted
+                                        //exponental curve.
+
+        printf("4. Testing default property values: \n\t%f\n\t%f\n\t%f\n"
+                ,p1,p2,p3);
+
         TendonForceLengthCurve fseCurve4;
-            SimTK_TEST(fseCurve4.getStrainAtOneNormForce()      == p1);
-            SimTK_TEST(fseCurve4.getStiffnessAtOneNormForce()   == p2);
-            SimTK_TEST(fseCurve4.getCurviness()                 == p3);
+            double tol = 1e-6;
+            SimTK_TEST_EQ_TOL(fseCurve4.getStrainAtOneNormForce(),p1,tol);
+            SimTK_TEST_EQ_TOL(fseCurve4.getStiffnessAtOneNormForceInUse(),p2,tol);
+            SimTK_TEST_EQ_TOL(fseCurve4.getCurvinessInUse(),p3,tol);
+
         cout << "Passed" << endl;
         //====================================================================
         cout <<"5. Testing default curve values at end points,"
-               " and services" << endl;
+                "and services."<<endl;
+        cout <<"This also tests the easy-to-use constructor" << endl;
         fseCurve4.setName("fseCurve");
 
         cout <<"    a. calcValue" << endl;
@@ -634,7 +641,7 @@ void testTendonForceLengthCurve()
             double l1 = l0 + p1;
             double dydx = p2;
 
-            double tol = sqrt(SimTK::Eps);
+            tol = sqrt(SimTK::Eps);
 
             double value = fseCurve4.calcValue(l0);
                 SimTK_TEST_EQ_TOL(value, 0, tol);
@@ -651,6 +658,14 @@ void testTendonForceLengthCurve()
             dvalue= fseCurve4.calcDerivative(l1,2);
                 SimTK_TEST_EQ_TOL(dvalue, 0, tol);
 
+        cout <<"    c. calcIntegral at e0" << endl;
+        value = fseCurve4.calcIntegral(1 + fseCurve4.getStrainAtOneNormForce());
+        double trueValue = 1.266816749781739e-002;
+        double relError = abs(value-trueValue)/trueValue;
+        SimTK_TEST_EQ_TOL(relError, 0, 1e-4); 
+        //An error of 1e-4 is used due to the way the integral is approximated 
+        //using a spline fit.
+
         cout <<"    c. getCurveDomain" << endl;
             SimTK::Vec2 tmp = fseCurve4.getCurveDomain();
             SimTK_TEST(tmp(0) == l0 &&
@@ -662,6 +677,9 @@ void testTendonForceLengthCurve()
             std::string fname = fseCurve4.getName();
             fname.append(".csv");
             remove(fname.c_str());
+
+        
+
 
        cout << "Passed: Testing Services for connectivity" << endl;                            
 
