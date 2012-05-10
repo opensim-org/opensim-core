@@ -363,9 +363,14 @@ public:
     objects to avoid expensive reinitialization if it is unnecessary (that is,
     whenever this %Object hands out writable access to a property). Note
     that use of this flag is entirely optional; most %Object classes don't
-    have any expensive initialization to worry about. **/
-    void setObjectIsUpToDateWithProperties(bool isUpToDate)
-    {   _objectIsUpToDate = isUpToDate; }
+    have any expensive initialization to worry about. 
+    
+    This flag is cleared automatically but if you want to clear it manually
+    for testing or debugging, see clearObjectIsUpToDateWithProperties(). **/
+    void setObjectIsUpToDateWithProperties()
+    {   _objectIsUpToDate = true; }
+    /** Returns \c true if any property's value has changed since the last time
+    setObjectIsUpToDateWithProperties() was called. **/
     bool isObjectUpToDateWithProperties() const {return _objectIsUpToDate;}
 
     /** Dump formatted property information to a given output stream, useful
@@ -578,6 +583,14 @@ public:
 	{
 		return _serializeAllDefaults;
 	}
+
+    /** For testing or debugging purposes, manually clear the "object is up to 
+    date with respect to properties" flag. This is normally done automatically
+    when a property is modified. Setting the flag is always done manually,
+    however, see setObjectIsUpToDateWithProperties(). **/    
+    void clearObjectIsUpToDateWithProperties()
+    {   _objectIsUpToDate = false; }
+
     /** Returns true if the passed-in string is "Object"; each %Object-derived
     class defines a method of this name for its own class name. **/
 	static bool isKindOf(const char *type) 
