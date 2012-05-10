@@ -33,7 +33,7 @@ SET(NameSpace "" CACHE STRING
 # This will be initialized to the environment variable of the same name
 # if it is set, otherwise it will be empty.
 SET(SimTK_INSTALL_DIR $ENV{SimTK_INSTALL_DIR} CACHE
-  STRING "Where to look for the Simbody libraries; you can change this.")
+  PATH "Where to look for the Simbody libraries; you can change this.")
 
 #
 # These are the names of all the libraries we depend on. These are
