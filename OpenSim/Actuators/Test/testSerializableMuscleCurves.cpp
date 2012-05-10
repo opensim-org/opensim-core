@@ -666,12 +666,12 @@ void testTendonForceLengthCurve()
         //An error of 1e-4 is used due to the way the integral is approximated 
         //using a spline fit.
 
-        cout <<"    c. getCurveDomain" << endl;
+        cout <<"    d. getCurveDomain" << endl;
             SimTK::Vec2 tmp = fseCurve4.getCurveDomain();
             SimTK_TEST(tmp(0) == l0 &&
                        tmp(1) == l1);
 
-        cout <<"    d. printMuscleCurveToCSVFile" << endl;            
+        cout <<"    e. printMuscleCurveToCSVFile" << endl;            
 
             fseCurve4.printMuscleCurveToCSVFile("");
             std::string fname = fseCurve4.getName();
@@ -768,17 +768,17 @@ void testFiberForceLengthCurve()
 
         //====================================================================
         double p1 = 0.6;
-        double p2 = 8.4;
-        double p3 = 0.65;
+        double p2 = 8.3898637908858689;
+        double p3 = 0.63753341725162227;
 
         printf("4. Testing default property values: \n\t%f,\n\t%f,\n\t%f\n",
             p1,p2,p3);      
         FiberForceLengthCurve fpeCurve4;
         fpeCurve4.setName("fpeCurve");
 
-        SimTK_TEST(fpeCurve4.getStrainAtOneNormForce()      == p1);
-        SimTK_TEST(fpeCurve4.getStiffnessAtOneNormForce()   == p2);
-        SimTK_TEST(fpeCurve4.getCurviness()                 == p3);
+        SimTK_TEST(fpeCurve4.getStrainAtOneNormForce()          == p1);
+        SimTK_TEST(fpeCurve4.getStiffnessAtOneNormForceInUse()  == p2);
+        SimTK_TEST(fpeCurve4.getCurvinessInUse()                == p3);
 
         fpeCurve4.setName("fpeCurve");
         cout << "Passed" << endl;
@@ -809,12 +809,19 @@ void testFiberForceLengthCurve()
             dvalue= fpeCurve4.calcDerivative(l1,2);
             SimTK_TEST_EQ_TOL(dvalue, 0, tol);
 
-        cout <<"    c. getCurveDomain" << endl;
+        cout <<"    c. calcIntegral at e0" << endl;
+                value = fpeCurve4.calcIntegral(1 
+                    + fpeCurve4.getStrainAtOneNormForce());
+                double trueValue = 0.11592980705621746;
+                double relError = abs(value-trueValue)/trueValue;
+                SimTK_TEST_EQ_TOL(relError, 0, 1e-4); 
+
+        cout <<"    d. getCurveDomain" << endl;
             SimTK::Vec2 tmp = fpeCurve4.getCurveDomain();
             SimTK_TEST(tmp(0) == l0 &&
                        tmp(1) == l1);
 
-        cout <<"    d. printMuscleCurveToCSVFile" << endl;            
+        cout <<"    e. printMuscleCurveToCSVFile" << endl;            
 
             fpeCurve4.printMuscleCurveToCSVFile("");
             std::string fname = fpeCurve4.getName();

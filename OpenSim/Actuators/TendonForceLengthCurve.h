@@ -44,33 +44,49 @@ namespace OpenSim {
 
 /**
  This class serves as a serializable TendonForceLengthCurve, for use in 
- muscle models. The default constructor offers user control over the strain
- the tendon undergoes at 1 unit load (e0), its stiffness at a strain of e0, 
- and the shape of the tendon curve (its `curviness'). All parameters but the
- strain of the tendon at 1 unit load (e0) are optional.
+ muscle models. The user has control over the strain the tendon undergoes at 
+ 1 unit load (e0), its stiffness at a strain of e0, and the shape of the tendon 
+ curve (its `curviness') using the following parameters: 
  
+  <B>Manditory Properties</B>
+ \li strainAtOneNormForce
+
+ <B>Optional Properties</B>
+ \li stiffnessAtOneNormForce
+ \li curviness
+
+  All parameters but the strain of the tendon at 1 unit load (e0) are optional. 
+ Note that both optional parameters must either be left blank, or filled in. 
+ Filling in one optional parameter but not the other will throw an exception
+ when the curve is built.
+
+  The shape of the curve can be varied from a close approximation of a line to a
+  sharply bent curve using the optional parameters. 
+
  \image html fig_TendonForceLengthCurve.png
  
  If the optional parameters are not provided, the tendon force length curve is
- fitted to a linearly extrapolated exponential curve (Thelen 2003) so the
+ fitted to a linearly extrapolated exponential curve (Thelen 2003) so that the
+ following mathematical properties match between the two curves:
  
- \li The strain (e0) of the two curves under 1 unit force of tension is identical
- \li The slope of the curve at a strain of e0 of the two curves is identical 
+ \li The strain (e0) of the two curves under 1 unit force of tension
+ \li The slope of the curve at a strain of e0 of the two curves 
  \li The area enclosed by the curves between a strain of 0 and e0 of the two
      curves match with a small relative error.
 
+    An example of a fitted curve can be seen in the figure below.
+
  \image html fig_TendonForceLengthCurve_Fitted.png
 
- For more details see functions:
+ For more details on the fitting process see functions:
 
  \li TendonForceLengthCurve(double strainAtOneNormForce,const std::string& muscleName)
  \li getStiffnessAtOneNormForceInUse()
  \li getCurvinessInUse()
 
  <B> References </B>
-    Thelen (2003). Adjustment of Muscle
-    Mechanics Model Paramters to Simulate Dynamic Contractions in Older
-    Adults. ASME J Biomech Eng (125).
+    Thelen (2003). Adjustment of Muscle Mechanics Model Paramters to Simulate 
+    Dynamic Contractions in Older Adults. ASME J Biomech Eng (125).
 
  <B>Computational Cost Details</B>
     All computational costs assume the following operation costs:
@@ -304,6 +320,13 @@ public:
      double getStiffnessAtOneNormForce();
      
      /**
+        @returns The normalized stiffness (or slope) of the tendon curve 
+                when the tendon is strained by strainAtOneNormForce
+                under a load of 1 normalized unit of force.
+
+                If the optional parameter stiffnessAtOneNormForce has beens set,
+                its value is returned.
+        
         If the optional parameter 'stiffnessAtOneNormForce' has not been set, 
         then this function will calculate the stiffness of the curve so that 
         it matches klin in Eqn. 5 in Thelen 2003. Note that the solution for 
@@ -402,7 +425,7 @@ public:
                 very close to a straight line segment while a value of 1 will 
                 create a curve that smoothly fills the corner formed by the 
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
-                x axis as shown in the figure.
+                x axis as shown in the figure in the class description.
 
                 This is an optional parameter, and so, if this parameter is 
                 empty, a call to this function will throw an exception. If
@@ -413,6 +436,16 @@ public:
      double getCurviness();
 
      /**
+        @returns A dimensionless parameter between [0-1] that controls how 
+                the curve is drawn: 0 will create a curve that is
+                very close to a straight line segment while a value of 1 will 
+                create a curve that smoothly fills the corner formed by the 
+                linear extrapolation of 'stiffnessAtOneNormForce' and the
+                x axis as shown in the figure in the class description.
+        
+        If the optional parameter 'curviness' has been set, its value is 
+        returned.
+
         If the optional parameter 'curviness' has not been set, 
         then this function will calculate the curviness parameter so that the
         curve has the same area (equivalent to the same normalized strain 
@@ -530,8 +563,10 @@ public:
     @return Computes the normalized area under the curve. For this curve, 
             this quantity corresponds to the normalized potential energy stored 
             in the tendon - simply multiply this quantity by the number of 
-            Newtons per normalized force unit to obtain the potental energy
-            stored in the tendon in units of Joules.
+            NormForce*NormLength (where NormForce corresponds to the number of
+            Newtons that 1 normalized force corresponds to, and NormLength 
+            is the length in meters that a length of 1 corresponds to) to obtain 
+            the potental energy stored in the tendon in units of Joules.
 
     <B>Computational Costs</B>       
     \verbatim
@@ -647,12 +682,12 @@ private:
                     the properties of the extrapolated exponental curve that is 
                     used to construct the reference tendon defined in 
                     Thelen 2003. The fields of the vector are as follows:
-
-                    [0]: etoe
-                    [1]: Ftoe
-                    [2]: ktoe
-                    [3]: klin
-                    [4]: normalized potental energy from a strain of 0 to e0
+                    [0]: e0
+                    [1]: etoe
+                    [2]: Ftoe
+                    [3]: ktoe
+                    [4]: klin
+                    [5]: normalized potental energy from a strain of 0 to e0
                 
     <B>Computational Costs</B>       
     \verbatim
@@ -671,8 +706,8 @@ private:
     void constructProperties();
 
   /**
-        This function will take all of the current parameter values and use 
-        them to build a curve.
+        This function will take all of the current property values, and if they
+        have changed since the last time the curve was built, and build a curve.
 
         <B>Computational Costs</B>
         \verbatim 
@@ -698,13 +733,15 @@ private:
                                 std::string& name) const;
 
   MuscleCurveFunction   m_curve;
-  double                m_stiffnessAtOneNormForceInUse; 
-                        //internal record, because this is
-                        //expensive to re-compute
-  double                m_curvinessInUse; 
-                        //internal record, because this is
-                        //*really* expensive to re-compute
-  SimTK::Vector         m_TendonReference;
+
+  //[0] the curviness in use
+  //[1] the strain for which the curviness was computed
+  SimTK::Vec2   m_stiffnessAtOneNormForceInUse; 
+  //[0] the curviness in use
+  //[1] the strain for which the curviness was computed
+  SimTK::Vec2   m_curvinessInUse; 
+
+  SimTK::Vector   m_TendonReference;
 };
 
 }

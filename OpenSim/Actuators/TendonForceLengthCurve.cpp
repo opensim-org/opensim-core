@@ -25,6 +25,13 @@ using namespace OpenSim;
 using namespace SimTK;
 using namespace std;
 
+static int RefTendon_e0_Idx     = 0;
+static int RefTendon_etoe_Idx   = 1;
+static int RefTendon_Ftoe_Idx   = 2;
+static int RefTendon_ktoe_Idx   = 3;
+static int RefTendon_klin_Idx   = 4;
+static int RefTendon_normPE_Idx = 5;
+
 //=============================================================================
 // CONSTRUCTION, COPY CONSTRUCTION, ASSIGNMENT
 //=============================================================================
@@ -68,7 +75,7 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
 
 void TendonForceLengthCurve::setNull()
 {
-     setObjectIsUpToDateWithProperties(false);
+     //setObjectIsUpToDateWithProperties(false);
 }
 
 void TendonForceLengthCurve::constructProperties()
@@ -102,7 +109,7 @@ void TendonForceLengthCurve::buildCurve()
 SimTK::Vector TendonForceLengthCurve::
     calcReferenceTendonCurveProperties(double strainAtOneNormForce)
 {
-    SimTK::Vector tdnProp(5);
+    SimTK::Vector tdnProp(6);
 
     //Calculate the stiffness given the strain at 1 norm force.
     //Use the extrapolated exponential tendon curve documented in
@@ -127,20 +134,21 @@ SimTK::Vector TendonForceLengthCurve::
         //1.266816749781739e-002 
     
         //Compute the potental energy stored in the toe region of the exponental
-        double peToe = (FToe/(expkToe-1))*( ((eToe/kToe)*exp(kToe) - eToe) 
+        double peNormToe = (FToe/(expkToe-1))*( ((eToe/kToe)*exp(kToe) - eToe) 
                                           - ((eToe/kToe)*exp(0.0) -  0.0));
         //Compute the potential energy stored in the linear region of the
         //curve between the toe region and e0
-        double peLin = (kLin*(0.5*e0*e0       - eToe*e0   ) + FToe*e0)
+        double peNormLin = (kLin*(0.5*e0*e0       - eToe*e0   ) + FToe*e0)
                       -(kLin*(0.5*eToe*eToe - eToe*eToe) + FToe*eToe); 
         //Sum the total
-        double peTotal = peToe + peLin;
-    
-    tdnProp[0] = eToe;
-    tdnProp[1] = FToe; 
-    tdnProp[2] = kToe;
-    tdnProp[3] = kLin;
-    tdnProp[4] = peTotal;
+        double peNormTotal = peNormToe + peNormLin;
+         
+        tdnProp[RefTendon_e0_Idx]   = strainAtOneNormForce;
+        tdnProp[RefTendon_etoe_Idx] = eToe;
+        tdnProp[RefTendon_Ftoe_Idx] = FToe; 
+        tdnProp[RefTendon_ktoe_Idx] = kToe;
+        tdnProp[RefTendon_klin_Idx] = kLin;
+        tdnProp[RefTendon_normPE_Idx] = peNormTotal;
 
     return tdnProp;
 }
@@ -184,19 +192,33 @@ double TendonForceLengthCurve::getStiffnessAtOneNormForce()
 double TendonForceLengthCurve::getStiffnessAtOneNormForceInUse()
 {
     
-    if(getProperty_stiffness_at_one_norm_force().empty()){
+    if(getProperty_stiffness_at_one_norm_force().empty() ){
+        //This error condition is checked to make sure that the reference
+        //tendon is being used to populate all optional properties or none
+        //of them. Anything different would result in an inconsistency in
+        //the computed curve - it wouldn't reflect the reference curve.
+        SimTK_ERRCHK1_ALWAYS(getProperty_curviness().empty(),
+            "TendonForceLengthCurve::getStiffnessAtOneNormForceInUse()",
+            "%s: Optional parameters stiffness and curviness must both"
+            "be set, or both remain empty. You have set one parameter"
+            "and left the other blank.",
+            getName().c_str());              
 
-       //Have we computed this already?
-        if(isObjectUpToDateWithProperties() == false){            
+        if(isObjectUpToDateWithProperties() == false &&
+            m_stiffnessAtOneNormForceInUse[1] != getStrainAtOneNormForce())
+        {            
             SimTK::Vector tdnProp = getReferenceTendon();
-            m_stiffnessAtOneNormForceInUse = tdnProp[3];   
+            m_stiffnessAtOneNormForceInUse[0] = tdnProp[RefTendon_klin_Idx];   
+            m_stiffnessAtOneNormForceInUse[1] = tdnProp[RefTendon_e0_Idx];
         }
 
-    }else{
-        m_stiffnessAtOneNormForceInUse 
+    }else if(getProperty_stiffness_at_one_norm_force().empty() == false){
+        m_stiffnessAtOneNormForceInUse[0] 
             = getProperty_stiffness_at_one_norm_force();
+        m_stiffnessAtOneNormForceInUse[1] = SimTK::NaN;
+
     }
-    return m_stiffnessAtOneNormForceInUse;
+    return m_stiffnessAtOneNormForceInUse[0];
 }
 
 double TendonForceLengthCurve::getCurviness()
@@ -207,16 +229,31 @@ double TendonForceLengthCurve::getCurviness()
 double TendonForceLengthCurve::getCurvinessInUse()
 {
     if(getProperty_curviness().empty()){
+        
 
+        //This error condition is checked to make sure that the reference
+        //tendon is being used to populate all optional properties or none
+        //of them. Anything different would result in an inconsistency in
+        //the computed curve - it wouldn't reflect the reference curve.
+
+        SimTK_ERRCHK1_ALWAYS(getProperty_stiffness_at_one_norm_force().empty(),
+            "TendonForceLengthCurve::getCurvinessInUse()",
+            "%s: Optional parameters stiffness and curviness must both"
+            "be set, or both remain empty. You have set one parameter"
+            "and left the other blank.",
+            getName().c_str());       
+        
        //Have we computed this already?
-        if(isObjectUpToDateWithProperties() == false){
-            double e0 = getProperty_strain_at_one_norm_force();
+        if(isObjectUpToDateWithProperties() == false &&
+            m_curvinessInUse[1] != getStrainAtOneNormForce()){
+            
             SimTK::Vector tdnProp = getReferenceTendon();
-            double etoe     = tdnProp[0];
-            double Ftoe     = tdnProp[1];
-            double ktoe     = tdnProp[2];
-            double klin     = tdnProp[3];
-            double peNorm   = tdnProp[4];
+            double e0       = tdnProp[RefTendon_e0_Idx];
+            double etoe     = tdnProp[RefTendon_etoe_Idx];
+            double Ftoe     = tdnProp[RefTendon_Ftoe_Idx];
+            double ktoe     = tdnProp[RefTendon_ktoe_Idx];
+            double klin     = tdnProp[RefTendon_klin_Idx];
+            double peNorm   = tdnProp[RefTendon_normPE_Idx];
 
             //Use the bisection method to solve for the curviness parameter 
             //value that results in a tendon curve that has the same normalized
@@ -227,7 +264,7 @@ double TendonForceLengthCurve::getCurvinessInUse()
             //double c_opt = fitToReferenceTendon(e0, klin,peNorm,tol,name);
 
             double c = 0.5;
-            double prevC = 0.5;
+            double prevC = 0;
             double step = 0.25;
             
             MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
@@ -287,11 +324,12 @@ double TendonForceLengthCurve::getCurvinessInUse()
                     localIter++;
                }
 
+                //0. Check if we can numerically calculate a Newton step
                 //1. Compute a Newton step 
                 //2. If the Newton step is smaller than the current step, take it
                 //3. If the Newton step results in improvement, update.
-
-                //if(flag_improvement == false){
+                    
+                if(abs(err) < abs(errStart)){
                     double dErr = err-prevErr;
                     double dC   = c-prevC; 
                     double dErrdC= dErr/dC;
@@ -316,33 +354,42 @@ double TendonForceLengthCurve::getCurvinessInUse()
                             flag_improvement = true;
                             flag_Newton = true;
                             step = deltaC;
+
+                            if(prevErr*err < 0)
+                                step = step*-1;
+                            
+
                       }
                         localIter++;
                     }
-                //}
+                }
 
                 evalIter += localIter;
                 step = step/2.0;
                 iter++;
-                //printf("Bisection Iter %i ,err: %f, eval %i\n",
+                //printf("Root Finding Iter %i ,err: %f, eval %i\n",
                 //    iter,err,evalIter);
             }
 
-            SimTK_ERRCHK1_ALWAYS(err < errStart && errStart > (tol+step),
+            SimTK_ERRCHK1_ALWAYS(err < tol && errStart > (tol+step),
                 "TendonForceLengthCurve::getCurvinessInUse()",
                 "%s: Not able to fit a tendon curve to the reference"
                 "tendon curve",getName().c_str());
 
-            m_curvinessInUse = c;
+            m_curvinessInUse[0] = c;
+            m_curvinessInUse[1] = tdnProp[RefTendon_e0_Idx];
         }
 
 
 
     }else{
-        m_curvinessInUse 
-            = getProperty_curviness();
+            m_curvinessInUse[0] = getCurviness();
+            m_curvinessInUse[1] = SimTK::NaN; 
     }
-    return m_curvinessInUse;
+        //NaN is used because in the context where the optional parameter has
+        //been set, it doesn't make sense to have a real value here.
+    
+    return m_curvinessInUse[0];
 }
 
 
@@ -352,7 +399,7 @@ void TendonForceLengthCurve::
     if(aStrainAtOneNormForce != getStrainAtOneNormForce() )
     {        
         setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);
-        setObjectIsUpToDateWithProperties(false);
+        //setObjectIsUpToDateWithProperties(false);
     }
 }
 
@@ -362,7 +409,7 @@ void TendonForceLengthCurve::
     //if(aStiffnessAtOneNormForce != getStiffnessAtOneNormForce() )
     //{
         setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-        setObjectIsUpToDateWithProperties(false);
+        //setObjectIsUpToDateWithProperties(false);
     //}
 }
 
@@ -371,17 +418,22 @@ void TendonForceLengthCurve::setCurviness(double aCurviness)
     //if(aCurviness != getCurviness() )
     //{
         setProperty_curviness(aCurviness);
-        setObjectIsUpToDateWithProperties(false);
+        //setObjectIsUpToDateWithProperties(false);
     //}
 }
 
 
 SimTK::Vector TendonForceLengthCurve::getReferenceTendon()
 {
-    if(m_TendonReference.size() == 0){
+
+    if(m_TendonReference.size()==0){
         double e0 = getStrainAtOneNormForce();
         m_TendonReference = calcReferenceTendonCurveProperties(e0);
+    }else if(m_TendonReference[RefTendon_e0_Idx] != getStrainAtOneNormForce()){
+        double e0 = getStrainAtOneNormForce();
+        m_TendonReference = calcReferenceTendonCurveProperties(e0);    
     }
+
     return m_TendonReference;
 }
 

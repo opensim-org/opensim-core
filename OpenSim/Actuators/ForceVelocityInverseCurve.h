@@ -88,8 +88,8 @@ public:
 // PUBLIC METHODS
 //==============================================================================
 
-    /** Default constructor creates an object with a default name that doesn't
-    yet define a curve. **/
+    /** Default constructor creates an curve with the default property values,
+     and assigns it a default name **/
     ForceVelocityInverseCurve();
 
     // Uses default (compiler-generated) destructor, copy constructor, copy 
@@ -404,8 +404,9 @@ private:
     void constructProperties();
 
     /**
-        This function will take all of the current parameter values and use 
-        them to build a curve.
+        This function will take all of the current property values, and if they
+        have changed since the last time the curve was built, and build a curve.
+
 
         <B>Computational Costs</B>
         \verbatim 
