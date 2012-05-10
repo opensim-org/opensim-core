@@ -27,7 +27,7 @@
 #include <OpenSim/Simulation/Model/ModelComponent.h>
 #include <OpenSim/Common/MuscleCurveFunctionFactory.h>
 #include <OpenSim/Common/MuscleCurveFunction.h>
-#include <Simbody/internal/common.h>
+#include <simbody/internal/common.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
