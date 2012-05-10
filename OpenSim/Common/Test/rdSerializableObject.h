@@ -32,7 +32,6 @@
 * Author: Frank C. Anderson 
 */
 
-
 // INCLUDES
 #include <OpenSim/Common/XMLDocument.h>
 #include <OpenSim/Common/Object.h>
@@ -42,7 +41,6 @@
 #include <OpenSim/Common/PropertyDblVec.h>
 #include <OpenSim/Common/NaturalCubicSpline.h>
 #include "rdSerializableObject2.h"
-//extern template class OSIMCOMMON_API Array<double>;
 
 //=============================================================================
 //=============================================================================
@@ -93,7 +91,7 @@ public:
 	OpenSim_DECLARE_LIST_PROPERTY(Test_ObjArray_2, Object,
 		"Comment on Object Array");
 	// Transform
-    OpenSim_DECLARE_PROPERTY(MyTransformProperty, SimTK::Transform,
+    OpenSim_DECLARE_PROPERTY(MyTransformProperty_2, SimTK::Transform,
         "Comment on Transform");
     // Vec3
 	OpenSim_DECLARE_PROPERTY(Test_DblVec3_2, SimTK::Vec3,
@@ -121,13 +119,18 @@ public:
     :   Object(source)
 	{
 		setNull();
-		setupSerializedMembers(false);
+		setupSerializedMembers(&source);
 		*this = source;
 	}
 
 private:
 	void setNull() {}
-	void setupSerializedMembers(bool constructNew=true){
+    // If sourcep is set we are doing a copy construction in which case old
+    // and new properties must be handled differently. The old ones must be
+    // recreated from scratch; the new ones are copied automatically in the
+    // base class but the local index must be reset here using copyProperty_()
+    // methods.
+	void setupSerializedMembers(const rdSerializableObject* sourcep=0){
 		int i;
 
 		// Bool
@@ -231,9 +234,28 @@ private:
 		pNamelessObj.setComment("Comment on deprecated nameless Object");
 		_propertySet.append(pNamelessObj.clone());
 
-        if (!constructNew)
+        if (sourcep) {
+            // Just reset local indices for copy construction of new props.
+            const rdSerializableObject& source = *sourcep;
+            copyProperty_Test_Bool_2(source);
+            copyProperty_Test_Int_2(source);
+            copyProperty_Test_Infinity_2(source);
+            copyProperty_Test_MinusInfinity_2(source);
+            copyProperty_Test_Dbl_2(source);
+            copyProperty_Test_NaN_2(source);
+            copyProperty_Test_Str_2(source);
+            copyProperty_Test_Obj_2(source);
+            copyProperty_Test_IntArray_2(source);
+            copyProperty_Test_DblArray_2(source);
+            copyProperty_Test_StrArray_2(source);
+            copyProperty_Test_ObjArray_2(source);
+            copyProperty_MyTransformProperty_2(source);
+            copyProperty_Test_DblVec3_2(source);
+            copyProperty_rdSerializableObject3(source);
             return;
+        }
 
+        // This is a first-time construction.
         constructProperty_Test_Bool_2(true);
         constructProperty_Test_Int_2(0);
         constructProperty_Test_Infinity_2(SimTK::Infinity);
@@ -242,66 +264,21 @@ private:
         constructProperty_Test_NaN_2(SimTK::NaN);
         constructProperty_Test_Str_2("ABC");
 
-		//// Bool
-		//addProperty<bool>("Test_Bool_2",
-		//	"Comment on a boolean",
-		//	true);
-
-		//// Int
-		//addProperty<int>("Test_Int_2",
-		//	"Comment on a int",
-		//	0);
-
-		//// Dbl
-		//addProperty<double>("Test_Infinity_2",
-		//	"Comment on a double infinity",
-		//	SimTK::Infinity);
-
-		//// Dbl
-		//addProperty<double>("Test_MinusInfinity_2",
-		//	"Comment on a double minus infinity",
-		//	-SimTK::Infinity);
-
-		//// Dbl
-		//addProperty<double>("Test_Dbl_2",
-		//	"Comment on a double",
-		//	1.23456);
-
-		//// Dbl
-		//addProperty<double>("Test_NaN_2",
-		//	"Comment on a double not a number",
-		//	SimTK::NaN);
-
-		//// Str
-		//addProperty<string>("Test_Str_2",
-		//	"Comment on a string",
-		//	"ABC");
-		//	
-
 		// Obj
 		rdSerializableObject3 obj2;
 		obj2.setName("Test_Obj_2");
-		//addProperty<rdSerializableObject3>("Test_Obj_2",
-		//	"Comment on an Object",
-		//	obj2);
         constructProperty_Test_Obj_2(obj2);
 
 		// IntArray
 		Array<int> arrayInt2(2);
 		arrayInt2.setSize(4);
 		for(i=0;i<arrayInt.getSize();i++) arrayInt2[i] = i;
-		//addListProperty<int>("Test_IntArray_2",
-		//	"Comment on an int-array",
-		//	arrayInt2);
         constructProperty_Test_IntArray_2(arrayInt2);
 
 		// DblArray
 		Array<double> arrayDbl2(0.0);
 		arrayDbl2.setSize(4);
 		for(i=0;i<arrayDbl.getSize();i++) arrayDbl2[i] = (double)i;
-		//addListProperty<double>("Test_DblArray_2",
-		//	"Comment on a double-array",
-		//	arrayDbl2);
         constructProperty_Test_DblArray_2(arrayDbl2);
 
 		// StrArray
@@ -311,9 +288,6 @@ private:
 		arrayStr2[1] = "def";
 		arrayStr2[2] = "ghi";
 		arrayStr2[3] = "jkl";
-		//addListProperty<string>("Test_StrArray_2",
-		//	"Comment on a string-array",
-		//	arrayStr2);
         constructProperty_Test_StrArray_2(arrayStr2);
 
 		// ObjArray
@@ -325,30 +299,18 @@ private:
 		arrayObj2.append(object2.clone());
 		object2.setName("Obj3");
 		arrayObj2.append(object2.clone());
-		//addListProperty<Object>("Test_ObjArray_2",
-		//	"Comment on Object Array",
-		//	arrayObj2);
         constructProperty_Test_ObjArray_2(arrayObj2);
 
 		// Transform
 		SimTK::Transform xform2;
 		xform2.updP() = SimTK::Vec3(3., 2., 1.);
 		xform2.updR().setRotationToBodyFixedXYZ(SimTK::Vec3(2, 1, 0.5));
-  //      addProperty<SimTK::Transform>("MyTransformProperty",
-  //          "Comment on Transform",
-  //          xform2);
-        constructProperty_MyTransformProperty(xform2);
+        constructProperty_MyTransformProperty_2(xform2);
 
-  //      // Vec3
-		//addProperty<SimTK::Vec3>("Test_DblVec3_2",
-		//	"Point at 3,5,7",
-		//	SimTK::Vec3(3., 5., 7.));
+        // Vec3
         constructProperty_Test_DblVec3_2(SimTK::Vec3(3., 5., 7.));
 
-		//// Nameless Obj
-		//addProperty<rdSerializableObject3>("",
-		//	"Comment on nameless Object",
-		//	obj2);
+		// Nameless Obj
         constructProperty_rdSerializableObject3(obj2);
 	}
 	//--------------------------------------------------------------------------

@@ -412,6 +412,7 @@ public:
             throw OpenSim::Exception(
                 "(T&)Property<T> conversion: property " + getName()
                 + "is empty so there is no value to return.");
+        setValueIsDefault(false);
         return updValueVirtual(0);
     }
 

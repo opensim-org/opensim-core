@@ -123,6 +123,10 @@ int main()
 		rdSerializableObject obj1;
 		obj1.setName("TestObject");
 		obj1.print("obj1.xml");
+        rdSerializableObject obj1copy(obj1);
+        obj1copy.setAllPropertiesUseDefault(true);
+        obj1copy.setProperty_Test_Bool_2(false);
+        obj1copy.print("obj1copy.xml");
 
         //Xml xx("obj1.xml");
         //cerr << xx;

@@ -751,10 +751,10 @@ UpdateXMLNodeTransform(const Property_Deprecated*   aProperty,
 	// Get 6 raw numbers into an array and then use those to update the node
 	OpenSim::Array<double> arr(0, 6);
 	((PropertyTransform *)aProperty)->getRotationsAndTranslationsAsArray6(&arr[0]);
-	//if(!aProperty->getValueIsDefault()||Object::getSerializeAllDefaults()) {
+	if(!aProperty->getValueIsDefault()||Object::getSerializeAllDefaults()) {
 		SimTK::Xml::Element elt(aProperty->getName(), arr);
 		dParentNode.insertNodeAfter(dParentNode.node_end(), elt);
-	//} 
+	} 
 }
 
 
@@ -1089,6 +1089,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 
 
 	// LOOP THROUGH PROPERTIES
+    bool wroteAnyProperties = false;
 	for(int i=0; i < _propertyTable.getNumProperties(); ++i) {
 		AbstractProperty& prop = _propertyTable.updAbstractPropertyByIndex(i);
 	    
@@ -1101,6 +1102,7 @@ updateXMLNode(SimTK::Xml::Element& aParent)
                      << prop.getName() << endl;
 
             prop.writeToXMLParentElement(myObjectElement);
+            wroteAnyProperties = true;
         }
     }
 
@@ -1108,19 +1110,22 @@ updateXMLNode(SimTK::Xml::Element& aParent)
     // TODO: get rid of this
 	for(int i=0;i<_propertySet.getSize();i++) {
 
-		//_document->writeToString(elemAsString);
+		Property_Deprecated *prop = _propertySet.get(i);
+        if (prop->getValueIsDefault() && !Object::getSerializeAllDefaults())
+            continue;
 
-		Property_Deprecated *property = _propertySet.get(i);
+        wroteAnyProperties = true;
 
 		// Add comment if any
-		if (!property->getComment().empty()) {
-			myObjectElement.insertNodeAfter(myObjectElement.node_end(), SimTK::Xml::Comment(property->getComment()));
-		}
+		if (!prop->getComment().empty())
+			myObjectElement.insertNodeAfter(myObjectElement.node_end(), 
+                SimTK::Xml::Comment(prop->getComment()));
+
 		// TYPE
-		Property_Deprecated::PropertyType type = property->getType();
+		Property_Deprecated::PropertyType type = prop->getType();
 
 		// NAME
-		string name = property->getName();
+		string name = prop->getName();
 
 		string stringValue="";
 		// VALUE
@@ -1128,62 +1133,62 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 
 		// Bool
 		case(Property_Deprecated::Bool) :
-			UpdateXMLNodeSimpleProperty<bool>(property, myObjectElement, name);
+			UpdateXMLNodeSimpleProperty<bool>(prop, myObjectElement, name);
 			break;
 		// Int
 		case(Property_Deprecated::Int) :
-			UpdateXMLNodeSimpleProperty<int>(property, myObjectElement, name);
+			UpdateXMLNodeSimpleProperty<int>(prop, myObjectElement, name);
 			break;
 		// Dbl
 		case(Property_Deprecated::Dbl) :
-			if (SimTK::isFinite(property->getValueDbl()))
-				UpdateXMLNodeSimpleProperty<double>(property, myObjectElement, name);
+			if (SimTK::isFinite(prop->getValueDbl()))
+				UpdateXMLNodeSimpleProperty<double>(prop, myObjectElement, name);
 			else {
-				if (property->getValueDbl() == SimTK::Infinity)
+				if (prop->getValueDbl() == SimTK::Infinity)
 					stringValue="infinity";
-				else if (property->getValueDbl() == -SimTK::Infinity)
+				else if (prop->getValueDbl() == -SimTK::Infinity)
 					stringValue="-infinity";
-				else if (SimTK::isNaN(property->getValueDbl()))
+				else if (SimTK::isNaN(prop->getValueDbl()))
 					stringValue="NaN";
-				if(!property->getValueIsDefault()) {
-					SimTK::Xml::Element elt(property->getName(), stringValue);
+				if(!prop->getValueIsDefault()) {
+					SimTK::Xml::Element elt(prop->getName(), stringValue);
 					myObjectElement.insertNodeAfter(myObjectElement.node_end(), elt);
 				}
 			} 
 			break;
 		// Str
 		case(Property_Deprecated::Str) :
-			UpdateXMLNodeSimpleProperty<string>(property, myObjectElement, name);
+			UpdateXMLNodeSimpleProperty<string>(prop, myObjectElement, name);
 			break;
 		// BoolArray
 		case(Property_Deprecated::BoolArray) :
-			UpdateXMLNodeArrayProperty<bool>(property,myObjectElement,name);
+			UpdateXMLNodeArrayProperty<bool>(prop,myObjectElement,name);
 			break;
 		// IntArray
 		case(Property_Deprecated::IntArray) :
-			UpdateXMLNodeArrayProperty<int>(property,myObjectElement,name);
+			UpdateXMLNodeArrayProperty<int>(prop,myObjectElement,name);
 			break;
 		// DblArray
 		case(Property_Deprecated::DblArray) :
-			UpdateXMLNodeArrayProperty<double>(property,myObjectElement,name);
+			UpdateXMLNodeArrayProperty<double>(prop,myObjectElement,name);
 			break;
 		// DblVec3
 		case(Property_Deprecated::DblVec) :
-			UpdateXMLNodeVec(property,myObjectElement,name);
+			UpdateXMLNodeVec(prop,myObjectElement,name);
 			break;
 		// Transform
 		case(Property_Deprecated::Transform) :
-			UpdateXMLNodeTransform(property,myObjectElement,name);
+			UpdateXMLNodeTransform(prop,myObjectElement,name);
 			break;
 		// StrArray
 		case(Property_Deprecated::StrArray) :
-			UpdateXMLNodeArrayProperty<string>(property,myObjectElement,name);
+			UpdateXMLNodeArrayProperty<string>(prop,myObjectElement,name);
 			break;
 
 		// Obj
 		case(Property_Deprecated::Obj) : {
-			PropertyObj *propObj = (PropertyObj*)property;
-			Object &object = property->getValueObj();
+			PropertyObj *propObj = (PropertyObj*)prop;
+			Object &object = prop->getValueObj();
 			object.updateXMLNode(myObjectElement);
 			/*
 			if(propObj->getMatchName()) {
@@ -1196,10 +1201,10 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 				elmt = XMLNode::GetFirstChildElementByTagName(myObjectElement, object.getType());
 			}
 
-			if(!elmt && !property->getValueIsDefault()) {
-				elmt = XMLNode::InsertNewElementWithComment(myObjectElement, object.getType(), object.getName(), property->getComment(), aNodeIndex);
-			} else if (elmt && !property->getComment().empty()) {
-				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,property->getComment());
+			if(!elmt && !prop->getValueIsDefault()) {
+				elmt = XMLNode::InsertNewElementWithComment(myObjectElement, object.getType(), object.getName(), prop->getComment(), aNodeIndex);
+			} else if (elmt && !prop->getComment().empty()) {
+				XMLNode::UpdateCommentNodeCorrespondingToChildElement(elmt,prop->getComment());
 			}
 
 			if(elmt) {
@@ -1219,13 +1224,13 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 						// in order, with index=0 so each new one is added to the end
 						// of the list (more efficient than inserting each one into
 						// the proper slot).
-					SimTK::Xml::Element objectArrayElement(property->getName());
+					SimTK::Xml::Element objectArrayElement(prop->getName());
 					myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectArrayElement);
-					   for(int j=0;j<property->getArraySize();j++)
-						property->getValueObjPtr(j)->updateXMLNode(objectArrayElement);
+					   for(int j=0;j<prop->getArraySize();j++)
+						prop->getValueObjPtr(j)->updateXMLNode(objectArrayElement);
 				} else { // ObjPtr
-					Object *object = property->getValueObjPtr();
-					SimTK::Xml::Element objectBaseElement(property->getName());
+					Object *object = prop->getValueObjPtr();
+					SimTK::Xml::Element objectBaseElement(prop->getName());
 					myObjectElement.insertNodeAfter(myObjectElement.node_end(), objectBaseElement);
 					if(object) { // Add node for base classHEREHEREHERE
 						object->updateXMLNode(objectBaseElement);
@@ -1240,6 +1245,12 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 			break;
 		}
 	}
+
+	if (!wroteAnyProperties) {
+		myObjectElement.insertNodeAfter(myObjectElement.node_end(), 
+            SimTK::Xml::Comment
+               ("All properties of this object have their default values."));
+    }
 }
 
 //_____________________________________________________________________________

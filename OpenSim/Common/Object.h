@@ -187,7 +187,7 @@ overridden in the defaults section of a document), a copy of it is maintained
 in a dictionary as a "default" object of its class. When new instances of this 
 class are requested, the contents of the default object are used to populate the
 new instance before deserialization. This allows for specifying default values
-that will be commonly used in one place in the XML file rather then with each 
+that will be commonly used in one place in the XML file rather than with each 
 object which leads to smaller files that are easier to read. Property values
 that obtain their values from the defaults and are not subsequently overridden
 are marked as being default values, allowing us to avoid writing
@@ -871,6 +871,7 @@ addProperty(const std::string& name,
 
     p->setComment(comment);
     p->appendValue(value);
+    p->setValueIsDefault(true);
 
     // Note that an unnamed, one-object property will use the object class name
     // as a name for lookup purposes.
@@ -891,6 +892,7 @@ addOptionalProperty(const std::string& name,
     p->setAllowableListSize(0,1);
     p->setComment(comment);
     p->appendValue(value);
+    p->setValueIsDefault(true);
 
 	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
@@ -907,6 +909,7 @@ addOptionalProperty(const std::string& name,
     Property<T>* p = Property<T>::TypeHelper::create(name, false);
     p->setAllowableListSize(0,1);
     p->setComment(comment);
+    p->setValueIsDefault(true);
 
 	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
@@ -932,6 +935,7 @@ addListProperty(const std::string& name,
     Property<T>* p = Property<T>::TypeHelper::create(name, false);
     p->setAllowableListSize(minSize, maxSize);
     p->setComment(comment);
+    p->setValueIsDefault(true);
 
 	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
@@ -959,6 +963,7 @@ addListProperty(const std::string&  name,
     p->setComment(comment);
     for (int i=0; i < (int)valueList.size(); ++i)
         p->appendValue(valueList[i]);
+    p->setValueIsDefault(true);
 
 	return PropertyIndex(_propertyTable.adoptProperty(p));
 }
@@ -1256,6 +1261,7 @@ getValue(int index) const {
 
 template <class T> inline T& AbstractProperty::
 updValue(int index) {
+    setValueIsDefault(false); // assume it is being changed
     //TODO: temporary support for obsolete properties
     Property_Deprecated* pd = dynamic_cast<Property_Deprecated*>(this);
     if (pd) {
@@ -1274,6 +1280,7 @@ updValue(int index) {
 
 template <class T> inline int AbstractProperty::
 appendValue(const T& value) {
+    setValueIsDefault(false);
     //TODO: temporary support for obsolete properties
     Property_Deprecated* pd = dynamic_cast<Property_Deprecated*>(this);
     if (pd) {
