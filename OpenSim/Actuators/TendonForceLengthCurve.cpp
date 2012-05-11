@@ -55,10 +55,9 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
     setName(muscleName + "_TendonForceLengthCurve");
 
     setStrainAtOneNormForce(strainAtOneNormForce);
-    setStiffnessAtOneNormForce(stiffnessAtOneNormForce);
-    setCurviness(curviness);
+    setOptionalProperties(stiffnessAtOneNormForce,curviness);
 
-    buildCurve();
+    ensureCurveUpToDate();
 }
 
 
@@ -70,7 +69,7 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
     setName(muscleName + "_TendonForceLengthCurve");
 
     setStrainAtOneNormForce(strainAtOneNormForce);
-    buildCurve();
+    ensureCurveUpToDate();
 }
 
 void TendonForceLengthCurve::setNull()
@@ -86,27 +85,333 @@ void TendonForceLengthCurve::constructProperties()
 
 
 void TendonForceLengthCurve::buildCurve()
-{
-    if(isObjectUpToDateWithProperties() == false){
-        
-        double e0   =  getStrainAtOneNormForce();
-        double kiso =  getStiffnessAtOneNormForceInUse();
-        double c    =  getCurvinessInUse();        
+{            
+        double e0   =  getProperty_strain_at_one_norm_force();
+        double k    =  m_stiffnessAtOneNormForceInUse;                       
+        double c    =  m_curvinessInUse;        
 
         //Here's where you call the MuscleCurveFunctionFactory
         MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
                                     createTendonForceLengthCurve(   e0,
-                                                                    kiso,
+                                                                    k,
                                                                     c,
                                                                     true,
                                                                     getName());            
-        this->m_curve = tmp;          
+        this->m_curve = tmp;              
+        setObjectIsUpToDateWithProperties();
+}
+
+void TendonForceLengthCurve::ensureCurveUpToDate()
+{
+  if(isObjectUpToDateWithProperties() == false){        
+    //=====================================================================
+    //Compute optional properties if they haven't been provided
+    //=====================================================================
+    if(    getProperty_stiffness_at_one_norm_force().empty() == true
+        && getProperty_curviness().empty() == true)
+    {
+        //Get properties of the reference curve
+        double e0 = getProperty_strain_at_one_norm_force();
+        SimTK::Vector refTendon = calcReferenceTendon(e0);    
+
+        //Assign the stiffness
+        m_stiffnessAtOneNormForceInUse = refTendon[RefTendon_klin_Idx];
+
+        //Fit the curviness parameter            
+        m_curvinessInUse=calcCurvinessOfBestFit(refTendon[RefTendon_e0_Idx],
+                                                refTendon[RefTendon_klin_Idx],
+                                                refTendon[RefTendon_normPE_Idx],
+                                                1e-6);
+        m_isFittedCurveBeingUsed = true;
     }
-    setObjectIsUpToDateWithProperties();
+
+    //=====================================================================
+    //Get optional properties if they've both been provided
+    //=====================================================================
+    if(    getProperty_stiffness_at_one_norm_force().empty() == false
+        && getProperty_curviness().empty() == false){
+
+                
+        m_stiffnessAtOneNormForceInUse
+                            = getProperty_stiffness_at_one_norm_force();
+        m_curvinessInUse    = getProperty_curviness();
+        m_isFittedCurveBeingUsed = false;
+    }
+
+    //=====================================================================
+    //Error condition if only one optional parameter is set.
+    //=====================================================================
+    bool a = getProperty_stiffness_at_one_norm_force().empty();
+    bool b = getProperty_curviness().empty();
+
+    //This is really a XOR operation ...
+    if( ( a && !b ) || ( !a && b ) ){
+
+        //This error condition is checked to make sure that the reference
+        //tendon is being used to populate all optional properties or none
+        //of them. Anything different would result in an inconsistency in
+        //the computed curve - it wouldn't reflect the reference curve.
+
+        SimTK_ERRCHK1_ALWAYS(false,
+            "TendonForceLengthCurve::ensureCurveUpToDate()",
+            "%s: Optional parameters stiffness and curviness must both"
+            "be set, or both remain empty. You have set one parameter"
+            "and left the other blank.",
+            getName().c_str());  
+    }
+
+    buildCurve();
+}
+
+}
+
+
+//=============================================================================
+// MODEL COMPONENT INTERFACE
+//=============================================================================
+void TendonForceLengthCurve::setup(Model& model)
+{
+    Super::setup(model);
+}
+
+void TendonForceLengthCurve::initState(SimTK::State& s) const
+{
+    Super::initState(s);
+}
+
+void TendonForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
+{
+    Super::createSystem(system);
+
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+}
+
+
+
+//=============================================================================
+// GET & SET METHODS
+//=============================================================================
+double TendonForceLengthCurve::getStrainAtOneNormForce()
+{
+    ensureCurveUpToDate();
+    return getProperty_strain_at_one_norm_force();
+}
+
+
+double TendonForceLengthCurve::getStiffnessAtOneNormForceInUse()
+{
+    ensureCurveUpToDate();
+    return m_stiffnessAtOneNormForceInUse;
+}
+
+
+double TendonForceLengthCurve::getCurvinessInUse()
+{
+    ensureCurveUpToDate();
+    return m_curvinessInUse;
+}
+
+bool TendonForceLengthCurve::isFittedCurveBeingUsed()
+{
+    ensureCurveUpToDate();
+    return m_isFittedCurveBeingUsed;
+}
+
+void TendonForceLengthCurve::
+    setStrainAtOneNormForce(double aStrainAtOneNormForce)
+{         
+    setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);  
+}
+
+void TendonForceLengthCurve::
+    setOptionalProperties(double aStiffnessAtOneNormForce, double aCurviness)
+{
+    setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
+    setProperty_curviness(aCurviness);
+}
+
+
+
+
+//=============================================================================
+// SERVICES
+//=============================================================================
+
+double TendonForceLengthCurve::
+    calcValue(double aNormLength) const
+{
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    return m_curve.calcValue(aNormLength);
+}
+
+double TendonForceLengthCurve::
+    calcDerivative(double aNormLength, int order) const
+{
+    SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
+        "TendonForceLengthCurve::calcDerivative",
+        "order must be 0, 1, or 2, but %i was entered", order);
+    
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    return m_curve.calcDerivative(aNormLength,order);
+}
+
+double TendonForceLengthCurve::calcIntegral(double aNormLength) const
+{
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    return m_curve.calcIntegral(aNormLength);
+}
+
+SimTK::Vec2 TendonForceLengthCurve::getCurveDomain() const
+{
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    return m_curve.getCurveDomain();
+}
+
+void TendonForceLengthCurve::
+    printMuscleCurveToCSVFile(const std::string& path) const
+{
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    m_curve.printMuscleCurveToCSVFile(path);
+}
+
+
+//==============================================================================
+// Private Services
+//==============================================================================
+
+double TendonForceLengthCurve::
+    calcCurvinessOfBestFit(double e0, double klin, double area, double relTol)
+{
+
+    std::string name = getName();
+    //double c_opt = fitToReferenceTendon(e0, klin,peNorm,tol,name);
+
+    double c = 0.5;
+    double prevC = 0;
+    double step = 0.25;
+            
+    MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+            createTendonForceLengthCurve(   e0,
+                                            klin,
+                                            c,
+                                            true,
+                                            getName());
+
+    double val = tmp.calcIntegral(1+e0);
+
+    double err      = (val-area)/area;
+    double prevErr = 0;
+    double errStart = err;
+    double errMin   = 0;
+            
+    double solMin           = 0;
+    bool flag_improvement   = false;
+    bool flag_Newton        = false;
+
+    int maxIter     = 10;
+    int iter        = 0;
+    int localIter   = 0;
+    int evalIter    = 0;
+
+
+    while(iter < maxIter && abs(err) > relTol){ 
+        flag_improvement = false;
+        localIter        = 0;                
+
+        //Bisection
+        while(flag_improvement == false && localIter < 2 
+                && flag_Newton == false){
+
+            MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+                            createTendonForceLengthCurve(   e0,
+                                                            klin,
+                                                            c+step,
+                                                            true,
+                                                            getName());                
+            val     = tmp.calcIntegral(1+e0);
+            errMin  = (val-area)/area; 
+                                    
+            if(abs(errMin) < abs(err)){
+                prevC = c;
+                c   = c+step;
+                prevErr = err;
+                err = errMin;
+                flag_improvement = true;
+
+                if(err*prevErr < 0)
+                    step = step*-1;
+                        
+            }else{
+                step = step*-1;
+            }
+            localIter++;
+        }
+
+        //0. Check if we can numerically calculate a Newton step
+        //1. Compute a Newton step 
+        //2. If the Newton step is smaller than the current step, take it
+        //3. If the Newton step results in improvement, update.
+                    
+        if(abs(err) < abs(errStart)){
+            double dErr = err-prevErr;
+            double dC   = c-prevC; 
+            double dErrdC= dErr/dC;
+            double deltaC = -err/dErrdC;
+            double cNewton = c + deltaC;
+
+            if(abs(deltaC) < abs(step)){
+                MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+                            createTendonForceLengthCurve(   e0,
+                                                            klin,
+                                                            cNewton,
+                                                            true,
+                                                            getName());                
+                val     = tmp.calcIntegral(1+e0);
+                errMin  = (val-area)/area; 
+                                    
+                if(abs(errMin) < abs(err)){
+                    prevC = c;
+                    c   = cNewton;
+                    prevErr = err;
+                    err = errMin;
+                    flag_improvement = true;
+                    flag_Newton = true;
+                    step = deltaC;
+
+                    if(prevErr*err < 0)
+                        step = step*-1;
+                            
+
+                }
+                localIter++;
+            }
+        }
+
+        evalIter += localIter;
+        step = step/2.0;
+        iter++;
+        //printf("Root Finding Iter %i ,err: %f, eval %i\n",
+        //    iter,err,evalIter);
+    }
+
+    SimTK_ERRCHK1_ALWAYS(   abs(err) < relTol 
+                        &&  abs(errStart) > abs(relTol+abs(step)),
+        "TendonForceLengthCurve::calcCurvinessOfBestFit()",
+        "%s: Not able to fit a tendon curve to the reference"
+        "tendon curve",getName().c_str());
+
+    return c;
+
 }
 
 SimTK::Vector TendonForceLengthCurve::
-    calcReferenceTendonCurveProperties(double strainAtOneNormForce)
+    calcReferenceTendon(double strainAtOneNormForce)
 {
     SimTK::Vector tdnProp(6);
 
@@ -151,516 +456,3 @@ SimTK::Vector TendonForceLengthCurve::
 
     return tdnProp;
 }
-
-//=============================================================================
-// MODEL COMPPONENT INTERFACE
-//=============================================================================
-void TendonForceLengthCurve::setup(Model& model)
-{
-    Super::setup(model);
-}
-
-void TendonForceLengthCurve::initState(SimTK::State& s) const
-{
-    Super::initState(s);
-}
-
-void TendonForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
-{
-    Super::createSystem(system);
-
-    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
-    mthis->buildCurve();
-}
-
-
-
-//=============================================================================
-// GET & SET METHODS
-//=============================================================================
-double TendonForceLengthCurve::getStrainAtOneNormForce()
-{
-    return getProperty_strain_at_one_norm_force();
-}
-
-double TendonForceLengthCurve::getStiffnessAtOneNormForce()
-{
-    return getProperty_stiffness_at_one_norm_force();
-}
-
-double TendonForceLengthCurve::getStiffnessAtOneNormForceInUse()
-{
-    
-    if(getProperty_stiffness_at_one_norm_force().empty() ){
-        //This error condition is checked to make sure that the reference
-        //tendon is being used to populate all optional properties or none
-        //of them. Anything different would result in an inconsistency in
-        //the computed curve - it wouldn't reflect the reference curve.
-        SimTK_ERRCHK1_ALWAYS(getProperty_curviness().empty(),
-            "TendonForceLengthCurve::getStiffnessAtOneNormForceInUse()",
-            "%s: Optional parameters stiffness and curviness must both"
-            "be set, or both remain empty. You have set one parameter"
-            "and left the other blank.",
-            getName().c_str());              
-
-        if(isObjectUpToDateWithProperties() == false &&
-            m_stiffnessAtOneNormForceInUse[1] != getStrainAtOneNormForce())
-        {            
-            SimTK::Vector tdnProp = getReferenceTendon();
-            m_stiffnessAtOneNormForceInUse[0] = tdnProp[RefTendon_klin_Idx];   
-            m_stiffnessAtOneNormForceInUse[1] = tdnProp[RefTendon_e0_Idx];
-        }
-
-    }else if(getProperty_stiffness_at_one_norm_force().empty() == false){
-        m_stiffnessAtOneNormForceInUse[0] 
-            = getProperty_stiffness_at_one_norm_force();
-        m_stiffnessAtOneNormForceInUse[1] = SimTK::NaN;
-
-    }
-    return m_stiffnessAtOneNormForceInUse[0];
-}
-
-double TendonForceLengthCurve::getCurviness()
-{
-    return getProperty_curviness();
-}
-
-double TendonForceLengthCurve::getCurvinessInUse()
-{
-    if(getProperty_curviness().empty()){
-        
-
-        //This error condition is checked to make sure that the reference
-        //tendon is being used to populate all optional properties or none
-        //of them. Anything different would result in an inconsistency in
-        //the computed curve - it wouldn't reflect the reference curve.
-
-        SimTK_ERRCHK1_ALWAYS(getProperty_stiffness_at_one_norm_force().empty(),
-            "TendonForceLengthCurve::getCurvinessInUse()",
-            "%s: Optional parameters stiffness and curviness must both"
-            "be set, or both remain empty. You have set one parameter"
-            "and left the other blank.",
-            getName().c_str());       
-        
-       //Have we computed this already?
-        if(isObjectUpToDateWithProperties() == false &&
-            m_curvinessInUse[1] != getStrainAtOneNormForce()){
-            
-            SimTK::Vector tdnProp = getReferenceTendon();
-            double e0       = tdnProp[RefTendon_e0_Idx];
-            double etoe     = tdnProp[RefTendon_etoe_Idx];
-            double Ftoe     = tdnProp[RefTendon_Ftoe_Idx];
-            double ktoe     = tdnProp[RefTendon_ktoe_Idx];
-            double klin     = tdnProp[RefTendon_klin_Idx];
-            double peNorm   = tdnProp[RefTendon_normPE_Idx];
-
-            //Use the bisection method to solve for the curviness parameter 
-            //value that results in a tendon curve that has the same normalized
-            //strain energy as the extrapolated exponential curve.
-
-            double tol = 1e-6;
-            std::string name = getName();
-            //double c_opt = fitToReferenceTendon(e0, klin,peNorm,tol,name);
-
-            double c = 0.5;
-            double prevC = 0;
-            double step = 0.25;
-            
-            MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
-                    createTendonForceLengthCurve(   e0,
-                                                    klin,
-                                                    c,
-                                                    true,
-                                                    getName());
-
-            double val = tmp.calcIntegral(1+e0);
-
-            double err      = (val-peNorm)/peNorm;
-            double prevErr = 0;
-            double errStart = err;
-            double errMin   = 0;
-            
-            double solMin           = 0;
-            bool flag_improvement   = false;
-            bool flag_Newton        = false;
-
-            int maxIter     = 10;
-            int iter        = 0;
-            int localIter   = 0;
-            int evalIter    = 0;
-
-
-            while(iter < maxIter && abs(err) > tol){ 
-                flag_improvement = false;
-                localIter        = 0;                
-
-                //Bisection
-                while(flag_improvement == false && localIter < 2 
-                        && flag_Newton == false){
-
-                    MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
-                                    createTendonForceLengthCurve(   e0,
-                                                                    klin,
-                                                                    c+step,
-                                                                    true,
-                                                                    getName());                
-                    val     = tmp.calcIntegral(1+e0);
-                    errMin  = (val-peNorm)/peNorm; 
-                                    
-                    if(abs(errMin) < abs(err)){
-                        prevC = c;
-                        c   = c+step;
-                        prevErr = err;
-                        err = errMin;
-                        flag_improvement = true;
-
-                        if(err*prevErr < 0)
-                            step = step*-1;
-                        
-                    }else{
-                        step = step*-1;
-                    }
-                    localIter++;
-               }
-
-                //0. Check if we can numerically calculate a Newton step
-                //1. Compute a Newton step 
-                //2. If the Newton step is smaller than the current step, take it
-                //3. If the Newton step results in improvement, update.
-                    
-                if(abs(err) < abs(errStart)){
-                    double dErr = err-prevErr;
-                    double dC   = c-prevC; 
-                    double dErrdC= dErr/dC;
-                    double deltaC = -err/dErrdC;
-                    double cNewton = c + deltaC;
-
-                    if(abs(deltaC) < abs(step)){
-                        MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
-                                    createTendonForceLengthCurve(   e0,
-                                                                    klin,
-                                                                    cNewton,
-                                                                    true,
-                                                                    getName());                
-                        val     = tmp.calcIntegral(1+e0);
-                        errMin  = (val-peNorm)/peNorm; 
-                                    
-                        if(abs(errMin) < abs(err)){
-                            prevC = c;
-                            c   = cNewton;
-                            prevErr = err;
-                            err = errMin;
-                            flag_improvement = true;
-                            flag_Newton = true;
-                            step = deltaC;
-
-                            if(prevErr*err < 0)
-                                step = step*-1;
-                            
-
-                      }
-                        localIter++;
-                    }
-                }
-
-                evalIter += localIter;
-                step = step/2.0;
-                iter++;
-                //printf("Root Finding Iter %i ,err: %f, eval %i\n",
-                //    iter,err,evalIter);
-            }
-
-            SimTK_ERRCHK1_ALWAYS(err < tol && errStart > (tol+step),
-                "TendonForceLengthCurve::getCurvinessInUse()",
-                "%s: Not able to fit a tendon curve to the reference"
-                "tendon curve",getName().c_str());
-
-            m_curvinessInUse[0] = c;
-            m_curvinessInUse[1] = tdnProp[RefTendon_e0_Idx];
-        }
-
-
-
-    }else{
-            m_curvinessInUse[0] = getCurviness();
-            m_curvinessInUse[1] = SimTK::NaN; 
-    }
-        //NaN is used because in the context where the optional parameter has
-        //been set, it doesn't make sense to have a real value here.
-    
-    return m_curvinessInUse[0];
-}
-
-
-void TendonForceLengthCurve::
-    setStrainAtOneNormForce(double aStrainAtOneNormForce)
-{
-    if(aStrainAtOneNormForce != getStrainAtOneNormForce() )
-    {        
-        setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);
-    }
-}
-
-void TendonForceLengthCurve::
-        setStiffnessAtOneNormForce(double aStiffnessAtOneNormForce)
-{
-    //if(aStiffnessAtOneNormForce != getStiffnessAtOneNormForce() )
-    //{
-        setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-    //}
-}
-
-void TendonForceLengthCurve::setCurviness(double aCurviness)
-{
-    //if(aCurviness != getCurviness() )
-    //{
-        setProperty_curviness(aCurviness);
-    //}
-}
-
-
-SimTK::Vector TendonForceLengthCurve::getReferenceTendon()
-{
-
-    if(m_TendonReference.size()==0){
-        double e0 = getStrainAtOneNormForce();
-        m_TendonReference = calcReferenceTendonCurveProperties(e0);
-    }else if(m_TendonReference[RefTendon_e0_Idx] != getStrainAtOneNormForce()){
-        double e0 = getStrainAtOneNormForce();
-        m_TendonReference = calcReferenceTendonCurveProperties(e0);    
-    }
-
-    return m_TendonReference;
-}
-
-//=============================================================================
-// SERVICES
-//=============================================================================
-
-double TendonForceLengthCurve::
-    calcValue(double aNormLength) const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.calcValue(aNormLength);
-}
-
-double TendonForceLengthCurve::
-    calcDerivative(double aNormLength, int order) const
-{
-    SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
-        "TendonForceLengthCurve::calcDerivative",
-        "order must be 0, 1, or 2, but %i was entered", order);
-    
-    if(isObjectUpToDateWithProperties() == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.calcDerivative(aNormLength,order);
-}
-
-double TendonForceLengthCurve::calcIntegral(double aNormLength) const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.calcIntegral(aNormLength);
-}
-
-SimTK::Vec2 TendonForceLengthCurve::getCurveDomain() const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.getCurveDomain();
-}
-
-void TendonForceLengthCurve::
-    printMuscleCurveToCSVFile(const std::string& path) const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        TendonForceLengthCurve* mthis = 
-            const_cast<TendonForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    m_curve.printMuscleCurveToCSVFile(path);
-}
-
-
-//==============================================================================
-//
-// Set up SimTK::Optimizer to fit the tendon curve to a reference curve
-//
-//==============================================================================
-
-/*
-///@cond
-class TendonReferenceCurveData {
-public:
-        double strainAtOneNormForce;
-        double stiffnessAtOneNormForce;
-        double areaAtOneNormForce;
-        string name;
-};
-///@endcond
-///@cond
-class ProblemSystem : public OptimizerSystem {
-public:
-    ProblemSystem(const TendonReferenceCurveData& data,
-                  const int numOptVars,
-                  const int numEqConst,
-                  const int numIEqConst)
-                  : tendonData(data), OptimizerSystem(numOptVars) {
-        setNumEqualityConstraints(numEqConst);
-        setNumInequalityConstraints(numIEqConst);
-        iterations = 0;
-        
-    }
-
-
-    int objectiveFunc(const Vector &optVariables, 
-        bool newVariables, Real& f) const {
-        
-            double e0 = tendonData.strainAtOneNormForce;
-            double k  = tendonData.stiffnessAtOneNormForce;
-            double c  = optVariables[0];
-            string name= tendonData.name;
-
-            if(c > 1){c = 1;}
-            if(c < 0){c = 0;}
-
-            MuscleCurveFunction tmpM = MuscleCurveFunctionFactory::
-                                    createTendonForceLengthCurve(   e0,
-                                                                    k,
-                                                                    c,
-                                                                    true,
-                                                                    name);
-
-            double areaAtOneNormForce = tmpM.calcIntegral(1+e0);
-            double areaRef = tendonData.areaAtOneNormForce;
-            double relErr = (areaAtOneNormForce - areaRef)/areaRef;
-            f = abs(relErr)*abs(relErr)*1000;
-            iterations++;
-            return(0);
-    }
-
-    int getNumIterations(){
-        return iterations;
-    }
-
-
-private:
-    const TendonReferenceCurveData tendonData;
-    int mutable iterations;
-};
-///@endcond
-
-///@cond
-double TendonForceLengthCurve::
-    fitToReferenceTendon(   double strainAtOneNormForce,
-                            double stiffnessAtOneNormForce,
-                            double areaAtOneNormForce, 
-                            double relTol,
-                            std::string& name) const
-{
-    TendonReferenceCurveData tdata;
-    tdata.strainAtOneNormForce      = strainAtOneNormForce;
-    tdata.stiffnessAtOneNormForce   = stiffnessAtOneNormForce;
-    tdata.areaAtOneNormForce        = areaAtOneNormForce;
-    tdata.name                      = name;
-
-    int numOptVars = 1;
-    int numEqConst = 0;
-    int numIEqConst= 0;
-
-    ProblemSystem sys(tdata, numOptVars, numEqConst, numIEqConst);
-
-    Vector results(numOptVars);
-    Vector lowerBounds(numOptVars);
-    Vector upperBounds(numOptVars);
-
-    results[0]      = 0.5;
-    lowerBounds[0]  = 0;
-    upperBounds[0]  = 1;
-
-    sys.setParameterLimits( lowerBounds, upperBounds );
-
-    Real f = NaN;
-    try {
-        Optimizer opt( sys ); 
-        
-        opt.setConvergenceTolerance( relTol );        
-        opt.useNumericalGradient(true);
-        opt.useNumericalJacobian(true);
-        f = opt.optimize( results );
-        int iter = sys.getNumIterations();
-        printf("Optimizer Iterations %i\n",iter);
-    }
-    catch (const std::exception& e) {
-        printf( "%s: %s: Caught exception while creating fitted tendon curve",
-                "TendonForceLengthCurve::fitToReferenceTendon",name.c_str());
-        std::cout << e.what() << std::endl;
-    }
-
-    return results[0];
-}
-///@endcond
-
-*/
-/*
-            int maxIter = 20;
-            int iter = 0;
-
-            while(iter < maxIter && abs(err) > tol){ 
-
-                MuscleCurveFunction tmpP = MuscleCurveFunctionFactory::
-                                    createTendonForceLengthCurve(   e0,
-                                                                    klin,
-                                                                    c+step,
-                                                                    true,
-                                                                    getName());
-
-                MuscleCurveFunction tmpM = MuscleCurveFunctionFactory::
-                                    createTendonForceLengthCurve(   e0,
-                                                                    klin,
-                                                                    c-step,
-                                                                    true,
-                                                                    getName());
-                valP = tmpP.calcIntegral(1+e0);
-                valM = tmpM.calcIntegral(1+e0);
-
-
-                errP = abs(peNorm-valP)/peNorm;
-                errM = abs(peNorm-valM)/peNorm;
-
-                if(abs(errP) < abs(errM)){
-                    errMin = abs(errP);
-                    solMin = c+step;
-                }else{
-                    errMin = abs(errM);
-                    solMin = c-step;
-                }
-
-                if(abs(errMin) < abs(err)){
-                    c = solMin;
-                    err = abs(errMin);
-                }
-                step = step/2.0;
-                iter++;
-                printf("Bisection Loop %i, err: %f, eval %i\n",iter,err,iter*2);
-            }
-*/
-

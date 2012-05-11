@@ -38,7 +38,7 @@ static int RefFiber_normPE_Idx = 3;
 FiberForceLengthCurve::FiberForceLengthCurve()
 {
     setNull();
-    constructProperties();
+    constructProperties();    
     setName("default_FiberForceLengthCurve");
 }
 
@@ -51,16 +51,16 @@ FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtOneNormForce,
     constructProperties();
     setName(muscleName + "_FiberForceLengthCurve");
 
-    setStrainAtOneNormForce(strainAtOneNormForce);
-    setStiffnessAtOneNormForce(stiffnessAtOneNormForce);
-    setCurviness(curviness);
+    setProperty_strain_at_one_norm_force(strainAtOneNormForce);
+    setOptionalProperties(stiffnessAtOneNormForce, curviness);
 
-    buildCurve();
+    ensureCurveUpToDate();
 }
 
 
 void FiberForceLengthCurve::setNull()
 {
+
 }
 
 void FiberForceLengthCurve::constructProperties()
@@ -72,27 +72,88 @@ void FiberForceLengthCurve::constructProperties()
 }
 
 void FiberForceLengthCurve::buildCurve()
-{
-    if(isObjectUpToDateWithProperties() == false){
-        
-        double e0   =  getStrainAtOneNormForce();
-        double kiso =  getStiffnessAtOneNormForceInUse();
-        double c    =  getCurvinessInUse();        
+{           
+        double e0   =  getProperty_strain_at_one_norm_force();
+        double kiso =  m_stiffnessAtOneNormForceInUse;
+        double c    =  m_curvinessInUse;        
 
-        //Here's where you call the MuscleCurveFunctionFactory
         MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
                                                                     kiso,
                                                                     c,
                                                                     true,
                                                                     getName());            
-
         this->m_curve = tmp;
-          
-    }
+       
     setObjectIsUpToDateWithProperties();
 }
 
+void FiberForceLengthCurve::ensureCurveUpToDate()
+{
+    if(isObjectUpToDateWithProperties() == false){
+        
+
+        //=====================================================================
+        //Compute optional properties if they haven't been provided
+        //=====================================================================
+        if(    getProperty_stiffness_at_one_norm_force().empty() == true
+            && getProperty_curviness().empty() == true)
+        {
+            //Get properties of the reference curve
+            double e0 = getProperty_strain_at_one_norm_force();
+            SimTK::Vec4 refFiber = calcReferencePassiveFiber(e0);    
+
+            //Assign the stiffness
+            m_stiffnessAtOneNormForceInUse = refFiber[RefFiber_klin_Idx];
+
+            //Fit the curviness parameter            
+            m_curvinessInUse = calcCurvinessOfBestFit(refFiber[RefFiber_e0_Idx],
+                                                refFiber[RefFiber_klin_Idx],
+                                                refFiber[RefFiber_normPE_Idx],
+                                                1e-6);
+            m_fittedCurveBeingUsed = true;
+
+        }
+
+        //=====================================================================
+        //Get optional properties if they've both been provided
+        //=====================================================================
+        if(    getProperty_stiffness_at_one_norm_force().empty() == false
+            && getProperty_curviness().empty() == false){
+
+                
+            m_stiffnessAtOneNormForceInUse
+                                = getProperty_stiffness_at_one_norm_force();
+            m_curvinessInUse    = getProperty_curviness();
+
+            m_fittedCurveBeingUsed = false;
+        }
+
+        //=====================================================================
+        //Error condition if only one optional parameter is set.
+        //=====================================================================
+        bool a = getProperty_stiffness_at_one_norm_force().empty();
+        bool b = getProperty_curviness().empty();
+
+        //This is really a XOR operation ...
+        if( ( a && !b ) || ( !a && b ) ){
+
+            //This error condition is checked to make sure that the reference
+            //fiber is being used to populate all optional properties or none
+            //of them. Anything different would result in an inconsistency in
+            //the computed curve - it wouldn't reflect the reference curve.
+
+            SimTK_ERRCHK1_ALWAYS(false,
+                "FiberForceLengthCurve::ensureCurveUpToDate()",
+                "%s: Optional parameters stiffness and curviness must both"
+                "be set, or both remain empty. You have set one parameter"
+                "and left the other blank.",
+                getName().c_str());  
+        }
+
+        buildCurve();
+    }
+}
 
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
@@ -112,7 +173,7 @@ void FiberForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
     Super::createSystem(system);
 
     FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
-    mthis->buildCurve();
+    mthis->ensureCurveUpToDate();
 }
 
 
@@ -121,84 +182,104 @@ void FiberForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
 // GET & SET METHODS
 //=============================================================================
 double FiberForceLengthCurve::getStrainAtOneNormForce()
-{
+{    
+    ensureCurveUpToDate();
     return getProperty_strain_at_one_norm_force();
 }
 
-double FiberForceLengthCurve::getStiffnessAtOneNormForce()
-{
-    return getProperty_stiffness_at_one_norm_force();
-}
 
 double FiberForceLengthCurve::getStiffnessAtOneNormForceInUse()
 {    
-    if(getProperty_stiffness_at_one_norm_force().empty() == true)
-    {
-        //This error condition is checked to make sure that the reference
-        //fiber is being used to populate all optional properties or none
-        //of them. Anything different would result in an inconsistency in
-        //the computed curve - it wouldn't reflect the reference curve.
-
-        SimTK_ERRCHK1_ALWAYS(getProperty_curviness().empty(),
-            "FiberForceLengthCurve::getCurvinessInUse()",
-            "%s: Optional parameters stiffness and curviness must both"
-            "be set, or both remain empty. You have set one parameter"
-            "and left the other blank.",
-            getName().c_str());  
-        
-        if(isObjectUpToDateWithProperties() == false &&
-            m_stiffnessAtOneNormForceInUse[1] != getStrainAtOneNormForce())
-        {
-            SimTK::Vec4 refFiber = getReferencePassiveFiber();
-            m_stiffnessAtOneNormForceInUse[0] = refFiber[RefFiber_klin_Idx];
-            m_stiffnessAtOneNormForceInUse[1] = refFiber[RefFiber_e0_Idx];
-        }
-    }else{
-        m_stiffnessAtOneNormForceInUse[0] = getStiffnessAtOneNormForce();
-        m_stiffnessAtOneNormForceInUse[1] = SimTK::NaN;
-    }
-
-    return m_stiffnessAtOneNormForceInUse[0];
+    ensureCurveUpToDate();
+    return m_stiffnessAtOneNormForceInUse;
 }
 
-
-double FiberForceLengthCurve::getCurviness()
+bool FiberForceLengthCurve::isFittedCurveBeingUsed()
 {
-    return getProperty_curviness();
+    ensureCurveUpToDate();
+    return m_fittedCurveBeingUsed;
 }
 
 
 double FiberForceLengthCurve::getCurvinessInUse()
 {
-    if(getProperty_curviness().empty() == true)
-    {
-        //This error condition is checked to make sure that the reference
-        //fiber is being used to populate all optional properties or none
-        //of them. Anything different would result in an inconsistency in
-        //the computed curve - it wouldn't reflect the reference curve.
+    ensureCurveUpToDate();
+    return m_curvinessInUse;
+}
 
-        SimTK_ERRCHK1_ALWAYS(getProperty_stiffness_at_one_norm_force().empty(),
-            "FiberForceLengthCurve::getCurvinessInUse()",
-            "%s: Optional parameters stiffness and curviness must both"
-            "be set, or both remain empty. You have set one parameter"
-            "and left the other blank.",
-            getName().c_str()); 
+void FiberForceLengthCurve::
+    setStrainAtOneNormForce(double aStrainAtOneNormForce)
+{
+        setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);   
+}
 
-        if(isObjectUpToDateWithProperties() == false &&
-            m_curvinessInUse[1] != getStrainAtOneNormForce()){
+void FiberForceLengthCurve::
+        setOptionalProperties(double aStiffnessAtOneNormForce,double aCurviness)
+{
+        setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
+        setProperty_curviness(aCurviness);
+}
+
+//=============================================================================
+// SERVICES
+//=============================================================================
+
+double FiberForceLengthCurve::
+    calcValue(double aNormLength) const
+{
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
+    return m_curve.calcValue(aNormLength);
+}
+
+double FiberForceLengthCurve::
+    calcDerivative(double aNormLength, int order) const
+{
+    SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
+        "FiberForceLengthCurve::calcDerivative",
+        "order must be 0, 1, or 2, but %i was entered", order);
     
-            SimTK::Vec4 refFiber = getReferencePassiveFiber();
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
 
-            double e0       = refFiber[RefFiber_e0_Idx];
-            double k        = refFiber[RefFiber_klin_Idx];
-            double peNorm   = refFiber[RefFiber_normPE_Idx];
+    return m_curve.calcDerivative(aNormLength,order);
+}
 
-            //Use the bisection method and Newton's method to find the
-            //value of the curviness parameter that creates a curve with the
-            //same area under it between 0 and e0
-            //==================================================================
+double FiberForceLengthCurve::
+    calcIntegral(double aNormLength) const
+{
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
 
-            double tol = 1e-6;
+    return m_curve.calcIntegral(aNormLength);
+}
+
+SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
+{
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
+    return m_curve.getCurveDomain();
+}
+
+void FiberForceLengthCurve::
+    printMuscleCurveToCSVFile(const std::string& path) const
+{
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
+    m_curve.printMuscleCurveToCSVFile(path);
+}
+
+//=============================================================================
+// PRIVATE SERVICES
+//=============================================================================
+
+double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k, 
+                                                   double area, double relTol)
+{
+
             std::string name = getName();
 
             double c = 0.5;
@@ -214,7 +295,7 @@ double FiberForceLengthCurve::getCurvinessInUse()
 
             double val = tmp.calcIntegral(1+e0);
 
-            double err      = (val-peNorm)/peNorm;
+            double err      = (val-area)/area;
             double prevErr = 0;
             double errStart = err;
             double errMin   = 0;
@@ -229,7 +310,7 @@ double FiberForceLengthCurve::getCurvinessInUse()
             int evalIter    = 0;
 
 
-            while(iter < maxIter && abs(err) > tol){ 
+            while(iter < maxIter && abs(err) > relTol){ 
                 flag_improvement = false;
                 localIter        = 0;                
 
@@ -244,7 +325,7 @@ double FiberForceLengthCurve::getCurvinessInUse()
                                                                    true,
                                                                    name);                
                     val     = tmp.calcIntegral(1+e0);
-                    errMin  = (val-peNorm)/peNorm; 
+                    errMin  = (val-area)/area; 
                                     
                     if(abs(errMin) < abs(err)){
                         prevC = c;
@@ -281,7 +362,7 @@ double FiberForceLengthCurve::getCurvinessInUse()
                                                                    true,
                                                                    name);                 
                         val     = tmp.calcIntegral(1+e0);
-                        errMin  = (val-peNorm)/peNorm; 
+                        errMin  = (val-area)/area; 
                                     
                         if(abs(errMin) < abs(err)){
                             prevC = c;
@@ -306,39 +387,15 @@ double FiberForceLengthCurve::getCurvinessInUse()
                 //    iter,err,evalIter);
             }
 
-            SimTK_ERRCHK1_ALWAYS(err < tol && errStart > (tol+step),
-                "FiberForceLengthCurve::getCurvinessInUse()",
+            SimTK_ERRCHK1_ALWAYS(abs(err) < abs(relTol) 
+                         && abs(errStart) > abs(relTol+abs(step)),
+                "FiberForceLengthCurve::calcCurvinessOfBestFit()",
                 "%s: Not able to fit a fiber curve to the reference"
                 "fiber curve",getName().c_str());
 
-
-            m_curvinessInUse[0] = c;
-            m_curvinessInUse[1] = refFiber[RefFiber_e0_Idx];
-            //==================================================================          
-        }
-    }else{
-        m_curvinessInUse[0] = getCurviness();
-        m_curvinessInUse[1] = SimTK::NaN;
-    }
-
-    return m_curvinessInUse[0];
+            return c;
 }
 
-
-SimTK::Vec4 FiberForceLengthCurve::getReferencePassiveFiber()
-{
-    //Update the properties if they haven't been computed yet, 
-    //or if the strain value they are based on has changed.
-
-    if(m_FiberReference.size()==0){
-        double e0 = getStrainAtOneNormForce();
-        m_FiberReference = calcReferencePassiveFiber(e0);
-    }else if(getStrainAtOneNormForce() != m_FiberReference[RefFiber_e0_Idx]){
-        double e0 = getStrainAtOneNormForce();
-        m_FiberReference = calcReferencePassiveFiber(e0);    
-    }
-    return m_FiberReference;
-}
 
 SimTK::Vec4 FiberForceLengthCurve::
     calcReferencePassiveFiber(double strainAtOneNormForce)
@@ -376,98 +433,5 @@ SimTK::Vec4 FiberForceLengthCurve::
      properties[RefFiber_normPE_Idx] = intF1-intF0;
             
     return properties;
-}
 
-void FiberForceLengthCurve::
-    setStrainAtOneNormForce(double aStrainAtOneNormForce)
-{
-    if(aStrainAtOneNormForce != getStrainAtOneNormForce() )
-    {
-        setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);
-    }
-}
-
-void FiberForceLengthCurve::
-        setStiffnessAtOneNormForce(double aStiffnessAtOneNormForce)
-{
-    //if(aStiffnessAtOneNormForce != getStiffnessAtOneNormForce() )
-    //{
-        setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-    //}
-}
-
-void FiberForceLengthCurve::setCurviness(double aCurviness)
-{
-    //if(aCurviness != getCurviness() )
-    //{
-        setProperty_curviness(aCurviness);
-    //}
-}
-
-
-//=============================================================================
-// SERVICES
-//=============================================================================
-
-double FiberForceLengthCurve::
-    calcValue(double aNormLength) const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        FiberForceLengthCurve* mthis = 
-            const_cast<FiberForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.calcValue(aNormLength);
-}
-
-double FiberForceLengthCurve::
-    calcDerivative(double aNormLength, int order) const
-{
-    SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
-        "FiberForceLengthCurve::calcDerivative",
-        "order must be 0, 1, or 2, but %i was entered", order);
-    
-    if(isObjectUpToDateWithProperties() == false){
-        FiberForceLengthCurve* mthis = 
-            const_cast<FiberForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.calcDerivative(aNormLength,order);
-}
-
-double FiberForceLengthCurve::
-    calcIntegral(double aNormLength) const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        FiberForceLengthCurve* mthis = 
-            const_cast<FiberForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.calcIntegral(aNormLength);
-}
-
-SimTK::Vec2 FiberForceLengthCurve::getCurveDomain() const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        FiberForceLengthCurve* mthis = 
-            const_cast<FiberForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    return m_curve.getCurveDomain();
-}
-
-void FiberForceLengthCurve::
-    printMuscleCurveToCSVFile(const std::string& path) const
-{
-    if(isObjectUpToDateWithProperties() == false){
-        FiberForceLengthCurve* mthis = 
-            const_cast<FiberForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
-    m_curve.printMuscleCurveToCSVFile(path);
 }

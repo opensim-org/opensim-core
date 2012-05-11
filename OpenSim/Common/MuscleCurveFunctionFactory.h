@@ -117,11 +117,11 @@ altered to achieve the desired shape.
 All computational costs assume the following operation costs:
 
 \verbatim
-Operation Type   : #flops
-+,-,=,Boolean Op : 1 
-               / : 10
-             sqrt: 20
-             trig: 40
+Operation Type     : #flops
+*,+,-,=,Boolean Op : 1 
+                 / : 10
+               sqrt: 20
+               trig: 40
 \endverbatim
 
 These relative weightings will vary processor to processor, and so any of 

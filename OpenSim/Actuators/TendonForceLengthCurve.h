@@ -306,18 +306,7 @@ public:
      double getStrainAtOneNormForce();
 
      
-     /**
-     @returns   The normalized stiffness (or slope) of the tendon curve 
-                when the tendon is strained by strainAtOneNormForce
-                under a load of 1 normalized unit of force.
-
-                This is an optional parameter, and so, if this parameter is 
-                empty, a call to this function will throw an exception. If
-                you're not sure if its been set, you can make a call to the
-                corresponding set function before hand, or call the 
-                corresponding '...InUse()' function.
-     */
-     double getStiffnessAtOneNormForce();
+    
      
      /**
         @returns The normalized stiffness (or slope) of the tendon curve 
@@ -419,21 +408,7 @@ public:
      */
      double getStiffnessAtOneNormForceInUse();
 
-     /**
-     @returns   A dimensionless parameter between [0-1] that controls how 
-                the curve is drawn: 0 will create a curve that is
-                very close to a straight line segment while a value of 1 will 
-                create a curve that smoothly fills the corner formed by the 
-                linear extrapolation of 'stiffnessAtOneNormForce' and the
-                x axis as shown in the figure in the class description.
-
-                This is an optional parameter, and so, if this parameter is 
-                empty, a call to this function will throw an exception. If
-                you're not sure if its been set, you can make a call to the
-                corresponding set function before hand, or call the 
-                corresponding '...InUse()' function.
-     */
-     double getCurviness();
+    
 
      /**
         @returns A dimensionless parameter between [0-1] that controls how 
@@ -470,6 +445,13 @@ public:
      double getCurvinessInUse();
 
      /**
+     @returns true if the optional properties are empty and the fitted curve is
+              being used. This function returns false if the optional properties
+              are filled and are being used to construct the curve.
+     */
+     bool isFittedCurveBeingUsed();
+
+     /**
     @param aStrainAtOneNormForce     
                 The tendon strain at which the tendon develops 1 unit of 
                 normalized force. The definition of strain used for this 
@@ -482,16 +464,13 @@ public:
                 equivalently is stretched to 1.04 times its resting length.
     */
      void setStrainAtOneNormForce(double aStrainAtOneNormForce);
-
+    
      /**
      @param aStiffnessAtOneNormForce
                 The normalized stiffness (or slope) of the tendon curve 
                 when the tendon is strained by strainAtOneNormForce
                 under a load of 1 normalized unit of force.
-     */
-     void setStiffnessAtOneNormForce(double aStiffnessAtOneNormForce);
-
-     /**
+    
      @param aCurviness  
                 A dimensionless parameter between [0-1] that controls how 
                 the curve is drawn: 0 will create a curve that is
@@ -499,8 +478,10 @@ public:
                 create a curve that smoothly fills the corner formed by the 
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
                 x axis as shown in the figure.
+
      */
-     void setCurviness(double aCurviness);
+     void setOptionalProperties( double aStiffnessAtOneNormForce, 
+                                 double aCurviness);
 
     /**
     Calculates the value of the curve evaluated at the desired normalized fiber
@@ -700,7 +681,7 @@ private:
         Adults. ASME J Biomech Eng (125).
     */
     SimTK::Vector 
-        calcReferenceTendonCurveProperties(double strainAtOneNormForce);
+        calcReferenceTendon(double strainAtOneNormForce);
 
     void setNull();
     void constructProperties();
@@ -717,31 +698,18 @@ private:
     */
   void buildCurve();
 
-  /**
-    @returns m_TendonReference if calcReferenceTendonCurveProperties has been
-                               called, else it calls 
-                               calcReferenceTendonCurveProperties
-                               and assigns the resulting vector to 
-                               m_TendonReference
-  */
-  SimTK::Vector getReferenceTendon();
+  void ensureCurveUpToDate();
 
-  double fitToReferenceTendon(  double strainAtOneNormForce,
-                                double stiffnessAtOneNormForce,
-                                double areaAtOneNormForce,
-                                double relTol,
-                                std::string& name) const;
+  double calcCurvinessOfBestFit(double e0,  double klin,
+                                double area,double relTol);
 
   MuscleCurveFunction   m_curve;
 
-  //[0] the curviness in use
-  //[1] the strain for which the curviness was computed
-  SimTK::Vec2   m_stiffnessAtOneNormForceInUse; 
-  //[0] the curviness in use
-  //[1] the strain for which the curviness was computed
-  SimTK::Vec2   m_curvinessInUse; 
+  
+  double   m_stiffnessAtOneNormForceInUse;  
+  double   m_curvinessInUse; 
+  bool     m_isFittedCurveBeingUsed;
 
-  SimTK::Vector   m_TendonReference;
 };
 
 }

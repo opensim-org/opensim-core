@@ -554,8 +554,7 @@ void testTendonForceLengthCurve()
         TendonForceLengthCurve fseCurve2;
         //change all of the properties to something other than the default
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setStiffnessAtOneNormForce(50.0);
-        fseCurve2.setCurviness(0.8);
+        fseCurve2.setOptionalProperties(50.0,0.8);
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -573,8 +572,7 @@ void testTendonForceLengthCurve()
         
 
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setStiffnessAtOneNormForce(50.0);
-        fseCurve2.setCurviness(0.8);
+        fseCurve2.setOptionalProperties(50.0,0.8);
 
         cout <<"    c. assignment operator" <<endl;
         fseCurve2=fseCurve1;
@@ -582,8 +580,7 @@ void testTendonForceLengthCurve()
         SimTK_TEST(fseCurve1==fseCurve2);
 
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setStiffnessAtOneNormForce(50.0);
-        fseCurve2.setCurviness(0.8);
+        fseCurve2.setOptionalProperties(50.0,0.8);
 
         cout <<"    d. copy constructor" <<endl;
         TendonForceLengthCurve fseCurve2p5(fseCurve2);
@@ -600,27 +597,28 @@ void testTendonForceLengthCurve()
         cout << "Passed: Testing API constructor" << endl;
 
         //====================================================================
-        cout <<"3. Testing get/set methods:" << endl;
+        cout <<"3. Testing get/set methods and the fitted flag:" << endl;
 
         fseCurve2.setStrainAtOneNormForce(0.10);
-        fseCurve2.setStiffnessAtOneNormForce(50.0);
-        fseCurve2.setCurviness(0.8);
+        fseCurve2.setOptionalProperties(50.0,0.8);
 
         SimTK_TEST(fseCurve2.getStrainAtOneNormForce()      == 0.10);
-        SimTK_TEST(fseCurve2.getStiffnessAtOneNormForce()   == 50.0);
-        SimTK_TEST(fseCurve2.getCurviness()                 == 0.80);
-        
+        SimTK_TEST(fseCurve2.getStiffnessAtOneNormForceInUse()   == 50.0);
+        SimTK_TEST(fseCurve2.getCurvinessInUse()                 == 0.80);
+        SimTK_TEST(fseCurve2.isFittedCurveBeingUsed() == false);
+
         cout << "Passed: Testing get/set methods" << endl;
 
         //====================================================================
         double p1 = 0.04;
-        double p2 = 42.796793488158812; //stiffness of fitted exponental curve
+        double p2 = 42.796793488158585; //stiffness of fitted exponental curve
 
         double p3 = 0.83401209498572515;//curviness that makes the Bezier curve
                                         //have the same area as the fitted
                                         //exponental curve.
 
-        printf("4. Testing default property values: \n\t%f\n\t%f\n\t%f\n"
+        printf("4. Testing default property values, "
+                "and fitted flag: \n\t%f\n\t%f\n\t%f\n"
                 ,p1,p2,p3);
 
         TendonForceLengthCurve fseCurve4;
@@ -628,6 +626,7 @@ void testTendonForceLengthCurve()
             SimTK_TEST_EQ_TOL(fseCurve4.getStrainAtOneNormForce(),p1,tol);
             SimTK_TEST_EQ_TOL(fseCurve4.getStiffnessAtOneNormForceInUse(),p2,tol);
             SimTK_TEST_EQ_TOL(fseCurve4.getCurvinessInUse(),p3,tol);
+            SimTK_TEST(fseCurve4.isFittedCurveBeingUsed() == true);
 
         cout << "Passed" << endl;
         //====================================================================
@@ -708,8 +707,7 @@ void testFiberForceLengthCurve()
         FiberForceLengthCurve fpeCurve2;
         //change all of the properties to something other than the default
         fpeCurve2.setStrainAtOneNormForce(0.80);
-        fpeCurve2.setStiffnessAtOneNormForce(10.0);
-        fpeCurve2.setCurviness(0.8);
+        fpeCurve2.setOptionalProperties(10.0,0.8);
 
 
         //These next few lines are just to read the object in, and repopulate
@@ -727,8 +725,7 @@ void testFiberForceLengthCurve()
         
 
         fpeCurve2.setStrainAtOneNormForce(0.80);
-        fpeCurve2.setStiffnessAtOneNormForce(10.0);
-        fpeCurve2.setCurviness(0.8);
+        fpeCurve2.setOptionalProperties(10.0,0.8);
 
         cout <<"    c. assignment operator" <<endl;
         fpeCurve2=fpeCurve1;
@@ -736,8 +733,7 @@ void testFiberForceLengthCurve()
         SimTK_TEST(fpeCurve1==fpeCurve2);
 
         fpeCurve2.setStrainAtOneNormForce(0.80);
-        fpeCurve2.setStiffnessAtOneNormForce(10.0);
-        fpeCurve2.setCurviness(0.8);
+        fpeCurve2.setOptionalProperties(10.0,0.8);
 
         cout <<"    d. copy constructor" <<endl;
         FiberForceLengthCurve fpeCurve2p5(fpeCurve2);
@@ -754,16 +750,16 @@ void testFiberForceLengthCurve()
         cout << "Passed: Testing API constructor" << endl;
 
         //====================================================================
-        cout <<"3. Testing get/set methods:" << endl;
+        cout <<"3. Testing get/set methods and the fitted flag:" << endl;
 
         fpeCurve2.setStrainAtOneNormForce(0.80);
-        fpeCurve2.setStiffnessAtOneNormForce(10.0);
-        fpeCurve2.setCurviness(0.8);
+        fpeCurve2.setOptionalProperties(10.0,0.8);
 
-        SimTK_TEST(fpeCurve2.getStrainAtOneNormForce()      == 0.80);
-        SimTK_TEST(fpeCurve2.getStiffnessAtOneNormForce()   == 10.0);
-        SimTK_TEST(fpeCurve2.getCurviness()                 == 0.80);
-        
+        SimTK_TEST(fpeCurve2.getStrainAtOneNormForce()         == 0.80);
+        SimTK_TEST(fpeCurve2.getStiffnessAtOneNormForceInUse() == 10.0);
+        SimTK_TEST(fpeCurve2.getCurvinessInUse()               == 0.80);
+        SimTK_TEST(fpeCurve2.isFittedCurveBeingUsed() == false);
+
         cout << "Passed: Testing get/set methods" << endl;
 
         //====================================================================
@@ -771,14 +767,16 @@ void testFiberForceLengthCurve()
         double p2 = 8.3898637908858689;
         double p3 = 0.63753341725162227;
 
-        printf("4. Testing default property values: \n\t%f,\n\t%f,\n\t%f\n",
+        printf( "4. Testing default property values"
+                " and the fitted flag: \n\t%f,\n\t%f,\n\t%f\n",
             p1,p2,p3);      
         FiberForceLengthCurve fpeCurve4;
         fpeCurve4.setName("fpeCurve");
 
-        SimTK_TEST(fpeCurve4.getStrainAtOneNormForce()          == p1);
-        SimTK_TEST(fpeCurve4.getStiffnessAtOneNormForceInUse()  == p2);
-        SimTK_TEST(fpeCurve4.getCurvinessInUse()                == p3);
+        SimTK_TEST_EQ_TOL(fpeCurve4.getStrainAtOneNormForce()        ,p1, 1e-6);
+        SimTK_TEST_EQ_TOL(fpeCurve4.getStiffnessAtOneNormForceInUse(),p2, 1e-6);
+        SimTK_TEST_EQ_TOL(fpeCurve4.getCurvinessInUse()              ,p3, 1e-6);
+        SimTK_TEST(fpeCurve4.isFittedCurveBeingUsed() == true);
 
         fpeCurve4.setName("fpeCurve");
         cout << "Passed" << endl;

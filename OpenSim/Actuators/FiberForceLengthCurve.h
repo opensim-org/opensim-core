@@ -227,17 +227,7 @@ public:
     */
      double getStrainAtOneNormForce();
 
-     /**
-     @returns   The normalized stiffness (or slope) of the fiber curve 
-                when the fiber is strained by strainAtOneNormForce
-                under a load of 1 normalized unit of force.
-
-                This function will throw an exception if the optional property 
-                'curviness' has not been yet been set. If you are unsure if this
-                property has been set, set it, or call getCurvinessInUse().
-
-     */
-     double getStiffnessAtOneNormForce();
+     
 
      /**
      @returns   The slope of the curve (or stiffness of the fiber) when the 
@@ -283,19 +273,7 @@ public:
      */
      double getStiffnessAtOneNormForceInUse();
 
-     /**
-     @returns   A dimensionless parameter between [0-1] that controls how 
-                the curve is drawn: 0 will create a curve that is
-                very close to a straight line segment while a value of 1 will 
-                create a curve that smoothly fills the corner formed by the 
-                linear extrapolation of 'stiffnessAtOneNormForce' and the
-                x axis as shown in the figure in the class description. 
-                
-                This function will throw an exception if the optional property 
-                'curviness' has not been yet been set. If you are unsure if this
-                property has been set, set it, or call getCurvinessInUse().
-     */
-     double getCurviness();
+     
 
      /**
         @returns A dimensionless parameter between [0-1] that controls how 
@@ -333,6 +311,13 @@ public:
      double getCurvinessInUse();
 
      /**
+     @returns true if the optional properties are empty and the fitted curve is
+              being used. This function returns false if the optional properties
+              are filled and are being used to construct the curve.
+     */
+     bool isFittedCurveBeingUsed();
+
+     /**
     @param aStrainAtOneNormForce     
                 The fiber strain at which the fiber develops 1 unit of 
                 normalized force. The definition of strain used for this 
@@ -346,15 +331,13 @@ public:
     */
      void setStrainAtOneNormForce(double aStrainAtOneNormForce);
 
+    
      /**
      @param aStiffnessAtOneNormForce
                 The normalized stiffness (or slope) of the fiber curve 
                 when the fiber is strained by strainAtOneNormForce
                 under a load of 1 normalized unit of force.
-     */
-     void setStiffnessAtOneNormForce(double aStiffnessAtOneNormForce);
 
-     /**
      @param aCurviness  
                 A dimensionless parameter between [0-1] that controls how 
                 the curve is drawn: 0 will create a curve that is
@@ -362,8 +345,11 @@ public:
                 create a curve that smoothly fills the corner formed by the 
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
                 x axis as shown in the figure.
-     */
-     void setCurviness(double aCurviness);
+
+    
+     */    
+     void setOptionalProperties(double aStiffnessAtOneNormForce,
+                                double aCurviness);
 
     /**
     Calculates the value of the curve evaluated at the desired normalized fiber
@@ -552,6 +538,12 @@ private:
     void buildCurve();
 
     /**
+        If the curve is upto date nothing is done. If the curves parameters have
+        changed then all of the 
+    */
+    void ensureCurveUpToDate();
+
+    /**
      @returns The properties of the passive fiber length curve documented in 
             Thelen 2003. Specifically:
 
@@ -574,53 +566,16 @@ private:
         Simulate Dynamic Contractions in Older Adults. ASME J Biomech Eng (125).
    */
    SimTK::Vec4 calcReferencePassiveFiber(double strainAtOneNormForce);
-   
-   /**
-   @returns The properties of the passive fiber length curve documented in 
-            Thelen 2003. Specifically:
+      
 
-        \li [0]: the strainAtOneNormForce these properties were computed for
-        \li [1]: kPE
-        \li [2]: Normalized slope: dF/depsilon at 
-                 strainAtOneNormForce (stiffness)
-        \li [3]: Normalized area under the curve from a strain (Cauchy 
-                 definition of strain) from 0 to strainAtOneNormForce
+   double calcCurvinessOfBestFit(double e0, double k, 
+                                 double area, double relTol);
 
-        If these properties have already been computed, the saved versions are
-        returned, else calcReferencePassiveFiber(double strainAtOneNormForc) is
-        called.
+    MuscleCurveFunction   m_curve;    
+    double m_stiffnessAtOneNormForceInUse;    
+    double m_curvinessInUse;
+    bool   m_fittedCurveBeingUsed; 
 
-   <B> Computational Cost: </B>
-
-   \verbatim 
-            ~220 flops
-            ~5 flops for subsequent function calls
-    \endverbatim
-
-   <B> References </B>
-
-        Thelen (2003). Adjustment of Muscle Mechanics Model Paramters to 
-        Simulate Dynamic Contractions in Older Adults. ASME J Biomech Eng (125).
-   */
-   SimTK::Vec4 getReferencePassiveFiber();
-
-    MuscleCurveFunction   m_curve;
-    
-    //[0] the stiffness in use
-    //[1] the strain for which the stiffness was computed
-    SimTK::Vec2 m_stiffnessAtOneNormForceInUse;
-    
-    //[0] the curviness in use
-    //[1] the strain for which the curviness was computed
-    SimTK::Vec2 m_curvinessInUse;
-
-    //[0]: the strainAtOneNormForce these properties were computed for
-    //[1]: kPE
-    //[2]: Normalized slope: dF/depsilon at 
-    //     strainAtOneNormForce (stiffness)
-    //[3]: Normalized area under the curve from a strain (Cauchy 
-    //     definition of strain) from 0 to strainAtOneNormForce
-    SimTK::Vec4 m_FiberReference;
 };
 
 }
