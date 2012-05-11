@@ -317,6 +317,18 @@ public:
         pd.setValue(6, array6);
     }
 
+    static double getValueVec3(const AbstractProperty& p, int index) 
+    {   
+        const Property<SimTK::Vec3>& pd = dynamic_cast<const Property<SimTK::Vec3>&>(p);
+        const SimTK::Vec3& vec3 = pd.getValue();
+        return vec3[index]; 
+    }
+    static void setValueVec3(double v, AbstractProperty& p, int index) 
+    {   
+        Property<SimTK::Vec3>& pd = dynamic_cast<Property<SimTK::Vec3>&>(p);
+        pd.updValue()[index] = v;
+     }
+
 };
 
 } // namespace OpenSim
