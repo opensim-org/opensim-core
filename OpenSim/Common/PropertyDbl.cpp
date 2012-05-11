@@ -187,7 +187,7 @@ toString() const
     }
 
     if (SimTK::isNaN(_value)) return "NaN";
-	if (_value ==  SimTK::Infinity) return "infinity";
-	if (_value == -SimTK::Infinity) return "-infinity";
+	if (_value ==  SimTK::Infinity) return "Inf";
+	if (_value == -SimTK::Infinity) return "-Inf";
 	return "UnrecognizedNonFinite???";
 }

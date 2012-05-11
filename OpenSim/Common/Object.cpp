@@ -832,9 +832,9 @@ try {
 			if (iter == aNode.element_end()) continue;	// Not found
 			iter->getValueAs(valueString); // special values
 			lowerCaseValueString = valueString.toLower();
-			if (lowerCaseValueString=="infinity")
+			if (lowerCaseValueString=="infinity" || lowerCaseValueString=="inf")
 				property->setValue(SimTK::Infinity);
-			else if (lowerCaseValueString=="-infinity")
+			else if (lowerCaseValueString=="-infinity" || lowerCaseValueString=="-inf")
 				property->setValue(-SimTK::Infinity);
 			else if (lowerCaseValueString=="nan")
 				property->setValue(SimTK::NaN);
@@ -1145,9 +1145,9 @@ updateXMLNode(SimTK::Xml::Element& aParent)
 				UpdateXMLNodeSimpleProperty<double>(prop, myObjectElement, name);
 			else {
 				if (prop->getValueDbl() == SimTK::Infinity)
-					stringValue="infinity";
+					stringValue="Inf";
 				else if (prop->getValueDbl() == -SimTK::Infinity)
-					stringValue="-infinity";
+					stringValue="-Inf";
 				else if (SimTK::isNaN(prop->getValueDbl()))
 					stringValue="NaN";
 				if(!prop->getValueIsDefault()) {
