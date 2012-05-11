@@ -61,8 +61,6 @@ FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtOneNormForce,
 
 void FiberForceLengthCurve::setNull()
 {
-    //Sherm says this is taken care of automatically
-    //setObjectIsUpToDateWithProperties(false);
 }
 
 void FiberForceLengthCurve::constructProperties()
@@ -92,7 +90,7 @@ void FiberForceLengthCurve::buildCurve()
         this->m_curve = tmp;
           
     }
-    setObjectIsUpToDateWithProperties(true);
+    setObjectIsUpToDateWithProperties();
 }
 
 
@@ -386,8 +384,6 @@ void FiberForceLengthCurve::
     if(aStrainAtOneNormForce != getStrainAtOneNormForce() )
     {
         setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);
-        //Sherm says this is taken care of automatically
-        //setObjectIsUpToDateWithProperties(false);
     }
 }
 
@@ -397,8 +393,6 @@ void FiberForceLengthCurve::
     //if(aStiffnessAtOneNormForce != getStiffnessAtOneNormForce() )
     //{
         setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-        //Sherm says this is taken care of automatically
-        //setObjectIsUpToDateWithProperties(false);
     //}
 }
 
@@ -407,8 +401,6 @@ void FiberForceLengthCurve::setCurviness(double aCurviness)
     //if(aCurviness != getCurviness() )
     //{
         setProperty_curviness(aCurviness);
-        //Sherm says this is taken care of automatically
-        //setObjectIsUpToDateWithProperties(false);
     //}
 }
 

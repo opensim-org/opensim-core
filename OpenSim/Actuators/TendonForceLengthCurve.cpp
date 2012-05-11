@@ -75,7 +75,6 @@ TendonForceLengthCurve::TendonForceLengthCurve( double strainAtOneNormForce,
 
 void TendonForceLengthCurve::setNull()
 {
-     //setObjectIsUpToDateWithProperties(false);
 }
 
 void TendonForceLengthCurve::constructProperties()
@@ -103,7 +102,7 @@ void TendonForceLengthCurve::buildCurve()
                                                                     getName());            
         this->m_curve = tmp;          
     }
-    setObjectIsUpToDateWithProperties(true);
+    setObjectIsUpToDateWithProperties();
 }
 
 SimTK::Vector TendonForceLengthCurve::
@@ -399,7 +398,6 @@ void TendonForceLengthCurve::
     if(aStrainAtOneNormForce != getStrainAtOneNormForce() )
     {        
         setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);
-        //setObjectIsUpToDateWithProperties(false);
     }
 }
 
@@ -409,7 +407,6 @@ void TendonForceLengthCurve::
     //if(aStiffnessAtOneNormForce != getStiffnessAtOneNormForce() )
     //{
         setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-        //setObjectIsUpToDateWithProperties(false);
     //}
 }
 
@@ -418,7 +415,6 @@ void TendonForceLengthCurve::setCurviness(double aCurviness)
     //if(aCurviness != getCurviness() )
     //{
         setProperty_curviness(aCurviness);
-        //setObjectIsUpToDateWithProperties(false);
     //}
 }
 

@@ -137,13 +137,17 @@ public:
 	 */ 
 	//@{
 
-	/** get/set Modeling option to ignore tendon compliance when computing muscle dynamics */
+	/** Get/set Modeling (runtime) option to ignore tendon compliance when 
+    computing muscle dynamics. This does not directly modify the persistent
+    property value. **/
 	bool getIgnoreTendonCompliance(const SimTK::State& s) const;
-	void setIgnoreTendonCompliance(SimTK::State& s, bool ignore);
+	void setIgnoreTendonCompliance(SimTK::State& s, bool ignore) const;
 
-	/** get/set Modeling option to ignore activation dynamics when computing muscle dynamics  */
+	/** Get/set Modeling (runtime) option to ignore activation dynamics when 
+    computing muscle dynamics. This does not directly modify the persistent
+    property value. **/
 	bool getIgnoreActivationDynamics(const SimTK::State& s) const;
-	void setIgnoreActivationDynamics(SimTK::State& s, bool ignore);
+	void setIgnoreActivationDynamics(SimTK::State& s, bool ignore) const;
 
 	/** get the activation level of the muscle, which modulates the active force of the muscle 
 	    and has a normalized (0 to 1) value 
@@ -314,9 +318,10 @@ protected:
 	
 
 	/** Model Component creation interface */
-	virtual void setup(Model &aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void setDefaultsFromState(const SimTK::State &s);
+	void setup(Model &aModel) OVERRIDE_11;
+	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void setDefaultsFromState(const SimTK::State &s) OVERRIDE_11;
+	void initState(SimTK::State& state) const OVERRIDE_11;
 	
 	// Update the geometry attached to the muscle (location of muscle points and connecting segments
 	//  all in global/interial frame)

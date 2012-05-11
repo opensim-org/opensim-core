@@ -72,7 +72,6 @@ FiberCompressiveForceCosPennationCurve::
 
 void FiberCompressiveForceCosPennationCurve::setNull()
 {    
-    setObjectIsUpToDateWithProperties(false);
 }
 
 void FiberCompressiveForceCosPennationCurve::constructProperties()
@@ -104,7 +103,7 @@ void FiberCompressiveForceCosPennationCurve::buildCurve()
                                                             getName());       
         this->m_curve = tmp;          
     }   
-    setObjectIsUpToDateWithProperties(true);
+    setObjectIsUpToDateWithProperties();
 }
 
 
@@ -178,7 +177,6 @@ void FiberCompressiveForceCosPennationCurve::
     if(aEngagementAngleInDegrees != getEngagementAngleInDegrees() )
     {
         setProperty_engagement_angle_in_degrees(aEngagementAngleInDegrees);
-        setObjectIsUpToDateWithProperties(false);
     }
 }
 
@@ -186,13 +184,11 @@ void FiberCompressiveForceCosPennationCurve::
         setStiffnessAtPerpendicular(double aStiffnessAtPerpendicular)
 {    
         setProperty_stiffness_at_perpendicular(aStiffnessAtPerpendicular);
-        setObjectIsUpToDateWithProperties(false);
 }
 
 void FiberCompressiveForceCosPennationCurve::setCurviness(double aCurviness)
 {    
         setProperty_curviness(aCurviness);
-        setObjectIsUpToDateWithProperties(false);
 }
 
 

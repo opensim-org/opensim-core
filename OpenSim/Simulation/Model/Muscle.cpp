@@ -155,6 +155,7 @@ void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
 void Muscle::setup(Model &aModel)
 {
 	Super::setup(aModel);
+
 	_muscleWidth = getOptimalFiberLength()
                     * sin(getPennationAngleAtOptimalFiberLength());
 
@@ -181,19 +182,31 @@ void Muscle::setup(Model &aModel)
        ("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
  }
 
-void Muscle::setDefaultsFromState(const SimTK::State& s)
+void Muscle::setDefaultsFromState(const SimTK::State& state)
 {
-    setProperty_ignore_tendon_compliance(getIgnoreTendonCompliance(s));
-	setProperty_ignore_activation_dynamics(getIgnoreActivationDynamics(s));
+    Super::setDefaultsFromState(state);
+
+    setProperty_ignore_tendon_compliance(getIgnoreTendonCompliance(state));
+	setProperty_ignore_activation_dynamics(getIgnoreActivationDynamics(state));
 }
 
-/* get/set flag to ignore tendon compliance when computing muscle dynamics */
+void  Muscle::initState(SimTK::State& state) const {
+    Super::initState(state);
+
+    setIgnoreTendonCompliance(state, 
+        getProperty_ignore_tendon_compliance());
+    setIgnoreActivationDynamics(state, 
+        getProperty_ignore_activation_dynamics());
+}
+
+// Get/set runtime flag to ignore tendon compliance when computing muscle 
+// dynamics.
 bool Muscle::getIgnoreTendonCompliance(const SimTK::State& s) const
 {
 	return (getModelingOption(s, "ignore_tendon_compliance") > 0);
 }
 
-void Muscle::setIgnoreTendonCompliance(SimTK::State& s, bool ignore)
+void Muscle::setIgnoreTendonCompliance(SimTK::State& s, bool ignore) const
 {
 	setModelingOption(s, "ignore_tendon_compliance", int(ignore));
 }
@@ -205,7 +218,7 @@ bool Muscle::getIgnoreActivationDynamics(const SimTK::State& s) const
 	return (getModelingOption(s, "ignore_activation_dynamics") > 0);
 }
 
-void Muscle::setIgnoreActivationDynamics(SimTK::State& s, bool ignore)
+void Muscle::setIgnoreActivationDynamics(SimTK::State& s, bool ignore) const
 {
 	setModelingOption(s, "ignore_activation_dynamics", int(ignore));
 }
