@@ -55,7 +55,7 @@
 #include <OpenSim/Actuators/Schutte1993Muscle_Deprecated.h>
 #include <OpenSim/Actuators/Delp1990Muscle_Deprecated.h>
 #include <OpenSim/Common/Array.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/XYFunctionInterface.h>
 
 #define ROUNDOFF_ERROR 0.000000001
@@ -162,7 +162,7 @@ void SimbodySimmModel::setup(const Model* aModel)
    _model = aModel;
 
    // Make a simple linear function for unconstrained coordinates
-   NaturalCubicSpline* f = new NaturalCubicSpline();
+   SimmSpline* f = new SimmSpline();
    f->addPoint(-2.0*SimTK::Pi, -2.0*SimTK::Pi);
    f->addPoint(2.0*SimTK::Pi, 2.0*SimTK::Pi);
    f->setName("f0");

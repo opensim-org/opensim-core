@@ -41,7 +41,7 @@
 #include "CoordinateSet.h"
 #include "Model.h"
 #include <OpenSim/Common/SimmMacros.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include "SimTKsimbody.h"
 

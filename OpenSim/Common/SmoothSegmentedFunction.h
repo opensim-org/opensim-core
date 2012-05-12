@@ -1,7 +1,7 @@
-#ifndef OPENSIM_MUSCLECURVEFUNCTION_H_
-#define OPENSIM_MUSCLECURVEFUNCTION_H_
+#ifndef OPENSIM_SMOOTHSEGMENTEDFUNCTION_H_
+#define OPENSIM_SMOOTHSEGMENTEDFUNCTION_H_
 
-// MuscleCurveFunction.h
+// SmoothSegmentedFunction.h
 // Author: Matthew Millard
 /*
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -24,16 +24,16 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 
-//#include "MuscleCurveFunctionFactory.h"
-#include "QuinticBezierCurveSet.h"
+//#include "SmoothSegmentedFunctionFactory.h"
+#include "SegmentedQuinticBezierToolkit.h"
 
 namespace OpenSim { 
 
     /**
     This class contains the quintic Bezier curves, x(u) and y(u), that have been
-    created by MuscleCurveFunctionFactory to follow a physiologically meaningful 
-    muscle characteristic. A MuscleCurveFunction cannot be created directly,
-    you must use MuscleCurveFunctionFactory to create the muscle curve of 
+    created by SmoothSegmentedFunctionFactory to follow a physiologically meaningful 
+    muscle characteristic. A SmoothSegmentedFunction cannot be created directly,
+    you must use SmoothSegmentedFunctionFactory to create the muscle curve of 
     interest.
 
     <B>Future Upgrades</B>
@@ -60,8 +60,8 @@ namespace OpenSim {
 
 
     */
-    class OSIMCOMMON_API MuscleCurveFunction : public SimTK::Function_<double>
-//    class MuscleCurveFunction : public SimTK::Function_<double>
+    class OSIMCOMMON_API SmoothSegmentedFunction : public SimTK::Function_<double>
+//    class SmoothSegmentedFunction : public SimTK::Function_<double>
 
     {
      
@@ -70,7 +70,7 @@ namespace OpenSim {
 
         ///The default constructor, which populates the member data fields with
         ///NaN's
-        MuscleCurveFunction();
+        SmoothSegmentedFunction();
 
 
 
@@ -180,7 +180,7 @@ namespace OpenSim {
        /**This function will generate a csv file (of 'name_curveName.csv', where 
        name is the one used in the constructor) of the muscle curve, and 
        'curveName' corresponds to the function that was called from
-       MuscleCurveFunctionFactory to create the curve.
+       SmoothSegmentedFunctionFactory to create the curve.
        
        @param path The full path to the location. Note '/' slashes must be used,
             and do not put a '/' after the last folder.
@@ -307,13 +307,13 @@ namespace OpenSim {
         /**The name of the function**/
         std::string _name;
             
-        /**No human should be constructing a MuscleCurveFunction, so the
+        /**No human should be constructing a SmoothSegmentedFunction, so the
         constructor is made private so that mere mortals cannot look at it. 
-        MuscleCurveFunctionFactory should be used to create MuscleCurveFunctions
+        SmoothSegmentedFunctionFactory should be used to create MuscleCurveFunctions
         and that's why its a friend*/
-        friend class MuscleCurveFunctionFactory;
+        friend class SmoothSegmentedFunctionFactory;
 
-       //MuscleCurveFunction();
+       //SmoothSegmentedFunction();
        /**
        Creates a set of quintic Bezier Curve.
 
@@ -359,7 +359,7 @@ namespace OpenSim {
                             computed from x1-x0 with the initial condition at 
                             x1 of 0.
 
-       @param name          The name of the data this MuscleCurveFunction 
+       @param name          The name of the data this SmoothSegmentedFunction 
 
        <B>Computational Costs</B>
        Generating the integral curve is not cheap, and so should only be used 
@@ -371,7 +371,7 @@ namespace OpenSim {
        \endverbatim
 
               */
-       MuscleCurveFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY, 
+       SmoothSegmentedFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY, 
           double x0, double x1,double y0, double y1,double dydx0, double dydx1,
           bool computeIntegral, bool intx0x1, const std::string& name); 
 

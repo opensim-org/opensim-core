@@ -1,7 +1,7 @@
-#ifndef OPENSIM_MUSCLECURVEFUNCTIONFACTORY_H_
-#define OPENSIM_MUSCLECURVEFUNCTIONFACTORY_H_
+#ifndef OPENSIM_SMOOTHSEGMENTEDFUNCTIONFACTORY_H_
+#define OPENSIM_SMOOTHSEGMENTEDFUNCTIONFACTORY_H_
 
-// MuscleCurveFunctionFactory.h
+// SmoothSegmentedFunctionFactory.h
 // Author: Matthew Millard
 /*
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -24,8 +24,8 @@
  * -------------------------------------------------------------------------- */
 #include "osimCommonDLL.h"
 
-#include "MuscleCurveFunction.h"
-#include "QuinticBezierCurveSet.h"
+#include "SmoothSegmentedFunction.h"
+#include "SegmentedQuinticBezierToolkit.h"
 
 #include "Simbody.h"
 
@@ -92,7 +92,7 @@ These goals were surprisingly difficult to achieve, but these goals have been
 achieved using sets of C2 continuous quintic Bezier curves. The resulting 
 muscle curve functions in this class take parameters that would be intuitive to 
 biomechanists who simulate human musculoskeletal systems, and returns a 
-MuscleCurveFunction which is capable of evaluating the value, derivatives 
+SmoothSegmentedFunction which is capable of evaluating the value, derivatives 
 and optionally the integral of the desired function (or actually relation as 
 the case may be). 
 
@@ -131,14 +131,14 @@ the quoted computational costs are approximate.
 @version 0.0
 
 */
-class OSIMCOMMON_API MuscleCurveFunctionFactory
-//class MuscleCurveFunctionFactory
+class OSIMCOMMON_API SmoothSegmentedFunctionFactory
+//class SmoothSegmentedFunctionFactory
 {
 
 
     public:
 
-       // friend class MuscleCurveFunction;
+       // friend class SmoothSegmentedFunction;
 
 
         /**
@@ -195,7 +195,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
-        @return MuscleCurveFunction object
+        @return SmoothSegmentedFunction object
 
         \image html fig_MuscleCurveFunctionFactory_falCurve.png
 
@@ -224,7 +224,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double plateauSlope = 0.75;
             double curviness    = 0.9;
 
-            MuscleCurveFunction fiberfalCurve = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction fiberfalCurve = SmoothSegmentedFunctionFactory::
                 createFiberActiveForceLengthCurve(lce0, lce1, lce2, lce3, 
                               shoulderVal, plateauSlope, curviness,false,"test");
             fiberfalCurve.printMuscleCurveToFile();
@@ -232,7 +232,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         
 
         */
-        static MuscleCurveFunction createFiberActiveForceLengthCurve(
+        static SmoothSegmentedFunction createFiberActiveForceLengthCurve(
             double lce0, double lce1, double lce2, double lce3, 
             double minActiveForceLengthValue, double plateauSlope, 
             double curviness, bool computeIntegral, 
@@ -300,7 +300,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         @param computeIntegral  If this is true, the integral for this curve
                                 is numerically calculated and splined. If false, 
                                 this integral is not computed, and a call to 
-                                MuscleCurveFunction::calcIntegral() will throw 
+                                SmoothSegmentedFunction::calcIntegral() will throw 
                                 an exception
 
         @param curveName The name of the muscle this curve applies to. This 
@@ -310,7 +310,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
-        @return MuscleCurveFunction object
+        @return SmoothSegmentedFunction object
         
                 \image html fig_MuscleCurveFunctionFactory_fvCurve.png
 
@@ -339,13 +339,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double concCurviness = 0.1;
             double eccCurviness = 0.75;
 
-            MuscleCurveFunction fiberFVCurve = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction fiberFVCurve = SmoothSegmentedFunctionFactory::
                 createFiberForceVelocityCurve(fmaxE, dydxC, dydxIso, dydxE, 
                                 concCurviness,  eccCurviness,false,"test");
             fiberFVCurve.printMuscleCurveToFile();
         @endcode             
         */
-        static MuscleCurveFunction createFiberForceVelocityCurve(
+        static SmoothSegmentedFunction createFiberForceVelocityCurve(
             double fmaxE, double dydxC, double dydxIso, double dydxE, 
             double concCurviness, double eccCurviness,
             bool computeIntegral, const std::string& curveName);
@@ -367,7 +367,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         \image html fig_MuscleCurveFunctionFactory_fvInvCurve.png
 
         */
-        static MuscleCurveFunction createFiberForceVelocityInverseCurve(
+        static SmoothSegmentedFunction createFiberForceVelocityInverseCurve(
             double fmaxE, double dydxC, double dydxIso, double dydxE, 
             double concCurviness, double eccCurviness, 
             bool computeIntegral, const std::string& muscleName);
@@ -410,7 +410,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
-        @return MuscleCurveFunction object
+        @return SmoothSegmentedFunction object
 
         \image html fig_MuscleCurveFunctionFactory_fcphiCurve.png
 
@@ -433,13 +433,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double kiso = 8.389863790885878;
             double c    = 0.0;
 
-            MuscleCurveFunction fiberCEPhiCurve = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction fiberCEPhiCurve = SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForcePennationCurve(phi0,kiso,c,
                 true,"test");
             fiberCEPhiCurve.printMuscleCurveToFile();
         @endcode
         */
-        static MuscleCurveFunction 
+        static SmoothSegmentedFunction 
             createFiberCompressiveForcePennationCurve(
                 double phi0, double kiso, double curviness, 
                 bool computeIntegral, const std::string& curveName);
@@ -486,7 +486,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
-        @return MuscleCurveFunction object
+        @return SmoothSegmentedFunction object
         
         \image html fig_MuscleCurveFunctionFactory_fcCosPhiCurve.png
 
@@ -510,7 +510,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double kiso    = -1.2/(cosPhi0);
             double c       = 0.5;
 
-            MuscleCurveFunction fiberCECosPhiCurve = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction fiberCECosPhiCurve = SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForceCosPennationCurve(cosPhi0,kiso,
                                                            c,true,"test");
             fiberCEPhiCurve.printMuscleCurveToFile();
@@ -519,7 +519,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
         
 
         */
-        static MuscleCurveFunction 
+        static SmoothSegmentedFunction 
             createFiberCompressiveForceCosPennationCurve(
                 double cosPhi0, double kiso, double curviness, 
                 bool computeIntegral, const std::string& curveName);
@@ -564,7 +564,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
-        @return MuscleCurveFunction object
+        @return SmoothSegmentedFunction object
 
         \image html fig_MuscleCurveFunctionFactory_fpeCurve.png
 
@@ -587,13 +587,13 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double kiso = -8.389863790885878;
             double c    = 0.1;//0.0;
 
-            MuscleCurveFunction fiberCECurve = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction fiberCECurve = SmoothSegmentedFunctionFactory::
                 createFiberCompressiveForceLengthCurve(lmax,kiso,c,true,"test");
             fiberCECurve.printMuscleCurveToFile();
         @endcode
 
         */
-        static MuscleCurveFunction 
+        static SmoothSegmentedFunction 
             createFiberCompressiveForceLengthCurve(double l0, double kiso, 
             double curviness,bool computeIntegral,const std::string& curveName);
 
@@ -628,7 +628,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
-        @return MuscleCurveFunction object
+        @return SmoothSegmentedFunction object
 
 
         \image html fig_MuscleCurveFunctionFactory_fcLengthCurve.png
@@ -652,14 +652,14 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double kiso    = 8.389863790885878;
             double c       = 0.65;
 
-            MuscleCurveFunction fiberFLCurve = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction fiberFLCurve = SmoothSegmentedFunctionFactory::
                                               createFiberForceLengthCurve(e0,
                                               kiso, c, true,"test");
             fiberFLCurve.printMuscleCurveToFile();
         @endcode
 
         */
-        static MuscleCurveFunction createFiberForceLengthCurve(double e0, 
+        static SmoothSegmentedFunction createFiberForceLengthCurve(double e0, 
                         double kiso, double curviness,
                         bool computeIntegral, const std::string& curveName);
 
@@ -698,7 +698,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
                           userfriendly error message can be displayed to the
                           end user to help them debug their model.
 
-        @return MuscleCurveFunction
+        @return SmoothSegmentedFunction
 
         \image html fig_MuscleCurveFunctionFactory_fseCurve.png
 
@@ -721,7 +721,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
             double kiso = 42.79679348815859;
             double c    = 0.75;
     
-            MuscleCurveFunction tendonCurve = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction tendonCurve = SmoothSegmentedFunctionFactory::
                                                 createTendonForceLengthCurve(
                                                   e0,kiso,c,true,"test");
             tendonCurve.printMuscleCurveToFile();  
@@ -729,7 +729,7 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
         
         */
-        static MuscleCurveFunction 
+        static SmoothSegmentedFunction 
            createTendonForceLengthCurve(double e0,double kiso,double curviness,
            bool computeIntegral, const std::string& curveName);
 
@@ -755,4 +755,4 @@ class OSIMCOMMON_API MuscleCurveFunctionFactory
 
 }
 
-#endif //OPENSIM_MUSCLECURVEFUNCTIONFACTORY_H_
+#endif //OPENSIM_SMOOTHSEGMENTEDFUNCTIONFACTORY_H_

@@ -25,8 +25,8 @@
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Common/MuscleCurveFunctionFactory.h>
-#include <OpenSim/Common/MuscleCurveFunction.h>
+#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
+#include <OpenSim/Common/SmoothSegmentedFunction.h>
 
 #include <Simbody.h>
 
@@ -363,13 +363,13 @@ private:
     /*
     This object extends the ModelComponent interface so that we can make use
     of the 'createSystem' function, which we are using to create the active
-    force length curve (using MuscleCurveFunctionFactory), which is an 
+    force length curve (using SmoothSegmentedFunctionFactory), which is an 
     expensive operation, just once prior to simulation. 
     
     Thus the user is allowed to set the properties of this curve until just 
     before the simulation begins. Just prior to the simulation starts 
     'createSystem' is called, and then this object will build the 
-    MuscleCurveFunction that defines the curve the user requested
+    SmoothSegmentedFunction that defines the curve the user requested
     */
 
     ///ModelComponent Interface required function
@@ -408,7 +408,7 @@ private:
     */
     void buildCurve();
 
-    MuscleCurveFunction   m_curve;
+    SmoothSegmentedFunction   m_curve;
     bool                  m_curveUpToDate;
 };
 

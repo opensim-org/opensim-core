@@ -1,4 +1,4 @@
-// NaturalCubicSpline.cpp
+// SimmSpline.cpp
 // Author: Peter Loan
 /*
  * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -28,7 +28,7 @@
 
 
 // C++ INCLUDES
-#include "NaturalCubicSpline.h"
+#include "SimmSpline.h"
 #include "Constant.h"
 #include "PropertyInt.h"
 #include "PropertyDbl.h"
@@ -55,14 +55,14 @@ using SimTK::Vector;
 /**
  * Destructor.
  */
-NaturalCubicSpline::~NaturalCubicSpline()
+SimmSpline::~SimmSpline()
 {
 }
 //_____________________________________________________________________________
 /**
  * Default constructor.
  */
-NaturalCubicSpline::NaturalCubicSpline() :
+SimmSpline::SimmSpline() :
 	_x(_propX.getValueDblArray()),
 	_y(_propY.getValueDblArray()),
 	_b(0.0), _c(0.0), _d(0.0)
@@ -72,7 +72,7 @@ NaturalCubicSpline::NaturalCubicSpline() :
 //_____________________________________________________________________________
 /**
  */
-NaturalCubicSpline::NaturalCubicSpline(int aN,const double *aX,const double *aY,
+SimmSpline::SimmSpline(int aN,const double *aX,const double *aY,
 	const string &aName) :
 	_x(_propX.getValueDblArray()),
 	_y(_propY.getValueDblArray()),
@@ -86,14 +86,14 @@ NaturalCubicSpline::NaturalCubicSpline(int aN,const double *aX,const double *aY,
 	// NUMBER OF DATA POINTS
 	if(aN < 2)
 	{
-		printf("NaturalCubicSpline: ERROR- there must be 2 or more data points.\n");
+		printf("SimmSpline: ERROR- there must be 2 or more data points.\n");
 		return;
 	}
 
 	// CHECK DATA
 	if((aX==NULL)||(aY==NULL))
 	{
-		printf("NaturalCubicSpline: ERROR- NULL arrays for data points encountered.\n");
+		printf("SimmSpline: ERROR- NULL arrays for data points encountered.\n");
 		return;
 	}
 
@@ -112,9 +112,9 @@ NaturalCubicSpline::NaturalCubicSpline(int aN,const double *aX,const double *aY,
  * Copy constructor.
  * All data members of the specified spline are copied.
  *
- * @param aSpline NaturalCubicSpline object to be copied.
+ * @param aSpline SimmSpline object to be copied.
  */
-NaturalCubicSpline::NaturalCubicSpline(const NaturalCubicSpline &aSpline) :
+SimmSpline::SimmSpline(const SimmSpline &aSpline) :
 	Function(aSpline),
 	_x(_propX.getValueDblArray()),
 	_y(_propY.getValueDblArray()),
@@ -131,7 +131,7 @@ NaturalCubicSpline::NaturalCubicSpline(const NaturalCubicSpline &aSpline) :
 /**
  * Set all member variables to their NULL or default values.
  */
-void NaturalCubicSpline::setNull()
+void SimmSpline::setNull()
 {
 	setupProperties();
 }
@@ -141,7 +141,7 @@ void NaturalCubicSpline::setNull()
  * the properties and connecting them to the local pointers used to access
  * the serialized member variables.
  */
-void NaturalCubicSpline::setupProperties()
+void SimmSpline::setupProperties()
 {
 	// X- INDEPENDENT VARIABLES
 	_propX.setName("x");
@@ -162,7 +162,7 @@ void NaturalCubicSpline::setupProperties()
  * members defined in this class.  It does not, for example, make any changes
  * to data members of base classes.
  */
-void NaturalCubicSpline::setEqual(const NaturalCubicSpline &aSpline)
+void SimmSpline::setEqual(const SimmSpline &aSpline)
 {
 	setNull();
 
@@ -184,18 +184,18 @@ void NaturalCubicSpline::setEqual(const NaturalCubicSpline &aSpline)
  * @param aXValues the X values
  * @param aYValues the Y values
  */
-void NaturalCubicSpline::init(Function* aFunction)
+void SimmSpline::init(Function* aFunction)
 {
 	if (aFunction == NULL)
 		return;
 
-	NaturalCubicSpline* ncs = dynamic_cast<NaturalCubicSpline*>(aFunction);
+	SimmSpline* ncs = dynamic_cast<SimmSpline*>(aFunction);
 	if (ncs != NULL) {
 		setEqual(*ncs);
 	} else {
 		XYFunctionInterface xyFunc(aFunction);
 		if (xyFunc.getNumberOfPoints() == 0) {
-			// A NaturalCubicSpline must have at least 2 data points.
+			// A SimmSpline must have at least 2 data points.
 			// If aFunction is a Constant, use its Y value for both data points.
 			// If it is not, make up two data points.
 			double x[2] = {0.0, 1.0}, y[2];
@@ -205,15 +205,15 @@ void NaturalCubicSpline::init(Function* aFunction)
 			} else {
 				y[0] = y[1] = 1.0;
 			}
-			*this = NaturalCubicSpline(2, x, y);
+			*this = SimmSpline(2, x, y);
 		} else if (xyFunc.getNumberOfPoints() == 1) {
 			double x[2], y[2];
 			x[0] = xyFunc.getXValues()[0];
 			x[1] = x[0] + 1.0;
 			y[0] = y[1] = xyFunc.getYValues()[0];
-			*this = NaturalCubicSpline(2, x, y);
+			*this = SimmSpline(2, x, y);
 		} else {
-			*this = NaturalCubicSpline(xyFunc.getNumberOfPoints(),
+			*this = SimmSpline(xyFunc.getNumberOfPoints(),
 				xyFunc.getXValues(), xyFunc.getYValues());
 		}
 	}
@@ -229,7 +229,7 @@ void NaturalCubicSpline::init(Function* aFunction)
  *
  * @return Reference to this object.
  */
-NaturalCubicSpline& NaturalCubicSpline::operator=(const NaturalCubicSpline &aSpline)
+SimmSpline& SimmSpline::operator=(const SimmSpline &aSpline)
 {
 	// BASE CLASS
 	Function::operator=(aSpline);
@@ -254,7 +254,7 @@ NaturalCubicSpline& NaturalCubicSpline::operator=(const NaturalCubicSpline &aSpl
  *
  * @return Number of data points (or number of coefficients).
  */
-int NaturalCubicSpline::getSize() const
+int SimmSpline::getSize() const
 {
 	return(_x.getSize());
 }
@@ -270,7 +270,7 @@ int NaturalCubicSpline::getSize() const
  * @return Pointer to the independent variable data points.
  * @see getN();
  */
-const Array<double>& NaturalCubicSpline::getX() const
+const Array<double>& SimmSpline::getX() const
 {
 	return(_x);
 }
@@ -282,7 +282,7 @@ const Array<double>& NaturalCubicSpline::getX() const
  * @return Pointer to the coefficients.
  * @see getCoefficients();
  */
-const Array<double>& NaturalCubicSpline::getY() const
+const Array<double>& SimmSpline::getY() const
 {
 	return(_y);
 }
@@ -294,7 +294,7 @@ const Array<double>& NaturalCubicSpline::getY() const
  * @return Pointer to the independent variable data points.
  * @see getN();
  */
-const double* NaturalCubicSpline::getXValues() const
+const double* SimmSpline::getXValues() const
 {
 	return(&_x[0]);
 }
@@ -304,7 +304,7 @@ const double* NaturalCubicSpline::getXValues() const
  *
  * @return Pointer to the independent variable data points.
  */
-const double* NaturalCubicSpline::getYValues() const
+const double* SimmSpline::getYValues() const
 {
 	return(&_y[0]);
 }
@@ -317,7 +317,7 @@ const double* NaturalCubicSpline::getYValues() const
 /**
  * Update this object based on its XML node.
  */
-void NaturalCubicSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
+void SimmSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 {
 	Function::updateFromXMLNode(aNode, versionNumber);
 	calcCoefficients();
@@ -326,7 +326,7 @@ void NaturalCubicSpline::updateFromXMLNode(SimTK::Xml::Element& aNode, int versi
 //=============================================================================
 // EVALUATION
 //=============================================================================
-void NaturalCubicSpline::calcCoefficients()
+void SimmSpline::calcCoefficients()
 {
    int n = _x.getSize();
 	int nm1, nm2, i, j;
@@ -423,47 +423,47 @@ void NaturalCubicSpline::calcCoefficients()
 
 }
 
-double NaturalCubicSpline::getX(int aIndex) const
+double SimmSpline::getX(int aIndex) const
 {
 	if (aIndex >= 0 && aIndex < _x.getSize())
 		return _x.get(aIndex);
 	else {
-		throw Exception("NaturalCubicSpline::getX(): index out of bounds.");
+		throw Exception("SimmSpline::getX(): index out of bounds.");
 		return 0.0;
 	}
 }
 
-double NaturalCubicSpline::getY(int aIndex) const
+double SimmSpline::getY(int aIndex) const
 {
 	if (aIndex >= 0 && aIndex < _y.getSize())
 		return _y.get(aIndex);
 	else {
-		throw Exception("NaturalCubicSpline::getY(): index out of bounds.");
+		throw Exception("SimmSpline::getY(): index out of bounds.");
 		return 0.0;
 	}
 }
 
-void NaturalCubicSpline::setX(int aIndex, double aValue)
+void SimmSpline::setX(int aIndex, double aValue)
 {
 	if (aIndex >= 0 && aIndex < _x.getSize()) {
 		_x[aIndex] = aValue;
 	   calcCoefficients();
 	} else {
-		throw Exception("NaturalCubicSpline::setX(): index out of bounds.");
+		throw Exception("SimmSpline::setX(): index out of bounds.");
 	}
 }
 
-void NaturalCubicSpline::setY(int aIndex, double aValue)
+void SimmSpline::setY(int aIndex, double aValue)
 {
 	if (aIndex >= 0 && aIndex < _y.getSize()) {
 		_y[aIndex] = aValue;
 	   calcCoefficients();
 	} else {
-		throw Exception("NaturalCubicSpline::setY(): index out of bounds.");
+		throw Exception("SimmSpline::setY(): index out of bounds.");
 	}
 }
 
-bool NaturalCubicSpline::deletePoint(int aIndex)
+bool SimmSpline::deletePoint(int aIndex)
 {
 	if (_x.getSize() > 2 && _y.getSize() > 2 &&
 		 aIndex < _x.getSize() && aIndex < _y.getSize()) {
@@ -478,7 +478,7 @@ bool NaturalCubicSpline::deletePoint(int aIndex)
    return false;
 }
 
-bool NaturalCubicSpline::deletePoints(const Array<int>& indices)
+bool SimmSpline::deletePoints(const Array<int>& indices)
 {
 	bool pointsDeleted = false;
 	int numPointsLeft = _x.getSize() - indices.getSize();
@@ -500,7 +500,7 @@ bool NaturalCubicSpline::deletePoints(const Array<int>& indices)
    return pointsDeleted;
 }
 
-int NaturalCubicSpline::addPoint(double aX, double aY)
+int SimmSpline::addPoint(double aX, double aY)
 {
 	int i=0;
 	for (i=0; i<_x.getSize(); i++)
@@ -516,7 +516,7 @@ int NaturalCubicSpline::addPoint(double aX, double aY)
 	return i;
 }
 
-double NaturalCubicSpline::calcValue(const Vector& x) const
+double SimmSpline::calcValue(const Vector& x) const
 {
 	// NOT A NUMBER
 	if(!_y.getSize()) return(SimTK::NaN);
@@ -583,7 +583,7 @@ double NaturalCubicSpline::calcValue(const Vector& x) const
    return _y[k] + dx*(_b[k] + dx*(_c[k] + dx*_d[k]));
 }
 
-double NaturalCubicSpline::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
+double SimmSpline::calcDerivative(const std::vector<int>& derivComponents, const Vector& x) const
 {
 	// NOT A NUMBER
 	if(!_y.getSize()) return(SimTK::NaN);
@@ -598,7 +598,7 @@ double NaturalCubicSpline::calcDerivative(const std::vector<int>& derivComponent
     double aX = x[0];
     int aDerivOrder = derivComponents.size();
     if (aDerivOrder < 1 || aDerivOrder > 2)
-		throw Exception("NaturalCubicSpline::calcDerivative(): derivative order must be 1 or 2.");
+		throw Exception("SimmSpline::calcDerivative(): derivative order must be 1 or 2.");
 
    /* Check if the abscissa is out of range of the function. If it is,
     * then use the slope of the function at the appropriate end point to
@@ -678,16 +678,16 @@ double NaturalCubicSpline::calcDerivative(const std::vector<int>& derivComponent
       return (2.0*_c[k] + 6.0*dx*_d[k]);
 }
 
-int NaturalCubicSpline::getArgumentSize() const
+int SimmSpline::getArgumentSize() const
 {
     return 1;
 }
 
-int NaturalCubicSpline::getMaxDerivativeOrder() const
+int SimmSpline::getMaxDerivativeOrder() const
 {
     return 2;
 }
 
-SimTK::Function* NaturalCubicSpline::createSimTKFunction() const {
+SimTK::Function* SimmSpline::createSimTKFunction() const {
     return new FunctionAdapter(*this);
 }

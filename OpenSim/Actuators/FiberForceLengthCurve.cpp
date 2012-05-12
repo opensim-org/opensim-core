@@ -77,7 +77,7 @@ void FiberForceLengthCurve::buildCurve()
         double kiso =  m_stiffnessAtOneNormForceInUse;
         double c    =  m_curvinessInUse;        
 
-        MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+        SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
                                                                     kiso,
                                                                     c,
@@ -286,7 +286,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
             double prevC = 0.5;
             double step = 0.25;
             
-            MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
                                                                    k,
                                                                    c,
@@ -318,7 +318,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
                 while(flag_improvement == false && localIter < 2 
                         && flag_Newton == false){
 
-                    MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+                    SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
                                                                    k,
                                                                    c+step,
@@ -355,7 +355,7 @@ double FiberForceLengthCurve::calcCurvinessOfBestFit(double e0, double k,
                     double cNewton = c + deltaC;
 
                     if(abs(deltaC) < abs(step)){
-                       MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+                       SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createFiberForceLengthCurve(   e0,
                                                                    k,
                                                                    cNewton,

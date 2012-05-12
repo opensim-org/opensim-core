@@ -45,7 +45,7 @@ bool XYFunctionInterface::isXYFunction(Function* f)
 		dynamic_cast<StepFunction*>(func) ||
 		dynamic_cast<PiecewiseLinearFunction*>(func) ||
 		dynamic_cast<LinearFunction*>(func) ||
-		dynamic_cast<NaturalCubicSpline*>(func) ||
+		dynamic_cast<SimmSpline*>(func) ||
 		dynamic_cast<GCVSpline*>(func)||
 		dynamic_cast<PiecewiseConstantFunction*>(func))
 		return true;
@@ -97,7 +97,7 @@ XYFunctionInterface::XYFunctionInterface(Function* f) :
 		_functionType = typeLinearFunction;
 		return;
 	}
-	_natCubicSpline = dynamic_cast<NaturalCubicSpline*>(func);
+	_natCubicSpline = dynamic_cast<SimmSpline*>(func);
 	if (_natCubicSpline) {
 		_functionType = typeNatCubicSpline;
 		return;

@@ -38,7 +38,7 @@
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/SimbodyEngine/SimbodyEngine.h>
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Simulation/SimbodyEngine/Body.h>
 
 //=============================================================================
@@ -160,19 +160,19 @@ void MovingPathPoint::init(const PathPoint& aPoint)
 		if (coord)
 			_xCoordinateName = coord->getName();
 		y[0] = y[1] = aPoint.getLocation()[0];
-		_xLocation = new NaturalCubicSpline(2, x, y);
+		_xLocation = new SimmSpline(2, x, y);
 
 		// Create the default Y component.
 		if (coord)
 			_yCoordinateName = coord->getName();
 		y[0] = y[1] = aPoint.getLocation()[1];
-		_yLocation = new NaturalCubicSpline(2, x, y);
+		_yLocation = new SimmSpline(2, x, y);
 
 		// Create the default Z component.
 		if (coord)
 			_zCoordinateName = coord->getName();
 		y[0] = y[1] = aPoint.getLocation()[2];
-		_zLocation = new NaturalCubicSpline(2, x, y);
+		_zLocation = new SimmSpline(2, x, y);
 	}
 }
 

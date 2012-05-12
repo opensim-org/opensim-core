@@ -1,4 +1,4 @@
-// MuscleCurveFunction.cpp
+// SmoothSegmentedFunction.cpp
 // Author: Matthew Millard
 /*
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -22,7 +22,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "MuscleCurveFunction.h"
+#include "SmoothSegmentedFunction.h"
 
 //=============================================================================
 // STATICS
@@ -56,7 +56,7 @@ static int NUM_SAMPLE_PTS = 100;
                             fitForSmoothingParameter(3,x,u,0).getSpline();
             Cost:       ?
 
-            m*100       QuinticBezierCurveSet::
+            m*100       SegmentedQuinticBezierToolkit::
                             calcQuinticBezierCurveVal
             Cost:                                   Mult     Add   Assignments
                                                     21       20    13       
@@ -85,10 +85,10 @@ static int NUM_SAMPLE_PTS = 100;
         M: Matrix
         V: Vector
 
-        N.B. These costs are dependent on QuinticBezierCurveSet
+        N.B. These costs are dependent on SegmentedQuinticBezierToolkit
 */
-MuscleCurveFunction::
-  MuscleCurveFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY,  
+SmoothSegmentedFunction::
+  SmoothSegmentedFunction(const SimTK::Matrix& mX, const SimTK::Matrix& mY,  
           double x0, double x1, double y0, double y1,double dydx0, double dydx1,
           bool computeIntegral, bool intx0x1, const std::string& name):
  _mX(mX),_mY(mY),_x0(x0),_x1(x1),_y0(y0),_y1(y1),_dydx0(dydx0),_dydx1(dydx1),
@@ -113,7 +113,7 @@ MuscleCurveFunction::
         //Sample the local set for u and x
         for(int i=0;i<NUM_SAMPLE_PTS;i++){
             u(i) = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
-            x(i) = QuinticBezierCurveSet::
+            x(i) = SegmentedQuinticBezierToolkit::
                 calcQuinticBezierCurveVal(u(i),_mX(s),_name);            
             if(_numBezierSections > 1){
                 //Skip the last point of a set that has another set of points
@@ -138,7 +138,7 @@ MuscleCurveFunction::
         //Compute the integral of y(x) and spline the result    
         //////////////////////////////////////////////////
 
-        SimTK::Matrix yInt =  QuinticBezierCurveSet::
+        SimTK::Matrix yInt =  SegmentedQuinticBezierToolkit::
             calcNumIntBezierYfcnX(xALL,0,INTTOL, UTOL, MAXITER,_mX, _mY,
             _arraySplineUX,_intx0x1,_name);
 
@@ -154,7 +154,7 @@ MuscleCurveFunction::
   
 }
 
- MuscleCurveFunction::MuscleCurveFunction():
+ SmoothSegmentedFunction::SmoothSegmentedFunction():
  _mX(0,0),_mY(0,0),_x0(SimTK::NaN),_x1(SimTK::NaN),_y0(SimTK::NaN)
      ,_y1(SimTK::NaN),_dydx0(SimTK::NaN),_dydx1(SimTK::NaN),
      _computeIntegral(false),_intx0x1(false),_name("NOT_YET_SET")
@@ -170,7 +170,7 @@ MuscleCurveFunction::
     If x is in the Bezier Curve
                             Name     Comp.   Div.    Mult.   Add.    Assign.
 _______________________________________________________________________
-        QuinticBezierCurveSet::
+        SegmentedQuinticBezierToolkit::
                         calcIndex     3*m+2                   1*m     3   
                             *calcU     15      2      82      42      60  
         calcQuinticBezierCurveVal                     21      20      13
@@ -185,18 +185,18 @@ If x is in the linear region
 ________________________________________________________________________
  
  */
-double MuscleCurveFunction::calcValue(double x) const
+double SmoothSegmentedFunction::calcValue(double x) const
 {
     return calcValue(SimTK::Vector(1,x));
 }
 
 
 
-double MuscleCurveFunction::calcValue(const SimTK::Vector& ax) const
+double SmoothSegmentedFunction::calcValue(const SimTK::Vector& ax) const
 {
     
     SimTK_ERRCHK2_ALWAYS( ax.nelt() == 1,
-        "MuscleCurveFunction::calcValue",
+        "SmoothSegmentedFunction::calcValue",
         "%s: Argument x must have only 1 element, as this function is "
         "designed only for 1D functions, but a function with %i elements was"
         "entered",_name.c_str(),ax.nelt());
@@ -204,10 +204,10 @@ double MuscleCurveFunction::calcValue(const SimTK::Vector& ax) const
     double yVal = 0;
     if(ax(0) >= _x0 && ax(0) <= _x1 )
     {
-        int idx  = QuinticBezierCurveSet::calcIndex(ax(0),_mX,_name);
-        double u = QuinticBezierCurveSet::
+        int idx  = SegmentedQuinticBezierToolkit::calcIndex(ax(0),_mX,_name);
+        double u = SegmentedQuinticBezierToolkit::
                  calcU(ax(0),_mX(idx), _arraySplineUX[idx], UTOL,MAXITER,_name);
-        yVal = QuinticBezierCurveSet::
+        yVal = SegmentedQuinticBezierToolkit::
                  calcQuinticBezierCurveVal(u,_mY(idx),_name);
     }else{
         if(ax(0) < _x0){
@@ -226,7 +226,7 @@ If x is in the Bezier Curve, and dy/dx is being evaluated
                         Name     Comp.   Div.    Mult.   Add.    Assign.
 _______________________________________________________________________
 Overhead:
-    QuinticBezierCurveSet::
+    SegmentedQuinticBezierToolkit::
                     calcIndex     3*m+2                   1*m     3   
                         *calcU     15      2      82      42     60  
     Derivative Evaluation:
@@ -246,7 +246,7 @@ If x is in the linear region
                                     1                            1
 ________________________________________________________________________
     */
-double MuscleCurveFunction::calcDerivative(double x, int order) const
+double SmoothSegmentedFunction::calcDerivative(double x, int order) const
 {
     return calcDerivative( SimTK::Array_<int>(order,0),
                            SimTK::Vector(1,x));
@@ -254,26 +254,26 @@ double MuscleCurveFunction::calcDerivative(double x, int order) const
 
 
 
-double MuscleCurveFunction::
+double SmoothSegmentedFunction::
     calcDerivative(const SimTK::Array_<int>& derivComponents,
                  const SimTK::Vector& ax) const
 {
     for(int i=0; i < (signed)derivComponents.size(); i++){
         SimTK_ERRCHK2_ALWAYS( derivComponents[i] == 0,
-        "MuscleCurveFunction::calcDerivative",
+        "SmoothSegmentedFunction::calcDerivative",
         "%s: derivComponents can only be populated with 0's because "
-        "MuscleCurveFunction is only valid for a 1D function, but "
+        "SmoothSegmentedFunction is only valid for a 1D function, but "
         "derivComponents had a value of %i in it",
         _name.c_str(), derivComponents[i]);
     }
     SimTK_ERRCHK2_ALWAYS( derivComponents.size() <= 6,
-        "MuscleCurveFunction::calcDerivative",
+        "SmoothSegmentedFunction::calcDerivative",
         "%s: calcDerivative is only valid up to a 6th order derivative"
         " but derivComponents had a size of %i",
         _name.c_str(), derivComponents.size());
 
     SimTK_ERRCHK2_ALWAYS( ax.nelt() == 1,
-        "MuscleCurveFunction::calcValue",
+        "SmoothSegmentedFunction::calcValue",
         "%s: Argument x must have only 1 element, as this function is "
         "designed only for 1D functions, but ax had a size of %i",
         _name.c_str(), ax.nelt());
@@ -289,12 +289,12 @@ double MuscleCurveFunction::
     }else{
     
             if(ax(0) >= _x0 && ax(0) <= _x1){        
-                int idx  = QuinticBezierCurveSet::
+                int idx  = SegmentedQuinticBezierToolkit::
                                 calcIndex(ax(0),_mX,_name);
-                double u = QuinticBezierCurveSet::
+                double u = SegmentedQuinticBezierToolkit::
                                 calcU(ax(0),_mX(idx), _arraySplineUX[idx], 
                                 UTOL,MAXITER,_name);
-                yVal = QuinticBezierCurveSet::
+                yVal = SegmentedQuinticBezierToolkit::
                             calcQuinticBezierCurveDerivDYDX(u, _mX(idx), 
                             _mY(idx), derivComponents.size(),_name);
             }else{
@@ -333,10 +333,10 @@ If x is in the linear region
 ________________________________________________________________________
 
 */
-double MuscleCurveFunction::calcIntegral(double x) const
+double SmoothSegmentedFunction::calcIntegral(double x) const
 {
     SimTK_ERRCHK1_ALWAYS(_computeIntegral,
-        "MuscleCurveFunction::calcIntegral",
+        "SmoothSegmentedFunction::calcIntegral",
         "%s: This curve was not constructed with its integral because"
         "computeIntegral was false",_name.c_str());
 
@@ -378,32 +378,32 @@ double MuscleCurveFunction::calcIntegral(double x) const
     return yVal;
 }
 
-bool MuscleCurveFunction::isIntegralAvailable() const
+bool SmoothSegmentedFunction::isIntegralAvailable() const
 {
     return _computeIntegral;
 }
 
-bool MuscleCurveFunction::isIntegralComputedLeftToRight() const
+bool SmoothSegmentedFunction::isIntegralComputedLeftToRight() const
 {
     return _intx0x1;
 }
 
-int MuscleCurveFunction::getArgumentSize() const
+int SmoothSegmentedFunction::getArgumentSize() const
 {
     return 1;
 }
 
-int MuscleCurveFunction::getMaxDerivativeOrder() const
+int SmoothSegmentedFunction::getMaxDerivativeOrder() const
 {
     return 6;
 }
 
-std::string MuscleCurveFunction::getName() const
+std::string SmoothSegmentedFunction::getName() const
 {
     return _name;
 }
 
-SimTK::Vec2 MuscleCurveFunction::getCurveDomain() const
+SimTK::Vec2 SmoothSegmentedFunction::getCurveDomain() const
 {
     SimTK::Vec2 xrange;
     xrange(0) = _mX(0,0);
@@ -444,11 +444,11 @@ _______________________________________________________________________
     **Approximate. Includes estimated cost of evaluating a cubic spline
                     with 100 knots
 */
-SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve(int maxOrder) const{
+SimTK::Matrix SmoothSegmentedFunction::calcSampledMuscleCurve(int maxOrder) const{
     int pts = 1; //Number of points between each of the spline points used
                   //to fit u(x), and also the integral spline
     SimTK_ERRCHK_ALWAYS(maxOrder <= getMaxDerivativeOrder(),
-        "MuscleCurveFunction::calcSampledMuscleCurve",
+        "SmoothSegmentedFunction::calcSampledMuscleCurve",
         "Derivative order past the maximum computed order requested");
 
     double x0,x1,delta;
@@ -464,7 +464,7 @@ SimTK::Matrix MuscleCurveFunction::calcSampledMuscleCurve(int maxOrder) const{
         //Sample the local set for u and x
         for(int i=0;i<NUM_SAMPLE_PTS;i++){
                 u = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
-                x(i) = QuinticBezierCurveSet::
+                x(i) = SegmentedQuinticBezierToolkit::
                     calcQuinticBezierCurveVal(u,_mX(s),_name);            
                 if(_numBezierSections > 1){
                    //Skip the last point of a set that has another set of points
@@ -595,7 +595,7 @@ _______________________________________________________________________
     **Approximate. Includes estimated cost of evaluating a cubic spline
                     with 100 knots
 */
-void MuscleCurveFunction::printMuscleCurveToCSVFile(const std::string& path) const
+void SmoothSegmentedFunction::printMuscleCurveToCSVFile(const std::string& path) const
 {
     //Only compute up to the 2nd derivative
     SimTK::Matrix results = calcSampledMuscleCurve(2);
@@ -611,7 +611,7 @@ void MuscleCurveFunction::printMuscleCurveToCSVFile(const std::string& path) con
 
             std::string fname = _name;
             SimTK_ERRCHK_ALWAYS(fname.length() > 0,
-                "MuscleCurveFunction::printMuscleCurveToCSVFile",
+                "SmoothSegmentedFunction::printMuscleCurveToCSVFile",
                 "Muscle Curve name is empty!");
             fname.append(".csv");
 
@@ -623,7 +623,7 @@ This function will print cvs file of the column vector col0 and the matrix data
 @params data: A matrix of data
 @params filename: The name of the file to print
 */
-void MuscleCurveFunction::
+void SmoothSegmentedFunction::
     printMatrixToFile(SimTK::Matrix& data, SimTK::Array_<std::string>& colNames,
     const std::string& path, const std::string& filename) const
 {
@@ -641,7 +641,7 @@ void MuscleCurveFunction::
     if(!datafile){
         datafile.close();
         SimTK_ERRCHK2_ALWAYS( false, 
-        "MuscleCurveFunction::printMatrixToFile",
+        "SmoothSegmentedFunction::printMatrixToFile",
         "%s: Failed to open the file path: %s", _name.c_str(),fullpath.c_str());
     }
 
@@ -663,3 +663,5 @@ void MuscleCurveFunction::
 	}
 	datafile.close();
 } 
+
+

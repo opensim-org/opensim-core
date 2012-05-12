@@ -38,7 +38,7 @@
 #include "GCVSpline.h"
 #include "VectorGCVSplineR1R3.h"
 #include "Scale.h"
-#include "NaturalCubicSpline.h"
+#include "SimmSpline.h"
 #include "Constant.h"
 #include "Sine.h"
 #include "StepFunction.h"
@@ -75,7 +75,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::registerType( GCVSpline() );
 	Object::registerType( VectorGCVSplineR1R3() );
 	Object::registerType( Scale() );
-	Object::registerType( NaturalCubicSpline() );
+	Object::registerType( SimmSpline() );
 	Object::registerType( Constant() );
 	Object::registerType( Sine() );
 	Object::registerType( StepFunction() );
@@ -88,7 +88,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::registerType( ObjectGroup() );
 
 	// To support old type name of "natCubicSpline"
-	Object::renameType("natCubicSpline", "NaturalCubicSpline");
+	Object::renameType("natCubicSpline", "SimmSpline");
 
   } catch (const std::exception& e) {
     std::cerr 

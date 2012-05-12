@@ -49,7 +49,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Simulation/SimbodyEngine/SliderJoint.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/FunctionAdapter.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Tools/CorrectionController.h>

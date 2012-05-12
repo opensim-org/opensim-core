@@ -50,20 +50,24 @@ ForceVelocityCurve::ForceVelocityCurve
     constructProperties();
     setName(muscleName + "_ForceVelocityCurve");
 
-    setConcentricMinSlope(concentricMinSlope);
-    setIsometricMaxSlope(isometricMaxSlope);
-    setEccentricMinSlope(eccentricMinSlope);
-    setMaxEccentricVelocityForceMultiplier(maxEccentricVelocityForceMultiplier);
-    setConcentricCurviness(concentricCurviness);
-    setEccentricCurviness(eccentricCurviness);
-    
-    buildCurve();
+    setProperty_min_concentric_slope(concentricMinSlope);
+    setProperty_isometric_slope(isometricMaxSlope);
+    setProperty_min_eccentric_slope(eccentricMinSlope);
+
+    setProperty_max_eccentric_velocity_force_multiplier(
+                       maxEccentricVelocityForceMultiplier);
+
+    setProperty_concentric_curviness(concentricCurviness);
+    setProperty_eccentric_curviness(eccentricCurviness);
+
+
+    ensureCurveUpToDate();
 }
 
 
 void ForceVelocityCurve::setNull()
 {
-    m_curveUpToDate = false;
+   
 }
 
 void ForceVelocityCurve::constructProperties()
@@ -76,20 +80,20 @@ void ForceVelocityCurve::constructProperties()
     constructProperty_eccentric_curviness(0.75);
 }
 
+
 void ForceVelocityCurve::buildCurve()
 {
-    if(m_curveUpToDate == false){
         
-        double dydxC =  getConcentricMinSlope();
-        double dydxIso= getIsometricMaxSlope();
-        double dydxE =  getEccentricMinSlope();
-        double fmax  =  getMaxEccentricVelocityForceMultiplier();
-        double ccurv =  getConcentricCurviness();
-        double ecurv =  getEccentricCurviness();
-
-        //Here's where you call the MuscleCurveFunctionFactory
-        MuscleCurveFunction tmp = 
-            MuscleCurveFunctionFactory::
+        double dydxC =  getProperty_min_concentric_slope();;
+        double dydxIso= getProperty_isometric_slope();
+        double dydxE =  getProperty_min_eccentric_slope();
+        double fmax  =  getProperty_max_eccentric_velocity_force_multiplier();
+        double ccurv =  getProperty_concentric_curviness();
+        double ecurv =  getProperty_eccentric_curviness();
+                                
+        //Here's where you call the SmoothSegmentedFunctionFactory
+        SmoothSegmentedFunction tmp = 
+            SmoothSegmentedFunctionFactory::
             createFiberForceVelocityCurve(  fmax,
                                             dydxC,
                                             dydxIso,
@@ -100,10 +104,16 @@ void ForceVelocityCurve::buildCurve()
                                             getName());
         this->m_curve = tmp;
           
-    }
-    m_curveUpToDate = true;
+    
+    setObjectIsUpToDateWithProperties();
 }
 
+void ForceVelocityCurve::ensureCurveUpToDate()
+{
+    if(isObjectUpToDateWithProperties() == false){
+        buildCurve();
+    }
+}
 
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
@@ -123,7 +133,7 @@ void ForceVelocityCurve::createSystem(SimTK::MultibodySystem& system) const
     Super::createSystem(system);
 
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
-    mthis->buildCurve();
+    mthis->ensureCurveUpToDate();
 }
 
 
@@ -133,92 +143,72 @@ void ForceVelocityCurve::createSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 double ForceVelocityCurve::getConcentricMinSlope()
 {
+    ensureCurveUpToDate();
     return getProperty_min_concentric_slope();
 }
 
 double ForceVelocityCurve::getIsometricMaxSlope()
 {
+    ensureCurveUpToDate();
     return getProperty_isometric_slope();
 }
 
 double ForceVelocityCurve::getEccentricMinSlope()
 {
+    ensureCurveUpToDate();
     return getProperty_min_eccentric_slope();
 }
 
 double ForceVelocityCurve::getMaxEccentricVelocityForceMultiplier()
 {
+    ensureCurveUpToDate();
     return getProperty_max_eccentric_velocity_force_multiplier();
 }
     
 double ForceVelocityCurve::getConcentricCurviness()
 {
+    ensureCurveUpToDate();
     return getProperty_concentric_curviness();
 }
     
 double ForceVelocityCurve::getEccentricCurviness()
 {
+    ensureCurveUpToDate();
     return getProperty_eccentric_curviness();
 }
 
 void ForceVelocityCurve::setConcentricMinSlope(double aConcentricMinSlope)
-{
-    if(aConcentricMinSlope != getConcentricMinSlope() )
-    {
-        setProperty_min_concentric_slope(aConcentricMinSlope);
-        m_curveUpToDate = false;
-    }
-
+{   
+    setProperty_min_concentric_slope(aConcentricMinSlope);   
 }
 
 void ForceVelocityCurve::setIsometricMaxSlope(double aIsometricMaxSlope)
 {
-    if(aIsometricMaxSlope != getIsometricMaxSlope() )
-    {
-        setProperty_isometric_slope(aIsometricMaxSlope);
-        m_curveUpToDate = false;
-    }
+    setProperty_isometric_slope(aIsometricMaxSlope);
 }
 
 void ForceVelocityCurve::setEccentricMinSlope(double aEccentricMinSlope)
 {
-    if(aEccentricMinSlope != getEccentricMinSlope() )
-    {
-        setProperty_min_eccentric_slope(aEccentricMinSlope);
-        m_curveUpToDate = false;
-    }
+    setProperty_min_eccentric_slope(aEccentricMinSlope);
 }
 
 
 void ForceVelocityCurve::
     setMaxEccentricVelocityForceMultiplier(double aMaxForceMultiplier)
 {
-    if(aMaxForceMultiplier != getMaxEccentricVelocityForceMultiplier() )
-    {
-        setProperty_max_eccentric_velocity_force_multiplier
-            (aMaxForceMultiplier);
-        m_curveUpToDate = false;
-    }
+    setProperty_max_eccentric_velocity_force_multiplier(aMaxForceMultiplier);
 }
 
 
 void ForceVelocityCurve::setConcentricCurviness(double aConcentricCurviness)
 {
-    if(aConcentricCurviness != getConcentricCurviness() )
-    {
-        setProperty_concentric_curviness(aConcentricCurviness);
-        m_curveUpToDate = false;
-    }
+    setProperty_concentric_curviness(aConcentricCurviness);
 }
 
 
 void ForceVelocityCurve::setEccentricCurviness(double aEccentricCurviness)
 {
-    if(aEccentricCurviness != getEccentricCurviness() )
-    {
-        setProperty_eccentric_curviness(aEccentricCurviness);
-        m_curveUpToDate = false;
-    }
+    setProperty_eccentric_curviness(aEccentricCurviness);
 }
 
 
@@ -227,12 +217,9 @@ void ForceVelocityCurve::setEccentricCurviness(double aEccentricCurviness)
 //=============================================================================
 
 double ForceVelocityCurve::calcValue(double normFiberVelocity) const
-{
-    if(m_curveUpToDate == false){
-        ForceVelocityCurve* mthis = 
-            const_cast<ForceVelocityCurve*>(this);    
-        mthis->buildCurve();    
-    }
+{   
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate(); 
 
     return m_curve.calcValue(normFiberVelocity);
 }
@@ -243,35 +230,28 @@ double ForceVelocityCurve::calcDerivative(double normFiberVelocity,
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "ForceVelocityCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
-    
-    if(m_curveUpToDate == false){
-        ForceVelocityCurve* mthis = 
-            const_cast<ForceVelocityCurve*>(this);    
-        mthis->buildCurve();    
-    }
+  
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();        
 
     return m_curve.calcDerivative(normFiberVelocity,order);
 }
 
 SimTK::Vec2 ForceVelocityCurve::getCurveDomain() const
 {
-    if(m_curveUpToDate == false){
-        ForceVelocityCurve* mthis = 
-            const_cast<ForceVelocityCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
+    
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    
     return m_curve.getCurveDomain();
 }
 
 void ForceVelocityCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {
-    if(m_curveUpToDate == false){
-        ForceVelocityCurve* mthis = 
-            const_cast<ForceVelocityCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
+    
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    
     m_curve.printMuscleCurveToCSVFile(path);
 }

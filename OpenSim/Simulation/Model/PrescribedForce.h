@@ -33,7 +33,7 @@
 #include "OpenSim/Common/PropertyBool.h"
 #include "OpenSim/Common/PropertyObj.h"
 #include "OpenSim/Common/Function.h"
-#include "OpenSim/Common/NaturalCubicSpline.h"
+#include "OpenSim/Common/SimmSpline.h"
 #include "OpenSim/Common/FunctionSet.h"
 #include "Force.h"
 

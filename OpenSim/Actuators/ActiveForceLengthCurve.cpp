@@ -86,9 +86,9 @@ void ActiveForceLengthCurve::buildCurve()
 
         double curviness = 0.75;
 
-        //Here's where you call the MuscleCurveFunctionFactory
-        MuscleCurveFunction tmp = 
-            MuscleCurveFunctionFactory::
+        //Here's where you call the SmoothSegmentedFunctionFactory
+        SmoothSegmentedFunction tmp = 
+            SmoothSegmentedFunctionFactory::
             createFiberActiveForceLengthCurve(  lce0, lce1,
                                                 lce2, lce3,
                                               minVal, dydx,

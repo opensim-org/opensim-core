@@ -1,4 +1,4 @@
-// MuscleCurveFunctionFactory.cpp
+// SmoothSegmentedFunctionFactory.cpp
 // Author: Matthew Millard
 /*
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -23,7 +23,7 @@
 // INCLUDES
 //=============================================================================
 
-#include "MuscleCurveFunctionFactory.h"
+#include "SmoothSegmentedFunctionFactory.h"
 //=============================================================================
 // STATICS
 //=============================================================================
@@ -50,7 +50,7 @@ static int MAXITER = 20;
 //=============================================================================
 // UTILITY FUNCTIONS
 //=============================================================================
-double MuscleCurveFunctionFactory::scaleCurviness(double curviness)
+double SmoothSegmentedFunctionFactory::scaleCurviness(double curviness)
 {
     double c = 0.1 + 0.8*curviness;
     return c;
@@ -58,7 +58,7 @@ double MuscleCurveFunctionFactory::scaleCurviness(double curviness)
 //=============================================================================
 // MUSCLE CURVE FITTING FUNCTIONS
 //=============================================================================
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     createFiberActiveForceLengthCurve(double x0, double x1, double x2, 
     double x3, double ylow,  double dydx, double curviness,
     bool computeIntegral, const std::string& curveName)
@@ -67,19 +67,19 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double rootEPS = sqrt(SimTK::Eps);
     SimTK_ERRCHK1_ALWAYS( (x0>0 && x1>x0+rootEPS  
                         && x2>x1+rootEPS && x3>x2+rootEPS),
-        "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
+        "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
         "%s: This must be true: 0 < lce0 < lce1 < lce2 < lce3",
         curveName.c_str());
     SimTK_ERRCHK1_ALWAYS( ylow >= 0,
-        "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
+        "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
         "%s: shoulderVal must be greater than, or equal to 0",
         curveName.c_str());
     SimTK_ERRCHK1_ALWAYS(dydx >= 0 && dydx < (1/(x2-x1)),
-        "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
+        "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
         "%s: plateauSlope must be greater than 0",
         curveName.c_str());
     SimTK_ERRCHK1_ALWAYS( (curviness >= 0 && curviness <= 1),
-        "MuscleCurveFunctionFactory::createFiberActiveForceLengthCurve",
+        "SmoothSegmentedFunctionFactory::createFiberActiveForceLengthCurve",
         "%s: curviness must be between 0 and 1",
         curveName.c_str());
 
@@ -131,19 +131,19 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
        double dydx23   = (1-c)*dydx23c0 + c*dydx23c1; 
     
     //Compute the locations of the control points
-       SimTK::Matrix p0 = QuinticBezierCurveSet::
+       SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
            calcQuinticBezierCornerControlPoints(x0, y0, dydx0,x01,y01,dydx01,c
                                                                     ,name);
-       SimTK::Matrix p1 = QuinticBezierCurveSet::
+       SimTK::Matrix p1 = SegmentedQuinticBezierToolkit::
           calcQuinticBezierCornerControlPoints(x01,y01,dydx01,x1s,y1s,dydx1s,c
                                                                     ,name);
-       SimTK::Matrix p2 = QuinticBezierCurveSet::
+       SimTK::Matrix p2 = SegmentedQuinticBezierToolkit::
           calcQuinticBezierCornerControlPoints(x1s,y1s,dydx1s,x2, y2, dydx2,c
                                                                     ,name);
-       SimTK::Matrix p3 = QuinticBezierCurveSet::
+       SimTK::Matrix p3 = SegmentedQuinticBezierToolkit::
            calcQuinticBezierCornerControlPoints(x2, y2, dydx2,x23,y23,dydx23,c
                                                                     ,name);
-       SimTK::Matrix p4 = QuinticBezierCurveSet::
+       SimTK::Matrix p4 = SegmentedQuinticBezierToolkit::
            calcQuinticBezierCornerControlPoints(x23,y23,dydx23,x3, y3, dydx3,c
                                                                      ,name);
                                     
@@ -162,37 +162,37 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
         //std::string curveName = muscleName;
         //curveName.append("_fiberActiveForceLengthCurve");
-        MuscleCurveFunction mclCrvFcn(mX,mY,x0,x3,ylow,ylow,0,0,computeIntegral,
+        SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x3,ylow,ylow,0,0,computeIntegral,
             true, curveName);    
         return mclCrvFcn;
 }
 
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     createFiberForceVelocityCurve(double fmaxE, double dydxC, double dydxIso, 
     double dydxE, double concCurviness,double eccCurviness,
     bool computeIntegral, const std::string& curveName)
 {
     //Ensure that the inputs are within a valid range
     SimTK_ERRCHK1_ALWAYS( fmaxE > 1.0, 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityCurve",
         "%s: fmaxE must be greater than 1",curveName.c_str());
     SimTK_ERRCHK1_ALWAYS( (dydxC >= 0.0 && dydxC < 1), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityCurve",
         "%s: dydxC must be greater than or equal to 0"
         "and less than 1",curveName.c_str());
     SimTK_ERRCHK2_ALWAYS( dydxIso > 1, 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityCurve",
         "%s: dydxIso must be greater than (fmaxE-1)/1 (%f)",curveName.c_str(),
                                                             ((fmaxE-1.0)/1.0));
     SimTK_ERRCHK2_ALWAYS( (dydxE >= 0.0 && dydxE < (fmaxE-1)), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityCurve",
         "%s: dydxE must be greater than or equal to 0"
         "and less than fmaxE-1 (%f)",curveName.c_str(),(fmaxE-1));
     SimTK_ERRCHK1_ALWAYS( (concCurviness <= 1.0 && concCurviness >= 0), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityCurve",
         "%s: concCurviness must be between 0 and 1",curveName.c_str());
     SimTK_ERRCHK1_ALWAYS( (eccCurviness <= 1.0 && eccCurviness >= 0), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityCurve",
         "%s: eccCurviness must be between 0 and 1",curveName.c_str());
 
     std::string name = curveName;
@@ -210,10 +210,10 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double xE   = 1;
     double yE   = fmaxE;
 
-    SimTK::Matrix concPts = QuinticBezierCurveSet::
+    SimTK::Matrix concPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xC,yC,dydxC, xIso,yIso,dydxIso,cC,
         name);
-    SimTK::Matrix eccPts = QuinticBezierCurveSet::
+    SimTK::Matrix eccPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(xIso,yIso,dydxIso, xE,yE,dydxE,cE,
         name);
 
@@ -225,37 +225,37 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberForceVelocityCurve");
-    MuscleCurveFunction mclCrvFcn(mX,mY,xC,xE,yC,yE,dydxC,dydxE,computeIntegral,
+    SmoothSegmentedFunction mclCrvFcn(mX,mY,xC,xE,yC,yE,dydxC,dydxE,computeIntegral,
                                                                true, curveName);    
     return mclCrvFcn;
 }
 
 
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     createFiberForceVelocityInverseCurve(double fmaxE, double dydxC, 
     double dydxIso, double dydxE, double concCurviness, double eccCurviness,
     bool computeIntegral, const std::string& curveName)
 {
     //Ensure that the inputs are within a valid range
     SimTK_ERRCHK1_ALWAYS( fmaxE > 1.0, 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: fmaxE must be greater than 1",curveName.c_str());
     SimTK_ERRCHK1_ALWAYS( (dydxC > 0.0 && dydxC < 1), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxC must be greater than 0"
         "and less than 1",curveName.c_str());
     SimTK_ERRCHK1_ALWAYS( dydxIso > 1, 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxIso must be greater than or equal to 1",curveName.c_str());
     SimTK_ERRCHK2_ALWAYS( (dydxE > 0.0 && dydxE < (fmaxE-1)), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: dydxE must be greater than or equal to 0"
         "and less than fmaxE-1 (%f)",curveName.c_str(),(fmaxE-1));
     SimTK_ERRCHK1_ALWAYS( (concCurviness <= 1.0 && concCurviness >= 0), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: concCurviness must be between 0 and 1",curveName.c_str());
     SimTK_ERRCHK1_ALWAYS( (eccCurviness <= 1.0 && eccCurviness >= 0), 
-        "MuscleCurveFunctionFactory::createFiberForceVelocityInverseCurve",
+        "SmoothSegmentedFunctionFactory::createFiberForceVelocityInverseCurve",
         "%s: eccCurviness must be between 0 and 1",curveName.c_str());
 
     std::string name = curveName;
@@ -273,9 +273,9 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double xE   = 1;
     double yE   = fmaxE;
 
-        SimTK::Matrix concPts = QuinticBezierCurveSet::
+        SimTK::Matrix concPts = SegmentedQuinticBezierToolkit::
     calcQuinticBezierCornerControlPoints(xC,yC,dydxC,xIso,yIso,dydxIso,cC,name);
-        SimTK::Matrix eccPts = QuinticBezierCurveSet::
+        SimTK::Matrix eccPts = SegmentedQuinticBezierToolkit::
     calcQuinticBezierCornerControlPoints(xIso,yIso,dydxIso,xE,yE,dydxE,cE,name);
     //Sample the curve. There are NUM_SAMPLE_PTS*2 -1 to remove the 1 overlapping
     //point of both curves.
@@ -287,28 +287,28 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberForceVelocityInverseCurve");
-    MuscleCurveFunction mclCrvFcn(mY,mX,yC,yE,xC,xE,1/dydxC,1/dydxE,
+    SmoothSegmentedFunction mclCrvFcn(mY,mX,yC,yE,xC,xE,1/dydxC,1/dydxE,
         computeIntegral,true, curveName);    
     return mclCrvFcn;
 
 }
 
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     createFiberCompressiveForcePennationCurve(double phi0, double k, 
          double curviness, bool computeIntegral, const std::string& curveName)
 {
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( (phi0>0 && phi0<(SimTK::Pi/2.0)) , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForcePennationCurve", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForcePennationCurve", 
         "%s: phi0 must be greater than 0, and less than Pi/2",curveName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( k > (1.0/(SimTK::Pi/2.0-phi0)) , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForcePennationCurve", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForcePennationCurve", 
         "%s: k must be greater than %f",curveName.c_str(), 
         (1.0/(SimTK::Pi/2.0-phi0)));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForcePennationCurve", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForcePennationCurve", 
         "%s: curviness must be between 0.0 and 1.0",curveName.c_str());
 
     std::string name=curveName;
@@ -323,7 +323,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double y1 = 1;
     double dydx1 = k;
 
-    SimTK::Matrix ctrlPts = QuinticBezierCurveSet::
+    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,name);
     
     SimTK::Matrix mX(6,1), mY(6,1);
@@ -332,7 +332,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberCompressiveForcePennationCurve");
-    MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+    SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                 true,curveName);
 
     //If in debug, print the function
@@ -340,21 +340,21 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 }
 
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
     createFiberCompressiveForceCosPennationCurve(double cosPhi0, double k, 
          double curviness, bool computeIntegral, const std::string& curveName)
 {
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( (cosPhi0>0 && cosPhi0 < 1) , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
         "%s: cosPhi0 must be greater than 0, and less than 1",curveName.c_str());
 
     SimTK_ERRCHK1_ALWAYS( k < 1/cosPhi0 , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
         "%s: k must be less than 0",curveName.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForceCosPennationCurve", 
         "%s: curviness must be between 0.0 and 1.0",curveName.c_str());
 
     std::string name=curveName;
@@ -369,7 +369,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double y1 = 0;
     double dydx1 = 0;
 
-    SimTK::Matrix ctrlPts = QuinticBezierCurveSet::
+    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,name);
     
     SimTK::Matrix mX(6,1), mY(6,1);
@@ -378,7 +378,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
     //std::string curveName = muscleName;
     //curveName.append("_fiberCompressiveForceCosPennationCurve");
-    MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+    SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                               false,curveName);
 
     //If in debug, print the function
@@ -386,22 +386,22 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 }
 
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
       createFiberCompressiveForceLengthCurve(double lmax, double k, 
                double curviness, bool computeIntegral, 
                const std::string& curveName)
 {
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( lmax>0 , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForceLength", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForceLength", 
         "%s: l0 must be greater than 0",curveName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( k < -(1.0/lmax) , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForceLength", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForceLength", 
         "%s: k must be less than %f",curveName.c_str(),-(1.0/lmax));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
-        "MuscleCurveFunctionFactory::createFiberCompressiveForceLength", 
+        "SmoothSegmentedFunctionFactory::createFiberCompressiveForceLength", 
         "%s: curviness must be between 0.0 and 1.0",curveName.c_str());
 
     std::string caller = curveName;
@@ -416,7 +416,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double y1 = 0;
     double dydx1 = 0;
 
-    SimTK::Matrix ctrlPts = QuinticBezierCurveSet::
+    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,caller);
 
     SimTK::Matrix mX(6,1), mY(6,1);
@@ -425,7 +425,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
     // curveName = muscleName;
     //curveName.append("_fiberCompressiveForceLengthCurve");
-    MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+    SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                false,curveName);
 
     return mclCrvFcn;
@@ -433,22 +433,22 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 }
 
 
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
           createFiberForceLengthCurve(double e0, double kiso, double curviness,
           bool computeIntegral, const std::string& curveName)
 {
     
     //Check the input arguments
     SimTK_ERRCHK1_ALWAYS( e0>0 , 
-        "MuscleCurveFunctionFactory::createFiberForceLength", 
+        "SmoothSegmentedFunctionFactory::createFiberForceLength", 
         "%s: e0 must be greater than 0",curveName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( kiso > (1/e0) , 
-        "MuscleCurveFunctionFactory::createFiberForceLength", 
+        "SmoothSegmentedFunctionFactory::createFiberForceLength", 
         "%s: kiso must be greater than 1/e0 (%f)",curveName.c_str(),(1/e0));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
-        "MuscleCurveFunctionFactory::createFiberForceLength", 
+        "SmoothSegmentedFunctionFactory::createFiberForceLength", 
         "%s: curviness must be between 0.0 and 1.0",curveName.c_str());
 
     std::string caller = curveName;
@@ -463,7 +463,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double y1 = 1;
     double dydx1 = kiso;
 
-    SimTK::Matrix ctrlPts = QuinticBezierCurveSet::
+    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
         calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,caller);
 
     SimTK::Matrix mX(6,1), mY(6,1);
@@ -473,7 +473,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     //std::string curveName = muscleName;
     //curveName.append("_fiberForceLengthCurve");
         //Instantiate a muscle curve object
-    MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+    SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                 true,curveName);
 
     return mclCrvFcn;
@@ -482,7 +482,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
 
 
 
-MuscleCurveFunction MuscleCurveFunctionFactory::
+SmoothSegmentedFunction SmoothSegmentedFunctionFactory::
           createTendonForceLengthCurve(double e0, double kiso, double curviness,
                                     bool computeIntegral, 
                                     const std::string& curveName)
@@ -490,16 +490,16 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     //Check the input arguments
     //e0>0 
     SimTK_ERRCHK1_ALWAYS( e0>0 , 
-        "MuscleCurveFunctionFactory::createTendonForceLengthCurve", 
+        "SmoothSegmentedFunctionFactory::createTendonForceLengthCurve", 
         "%s: e0 must be greater than 0, but %f was entered", curveName.c_str());
 
     SimTK_ERRCHK2_ALWAYS( kiso > (1/e0) , 
-        "MuscleCurveFunctionFactory::createTendonForceLengthCurve", 
+        "SmoothSegmentedFunctionFactory::createTendonForceLengthCurve", 
         "%s : kiso must be greater than 1/e0, (%f)", 
         curveName.c_str(), (1/e0));
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
-        "MuscleCurveFunctionFactory::createTendonForceLengthCurve", 
+        "SmoothSegmentedFunctionFactory::createTendonForceLengthCurve", 
         "%s : curviness must be between 0.0 and 1.0, but %f was entered"
         , curveName.c_str());
 
@@ -516,7 +516,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     double dydx1 = kiso;
 
     //Compute the Quintic Bezier control points
-    SimTK::Matrix ctrlPts = QuinticBezierCurveSet::
+    SimTK::Matrix ctrlPts = SegmentedQuinticBezierToolkit::
      calcQuinticBezierCornerControlPoints(x0,y0,dydx0,x1,y1,dydx1,c,callerName);
     SimTK::Matrix mX(6,1);
     SimTK::Matrix mY(6,1);
@@ -527,7 +527,7 @@ MuscleCurveFunction MuscleCurveFunctionFactory::
     //std::string curveName = muscleName;
     //curveName.append("_tendonForceLengthCurve");
     //Instantiate a muscle curve object
-   MuscleCurveFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
+   SmoothSegmentedFunction mclCrvFcn(mX,mY,x0,x1,y0,y1,dydx0,dydx1,computeIntegral,
                                                                 true,curveName);
 
     return mclCrvFcn;

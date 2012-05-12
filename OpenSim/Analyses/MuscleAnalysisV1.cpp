@@ -39,7 +39,7 @@
 #include <OpenSim/Simulation/SimbodyEngine/Coordinate.h>
 #include <OpenSim/Simulation/Model/CoordinateSet.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Analyses/MuscleAnalysisV1.h>
 #include <OpenSim/Actuators/Thelen2003MuscleV1.h>
 
@@ -214,7 +214,7 @@ setupProperties()
 /**
  *  MM 2011 10 18
  *
- * This function will populate the NaturalCubicSpline objects with curves that are
+ * This function will populate the SimmSpline objects with curves that are
  * specified in the data files listed below. These curves are used as a point of 
  * comparision to evaluate whether the muscle model in question is operating in a
  * physiologically reasonable region or not.
@@ -1039,15 +1039,15 @@ printResults(const string &aBaseName,const string &aDir,double aDT,
  * MM 2011 10 18
  *
  * This method is called when the constructor is executed. It is used to fetch data from
- * a user specified *.sto file, spline interpolate it using the NaturalCubicSpline
+ * a user specified *.sto file, spline interpolate it using the SimmSpline
  * class and return the result. Note that the columns of the *.sto file need to be
  * 'time' and then 'col0'. Why? Because the class that reads in the data requires it.
  * This should be fixed.
  *
  * @param aFileName: a reference to a string of the filename to read. 
- * @returns NaturalCubicSpline* to the interpolated curve in the file.
+ * @returns SimmSpline* to the interpolated curve in the file.
  */
-NaturalCubicSpline* MuscleAnalysisV1::get1DSpline(const std::string &aFileName){
+SimmSpline* MuscleAnalysisV1::get1DSpline(const std::string &aFileName){
 	
 	Storage curvefal(aFileName);
 	OpenSim::Array<double> curvefalX, curvefalY;
@@ -1071,7 +1071,7 @@ NaturalCubicSpline* MuscleAnalysisV1::get1DSpline(const std::string &aFileName){
 	colIdx = 1;
 	int result_col2 = curvefal.getDataColumn(colIdx,curvefalY);
 
-	return new NaturalCubicSpline(curvefalX.getSize(),&curvefalX[0],&curvefalY[0],"Active-Force Length Curve Approximation");
+	return new SimmSpline(curvefalX.getSize(),&curvefalX[0],&curvefalY[0],"Active-Force Length Curve Approximation");
 }
 
 
@@ -1088,7 +1088,7 @@ NaturalCubicSpline* MuscleAnalysisV1::get1DSpline(const std::string &aFileName){
  * @param xval: The value at which you'd like to evaluate the spline
  * @return double of the value of the spline at xval.
  */
-double 	MuscleAnalysisV1::get1DSplineValue(const NaturalCubicSpline *aSpline, double xval){	
+double 	MuscleAnalysisV1::get1DSplineValue(const SimmSpline *aSpline, double xval){	
 	SimTK::Vector tmpvec(aSpline->getArgumentSize(), 0.0);
 	for(int i=0; i<aSpline->getArgumentSize();i++ )
 		tmpvec[i] = xval;

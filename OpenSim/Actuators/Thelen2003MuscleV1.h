@@ -26,7 +26,7 @@
 // INCLUDE
 #include "osimActuatorsDLL.h"
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 
 
 #ifdef SWIG
@@ -152,7 +152,7 @@ protected:
 	double &_ca;
 
 	//MM splined versions of the active force length curve
-	//NaturalCubicSpline *_ncsfal;
+	//SimmSpline *_ncsfal;
 
     SimTK::Spline_<SimTK::Real> _ncsfal;
     SimTK::Spline_<SimTK::Real> _ncsfv;
@@ -284,7 +284,7 @@ private:
 	void loadForceActiveLengthCurve(); //MM
     void loadForceVelocityCurve(); //MM
 	SimTK::Spline_<SimTK::Real> get1DSpline(const std::string &aFileName); //MM
-	//double get1DSplineValue(const NaturalCubicSpline *aSpline, double xval); //MM 
+	//double get1DSplineValue(const SimmSpline *aSpline, double xval); //MM 
 //=============================================================================
 };	// END of class Thelen2003MuscleV1
 //=============================================================================

@@ -90,8 +90,8 @@ void TendonForceLengthCurve::buildCurve()
         double k    =  m_stiffnessAtOneNormForceInUse;                       
         double c    =  m_curvinessInUse;        
 
-        //Here's where you call the MuscleCurveFunctionFactory
-        MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+        //Here's where you call the SmoothSegmentedFunctionFactory
+        SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                                     createTendonForceLengthCurve(   e0,
                                                                     k,
                                                                     c,
@@ -296,7 +296,7 @@ double TendonForceLengthCurve::
     double prevC = 0;
     double step = 0.25;
             
-    MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+    SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
             createTendonForceLengthCurve(   e0,
                                             klin,
                                             c,
@@ -328,7 +328,7 @@ double TendonForceLengthCurve::
         while(flag_improvement == false && localIter < 2 
                 && flag_Newton == false){
 
-            MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+            SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                             createTendonForceLengthCurve(   e0,
                                                             klin,
                                                             c+step,
@@ -366,7 +366,7 @@ double TendonForceLengthCurve::
             double cNewton = c + deltaC;
 
             if(abs(deltaC) < abs(step)){
-                MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+                SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
                             createTendonForceLengthCurve(   e0,
                                                             klin,
                                                             cNewton,

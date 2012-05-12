@@ -28,8 +28,8 @@
 // INCLUDE
 #include <simbody/internal/common.h>
 #include <OpenSim/Simulation/Model/ModelComponent.h>
-#include <OpenSim/Common/MuscleCurveFunctionFactory.h>
-#include <OpenSim/Common/MuscleCurveFunction.h>
+#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
+#include <OpenSim/Common/SmoothSegmentedFunction.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API
@@ -410,13 +410,13 @@ private:
     /*
     This object extends the ModelComponent interface so that we can make use
     of the 'createSystem' function, which we are using to create the 
-    curve (using MuscleCurveFunctionFactory), which is an 
+    curve (using SmoothSegmentedFunctionFactory), which is an 
     expensive operation, just once prior to simulation. 
     
     Thus the user is allowed to set the properties of this curve until just 
     before the simulation begins. Just prior to the simulation starts 
     'createSystem' is called, and then this object will build the 
-    MuscleCurveFunction that defines the curve the user requested
+    SmoothSegmentedFunction that defines the curve the user requested
     */
 
     ///ModelComponent Interface required function
@@ -444,8 +444,8 @@ private:
     void constructProperties();
 
     /**
-        This function will take all of the current property values, and if they
-        have changed since the last time the curve was built, and build a curve.
+        This function will take all of the current property values and build
+        a curve.
 
         <B>Computational Costs</B>
         \verbatim 
@@ -454,10 +454,9 @@ private:
 
     */
     void buildCurve();
+    void ensureCurveUpToDate();
 
-
-    MuscleCurveFunction m_curve;
-    bool                m_curveUpToDate;
+    SmoothSegmentedFunction m_curve;
 };
 
 }

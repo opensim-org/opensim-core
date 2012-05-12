@@ -77,8 +77,8 @@ void FiberCompressiveForceLengthCurve::buildCurve()
         double kiso =  getStiffnessAtZeroLength();
         double c    =  getCurviness();        
 
-        //Here's where you call the MuscleCurveFunctionFactory
-        MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+        //Here's where you call the SmoothSegmentedFunctionFactory
+        SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
             createFiberCompressiveForceLengthCurve( l0,
                                                     kiso,
                                                     c,

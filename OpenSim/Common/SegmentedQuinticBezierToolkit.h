@@ -1,7 +1,7 @@
-#ifndef OPENSIM_QUINTICBEZIERCURVESET_H_
-#define OPENSIM_QUINTICBEZIERCURVESET_H_
+#ifndef OPENSIM_SEGMENTEDQUINTICBEZIERTOOLKIT_H_
+#define OPENSIM_SEGMENTEDQUINTICBEZIERTOOLKIT_H_
 
-// QuinticBezierCurveSet.h
+// SegmentedQuinticBezierToolkit.h
 // Author: Matthew Millard
 /*
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -131,8 +131,8 @@ the quoted computational costs are approximate.
 @version 0.0
 
 */
-class OSIMCOMMON_API QuinticBezierCurveSet
-//class QuinticBezierCurveSet
+class OSIMCOMMON_API SegmentedQuinticBezierToolkit
+//class SegmentedQuinticBezierToolkit
 {
 
 
@@ -178,14 +178,14 @@ class OSIMCOMMON_API QuinticBezierCurveSet
             //Create the splined approximate inverse of u(x)
             for(int i=0; i<100; i++){
                 u(i) = ( (double)i )/( (double)(100-1) );
-                x(i) = QuinticBezierCurveSet::
+                x(i) = SegmentedQuinticBezierToolkit::
                     calcQuinticBezierCurveVal(u(i),vX,"test"); 
             }
             SimTK::Spline splineUX = SimTK::SplineFitter<Real>::
                 fitForSmoothingParameter(3,x,u,0).getSpline();
 
             //Now evalutate u at the given xVal
-            double u = QuinticBezierCurveSet::
+            double u = SegmentedQuinticBezierToolkit::
                      calcU(xVal,vX, splineUX, 1e-12,20,"test");
 
             @endcode
@@ -239,7 +239,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
 
             //The value of x for which we want the index for
             double xVal = 1.75;
-            int idx  = QuinticBezierCurveSet::calcIndex(xVal,mX,"test");
+            int idx  = SegmentedQuinticBezierToolkit::calcIndex(xVal,mX,"test");
         @endcode
 
 
@@ -306,7 +306,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
             vX(4) = 4;
             vX(5) = 6;
 
-            yVal = QuinticBezierCurveSet::
+            yVal = SegmentedQuinticBezierToolkit::
                      calcQuinticBezierCurveVal(u,vX,"test");
             @endcode
 
@@ -442,7 +442,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
             vY(5) = 1;
 
 
-            d2ydx2 = QuinticBezierCurveSet::calcQuinticBezierCurveDerivDYDX(
+            d2ydx2 = SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(
                      u,vX, vY, 2,"test");
             @endcode
 
@@ -494,7 +494,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
             double dydx1 = 43;
             double c = 0.75;
 
-            SimTK::Matrix p0 = QuinticBezierCurveSet::
+            SimTK::Matrix p0 = SegmentedQuinticBezierToolkit::
                calcQuinticBezierCornerControlPoints(x0, y0, dydx0,x1,y1,dydx01,
                                                                      c,"test");
             @endcode
@@ -591,7 +591,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
             //Sample the local set for u and x
             for(int i=0;i<NUM_SAMPLE_PTS;i++){
                 u(i) = ( (double)i )/( (double)(NUM_SAMPLE_PTS-1) );
-                x(i) = QuinticBezierCurveSet::
+                x(i) = SegmentedQuinticBezierToolkit::
                     calcQuinticBezierCurveVal(u(i),_mX(s),_name);            
                 if(_numBezierSections > 1){
                    //Skip the last point of a set that has another set of points
@@ -616,7 +616,7 @@ class OSIMCOMMON_API QuinticBezierCurveSet
         //Compute the integral of y(x) and spline the result    
         //////////////////////////////////////////////////
 
-        SimTK::Vector yInt =  QuinticBezierCurveSet::
+        SimTK::Vector yInt =  SegmentedQuinticBezierToolkit::
             calcNumIntBezierYfcnX(xALL,0,INTTOL, UTOL, MAXITER,_mX, _mY,
             _arraySplineUX,_name);
     

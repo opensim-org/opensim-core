@@ -35,7 +35,7 @@
 #include "Ligament.h"
 #include "GeometryPath.h"
 #include "PointForceDirection.h"
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 
 //=============================================================================
 // STATICS
@@ -75,7 +75,7 @@ void Ligament::constructProperties()
 	int forceLengthCurvePoints = 13;
 	double forceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
 	double forceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
-	NaturalCubicSpline forceLengthCurve
+	SimmSpline forceLengthCurve
        (forceLengthCurvePoints, forceLengthCurveX, forceLengthCurveY);
 
 	constructProperty_force_length_curve(forceLengthCurve);

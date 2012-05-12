@@ -111,7 +111,7 @@ void SimbodySimmFunction::write(ofstream& aStream)
 		}
 		aStream << "endgcvspline" << endl << endl;
 	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typeNatCubicSpline) {
-		aStream << "beginnaturalcubicspline f" << _userNumber << endl;
+		aStream << "beginSimmSpline f" << _userNumber << endl;
 		for (int i=0; i<xyFunc.getNumberOfPoints(); i++) {
 			double x = xyFunc.getX(i);
 			if (_XType == Coordinate::Rotational)
@@ -121,7 +121,7 @@ void SimbodySimmFunction::write(ofstream& aStream)
 				y *= 180.0 / SimTK::Pi;
 			aStream << "(" << x << "," << y << ")" << endl;
 		}
-		aStream << "endnaturalcubicspline" << endl << endl;
+		aStream << "endSimmSpline" << endl << endl;
 	} else if (xyFunc.getFunctionType() == XYFunctionInterface::typePiecewiseLinearFunction ||
 		        xyFunc.getFunctionType() == XYFunctionInterface::typeLinearFunction) {
 		aStream << "beginlinearfunction f" << _userNumber << endl;

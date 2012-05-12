@@ -717,7 +717,7 @@ class MySystemGuts : public SimTK::System::Guts {
 This is the implementation of the nice user interface class to MySystemGuts, 
 which creates a System object that is required to use SimTK's integrators to 
 integrate the Bezier curve sets. Used in function
-QuinticBezierCurveSet::calcNumIntBezierYfcnX
+SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX
 */
 class MySystem : public System {
 public:

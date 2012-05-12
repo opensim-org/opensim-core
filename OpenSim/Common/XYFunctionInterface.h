@@ -37,7 +37,7 @@
 #include <OpenSim/Common/PiecewiseLinearFunction.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/GCVSpline.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/MultiplierFunction.h>
 
 namespace OpenSim {
@@ -93,7 +93,7 @@ private:
 	StepFunction* _stepFunction;
 	PiecewiseLinearFunction* _piecewiseLinearFunction;
 	LinearFunction* _linearFunction;
-	NaturalCubicSpline* _natCubicSpline;
+	SimmSpline* _natCubicSpline;
 	GCVSpline* _gcvSpline;
 	PiecewiseConstantFunction* _mStepFunction;
 
@@ -123,7 +123,7 @@ public:
 	PiecewiseConstantFunction* getMultiStepFunction() const { return _mStepFunction; }
 	PiecewiseLinearFunction* getPiecewiseLinearFunction() const { return _piecewiseLinearFunction; }
 	LinearFunction* getLinearFunction() const { return _linearFunction; }
-	NaturalCubicSpline* getNaturalCubicSpline() const { return _natCubicSpline; }
+	SimmSpline* getSimmSpline() const { return _natCubicSpline; }
 	GCVSpline* getGCVSpline() const { return _gcvSpline; }
 
 }; // class XYFunctionInterface

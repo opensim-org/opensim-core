@@ -70,7 +70,7 @@
 #include <OpenSim/Actuators/CoordinateActuator.h>
 
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/LinearFunction.h>
 #include <OpenSim/Common/Constant.h>
 #include <OpenSim/Common/FunctionAdapter.h>
@@ -549,8 +549,8 @@ void testCustomJointVsFunctionBased()
 		kneeY[i] += (-kneeInFemur[1]+hipInFemur[1]); 
 	}
 
-	NaturalCubicSpline tx(npx, angX, kneeX);
-	NaturalCubicSpline ty(npy, angY, kneeY);;
+	SimmSpline tx(npx, angX, kneeX);
+	SimmSpline ty(npy, angY, kneeY);;
 
 	// Define the functions that specify the FunctionBased Mobilized Body.
 	std::vector<std::vector<int> > coordIndices;

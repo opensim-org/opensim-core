@@ -39,7 +39,7 @@
 #include <OpenSim/Common/PropertyTransform.h>
 #include <OpenSim/Common/PropertyObjArray.h>
 #include <OpenSim/Common/PropertyDblVec.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include "rdSerializableObject2.h"
 
 //=============================================================================

@@ -20,7 +20,7 @@
  * -------------------------------------------------------------------------- */
 
 /* 
-    Below is a basic bench mark simulation for the MuscleCurveFunctionFactory
+    Below is a basic bench mark simulation for the SmoothSegmentedFunctionFactory
     class, a class that enables the easy generation of C2 continuous curves 
     that define the various characteristic curves required in a muscle model
  */
@@ -33,8 +33,8 @@
 
 #include <OpenSim/OpenSim.h>
 
-//#include <OpenSim/Common/QuinticBezierCurveSet.h>
-//#include <OpenSim/Common/MuscleCurveFunctionFactory.h>
+//#include <OpenSim/Common/SegmentedQuinticBezierToolkit.h>
+//#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 
 #include <OpenSim/Simulation/Model/MuscleFixedWidthPennationModel.h>
 

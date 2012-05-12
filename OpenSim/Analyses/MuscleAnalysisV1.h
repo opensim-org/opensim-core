@@ -52,7 +52,7 @@
 #include <OpenSim/Simulation/Model/Analysis.h>
 #include "osimAnalysesDLL.h"
 #include <OpenSim/Simulation/Model/Muscle.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 
 
 #ifdef SWIG
@@ -156,10 +156,10 @@ private:
 
 	//MM	Spline functions used to interpolate the curves that are used as Gold Standards for 
 	//		the force-velocity, active-force-length, passive muscle force, and tendon stiffness
-	NaturalCubicSpline *_ncs_stdfal;
-	NaturalCubicSpline *_ncs_stdfv;
-	NaturalCubicSpline *_ncs_stdfpe;
-	NaturalCubicSpline *_ncs_stdfse;
+	SimmSpline *_ncs_stdfal;
+	SimmSpline *_ncs_stdfv;
+	SimmSpline *_ncs_stdfpe;
+	SimmSpline *_ncs_stdfse;
 
 	Storage *_fvErrStore;//Difference between model's fv, and gold standard fv for a given velocity
 	Storage *_falErrStore;//Difference between model's fal, and gold standard fal for a given velocity
@@ -200,8 +200,8 @@ private:
 	void updateStorageObjects();
 	void constructColumnLabels();
 	void setStandardMuscleCurves(); //MM
-	NaturalCubicSpline* get1DSpline(const std::string &aFileName); //MM
-	double get1DSplineValue(const NaturalCubicSpline *aSpline, double xval); //MM 
+	SimmSpline* get1DSpline(const std::string &aFileName); //MM
+	double get1DSplineValue(const SimmSpline *aSpline, double xval); //MM 
 
 public:
 	//--------------------------------------------------------------------------

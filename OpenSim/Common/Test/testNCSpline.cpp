@@ -29,7 +29,7 @@
 #include <fstream>
 #include <OpenSim/Common/Exception.h>
 //#include <OpenSim/Common/CubicSpline.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <stdio.h>
 #include <SimTKcommon/Testing.h>
 
@@ -170,7 +170,7 @@ SimTK::Vector getAnalyticFunction(double x,int fcnType){
 *
 *
 */
-SimTK::Vector testNaturalCubicSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector yK, SimTK::Vector xM,SimTK::Vector xD,string name, bool print){
+SimTK::Vector testSimmSpline(SimTK::Function* sp, SimTK::Vector xK, SimTK::Vector yK, SimTK::Vector xM,SimTK::Vector xD,string name, bool print){
 	int size = xK.size();
 	int sizeD= xD.size();
 	int sizeDK = xD.size()/(xK.size()-1);
@@ -312,7 +312,7 @@ SimTK::Vector testNaturalCubicSpline(SimTK::Function* sp, SimTK::Vector xK, SimT
 *    mid knot location and high resolution step locations respectively
 * 1. Initialize the analytically computed output yK, yM and yD
 * 2. Create each of the spline objects. 
-* 3. Evaluate the numerical accuracy of the splines by calling testNaturalCubicSpline
+* 3. Evaluate the numerical accuracy of the splines by calling testSimmSpline
 */
 int main() {
     try {
@@ -345,7 +345,7 @@ int main() {
 										//in each row entry, for each of the 2 spline classes
 										//tested.
 										// SimTK SplineFitter results are stored in column 0
-										// OpenSim::NaturalCubicSpline results are stored in column 1
+										// OpenSim::SimmSpline results are stored in column 1
 		//testResults.elementwiseAssign(0.0);
 		testResults = -1;
 		SimTK::Vector tmpV1(1);
@@ -428,11 +428,11 @@ int main() {
 		//CubicSpline::createNaturalSpline(xK,yKVal, csDerivs1);
 		//CubicSpline::createNaturalSpline(xK,csDerivs1, csDerivs2);
 
-		//OpenSim:NaturalCubicSplines
+		//OpenSim:SimmSplines
 		SimTK::Vector ncsDerivs1(xK.size());
 		vector<int> derOrder(1);
 		derOrder[0] = 0;		
-		NaturalCubicSpline ncs(xK.size(), &xK[0], &yKVal[0],"test");					
+		SimmSpline ncs(xK.size(), &xK[0], &yKVal[0],"test");					
 		SimTK::Function* ncs_simtkfcn = ncs.createSimTKFunction();
 
 		//SimTK::SplineFitter
@@ -443,11 +443,11 @@ int main() {
 	//3. Test the splines
 	///////////////////////////////////////////
 
-		testResults(0) = testNaturalCubicSpline(&sTK, xK, yK(0), xM, xD, "simtk_splinefitter",true);
-		testResults(1) = testNaturalCubicSpline(ncs_simtkfcn, xK, yK(0), xM, xD,"opensim_natcubspline",true);
+		testResults(0) = testSimmSpline(&sTK, xK, yK(0), xM, xD, "simtk_splinefitter",true);
+		testResults(1) = testSimmSpline(ncs_simtkfcn, xK, yK(0), xM, xD,"opensim_natcubspline",true);
 
 		cout << "Test Result Matrix: 0 or small numbers pass" <<endl;
-		cout << "  column 0: SimTK::SplineFitter, column 1: OpenSim::NaturalCubicSpline" <<endl;
+		cout << "  column 0: SimTK::SplineFitter, column 1: OpenSim::SimmSpline" <<endl;
 		cout << "  row 0: Passes through knots (tol 1e-14)" << endl;
 		cout << "  row 1: First derivative is continuous and smooth (tol " << deltaD << ")" << endl;
 		cout << "  row 2: Second derivative is continuous (tol " << 10*deltaD << ")" << endl;

@@ -94,8 +94,8 @@ void FiberCompressiveForceCosPennationCurve::buildCurve()
 
         double cosAngle = cos(angle*DegreesToRadians);
 
-        //Here's where you call the MuscleCurveFunctionFactory
-        MuscleCurveFunction tmp = MuscleCurveFunctionFactory::
+        //Here's where you call the SmoothSegmentedFunctionFactory
+        SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
             createFiberCompressiveForceCosPennationCurve(   cosAngle,
                                                             kiso,
                                                             c,

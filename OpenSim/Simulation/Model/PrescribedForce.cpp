@@ -161,11 +161,11 @@ void PrescribedForce::setTorqueFunctionNames
 	// Expected column labels for the file
 	kineticsStore.getTimeColumn(t);
 	double *column=0;
-	NaturalCubicSpline** tSpline = new NaturalCubicSpline*[3];
+	SimmSpline** tSpline = new SimmSpline*[3];
 	for(int i=0;i<aFunctionNames.getSize();i++)
 	{
 		kineticsStore.getDataColumn(aFunctionNames[i], column);
-		tSpline[i]= new NaturalCubicSpline((forceSize>10?10:forceSize), t, column, aFunctionNames[i]);
+		tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), t, column, aFunctionNames[i]);
 	}
 	setTorqueFunctions(tSpline[0], tSpline[1], tSpline[2]);
 	for (int i=0; i<aFunctionNames.getSize();i++)
@@ -183,11 +183,11 @@ void PrescribedForce::setForceFunctionNames
 	// Expected column labels for the file
 	kineticsStore.getTimeColumn(t);
 	double *column=0;
-	NaturalCubicSpline** tSpline = new NaturalCubicSpline*[3];
+	SimmSpline** tSpline = new SimmSpline*[3];
 	for(int i=0;i<aFunctionNames.getSize();i++)
 	{
 		kineticsStore.getDataColumn(aFunctionNames[i], column);
-		tSpline[i]= new NaturalCubicSpline((forceSize>10?10:forceSize), t, column, aFunctionNames[i]);
+		tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), t, column, aFunctionNames[i]);
 	}
 	setForceFunctions(tSpline[0], tSpline[1], tSpline[2]);
 	for (int i=0; i<aFunctionNames.getSize();i++)
@@ -205,11 +205,11 @@ void PrescribedForce::setPointFunctionNames
 	// Expected column labels for the file
 	kineticsStore.getTimeColumn(t);
 	double *column=0;
-	NaturalCubicSpline** tSpline = new NaturalCubicSpline*[3];
+	SimmSpline** tSpline = new SimmSpline*[3];
 	for(int i=0;i<aFunctionNames.getSize();i++)
 	{
 		kineticsStore.getDataColumn(aFunctionNames[i], column);
-		tSpline[i]= new NaturalCubicSpline((forceSize>10?10:forceSize), 
+		tSpline[i]= new SimmSpline((forceSize>10?10:forceSize), 
                                            t, column, aFunctionNames[i]);
 	}
 	setPointFunctions(tSpline[0], tSpline[1], tSpline[2]);

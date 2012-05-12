@@ -219,7 +219,7 @@ void testActiveForceLengthCurve()
 
         //cout <<"**************************************************"<<endl;
         cout <<"Service correctness is tested by underlying utility class"<<endl;
-        cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+        cout <<"SmoothSegmentedFunction, and SmoothSegmentedFunctionFactory"<<endl;
         //cout <<"**************************************************"<<endl;
 
         //cout <<"**************************************************"<<endl;
@@ -375,7 +375,7 @@ void testForceVelocityCurve()
         cout << "Passed: Testing Services for connectivity" << endl;                            
 
        cout <<"Service correctness is tested by underlying utility class"<<endl;
-        cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+        cout <<"SmoothSegmentedFunction, and SmoothSegmentedFunctionFactory"<<endl;
 
         cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING ForceVelocityCurve              "<<endl;
@@ -526,7 +526,7 @@ void testForceVelocityInverseCurve()
 
         //cout <<"**************************************************"<<endl;
        cout <<"Service correctness is tested by underlying utility class"<<endl;
-       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+       cout <<"SmoothSegmentedFunction, and SmoothSegmentedFunctionFactory"<<endl;
         //cout <<"**************************************************"<<endl;
 
         //cout <<"**************************************************"<<endl;
@@ -683,7 +683,7 @@ void testTendonForceLengthCurve()
        cout << "Passed: Testing Services for connectivity" << endl;                            
 
        cout <<"Service correctness is tested by underlying utility class"<<endl;
-       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+       cout <<"SmoothSegmentedFunction, and SmoothSegmentedFunctionFactory"<<endl;
 
        cout <<"________________________________________________________"<<endl;
        cout <<"          TESTING TendonForceLengthCurve             "<<endl;
@@ -829,7 +829,7 @@ void testFiberForceLengthCurve()
         cout << "Passed: Testing Services for connectivity" << endl;                            
 
        cout <<"Service correctness is tested by underlying utility class"<<endl;
-       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+       cout <<"SmoothSegmentedFunction, and SmoothSegmentedFunctionFactory"<<endl;
 
         cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING FiberForceLengthCurve             "<<endl;
@@ -1020,7 +1020,7 @@ void testFiberCompressiveForceLengthCurve()
         cout << "Passed: Testing Services for connectivity" << endl;                            
 
        cout <<"Service correctness is tested by underlying utility class"<<endl;
-       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+       cout <<"SmoothSegmentedFunction, and SmoothSegmentedFunctionFactory"<<endl;
 
         cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING FiberCompressiveForceLengthCurve      "<<endl;
@@ -1183,7 +1183,7 @@ void testFiberCompressiveForceCosPennationCurve()
         cout << "Passed: Testing Services for connectivity" << endl;                            
 
        cout <<"Service correctness is tested by underlying utility class"<<endl;
-       cout <<"MuscleCurveFunction, and MuscleCurveFunctionFactory"<<endl;
+       cout <<"SmoothSegmentedFunction, and SmoothSegmentedFunctionFactory"<<endl;
 
         cout <<"________________________________________________________"<<endl;
         cout <<"          TESTING FiberCompressiveForceCosPennationCurve"<<endl;

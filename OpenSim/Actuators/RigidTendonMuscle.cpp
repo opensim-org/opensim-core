@@ -30,7 +30,7 @@
 // INCLUDES
 //==============================================================================
 #include <OpenSim/Simulation/Model/Model.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 
 #include "RigidTendonMuscle.h"
 
@@ -90,14 +90,14 @@ void RigidTendonMuscle::constructProperties()
 	int activeForceLengthCurvePoints = 21;
 	double activeForceLengthCurveX[] = {-5.30769200, -4.30769200, -1.92307700, -0.88461500, -0.26923100,  0.23076900,  0.46153800,  0.52725000,  0.62875000,  0.71875000,  0.86125000,  1.04500000,  1.21750000,  1.43875000,  1.50000000,  1.61538500,  2.00000000,  2.96153800,  3.69230800,  5.46153800,  9.90190200};
 	double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
-	NaturalCubicSpline activeForceLengthCurve
+	SimmSpline activeForceLengthCurve
        (activeForceLengthCurvePoints, activeForceLengthCurveX, activeForceLengthCurveY);
 	constructProperty_active_force_length_curve(activeForceLengthCurve);
 
 	int passiveForceLengthCurvePoints = 13;
 	double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
 	double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
-	NaturalCubicSpline passiveForceLengthCurve
+	SimmSpline passiveForceLengthCurve
        (passiveForceLengthCurvePoints, passiveForceLengthCurveX, 
         passiveForceLengthCurveY);
 	constructProperty_passive_force_length_curve(passiveForceLengthCurve);
@@ -107,7 +107,7 @@ void RigidTendonMuscle::constructProperties()
 		0.050000000000, 0.100000000000, 0.150000000000, 0.200000000000, 0.250000000000, 0.300000000000, 0.350000000000, 0.400000000000, 0.450000000000, 0.500000000000, 0.550000000000, 0.600000000000, 0.650000000000, 0.700000000000, 0.750000000000, 0.800000000000, 0.850000000000, 0.900000000000, 0.950000000000, 1.000000000000};
 	double forceVelocityLengthCurveY[] = {0.000000000000, 0.000000000000, 0.010417000000, 0.021739000000, 0.034091000000, 0.047619000000, 0.062500000000, 0.078947000000, 0.097222000000, 0.117647000000, 0.140625000000, 0.166667000000, 0.196429000000, 0.230769000000, 0.270833000000, 0.318182000000, 0.375000000000, 0.444444000000, 0.531250000000, 0.642857000000, 0.791667000000, 1.000000000000,
 		1.482014000000, 1.601571000000, 1.655791000000, 1.686739000000, 1.706751000000, 1.720753000000, 1.731099000000, 1.739055000000, 1.745365000000, 1.750490000000, 1.754736000000, 1.758312000000, 1.761364000000, 1.763999000000, 1.766298000000, 1.768321000000, 1.770115000000, 1.771717000000, 1.773155000000, 1.774455000000};
-	NaturalCubicSpline forceVelocityLengthCurve
+	SimmSpline forceVelocityLengthCurve
        (forceVelocityLengthCurvePoints, forceVelocityLengthCurveX, 
         forceVelocityLengthCurveY);
 	constructProperty_force_velocity_curve(forceVelocityLengthCurve);

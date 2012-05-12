@@ -1,7 +1,7 @@
-#ifndef _NaturalCubicSpline_h_
-#define _NaturalCubicSpline_h_
+#ifndef OPENSIM_SIMMSPLINE_H_
+#define OPENSIM_SIMMSPLINE_H_
 
-// NaturalCubicSpline.h
+// SimmSpline.h
 // Author: Peter Loan
 /*
  * Copyright (c)  2005, Stanford University. All rights reserved. 
@@ -53,8 +53,8 @@
  */
 namespace OpenSim { 
 
-class OSIMCOMMON_API NaturalCubicSpline : public Function {
-OpenSim_DECLARE_CONCRETE_OBJECT(NaturalCubicSpline, Function);
+class OSIMCOMMON_API SimmSpline : public Function {
+OpenSim_DECLARE_CONCRETE_OBJECT(SimmSpline, Function);
 
 //=============================================================================
 // MEMBER VARIABLES
@@ -82,25 +82,25 @@ public:
 	//--------------------------------------------------------------------------
 	// CONSTRUCTION
 	//--------------------------------------------------------------------------
-	NaturalCubicSpline();
-	NaturalCubicSpline(int aN,const double *aTimes,const double *aValues,
+	SimmSpline();
+	SimmSpline(int aN,const double *aTimes,const double *aValues,
 		const std::string &aName="");
-	NaturalCubicSpline(const NaturalCubicSpline &aSpline);
-	virtual ~NaturalCubicSpline();
+	SimmSpline(const SimmSpline &aSpline);
+	virtual ~SimmSpline();
 
 	virtual void init(Function* aFunction);
 
 private:
 	void setNull();
 	void setupProperties();
-	void setEqual(const NaturalCubicSpline &aSpline);
+	void setEqual(const SimmSpline &aSpline);
 
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------
 public:
 #ifndef SWIG
-	NaturalCubicSpline& operator=(const NaturalCubicSpline &aSpline);
+	SimmSpline& operator=(const SimmSpline &aSpline);
 #endif
 	//--------------------------------------------------------------------------
 	// SET AND GET
@@ -135,10 +135,10 @@ public:
 private:
 	void calcCoefficients();
 //=============================================================================
-};	// END class NaturalCubicSpline
+};	// END class SimmSpline
 
 }; //namespace
 //=============================================================================
 //=============================================================================
 
-#endif  // __NaturalCubicSpline_h__
+#endif  // OPENSIM_SIMMSPLINE_H_

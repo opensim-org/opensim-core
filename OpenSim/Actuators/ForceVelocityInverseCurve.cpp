@@ -50,20 +50,22 @@ ForceVelocityInverseCurve::ForceVelocityInverseCurve
     constructProperties();
     setName(muscleName + "_ForceVelocityInverseCurve");
 
-    setConcentricMinSlope(concentricMinSlope);
-    setIsometricMaxSlope(isometricMaxSlope);
-    setEccentricMinSlope(eccentricMinSlope);
-    setMaxEccentricVelocityForceMultiplier(maxEccentricVelocityForceMultiplier);
-    setConcentricCurviness(concentricCurviness);
-    setEccentricCurviness(eccentricCurviness);
     
-    buildCurve();
+    setProperty_min_concentric_slope(concentricMinSlope);
+    setProperty_isometric_slope(isometricMaxSlope);
+    setProperty_min_eccentric_slope(eccentricMinSlope);
+    setProperty_max_eccentric_velocity_force_multiplier(
+        maxEccentricVelocityForceMultiplier);
+    setProperty_concentric_curviness(concentricCurviness);
+    setProperty_eccentric_curviness(eccentricCurviness);
+
+    ensureCurveUpToDate();
 }
 
 
 void ForceVelocityInverseCurve::setNull()
 {
-    m_curveUpToDate =false;
+    
 }
 
 void ForceVelocityInverseCurve::constructProperties()
@@ -77,19 +79,17 @@ void ForceVelocityInverseCurve::constructProperties()
 }
 
 void ForceVelocityInverseCurve::buildCurve()
-{
-    if(m_curveUpToDate == false){
-        
-        double dydxC =  getConcentricMinSlope();
-        double dydxIso= getIsometricMaxSlope();
-        double dydxE =  getEccentricMinSlope();
-        double fmax  =  getMaxEccentricVelocityForceMultiplier();
-        double ccurv =  getConcentricCurviness();
-        double ecurv =  getEccentricCurviness();
+{      
+        double dydxC =  getProperty_min_concentric_slope();
+        double dydxIso= getProperty_isometric_slope();
+        double dydxE =  getProperty_min_eccentric_slope();
+        double fmax  =  getProperty_max_eccentric_velocity_force_multiplier();
+        double ccurv =  getProperty_concentric_curviness();
+        double ecurv =  getProperty_eccentric_curviness();
 
-        //Here's where you call the MuscleCurveFunctionFactory
-        MuscleCurveFunction tmp = 
-            MuscleCurveFunctionFactory::
+        //Here's where you call the SmoothSegmentedFunctionFactory
+        SmoothSegmentedFunction tmp = 
+            SmoothSegmentedFunctionFactory::
             createFiberForceVelocityInverseCurve(  fmax,
                                             dydxC,
                                             dydxIso,
@@ -100,11 +100,16 @@ void ForceVelocityInverseCurve::buildCurve()
                                             getName());
 
         this->m_curve = tmp;
-          
-    }
-    m_curveUpToDate = true;
+        setObjectIsUpToDateWithProperties();      
+    
 }
 
+void ForceVelocityInverseCurve::ensureCurveUpToDate()
+{
+    if(isObjectUpToDateWithProperties() == false){
+        buildCurve();
+    }
+}
 
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
@@ -119,12 +124,14 @@ void ForceVelocityInverseCurve::initState(SimTK::State& s) const
     ModelComponent::initState(s);
 }
 
-void ForceVelocityInverseCurve::createSystem(SimTK::MultibodySystem& system) const
+void ForceVelocityInverseCurve::
+    createSystem(SimTK::MultibodySystem& system) const
 {
     Super::createSystem(system);
 
-    ForceVelocityInverseCurve* mthis = const_cast<ForceVelocityInverseCurve*>(this);    
-    mthis->buildCurve();
+    ForceVelocityInverseCurve* mthis 
+        = const_cast<ForceVelocityInverseCurve*>(this);    
+    mthis->ensureCurveUpToDate();
 }
 
 
@@ -134,93 +141,74 @@ void ForceVelocityInverseCurve::createSystem(SimTK::MultibodySystem& system) con
 //=============================================================================
 double ForceVelocityInverseCurve::getConcentricMinSlope()
 {
+    ensureCurveUpToDate();
     return getProperty_min_concentric_slope();
 }
 
 double ForceVelocityInverseCurve::getIsometricMaxSlope()
 {
+    ensureCurveUpToDate();
     return getProperty_isometric_slope();
 }
 
 double ForceVelocityInverseCurve::getEccentricMinSlope()
 {
+    ensureCurveUpToDate();
     return getProperty_min_eccentric_slope();
 }
 
 double ForceVelocityInverseCurve::getMaxEccentricVelocityForceMultiplier()
 {
+    ensureCurveUpToDate();
     return getProperty_max_eccentric_velocity_force_multiplier();
 }
     
 double ForceVelocityInverseCurve::getConcentricCurviness()
 {
+    ensureCurveUpToDate();
     return getProperty_concentric_curviness();
 }
     
 double ForceVelocityInverseCurve::getEccentricCurviness()
 {
+    ensureCurveUpToDate();
     return getProperty_eccentric_curviness();
 }
 
 
 void ForceVelocityInverseCurve::setConcentricMinSlope(double aConcentricMinSlope)
-{
-    if(aConcentricMinSlope != getConcentricMinSlope() )
-    {
-        setProperty_min_concentric_slope(aConcentricMinSlope);
-        m_curveUpToDate = false;
-    }
-
+{   
+    setProperty_min_concentric_slope(aConcentricMinSlope);    
 }
 
 void ForceVelocityInverseCurve::setIsometricMaxSlope(double aIsometricMaxSlope)
 {
-    if(aIsometricMaxSlope != getIsometricMaxSlope() )
-    {
-        setProperty_isometric_slope(aIsometricMaxSlope);
-        m_curveUpToDate = false;
-    }
+    setProperty_isometric_slope(aIsometricMaxSlope);
 }
 
 void ForceVelocityInverseCurve::setEccentricMinSlope(double aEccentricMinSlope)
 {
-    if(aEccentricMinSlope != getEccentricMinSlope() )
-    {
-        setProperty_min_eccentric_slope(aEccentricMinSlope);
-        m_curveUpToDate = false;
-    }
+    setProperty_min_eccentric_slope(aEccentricMinSlope);
 }
 
 
 void ForceVelocityInverseCurve::
     setMaxEccentricVelocityForceMultiplier(double aMaxForceMultiplier)
 {
-    if(aMaxForceMultiplier != getMaxEccentricVelocityForceMultiplier() )
-    {
         setProperty_max_eccentric_velocity_force_multiplier
             (aMaxForceMultiplier);
-        m_curveUpToDate = false;
-    }
 }
 
 
 void ForceVelocityInverseCurve::setConcentricCurviness(double aConcentricCurviness)
 {
-    if(aConcentricCurviness != getConcentricCurviness() )
-    {
         setProperty_concentric_curviness(aConcentricCurviness);
-        m_curveUpToDate = false;
-    }
 }
 
 
 void ForceVelocityInverseCurve::setEccentricCurviness(double aEccentricCurviness)
 {
-    if(aEccentricCurviness != getEccentricCurviness() )
-    {
         setProperty_eccentric_curviness(aEccentricCurviness);
-        m_curveUpToDate = false;
-    }
 }
 
 
@@ -231,11 +219,9 @@ void ForceVelocityInverseCurve::setEccentricCurviness(double aEccentricCurviness
 double ForceVelocityInverseCurve::
     calcValue(double aForceVelocityMultiplier) const
 {
-    if(m_curveUpToDate == false){
         ForceVelocityInverseCurve* mthis = 
             const_cast<ForceVelocityInverseCurve*>(this);    
-        mthis->buildCurve();    
-    }
+        mthis->ensureCurveUpToDate();;    
 
     return m_curve.calcValue(aForceVelocityMultiplier);
 }
@@ -247,22 +233,18 @@ double ForceVelocityInverseCurve::
         "ForceVelocityInverseCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
     
-    if(m_curveUpToDate == false){
         ForceVelocityInverseCurve* mthis = 
             const_cast<ForceVelocityInverseCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
+        mthis->ensureCurveUpToDate();;    
+    
     return m_curve.calcDerivative(aForceVelocityMultiplier,order);
 }
 
 SimTK::Vec2 ForceVelocityInverseCurve::getCurveDomain() const
 {
-    if(m_curveUpToDate == false){
         ForceVelocityInverseCurve* mthis = 
             const_cast<ForceVelocityInverseCurve*>(this);    
-        mthis->buildCurve();    
-    }
+        mthis->ensureCurveUpToDate();;    
 
     return m_curve.getCurveDomain();
 }
@@ -270,11 +252,9 @@ SimTK::Vec2 ForceVelocityInverseCurve::getCurveDomain() const
 void ForceVelocityInverseCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
 {
-    if(m_curveUpToDate == false){
         ForceVelocityInverseCurve* mthis = 
             const_cast<ForceVelocityInverseCurve*>(this);    
-        mthis->buildCurve();    
-    }
+        mthis->ensureCurveUpToDate();    
 
     m_curve.printMuscleCurveToCSVFile(path);
 }

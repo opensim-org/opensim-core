@@ -30,7 +30,7 @@
 // INCLUDES
 //=============================================================================
 #include "Schutte1993Muscle_Deprecated.h"
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Simulation/Model/Model.h>
 
@@ -85,7 +85,7 @@ void Schutte1993Muscle_Deprecated::constructProperties()
 	int tendonForceLengthCurvePoints = 17;
 	double tendonForceLengthCurveX[] = {-10.00000000, -0.00200000, -0.00100000,  0.00000000,  0.00131000,  0.00281000,  0.00431000,  0.00581000,  0.00731000,  0.00881000,  0.01030000,  0.01180000,  0.01230000,  9.20000000,  9.20100000,  9.20200000, 20.00000000};
 	double tendonForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.01080000,  0.02570000,  0.04350000,  0.06520000,  0.09150000,  0.12300000,  0.16100000,  0.20800000,  0.22700000,  345.00000000,  345.00000000,  345.00000000,  345.00000000};
-	NaturalCubicSpline tendonForceLengthCurve
+	SimmSpline tendonForceLengthCurve
        (tendonForceLengthCurvePoints, tendonForceLengthCurveX, 
         tendonForceLengthCurveY);
 	constructProperty_tendon_force_length_curve(tendonForceLengthCurve);
@@ -93,7 +93,7 @@ void Schutte1993Muscle_Deprecated::constructProperties()
 	int activeForceLengthCurvePoints = 21;
 	double activeForceLengthCurveX[] = {-5.30769200, -4.30769200, -1.92307700, -0.88461500, -0.26923100,  0.23076900,  0.46153800,  0.52725000,  0.62875000,  0.71875000,  0.86125000,  1.04500000,  1.21750000,  1.43875000,  1.50000000,  1.61538500,  2.00000000,  2.96153800,  3.69230800,  5.46153800,  9.90190200};
 	double activeForceLengthCurveY[] = {0.01218800,  0.02189900,  0.03646600,  0.05249300,  0.07531200,  0.11415800,  0.15785900,  0.22666700,  0.63666700,  0.85666700,  0.95000000,  0.99333300,  0.77000000,  0.24666700,  0.19382100,  0.13325200,  0.07268300,  0.04441700,  0.03634100,  0.02189900,  0.00733200};
-	NaturalCubicSpline activeForceLengthCurve
+	SimmSpline activeForceLengthCurve
        (activeForceLengthCurvePoints, activeForceLengthCurveX, 
         activeForceLengthCurveY);
 	constructProperty_active_force_length_curve(activeForceLengthCurve);
@@ -101,7 +101,7 @@ void Schutte1993Muscle_Deprecated::constructProperties()
 	int passiveForceLengthCurvePoints = 13;
 	double passiveForceLengthCurveX[] = {-5.00000000,  0.99800000,  0.99900000,  1.00000000,  1.10000000,  1.20000000,  1.30000000,  1.40000000,  1.50000000,  1.60000000,  1.60100000,  1.60200000,  5.00000000};
 	double passiveForceLengthCurveY[] = {0.00000000,  0.00000000,  0.00000000,  0.00000000,  0.03500000,  0.12000000,  0.26000000,  0.55000000,  1.17000000,  2.00000000,  2.00000000,  2.00000000,  2.00000000};
-	NaturalCubicSpline passiveForceLengthCurve
+	SimmSpline passiveForceLengthCurve
        (passiveForceLengthCurvePoints, passiveForceLengthCurveX, 
         passiveForceLengthCurveY);
 	constructProperty_passive_force_length_curve(passiveForceLengthCurve);

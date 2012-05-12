@@ -39,7 +39,7 @@
 #include "GCVSpline.h"
 #include "VectorGCVSplineR1R3.h"
 #include "Scale.h"
-#include "NaturalCubicSpline.h"
+#include "SimmSpline.h"
 #include "Constant.h"
 #include "Sine.h"
 #include "StepFunction.h"
@@ -52,5 +52,5 @@
 #include "StorageInterface.h"
 #include "LoadOpenSimLibrary.h"
 #include "RegisterTypes_osimCommon.h"	// to expose RegisterTypes_osimCommon
-#include "MuscleCurveFunctionFactory.h"
+#include "SmoothSegmentedFunctionFactory.h"
 #endif // _osimCommon_h_

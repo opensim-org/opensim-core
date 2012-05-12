@@ -1193,13 +1193,13 @@ double Thelen2003MuscleV1::calcFiberVelocity(const SimTK::State& s, double aActi
  * MM 2011 10 18
  *
  * This method is called when the constructor is executed. It is used to fetch data from
- * a user specified *.sto file, spline interpolate it using the NaturalCubicSpline
+ * a user specified *.sto file, spline interpolate it using the SimmSpline
  * class and return the result. Note that the columns of the *.sto file need to be
  * 'time' and then 'col0'. Why? Because the class that reads in the data requires it.
  * This should be fixed.
  *
  * @param aFileName: a reference to a string of the filename to read. 
- * @returns NaturalCubicSpline* to the interpolated curve in the file.
+ * @returns SimmSpline* to the interpolated curve in the file.
  */
 SimTK::Spline_<SimTK::Real> Thelen2003MuscleV1::get1DSpline(const std::string &aFileName){
     
@@ -1216,7 +1216,7 @@ SimTK::Spline_<SimTK::Real> Thelen2003MuscleV1::get1DSpline(const std::string &a
                                                              //    (not sure why) when I use the function that would 
                                                              //    otherwise do this.    
 
-    //new NaturalCubicSpline(curvefalX.getSize(),&curvefalX[0],&curvefalY[0],"Active-Force Length Curve Approximation");
+    //new SimmSpline(curvefalX.getSize(),&curvefalX[0],&curvefalY[0],"Active-Force Length Curve Approximation");
     SimTK::Vector x(curveX.getSize());
     SimTK::Vector y(curveY.getSize());
 

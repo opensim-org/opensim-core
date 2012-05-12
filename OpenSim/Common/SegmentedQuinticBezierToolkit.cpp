@@ -1,4 +1,4 @@
-// QuinticBezierCurveSet.cpp
+// SegmentedQuinticBezierToolkit.cpp
 // Author: Matthew Millard
 /*
  * Permission is hereby granted, free of charge, to any person obtaining a    *
@@ -22,7 +22,7 @@
 //=============================================================================
 // INCLUDES
 //=============================================================================
-#include "QuinticBezierCurveSet.h"
+#include "SegmentedQuinticBezierToolkit.h"
 
 
 //=============================================================================
@@ -44,7 +44,7 @@ static int NUM_SAMPLE_PTS = 100; //The number of knot points to use to sample
 * @params data: A matrix of data
 * @params filename: The name of the file to print
 */
-void QuinticBezierCurveSet::
+void SegmentedQuinticBezierToolkit::
     printMatrixToFile(const SimTK::Vector& col0, 
     const SimTK::Matrix& data, std::string& filename)
 {
@@ -64,7 +64,7 @@ void QuinticBezierCurveSet::
 	datafile.close();
 } 
 
-void QuinticBezierCurveSet::
+void SegmentedQuinticBezierToolkit::
     printBezierSplineFitCurves(const SimTK::Function_<double>& curveFit, 
     SimTK::Matrix& ctrlPts, SimTK::Vector& xVal, SimTK::Vector& yVal, 
     std::string& filename)
@@ -136,7 +136,7 @@ void QuinticBezierCurveSet::
         Divisions   Multiplication  Additions   Assignments
         1           13              9              23
 */
-SimTK::Matrix QuinticBezierCurveSet::
+SimTK::Matrix SegmentedQuinticBezierToolkit::
     calcQuinticBezierCornerControlPoints(double x0, double y0, double dydx0, 
                            double x1, double y1, double dydx1, double curviness,
                            const std::string& caller)
@@ -144,7 +144,7 @@ SimTK::Matrix QuinticBezierCurveSet::
     SimTK::Matrix xyPts(6,2); 
 
     SimTK_ERRCHK1_ALWAYS( (curviness>=0 && curviness <= 1) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCornerControlPoints", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCornerControlPoints", 
         "Error: double argument curviness must be between 0.0 and 1.0."
         "Called by %s", caller.c_str());
 
@@ -186,7 +186,7 @@ SimTK::Matrix QuinticBezierCurveSet::
 
     //This error message needs to be better.
     SimTK_ERRCHK1_ALWAYS( ((c > a) && (c > b)), 
-        "QuinticBezierCurveSet::calcQuinticBezierCornerControlPoints", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCornerControlPoints", 
         "The intersection point for the two lines defined by the input"
         "parameters must be consistent with a C shaped corner. Called by %s",
         caller.c_str());
@@ -243,7 +243,7 @@ SimTK::Matrix QuinticBezierCurveSet::
 Multiplications     Additions   Assignments
 21                  20          13
 */
-double  QuinticBezierCurveSet::
+double  SegmentedQuinticBezierToolkit::
     calcQuinticBezierCurveVal(double u, const SimTK::Vector& pts, 
                                                    const std::string& caller)
 {
@@ -251,14 +251,14 @@ double  QuinticBezierCurveSet::
 
 
     SimTK_ERRCHK2_ALWAYS( (u>=0 && u <= 1) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCurveVal", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
         "Error: double argument u must be between 0.0 and 1.0"
         "but %f was entered. Called by %s",u,caller.c_str());
 
     
 
     SimTK_ERRCHK1_ALWAYS( (pts.size() == 6) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCurveVal", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveVal", 
         "Error: vector argument pts \nmust have a length of 6. Called by %s",
         caller.c_str());
 
@@ -367,7 +367,7 @@ Detailed Computational Costs
             total   9           334             209         106
 
 */
-double QuinticBezierCurveSet::calcQuinticBezierCurveDerivDYDX(double u,
+double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivDYDX(double u,
                 const SimTK::Vector& xpts, const SimTK::Vector& ypts, int order,
                 const std::string& caller)
 {
@@ -375,26 +375,26 @@ double QuinticBezierCurveSet::calcQuinticBezierCurveDerivDYDX(double u,
    
     //Bounds checking on the input
     SimTK_ERRCHK1_ALWAYS( (u>=0 && u <= 1) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: double argument u must be between 0.0 and 1.0."
         " Called by %s",caller.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (xpts.size()==6) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: vector argument xpts \nmust have a length of 6."
         " Called by %s",caller.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (ypts.size()==6) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: vector argument ypts \nmust have a length of 6."
         " Called by %s", caller.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (order >= 1),
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: order must be greater than. Called by %s", caller.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (order <= 6),
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: order must be less than, or equal to 6.  Called by %s", 
         caller.c_str());
 
@@ -649,23 +649,23 @@ d2x/du2             17              17          9
 d3y/du3             14              14          6
 
 */
-double QuinticBezierCurveSet::calcQuinticBezierCurveDerivU(double u,
+double SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU(double u,
                  const SimTK::Vector& pts,int order, const std::string& caller)
 {
     double val = -1;
 
     SimTK_ERRCHK1_ALWAYS( (u>=0 && u <= 1) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: double argument u must be between 0.0 and 1.0."
         "Called by %s",caller.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (pts.size()==6) , 
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: vector argument pts \nmust have a length of 6."
         " Called by %s",caller.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (order >= 1),
-        "QuinticBezierCurveSet::calcQuinticBezierCurveDerivU", 
+        "SegmentedQuinticBezierToolkit::calcQuinticBezierCurveDerivU", 
         "Error: order must be greater than, or equal to 1 Called by %s"
         ,caller.c_str());
 
@@ -766,7 +766,7 @@ double QuinticBezierCurveSet::calcQuinticBezierCurveDerivU(double u,
 
 }
 
-double QuinticBezierCurveSet::clampU(double u){
+double SegmentedQuinticBezierToolkit::clampU(double u){
     double uC = u;
     if(u<0.0){
         uC=0;
@@ -796,7 +796,7 @@ double QuinticBezierCurveSet::clampU(double u){
                 Comparisons     Div     Mult    Additions   Assignments
     eval U      7+8=15          2       82      42          60
 */
-double QuinticBezierCurveSet::calcU(double ax, const SimTK::Vector& bezierPtsX, 
+double SegmentedQuinticBezierToolkit::calcU(double ax, const SimTK::Vector& bezierPtsX, 
                                  const SimTK::Spline& splineUX, double tol, 
                                  int maxIter, const std::string& caller)
 {
@@ -817,7 +817,7 @@ double QuinticBezierCurveSet::calcU(double ax, const SimTK::Vector& bezierPtsX,
     }
 
     SimTK_ERRCHK1_ALWAYS( ax >= minX && ax <= maxX, 
-        "QuinticBezierCurveSet::calcU", 
+        "SegmentedQuinticBezierToolkit::calcU", 
         "Error: input ax was not in the domain of the Bezier curve specified \n"
         "by the control points in bezierPtsX. Called by %s", caller.c_str());
 
@@ -850,12 +850,12 @@ double QuinticBezierCurveSet::calcU(double ax, const SimTK::Vector& bezierPtsX,
 
     //Check for convergence
     SimTK_ERRCHK3_ALWAYS( (f <= tol), 
-        "QuinticBezierCurveSet::calcU", 
+        "SegmentedQuinticBezierToolkit::calcU", 
         "Error: desired tolerance of %f on U not met by the Newton iteration."
         " A tolerance of %f was reached. Called by %s",tol, f, caller.c_str());
 
     SimTK_ERRCHK1_ALWAYS( (pathologic==false), 
-        "QuinticBezierCurveSet::calcU", 
+        "SegmentedQuinticBezierToolkit::calcU", 
         "Error: Newton iteration went pathologic: df = 0 to machine precision."
         " Called by %s", caller.c_str());
       
@@ -871,7 +871,7 @@ Cost: n comparisons, for a quintic Bezier curve with n-spline sections
 Cost            3*n+2                       1*n      3                         
         
 */
-int QuinticBezierCurveSet::calcIndex(double x, const SimTK::Matrix& bezierPtsX,
+int SegmentedQuinticBezierToolkit::calcIndex(double x, const SimTK::Matrix& bezierPtsX,
     const std::string& caller)
 {
     int idx = 0;
@@ -892,7 +892,7 @@ int QuinticBezierCurveSet::calcIndex(double x, const SimTK::Matrix& bezierPtsX,
     }
 
     SimTK_ERRCHK1_ALWAYS( (flag_found == true), 
-        "QuinticBezierCurveSet::calcIndex", 
+        "SegmentedQuinticBezierToolkit::calcIndex", 
         "Error: A value of x was used that is not within the Bezier curve set."
         " Called by %s",caller.c_str());
 
@@ -982,13 +982,13 @@ class MySystemGuts : public System::Guts {
         // HERE'S THE CALL TO YOUR FUNCTION
         //Get the index within the spline set
         
-        int idx = QuinticBezierCurveSet::calcIndex(x,bdata._mX, bdata._name);
+        int idx = SegmentedQuinticBezierToolkit::calcIndex(x,bdata._mX, bdata._name);
         //Get the value of u that corresponds to x
-        double u = QuinticBezierCurveSet::calcU(x,bdata._mX(idx),
+        double u = SegmentedQuinticBezierToolkit::calcU(x,bdata._mX(idx),
             bdata._aArraySplineUX[idx],bdata._uTol,bdata._uMaxIter,bdata._name);
 
         //Compute the value of the curve at u;
-        double y=QuinticBezierCurveSet::
+        double y=SegmentedQuinticBezierToolkit::
             calcQuinticBezierCurveVal(u,bdata._mY(idx), bdata._name);
         state.updZDot()[0] = y;
         return 0;
@@ -1008,13 +1008,13 @@ class MySystemGuts : public System::Guts {
 This is the implementation of the nice user interface class to MySystemGuts, 
 which creates a System object that is required to use SimTK's integrators to 
 integrate the Bezier curve sets. Used in function
-QuinticBezierCurveSet::calcNumIntBezierYfcnX
+SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX
 */
 class MySystem : public System {
 public:
 
     /**Local MySystem object used in function 
-    QuinticBezierCurveSet::calcNumIntBezierYfcnX*/
+    SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX*/
     MySystem(const BezierData bdata) {
         adoptSystemGuts(new MySystemGuts(bdata));
         DefaultSystemSubsystem defsub(*this);
@@ -1054,7 +1054,7 @@ RK45 on 100pts per section, over 3 sections
 Total       46,800      3600    185,400     117,000        136,000
 
 */
-SimTK::Matrix QuinticBezierCurveSet::calcNumIntBezierYfcnX(
+SimTK::Matrix SegmentedQuinticBezierToolkit::calcNumIntBezierYfcnX(
                             const SimTK::Vector& vX, 
                             double ic0, double intAcc, 
                             double uTol, int uMaxIter,
