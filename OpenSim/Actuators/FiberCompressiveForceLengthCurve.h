@@ -63,9 +63,9 @@ public:
     /**@{**/
     OpenSim_DECLARE_PROPERTY(norm_length_at_zero_force, double, 
         "Normalized fiber length at zero force");
-    OpenSim_DECLARE_PROPERTY(stiffness_at_zero_length, double, 
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(stiffness_at_zero_length, double, 
         "Fiber stiffness at zero length");
-    OpenSim_DECLARE_PROPERTY(curviness, double, 
+    OpenSim_DECLARE_OPTIONAL_PROPERTY(curviness, double, 
         "Fiber curve bend, from linear to maximum bend (0-1)");
     /**@}**/
 
@@ -153,9 +153,11 @@ public:
 
      /**
      @returns   This is the stiffness of the compressive elastic force length
-                spring when the fiber reaches a normalized length of 0.  
+                spring when the fiber reaches a normalized length of 0. If this
+                optional property is not specified, a suitable value will be 
+                calculated and used instead.
      */
-     double getStiffnessAtZeroLength();
+     double getStiffnessAtZeroLengthInUse();
 
      /**
      @returns   A dimensionless parameter between [0-1] that controls how 
@@ -163,9 +165,11 @@ public:
                 very close to a straight line segment while a value of 1 will 
                 create a curve that smoothly fills the corner formed by the 
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
-                x axis as shown in the figure.
+                x axis as shown in the figure. If this optional property
+                is not specified, a suitable value will be calculated and used
+                instead.
      */
-     double getCurviness();
+     double getCurvinessInUse();
 
      /**
     @param aNormLengthAtZeroForce
@@ -183,10 +187,7 @@ public:
             Sets the stiffness of the compressive elastic force length
             spring when the fiber reaches a normalized length of 0. This 
             stiffness must be less than -1/normLengthAtZeroForce
-     */
-     void setStiffnessAtZeroLength(double aStiffnessAtZeroLength);
-
-     /**
+     
      @param aCurviness  
                 A dimensionless parameter between [0-1] that controls how 
                 the curve is drawn: 0 will create a curve that is
@@ -194,8 +195,17 @@ public:
                 create a curve that smoothly fills the corner formed by the 
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
                 x axis as shown in the figure.
+     */     
+     void setOptionalProperties(double aStiffnessAtZeroLength, 
+                                double aCurviness);
+
+     /**
+     @returns true if the optional properties are empty and the fitted curve is
+              being used. This function returns false if the optional properties
+              are filled and are being used to construct the curve.
      */
-     void setCurviness(double aCurviness);
+     bool isFittedCurveBeingUsed();
+
 
     /**
     Calculates the value of the curve evaluated at the desired normalized fiber
@@ -246,6 +256,34 @@ public:
 
     */
     double calcDerivative(double aNormLength, int order) const;
+
+    /**     
+    @param aNormLength
+                Here aNormLength = l/l0, where l is the length 
+                of the fiber and l0 is the resting length of the fiber.  
+                Thus normalized length of 1.0 means the fiber is at its 
+                resting length.
+    
+    @return Computes the normalized area under the curve. For this curve, 
+            this quantity corresponds to the normalized potential energy stored 
+            in the fiber compressive force length spring - simply 
+            multiply this quantity by the number of NormForce*NormDistance
+            (where NormForce corresponds to the number of
+            Newtons that 1 normalized force corresponds to, and NormDistance
+            is the distance in meters that a normalized value of 1 corresponds
+            to) to obtain the potental energy stored in the fiber in units of 
+            Joules.
+
+    <B>Computational Costs</B>    
+
+    \verbatim
+        x in curve domain  : ~13 flops
+        x in linear section: ~19 flops
+    \endverbatim
+
+    */
+    double calcIntegral(double aNormLength) const;
+
 
     /**
        This function returns a SimTK::Vec2 that contains in its 0th element
@@ -352,9 +390,12 @@ private:
 
     */
     void buildCurve();
+    void ensureCurveUpToDate();
 
     SmoothSegmentedFunction   m_curve;
-    bool                  m_curveUpToDate;
+    double m_stiffnessAtZeroLengthInUse;
+    double m_curvinessInUse;
+    bool m_isFittedCurveBeingUsed;
 };
 
 }

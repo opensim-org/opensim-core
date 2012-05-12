@@ -48,47 +48,97 @@ FiberCompressiveForceLengthCurve::FiberCompressiveForceLengthCurve
     constructProperties();
     setName(muscleName + "_FiberCompressiveForceLengthCurve");
 
-    setNormLengthAtZeroForce(normLengthAtZeroForce);
-    setStiffnessAtZeroLength(stiffnessAtZeroLength);
-    setCurviness(curviness);
+    setProperty_norm_length_at_zero_force(normLengthAtZeroForce);
+    setProperty_stiffness_at_zero_length(stiffnessAtZeroLength);
+    setProperty_curviness(curviness);
 
-    buildCurve();
+    ensureCurveUpToDate();
 }
 
 
 void FiberCompressiveForceLengthCurve::setNull()
 {
-    m_curveUpToDate = false;
 }
 
 void FiberCompressiveForceLengthCurve::constructProperties()
 {   
-    constructProperty_norm_length_at_zero_force(0.58564173314080115);
-    constructProperty_stiffness_at_zero_length(-8.0);
-    constructProperty_curviness(0.1);
+    constructProperty_norm_length_at_zero_force(0.5);
+    constructProperty_stiffness_at_zero_length();
+    constructProperty_curviness();
 }
 
 
 void FiberCompressiveForceLengthCurve::buildCurve()
-{
-    if(m_curveUpToDate == false){
-        
-        double l0   =  getNormLengthAtZeroForce();
-        double kiso =  getStiffnessAtZeroLength();
-        double c    =  getCurviness();        
+{        
+        double l0   =  getProperty_norm_length_at_zero_force();
+        double k    =  m_stiffnessAtZeroLengthInUse;
+        double c    =  m_curvinessInUse;        
 
         //Here's where you call the SmoothSegmentedFunctionFactory
         SmoothSegmentedFunction tmp = SmoothSegmentedFunctionFactory::
             createFiberCompressiveForceLengthCurve( l0,
-                                                    kiso,
+                                                    k,
                                                     c,
                                                     true,
                                                     getName());            
-
         this->m_curve = tmp;
           
+        setObjectIsUpToDateWithProperties();
+}
+
+void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
+{
+    if(isObjectUpToDateWithProperties() == false){
+
+        //=====================================================================
+        //Compute the optional properties if they have not been set
+        //=====================================================================
+        if(getProperty_stiffness_at_zero_length().empty() == true &&
+            getProperty_curviness().empty() == true)
+        {
+            double lengthAtZeroForce = getProperty_norm_length_at_zero_force();
+
+            m_stiffnessAtZeroLengthInUse= -2.0/lengthAtZeroForce; 
+            m_curvinessInUse = 0.5;
+            m_isFittedCurveBeingUsed = true;
+        }
+
+        //=====================================================================
+        //Use the optional properties if they have been set
+        //=====================================================================
+        if(getProperty_stiffness_at_zero_length().empty() == false &&
+            getProperty_curviness().empty() == false)
+        {
+            
+            m_stiffnessAtZeroLengthInUse = 
+                getProperty_stiffness_at_zero_length();
+            m_curvinessInUse = getProperty_curviness();
+            m_isFittedCurveBeingUsed = false;
+        }
+
+        //=====================================================================
+        //Error condition if only one optional parameter is set.
+        //=====================================================================
+        bool a = getProperty_stiffness_at_zero_length().empty();
+        bool b = getProperty_curviness().empty();
+
+        //This is really a XOR operation ...
+        if( ( a && !b ) || ( !a && b ) ){
+
+            //This error condition is checked to make sure that the reference
+            //fiber is being used to populate all optional properties or none
+            //of them. Anything different would result in an inconsistency in
+            //the computed curve - it wouldn't reflect the reference curve.
+            SimTK_ERRCHK1_ALWAYS(false,
+                "FiberCompressiveForceLengthCurve::ensureCurveUpToDate()",
+                "%s: Optional parameters stiffness and curviness must both"
+                "be set, or both remain empty. You have set one parameter"
+                "and left the other blank.",
+                getName().c_str());  
+        }
+
+        buildCurve();
     }
-    m_curveUpToDate = true;
 }
 
 
@@ -121,47 +171,40 @@ void FiberCompressiveForceLengthCurve::createSystem(SimTK::MultibodySystem& syst
 //=============================================================================
 double FiberCompressiveForceLengthCurve::getNormLengthAtZeroForce()
 {
+    ensureCurveUpToDate();
     return getProperty_norm_length_at_zero_force();
 }
 
-double FiberCompressiveForceLengthCurve::getStiffnessAtZeroLength()
+double FiberCompressiveForceLengthCurve::getStiffnessAtZeroLengthInUse()
 {
-    return getProperty_stiffness_at_zero_length();
+    ensureCurveUpToDate();
+    return m_stiffnessAtZeroLengthInUse;
 }
 
-double FiberCompressiveForceLengthCurve::getCurviness()
+double FiberCompressiveForceLengthCurve::getCurvinessInUse()
 {
-    return getProperty_curviness();
+    ensureCurveUpToDate();
+    return m_curvinessInUse;
+}
+
+bool FiberCompressiveForceLengthCurve::isFittedCurveBeingUsed()
+{
+    ensureCurveUpToDate();
+    return m_isFittedCurveBeingUsed;
 }
 
 
 void FiberCompressiveForceLengthCurve::
     setNormLengthAtZeroForce(double aNormLengthAtZeroForce)
-{
-    if(aNormLengthAtZeroForce != getNormLengthAtZeroForce() )
-    {
-        setProperty_norm_length_at_zero_force(aNormLengthAtZeroForce);
-        m_curveUpToDate = false;
-    }
+{   
+    setProperty_norm_length_at_zero_force(aNormLengthAtZeroForce);
 }
 
 void FiberCompressiveForceLengthCurve::
-        setStiffnessAtZeroLength(double aStiffnessAtZeroLength)
+        setOptionalProperties(double aStiffnessAtZeroLength, double aCurviness)
 {
-    if(aStiffnessAtZeroLength != getStiffnessAtZeroLength() )
-    {
-        setProperty_stiffness_at_zero_length(aStiffnessAtZeroLength);
-        m_curveUpToDate = false;
-    }
-}
-
-void FiberCompressiveForceLengthCurve::setCurviness(double aCurviness)
-{
-    if(aCurviness != getCurviness() )
-    {
-        setProperty_curviness(aCurviness);
-        m_curveUpToDate = false;
-    }
+   setProperty_stiffness_at_zero_length(aStiffnessAtZeroLength);
+   setProperty_curviness(aCurviness);
 }
 
 
@@ -169,16 +212,22 @@ void FiberCompressiveForceLengthCurve::setCurviness(double aCurviness)
 // SERVICES
 //=============================================================================
 
-double FiberCompressiveForceLengthCurve::
-    calcValue(double aNormLength) const
-{
-    if(m_curveUpToDate == false){
-        FiberCompressiveForceLengthCurve* mthis = 
-            const_cast<FiberCompressiveForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
+double FiberCompressiveForceLengthCurve::calcValue(double aNormLength) const
+{    
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    
     return m_curve.calcValue(aNormLength);
+}
+
+double FiberCompressiveForceLengthCurve::calcIntegral(double aNormLength) const
+{    
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    
+    return m_curve.calcIntegral(aNormLength);
 }
 
 double FiberCompressiveForceLengthCurve::
@@ -187,35 +236,30 @@ double FiberCompressiveForceLengthCurve::
     SimTK_ERRCHK1_ALWAYS(order >= 0 && order <= 2, 
         "FiberCompressiveForceLengthCurve::calcDerivative",
         "order must be 0, 1, or 2, but %i was entered", order);
-    
-    if(m_curveUpToDate == false){
+     
         FiberCompressiveForceLengthCurve* mthis = 
             const_cast<FiberCompressiveForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
+        mthis->ensureCurveUpToDate();    
 
     return m_curve.calcDerivative(aNormLength,order);
 }
 
 SimTK::Vec2 FiberCompressiveForceLengthCurve::getCurveDomain() const
 {
-    if(m_curveUpToDate == false){
-        FiberCompressiveForceLengthCurve* mthis = 
-            const_cast<FiberCompressiveForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
+   
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    
     return m_curve.getCurveDomain();
 }
 
 void FiberCompressiveForceLengthCurve::
     printMuscleCurveToCSVFile(const std::string& path) const
-{
-    if(m_curveUpToDate == false){
-        FiberCompressiveForceLengthCurve* mthis = 
-            const_cast<FiberCompressiveForceLengthCurve*>(this);    
-        mthis->buildCurve();    
-    }
-
+{    
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();    
+    
     m_curve.printMuscleCurveToCSVFile(path);
 }

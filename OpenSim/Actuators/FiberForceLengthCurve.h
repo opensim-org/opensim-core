@@ -406,10 +406,10 @@ public:
     /**     
     @param aNormLength
                 The normalized fiber length used to evaluate the fiber force 
-                length curve for the corresponding normalized force. Here 
-                aNormLength = l/l0, where l is the length of the fiber and l0 
-                is the resting length of the fiber.  Thus normalized length of 
-                1.0 means the fiber is at its resting length.
+                length curve. Here aNormLength = l/l0, where l is the length 
+                of the fiber and l0 is the resting length of the fiber.  
+                Thus normalized length of 1.0 means the fiber is at its 
+                resting length.
     
     @return Computes the normalized area under the curve. For this curve, 
             this quantity corresponds to the normalized potential energy stored 

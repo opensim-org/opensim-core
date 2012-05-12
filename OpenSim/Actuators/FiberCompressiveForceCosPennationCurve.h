@@ -213,18 +213,6 @@ public:
 
      /**
      @returns   This is the stiffness of the compressive elastic force length
-                spring when the pennation angle reaches 90 degrees. Note that 
-                the units of this stiffness are 
-                (normalized force) / cos(engagmentAngleInDegrees). 
-                
-                *If this property has not been set 
-                (it may not be because it is optional) an exception will be
-                thrown.
-     */
-     double getStiffnessAtPerpendicular();
-
-     /**
-     @returns   This is the stiffness of the compressive elastic force length
                 spring when the pennation angle reaches 90 degrees. If this 
                 property has been set, the property value is returned. If this
                 property is empty, then a value is computed and returned. The
@@ -240,18 +228,6 @@ public:
      */
      double getStiffnessAtPerpendicularInUse();
 
-     /**
-     @returns   A dimensionless parameter between [0-1] that controls how 
-                the curve is drawn: 0 will create a curve that is
-                very close to a straight line segment while a value of 1 will 
-                create a curve that smoothly fills the corner formed by the 
-                linear extrapolation of 'StiffnessAtPerpendicularFiber'.
-
-                *If this property has not been set 
-                (it may not be because it is optional) an exception will be
-                thrown.
-     */
-     double getCurviness();
 
      /**
      @returns   A dimensionless parameter between [0-1] that controls how 
@@ -269,6 +245,9 @@ public:
      */
      double getCurvinessInUse();
 
+
+     bool isFittedCurveBeingUsed();
+
      /**
     @param aEngagementAngleInDegrees
             Sets the pennation angle engagement angle of the fiber compressive
@@ -276,14 +255,12 @@ public:
     */
      void setEngagementAngleInDegrees(double aEngagementAngleInDegrees);
 
+    
      /**
      @param aStiffnessAtPerpendicular
             This is the stiffness of the compressive elastic force length
             spring when the pennation angle reaches 90 degrees.
-     */
-     void setStiffnessAtPerpendicular(double aStiffnessAtPerpendicular);
 
-     /**
      @param aCurviness  
                 A dimensionless parameter between [0-1] that controls how 
                 the curve is drawn: 0 will create a curve that is
@@ -291,8 +268,10 @@ public:
                 create a curve that smoothly fills the corner formed by the 
                 linear extrapolation of 'stiffnessAtOneNormForce' and the
                 x axis as shown in the figure.
+
      */
-     void setCurviness(double aCurviness);
+     void setOptionalProperties(double aStiffnessAtPerpendicular,
+                                double aCurviness);
 
     /**
     Calculates the value of the curve evaluated at cosPennationAngle. 
@@ -348,6 +327,31 @@ public:
                   y(x). Within this range y(x) is a curve, outside of this range
                   the function y(x) is a C2 (continuous to the second 
                   derivative) linear extrapolation*/
+
+    /**     
+    @param aNormLength
+                The cosine of the pennation angle
+    
+    @return Computes the normalized area under the curve. For this curve, 
+            this quantity corresponds to the normalized potential energy stored 
+            in the fiber compressive force cos pennation spring - simply 
+            multiply this quantity by the number of NormForce
+            (where NormForce corresponds to the number of
+            Newtons that 1 normalized force corresponds to) to obtain 
+            the potental energy stored in the fiber in units of Joules. Note 
+            that NormDistance is omitted because the length dimension of this 
+            curve is not normalized, only the force dimension.
+
+    <B>Computational Costs</B>    
+
+    \verbatim
+        x in curve domain  : ~13 flops
+        x in linear section: ~19 flops
+    \endverbatim
+
+    */
+    double calcIntegral(double cosPennationAngle) const;
+
     SimTK::Vec2 getCurveDomain() const;
 
     /**This function will generate a csv file with a name that matches the 
@@ -441,9 +445,14 @@ private:
 
     */
   void buildCurve();
+  void ensureCurveUpToDate();
+
+
 
   SmoothSegmentedFunction m_curve;
-
+  double m_stiffnessAtPerpendicularInUse;
+  double m_curvinessInUse;
+  bool  m_isFittedCurveBeingUsed;
 };
 
 }
