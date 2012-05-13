@@ -48,6 +48,7 @@
 #include <OpenSim/Tools/MarkerPlacer.h>
 #include <OpenSim/Simulation/Model/ForceSet.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
+#include <OpenSim/Actuators/Thelen2003Muscle.h>
 
 using namespace OpenSim;
 using namespace SimTK;
@@ -92,6 +93,15 @@ int main()
 	OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
 	Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
 	assert(dTRIlong);
+    OpenSim::Thelen2003Muscle* thelenMsl = dynamic_cast<Thelen2003Muscle*>(dTRIlong);
+    AbstractProperty& dProp = thelenMsl->updPropertyByName("ignore_tendon_compliance");
+    PropertyHelper::setValueBool(true, dProp);
+    cout << "Prop after is " << dProp.toString() << endl;
+    context->recreateSystemAfterSystemExistsKeepStage();
+    AbstractProperty& dProp2 = thelenMsl->updPropertyByName("ignore_tendon_compliance");
+    cout << "Prop after create system" << dProp2.toString() << endl;
+    bool after = PropertyHelper::getValueBool(dProp);
+    assert(after);
 	context->updateDisplayer(*dTRIlong);
 	const OpenSim::Array<PathPoint*>& path = context->getCurrentPath(*dTRIlong);
 	cout << "Muscle Path" << endl;
