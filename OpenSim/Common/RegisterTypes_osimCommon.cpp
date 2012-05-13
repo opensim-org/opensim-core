@@ -87,7 +87,11 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::registerType( VisibleObject() );
 	Object::registerType( ObjectGroup() );
 
-	// To support old type name of "natCubicSpline"
+    // TODO: temporarily map old NaturalCubicSpline (which wasn't a 
+    // natural cubic spline) to renamed SimmSpline class. Later we
+    // will replace this with an actual natural cubic spline.
+	Object::renameType("NaturalCubicSpline", "SimmSpline");
+	// To support older type name of "natCubicSpline"
 	Object::renameType("natCubicSpline", "SimmSpline");
 
   } catch (const std::exception& e) {
