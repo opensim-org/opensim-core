@@ -36,7 +36,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/Function.h>
 #include <OpenSim/Common/Constant.h>
-#include <OpenSim/Common/NaturalCubicSpline.h>
+#include <OpenSim/Common/SimmSpline.h>
 #include <OpenSim/Common/StepFunction.h>
 #include <OpenSim/Common/PiecewiseConstantFunction.h>
 #include <OpenSim/Common/LinearFunction.h>
@@ -495,7 +495,7 @@ static bool trace=false;
 %include <OpenSim/Common/IO.h>
 %include <OpenSim/Common/Function.h>
 %include <OpenSim/Common/Constant.h>
-%include <OpenSim/Common/NaturalCubicSpline.h>
+%include <OpenSim/Common/SimmSpline.h>
 %include <OpenSim/Common/StepFunction.h>
 %include <OpenSim/Common/PiecewiseConstantFunction.h>
 %include <OpenSim/Common/LinearFunction.h>
