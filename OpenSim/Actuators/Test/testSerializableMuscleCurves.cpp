@@ -157,13 +157,13 @@ void testActiveForceLengthCurve()
         //cout <<"**************************************************"<<endl;
         cout <<"3. Testing get/set methods:" << endl;
 
-        falCurve2.setMinActiveFiberLength(0);
+        falCurve2.setMinActiveFiberLength(0.01);
         falCurve2.setTransitionFiberLength(0.8);
         falCurve2.setMaxActiveFiberLength(2);        
         falCurve2.setMinValue(0.3);
         falCurve2.setShallowAscendingSlope(0.5);
 
-        SimTK_TEST(falCurve2.getMinActiveFiberLength() == 0.0);
+        SimTK_TEST(falCurve2.getMinActiveFiberLength() == 0.01);
         SimTK_TEST(falCurve2.getTransitionFiberLength()== 0.8);
         SimTK_TEST(falCurve2.getMaxActiveFiberLength() == 2.0);
         SimTK_TEST(falCurve2.getMinValue() == 0.3);
@@ -325,18 +325,18 @@ void testForceVelocityCurve()
         cout << "Passed: Testing get/set methods" << endl;
 
         //====================================================================
-        double p1 = 0.1;
+        double p1 = 0.0;
         double p2 = 5;
-        double p3 = 0.1;
+        double p3 = 0.0;
         double p4 = 1.8;
-        double p5 = 0.1;
-        double p6 = 0.75;
+        double p5 = 0.4;
+        double p6 = 0.9;
 
         printf("4. Testing default property values: "
                "\n\t%f,\n\t%f,\n\t%f,\n\t%f,\n\t%f,\n\t%f\n"
             ,p1,p2,p3,p4,p5,p6);      
         ForceVelocityCurve fvCurve4;
-        fvCurve4.setName("fvCurve");
+        //fvCurve4.setName("default_ForceVelocityCurve");
 
         SimTK_TEST(fvCurve4.getConcentricMinSlope()     == p1);
         SimTK_TEST(fvCurve4.getIsometricMaxSlope()      == p2);
@@ -364,9 +364,7 @@ void testForceVelocityCurve()
             SimTK_TEST(tmp(0) == -1.0 &&
                        tmp(1) == 1.0);
 
-        cout <<"    d. printMuscleCurveToCSVFile" << endl;
-            fvCurve4.setConcentricCurviness(0.5);
-            fvCurve4.setEccentricCurviness(1.0);
+        cout <<"    d. printMuscleCurveToCSVFile" << endl;            
             fvCurve4.printMuscleCurveToCSVFile("");
             std::string fname = fvCurve4.getName();
             fname.append(".csv");
@@ -479,8 +477,8 @@ void testForceVelocityInverseCurve()
         double p2 = 5;
         double p3 = 0.1;
         double p4 = 1.8;
-        double p5 = 0.1;
-        double p6 = 0.75;
+        double p5 = 0.4;
+        double p6 = 0.9;
 
         printf("4. Testing default property values:"
                " \n\t%f,\n\t%f,\n\t%f,\n\t%f,\n\t%f,\n\t%f\n"

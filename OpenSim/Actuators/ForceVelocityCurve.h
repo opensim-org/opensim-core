@@ -224,25 +224,25 @@ public:
     @returns    The slope of the force velocity curve at the maximum
                 normalized contraction velocity (-1). 
     */
-     double getConcentricMinSlope();
+     double getConcentricMinSlope() const;
 
      /**
      @returns   The slope of the force velocity curve at a normalized 
                 contraction velocity of 0.
      */
-     double getIsometricMaxSlope();
+     double getIsometricMaxSlope() const;
 
      /**
      @returns   The slope of the force velocity curve at the maximum eccentric
                 (lengthening) contraction velocity (1).
      */
-     double getEccentricMinSlope();
+     double getEccentricMinSlope() const;
 
      /**
      @returns   The value of the force velocity multiplier at the maximum 
                 eccentric (lengthening) velocity.
      */
-     double getMaxEccentricVelocityForceMultiplier();
+     double getMaxEccentricVelocityForceMultiplier() const;
 
      /**
      @returns   The value of the curviness of the concentric curve, where 0
@@ -250,7 +250,7 @@ public:
                 a curve with the maximum bend possible given the 
                 concentricMinSlope, and the isometricMaxSlope. 
      */
-     double getConcentricCurviness();
+     double getConcentricCurviness() const;
 
      /**
      @returns   The value of the curviness of the eccentric curve, where 0
@@ -258,7 +258,7 @@ public:
                 a curve with the maximum bend possible given the 
                 eccentricMinSlope, and the isometricMaxSlope.
      */
-     double getEccentricCurviness();
+     double getEccentricCurviness() const;
 
      /**
      @param aConcentricMinSlope 

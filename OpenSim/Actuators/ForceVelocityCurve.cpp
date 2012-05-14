@@ -72,12 +72,12 @@ void ForceVelocityCurve::setNull()
 
 void ForceVelocityCurve::constructProperties()
 {
-    constructProperty_min_concentric_slope(0.1);
+    constructProperty_min_concentric_slope(0.0);
     constructProperty_isometric_slope(5);
-    constructProperty_min_eccentric_slope(0.1);
+    constructProperty_min_eccentric_slope(0.0);
     constructProperty_max_eccentric_velocity_force_multiplier(1.8);
-    constructProperty_concentric_curviness(0.1);
-    constructProperty_eccentric_curviness(0.75);
+    constructProperty_concentric_curviness(0.4);
+    constructProperty_eccentric_curviness(0.9);
 }
 
 
@@ -141,39 +141,45 @@ void ForceVelocityCurve::createSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // GET & SET METHODS
 //=============================================================================
-double ForceVelocityCurve::getConcentricMinSlope()
+double ForceVelocityCurve::getConcentricMinSlope() const
 {
-    ensureCurveUpToDate();
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return getProperty_min_concentric_slope();
 }
 
-double ForceVelocityCurve::getIsometricMaxSlope()
+double ForceVelocityCurve::getIsometricMaxSlope() const
 {
-    ensureCurveUpToDate();
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return getProperty_isometric_slope();
 }
 
-double ForceVelocityCurve::getEccentricMinSlope()
+double ForceVelocityCurve::getEccentricMinSlope() const
 {
-    ensureCurveUpToDate();
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return getProperty_min_eccentric_slope();
 }
 
-double ForceVelocityCurve::getMaxEccentricVelocityForceMultiplier()
+double ForceVelocityCurve::getMaxEccentricVelocityForceMultiplier() const
 {
-    ensureCurveUpToDate();
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return getProperty_max_eccentric_velocity_force_multiplier();
 }
     
-double ForceVelocityCurve::getConcentricCurviness()
+double ForceVelocityCurve::getConcentricCurviness() const
 {
-    ensureCurveUpToDate();
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return getProperty_concentric_curviness();
 }
     
-double ForceVelocityCurve::getEccentricCurviness()
+double ForceVelocityCurve::getEccentricCurviness() const
 {
-    ensureCurveUpToDate();
+    ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return getProperty_eccentric_curviness();
 }
 

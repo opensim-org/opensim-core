@@ -225,7 +225,7 @@ public:
                 it is strained by 60% of its resting length, or 
                 equivalently is stretched to 1.6 times its resting length.
     */
-     double getStrainAtOneNormForce();
+     double getStrainAtOneNormForce() const;
 
      
 
@@ -271,7 +271,7 @@ public:
         Simulate Dynamic Contractions in Older Adults. ASME J Biomech Eng (125).
                 
      */
-     double getStiffnessAtOneNormForceInUse();
+     double getStiffnessAtOneNormForceInUse() const;
 
      
 
@@ -308,14 +308,14 @@ public:
         \endverbatim
 
      */
-     double getCurvinessInUse();
+     double getCurvinessInUse() const;
 
      /**
      @returns true if the optional properties are empty and the fitted curve is
               being used. This function returns false if the optional properties
               are filled and are being used to construct the curve.
      */
-     bool isFittedCurveBeingUsed();
+     bool isFittedCurveBeingUsed() const;
 
      /**
     @param aStrainAtOneNormForce     

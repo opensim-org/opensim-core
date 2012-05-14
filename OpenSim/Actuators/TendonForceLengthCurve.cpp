@@ -192,29 +192,33 @@ void TendonForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // GET & SET METHODS
 //=============================================================================
-double TendonForceLengthCurve::getStrainAtOneNormForce()
+double TendonForceLengthCurve::getStrainAtOneNormForce() const
 {
-    ensureCurveUpToDate();
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return getProperty_strain_at_one_norm_force();
 }
 
 
-double TendonForceLengthCurve::getStiffnessAtOneNormForceInUse()
+double TendonForceLengthCurve::getStiffnessAtOneNormForceInUse() const
 {
-    ensureCurveUpToDate();
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return m_stiffnessAtOneNormForceInUse;
 }
 
 
-double TendonForceLengthCurve::getCurvinessInUse()
+double TendonForceLengthCurve::getCurvinessInUse() const
 {
-    ensureCurveUpToDate();
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return m_curvinessInUse;
 }
 
-bool TendonForceLengthCurve::isFittedCurveBeingUsed()
+bool TendonForceLengthCurve::isFittedCurveBeingUsed() const
 {
-    ensureCurveUpToDate();
+    TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
     return m_isFittedCurveBeingUsed;
 }
 

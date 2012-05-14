@@ -185,22 +185,33 @@ void FiberCompressiveForceCosPennationCurve::
 //=============================================================================
 // GET & SET METHODS
 //=============================================================================
-double FiberCompressiveForceCosPennationCurve::getEngagementAngleInDegrees()
+double FiberCompressiveForceCosPennationCurve::
+    getEngagementAngleInDegrees() const
 {    
-    ensureCurveUpToDate();
+    FiberCompressiveForceCosPennationCurve* mthis = 
+        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return getProperty_engagement_angle_in_degrees();
 }
 
 double FiberCompressiveForceCosPennationCurve::
-    getStiffnessAtPerpendicularInUse()
+    getStiffnessAtPerpendicularInUse() const
 {
-    ensureCurveUpToDate();
+    FiberCompressiveForceCosPennationCurve* mthis = 
+        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return m_stiffnessAtPerpendicularInUse;
 }
 
-double FiberCompressiveForceCosPennationCurve::getCurvinessInUse()
+double FiberCompressiveForceCosPennationCurve::
+    getCurvinessInUse() const
 {
-    ensureCurveUpToDate();
+    FiberCompressiveForceCosPennationCurve* mthis = 
+        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return m_curvinessInUse;
 }
 
@@ -217,9 +228,12 @@ void FiberCompressiveForceCosPennationCurve::
     setProperty_curviness(aCurviness);
 }
 
-bool FiberCompressiveForceCosPennationCurve::isFittedCurveBeingUsed()
+bool FiberCompressiveForceCosPennationCurve::isFittedCurveBeingUsed() const
 {
-    ensureCurveUpToDate();
+    FiberCompressiveForceCosPennationCurve* mthis = 
+        const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return m_isFittedCurveBeingUsed;
 }
 

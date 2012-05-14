@@ -149,7 +149,7 @@ public:
                 length_norm = l/l0, where l is the length of the fiber,
                 and l0 is the resting length of the fiber.    
     */
-     double getNormLengthAtZeroForce();
+     double getNormLengthAtZeroForce() const;
 
      /**
      @returns   This is the stiffness of the compressive elastic force length
@@ -157,7 +157,7 @@ public:
                 optional property is not specified, a suitable value will be 
                 calculated and used instead.
      */
-     double getStiffnessAtZeroLengthInUse();
+     double getStiffnessAtZeroLengthInUse() const;
 
      /**
      @returns   A dimensionless parameter between [0-1] that controls how 
@@ -169,7 +169,7 @@ public:
                 is not specified, a suitable value will be calculated and used
                 instead.
      */
-     double getCurvinessInUse();
+     double getCurvinessInUse() const;
 
      /**
     @param aNormLengthAtZeroForce
@@ -204,7 +204,7 @@ public:
               being used. This function returns false if the optional properties
               are filled and are being used to construct the curve.
      */
-     bool isFittedCurveBeingUsed();
+     bool isFittedCurveBeingUsed() const;
 
 
     /**

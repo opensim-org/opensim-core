@@ -181,30 +181,37 @@ void FiberForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
 //=============================================================================
 // GET & SET METHODS
 //=============================================================================
-double FiberForceLengthCurve::getStrainAtOneNormForce()
+double FiberForceLengthCurve::getStrainAtOneNormForce() const
 {    
-    ensureCurveUpToDate();
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return getProperty_strain_at_one_norm_force();
 }
 
 
-double FiberForceLengthCurve::getStiffnessAtOneNormForceInUse()
+double FiberForceLengthCurve::getStiffnessAtOneNormForceInUse() const
 {    
-    ensureCurveUpToDate();
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return m_stiffnessAtOneNormForceInUse;
 }
 
-bool FiberForceLengthCurve::isFittedCurveBeingUsed()
+double FiberForceLengthCurve::getCurvinessInUse() const
 {
-    ensureCurveUpToDate();
-    return m_fittedCurveBeingUsed;
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
+    return m_curvinessInUse;
 }
 
-
-double FiberForceLengthCurve::getCurvinessInUse()
+bool FiberForceLengthCurve::isFittedCurveBeingUsed() const
 {
-    ensureCurveUpToDate();
-    return m_curvinessInUse;
+    FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
+    return m_fittedCurveBeingUsed;
 }
 
 void FiberForceLengthCurve::

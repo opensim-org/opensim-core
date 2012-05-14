@@ -169,27 +169,39 @@ void FiberCompressiveForceLengthCurve::createSystem(SimTK::MultibodySystem& syst
 //=============================================================================
 // GET & SET METHODS
 //=============================================================================
-double FiberCompressiveForceLengthCurve::getNormLengthAtZeroForce()
+double FiberCompressiveForceLengthCurve::getNormLengthAtZeroForce() const
 {
-    ensureCurveUpToDate();
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return getProperty_norm_length_at_zero_force();
 }
 
-double FiberCompressiveForceLengthCurve::getStiffnessAtZeroLengthInUse()
+double FiberCompressiveForceLengthCurve::getStiffnessAtZeroLengthInUse() const
 {
-    ensureCurveUpToDate();
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return m_stiffnessAtZeroLengthInUse;
 }
 
-double FiberCompressiveForceLengthCurve::getCurvinessInUse()
+double FiberCompressiveForceLengthCurve::getCurvinessInUse() const
 {
-    ensureCurveUpToDate();
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return m_curvinessInUse;
 }
 
-bool FiberCompressiveForceLengthCurve::isFittedCurveBeingUsed()
+bool FiberCompressiveForceLengthCurve::isFittedCurveBeingUsed() const
 {
-    ensureCurveUpToDate();
+    FiberCompressiveForceLengthCurve* mthis = 
+        const_cast<FiberCompressiveForceLengthCurve*>(this);    
+    mthis->ensureCurveUpToDate();
+
     return m_isFittedCurveBeingUsed;
 }
 

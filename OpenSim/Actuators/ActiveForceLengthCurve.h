@@ -407,9 +407,10 @@ private:
 
     */
     void buildCurve();
+    void ensureCurveUpToDate();
 
     SmoothSegmentedFunction   m_curve;
-    bool                  m_curveUpToDate;
+    
 };
 
 }

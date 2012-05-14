@@ -208,7 +208,7 @@ public:
     @returns    The pennation angle engagement angle of the fiber compressive
                 force pennation curve. 
     */
-    double getEngagementAngleInDegrees();
+    double getEngagementAngleInDegrees() const;
 
 
      /**
@@ -226,7 +226,7 @@ public:
                 of degrees
 
      */
-     double getStiffnessAtPerpendicularInUse();
+     double getStiffnessAtPerpendicularInUse() const;
 
 
      /**
@@ -243,10 +243,10 @@ public:
                 curviness = 0.1       
                 \endverbatim
      */
-     double getCurvinessInUse();
+     double getCurvinessInUse() const;
 
 
-     bool isFittedCurveBeingUsed();
+     bool isFittedCurveBeingUsed() const;
 
      /**
     @param aEngagementAngleInDegrees
