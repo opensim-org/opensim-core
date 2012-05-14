@@ -249,12 +249,12 @@ int ProbeReporter::record(const SimTK::State& s)
     for(int i=0 ; i<nP ; i++) {
         Probe& nextProbe = (Probe&)probes[i];
 
-        if (nextProbe.isDisabled()) continue;
-
-        // Get probe values after the probe operation
-        Array<double> values = nextProbe.getRecordValues(s);
-        nextRow.getData().append(values);
-
+        if (!nextProbe.isDisabled())
+        {
+            // Get probe values after the probe operation
+            Array<double> values = nextProbe.getRecordValues(s);
+            nextRow.getData().append(values);
+        }
     }
 
     _probeStore.append(nextRow);
