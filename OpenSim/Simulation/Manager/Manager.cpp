@@ -820,6 +820,8 @@ bool Manager::doIntegration(SimTK::State& s, int step, double dtFirst ) {
             }
             step++;
         }
+        else
+            halt();
         
         time = _integ->getState().getTime();
         // CHECK FOR INTERRUPT
