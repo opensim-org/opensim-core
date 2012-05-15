@@ -36,7 +36,7 @@
 //#include <OpenSim/Common/SegmentedQuinticBezierToolkit.h>
 //#include <OpenSim/Common/SmoothSegmentedFunctionFactory.h>
 
-#include <OpenSim/Simulation/Model/MuscleFixedWidthPennationModel.h>
+#include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
 #include <SimTKsimbody.h>
 #include <ctime>
@@ -321,8 +321,21 @@ int main(int argc, char* argv[])
         double paraHeight= optFibLen*sin(optPenAng);
         double tendonSlackLen= optFibLen;
 
-            MuscleFixedWidthPennationModel fibKin = 
-            MuscleFixedWidthPennationModel(optFibLen, optPenAng, caller);
+        MuscleFixedWidthPennationModel fibKin(optFibLen, optPenAng, caller);
+        MuscleFixedWidthPennationModel fibKin2(optFibLen*2, optPenAng, caller);
+
+        cout << "**************************************************" << endl;
+        cout << "Test: Serialization" << endl;
+        
+        fibKin.print("default_MuscleFixedWidthPennationModel");
+
+        Object* tmpObj = Object::
+        makeObjectFromFile("default_MuscleFixedWidthPennationModel");
+        fibKin2 = *dynamic_cast<MuscleFixedWidthPennationModel*>(tmpObj);
+        delete tmpObj;
+       
+            SimTK_TEST(fibKin == fibKin2);
+            remove("default_MuscleFixedWidthPennationModel");
 
             SimTK::Vector time(numPts);
             SimTK::Vector fibLen(numPts);
@@ -607,6 +620,18 @@ int main(int argc, char* argv[])
             MuscleFixedWidthPennationModel(optFibLen, -0.01, caller));
         SimTK_TEST_MUST_THROW(MuscleFixedWidthPennationModel fibKinEX = 
             MuscleFixedWidthPennationModel(optFibLen, SimTK::Pi/2, caller));
+
+        //Unset properties
+        MuscleFixedWidthPennationModel fibKinEmpty;
+        double valTest=0;
+        std::string nameTest = "test";
+        SimTK_TEST_MUST_THROW(fibKinEmpty.getOptimalFiberLength());
+        SimTK_TEST_MUST_THROW(fibKinEmpty.getOptimalPennationAngle());
+        SimTK_TEST_MUST_THROW(fibKinEmpty.getParallelogramHeight());
+        SimTK_TEST_MUST_THROW(valTest = 
+            fibKinEmpty.calcPennationAngle(0.1,nameTest));
+        SimTK_TEST_MUST_THROW(valTest = 
+            fibKinEmpty.calcPennationAngularVelocity(tan(0.7),0.1,0.1,nameTest));
 
         //calcPennationAngle
         SimTK_TEST_MUST_THROW(fibKin.calcPennationAngle(0,caller));

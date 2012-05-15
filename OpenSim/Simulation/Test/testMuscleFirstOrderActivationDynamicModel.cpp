@@ -25,7 +25,7 @@
 
 #include "Simbody.h"
 #include "OpenSim/OpenSim.h"
-#include <OpenSim/Simulation/Model/MuscleFirstOrderActivationDynamicModel.h>
+#include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
 //"MuscleFirstOrderActivationDynamicModel.h"
 //#include <SimTKcommon/Testing.h>
 //#include <OpenSim/Common/Exception.h>
@@ -43,19 +43,22 @@ SimTK::Vector calcCentralDifference(const SimTK::Vector& x,
                                  const SimTK::Vector& y, bool extrap_endpoints);
 
 SimTK::Vector calcCentralDifference(const SimTK::Matrix& xM,
-                                    const SimTK::Function& yF,
+                                    const MuscleFirstOrderActivationDynamicModel& yF,
                                     int dim,int order);
 
 bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
     const SimTK::Vector& dydxV, const SimTK::Vector& d2ydx2V, double minTol,
                                                     double taylorErrorMult);
 
-SimTK::Matrix calcFunctionTimeIntegral( const SimTK::Vector& timeV, 
-                                        const SimTK::Matrix& xM, 
-                                        const SimTK::Function& yF,
-                                        double ic, int dim, 
-                                        double startTime, double endTime,
-                                        double intAcc);
+SimTK::Matrix calcFunctionTimeIntegral( 
+                                const SimTK::Vector& timeV, 
+                                const SimTK::Matrix& xM, 
+                                const MuscleFirstOrderActivationDynamicModel& yF,
+                                double ic, 
+                                int dim, 
+                                double startTime, 
+                                double endTime,
+                                double intAcc);
                                         
 int main(int argc, char* argv[])
 {
@@ -88,12 +91,7 @@ int main(int argc, char* argv[])
             ////////////////////////////
             //generate a step input
             ////////////////////////////
-            cout << endl;
-            cout<<"*****************************************************"<<endl;
-            printf("TEST: Actvation bounds %f and 1 \n",amin);
-            cout<<"       respected during step response"<<endl;
-            cout << endl;
-
+            
             SimTK::Vector timeV(pts);
             SimTK::Matrix xM(pts,2);
 
@@ -108,11 +106,43 @@ int main(int argc, char* argv[])
             }
 
 
-            MuscleFirstOrderActivationDynamicModel 
-                     actMdl(tauA,tauD,amin,"test");
+            MuscleFirstOrderActivationDynamicModel actMdl;
 
-            SimTK::Matrix stepResponse = 
-                calcFunctionTimeIntegral(timeV,xM,actMdl,amin,0,0,1,1e-12);
+            MuscleFirstOrderActivationDynamicModel actMdl2;
+            actMdl2.setActivationTimeConstant(2*tauA);
+            actMdl2.setDeactivationTimeConstant(2*tauD);
+            actMdl2.setMinActivation(2*amin);
+
+            cout << endl;
+            cout<<"*****************************************************"<<endl;
+            cout << "TEST: Serialization"<<endl;
+            cout << endl;
+
+            actMdl.print("default_MuscleFirstOrderActivationDynamicModel.xml");
+       
+        Object* tmpObj = Object::
+        makeObjectFromFile("default_MuscleFirstOrderActivationDynamicModel.xml");
+        actMdl2 = *dynamic_cast<MuscleFirstOrderActivationDynamicModel*>(tmpObj);
+        delete tmpObj;
+       
+            SimTK_TEST(actMdl ==actMdl2);
+            remove("default_MuscleFirstOrderActivationDynamicModel.xml");
+
+            cout << endl;
+            cout<<"*****************************************************"<<endl;
+            printf("TEST: Actvation bounds %f and 1 \n",amin);
+            cout<<"       respected during step response"<<endl;
+            cout << endl;
+
+
+            SimTK::Matrix stepResponse = calcFunctionTimeIntegral(  timeV, 
+                                                                    xM, 
+                                                                    actMdl,
+                                                                    amin, 
+                                                                    0, 
+                                                                    0, 
+                                                                    1,
+                                                                    1e-12);
 
             //printMatrixToFile( stepResponse, "stepResponse.csv");
 
@@ -311,7 +341,7 @@ int main(int argc, char* argv[])
             SimTK_TEST_MUST_THROW(MuscleFirstOrderActivationDynamicModel 
                                     actMdlX(tauA,tauD,1,"test"));
              
-            SimTK::Function_<SimTK::Real> *fcnActMdl = &actMdl;
+            MuscleFirstOrderActivationDynamicModel *fcnActMdl = &actMdl;
 
             SimTK_TEST_MUST_THROW(fcnActMdl->calcValue(xEX1));
             SimTK_TEST_MUST_THROW(fcnActMdl->calcValue(xEX3));
@@ -500,8 +530,9 @@ bool isFunctionContinuous(const SimTK::Vector& xV, const SimTK::Vector& yV,
 									the neighboring 2 points
  @returns dy/dx computed using central differences
 */
-SimTK::Vector calcCentralDifference(const SimTK::Vector& x, const SimTK::Vector& y, 
-                                               bool extrap_endpoints){
+SimTK::Vector calcCentralDifference(const SimTK::Vector& x, 
+                                    const SimTK::Vector& y,                                          
+                                    bool extrap_endpoints){
  
 
 	SimTK::Vector dy(x.size());
@@ -564,7 +595,7 @@ SimTK::Vector calcCentralDifference(const SimTK::Vector& x, const SimTK::Vector&
      @param the order of the derivative to take
 */
 SimTK::Vector calcCentralDifference(const SimTK::Matrix& xM,
-                                    const SimTK::Function& yF,
+                                    MuscleFirstOrderActivationDynamicModel& yF,
                                     int dim, int order)
 {
     //step size
@@ -589,8 +620,10 @@ SimTK::Vector calcCentralDifference(const SimTK::Matrix& xM,
     double y_C3min = sqrt(SimTK::Eps);
     double y_C3max = 1e1;
 
+    double maxDerOrder = 1;
+
     for(int i=0; i<xM.nrow(); i++){
-        if(yF.getMaxDerivativeOrder() >= 3){
+        if(maxDerOrder >= 3){
             c3 = yF.calcDerivative(d3ydx3,~xM[i]);
         }else{
             c3 = 1;
@@ -626,7 +659,7 @@ SimTK::Vector calcCentralDifference(const SimTK::Matrix& xM,
 ///@cond
 class FunctionData {
 public:
-    const SimTK::Function& m_func;
+    const MuscleFirstOrderActivationDynamicModel& m_func;
     SimTK::Array_<SimTK::Spline_<double> > m_splinedInput;
         
     double m_ic;        
@@ -634,7 +667,7 @@ public:
 
     mutable SimTK::Vector m_tmpXV; //A temporary variable   
 
-    FunctionData(const SimTK::Function& func):m_func(func)
+    FunctionData(const MuscleFirstOrderActivationDynamicModel& func):m_func(func)
     {};
 };
 
@@ -737,12 +770,15 @@ public:
 @param intAcc The accuracy of the integral
 @returns an nx2 matrix, time in column 0, integral of y in column 1
 */
-SimTK::Matrix calcFunctionTimeIntegral( const SimTK::Vector& timeV,
-                                    const SimTK::Matrix& xM, 
-                                    const SimTK::Function& yF,
-                                    double ic, int dim, 
-                                    double startTime, double endTime,
-                                    double intAcc)
+SimTK::Matrix calcFunctionTimeIntegral( 
+                                const SimTK::Vector& timeV,
+                                const SimTK::Matrix& xM, 
+                                const MuscleFirstOrderActivationDynamicModel& yF,
+                                double ic, 
+                                int dim, 
+                                double startTime, 
+                                double endTime,
+                                double intAcc)
 {
     SimTK::Matrix intXY(timeV.nelt(),2);
 

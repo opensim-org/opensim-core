@@ -27,8 +27,8 @@
 // INCLUDE
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
-#include <OpenSim/Simulation/Model/MuscleFirstOrderActivationDynamicModel.h>
-#include <OpenSim/Simulation/Model/MuscleFixedWidthPennationModel.h>
+#include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
+#include <OpenSim/Actuators/MuscleFixedWidthPennationModel.h>
 
 #ifdef SWIG
     #ifdef OSIMACTUATORS_API

@@ -38,7 +38,7 @@
 #include "PointToPointActuator.h"
 #include "Thelen2003Muscle.h"
 #include "Thelen2003Muscle_Deprecated.h"
-#include "Thelen2003MuscleV1.h"//MM
+#include "Thelen2003MuscleV1.h"
 #include "Schutte1993Muscle_Deprecated.h"
 #include "Delp1990Muscle_Deprecated.h"
 #include "CoordinateLimitForce.h"
@@ -53,6 +53,9 @@
 #include "FiberForceLengthCurve.h"
 #include "FiberCompressiveForceLengthCurve.h"
 #include "FiberCompressiveForceCosPennationCurve.h"
+#include "MuscleFirstOrderActivationDynamicModel.h"
+#include "MuscleFixedWidthPennationModel.h"
+
 
 using namespace OpenSim;
 using namespace std;
@@ -90,6 +93,9 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
     Object::RegisterType( FiberForceLengthCurve() );
     Object::RegisterType( FiberCompressiveForceLengthCurve() );
     Object::RegisterType( FiberCompressiveForceCosPennationCurve() );
+
+    Object::RegisterType(MuscleFirstOrderActivationDynamicModel());
+    Object::RegisterType(MuscleFixedWidthPennationModel());
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

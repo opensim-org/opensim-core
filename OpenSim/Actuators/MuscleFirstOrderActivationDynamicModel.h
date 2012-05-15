@@ -29,7 +29,8 @@
 //#include <SimTKcommon/internal/Function.h>
 #include "Simbody.h"
 
-#include <OpenSim/Simulation/osimSimulationDLL.h>
+#include <OpenSim/Actuators/osimActuatorsDLL.h>
+#include <OpenSim/Common/Object.h>
 
 namespace OpenSim {
 
@@ -134,152 +135,165 @@ namespace OpenSim {
     @author Matt Millard
     @version 0.0
     */    
-    class OSIMSIMULATION_API MuscleFirstOrderActivationDynamicModel 
-        : public SimTK::Function_<double>
-    {
-        //It occurs to me that it doesn't make sense to have this in a
-            //function object, because the derivative I'm computing is not
-            //the derivative of the function w.r.t. the 0th parameter,
-            //activation, but time. Hmm. This interface is convenient for 
-            //other things though, particularly for testing (I have written
-            //lots of test code that works with the SimTK::Function interface.)
-            //
-            //Given that the guts of the interface are private, that is good
-            //enough justification for me, for now.
+class OSIMACTUATORS_API MuscleFirstOrderActivationDynamicModel : public Object{
+OpenSim_DECLARE_CONCRETE_OBJECT(MuscleFirstOrderActivationDynamicModel, Object);
+public:
+//==============================================================================
+// PROPERTIES
+//==============================================================================
+    /** @name Property declarations
+    These are the serializable properties associated with this class. **/
+    /**@{**/
+    OpenSim_DECLARE_PROPERTY(activation_time_constant, double,
+        "activation time constant in seconds");            
+    OpenSim_DECLARE_PROPERTY(deactivation_time_constant, double,
+        "deactivation time constant in seconds");
+    OpenSim_DECLARE_PROPERTY(minimum_activation, double,
+        "minimum activation allowed");                       
+    /**@}**/
 
-        public:
-        /**
-        @param tauActivation The first order time constant associated with
-                             a muscle that is being activated (units of seconds) 
-                             A typical value is 0.010, or 10 ms.
+//==============================================================================
+// PUBLIC METHODS
+//==============================================================================
 
-        @param tauDeactivation  The first order time constant associated with a
-                                muscle that is turning off, or being 
-                                deactivated (units of seconds). A typical value
-                                is 0.040 or 40 ms.
+    /**
+    @param tauActivation The first order time constant associated with
+                            a muscle that is being activated (units of seconds) 
+                            A typical value is 0.010, or 10 ms.
 
-        @param minActivation    The minimum activation allowed. Equilibrium 
-                                muscle models might set this value to be between
-                                0.01-0.1, as they have a singularity when 
-                                a = 0. Muscle models that don't have a 
-                                singularity at a=0 will set minActivation to be
-                                0. (Unitless).
+    @param tauDeactivation  The first order time constant associated with a
+                            muscle that is turning off, or being 
+                            deactivated (units of seconds). A typical value
+                            is 0.040 or 40 ms.
 
-        @param muscleName       The name of the muscle that this activation 
-                                object belongs to. This string is used to
-                                create useful exception messages.
+    @param minActivation    The minimum activation allowed. Equilibrium 
+                            muscle models might set this value to be between
+                            0.01-0.1, as they have a singularity when 
+                            a = 0. Muscle models that don't have a 
+                            singularity at a=0 will set minActivation to be
+                            0. (Unitless).
 
-        <B>Conditions</B>
-        \verbatim
-            0 < tauActivation 
-            0 < tauDeactivation 
-            0 <= minActivation < 1
-        \endverbatim
+    @param muscleName       The name of the muscle that this activation 
+                            object belongs to. This string is used to
+                            create useful exception messages.
 
-        <B>Computational Cost</B>
-        \verbatim
-            ~15 flops
-        \endverbatim
+    <B>Conditions</B>
+    \verbatim
+        0 < tauActivation 
+        0 < tauDeactivation 
+        0 <= minActivation < 1
+    \endverbatim
 
-        */
-        MuscleFirstOrderActivationDynamicModel(double tauActivation, 
-                                               double tauDeactivation, 
-                                               double minActivation,
-                                               const std::string& muscleName);
-        ///Default constructor. Sets data members to NAN and other error
-        ///causing values
-        MuscleFirstOrderActivationDynamicModel();
+    <B>Computational Cost</B>
+    \verbatim
+        ~15 flops
+    \endverbatim
 
-
-        /**
-        @param excitation The excitation signal being sent to the muscle 
-                          (Unitless, [0,1])
-        @param activation   The current activation of the muscle(Unitless [0,1])
-        @returns the time derivative of activation
-
-        <B>Conditions</B>
-        \verbatim
-            0 <= excitation <= 1
-        \endverbatim
-
-        <B>Computational Cost</B>
-        \verbatim
-            ~40 flops
-        \endverbatim
-        */
-        double calcDerivative(double activation, double excitation) const;
+    */
+    MuscleFirstOrderActivationDynamicModel(double tauActivation, 
+                                            double tauDeactivation, 
+                                            double minActivation,
+                                            const std::string& muscleName);
+    ///Default constructor. Sets data members to NAN and other error
+    ///causing values
+    MuscleFirstOrderActivationDynamicModel();
 
 
-        /**        
-        @returns The activation time constant in (units of seconds)
+    /**
+    @param excitation The excitation signal being sent to the muscle 
+                        (Unitless, [0,1])
+    @param activation   The current activation of the muscle(Unitless [0,1])
+    @returns the time derivative of activation
+
+    <B>Conditions</B>
+    \verbatim
+        0 <= excitation <= 1
+    \endverbatim
+
+    <B>Computational Cost</B>
+    \verbatim
+        ~40 flops
+    \endverbatim
+    */
+    double calcDerivative(double activation, double excitation) const;
+
+
+    /**        
+    @returns The activation time constant in (units of seconds)
         
-        <B>Computational Cost</B>
-        \verbatim
-            ~1 flops
-        \endverbatim
-        */
-        double getActivationTimeConstant() const;
+    <B>Computational Cost</B>
+    \verbatim
+        ~1 flops
+    \endverbatim
+    */
+    double getActivationTimeConstant() const;
         
-        /**        
-        @returns The deactivation time constant in (units of seconds)
+    /**        
+    @returns The deactivation time constant in (units of seconds)
         
-        <B>Computational Cost</B>
-        \verbatim
-            ~1 flops
-        \endverbatim
-        */
-        double getDeactivationTimeConstant() const;
+    <B>Computational Cost</B>
+    \verbatim
+        ~1 flops
+    \endverbatim
+    */
+    double getDeactivationTimeConstant() const;
         
-        /**
-        @returns The minimum activation level
+    /**
+    @returns The minimum activation level
         
-        <B>Computational Cost</B>
-        \verbatim
-            ~1 flops
-        \endverbatim
-        */
-        double getMinActivation() const;
+    <B>Computational Cost</B>
+    \verbatim
+        ~1 flops
+    \endverbatim
+    */
+    double getMinActivation() const;
 
-        /**
-        @returns the name of this activation object
+    /**        
+    @param The activation time constant in (units of seconds)
         
-        <B>Computational Cost</B>
-        \verbatim
-            ~1 flops
-        \endverbatim
-        */
-        std::string getName() const;
+    <B>Computational Cost</B>
+    \verbatim
+        ~1 flops
+    \endverbatim
+    */
+    void setActivationTimeConstant(double activationTimeConstant);
+        
+    /**        
+    @returns The deactivation time constant in (units of seconds)
+        
+    <B>Computational Cost</B>
+    \verbatim
+        ~1 flops
+    \endverbatim
+    */
+    void setDeactivationTimeConstant(double deactivationTimeConstant);
+        
+    /**
+    @returns The minimum activation level
+        
+    <B>Computational Cost</B>
+    \verbatim
+        ~1 flops
+    \endverbatim
+    */
+    void setMinActivation(double minimumActivation);
 
-        private:
-           /**
+    ///@cond
+    /*This is useful for testing purposes only. Don't even think
+        about using these functions!*/
+    double calcValue(const SimTK::Vector& x) const; /*virtual*/
+    double calcDerivative(const SimTK::Array_<int>& derivComponents, 
+                            const SimTK::Vector& x) const; /*virtual*/ 
+    int getArgumentSize() const;  /*virtual*/ 
+    int getMaxDerivativeOrder() const;  /*virtual*/ 
+    ///@endcond
+
+    private:           
+        double m_minAS; //scaled version of m_minA
            
-           */
-            double calcValue(const SimTK::Vector& x) const; /*virtual*/
-
-           /** 
-           
-           */
-           double calcDerivative(const SimTK::Array_<int>& derivComponents, 
-                                   const SimTK::Vector& x) const; /*virtual*/ 
-
-           /**
-           @returns 2, activation and excitation in that order
-           */
-           int getArgumentSize() const;  /*virtual*/ 
-
-           /**
-           @returns 1
-           */ 
-           int getMaxDerivativeOrder() const;  /*virtual*/ 
-
-    private:
-            double m_ta; //activation time constant
-            double m_td; //deactivation time constant
-            double m_minA; //minimum activation level
-            double m_minAS; //scaled version of m_minA
-            std::string m_name;
-
-    };
+        void setNull();
+        void constructProperties();
+};
 
 }
 #endif //OPENSIM_MUSCLEFIRSTORDERACTIVATIONDYNAMICMODEL

@@ -31,12 +31,12 @@ using namespace SimTK;
 //=============================================================================
 // Code
 //=============================================================================
-
 MuscleFirstOrderActivationDynamicModel::
-    MuscleFirstOrderActivationDynamicModel(): m_ta(SimTK::NaN),m_td(SimTK::NaN),
-                                          m_minA(SimTK::NaN),m_minAS(SimTK::NaN)
+    MuscleFirstOrderActivationDynamicModel():m_minAS(SimTK::NaN)
 {
-    m_name = "NOT_ASSIGNED_YET";
+    setName("default_MuscleFirstOrderActivationDynamicModel");
+    setNull();
+    constructProperties();
 }
 
 /*
@@ -48,30 +48,50 @@ Detailed Computational Cost
 MuscleFirstOrderActivationDynamicModel::
         MuscleFirstOrderActivationDynamicModel(double tauActivation, 
         double tauDeactivation, double minActivation, 
-        const std::string& muscleName):
-        m_ta(tauActivation), m_td(tauDeactivation), 
-        m_minA(minActivation)
+        const std::string& muscleName)
 {
-    m_name = muscleName;
-    m_name.append("_activation");
+    setNull();
+    constructProperties();
+
+    std::string name = muscleName;
+    name.append("_activation");
+    setName(name);
+
     double smallTol = sqrt(SimTK::Eps);
     SimTK_ERRCHK1_ALWAYS( tauActivation>smallTol && tauDeactivation>smallTol,
         "MuscleFirstOrderActivationDynamicModel::"
         "MuscleFirstOrderActivationDynamicModel",
-        "%s: Activation/Deactivation time constants", m_name.c_str());
+        "%s: Activation/Deactivation time constants", name.c_str());
 
-    SimTK_ERRCHK1_ALWAYS( m_minA >= 0 && m_minA < 1-smallTol,
+    SimTK_ERRCHK1_ALWAYS( minActivation >= 0 && minActivation < 1-smallTol,
         "MuscleFirstOrderActivationDynamicModel::"
         "MuscleFirstOrderActivationDynamicModel",
         "%s: Minimum activation must be greater than 0 and less than 1",
-        m_name.c_str());
+        name.c_str());
+
+    setProperty_activation_time_constant(tauActivation);
+    setProperty_deactivation_time_constant(tauDeactivation);
+    setProperty_minimum_activation(minActivation);
 
     //This simple quantity is precomputed to save a division, a 
     //subtraction and an assignment ...
-    m_minAS = m_minA/(1-m_minA); 
+    m_minAS = minActivation/(1-minActivation); 
 
 }
         
+void MuscleFirstOrderActivationDynamicModel::setNull()
+{
+    m_minAS = SimTK::NaN;
+}
+
+void MuscleFirstOrderActivationDynamicModel::constructProperties()
+{
+    constructProperty_activation_time_constant(0.010);
+    constructProperty_deactivation_time_constant(0.040);
+    constructProperty_minimum_activation(0.05);
+
+    m_minAS = 0.05/(1-0.05);
+}
 
 double MuscleFirstOrderActivationDynamicModel::
     calcDerivative(double activation, double excitation) const
@@ -91,26 +111,41 @@ double MuscleFirstOrderActivationDynamicModel::
 double MuscleFirstOrderActivationDynamicModel::
     getActivationTimeConstant() const
 {
-    return m_ta;
+    return getProperty_activation_time_constant();
 }
         
 
 double MuscleFirstOrderActivationDynamicModel::
     getDeactivationTimeConstant() const
 {
-    return m_td;
+    return getProperty_deactivation_time_constant();
 }
         
 
 double MuscleFirstOrderActivationDynamicModel::getMinActivation() const
 {
-    return m_minA;
+    return getProperty_minimum_activation();
 }
 
 
-std::string MuscleFirstOrderActivationDynamicModel::getName() const
+void MuscleFirstOrderActivationDynamicModel::
+    setActivationTimeConstant(double activationTimeConstant) 
 {
-    return m_name;
+    setProperty_activation_time_constant(activationTimeConstant);
+}
+        
+
+void MuscleFirstOrderActivationDynamicModel::
+    setDeactivationTimeConstant(double deactivationTimeConstant) 
+{
+    setProperty_deactivation_time_constant(deactivationTimeConstant);
+}
+        
+
+void MuscleFirstOrderActivationDynamicModel::
+    setMinActivation(double minimumActivation)
+{
+    setProperty_minimum_activation(minimumActivation);
 }
 
 double MuscleFirstOrderActivationDynamicModel::
@@ -119,7 +154,7 @@ double MuscleFirstOrderActivationDynamicModel::
     SimTK_ERRCHK1_ALWAYS(x.size() == 2,
         "MuscleFirstOrderActivationDynamicModel::calcDerivative",
         "%s: Two arguments are required: excitation and activation", 
-        m_name.c_str());
+        getName().c_str());
 
     double activation = x(0);
     double excitation = x(1);
@@ -139,7 +174,7 @@ double MuscleFirstOrderActivationDynamicModel::
     SimTK_ERRCHK1_ALWAYS(x.size() == 2,
         "MuscleFirstOrderActivationDynamicModel::calcDerivative",
         "%s: Two arguments are required: excitation and activation", 
-        m_name.c_str());
+        getName().c_str());
 
     double da = 0;
 
@@ -158,21 +193,27 @@ double MuscleFirstOrderActivationDynamicModel::
                     
                     SimTK_ERRCHK1_ALWAYS(excitation >= 0 && excitation <= 1,
                     "MuscleFirstOrderActivationDynamicModel::calcDerivative",
-                    "%s: Excitation must be bounded by 0 and 1",m_name.c_str());
+                    "%s: Excitation must be bounded by 0 and 1",getName().c_str());
 
-                    SimTK_ERRCHK2_ALWAYS(activation >= m_minA && activation<=1,
+
+                    double minAct = getProperty_minimum_activation();
+
+                    SimTK_ERRCHK2_ALWAYS(activation >= minAct && activation<=1,
                     "MuscleFirstOrderActivationDynamicModel::calcDerivative",
                     "%s: Activation must be between minA and 1 (%f and 1)",
-                        m_name.c_str(), m_minA);
+                        getName().c_str(), minAct);
                     
 
-                    double aS = activation/(1-m_minA);
+                    double aS = activation/(1-minAct);
                     double tau = 0;
 
+                    double ta = getProperty_activation_time_constant();
+                    double td = getProperty_deactivation_time_constant();
+
                     if(excitation > (aS-m_minAS)){
-                        tau = m_ta*(0.5 + 1.5*(aS-m_minAS));
+                        tau = ta*(0.5 + 1.5*(aS-m_minAS));
                     }else{
-                        tau = m_td*(0.5+1.5*(aS-m_minAS));
+                        tau = td*(0.5+1.5*(aS-m_minAS));
                     }
                     da = (excitation - (aS-m_minAS))/tau;
 
@@ -180,7 +221,7 @@ double MuscleFirstOrderActivationDynamicModel::
                    SimTK_ERRCHK1_ALWAYS(false,
                     "MuscleFirstOrderActivationDynamicModel::calcDerivative",
                     "%s: calcDerivative is only valid for the 0th partial", 
-                    m_name.c_str());
+                    getName().c_str());
                 }
             }
             break;
@@ -188,7 +229,7 @@ double MuscleFirstOrderActivationDynamicModel::
             SimTK_ERRCHK1_ALWAYS(false,
             "MuscleFirstOrderActivationDynamicModel::calcDerivative",
             "%s: calcDerivative is only valid for the 0th and 1st derivative", 
-            m_name.c_str());
+            getName().c_str());
             
     }
 
@@ -205,3 +246,4 @@ int MuscleFirstOrderActivationDynamicModel::
 {
     return 1;
 }
+
