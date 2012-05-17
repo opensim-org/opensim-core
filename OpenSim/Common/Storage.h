@@ -178,9 +178,11 @@ public:
 	// DATA
 	int getData(int aTimeIndex,int aStateIndex,double &rValue) const;
 	int getData(int aTimeIndex,int aStateIndex,int aN,double **rData) const;
+#ifndef SWIG
 	int getData(int aTimeIndex,int aStateIndex,int aN,double *rData) const;
 	int getData(int aTimeIndex,int aN,double **rData) const;
 	int getData(int aTimeIndex,int aN,double *rData) const;
+#endif
 	int getDataAtTime(double aTime,int aN,double **rData) const;
 	int getDataAtTime(double aTime,int aN,double *rData) const;
 	int getDataAtTime(double aTime,int aN,Array<double> &rData) const;
