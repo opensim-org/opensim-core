@@ -193,7 +193,15 @@ public:
 	void setDefaultsFromState() {	// Sets the defaults in the model from the current state
 		_model->setDefaultsFromState(*_configState);
 	}
-
+    /**
+     * Create a new System under the model then realize it to the same stage it had
+     */
+    void recreateSystemKeepStage() {
+        SimTK::Stage stageBeforeRecreatingSystem = _configState->getSystemStage();
+        SimTK::State* newState = &_model->initSystem();
+        setState( newState );
+        _model->getMultibodySystem().realize( *_configState, stageBeforeRecreatingSystem );
+    }
 	// Force re-realization
 	void realizePosition();
 	void realizeVelocity();
