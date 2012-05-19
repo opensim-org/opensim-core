@@ -475,6 +475,20 @@ public:
                                         double DpennationAngle_DfiberLength,                                           
                                         std::string& caller) const;
 
+    double calcFiberLength(  double muscleLength, 
+                                double tendonLength, 
+                                std::string& caller) const;
+
+    double   calcFiberVelocity( double fiberLength,
+                                double cosPennation,
+                                double sinPennation,
+                                double muscleLength,
+                                double tendonLength,
+                                double muscleVelocity, 
+                                double tendonVelocity,                                                                              
+                                std::string& caller) const;
+
+
 private:
     void setNull();
     void constructProperties();

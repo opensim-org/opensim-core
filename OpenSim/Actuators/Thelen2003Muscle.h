@@ -25,6 +25,8 @@
 
 
 // INCLUDE
+#include <simbody/internal/common.h>
+
 #include <OpenSim/Actuators/osimActuatorsDLL.h>
 #include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 #include <OpenSim/Actuators/MuscleFirstOrderActivationDynamicModel.h>
@@ -183,7 +185,7 @@ public:
 // Public Computations
 //==============================================================================
     //Ajay: this is old. Can I stop calling it?
-    virtual double computeActuation(const SimTK::State& s) const;
+    virtual double computeActuation(const SimTK::State& s) const OVERRIDE_11;
 
 
     /** Compute initial fiber length (velocity) such that muscle fiber and 
@@ -191,9 +193,9 @@ public:
         
         Part of the Muscle.h interface
     */
-    void computeInitialFiberEquilibrium(SimTK::State& s) const; /*virtual*/
+    void computeInitialFiberEquilibrium(SimTK::State& s) const OVERRIDE_11;
     double computeIsometricForce(   SimTK::State& s, 
-                                    double activation) const;/*virtual*/
+                                    double activation) const OVERRIDE_11;
 
 protected:
 //==============================================================================

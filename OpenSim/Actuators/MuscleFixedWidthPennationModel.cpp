@@ -254,3 +254,56 @@ double MuscleFixedWidthPennationModel::
     return dtl_dlce;
 }
 
+/*==============================================================================
+Kinematic Fiber Pose Equations
+Useful during initialization
+==============================================================================*/
+
+double MuscleFixedWidthPennationModel::
+    calcFiberVelocity(  double fiberLength,
+                        double cosPennation,
+                        double sinPennation,
+                        double muscleLength,
+                        double tendonLength,
+                        double muscleVelocity, 
+                        double tendonVelocity,                                     
+                        std::string& caller) const
+{
+    double t2 = cosPennation * cosPennation;
+    double t6 = sinPennation * sinPennation;
+    double denominator = (t2*cosPennation*fiberLength + 
+                          t6*muscleLength - t6*tendonLength);
+
+    SimTK_ERRCHK1_ALWAYS( denominator >= SimTK::Eps ,
+     "MuscleFixedWidthPennationModel::calcFiberVelocity",
+     "%s: Equation is singular: check pennation angle",
+     caller.c_str() );
+
+    double fiberVelocity = (muscleVelocity - tendonVelocity)*t2*fiberLength 
+                            / denominator;
+    return fiberVelocity;
+}
+
+double MuscleFixedWidthPennationModel::
+    calcFiberLength(  double muscleLength, 
+                    double tendonLength, 
+                    std::string& caller) const
+{
+    double fiberLengthAT = muscleLength-tendonLength;
+    SimTK_ERRCHK1_ALWAYS( fiberLengthAT >= SimTK::Eps ,
+     "MuscleFixedWidthPennationModel::calcFiberLength",
+     "%s: Equation is singular: pennation angle of 90 predicted",
+     caller.c_str() );
+    SimTK::Vec2 pose;
+
+    double tanPhi = m_parallelogramHeight/fiberLengthAT;
+    
+    //Not returing phi as well is slightly wasteful, but I've opted to not to
+    //to make the function name clearer
+
+    double phi = atan(tanPhi);
+    double fiberLength = m_parallelogramHeight/sin(phi);
+   
+
+    return fiberLength;
+}
