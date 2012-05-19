@@ -611,6 +611,56 @@ int main(int argc, char* argv[])
 
         cout << endl;
         cout << "**************************************************" << endl;
+        cout << "TEST: calcFiberLength correctness" << endl;
+
+        maxErr = 0;
+        int maxErrIdx = 0;
+        err = 0;
+        double tmp = 0;
+
+        for(int i=0;i<numPts; i++)
+        {
+            tmp = fibKin.calcFiberLength(mclLen(i), tdnLen(i),caller);
+            err = abs(tmp-fibLen(i));
+            if(err > maxErr){
+                maxErr=err;
+                maxErrIdx = i;
+            }
+        }
+
+        SimTK_TEST_EQ_TOL(maxErr,0,smallTol);
+
+        printf("    :passed with a max. error < rel. tol. (%f*1e16 < %f*1e16)\n"
+                ,maxErr*1e16,smallTol*1e16);
+
+        cout << endl;
+        cout << "**************************************************" << endl;
+        cout << "TEST: calcFiberVelocity correctness" << endl;
+
+        maxErr = 0;
+        maxErrIdx = 0;
+        err = 0;
+        tmp = 0;
+
+        for(int i=0;i<numPts; i++)
+        {
+           tmp=fibKin.calcFiberVelocity(fibLen(i),cos(penAng(i)),sin(penAng(i)),
+                                        mclLen(i),tdnLen(i),mclVel(i),tdnVel(i),
+                                        caller);
+            err = abs(tmp-fibVel(i));
+            if(err > maxErr){
+                maxErr=err;
+                maxErrIdx = i;
+            }
+        }
+
+        SimTK_TEST_EQ_TOL(maxErr,0,smallTol);
+
+        printf("    :passed with a max. error < rel. tol. (%f*1e16 < %f*1e16)\n"
+                ,maxErr*1e16,smallTol*1e16);
+
+        cout << endl;
+        cout << "**************************************************" << endl;
         cout << "TEST: Exception Handling" << endl;
 
         //constructor
@@ -645,10 +695,18 @@ int main(int argc, char* argv[])
         SimTK_TEST_MUST_THROW(fibKin.calc_DpennationAngle_DfiberLength(
                                                         paraHeight,caller));
 
+        //calcFiberLength
+        SimTK_TEST_MUST_THROW(fibKin.calcFiberLength(1.0, 1.0, caller));
+
+        //calcFiberVelocity
+        SimTK_TEST_MUST_THROW(fibKin.calcFiberVelocity(1,0,1, 1,1,0,0,caller));
+
         //calc_DtendonLength_DfiberLength
         SimTK_TEST_MUST_THROW(fibKin.calc_DtendonLength_DfiberLength(paraHeight,
             sin(penAng(0)),cos(penAng(0)), 0.5, caller));
         cout << "    passed" << endl;
+
+        
 
         SimTK_END_TEST();
 
