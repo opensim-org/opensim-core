@@ -1,5 +1,5 @@
-function strengthScalar(Model_In, Model_Out, scaleFactor)
-% OSIMstrength_scalar(Model_In, Model_Out, scaleFactor)
+function strengthScaler(Model_In, Model_Out, scaleFactor)
+% OSIMstrength_scaler(Model_In, Model_Out, scaleFactor)
 % Test program to load muscles and change strength of muscles and re-save
 % model
 %
@@ -7,11 +7,11 @@ function strengthScalar(Model_In, Model_Out, scaleFactor)
 %          Model_Out (string) - new model path and file name 
 %          scaleFactor (double) - amount to scale all muscle forces
 %
-% eg. strengthScalar('mySimpleBlockModel.osim', 'myStrongerBlockModel.osim', 2)
+% eg. strengthScaler('mySimpleBlockModel.osim', 'myStrongerBlockModel.osim', 2)
 %
 % Author: Glen Lichtwark (The University of Queensland)
 % with invaluable assistance from Ayman Habib (Stanford University)
-% Initial code replicating the muscleStrengthScalar.cpp file developed by
+% Initial code replicating the muscleStrengthScaler.cpp file developed by
 % Edith Arnold and Ajay Seth
 
 import org.opensim.modeling.*
@@ -34,27 +34,29 @@ M2.initSystem;
 % the GUI navigator
 M2.setName('modelModified');
 
-% Get the set of forces that are in the original model
+% Get the set of muscles that are in the original model
 M1 = M1.getMuscles(); 
+
 %Count the muscles
 nMuscles = M1.getSize();
 
 disp(['Number of muscles in orginal model: ' num2str(nMuscles)]);
+
 % Get the set of forces that are in the scaled model
 % (Should be the same as the original at this point.)
 M2 = M2.getMuscles();
 
-% loop through forces and scale muscle Fmax accordingly
-for i = 1:nMuscles
+% loop through forces and scale muscle Fmax accordingly (index starts at 0)
+for i = 0:nMuscles-1
         
     %get the muscle that the original muscle set points to
     %to read the muscle type and the max isometric force
-    currentMuscle = M1.get(i-1);
+    currentMuscle = M1.get(i);
     muscleType = currentMuscle.getType;
     disp([char(currentMuscle.getName()) '--> muscle type: ' char(muscleType)]);
 
     %define the muscle in the modified model for changing
-    newMuscle = M2.get(i-1);
+    newMuscle = M2.get(i);
 
     %define the new muscle force by multiplying current muscle max
     %force by the scale factor
