@@ -63,7 +63,7 @@ static const double accuracy = 1e-4;
 static const double maxIsometricForce = 100.0, optimalFiberLength = 0.1, tendonSlackLength = 0.2, pennationAngle = 0.0;
 static const double activation = 0.01, deactivation = 0.4,	activation1 = 7.6,	activation2 = 2.5;
 
-void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &act0, 
+void simulateMuscle(const PathActuator &aMuscle, const double &startX, const double &act0, 
 					Function *motion, 
 					Function *control, 
 					const double &accuracy);
@@ -132,27 +132,30 @@ int main()
 //
 // TODO: Test will fail wih prescribe motion until the work done by this constraint is accounted for.
 //==========================================================================================================
-void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &act0, 
+void simulateMuscle(const PathActuator &aMuscModel, const double &startX, const double &act0, 
 					Function *motion,  // prescribe motion of free end of muscle
 					Function *control, // prescribed excitation signal to the muscle
 					const double &accuracy)
 {
 	cout << "\n******************************************************" << endl;
-	cout << " Test " << aMuscle.getConcreteClassName() << " Muscle Actuator Type." <<endl;
+	cout << " Test " << aMuscModel.getConcreteClassName() << " Muscle Actuator Type." <<endl;
 	cout << "******************************************************" << endl;
 	using SimTK::Vec3;
 
 	// Define the initial and final simulation times
 	double initialTime = 0.0;
-	double finalTime = 1.0;
+	double finalTime = 0.25;
 	
 	//Physical properties of the model
 	double ballMass = 10;
 	double ballRadius = 0.05;
 	double anchorWidth = 0.1;
 
-	// Create an OpenSim model and set its name
+	// Create an OpenSim model
 	Model model;
+
+	// Use a copy of the muscle model passed in to add path points later
+	PathActuator *aMuscle = aMuscModel.clone();
 
 	// Get a reference to the model's ground body
 	Body& ground = model.getGroundBody();
@@ -164,6 +167,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	ball.updDisplayer()->setScaleFactors(Vec3(2*ballRadius));
 	// ball connected  to ground via a slider along X
 	double xSinG = optimalFiberLength*cos(pennationAngle)+tendonSlackLength;
+
 	SliderJoint slider("slider", ground, Vec3(anchorWidth/2+xSinG, 0, 0), Vec3(0), ball, Vec3(0), Vec3(0));
 	CoordinateSet& jointCoordinateSet = slider.getCoordinateSet();
 	jointCoordinateSet[0].setName("tx");
@@ -175,18 +179,18 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	model.addBody(&ball);
 
 	//Attach the muscle
-	const string &actuatorType = aMuscle.getConcreteClassName();
-	aMuscle.setName("muscle");
-	aMuscle.addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
-	aMuscle.addNewPathPoint("muscle-ball", ball, Vec3(-ballRadius,0,0));
+	const string &actuatorType = aMuscle->getConcreteClassName();
+	aMuscle->setName("muscle");
+	aMuscle->addNewPathPoint("muscle-box", ground, Vec3(anchorWidth/2,0,0));
+	aMuscle->addNewPathPoint("muscle-ball", ball, Vec3(-ballRadius,0,0));
 	
-	ActivationFiberLengthMuscle_Deprecated *aflMuscle = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(&aMuscle);
+	ActivationFiberLengthMuscle_Deprecated *aflMuscle = dynamic_cast<ActivationFiberLengthMuscle_Deprecated *>(aMuscle);
 	if(aflMuscle){
 		// Define the default states for the muscle that has activation and fiber-length states
 		aflMuscle->setDefaultActivation(act0);
 		aflMuscle->setDefaultFiberLength(aflMuscle->getOptimalFiberLength());
 	}else{
-		ActivationFiberLengthMuscle *aflMuscle2 = dynamic_cast<ActivationFiberLengthMuscle *>(&aMuscle);
+		ActivationFiberLengthMuscle *aflMuscle2 = dynamic_cast<ActivationFiberLengthMuscle *>(aMuscle);
 		if(aflMuscle2){
 			// Define the default states for the muscle that has activation and fiber-length states
 			aflMuscle2->setDefaultActivation(act0);
@@ -194,8 +198,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 		}
 	}
 
-
-	model.addForce(&aMuscle);
+	model.addForce(aMuscle);
 
 	// Create a prescribed controller that simply applies controls as function of time
 	PrescribedController muscleController;
@@ -209,7 +212,7 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	}
 
 	// Add an energy meter to measure the work done by the muscle actuator 
-	ActuatorWorkMeter workMeter(aMuscle, 0.0);
+	ActuatorWorkMeter workMeter(*aMuscle, 0.0);
 	model.addComponent(&workMeter);
 
 	// Add an energy meter to measure the work done by the joint
@@ -234,22 +237,26 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 
 	// Initialize the system and get the default state
 	SimTK::State& si = model.initSystem();
+	
+	CoordinateSet& modelCoordinateSet = model.updCoordinateSet();
 
 	// Define non-zero (defaults are 0) states for the free joint
-	CoordinateSet& modelCoordinateSet = model.updCoordinateSet();
-	modelCoordinateSet[0].setValue(si, startX); // set x-translation value
+	modelCoordinateSet[0].setValue(si, startX, true); // set x-translation value
 
 	// Check muscle is setup correctly 
 	const PathActuator &muscle = dynamic_cast<const PathActuator&>(model.updActuators().get("muscle"));
 	double length = muscle.getLength(si);
 	double trueLength = startX + xSinG - anchorWidth/2;
-	ASSERT_EQUAL(trueLength, length, 0.01*accuracy);
+	ASSERT_EQUAL(length/trueLength, 1.0, accuracy, __FILE__, __LINE__, 
+		"testMuscles: path failed to initialize to correct length." );
 
 	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
+
 	double Emuscle0 = workMeter.getWork(si);
 	//cout << "Muscle initial energy = " << Emuscle0 << endl;
 	double Esys0 = model.getMultibodySystem().calcEnergy(si);
 	Esys0 += (Emuscle0 + jointWorkMeter.getWork(si));
+	double PEsys0 = model.getMultibodySystem().calcPotentialEnergy(si);
 	//cout << "Total initial system energy = " << Esys0 << endl; 
 
 	// Create the integrator
@@ -272,17 +279,25 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 	// how long did it take?
 	double comp_time = (double)(clock()-start)/CLOCKS_PER_SEC;
 
-	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
-	cout << "Muscle work = " << workMeter.getWork(si) << endl;
-
-	double jointWork = jointWorkMeter.getWork(si);
-	double ESysMinusWork = model.getMultibodySystem().calcEnergy(si) - workMeter.getWork(si) - jointWork; 
-	cout << "Total system energy - work = " << ESysMinusWork << endl; 
-	ASSERT_EQUAL(Esys0, ESysMinusWork, 0.5*accuracy, __FILE__, __LINE__, "System energy with muscle not conserved.");
-
 	// Save the simulation results
 	Storage states(manager.getStateStorage());
 	states.print(actuatorType+"_states.sto");
+
+	model.getMultibodySystem().realize(si, SimTK::Stage::Acceleration);
+	double Esys = model.getMultibodySystem().calcEnergy(si);
+	double KEsys =  model.getMultibodySystem().calcKineticEnergy(si);
+	double xSpeed = modelCoordinateSet[0].getSpeedValue(si);
+	double KEsysCheck =  0.5*ballMass*xSpeed*xSpeed;
+	double PEsys =  model.getMultibodySystem().calcPotentialEnergy(si);
+
+	double muscleWork = workMeter.getWork(si);
+	cout << "Muscle work = " << muscleWork << endl;
+
+	double jointWork = jointWorkMeter.getWork(si);
+	double ESysMinusWork = Esys - workMeter.getWork(si) - jointWork; 
+	cout << "Esys - Work = " << ESysMinusWork << " :: Esys0 = " << Esys0 << endl; 
+	ASSERT_EQUAL(ESysMinusWork, Esys0, accuracy, __FILE__, __LINE__, 
+		"testMuscles: System energy-work not conserved.");
 	
 	//An analysis only writes to a dir that exists, so create here.
 	//IO::makeDir("testMuscleResults");
@@ -297,6 +312,46 @@ void simulateMuscle(PathActuator &aMuscle, const double &startX, const double &a
 //==========================================================================================================
 // Individudal muscle model (derived from Muscle) test cases can be added here
 //==========================================================================================================
+
+void testPathActuator()
+{
+	double x0 = 0;
+	double act0 = 0.2;
+	double loadX = 50;
+
+	PathActuator muscle;
+	muscle.setOptimalForce(maxIsometricForce);
+
+	Constant control(0.5);
+
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	// concentric
+	//simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
+	// eccentric 
+	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
+}
+
+
+void testRigidTendonMuscle()
+{
+	RigidTendonMuscle muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+
+	double x0 = 0;
+	double act0 = 0.2;
+
+	Constant control(0.5);
+
+	Sine motion(0.1, SimTK::Pi, 0);
+
+	// concentric
+	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
+	// eccentric 
+	simulateMuscle(muscle, x0, act0, &motion, &control, accuracy);
+}
+
+
+
 void testThelen2003Muscle_Deprecated()
 {
 	Thelen2003Muscle_Deprecated muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
@@ -368,36 +423,7 @@ void testDelp1990Muscle()
 	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
 }
 
-void testPathActuator()
-{
-	double x0 = 0;
-	double act0 = 0.2;
-	double loadX = 50;
 
-	PathActuator muscle;
-	muscle.setOptimalForce(maxIsometricForce);
-
-	Constant control(0.5);
-
-	Sine motion(0.1, SimTK::Pi, 0);
-
-	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
-}
-
-
-void testRigidTendonMuscle()
-{
-	RigidTendonMuscle muscle("muscle",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
-
-	double x0 = 0;
-	double act0 = 0.2;
-
-	Constant control(0.5);
-
-	Sine motion(0.1, SimTK::Pi, 0);
-
-	simulateMuscle(muscle, x0, act0, NULL, &control, accuracy);
-}
 
 void testThelen2003MuscleV1()
 {

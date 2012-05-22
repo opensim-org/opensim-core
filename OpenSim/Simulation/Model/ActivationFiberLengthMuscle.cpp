@@ -61,7 +61,7 @@ ActivationFiberLengthMuscle::ActivationFiberLengthMuscle()
 // Allocate and initialize properties.
 void ActivationFiberLengthMuscle::constructProperties()
 {
-	constructProperty_default_activation(1.0);
+	constructProperty_default_activation(0.05);
 	constructProperty_default_fiber_length(getOptimalFiberLength());
 }
 

@@ -110,7 +110,7 @@ void testAssembleModelWithConstraints(string modelFile)
 
 	double bw = -model.getSimbodyEngine().getMass()*(model.getGravity()[1]);
 
-	ASSERT_EQUAL(totalYforce, bw, 1.0);
+	ASSERT_EQUAL(totalYforce/bw, 1.0, 0.02);
 
 	//const CoordinateSet &coords = model.getCoordinateSet();
 	double q_error = 0;

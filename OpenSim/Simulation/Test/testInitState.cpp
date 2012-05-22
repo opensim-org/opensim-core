@@ -1,7 +1,7 @@
 // testInitState.cpp
-// Author:  Peter Eastman
+// Author:  Peter Eastman, Ajay Seth
 /*
-* Copyright (c) 2009, Stanford University. All rights reserved. 
+* Copyright (c) 2012, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -26,31 +26,15 @@
 */
 
 //==========================================================================================================
-//	testJoints builds OpenSim models using the OpenSim API and builds an equivalent
-//  Simbody system using the Simbody API for each test case. A test fails if the
-//  OpenSim and Simbody final states of the simulation are not equivelent (norm-err
-//  less than 10x integration error tolerance)
-//
-//	Tests Include:
-//      1. CustomJoint against Simbody built-in Pin and Universal joints
-//      2. CustomJoint versus Simbody FunctionBased with spline based functions
-//		3. WeldJoint versus Weld Mobilizer by welding bodies to those in test 1.
-//		4. Randomized order of bodies in the BodySet (in 3.) to test connectBodies()
-//		
-//		TODO random branching toplogy.
-//     Add tests here as new joint types are added to OpenSim
-//
+//	testInitState tests that a Model consistently generates the same default state
+//  from its initState method. It also tests that when the defualt values (properties)
+//  are updated (after a simulation) that the defaults match the values in the new state.
 //==========================================================================================================
-#include <iostream>
-#include <OpenSim/Common/IO.h>
-#include <OpenSim/Common/Exception.h>
 #include <OpenSim/Simulation/Manager/Manager.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>
 #include <OpenSim/Simulation/Model/Model.h>
 #include <OpenSim/Common/LoadOpenSimLibrary.h>
 #include <OpenSim/Auxiliary/auxiliaryTestFunctions.h>
-#include "SimTKsimbody.h"
-#include "SimTKmath.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -60,11 +44,16 @@ void testStates();
 int main()
 {
 	try {
-	    LoadOpenSimLibrary("osimActuators");
+		LoadOpenSimLibrary("osimActuators");
 		testStates();
 	}
 	catch (const Exception& e) {
-        e.print(cerr);
+        cout << "testInitState failed: ";
+		e.print(cout); 
+        return 1;
+    }
+	catch (const std::exception& e) {
+        cout << "testInitState failed: " << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
@@ -85,10 +74,17 @@ void testStates()
     controller->setControlSetFileName( "arm26_StaticOptimization_controls.xml" );
   
     model.addController( controller );
+	// original default state
     State state = model.initSystem();
-    Vector y1 = state.getY();
-    model.equilibrateMuscles(state);
 
+	// hold on to original default continuous state variables
+    Vector y1 = state.getY();
+	y1 = state.getY();
+	y1.dump("y1: Initial state:");
+
+	// update state to contain muscle states that yield muscle equilibirium
+    model.equilibrateMuscles(state);
+	state.getY().dump("y1: State after equilibrateMuscles:");
 	//==========================================================================================================
 	// Compute the force and torque at the specified times.
 
@@ -96,17 +92,39 @@ void testStates()
     Manager manager(model, integrator);
     manager.setInitialTime(0.0);
     manager.setFinalTime(0.05);
+
+	// update state after a short simulation forward in time
     manager.integrate(state);
+
+	// continuous state variables after simulation
     Vector y2 = state.getY();
+
+	// another default state from the system
     State state2 = model.initSystem();
+	// another version of default continuous state variables 
+	// should be unaffected by simulation of the system
     Vector y3 = state2.getY();
+	y3.dump("y3: Model reset to Initial state:");
+
+	// update the default (properties) values from the state
+	// after the simulation
     model.setDefaultsFromState(state);
+
+	// get a new default state that should reflect the states 
+	// after the simulation
     state2 = model.initSystem();
+	// get the default continuous state variables updated
+	// from the state after the simulation
     Vector y4 = state2.getY();
+	y2.dump("y2: State after integration:");
+	y4.dump("y4: Default State after update:");
+
     for (int i = 0; i < y1.size(); i++) 
     {
-        ASSERT_EQUAL(y1[i], y3[i], 1e-5);
-        ASSERT_EQUAL(y2[i], y4[i], 1e-5);
+		cout << i <<" : y1[i] = " << y1[i] << " :: y3[i] = " << y3[i] << endl;
+        ASSERT_EQUAL(y1[i], y3[i], 1e-5,__FILE__, __LINE__, "Model failed to maintain default state after simulation.");
+		cout << i <<" : y2[i] = " << y2[i] << " :: y4[i] = " << y4[i] << endl;
+        ASSERT_EQUAL(y2[i], y4[i], 1e-5,__FILE__, __LINE__, "Model failed to properly update default state after simulation.");
     }
     ASSERT(max(abs(y1-y2)) > 1e-4);
 }

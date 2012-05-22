@@ -441,11 +441,28 @@ SimTK::State& Model::initSystem()
 
 void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 {
-	// Don't bother assembling if the model has no coupled constraints
-	// Coordinates have locks as prescribed motion constraints but do not need assemble to be resolved
+	
+	bool constrained = false;
+	const CoordinateSet &coords = getCoordinateSet();
+	for(int i=0; i<coords.getSize(); ++i){
+		constrained = constrained || coords[i].isConstrained(s);
+	}
+
+	// Don't bother assembling if the model has no constraints
 	if(_constraintSet.getSize()< 1){
 		// just realize the current state to position
 		getMultibodySystem().realize(s, Stage::Position);
+
+		// if a coordinate is locked or prescribed, then project will suffice
+		if(constrained){
+			// correct position constraint violations due to prescribed motion
+			getMultibodySystem().projectQ(s, 1e-10);
+
+			// Have a new working configuration so should realize to velocity
+			getMultibodySystem().realize(s, Stage::Velocity);
+			// correct velocity constraint violations due to prescribed motion
+			getMultibodySystem().projectU(s, 1e-10);
+		}
 		return;
 	}
 
@@ -488,8 +505,9 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 		}
 	}
 
-	// Have a new working confirguration so should realize to atleast position
-	getMultibodySystem().realize(s, Stage::Position);
+	// Have a new working configuration so should realize to velocity
+	getMultibodySystem().realize(s, Stage::Velocity);
+
 }
 
 void Model::invalidateSystem()

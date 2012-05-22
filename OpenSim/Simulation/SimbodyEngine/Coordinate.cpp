@@ -461,7 +461,7 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 	// the last setValue() call in a string of them (e.g., to set a model pose), in which case you only try to
 	// enforce constraints during the last call.
 	if (enforceConstraints) {
-		if (_model->getConstraintSet().getSize()>0){
+		if (_model->getConstraintSet().getSize()>0 || isConstrained(s)){
 			// if this coordinate is setup to be dependent on other coordinates
 			// its value should be dictated by the other coordinates and not its present value
 			double weight = isDependent(s) ? 0.0  : 10;
