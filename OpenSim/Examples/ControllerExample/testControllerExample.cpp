@@ -41,21 +41,17 @@ int main()
 {
 	try {
 		Storage result1("tugOfWar_controls.sto"), standard1("std_tugOfWar_controls.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.1, 24), __FILE__, __LINE__, "tugOfWar controls failed");
-		cout << "tugOfWar controls passed\n";
+		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.01, 24), __FILE__, __LINE__, "tugOfWar controls failed");
+		cout << "\ntugOfWar controls passed\n" << endl;
 
 		Storage result2("tugOfWar_states.sto"), standard2("std_tugOfWar_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(0.1, 24), __FILE__, __LINE__, "tugOfWar states failed");
-		cout << "tugOfWar states passed\n";
-
-		Storage result3("tugOfWar_states_degrees.mot"), standard3("std_tugOfWar_states_degrees.mot");
-		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(2., 24), __FILE__, __LINE__, "tugOfWar states degrees failed");
-		cout << "tugOfWar states degrees passed\n";
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(0.01, 24), __FILE__, __LINE__, "tugOfWar states failed");
+		cout << "\ntugOfWar states passed\n" << endl;
 	}
-	catch (const Exception& e) {
-        e.print(cerr);
+	catch (const std::exception& e) {
+        cout << e.what() << endl;
         return 1;
     }
-    cout << "Done" << endl;
+    cout << "\nDone" << endl;
     return 0;
 }
