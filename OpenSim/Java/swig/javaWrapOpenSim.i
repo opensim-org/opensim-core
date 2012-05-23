@@ -462,6 +462,18 @@ static bool trace=false;
 		LoadOpenSimLibrary(libraryName);
 	}
 }
+
+%extend OpenSim::Object {
+	static OpenSim::Array<std::string> getFunctionClassNames() {
+		  OpenSim::Array<std::string> availableClassNames;
+		  ArrayPtrs<OpenSim::Function> rArray;
+		  Object::getRegisteredObjectsOfGivenType<OpenSim::Function>(rArray);
+		  for (int i=0;i<rArray.size(); i++)
+			availableClassNames.append(rArray[i]->getConcreteClassName());
+		  
+		  return availableClassNames;
+	}
+}
 /* rest of header files to be wrapped */
 %include <OpenSim/version.h>
 // osimCommon Library
