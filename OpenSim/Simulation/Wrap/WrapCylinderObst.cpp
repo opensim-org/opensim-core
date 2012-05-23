@@ -136,6 +136,7 @@ void WrapCylinderObst::setup(Model& aModel, OpenSim::Body& aBody)
 		throw Exception(errorMessage);
 	}
 
+    _displayer.freeGeometry();
 	AnalyticCylinder* cyl = new AnalyticCylinder(_radius, _length);
 	setGeometryQuadrants(cyl);
 	_displayer.addGeometry(cyl);

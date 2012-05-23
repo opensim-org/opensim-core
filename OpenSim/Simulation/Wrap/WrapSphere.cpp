@@ -129,6 +129,7 @@ void WrapSphere::setup(Model& aModel, OpenSim::Body& aBody)
 		throw Exception(errorMessage);
 	}
 
+    _displayer.freeGeometry();
 	AnalyticSphere* sphere = new AnalyticSphere(_radius);
 	setGeometryQuadrants(sphere);
 	_displayer.addGeometry(sphere);

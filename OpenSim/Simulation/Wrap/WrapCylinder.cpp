@@ -169,7 +169,7 @@ void WrapCylinder::setup(Model& aModel, Body& aBody)
 		string errorMessage = "Error: radius for WrapCylinder " + getName() + " was either not specified, or is negative.";
 		throw Exception(errorMessage);
 	}
-
+    _displayer.freeGeometry();
 	AnalyticCylinder* cyl = new AnalyticCylinder(_radius, _length);
 	setGeometryQuadrants(cyl);
 	_displayer.addGeometry(cyl);
