@@ -49,7 +49,7 @@ FILE(GLOB TEST_FILES *.osim *.obj *.vtp *.xml *.sto *.mot)
 #
 FOREACH (dataFile ${TEST_FILES})
   ADD_CUSTOM_COMMAND(
-     TARGET testOpenSimAPI
+     TARGET copyTestFiles
      COMMAND ${CMAKE_COMMAND}
      ARGS -E copy
      ${dataFile}
@@ -57,7 +57,6 @@ FOREACH (dataFile ${TEST_FILES})
  
 ENDFOREACH (dataFile) 
 
-INSTALL_TARGETS(/bin testOpenSimAPI)
 ENDIF(BUILD_TESTING)
 
 SUBDIRS(Wrapping)
