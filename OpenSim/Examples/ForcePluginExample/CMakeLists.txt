@@ -47,7 +47,7 @@ FILE(GLOB INCLUDE_FILES *.h)
 
 SET(EXPORT_MACRO OSIM${UKIT}_EXPORTS)
 
-SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.4.0/" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} CACHE PATH "Top-level directory of OpenSim install")
 
 SET(PLUGIN_NAME "osimCoupledBushingForcePlugin" CACHE STRING "Name of shared library to create")
 

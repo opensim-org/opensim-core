@@ -65,7 +65,7 @@ PROJECT (ControllerExample)
 
 SET(SOURCE_FILES ControllerExample.cpp) 
 
-SET(OPENSIM_INSTALL_DIR "C:/OpenSim2.4.0" CACHE PATH "Top-level directory of OpenSim install")
+SET(OPENSIM_INSTALL_DIR $ENV{OPENSIM_HOME} CACHE PATH "Top-level directory of OpenSim install")
 
 SET(CMAKE_CONFIGURATION_TYPES "RelWithDebInfo;Release"
       CACHE STRING "Semicolon separated list of supported configuration types, only supports Debug, Release, MinSizeRel, and RelWithDebInfo, anything else will be ignored." FORCE )
