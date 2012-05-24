@@ -52,11 +52,16 @@ int main()
     std::clock_t startTime = std::clock();
 
 	try {
+		///////////////////////////////////////////////
+		// DEFINE THE SIMULATION START AND END TIMES //
+		///////////////////////////////////////////////
+		// Define the initial and final simulation times
+		double initialTime = 0.0;
+		double finalTime = 1.0;
 
 		///////////////////////////////////////////
 		// DEFINE BODIES AND JOINTS OF THE MODEL //
 		///////////////////////////////////////////
-
 		// Create an OpenSim model and set its name
 		Model osimModel;
 		osimModel.setName("tugOfWar");
@@ -82,12 +87,14 @@ int main()
 		OpenSim::Body *block = new OpenSim::Body("block", blockMass, blockMassCenter, blockInertia);
 
 		// Add display geometry to the block to visualize in the GUI
-		block->addDisplayGeometry("blockRemesh192.obj");
+		block->addDisplayGeometry("block.vtp");
 
 		// FREE JOINT
 
 		// Create a new free joint with 6 degrees-of-freedom (coordinates) between the block and ground bodies
-		Vec3 locationInParent(0, blockSideLength/2, 0), orientationInParent(0), locationInBody(0), orientationInBody(0);
+		double halfLength = blockSideLength/2.0;
+		Vec3 locationInParent(0, halfLength, 0), orientationInParent(0);
+		Vec3 locationInBody(0, halfLength, 0), orientationInBody(0);
 		FreeJoint *blockToGround = new FreeJoint("blockToGround", ground, locationInParent, orientationInParent, *block, locationInBody, orientationInBody);
 		
 		// Get a reference to the coordinate set (6 degrees-of-freedom) between the block and ground bodies
@@ -106,110 +113,70 @@ int main()
 		// Add the block body to the model
 		osimModel.addBody(block);
 
-		///////////////////////////////////////////////
-		// DEFINE THE SIMULATION START AND END TIMES //
-		///////////////////////////////////////////////
-
-		// Define the initial and final simulation times
-		double initialTime = 0.0;
-		double finalTime = 5.0;
 
 		///////////////////////////////////////
 		// DEFINE FORCES ACTING ON THE MODEL //
 		///////////////////////////////////////
-
 		// MUSCLE FORCES
 
 		// Create two new muscles
-		double maxIsometricForce1 = 4000.0, maxIsometricForce2 = 2000.0, optimalFiberLength = 0.2, tendonSlackLength = 0.2;
-		double pennationAngle = 0.0, activation = 0.0001, deactivation = 1.0, fatigueFactor = 0.0, recoveryFactor = 0.0;
+		double maxIsometricForce= 1000.0, optimalFiberLength = 0.2, tendonSlackLength = 0.2;
+		double pennationAngle = 0.0, activationConstant = 0.015, deactivationConstant = 0.05, fatigueFactor = 0.30, recoveryFactor = 0.20;
 
 		// muscle 1 (model with fatigue)
-		LiuThelen2003Muscle* muscle1 = new LiuThelen2003Muscle("Liu",maxIsometricForce1,optimalFiberLength,tendonSlackLength,pennationAngle, fatigueFactor, recoveryFactor);
-		muscle1->setActivationTimeConstant(activation);
-		muscle1->setDeactivationTimeConstant(deactivation);
+		LiuThelen2003Muscle* muscle1 = new LiuThelen2003Muscle("Liu",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle, fatigueFactor, recoveryFactor);
+		muscle1->setActivationTimeConstant(activationConstant);
+		muscle1->setDeactivationTimeConstant(deactivationConstant);
 		// muscle 2 (model without fatigue)
-		Thelen2003Muscle* muscle2 = new Thelen2003Muscle("Thelen",maxIsometricForce2,optimalFiberLength,tendonSlackLength,pennationAngle);
-		muscle2->setActivationTimeConstant(activation);
-		muscle2->setDeactivationTimeConstant(deactivation);
+		Thelen2003Muscle* muscle2 = new Thelen2003Muscle("Thelen",maxIsometricForce,optimalFiberLength,tendonSlackLength,pennationAngle);
+		muscle2->setActivationTimeConstant(activationConstant);
+		muscle2->setDeactivationTimeConstant(deactivationConstant);
 
 		// Define the path of the muscles
-		muscle1->addNewPathPoint("Liu-point1", ground, SimTK::Vec3(0.0,0.05,-0.35));
-		muscle1->addNewPathPoint("Liu-point2", *block, SimTK::Vec3(0.0,0.0,-0.05));
+		muscle1->addNewPathPoint("Liu-point1", ground, SimTK::Vec3(0.0, halfLength, -0.35));
+		muscle1->addNewPathPoint("Liu-point2", *block, SimTK::Vec3(0.0, halfLength, -halfLength));
 
-		muscle2->addNewPathPoint("Thelen-point1", ground, SimTK::Vec3(0.0,0.05,0.35));
-		muscle2->addNewPathPoint("Thelen-point2", *block, SimTK::Vec3(0.0,0.0,0.05));
+		muscle2->addNewPathPoint("Thelen-point1", ground, SimTK::Vec3(0.0, halfLength, 0.35));
+		muscle2->addNewPathPoint("Thelen-point2", *block, SimTK::Vec3(0.0, halfLength, halfLength));
+
+		// Define the default states for the two muscles
+		// Activation
+		muscle1->setDefaultActivation(0.01);
+		muscle2->setDefaultActivation(0.01);
+		// Fiber length
+		muscle2->setDefaultFiberLength(0.1);
+		muscle1->setDefaultFiberLength(0.1);
 
 		// Add the two muscles (as forces) to the model
 		osimModel.addForce(muscle1);
 		osimModel.addForce(muscle2);
 
-		// CONTACT FORCE
-
-		// Create new contact geometry for the floor and a cube
-		// Create new floor contact halfspace
-		ContactHalfSpace *floor = new ContactHalfSpace(SimTK::Vec3(0), SimTK::Vec3(0, 0, -0.5*SimTK_PI), ground);
-		floor->setName("floor");
-		// Create new cube contact mesh
-		OpenSim::ContactMesh *cube = new OpenSim::ContactMesh("blockRemesh192.obj", SimTK::Vec3(0), SimTK::Vec3(0), *block);
-		cube->setName("cube");
-
-		// Add contact geometry to the model
-		osimModel.addContactGeometry(floor);
-		osimModel.addContactGeometry(cube);
-
-		// Create a new elastic foundation force between the floor and cube.
-		OpenSim::ElasticFoundationForce *contactForce = new OpenSim::ElasticFoundationForce();
-		OpenSim::ElasticFoundationForce::ContactParameters contactParams;
-		contactParams.updGeometry().appendValue("cube");
-		contactParams.updGeometry().appendValue("floor");
-		contactParams.setStiffness(1.0e8);
-		contactParams.setDissipation(0.01);
-		contactParams.setDynamicFriction(0.25);
-		contactForce->updContactParametersSet().append(contactParams);
-		contactForce->setName("contactForce");
-
-		// Add the new elastic foundation force to the model
-		osimModel.addForce(contactForce);
-
-		// GRAVITY
-
-		// Define the acceleration due to gravity
-		osimModel.setGravity(Vec3(0,-9.80665,0));
-
 		///////////////////////////////////
 		// DEFINE CONTROLS FOR THE MODEL //
 		///////////////////////////////////
+		// Create a prescribed controller that simply supplies controls as a function of time.
+		// For muscles, controls are normalized motor-neuron excitations
+		PrescribedController *muscleController = new PrescribedController();
+		muscleController->setActuators(osimModel.updActuators());
+		// Define linear "ramp" for the control values for the two muscles
+		Array<double> slopeAndIntercept(0.0, 2);  // array of 2 doubles, with 0.0 as default
+	
+		// muscle control has slope of 1.0 if simulation period is 1s and intercept of 0.
+		slopeAndIntercept[0] = 1.0/(finalTime-initialTime);  
 
-		// Define the initial and final control values for the two muscles
-		double initialControl[2] = {0.0, 0.0};
-		double finalControl[2] = {1.0, 1.0};
-		// Create two new linear control signals
-		ControlLinear *control1 = new ControlLinear();
-		ControlLinear *control2 = new ControlLinear();
-		control1->setName("Liu");
-		control2->setName("Thelen");
-		// Create a new control set and add the control signals to the set
-		ControlSet *muscleControls = new ControlSet();
-		muscleControls->append(control1);
-		muscleControls->append(control2);
-		// Specify control values at the initial and final times
-		muscleControls->setControlValues(initialTime, initialControl);
-		muscleControls->setControlValues(finalTime, finalControl);
-		// Create a new control set controller that applies controls from a ControlSet
-		ControlSetController *muscleController = new ControlSetController();
-		muscleController->setControlSet(muscleControls);
+		// Set the prescribed muscle controller to use the same muscle control function for each muscle
+		muscleController->prescribeControlForActuator("Liu", new LinearFunction(slopeAndIntercept));
+		muscleController->prescribeControlForActuator("Thelen", new LinearFunction(slopeAndIntercept));
 
-		// Add the control set controller to the model
+		// Add the muscle controller to the model
 		osimModel.addController(muscleController);
 
-		// Define the initial states for the two muscles
-		// Activation
-		muscle1->setDefaultActivation(initialControl[0]);
-		muscle2->setDefaultActivation(initialControl[1]);
-		// Fiber length
-		muscle2->setDefaultFiberLength(0.1);
-		muscle1->setDefaultFiberLength(0.1);
+		// Obtain the default acceleration due to gravity
+		Vec3 gravity = osimModel.getGravity();
+
+		// Turn on the visualizer to view the simulation run live.
+		osimModel.setUseVisualizer(false);
+
 		//////////////////////////
 		// PERFORM A SIMULATION //
 		//////////////////////////
@@ -217,21 +184,18 @@ int main()
 		// Initialize the system and get the state
 		SimTK::State& si = osimModel.initSystem();
 
-		// Lock the rotational degrees of freedom so the block doesn't twist
+		// Init coords to 0 and lock the rotational degrees of freedom so the block doesn't twist
 		CoordinateSet& coordinates = osimModel.updCoordinateSet();
-		coordinates[0].setValue(si, 0, true);
-		coordinates[1].setValue(si, 0, true);
-		coordinates[2].setValue(si, 0, true);
-		coordinates[3].setValue(si, 0, true);
-		coordinates[4].setValue(si, 0, true);
-		coordinates[5].setValue(si, 0, true);
+		coordinates[0].setValue(si, 0);
+		coordinates[1].setValue(si, 0);
+		coordinates[2].setValue(si, 0);
+		coordinates[3].setValue(si, 0);
+		coordinates[4].setValue(si, 0); 
+		coordinates[5].setValue(si, 0);
 		coordinates[0].setLocked(si, true);
 		coordinates[1].setLocked(si, true);
 		coordinates[2].setLocked(si, true);
-
-		// Initialize the muscle state
-		//muscle1->initState(si);
-		//muscle2->initState(si);
+		coordinates[4].setLocked(si, true); // don't let the block fall through or rise off the ground
 
 		// Compute initial conditions for muscles
 		osimModel.equilibrateMuscles(si);
@@ -240,7 +204,7 @@ int main()
 		// Create the integrator
 		SimTK::RungeKuttaMersonIntegrator integrator(osimModel.getMultibodySystem());
 		integrator.setAccuracy(1.0e-4);
-
+		
 		// Create the force reporter
 		ForceReporter* reporter = new ForceReporter(&osimModel);
 		osimModel.updAnalysisSet().append(reporter);
@@ -250,15 +214,10 @@ int main()
 		// Print out details of the model
 		osimModel.printDetailedInfo(si, std::cout);
 
-		// Print out the initial position and velocity states
-		si.getQ().dump("Initial q's"); // block positions
-		si.getU().dump("Initial u's"); // block velocities
-		std::cout << "Initial time: " << si.getTime() << std::endl;
-
 		// Integrate from initial time to final time
 		manager.setInitialTime(initialTime);
 		manager.setFinalTime(finalTime);
-		std::cout<<"\n\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
+		std::cout<<"\nIntegrating from "<<initialTime<<" to "<<finalTime<<std::endl;
 		manager.integrate(si);
 
 		//////////////////////////////
@@ -267,11 +226,8 @@ int main()
 
 		// Save the simulation results
 		// Save the states
-		Storage statesDegrees(manager.getStateStorage());
-		statesDegrees.print("tugOfWar_fatigue_states.sto");
-		osimModel.updSimbodyEngine().convertRadiansToDegrees(statesDegrees);
-		statesDegrees.setWriteSIMMHeader(true);
-		statesDegrees.print("tugOfWar_fatigue_states_degrees.mot");
+		manager.getStateStorage().print("tugOfWar_fatigue_states.sto");
+
 		// Save the forces
 		reporter->getForceStorage().print("tugOfWar_forces.mot");
 
@@ -279,12 +235,12 @@ int main()
 		osimModel.print("tugOfWar_fatigue_model.osim");
 
 	}
-    catch (OpenSim::Exception ex)
+    catch (const OpenSim::Exception &ex)
     {
         std::cout << ex.getMessage() << std::endl;
         return 1;
     }
-    catch (std::exception ex)
+    catch (const std::exception &ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;

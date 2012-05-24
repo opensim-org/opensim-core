@@ -40,15 +40,13 @@ int main()
 {
 	try {
 		Storage result1("tugOfWar_fatigue_states.sto"), standard1("std_tugOfWar_fatigue_states.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.5, 24), __FILE__, __LINE__, "tugOfWar fatigue states failed");
+		int ncols = result1.getColumnLabels().getSize();
+		CHECK_STORAGE_AGAINST_STANDARD(result1, standard1, Array<double>(0.01, ncols), __FILE__, __LINE__, "tugOfWar fatigue states failed");
 		cout << "tugOfWar fatigue states passed\n";
 
-		Storage result2("tugOfWar_fatigue_states_degrees.mot"), standard2("std_tugOfWar_fatigue_states_degrees.mot");
-		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1, 24), __FILE__, __LINE__, "tugOfWar fatigue states degrees failed");
-		cout << "tugOfWar fatigue states degrees passed\n";
-
-		Storage result3("tugOfWar_forces.mot"), standard3("std_tugOfWar_forces.mot");
-		CHECK_STORAGE_AGAINST_STANDARD(result3, standard3, Array<double>(10., 24), __FILE__, __LINE__, "tugOfWar forces failed");
+		Storage result2("tugOfWar_forces.mot"), standard2("std_tugOfWar_forces.mot");
+		ncols = result2.getColumnLabels().getSize();
+		CHECK_STORAGE_AGAINST_STANDARD(result2, standard2, Array<double>(1.0, ncols), __FILE__, __LINE__, "tugOfWar forces failed");
 		cout << "tugOfWar forces passed\n";
 	}
 	catch (const Exception& e) {
