@@ -99,7 +99,7 @@ int main()
     cout << "Prop after is " << dProp.toString() << endl;
     context->recreateSystemAfterSystemExistsKeepStage();
     AbstractProperty& dProp2 = thelenMsl->updPropertyByName("ignore_tendon_compliance");
-    cout << "Prop after create system" << dProp2.toString() << endl;
+    cout << "Prop after create system is " << dProp2.toString() << endl;
     bool after = PropertyHelper::getValueBool(dProp);
     assert(after);
 	context->updateDisplayer(*dTRIlong);
