@@ -80,7 +80,8 @@ public:
 	*/
 	CoordinateReference();
 	CoordinateReference(const std::string name, Function &ReferenceFunction);
-	CoordinateReference& operator=(const CoordinateReference &aRef);
+	CoordinateReference(const CoordinateReference& source);
+	CoordinateReference& operator=(const CoordinateReference& source);
 	virtual ~CoordinateReference() {}
 
 	//--------------------------------------------------------------------------
@@ -116,6 +117,8 @@ public:
 	{
 		_coordinateValueFunction = function.clone();
 	}
+private:
+    void copyData(const CoordinateReference& source);
 
 //=============================================================================
 };	// END of class CoordinateReference

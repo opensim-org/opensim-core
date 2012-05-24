@@ -57,13 +57,29 @@ CoordinateReference::CoordinateReference() : Reference_<double>(),
 	_names[0] = getName();
 }
 
-
-CoordinateReference& CoordinateReference::operator=(const CoordinateReference &aRef)
+// Copy constructor
+CoordinateReference::CoordinateReference(const CoordinateReference& source)
+:   Super(source), 
+    _coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
+	_defaultWeight(_defaultWeightProp.getValueDbl()) 
 {
-	Reference_<double>::operator=(aRef);
-	_coordinateValueFunction = aRef._coordinateValueFunction;
-	_defaultWeight = aRef._defaultWeight;
-	return(*this);
+    copyData(source);
+}
+
+
+CoordinateReference& CoordinateReference::operator=(const CoordinateReference& source)
+{
+    if (&source != this) {
+	    Super::operator=(source);
+        copyData(source);
+    }
+	return *this;
+};
+
+void CoordinateReference::copyData(const CoordinateReference& source)
+{
+	_coordinateValueFunction = source._coordinateValueFunction->clone();
+	_defaultWeight = source._defaultWeight;
 };
 
 
