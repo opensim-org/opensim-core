@@ -90,7 +90,7 @@ public:
 	//--------------------------------------------------------------------------
 
 	/** Construct an Assembly solver with the coordinate references as the goal
-	    of the assembly and (optional)constraint weight. Defual is infitinet
+	    of the assembly and (optional)constraint weight. Default is infinity
 		constraint weighting (i.e. rigidly enforced) during assembly. */
 	AssemblySolver(const Model &model, 
 				   SimTK::Array_<CoordinateReference> &coordinateReferences,

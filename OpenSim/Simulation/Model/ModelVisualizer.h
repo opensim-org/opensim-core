@@ -101,11 +101,23 @@ public:
 
     /** Given the name of a geometry file, this method will attempt to
     find it in a series of locations using the same algorithm as is done
-    internally by the %ModelVisualizer. The absolute path names that were
-    tried are returned in \a attempts. If the file is found the method returns
-    \c true and attempts.back() is the absolute path name. The search rule
-    is as follows:
-      - If \c geoFile is an absolute pathname no search is done.
+    internally by the %ModelVisualizer. 
+    
+    @param[in]      geoFile 
+        Name of file to look for; can be absolute or relative path name or just
+        a file name and the extension must be supplied.
+    @param[out]     isAbsolute
+        This output parameter is set to true on return if the supplied 
+        \a geoFile was an absolute path name; in that case no searching was
+        done.
+    @param[out]     attempts
+        On return, this is a list of the absolute path names that were tried.
+        If \a geoFile was found, attempts.back() (the last entry) is the
+        absolute path name of \a geoFile.
+    @returns \c true if \a geoFile was located and is readable.
+        
+    The search rule is as follows:
+      - If \a geoFile is an absolute pathname no search is done.
       - Otherwise, define modelDir as the directory from which the current
         Model file was read in, if any, otherwise the current directory.
       - Try modelDir/geoFile, then modelDir/Geometry/geoFile.

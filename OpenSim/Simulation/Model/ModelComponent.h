@@ -182,7 +182,7 @@ public:
  * change the modeled dynamics of the component. ModelComponent provides services
  * that enable developers of components to define additional ModelingOptions.
  *
- * Often a component requires input from an outside source (precompuetd data from 
+ * Often a component requires input from an outside source (precomputed data from 
  * a file, another program, or interaction from a user) in which case these
  * variables do not have dynamics (differential eqns.) known to the component, but 
  * are necessary to describe the dynamical "state" of the system. An example, is
@@ -196,7 +196,7 @@ public:
  * provides services to enable developers of components to define and access its 
  * DiscreteVariables.
  *
- * Fast and efficient simulations also require compututationally expensive calculations
+ * Fast and efficient simulations also require computationally expensive calculations
  * to be performed only when necessary. Often the result of a expensive calculation can
  * be reused many times over, while the variables it is dependent on remain fixed. The
  * concept of holding onto these values is called caching and the variables that hold
@@ -229,7 +229,7 @@ public:
  * The ModelComponent interface is automatically invoked by the System and its realizations.
  * Component users and most developers need not concern themselves with
  * \c Topology, \c %Model or \c Instance stages. That interaction is managed by ModelComponent 
- * when component creators implement createSystem() and use the services provded ModelComponent.
+ * when component creators implement createSystem() and use the services provided ModelComponent.
  * Component creators do need to determine and specify stage dependencies for Discrete  
  * and CacheVariables that they add to their components. For example, the throttle 
  * controller reads its value from user input and it is valid for all calculations as
@@ -565,7 +565,7 @@ public:
 protected:
 
 	/** @name                   ModelComponent Interface
-	 * The interface ensures that deserialization, resolution of inter-connections and dependicies,
+	 * The interface ensures that deserialization, resolution of inter-connections and dependencies,
 	 * are performed systematically and prior to system creation. createSystem() is responsible
 	 * These methods are virtual and must be implemented by subclasses of ModelComponents.
 	*/ 
@@ -598,7 +598,7 @@ protected:
 
     /**
      * This is called after a SimTK::System and State have been created for the Model.  It is
-     * implementd to set initial values of state variables from defaults (typical) or by  
+     * implemented to set initial values of state variables from defaults (typical) or by  
      * any calculation that is not dependent on the state (i.e. function of property values).
      * @param state    the State to initialize
      */
