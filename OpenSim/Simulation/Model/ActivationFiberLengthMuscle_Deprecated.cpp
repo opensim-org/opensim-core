@@ -117,8 +117,6 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 {
     Muscle::initState(s);
 
-	ActivationFiberLengthMuscle_Deprecated* mutableThis = const_cast<ActivationFiberLengthMuscle_Deprecated *>(this);
-
 	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);
 }
