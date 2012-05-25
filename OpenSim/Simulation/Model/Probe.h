@@ -102,7 +102,7 @@ public:
     /** Returns the probe values after being operated on. */
     Array<double> getRecordValues(const SimTK::State& state) const;
 
-
+#ifndef SWIG
     // This is the Probe interface that must be implemented by concrete Probe
     // objects.
 
@@ -113,7 +113,7 @@ public:
     @param  state   System state from which value is computed.  
     @return         The SimTK::Vector of probe values. **/
     virtual double computeProbeValue(const SimTK::State& state) const=0;
-
+#endif
 protected:
     // ModelComponent interface.
     /** Concrete probes may override; be sure to invoke Super::setup()

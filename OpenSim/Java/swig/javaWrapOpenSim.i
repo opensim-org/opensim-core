@@ -47,6 +47,8 @@
 #include <OpenSim/Simulation/Model/ExternalForce.h>
 #include <OpenSim/Simulation/Model/ContactGeometry.h>
 #include <OpenSim/Simulation/Model/ContactGeometrySet.h>
+#include <OpenSim/Simulation/Model/Probe.h>
+#include <OpenSim/Simulation/Model/ProbeSet.h>
 #include <OpenSim/Simulation/Model/ModelVisualizer.h>
 
 #include <OpenSim/Simulation/Model/Actuator.h>
@@ -612,6 +614,12 @@ static bool trace=false;
 %template(SetConstraints) OpenSim::Set<OpenSim::Constraint>;
 %template(ModelComponentSetConstraints) OpenSim::ModelComponentSet<OpenSim::Constraint>;
 %include <OpenSim/Simulation/Model/ConstraintSet.h>
+
+%include <OpenSim/Simulation/Model/Probe.h>
+%template(SetProbes) OpenSim::Set<OpenSim::Probe>;
+%template(ModelComponentSetProbes) OpenSim::ModelComponentSet<OpenSim::Probe>;
+%include <OpenSim/Simulation/Model/ProbeSet.h>
+
 %include <OpenSim/Simulation/Model/ModelVisualizer.h>
 %include <OpenSim/Simulation/Model/Model.h>
 
