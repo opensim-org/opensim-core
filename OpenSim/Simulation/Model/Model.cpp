@@ -387,10 +387,11 @@ void Model::setupProperties()
 }
 
 //------------------------------------------------------------------------------
-//                                  INIT SYSTEM
+//                                BUILD SYSTEM
 //------------------------------------------------------------------------------
-SimTK::State& Model::initSystem()
-{
+// Perform some final checks on the Model, wire up all its components, and then
+// build a computational System for it.
+void Model::buildSystem() {
 	// Some validation
 	validateMassProperties();
 	if (getValidationLog().size()>0)
@@ -402,40 +403,67 @@ SimTK::State& Model::initSystem()
 	_stateVariableSystemIndices.setSize(0);
 	tidyProbeNames();
 
+    // Finish building the Model.
 	setup();
+    updControllerSet().setActuators(updActuators());
+
+    // Create the computational System representing this Model.
 	createSystem();
 
-    // Create a Visualizer for this Model if one has been requested. Doesn't
-    // initialize geometry yet.
-    if (getUseVisualizer()) {
+    // Create a Visualizer for this Model if one has been requested. This adds
+    // necessary elements to the System. Doesn't initialize geometry yet.
+    if (getUseVisualizer())
         _modelViz = new ModelVisualizer(*this);
-    }
 
+}
+
+
+//------------------------------------------------------------------------------
+//                            INITIALIZE STATE
+//------------------------------------------------------------------------------
+// Requires that buildSystem() has already been called.
+SimTK::State& Model::initializeState() {
+    if (_system == NULL) 
+        Exception("Model::initializeState(): call buildSystem() first.");
+
+    // This tells Simbody to finalize the System.
     getMultibodySystem().realizeTopology();
-    SimTK::State& s = updMultibodySystem().updDefaultState();
+    // Get a writable reference to the default state that is stored inside
+    // the System. TODO: not sure it is a good idea to modify the default
+    // State (sherm 5/21/2012).
+    SimTK::State& defaultState = updMultibodySystem().updDefaultState();
 
-    _matter->setUseEulerAngles(s, true);
-	getMultibodySystem().realizeModel(s);
+    // Set the Simbody modeling option that tells any joints that use 
+    // quaternions to use Euler angles instead.
+    _matter->setUseEulerAngles(defaultState, true);
+    // Process the modified modeling option.
+	getMultibodySystem().realizeModel(defaultState);
 
-    initState(s);
-    getMultibodySystem().realize(s, Stage::Instance);
+    // Invoke the ModelComponent interface for initializing the state.
+    initState(defaultState);
 
-    // We can now collect up all the fixed geometry.
+    // Realize instance variables that may have been set above. This 
+    // means floating point parameters such as mass properties and geometry
+    // placements are frozen.
+    getMultibodySystem().realize(defaultState, Stage::Instance);
+
+    // We can now collect up all the fixed geometry, which can depend only
+    // on instance variable, not on configuration.
     if (getUseVisualizer()) {
-        _modelViz->collectFixedGeometry(s);
+        _modelViz->collectFixedGeometry(defaultState);
     }
 
-    getMultibodySystem().realize(s, Stage::Position);
+    // Realize the initial configuration in preparation for assembly. This
+    // initial configuration does not necessarily satisfy constraints.
+    getMultibodySystem().realize(defaultState, Stage::Position);
 
-    updControllerSet().setActuators(updActuators());
-    //updControllerSet().constructStorage();
 
-	createAssemblySolver(s);
+	createAssemblySolver(defaultState);
 
 	// do the assembly
-	assemble(s);
+	assemble(defaultState);
 
-	return(s);
+	return defaultState;
 }
 
 
@@ -1420,13 +1448,17 @@ void Model::applyDefaultConfiguration(SimTK::State& s)
  */
 void Model::createAssemblySolver(const SimTK::State& s)
 {
-	SimTK::Array_<CoordinateReference> &coordsToTrack = *new SimTK::Array_<CoordinateReference>();
-	for(int i=0; i<getNumCoordinates(); i++){
-		// iff a coordinate is dependent on other coordinates for its value, do not give it a reference/goal
+    // Allocate on heap so AssemblySolver can take ownership.
+	SimTK::Array_<CoordinateReference>* coordsToTrack = 
+        new SimTK::Array_<CoordinateReference>();
+
+	for(int i=0; i<getNumCoordinates(); ++i){
+		// Iff a coordinate is dependent on other coordinates for its value, 
+        // do not give it a reference/goal.
 		if(!_coordinateSet[i].isDependent(s)){
-			Constant reference(Constant(_coordinateSet[i].getValue(s)));
-			CoordinateReference *coordRef = new CoordinateReference(_coordinateSet[i].getName(), reference);
-			coordsToTrack.push_back(*coordRef);
+			Constant reference(_coordinateSet[i].getValue(s));
+			CoordinateReference coordRef(_coordinateSet[i].getName(), reference);
+			coordsToTrack->push_back(coordRef);
 		}
 	}
 
@@ -1434,8 +1466,9 @@ void Model::createAssemblySolver(const SimTK::State& s)
 	delete _assemblySolver;
 
 	// Use the assembler to generate the initial pose from Coordinate defaults
-	// that also satisfies the constraints
-	_assemblySolver = new AssemblySolver(*this, coordsToTrack);
+	// that also satisfies the constraints. AssemblySolver takes over ownership
+    // of coordsToTrack
+	_assemblySolver = new AssemblySolver(*this, *coordsToTrack);
 	_assemblySolver->setConstraintWeight(50.0);
 }
 

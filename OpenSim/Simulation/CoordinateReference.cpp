@@ -48,7 +48,7 @@ CoordinateReference::CoordinateReference() : Reference_<double>(),
  * @param name of the reference to be found in the model and
  * @param referenceFunction is its its function returning its value
  */
-	CoordinateReference::CoordinateReference(const std::string name, Function &referenceFunction) : Reference_<double>(name),
+CoordinateReference::CoordinateReference(const std::string name, Function &referenceFunction) : Reference_<double>(name),
 	_coordinateValueFunction(_coordinateValueFunctionProp.getValueObjPtrRef()),
 	_defaultWeight(_defaultWeightProp.getValueDbl())
 {

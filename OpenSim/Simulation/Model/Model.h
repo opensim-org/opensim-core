@@ -215,13 +215,43 @@ public:
         return *_modelViz; 
     }
     /**@}**/
-    
-	/**
-	 * This must be called after the Model is fully created but before starting a simulation.
-     * It creates and initializes the computational system used to simulate the model.
-	 */
-    SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION;
 
+    /** After the %Model and its components have been constructed, call this to
+    interconnect the components and then create the Simbody
+    MultibodySystem needed to represent the %Model computationally. The
+    connectToModel() method of each contained ModelComponent will be invoked,
+    and then their addToSystem() methods are invoked.   
+    The resulting MultibodySystem is maintained internally by the %Model. After 
+    this call, you may obtain a writable reference to the System using 
+    updMultibodySystem() which you can use to make any additions you want. Then 
+    when the System is complete, call initializeState() to finalize it and 
+    obtain an initial State. **/
+    void buildSystem();
+
+    /** After buildSystem() has been called, and any additional modifications
+    to the Simbody MultibodySystem have been made, call this method to finalize 
+    the MultibodySystem (by calling its realizeTopology() method), obtain a 
+    default state, and assemble it so that position constraints are 
+    satisified. The initStateFromProperties() method of each contained
+    ModelComponent will be invoked. A reference to the internally-maintained 
+    default State is returned; your first action should usually be to copy it 
+    into your own State object, for example:
+    @code
+        SimTK::State myState = initializeState(); 
+    @endcode **/
+    SimTK::State& initializeState();
+    
+	/** Convenience method that invokes buildSystem() and then 
+    initializeState().  A reference to the internally-maintained default State 
+    is returned; your first action should usually be to copy it into your own
+    State object, for example:
+    @code
+        SimTK::State myState = initSystem(); 
+    @endcode **/
+    SimTK::State& initSystem() SWIG_DECLARE_EXCEPTION {
+        buildSystem();
+        return initializeState();
+    }
 
 	/**
 	 * This is called after the Model is fully created but before starting a simulation.

@@ -1181,7 +1181,19 @@ ObjectProperty<T>::readFromXMLElement
 	for (; iter != propertyElement.element_end(); ++iter) {
         const SimTK::String& objTypeTag = iter->getElementTag();
 
-        if (!Object::isObjectTypeDerivedFrom<T>(objTypeTag)) {
+        const Object* registeredObj = 
+            Object::getDefaultInstanceOfType(objTypeTag);
+
+        if (!registeredObj) {
+            std::cerr 
+                << "Encountered unrecognized Object typename " 
+                << objTypeTag << " while reading property " << this->getName()
+                << ". There is no registered Object of this type; ignoring.\n";
+            continue;                        
+        }
+
+        // Check that the object type found is derived from T.
+        if (!dynamic_cast<const T*>(registeredObj)) {
             std::cerr << "Object type " << objTypeTag  
                         << " wrong for " << objectClassName
                         << " property " << this->getName()
