@@ -60,6 +60,7 @@ if ((found)<(expected)-(tol) || (found)>(expected)+(tol)) throw(exception());}
 
 int main()
 {
+  try {
     int  status = 0;
 
 	// To Retrace the steps taken by the GUI this test case follows the same call sequence:
@@ -101,7 +102,7 @@ int main()
     AbstractProperty& dProp2 = thelenMsl->updPropertyByName("ignore_tendon_compliance");
     cout << "Prop after create system is " << dProp2.toString() << endl;
     bool after = PropertyHelper::getValueBool(dProp);
-    assert(after);
+    SimTK_ASSERT_ALWAYS(after, "Property has wrong value!!");
 	context->updateDisplayer(*dTRIlong);
 	const OpenSim::Array<PathPoint*>& path = context->getCurrentPath(*dTRIlong);
 	cout << "Muscle Path" << endl;
@@ -148,5 +149,9 @@ int main()
 	ASSERT_EQUAL(.315748, length2, 1e-5);
 	// Analyze Tool for plotting?
 	return status;
+  } catch (const std::exception& e) {
+      cout << "Exception: " << e.what() << endl;
+      return 1;
+  }
 }
 
