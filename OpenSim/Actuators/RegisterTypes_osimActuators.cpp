@@ -56,6 +56,7 @@
 #include "MuscleFirstOrderActivationDynamicModel.h"
 #include "MuscleFixedWidthPennationModel.h"
 
+#include "Millard2012EquilibriumMuscle.h"
 
 using namespace OpenSim;
 using namespace std;
@@ -96,6 +97,8 @@ OSIMACTUATORS_API void RegisterTypes_osimActuators()
 
     Object::RegisterType(MuscleFirstOrderActivationDynamicModel());
     Object::RegisterType(MuscleFixedWidthPennationModel());
+
+    Object::RegisterType(Millard2012EquilibriumMuscle());
 
 	// OLD Versions
 	//Associate an instance with old name to help deserialization

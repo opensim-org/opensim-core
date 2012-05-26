@@ -77,7 +77,7 @@ void FiberCompressiveForceCosPennationCurve::setNull()
 void FiberCompressiveForceCosPennationCurve::constructProperties()
 {   
     
-    constructProperty_engagement_angle_in_degrees(80);
+    constructProperty_engagement_angle_in_degrees(85);
     constructProperty_stiffness_at_perpendicular();
     constructProperty_curviness();
 
