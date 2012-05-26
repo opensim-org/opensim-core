@@ -39,24 +39,48 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime=0.5);
 
 int main()
 {
-	try {
-		// Baseline perfromance without wrapping
-		simulateModelWithMuscles("test_nowrap_vasint.osim");
-		// performance with cylnder wrapping
-		simulateModelWithMuscles("test_wrapping_vasint.osim");
-		// performance with ellipsoid wrapping
-		simulateModelWithMuscles("test_wrapEllipsoid_vasint.osim");
-		// performance with multiple muscles and no wrapping
-		simulateModelWithMuscles("gait2392_pelvisFixed.osim", 0.1);
-		// performance with multiple muscles and wrapping
-		simulateModelWithMuscles("Arnold2010_pelvisFixed.osim", 0.1);
-		// performance with multiple muscles and wrapping in upper-exremity
-		simulateModelWithMuscles("TestShoulderModel.osim", 0.1);
-	}
+	SimTK::Array_<std::string> failures;
+	try {// Baseline perfromance without wrapping
+		simulateModelWithMuscles("test_nowrap_vasint.osim");}
 	catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
+        std::cout << "Exception: " << e.what() << std::endl;
+		failures.push_back("test_nowrap_vasint"); }
+
+	try{// performance with cylnder wrapping
+		simulateModelWithMuscles("test_wrapping_vasint.osim");}
+	catch (const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+		failures.push_back("test_wrapping_vasint (cylinder wrap)"); }
+
+	try{// performance with ellipsoid wrapping
+		simulateModelWithMuscles("test_wrapEllipsoid_vasint.osim");}
+	catch (const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+		failures.push_back("test_wrapEllipsoid_vasint"); }
+
+	try{// performance with multiple muscles and no wrapping
+		simulateModelWithMuscles("gait2392_pelvisFixed.osim", 0.1);}
+	catch (const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+		failures.push_back("gait2392_pelvisFixed (no wrapping)"); }
+
+	try{// performance with multiple muscles and wrapping
+		simulateModelWithMuscles("Arnold2010_pelvisFixed.osim", 0.05);}
+	catch (const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+		failures.push_back("Arnold2010_pelvisFixed (multiple wrap)"); }
+
+	try{// performance with multiple muscles and wrapping in upper-exremity
+		simulateModelWithMuscles("TestShoulderModel.osim", 0.02);}
+	catch (const std::exception& e) {
+        std::cout << "Exception: " << e.what() << std::endl;
+		failures.push_back("TestShoulderModel (multiple wrap)"); }
+    
+	if (!failures.empty()) {
+        cout << "Done, with failure(s): " << failures << endl;
         return 1;
     }
+
     cout << "Done" << endl;
     return 0;
 }
@@ -69,7 +93,7 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime)
 	double initialTime = 0;
 
 	// Define the initial and final control values
-	double control = 0.2;
+	double control = 0.5;
 
 	// Create a prescribed controller that simply applies a function of the force
 	PrescribedController actuatorController;
@@ -87,7 +111,7 @@ void simulateModelWithMuscles(const string &modelFile, double finalTime)
 
 	const Set<Muscle>& muscles = osimModel.getMuscles();
 	for (int i=0; i<muscles.getSize(); i++){
-		muscles[i].setActivation(si, 0.05); //setDisabled(si, true);
+		muscles[i].setActivation(si, control); //setDisabled(si, true);
 	}
 	osimModel.equilibrateMuscles(si); 
 

@@ -80,7 +80,7 @@ public:
 	OpenSim_DECLARE_PROPERTY(tendon_slack_length, double,
 		"Resting length of the tendon");
 	OpenSim_DECLARE_PROPERTY(pennation_angle_at_optimal, double,
-		"Angle between tendon and fibers at optimal fiber length");
+		"Angle between tendon and fibers at optimal fiber length expressed in radians");
 	OpenSim_DECLARE_PROPERTY(max_contraction_velocity, double,
 		"Maximum contraction velocity of the fibers, in optimal fiberlengths/second");
 	OpenSim_DECLARE_PROPERTY(ignore_tendon_compliance, bool,

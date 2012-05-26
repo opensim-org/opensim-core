@@ -680,6 +680,8 @@ void testCustomJointVsFunctionBased()
 	// for the model if it does not exist.
 	SimTK::State osim_state = osimModel->initSystem();
 
+	osimModel->setUseVisualizer(true);
+
 	//==========================================================================================================
 	// Compare Simbody system and OpenSim model simulations
 	compareSimulations(system, state, osimModel, osim_state, "testCustomJointVsFunctionBased FAILED\n");
@@ -1583,6 +1585,9 @@ void testEquivalentBodyForceFromGeneralizedForce()
 void testEquivalentBodyForceForGenForces(Model *model)
 {
 	using namespace SimTK;
+
+	// remove any forces for joint testing
+	model->updForceSet().setSize(0);
 
 	State &state = model->initSystem();
 	Vector& qi = state.updQ();
