@@ -104,9 +104,9 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getFatigueFactor() const { return getProperty_fatigue_factor(); }
+	virtual double getFatigueFactor() const { return get_fatigue_factor(); }
 	virtual bool setFatigueFactor(double aFatigueFactor);
-	virtual double getRecoveryFactor() const { return getProperty_recovery_factor(); }
+	virtual double getRecoveryFactor() const { return get_recovery_factor(); }
 	virtual bool setRecoveryFactor(double aRecoveryFactor);
 
 	// Computed quantities

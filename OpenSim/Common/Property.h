@@ -275,58 +275,64 @@ assignment operator.
 <h3>Runtime access to property values</h3>
 
 The property declaration macros also generate per-property methods for getting
-access to property values. These inline methods are very fast and can be used 
-whenever you need access to a property value. The following are generated for 
-all property types:
+access to property values or the the %Property objects themselves. These inline
+methods are very fast and can be used whenever you need access to a property 
+value. The following are generated for single-valued property types, including
+the basic, optional, and unnamed properties:
 @code
-    // Get a const reference to the Property<T> object for "propName".
+    // Get a const reference to the value of a single-valued property 
+    // named "prop_name" (basic, optional, unnamed properties only).
+    const T& get_prop_name() const;
+    // Same, but returns a writable reference.
+    T& upd_prop_name();
+    // Set the value of a single-valued property.
+    void set_prop_name(const T& value);
+@endcode
+
+Additional methods are generated for list properties:
+@code
+    // Get a const reference to the i'th element in a list property's value 
+    // list.
+    const T& get_prop_name(int i) const;
+    // Same, but returns a writable reference.
+    T& upd_prop_name(int i);
+    // Set the i'th element of a list property to the given value. Only 
+    // allowed if the list currently has at least i elements, so no gaps can
+    // be created with this method.
+    void set_prop_name(int i, const T& value);
+    // Use this to append one element to a list property's value list; the
+    // assigned index is returned.
+    int append_prop_name(const T& value);
+    // Use this to set all the values of a list-valued property.
+    template <template <class> class Container>
+    void set_prop_name(const Container<T>& valueList);
+@endcode
+The last form accepts any container that has a %size() method and allows
+element access using operator[]. Runtime checks verify that the list length
+is within the allowable range for the property. Note that every property is 
+considered to have a value list (even when restricted to one element) so the 
+indexed forms above can also be used with single-valued properties as long as
+the index is zero.
+
+To get access to the %Property object rather than one of its values, the
+following methods are provided:
+@code
+    // Get a const reference to the Property<T> object for "prop_name".
     const Property<T>& getProperty_prop_name() const;
     // Same, but returns a writable reference.
     Property<T>& updProperty_prop_name();
-    // Get a const reference to the i'th element in the property's value list.
-    const T& getProperty_prop_name(int i) const;
-    // Same, but returns a writable reference.
-    T& updProperty_prop_name(int i);
 @endcode
-Note that every property is considered to have a value list (even when 
-restricted to one element) so the indexed form above can always be used.
-The %Property\<T> class acts as a container of values, and has the usual %size()
-and %empty() methods available so you can use the non-indexed form of 
+
+The %Property\<T> class acts as a container of values, and has the usual 
+%size(), %empty(), and operator[] methods available so you can use 
 getProperty...() above to get access to those methods. For example, to write 
 out all the values of any property:
 @code
     // Assumes type T can be written to a stream with operator<<.
     for (int i=0; i < getProperty_prop_name().size(); ++i)
-        std::cout << getProperty_prop_name(i) << std::endl;
+        std::cout << get_prop_name(i) << std::endl;
 @endcode
 
-%Property\<T> objects have an implicit conversion to type T for single-valued
-properties, so you can write
-@code
-    // This works only for single-valued properties; otherwise specify index.
-    T value = getProperty_prop_name();
-@endcode
-
-Once you have a writable %Property\<T> object you can call its methods to set 
-values. However, for convenience the macros also generate methods for setting 
-values directly. These vary somewhat depending on the type of property:
-@code
-    // Use this for single-valued properties (including optional).
-    void setProperty_prop_name(const T& value);
-    // Use this to append one element to a list property's value list; the
-    // assigned index is returned.
-    int appendProperty_prop_name(const T& value);
-    // Use this to change the i'th element of a list-valued property; that 
-    // element must already exist or be one past the end of the list so the
-    // new value can be appended without leaving a gap.
-    void setProperty_prop_name(int i, const T& value);
-    // Use this to set all the values of a list-valued property.
-    template <template <class> class Container>
-    void setProperty_prop_name(const Container<T>& valueList);
-@endcode
-The last form accepts any container that has a %size() method and allows
-element access using operator[]. Runtime checks verify that the list length
-is within the allowable range for the property. 
 
 @see OpenSim::Object, OpenSim::AbstractProperty 
 @author Michael Sherman
@@ -378,42 +384,6 @@ public:
     Property& operator=(const Container<T>& valueList) {
         setValue(valueList);
         return *this;
-    }
-
-    /** This is an implicit conversion from const Property\<T> to a const 
-    reference to the single value contained in this property. This
-    will throw an exception if the value list is empty or if this is a list
-    property in which case you must pick a particular element. **/
-    operator const T&() const {
-        if (getMaxListSize()>1)
-            throw OpenSim::Exception(
-                "(const T&)Property<T> conversion: property " + getName()
-                + "is a list property so you can't access its values by "
-                  "conversion to T; instead select an element by index.");
-        if (empty())
-            throw OpenSim::Exception(
-                "(const T&)Property<T> conversion: property " + getName()
-                + "is empty so there is no value to return.");
-        return getValueVirtual(0);
-    }
-
-
-    /** This is an implicit conversion from Property\<T> to a writable 
-    reference to the single value contained in this property. This
-    will throw an exception if the value list is empty or if this is a list
-    property in which case you must pick a particular element. **/
-    operator T&() {
-        if (getMaxListSize()>1)
-            throw OpenSim::Exception(
-                "(T&)Property<T> conversion: property " + getName()
-                + "is a list property so you can't access its values by "
-                  "conversion to T; instead select an element by index.");
-        if (empty())
-            throw OpenSim::Exception(
-                "(T&)Property<T> conversion: property " + getName()
-                + "is empty so there is no value to return.");
-        setValueIsDefault(false);
-        return updValueVirtual(0);
     }
 
     /** Replace the i'th value list element with a copy of the given \a value.
@@ -1103,13 +1073,13 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     {   return getProperty<T>(PropertyIndex_##name); }                      \
     Property<T>& updProperty_##name()                                       \
     {   return updProperty<T>(PropertyIndex_##name); }                      \
-    const T& getProperty_##name(int i) const                                \
+    const T& get_##name(int i) const                                        \
     {   return getProperty<T>(PropertyIndex_##name)[i]; }                   \
-    T& updProperty_##name(int i)                                            \
+    T& upd_##name(int i)                                                    \
     {   return updProperty<T>(PropertyIndex_##name)[i]; }                   \
-    void setProperty_##name(int i, const T& value)                          \
+    void set_##name(int i, const T& value)                                  \
     {   updProperty_##name().setValue(i,value); }                           \
-    int appendProperty_##name(const T& value)                               \
+    int append_##name(const T& value)                                       \
     {   return updProperty_##name().appendValue(value); }
 
 
@@ -1125,7 +1095,7 @@ SimTK_DEFINE_UNIQUE_INDEX_TYPE(PropertyIndex);
     {   PropertyIndex_##name = addListProperty<T>(#name, comment,           \
                             minSize, maxSize, initValue); }                 \
     template <template <class> class Container>                             \
-    void setProperty_##name(const Container<T>& value)                      \
+    void set_##name(const Container<T>& value)                              \
     {   updProperty_##name().setValue(value); }
 /** @endcond **/
 
@@ -1137,7 +1107,9 @@ methods. If the property name is my_prop_name, then the defined methods are:
   - constructProperty_my_prop_name(initialValue)
   - getProperty_my_prop_name()
   - updProperty_my_prop_name()
-  - setProperty_my_prop_name(value)
+  - get_my_prop_name()
+  - upd_my_prop_name()
+  - set_my_prop_name(value)
 
 For some property types, the initial value may be omitted during construction.
 A data member is also created but is intended for internal use only:
@@ -1149,7 +1121,11 @@ A data member is also created but is intended for internal use only:
     OpenSim_DECLARE_PROPERTY_HELPER(name,T)                                 \
     void constructProperty_##name(const T& initValue)                       \
     {   PropertyIndex_##name = addProperty<T>(#name,comment,initValue); }   \
-    void setProperty_##name(const T& value)                                 \
+    const T& get_##name() const                                             \
+    {   return getProperty_##name().getValue(); }                           \
+    T& upd_##name()                                                         \
+    {   return updProperty_##name().updValue(); }                           \
+    void set_##name(const T& value)                                         \
     {   updProperty_##name().setValue(value); }
 
 /** Declare a required, unnamed property holding exactly one object of type
@@ -1161,7 +1137,11 @@ initialized with an object of type T.
     OpenSim_DECLARE_PROPERTY_HELPER(T,T)                                    \
     void constructProperty_##T(const T& initValue)                          \
     {   PropertyIndex_##T = addProperty<T>("", comment, initValue); }       \
-    void setProperty_##T(const T& value)                                    \
+    const T& get_##T() const                                                \
+    {   return getProperty_##T().getValue(); }                              \
+    T& upd_##T()                                                            \
+    {   return updProperty_##T().updValue(); }                              \
+    void set_##T(const T& value)                                            \
     {   updProperty_##T().setValue(value); }
 
 /** Declare a property of the given \a name containing an optional value of
@@ -1176,7 +1156,11 @@ value of type T.
     void constructProperty_##name(const T& initValue)                       \
     {   PropertyIndex_##name = addOptionalProperty<T>(#name, comment,       \
                                                       initValue); }         \
-    void setProperty_##name(const T& value)                                 \
+    const T& get_##name() const                                             \
+    {   return getProperty_##name().getValue(); }                           \
+    T& upd_##name()                                                         \
+    {   return updProperty_##name().updValue(); }                           \
+    void set_##name(const T& value)                                         \
     {   updProperty_##name().setValue(value); }
 
 /** Declare a property of the given \a name containing a variable-length

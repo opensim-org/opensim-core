@@ -55,8 +55,8 @@ ElasticFoundationForce::ElasticFoundationForce(ContactParameters* params)
 void ElasticFoundationForce::createSystem(SimTK::MultibodySystem& system) const
 {
     const ContactParametersSet& contactParametersSet = 
-        getProperty_contact_parameters();
-	const double& transitionVelocity = getProperty_transition_velocity();
+        get_contact_parameters();
+	const double& transitionVelocity = get_transition_velocity();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
     SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
@@ -96,12 +96,12 @@ void ElasticFoundationForce::constructProperties()
 
 ElasticFoundationForce::ContactParametersSet& ElasticFoundationForce::updContactParametersSet()
 {
-    return updProperty_contact_parameters();
+    return upd_contact_parameters();
 }
 
 const ElasticFoundationForce::ContactParametersSet& ElasticFoundationForce::getContactParametersSet()
 {
-    return getProperty_contact_parameters();
+    return get_contact_parameters();
 }
 
 void ElasticFoundationForce::addContactParameters(ElasticFoundationForce::ContactParameters* params)
@@ -111,12 +111,12 @@ void ElasticFoundationForce::addContactParameters(ElasticFoundationForce::Contac
 
 double ElasticFoundationForce::getTransitionVelocity() const
 {
-    return getProperty_transition_velocity();
+    return get_transition_velocity();
 }
 
 void ElasticFoundationForce::setTransitionVelocity(double velocity)
 {
-    setProperty_transition_velocity(velocity);
+    set_transition_velocity(velocity);
 }
 
 
@@ -137,11 +137,11 @@ ElasticFoundationForce::ContactParameters::ContactParameters
     double dynamicFriction, double viscousFriction)
 {
     constructProperties();
-	setProperty_stiffness(stiffness);
-	setProperty_dissipation(dissipation);
-	setProperty_static_friction(staticFriction);
-	setProperty_dynamic_friction(dynamicFriction);
-	setProperty_viscous_friction(viscousFriction);
+	set_stiffness(stiffness);
+	set_dissipation(dissipation);
+	set_static_friction(staticFriction);
+	set_dynamic_friction(dynamicFriction);
+	set_viscous_friction(viscousFriction);
 }
 
 
@@ -172,52 +172,52 @@ void ElasticFoundationForce::ContactParameters::addGeometry(const std::string& n
 
 double ElasticFoundationForce::ContactParameters::getStiffness() const
 {
-    return getProperty_stiffness();
+    return get_stiffness();
 }
 
 void ElasticFoundationForce::ContactParameters::setStiffness(double stiffness)
 {
-    setProperty_stiffness(stiffness);
+    set_stiffness(stiffness);
 }
 
 double ElasticFoundationForce::ContactParameters::getDissipation() const
 {
-    return getProperty_dissipation();
+    return get_dissipation();
 }
 
 void ElasticFoundationForce::ContactParameters::setDissipation(double dissipation)
 {
-    setProperty_dissipation(dissipation);
+    set_dissipation(dissipation);
 }
 
 double ElasticFoundationForce::ContactParameters::getStaticFriction() const
 {
-    return getProperty_static_friction();
+    return get_static_friction();
 }
 
 void ElasticFoundationForce::ContactParameters::setStaticFriction(double friction)
 {
-    setProperty_static_friction(friction);
+    set_static_friction(friction);
 }
 
 double ElasticFoundationForce::ContactParameters::getDynamicFriction() const
 {
-    return getProperty_dynamic_friction();
+    return get_dynamic_friction();
 }
 
 void ElasticFoundationForce::ContactParameters::setDynamicFriction(double friction)
 {
-    setProperty_dynamic_friction(friction);
+    set_dynamic_friction(friction);
 }
 
 double ElasticFoundationForce::ContactParameters::getViscousFriction() const
 {
-    return getProperty_viscous_friction();
+    return get_viscous_friction();
 }
 
 void ElasticFoundationForce::ContactParameters::setViscousFriction(double friction)
 {
-    setProperty_viscous_friction(friction);
+    set_viscous_friction(friction);
 }
 
 void ElasticFoundationForce::ContactParametersSet::setNull()
@@ -243,7 +243,7 @@ OpenSim::Array<std::string> ElasticFoundationForce::getRecordLabels() const
 	OpenSim::Array<std::string> labels("");
 
 	const ContactParametersSet& contactParametersSet = 
-        getProperty_contact_parameters();
+        get_contact_parameters();
 
 	for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
@@ -271,7 +271,7 @@ OpenSim::Array<double> ElasticFoundationForce::getRecordValues(const SimTK::Stat
 	OpenSim::Array<double> values(1);
 
 	const ContactParametersSet& contactParametersSet = 
-        getProperty_contact_parameters();
+        get_contact_parameters();
 
 	const SimTK::ElasticFoundationForce& simtkForce = 
         (SimTK::ElasticFoundationForce &)(_model->getForceSubsystem().getForce(_index));

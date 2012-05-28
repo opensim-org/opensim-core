@@ -96,33 +96,33 @@ public:
     /** Set the 'pointA' property to the supplied value; frame is interpreted
     according to the 'points_are_global' property. **/
 	void setPointA(const SimTK::Vec3& pointAPos) 
-    {   setProperty_pointA(pointAPos); } ;
+    {   set_pointA(pointAPos); } ;
     /** Return the current value of the 'pointA' property. **/
 	const SimTK::Vec3& getPointA() const 
-    {   return getProperty_pointA(); };
+    {   return get_pointA(); };
     /** Set the 'pointB' property to the supplied value; frame is interpreted
     according to the 'points_are_global' property. **/
 	void setPointB(const SimTK::Vec3& pointBPos) 
-    {   setProperty_pointB(pointBPos); } ;
+    {   set_pointB(pointBPos); } ;
     /** Return the current value of the 'pointB' property. **/
 	const SimTK::Vec3& getPointB() const 
-    {   return getProperty_pointB(); };
+    {   return get_pointB(); };
 
     /** Set the 'points_are_global' property that determines how to interpret
     the 'pointA' and 'pointB' location vectors: if not global (Ground frame) 
     then they are in the local frame of 'bodyA' and 'bodyB' respectively. **/
 	void setPointsAreGlobal(bool isGlobal) 
-    {   setProperty_points_are_global(isGlobal); };
+    {   set_points_are_global(isGlobal); };
     /** Return the current value of the 'points_are_global' property. **/
 	bool getPointsAreGlobal() const
-    {   return getProperty_points_are_global(); };
+    {   return get_points_are_global(); };
 
 	/** Set the 'optimal_force' property. **/
 	void setOptimalForce(double optimalForce)
-    {   setProperty_optimal_force(optimalForce); }
+    {   set_optimal_force(optimalForce); }
     /** Get the current value of the 'optimal_force' property. **/
 	double getOptimalForce() const OVERRIDE_11 // Part of Actuator interface.
-    {   return getProperty_optimal_force(); }
+    {   return get_optimal_force(); }
 
     // default destructor, copy constructor, copy assignment
 

@@ -122,7 +122,7 @@ void Force::initState(SimTK::State& s) const
 	SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 
 	// Otherwise we have to change the status of the constraint
-	if(getProperty_isDisabled())
+	if(get_isDisabled())
 		simForce.disable(s);
 	else
 		simForce.enable(s);
@@ -133,7 +133,7 @@ void Force::setDefaultsFromState(const SimTK::State& state)
 {
 	Super::setDefaultsFromState(state);
 
-    setProperty_isDisabled(isDisabled(state));
+    set_isDisabled(isDisabled(state));
 }
 
 
@@ -154,7 +154,7 @@ void Force::setDisabled(SimTK::State& s, bool isDisabled)
 		else
 			simtkForce.enable(s);
 	}
-	setProperty_isDisabled(isDisabled);
+	set_isDisabled(isDisabled);
 }
 
 bool Force::isDisabled(const SimTK::State& s) const
@@ -163,7 +163,7 @@ bool Force::isDisabled(const SimTK::State& s) const
 		SimTK::Force& simtkForce = _model->updForceSubsystem().updForce(_index);
 		return simtkForce.isDisabled(s);
 	}
-	return getProperty_isDisabled();
+	return get_isDisabled();
 }
 
 //-----------------------------------------------------------------------------

@@ -51,7 +51,7 @@ FiberForceLengthCurve::FiberForceLengthCurve(   double strainAtOneNormForce,
     constructProperties();
     setName(muscleName + "_FiberForceLengthCurve");
 
-    setProperty_strain_at_one_norm_force(strainAtOneNormForce);
+    set_strain_at_one_norm_force(strainAtOneNormForce);
     setOptionalProperties(stiffnessAtOneNormForce, curviness);
 
     ensureCurveUpToDate();
@@ -73,7 +73,7 @@ void FiberForceLengthCurve::constructProperties()
 
 void FiberForceLengthCurve::buildCurve()
 {           
-        double e0   =  getProperty_strain_at_one_norm_force();
+        double e0   =  get_strain_at_one_norm_force();
         double kiso =  m_stiffnessAtOneNormForceInUse;
         double c    =  m_curvinessInUse;        
 
@@ -100,7 +100,7 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
             && getProperty_curviness().empty() == true)
         {
             //Get properties of the reference curve
-            double e0 = getProperty_strain_at_one_norm_force();
+            double e0 = get_strain_at_one_norm_force();
             SimTK::Vec4 refFiber = calcReferencePassiveFiber(e0);    
 
             //Assign the stiffness
@@ -123,8 +123,8 @@ void FiberForceLengthCurve::ensureCurveUpToDate()
 
                 
             m_stiffnessAtOneNormForceInUse
-                                = getProperty_stiffness_at_one_norm_force();
-            m_curvinessInUse    = getProperty_curviness();
+                                = get_stiffness_at_one_norm_force();
+            m_curvinessInUse    = get_curviness();
 
             m_fittedCurveBeingUsed = false;
         }
@@ -186,7 +186,7 @@ double FiberForceLengthCurve::getStrainAtOneNormForce() const
     FiberForceLengthCurve* mthis = const_cast<FiberForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();
 
-    return getProperty_strain_at_one_norm_force();
+    return get_strain_at_one_norm_force();
 }
 
 
@@ -217,14 +217,14 @@ bool FiberForceLengthCurve::isFittedCurveBeingUsed() const
 void FiberForceLengthCurve::
     setStrainAtOneNormForce(double aStrainAtOneNormForce)
 {
-        setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);   
+        set_strain_at_one_norm_force(aStrainAtOneNormForce);   
 }
 
 void FiberForceLengthCurve::
         setOptionalProperties(double aStiffnessAtOneNormForce,double aCurviness)
 {
-        setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-        setProperty_curviness(aCurviness);
+        set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
+        set_curviness(aCurviness);
 }
 
 //=============================================================================

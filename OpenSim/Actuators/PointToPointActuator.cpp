@@ -60,8 +60,8 @@ PointToPointActuator::PointToPointActuator(const string& bodyNameA,
 {
 	constructProperties();
 
-    if (!bodyNameA.empty()) setProperty_bodyA(bodyNameA);
-    if (!bodyNameB.empty()) setProperty_bodyB(bodyNameB);
+    if (!bodyNameA.empty()) set_bodyA(bodyNameA);
+    if (!bodyNameB.empty()) set_bodyB(bodyNameB);
 }
 
 //_____________________________________________________________________________
@@ -93,7 +93,7 @@ void PointToPointActuator::setBodyA(Body* aBody)
 {
 	_bodyA = aBody;
 	if(aBody)
-		setProperty_bodyA(aBody->getName());
+		set_bodyA(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -106,7 +106,7 @@ void PointToPointActuator::setBodyB(Body* aBody)
 {
 	_bodyB = aBody;
 	if(aBody)
-		setProperty_bodyB(aBody->getName());
+		set_bodyB(aBody->getName());
 }
 
 
@@ -228,14 +228,14 @@ void PointToPointActuator::setup(Model& model)
 {
 	Super::setup(model);
 
-    if (getProperty_bodyA().empty() || getProperty_bodyB().empty())
+    if (get_bodyA().empty() || get_bodyB().empty())
         throw OpenSim::Exception(
             "PointToPointActuator::setup(): body name properties were not set.");
 
     // Look up the bodies by name in the Model, and record pointers to the
     // corresponding body objects.
-	_bodyA = &updModel().updBodySet().get(getProperty_bodyA());
-	_bodyB = &updModel().updBodySet().get(getProperty_bodyB());
+	_bodyA = &updModel().updBodySet().get(get_bodyA());
+	_bodyB = &updModel().updBodySet().get(get_bodyB());
 }
 
 //==============================================================================
@@ -259,8 +259,8 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 
     // Look up the bodies by name in the Model, and record pointers to the
     // corresponding body objects.
-    if (!(getProperty_bodyA().empty()|| getProperty_bodyB().empty())) {
-	    _bodyA = &updModel().updBodySet().get(getProperty_bodyA());
-	    _bodyB = &updModel().updBodySet().get(getProperty_bodyB());
+    if (!(get_bodyA().empty()|| get_bodyB().empty())) {
+	    _bodyA = &updModel().updBodySet().get(get_bodyA());
+	    _bodyB = &updModel().updBodySet().get(get_bodyB());
     }
 }	

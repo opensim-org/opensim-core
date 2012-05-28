@@ -106,16 +106,16 @@ void ActivationFiberLengthMuscle::setDefaultsFromState(const SimTK::State& state
 }
 
 double ActivationFiberLengthMuscle::getDefaultActivation() const {
-    return getProperty_default_activation();
+    return get_default_activation();
 }
 void ActivationFiberLengthMuscle::setDefaultActivation(double activation) {
-    setProperty_default_activation(activation);
+    set_default_activation(activation);
 }
 double ActivationFiberLengthMuscle::getDefaultFiberLength() const {
-    return getProperty_default_fiber_length();
+    return get_default_fiber_length();
 }
 void ActivationFiberLengthMuscle::setDefaultFiberLength(double length) {
-    setProperty_default_fiber_length(length);
+    set_default_fiber_length(length);
 }
 
 //_____________________________________________________________________________
@@ -229,15 +229,15 @@ double ActivationFiberLengthMuscle::getActivationRate(const SimTK::State& s) con
 void ActivationFiberLengthMuscle::
 postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath& path = updProperty_GeometryPath();
+	GeometryPath& path = upd_GeometryPath();
 
 	path.postScale(s, aScaleSet);
 
 	if (path.getPreScaleLength(s) > 0.0)
 		{
 			double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-			updProperty_optimal_fiber_length() *= scaleFactor;
-			updProperty_tendon_slack_length() *= scaleFactor;
+			upd_optimal_fiber_length() *= scaleFactor;
+			upd_tendon_slack_length() *= scaleFactor;
 			path.setPreScaleLength(s, 0.0) ;
 		}
 }
@@ -318,9 +318,9 @@ computeIsokineticForceAssumingInfinitelyStiffTendon(SimTK::State& s,
 {
 	double isometricForce = computeIsometricForce(s, aActivation);
 
-	const double &optimalFiberLength = getProperty_optimal_fiber_length();
-	const double &pennationAngleAtOptimal = getProperty_pennation_angle_at_optimal();
-	const double &maxContractionVelocity = getProperty_max_contraction_velocity();
+	const double &optimalFiberLength = get_optimal_fiber_length();
+	const double &pennationAngleAtOptimal = get_pennation_angle_at_optimal();
+	const double &maxContractionVelocity = get_max_contraction_velocity();
 
 	double normalizedLength = getFiberLength(s) / optimalFiberLength;
 	double normalizedVelocity = -cos(pennationAngleAtOptimal) 

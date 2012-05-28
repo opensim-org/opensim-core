@@ -159,7 +159,7 @@ void LiuThelen2003Muscle::equilibrate(SimTK::State& state) const
  */
 bool LiuThelen2003Muscle::setFatigueFactor(double aFatigueFactor)
 {
-	setProperty_fatigue_factor(aFatigueFactor);
+	set_fatigue_factor(aFatigueFactor);
 	return true;
 }
 
@@ -175,7 +175,7 @@ bool LiuThelen2003Muscle::setFatigueFactor(double aFatigueFactor)
  */
 bool LiuThelen2003Muscle::setRecoveryFactor(double aRecoveryFactor)
 {
-	setProperty_recovery_factor(aRecoveryFactor);
+	set_recovery_factor(aRecoveryFactor);
 	return true;
 }
 
@@ -237,14 +237,14 @@ double LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 	double normState[4], normStateDeriv[4], norm_tendon_length, ca;
 	double norm_muscle_tendon_length, pennation_angle;
 
-	const double maxIsometricForce = getProperty_max_isometric_force();
-    const double optimalFiberLength = getProperty_optimal_fiber_length();
-	const double tendonSlackLength = getProperty_tendon_slack_length();
-	const double pennationAngleAtOptimal = getProperty_pennation_angle_at_optimal();
-	const double activationTimeConstant = getProperty_activation_time_constant();
-	const double deactivationTimeConstant = getProperty_deactivation_time_constant();
-	const double vmax = getProperty_Vmax();
-	const double vmax0 = getProperty_Vmax0();
+	const double maxIsometricForce = get_max_isometric_force();
+    const double optimalFiberLength = get_optimal_fiber_length();
+	const double tendonSlackLength = get_tendon_slack_length();
+	const double pennationAngleAtOptimal = get_pennation_angle_at_optimal();
+	const double activationTimeConstant = get_activation_time_constant();
+	const double deactivationTimeConstant = get_deactivation_time_constant();
+	const double vmax = get_Vmax();
+	const double vmax0 = get_Vmax0();
 
 	// Normalize the muscle states.
 	normState[STATE_ACTIVATION] = getActivation(s);
@@ -335,9 +335,9 @@ double LiuThelen2003Muscle::computeActuation(const SimTK::State& s) const
 double LiuThelen2003Muscle::
 computeIsometricForce(SimTK::State& s, double aActivation) const
 {
-	const double optimalFiberLength = getProperty_optimal_fiber_length();
-	const double fatigueFactor = getProperty_fatigue_factor();
-	const double recoveryFactor = getProperty_recovery_factor();
+	const double optimalFiberLength = get_optimal_fiber_length();
+	const double fatigueFactor = get_fatigue_factor();
+	const double recoveryFactor = get_recovery_factor();
 
     if (optimalFiberLength < ROUNDOFF_ERROR) {
        return 0.0;

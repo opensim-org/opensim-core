@@ -92,7 +92,7 @@ void PathActuator::constructProperties()
  */
 void PathActuator::setOptimalForce(double aOptimalForce)
 {
-	setProperty_optimal_force(aOptimalForce);
+	set_optimal_force(aOptimalForce);
 }
 
 //_____________________________________________________________________________
@@ -103,7 +103,7 @@ void PathActuator::setOptimalForce(double aOptimalForce)
  */
 double PathActuator::getOptimalForce() const
 {
-	return getProperty_optimal_force();
+	return get_optimal_force();
 }
 
 //-----------------------------------------------------------------------------
@@ -138,7 +138,7 @@ double PathActuator::getLengtheningSpeed(const SimTK::State& s) const
  */
 double PathActuator::getStress( const SimTK::State& s) const
 {
-	return fabs(getForce(s)/getProperty_optimal_force()); 
+	return fabs(getForce(s)/get_optimal_force()); 
 }
 
 
@@ -175,7 +175,7 @@ double PathActuator::computeActuation( const SimTK::State& s ) const
 		return 0.0;
 
 	// FORCE
-	return( getControl(s) * getProperty_optimal_force() );
+	return( getControl(s) * get_optimal_force() );
 }
 
 

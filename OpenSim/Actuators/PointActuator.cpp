@@ -66,7 +66,7 @@ PointActuator::PointActuator(const string& bodyName)
     constructProperties();
 
 	if (!bodyName.empty())
-	    setProperty_body(bodyName);
+	    set_body(bodyName);
 }
 
 //=============================================================================
@@ -104,7 +104,7 @@ void PointActuator::setBody(Body* aBody)
 {
 	_body = aBody;
 	if(aBody)
-		setProperty_body(aBody->getName());
+		set_body(aBody->getName());
 }
 //_____________________________________________________________________________
 // Get the generalized Body to which the Body actuator is applied.
@@ -121,13 +121,13 @@ Body* PointActuator::getBody() const
 
 void PointActuator::setOptimalForce(double aOptimalForce)
 {
-	setProperty_optimal_force(aOptimalForce);
+	set_optimal_force(aOptimalForce);
 }
 //_____________________________________________________________________________
 // Get the optimal force of the force.
 double PointActuator::getOptimalForce() const
 {
-	return getProperty_optimal_force();
+	return get_optimal_force();
 }
 //_____________________________________________________________________________
 // Get the stress of the force.
@@ -180,12 +180,12 @@ void PointActuator::computeForce(const SimTK::State& s,
     setForce(s,  force );
 
 	
-	Vec3 forceVec = force*SimTK::UnitVec3(getProperty_direction());
-	Vec3 lpoint = getProperty_point();
-	if (!getProperty_force_is_global())
+	Vec3 forceVec = force*SimTK::UnitVec3(get_direction());
+	Vec3 lpoint = get_point();
+	if (!get_force_is_global())
 		engine.transform(s, *_body, forceVec, 
                          engine.getGroundBody(), forceVec);
-	if (getProperty_point_is_global())
+	if (get_point_is_global())
         engine.transformPosition(s, engine.getGroundBody(), lpoint, 
                                  *_body, lpoint);
 	applyForceToPoint(s, *_body, lpoint, forceVec, bodyForces);
@@ -208,7 +208,7 @@ void PointActuator::setup(Model& model)
 
 	string errorMessage;
 
-	const string& bodyName = getProperty_body();
+	const string& bodyName = get_body();
 
 	if (!model.updBodySet().contains(bodyName)) {
 		errorMessage = "PointActuator: Unknown body (" + bodyName 
@@ -245,15 +245,15 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			XMLDocument::renameChildNode(aNode, "body_B", "body"); // body_B -> body
 			XMLDocument::renameChildNode(aNode, "point_B", "point"); // point_B -> point
 			XMLDocument::renameChildNode(aNode, "direction_A", "direction"); // direction_A -> direction
-			setProperty_force_is_global(true);
+			set_force_is_global(true);
 			converting = true;
 		}
 	}
 	Super::updateFromXMLNode(aNode, versionNumber);
-	if (converting) updProperty_direction(0) *= -1.0;
+	if (converting) upd_direction() *= -1.0;
 
-	if (_model && !getProperty_body().empty()) {
-        const std::string& bodyName = getProperty_body();
+	if (_model && !get_body().empty()) {
+        const std::string& bodyName = get_body();
 		_body = &_model->updBodySet().get(bodyName);
     }
 }	

@@ -119,34 +119,34 @@ void Muscle::constructProperties()
 // MUSCLE PARAMETERS GETTERS AND SETTERS
 //--------------------------------------------------------------------------
 double Muscle::getMaxIsometricForce() const
-{   return getProperty_max_isometric_force(); }
+{   return get_max_isometric_force(); }
 
 double Muscle::getOptimalFiberLength() const
-{   return getProperty_optimal_fiber_length(); }
+{   return get_optimal_fiber_length(); }
 
 double Muscle::getTendonSlackLength() const 
-{   return getProperty_tendon_slack_length(); }
+{   return get_tendon_slack_length(); }
 
 double Muscle::getPennationAngleAtOptimalFiberLength() const 
-{   return getProperty_pennation_angle_at_optimal(); }
+{   return get_pennation_angle_at_optimal(); }
 
 double Muscle::getMaxContractionVelocity() const 
-{   return getProperty_max_contraction_velocity(); }
+{   return get_max_contraction_velocity(); }
 
 void Muscle::setMaxIsometricForce(double aMaxIsometricForce)
-{   setProperty_max_isometric_force(aMaxIsometricForce); }
+{   set_max_isometric_force(aMaxIsometricForce); }
 
 void Muscle::setOptimalFiberLength(double aOptimalFiberLength) 
-{   setProperty_optimal_fiber_length(aOptimalFiberLength); }
+{   set_optimal_fiber_length(aOptimalFiberLength); }
 
 void Muscle::setTendonSlackLength(double aTendonSlackLength) 
-{   setProperty_tendon_slack_length(aTendonSlackLength); }
+{   set_tendon_slack_length(aTendonSlackLength); }
 
 void Muscle::setPennationAngleAtOptimalFiberLength(double aPennationAngle)
-{   setProperty_pennation_angle_at_optimal(aPennationAngle); }
+{   set_pennation_angle_at_optimal(aPennationAngle); }
 
 void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity) 
-{   setProperty_max_contraction_velocity(aMaxContractionVelocity); }
+{   set_max_contraction_velocity(aMaxContractionVelocity); }
 
 
 //=============================================================================
@@ -186,17 +186,17 @@ void Muscle::setDefaultsFromState(const SimTK::State& state)
 {
     Super::setDefaultsFromState(state);
 
-    setProperty_ignore_tendon_compliance(getIgnoreTendonCompliance(state));
-	setProperty_ignore_activation_dynamics(getIgnoreActivationDynamics(state));
+    set_ignore_tendon_compliance(getIgnoreTendonCompliance(state));
+	set_ignore_activation_dynamics(getIgnoreActivationDynamics(state));
 }
 
 void  Muscle::initState(SimTK::State& state) const {
     Super::initState(state);
 
     setIgnoreTendonCompliance(state, 
-        getProperty_ignore_tendon_compliance());
+        get_ignore_tendon_compliance());
     setIgnoreActivationDynamics(state, 
-        getProperty_ignore_activation_dynamics());
+        get_ignore_activation_dynamics());
 }
 
 // Get/set runtime flag to ignore tendon compliance when computing muscle 

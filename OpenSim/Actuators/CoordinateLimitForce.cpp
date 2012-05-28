@@ -67,15 +67,15 @@ CoordinateLimitForce::CoordinateLimitForce
 	setNull();
     constructProperties();
 
-	setProperty_coordinate(coordName);
-	setProperty_upper_stiffness(K_upper);
-	setProperty_upper_limit(q_upper);
-	setProperty_lower_stiffness(K_lower);
-	setProperty_lower_limit(q_lower);
-	setProperty_damping(damping);
-	setProperty_transition(dq);
+	set_coordinate(coordName);
+	set_upper_stiffness(K_upper);
+	set_upper_limit(q_upper);
+	set_lower_stiffness(K_lower);
+	set_lower_limit(q_lower);
+	set_damping(damping);
+	set_transition(dq);
 
-	setProperty_compute_dissipation_energy(computeDissipationEnergy);
+	set_compute_dissipation_energy(computeDissipationEnergy);
 
 	setName(coordName + "_LimitForce");
 }
@@ -169,37 +169,37 @@ void CoordinateLimitForce::copyData(const CoordinateLimitForce& source)
 //=============================================================================
 void CoordinateLimitForce::setUpperStiffness(double aUpperStiffness)
 {
-	setProperty_upper_stiffness(aUpperStiffness);
+	set_upper_stiffness(aUpperStiffness);
 }
 
 void CoordinateLimitForce::setUpperLimit(double aUpperLimit)
 {
-	setProperty_upper_limit(aUpperLimit);
+	set_upper_limit(aUpperLimit);
 }
 
 void CoordinateLimitForce::setLowerStiffness(double aLowerStiffness)
 {
-	setProperty_lower_stiffness(aLowerStiffness);
+	set_lower_stiffness(aLowerStiffness);
 }
 
 void CoordinateLimitForce::setLowerLimit(double aLowerLimit)
 {
-	setProperty_lower_limit(aLowerLimit);
+	set_lower_limit(aLowerLimit);
 }
 
 void CoordinateLimitForce::setDamping(double aDamping)
 {
-	setProperty_damping(aDamping);
+	set_damping(aDamping);
 }
 
 void CoordinateLimitForce::setTransition(double aTransition)
 {
-	setProperty_transition(aTransition);
+	set_transition(aTransition);
 }
 
 void CoordinateLimitForce::setComputeDissipationEnergy(bool flag)
 {
-	setProperty_compute_dissipation_energy(flag);
+	set_compute_dissipation_energy(flag);
 }
 
 //_____________________________________________________________________________
@@ -208,36 +208,36 @@ void CoordinateLimitForce::setComputeDissipationEnergy(bool flag)
  */
 double CoordinateLimitForce::getUpperStiffness() const
 {
-	return getProperty_upper_stiffness();
+	return get_upper_stiffness();
 }
 
 double CoordinateLimitForce::getUpperLimit() const
 {
-	return getProperty_upper_limit();
+	return get_upper_limit();
 }
 
 double CoordinateLimitForce::getLowerStiffness() const
 {
-	return getProperty_lower_stiffness();
+	return get_lower_stiffness();
 }
 double CoordinateLimitForce::getLowerLimit() const
 {
-	return getProperty_lower_limit();
+	return get_lower_limit();
 }
 
 double CoordinateLimitForce::getDamping() const
 {
-	return getProperty_damping();
+	return get_damping();
 }
 
 double CoordinateLimitForce::getTransition() const
 {
-	return getProperty_transition();
+	return get_transition();
 }
 
 bool CoordinateLimitForce::isComputingDissipationEnergy() const
 {
-	return getProperty_compute_dissipation_energy();
+	return get_compute_dissipation_energy();
 }
 
 //_____________________________________________________________________________
@@ -253,13 +253,13 @@ void CoordinateLimitForce::setup(Model& aModel)
 
     string errorMessage;
 
-	const string& coordName = getProperty_coordinate();
-	const double& upperStiffness = getProperty_upper_stiffness();
-	const double& upperLimit = getProperty_upper_limit();
-	const double& lowerStiffness = getProperty_lower_stiffness();
-	const double& lowerLimit = getProperty_lower_limit();
-	const double& transition = getProperty_transition();
-	const double& damping = getProperty_damping();
+	const string& coordName = get_coordinate();
+	const double& upperStiffness = get_upper_stiffness();
+	const double& upperLimit = get_upper_limit();
+	const double& lowerStiffness = get_lower_stiffness();
+	const double& lowerLimit = get_lower_limit();
+	const double& transition = get_transition();
+	const double& damping = get_damping();
 
 	// Look up the coordinate
 	if (!_model->updCoordinateSet().contains(coordName)) {
@@ -358,7 +358,7 @@ double CoordinateLimitForce::computePotentialEnergy(const SimTK::State& s) const
 		return 0.0;
 	}
 	
-	const double &trans = _w*getProperty_transition();
+	const double &trans = _w*get_transition();
 
 	if(delta >= trans){
 		// = 5/14*K*trans^2 - 1/2*K*trans^2 + 1/2*K*(delta)^2

@@ -65,8 +65,8 @@ ActuatorWorkMeter::ActuatorWorkMeter(const Actuator& actuator,
 	setNull();
 	constructProperties();
 
-	setProperty_actuator_name(actuator.getName());
-	setProperty_initial_actuator_work(initialWork);
+	set_actuator_name(actuator.getName());
+	set_initial_actuator_work(initialWork);
 }
 
 
@@ -99,7 +99,7 @@ void ActuatorWorkMeter::setup(Model& aModel)
 {
 	Super::setup(aModel);
 
-	const string& actName = getProperty_actuator_name();
+	const string& actName = get_actuator_name();
 	int k = _model->getActuators().getIndex(actName);
 	if( k >=0 )
 		_actuator = &_model->getActuators().get(k);
@@ -142,12 +142,12 @@ computeStateVariableDerivatives(const SimTK::State& s) const
  void ActuatorWorkMeter::initState(SimTK::State& s) const
 {
 	setStateVariable(s, getStateVariableNames()[0], 
-        getProperty_initial_actuator_work());
+        get_initial_actuator_work());
 }
 
 void ActuatorWorkMeter::setDefaultsFromState(const SimTK::State& state)
 {
-    setProperty_initial_actuator_work(getWork(state));
+    set_initial_actuator_work(getWork(state));
 }
 
 

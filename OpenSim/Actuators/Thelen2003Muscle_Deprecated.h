@@ -100,41 +100,41 @@ public:
 	
 	// Properties
 	double getActivationTimeConstant() const 
-    {   return getProperty_activation_time_constant(); }
+    {   return get_activation_time_constant(); }
 	double getDeactivationTimeConstant() const 
-    {   return getProperty_deactivation_time_constant(); }
-	double getVmax() const {return getProperty_Vmax();}
-	double getVmax0() const {return getProperty_Vmax0();}
-	double getFmaxTendonStrain() const {return getProperty_FmaxTendonStrain();}
-	double getFmaxMuscleStrain() const {return getProperty_FmaxMuscleStrain();}
-	double getKshapeActive() const {return getProperty_KshapeActive();}
-	double getKshapePassive() const {return getProperty_KshapePassive();}
-	double getDamping() const {return getProperty_damping();}
-	double getAf() const {return getProperty_Af();}
-	double getFlen() const {return getProperty_Flen();}
+    {   return get_deactivation_time_constant(); }
+	double getVmax() const {return get_Vmax();}
+	double getVmax0() const {return get_Vmax0();}
+	double getFmaxTendonStrain() const {return get_FmaxTendonStrain();}
+	double getFmaxMuscleStrain() const {return get_FmaxMuscleStrain();}
+	double getKshapeActive() const {return get_KshapeActive();}
+	double getKshapePassive() const {return get_KshapePassive();}
+	double getDamping() const {return get_damping();}
+	double getAf() const {return get_Af();}
+	double getFlen() const {return get_Flen();}
 
 	void setActivationTimeConstant(double aActivationTimeConstant)
-    {	setProperty_activation_time_constant(aActivationTimeConstant); }
+    {	set_activation_time_constant(aActivationTimeConstant); }
 	void setDeactivationTimeConstant(double aDeactivationTimeConstant)
-    {	setProperty_deactivation_time_constant(aDeactivationTimeConstant); }
+    {	set_deactivation_time_constant(aDeactivationTimeConstant); }
 	void setVmax(double aVmax)
-    {	setProperty_Vmax(aVmax); }
+    {	set_Vmax(aVmax); }
 	void setVmax0(double aVmax0)
-    {	setProperty_Vmax0(aVmax0); }
+    {	set_Vmax0(aVmax0); }
 	void setFmaxTendonStrain(double aFmaxTendonStrain)
-    {	setProperty_FmaxTendonStrain(aFmaxTendonStrain); }
+    {	set_FmaxTendonStrain(aFmaxTendonStrain); }
 	void setFmaxMuscleStrain(double aFmaxMuscleStrain)
-    {	setProperty_FmaxMuscleStrain(aFmaxMuscleStrain); }
+    {	set_FmaxMuscleStrain(aFmaxMuscleStrain); }
 	void setKshapeActive(double aKShapeActive)
-    {	setProperty_KshapeActive(aKShapeActive); }
+    {	set_KshapeActive(aKShapeActive); }
 	void setKshapePassive(double aKshapePassive)
-    {	setProperty_KshapePassive(aKshapePassive); }
+    {	set_KshapePassive(aKshapePassive); }
 	void setDamping(double aDamping)
-    {	setProperty_damping(aDamping); }
+    {	set_damping(aDamping); }
 	void setAf(double aAf)
-    {	setProperty_Af(aAf); }
+    {	set_Af(aAf); }
 	void setFlen(double aFlen)
-    {	setProperty_Flen(aFlen); }
+    {	set_Flen(aFlen); }
 
 	// Computed quantities
 	//--------------------------------------------------------------------------

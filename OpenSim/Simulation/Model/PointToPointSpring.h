@@ -108,34 +108,34 @@ public:
 	* @param std::string bodyName<1/2>
 	*/
 	void setBody1Name(const std::string& body1Name) 
-    {   setProperty_body1(body1Name); }
+    {   set_body1(body1Name); }
 	void setBody2Name(const std::string& body2Name) 
-    {   setProperty_body2(body2Name); }
-	const std::string& getBody1Name() const {return getProperty_body1();}
-	const std::string& getBody2Name() const {return getProperty_body2();}
+    {   set_body2(body2Name); }
+	const std::string& getBody1Name() const {return get_body1();}
+	const std::string& getBody2Name() const {return get_body2();}
 
 	/**
 	* Spring end points 
 	* 
 	* @param Vec3 point<1/2> 
 	*/
-	void setPoint1(SimTK::Vec3 aPosition) { setProperty_point1(aPosition); }
-	const SimTK::Vec3& getPoint1() const { return getProperty_point1(); }
-	void setPoint2(SimTK::Vec3 aPosition) { setProperty_point2(aPosition); }
-	const SimTK::Vec3& getPoint2() const { return getProperty_point2(); }
+	void setPoint1(SimTK::Vec3 aPosition) { set_point1(aPosition); }
+	const SimTK::Vec3& getPoint1() const { return get_point1(); }
+	void setPoint2(SimTK::Vec3 aPosition) { set_point2(aPosition); }
+	const SimTK::Vec3& getPoint2() const { return get_point2(); }
 
 	/**
 	* Spring stiffness
 	* @param stiffness 
 	*/
-	void setStiffness(double stiffness) {setProperty_stiffness(stiffness);}
-	double getStiffness() const {return getProperty_stiffness();}
+	void setStiffness(double stiffness) {set_stiffness(stiffness);}
+	double getStiffness() const {return get_stiffness();}
 	/**
 	* Spring resting length
 	* @param restLength 
 	*/
-	void setRestlength(double restLength) {setProperty_rest_length(restLength);}
-	double getRestlength() const {return getProperty_rest_length();}
+	void setRestlength(double restLength) {set_rest_length(restLength);}
+	double getRestlength() const {return get_rest_length();}
 
 	//-----------------------------------------------------------------------------
 	// Model setup and system creation

@@ -48,9 +48,9 @@ FiberCompressiveForceLengthCurve::FiberCompressiveForceLengthCurve
     constructProperties();
     setName(muscleName + "_FiberCompressiveForceLengthCurve");
 
-    setProperty_norm_length_at_zero_force(normLengthAtZeroForce);
-    setProperty_stiffness_at_zero_length(stiffnessAtZeroLength);
-    setProperty_curviness(curviness);
+    set_norm_length_at_zero_force(normLengthAtZeroForce);
+    set_stiffness_at_zero_length(stiffnessAtZeroLength);
+    set_curviness(curviness);
 
     ensureCurveUpToDate();
 }
@@ -70,7 +70,7 @@ void FiberCompressiveForceLengthCurve::constructProperties()
 
 void FiberCompressiveForceLengthCurve::buildCurve()
 {        
-        double l0   =  getProperty_norm_length_at_zero_force();
+        double l0   =  get_norm_length_at_zero_force();
         double k    =  m_stiffnessAtZeroLengthInUse;
         double c    =  m_curvinessInUse;        
 
@@ -96,7 +96,7 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
         if(getProperty_stiffness_at_zero_length().empty() == true &&
             getProperty_curviness().empty() == true)
         {
-            double lengthAtZeroForce = getProperty_norm_length_at_zero_force();
+            double lengthAtZeroForce = get_norm_length_at_zero_force();
 
             m_stiffnessAtZeroLengthInUse= -2.0/lengthAtZeroForce; 
             m_curvinessInUse = 0.5;
@@ -111,8 +111,8 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
         {
             
             m_stiffnessAtZeroLengthInUse = 
-                getProperty_stiffness_at_zero_length();
-            m_curvinessInUse = getProperty_curviness();
+                get_stiffness_at_zero_length();
+            m_curvinessInUse = get_curviness();
             m_isFittedCurveBeingUsed = false;
         }
 
@@ -175,7 +175,7 @@ double FiberCompressiveForceLengthCurve::getNormLengthAtZeroForce() const
         const_cast<FiberCompressiveForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();
 
-    return getProperty_norm_length_at_zero_force();
+    return get_norm_length_at_zero_force();
 }
 
 double FiberCompressiveForceLengthCurve::getStiffnessAtZeroLengthInUse() const
@@ -209,14 +209,14 @@ bool FiberCompressiveForceLengthCurve::isFittedCurveBeingUsed() const
 void FiberCompressiveForceLengthCurve::
     setNormLengthAtZeroForce(double aNormLengthAtZeroForce)
 {   
-    setProperty_norm_length_at_zero_force(aNormLengthAtZeroForce);
+    set_norm_length_at_zero_force(aNormLengthAtZeroForce);
 }
 
 void FiberCompressiveForceLengthCurve::
         setOptionalProperties(double aStiffnessAtZeroLength, double aCurviness)
 {
-   setProperty_stiffness_at_zero_length(aStiffnessAtZeroLength);
-   setProperty_curviness(aCurviness);
+   set_stiffness_at_zero_length(aStiffnessAtZeroLength);
+   set_curviness(aCurviness);
 }
 
 

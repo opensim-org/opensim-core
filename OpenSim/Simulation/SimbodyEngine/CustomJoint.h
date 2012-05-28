@@ -92,9 +92,9 @@ public:
 
 	// Transforms
 	const SpatialTransform& getSpatialTransform() const
-    {   return getProperty_SpatialTransform(); }
+    {   return get_SpatialTransform(); }
     SpatialTransform& updSpatialTransform() 
-    {   return updProperty_SpatialTransform(); }
+    {   return upd_SpatialTransform(); }
 
 	// SCALE
 	void scale(const ScaleSet& aScaleSet);

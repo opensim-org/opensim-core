@@ -61,8 +61,8 @@ JointWorkMeter::JointWorkMeter(const Joint &joint, double initialWork)
 	setNull();
 	constructProperties();
 
-	setProperty_joint_name(joint.getName());
-	setProperty_initial_joint_work(initialWork);
+	set_joint_name(joint.getName());
+	set_initial_joint_work(initialWork);
 }
 
 //==============================================================================
@@ -97,7 +97,7 @@ void JointWorkMeter::setup(Model& aModel)
 {
 	Super::setup(aModel);
 
-	const string& jointName = getProperty_joint_name();
+	const string& jointName = get_joint_name();
 	int k = _model->getJointSet().getIndex(jointName);
 	if( k >=0 )
 		_joint = &_model->getJointSet().get(k);
@@ -138,12 +138,12 @@ computeStateVariableDerivatives(const SimTK::State& s) const
  void JointWorkMeter::initState( SimTK::State& s) const
 {
 	setStateVariable(s, getStateVariableNames()[0], 
-        getProperty_initial_joint_work());
+        get_initial_joint_work());
 }
 
 void JointWorkMeter::setDefaultsFromState(const SimTK::State& state)
 {
-    setProperty_initial_joint_work(getWork(state));
+    set_initial_joint_work(getWork(state));
 }
 
 

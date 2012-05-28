@@ -104,12 +104,12 @@ public:
     along the axis controlled by this %TransformAxis object.
     @param coordNames   Names of the generalized coordinates. **/
 	void setCoordinateNames(const Array<std::string>& coordNames) 
-    {   setProperty_coordinates(coordNames); }
+    {   set_coordinates(coordNames); }
 	
     /** Get the generalized coordinate names associated with this object.
     The returned value is a references to the Property\<string> that contains
     the list of coordinate names.
-    @see getProperty_coordinates() **/
+    @see get_coordinates() **/
     const Property<std::string>& getCoordinateNames() const 
     {   return getProperty_coordinates(); }
 
@@ -118,17 +118,17 @@ public:
     Array<std::string> getCoordinateNamesInArray() const {
         Array<std::string> coords;
         for (int i=0; i < getProperty_coordinates().size(); ++i)
-            coords.append(getProperty_coordinates(i));
+            coords.append(get_coordinates(i));
         return coords;
     }
 
     /** %Set the value of the "axis" property. **/
 	void setAxis(const SimTK::Vec3& axis) 
-    {   setProperty_axis(axis); }
+    {   set_axis(axis); }
 
     /** Return the current value of the "axis" property. **/
 	const SimTK::Vec3& getAxis() const
-    {   return getProperty_axis(); }
+    {   return get_axis(); }
 
     /** Alternate signature that writes the axis value to its argument. **/
     void getAxis(SimTK::Vec3& axis) const {axis = getAxis();}

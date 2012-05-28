@@ -55,7 +55,7 @@ ActuatorPowerProbe::ActuatorPowerProbe(Array<string> actuator_names)
     setNull();
     constructProperties();
 
-    setProperty_actuator_names(actuator_names);
+    set_actuator_names(actuator_names);
 }
 
 
@@ -86,7 +86,7 @@ const Property<string>& ActuatorPowerProbe::getActuatorNames() const
 // Sets the names of the Actuators being probed.
 void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
 {
-    setProperty_actuator_names(actuatorNames);
+    set_actuator_names(actuatorNames);
 }
 
 

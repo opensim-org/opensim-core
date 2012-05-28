@@ -125,48 +125,48 @@ public:
 
     /** Get the name of the data source for the force data. **/ 
 	const std::string& getDataSourceName() const 
-    {   return getProperty_data_source_name(); }
+    {   return get_data_source_name(); }
 
 	/**
 	 *  Specify or obtain the body to which the force will be applied
 	 */
 	void setAppliedToBodyName(const std::string &applyToName) 
-    {   setProperty_applied_to_body(applyToName); }
+    {   set_applied_to_body(applyToName); }
 	const std::string& getAppliedToBodyName() const 
-    {   return getProperty_applied_to_body(); }
+    {   return get_applied_to_body(); }
 
 	/**
 	 *  Specify or obtain the body in which the point of application is expressed
 	 */
 	void setPointExpressedInBodyName(const std::string &pointInBodyName) 
-    {   setProperty_point_expressed_in_body(pointInBodyName); }
+    {   set_point_expressed_in_body(pointInBodyName); }
 	const std::string& getPointExpressedInBodyName() const 
-    {   return getProperty_point_expressed_in_body(); }
+    {   return get_point_expressed_in_body(); }
 
 	/**
 	 *  Specify or obtain the body in which the force is expressed
 	 */
 	void setForceExpressedInBodyName(const std::string &forceInBodyName) 
-    {   setProperty_force_expressed_in_body(forceInBodyName); }
+    {   set_force_expressed_in_body(forceInBodyName); }
 	const std::string& getForceExpressedInBodyName() const 
-    {   return getProperty_force_expressed_in_body(); }
+    {   return get_force_expressed_in_body(); }
 
 	/**
 	 * Identifiers
 	 */
 	void setForceIdentifier(const std::string aForceIdentifier) 
-    {   setProperty_force_identifier(aForceIdentifier); }
+    {   set_force_identifier(aForceIdentifier); }
 	void setPointIdentifier(const std::string aPointIdentifier) 
-    {   setProperty_point_identifier(aPointIdentifier); }
+    {   set_point_identifier(aPointIdentifier); }
 	void setTorqueIdentifier(const std::string aTorqueIdentifier) 
-    {   setProperty_torque_identifier(aTorqueIdentifier); }
+    {   set_torque_identifier(aTorqueIdentifier); }
 
 	const std::string& getForceIdentifier() const 
-    {   return getProperty_force_identifier(); }
+    {   return get_force_identifier(); }
 	const std::string& getPointIdentifier() const 
-    {   return getProperty_point_identifier(); }
+    {   return get_point_identifier(); }
 	const std::string& getTorqueIdentifier() const 
-    {   return getProperty_torque_identifier(); }
+    {   return get_torque_identifier(); }
 	/**
 	 * Convenience methods to access external forces at a given time
 	 */
@@ -190,17 +190,17 @@ public:
      * point force and/or if it applies a torque. 
 	 */
 	bool appliesForce() const { 
-        const std::string &forceIdentifier = getProperty_force_identifier(); 
+        const std::string &forceIdentifier = get_force_identifier(); 
         return !((forceIdentifier.find_first_not_of(" \t")==std::string::npos) 
                   || (forceIdentifier == "Unassigned"));
     }
 	bool specifiesPoint() const { 
-        const std::string &pointIdentifier = getProperty_point_identifier(); 
+        const std::string &pointIdentifier = get_point_identifier(); 
         return !((pointIdentifier.find_first_not_of(" \t")==std::string::npos) 
                   || (pointIdentifier == "Unassigned"));
     }
 	bool appliesTorque() const { 
-        const std::string &torqueIdentifier = getProperty_torque_identifier(); 
+        const std::string &torqueIdentifier = get_torque_identifier(); 
         return !((torqueIdentifier.find_first_not_of(" \t")==std::string::npos) 
                   || (torqueIdentifier == "Unassigned"));
     }

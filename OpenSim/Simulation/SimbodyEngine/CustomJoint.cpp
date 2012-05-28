@@ -72,7 +72,7 @@ CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent,
 			body, locationInBody, orientationInBody,reverse)
 {
 	constructProperties();
-	setProperty_SpatialTransform(aSpatialTransform);
+	set_SpatialTransform(aSpatialTransform);
 
 	_body->setJoint(*this);
 	constructCoordinates();

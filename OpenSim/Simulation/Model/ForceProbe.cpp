@@ -66,7 +66,7 @@ ForceProbe::ForceProbe(const Array<string>& force_names)
     setNull();
     constructProperties();
 
-    setProperty_force_names(force_names);
+    set_force_names(force_names);
 }
 
 
@@ -105,7 +105,7 @@ const Property<string>& ForceProbe::getForceNames() const
  */
 void ForceProbe::setForceNames(const Array<string>& forceNames)
 {
-    setProperty_force_names(forceNames);
+    set_force_names(forceNames);
 }
 
 

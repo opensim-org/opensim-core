@@ -125,7 +125,7 @@ int main()
 		obj1.print("obj1.xml");
         rdSerializableObject obj1copy(obj1);
         obj1copy.setAllPropertiesUseDefault(true);
-        obj1copy.setProperty_Test_Bool_2(false);
+        obj1copy.set_Test_Bool_2(false);
         obj1copy.print("obj1copy.xml");
 
         //Xml xx("obj1.xml");

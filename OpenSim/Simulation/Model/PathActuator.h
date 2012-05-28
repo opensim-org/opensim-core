@@ -79,9 +79,9 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 	// Path
-	GeometryPath& updGeometryPath() { return updProperty_GeometryPath(); }
+	GeometryPath& updGeometryPath() { return upd_GeometryPath(); }
 	const GeometryPath& getGeometryPath() const 
-    {   return getProperty_GeometryPath(); }
+    {   return get_GeometryPath(); }
 	virtual bool hasGeometryPath() const { return true;};
 
 	// OPTIMAL FORCE

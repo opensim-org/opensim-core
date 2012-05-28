@@ -136,34 +136,34 @@ void Thelen2003Muscle::constructProperties()
 //=============================================================================
 
 double Thelen2003Muscle::getActivationTimeConstant() const 
-{   return getProperty_activation_time_constant(); }
+{   return get_activation_time_constant(); }
 
 double Thelen2003Muscle::getDeactivationTimeConstant() const 
-{   return getProperty_deactivation_time_constant(); }
+{   return get_deactivation_time_constant(); }
 
 double Thelen2003Muscle::getFmaxTendonStrain() const 
-{   return getProperty_FmaxTendonStrain(); }
+{   return get_FmaxTendonStrain(); }
 
 double Thelen2003Muscle::getFmaxMuscleStrain()  const 
-{   return getProperty_FmaxMuscleStrain(); }
+{   return get_FmaxMuscleStrain(); }
 
 double Thelen2003Muscle::getKshapeActive()  const 
-{   return getProperty_KshapeActive(); }
+{   return get_KshapeActive(); }
 
 double Thelen2003Muscle::getKshapePassive() const 
-{   return getProperty_KshapePassive(); }
+{   return get_KshapePassive(); }
 
 double Thelen2003Muscle::getAf() const 
-{   return getProperty_Af(); }
+{   return get_Af(); }
 
 double Thelen2003Muscle::getFlen() const 
-{   return getProperty_Flen(); }
+{   return get_Flen(); }
 
 double Thelen2003Muscle::getActivationMinimumValue() const 
-{   return getProperty_activation_minimum_value(); }
+{   return get_activation_minimum_value(); }
 
 double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const 
-{   return getProperty_fv_linear_extrap_threshold(); }
+{   return get_fv_linear_extrap_threshold(); }
 
 //=============================================================================
 // SET
@@ -172,7 +172,7 @@ double Thelen2003Muscle::getForceVelocityExtrapolationThreshold() const
 bool Thelen2003Muscle::setActivationTimeConstant(double aActTimeConstant)
 {
     if(aActTimeConstant > 0){
-        setProperty_activation_time_constant(aActTimeConstant);           
+        set_activation_time_constant(aActTimeConstant);           
         return true;
     }
     return false;
@@ -181,7 +181,7 @@ bool Thelen2003Muscle::setActivationTimeConstant(double aActTimeConstant)
 bool Thelen2003Muscle::setActivationMinimumValue(double aActMinValue)
 {
     if(aActMinValue > 0 && aActMinValue < 1.0){
-        setProperty_activation_minimum_value(aActMinValue);
+        set_activation_minimum_value(aActMinValue);
         return true;
     }
     return false;
@@ -190,7 +190,7 @@ bool Thelen2003Muscle::setActivationMinimumValue(double aActMinValue)
 bool Thelen2003Muscle::setDeactivationTimeConstant(double aDeActTimeConstant)
 {
     if(aDeActTimeConstant > 0){
-        setProperty_deactivation_time_constant(aDeActTimeConstant);       
+        set_deactivation_time_constant(aDeActTimeConstant);       
         return true;
     }
     return false;
@@ -199,7 +199,7 @@ bool Thelen2003Muscle::setDeactivationTimeConstant(double aDeActTimeConstant)
 bool Thelen2003Muscle::setFmaxTendonStrain(double aFmaxTendonStrain)
 {
     if(aFmaxTendonStrain > 0){
-        setProperty_FmaxTendonStrain(aFmaxTendonStrain);
+        set_FmaxTendonStrain(aFmaxTendonStrain);
         return true;
     }
     return false;
@@ -208,7 +208,7 @@ bool Thelen2003Muscle::setFmaxTendonStrain(double aFmaxTendonStrain)
 bool Thelen2003Muscle::setFmaxFiberStrain(double aFmaxMuscleStrain)
 {
     if(aFmaxMuscleStrain > 0){
-        setProperty_FmaxMuscleStrain(aFmaxMuscleStrain);
+        set_FmaxMuscleStrain(aFmaxMuscleStrain);
         return true;
     }
     return false;
@@ -217,7 +217,7 @@ bool Thelen2003Muscle::setFmaxFiberStrain(double aFmaxMuscleStrain)
 bool Thelen2003Muscle::setKshapeActive(double aKShapeActive)
 {
     if(aKShapeActive > 0){
-        setProperty_KshapeActive(aKShapeActive);
+        set_KshapeActive(aKShapeActive);
         return true; 
     }
     return false;
@@ -226,7 +226,7 @@ bool Thelen2003Muscle::setKshapeActive(double aKShapeActive)
 bool Thelen2003Muscle::setKshapePassive(double aKshapePassive)
 {
     if(aKshapePassive > 0){
-        setProperty_KshapePassive(aKshapePassive);
+        set_KshapePassive(aKshapePassive);
         return true;
     }
     return false;
@@ -236,7 +236,7 @@ bool Thelen2003Muscle::setKshapePassive(double aKshapePassive)
 bool Thelen2003Muscle::setAf(double aAf)
 {
     if(aAf > 0){
-        setProperty_Af(aAf);
+        set_Af(aAf);
         return true;
     }
     return false;
@@ -245,7 +245,7 @@ bool Thelen2003Muscle::setAf(double aAf)
 bool Thelen2003Muscle::setFlen(double aFlen)
 {
     if(aFlen > 1.0){
-        setProperty_Flen(aFlen);
+        set_Flen(aFlen);
         return true;
     }
     return false;
@@ -257,7 +257,7 @@ bool Thelen2003Muscle::
                  setForceVelocityExtrapolationThreshold(double aFvThresh)
 {
     if(aFvThresh > 1.0/getFlen()){
-        setProperty_fv_linear_extrap_threshold(aFvThresh);
+        set_fv_linear_extrap_threshold(aFvThresh);
         return true;
     }
     return false;

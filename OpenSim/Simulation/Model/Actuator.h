@@ -184,11 +184,11 @@ public:
 
 	// manage bounds on Control
 	void setMinControl(const double& aMinControl) 
-    {   setProperty_min_control(aMinControl); }
-	double getMinControl() const { return getProperty_min_control(); }
+    {   set_min_control(aMinControl); }
+	double getMinControl() const { return get_min_control(); }
 	void setMaxControl(const double& aMaxControl) 
-    {   setProperty_max_control(aMaxControl); }
-	double getMaxControl() const { return getProperty_max_control(); }
+    {   set_max_control(aMaxControl); }
+	double getMaxControl() const { return get_max_control(); }
 
     ///--------------------------------------------------------------------------
     /// Overriding forces

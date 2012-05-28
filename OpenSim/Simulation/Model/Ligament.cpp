@@ -90,8 +90,8 @@ void Ligament::constructProperties()
  */
 void Ligament::setup(Model& aModel)
 {
-	GeometryPath& path = updProperty_GeometryPath();
-	const double& restingLength = getProperty_resting_length();
+	GeometryPath& path = upd_GeometryPath();
+	const double& restingLength = get_resting_length();
 
 	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
 	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
@@ -152,7 +152,7 @@ double Ligament::getLength(const SimTK::State& s) const
  */
 bool Ligament::setRestingLength(double aRestingLength)
 {
-	setProperty_resting_length(aRestingLength);
+	set_resting_length(aRestingLength);
 	return true;
 }
 
@@ -165,7 +165,7 @@ bool Ligament::setRestingLength(double aRestingLength)
  */
 bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
 {
-	setProperty_pcsa_force(aMaxIsometricForce);
+	set_pcsa_force(aMaxIsometricForce);
 	return true;
 }
 
@@ -178,7 +178,7 @@ bool Ligament::setMaxIsometricForce(double aMaxIsometricForce)
  */
 bool Ligament::setForceLengthCurve(const Function& aForceLengthCurve)
 {
-	setProperty_force_length_curve(aForceLengthCurve);
+	set_force_length_curve(aForceLengthCurve);
 	return true;
 }
 //=============================================================================
@@ -220,7 +220,7 @@ void Ligament::scale(const SimTK::State& s, const ScaleSet& aScaleSet)
 void Ligament::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
 	GeometryPath& path          = updGeometryPath();
-	double&       restingLength = updProperty_resting_length();
+	double&       restingLength = upd_resting_length();
 
 	path.postScale(s, aScaleSet);
 
@@ -254,8 +254,8 @@ void Ligament::computeForce(const SimTK::State& s,
 							  SimTK::Vector& generalizedForces) const
 {
 	const GeometryPath& path = getGeometryPath();
-	const double& restingLength = getProperty_resting_length();
-	const double& pcsaForce = getProperty_pcsa_force();
+	const double& restingLength = get_resting_length();
+	const double& pcsaForce = get_pcsa_force();
 
 	if (path.getLength(s) <= restingLength)
 		return;

@@ -75,13 +75,13 @@ ExternalForce::ExternalForce
 	constructProperties();
 	_dataSource = &dataSource;
 
-	setProperty_applied_to_body(appliedToBodyName);
-	setProperty_force_expressed_in_body(forceExpressedInBodyName);
-	setProperty_point_expressed_in_body(pointExpressedInBodyName);
-	setProperty_data_source_name(dataSource.getName());
-	setProperty_force_identifier(forceIdentifier);
-	setProperty_point_identifier(pointIdentifier);
-	setProperty_torque_identifier(torqueIdentifier);
+	set_applied_to_body(appliedToBodyName);
+	set_force_expressed_in_body(forceExpressedInBodyName);
+	set_point_expressed_in_body(pointExpressedInBodyName);
+	set_data_source_name(dataSource.getName());
+	set_force_identifier(forceIdentifier);
+	set_point_identifier(pointIdentifier);
+	set_torque_identifier(torqueIdentifier);
 }
 
 
@@ -124,8 +124,8 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 	//	throw Exception("ExternalForce:: data source name must be assigned.");
 	//}
 
-	if(    getProperty_force_identifier().empty() 
-        && getProperty_torque_identifier().empty())
+	if(    get_force_identifier().empty() 
+        && get_torque_identifier().empty())
 	{
 		throw Exception("ExternalForce:: no force or torque identified.");
 	}
@@ -149,19 +149,19 @@ void ExternalForce::constructProperties()
 void ExternalForce::setDataSource(const Storage *dataSource)
 { 
 	_dataSource = dataSource;
-	setProperty_data_source_name(dataSource->getName());
+	set_data_source_name(dataSource->getName());
 }
 
 void ExternalForce::setup(Model& model)
 {
 	Force::setup(model);
 
-	const string& appliedToBodyName = getProperty_applied_to_body();
-	const string& forceExpressedInBodyName = getProperty_force_expressed_in_body();
-	const string& pointExpressedInBodyName = getProperty_point_expressed_in_body();
-	const string& forceIdentifier = getProperty_force_identifier();
-	const string& pointIdentifier = getProperty_point_identifier();
-	const string& torqueIdentifier = getProperty_torque_identifier();
+	const string& appliedToBodyName = get_applied_to_body();
+	const string& forceExpressedInBodyName = get_force_expressed_in_body();
+	const string& pointExpressedInBodyName = get_point_expressed_in_body();
+	const string& forceIdentifier = get_force_identifier();
+	const string& pointIdentifier = get_point_identifier();
+	const string& torqueIdentifier = get_torque_identifier();
 
     // This might not have been supplied in which case it will have size()==0.
 	const Property<string>& dataSourceProp = getProperty_data_source_name();
@@ -392,7 +392,7 @@ Vec3 ExternalForce::getTorqueAtTime(double aTime) const
 OpenSim::Array<std::string> ExternalForce::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 
-	const string& appliedToBodyName = getProperty_applied_to_body();
+	const string& appliedToBodyName = get_applied_to_body();
 
 	if (_appliesForce) {
 		labels.append(appliedToBodyName+"_"+getName()+"_Fx");

@@ -54,7 +54,7 @@ SpringGeneralizedForce::SpringGeneralizedForce(const string& coordinateName)
     constructProperties();
 
     if (!coordinateName.empty())
-	    setProperty_coordinate(coordinateName);
+	    set_coordinate(coordinateName);
 }
 
 //_____________________________________________________________________________
@@ -87,7 +87,7 @@ void SpringGeneralizedForce::setup(Model& model)
 {
 	Super::setup(model);
 
-    _coord = &model.updCoordinateSet().get(getProperty_coordinate());
+    _coord = &model.updCoordinateSet().get(get_coordinate());
 }
 
 //==============================================================================
@@ -105,7 +105,7 @@ void SpringGeneralizedForce::setup(Model& model)
 void SpringGeneralizedForce::
 setRestLength(double aRestLength)
 {
-	setProperty_rest_length(aRestLength);
+	set_rest_length(aRestLength);
 }
 //_____________________________________________________________________________
 /**
@@ -116,7 +116,7 @@ setRestLength(double aRestLength)
 double SpringGeneralizedForce::
 getRestLength() const
 {
-	return getProperty_rest_length();
+	return get_rest_length();
 }
 
 //-----------------------------------------------------------------------------
@@ -133,7 +133,7 @@ getRestLength() const
 void SpringGeneralizedForce::
 setViscosity(double aViscosity)
 {
-	setProperty_viscosity(aViscosity);
+	set_viscosity(aViscosity);
 }
 //_____________________________________________________________________________
 /**
@@ -144,7 +144,7 @@ setViscosity(double aViscosity)
 double SpringGeneralizedForce::
 getViscosity() const
 {
-	return getProperty_viscosity();
+	return get_viscosity();
 }
 
 //-----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ getViscosity() const
 void SpringGeneralizedForce::
 setStiffness(double aStiffness)
 {
-	setProperty_stiffness(aStiffness);
+	set_stiffness(aStiffness);
 }
 //_____________________________________________________________________________
 /**
@@ -173,7 +173,7 @@ double SpringGeneralizedForce::
 getStiffness() const
 {
 
-	return getProperty_stiffness();
+	return get_stiffness();
 }
 
 
@@ -207,7 +207,7 @@ createSystem(SimTK::MultibodySystem& system) const {
 	if (_model) {
         SpringGeneralizedForce* mthis = 
             const_cast<SpringGeneralizedForce*>(this);
-		mthis->_coord = &_model->updCoordinateSet().get(getProperty_coordinate());
+		mthis->_coord = &_model->updCoordinateSet().get(get_coordinate());
     }
      
 }
@@ -241,7 +241,7 @@ computeForceMagnitude(const SimTK::State& s) const
 {
 	double q = _coord->getValue(s);
 	double speed =  _coord->getSpeedValue(s);
-	double force = -getStiffness()*(q - getProperty_rest_length()) 
-                        - getProperty_viscosity()*speed;
+	double force = -getStiffness()*(q - get_rest_length()) 
+                        - get_viscosity()*speed;
 	return force;
 }

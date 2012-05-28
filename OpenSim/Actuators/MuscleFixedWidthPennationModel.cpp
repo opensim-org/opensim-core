@@ -64,16 +64,16 @@ MuscleFixedWidthPennationModel::
     setNull();
     constructProperties();
 
-    setProperty_optimal_fiber_length(optimalFiberLength);
-    setProperty_optimal_pennation_angle(optimalPennationAngle);
+    set_optimal_fiber_length(optimalFiberLength);
+    set_optimal_pennation_angle(optimalPennationAngle);
 
     m_parallelogramHeight = optimalFiberLength * sin(optimalPennationAngle);
 }
 
 void MuscleFixedWidthPennationModel::ensurePropertiesSet() const
 {
-    double optFibLen = getProperty_optimal_fiber_length();
-    double optPenAng = getProperty_optimal_pennation_angle();
+    double optFibLen = get_optimal_fiber_length();
+    double optPenAng = get_optimal_pennation_angle();
     
     SimTK_ERRCHK1_ALWAYS((isnan(optFibLen) != true && isnan(optPenAng) != true),
     "MuscleFixedWidthPennationModel",
@@ -91,13 +91,13 @@ double MuscleFixedWidthPennationModel::getParallelogramHeight() const
 double MuscleFixedWidthPennationModel::getOptimalFiberLength() const
 {
     ensurePropertiesSet();
-    return getProperty_optimal_fiber_length();
+    return get_optimal_fiber_length();
 }
 
 double MuscleFixedWidthPennationModel::getOptimalPennationAngle() const
 {
     ensurePropertiesSet();
-    return getProperty_optimal_pennation_angle();
+    return get_optimal_pennation_angle();
 }
 /*==============================================================================
 Position level kinematics
@@ -111,7 +111,7 @@ double MuscleFixedWidthPennationModel::calcPennationAngle(double fiberLength,
     //angle
     ensurePropertiesSet();
 
-    double optimalPennationAngle = getProperty_optimal_pennation_angle();
+    double optimalPennationAngle = get_optimal_pennation_angle();
 
     if(optimalPennationAngle > SimTK::Eps){
         //lce_opt * sin(phi_opt) = m_parallelogramHeight
@@ -159,7 +159,7 @@ double MuscleFixedWidthPennationModel::
 {
     double dphi=0;
     ensurePropertiesSet();
-    double optimalPennationAngle = getProperty_optimal_pennation_angle();
+    double optimalPennationAngle = get_optimal_pennation_angle();
 
     if(optimalPennationAngle > SimTK::Eps){
         SimTK_ERRCHK1_ALWAYS( fiberLength > 0,

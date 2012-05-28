@@ -57,8 +57,8 @@ HuntCrossleyForce::HuntCrossleyForce(ContactParameters* params)
 void HuntCrossleyForce::createSystem(SimTK::MultibodySystem& system) const
 {
     const ContactParametersSet& contactParametersSet = 
-        getProperty_contact_parameters();
-	const double& transitionVelocity = getProperty_transition_velocity();
+        get_contact_parameters();
+	const double& transitionVelocity = get_transition_velocity();
 
     SimTK::GeneralContactSubsystem& contacts = system.updContactSubsystem();
     SimTK::SimbodyMatterSubsystem& matter = system.updMatterSubsystem();
@@ -96,13 +96,13 @@ void HuntCrossleyForce::constructProperties()
 HuntCrossleyForce::ContactParametersSet& HuntCrossleyForce::
 updContactParametersSet()
 {
-    return updProperty_contact_parameters();
+    return upd_contact_parameters();
 }
 
 const HuntCrossleyForce::ContactParametersSet& HuntCrossleyForce::
 getContactParametersSet()
 {
-    return getProperty_contact_parameters();
+    return get_contact_parameters();
 }
 
 void HuntCrossleyForce::
@@ -113,12 +113,12 @@ addContactParameters(HuntCrossleyForce::ContactParameters* params)
 
 double HuntCrossleyForce::getTransitionVelocity() const
 {
-    return getProperty_transition_velocity();
+    return get_transition_velocity();
 }
 
 void HuntCrossleyForce::setTransitionVelocity(double velocity)
 {
-    setProperty_transition_velocity(velocity);
+    set_transition_velocity(velocity);
 }
 
 
@@ -139,11 +139,11 @@ HuntCrossleyForce::ContactParameters::ContactParameters
     double dynamicFriction, double viscousFriction)
 {
     constructProperties();
-	setProperty_stiffness(stiffness);
-	setProperty_dissipation(dissipation);
-	setProperty_static_friction(staticFriction);
-	setProperty_dynamic_friction(dynamicFriction);
-	setProperty_viscous_friction(viscousFriction);
+	set_stiffness(stiffness);
+	set_dissipation(dissipation);
+	set_static_friction(staticFriction);
+	set_dynamic_friction(dynamicFriction);
+	set_viscous_friction(viscousFriction);
 }
 
 
@@ -174,52 +174,52 @@ void HuntCrossleyForce::ContactParameters::addGeometry(const std::string& name)
 
 double HuntCrossleyForce::ContactParameters::getStiffness() const
 {
-    return getProperty_stiffness();
+    return get_stiffness();
 }
 
 void HuntCrossleyForce::ContactParameters::setStiffness(double stiffness)
 {
-    setProperty_stiffness(stiffness);
+    set_stiffness(stiffness);
 }
 
 double HuntCrossleyForce::ContactParameters::getDissipation() const
 {
-    return getProperty_dissipation();
+    return get_dissipation();
 }
 
 void HuntCrossleyForce::ContactParameters::setDissipation(double dissipation)
 {
-    setProperty_dissipation(dissipation);
+    set_dissipation(dissipation);
 }
 
 double HuntCrossleyForce::ContactParameters::getStaticFriction() const
 {
-    return getProperty_static_friction();
+    return get_static_friction();
 }
 
 void HuntCrossleyForce::ContactParameters::setStaticFriction(double friction)
 {
-    setProperty_static_friction(friction);
+    set_static_friction(friction);
 }
 
 double HuntCrossleyForce::ContactParameters::getDynamicFriction() const
 {
-    return getProperty_dynamic_friction();
+    return get_dynamic_friction();
 }
 
 void HuntCrossleyForce::ContactParameters::setDynamicFriction(double friction)
 {
-    setProperty_dynamic_friction(friction);
+    set_dynamic_friction(friction);
 }
 
 double HuntCrossleyForce::ContactParameters::getViscousFriction() const
 {
-    return getProperty_viscous_friction();
+    return get_viscous_friction();
 }
 
 void HuntCrossleyForce::ContactParameters::setViscousFriction(double friction)
 {
-    setProperty_viscous_friction(friction);
+    set_viscous_friction(friction);
 }
 
 void HuntCrossleyForce::ContactParametersSet::setNull()
@@ -245,7 +245,7 @@ OpenSim::Array<std::string> HuntCrossleyForce::getRecordLabels() const
 	OpenSim::Array<std::string> labels("");
 
 	const ContactParametersSet& contactParametersSet = 
-        getProperty_contact_parameters();
+        get_contact_parameters();
 
 	for (int i = 0; i < contactParametersSet.getSize(); ++i)
     {
@@ -274,7 +274,7 @@ getRecordValues(const SimTK::State& state) const
 	OpenSim::Array<double> values(1);
 
 	const ContactParametersSet& contactParametersSet = 
-        getProperty_contact_parameters();
+        get_contact_parameters();
 
 	const SimTK::HuntCrossleyForce& simtkForce = 
         (SimTK::HuntCrossleyForce &)(_model->getForceSubsystem().getForce(_index));

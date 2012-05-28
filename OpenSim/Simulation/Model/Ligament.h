@@ -94,19 +94,19 @@ public:
 	//--------------------------------------------------------------------------
 	// Properties
 	const GeometryPath& getGeometryPath() const 
-    {   return getProperty_GeometryPath(); }
+    {   return get_GeometryPath(); }
 	GeometryPath& updGeometryPath() 
-    {   return updProperty_GeometryPath(); }
+    {   return upd_GeometryPath(); }
 	virtual bool hasGeometryPath() const { return true;};
 	virtual double getLength(const SimTK::State& s) const;
 	virtual double getRestingLength() const 
-    {   return getProperty_resting_length(); }
+    {   return get_resting_length(); }
 	virtual bool setRestingLength(double aRestingLength);
 	virtual double getMaxIsometricForce() const 
-    {   return getProperty_pcsa_force(); }
+    {   return get_pcsa_force(); }
 	virtual bool setMaxIsometricForce(double aMaxIsometricForce);
 	virtual const Function& getForceLengthCurve() const 
-    {   return getProperty_force_length_curve(); }
+    {   return get_force_length_curve(); }
 	virtual bool setForceLengthCurve(const Function& aForceLengthCurve);
 
 	//--------------------------------------------------------------------------

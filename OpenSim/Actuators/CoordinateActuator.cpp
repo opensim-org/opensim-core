@@ -57,7 +57,7 @@ CoordinateActuator::CoordinateActuator(const string& coordinateName)
     constructProperties();
 
     if (!coordinateName.empty())
-	    setProperty_coordinate(coordinateName);
+	    set_coordinate(coordinateName);
 }
 //_____________________________________________________________________________
 // Set the data members of this actuator to their null values.
@@ -91,7 +91,7 @@ void CoordinateActuator::setCoordinate(Coordinate* coordinate)
 {
 	_coord = coordinate;
 	if (coordinate)
-		setProperty_coordinate(coordinate->getName());
+		set_coordinate(coordinate->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -116,7 +116,7 @@ Coordinate* CoordinateActuator::getCoordinate() const
  */
 void CoordinateActuator::setOptimalForce(double optimalForce)
 {
-	setProperty_optimal_force(optimalForce);
+	set_optimal_force(optimalForce);
 }
 //_____________________________________________________________________________
 /**
@@ -126,7 +126,7 @@ void CoordinateActuator::setOptimalForce(double optimalForce)
  */
 double CoordinateActuator::getOptimalForce() const
 {
-	return getProperty_optimal_force();
+	return get_optimal_force();
 }
 //_____________________________________________________________________________
 /**
@@ -232,7 +232,7 @@ void CoordinateActuator::setup(Model& aModel)
 	string errorMessage;
 
     // This will fail if no coordinate has been specified.
-	const string& coordName = getProperty_coordinate();
+	const string& coordName = get_coordinate();
 
 	// Look up the coordinate
 	if (!_model->updCoordinateSet().contains(coordName)) {

@@ -227,8 +227,8 @@ void PrescribedForce::computeForce(const SimTK::State& state,
 							  SimTK::Vector_<SimTK::SpatialVec>& bodyForces, 
 							  SimTK::Vector& generalizedForces) const
 {
-	const bool pointIsGlobal = getProperty_pointIsGlobal();
-	const bool forceIsGlobal = getProperty_forceIsGlobal();
+	const bool pointIsGlobal = get_pointIsGlobal();
+	const bool forceIsGlobal = get_forceIsGlobal();
 	const FunctionSet& forceFunctions = getForceFunctions();
 	const FunctionSet& pointFunctions = getPointFunctions();
 	const FunctionSet& torqueFunctions = getTorqueFunctions();
@@ -325,7 +325,7 @@ Vec3 PrescribedForce::getTorqueAtTime(double aTime) const
 OpenSim::Array<std::string> PrescribedForce::getRecordLabels() const {
 	OpenSim::Array<std::string> labels("");
 
-	const bool forceIsGlobal = getProperty_forceIsGlobal();
+	const bool forceIsGlobal = get_forceIsGlobal();
 
 	const FunctionSet& forceFunctions = getForceFunctions();
 	const FunctionSet& pointFunctions = getPointFunctions();
@@ -361,8 +361,8 @@ OpenSim::Array<double> PrescribedForce::getRecordValues(const SimTK::State& stat
 	OpenSim::Array<double>	values(SimTK::NaN);
 	assert(_body!=0);
 
-	const bool pointIsGlobal = getProperty_pointIsGlobal();
-	const bool forceIsGlobal = getProperty_forceIsGlobal();
+	const bool pointIsGlobal = get_pointIsGlobal();
+	const bool forceIsGlobal = get_forceIsGlobal();
 
 	const FunctionSet& forceFunctions = getForceFunctions();
 	const FunctionSet& pointFunctions = getPointFunctions();

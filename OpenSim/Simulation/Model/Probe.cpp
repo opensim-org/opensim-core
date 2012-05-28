@@ -192,7 +192,7 @@ void Probe::createSystem(MultibodySystem& system) const
  */
 bool Probe::isDisabled() const
 {
-    return getProperty_isDisabled();
+    return get_isDisabled();
 }
 
 //_____________________________________________________________________________
@@ -203,7 +203,7 @@ bool Probe::isDisabled() const
  */
 string Probe::getOperation() const
 {
-    return getProperty_operation();
+    return get_operation();
 }
 
 //_____________________________________________________________________________
@@ -214,7 +214,7 @@ string Probe::getOperation() const
  */
 double Probe::getOperationParameter() const
 {
-    return getProperty_operation_parameter();
+    return get_operation_parameter();
 }
 
 //_____________________________________________________________________________
@@ -224,7 +224,7 @@ double Probe::getOperationParameter() const
  */
 void Probe::setDisabled(bool isDisabled) 
 {
-    setProperty_isDisabled(isDisabled);
+    set_isDisabled(isDisabled);
 }
 
 //_____________________________________________________________________________
@@ -234,7 +234,7 @@ void Probe::setDisabled(bool isDisabled)
  */
 void Probe::setOperation(string operation) 
 {
-    setProperty_operation(operation);
+    set_operation(operation);
 }
 
 
@@ -245,7 +245,7 @@ void Probe::setOperation(string operation)
  */
 void Probe::setOperationParameter(double operation_parameter) 
 {
-    setProperty_operation_parameter(operation_parameter);
+    set_operation_parameter(operation_parameter);
 }
 
 

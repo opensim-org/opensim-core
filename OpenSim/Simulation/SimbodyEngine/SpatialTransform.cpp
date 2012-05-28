@@ -79,12 +79,12 @@ void SpatialTransform::constructProperties()
 const TransformAxis& SpatialTransform::getTransformAxis(int whichAxis) const
 {
 	 switch(whichAxis){
-		case 0: return getProperty_rotation1();
-		case 1: return getProperty_rotation2();
-		case 2: return getProperty_rotation3();
-		case 3: return getProperty_translation1();
-		case 4: return getProperty_translation2();
-		case 5: return getProperty_translation3();
+		case 0: return get_rotation1();
+		case 1: return get_rotation2();
+		case 2: return get_rotation3();
+		case 3: return get_translation1();
+		case 4: return get_translation2();
+		case 5: return get_translation3();
 		default:
 			throw Exception("SpatialTransform: Attempting to access beyond 6 axes.");
 	 }
@@ -93,12 +93,12 @@ const TransformAxis& SpatialTransform::getTransformAxis(int whichAxis) const
 TransformAxis& SpatialTransform::updTransformAxis(int whichAxis)
 {
 	 switch(whichAxis){
-		case 0: return updProperty_rotation1();
-		case 1: return updProperty_rotation2();
-		case 2: return updProperty_rotation3();
-		case 3: return updProperty_translation1();
-		case 4: return updProperty_translation2();
-		case 5: return updProperty_translation3();
+		case 0: return upd_rotation1();
+		case 1: return upd_rotation2();
+		case 2: return upd_rotation3();
+		case 3: return upd_translation1();
+		case 4: return upd_translation2();
+		case 5: return upd_translation3();
 		default:
 			throw Exception("SpatialTransform: Attempting to access beyond 6 axes.");
 	 }

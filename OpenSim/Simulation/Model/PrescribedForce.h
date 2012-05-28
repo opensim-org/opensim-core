@@ -130,8 +130,8 @@ public:
 	/** Copy in properties from XML. **/
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
-	void setBodyName(const std::string& aBodyName) { setProperty_body(aBodyName); }
-	const std::string& getBodyName() const { return getProperty_body(); }
+	void setBodyName(const std::string& aBodyName) { set_body(aBodyName); }
+	const std::string& getBodyName() const { return get_body(); }
 
 	/**
 	 * Set the functions which specify the force to apply.  By default the 
@@ -150,8 +150,8 @@ public:
      *                      the force to apply
 	 */
 	void setForceFunctions(Function* forceX, Function* forceY, Function* forceZ);
-	const FunctionSet& getForceFunctions() const { return getProperty_forceFunctions(); }
-	FunctionSet& updForceFunctions() { return updProperty_forceFunctions(); }
+	const FunctionSet& getForceFunctions() const { return get_forceFunctions(); }
+	FunctionSet& updForceFunctions() { return upd_forceFunctions(); }
 	void getForceFunctionNames(OpenSim::Array<std::string>& aFunctionNames) {
 			getForceFunctions().getNames(aFunctionNames);
 	}
@@ -175,8 +175,8 @@ public:
      *                      the point at which to apply the force
 	 */
 	void setPointFunctions(Function* pointX, Function* pointY, Function* pointZ);
-	const FunctionSet& getPointFunctions() const { return getProperty_pointFunctions(); }
-	FunctionSet& updPointFunctions() { return updProperty_pointFunctions(); }
+	const FunctionSet& getPointFunctions() const { return get_pointFunctions(); }
+	FunctionSet& updPointFunctions() { return upd_pointFunctions(); }
 	void getPointFunctionNames(OpenSim::Array<std::string>& aFunctionNames){
 			getPointFunctions().getNames(aFunctionNames);
 	}
@@ -200,8 +200,8 @@ public:
      *                      the torque to apply
 	 */
 	void setTorqueFunctions(Function* torqueX, Function* torqueY, Function* torqueZ);
-	const FunctionSet& getTorqueFunctions() const { return getProperty_torqueFunctions(); }
-	FunctionSet& updTorqueFunctions() { return updProperty_torqueFunctions(); }
+	const FunctionSet& getTorqueFunctions() const { return get_torqueFunctions(); }
+	FunctionSet& updTorqueFunctions() { return upd_torqueFunctions(); }
 	void getTorqueFunctionNames(OpenSim::Array<std::string>& aFunctionNames){
 		getTorqueFunctions().getNames(aFunctionNames);
 	}
@@ -211,18 +211,18 @@ public:
 
 	/** Get whether the force and torque are specified in inertial coordinates 
     or in the body's local coordinates. **/
-    bool getForceIsInGlobalFrame() const {return getProperty_forceIsGlobal();}
+    bool getForceIsInGlobalFrame() const {return get_forceIsGlobal();}
 	/** Set whether the force and torque are specified in inertial coordinates 
     or in the body's local coordinates. **/
 	void setForceIsInGlobalFrame(bool isGlobal) 
-    {   setProperty_forceIsGlobal(isGlobal); }
+    {   set_forceIsGlobal(isGlobal); }
 	/** Get whether the point is specified in inertial coordinates or in the 
     body's local coordinates. **/
-    bool getPointIsInGlobalFrame() const {return getProperty_pointIsGlobal();}
+    bool getPointIsInGlobalFrame() const {return get_pointIsGlobal();}
 	/** Set whether the point is specified in inertial coordinates or in the 
     body's local coordinates. **/
 	void setPointIsInGlobalFrame(bool isGlobal)
-    {   setProperty_pointIsGlobal(isGlobal); }
+    {   set_pointIsGlobal(isGlobal); }
 
 	/** Get the body that the prescribed force is acting upon. **/
 	const OpenSim::Body& getBody() const {assert(_body); return *_body; }

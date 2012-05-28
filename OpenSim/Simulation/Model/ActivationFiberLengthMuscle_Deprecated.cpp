@@ -357,7 +357,7 @@ double ActivationFiberLengthMuscle_Deprecated::getExcitation( const SimTK::State
  */
 double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) const
 {
-	return getForce(s) / getProperty_max_isometric_force();
+	return getForce(s) / get_max_isometric_force();
 }
 
 //==============================================================================
@@ -375,15 +375,15 @@ double ActivationFiberLengthMuscle_Deprecated::getStress(const SimTK::State& s) 
  */
 void ActivationFiberLengthMuscle_Deprecated::postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath &path = updProperty_GeometryPath();
+	GeometryPath &path = upd_GeometryPath();
 
 	path.postScale(s, aScaleSet);
 
 	if (path.getPreScaleLength(s) > 0.0)
 		{
 			double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-			updProperty_optimal_fiber_length() *= scaleFactor;
-			updProperty_tendon_slack_length() *= scaleFactor;
+			upd_optimal_fiber_length() *= scaleFactor;
+			upd_tendon_slack_length() *= scaleFactor;
 			path.setPreScaleLength(s, 0.0) ;
 		}
 }
@@ -459,9 +459,9 @@ double ActivationFiberLengthMuscle_Deprecated::computeIsokineticForceAssumingInf
 {
 	double isometricForce = computeIsometricForce(s, aActivation);
 
-	const double &optimalFiberLength = getProperty_optimal_fiber_length();
-	const double &pennationAngleAtOptimal = getProperty_pennation_angle_at_optimal();
-	const double &maxContractionVelocity = getProperty_max_contraction_velocity();
+	const double &optimalFiberLength = get_optimal_fiber_length();
+	const double &pennationAngleAtOptimal = get_pennation_angle_at_optimal();
+	const double &maxContractionVelocity = get_max_contraction_velocity();
 
 	double normalizedLength = getFiberLength(s) / optimalFiberLength;
 	double normalizedVelocity = -cos(pennationAngleAtOptimal) * getLengtheningSpeed(s) / (maxContractionVelocity * optimalFiberLength);

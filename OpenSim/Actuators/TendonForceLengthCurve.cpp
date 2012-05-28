@@ -86,7 +86,7 @@ void TendonForceLengthCurve::constructProperties()
 
 void TendonForceLengthCurve::buildCurve()
 {            
-        double e0   =  getProperty_strain_at_one_norm_force();
+        double e0   =  get_strain_at_one_norm_force();
         double k    =  m_stiffnessAtOneNormForceInUse;                       
         double c    =  m_curvinessInUse;        
 
@@ -111,7 +111,7 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
         && getProperty_curviness().empty() == true)
     {
         //Get properties of the reference curve
-        double e0 = getProperty_strain_at_one_norm_force();
+        double e0 = get_strain_at_one_norm_force();
         SimTK::Vector refTendon = calcReferenceTendon(e0);    
 
         //Assign the stiffness
@@ -133,8 +133,8 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
 
                 
         m_stiffnessAtOneNormForceInUse
-                            = getProperty_stiffness_at_one_norm_force();
-        m_curvinessInUse    = getProperty_curviness();
+                            = get_stiffness_at_one_norm_force();
+        m_curvinessInUse    = get_curviness();
         m_isFittedCurveBeingUsed = false;
     }
 
@@ -196,7 +196,7 @@ double TendonForceLengthCurve::getStrainAtOneNormForce() const
 {
     TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();
-    return getProperty_strain_at_one_norm_force();
+    return get_strain_at_one_norm_force();
 }
 
 
@@ -225,14 +225,14 @@ bool TendonForceLengthCurve::isFittedCurveBeingUsed() const
 void TendonForceLengthCurve::
     setStrainAtOneNormForce(double aStrainAtOneNormForce)
 {         
-    setProperty_strain_at_one_norm_force(aStrainAtOneNormForce);  
+    set_strain_at_one_norm_force(aStrainAtOneNormForce);  
 }
 
 void TendonForceLengthCurve::
     setOptionalProperties(double aStiffnessAtOneNormForce, double aCurviness)
 {
-    setProperty_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
-    setProperty_curviness(aCurviness);
+    set_stiffness_at_one_norm_force(aStiffnessAtOneNormForce);
+    set_curviness(aCurviness);
 }
 
 

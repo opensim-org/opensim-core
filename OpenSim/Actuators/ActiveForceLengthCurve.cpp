@@ -50,11 +50,11 @@ ActiveForceLengthCurve::ActiveForceLengthCurve(double minActiveNormFiberLength,
     constructProperties();
     setName(muscleName + "_ActiveForceLengthCurve");
 
-    setProperty_min_norm_active_fiber_length(minActiveNormFiberLength);
-    setProperty_transition_norm_fiber_length(transitionNormFiberLength);
-    setProperty_max_norm_active_fiber_length(maxActiveNormFiberLength);
-    setProperty_shallow_ascending_slope(shallowAscendingSlope);
-    setProperty_minimum_value(minValue);
+    set_min_norm_active_fiber_length(minActiveNormFiberLength);
+    set_transition_norm_fiber_length(transitionNormFiberLength);
+    set_max_norm_active_fiber_length(maxActiveNormFiberLength);
+    set_shallow_ascending_slope(shallowAscendingSlope);
+    set_minimum_value(minValue);
 
     ensureCurveUpToDate();
 }
@@ -76,13 +76,13 @@ void ActiveForceLengthCurve::constructProperties()
 void ActiveForceLengthCurve::buildCurve()
 {
     
-        double lce0 = getProperty_min_norm_active_fiber_length();
-        double lce1 = getProperty_transition_norm_fiber_length();
+        double lce0 = get_min_norm_active_fiber_length();
+        double lce1 = get_transition_norm_fiber_length();
         double lce2 = 1.0;
-        double lce3 = getProperty_max_norm_active_fiber_length();
+        double lce3 = get_max_norm_active_fiber_length();
 
-        double dydx = getProperty_shallow_ascending_slope();
-        double minVal=getProperty_minimum_value();
+        double dydx = get_shallow_ascending_slope();
+        double minVal=get_minimum_value();
 
         double curviness = 0.75;
 
@@ -137,35 +137,35 @@ double ActiveForceLengthCurve::getMinActiveFiberLength() const
 {
     ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();  
-    return getProperty_min_norm_active_fiber_length();
+    return get_min_norm_active_fiber_length();
 }
 
 double ActiveForceLengthCurve::getTransitionFiberLength() const
 {
     ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();  
-    return getProperty_transition_norm_fiber_length();
+    return get_transition_norm_fiber_length();
 }
 
 double ActiveForceLengthCurve::getMaxActiveFiberLength() const
 {
     ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();  
-    return getProperty_max_norm_active_fiber_length();
+    return get_max_norm_active_fiber_length();
 }
 
 double ActiveForceLengthCurve::getShallowAscendingSlope() const
 {
     ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();  
-    return getProperty_shallow_ascending_slope();
+    return get_shallow_ascending_slope();
 }
 
 double ActiveForceLengthCurve::getMinValue() const
 {
     ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();  
-    return getProperty_minimum_value();
+    return get_minimum_value();
 }
 
 
@@ -173,30 +173,30 @@ double ActiveForceLengthCurve::getMinValue() const
 void ActiveForceLengthCurve::
     setMinActiveFiberLength(double minActiveNormFiberLength)
 {   
-    setProperty_min_norm_active_fiber_length(minActiveNormFiberLength);   
+    set_min_norm_active_fiber_length(minActiveNormFiberLength);   
 }
 
 void ActiveForceLengthCurve::
     setTransitionFiberLength(double transitionNormFiberLength)
 {    
-    setProperty_transition_norm_fiber_length(transitionNormFiberLength);
+    set_transition_norm_fiber_length(transitionNormFiberLength);
 }
 
 void ActiveForceLengthCurve::
     setMaxActiveFiberLength(double maxActiveNormFiberLength)
 {
-    setProperty_max_norm_active_fiber_length(maxActiveNormFiberLength);
+    set_max_norm_active_fiber_length(maxActiveNormFiberLength);
 }
 
 void ActiveForceLengthCurve::
     setShallowAscendingSlope(double aSlopeValue)
 {
-    setProperty_shallow_ascending_slope(aSlopeValue);
+    set_shallow_ascending_slope(aSlopeValue);
 }
 
 void ActiveForceLengthCurve::setMinValue(double minimumValue)
 {    
-    setProperty_minimum_value(minimumValue);    
+    set_minimum_value(minimumValue);    
 }
 
 

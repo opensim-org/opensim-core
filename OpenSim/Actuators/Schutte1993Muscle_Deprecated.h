@@ -100,8 +100,8 @@ public:
 	// GET
 	//--------------------------------------------------------------------------
 	// Properties
-	virtual double getTimeScale() const { return getProperty_time_scale(); }
-	virtual double getDamping() const { return getProperty_damping(); }
+	virtual double getTimeScale() const { return get_time_scale(); }
+	virtual double getDamping() const { return get_damping(); }
 	virtual bool setTimeScale(double aTimeScale);
 	virtual bool setActivation1(double aActivation1);
 	virtual bool setActivation2(double aActivation2);

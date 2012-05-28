@@ -56,8 +56,8 @@ SystemEnergyProbe::SystemEnergyProbe(bool computeKE, bool computePE)
 {
     setNull();
     constructProperties();
-    setProperty_compute_kinetic_energy(computeKE);
-    setProperty_compute_potential_energy(computePE);
+    set_compute_kinetic_energy(computeKE);
+    set_compute_potential_energy(computePE);
 }
 
 
@@ -82,28 +82,28 @@ void SystemEnergyProbe::constructProperties(void)
 // Returns whether KE is to be included in the system energy computation.
 bool SystemEnergyProbe::getComputeKineticEnergy() const
 {
-    return getProperty_compute_kinetic_energy();
+    return get_compute_kinetic_energy();
 }
 
 //_____________________________________________________________________________
 // Returns whether PE is to be included in the system energy computation.
 bool SystemEnergyProbe::getComputePotentialEnergy() const
 {
-    return getProperty_compute_potential_energy();
+    return get_compute_potential_energy();
 }
 
 //_____________________________________________________________________________
 // Sets whether KE is to be included in the system energy computation.
 void SystemEnergyProbe::setComputeKineticEnergy(bool c)
 {
-    return setProperty_compute_kinetic_energy(c);
+    return set_compute_kinetic_energy(c);
 }
 
 //_____________________________________________________________________________
 // Sets whether PE is to be included in the system energy computation.
 void SystemEnergyProbe::setComputePotentialEnergy(bool c)
 {
-    return setProperty_compute_potential_energy(c);
+    return set_compute_potential_energy(c);
 }
 
 //==============================================================================

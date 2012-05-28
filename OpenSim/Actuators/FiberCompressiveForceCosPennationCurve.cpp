@@ -50,9 +50,9 @@ FiberCompressiveForceCosPennationCurve::
     constructProperties();
     setName(muscleName + "_FiberCompressiveForceCosPennationCurve");
 
-    setProperty_engagement_angle_in_degrees(engagementAngleInDegrees);
-    setProperty_stiffness_at_perpendicular(stiffnessAtPerpendicular);
-    setProperty_curviness(curviness);
+    set_engagement_angle_in_degrees(engagementAngleInDegrees);
+    set_stiffness_at_perpendicular(stiffnessAtPerpendicular);
+    set_curviness(curviness);
 
     ensureCurveUpToDate();
 }
@@ -65,7 +65,7 @@ FiberCompressiveForceCosPennationCurve::
     constructProperties();
     setName(muscleName + "_FiberCompressiveForceCosPennationCurve");
 
-    setProperty_engagement_angle_in_degrees(engagementAngleInDegrees);    
+    set_engagement_angle_in_degrees(engagementAngleInDegrees);    
     ensureCurveUpToDate();
 }
 
@@ -86,7 +86,7 @@ void FiberCompressiveForceCosPennationCurve::constructProperties()
 
 void FiberCompressiveForceCosPennationCurve::buildCurve()
 {
-    double angle =  getProperty_engagement_angle_in_degrees();
+    double angle =  get_engagement_angle_in_degrees();
     double k     =  m_stiffnessAtPerpendicularInUse;
     double c     =  m_curvinessInUse;        
 
@@ -114,7 +114,7 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
         if(getProperty_stiffness_at_perpendicular().empty() == true &&
             getProperty_curviness().empty() == true)
         {
-            double eAngleRad = getProperty_engagement_angle_in_degrees()
+            double eAngleRad = get_engagement_angle_in_degrees()
                               *DegreesToRadians;
 
             m_stiffnessAtPerpendicularInUse= -2.0/cos(eAngleRad); 
@@ -130,8 +130,8 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
         {
             
             m_stiffnessAtPerpendicularInUse = 
-                getProperty_stiffness_at_perpendicular();
-            m_curvinessInUse = getProperty_curviness();
+                get_stiffness_at_perpendicular();
+            m_curvinessInUse = get_curviness();
             m_isFittedCurveBeingUsed = false;
         }
 
@@ -192,7 +192,7 @@ double FiberCompressiveForceCosPennationCurve::
         const_cast<FiberCompressiveForceCosPennationCurve*>(this);    
     mthis->ensureCurveUpToDate();
 
-    return getProperty_engagement_angle_in_degrees();
+    return get_engagement_angle_in_degrees();
 }
 
 double FiberCompressiveForceCosPennationCurve::
@@ -218,14 +218,14 @@ double FiberCompressiveForceCosPennationCurve::
 void FiberCompressiveForceCosPennationCurve::
     setEngagementAngleInDegrees(double aEngagementAngleInDegrees)
 {   
-   setProperty_engagement_angle_in_degrees(aEngagementAngleInDegrees);  
+   set_engagement_angle_in_degrees(aEngagementAngleInDegrees);  
 }
 
 void FiberCompressiveForceCosPennationCurve::
     setOptionalProperties(double aStiffnessAtPerpendicular, double aCurviness)
 {    
-    setProperty_stiffness_at_perpendicular(aStiffnessAtPerpendicular);    
-    setProperty_curviness(aCurviness);
+    set_stiffness_at_perpendicular(aStiffnessAtPerpendicular);    
+    set_curviness(aCurviness);
 }
 
 bool FiberCompressiveForceCosPennationCurve::isFittedCurveBeingUsed() const

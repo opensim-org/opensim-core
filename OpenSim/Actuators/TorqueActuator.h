@@ -98,25 +98,25 @@ public:
     /** Set the 'axis' property to the supplied value; frame is interpreted
     according to the 'torque_is_global' property. **/
 	void setAxis(const SimTK::Vec3& axis) 
-    {   setProperty_axis(axis); }
+    {   set_axis(axis); }
     /** Return the current value of the 'axis' property. **/
 	const SimTK::Vec3& getAxis() const 
-    {   return getProperty_axis(); }
+    {   return get_axis(); }
 
     /** Set the 'torque_is_global' property that determines how to interpret
     the 'axis' vector; if not global (Ground frame) it is in body A's frame. **/
 	void setTorqueIsGlobal(bool isGlobal) 
-    {   setProperty_torque_is_global(isGlobal); }
+    {   set_torque_is_global(isGlobal); }
     /** Return the current value of the 'torque_is_global' property. **/
 	bool getTorqueIsGlobal() const
-    {   return getProperty_torque_is_global(); }
+    {   return get_torque_is_global(); }
 
 	/** Set the 'optimal_force' property. **/
 	void setOptimalForce(double optimalForce)
-    {   setProperty_optimal_force(optimalForce); }
+    {   set_optimal_force(optimalForce); }
     /** Get the current value of the 'optimal_force' property. **/
 	double getOptimalForce() const OVERRIDE_11 // Part of Actuator interface.
-    {   return getProperty_optimal_force(); }
+    {   return get_optimal_force(); }
 
 //==============================================================================
 // PRIVATE

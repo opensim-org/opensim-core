@@ -50,15 +50,15 @@ ForceVelocityCurve::ForceVelocityCurve
     constructProperties();
     setName(muscleName + "_ForceVelocityCurve");
 
-    setProperty_min_concentric_slope(concentricMinSlope);
-    setProperty_isometric_slope(isometricMaxSlope);
-    setProperty_min_eccentric_slope(eccentricMinSlope);
+    set_min_concentric_slope(concentricMinSlope);
+    set_isometric_slope(isometricMaxSlope);
+    set_min_eccentric_slope(eccentricMinSlope);
 
-    setProperty_max_eccentric_velocity_force_multiplier(
+    set_max_eccentric_velocity_force_multiplier(
                        maxEccentricVelocityForceMultiplier);
 
-    setProperty_concentric_curviness(concentricCurviness);
-    setProperty_eccentric_curviness(eccentricCurviness);
+    set_concentric_curviness(concentricCurviness);
+    set_eccentric_curviness(eccentricCurviness);
 
 
     ensureCurveUpToDate();
@@ -84,12 +84,12 @@ void ForceVelocityCurve::constructProperties()
 void ForceVelocityCurve::buildCurve()
 {
         
-        double dydxC =  getProperty_min_concentric_slope();;
-        double dydxIso= getProperty_isometric_slope();
-        double dydxE =  getProperty_min_eccentric_slope();
-        double fmax  =  getProperty_max_eccentric_velocity_force_multiplier();
-        double ccurv =  getProperty_concentric_curviness();
-        double ecurv =  getProperty_eccentric_curviness();
+        double dydxC =  get_min_concentric_slope();;
+        double dydxIso= get_isometric_slope();
+        double dydxE =  get_min_eccentric_slope();
+        double fmax  =  get_max_eccentric_velocity_force_multiplier();
+        double ccurv =  get_concentric_curviness();
+        double ecurv =  get_eccentric_curviness();
                                 
         //Here's where you call the SmoothSegmentedFunctionFactory
         SmoothSegmentedFunction tmp = 
@@ -145,76 +145,76 @@ double ForceVelocityCurve::getConcentricMinSlope() const
 {
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
     mthis->ensureCurveUpToDate();
-    return getProperty_min_concentric_slope();
+    return get_min_concentric_slope();
 }
 
 double ForceVelocityCurve::getIsometricMaxSlope() const
 {
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
     mthis->ensureCurveUpToDate();
-    return getProperty_isometric_slope();
+    return get_isometric_slope();
 }
 
 double ForceVelocityCurve::getEccentricMinSlope() const
 {
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
     mthis->ensureCurveUpToDate();
-    return getProperty_min_eccentric_slope();
+    return get_min_eccentric_slope();
 }
 
 double ForceVelocityCurve::getMaxEccentricVelocityForceMultiplier() const
 {
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
     mthis->ensureCurveUpToDate();
-    return getProperty_max_eccentric_velocity_force_multiplier();
+    return get_max_eccentric_velocity_force_multiplier();
 }
     
 double ForceVelocityCurve::getConcentricCurviness() const
 {
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
     mthis->ensureCurveUpToDate();
-    return getProperty_concentric_curviness();
+    return get_concentric_curviness();
 }
     
 double ForceVelocityCurve::getEccentricCurviness() const
 {
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
     mthis->ensureCurveUpToDate();
-    return getProperty_eccentric_curviness();
+    return get_eccentric_curviness();
 }
 
 void ForceVelocityCurve::setConcentricMinSlope(double aConcentricMinSlope)
 {   
-    setProperty_min_concentric_slope(aConcentricMinSlope);   
+    set_min_concentric_slope(aConcentricMinSlope);   
 }
 
 void ForceVelocityCurve::setIsometricMaxSlope(double aIsometricMaxSlope)
 {
-    setProperty_isometric_slope(aIsometricMaxSlope);
+    set_isometric_slope(aIsometricMaxSlope);
 }
 
 void ForceVelocityCurve::setEccentricMinSlope(double aEccentricMinSlope)
 {
-    setProperty_min_eccentric_slope(aEccentricMinSlope);
+    set_min_eccentric_slope(aEccentricMinSlope);
 }
 
 
 void ForceVelocityCurve::
     setMaxEccentricVelocityForceMultiplier(double aMaxForceMultiplier)
 {
-    setProperty_max_eccentric_velocity_force_multiplier(aMaxForceMultiplier);
+    set_max_eccentric_velocity_force_multiplier(aMaxForceMultiplier);
 }
 
 
 void ForceVelocityCurve::setConcentricCurviness(double aConcentricCurviness)
 {
-    setProperty_concentric_curviness(aConcentricCurviness);
+    set_concentric_curviness(aConcentricCurviness);
 }
 
 
 void ForceVelocityCurve::setEccentricCurviness(double aEccentricCurviness)
 {
-    setProperty_eccentric_curviness(aEccentricCurviness);
+    set_eccentric_curviness(aEccentricCurviness);
 }
 
 

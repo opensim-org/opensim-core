@@ -56,7 +56,7 @@ JointPowerProbe::JointPowerProbe(const Array<string>& joint_names)
 {
     setNull();
     constructProperties();
-    setProperty_joint_names(joint_names);
+    set_joint_names(joint_names);
 }
 
 //_____________________________________________________________________________
@@ -91,7 +91,7 @@ const Property<string>& JointPowerProbe::getJointNames() const
  */
 void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
 {
-    setProperty_joint_names(aJointNames);
+    set_joint_names(aJointNames);
 }
 
 

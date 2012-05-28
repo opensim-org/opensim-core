@@ -63,8 +63,8 @@ TorqueActuator::TorqueActuator(const string& bodyNameA,
 {
 	constructProperties();
 
-    if (!bodyNameA.empty()) setProperty_bodyA(bodyNameA);
-    if (!bodyNameB.empty()) setProperty_bodyB(bodyNameB);
+    if (!bodyNameA.empty()) set_bodyA(bodyNameA);
+    if (!bodyNameB.empty()) set_bodyB(bodyNameB);
 }
 
 //_____________________________________________________________________________
@@ -95,7 +95,7 @@ void TorqueActuator::setBodyA(Body* aBody)
 {
 	_bodyA = aBody;
 	if(aBody)
-		setProperty_bodyA(aBody->getName());
+		set_bodyA(aBody->getName());
 }
 //_____________________________________________________________________________
 /**
@@ -108,7 +108,7 @@ void TorqueActuator::setBodyB(Body* aBody)
 {
 	_bodyB = aBody;
 	if(aBody)
-		setProperty_bodyB(aBody->getName());
+		set_bodyB(aBody->getName());
 }
 
 
@@ -192,14 +192,14 @@ void TorqueActuator::setup(Model& model)
 {
 	Super::setup(model);
 
-    if (getProperty_bodyA().empty() || getProperty_bodyB().empty())
+    if (get_bodyA().empty() || get_bodyB().empty())
         throw OpenSim::Exception(
             "TorqueActuator::setup(): body name properties were not set.");
 
     // Look up the bodies by name in the Model, and record pointers to the
     // corresponding body objects.
-	_bodyA = model.updBodySet().get(getProperty_bodyA());
-	_bodyB = model.updBodySet().get(getProperty_bodyB());
+	_bodyA = model.updBodySet().get(get_bodyA());
+	_bodyB = model.updBodySet().get(get_bodyB());
 }
 
 //==============================================================================
@@ -231,6 +231,6 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 		}
 	}
 	Super::updateFromXMLNode(aNode, versionNumber);
-	if (converting) updProperty_axis(0) *= -1.0;
+	if (converting) upd_axis() *= -1.0;
 }	
 

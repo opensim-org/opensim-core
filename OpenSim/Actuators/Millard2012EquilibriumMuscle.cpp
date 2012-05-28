@@ -202,13 +202,13 @@ SimTK::Vector Millard2012EquilibriumMuscle::
 double Millard2012EquilibriumMuscle::getDefaultActivation() const
 {
     ensureMuscleUpToDate();
-    return getProperty_default_activation();
+    return get_default_activation();
 }
 
 double Millard2012EquilibriumMuscle::getDefaultFiberLength() const
 {
     ensureMuscleUpToDate();
-    return getProperty_default_fiber_length();
+    return get_default_fiber_length();
 }
 
 double Millard2012EquilibriumMuscle::
@@ -268,12 +268,12 @@ double Millard2012EquilibriumMuscle::
 
 void Millard2012EquilibriumMuscle::setDefaultActivation(double activation)
 {
-    setProperty_default_activation(activation);
+    set_default_activation(activation);
 }
 
 void Millard2012EquilibriumMuscle::setDefaultFiberLength(double fiberLength)
 {
-    setProperty_default_fiber_length(fiberLength);
+    set_default_fiber_length(fiberLength);
 }
 
 void Millard2012EquilibriumMuscle::
@@ -336,49 +336,49 @@ MuscleFirstOrderActivationDynamicModel Millard2012EquilibriumMuscle::
     getActivationModel() const
 {
     ensureMuscleUpToDate();
-    return getProperty_activation_model();
+    return get_activation_model();
 }
 
 ActiveForceLengthCurve Millard2012EquilibriumMuscle::
     getActiveForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return getProperty_active_force_length_curve();
+    return get_active_force_length_curve();
 }
 
 ForceVelocityInverseCurve Millard2012EquilibriumMuscle::
     getForceVelocityInverseCurve() const
 {
     ensureMuscleUpToDate();
-    return getProperty_force_velocity_inverse_curve();
+    return get_force_velocity_inverse_curve();
 }
 
 FiberForceLengthCurve Millard2012EquilibriumMuscle::
     getFiberForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return getProperty_fiber_force_length_curve();
+    return get_fiber_force_length_curve();
 }
 
 TendonForceLengthCurve Millard2012EquilibriumMuscle::
     getTendonForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return getProperty_tendon_force_length_curve();
+    return get_tendon_force_length_curve();
 }
 
 FiberCompressiveForceLengthCurve Millard2012EquilibriumMuscle::
     getFiberCompressiveForceLengthCurve() const
 {
     ensureMuscleUpToDate();
-    return getProperty_fiber_compressive_force_length_curve();
+    return get_fiber_compressive_force_length_curve();
 }
 
 FiberCompressiveForceCosPennationCurve Millard2012EquilibriumMuscle::
     getFiberCompressiveForceCosPennationCurve() const
 {
     ensureMuscleUpToDate();
-    return getProperty_fiber_compressive_force_cospennation_curve();
+    return get_fiber_compressive_force_cospennation_curve();
 }
 
 double Millard2012EquilibriumMuscle::
@@ -396,36 +396,36 @@ double Millard2012EquilibriumMuscle::
 void Millard2012EquilibriumMuscle::setActivationModel(
         MuscleFirstOrderActivationDynamicModel& aActivationMdl)
 {
-    setProperty_activation_model(aActivationMdl);
+    set_activation_model(aActivationMdl);
 }
 void Millard2012EquilibriumMuscle::setActiveForceLengthCurve(
         ActiveForceLengthCurve& aActiveForceLengthCurve)
 {
-    setProperty_active_force_length_curve(aActiveForceLengthCurve);
+    set_active_force_length_curve(aActiveForceLengthCurve);
 }
 
 void Millard2012EquilibriumMuscle::setForceVelocityInverseCurve(
         ForceVelocityInverseCurve& aForceVelocityInverseCurve)
 {   
-    setProperty_force_velocity_inverse_curve(aForceVelocityInverseCurve);
+    set_force_velocity_inverse_curve(aForceVelocityInverseCurve);
 }
 
 void Millard2012EquilibriumMuscle::setFiberForceLengthCurve(
         FiberForceLengthCurve& aFiberForceLengthCurve)
 {
-    setProperty_fiber_force_length_curve(aFiberForceLengthCurve);
+    set_fiber_force_length_curve(aFiberForceLengthCurve);
 }
 
 void Millard2012EquilibriumMuscle::setTendonForceLengthCurve(
         TendonForceLengthCurve& aTendonForceLengthCurve)
 {
-    setProperty_tendon_force_length_curve(aTendonForceLengthCurve);
+    set_tendon_force_length_curve(aTendonForceLengthCurve);
 }
 
 void Millard2012EquilibriumMuscle::setFiberCompressiveForceLengthCurve(
         FiberCompressiveForceLengthCurve& aFiberCompressiveForceLengthCurve)
 {
-    setProperty_fiber_compressive_force_length_curve(
+    set_fiber_compressive_force_length_curve(
         aFiberCompressiveForceLengthCurve);
 }
 
@@ -433,7 +433,7 @@ void Millard2012EquilibriumMuscle::setFiberCompressiveForceCosPennationCurve(
         FiberCompressiveForceCosPennationCurve& 
         aFiberCompressiveForceCosPennationCurve)
 {
-    setProperty_fiber_compressive_force_cospennation_curve(
+    set_fiber_compressive_force_cospennation_curve(
         aFiberCompressiveForceCosPennationCurve);
 }
 
@@ -444,15 +444,15 @@ void Millard2012EquilibriumMuscle::setFiberCompressiveForceCosPennationCurve(
 void Millard2012EquilibriumMuscle::
 postScale(const SimTK::State& s, const ScaleSet& aScaleSet)
 {
-	GeometryPath& path = updProperty_GeometryPath();
+	GeometryPath& path = upd_GeometryPath();
 
 	path.postScale(s, aScaleSet);
 
 	if (path.getPreScaleLength(s) > 0.0)
 	{
 		double scaleFactor = getLength(s) / path.getPreScaleLength(s);
-		updProperty_optimal_fiber_length() *= scaleFactor;
-		updProperty_tendon_slack_length() *= scaleFactor;
+		upd_optimal_fiber_length() *= scaleFactor;
+		upd_tendon_slack_length() *= scaleFactor;
 		path.setPreScaleLength(s, 0.0) ;
 	}
 }
