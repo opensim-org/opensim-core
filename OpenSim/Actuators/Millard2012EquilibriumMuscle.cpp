@@ -40,19 +40,16 @@ using namespace std;
 using namespace OpenSim;
 using namespace SimTK;
 
-///@cond  
 const string Millard2012EquilibriumMuscle::
     STATE_ACTIVATION_NAME = "activation";
 const string Millard2012EquilibriumMuscle::
-    STATE_FIBER_LENGTH_NAME = "fiber_length";
-///@endcond  
+    STATE_FIBER_LENGTH_NAME = "fiber_length"; 
 
 //=============================================================================
 // PROPERTY MANAGEMENT
 //=============================================================================
 void Millard2012EquilibriumMuscle::setNull()
 {
-     penMdl = NULL;
 }
 
 
@@ -91,7 +88,6 @@ void Millard2012EquilibriumMuscle::buildMuscle()
     std::string caller = getName();
     caller.append(".buildMuscle()");
 
-    penMdl = NULL; // Ask Sherm: do I need to do this?
     penMdl = new MuscleFixedWidthPennationModel(optFibLen,optPenAng,caller);
     setObjectIsUpToDateWithProperties();
 }
@@ -108,13 +104,8 @@ void Millard2012EquilibriumMuscle::ensureMuscleUpToDate() const
 
 
 //=============================================================================
-// CONSTRUCTOR(S) AND DESTRUCTOR
+// CONSTRUCTOR(S)
 //=============================================================================
-Millard2012EquilibriumMuscle::~Millard2012EquilibriumMuscle()
-{
-    delete penMdl;
-}
-
 
 Millard2012EquilibriumMuscle::Millard2012EquilibriumMuscle()            
 {    

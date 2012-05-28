@@ -177,8 +177,6 @@ public:
 //=============================================================================
     /**Default constructor: produces a non-functional empty muscle*/
     Millard2012EquilibriumMuscle();
-    /**Default destructor*/
-    ~Millard2012EquilibriumMuscle();
 
     /**Constructs a functional muscle using all of the default curves and
        activation model.
@@ -496,11 +494,6 @@ protected:
 	double getStateVariableDeriv(   const SimTK::State& s, 
                                     const std::string &aStateName) const;
 
-//Trying this with char* defined in the CPP file
-//	static const std::string STATE_ACTIVATION_NAME;
-//	static const std::string STATE_FIBER_LENGTH_NAME;   
-
-
 private:
     ///The name used to access the activation state
     static const std::string STATE_ACTIVATION_NAME;
@@ -679,8 +672,11 @@ private:
     //      -Computes activation dynamics and fiber kinematics
     //=====================================================================
 
-    /**This object defines the pennation model used for this muscle model*/
-    mutable MuscleFixedWidthPennationModel *penMdl;
+    // This object defines the pennation model used for this muscle model.
+    // Using a ClonePtr saves us from having to write a destructor, copy
+    // constructor, or copy assignment. This will be zeroed on construction,
+    // cleaned up on destruction, and cloned when copying.
+    SimTK::ClonePtr<MuscleFixedWidthPennationModel> penMdl;
 
     /**
     @param s the system state
