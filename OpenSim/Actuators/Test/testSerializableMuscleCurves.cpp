@@ -1126,7 +1126,7 @@ void testFiberCompressiveForceCosPennationCurve()
         cout << "Passed: Testing get/set methods" << endl;
 
         //====================================================================
-        double p1 = 80;
+        double p1 = 85;
         double p2 = -2.0/cos(p1*SimTK::Pi/180.0);
         double p3 = 0.1;
 
