@@ -237,39 +237,39 @@ public:
    @returns the MuscleFirstOrderActivationDynamicModel 
             that this muscle model uses
    */
-    MuscleFirstOrderActivationDynamicModel getActivationModel() const;
+    const MuscleFirstOrderActivationDynamicModel& getActivationModel() const;
 
     /**
     @returns the ActiveForceLengthCurve that this muscle model uses
     */
-    ActiveForceLengthCurve getActiveForceLengthCurve() const;
+    const ActiveForceLengthCurve& getActiveForceLengthCurve() const;
 
     /**
     @returns the ForceVelocityInverseCurve that this muscle model uses
     */
-    ForceVelocityInverseCurve getForceVelocityInverseCurve() const;
+    const ForceVelocityInverseCurve& getForceVelocityInverseCurve() const;
 
     /**
     @returns the FiberForceLengthCurve that this muscle model uses
     */
-    FiberForceLengthCurve getFiberForceLengthCurve() const;
+    const FiberForceLengthCurve& getFiberForceLengthCurve() const;
 
     /**
     @returns the TendonForceLengthCurve that this muscle model uses
     */
-    TendonForceLengthCurve getTendonForceLengthCurve() const;
+    const TendonForceLengthCurve& getTendonForceLengthCurve() const;
 
     /**
     @returns the FiberCompressiveForceLengthCurve that this muscle model uses
     */
-    FiberCompressiveForceLengthCurve 
+    const FiberCompressiveForceLengthCurve& 
         getFiberCompressiveForceLengthCurve() const;
 
     /**
     @returns the FiberCompressiveForceCosPennationCurve that this muscle 
              model uses.
     */
-    FiberCompressiveForceCosPennationCurve 
+    const FiberCompressiveForceCosPennationCurve& 
         getFiberCompressiveForceCosPennationCurve() const;
 
     /**
@@ -495,24 +495,24 @@ protected:
                                     const std::string &aStateName) const;
 
 private:
-    ///The name used to access the activation state
+    //The name used to access the activation state
     static const std::string STATE_ACTIVATION_NAME;
-    ///The name used to access the fiber length state
+    //The name used to access the fiber length state
 	static const std::string STATE_FIBER_LENGTH_NAME;
 
     
     void setNull();
     void constructProperties();
     
-    /**Builds all of the components that are necessary to use this 
+    /*Builds all of the components that are necessary to use this 
     muscle model in simulation*/
     void buildMuscle();
 
-    /**Checks to make sure that none of the muscle model's properties have
+    /*Checks to make sure that none of the muscle model's properties have
     changed. If they have changed, then the muscle is rebuilt.*/
     void ensureMuscleUpToDate() const;
 
-    /**
+    /*
     Calculates the force-velocity multiplier
     @param a activation
     @param fal the fiber active force length multiplier
@@ -535,7 +535,7 @@ private:
                     double cosphi,
                     std::string& caller) const;
 
-    /**
+    /*
     
     @param fiso the maximum isometric force the fiber can generate  
     @param a activation
@@ -558,7 +558,7 @@ private:
                             double cosPhi) const;    
 
 
-    /**
+    /*
     @param fiso the maximum isometric force the fiber can generate  
     @param a activation
     @param fal the fiber active force length multiplier
@@ -580,7 +580,7 @@ private:
                                         double cosPhi) const;  
 
 
-    /**
+    /*
     @param fiso the maximum isometric force the fiber can generate  
     @param a activation
     @param fal the fiber active force length multiplier
@@ -609,7 +609,7 @@ private:
                                 double lceN,
                                 double optFibLen) const;
 
-    /**
+    /*
     @param dFm_d_lce the stiffness of the fiber in the direction of the fiber
     @param sinphi the sine of the pennation angle
     @param cosphi the cosine of the pennation angle    
@@ -622,7 +622,7 @@ private:
                                                double sinPhi,
                                                double cosPhi,
                                                double lce) const;
-    /**
+    /*
     @param fiso the maximum isometric force the fiber can generate  
     @param a activation
     @param fal the fiber active force length multiplier
@@ -652,7 +652,7 @@ private:
                                             double lceN,
                                             double optFibLen) const;
 
-    /**
+    /*
     @param dFt_d_tl the partial derivative of tendon force with respect to small
                     changes in tendon length (tendon stiffness) in (N/m)
     @param lce the fiber length
@@ -676,9 +676,10 @@ private:
     // Using a ClonePtr saves us from having to write a destructor, copy
     // constructor, or copy assignment. This will be zeroed on construction,
     // cleaned up on destruction, and cloned when copying.
-    SimTK::ClonePtr<MuscleFixedWidthPennationModel> penMdl;
+    //SimTK::ClonePtr<MuscleFixedWidthPennationModel> penMdl;
+    MuscleFixedWidthPennationModel penMdl;
 
-    /**
+    /*
     @param s the system state
     @param aActivation the initial activation of the muscle
     @param aSolTolerance the desired relative tolerance of the equilibrium 
