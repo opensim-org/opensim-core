@@ -440,8 +440,9 @@ IF(WIN32)
 ENDIF(WIN32)
 
 
-## Install other files (batch file, doc, api)
-INCLUDE (Dart)
+## The following are required to uses Dart and the Cdash dashboard per Jesse
+ENABLE_TESTING()
+INCLUDE(CTest)
 
 ## This adds a target "doxygen" for building the doxygen docs, as well as 
 ## an INSTALL procedure.
