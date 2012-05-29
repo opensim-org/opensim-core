@@ -317,15 +317,15 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                             "computeInitialFiberEquilibrium(SimTK::State& s)";
     std::string muscleName = getName();
 
-    SimTK_ERRCHK3_ALWAYS(flag_status == 1, fcnName.c_str(),
+    SimTK_ERRCHK3_ALWAYS(flag_status == 0, fcnName.c_str(),
         "%s: \n"
      "    The initialization routine found no stable equilibrium fiber length\n"
      "    length. The initial activation (%f) or whole muscle length (%f)"
      "    might be unsuitable.", 
         muscleName.c_str(), getActivation(s), getLength(s));
 
-    //1: flag (0 = diverged (not enough iterations), 
-    //         1=converged, 
+    //1: flag (0 = converged, 
+    //         1=diverged (not enough iterations), 
     //         2= no solution due to singularity:length 0, 
     //         3= no solution due to pennation angle singularity    
     //2: solution error (N)
@@ -635,7 +635,8 @@ SimTK::Vector Thelen2003Muscle::
    
 
     //results vector format
-    //1: flag (0 = diverged (not enough iterations), 1=converged, 
+    //1: flag (0 = converged 
+    //         1=diverged, 
     //         2= no solution due to singularity:length 0, 
     //         3= no solution due to pennation angle singularity    
     //2: solution error (N)
@@ -815,7 +816,8 @@ SimTK::Vector Thelen2003Muscle::
     //*******************************
     //If the solution converged
     if(abs(ferr) < aSolTolerance){    
-        //1: flag (0 = diverged (not enough iterations), 1=converged, 
+        //1: flag (0 = converged
+        //         1 = diverged (not enough iterations) 
         //         2= no solution due to singularity:length 0, 
         //         3= no solution due to pennation angle singularity
         //2: solution Error (N)
@@ -824,7 +826,7 @@ SimTK::Vector Thelen2003Muscle::
         //5: passive force (N)
         //6: tendon force (N)
         
-        results[0] = 1.0;
+        results[0] = 0;
         results[1] = ferr;
         results[2] = (double)iter;
         results[3] = lce;
@@ -863,7 +865,7 @@ SimTK::Vector Thelen2003Muscle::
 
         //Not enough iterations
         }else{ 
-            results[0] = 0.0;
+            results[0] = 1.0;
             results[1] = ferr;
             results[2] = (double)iter;
             results[3] = lce;
@@ -1351,7 +1353,7 @@ SimTK::Vector Thelen2003Muscle::
                                const double tolerance, int maxIterations) const
 {
     SimTK::Vector result(2);
-    result(0) = 0.0; //value of flag: 0 diverged, 1 converged
+    result(0) = 0.0; //value of flag: 0 converged, 1 diverged
     result(1) = 0.0; //value of fv
     double ferr=1;
     double iter= 0;

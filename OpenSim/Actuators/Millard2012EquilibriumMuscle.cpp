@@ -504,7 +504,7 @@ void Millard2012EquilibriumMuscle::
                             "computeInitialFiberEquilibrium(SimTK::State& s)";
     std::string muscleName = getName();
 
-    SimTK_ERRCHK3_ALWAYS(   flag_status == 1, 
+    SimTK_ERRCHK3_ALWAYS(   flag_status == 0, 
                             fcnName.c_str(),
         "%s: \n"
      "    The initialization routine found no stable equilibrium fiber length\n"
@@ -514,8 +514,8 @@ void Millard2012EquilibriumMuscle::
         getActivation(s), 
         getLength(s));
 
-    //1: flag (0 = diverged (not enough iterations), 
-    //         1=converged, 
+    //1: flag (0 = converged, 
+    //         1=diverged , 
     //         2= no solution due to singularity:length 0, 
     //         3= no solution due to pennation angle singularity    
     //2: solution error (N)
@@ -858,7 +858,8 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     std::string caller = getName();
     caller.append(".initMuscleState");
     //results vector format
-    //1: flag (0 = diverged (not enough iterations), 1=converged, 
+    //1: flag (0 = converged,
+    //         1 = diverged,
     //         2= no solution due to singularity:length 0, 
     //         3= no solution due to pennation angle singularity    
     //2: solution error (N)
@@ -1094,7 +1095,8 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     //*******************************
     //If the solution converged
     if(abs(ferr) < aSolTolerance){    
-        //1: flag (0 = diverged (not enough iterations), 1=converged, 
+        //1: flag (0 = converged
+        //         1=diverged, 
         //         2= no solution due to singularity:length 0, 
         //         3= no solution due to pennation angle singularity
         //2: solution Error (N)
@@ -1103,7 +1105,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
         //5: passive force (N)
         //6: tendon force (N)
         
-        results[0] = 1.0;
+        results[0] = 0;
         results[1] = ferr;
         results[2] = (double)iter;
         results[3] = lce;
@@ -1140,7 +1142,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
 
         //Not enough iterations
         }else{ 
-            results[0] = 0.0;
+            results[0] = 1.0;
             results[1] = ferr;
             results[2] = (double)iter;
             results[3] = lce;
