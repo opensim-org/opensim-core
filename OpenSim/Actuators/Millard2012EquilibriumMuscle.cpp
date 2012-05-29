@@ -45,6 +45,12 @@ const string Millard2012EquilibriumMuscle::
 const string Millard2012EquilibriumMuscle::
     STATE_FIBER_LENGTH_NAME = "fiber_length"; 
 
+const static int MLIfse     = 0;
+const static int MLIfk      = 1;
+const static int MLIfcphi   = 2;
+const static int MLIfkPE    = 3;
+const static int MLIfcphiPE = 4;
+
 //=============================================================================
 // PROPERTY MANAGEMENT
 //=============================================================================
@@ -314,14 +320,14 @@ double Millard2012EquilibriumMuscle::
     getFiberCompressiveForceLengthMultiplier(SimTK::State& s) const
 {
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-    return mli.userDefinedLengthExtras[1];
+    return mli.userDefinedLengthExtras[MLIfk];
 }
 
 double Millard2012EquilibriumMuscle::
     getFiberCompressiveForceCosPennationMultiplier(SimTK::State& s) const
 {
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-    return mli.userDefinedLengthExtras[2];
+    return mli.userDefinedLengthExtras[MLIfcphi];
 }
 
 
@@ -329,7 +335,7 @@ double Millard2012EquilibriumMuscle::
     getTendonForceMultiplier(SimTK::State& s) const
 {
     const MuscleLengthInfo& mli = getMuscleLengthInfo(s);
-    return mli.userDefinedLengthExtras[0];
+    return mli.userDefinedLengthExtras[MLIfse];
 }
 
 const MuscleFirstOrderActivationDynamicModel& Millard2012EquilibriumMuscle::
@@ -603,11 +609,11 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
 
 
 
-    mli.userDefinedLengthExtras[0] =tendonForceLengthMultiplier;
-    mli.userDefinedLengthExtras[1] =fkCurve.calcValue(mli.normFiberLength);
-    mli.userDefinedLengthExtras[2] =fcphiCurve.calcValue(mli.cosPennationAngle);
-    mli.userDefinedLengthExtras[3] =compForceLengthPE;
-    mli.userDefinedLengthExtras[4] =compForceCosPennationPE;
+    mli.userDefinedLengthExtras[MLIfse] =tendonForceLengthMultiplier;
+    mli.userDefinedLengthExtras[MLIfk] =fkCurve.calcValue(mli.normFiberLength);
+    mli.userDefinedLengthExtras[MLIfcphi] =fcphiCurve.calcValue(mli.cosPennationAngle);
+    mli.userDefinedLengthExtras[MLIfkPE] =compForceLengthPE;
+    mli.userDefinedLengthExtras[MLIfcphiPE] =compForceCosPennationPE;
 
 }
 
@@ -653,9 +659,9 @@ void Millard2012EquilibriumMuscle::calcFiberVelocityInfo(const SimTK::State& s,
 
     double fal  = mli.fiberActiveForceLengthMultiplier;
     double fpe  = mli.fiberPassiveForceLengthMultiplier;
-    double fse  = mli.userDefinedLengthExtras[0];
-    double fk   = mli.userDefinedLengthExtras[1];
-    double fcphi= mli.userDefinedLengthExtras[2];
+    double fse  = mli.userDefinedLengthExtras[MLIfse];
+    double fk   = mli.userDefinedLengthExtras[MLIfk];
+    double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     
     //2. Compute fv - but check for singularities first
@@ -759,9 +765,9 @@ void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s,
     double fal  = mli.fiberActiveForceLengthMultiplier;
     double fpe  = mli.fiberPassiveForceLengthMultiplier;
     double fv   = mvi.fiberForceVelocityMultiplier;    
-    double fse  = mli.userDefinedLengthExtras[0];
-    double fk   = mli.userDefinedLengthExtras[1];
-    double fcphi= mli.userDefinedLengthExtras[2];
+    double fse  = mli.userDefinedLengthExtras[MLIfse];
+    double fk   = mli.userDefinedLengthExtras[MLIfk];
+    double fcphi= mli.userDefinedLengthExtras[MLIfcphi];
 
     //Compute the stiffness of the muscle fiber
     SimTK_ERRCHK1_ALWAYS(lce > SimTK::Eps, fcnName.c_str(),
