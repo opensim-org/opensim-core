@@ -617,11 +617,6 @@ void Millard2012EquilibriumMuscle::calcMuscleLengthInfo(const SimTK::State& s,
 
 }
 
-//=======================================
-// computeMuscleLengthInfo helper functions
-//=======================================
-
-
 
 void Millard2012EquilibriumMuscle::calcFiberVelocityInfo(const SimTK::State& s, 
                                                FiberVelocityInfo& fvi) const
@@ -711,13 +706,6 @@ void Millard2012EquilibriumMuscle::calcFiberVelocityInfo(const SimTK::State& s,
 }
 
 
-
-
-
-
-//=======================================
-// computeFiberVelocityInfo helper functions
-//=======================================
 
 void Millard2012EquilibriumMuscle::calcMuscleDynamicsInfo(const SimTK::State& s, 
                                                MuscleDynamicsInfo& mdi) const
