@@ -28,7 +28,7 @@
 #include <OpenSim/Simulation/Model/Model.h>
 #include <iostream>
 
-#include <SimTKcommon\internal\ExceptionMacros.h>
+#include <SimTKcommon/internal/ExceptionMacros.h>
 
 //=============================================================================
 // STATICS
@@ -1119,7 +1119,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
             printf("Initialization failed: fiber length approaching 0, \n"
                    "                       for %s, a Millard2012EquilibriumMuscle \n"
                    "                       with an error of %f", 
-                   getName(), ferr);
+                   getName().c_str(), ferr);
         //Check for a pennation angle singularity   
         }else if(phi > SimTK::Pi/2 - SimTK::Eps){
             results[0] = 3.0;
@@ -1132,7 +1132,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
             printf("Initialization failed: pennation angle approaching Pi/2, \n"
                    "                       for %s, a Millard2012EquilibriumMuscle \n"
                    "                       with an error of %f", 
-                   getName(), ferr);
+                   getName().c_str(), ferr);
 
         //Not enough iterations
         }else{ 
@@ -1146,7 +1146,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
             printf("Initialization failed: solution did not converge in %i, \n"
                    "                       for %s, a Millard2012EquilibriumMuscle \n"
                    "                       with an error of %f", 
-                   iter,getName(),ferr);
+                   iter,getName().c_str(),ferr);
 
         }
  
