@@ -1,7 +1,7 @@
 // Object.cpp
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /*
-* Copyright (c)   2005, Stanford University. All rights reserved. 
+* Copyright (c)   2005-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -565,25 +565,47 @@ renameType(const std::string& oldTypeName, const std::string& newTypeName)
 
 /*static*/ const Object* Object::
 getDefaultInstanceOfType(const std::string& objectTypeTag) {
+    std::string actualName = objectTypeTag;
+    bool wasRenamed = false; // for a better error message
+
+    // First apply renames if any.
+
+    // Avoid an infinite loop if there is a cycle in the rename table.
+    const int MaxRenames = _renamedTypesMap.size();
+    int renameCount = 0;
+    while(true) {
+        std::map<std::string,std::string>::const_iterator newNamep =
+            _renamedTypesMap.find(actualName);
+        if (newNamep == _renamedTypesMap.end())
+            break; // actualName has not been renamed
+
+        if (++renameCount > MaxRenames) {
+            throw OpenSim::Exception(
+                "Object::getDefaultInstanceOfType(): cycle in rename table "
+                "found when looking for '" + objectTypeTag + "'.");
+        }
+
+        actualName = newNamep->second;
+        wasRenamed = true;
+    }
+
+    // Look up the "actualName" default object and return it.
     std::map<std::string,Object*>::const_iterator p = 
-        _mapTypesToDefaultObjects.find(objectTypeTag);
+        _mapTypesToDefaultObjects.find(actualName);
     if (p != _mapTypesToDefaultObjects.end())
         return p->second;
-    // Couldn't find it. Check to see if it has been renamed.
-    std::map<std::string,std::string>::const_iterator newName =
-        _renamedTypesMap.find(objectTypeTag);
-    if (newName == _renamedTypesMap.end())
-        return NULL; // no object with this tag known
 
-    // If it was in the renamedTypes table then there must be a 
-    // corresponding registered type or something terrible has happened!
-    p = _mapTypesToDefaultObjects.find(newName->second);
-    SimTK_ASSERT2_ALWAYS(p != _mapTypesToDefaultObjects.end(),
-        "Object::getDefaultInstanceOfType(): "
-        "Found tag '%s' renamed to unregistered tag '%s'.", 
-        objectTypeTag.c_str(), newName->second.c_str());
+    // The requested object was not registered. That's OK normally but is
+    // a bug if we went through the rename table since you are only allowed
+    // to rename things to registered objects.
+    if (wasRenamed) {
+        throw OpenSim::Exception(
+            "Object::getDefaultInstanceOfType(): '" + objectTypeTag
+            + "' was renamed to '" + actualName 
+            + "' which is not the name of a registered object.");
+    }
 
-    return p->second;
+    return NULL;
 }
 
 /*
@@ -619,7 +641,8 @@ getRegisteredTypenames(Array<std::string>& rTypeNames)
         _mapTypesToDefaultObjects.begin();
     for (; p != _mapTypesToDefaultObjects.end(); ++p)
         rTypeNames.append(p->first);
-	// Renamed type names don't appear in the registeredTypes map.
+	// Renamed type names don't appear in the registeredTypes map, unless
+    // they were separately registered.
 }
 
 //=============================================================================

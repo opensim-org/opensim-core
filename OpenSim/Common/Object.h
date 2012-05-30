@@ -408,7 +408,9 @@ public:
     types derived from %Object must be registered and a default instance
     provided. This enables reading these objects from XML files. You can also
     recognize now-obsolete names for objects and have them quietly mapped to
-    their modern names using the renameType() method. **/
+    their modern names using the renameType() method. Rename can also be used
+    programmatically to replace one registered type with another, because
+    renaming occurs prior to object lookup. **/
     /**@{**/
 
     /** Register an instance of a class; if the class is already registered it
@@ -422,7 +424,9 @@ public:
 
 	/** Support versioning by associating the current %Object type with an 
     old name. This is only allowed if \a newTypeName has already been 
-    registered with registerType(). **/
+    registered with registerType(). Renaming is applied first prior to lookup
+    so can be used both for translating now-obsolete names to their new names
+    and for overriding one registered type with another. **/
 	static void renameType(const std::string& oldTypeName, 
                            const std::string& newTypeName);
 
@@ -433,7 +437,8 @@ public:
     instead, use newInstanceOfType(). The given \a concreteClassName will be
     mapped through the renamed type table if necessary but the returned object
     will always have the new type name, which may differ from the supplied 
-    one. 
+    one. Note that renaming is applied first, prior to looking up the name
+    in the registered objects table.
     @see registerType(), renameType() **/
     static const Object* 
     getDefaultInstanceOfType(const std::string& concreteClassName);
@@ -444,7 +449,8 @@ public:
     For this to work the name must represent an already-registered object
     type. If necessary \a concreteClassName will be mapped through the renamed
     type table, so we'll return true if the class it maps to satisfies the
-    condition.
+    condition. Note that renaming is applied first, prior to looking up the name
+    in the registered objects table.
     @see registerType(), renameType() **/
     template <class T> static bool
     isObjectTypeDerivedFrom(const std::string& concreteClassName) {
@@ -462,10 +468,12 @@ public:
 
 	/** Retrieve all the typenames registered so far. This is done by traversing
     the registered objects map, so only concrete classes that have registered 
-    instances are returned; renamed types will not appear. The result returned 
-    in \a typeNames should not be cached while more shared libraries or plugins 
-    are loaded, because more types may be registered as a result. Instead the 
-    list should be reconstructed whenever in doubt. **/
+    instances are returned; renamed types will not appear unless they were
+    separately registered. (Note that even if one registered type has been
+    renamed to another, both will appear in the returned list.) The result 
+    returned in \a typeNames should not be cached while more shared libraries 
+    or plugins are loaded, because more types may be registered as a result. 
+    Instead the list should be reconstructed whenever in doubt. **/
 	static void getRegisteredTypenames(Array<std::string>& typeNames);
 
 	/** Return an array of pointers to the default instances of all registered
@@ -785,20 +793,24 @@ protected:
 
 private:
 	// Array holding a default value for each of the registered object types. 
-    // Each object type only appears once in this array. Renamed types do not 
-    // have separate registered objects; they are just used to locate one of 
-    // the current ones.
+    // Each object type only appears once in this array. Renamed types usually
+    // do not have separate registered objects; they are just used to locate 
+    // one of the current ones.
 	static ArrayPtrs<Object>                    _registeredTypes;
 
 	// Map from concrete object class name string to a default object of that 
     // type kept in the above array of registered types. Renamed types are *not* 
-    // entered here; the names are mapped separately using the map below.
+    // normally entered here; the names are mapped separately using the map 
+    // below.
 	static std::map<std::string,Object*>        _mapTypesToDefaultObjects;
 
 	// Map types that have been renamed to their new names, which can
     // then be used to find them in the default object map. This lets us 
     // recognize the old names while converting to the new ones internally
-    // so that they will be updated when written out.
+    // so that they will be updated when written out. It also allows one 
+    // to map one registered type to a different one programmatically, because
+    // we'll look up the name in the rename table first prior to searching
+    // the registered types list.
 	static std::map<std::string,std::string>    _renamedTypesMap;
 
 	// Global flag to indicate if all registered objects are to be written in 
