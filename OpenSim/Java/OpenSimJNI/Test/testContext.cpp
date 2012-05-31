@@ -94,11 +94,12 @@ int main()
 	OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
 	Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
 	assert(dTRIlong);
+    context->setDefaultsFromState();
     OpenSim::Thelen2003Muscle* thelenMsl = dynamic_cast<Thelen2003Muscle*>(dTRIlong);
     AbstractProperty& dProp = thelenMsl->updPropertyByName("ignore_tendon_compliance");
     PropertyHelper::setValueBool(true, dProp);
     cout << "Prop after is " << dProp.toString() << endl;
-    context->recreateSystemAfterSystemExistsKeepStage();
+    context->recreateSystemKeepStage();
     AbstractProperty& dProp2 = thelenMsl->updPropertyByName("ignore_tendon_compliance");
     cout << "Prop after create system is " << dProp2.toString() << endl;
     bool after = PropertyHelper::getValueBool(dProp);
