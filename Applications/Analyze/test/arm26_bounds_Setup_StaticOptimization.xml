@@ -173,7 +173,7 @@
 	<!--Flag indicating whether or not to compute equilibrium values for
 	    states other than the coordinates or speeds.  For example, equilibrium
 	    muscle fiber lengths or muscle forces.-->
-	<solve_for_equilibrium_for_auxiliary_states> true </solve_for_equilibrium_for_auxiliary_states>
+	<solve_for_equilibrium_for_auxiliary_states> false </solve_for_equilibrium_for_auxiliary_states>
 		<!--Maximum number of integrator steps.-->
 		<maximum_number_of_integrator_steps> 20000 </maximum_number_of_integrator_steps>
 		<!--Maximum integration step size.-->

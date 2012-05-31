@@ -41,31 +41,47 @@
 using namespace OpenSim;
 using namespace std;
 
+void testArm26(bool useDeprecatedMuscle);
+
 int main()
 {
 	try {
-		AnalyzeTool analyze1("arm26_Setup_StaticOptimization.xml");
-		analyze1.getModel();
-		analyze1.run();
-		Storage resultActivation1("Results/arm26_StaticOptimization_activation.sto"), standardActivation1("std_arm26_StaticOptimization_activation.sto");
-		Storage resultForce1("Results/arm26_StaticOptimization_force.sto"), standardForce1("std_arm26_StaticOptimization_force.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(resultActivation1, standardActivation1, Array<double>(0.005, 24), __FILE__, __LINE__, "testArm failed");
-		CHECK_STORAGE_AGAINST_STANDARD(resultForce1, standardForce1, Array<double>(0.1, 24), __FILE__, __LINE__, "testArm failed");
-		cout << "testArm passed" << endl;
+		// test with arm26 model and updated Thelen2003Muscle model
+		//testArm26(false);
 
-		AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
-		analyze2.getModel();
-		analyze2.run();
-		Storage resultActivation2("Results/arm26_bounds_StaticOptimization_activation.sto"), standardActivation2("std_arm26_bounds_StaticOptimization_activation.sto");
-		Storage resultForce2("Results/arm26_bounds_StaticOptimization_force.sto"), standardForce2("std_arm26_bounds_StaticOptimization_force.sto");
-		CHECK_STORAGE_AGAINST_STANDARD(resultActivation2, standardActivation2, Array<double>(0.005, 24), __FILE__, __LINE__, "testArm with bounds failed");
-		CHECK_STORAGE_AGAINST_STANDARD(resultForce2, standardForce2, Array<double>(0.1, 24), __FILE__, __LINE__, "testArm with bounds failed");
-		cout << "testArm with bounds passed" << endl;
+		// test with arm26 model and deprecated Thelen2003Muscle model
+		testArm26(true);
 	}
-	catch (const Exception& e) {
-        e.print(cerr);
+	catch (const std::exception& e) {
+        cout << "Failed: "<< e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;
     return 0;
+}
+
+void testArm26(bool useDeprecatedMuscle)
+{
+	string resultsDir = "Results";
+	if(	useDeprecatedMuscle ){
+		Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
+		resultsDir = "Results_Deprecated";
+	}
+	AnalyzeTool analyze1("arm26_Setup_StaticOptimization.xml");
+	analyze1.setResultsDir(resultsDir);
+	analyze1.run();
+	Storage resultActivation1(resultsDir+"/arm26_StaticOptimization_activation.sto"), standardActivation1("std_arm26_StaticOptimization_activation.sto");
+	Storage resultForce1(resultsDir+"/arm26_StaticOptimization_force.sto"), standardForce1("std_arm26_StaticOptimization_force.sto");
+	CHECK_STORAGE_AGAINST_STANDARD(resultActivation1, standardActivation1, Array<double>(0.025, 6), __FILE__, __LINE__, "testArm failed");
+	CHECK_STORAGE_AGAINST_STANDARD(resultForce1, standardForce1, Array<double>(2.0, 6), __FILE__, __LINE__, "testArm failed");
+	cout << resultsDir <<": testArm passed" << endl;
+
+	AnalyzeTool analyze2("arm26_bounds_Setup_StaticOptimization.xml");
+	analyze2.setResultsDir(resultsDir);
+	analyze2.run();
+	Storage resultActivation2(resultsDir+"/arm26_bounds_StaticOptimization_activation.sto"), standardActivation2("std_arm26_bounds_StaticOptimization_activation.sto");
+	Storage resultForce2(resultsDir+"/arm26_bounds_StaticOptimization_force.sto"), standardForce2("std_arm26_bounds_StaticOptimization_force.sto");
+	CHECK_STORAGE_AGAINST_STANDARD(resultActivation2, standardActivation2, Array<double>(0.03, 6), __FILE__, __LINE__, "testArm with bounds failed");
+	CHECK_STORAGE_AGAINST_STANDARD(resultForce2, standardForce2, Array<double>(2.5, 6), __FILE__, __LINE__, "testArm with bounds failed");
+	cout << resultsDir << ": testArm with bounds passed" << endl;
 }

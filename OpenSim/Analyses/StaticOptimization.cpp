@@ -47,6 +47,7 @@
 #include <SimTKlapack.h>
 #include "StaticOptimization.h"
 #include "StaticOptimizationTarget.h"
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
 
 
 using namespace OpenSim;
@@ -303,13 +304,17 @@ record(const SimTK::State& s)
 {
 	if(!_modelWorkingCopy) return -1;
 
-	// Set model Q's and U's
+	// Set model to whatever defaults have been updated to from the last iteration
 	SimTK::State& sWorkingCopy = _modelWorkingCopy->updMultibodySystem().updDefaultState();
-
 	sWorkingCopy.setTime(s.getTime());
+	_modelWorkingCopy->initStateWithoutRecreatingSystem(sWorkingCopy); 
+
+	// update Q's and U's
 	sWorkingCopy.setQ(s.getQ());
 	sWorkingCopy.setU(s.getU());
-	_modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
+
+	_modelWorkingCopy->getMultibodySystem().realize(sWorkingCopy, SimTK::Stage::Velocity);
+	//_modelWorkingCopy->equilibrateMuscles(sWorkingCopy);
 
     const Set<Actuator>& fs = _modelWorkingCopy->getActuators();
 
@@ -462,6 +467,14 @@ record(const SimTK::State& s)
 	//cout << "optimizer time = " << (duration*1.0e3) << " milliseconds" << endl;
 
 	target.printPerformance(sWorkingCopy, &_parameters[0]);
+
+	//update defaults for use in the next step
+	const Set<Actuator>& actuators = _modelWorkingCopy->getActuators();
+	for(int k=0; k < actuators.getSize(); ++k){
+		ActivationFiberLengthMuscle *mus = dynamic_cast<ActivationFiberLengthMuscle*>(&actuators[k]);
+		if(mus)
+			mus->setDefaultActivation(_parameters[k]);
+	}
 
 	_activationStorage->append(sWorkingCopy.getTime(),na,&_parameters[0]);
 

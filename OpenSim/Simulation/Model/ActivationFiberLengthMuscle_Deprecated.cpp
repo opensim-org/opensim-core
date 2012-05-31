@@ -83,7 +83,7 @@ void ActivationFiberLengthMuscle_Deprecated::constructProperties()
 void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) const
 {
 	// Reasonable initial activation value
-	setActivation(state, 0.01);
+	setActivation(state, 0.001);
 	setFiberLength(state, getOptimalFiberLength());
 	_model->getMultibodySystem().realize(state, SimTK::Stage::Velocity);
 

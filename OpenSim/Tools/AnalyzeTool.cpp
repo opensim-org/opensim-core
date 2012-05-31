@@ -274,13 +274,21 @@ createStatesStorageFromCoordinatesAndSpeeds(const Model& aModel, const Storage& 
 	if(aQStore.getSize() != aUStore.getSize())
 		throw Exception("AnalyzeTool.initializeFromFiles: ERROR- The coordinates storage and speeds storage should have the same number of rows, but do not.",__FILE__,__LINE__);
 
-	Array<string> stateNames("");
+	Array<string> stateNames("", ny);
 	stateNames = aModel.getStateVariableNames();
 	stateNames.insert(0, "time");
+
+	//Get the default state resulting from initializing the state after system creation
+	const SimTK::State &s = aModel.getMultibodySystem().getDefaultState();
 
 	Storage *statesStore = new Storage(512,"states");
 	statesStore->setColumnLabels(stateNames);
 	Array<double> y(0.0,ny);
+
+	// initialize the state storage from the default state so that states have relevant values
+	// that are not zero (for example muscle activations and fiber-lengths)
+	aModel.getStateValues(s, y);
+
 	for(int index=0; index<aQStore.getSize(); index++) {
 		double t;
 		aQStore.getTime(index,t);

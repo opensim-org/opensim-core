@@ -44,6 +44,7 @@ void testGait2354();    // controlled muscles and ground reactions forces
 void testGait2354WithController(); // included additional controller
 
 int main() {
+	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
     try {
 		
         testPendulum();	// test manager/integration process
@@ -64,8 +65,8 @@ int main() {
 		testGait2354WithController();
 		cout << "\ngait2354 with correction controller test PASSED " << std::endl;
 	}
-    catch (const Exception& e) {
-        e.print(cerr);
+    catch (const std::exception& e) {
+        cout << "\n" << e.what() << endl;
         return 1;
     }
     cout << "\nDone" << endl;

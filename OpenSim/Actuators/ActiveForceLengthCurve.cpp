@@ -70,7 +70,7 @@ void ActiveForceLengthCurve::constructProperties()
     constructProperty_transition_norm_fiber_length(0.75);
     constructProperty_max_norm_active_fiber_length(1.6);
     constructProperty_shallow_ascending_slope(0.75);
-    constructProperty_minimum_value(0.05); 
+    constructProperty_minimum_value(0.01); 
 }
 
 void ActiveForceLengthCurve::buildCurve()
