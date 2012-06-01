@@ -44,6 +44,7 @@
 using namespace OpenSim;
 using namespace std;
 
+void testSingleRigidTendonMuscle();
 void testSingleMuscle();
 void testTwoMusclesOnBlock();
 void testArm26();
@@ -53,6 +54,11 @@ void testHamnerRunningModel();
 
 int main() {
     SimTK::Array_<std::string> failures;
+
+    try {testSingleRigidTendonMuscle();}
+    catch (const Exception& e)
+		{   e.print(cerr); failures.push_back("testSingleRigidTendonMuscle"); }
+
     try {testSingleMuscle();}
     catch (const Exception& e)
 		{   e.print(cerr); failures.push_back("testSingleMuscle"); }
@@ -88,13 +94,28 @@ int main() {
 
 }
 
-
 void testSingleMuscle() {
 
 	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
 	forward.run();
 
 	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
+	cmc.run();
+
+	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
+	Storage cmc_result("block_hanging_from_muscle_ResultsCMC/block_hanging_from_muscle_states.sto");
+
+	CHECK_STORAGE_AGAINST_STANDARD(cmc_result, fwd_result, Array<double>(0.0005, 4), __FILE__, __LINE__, "testSingleMuscle failed");
+	cout << "testSingleMuscle passed\n" << endl;
+}
+
+void testSingleRigidTendonMuscle() {
+
+	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
+	Model model("block_hanging_RigidTendonMuscle.osim");
+
+	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
+	cmc.setModel(model);
 	cmc.run();
 
 	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");

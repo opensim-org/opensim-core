@@ -37,7 +37,7 @@
 #include "GCVSplineSet.h"
 #include "ScaleSet.h"
 #include "GCVSpline.h"
-#include "VectorGCVSplineR1R3.h"
+
 #include "Scale.h"
 #include "SimmSpline.h"
 #include "Constant.h"

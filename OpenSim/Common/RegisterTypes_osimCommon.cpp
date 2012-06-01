@@ -36,7 +36,7 @@
 #include "GCVSplineSet.h"
 #include "ScaleSet.h"
 #include "GCVSpline.h"
-#include "VectorGCVSplineR1R3.h"
+
 #include "Scale.h"
 #include "SimmSpline.h"
 #include "Constant.h"
@@ -73,7 +73,7 @@ OSIMCOMMON_API void RegisterTypes_osimCommon()
 	Object::registerType( ScaleSet() );
 
 	Object::registerType( GCVSpline() );
-	Object::registerType( VectorGCVSplineR1R3() );
+
 	Object::registerType( Scale() );
 	Object::registerType( SimmSpline() );
 	Object::registerType( Constant() );

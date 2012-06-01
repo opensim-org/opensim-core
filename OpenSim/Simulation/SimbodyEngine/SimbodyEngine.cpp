@@ -438,18 +438,35 @@ SimTK::Transform SimbodyEngine::getTransform(const SimTK::State& s, const OpenSi
  */
 void SimbodyEngine::computeReactions(const SimTK::State& s, Vector_<Vec3>& rForces, Vector_<Vec3>& rTorques) const
 {
-	int nb = _model->getMatterSubsystem().getNumBodies();
-	SimTK::Vector_<SpatialVec> reactionForces(_model->getMatterSubsystem().getNumBodies());
+	// get the number of mobilized bodies in the underlying SimbodyMatterSubsystem
+	int nmb = _model->getMatterSubsystem().getNumBodies();
+	
+	// get the number of bodies in the OpenSim model
+	int nb = _model->getNumBodies();
+
+	int nf = rForces.size();
+	int ntorq = rTorques.size();
+
+	// there may be more mobilized bodies than joint exposed in the OpenSim model
+	// since joints and other components may use (massless) bodies internally
+	assert(nmb >= nb);
+	assert(nb == nf);
+	assert(nf == ntorq);
+
+	SimTK::Vector_<SpatialVec> reactionForces(nb);
 
 	// Systems must be realized to acceleration stage
 	_model->getMultibodySystem().realize(s, Stage::Acceleration);
     _model->getMatterSubsystem().calcMobilizerReactionForces(s, reactionForces);
 
+
+	const BodySet &bodies = _model->getBodySet();
+
     //Separate SimTK SpatialVecs to Forces and Torques	
 	// SpatialVec = Vec2<Vec3 torque, Vec3 force>
 	for(int i=0; i<nb; i++){
-         rTorques[i] = reactionForces[i](0);
-         rForces[i] = reactionForces[i](1);
+         rTorques[i] = reactionForces[bodies[i].getIndex()](0);
+         rForces[i] = reactionForces[bodies[i].getIndex()](1);
 	}
 }
 

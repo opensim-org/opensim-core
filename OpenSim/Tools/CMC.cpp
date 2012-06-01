@@ -1078,7 +1078,7 @@ void CMC::computeControls(const SimTK::State& s, SimTK::Vector& controls)  const
 		_actuatorSet[i].addInControls(actControls, controls);
 	}
 
-	double val = controls[0];
+	double *val = &controls[0];
 }
 
 void CMC::setActuators( Set<Actuator>& actSet ) 

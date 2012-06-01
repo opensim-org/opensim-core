@@ -32,7 +32,7 @@
 #include "ForwardTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/InterruptedException.h>
-#include <OpenSim/Common/VectorGCVSplineR1R3.h>
+
 #include <OpenSim/Simulation/Control/Controller.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Control/ControlSetController.h>

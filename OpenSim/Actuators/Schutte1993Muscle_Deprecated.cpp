@@ -625,3 +625,13 @@ double Schutte1993Muscle_Deprecated::computeIsometricForce(SimTK::State& s, doub
 
 	return tendon_force;
 }
+
+// Satisdfy the ActivationFiberLengthMuscle_Deprecated interface
+double Schutte1993Muscle_Deprecated::calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const
+{
+	return calcNonzeroPassiveForce(s,aNormFiberLength, 0.0);
+}
+double Schutte1993Muscle_Deprecated::calcActiveForce(const SimTK::State& s, double aNormFiberLength) const
+{
+	return getActiveForceLengthCurve().calcValue(SimTK::Vector(1, aNormFiberLength) );
+}

@@ -35,7 +35,7 @@
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSpline.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/VectorGCVSplineR1R3.h>
+
 #include <OpenSim/Common/VectorFunction.h>
 #include "PrescribedForce.h"
 #include "ForceSet.h"

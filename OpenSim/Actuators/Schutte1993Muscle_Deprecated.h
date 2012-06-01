@@ -124,6 +124,10 @@ protected:
 	// Model Component Interface
 	virtual void setup(Model& aModel);
 
+	// Super interface
+	double calcPassiveForce(const SimTK::State& s, double aNormFiberLength) const;
+	double calcActiveForce(const SimTK::State& s, double aNormFiberLength) const;
+
 private:
 	double calcNonzeroPassiveForce(const SimTK::State& s, double aNormFiberLength, double aNormFiberVelocity) const;
 	double calcFiberVelocity(const SimTK::State& s, double aActivation, double aActiveForce, double aVelocityDependentForce) const;

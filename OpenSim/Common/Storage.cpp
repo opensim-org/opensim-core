@@ -3098,7 +3098,7 @@ void Storage::postProcessSIMMMotion()
 				}
 			}
 			else {	// No time specified altogether
-					throw (Exception("Storage::postProcessSIMMMotion Not implemented yet"));
+					throw (Exception("Storage::postProcessSIMMMotion no time column found."));
 			}
 		}
 	}

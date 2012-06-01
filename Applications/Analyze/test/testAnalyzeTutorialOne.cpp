@@ -54,8 +54,8 @@ int main()
         */
 		cout << "testAnalyzeTutorialOne passed" << endl;
 	}
-	catch (const Exception& e) {
-        e.print(cerr);
+	catch (const exception& e) {
+		cout << "\ntestAnalyzeTutorialOne Failed: " << e.what() << endl;
         return 1;
     }
     cout << "Done" << endl;

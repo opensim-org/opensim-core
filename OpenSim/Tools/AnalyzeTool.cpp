@@ -8,7 +8,7 @@
 #include "AnalyzeTool.h"
 #include <OpenSim/Common/IO.h>
 #include <OpenSim/Common/GCVSplineSet.h>
-#include <OpenSim/Common/VectorGCVSplineR1R3.h>
+
 #include <OpenSim/Simulation/Control/ControlLinear.h>
 #include <OpenSim/Simulation/Control/ControlSet.h>
 #include <OpenSim/Simulation/Manager/Manager.h>

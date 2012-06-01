@@ -518,36 +518,34 @@ int MuscleAnalysis::record(const SimTK::State& s)
 	// ----------------------------------
 	// LOOP THROUGH MUSCLES
 	int nm = _muscleArray.getSize();
+
+	double nan = SimTK::NaN;
 	// Angles and lengths
-	Array<double> penang(0.0,nm);
-	Array<double> len(0.0,nm), tlen(0.0,nm);
-	Array<double> fiblen(0.0,nm), normfiblen(0.0,nm);
+	Array<double> penang(nan,nm);
+	Array<double> len(nan,nm), tlen(nan,nm);
+	Array<double> fiblen(nan,nm), normfiblen(nan,nm);
 
 	// Muscle velocity information
-	Array<double> fibVel(0.0,nm), normFibVel(0.0,nm);
-	Array<double> penAngVel(0.0,nm);
+	Array<double> fibVel(nan,nm), normFibVel(nan,nm);
+	Array<double> penAngVel(nan,nm);
 
 	// Muscle component forces
-	Array<double> force(0.0,nm),fibforce(0.0,nm);
-	Array<double> actfibforce(0.0,nm),passfibforce(0.0,nm);
-	Array<double> actfibforcealongten(0.0,nm),passfibforcealongten(0.0,nm);
+	Array<double> force(nan,nm), fibforce(nan,nm);
+	Array<double> actfibforce(nan,nm), passfibforce(nan,nm);
+	Array<double> actfibforcealongten(nan,nm), passfibforcealongten(nan,nm);
 
 	// Muscle and component powers
-	Array<double> fibPower(0.0,nm), tendonPower(0.0,nm), muscPower(0.0,nm);
+	Array<double> fibPower(nan,nm), tendonPower(nan,nm), muscPower(nan,nm);
 
-	// state derivatives are gauranteed to be evaluated by acceleration
-	_model->getMultibodySystem().realize(s,SimTK::Stage::Acceleration);  
+	double sysMass = _model->getMatterSubsystem().calcSystemMass(s);
+	bool hasMass = sysMass > SimTK::Eps;
 
-	for(int i=0; i<nm; i++) {
+	for(int i=0; i<nm; ++i) {
 		penang[i] = _muscleArray[i]->getPennationAngle(s);
 		len[i] = _muscleArray[i]->getLength(s);
 		tlen[i] = _muscleArray[i]->getTendonLength(s);
 		fiblen[i] = _muscleArray[i]->getFiberLength(s);
 		normfiblen[i] = _muscleArray[i]->getNormalizedFiberLength(s);
-
-		fibVel[i] = _muscleArray[i]->getFiberVelocity(s);
-		normFibVel[i] =  _muscleArray[i]->getNormalizedFiberVelocity(s);
-		penAngVel[i] =  _muscleArray[i]->getPennationAngularVelocity(s);
 
 		// Compute muscle forces that are dependent on Positions, Velocities
 		// so that later quantities are valid and setForce is called
@@ -557,12 +555,24 @@ int MuscleAnalysis::record(const SimTK::State& s)
 		actfibforce[i] = _muscleArray[i]->getActiveFiberForce(s);
 		passfibforce[i] = _muscleArray[i]->getPassiveFiberForce(s);
 		actfibforcealongten[i] = _muscleArray[i]->getActiveFiberForceAlongTendon(s);
-		passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon(s);
-	
-		//Powers
-		fibPower[i] = _muscleArray[i]->getFiberPower(s);
-		tendonPower[i] = _muscleArray[i]->getTendonPower(s);
-		muscPower[i] = _muscleArray[i]->getMusclePower(s);
+		passfibforcealongten[i] = _muscleArray[i]->getPassiveFiberForceAlongTendon(s);	
+	}
+
+	// Cannot compute system dynamics without mass
+	if(hasMass){
+		// state derivatives (activation rate and fiber velocity) evaluated at dynamics
+		_model->getMultibodySystem().realize(s,SimTK::Stage::Dynamics);
+
+		for(int i=0; i<nm; ++i) {
+			//Velocities
+			fibVel[i] = _muscleArray[i]->getFiberVelocity(s);
+			normFibVel[i] =  _muscleArray[i]->getNormalizedFiberVelocity(s);
+			penAngVel[i] =  _muscleArray[i]->getPennationAngularVelocity(s);
+			//Powers
+			fibPower[i] = _muscleArray[i]->getFiberPower(s);
+			tendonPower[i] = _muscleArray[i]->getTendonPower(s);
+			muscPower[i] = _muscleArray[i]->getMusclePower(s);
+		}
 	}
 
 	// APPEND TO STORAGE
@@ -588,32 +598,32 @@ int MuscleAnalysis::record(const SimTK::State& s)
 	_musclePowerStore->append(tReal,muscPower.getSize(),&muscPower[0]);
 
 	if (_computeMoments){
-	// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
-	Coordinate *q = NULL;
-	Storage *maStore=NULL, *mStore=NULL;
-	int nq = _momentArmStorageArray.getSize();
-	Array<double> ma(0.0,nm),m(0.0,nm);
+		// LOOP OVER ACTIVE MOMENT ARM STORAGE OBJECTS
+		Coordinate *q = NULL;
+		Storage *maStore=NULL, *mStore=NULL;
+		int nq = _momentArmStorageArray.getSize();
+		Array<double> ma(0.0,nm),m(0.0,nm);
 
-	for(int i=0; i<nq; i++) {
+		for(int i=0; i<nq; i++) {
 
-		q = _momentArmStorageArray[i]->q;
-		maStore = _momentArmStorageArray[i]->momentArmStore;
-		mStore = _momentArmStorageArray[i]->momentStore;
-       
-		// Make a writable copy of the state so moment arm can be computed
-		SimTK::State tempState = s;
+			q = _momentArmStorageArray[i]->q;
+			maStore = _momentArmStorageArray[i]->momentArmStore;
+			mStore = _momentArmStorageArray[i]->momentStore;
+	       
+			// Make a writable copy of the state so moment arm can be computed
+			SimTK::State tempState = s;
 
-		bool locked = q->getLocked(tempState);
+			bool locked = q->getLocked(tempState);
 
-		_model->getMultibodySystem().realize(tempState, s.getSystemStage() );
-		// LOOP OVER MUSCLES
-		for(int j=0; j<nm; j++) {
-            ma[j] = _muscleArray[j]->computeMomentArm(tempState,*q);
-			m[j] = ma[j] * force[j];
+			_model->getMultibodySystem().realize(tempState, s.getSystemStage() );
+			// LOOP OVER MUSCLES
+			for(int j=0; j<nm; j++) {
+				ma[j] = _muscleArray[j]->computeMomentArm(tempState,*q);
+				m[j] = ma[j] * force[j];
+			}
+			maStore->append(s.getTime(),nm,&ma[0]);
+			mStore->append(s.getTime(),nm,&m[0]);
 		}
-		maStore->append(s.getTime(),nm,&ma[0]);
-		mStore->append(s.getTime(),nm,&m[0]);
-	}
 	}
 	return(0);
 }

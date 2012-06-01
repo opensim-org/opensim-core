@@ -48,7 +48,7 @@ namespace OpenSim {
 
 class PrescribedForce;
 class GCVSpline;
-class VectorGCVSplineR1R3;
+
 class Model;
 class ForceSet;
 class Body;
