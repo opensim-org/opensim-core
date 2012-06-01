@@ -421,7 +421,11 @@ Array<XYPoint>* XYFunctionInterface::renderAsLineSegments(int aIndex)
 			xyPts->append(XYPoint(xValue, _gcvSpline->calcValue(SimTK::Vector(1,xValue)) * _scaleFactor));
 		}
 		xyPts->append(XYPoint(x[aIndex + 1], _gcvSpline->calcValue(SimTK::Vector(1,x[aIndex + 1])) * _scaleFactor));
-	}
+	} else if (_functionType == typePiecewiseConstantFunction)	{
+		xyPts->append(XYPoint(x[aIndex], y[aIndex]));
+		xyPts->append(XYPoint(x[aIndex], y[aIndex+1]));
+		xyPts->append(XYPoint(x[aIndex+1], y[aIndex+1]));
+	} 
 
 	return xyPts;
 }
