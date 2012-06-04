@@ -1,10 +1,10 @@
-#ifndef __ForceAdapter_h__
-#define __ForceAdapter_h__
+#ifndef OPENSIM_FORCE_ADAPTER_H_
+#define OPENSIM_FORCE_ADAPTER_H_
 // File:     ForceAdapter.h
 // Author:   Peter Eastman
 //-----------------------------------------------------------------------------
 /*
-* Copyright (c) 2008, Stanford University. All rights reserved. 
+* Copyright (c) 2008-12, Stanford University. All rights reserved. 
 * Use of the OpenSim software in source form is permitted provided that the following
 * conditions are met:
 * 	1. The software is used only for non-commercial research and education. It may not
@@ -31,9 +31,10 @@
 
 // INCLUDES
 #include "OpenSim/Simulation/osimSimulationDLL.h"
-#include <SimTKsimbody.h>
 #include "Force.h"
 #include "Actuator.h"
+
+#include <SimTKsimbody.h>
 
 namespace OpenSim {
 
@@ -56,29 +57,21 @@ private:
 // METHODS
 //=============================================================================
 public:
-	// CONSTRUCTION AND DESTRUCTION
-	ForceAdapter(const Force& force);
+    // CONSTRUCTION AND DESTRUCTION
+    ForceAdapter(const Force& force);
 
-   // CALC FORCES (Called by Simbody)
-	void calcForce(const SimTK::State& state,
-		SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
-		SimTK::Vector& mobilityForces) const;   
+    // CALC FORCES (Called by Simbody)
+    void calcForce(const SimTK::State& state,
+	    SimTK::Vector_<SimTK::SpatialVec>& bodyForces,SimTK::Vector_<SimTK::Vec3>& particleForces,
+	    SimTK::Vector& mobilityForces) const;   
 
-   // CALC POTENTIAL ENERGY (Called by Simbody)
-	SimTK::Real calcPotentialEnergy(const SimTK::State& state) const;   
+    // CALC POTENTIAL ENERGY (Called by Simbody)
+    SimTK::Real calcPotentialEnergy(const SimTK::State& state) const;   
 
-	// Add state, discrete, and cache variables as requested by OpenSim::Force
-	virtual void realizeTopology(SimTK::State& state) const;
-	virtual void realizeModel(SimTK::State& state) const {};
-    virtual void realizeInstance(const SimTK::State& state) const {};
-    virtual void realizeTime(const SimTK::State& state) const {};
-    virtual void realizePosition(const SimTK::State& state) const {};
-    virtual void realizeVelocity(const SimTK::State& state) const {};
-    virtual void realizeDynamics(const SimTK::State& state) const {};
-    virtual void realizeAcceleration(const SimTK::State& state) const;
-    virtual void realizeReport(const SimTK::State& state) const {};
+    // No need to override realize() methods; we don't provide that service
+    // to OpenSim Force elements.
 };
 
 } // end of namespace OpenSim
 
-#endif // __ForceAdapter_h__
+#endif // OPENSIM_FORCE_ADAPTER_H_

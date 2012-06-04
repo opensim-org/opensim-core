@@ -200,14 +200,18 @@ void ConstantController::computeControls(const SimTK::State& s, SimTK::Vector& c
 // for any post XML desereialization intialization
 void ConstantController::setup(Model& model) 
 {
-     setActuators( _model->updActuators() );
+    Super::setup(model);
+
+    setActuators( _model->updActuators() );
 }
 // for adding any components to the model
 void ConstantController::createSystem( SimTK::MultibodySystem& system ) const
 {
+    Super::createSystem(system);
 }
 
 // for any intialization requiring a state or the complete system 
 void ConstantController::initState( SimTK::State& s)  const 
 {
+    Super::initState(s);
 }

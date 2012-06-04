@@ -60,17 +60,3 @@ SimTK::Real ForceAdapter::calcPotentialEnergy(const SimTK::State& state) const
     return _force->computePotentialEnergy(state);
 }
 
-//-----------------------------------------------------------------------------
-// Methods to support the force as underlying SimTK component of a subsystem
-//-----------------------------------------------------------------------------
-void ForceAdapter::realizeTopology(SimTK::State& s) const
-{
-	Force* mutableForce = const_cast<Force *>(_force);
-	mutableForce->updRep()->realizeTopology(s);
-}
-
-void ForceAdapter::realizeAcceleration(const SimTK::State& s) const
-{
-	Force* mutableForce = const_cast<Force *>(_force);
-	mutableForce->updRep()->realizeAcceleration(s);
-}

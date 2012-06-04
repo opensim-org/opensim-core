@@ -658,7 +658,8 @@ bool CMCTool::run()
 	SimTK::State& actuatorSystemState = actuatorSystem.updDefaultState(); 
     
 	SimTK::Vector &actSysZ = actuatorSystemState.updZ();
-	const SimTK::Vector &modelZ = _model->getForceSubsystem().getZ(s);
+	const SimTK::Vector &modelZ = _model->getMultibodySystem()
+                                            .getDefaultSubsystem().getZ(s);
 	
 	int nra = actSysZ.size();
 	int nrm = modelZ.size();

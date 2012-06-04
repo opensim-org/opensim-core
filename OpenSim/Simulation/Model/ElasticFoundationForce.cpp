@@ -54,6 +54,8 @@ ElasticFoundationForce::ElasticFoundationForce(ContactParameters* params)
 
 void ElasticFoundationForce::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();
 	const double& transitionVelocity = get_transition_velocity();

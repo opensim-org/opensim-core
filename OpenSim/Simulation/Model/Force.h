@@ -81,6 +81,11 @@ public:
 	Force& operator=(const Force &aForce);
 #endif
 
+	/** Return if the Force is disabled or not. */
+	bool isDisabled(const SimTK::State& s) const;
+	/** Set the Force as disabled (true) or not (false). */
+	void setDisabled(SimTK::State& s, bool disabled);
+
 	/**
 	 * Methods to query a Force for the value actually applied during 
      * simulation. The names of the quantities (column labels) is returned by 
@@ -98,10 +103,6 @@ public:
 		return OpenSim::Array<double>();
 	};
 
-	/** Return if the Force is disabled or not. */
-	virtual bool isDisabled(const SimTK::State &s) const;
-	/** Set the Force as disabled (true) or not (false). */
-	virtual void setDisabled(SimTK::State &s, bool disabled);
 
 	/** Return a flag indicating whether the Force is applied along a Path. If
     you override this method to return true for a specific subclass, it must

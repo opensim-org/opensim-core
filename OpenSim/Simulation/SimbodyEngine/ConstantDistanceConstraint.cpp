@@ -192,10 +192,9 @@ void ConstantDistanceConstraint::setupProperties()
  */
 void ConstantDistanceConstraint::setup(Model& aModel)
 {
-	string errorMessage;
+	Super::setup(aModel);
 
-	// Base class
-	Constraint::setup(aModel);
+	string errorMessage;
 
 	// Look up the two bodies being connected together by name in the
 	// model and might as well keep a pointer to them
@@ -213,6 +212,8 @@ void ConstantDistanceConstraint::setup(Model& aModel)
 
 void ConstantDistanceConstraint::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getIndex());
 	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body2->getIndex());

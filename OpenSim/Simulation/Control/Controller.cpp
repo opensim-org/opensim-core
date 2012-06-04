@@ -215,7 +215,7 @@ void Controller::setDisabled(bool aTrueFalse)
 // for any post XML deseraialization intialization
 void Controller:: setup(Model& model)
 {
-	ModelComponent::setup(model);
+	Super::setup(model);
 
 	if(_actuatorNameList.getSize() > 0){
 		if(IO::Uppercase(_actuatorNameList[0]) == "ALL"){
@@ -243,16 +243,7 @@ void Controller:: setup(Model& model)
  */
 void Controller::createSystem(SimTK::MultibodySystem& system) const
 {
-	 // Beyond the const Component get the index so we can access the SimTK::Force later
-	Controller* mutableThis = const_cast<Controller *>(this);
-
-	// Keep track of the subystem the Controller is a part of in case subclasses want to 
-	// extend by adding states, etc...
-	// Since controllers affect how actuators produce force, it makes sense for a controller
-	// to be a part of ForceSubsystem
-	mutableThis->setIndexOfSubsystemForAllocations(_model->updForceSubsystem().getMySubsystemIndex());
-
-	ModelComponent::createSystem(system);
+	Super::createSystem(system);
 }
 
 // makes a request for which actuators a controller will control

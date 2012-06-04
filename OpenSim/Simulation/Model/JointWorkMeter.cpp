@@ -137,12 +137,16 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 
  void JointWorkMeter::initState( SimTK::State& s) const
 {
+    Super::initState(s);
+
 	setStateVariable(s, getStateVariableNames()[0], 
         get_initial_joint_work());
 }
 
 void JointWorkMeter::setDefaultsFromState(const SimTK::State& state)
 {
+    Super::setDefaultsFromState(state);
+
     set_initial_joint_work(getWork(state));
 }
 

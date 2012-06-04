@@ -243,6 +243,8 @@ void Coordinate::setupProperties(void)
 
 void Coordinate::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	//create lock constraint automatically
 	// The underlying SimTK constraint
 	SimTK::Constraint::PrescribedMotion lock(_model->updMatterSubsystem(), 
@@ -280,8 +282,7 @@ void Coordinate::createSystem(SimTK::MultibodySystem& system) const
  */
 void Coordinate::setup(Model& aModel)
 {
-	// Base class
-	ModelComponent::setup(aModel);
+	Super::setup(aModel);
 
 	if((IO::Lowercase(_motionTypeName) == "rotational") || _motionTypeName == "")
 		_motionType = Rotational;

@@ -97,6 +97,7 @@ void Force::constructProperties()
 // computational system.  Create a SimTK::Force::Custom by default.
 void Force::createSystem(SimTK::MultibodySystem& system) const
 {
+	Super::createSystem(system);
 
 	ForceAdapter* adapter = new ForceAdapter(*this);
     SimTK::Force::Custom force(_model->updForceSubsystem(), adapter);
@@ -104,14 +105,6 @@ void Force::createSystem(SimTK::MultibodySystem& system) const
 	 // Beyond the const Component get the index so we can access the SimTK::Force later
 	Force* mutableThis = const_cast<Force *>(this);
 	mutableThis->_index = force.getForceIndex();
-
-	// Keep track of the subystem the force is a part of in case subclasses
-	// want to extend by adding states, etc...
-	mutableThis->setIndexOfSubsystemForAllocations
-       (_model->updForceSubsystem().getMySubsystemIndex());
-
-    //TODO: this must *follow* the above
-	Super::createSystem(system);
 }
 
 

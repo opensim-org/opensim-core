@@ -228,11 +228,9 @@ void CoupledBushingForce::setupProperties()
  */
 void CoupledBushingForce::setup(Model& aModel)
 {
+    Super::setup(aModel);
+
 	string errorMessage;
-
-	// Base class
-	Force::setup(aModel);
-
 	// Look up the two bodies being connected by bushing by name in the
 	// model and might as well keep a pointer to them
 	if (!aModel.updBodySet().contains(_body1Name)) {
@@ -247,6 +245,8 @@ void CoupledBushingForce::setup(Model& aModel)
 
 void CoupledBushingForce::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	Body &body1 = _model->updBodySet().get(_body1Name);
 	Body &body2 = _model->updBodySet().get(_body2Name);
 
@@ -262,9 +262,6 @@ void CoupledBushingForce::createSystem(SimTK::MultibodySystem& system) const
 	// Hang on to the transforms for the bushing frames
 	mutableThis->_inb1 = SimTK::Transform(r1, _locationInBody1);
 	mutableThis->_inb2 = SimTK::Transform(r2, _locationInBody2);
-
-    // Now create a Simbody Force::CustomForce
-    Force::createSystem(system);
 }
 
 //=============================================================================

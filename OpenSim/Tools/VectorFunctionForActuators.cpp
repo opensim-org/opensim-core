@@ -279,7 +279,8 @@ evaluate( const SimTK::State& s, double *aX, double *rF)
 	manager.setPerformAnalyses(false); 
 	manager.setWriteToStorage(false); 
 	SimTK::State& actSysState = _CMCActuatorSystem->updDefaultState();
-	getCMCActSubsys()->updZ(actSysState) = _model->getForceSubsystem().getZ(s);
+	getCMCActSubsys()->updZ(actSysState) = _model->getMultibodySystem()
+                                            .getDefaultSubsystem().getZ(s);
 
     actSysState.setTime(_ti);
 

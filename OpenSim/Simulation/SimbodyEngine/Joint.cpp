@@ -214,11 +214,10 @@ void Joint::updateName(const std::string &aName)
  *
  * @param aModel OpenSim model containing this Joint.
  */
-void Joint::setup(Model& aModel)
-{
-	string errorMessage;
+void Joint::setup(Model& aModel) {
+	Super::setup(aModel);
 
-	ModelComponent::setup(aModel);
+	string errorMessage;
 
 	// Look up the parent and child bodies by name in the
 	// body set
@@ -525,8 +524,12 @@ void Joint::constructCoordinates()
 	}
 }
 
+// TODO: note that child must invoke Joint::createSystem()
+// *after* it creates its mobilized body; that is an API bug.
 void Joint::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	// Each coordinate needs to know it's body index and mobility index.
 	int nq = _coordinateSet.getSize();
 	_coordinateSet.setMemoryOwner(false);
@@ -544,12 +547,16 @@ void Joint::createSystem(SimTK::MultibodySystem& system) const
 
 void Joint::initState(SimTK::State& s) const
 {
+    Super::initState(s);
+
     for (int i = 0; i < _coordinateSet.getSize(); i++)
         _coordinateSet.get(i).initState(s);
 }
 
 void Joint::setDefaultsFromState(const SimTK::State& state)
 {
+    Super::setDefaultsFromState(state);
+
     for (int i = 0; i < _coordinateSet.getSize(); i++)
         _coordinateSet.get(i).setDefaultsFromState(state);
 }

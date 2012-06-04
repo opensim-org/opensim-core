@@ -125,7 +125,7 @@ void ForceVelocityInverseCurve::initState(SimTK::State& s) const
 }
 
 void ForceVelocityInverseCurve::
-    createSystem(SimTK::MultibodySystem& system) const
+createSystem(SimTK::MultibodySystem& system) const
 {
     Super::createSystem(system);
 

@@ -275,12 +275,13 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 
 void CorrectionController::createSystem(SimTK::MultibodySystem& system) const
 { 
+    Super::createSystem(system);
 }
 
 // for any post XML deserialization intialization
 void CorrectionController::setup(Model& model)
 {
-	TrackingController::setup(model);
+	Super::setup(model);
 
 	_actuatorSet.setSize(0);
 	_actuatorSet.setMemoryOwner(false);
@@ -316,4 +317,5 @@ void CorrectionController::setup(Model& model)
 // for any intialization requiring a state or the complete system 
 void CorrectionController::initState( SimTK::State& s) const
 {
+    Super::initState(s);
 }

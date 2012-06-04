@@ -208,8 +208,8 @@ protected:
 
 		setMobilizedBodyIndex(_body, mobBod.getMobilizedBodyIndex());
 
-		// Let the superclass do its construction.
-		Joint::createSystem(system);
+        // TODO: Joints require super class to be called last.
+        Super::createSystem(system);
 	}
 
 //=============================================================================

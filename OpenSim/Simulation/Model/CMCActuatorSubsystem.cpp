@@ -86,7 +86,10 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
   CMCActuatorSubsystemRep::~CMCActuatorSubsystemRep() { }
 
   int CMCActuatorSubsystemRep::realizeSubsystemTopologyImpl(State& s) const {
-     Vector z(_model->getNumMuscleStates());
+     // Make sure the CMC Actuator subsystem has the same number of Z's as
+     // the model as a whole so we don't miss any of them. This will include
+     // some that aren't muscle states, but who cares?
+     Vector z(_model->getMultibodySystem().getDefaultState().getNZ());
      s.allocateZ( getMySubsystemIndex(), z );
      return 0;
   }
@@ -131,13 +134,13 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
 
      /* copy  muscle states computed from the actuator system to the muscle states
         for the complete system  then compute forces*/
-      _model->getForceSubsystem().updZ( const_cast<SimTK::State&>(_completeState)) = s.getZ();
-
+     const_cast<SimTK::State&>(_completeState).updZ() = s.getZ();
 	 const_cast<SimTK::State&>(_completeState).updTime() = t;
+
      _model->getMultibodySystem().realize(_completeState, SimTK::Stage::Acceleration);
 
      /* copy 1st derivatives of muscle states from complete system to actuator system */ 
-     s.updZDot() = _model->getForceSubsystem().getZDot( _completeState );
+     s.updZDot() = _completeState.getZDot();
 
 /*
 	cout << "_qWork=" << _qWork << endl;
@@ -146,7 +149,7 @@ void CMCActuatorSubsystemRep::setSpeedTrajectories(FunctionSet *aSet) {
     cout << "u=" << u << endl;
 	cout << "actuatorStates=" << s.getZ() << endl;
 	cout << " CMCrealize:Dynamics  time=" <<  s.getTime(); 
-    cout << " Actuator dydt=" << _model->getForceSubsystem().getZDot( _completeState ) << endl;
+    cout << " Actuator dydt=" << _completeState.getZDot() << endl;
   
 */
      return 0;

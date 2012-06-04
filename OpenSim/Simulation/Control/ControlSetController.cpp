@@ -266,11 +266,11 @@ void ControlSetController::setup(Model& model)
 // for adding any components to the model
 void ControlSetController::createSystem( SimTK::MultibodySystem& system ) const
 {
-	Controller::createSystem(system);
+	Super::createSystem(system);
 }
 
 // for any intialization requiring a state or the complete system 
 void ControlSetController::initState( SimTK::State& s)  const
 {
-	Controller::initState(s);
+	Super::initState(s);
 }

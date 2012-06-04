@@ -245,6 +245,8 @@ void PathActuator::setup(Model& aModel)
     // automatically propagate setup to subcomponents. Subsequent createSystem()
     // will also be automatically propagated.
 	includeAsSubComponent(&path);
+
+    //TODO: can't call this at start of override; this is an API bug.
 	Super::setup(aModel);
 
 	// _model will be NULL when objects are being registered.

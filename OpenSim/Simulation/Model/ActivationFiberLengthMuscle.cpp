@@ -174,10 +174,11 @@ getStateVariableDeriv(const SimTK::State& s, const std::string &aStateName) cons
 SimTK::Vector ActivationFiberLengthMuscle::
 computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	SimTK::Vector derivs(getNumStateVariables());
-	derivs[0] = getActivationRate(s);
-	derivs[1] = getFiberVelocity(s);
-	//derivs.dump("ActivationFiberLengthMuscle::derivs");
+	SimTK::Vector derivs(getNumStateVariables(), 0.);
+    if (!isDisabled(s)) {
+	    derivs[0] = getActivationRate(s);
+	    derivs[1] = getFiberVelocity(s);
+    }
 	return derivs;
 }
 

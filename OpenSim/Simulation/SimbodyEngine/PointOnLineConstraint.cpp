@@ -182,13 +182,10 @@ void PointOnLineConstraint::setupProperties()
  *
  * @param aModel OpenSim model containing this PointOnLineConstraint.
  */
-void PointOnLineConstraint::setup(Model& aModel)
-{
+void PointOnLineConstraint::setup(Model& aModel) {
+	Super::setup(aModel);
+
 	string errorMessage;
-
-	// Base class
-	Constraint::setup(aModel);
-
 	// Look up the two bodies being constrained together by name in the
 	// model and might as well keep a pointer to them
 	if (!aModel.updBodySet().contains(_lineBodyName)) {
@@ -205,6 +202,8 @@ void PointOnLineConstraint::setup(Model& aModel)
 
 void PointOnLineConstraint::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody lb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_lineBody->getIndex());
 	SimTK::MobilizedBody fb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_followerBody->getIndex());

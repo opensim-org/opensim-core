@@ -270,7 +270,7 @@ void Body::setupProperties()
  */
 void Body::setup(Model& aModel)
 {
-	ModelComponent::setup(aModel);
+	Super::setup(aModel);
 
 	for(int i=0; i<_wrapObjectSet.getSize(); i++)
 		_wrapObjectSet.get(i).setup(aModel, *this);
@@ -281,6 +281,8 @@ void Body::setup(Model& aModel)
 
 void Body::createSystem(SimTK::MultibodySystem& system) const
 {
+	Super::createSystem(system);
+
 	if(getName() == "ground"){
 		Body * mutableThis = const_cast<Body *>(this);
 		mutableThis->_index = SimTK::GroundIndex;

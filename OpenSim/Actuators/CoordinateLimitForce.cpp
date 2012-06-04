@@ -394,7 +394,10 @@ double CoordinateLimitForce::getDissipatedEnergy(const SimTK::State& s) const
 SimTK::Vector CoordinateLimitForce::
 computeStateVariableDerivatives(const SimTK::State& s) const
 {
-	return SimTK::Vector(1, getPowerDissipation(s));
+    SimTK::Vector derivs(1, 0.);
+    if (!isDisabled(s))
+        derivs[0] = getPowerDissipation(s);
+    return derivs;
 }
 
 

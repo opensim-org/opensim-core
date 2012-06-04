@@ -1089,7 +1089,7 @@ void CMC::setActuators( Set<Actuator>& actSet )
 // for any post XML deserialization intialization
 void CMC::setup(Model& model)   {
 
-	TrackingController::setup(model);
+	Super::setup(model);
 
 	// STORAGE
 	Array<string> labels;
@@ -1109,9 +1109,12 @@ void CMC::setup(Model& model)   {
 // for adding any components to the model
 void CMC::createSystem( SimTK::MultibodySystem& system)  const
 {
+    Super::createSystem(system);
+
 	// add event handler for updating controls for next window 
 	CMC* mutableThis = const_cast<CMC *>(this);
-	ComputeControlsEventHandler* computeControlsHandler = new ComputeControlsEventHandler(mutableThis);
+	ComputeControlsEventHandler* computeControlsHandler = 
+        new ComputeControlsEventHandler(mutableThis);
 
 	system.updDefaultSubsystem().addEventHandler(computeControlsHandler );
 
@@ -1167,13 +1170,10 @@ void CMC::createSystem( SimTK::MultibodySystem& system)  const
 	}
 
     mutableThis->_numControls = _controlSet.getSize();
-
-	Controller::createSystem(system);
-
 }
 
 // for any intialization requiring a state or the complete system 
 void CMC::initState( SimTK::State& s) 
 {
-   
+    Super::initState(s);  
 }

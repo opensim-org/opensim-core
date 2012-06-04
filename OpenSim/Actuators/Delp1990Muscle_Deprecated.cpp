@@ -221,8 +221,7 @@ void Delp1990Muscle_Deprecated::setupProperties()
  */
 void Delp1990Muscle_Deprecated::setup(Model& aModel)
 {
-	// Base class
-	ActivationFiberLengthMuscle_Deprecated::setup(aModel);
+	Super::setup(aModel);
 
 	// aModel will be NULL when objects are being registered.
 	if (_model == NULL)
@@ -240,7 +239,7 @@ void Delp1990Muscle_Deprecated::setup(Model& aModel)
 
 void Delp1990Muscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
 {
-	ActivationFiberLengthMuscle_Deprecated::createSystem(system);
+	Super::createSystem(system);
 	
 	addStateVariable("fiber_velocity");
 	addCacheVariable("fiber_velocity_deriv", 0.0, SimTK::Stage::Dynamics);
@@ -355,9 +354,11 @@ bool Delp1990Muscle_Deprecated::setMass(double aMass)
  */
 SimTK::Vector Delp1990Muscle_Deprecated::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	SimTK::Vector derivs = ActivationFiberLengthMuscle_Deprecated::computeStateVariableDerivatives(s);
-	derivs.resize(3);
-	derivs[2] = getFiberVelocityDeriv(s);
+	SimTK::Vector derivs = Super::computeStateVariableDerivatives(s);
+	derivs.resizeKeep(3);
+    if (!isDisabled(s)) 
+        derivs[2] = getFiberVelocityDeriv(s);
+    else derivs[2] = 0;
 	return derivs; 
 }
 

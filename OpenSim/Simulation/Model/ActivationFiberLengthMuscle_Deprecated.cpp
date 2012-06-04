@@ -98,7 +98,7 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
  */
  void ActivationFiberLengthMuscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
 {
-	Muscle::createSystem(system);
+	Super::createSystem(system);
 
 	addStateVariable(STATE_ACTIVATION_NAME);
 	addStateVariable(STATE_FIBER_LENGTH_NAME);
@@ -115,7 +115,7 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 
  void ActivationFiberLengthMuscle_Deprecated::initState( SimTK::State& s) const
 {
-    Muscle::initState(s);
+    Super::initState(s);
 
 	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);
@@ -123,7 +123,7 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 
 void ActivationFiberLengthMuscle_Deprecated::setDefaultsFromState(const SimTK::State& state)
 {
-	Muscle::setDefaultsFromState(state);
+	Super::setDefaultsFromState(state);
 
     _defaultActivation = getActivation(state);
     _defaultFiberLength = getFiberLength(state);
@@ -192,11 +192,14 @@ double ActivationFiberLengthMuscle_Deprecated::getStateVariableDeriv(const SimTK
  *
  * @param s  system state
  */
-SimTK::Vector ActivationFiberLengthMuscle_Deprecated::computeStateVariableDerivatives(const SimTK::State &s) const
+SimTK::Vector ActivationFiberLengthMuscle_Deprecated::
+computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	SimTK::Vector derivs(getNumStateVariables());
-	derivs[0] = getActivationDeriv(s);
-	derivs[1] = getFiberLengthDeriv(s);
+	SimTK::Vector derivs(getNumStateVariables(), 0.);
+    if (!isDisabled(s)) {
+	    derivs[0] = getActivationDeriv(s);
+	    derivs[1] = getFiberLengthDeriv(s);
+    }
 	return derivs;
 }
 

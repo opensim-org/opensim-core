@@ -201,14 +201,14 @@ void ContDerivMuscle_Deprecated::setupProperties()
  */
 void ContDerivMuscle_Deprecated::setup(Model& aModel)
 {
-	// Base class
-	ActivationFiberLengthMuscle_Deprecated::setup(aModel);
+	Super::setup(aModel);
 }
 
    
 void ContDerivMuscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
 {
-	ActivationFiberLengthMuscle_Deprecated::createSystem(system);
+	Super::createSystem(system);
+
 	ContDerivMuscle_Deprecated* mutableThis = const_cast<ContDerivMuscle_Deprecated *>(this);
 
 	// Cache the computed active and passive muscle force
@@ -306,8 +306,9 @@ double ContDerivMuscle_Deprecated::getPassiveFiberForce(const SimTK::State& s) c
 
 SimTK::Vector ContDerivMuscle_Deprecated::computeStateVariableDerivatives(const SimTK::State &s) const
 {
-	SimTK::Vector derivs(getNumStateVariables());
-	derivs[0] = getActivationDeriv(s);
+	SimTK::Vector derivs(getNumStateVariables(), 0.);
+    if (!isDisabled(s))
+	    derivs[0] = getActivationDeriv(s);
 	return derivs; 
 }
 

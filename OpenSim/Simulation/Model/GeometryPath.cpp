@@ -142,9 +142,7 @@ void GeometryPath::setNull()
  * @param aModel The model containing this path.
  */
 void GeometryPath::setup(Model& aModel) {
-
-	// Base class
-	ModelComponent::setup(aModel);
+	Super::setup(aModel);
 
 	// aModel will be NULL when objects are being registered.
 	if (&aModel == NULL)
@@ -176,7 +174,8 @@ void GeometryPath::setup(Model& aModel) {
  */
  void GeometryPath::createSystem(SimTK::MultibodySystem& system) const 
 {
-	ModelComponent::createSystem(system);
+	Super::createSystem(system);
+
     // Beyond the const Component get the index so we can access the SimTK::Force later
 	GeometryPath* mutableThis = const_cast<GeometryPath *>(this);
 
@@ -191,7 +190,7 @@ void GeometryPath::setup(Model& aModel) {
 
 void GeometryPath::initState( SimTK::State& s) const
 {
-	ModelComponent::initState(s);
+	Super::initState(s);
 }
 
 //_____________________________________________________________________________

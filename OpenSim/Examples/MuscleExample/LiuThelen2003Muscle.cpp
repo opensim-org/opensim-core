@@ -211,8 +211,11 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 {
 	SimTK::Vector derivs = Super::computeStateVariableDerivatives(s);
 	derivs.resizeKeep(4);
-	derivs[2] = getActiveMotorUnitsDeriv(s);
-	derivs[3] = getFatiguedMotorUnitsDeriv(s);
+    if (!isDisabled(s)) {
+	    derivs[2] = getActiveMotorUnitsDeriv(s);
+	    derivs[3] = getFatiguedMotorUnitsDeriv(s);
+    } else
+        derivs[2] = derivs[3] = 0;
 	return derivs;
 }
 

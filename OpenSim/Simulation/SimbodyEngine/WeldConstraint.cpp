@@ -207,10 +207,9 @@ void WeldConstraint::setupProperties()
  */
 void WeldConstraint::setup(Model& aModel)
 {
-	string errorMessage;
-
-	// Base class
-	Constraint::setup(aModel);
+	Super::setup(aModel);
+    
+    string errorMessage;
 
 	// Look up the two bodies being welded together by name in the
 	// model and might as well keep a pointer to them
@@ -228,6 +227,8 @@ void WeldConstraint::setup(Model& aModel)
 
 void WeldConstraint::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->getIndex());
 	SimTK::MobilizedBody b2 = _model->updMatterSubsystem().getMobilizedBody(_body2->getIndex());

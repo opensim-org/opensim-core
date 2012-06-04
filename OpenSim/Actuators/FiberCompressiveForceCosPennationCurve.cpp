@@ -160,20 +160,20 @@ void FiberCompressiveForceCosPennationCurve::ensureCurveUpToDate()
     }
 }
 //=============================================================================
-// MODEL COMPPONENT INTERFACE
+// MODEL COMPONENT INTERFACE
 //=============================================================================
 void FiberCompressiveForceCosPennationCurve::setup(Model& aModel)
 {
-    ModelComponent::setup(aModel);
+    Super::setup(aModel);
 }
 
 void FiberCompressiveForceCosPennationCurve::initState(SimTK::State& s) const
 {
-    ModelComponent::initState(s);
+    Super::initState(s);
 }
 
 void FiberCompressiveForceCosPennationCurve::
-    createSystem(SimTK::MultibodySystem& system) const
+createSystem(SimTK::MultibodySystem& system) const
 {
     Super::createSystem(system);
 

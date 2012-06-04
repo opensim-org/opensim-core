@@ -200,7 +200,7 @@ void SpringGeneralizedForce::computeForce(const SimTK::State& s,
 /**
  * setup sets the actual Coordinate reference _coord
  */
- void  SpringGeneralizedForce::
+void SpringGeneralizedForce::
 createSystem(SimTK::MultibodySystem& system) const {
     Super::createSystem( system );
 

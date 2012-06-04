@@ -56,6 +56,8 @@ HuntCrossleyForce::HuntCrossleyForce(ContactParameters* params)
 
 void HuntCrossleyForce::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
     const ContactParametersSet& contactParametersSet = 
         get_contact_parameters();
 	const double& transitionVelocity = get_transition_velocity();

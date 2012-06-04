@@ -319,6 +319,15 @@ public:
     @see initStateWithoutRecreatingSystem() **/    
 	SimTK::MultibodySystem& updMultibodySystem() const {return *_system; } 
 
+    /** Get read-only access to the internal DefaultSystemSubsystem allocated
+    by this %Model's Simbody MultibodySystem. **/
+    const SimTK::DefaultSystemSubsystem& getDefaultSubsystem() const 
+    {   return getMultibodySystem().getDefaultSubsystem(); }
+    /** (Advanced) Get writable access to the internal DefaultSystemSubsystem 
+    allocated by this %Model's Simbody MultibodySystem. **/
+    SimTK::DefaultSystemSubsystem& updDefaultSubsystem() 
+    {   return updMultibodySystem().updDefaultSubsystem(); }
+
     /** Get read-only access to the internal SimbodyMatterSubsystem allocated
     by this %Model. **/
     const SimTK::SimbodyMatterSubsystem& getMatterSubsystem() const 

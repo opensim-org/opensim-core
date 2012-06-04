@@ -205,8 +205,7 @@ void CoordinateCouplerConstraint::setupProperties()
  */
 void CoordinateCouplerConstraint::setup(Model& aModel)
 {
-	// Base class
-	Constraint::setup(aModel);
+	Super::setup(aModel);
 
 	string errorMessage;
 
@@ -231,6 +230,8 @@ void CoordinateCouplerConstraint::setup(Model& aModel)
 
 void CoordinateCouplerConstraint::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	/** List of mobilized body indices established when constraint is setup */
 	std::vector<SimTK::MobilizedBodyIndex> mob_bodies;
 	/** List of coordinate (Q) indices corresponding to the respective body */

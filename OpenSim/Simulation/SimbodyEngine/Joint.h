@@ -221,6 +221,9 @@ protected:
 	void setCoordinateMobilityIndex(Coordinate *aCoord, int index) const {aCoord->_mobilityIndex = index;}
 	void setCoordinateModel(Coordinate *aCoord, Model *aModel) const {aCoord->_model = aModel;}
 
+    // TODO: child overrides must invoke Joint::createSystem()
+    // *after* they create the MobilizedBody. This is an API bug
+    // since we want to have children invoke parent first.
     void createSystem(SimTK::MultibodySystem& system) const;
     void initState(SimTK::State& s) const;
     void setDefaultsFromState(const SimTK::State& state);

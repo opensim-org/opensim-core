@@ -248,15 +248,16 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 			parentTransform, SimTK::Body::Rigid(_body->getMassProperties()), childTransform);
 
 		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
-
-		// Let the superclass do its creation of coordinates.
-		Joint::createSystem(system);
 	//}
+
+    // TODO: Joints require super class to be called last.
+    Super::createSystem(system);
 }
 
 void FreeJoint::initState(SimTK::State& s) const
 {
-    Joint::initState(s);
+    Super::initState(s);
+
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
@@ -274,12 +275,12 @@ void FreeJoint::initState(SimTK::State& s) const
 
 void FreeJoint::setDefaultsFromState(const SimTK::State& state)
 {
+    Super::setDefaultsFromState(state);
+
+    // Override default behavior in case of quaternions.
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
-    if (matter.getUseEulerAngles(state))
-        Joint::setDefaultsFromState(state);
-    else
-    {
+    if (!matter.getUseEulerAngles(state)) {
         Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).getMobilizerTransform(state).R();
 		Vec3 t = matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).getMobilizerTransform(state).p();
         Vec3 angles = r.convertRotationToBodyFixedXYZ();

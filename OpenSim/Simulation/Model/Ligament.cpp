@@ -97,7 +97,9 @@ void Ligament::setup(Model& aModel)
 	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
 	// propogated to subcomponents.
 	includeAsSubComponent(&path);
-	Force::setup(aModel);
+
+    //TODO: can't call this at start of override; this is an API bug.
+	Super::setup(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)

@@ -209,13 +209,14 @@ void BallJoint::createSystem(SimTK::MultibodySystem& system) const
 		setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 	//}
 
-    // Let the superclass do its construction.
-    Joint::createSystem(system);
+    // TODO: Joints require super class to be called last.
+    Super::createSystem(system);
 }
 
 void BallJoint::initState(SimTK::State& s) const
 {
-    Joint::initState(s);
+    Super::initState(s);
+
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
@@ -230,12 +231,12 @@ void BallJoint::initState(SimTK::State& s) const
 
 void BallJoint::setDefaultsFromState(const SimTK::State& state)
 {
-    const MultibodySystem& system = _model->getMultibodySystem();
+    Super::setDefaultsFromState(state);
+
+    // Override default behavior in case of quaternions.
+    const MultibodySystem&        system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
-    if (matter.getUseEulerAngles(state))
-        Joint::setDefaultsFromState(state);
-    else
-    {
+    if (!matter.getUseEulerAngles(state)) {
         Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.

@@ -140,14 +140,14 @@ Millard2012EquilibriumMuscle(const std::string &aName,  double aMaxIsometricForc
 //=============================================================================
 // Model Component Interface
 //=============================================================================
- void Millard2012EquilibriumMuscle::setup(Model& model)
- {
+void Millard2012EquilibriumMuscle::setup(Model& model)
+{
     Super::setup(model);
     ensureMuscleUpToDate();
- }
+}
 
- void Millard2012EquilibriumMuscle::
-     createSystem(SimTK::MultibodySystem& system) const
+void Millard2012EquilibriumMuscle::
+createSystem(SimTK::MultibodySystem& system) const
 {
     Super::createSystem(system);
 
@@ -193,11 +193,13 @@ void Millard2012EquilibriumMuscle::
 }
 
 SimTK::Vector Millard2012EquilibriumMuscle::
-    computeStateVariableDerivatives(const SimTK::State& s) const 
+computeStateVariableDerivatives(const SimTK::State& s) const 
 {
-    SimTK::Vector derivs(getNumStateVariables());
-    derivs[0] = getActivationRate(s);
-    derivs[1] = getFiberVelocity(s);
+    SimTK::Vector derivs(getNumStateVariables(), 0.);
+    if (!isDisabled(s)) {
+        derivs[0] = getActivationRate(s);
+        derivs[1] = getFiberVelocity(s);
+    }
     return derivs;
 }
 

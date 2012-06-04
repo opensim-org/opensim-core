@@ -589,6 +589,9 @@ void Model::createSystem()
 // creating components in its system.
 void Model::createSystem(SimTK::MultibodySystem& system) const
 {
+    // TODO: can't invoke ModelComponent::createSystem(); this is
+    // an API bug.
+
 	Model *mutableThis = const_cast<Model *>(this);
 
 	// Reset the vector of all controls' defaults

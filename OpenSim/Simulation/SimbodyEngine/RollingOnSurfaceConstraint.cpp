@@ -165,10 +165,9 @@ void RollingOnSurfaceConstraint::setupProperties()
  */
 void RollingOnSurfaceConstraint::setup(Model& aModel)
 {
-	string errorMessage;
+	Super::setup(aModel);
 
-	// Base class
-	UnilateralConstraint::setup(aModel);
+	string errorMessage;
 
 		// Look up the two bodies being constrained together by name in the
 	// dynamics engine and might as well keep a pointer to them
@@ -187,6 +186,8 @@ void RollingOnSurfaceConstraint::setup(Model& aModel)
 
 void RollingOnSurfaceConstraint::createSystem(SimTK::MultibodySystem& system) const
 {
+    Super::createSystem(system);
+
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getIndex());
 	SimTK::MobilizedBody surface = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_surfaceBody->getIndex());
@@ -222,6 +223,8 @@ void RollingOnSurfaceConstraint::createSystem(SimTK::MultibodySystem& system) co
 
 void RollingOnSurfaceConstraint::initState(SimTK::State& state) const
 {
+    Super::initState(state);
+
 	// All constraints treated the same as default behavior at initilization
 	for(int i=0; i < _numConstraintEquations; i++){
 		SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[i]);
@@ -237,6 +240,8 @@ void RollingOnSurfaceConstraint::initState(SimTK::State& state) const
 
 void RollingOnSurfaceConstraint::setDefaultsFromState(const SimTK::State& state)
 {
+    Super::setDefaultsFromState(state);
+
     _isDisabledProp.setValue(isDisabled(state));
 	for(int i=0; i < _numConstraintEquations; i++){
 		SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_indices[i]);

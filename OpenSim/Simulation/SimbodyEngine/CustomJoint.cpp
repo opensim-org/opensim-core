@@ -258,8 +258,8 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
             (getReverse() ? MobilizedBody::Reverse : MobilizedBody::Forward));
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 
-    // Let the superclass do its construction.
-    Super::createSystem(system);    
+    // TODO: Joints require super class to be called last.
+    Super::createSystem(system);
 }
 
 //=============================================================================

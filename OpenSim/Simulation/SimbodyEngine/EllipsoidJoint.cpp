@@ -222,7 +222,7 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 //_____________________________________________________________________________
 void EllipsoidJoint::createSystem(SimTK::MultibodySystem& system) const
 {
-	// CHILD TRANSFORM
+    // CHILD TRANSFORM
 	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
 	SimTK::Transform childTransform(rotation,_location);
 
@@ -238,13 +238,14 @@ void EllipsoidJoint::createSystem(SimTK::MultibodySystem& system) const
 
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 
-    // Let the superclass do its construction.
-    Joint::createSystem(system);
+    // TODO: Joints require super class to be called last.
+    Super::createSystem(system);
 }
 
 void EllipsoidJoint::initState(SimTK::State& s) const
 {
-    Joint::initState(s);
+    Super::initState(s);
+
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
     if (matter.getUseEulerAngles(s))
@@ -259,12 +260,12 @@ void EllipsoidJoint::initState(SimTK::State& s) const
 
 void EllipsoidJoint::setDefaultsFromState(const SimTK::State& state)
 {
+    Super::setDefaultsFromState(state);
+
+    // Override default in case of quaternions.
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
-    if (matter.getUseEulerAngles(state))
-        Joint::setDefaultsFromState(state);
-    else
-    {
+    if (!matter.getUseEulerAngles(state)) {
         Rotation r = matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).getBodyRotation(state);
         Vec3 angles = r.convertRotationToBodyFixedXYZ();
         int zero = 0; // Workaround for really ridiculous Visual Studio 8 bug.

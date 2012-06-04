@@ -193,6 +193,6 @@ void WeldJoint::createSystem(SimTK::MultibodySystem& system) const
 
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 
-    // Let the superclass do its construction.
-    Joint::createSystem(system);
+    // TODO: Joints require super class to be called last.
+    Super::createSystem(system);
 }
