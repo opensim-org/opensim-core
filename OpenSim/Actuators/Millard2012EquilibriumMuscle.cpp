@@ -939,7 +939,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
     double dtl    = 0;
     
 
-    double dlce   = penMdl.calcFiberVelocity(lce, cosphi, sinphi, 
+    double dlce   = penMdl.calcFiberVelocity(lce, sinphi, cosphi, 
                                               ml, tl, dml, dtl, caller);
     double dlceN  = dlce/(vmax*ofl);
     
@@ -1068,7 +1068,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                     Ke      = (dFmAT_dlceAT*dFt_d_tl)/(dFmAT_dlceAT + dFt_d_tl); 
                     dtl     = (1/dFt_d_tl)*Ke*dml;
 
-                    dlce = penMdl.calcFiberVelocity(lce,cosphi,sinphi,
+                    dlce = penMdl.calcFiberVelocity(lce,sinphi,cosphi,
                                                      ml,tl,dml,dtl,caller);                    
                     dlceN    = dlce/(vmax*ofl);
                     dphi = penMdl.calcPennationAngularVelocity(tan(phi),lce,
@@ -1260,7 +1260,7 @@ double Millard2012EquilibriumMuscle::
     double Dfpe_Dlce     = fpeCurve.calcDerivative(lceN,1) * DlceN_Dlce;
     double Dfk_Dlce      = fkCurve.calcDerivative(lceN,1)  * DlceN_Dlce;   
     
-    double Dphi_Dlce     = penMdl.calc_DpennationAngle_DfiberLength(lce,caller);
+    double Dphi_Dlce     = penMdl.calc_DPennationAngle_DfiberLength(lce,caller);
     double Dcosphi_Dlce  = -sinPhi*Dphi_Dlce;
 
     double Dfcphi_Dcosphi= fcphiCurve.calcDerivative(cosPhi,1);
@@ -1307,7 +1307,7 @@ double Millard2012EquilibriumMuscle::
     double Dfpe_Dlce     = fpeCurve.calcDerivative(lceN,1) * DlceN_Dlce;
     double Dfk_Dlce      = fkCurve.calcDerivative(lceN,1)  * DlceN_Dlce;   
     
-    double Dphi_Dlce     = penMdl.calc_DpennationAngle_DfiberLength(lce,caller);
+    double Dphi_Dlce     = penMdl.calc_DPennationAngle_DfiberLength(lce,caller);
     double Dcosphi_Dlce  = -sinPhi*Dphi_Dlce;
     
     double Dfcphi_Dcosphi= fcphiCurve.calcDerivative(cosPhi,1);
@@ -1333,7 +1333,7 @@ double Millard2012EquilibriumMuscle::
     std::string caller = getName();
     caller.append("calcFiberStiffnessAlongTendon");
 
-    double dphi_d_lce = penMdl.calc_DpennationAngle_DfiberLength(lce,caller);
+    double dphi_d_lce = penMdl.calc_DPennationAngle_DfiberLength(lce,caller);
     //2. Compute the change in length of the fiber length along the tendon
     //  lceAT = lce*cos(phi)
     // dlceAT/dlce = cos(phi) - lce*sin(phi)*dphi/dlce
@@ -1356,8 +1356,8 @@ double Millard2012EquilibriumMuscle::
                                     std::string& caller) const
 {
 
-    double dphi_d_lce  = penMdl.calc_DpennationAngle_DfiberLength(lce,caller);
-    double dtl_d_lce   = penMdl.calc_DtendonLength_DfiberLength(lce,sinphi,
+    double dphi_d_lce  = penMdl.calc_DPennationAngle_DfiberLength(lce,caller);
+    double dtl_d_lce   = penMdl.calc_DTendonLength_DfiberLength(lce,sinphi,
                                             cosphi,dphi_d_lce,caller);
 
     double dFt_d_lce = dFt_d_tl*dtl_d_lce;

@@ -313,7 +313,7 @@ int main(int argc, char* argv[])
         double smallTol = SimTK::Eps*1e2;
         double bigTol   = sqrt(SimTK::Eps);
         int numPts = 1000;
-
+        int numPtsMid = 100;
 
         string caller = "testMuscleParallelogramPennationModel";
         double optFibLen = 0.1;
@@ -340,8 +340,12 @@ int main(int argc, char* argv[])
             SimTK::Vector time(numPts);
             SimTK::Vector fibLen(numPts);
             SimTK::Vector fibLenAT(numPts);
+
             SimTK::Vector fibVel(numPts);
+            SimTK::Vector fibVel1(numPts);
             SimTK::Vector fibVelAT(numPts);
+            SimTK::Vector fibVelAT1(numPts); //only lce changes
+
             SimTK::Vector tdnLen(numPts);
             SimTK::Vector tdnVel(numPts);
 
@@ -350,6 +354,7 @@ int main(int argc, char* argv[])
 
             SimTK::Vector penAng(numPts);
             SimTK::Vector penAngVel(numPts);
+            SimTK::Vector penAngVel1(numPts);
             //Generate muscle tendon kinematics
             for(int i=0; i<numPts; i++){      
                 time(i) = ((double)i)/((double)numPts-(double)1);
@@ -359,11 +364,14 @@ int main(int argc, char* argv[])
                 
                 fibVel(i) = -sin(time(i)*(2*SimTK::Pi)) 
                             * paraHeight*(2*SimTK::Pi);
-                
+                fibVel1(i)= paraHeight;                
+
                 //Computed pennation kinematics
                 penAng(i) = fibKin.calcPennationAngle(fibLen(i), caller);
                 penAngVel(i) = fibKin.calcPennationAngularVelocity(
                                 tan(penAng(i)), fibLen(i),fibVel(i),caller);
+                penAngVel1(i) = fibKin.calcPennationAngularVelocity(
+                                tan(penAng(i)), fibLen(i),fibVel1(i),caller);
 
                 //Computed muscle kinematics
                 //Needs to be constant so I can numerically compute
@@ -382,6 +390,11 @@ int main(int argc, char* argv[])
                 fibVelAT(i) = fibKin.calcFiberVelocityAlongTendon(fibLen(i),
                                 fibVel(i),sin(penAng(i)), cos(penAng(i)), 
                                 penAngVel(i));
+
+
+                fibVelAT1(i)=fibKin.calcFiberVelocityAlongTendon(fibLen(i),
+                               fibVel1(i),sin(penAng(i)), cos(penAng(i)), 
+                               penAngVel1(i));
             }            
 
         cout << endl;
@@ -528,7 +541,7 @@ int main(int argc, char* argv[])
 
         cout << endl;
         cout << "**************************************************" << endl;
-        cout << "TEST: calc_DpennationAngle_DfiberLength correctness" << endl;
+        cout << "TEST: calc_DPennationAngle_DfiberLength correctness" << endl;
 
         SimTK::Vector DpenAngDfibLenNUM=calcCentralDifference(fibLen,penAng,
                                                                      true);
@@ -539,7 +552,7 @@ int main(int argc, char* argv[])
         maxErr = 0;
         //A central difference cannot be taken on the ends
         for(int i=1; i<numPts-1; i++){
-            DpenAngDfibLen(i) = fibKin.calc_DpennationAngle_DfiberLength(
+            DpenAngDfibLen(i) = fibKin.calc_DPennationAngle_DfiberLength(
                                                             fibLen(i),caller);
 
             //The isnan check needs to be in place because the numerical 
@@ -568,7 +581,7 @@ int main(int argc, char* argv[])
 
         cout << endl;
         cout << "**************************************************" << endl;
-        cout << "TEST: calc_DtendonLength_DfiberLength correctness" << endl;
+        cout << "TEST: calc_DTendonLength_DfiberLength correctness" << endl;
 
 
         SimTK::Vector DtdnLenDfibLenNUM=calcCentralDifference(fibLen,tdnLen,
@@ -580,7 +593,7 @@ int main(int argc, char* argv[])
 
         //A central difference cannot be taken on the ends
         for(int i=1; i<numPts-1; i++){
-            DtdnLenDfibLen(i) = fibKin.calc_DtendonLength_DfiberLength(
+            DtdnLenDfibLen(i) = fibKin.calc_DTendonLength_DfiberLength(
                 fibLen(i), sin(penAng(i)), cos(penAng(i)), 
                 DpenAngDfibLen(i), caller);
             //The isnan check needs to be in place because the numerical 
@@ -644,7 +657,7 @@ int main(int argc, char* argv[])
 
         for(int i=0;i<numPts; i++)
         {
-           tmp=fibKin.calcFiberVelocity(fibLen(i),cos(penAng(i)),sin(penAng(i)),
+           tmp=fibKin.calcFiberVelocity(fibLen(i),sin(penAng(i)),cos(penAng(i)),
                                         mclLen(i),tdnLen(i),mclVel(i),tdnVel(i),
                                         caller);
             err = abs(tmp-fibVel(i));
@@ -658,6 +671,121 @@ int main(int argc, char* argv[])
 
         printf("    :passed with a max. error < rel. tol. (%f*1e16 < %f*1e16)\n"
                 ,maxErr*1e16,smallTol*1e16);
+
+        cout << "**************************************************" << endl;
+        cout << "TEST: calc_DFiberLengthAlongTendon_DfiberLength correctness" 
+        << endl;
+
+        maxErr = 0;
+        maxErrIdx = 0;
+        err = 0;
+        tmp = 0;
+        double tmp1 = 0;
+
+        //To validate this function we must compute the partial derivative of
+        //D(dlceAT)D(lce) numerically, which means we must compute dlceAT
+        //such that only the fiber length is changing, and also the same
+        //for the function. Hence the use of fibVel1, and penAngVel1, which
+        //have been computed using a constant fiber velocity.
+
+        SimTK::Vector numDlceAT_Dlce =
+            calcCentralDifference(fibLen,fibLenAT,true);
+
+        SimTK::Matrix resultsDlceAT_Dlce(numPts,2);
+
+        for(int i=0;i<numPts; i++)
+        {
+           tmp1=fibKin.calc_DPennationAngle_DfiberLength(fibLen(i),caller);
+
+           tmp=fibKin.calc_DFiberLengthAlongTendon_DfiberLength(fibLen(i),
+                                                                sin(penAng(i)),
+                                                                cos(penAng(i)),
+                                                                tmp1);
+          
+
+           resultsDlceAT_Dlce(i,0) = numDlceAT_Dlce(i);
+           resultsDlceAT_Dlce(i,1) = tmp;
+
+            //Get the relative error
+            err = abs(tmp-numDlceAT_Dlce(i)) / 
+                (smallTol + abs(numDlceAT_Dlce(i)));
+            
+            if(err > maxErr){
+                maxErr=err;
+                maxErrIdx = i;
+            }
+        }
+        
+        //printMatrixToFile(resultsDdlceAT_Dlce,"D_dlceAT_Dlce.csv");
+       
+        SimTK_TEST_EQ_TOL(maxErr,0,5e-4);
+
+        printf("    :passed with a max. error < rel. tol. (%f < %f)\n"
+                ,maxErr,5e-4);
+
+
+        
+        cout << "**************************************************" << endl;
+        cout << "TEST: calc_DFiberVelocityAlongTendon_DfiberLength correctness" 
+             << endl;
+
+        maxErr = 0;
+        maxErrIdx = 0;
+        err = 0;
+        tmp = 0;
+        tmp1 = 0;
+        double tmp2 = 0;
+        //To validate this function we must compute the partial derivative of
+        //D(dlceAT)D(lce) numerically, which means we must compute dlceAT
+        //such that only the fiber length is changing, and also the same
+        //for the function. Hence the use of fibVel1, and penAngVel1, which
+        //have been computed using a constant fiber velocity.
+
+        SimTK::Vector numDdlceAT_Dlce =
+            calcCentralDifference(fibLen,fibVelAT1,true);
+
+        SimTK::Matrix resultsDdlceAT_Dlce(numPts,4);
+
+        for(int i=0;i<numPts; i++)
+        {
+           tmp1=fibKin.calc_DPennationAngle_DfiberLength(fibLen(i),caller);
+           tmp2=fibKin.calc_DPennationAngularVelocity_DfiberLength(fibLen(i),
+                                                                fibVel1(i),
+                                                                sin(penAng(i)),
+                                                                cos(penAng(i)),
+                                                                penAngVel1(i),
+                                                                tmp1,
+                                                                caller);
+
+           tmp=fibKin.calc_DFiberVelocityAlongTendon_DfiberLength(fibLen(i),
+                                                                fibVel1(i),
+                                                                sin(penAng(i)),
+                                                                cos(penAng(i)),
+                                                                penAngVel1(i),
+                                                                tmp1,
+                                                                tmp2);
+          
+           resultsDdlceAT_Dlce(i,0) = numDdlceAT_Dlce(i);
+           resultsDdlceAT_Dlce(i,1) = tmp;
+           resultsDdlceAT_Dlce(i,2) = fibVelAT1(i);
+           resultsDdlceAT_Dlce(i,3) = fibLen(i);
+
+            //Get the relative error
+            err = abs(tmp-numDdlceAT_Dlce(i)) / 
+                (smallTol + abs(numDdlceAT_Dlce(i)));
+            
+            if(err > maxErr){
+                maxErr=err;
+                maxErrIdx = i;
+            }
+        }
+        
+        //printMatrixToFile(resultsDdlceAT_Dlce,"D_dlceAT_Dlce.csv");
+       
+        SimTK_TEST_EQ_TOL(maxErr,0,2e-3);
+
+        printf("    :passed with a max. error < rel. tol. (%f < %f)\n"
+                ,maxErr,2e-3);
 
         cout << endl;
         cout << "**************************************************" << endl;
@@ -691,22 +819,40 @@ int main(int argc, char* argv[])
         SimTK_TEST_MUST_THROW(fibKin.calcPennationAngularVelocity(
                                     tan(penAng(0)), 0, fibVel(0),caller));
 
-        //calc_DpennationAngle_DfiberLength
-        SimTK_TEST_MUST_THROW(fibKin.calc_DpennationAngle_DfiberLength(
+        //calc_DPennationAngle_DfiberLength
+        SimTK_TEST_MUST_THROW(fibKin.calc_DPennationAngle_DfiberLength(
                                                         paraHeight,caller));
 
         //calcFiberLength
         SimTK_TEST_MUST_THROW(fibKin.calcFiberLength(1.0, 1.0, caller));
 
         //calcFiberVelocity
-        SimTK_TEST_MUST_THROW(fibKin.calcFiberVelocity(1,0,1, 1,1,0,0,caller));
+        SimTK_TEST_MUST_THROW(fibKin.calcFiberVelocity(1,1,0, 1,1,0,0,caller));
 
-        //calc_DtendonLength_DfiberLength
-        SimTK_TEST_MUST_THROW(fibKin.calc_DtendonLength_DfiberLength(paraHeight,
+        //calc_DTendonLength_DfiberLength
+        SimTK_TEST_MUST_THROW(fibKin.calc_DTendonLength_DfiberLength(paraHeight,
             sin(penAng(0)),cos(penAng(0)), 0.5, caller));
         cout << "    passed" << endl;
 
-        
+        //calc_DfiberVelocityAlongTendon_DfiberLength
+        //0 fiber length exception
+        SimTK_TEST_MUST_THROW(
+            fibKin.calc_DPennationAngularVelocity_DfiberLength( 0,
+                                                                1,
+                                                                sin(0.1),
+                                                                cos(0.1),
+                                                                1,
+                                                                0.1,
+                                                                caller));
+        //Pennation angle of 90 degrees exception
+        SimTK_TEST_MUST_THROW(
+            fibKin.calc_DPennationAngularVelocity_DfiberLength( 0,
+                                                                1,
+                                                                sin(SimTK::Pi/2),
+                                                                cos(SimTK::Pi/2),
+                                                                1,
+                                                                0.1,
+                                                                caller));
 
         SimTK_END_TEST();
 

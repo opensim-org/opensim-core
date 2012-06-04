@@ -164,6 +164,22 @@ public:
 
     /**
     @param fiberLength  The length of the fiber (meters)
+    @param sinPennationAngle The sine of the pennation angle (unitless)
+    @param cosPennationAngle The cosine of the pennation angle (unitless)
+    @param DpennationAngle_DfiberLength The partial derivative of the 
+                                        pennation angle with respect to 
+                                        fiber length
+    @return the partial derivative of the fiber length along the tendon with
+            respect to small changes in fiber length
+    */
+    double calc_DFiberLengthAlongTendon_DfiberLength(double fiberLength,                                     
+                                         double sinPennationAngle, 
+                                         double cosPennationAngle,                                    
+                                         double DpennationAngle_DfiberLength
+                                         ) const;
+
+    /**
+    @param fiberLength  The length of the fiber (meters)
     @param fiberVelocity The stretch velocity of the fiber (meters/s)
     @param sinPennationAngle The sine of the pennation angle (unitless)
     @param cosPennationAngle The cosine of the pennation angle (unitless)
@@ -173,6 +189,104 @@ public:
     double calcFiberVelocityAlongTendon(double fiberLength, 
         double fiberVelocity, double sinPennationAngle, 
         double cosPennationAngle, double pennationAngularVelocity) const;
+
+   
+    /**
+    @param fiberLength  The length of the fiber (meters)
+    @param fiberVelocity The stretch velocity of the fiber (meters/s)
+    @param sinPennationAngle The sine of the pennation angle (unitless)
+    @param cosPennationAngle The cosine of the pennation angle (unitless)
+    @param pennationAngularVelocity The angular velocity of the pennation
+                                    angle.
+    @param DpennationAngle_DfiberLength The partial derivative of the 
+                                        pennation angle with respect to 
+                                        fiber length
+    @param caller The name of the function calling this one. This 
+                        string is used to help the user debug their model
+                        when an assertion fails.
+    @return the partial derivative of the fiber velocity along the tendon with
+            respect to a change in fiber length
+
+
+    <B>Example:</B>
+    \code
+        double optFibLen = 0.1;
+        double optPenAng = SimTK::Pi/4.0;
+        string caller = "yourFunctionNameHere";
+        MuscleFixedWidthPennationModel fibKin = 
+                            MuscleFixedWidthPennationModel(
+                                optFibLen, optPenAng, caller);
+
+        double fibLen = optFibLen*2;
+        double penAng = fibKin.calcPennationAngle(fibLen,caller);
+
+        double fibVel = 0.2;
+        double penAngVel = fibKin.calcPennationAngularVelocity(
+                                tan(penAng), fibLen,fibVel,caller);
+
+        double Dphi_Dlce = fibKin.calc_DPennationAngle_DfiberLength(fibLen,
+                                                                    caller);
+
+        double DdlceAT_Dlce=
+            fibKin.calc_DFiberVelocityAlongTendon_DfiberLength(fibLen,
+                                                               fibVel,
+                                                               sin(penAng),
+                                                               cos(penAng),
+                                                               penAngVel,
+                                                               Dphi_Dlce,
+                                                               caller);
+
+    \endcode
+
+    <B>Computational Costs</B>
+    \verbatim
+    _______________________________________________________________________
+                        Trig     Comp.   Div.    Mult.   Add.    Assign.
+    _______________________________________________________________________
+                         0       2       3       14      6         10
+    \endverbatim
+
+    */
+    double calc_DFiberVelocityAlongTendon_DfiberLength(
+                                    double fiberLength, 
+                                    double fiberVelocity, 
+                                    double sinPennationAngle, 
+                                    double cosPennationAngle, 
+                                    double pennationAngularVelocity,
+                                    double DpennationAngle_DfiberLength,
+                                    double DpennationAngularVelocity_DfiberLength
+                                    ) const;
+    /**
+    @param fiberLength  The length of the fiber (meters)
+    @param fiberVelocity The stretch velocity of the fiber (meters/s)
+    @param sinPennationAngle The sine of the pennation angle (unitless)
+    @param cosPennationAngle The cosine of the pennation angle (unitless)
+    @param pennationAngularVelocity The angular velocity of the pennation
+                                    angle.
+    @param DpennationAngle_DfiberLength The partial derivative of the 
+                                        pennation angle with respect to 
+                                        fiber length
+    @param caller The name of the function calling this one. This 
+                        string is used to help the user debug their model
+                        when an assertion fails.
+    @return the partial derivative of the pennation angular velocity with 
+            respect to changes in fiber length
+
+
+    <B>Conditions:</B>
+    \verbatim
+        0 <  fiberLength 
+        pennationAngle < 90 degrees
+    \endverbatim
+    */
+    double calc_DPennationAngularVelocity_DfiberLength(double fiberLength, 
+                                            double fiberVelocity,
+                                            double sinPennationAngle, 
+                                            double cosPennationAngle, 
+                                            double pennationAngularVelocity,
+                                            double DpennationAngle_DfiberLength,
+                                            std::string& caller
+                                            ) const;
 
     /**
     This function calculates the pennation angle of the fiber given its
@@ -268,6 +382,45 @@ public:
                                         double fiberLength,  
                                         double fiberVelocity,
                                         std::string &caller) const;
+    /**
+    @param fiberLength  The length of the fiber (meters)
+    @param fiberVelocity The stretch velocity of the fiber (meters/s)
+    @param fiberAcceleration The stretch acceleration of the fiber (meters/s^2) 
+    @param sinPennationAngle The sine of the pennation angle (unitless)
+    @param cosPennationAngle The cosine of the pennation angle (unitless)
+    @param pennationAngularVelocity The angular velocity of the pennation
+                                    angle.
+    @param caller The name of the function calling this one. This 
+                        string is used to help the user debug their model
+                        when an assertion fails.
+    @return the angular acceleration of the pennation angle (rad/s^2)
+    */
+    double calcPennationAngularAcceleration(double fiberLength, 
+                                            double fiberVelocity,
+                                            double fiberAcceleration,
+                                            double sinPennationAngle,
+                                            double cosPennationAngle,
+                                        double pennationAngularVelocity,
+                                        std::string& caller) const;
+
+    /**
+    @param fiberLength  The length of the fiber (meters)
+    @param fiberVelocity The stretch velocity of the fiber (meters/s)
+    @param fiberAcceleration The stretch acceleration of the fiber (meters/s^2) 
+    @param sinPennationAngle The sine of the pennation angle (unitless)
+    @param cosPennationAngle The cosine of the pennation angle (unitless)
+    @param pennationAngularVelocity The angular velocity of the pennation
+                                    angle.
+    @param the angular acceleration of the pennation angle (rad/s^2)
+    @return the acceleration of the fiber in the direction of the tendon
+    */
+    double calcFiberAccelerationAlongTendon(double fiberLength, 
+                                            double fiberVelocity,
+                                            double fiberAcceleration,
+                                            double sinPennationAngle,
+                                            double cosPennationAngle,
+                                     double pennationAngularVelocity,
+                                     double pennationAngularAcceleration) const;
 
     /**
     This function computes the length of the tendon given the length of 
@@ -401,7 +554,7 @@ public:
                                 optFibLen, optPenAng, caller);
             
         double fibLen = optFibLen*2;
-        double DphiDlce = fibKin.calc_DpennationAngle_DfiberLength(fibLen, 
+        double DphiDlce = fibKin.calc_DPennationAngle_DfiberLength(fibLen, 
                                                                     caller);
     \endcode
 
@@ -414,7 +567,7 @@ public:
     \endverbatim
 
     */
-    double calc_DpennationAngle_DfiberLength(double fiberLength,                                            
+    double calc_DPennationAngle_DfiberLength(double fiberLength,                                            
                                             std::string& caller) const;
                 
     /**
@@ -453,10 +606,10 @@ public:
 
         double fibLen = optFibLen*2;
         double penAng = fibKin.calcPennationAngle(fibLen,caller);
-        double DphiDlce = fibKin.calc_DpennationAngle_DfiberLength(fibLen, 
+        double DphiDlce = fibKin.calc_DPennationAngle_DfiberLength(fibLen, 
                                                                     caller);
 
-        double DtdnDlce = fibKin.calc_DtendonLength_DfiberLength(fibLen,
+        double DtdnDlce = fibKin.calc_DTendonLength_DfiberLength(fibLen,
                                     sin(penAng), cos(penAng),DphiDlce,caller);
     \endcode
 
@@ -469,19 +622,39 @@ public:
     \endverbatim
 
     */
-    double calc_DtendonLength_DfiberLength(double fiberLength, 
+    double calc_DTendonLength_DfiberLength(double fiberLength, 
                                         double sinPennationAngle,
                                         double cosPennationAngle,
                                         double DpennationAngle_DfiberLength,                                           
                                         std::string& caller) const;
-
+    /**
+    @param muscleLength the length of the musculo tendon (meters)
+    @param tendonLength the length of the tendon (meters
+    @param caller       The name of the function calling this one. This 
+                        string is used to help the user debug their model
+                        when an assertion fails.
+    @return the fiber length (meters)
+    */
     double calcFiberLength(  double muscleLength, 
                                 double tendonLength, 
                                 std::string& caller) const;
 
+    /**
+    @param fiberLength         The length of the fiber (meters) 
+    @param sinPennationAngle   The sin(pennationAngle)
+    @param cosPennationAngle   The cos(pennationAngle)
+    @param muscleLength        The length of the muscle (meters)
+    @param tendonLength        The length of the tendon (meters)
+    @param muscleVelocity      The lengthening velocity of the muscle (meters/s)
+    @param tendonVelocity      The lengening velocity of the tendon (meters/s)
+    @param caller       The name of the function calling this one. This 
+                        string is used to help the user debug their model
+                        when an assertion fails.
+    @return the lengthening velocity of the fiber (meters/s)
+    */
     double   calcFiberVelocity( double fiberLength,
-                                double cosPennation,
                                 double sinPennation,
+                                double cosPennation,                                
                                 double muscleLength,
                                 double tendonLength,
                                 double muscleVelocity, 
