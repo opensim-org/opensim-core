@@ -176,7 +176,7 @@ void testActiveForceLengthCurve()
         double p2 = 0.75;
         double p3 = 1.6;
         double p4 = 0.75;
-        double p5 = 0.05;
+        double p5 = 0.01;
 
 
         printf("4. Testing default property values: \n\t%f,\n\t%f,\n\t%f,"
