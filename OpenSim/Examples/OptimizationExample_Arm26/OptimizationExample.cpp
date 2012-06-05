@@ -191,7 +191,7 @@ int main()
 
 		for(int i=0;i<numControls;i++) {
 			lower_bounds[i] = 0.01;
-			upper_bounds[i] = 1.0;
+			upper_bounds[i] = 0.99; // leave room for derivative perturbations
 		}
 
 		sys.setParameterLimits( lower_bounds, upper_bounds );
