@@ -205,32 +205,26 @@ int main()
 		controls[4]  = 0.01;
 		controls[5]  = 0.01;
 
-		try {
 			// Create an optimizer. Pass in our OptimizerSystem
-			// and the name of the optimization algorithm.
-			 Optimizer opt(sys, SimTK::LBFGSB);
-			//Optimizer opt(sys, InteriorPoint);
+		// and the name of the optimization algorithm.
+			Optimizer opt(sys, SimTK::LBFGSB);
+		//Optimizer opt(sys, InteriorPoint);
 
-			// Specify settings for the optimizer
-			opt.setConvergenceTolerance(0.2);
-			opt.useNumericalGradient(true);
-			opt.setMaxIterations(1000);
-			opt.setLimitedMemoryHistory(500);
+		// Specify settings for the optimizer
+		opt.setConvergenceTolerance(0.2);
+		opt.useNumericalGradient(true);
+		opt.setMaxIterations(1000);
+		opt.setLimitedMemoryHistory(500);
 			
-			// Optimize it!
-			f = opt.optimize(controls);
-		}
-		catch(const std::exception& e) {
-		std::cout << "OptimizationExample.cpp Caught exception :"  << std::endl;
-		std::cout << e.what() << std::endl;
-		}
-		
+		// Optimize it!
+		f = opt.optimize(controls);
+	
 		// osimModel.print("optimization_model_ARM.osim");
 		std::cout << "Elapsed time = " << 1.e3*(std::clock()-startTime)/CLOCKS_PER_SEC << "ms\n";
 
         std::cout << "OpenSim example completed successfully.\n";
 	}
-    catch (std::exception ex)
+    catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;
