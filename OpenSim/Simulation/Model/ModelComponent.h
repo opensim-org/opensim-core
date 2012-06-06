@@ -848,8 +848,8 @@ public:
 
     ModelComponentMeasure(SimTK::Subsystem& sub, 
                           const OpenSim::ModelComponent& mc)
-    :   Measure_<T>(sub, new Implementation(mc), 
-                    AbstractMeasure::SetHandle()) {}
+    :   SimTK::Measure_<T>(sub, new Implementation(mc), 
+                    SimTK::AbstractMeasure::SetHandle()) {}
 
     SimTK_MEASURE_HANDLE_POSTSCRIPT(ModelComponentMeasure, SimTK::Measure_<T>);
 };
