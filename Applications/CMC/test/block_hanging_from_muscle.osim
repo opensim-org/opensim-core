@@ -14,7 +14,7 @@
 					<!--Maximum allowed value for control signal. Used primarily when solving
 					    for control values-->
 					<max_control>       1.00000000 </max_control>
-          <default_fiber_length> 0.098 </default_fiber_length>
+          <default_fiber_length> 0.198 </default_fiber_length>
 					<GeometryPath name="">
 						<PathPointSet name="">
 							<objects>
@@ -88,11 +88,10 @@
 							<groups/>
 						</PathWrapSet>
 					</GeometryPath>
-					<optimal_force>       1.00000000 </optimal_force>
 					<!--Maximum isometric force that the fibers can generate-->
 					<max_isometric_force>   100.00000000 </max_isometric_force>
 					<!--Optimal length of the muscle fibers-->
-					<optimal_fiber_length>       0.10000000 </optimal_fiber_length>
+					<optimal_fiber_length>       0.20000000 </optimal_fiber_length>
 					<!--Resting length of the tendon-->
 					<tendon_slack_length>       0.10000000 </tendon_slack_length>
 					<!--Angle between tendon and fibers at optimal fiber length-->
@@ -196,7 +195,7 @@
 										<default_value>      -0.35000000 </default_value>
 										<default_speed_value>       0.00000000 </default_speed_value>
 										<initial_value>      -0.35000000 </initial_value>
-										<range>      -1.00000000      -0.10000000 </range>
+										<range>      -0.50000000      -0.10000000 </range>
 										<clamped> true </clamped>
 										<locked> false </locked>
 										<prescribed_function/>
@@ -272,7 +271,7 @@
 							<objects>
 								<DisplayGeometry name="">
 									<!--Name of geometry file .vtp, .stl, .obj-->
-									<geometry_file> small_block.vtp </geometry_file>
+									<geometry_file> box.vtp </geometry_file>
 									<!--Color used to display the geometry when visible-->
 									<color>       1.00000000       1.00000000       1.00000000 </color>
 									<!--Name of texture file .jpg, .bmp-->
@@ -291,7 +290,7 @@
 							<groups/>
 						</GeometrySet>
 						<!--Three scale factors for display purposes: scaleX scaleY scaleZ-->
-						<scale_factors>       1.00000000       1.00000000       1.00000000 </scale_factors>
+						<scale_factors>       0.20000000       0.20000000       0.20000000 </scale_factors>
 						<!--transform relative to owner specified as 3 rotations (rad) followed by
 						    3 translations rX rY rZ tx ty tz-->
 						<transform>      -0.00000000       0.00000000      -0.00000000       0.00000000       0.00000000       0.00000000 </transform>

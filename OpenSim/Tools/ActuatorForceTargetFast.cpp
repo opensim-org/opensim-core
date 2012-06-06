@@ -160,21 +160,20 @@ prepareToOptimize(SimTK::State& s, double *x)
 	// COMPUTE MAX ISOMETRIC FORCE
 	const Set<Actuator>& fSet = _controller->getModel().getActuators();
 	
-    const double eps = std::numeric_limits<double>::epsilon();
-	double fOpt;
-	// use tempory copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
-	// will change the muscle states
-	SimTK::State tempState = s;
-	getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
+	double fOpt = SimTK::NaN;
+
+	getController()->getModel().getMultibodySystem().realize(s, SimTK::Stage::Dynamics );
 	for(int i=0, index=0;i<fSet.getSize();i++) {
         Actuator& act = fSet.get(i);
-	    ActivationFiberLengthMuscle* mus = dynamic_cast<ActivationFiberLengthMuscle*>(&act);
+	    Muscle* mus = dynamic_cast<Muscle*>(&act);
 		if(mus==NULL) {
-			fOpt = 1.0e-4;
+			fOpt = act.getOptimalForce();
 		} else {
 			double activation = 1.0;
-			fOpt = mus->computeIsokineticForceAssumingInfinitelyStiffTendon(tempState,activation);
-			if( std::fabs(fOpt) < eps ) fOpt = 1.0e-4;
+			fOpt = mus->getMaxIsometricForce()*
+				(mus->getActiveForceLengthMultiplier(s)*mus->getForceVelocityMultiplier(s) + 
+					mus->getPassiveForceMultiplier(s))*cos(mus->getPennationAngle(s));
+			if( std::fabs(fOpt) < SimTK::TinyReal ) fOpt = SimTK::TinyReal;
 		}
 		_recipOptForceSquared[index++] = 1.0 / (fOpt*fOpt);
 	}

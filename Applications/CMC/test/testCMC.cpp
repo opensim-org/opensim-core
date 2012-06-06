@@ -53,35 +53,36 @@ void testEMGDrivenArm();
 void testHamnerRunningModel();
 
 int main() {
+	Object::renameType("Thelen2003Muscle", "Thelen2003Muscle_Deprecated");
     SimTK::Array_<std::string> failures;
 
-    try {testSingleRigidTendonMuscle();}
-    catch (const Exception& e)
-		{   e.print(cerr); failures.push_back("testSingleRigidTendonMuscle"); }
+	try {testSingleRigidTendonMuscle();}
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testSingleRigidTendonMuscle"); }
 
     try {testSingleMuscle();}
-    catch (const Exception& e)
-		{   e.print(cerr); failures.push_back("testSingleMuscle"); }
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testSingleMuscle"); }
 
     try {testTwoMusclesOnBlock();}
-    catch (const Exception& e)
-		{   e.print(cerr); failures.push_back("testTwoMusclesOnBlock"); }
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testTwoMusclesOnBlock"); }
 
     try {testArm26();}
-    catch (const Exception& e)
-		{   e.print(cerr); failures.push_back("testArm26"); }
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testArm26"); }
 
     try {testGait2354();}
-    catch (const Exception& e)
-		{   e.print(cerr); failures.push_back("testGait2354"); }
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testGait2354"); }
    
 	try {testEMGDrivenArm();}
-    catch (const Exception& e)
-	    {   e.print(cerr); failures.push_back("testEMGDrivenArm"); }
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm"); }
 
     try {testHamnerRunningModel();}
-	catch (const Exception& e)
-		{   e.print(cerr); failures.push_back("testHamnerRunningModel"); }
+    catch (const std::exception& e)
+		{  cout << e.what() <<endl; failures.push_back("testHamnerRunningModel"); }
 
     if (!failures.empty()) {
         cout << "Done, with failure(s): " << failures << endl;
@@ -95,7 +96,9 @@ int main() {
 }
 
 void testSingleMuscle() {
-
+	cout<<"\n******************************************************************" << endl;
+	cout << "*                       testSingleThelenMuscle                   *" << endl;
+	cout << "******************************************************************\n" << endl;
 	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
 	forward.run();
 
@@ -110,12 +113,22 @@ void testSingleMuscle() {
 }
 
 void testSingleRigidTendonMuscle() {
+	cout << "\n******************************************************************" << endl;
+	cout << "*                   testSingleRigidTendonMuscle                  *" << endl;
+	cout << "******************************************************************\n" << endl;
+
+	Model model("block_hanging_RigidTendonMuscle.osim");
+	Model* modelCopy = model.clone();
 
 	ForwardTool forward("block_hanging_from_muscle_Setup_Forward.xml");
-	Model model("block_hanging_RigidTendonMuscle.osim");
+	forward.setModel(model);
+	forward.run();
 
+	// Use copy of the model because forward adds a ControlSetController to the model and the controls from CMC
+	// are added in with those "feedforward" controls. Instead we want to verify that CMC can compute these 
+	// samecontrols
 	CMCTool cmc("block_hanging_from_muscle_Setup_CMC.xml");
-	cmc.setModel(model);
+	cmc.setModel(*modelCopy);
 	cmc.run();
 
 	Storage fwd_result("block_hanging_from_muscle_ForwardResults/block_hanging_from_muscle_states.sto");
@@ -126,6 +139,9 @@ void testSingleRigidTendonMuscle() {
 }
 
 void testTwoMusclesOnBlock() {
+	cout<<"\n******************************************************************" << endl;
+	cout << "*                       testTwoMusclesOnBlock                    *" << endl;
+	cout << "******************************************************************\n" << endl;
 
 	ForwardTool forward("twoMusclesOnBlock_Setup_Forward.xml");
 	forward.run();
@@ -149,7 +165,9 @@ void testTwoMusclesOnBlock() {
 
 
 void testArm26() {
-
+	cout<<"\n******************************************************************" << endl;
+	cout << "*                             testArm26                          *" << endl;
+	cout << "******************************************************************\n" << endl;
 	CMCTool cmc("arm26_Setup_CMC.xml");
 	cmc.run();
 	Storage results("Results_Arm26/arm26_states.sto"), standard("std_arm26_states.sto");

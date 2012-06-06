@@ -1152,7 +1152,7 @@ void CMC::createSystem( SimTK::MultibodySystem& system)  const
 			control->setUseSteps(true);
 			if(xmin < MIN_CMC_CONTROL_VALUE){
 				cout << "CMC::Warning: CMC cannot compute controls for muscles with muscle controls < " << MIN_CMC_CONTROL_VALUE <<".\n" <<
-					"The minumum control limit for muscle '" << musc->getName() << "' has been reset to " << MIN_CMC_CONTROL_VALUE <<"." <<endl;
+					"The minimum control limit for muscle '" << musc->getName() << "' has been reset to " << MIN_CMC_CONTROL_VALUE <<"." <<endl;
 				xmin = MIN_CMC_CONTROL_VALUE;
 			}
 			if(xmax < MAX_CMC_CONTROL_VALUE){
