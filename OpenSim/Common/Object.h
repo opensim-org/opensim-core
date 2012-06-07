@@ -771,8 +771,8 @@ private:
 
 	// Functions to support deserialization. 
 	void generateXMLDocument();
-	static void InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
-	static void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+	void InitializeObjectFromXMLNode(Property_Deprecated *aProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
+	void InitializeObjectFromXMLNode2(AbstractProperty *aAbstractProperty, const SimTK::Xml::element_iterator& rObjectElement, Object *aObject, int versionNumber);
 	void updateDefaultObjectsFromXMLNode();
 	void updateDefaultObjectsXMLNode(SimTK::Xml::Element& aParent);
 

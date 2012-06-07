@@ -712,13 +712,29 @@ InitializeObjectFromXMLNode(Property_Deprecated*                aProperty,
 	// Used to call a special copy method that took DOMElement* but 
 	// that ended up causing XML to be parsed twice.  Got rid of that
 	// copy method! - Eran, Feb/07
-	
-	// Set inlining attributes on final object
+ 	// Set inlining attributes on final object
 	if (!inlinedObject){
-		XMLDocument* newDoc = new XMLDocument(file);
+		// When including contents from another file it's assumed file path is relative
+        // to a parent directory. Ideally we can tell which is the case. For now leaving
+        // this assumption as it was in versions before 3.0
+        std::string savedCwd = IO::getCwd();
+	    IO::chDir(IO::getParentDirectory(getDocument()->getFileName()));
+        XMLDocument* newDoc=0;
+        try {
+            std::cout << "read object from file [" << file <<"] cwd =" << IO::getCwd() << std::endl;
+            newDoc = new XMLDocument(file);
+        } catch(const Exception &ex){
+            // if file can't be opened, maybe it's relative to a parent document
+            IO::chDir(savedCwd);
+            std::cout << "failure reading object from file [" << file <<"] cwd =" 
+                << IO::getCwd() << "Error:" << ex.getMessage() 
+                << std::endl;
+           return;
+        }
 		aObject->_inlined=false;
 		SimTK::Xml::Element e = newDoc->getRootDataElement();
 		aObject->updateFromXMLNode(e, newDoc->getDocumentVersion());
+        IO::chDir(savedCwd);
 	}
 	else
 		aObject->updateFromXMLNode(*rObjectElement, versionNumber);
