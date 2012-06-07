@@ -345,9 +345,7 @@ SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF CACHE BOOL "Build an installer (to post on
 MARK_AS_ADVANCED(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(OPENSIM_INSTALL_PACKAGE_BUILD)
 IF(WIN32)
-	SET(NETBEANS_INSTALL_DIR "C:/Program Files/netbeans-5.5/" CACHE PATH "Netbeans install directory")
 	SET(VTK_LIB_DIR ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll CACHE PATH "Prebuilt VTK-shared libraries")	
-	SET(JRE_TO_PACKAGE "C:/Program Files/Java/jdk1.5.0_6/jre" CACHE PATH "JRE to package with OpenSim (jre dir)")
 ENDIF(WIN32)
 ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 
@@ -436,6 +434,7 @@ IF(WIN32)
 		INSTALL_FILES(/bin/ FILES 
 			${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcr71.dll
 		            ${OpenSim_SOURCE_DIR}/Vendors/vtk_dll/msvcp71.dll)
+		
 	ENDIF(OPENSIM_INSTALL_PACKAGE_BUILD)
 ENDIF(WIN32)
 
@@ -491,5 +490,5 @@ IF(BUILD_API_ONLY)
 	SUBDIRS(Vendors OpenSim Documentation)
 	SET(OPENSIM_INSTALL_PACKAGE_BUILD OFF)
 ELSE(BUILD_API_ONLY)
-	SUBDIRS(Vendors OpenSim Install Documentation Applications)
+	SUBDIRS(Vendors OpenSim Install Documentation Applications Models)
 ENDIF(BUILD_API_ONLY)
