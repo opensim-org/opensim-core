@@ -161,7 +161,7 @@ public:
         for (int i = 0; i < Set<T>::getSize(); i++)
             static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
 		
-		setupGroups(); // make sure group members are populated
+		Set<T>::setupGroups(); // make sure group members are populated
     }
 
     /**
