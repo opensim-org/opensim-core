@@ -26,9 +26,9 @@
 #include <OpenSim/Common/SimmMacros.h>
 #include <OpenSim/Common/DebugUtilities.h>
 #include <OpenSim/Simulation/Model/Model.h>
+#include <Simbody.h>
 #include <iostream>
 
-#include <SimTKcommon\internal\ExceptionMacros.h>
 
 //=============================================================================
 // STATICS
@@ -1318,7 +1318,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
             printf("Initialization failed: fiber length approaching 0, \n"
                    "                       for %s, a Millard2012AccelerationMuscle \n"
                    "                       with an error of %f", 
-                   getName(), ddlce_dtt);
+                   getName().c_str(), ddlce_dtt);
         //Check for a pennation angle singularity   
         }else if(phi > SimTK::Pi/2 - SimTK::Eps){
             results[0] = 3.0;
@@ -1332,7 +1332,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
             printf("Initialization failed: pennation angle approaching Pi/2, \n"
                    "                       for %s, a Millard2012AccelerationMuscle \n"
                    "                       with an error of %f", 
-                   getName(), ddlce_dtt);
+                   getName().c_str(), ddlce_dtt);
 
         //Not enough iterations
         }else{ 
@@ -1347,7 +1347,7 @@ SimTK::Vector Millard2012AccelerationMuscle::
             printf("Initialization failed: solution did not converge in %i, \n"
                    "                       for %s, a Millard2012AccelerationMuscle \n"
                    "                       with an error of %f", 
-                   iter,getName(),ddlce_dtt);
+                   iter,getName().c_str(),ddlce_dtt);
 
         }
  
