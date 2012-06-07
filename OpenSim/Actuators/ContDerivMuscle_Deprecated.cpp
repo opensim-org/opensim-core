@@ -267,8 +267,6 @@ ContDerivMuscle_Deprecated& ContDerivMuscle_Deprecated::operator=(const ContDeri
 //-----------------------------------------------------------------------------
 //_____________________________________________________________________________
 /**
-//_____________________________________________________________________________
-/**
  * Get the normalized length of the muscle fiber(s).  This is the current
  * fiber length(s) divided by the optimal fiber length.
  *
@@ -563,7 +561,7 @@ double ContDerivMuscle_Deprecated::calcFiberVelocity(const SimTK::State& s, doub
    }
    return fiber_velocity;
 }
-/*
+
 //_____________________________________________________________________________
 /**
  * Get the stress in this actuator.  It is calculated as the force divided

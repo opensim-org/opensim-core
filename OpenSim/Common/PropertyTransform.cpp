@@ -166,6 +166,7 @@ setValue(const Array<double>& aArray)
 	for(int i=0;i<3; i++)
 		_transform[i] = aArray[i];
 }
+*/
 //_____________________________________________________________________________
 /**
  * Set the value of this property.

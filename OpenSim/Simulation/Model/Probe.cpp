@@ -254,8 +254,6 @@ void Probe::setOperationParameter(double operation_parameter)
 //=============================================================================
 //_____________________________________________________________________________
 /** 
-//_____________________________________________________________________________
-/** 
  * Provide names of the probe value integrals (column labels) to be reported.
  */
 Array<string> Probe::getRecordLabels() const 

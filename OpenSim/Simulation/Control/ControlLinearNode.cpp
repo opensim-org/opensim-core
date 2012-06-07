@@ -200,6 +200,7 @@ SetEqualityTolerance(double aTol)
 	_EqualityTolerance = aTol;
 	if(_EqualityTolerance<0.0) _EqualityTolerance = 0.0;
 }
+*/
 //_____________________________________________________________________________
 /**
  * Get the tolerance for determining equality of nodes.
@@ -219,7 +220,7 @@ GetEqualityTolerance()
 {
 	return(_EqualityTolerance);
 }
-
+*/
 //-----------------------------------------------------------------------------
 // TIME
 //-----------------------------------------------------------------------------

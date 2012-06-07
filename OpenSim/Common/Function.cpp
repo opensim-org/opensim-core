@@ -145,7 +145,7 @@ double Function::evaluate(int aDerivOrder,double aX,double aY,double aZ) const
 	    workDeriv[i] = 0;
     return calcDerivative(workDeriv, workX);
 }
-
+*/
 
 /**
  * Evaluates total first derivative using the chain rule.
@@ -155,7 +155,7 @@ evaluateTotalFirstDerivative(double aX,double aDxdt)
 {
 	return evaluate(1,aX) * aDxdt;
 }
-
+*/
 /**
  * Evaluates total second derivative using the chain rule.
  *

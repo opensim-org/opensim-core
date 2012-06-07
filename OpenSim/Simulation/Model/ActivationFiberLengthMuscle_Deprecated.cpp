@@ -224,7 +224,6 @@ void ActivationFiberLengthMuscle_Deprecated::setFiberLengthDeriv(const SimTK::St
 }
 //_____________________________________________________________________________
 /**
-/**
  * Get the normalized length of the muscle fiber(s).  This is the current
  * fiber length(s) divided by the optimal fiber length.
  *
