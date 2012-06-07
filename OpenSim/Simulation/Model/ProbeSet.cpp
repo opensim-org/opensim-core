@@ -79,37 +79,7 @@ ProbeSet::ProbeSet(const ProbeSet& aAbsProbeSet):
  */
 void ProbeSet::setNull()
 {
-    
 }
 
-/**
- * Post construction initialization.
- */
-void ProbeSet::setup(Model& aModel)
-{
-    // Base class
-    Set<Probe>::setup();
-
-    // Do members
-    ModelComponentSet<Probe>::setup(aModel);
-
-}
-//=============================================================================
-// OPERATORS
-//=============================================================================
-//_____________________________________________________________________________
-/**
- * Assignment operator.
- *
- * @return Reference to this object.
- */
-#ifndef SWIG
-ProbeSet& ProbeSet::operator=(const ProbeSet &aProbeSet)
-{
-    Set<Probe>::operator=(aProbeSet);
-
-    return (*this);
-}
-#endif
 
 

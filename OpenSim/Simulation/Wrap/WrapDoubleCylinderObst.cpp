@@ -136,10 +136,10 @@ void WrapDoubleCylinderObst::setupProperties()
 *
 * @param aModel simbody model
 */
-void WrapDoubleCylinderObst::setup(Model& aModel, OpenSim::Body& aBody)
+void WrapDoubleCylinderObst::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	WrapObject::setup(aModel, aBody);
+	Super::connectToModelAndBody(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 	if ( (_radiusUcyl<0.0) || (_radiusVcyl < 0.0) )

@@ -166,11 +166,10 @@ public:
 	virtual int getNumStateVariables() const { return 0;};
 
 protected:
-
-	virtual void setup(Model& aModel);
-	virtual void initState(SimTK::State& s) const;
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void setDefaultsFromState(const SimTK::State& state) {};
+    // ModelComponent interface.
+	void connectToModel(Model& aModel) OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 public:
 	//--------------------------------------------------------------------------

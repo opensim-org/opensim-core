@@ -194,7 +194,7 @@ ExternalLoads& ExternalLoads::operator=(const ExternalLoads &otherExternalLoads)
 	return(*this);
 }
 
-void ExternalLoads::setup(Model& aModel)
+void ExternalLoads::invokeConnectToModel(Model& aModel)
 {
 
 	Storage *forceData = new Storage(_dataFileName);
@@ -203,7 +203,7 @@ void ExternalLoads::setup(Model& aModel)
 		get(i).setDataSource(forceData);
 
 	// BASE CLASS
-	ModelComponentSet<ExternalForce>::setup(aModel);
+	Super::invokeConnectToModel(aModel);
 
 	// add loaded storage into list of storages for later garbage collection
 	_storages.push_back(forceData);

@@ -132,7 +132,7 @@ public:
 	virtual void changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aBody );
 #endif
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void setup(const Model& aModel);
+	virtual void connectMarkerToModel(const Model& aModel);
 	virtual void updateGeometry();
 
 	virtual const VisibleObject* getDisplayer() const { return &_displayer; }

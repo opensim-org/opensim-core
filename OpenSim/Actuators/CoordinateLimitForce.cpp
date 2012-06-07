@@ -108,7 +108,7 @@ operator=(const CoordinateLimitForce& source)
 //_____________________________________________________________________________
 // Set the data members of this actuator to their null values. Note that we
 // also use this after copy construction or copy assignment; these should be
-// calculated at setup().
+// calculated at connectToModel().
 void CoordinateLimitForce::setNull()
 {
 	upStep = NULL;
@@ -247,9 +247,9 @@ bool CoordinateLimitForce::isComputingDissipationEnergy() const
  *
  * @param aModel OpenSim model containing this CoordinateLimitForce.
  */
-void CoordinateLimitForce::setup(Model& aModel)
+void CoordinateLimitForce::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
     string errorMessage;
 
@@ -286,9 +286,9 @@ void CoordinateLimitForce::setup(Model& aModel)
 
 
 /** Create the underlying Force that is part of the multibodysystem. */
-void CoordinateLimitForce::createSystem(SimTK::MultibodySystem& system) const
+void CoordinateLimitForce::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	addCacheVariable<double>("dissipationPower", 0.0, SimTK::Stage::Dynamics);
 

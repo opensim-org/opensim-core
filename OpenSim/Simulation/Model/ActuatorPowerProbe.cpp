@@ -100,9 +100,9 @@ void ActuatorPowerProbe::setActuatorNames(const Array<string>& actuatorNames)
  *
  * @param aModel OpenSim model containing this ActuatorPowerProbe.
  */
-void ActuatorPowerProbe::setup(Model& model)
+void ActuatorPowerProbe::connectToModel(Model& model)
 {
-    Super::setup(model);
+    Super::connectToModel(model);
 
     // check that each Actuator in the actuator_names array exists in the model
     int nA = getActuatorNames().size();

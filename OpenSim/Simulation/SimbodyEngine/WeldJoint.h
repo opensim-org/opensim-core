@@ -73,15 +73,16 @@ public:
 
 	WeldJoint& operator=(const WeldJoint &aJoint);
 	void copyData(const WeldJoint &aJoint);
-	virtual void setup(Model& aModel);
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
 
+    // ModelComponent interface.
+	void connectToModel(Model& aModel) OVERRIDE_11;
 protected:
-    void createSystem(SimTK::MultibodySystem& system) const;
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:
 	void setNull();

@@ -125,10 +125,10 @@ void WrapEllipsoid::setupProperties()
 *
 * @param aModel 
 */
-void WrapEllipsoid::setup(Model& aModel, OpenSim::Body& aBody)
+void WrapEllipsoid::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	WrapObject::setup(aModel, aBody);
+	WrapObject::connectToModelAndBody(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 

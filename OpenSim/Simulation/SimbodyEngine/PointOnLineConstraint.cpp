@@ -182,8 +182,8 @@ void PointOnLineConstraint::setupProperties()
  *
  * @param aModel OpenSim model containing this PointOnLineConstraint.
  */
-void PointOnLineConstraint::setup(Model& aModel) {
-	Super::setup(aModel);
+void PointOnLineConstraint::connectToModel(Model& aModel) {
+	Super::connectToModel(aModel);
 
 	string errorMessage;
 	// Look up the two bodies being constrained together by name in the
@@ -200,9 +200,9 @@ void PointOnLineConstraint::setup(Model& aModel) {
 	_followerBody = &aModel.updBodySet().get(_followerBodyName);
 }
 
-void PointOnLineConstraint::createSystem(SimTK::MultibodySystem& system) const
+void PointOnLineConstraint::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody lb = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_lineBody->getIndex());

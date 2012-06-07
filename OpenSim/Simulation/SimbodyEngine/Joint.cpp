@@ -214,8 +214,8 @@ void Joint::updateName(const std::string &aName)
  *
  * @param aModel OpenSim model containing this Joint.
  */
-void Joint::setup(Model& aModel) {
-	Super::setup(aModel);
+void Joint::connectToModel(Model& aModel) {
+	Super::connectToModel(aModel);
 
 	string errorMessage;
 
@@ -229,7 +229,7 @@ void Joint::setup(Model& aModel) {
 		throw (Exception(errorMessage.c_str()));
 	}
 
-	_coordinateSet.setup(aModel);
+	_coordinateSet.invokeConnectToModel(aModel);
 	for(int i = 0; i< _coordinateSet.getSize(); i++)
 		_coordinateSet[i].setJoint(*this);
 }
@@ -524,11 +524,11 @@ void Joint::constructCoordinates()
 	}
 }
 
-// TODO: note that child must invoke Joint::createSystem()
+// TODO: note that child must invoke Joint::addToSystem()
 // *after* it creates its mobilized body; that is an API bug.
-void Joint::createSystem(SimTK::MultibodySystem& system) const
+void Joint::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	// Each coordinate needs to know it's body index and mobility index.
 	int nq = _coordinateSet.getSize();
@@ -545,20 +545,20 @@ void Joint::createSystem(SimTK::MultibodySystem& system) const
 	}
 }
 
-void Joint::initState(SimTK::State& s) const
+void Joint::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 
     for (int i = 0; i < _coordinateSet.getSize(); i++)
-        _coordinateSet.get(i).initState(s);
+        _coordinateSet.get(i).initStateFromProperties(s);
 }
 
-void Joint::setDefaultsFromState(const SimTK::State& state)
+void Joint::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setDefaultsFromState(state);
+    Super::setPropertiesFromState(state);
 
     for (int i = 0; i < _coordinateSet.getSize(); i++)
-        _coordinateSet.get(i).setDefaultsFromState(state);
+        _coordinateSet.get(i).setPropertiesFromState(state);
 }
 
 

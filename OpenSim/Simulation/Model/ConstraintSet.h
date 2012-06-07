@@ -71,7 +71,7 @@ public:
 	:   Super(model, aFileName, aUpdateFromXMLNode) {}
 	ConstraintSet(const ConstraintSet& aAbsConstraintSet);
 	~ConstraintSet(void);
-	void setup(Model& aModel);
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

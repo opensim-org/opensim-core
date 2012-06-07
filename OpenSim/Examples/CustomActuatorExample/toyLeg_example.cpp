@@ -230,9 +230,9 @@ int main()
 		forces->getForceStorage().print("actuator_forces.mot");
 		
 	}
-    catch (std::exception ex)
+    catch (const std::exception& ex)
     {
-        std::cout << ex.what() << std::endl;
+        std::cout << "Exception in toyLeg_example: " << ex.what() << std::endl;
         return 1;
     }
 

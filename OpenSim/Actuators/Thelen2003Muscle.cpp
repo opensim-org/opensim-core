@@ -73,9 +73,9 @@ Thelen2003Muscle(const std::string& aName,  double aMaxIsometricForce,
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
 }
 
-void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const 
+void Thelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const 
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     //const cast *this so you can initialize the member variables actMdl and
     //penMdl
@@ -95,7 +95,7 @@ void Thelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
 
     //Appropriately set the properties of the pennation model
         std::string caller(getName());
-        caller.append("_Thelen2003Muscle::createSystem");
+        caller.append("_Thelen2003Muscle::addToSystem");
         double optimalFiberLength = getOptimalFiberLength();
         double pennationAngle     = getPennationAngleAtOptimalFiberLength();
 

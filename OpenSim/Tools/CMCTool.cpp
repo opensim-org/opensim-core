@@ -807,7 +807,7 @@ bool CMCTool::run()
 	try {
 		manager.integrate(s);
 	}
-	catch(Exception &x) {
+	catch(const Exception& x) {
 		// TODO: eventually might want to allow writing of partial results
 		x.print(cout);
 		IO::chDir(saveWorkingDirectory);
@@ -853,7 +853,7 @@ bool CMCTool::run()
 
 	//_model->removeController(controller); // So that if this model is from GUI it doesn't double-delete it.
 
-	} catch(Exception &x) {
+	} catch(const Exception& x) {
 		// TODO: eventually might want to allow writing of partial results
 		x.print(cout);
 		IO::chDir(saveWorkingDirectory);
@@ -957,7 +957,7 @@ initializeControlSetUsingConstraints(
 			ControlLinear *control;
 			try {
 				control = (ControlLinear*)&rControlSet->get(rraControlName);
-			} catch(Exception x) {
+			} catch(const Exception& x) {
 				continue;
 			}
 			if(control==NULL) continue;

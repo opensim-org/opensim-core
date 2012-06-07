@@ -136,7 +136,7 @@ public:
 	virtual WrapObject* getWrapObject() const { return NULL; }
 #ifndef SWIG
 	virtual bool isActive(const SimTK::State& s) const { return true; }
-	virtual void setup(const Model& aModel, GeometryPath& aPath);
+	virtual void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
 	virtual void update(const SimTK::State& s) { }
 	virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
 #endif

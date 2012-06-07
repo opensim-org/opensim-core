@@ -190,9 +190,9 @@ void ConstantDistanceConstraint::setupProperties()
  *
  * @param aModel OpenSim model containing this ConstantDistanceConstraint.
  */
-void ConstantDistanceConstraint::setup(Model& aModel)
+void ConstantDistanceConstraint::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	string errorMessage;
 
@@ -210,9 +210,9 @@ void ConstantDistanceConstraint::setup(Model& aModel)
 	_body2 = &aModel.updBodySet().get(_body2Name);
 }
 
-void ConstantDistanceConstraint::createSystem(SimTK::MultibodySystem& system) const
+void ConstantDistanceConstraint::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getIndex());

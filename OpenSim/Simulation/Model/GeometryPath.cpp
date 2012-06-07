@@ -141,8 +141,8 @@ void GeometryPath::setNull()
  *
  * @param aModel The model containing this path.
  */
-void GeometryPath::setup(Model& aModel) {
-	Super::setup(aModel);
+void GeometryPath::connectToModel(Model& aModel) {
+	Super::connectToModel(aModel);
 
 	// aModel will be NULL when objects are being registered.
 	if (&aModel == NULL)
@@ -154,10 +154,10 @@ void GeometryPath::setup(Model& aModel) {
 	namePathPoints(0);
 
 	for (int i = 0; i < _pathWrapSet.getSize(); i++)
- 		_pathWrapSet[i].setup(aModel, *this);
+ 		_pathWrapSet[i].connectToModelAndPath(aModel, *this);
 
 	for (int i = 0; i < _pathPointSet.getSize(); i++){
-		_pathPointSet.get(i).setup(aModel, *this);
+		_pathPointSet.get(i).connectToModelAndPath(aModel, *this);
 		// GeometryPath points depend on the path itself
 		// Removing the dependency since path points now display as part of the
 		// path itself, extracted directly from the set of line segments
@@ -172,9 +172,9 @@ void GeometryPath::setup(Model& aModel) {
 /**
  * Create the SimTK state, dicrete and/or cache for this GeometryPath.
  */
- void GeometryPath::createSystem(SimTK::MultibodySystem& system) const 
+ void GeometryPath::addToSystem(SimTK::MultibodySystem& system) const 
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
     // Beyond the const Component get the index so we can access the SimTK::Force later
 	GeometryPath* mutableThis = const_cast<GeometryPath *>(this);
@@ -188,9 +188,9 @@ void GeometryPath::setup(Model& aModel) {
 	mutableThis->addCacheVariable<Array<PathPoint *> >("current_display_path", pathPrototype, SimTK::Stage::Position);
 }
 
-void GeometryPath::initState( SimTK::State& s) const
+void GeometryPath::initStateFromProperties( SimTK::State& s) const
 {
-	Super::initState(s);
+	Super::initStateFromProperties(s);
 }
 
 //_____________________________________________________________________________
@@ -492,7 +492,7 @@ PathPoint* GeometryPath::addPathPoint(const SimTK::State& s, int aIndex, OpenSim
 	newPoint->setBody(aBody);
 	Vec3& location = newPoint->getLocation();
 	placeNewPathPoint(s, location, aIndex, aBody);
-	newPoint->setup(getModel(), *this);
+	newPoint->connectToModelAndPath(getModel(), *this);
 	_pathPointSet.insert(aIndex, newPoint);
 
 	// Rename the path points starting at this new one.
@@ -691,7 +691,7 @@ void GeometryPath::addPathWrap(const SimTK::State& s, WrapObject& aWrapObject)
 	PathWrap* newWrap = new PathWrap();
 	newWrap->setWrapObject(aWrapObject);
 	newWrap->setMethod(PathWrap::hybrid);
-	newWrap->setup(getModel(), *this);
+	newWrap->connectToModelAndPath(getModel(), *this);
 	_pathWrapSet.append(newWrap);
 
 }

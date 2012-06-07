@@ -231,7 +231,7 @@ void testExternalLoad()
 
 	//Ask external loads to transform point expressed in ground to the applied body
 	extLoads->setDataFileName(forceStore2.getName());
-	extLoads->setup(model);
+	extLoads->invokeConnectToModel(model);
 	extLoads->transformPointsExpressedInGroundToAppliedBodies(*qStore);
 
 	// remove previous external force from the model too

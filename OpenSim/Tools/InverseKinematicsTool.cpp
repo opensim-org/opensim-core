@@ -447,7 +447,7 @@ bool InverseKinematicsTool::run()
 
 		cout << "InverseKinematicsTool completed " << Nframes-1 << " frames in " <<(double)(clock()-start)/CLOCKS_PER_SEC << "s\n" <<endl;
 	}
-	catch (std::exception ex) {
+	catch (const std::exception& ex) {
 		std::cout << "InverseKinematicsTool Failed: " << ex.what() << std::endl;
 		throw (Exception("InverseKinematicsTool Failed, please see messages window for details..."));
 	}

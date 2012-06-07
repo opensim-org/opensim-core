@@ -114,10 +114,10 @@ void Schutte1993Muscle_Deprecated::constructProperties()
  *
  * @param aModel model containing this Schutte1993Muscle_Deprecated.
  */
-void Schutte1993Muscle_Deprecated::setup(Model& aModel)
+void Schutte1993Muscle_Deprecated::connectToModel(Model& aModel)
 {
 	// Base class
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)

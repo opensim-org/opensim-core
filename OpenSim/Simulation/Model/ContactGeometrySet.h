@@ -60,7 +60,7 @@ public:
 	ContactGeometrySet(Model& model, const std::string &aFileName, bool aUpdateFromXMLNode);
 	ContactGeometrySet(const ContactGeometrySet& aContactGeometrySet);
 	~ContactGeometrySet(void);
-	void setup(Model& aModel);
+
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

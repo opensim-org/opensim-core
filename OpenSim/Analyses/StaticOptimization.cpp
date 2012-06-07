@@ -388,7 +388,7 @@ record(const SimTK::State& s)
 		target.setCurrentState( &sWorkingCopy );
 		optimizer->optimize(_parameters);
 	}
-	catch (const SimTK::Exception::Base &ex) {
+	catch (const SimTK::Exception::Base& ex) {
 		cout << ex.getMessage() << endl;
 		cout << "OPTIMIZATION FAILED..." << endl;
 		cout << endl;

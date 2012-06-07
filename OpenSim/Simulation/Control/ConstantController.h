@@ -140,14 +140,15 @@ protected:
 	 */
 	void copyData(const ConstantController &aController);
 
-   // for any post deseraialization intialization of references
-   virtual void setup(Model& model);
+    // ModelComponent interface.
+    // for any post deserialization intialization of references
+    void connectToModel(Model& model) OVERRIDE_11;
 
-   // for adding any components to the model
-   virtual void createSystem( SimTK::MultibodySystem& system) const; 
+    // for adding any components to the model
+    void addToSystem( SimTK::MultibodySystem& system) const OVERRIDE_11; 
 
-   // for any intialization requiring a state or the complete system 
-   virtual void initState( SimTK::State& s) const;
+    // for any intialization requiring a state or the complete system 
+    void initStateFromProperties( SimTK::State& s) const OVERRIDE_11;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

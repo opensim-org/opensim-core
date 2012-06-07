@@ -317,10 +317,11 @@ void MovingPathPoint::setZFunction( const SimTK::State& s, OpenSim::Function& aF
  *
  * @param aModel model containing this MovingPathPoint.
  */
-void MovingPathPoint::setup(const Model& aModel, GeometryPath& aPath)
+void MovingPathPoint::
+connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
 	// base class
-	PathPoint::setup(aModel, aPath);
+	Super::connectToModelAndPath(aModel, aPath);
 
 	// Look up the coordinates by name in the dynamics engine and
 	// store pointers to them.

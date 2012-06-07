@@ -1,5 +1,5 @@
-#ifndef __MuscleViaPoint_h__
-#define __MuscleViaPoint_h__
+#ifndef OPENSIM_CONDITIONAL_PATH_POINT_H_
+#define OPENSIM_CONDITIONAL_PATH_POINT_H_
 
 // ConditionalPathPoint.h
 // Author: Peter Loan
@@ -105,8 +105,10 @@ public:
 	void setRangeMin( const SimTK::State& s, double aMin);
 	void setRangeMax( const SimTK::State& s, double aMax);
 
-	virtual bool isActive(const SimTK::State& s) const;
-	virtual void setup(const Model& aModel, GeometryPath& aPath);
+    // Override PathPoint methods.
+	bool isActive(const SimTK::State& s) const OVERRIDE_11;
+	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
+                                                                OVERRIDE_11;
 #endif
 private:
 	void setNull();
@@ -118,6 +120,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __MuscleViaPoint_h__
+#endif // OPENSIM_CONDITIONAL_PATH_POINT_H_
 
 

@@ -549,7 +549,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 	Array<bool> constraintOn = applyContactConstraintAccordingToExternalForces(s_analysis);
 
 	// Hang on to a state that has the right flags for contact constraints turned on/off
-	_model->setDefaultsFromState(s_analysis);
+	_model->setPropertiesFromState(s_analysis);
 	// Use this state for the remainder of this step (record)
 	s_analysis = _model->getMultibodySystem().realizeTopology();
 	// DO NOT recreate the system, will lose location of constraint
@@ -634,7 +634,7 @@ int InducedAccelerations::record(const SimTK::State& s)
 			}
 
 			// This should also push changes to defaults for unilateral conditions
-			_model->setDefaultsFromState(s_analysis);
+			_model->setPropertiesFromState(s_analysis);
 
 		}
 		else if(_contributors[c] == "gravity"){

@@ -124,18 +124,6 @@ void FunctionThresholdCondition::setupProperties(void)
 
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel OpenSim model containing this Condition.
- */
-void FunctionThresholdCondition::setup(Model& aModel)
-{
-	Condition::setup(aModel);
-}
-
 
 //=============================================================================
 // OPERATORS

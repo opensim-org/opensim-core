@@ -79,7 +79,7 @@ TransformAxis::TransformAxis(Xml::Element& aNode) {
  * @param aEngine dynamics engine containing this dof.
  * @param aJoint joint containing this dof.
  */
-void TransformAxis::setup(const Joint& aJoint)
+void TransformAxis::connectToJoint(const Joint& aJoint)
 {
 	string errorMessage;
 

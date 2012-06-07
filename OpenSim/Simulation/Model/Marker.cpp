@@ -146,7 +146,7 @@ void Marker::setupProperties()
  *
  * @param aEngine dynamics engine containing this Marker.
  */
-void Marker::setup(const Model& aModel)
+void Marker::connectMarkerToModel(const Model& aModel)
 {
 
     _model = &aModel;
@@ -157,7 +157,7 @@ void Marker::setup(const Model& aModel)
         try {
     		_body = &const_cast<Model*>(&aModel)->updBodySet().get(_bodyName);
         }
-		catch (Exception ex) {
+		catch (const Exception&) {
 			string errorMessage = "Error: Body " + _bodyName + " referenced in marker " + getName() +
 				" does not exist in model " +	aModel.getName();
 			throw Exception(errorMessage);
@@ -166,9 +166,10 @@ void Marker::setup(const Model& aModel)
 		if (oldBody && oldBody->getName() != _body->getName()){
 			oldBody->updDisplayer()->removeDependent(&_displayer);
 		}
-		//Todo_AYMAN: make code below safe to call multiple times (since this setup() method may be
-		//called multiple times for a marker).  Should also try to handle case where a marker
-		// is deleted (e.g. in SimbodyEngine::updateMarkerSet) because then may end up with
+		// Todo_AYMAN: make code below safe to call multiple times (since this 
+        // method may be called multiple times for a marker). Should also try 
+        // to handle case where a marker is deleted (e.g. in 
+        // SimbodyEngine::updateMarkerSet) because then may end up with
 		// stale pointers.
 		VisibleObject* ownerBodyDisplayer;
 		if (_body && (ownerBodyDisplayer = _body->updDisplayer())){
@@ -368,7 +369,8 @@ bool Marker::setBodyNameUseDefault(bool aValue)
 //_____________________________________________________________________________
 /**
  * Change the body that this marker is attached to. It assumes that the body is
- * already set, so that setup() needs to be called to update dependent information.
+ * already set, so that connectMarkerToModel() needs to be called to update 
+ * dependent information.
  *
  * @param aBody Reference to the body.
  */
@@ -379,13 +381,14 @@ void Marker::changeBody( OpenSim::Body& aBody)
 		return;
 
 	setBodyName(aBody.getName());
-	setup(aBody.getModel());
+	connectMarkerToModel(aBody.getModel());
 }
 
 //_____________________________________________________________________________
 /**
  * Change the body that this marker is attached to. It assumes that the body is
- * already set, so that setup() needs to be called to update dependent information.
+ * already set, so that connectMarkerToModel() needs to be called to update 
+ * dependent information.
  *
  * @param s State.
  * @param aBody Reference to the body.
@@ -401,7 +404,7 @@ void Marker::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body& aB
     aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _offset, aBody, _offset);
 
 	setBodyName(aBody.getName());
-	setup(aBody.getModel());
+	connectMarkerToModel(aBody.getModel());
 }
 
 //=============================================================================

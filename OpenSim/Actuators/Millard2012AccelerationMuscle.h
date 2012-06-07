@@ -675,22 +675,22 @@ protected:
     /**Sets up the ModelComponent from the model, if necessary
     @param model the dynamic model
     */
-    void setup(Model& model) FINAL_11;
+    void connectToModel(Model& model) FINAL_11;
 
     /**Creates the ModelComponent so that it can be used in simulation
     @param system the multibody system
     */
-	void createSystem(SimTK::MultibodySystem& system) const FINAL_11;
+	void addToSystem(SimTK::MultibodySystem& system) const FINAL_11;
 
     /**Initializes the state of the ModelComponent
     @param s the state of the model
     */
-	void initState(SimTK::State& s) const FINAL_11;
+	void initStateFromProperties(SimTK::State& s) const FINAL_11;
     
     /**Sets the default state for ModelComponent
     @param s the state of the model
     */
-    void setDefaultsFromState(const SimTK::State& s) FINAL_11;
+    void setPropertiesFromState(const SimTK::State& s) FINAL_11;
 	
     /**computes state variable derivatives
     @param s the state of the model

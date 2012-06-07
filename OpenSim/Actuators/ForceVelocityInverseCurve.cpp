@@ -114,20 +114,20 @@ void ForceVelocityInverseCurve::ensureCurveUpToDate()
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
 //=============================================================================
-void ForceVelocityInverseCurve::setup(Model& aModel)
+void ForceVelocityInverseCurve::connectToModel(Model& aModel)
 {
-    ModelComponent::setup(aModel);
+    Super::connectToModel(aModel);
 }
 
-void ForceVelocityInverseCurve::initState(SimTK::State& s) const
+void ForceVelocityInverseCurve::initStateFromProperties(SimTK::State& s) const
 {
-    ModelComponent::initState(s);
+    Super::initStateFromProperties(s);
 }
 
 void ForceVelocityInverseCurve::
-createSystem(SimTK::MultibodySystem& system) const
+addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     ForceVelocityInverseCurve* mthis 
         = const_cast<ForceVelocityInverseCurve*>(this);    

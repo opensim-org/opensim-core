@@ -226,7 +226,7 @@ setFunctions(FunctionSet &aFuncSet)
 		for(j=0;j<nTrk;j++) {
 			try {
 				f[j] = &aFuncSet.get(iFunc);
-			} catch(Exception x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 			}
 			if(f[j]==NULL) break;
@@ -287,7 +287,7 @@ setFunctionsForVelocity(FunctionSet &aFuncSet)
 		for(j=0;j<nTrk;j++) {
 			try {
 				f[j] = &aFuncSet.get(iFunc);
-			} catch(Exception x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 			}
 			if(f[j]==NULL) break;
@@ -373,7 +373,7 @@ setFunctionsForAcceleration(FunctionSet &aFuncSet)
 		for(j=0;j<nTrk;j++) {
 			try {
 				f[j] = &aFuncSet.get(iFunc);
-			} catch(Exception x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 			}
 			if(f[j]==NULL) break;

@@ -158,10 +158,10 @@ void WrapTorus::scale(const SimTK::Vec3& aScaleFactors)
  *
  * @param aModel pointer to OpenSim Model 
  */
-void WrapTorus::setup(Model& aModel, OpenSim::Body& aBody)
+void WrapTorus::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	WrapObject::setup(aModel, aBody);
+	Super::connectToModelAndBody(aModel, aBody);
 
    // maybe set a parent pointer, _body = aBody;
 

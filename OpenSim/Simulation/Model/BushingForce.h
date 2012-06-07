@@ -141,9 +141,9 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface.
 	//--------------------------------------------------------------------------
-	void setup(Model& aModel) OVERRIDE_11;
+	void connectToModel(Model& aModel) OVERRIDE_11;
 	// Create a SimTK::Force::LinarBushing which implements this BushingForce.
-	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 	void setNull();
 	void constructProperties();

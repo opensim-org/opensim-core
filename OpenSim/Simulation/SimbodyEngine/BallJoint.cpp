@@ -137,10 +137,10 @@ void BallJoint::setupProperties()
  *
  * @param aEngine dynamics engine containing this BallJoint.
  */
-void BallJoint::setup(Model& aModel)
+void BallJoint::connectToModel(Model& aModel)
 {
 	// Base class
-	Joint::setup(aModel);
+	Super::connectToModel(aModel);
 }
 
 //=============================================================================
@@ -183,7 +183,7 @@ void BallJoint::scale(const ScaleSet& aScaleSet)
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void BallJoint::createSystem(SimTK::MultibodySystem& system) const
+void BallJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
 	// CHILD TRANSFORM
 	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
@@ -210,12 +210,12 @@ void BallJoint::createSystem(SimTK::MultibodySystem& system) const
 	//}
 
     // TODO: Joints require super class to be called last.
-    Super::createSystem(system);
+    Super::addToSystem(system);
 }
 
-void BallJoint::initState(SimTK::State& s) const
+void BallJoint::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
@@ -229,9 +229,9 @@ void BallJoint::initState(SimTK::State& s) const
     matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).setQToFitRotation(s, r);
 }
 
-void BallJoint::setDefaultsFromState(const SimTK::State& state)
+void BallJoint::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setDefaultsFromState(state);
+    Super::setPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem&        system = _model->getMultibodySystem();

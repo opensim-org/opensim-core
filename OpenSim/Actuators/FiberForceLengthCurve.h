@@ -491,20 +491,20 @@ public:
 private:
     /*
     This object extends the ModelComponent interface so that we can make use
-    of the 'createSystem' function, which we are using to create the 
+    of the 'addToSystem' function, which we are using to create the 
     curve (using SmoothSegmentedFunctionFactory), which is an 
     expensive operation, just once prior to simulation. 
     
     Thus the user is allowed to set the properties of this curve until just 
     before the simulation begins. Just prior to the simulation starts 
-    'createSystem' is called, and then this object will build the 
+    'addToSystem' is called, and then this object will build the 
     SmoothSegmentedFunction that defines the curve the user requested
     */
 
     ///ModelComponent Interface required function
-    void setup(Model& model) OVERRIDE_11;
+    void connectToModel(Model& model) OVERRIDE_11;
     ///ModelComponent Interface required function
-    void initState(SimTK::State& s) const OVERRIDE_11;
+    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
     /**
     ModelComponent is being used for this one function, which is called just
     prior to a simulation beginning. This is the ideal time to actually
@@ -516,10 +516,10 @@ private:
         necessary
 
     */
-    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
     ///ModelComponent Interface required function
-    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11 {};
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11 {};
     
     void setNull();
     void constructProperties();

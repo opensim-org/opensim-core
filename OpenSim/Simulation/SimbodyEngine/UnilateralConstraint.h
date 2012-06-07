@@ -97,7 +97,7 @@ public:
 		{ return std::vector<bool>(_numConstraintEquations, false); };
 
 protected:
-	virtual void setup(Model& aModel);
+	void connectToModel(Model& aModel) OVERRIDE_11;
 
 private:
 	void setNull();

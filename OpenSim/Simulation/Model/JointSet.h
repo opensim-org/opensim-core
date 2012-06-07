@@ -54,11 +54,11 @@ OpenSim_DECLARE_CONCRETE_OBJECT(JointSet, ModelComponentSet<Joint>);
 
 private:
 	void setNull();
-    void createSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, 
+    void addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, 
                                  const std::map<Body*, int>& bodyMap, 
                                  std::vector<bool>& hasProcessed) const;
-protected:
-    void createSystem(SimTK::MultibodySystem& system) const;
+    // This overrides the ModelComponentSet method to enforce ordering.
+    void invokeAddToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 public:
 	JointSet();
 	JointSet(Model& model);

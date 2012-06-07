@@ -45,7 +45,7 @@ class ForceAdapter;
  * This abstract class represents a force applied to bodies or generalized 
  * coordinates during a simulation. Each subclass represents a different type 
  * of force. The actual force computation is done by a SimTK::Force, which is 
- * created by createSystem().
+ * created by addToSystem().
  *
  * @author Peter Eastman
  * @author Ajay Seth
@@ -123,18 +123,18 @@ protected:
     // ModelComponent interface.
     //--------------------------------------------------------------------------
 
-	/** Subclass should override; be sure to invoke Force::initState() at the
+	/** Subclass should override; be sure to invoke Force::initStateFromProperties() at the
     beginning of the overriding method. **/
-	virtual void initState(SimTK::State& state) const OVERRIDE_11;
+	virtual void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
 
 	/** Default is to create a ForceAdapter which is a SimTK::Force::Custom
 	as the underlying computational component. Subclasses override to employ 
-    other SimTK::Forces; be sure to invoke Force::createSystem() at the
+    other SimTK::Forces; be sure to invoke Force::addToSystem() at the
     beginning of the overriding method. **/
-	virtual void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	virtual void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 	/** Subclass should override; be sure to invoke 
-    Force::setDefaultsFromState() at the beginning of the overriding method. **/
-    virtual void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11;
+    Force::setPropertiesFromState() at the beginning of the overriding method. **/
+    virtual void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
     
     //--------------------------------------------------------------------------
     // Force interface.

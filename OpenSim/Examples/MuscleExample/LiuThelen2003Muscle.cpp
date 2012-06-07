@@ -119,9 +119,9 @@ void LiuThelen2003Muscle::constructProperties()
 }
 
 //_____________________________________________________________________________
-void LiuThelen2003Muscle::createSystem(SimTK::MultibodySystem& system) const
+void LiuThelen2003Muscle::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	addStateVariable("active_motor_units");
 	addStateVariable("fatigued_motor_units");

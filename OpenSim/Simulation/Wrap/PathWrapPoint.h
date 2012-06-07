@@ -91,7 +91,6 @@ public:
 
 #ifndef SWIG
 	PathWrapPoint& operator=(const PathWrapPoint &aPoint);
-	virtual void setup(const Model& aModel, GeometryPath& aPath);
 #endif
 
 	Array<SimTK::Vec3>& getWrapPath() { return _wrapPath; }

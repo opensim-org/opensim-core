@@ -108,12 +108,6 @@ public:
 
     virtual void setDesiredStates( Storage* yStore); 
 
-    // post deserialize initialization
-	virtual void setup(Model& aModel);
-
-    // system creation 
-    virtual void createSystem(SimTK::MultibodySystem& system);
-
 	// Controller interface
 	virtual void computeControls(const SimTK::State& s, SimTK::Vector &controls) const; 
 

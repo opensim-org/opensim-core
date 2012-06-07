@@ -417,9 +417,9 @@ void PrescribedForce::setNull()
     _body = NULL;
 }
 
-void PrescribedForce::setup(Model& model)
+void PrescribedForce::connectToModel(Model& model)
 {
-	Super::setup(model);
+	Super::connectToModel(model);
 
 	// hook up body pointer to name
 	if (_model)

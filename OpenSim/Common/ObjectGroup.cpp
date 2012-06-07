@@ -220,7 +220,7 @@ void ObjectGroup::replace(const Object* aOldObject, Object* aNewObject)
  *
  * @param aObjects list of objects that are in the set that this group belongs to.
  */
-void ObjectGroup::setup(ArrayPtrs<Object>& aObjects)
+void ObjectGroup::setupGroup(ArrayPtrs<Object>& aObjects)
 {
 	_memberObjects.setSize(0); // clear existing contents
 	for (int i=0; i<_memberNames.getSize();) {

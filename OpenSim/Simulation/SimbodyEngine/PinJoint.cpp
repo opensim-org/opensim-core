@@ -130,12 +130,12 @@ void PinJoint::setupProperties()
  *
  * @param aModel OpenSim  model containing this PinJoint.
  */
-void PinJoint::setup(Model& aModel)
+void PinJoint::connectToModel(Model& aModel)
 {
 	string errorMessage;
 
 	// Base class
-	Joint::setup(aModel);
+	Joint::connectToModel(aModel);
 
 	// Look up the parent and child bodies by name in the
 	if (!aModel.updBodySet().contains(_parentName)) {
@@ -185,7 +185,7 @@ void PinJoint::scale(const ScaleSet& aScaleSet)
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void PinJoint::createSystem(SimTK::MultibodySystem& system) const
+void PinJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
 	// CHILD TRANSFORM
 	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
@@ -204,5 +204,5 @@ void PinJoint::createSystem(SimTK::MultibodySystem& system) const
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 
     // TODO: Joints require super class to be called last.
-    Super::createSystem(system);
+    Super::addToSystem(system);
 }

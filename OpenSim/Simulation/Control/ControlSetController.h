@@ -130,14 +130,14 @@ protected:
 	 */
 	void copyData(const ControlSetController &aController);
 
-	// for any post XML deseraialization intialization
-	virtual void setup(Model& model);
+	// for any post XML deserialization intialization
+	void connectToModel(Model& model) OVERRIDE_11;
 
 	// for adding any components to the model
-	virtual void createSystem( SimTK::MultibodySystem& system) const; 
+	void addToSystem( SimTK::MultibodySystem& system) const OVERRIDE_11; 
 
 	// for any intialization requiring a state or the complete system 
-	virtual void initState( SimTK::State& s) const;
+	void initStateFromProperties( SimTK::State& s) const OVERRIDE_11;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

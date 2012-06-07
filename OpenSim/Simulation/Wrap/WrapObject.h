@@ -136,7 +136,7 @@ public:
    void copyData(const WrapObject& aWrapObject);
 
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void setup(Model& aModel, Body& aBody);
+	virtual void connectToModelAndBody(Model& aModel, Body& aBody);
 
 	Body& getBody() const { return *_body; }
 	const double* getXYZBodyRotation() const { return &_xyzBodyRotation[0]; }

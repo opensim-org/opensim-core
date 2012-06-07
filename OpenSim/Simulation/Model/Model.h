@@ -256,11 +256,11 @@ public:
 	/**
 	 * This is called after the Model is fully created but before starting a simulation.
      * It ONLY initializes the computational system used to simulate the model and 
-	 * createSystem() has been called already. This method should only be used if 
+	 * addToSystem() has been called already. This method should only be used if 
 	 * if additional SimTK::System components are being added using the SimTK API 
 	 * and the programmer is certain that the model's system has been created.
 	 */
-	void initStateWithoutRecreatingSystem(SimTK::State& state) const { initState(state); };
+	void initStateWithoutRecreatingSystem(SimTK::State& state) const { initStateFromProperties(state); };
 
     /**
      * Mark the computational system as invalid.  This should be called whenever a property
@@ -793,21 +793,22 @@ public:
     model elements that are not ModelComponents) as subcomponents whose 
     corresponding methods need to be called. **/
     /**@{**/
-	/*virtual*/ void setup(Model& model) {setup();};
-	/*virtual*/ void createSystem(SimTK::MultibodySystem& system) const; 
-    /*virtual*/ void initState(SimTK::State& state) const;
+	void connectToModel(Model& model)  OVERRIDE_11 {setup();};
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11; 
+    void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
 
 	/**
      * Given a State, set all default values for this Model to match those 
      * found in the State.
      */
-    /*virtual*/ void setDefaultsFromState(const SimTK::State& state);
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 
-    /*virtual*/ void generateDecorations
+    void generateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,
-        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const;
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const 
+                                                                OVERRIDE_11;
 
     //TODO: Why are the rest of these part of ModelComponent interface?
 
@@ -833,7 +834,7 @@ private:
 
 	void createGroundBodyIfNecessary();
     void setDefaultProperties();
-	void createSystem();
+	void createMultibodySystem();
 	void tidyProbeNames();
 
 	// Copy only the model-defining data members from source.

@@ -114,7 +114,7 @@ public:
 	Model& getModel() { return *_model; }
     void setModel(Model& aModel) { _model = &aModel; }
 
-	virtual void setup(Model& aModel);
+	void connectSimbodyEngineToModel(Model& aModel);
 	//--------------------------------------------------------------------------
 	// COORDINATES
 	//--------------------------------------------------------------------------

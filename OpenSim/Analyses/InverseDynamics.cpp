@@ -413,7 +413,7 @@ begin(SimTK::State& s )
 	// Check that m is full rank
 	try {
  	    SimTK::FactorLU lu(massMatrix);
-    } catch (SimTK::Exception::Base e) {
+    } catch (const SimTK::Exception::Base&) {
         throw Exception("InverseDynamics: ERROR- mass matrix is singular  ",__FILE__,__LINE__);
     }
     // enable the line below when simmath is fixed

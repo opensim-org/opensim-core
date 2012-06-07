@@ -268,20 +268,20 @@ void Body::setupProperties()
  *
  * @param aModel OpenSim model containing this Body.
  */
-void Body::setup(Model& aModel)
+void Body::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	for(int i=0; i<_wrapObjectSet.getSize(); i++)
-		_wrapObjectSet.get(i).setup(aModel, *this);
+		_wrapObjectSet.get(i).connectToModelAndBody(aModel, *this);
 	if(this->getName() != "ground") {
-		if(_joint) _joint->setup(aModel);
+		if(_joint) _joint->connectToModel(aModel);
     }
 }
 
-void Body::createSystem(SimTK::MultibodySystem& system) const
+void Body::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	if(getName() == "ground"){
 		Body * mutableThis = const_cast<Body *>(this);

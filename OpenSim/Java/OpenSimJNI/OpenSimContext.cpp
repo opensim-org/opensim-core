@@ -215,7 +215,7 @@ void OpenSimContext::recreateSystemAfterSystemExistsKeepStage( )
 //-------------------------------------------------------------------
 void OpenSimContext::recreateSystemAfterSystemExists( )
 {
-  _model->setDefaultsFromState( *_configState );
+  _model->setPropertiesFromState( *_configState );
   SimTK::State* newState = &_model->initSystem();
   this->setState( newState );
 }

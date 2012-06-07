@@ -88,13 +88,12 @@ public:
 	FunctionThresholdCondition& operator=(const FunctionThresholdCondition &aFunctionThresholdCondition);
 	void copyData(const FunctionThresholdCondition &aFunctionThresholdCondition);
 
-	// Perform and setup that is necessary
-	virtual void setup(Model& aModel);
+	// Implement Condition interface. 
 
 	/**
 	 *  The defining FunctionThresholdCondition method  
 	 */
-	virtual bool calcCondition(const SimTK::State& s) const;
+	bool calcCondition(const SimTK::State& s) const OVERRIDE_11;
 
 private:
 	void setNull();

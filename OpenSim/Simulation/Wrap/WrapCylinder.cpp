@@ -158,10 +158,10 @@ void WrapCylinder::scale(const SimTK::Vec3& aScaleFactors)
 *
 * @param aModel pointer to OpenSim model.
 */
-void WrapCylinder::setup(Model& aModel, Body& aBody)
+void WrapCylinder::connectToModelAndBody(Model& aModel, Body& aBody)
 {
 	// Base class
-	WrapObject::setup(aModel, aBody);
+	Super::connectToModelAndBody(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 	if (_radius < 0.0)

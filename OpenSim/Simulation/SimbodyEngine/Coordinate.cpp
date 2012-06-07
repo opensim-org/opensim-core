@@ -241,9 +241,9 @@ void Coordinate::setupProperties(void)
 	_propertySet.append(&_prescribedFunctionProp);
 }
 
-void Coordinate::createSystem(SimTK::MultibodySystem& system) const
+void Coordinate::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	//create lock constraint automatically
 	// The underlying SimTK constraint
@@ -280,9 +280,9 @@ void Coordinate::createSystem(SimTK::MultibodySystem& system) const
  *
  * @param aModel OpenSim model containing this Coordinate.
  */
-void Coordinate::setup(Model& aModel)
+void Coordinate::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	if((IO::Lowercase(_motionTypeName) == "rotational") || _motionTypeName == "")
 		_motionType = Rotational;
@@ -309,7 +309,7 @@ void Coordinate::setup(Model& aModel)
 	_lockFunction = new ModifiableConstant<Real>(_defaultValue, 1); 
 }
 
-void Coordinate::initState(State& s) const
+void Coordinate::initStateFromProperties(State& s) const
 {
 	// Cannot enforce the constraint, since state of constraints may still be undefined
 	const MobilizedBody& mb=_model->getMatterSubsystem().getMobilizedBody(_bodyIndex);
@@ -326,7 +326,7 @@ void Coordinate::initState(State& s) const
 	setLocked(s, _locked);
 }
 
-void Coordinate::setDefaultsFromState(const SimTK::State& state)
+void Coordinate::setPropertiesFromState(const SimTK::State& state)
 {
     _defaultValue = _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneQ(state,_mobilityIndex);
     _defaultSpeedValue = _model->getMatterSubsystem().getMobilizedBody(_bodyIndex).getOneU(state,_mobilityIndex);
@@ -463,7 +463,7 @@ bool Coordinate::setValue(SimTK::State& s, double aValue , bool enforceConstrain
 	// enforce constraints during the last call.
 	if (enforceConstraints) {
 		if (_model->getConstraintSet().getSize()>0 || isConstrained(s)){
-			// if this coordinate is setup to be dependent on other coordinates
+			// if this coordinate is set up to be dependent on other coordinates
 			// its value should be dictated by the other coordinates and not its present value
 			double weight = isDependent(s) ? 0.0  : 10;
 			// assemble model so that states satisfy ALL constraints

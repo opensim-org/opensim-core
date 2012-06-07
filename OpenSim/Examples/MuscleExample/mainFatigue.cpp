@@ -235,12 +235,7 @@ int main()
 		osimModel.print("tugOfWar_fatigue_model.osim");
 
 	}
-    catch (const OpenSim::Exception &ex)
-    {
-        std::cout << ex.getMessage() << std::endl;
-        return 1;
-    }
-    catch (const std::exception &ex)
+    catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;

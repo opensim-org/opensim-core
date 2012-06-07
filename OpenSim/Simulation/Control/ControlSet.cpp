@@ -590,7 +590,7 @@ getParameterMins(Array<double> &rMins,const Array<int> *aList) const
 			// GET CONTROL
 			try {
 				c = _ptcMap.get(sp);
-			} catch(Exception &x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 				continue;
 			}
@@ -641,7 +641,7 @@ getParameterMaxs(Array<double> &rMaxs,const Array<int> *aList) const
 			// GET CONTROL
 			try {
 				c = _ptcMap.get(sp);
-			} catch(Exception &x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 				continue;
 			}
@@ -695,7 +695,7 @@ getParameterValues(double rP[],const Array<int> *aList) const
 			// GET CONTROL
 			try {
 				c = _ptcMap.get(sp);
-			} catch(Exception &x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 				continue;
 			}
@@ -746,7 +746,7 @@ getParameterValues(Array<double> &rP,const Array<int> *aList) const
 			// GET CONTROL
 			try {
 				c = _ptcMap.get(sp);
-			} catch(Exception &x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 				continue;
 			}
@@ -797,7 +797,7 @@ setParameterValues(const double *aP,const Array<int> *aList)
 			// GET CONTROL
 			try {
 				c = _ptcMap.get(sp);
-			} catch(Exception &x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 				continue;
 			}
@@ -860,7 +860,7 @@ setParameterValues(const Array<double> &aP,const Array<int> *aList)
 			// GET CONTROL
 			try {
 				c = _ptcMap.get(sp);
-			} catch(Exception &x) {
+			} catch(const Exception& x) {
 				x.print(cout);
 				continue;
 			}
@@ -901,7 +901,7 @@ simplify(const PropertySet &aProperties)
 		// SIMPLIFY
 		try {
 			control.simplify(aProperties);
-		} catch(Exception x) {
+		} catch(const Exception& x) {
 			x.print(cout);
 		}
 	}
@@ -932,7 +932,7 @@ filter(double aT)
 			{
 				control.filter(aT);
 			}
-		} catch(Exception x) {
+		} catch(const Exception& x) {
 			x.print(cout);
 		}
 	}

@@ -140,16 +140,16 @@ Millard2012EquilibriumMuscle(const std::string &aName,  double aMaxIsometricForc
 //=============================================================================
 // Model Component Interface
 //=============================================================================
-void Millard2012EquilibriumMuscle::setup(Model& model)
+void Millard2012EquilibriumMuscle::connectToModel(Model& model)
 {
-    Super::setup(model);
+    Super::connectToModel(model);
     ensureMuscleUpToDate();
 }
 
 void Millard2012EquilibriumMuscle::
-createSystem(SimTK::MultibodySystem& system) const
+addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     ensureMuscleUpToDate();
 
@@ -167,9 +167,9 @@ createSystem(SimTK::MultibodySystem& system) const
                         SimTK::Stage::Dynamics);
 }
 
-void Millard2012EquilibriumMuscle::initState(SimTK::State& s) const
+void Millard2012EquilibriumMuscle::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 
     ensureMuscleUpToDate();
 
@@ -182,9 +182,9 @@ void Millard2012EquilibriumMuscle::initState(SimTK::State& s) const
 }
     
 void Millard2012EquilibriumMuscle::
-    setDefaultsFromState(const SimTK::State& s)
+    setPropertiesFromState(const SimTK::State& s)
 {
-    Super::setDefaultsFromState(s);
+    Super::setPropertiesFromState(s);
     
     ensureMuscleUpToDate();
 
@@ -1040,7 +1040,7 @@ SimTK::Vector Millard2012EquilibriumMuscle::
                     //singular
                     try{ 
                         phi = penMdl.calcPennationAngle(lce,caller);
-                    }catch(const std::exception){
+                    }catch(const std::exception&){
                         phi = SimTK::Pi-SimTK::Eps;
                     }
 

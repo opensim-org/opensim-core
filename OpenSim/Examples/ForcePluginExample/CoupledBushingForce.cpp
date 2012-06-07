@@ -226,9 +226,9 @@ void CoupledBushingForce::setupProperties()
  *
  * @param aModel OpenSim model containing this CoupledBushingForce.
  */
-void CoupledBushingForce::setup(Model& aModel)
+void CoupledBushingForce::connectToModel(Model& aModel)
 {
-    Super::setup(aModel);
+    Super::connectToModel(aModel);
 
 	string errorMessage;
 	// Look up the two bodies being connected by bushing by name in the
@@ -243,9 +243,9 @@ void CoupledBushingForce::setup(Model& aModel)
 	}
 }
 
-void CoupledBushingForce::createSystem(SimTK::MultibodySystem& system) const
+void CoupledBushingForce::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	Body &body1 = _model->updBodySet().get(_body1Name);
 	Body &body2 = _model->updBodySet().get(_body2Name);

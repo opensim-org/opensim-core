@@ -163,9 +163,9 @@ void RollingOnSurfaceConstraint::setupProperties()
  *
  * @param aEngine dynamics engine containing this RollingOnSurfaceConstraint.
  */
-void RollingOnSurfaceConstraint::setup(Model& aModel)
+void RollingOnSurfaceConstraint::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	string errorMessage;
 
@@ -184,9 +184,9 @@ void RollingOnSurfaceConstraint::setup(Model& aModel)
 	}
 }
 
-void RollingOnSurfaceConstraint::createSystem(SimTK::MultibodySystem& system) const
+void RollingOnSurfaceConstraint::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody roller = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_rollingBody->getIndex());
@@ -221,9 +221,9 @@ void RollingOnSurfaceConstraint::createSystem(SimTK::MultibodySystem& system) co
 	mutableThis->_index = _indices[0];
 }
 
-void RollingOnSurfaceConstraint::initState(SimTK::State& state) const
+void RollingOnSurfaceConstraint::initStateFromProperties(SimTK::State& state) const
 {
-    Super::initState(state);
+    Super::initStateFromProperties(state);
 
 	// All constraints treated the same as default behavior at initilization
 	for(int i=0; i < _numConstraintEquations; i++){
@@ -238,9 +238,9 @@ void RollingOnSurfaceConstraint::initState(SimTK::State& state) const
 	}
 }
 
-void RollingOnSurfaceConstraint::setDefaultsFromState(const SimTK::State& state)
+void RollingOnSurfaceConstraint::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setDefaultsFromState(state);
+    Super::setPropertiesFromState(state);
 
     _isDisabledProp.setValue(isDisabled(state));
 	for(int i=0; i < _numConstraintEquations; i++){

@@ -67,9 +67,9 @@ void ActivationFiberLengthMuscle::constructProperties()
 
 //_____________________________________________________________________________
 // Allocate Simbody System resources for this actuator.
- void ActivationFiberLengthMuscle::createSystem(SimTK::MultibodySystem& system) const
+ void ActivationFiberLengthMuscle::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);   // invoke superclass implementation
+	Super::addToSystem(system);   // invoke superclass implementation
 
 	addStateVariable(STATE_ACTIVATION_NAME);
 	// Fiber length should be a position stage state variable.
@@ -87,9 +87,9 @@ void ActivationFiberLengthMuscle::constructProperties()
 	addCacheVariable(STATE_FIBER_LENGTH_NAME+"_deriv", value, SimTK::Stage::Dynamics);
  }
 
- void ActivationFiberLengthMuscle::initState( SimTK::State& s) const
+ void ActivationFiberLengthMuscle::initStateFromProperties( SimTK::State& s) const
 {
-    Super::initState(s);   // invoke superclass implementation
+    Super::initStateFromProperties(s);   // invoke superclass implementation
 
 	ActivationFiberLengthMuscle* mutableThis = const_cast<ActivationFiberLengthMuscle *>(this);
 
@@ -97,9 +97,9 @@ void ActivationFiberLengthMuscle::constructProperties()
 	setFiberLength(s, getDefaultFiberLength());
 }
 
-void ActivationFiberLengthMuscle::setDefaultsFromState(const SimTK::State& state)
+void ActivationFiberLengthMuscle::setPropertiesFromState(const SimTK::State& state)
 {
-	Super::setDefaultsFromState(state);    // invoke superclass implementation
+	Super::setPropertiesFromState(state);    // invoke superclass implementation
 
     setDefaultActivation(getStateVariable(state, STATE_ACTIVATION_NAME));
     setDefaultFiberLength(getStateVariable(state, STATE_FIBER_LENGTH_NAME));

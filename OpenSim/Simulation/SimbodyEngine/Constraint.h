@@ -116,10 +116,11 @@ public:
 	}
 
 protected:
-	virtual void setup(Model& aModel);
-	virtual void initState(SimTK::State& state) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
-	virtual int getNumStateVariables() const { return 0; };
+    // ModelComponent interface.
+	void connectToModel(Model& aModel) OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+	int getNumStateVariables() const  OVERRIDE_11 { return 0; };
 
 private:
 	void setNull();

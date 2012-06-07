@@ -78,10 +78,10 @@ public:
 
 protected:
 	// Model component interface
-	void setup(Model& aModel) OVERRIDE_11;
-	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void initState(SimTK::State& state) const OVERRIDE_11;
-    void setDefaultsFromState(const SimTK::State& state) OVERRIDE_11;
+	void connectToModel(Model& aModel) OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 	int getNumStateVariables() const  OVERRIDE_11 { return 1; }	
 	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const
          OVERRIDE_11;
@@ -95,7 +95,7 @@ private:
 //=============================================================================
     // A ReferencePtr is automatically initialize to null at construction,
     // and reset to null after copy construction or copy assignment. This is
-    // set in the setup() method.
+    // set in the connectToModel() method.
 	SimTK::ReferencePtr<Joint> _joint;
 //=============================================================================
 };	// END of class JointWorkMeter

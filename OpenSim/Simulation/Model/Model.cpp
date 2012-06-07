@@ -408,7 +408,7 @@ void Model::buildSystem() {
     updControllerSet().setActuators(updActuators());
 
     // Create the computational System representing this Model.
-	createSystem();
+	createMultibodySystem();
 
     // Create a Visualizer for this Model if one has been requested. This adds
     // necessary elements to the System. Doesn't initialize geometry yet.
@@ -440,7 +440,7 @@ SimTK::State& Model::initializeState() {
 	getMultibodySystem().realizeModel(defaultState);
 
     // Invoke the ModelComponent interface for initializing the state.
-    initState(defaultState);
+    initStateFromProperties(defaultState);
 
     // Realize instance variables that may have been set above. This 
     // means floating point parameters such as mass properties and geometry
@@ -512,12 +512,12 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 		// Try to track first with model satisfying the constraints exactly.
 		_assemblySolver->track(s);
 	}
-	catch (std::exception ex)    {
+	catch (const std::exception&)    {
 		try{
 			// Otherwise try to do a full-blown assemble
 			_assemblySolver->assemble(s);
 		}
-		catch (std::exception ex){
+		catch (const std::exception& ex){
 			// Constraints are probably infeasible so try again relaxing constraints
 			cout << "Model unable to assemble: " << ex.what() << endl;
 			cout << "Model relaxing constraints and trying again." << endl;
@@ -527,7 +527,7 @@ void Model::assemble(SimTK::State& s, const Coordinate *coord, double weight)
 				_assemblySolver->setConstraintWeight(20.0);
 				_assemblySolver->assemble(s);
 			}
-			catch (std::exception ex){
+			catch (const std::exception& ex){
 				cout << "Model unable to assemble with relaxed constraints: " << ex.what() << endl;
 			}
 		}
@@ -558,7 +558,7 @@ bool Model::isValidSystem()
  * Create the multibody system.
  *
  */
-void Model::createSystem()
+void Model::createMultibodySystem()
 {
     if (_system != NULL)
     {
@@ -582,14 +582,14 @@ void Model::createSystem()
 	SimTK::UnitVec3 direction = magnitude==0 ? SimTK::UnitVec3(0,-1,0) : SimTK::UnitVec3(_gravity/magnitude);
 	_gravityForce = new SimTK::Force::Gravity(*_forceSubsystem, *_matter, direction, magnitude);
 
-	createSystem(*_system);
+	addToSystem(*_system);
 }
 
 // ModelComponent interface enables this model to be treated as a subcomponent of another model by 
 // creating components in its system.
-void Model::createSystem(SimTK::MultibodySystem& system) const
+void Model::addToSystem(SimTK::MultibodySystem& system) const
 {
-    // TODO: can't invoke ModelComponent::createSystem(); this is
+    // TODO: can't invoke ModelComponent::addToSystem(); this is
     // an API bug.
 
 	Model *mutableThis = const_cast<Model *>(this);
@@ -598,16 +598,16 @@ void Model::createSystem(SimTK::MultibodySystem& system) const
 	mutableThis->_defaultControls.resize(0);
 
 	// Create the shared cache that will hold all model controls
-	// This must be created before Actuator.createSystem() since Actuator will append 
+	// This must be created before Actuator.addToSystem() since Actuator will append 
 	// its "slots" and retain its index by accessing this cached Vector
 	Measure_<Vector>::Result modelControls(_system->updDefaultSubsystem(), Stage::Velocity, Stage::Acceleration);
 	mutableThis->_modelControlsIndex = modelControls.getSubsystemMeasureIndex();
 
     // Let all the ModelComponents add their parts to the System.
-    static_cast<const ModelComponentSet<Body>&>(getBodySet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Bodies." << endl;
-	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Joints." << endl;
+    static_cast<const ModelComponentSet<Body>&>(getBodySet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Bodies." << endl;
+	static_cast<const ModelComponentSet<Joint>&>(getJointSet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Joints." << endl;
 	for(int i=0;i<getBodySet().getSize();i++) {
 		OpenSim::Body& body = getBodySet().get(i);
 		MobilizedBodyIndex idx(body.getIndex());
@@ -616,32 +616,32 @@ void Model::createSystem(SimTK::MultibodySystem& system) const
 	}
 
 	// Constraints add their parts to the System.
-    static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Constraints." << endl;
+    static_cast<const ModelComponentSet<Constraint>&>(getConstraintSet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Constraints." << endl;
 
 	// Contact Geometries add their parts to the System.
-	static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Contact Geometry." << endl;
+	static_cast<const ModelComponentSet<ContactGeometry>&>(getContactGeometrySet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Contact Geometry." << endl;
 
     // Coordinates add their parts to the System.
-	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).createSystem(*_system);
+	static_cast<const ModelComponentSet<Coordinate>&>(getCoordinateSet()).invokeAddToSystem(*_system);
 	if (getDebugLevel()>=2) cout << "Finished adding constraints for Coordinates." << endl;
 
 	// Forces add their parts to the System.
-    static_cast<const ModelComponentSet<Force>&>(getForceSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Forces." << endl;
+    static_cast<const ModelComponentSet<Force>&>(getForceSet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Forces." << endl;
 
 	// Probes add their parts to the System.
-	static_cast<const ModelComponentSet<Probe>&>(getProbeSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Probes." << endl;
+	static_cast<const ModelComponentSet<Probe>&>(getProbeSet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Probes." << endl;
 
 	// Controllers add their parts to the System.
-    static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for Controllers." << endl;
+    static_cast<const ModelComponentSet<Controller>&>(getControllerSet()).invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for Controllers." << endl;
 
 	// Misc ModelComponents add their parts to the System.
-	_componentSet.createSystem(*_system);
-	if (getDebugLevel()>=2) cout << "Finished createSystem for user added Components." << endl;
+	_componentSet.invokeAddToSystem(*_system);
+	if (getDebugLevel()>=2) cout << "Finished addToSystem for user added Components." << endl;
 }
 
 /**
@@ -661,7 +661,7 @@ SimTK::SystemYIndex Model::getStateVariableSystemIndex(const string &stateVariab
  */
 void Model::addComponent(ModelComponent* aComponent) {
 	_componentSet.append(aComponent);
-	_componentSet.setup(*this);
+	_componentSet.invokeConnectToModel(*this);
 }
 
 //_____________________________________________________________________________
@@ -671,7 +671,7 @@ void Model::addComponent(ModelComponent* aComponent) {
 void Model::addBody(OpenSim::Body *aBody)
 {
 	updBodySet().append(aBody);
-	updBodySet().setup(*this);
+	updBodySet().invokeConnectToModel(*this);
 	updJointSet().populate(*this);
 	updCoordinateSet().populate(*this);
 }
@@ -683,7 +683,7 @@ void Model::addBody(OpenSim::Body *aBody)
 void Model::addConstraint(OpenSim::Constraint *aConstraint)
 {
 	updConstraintSet().append(aConstraint);
-	updConstraintSet().setup(*this);
+	updConstraintSet().invokeConnectToModel(*this);
 }
 
 //_____________________________________________________________________________
@@ -693,7 +693,7 @@ void Model::addConstraint(OpenSim::Constraint *aConstraint)
 void Model::addForce(OpenSim::Force *aForce)
 {
 	updForceSet().append(aForce);
-	updForceSet().setup(*this);
+	updForceSet().invokeConnectToModel(*this);
 }
 
 //_____________________________________________________________________________
@@ -703,7 +703,7 @@ void Model::addForce(OpenSim::Force *aForce)
 void Model::addProbe(OpenSim::Probe *aProbe)
 {
 	updProbeSet().append(aProbe);
-	updProbeSet().setup(*this);
+	updProbeSet().invokeConnectToModel(*this);
 }
 
 //_____________________________________________________________________________
@@ -713,7 +713,7 @@ void Model::addProbe(OpenSim::Probe *aProbe)
 void Model::addContactGeometry(OpenSim::ContactGeometry *aContactGeometry)
 {
 	updContactGeometrySet().append(aContactGeometry);
-	updContactGeometrySet().setup(*this);
+	updContactGeometrySet().invokeConnectToModel(*this);
 }
 
 //_____________________________________________________________________________
@@ -724,12 +724,12 @@ void Model::addController(Controller *aController)
 {
 	if (aController ) {
 	   updControllerSet().append(aController);
-	   updControllerSet().setup(*this);
+	   updControllerSet().invokeConnectToModel(*this);
     }
 }
 //_____________________________________________________________________________
 /**
- * Perform some set up functions that happen after the
+ * Perform some setup functions that happen after the
  * object has been deserialized. This method is
  * not yet designed to be called after a model has been
  * copied.
@@ -740,7 +740,7 @@ void Model::setup()
 
 	// Update model components, not that Joints and Coordinates
 	// belong to Bodies, alough model lists are assembled for convenience
-	updBodySet().setup(*this);
+	updBodySet().invokeConnectToModel(*this);
 
     // Populate lists of model joints and coordinates according to the Bodies
 	// setup here who own the Joints which in turn own the model's Coordinates
@@ -748,17 +748,17 @@ void Model::setup()
 	updJointSet().populate(*this);
     updCoordinateSet().populate(*this);
 
-    updConstraintSet().setup(*this);
-    updMarkerSet().setup(*this);
-    updContactGeometrySet().setup(*this);
-	updForceSet().setup(*this);
-	updProbeSet().setup(*this);
-	updControllerSet().setup(*this);
+    updConstraintSet().invokeConnectToModel(*this);
+    updMarkerSet().connectMarkersToModel(*this);
+    updContactGeometrySet().invokeConnectToModel(*this);
+	updForceSet().invokeConnectToModel(*this);
+	updProbeSet().invokeConnectToModel(*this);
+	updControllerSet().invokeConnectToModel(*this);
 
-	_componentSet.setup(*this);
+	_componentSet.invokeConnectToModel(*this);
 
 	// TODO: Get rid of the SimbodyEngine
-	updSimbodyEngine().setup(*this);
+	updSimbodyEngine().connectSimbodyEngineToModel(*this);
 
 	updAnalysisSet().setModel(*this);
 }
@@ -832,7 +832,7 @@ void Model::setDefaultProperties()
 		_forceUnits = Units(_forceUnitsStr);
 }
 
-void Model::initState(SimTK::State& state) const
+void Model::initStateFromProperties(SimTK::State& state) const
 {
 	// Allocate the size and default values for controls
 	// Actuators will have a const view into the cache
@@ -840,14 +840,14 @@ void Model::initState(SimTK::State& state) const
 	controlsCache.updValue(state).resize(_defaultControls.size());
 	controlsCache.updValue(state) = _defaultControls;
 
-    _bodySet.initState(state);
-    _constraintSet.initState(state);
-    _contactGeometrySet.initState(state);
-    _jointSet.initState(state);
-    _forceSet.initState(state);
-	_probeSet.initState(state);
-	_controllerSet.initState(state);
-	_componentSet.initState(state);
+    _bodySet.invokeInitStateFromProperties(state);
+    _constraintSet.invokeInitStateFromProperties(state);
+    _contactGeometrySet.invokeInitStateFromProperties(state);
+    _jointSet.invokeInitStateFromProperties(state);
+    _forceSet.invokeInitStateFromProperties(state);
+	_probeSet.invokeInitStateFromProperties(state);
+	_controllerSet.invokeInitStateFromProperties(state);
+	_componentSet.invokeInitStateFromProperties(state);
 
 	// All model components have allocated their state variables so we can speed up access
 	// through model if we build a flat list of available state variables by name an their
@@ -887,16 +887,16 @@ void Model::initState(SimTK::State& state) const
 
 }
 
-void Model::setDefaultsFromState(const SimTK::State& state)
+void Model::setPropertiesFromState(const SimTK::State& state)
 {
-    _bodySet.setDefaultsFromState(state);
-    _constraintSet.setDefaultsFromState(state);
-    _contactGeometrySet.setDefaultsFromState(state);
-    _jointSet.setDefaultsFromState(state);
-    _forceSet.setDefaultsFromState(state);
-	_probeSet.setDefaultsFromState(state);
-	_controllerSet.setDefaultsFromState(state);
-	_componentSet.setDefaultsFromState(state);
+    _bodySet.invokeSetPropertiesFromState(state);
+    _constraintSet.invokeSetPropertiesFromState(state);
+    _contactGeometrySet.invokeSetPropertiesFromState(state);
+    _jointSet.invokeSetPropertiesFromState(state);
+    _forceSet.invokeSetPropertiesFromState(state);
+	_probeSet.invokeSetPropertiesFromState(state);
+	_controllerSet.invokeSetPropertiesFromState(state);
+	_componentSet.invokeSetPropertiesFromState(state);
 }
 
 void Model::generateDecorations
@@ -905,14 +905,14 @@ void Model::generateDecorations
         const SimTK::State&                         state,
         SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
 {
-    _bodySet.generateDecorations(fixed,hints,state,appendToThis);
-    _constraintSet.generateDecorations(fixed,hints,state,appendToThis);
-    _contactGeometrySet.generateDecorations(fixed,hints,state,appendToThis);
-    _jointSet.generateDecorations(fixed,hints,state,appendToThis);
-    _forceSet.generateDecorations(fixed,hints,state,appendToThis);
-	_probeSet.generateDecorations(fixed,hints,state,appendToThis);
-	_controllerSet.generateDecorations(fixed,hints,state,appendToThis);
-	_componentSet.generateDecorations(fixed,hints,state,appendToThis);
+    _bodySet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    _constraintSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    _contactGeometrySet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    _jointSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+    _forceSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+	_probeSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+	_controllerSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
+	_componentSet.invokeGenerateDecorations(fixed,hints,state,appendToThis);
 }
 
 void Model::equilibrateMuscles(SimTK::State& state)
@@ -1296,7 +1296,7 @@ bool Model::scale(SimTK::State& s, const ScaleSet& aScaleSet, double aFinalMass,
 	if (returnVal)
 	{
 		initSystem();	// This crashes now trying to delete the old matterSubsystem
-    	updSimbodyEngine().setup(*this);
+    	updSimbodyEngine().connectSimbodyEngineToModel(*this);
 	    getMultibodySystem().realizeTopology();
 		SimTK::State& newState = updMultibodySystem().updDefaultState();
 	    getMultibodySystem().realize( newState, SimTK::Stage::Velocity);
@@ -1577,11 +1577,12 @@ void Model::updateMarkerSet(MarkerSet& aMarkerSet)
 		}
 	}
 
-	// Todo_AYMAN: We need to call setup again to make sure the _body pointers are up to date; but
-	// note that we've already called setup before so we need to make sure the setup() function
-	// supports getting called multiple times
+	// Todo_AYMAN: We need to call connectMarkerToModel() again to make sure the
+    // _body pointers are up to date; but note that we've already called 
+    // it before so we need to make sure the connectMarkerToModel() function
+	// supports getting called multiple times.
 	for (int i = 0; i < _markerSet.getSize(); i++)
-		_markerSet.get(i).setup(*this);
+		_markerSet.get(i).connectMarkerToModel(*this);
 
 	cout << "Updated markers in model " << getName() << endl;
 }
@@ -1864,7 +1865,7 @@ void Model::validateMassProperties(bool fixMassProperties)
 			SimTK::Inertia_<SimTK::Real>(inertiaMat[0][0], inertiaMat[1][1], inertiaMat[2][2],
 				inertiaMat[0][1], inertiaMat[1][2], inertiaMat[0][2]);
 		}
-		catch(SimTK::Exception::Base& ex){
+		catch(const SimTK::Exception::Base& ex){
 			valid = false;
 			msg = "Body: "+b.getName()+" has non-physical mass properties.";
 			msg += ex.getMessage();

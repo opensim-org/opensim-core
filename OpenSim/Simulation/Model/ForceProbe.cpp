@@ -121,9 +121,9 @@ void ForceProbe::setForceNames(const Array<string>& forceNames)
  *
  * @param aModel OpenSim model containing this ForceProbe.
  */
-void ForceProbe::setup(Model& model)
+void ForceProbe::connectToModel(Model& model)
 {
-    Super::setup(model);
+    Super::connectToModel(model);
 
     // check that each Force in the force_names array exists in the model
     int nF = getForceNames().size();

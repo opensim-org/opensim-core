@@ -114,10 +114,6 @@ public:
 	/** Default destructor.	 */
 	virtual ~Controller();
 
-	/** Public model component interface to obtain the number of state variables
-	    introduced by the controller. */
-	virtual int getNumStateVariables() const { return 0; };
-
 protected:
 
 	/** Copy the member variables of the specified controller.  This method is
@@ -129,19 +125,12 @@ protected:
 
 	/** Model component interface that permits the controller to be "wired" up
 	   to its actuators. Subclasses can override to perform additional setup. */
-	virtual void setup(Model& model);  
+	void connectToModel(Model& model) OVERRIDE_11;  
 
 	/** Model component interface that creates underlying computational components
 	    in the SimTK::MultibodySystem. This includes adding states, creating 
 		measures, etc... required by the controller. */
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-
-	/** Model component interface to initialize states introduced by the controller */
-	virtual void initState( SimTK::State& s) const {};
-
-	/** Model component interface to initialize defualt values of the controller
-	    from/based on the given state. */
-	virtual void setDefaultsFromState(const SimTK::State& state) {};
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 	//--------------------------------------------------------------------------
 	// OPERATORS

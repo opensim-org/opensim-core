@@ -85,8 +85,7 @@ public:
 	Condition& operator=(const Condition &aCondition);
 	void copyData(const Condition &aCondition);
 
-	// Perform and setup that is necessary
-	virtual void setup(Model& aModel);
+	virtual void connectConditionToModel(Model& aModel);
 
 	virtual bool isDisabled() const {return _isDisabled; } ;
 

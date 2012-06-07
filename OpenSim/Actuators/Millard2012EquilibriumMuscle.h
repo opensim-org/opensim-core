@@ -456,16 +456,16 @@ protected:
 //ModelComponent Interface requirements
 //==============================================================================
     /**Sets up the ModelComponent from the model, if necessary*/
-    void setup(Model& model) FINAL_11;
+    void connectToModel(Model& model) FINAL_11;
 
     /**Creates the ModelComponent so that it can be used in simulation*/
-	void createSystem(SimTK::MultibodySystem& system) const FINAL_11;
+	void addToSystem(SimTK::MultibodySystem& system) const FINAL_11;
 
     /**Initializes the state of the ModelComponent*/
-	void initState(SimTK::State& s) const FINAL_11;
+	void initStateFromProperties(SimTK::State& s) const FINAL_11;
     
     /**Sets the default state for ModelComponent*/
-    void setDefaultsFromState(const SimTK::State& s) FINAL_11;
+    void setPropertiesFromState(const SimTK::State& s) FINAL_11;
 	
     /**computes state variable derivatives*/
     SimTK::Vector computeStateVariableDerivatives(

@@ -96,9 +96,9 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 /**
  * allocate and initialize the SimTK state for this acuator.
  */
- void ActivationFiberLengthMuscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
+ void ActivationFiberLengthMuscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	addStateVariable(STATE_ACTIVATION_NAME);
 	addStateVariable(STATE_FIBER_LENGTH_NAME);
@@ -113,17 +113,17 @@ void ActivationFiberLengthMuscle_Deprecated::equilibrate(SimTK::State& state) co
 	addCacheVariable<double>("passiveForce", 0.0, SimTK::Stage::Velocity);
  }
 
- void ActivationFiberLengthMuscle_Deprecated::initState( SimTK::State& s) const
+ void ActivationFiberLengthMuscle_Deprecated::initStateFromProperties( SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 
 	setActivation(s, _defaultActivation);
 	setFiberLength(s, _defaultFiberLength);
 }
 
-void ActivationFiberLengthMuscle_Deprecated::setDefaultsFromState(const SimTK::State& state)
+void ActivationFiberLengthMuscle_Deprecated::setPropertiesFromState(const SimTK::State& state)
 {
-	Super::setDefaultsFromState(state);
+	Super::setPropertiesFromState(state);
 
     _defaultActivation = getActivation(state);
     _defaultFiberLength = getFiberLength(state);

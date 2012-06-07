@@ -137,10 +137,10 @@ void EllipsoidJoint::setupProperties()
  *
  * @param aEngine dynamics engine containing this EllipsoidJoint.
  */
-void EllipsoidJoint::setup(Model& aModel)
+void EllipsoidJoint::connectToModel(Model& aModel)
 {
 	// Base class
-	Joint::setup(aModel);
+	Joint::connectToModel(aModel);
 }
 
 //=============================================================================
@@ -220,7 +220,7 @@ void EllipsoidJoint::scale(const ScaleSet& aScaleSet)
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void EllipsoidJoint::createSystem(SimTK::MultibodySystem& system) const
+void EllipsoidJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
     // CHILD TRANSFORM
 	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
@@ -239,12 +239,12 @@ void EllipsoidJoint::createSystem(SimTK::MultibodySystem& system) const
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 
     // TODO: Joints require super class to be called last.
-    Super::createSystem(system);
+    Super::addToSystem(system);
 }
 
-void EllipsoidJoint::initState(SimTK::State& s) const
+void EllipsoidJoint::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
@@ -258,9 +258,9 @@ void EllipsoidJoint::initState(SimTK::State& s) const
     matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).setQToFitRotation(s, r);
 }
 
-void EllipsoidJoint::setDefaultsFromState(const SimTK::State& state)
+void EllipsoidJoint::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setDefaultsFromState(state);
+    Super::setPropertiesFromState(state);
 
     // Override default in case of quaternions.
     const MultibodySystem& system = _model->getMultibodySystem();

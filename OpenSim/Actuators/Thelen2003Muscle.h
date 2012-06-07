@@ -221,7 +221,7 @@ protected:
     /** Calculate activation rate */
     double calcActivationRate(const SimTK::State& s) const OVERRIDE_11; 
 
-    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 
 private:

@@ -116,12 +116,12 @@ public:
 #endif
 protected:
     // ModelComponent interface.
-    /** Concrete probes may override; be sure to invoke Super::setup()
+    /** Concrete probes may override; be sure to invoke Super::connectToModel()
     at the beginning of the overriding method. **/
-    void setup(Model& model) OVERRIDE_11;
-    /** Concrete probes may override; be sure to invoke Super::createSystem()
+    void connectToModel(Model& model) OVERRIDE_11;
+    /** Concrete probes may override; be sure to invoke Super::addToSystem()
     at the beginning of the overriding method. **/
-    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 
 private:

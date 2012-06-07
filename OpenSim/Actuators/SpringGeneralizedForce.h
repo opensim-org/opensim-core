@@ -118,10 +118,10 @@ protected:
 					    SimTK::Vector& mobilityForces) const OVERRIDE_11;
 	
     // ModelComponent interface.
-    void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 	// Setup method to initialize coordinate reference
-	void setup(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) OVERRIDE_11;
 
 private:
 	void setNull();

@@ -95,9 +95,9 @@ void ActuatorWorkMeter::constructProperties(void)
  *
  * @param aModel OpenSim model containing this ActuatorWorkMeter.
  */
-void ActuatorWorkMeter::setup(Model& aModel)
+void ActuatorWorkMeter::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	const string& actName = get_actuator_name();
 	int k = _model->getActuators().getIndex(actName);
@@ -113,9 +113,9 @@ void ActuatorWorkMeter::setup(Model& aModel)
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void ActuatorWorkMeter::createSystem(SimTK::MultibodySystem& system) const
+void ActuatorWorkMeter::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	// Assign a name to the state variable to access the work value stored in the state
 	string stateName = _actuator->getName()+"."+WORK_STATE_NAME;
@@ -139,13 +139,13 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 	return derivs;
 }
 
- void ActuatorWorkMeter::initState(SimTK::State& s) const
+ void ActuatorWorkMeter::initStateFromProperties(SimTK::State& s) const
 {
 	setStateVariable(s, getStateVariableNames()[0], 
         get_initial_actuator_work());
 }
 
-void ActuatorWorkMeter::setDefaultsFromState(const SimTK::State& state)
+void ActuatorWorkMeter::setPropertiesFromState(const SimTK::State& state)
 {
     set_initial_actuator_work(getWork(state));
 }

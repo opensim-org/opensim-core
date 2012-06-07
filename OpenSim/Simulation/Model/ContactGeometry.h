@@ -130,7 +130,7 @@ public:
     const std::string& getBodyName();
 	/**
 	 * Set the name of the Body this geometry is attached to.  This will cause the
-     * Body to be set to NULL, then resolved when setup() is called.
+     * Body to be set to NULL, then resolved when connectToModel() is called.
 	 */
     void setBodyName(const std::string& name);
 	/**
@@ -157,16 +157,8 @@ public:
 	virtual void updateGeometry() {};
 
 protected:
-	/**
-  	 * Perform setup functions that happen after the object has been deserialized or copied.
-     *
-     * @param aModel OpenSim model containing this Joint.
-     */
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const {};
-	virtual void initState(SimTK::State& s) const {};
-	virtual void setDefaultsFromState(const SimTK::State& state) {};
-	virtual int getNumStateVariables() const { return 0; };
+	// ModelComponent interface
+	void connectToModel(Model& aModel) OVERRIDE_11;
 
 private:
     // INITIALIZATION

@@ -162,10 +162,10 @@ void FreeJoint::setupProperties()
  *
  * @param aEngine dynamics engine containing this FreeJoint.
  */
-void FreeJoint::setup(Model& aModel)
+void FreeJoint::connectToModel(Model& aModel)
 {
 	// Base class
-	Joint::setup(aModel);
+	Joint::connectToModel(aModel);
 }
 
 //=============================================================================
@@ -207,7 +207,7 @@ void FreeJoint::scale(const ScaleSet& aScaleSet)
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
+void FreeJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
 	// CHILD TRANSFORM
 	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
@@ -251,12 +251,12 @@ void FreeJoint::createSystem(SimTK::MultibodySystem& system) const
 	//}
 
     // TODO: Joints require super class to be called last.
-    Super::createSystem(system);
+    Super::addToSystem(system);
 }
 
-void FreeJoint::initState(SimTK::State& s) const
+void FreeJoint::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 
     const MultibodySystem& system = _model->getMultibodySystem();
     const SimbodyMatterSubsystem& matter = system.getMatterSubsystem();
@@ -273,9 +273,9 @@ void FreeJoint::initState(SimTK::State& s) const
     matter.getMobilizedBody(MobilizedBodyIndex(_body->getIndex())).setQToFitTransform(s, Transform(r, t));
 }
 
-void FreeJoint::setDefaultsFromState(const SimTK::State& state)
+void FreeJoint::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setDefaultsFromState(state);
+    Super::setPropertiesFromState(state);
 
     // Override default behavior in case of quaternions.
     const MultibodySystem& system = _model->getMultibodySystem();

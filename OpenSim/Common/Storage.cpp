@@ -608,7 +608,7 @@ getLastStateVector() const
 	StateVector *vec = NULL;
 	try {
 		vec = &_storage.getLast();
-	} catch(Exception &) {
+	} catch(const Exception&) {
 		//x.print(cout);
 	}
 	return(vec);

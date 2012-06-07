@@ -92,7 +92,7 @@ public:
 	void add(Object* aObject);
 	void remove(const Object* aObject);
 	void replace(const Object* aOldObject, Object* aNewObject);
-	void setup(ArrayPtrs<Object>& aObjects);
+	void setupGroup(ArrayPtrs<Object>& aObjects);
 	const Array<Object*>& getMembers() const { return _memberObjects; }
 
 private:

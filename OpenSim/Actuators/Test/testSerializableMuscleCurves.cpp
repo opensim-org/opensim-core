@@ -59,12 +59,6 @@ int main(int argc, char* argv[])
             testFiberCompressiveForceCosPennationCurve();
             SimTK_END_TEST();
     }
-    catch (OpenSim::Exception ex)
-    {
-        cout << ex.getMessage() << endl;
-		cin.get();
-        return 1;
-    }
     catch (const std::exception& ex)
     {
         cout << ex.what() << endl;

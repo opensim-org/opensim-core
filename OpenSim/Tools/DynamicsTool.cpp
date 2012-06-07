@@ -238,7 +238,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 	try {
 		_externalLoads = ExternalLoads(aModel, aExternalLoadsFileName);
 	}
-	 catch (const Exception &ex) {
+	 catch (const Exception& ex) {
 		// Important to catch exceptions here so we can restore current working directory...
 		// And then we can rethrow the exception
 		 cout << "Error: failed to construct ExternalLoads from file " << aExternalLoadsFileName
@@ -247,7 +247,7 @@ bool DynamicsTool::createExternalLoads( const string& aExternalLoadsFileName, Mo
 		throw(ex);
 	}
 	_externalLoads.setMemoryOwner(false);
-	_externalLoads.setup(aModel);
+	_externalLoads.invokeConnectToModel(aModel);
 
 	string loadKinematicsFileName = _externalLoads.getExternalLoadsModelKinematicsFileName();
 	

@@ -92,14 +92,14 @@ void MarkerSet::setNull()
 /**
  * Post construction initialization.
  */
-void MarkerSet::setup(Model& aModel)
+void MarkerSet::connectMarkersToModel(Model& aModel)
 {
-	// Base class
-	Set<Marker>::setup();
+	// Invoke base class method.
+	setupGroups();
 
 	// Do members
 	for (int i = 0; i < getSize(); i++)
-		get(i).setup(aModel);
+		get(i).connectMarkerToModel(aModel);
 
 }
 
@@ -190,8 +190,9 @@ Marker* MarkerSet::addMarker(const string& aName, const double aOffset[3], OpenS
 	Marker* m = new Marker();
 	m->setName(aName);
 	m->setOffset(aOffset);
-	m->setBodyName(aBody.getName()); // setup will set the body based on this name
-	m->setup(aBody.getModel());
+    // Body will be based on this name when marker is connected to Model.
+	m->setBodyName(aBody.getName()); 
+	m->connectMarkerToModel(aBody.getModel());
 	append(m);
 
 	return m;

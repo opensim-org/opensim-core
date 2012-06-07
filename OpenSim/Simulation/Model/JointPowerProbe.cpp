@@ -107,9 +107,9 @@ void JointPowerProbe::setJointNames(const Array<string>& aJointNames)
  *
  * @param aModel OpenSim model containing this JointPowerProbe.
  */
-void JointPowerProbe::setup(Model& aModel)
+void JointPowerProbe::connectToModel(Model& aModel)
 {
-    Super::setup(aModel);
+    Super::connectToModel(aModel);
 
     // check that each Joints in the joint_names array exists in the model
     int nA = getJointNames().size();

@@ -152,9 +152,9 @@ void Muscle::setMaxContractionVelocity(double aMaxContractionVelocity)
 //=============================================================================
 // ModelComponent Interface Implementation
 //=============================================================================
-void Muscle::setup(Model &aModel)
+void Muscle::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	_muscleWidth = getOptimalFiberLength()
                     * sin(getPennationAngleAtOptimalFiberLength());
@@ -166,9 +166,9 @@ void Muscle::setup(Model &aModel)
 }
 
 // Add Muscle's contributions to the underlying system
- void Muscle::createSystem(SimTK::MultibodySystem& system) const
+ void Muscle::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	addModelingOption("ignore_tendon_compliance", 1);
 	addModelingOption("ignore_activation_dynamics", 1);
@@ -182,16 +182,16 @@ void Muscle::setup(Model &aModel)
        ("dynamicsInfo", MuscleDynamicsInfo(), SimTK::Stage::Dynamics);
  }
 
-void Muscle::setDefaultsFromState(const SimTK::State& state)
+void Muscle::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setDefaultsFromState(state);
+    Super::setPropertiesFromState(state);
 
     set_ignore_tendon_compliance(getIgnoreTendonCompliance(state));
 	set_ignore_activation_dynamics(getIgnoreActivationDynamics(state));
 }
 
-void  Muscle::initState(SimTK::State& state) const {
-    Super::initState(state);
+void  Muscle::initStateFromProperties(SimTK::State& state) const {
+    Super::initStateFromProperties(state);
 
     setIgnoreTendonCompliance(state, 
         get_ignore_tendon_compliance());

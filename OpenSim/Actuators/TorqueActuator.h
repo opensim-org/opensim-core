@@ -149,7 +149,7 @@ private:
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method initializes Body reference pointers to match the names.
-	void setup(Model& model) OVERRIDE_11;
+	void connectToModel(Model& model) OVERRIDE_11;
 
 	//--------------------------------------------------------------------------
 	// Implement Object interface.

@@ -296,12 +296,7 @@ int main()
 		// Save the forces
 		reporter->getForceStorage().print("tugOfWar_forces.mot");
 	}
-    catch (const OpenSim::Exception &ex)
-    {
-        cerr << ex.getMessage() << endl;
-        return 1;
-    }
-	catch (const std::exception &ex)
+	catch (const std::exception& ex)
     {
         cerr << ex.what() << endl;
         return 1;

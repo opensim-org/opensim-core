@@ -209,7 +209,8 @@ public:
 protected:
 
 	/**  ModelComponent interface */ 
-	virtual void setup(Model& model);
+	void connectToModel(Model& model) OVERRIDE_11;
+
 	/**
 	 * Compute the force.
 	 */

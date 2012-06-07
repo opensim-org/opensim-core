@@ -523,7 +523,7 @@ void testCoordinateLocking()
 	coordinates[0].setSpeedValue(si, 1.0);
 	coordinates[1].setValue(si, fixedKneeAngle);
 	coordinates[1].setLocked(si, true);  // lock the knee
-	osimModel->setDefaultsFromState(si);
+	osimModel->setPropertiesFromState(si);
 
 	// Test that serialization and deserialization of locking works
 	osimModel->print("testLockingModel.osim");

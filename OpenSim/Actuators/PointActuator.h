@@ -124,7 +124,7 @@ private:
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
 	// Setup method to initialize Body reference
-	void setup(Model& model);
+	void connectToModel(Model& model) OVERRIDE_11;
     
     //--------------------------------------------------------------------------
 	// Implement Object interface.

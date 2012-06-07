@@ -118,19 +118,19 @@ void ForceVelocityCurve::ensureCurveUpToDate()
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
 //=============================================================================
-void ForceVelocityCurve::setup(Model& aModel)
+void ForceVelocityCurve::connectToModel(Model& aModel)
 {
-    Super::setup(aModel);
+    Super::connectToModel(aModel);
 }
 
-void ForceVelocityCurve::initState(SimTK::State& s) const
+void ForceVelocityCurve::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 }
 
-void ForceVelocityCurve::createSystem(SimTK::MultibodySystem& system) const
+void ForceVelocityCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     ForceVelocityCurve* mthis = const_cast<ForceVelocityCurve*>(this);    
     mthis->ensureCurveUpToDate();

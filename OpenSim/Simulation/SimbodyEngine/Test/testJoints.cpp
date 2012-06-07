@@ -172,7 +172,7 @@ public:
 	virtual int numCoordinates() const {return _numMobilities;};
 
 protected:
-    virtual void createSystem(SimTK::MultibodySystem& system) const
+    virtual void addToSystem(SimTK::MultibodySystem& system) const
 	{
 		using namespace SimTK;
 
@@ -209,7 +209,7 @@ protected:
 		setMobilizedBodyIndex(_body, mobBod.getMobilizedBodyIndex());
 
         // TODO: Joints require super class to be called last.
-        Super::createSystem(system);
+        Super::addToSystem(system);
 	}
 
 //=============================================================================

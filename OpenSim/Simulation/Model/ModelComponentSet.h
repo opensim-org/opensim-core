@@ -67,7 +67,6 @@ protected:
 // METHODS
 //=============================================================================
 public:
-    friend class Model;
     /** Default constructor creates an empty Set with no associated Model. **/
     ModelComponentSet() : _model(NULL)
     {
@@ -142,7 +141,6 @@ public:
         return Set<T>::set(aIndex, aObject, preserveGroups);
     }
 
-protected:
     // The following methods dispatch calls to the corresponding ModelComponent
     // methods. We have to upcast each concrete ModelComponent of type T to
     // ModelComponent so that we can invoke the methods, which are protected.
@@ -153,47 +151,47 @@ protected:
 
     /**
      * Set the Model this object is part of and allow each contained
-     * ModelComponent to connect itself to the Model by invoking its setup()
-     * method.
-     * @see ModelComponent::setup()
+     * ModelComponent to connect itself to the Model by invoking its 
+     * connectToModel() method.
+     * @see ModelComponent::connectToModel()
      */
-    virtual void setup(Model& model)
+    virtual void invokeConnectToModel(Model& model)
     {
         _model = &model;
         for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<ModelComponent&>(Set<T>::get(i)).setup(model);
+            static_cast<ModelComponent&>(Set<T>::get(i)).connectToModel(model);
 		
-		Super::setup(); // make sure group members are populated
+		setupGroups(); // make sure group members are populated
     }
 
     /**
-     * Invoke createSystem() on each element of the Set.
-     * @see ModelComponent::createSystem()
+     * Invoke addToSystem() on each element of the Set.
+     * @see ModelComponent::addToSystem()
      */
-    virtual void createSystem(SimTK::MultibodySystem& system) const
+    virtual void invokeAddToSystem(SimTK::MultibodySystem& system) const
     {
         for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i)).createSystem(system);
+            static_cast<const ModelComponent&>(Set<T>::get(i)).addToSystem(system);
     }
 
     /**
-     * Invoke initState() on each element of the Set.
-     * @see ModelComponent::initState()
+     * Invoke initStateFromProperties() on each element of the Set.
+     * @see ModelComponent::initStateFromProperties()
      */
-    virtual void initState(SimTK::State& state) const
+    virtual void invokeInitStateFromProperties(SimTK::State& state) const
     {
         for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<const ModelComponent&>(Set<T>::get(i)).initState(state);
+            static_cast<const ModelComponent&>(Set<T>::get(i)).initStateFromProperties(state);
     }
 
     /**
-     * Invoke setDefaultsFromState() on each element of the Set.
-     * @see ModelComponent::setDefaultsFromState()
+     * Invoke setPropertiesFromState() on each element of the Set.
+     * @see ModelComponent::setPropertiesFromState()
      */
-    virtual void setDefaultsFromState(const SimTK::State& state)
+    virtual void invokeSetPropertiesFromState(const SimTK::State& state)
     {
         for (int i = 0; i < Set<T>::getSize(); i++)
-            static_cast<ModelComponent&>(Set<T>::get(i)).setDefaultsFromState(state);
+            static_cast<ModelComponent&>(Set<T>::get(i)).setPropertiesFromState(state);
     }
 
     /** 
@@ -201,7 +199,7 @@ protected:
      * ModelComponent objects. 
      * @see ModelComponent::generateDecorations()
      */
-    virtual void generateDecorations
+    virtual void invokeGenerateDecorations
        (bool                                        fixed, 
         const ModelDisplayHints&                    hints,
         const SimTK::State&                         state,

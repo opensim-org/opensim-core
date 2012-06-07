@@ -169,19 +169,19 @@ void TendonForceLengthCurve::ensureCurveUpToDate()
 //=============================================================================
 // MODEL COMPONENT INTERFACE
 //=============================================================================
-void TendonForceLengthCurve::setup(Model& model)
+void TendonForceLengthCurve::connectToModel(Model& model)
 {
-    Super::setup(model);
+    Super::connectToModel(model);
 }
 
-void TendonForceLengthCurve::initState(SimTK::State& s) const
+void TendonForceLengthCurve::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 }
 
-void TendonForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
+void TendonForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     TendonForceLengthCurve* mthis = const_cast<TendonForceLengthCurve*>(this);    
     mthis->ensureCurveUpToDate();

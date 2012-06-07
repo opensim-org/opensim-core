@@ -98,7 +98,8 @@ public:
 	// GET AND SET
 	//--------------------------------------------------------------------------
 public:
-	virtual void setup(Model& aModel);
+    // Override ModelComponentSet method.
+	void invokeConnectToModel(Model& aModel) OVERRIDE_11;
 
 	// FORCE
 	bool remove(int aIndex);

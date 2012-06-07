@@ -138,9 +138,9 @@ protected:
 
 
 	/** Model Component Interface */
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void initState(SimTK::State& s) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
+	virtual void addToSystem(SimTK::MultibodySystem& system) const;
+	virtual void initStateFromProperties(SimTK::State& s) const;
+    virtual void setPropertiesFromState(const SimTK::State& state);
 	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
 
 	/** State derivative access helper methods */

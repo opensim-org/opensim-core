@@ -155,7 +155,7 @@ void ContactGeometry::setBodyName(const std::string& name)
     _body = NULL;
 }
 
-void ContactGeometry::setup(Model& aModel)
+void ContactGeometry::connectToModel(Model& aModel)
 {
     try {
     	_body = &aModel.updBodySet().get(_bodyName);

@@ -273,15 +273,15 @@ void CorrectionController::computeControls(const SimTK::State& s, SimTK::Vector&
 	}
 }
 
-void CorrectionController::createSystem(SimTK::MultibodySystem& system) const
+void CorrectionController::addToSystem(SimTK::MultibodySystem& system) const
 { 
-    Super::createSystem(system);
+    Super::addToSystem(system);
 }
 
 // for any post XML deserialization intialization
-void CorrectionController::setup(Model& model)
+void CorrectionController::connectToModel(Model& model)
 {
-	Super::setup(model);
+	Super::connectToModel(model);
 
 	_actuatorSet.setSize(0);
 	_actuatorSet.setMemoryOwner(false);
@@ -292,7 +292,9 @@ void CorrectionController::setup(Model& model)
 	// add these actuators to the model and set their indexes 
 	const CoordinateSet& cs = _model->getCoordinateSet();
 	for(int i=0; i<cs.getSize(); i++) {
-		std::cout << " CorrectionController::setup() " <<  cs.get(i).getName()+"_corrector" << "  added " << std::endl;
+		std::cout << " CorrectionController::connectToModel(): " 
+                  <<  cs.get(i).getName()+"_corrector" << "  added " 
+                  << std::endl;
 		std::string name = cs.get(i).getName()+"_corrector";
 		CoordinateActuator *actuator = NULL;
 		if(_model->getForceSet().contains(name)){
@@ -311,11 +313,11 @@ void CorrectionController::setup(Model& model)
    }
 	_numControls = _actuatorSet.getSize();
 
-	printf(" CorrectionController::setup end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
+	printf(" CorrectionController::connectToModel(): end  num Actuators= %d kv=%f kp=%f \n",  _model->getForceSet().getSize(), _kv, _kp );
 }
 
 // for any intialization requiring a state or the complete system 
-void CorrectionController::initState( SimTK::State& s) const
+void CorrectionController::initStateFromProperties( SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 }

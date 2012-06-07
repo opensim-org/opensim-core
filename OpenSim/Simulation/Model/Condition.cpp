@@ -122,7 +122,7 @@ void Condition::setupProperties(void)
  *
  * @param aModel OpenSim model containing this Condition.
  */
-void Condition::setup(Model& aModel)
+void Condition::connectConditionToModel(Model& aModel)
 {
     _model = &aModel;
 }

@@ -427,7 +427,7 @@ bool InverseDynamicsTool::run()
 		}
 
 	}
-	catch (OpenSim::Exception& ex) {
+	catch (const OpenSim::Exception& ex) {
 		std::cout << "InverseDynamicsTool Failed: " << ex.what() << std::endl;
 		throw (Exception("InverseDynamicsTool Failed, please see messages window for details..."));
 	}

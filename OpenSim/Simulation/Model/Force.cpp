@@ -95,9 +95,9 @@ void Force::constructProperties()
 
 // Create an underlying SimTK::Force to represent the OpenSim::Force in the 
 // computational system.  Create a SimTK::Force::Custom by default.
-void Force::createSystem(SimTK::MultibodySystem& system) const
+void Force::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	ForceAdapter* adapter = new ForceAdapter(*this);
     SimTK::Force::Custom force(_model->updForceSubsystem(), adapter);
@@ -108,9 +108,9 @@ void Force::createSystem(SimTK::MultibodySystem& system) const
 }
 
 
-void Force::initState(SimTK::State& s) const
+void Force::initStateFromProperties(SimTK::State& s) const
 {
-	Super::initState(s);
+	Super::initStateFromProperties(s);
 
 	SimTK::Force& simForce = _model->updForceSubsystem().updForce(_index);
 
@@ -122,9 +122,9 @@ void Force::initState(SimTK::State& s) const
 
 }
 
-void Force::setDefaultsFromState(const SimTK::State& state)
+void Force::setPropertiesFromState(const SimTK::State& state)
 {
-	Super::setDefaultsFromState(state);
+	Super::setPropertiesFromState(state);
 
     set_isDisabled(isDisabled(state));
 }

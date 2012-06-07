@@ -145,19 +145,19 @@ void FiberCompressiveForceLengthCurve::ensureCurveUpToDate()
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
 //=============================================================================
-void FiberCompressiveForceLengthCurve::setup(Model& aModel)
+void FiberCompressiveForceLengthCurve::connectToModel(Model& aModel)
 {
-    Super::setup(aModel);
+    Super::connectToModel(aModel);
 }
 
-void FiberCompressiveForceLengthCurve::initState(SimTK::State& s) const
+void FiberCompressiveForceLengthCurve::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 }
 
-void FiberCompressiveForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
+void FiberCompressiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     FiberCompressiveForceLengthCurve* mthis = 
         const_cast<FiberCompressiveForceLengthCurve*>(this);    

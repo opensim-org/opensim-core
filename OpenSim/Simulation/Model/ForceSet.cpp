@@ -144,10 +144,10 @@ void ForceSet::setupSerializedMembers()
 {
 }
 
-void ForceSet::setup(Model& aModel)
+void ForceSet::invokeConnectToModel(Model& aModel)
 {
 	// BASE CLASS
-	ModelComponentSet<Force>::setup(aModel);
+	Super::invokeConnectToModel(aModel);
 
 	updateActuators();
 	updateMuscles();

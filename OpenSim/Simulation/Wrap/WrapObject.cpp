@@ -145,7 +145,7 @@ void WrapObject::setupProperties()
  * @param aEngine dynamics engine containing this wrap object.
  * @param aBody body containing this wrap object.
  */
-void WrapObject::setup(Model& aModel, OpenSim::Body& aBody)
+void WrapObject::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
 {
    _body = &aBody;
    _model = &aModel;
@@ -181,7 +181,7 @@ void WrapObject::scale(const SimTK::Vec3& aScaleFactors)
 /**
  * set quadrants for the geometric object representing the wrap object
  * This has to be done after geometry object creation so it's not 
- * part of WrapObject::setup
+ * part of WrapObject::connectToModelAndBody()
  */
 void WrapObject::setGeometryQuadrants(OpenSim::AnalyticGeometry *aGeometry) const
 {
@@ -230,8 +230,8 @@ void WrapObject::setQuadrantName(const string& aName)
 //_____________________________________________________________________________
 /**
  * Determine the appropriate values of _quadrant, _wrapAxis, and _wrapSign,
- * based on the name of the quadrant. This should be called in setup() and
- * whenever the quadrant name changes.
+ * based on the name of the quadrant. This should be called in 
+ * connectToModelAndBody() and whenever the quadrant name changes.
  */
 void WrapObject::setupQuadrant()
 {

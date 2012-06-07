@@ -1,5 +1,5 @@
-#ifndef __MovingPathPoint_h__
-#define __MovingPathPoint_h__
+#ifndef OPENSIM_MOVING_PATH_POINT_H_
+#define OPENSIM_MOVING_PATH_POINT_H_
 
 // MovingPathPoint.h
 // Author: Peter Loan
@@ -125,10 +125,13 @@ public:
 	void setXCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
 	void setYCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
 	void setZCoordinate( const SimTK::State& s, Coordinate& aCoordinate);
-	virtual bool isActive(const SimTK::State& s) const { return true; }
-	virtual void setup(const Model& aModel, GeometryPath& aPath);
-	virtual void update(const SimTK::State& s);
-	virtual void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity);
+
+    // Override methods from PathPoint.
+	bool isActive(const SimTK::State& s) const OVERRIDE_11 { return true; }
+	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath) 
+                                                                OVERRIDE_11;
+	void update(const SimTK::State& s) OVERRIDE_11;
+	void getVelocity(const SimTK::State& s, SimTK::Vec3& aVelocity) OVERRIDE_11;
 #endif
 	const std::string& getXCoordinateName() const { return _xCoordinateName; }
 	const std::string& getYCoordinateName() const { return _yCoordinateName; }
@@ -153,6 +156,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __MovingPathPoint_h__
+#endif // OPENSIM_MOVING_PATH_POINT_H_
 
 

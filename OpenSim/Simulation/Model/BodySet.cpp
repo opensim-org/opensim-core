@@ -79,15 +79,6 @@ void BodySet::setNull()
 {
 }
 
-/**
- * Post construction initialization.
- */
-void BodySet::setup(Model& aModel)
-{
-	// Do members
-	Super::setup(aModel);
-
-}
 
 //=============================================================================
 // OPERATORS

@@ -133,7 +133,7 @@ void testAssembleModelWithConstraints(string modelFile)
 	Vector y1 = state.getY();
  
 	// defaults should capture an accurate snapshot of the model
-	model.setDefaultsFromState(state);
+	model.setPropertiesFromState(state);
     manager.integrate(state);
     Vector y2 = state.getY();
 
@@ -141,7 +141,7 @@ void testAssembleModelWithConstraints(string modelFile)
     State state2 = model.initSystem();
     Vector y3 = state2.getY();
 
-	model.setDefaultsFromState(state);
+	model.setPropertiesFromState(state);
     state2 = model.initSystem();
     Vector y4 = state2.getY();
     for (int i = 0; i < y1.size(); i++) 

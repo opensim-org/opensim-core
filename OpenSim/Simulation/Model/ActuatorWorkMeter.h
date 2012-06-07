@@ -83,13 +83,14 @@ public:
 
 protected:
 	// Model component interface
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual void initState(SimTK::State& state) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
-	virtual int getNumStateVariables() const { return 1; };
+	void connectToModel(Model& aModel) OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+	int getNumStateVariables() const  OVERRIDE_11 { return 1; };
 	
-	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const;
+	SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const 
+                                                            OVERRIDE_11;
 
 private:
 	void setNull();
@@ -99,7 +100,8 @@ private:
 // DATA
 //==============================================================================
 	// A ReferencePtr is initialized to zero on construction, and also after
-    // copy construction and copy assignment. A value is assigned in setup().
+    // copy construction and copy assignment. A value is assigned 
+    // in connectToModel().
     SimTK::ReferencePtr<Actuator> _actuator;
 
 //==============================================================================

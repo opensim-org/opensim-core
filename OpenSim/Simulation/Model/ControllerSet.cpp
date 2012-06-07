@@ -178,10 +178,10 @@ bool ControllerSet::addController(Controller *aController)
 	bool success = Set<Controller>::append(aController);
 
 	if(success) {
-		aController->setup(*_model);
+		aController->connectToModel(*_model);
 	}
 
-	return(success);
+	return success;
 }
 //_____________________________________________________________________________
 /**
@@ -274,13 +274,6 @@ void ControllerSet::setDesiredStates( Storage* yStore)
    }
 }
 
-// post deserialize initialization
-
-void ControllerSet::setup(Model& aModel)
-{
-	// BASE CLASS
-	ModelComponentSet<Controller>::setup(aModel);
-}
 
 void ControllerSet::printInfo() const 
 {
@@ -308,14 +301,6 @@ void ControllerSet::printInfo() const
    }
 }
 
-void ControllerSet::createSystem(SimTK::MultibodySystem& system)  
-{
-   for(int i=0;i<getSize(); i++ ) {
-       //get(i).setModel(*_model);
-       if(!get(i).isDisabled() )
-		   get(i).createSystem(system);
-   }
-}
 
 void ControllerSet::computeControls(const SimTK::State& s, SimTK::Vector &controls) const
 {

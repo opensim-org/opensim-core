@@ -82,9 +82,10 @@ void JointSet::setNull()
 }
 
 /**
- * This is overridden to ensure that joints are processed from ground outward.
+ * This ModelComponentSet method is overridden to ensure that joints are 
+ * processed from ground outward.
  */
-void JointSet::createSystem(SimTK::MultibodySystem& system) const
+void JointSet::invokeAddToSystem(SimTK::MultibodySystem& system) const
 {
     vector<bool> hasProcessed(getSize(), false);
     map<Body*, int> bodyMap;
@@ -94,13 +95,13 @@ void JointSet::createSystem(SimTK::MultibodySystem& system) const
         bodyMap[&joint.getBody()] = i;
     }
 	for (int i = 0; i < getSize(); i++){
-		if (getDebugLevel()>=2) cout << "Calling createSystem for Joint " << get(i).getName() << " ..." << endl;
-        createSystemForOneJoint(system, i, bodyMap, hasProcessed);
+		if (getDebugLevel()>=2) cout << "Calling addToSystem for Joint " << get(i).getName() << " ..." << endl;
+        addToSystemForOneJoint(system, i, bodyMap, hasProcessed);
 
 	}
 }
 
-void JointSet::createSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const map<Body*, int>& bodyMap, vector<bool>& hasProcessed) const
+void JointSet::addToSystemForOneJoint(SimTK::MultibodySystem& system, int jointIndex, const map<Body*, int>& bodyMap, vector<bool>& hasProcessed) const
 {
     if (hasProcessed[jointIndex])
         return;
@@ -115,10 +116,10 @@ void JointSet::createSystemForOneJoint(SimTK::MultibodySystem& system, int joint
         {
             int parentIndex = parent->second;
             if (!hasProcessed[parentIndex])
-                createSystemForOneJoint(system, parentIndex, bodyMap, hasProcessed);
+                addToSystemForOneJoint(system, parentIndex, bodyMap, hasProcessed);
         }
     }
-    static_cast<const Joint&>(get(jointIndex)).createSystem(system);
+    static_cast<const Joint&>(get(jointIndex)).addToSystem(system);
 }
 
 /**

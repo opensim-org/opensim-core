@@ -205,9 +205,9 @@ void WeldConstraint::setupProperties()
  *
  * @param aModel OpenSim model containing this WeldConstraint.
  */
-void WeldConstraint::setup(Model& aModel)
+void WeldConstraint::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
     
     string errorMessage;
 
@@ -225,9 +225,9 @@ void WeldConstraint::setup(Model& aModel)
 	_body2 = &aModel.updBodySet().get(_body2Name);
 }
 
-void WeldConstraint::createSystem(SimTK::MultibodySystem& system) const
+void WeldConstraint::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody(_body1->getIndex());

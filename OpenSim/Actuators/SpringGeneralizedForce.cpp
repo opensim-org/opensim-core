@@ -80,12 +80,12 @@ void SpringGeneralizedForce::constructProperties()
 
 //_____________________________________________________________________________
 /**
- * setup sets the _model pointer to proper value
+ * Sets the _model pointer to proper value
  * _coordinate is actually set inside _createSystem
  */
-void SpringGeneralizedForce::setup(Model& model)
+void SpringGeneralizedForce::connectToModel(Model& model)
 {
-	Super::setup(model);
+	Super::connectToModel(model);
 
     _coord = &model.updCoordinateSet().get(get_coordinate());
 }
@@ -198,11 +198,11 @@ void SpringGeneralizedForce::computeForce(const SimTK::State& s,
 }
 //_____________________________________________________________________________
 /**
- * setup sets the actual Coordinate reference _coord
+ * Sets the actual Coordinate reference _coord
  */
 void SpringGeneralizedForce::
-createSystem(SimTK::MultibodySystem& system) const {
-    Super::createSystem( system );
+addToSystem(SimTK::MultibodySystem& system) const {
+    Super::addToSystem( system );
 
 	if (_model) {
         SpringGeneralizedForce* mthis = 

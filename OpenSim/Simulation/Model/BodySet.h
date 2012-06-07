@@ -63,7 +63,7 @@ public:
 	BodySet(Model& model);
 	BodySet(const BodySet& aAbsBodySet);
 	~BodySet(void);
-	void setup(Model& aModel);
+
 	// Somehow the following function is not exported from base template
     BodySet(Model& model, const std::string &aFileName, 
             bool aUpdateFromXMLNode = true) 

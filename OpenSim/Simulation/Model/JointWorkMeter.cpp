@@ -93,9 +93,9 @@ void JointWorkMeter::constructProperties()
  *
  * @param aModel OpenSim model containing this JointWorkMeter.
  */
-void JointWorkMeter::setup(Model& aModel)
+void JointWorkMeter::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	const string& jointName = get_joint_name();
 	int k = _model->getJointSet().getIndex(jointName);
@@ -111,9 +111,9 @@ void JointWorkMeter::setup(Model& aModel)
 //==============================================================================
 // Create the underlying system component(s)
 //==============================================================================
-void JointWorkMeter::createSystem(SimTK::MultibodySystem& system) const
+void JointWorkMeter::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	// Assign a name to the state variable to access the work value stored in the state
 	string stateName = _joint->getName()+"."+WORK_STATE_NAME;
@@ -135,17 +135,17 @@ computeStateVariableDerivatives(const SimTK::State& s) const
 	return derivs;
 }
 
- void JointWorkMeter::initState( SimTK::State& s) const
+ void JointWorkMeter::initStateFromProperties( SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 
 	setStateVariable(s, getStateVariableNames()[0], 
         get_initial_joint_work());
 }
 
-void JointWorkMeter::setDefaultsFromState(const SimTK::State& state)
+void JointWorkMeter::setPropertiesFromState(const SimTK::State& state)
 {
-    Super::setDefaultsFromState(state);
+    Super::setPropertiesFromState(state);
 
     set_initial_joint_work(getWork(state));
 }

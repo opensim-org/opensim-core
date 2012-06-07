@@ -345,7 +345,7 @@ bool ModelScaler::processModel(SimTK::State& s, Model* aModel, const string& aPa
 
 
 	}
-	catch (Exception &x)
+	catch (const Exception& x)
 	{
 		x.print(cout);
 		return false;

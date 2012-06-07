@@ -108,11 +108,11 @@ public:
 	virtual void scale(const ScaleSet& aScaleSet);
 
 protected:
-	virtual void setup(Model& aModel);
+	void connectToModel(Model& aModel) OVERRIDE_11;
 	/**
 	 * Create a SimTK::Constraint::CoordinateCooupler which implements this constraint.
 	 */
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:
 	void setNull();

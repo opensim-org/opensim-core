@@ -318,10 +318,10 @@ protected:
 	
 
 	/** Model Component creation interface */
-	void setup(Model &aModel) OVERRIDE_11;
-	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
-	void setDefaultsFromState(const SimTK::State &s) OVERRIDE_11;
-	void initState(SimTK::State& state) const OVERRIDE_11;
+	void connectToModel(Model& aModel) OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void setPropertiesFromState(const SimTK::State &s) OVERRIDE_11;
+	void initStateFromProperties(SimTK::State& state) const OVERRIDE_11;
 	
 	// Update the geometry attached to the muscle (location of muscle points and connecting segments
 	//  all in global/interial frame)

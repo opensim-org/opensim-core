@@ -219,27 +219,27 @@ void Delp1990Muscle_Deprecated::setupProperties()
  *
  * @param aModel model containing this Delp1990Muscle_Deprecated.
  */
-void Delp1990Muscle_Deprecated::setup(Model& aModel)
+void Delp1990Muscle_Deprecated::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	// aModel will be NULL when objects are being registered.
 	if (_model == NULL)
 		return;
 
 	if(!getActiveForceLengthCurve()) 
-		throw Exception("Delp1990Muscle_Deprecated.setup: ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No active force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 	else if(!getPassiveForceLengthCurve())
-		throw Exception("Delp1990Muscle_Deprecated.setup: ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No passive force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 	else if(!getTendonForceLengthCurve())
-		throw Exception("Delp1990Muscle_Deprecated.setup: ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No tendon force length curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 	else if(!getForceVelocityCurve())
-		throw Exception("Delp1990Muscle_Deprecated.setup: ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
+		throw Exception("Delp1990Muscle_Deprecated::connectToModel(): ERROR- No force velocity curve specified for muscle '"+getName()+"'",__FILE__,__LINE__);
 }
 
-void Delp1990Muscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
+void Delp1990Muscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 	
 	addStateVariable("fiber_velocity");
 	addCacheVariable("fiber_velocity_deriv", 0.0, SimTK::Stage::Dynamics);

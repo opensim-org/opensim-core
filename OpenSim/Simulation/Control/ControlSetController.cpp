@@ -226,15 +226,15 @@ double ControlSetController::getLastTime() const {
     }
 }
 
-// for any post XML desereialization intialization
-void ControlSetController::setup(Model& model)  
+// for any post XML deserialization intialization
+void ControlSetController::connectToModel(Model& model)  
 {
 
     SimTK_ASSERT( _controlsFileName!="" , "ControlSetController::setup controlsFileName is NULL");
 
     if(_controlsFileName!="Unassigned") {
-//        std::cout<<"\n\nControlSetController::setup Loading controls from file "<<_controlsFileName<<"."<<std::endl;
-//        std::cout<<"ControlSetController::setup Found "<<_controlSet->getSize()<<" controls."<<std::endl;
+//        std::cout<<"\n\nControlSetController::connectToModel(): Loading controls from file "<<_controlsFileName<<"."<<std::endl;
+//        std::cout<<"ControlSetController::connectToModel(): Found "<<_controlSet->getSize()<<" controls."<<std::endl;
         delete  _controlSet;
 		if (_controlsFileName.rfind(".sto")!=std::string::npos)
 			_controlSet = new ControlSet(Storage(_controlsFileName));
@@ -242,7 +242,7 @@ void ControlSetController::setup(Model& model)
 			_controlSet = new ControlSet(_controlsFileName);
     }
 	else if (_controlSet == NULL) {
-       std::cout << " ControlSetController:: no Control Set Specified" << std::endl;
+       std::cout << " ControlSetController::connectToModel(): no Control Set Specified" << std::endl;
 	   setDisabled(true); 
 	   return;  // no more wiring is needed
     }
@@ -258,19 +258,20 @@ void ControlSetController::setup(Model& model)
 			_actuatorNameList.append(actName);
 	}
 
-    // Controller::setup calls setActuators() with actuators in the _actuatorNameList
-    // so call setup() after the _controlSet constructor has been called
-	Controller::setup(model);
+    // Controller::connectToModel() calls setActuators() with actuators in the
+    // _actuatorNameList so call connectToModel() after the _controlSet 
+    // constructor has been called
+	Super::connectToModel(model);
 
 }
 // for adding any components to the model
-void ControlSetController::createSystem( SimTK::MultibodySystem& system ) const
+void ControlSetController::addToSystem( SimTK::MultibodySystem& system ) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 }
 
 // for any intialization requiring a state or the complete system 
-void ControlSetController::initState( SimTK::State& s)  const
+void ControlSetController::initStateFromProperties( SimTK::State& s)  const
 {
-	Super::initState(s);
+	Super::initStateFromProperties(s);
 }

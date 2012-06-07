@@ -27,7 +27,7 @@
 
 //==========================================================================================================
 //	testInitState tests that a Model consistently generates the same default state
-//  from its initState method. It also tests that when the defualt values (properties)
+//  from its initSystem() method. It also tests that when the properties
 //  are updated (after a simulation) that the defaults match the values in the new state.
 //==========================================================================================================
 #include <OpenSim/Simulation/Manager/Manager.h>
@@ -108,7 +108,7 @@ void testStates()
 
 	// update the default (properties) values from the state
 	// after the simulation
-    model.setDefaultsFromState(state);
+    model.setPropertiesFromState(state);
 
 	// get a new default state that should reflect the states 
 	// after the simulation

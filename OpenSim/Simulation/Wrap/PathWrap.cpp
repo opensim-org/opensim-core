@@ -125,7 +125,7 @@ void PathWrap::setupProperties()
  * @param s current state of  system
  * @param aModel pointer to the OpenSim model.
  */
-void PathWrap::setup(const Model& aModel, GeometryPath& aPath)
+void PathWrap::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
 	int i;
 	const BodySet& bodySet = aModel.getBodySet();
@@ -144,10 +144,10 @@ void PathWrap::setup(const Model& aModel, GeometryPath& aPath)
 		}
 	}
 
-	// setup() must be called after setBody() because it requires
+	// connectToModelAndPath() must be called after setBody() because it requires
 	// that _bodyName already be assigned.
-	_wrapPoints[0].setup(aModel, aPath);
-	_wrapPoints[1].setup(aModel, aPath);
+	_wrapPoints[0].connectToModelAndPath(aModel, aPath);
+	_wrapPoints[1].connectToModelAndPath(aModel, aPath);
 
 	if (_methodName == "hybrid" || _methodName == "Hybrid" || _methodName == "HYBRID")
 		_method = hybrid;

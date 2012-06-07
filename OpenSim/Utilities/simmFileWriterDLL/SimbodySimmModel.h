@@ -116,7 +116,7 @@ public:
 private:
 	void setNull();
 	void copyData(const SimbodySimmModel &aEngine);
-	void setup(const Model* aModel);
+	void connectSimbodySimmModel(const Model* aModel);
 	bool jointArrayContains(const std::string& aName);
 
 public:

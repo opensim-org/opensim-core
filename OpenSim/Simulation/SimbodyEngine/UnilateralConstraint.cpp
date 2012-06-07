@@ -101,10 +101,10 @@ void UnilateralConstraint::setNull(void)
  *
  * @param Model containing this UnilateralConstraint.
  */
-void UnilateralConstraint::setup(Model& aModel)
+void UnilateralConstraint::connectToModel(Model& aModel)
 {
 	// Base class
-	Constraint::setup(aModel);
+	Super::connectToModel(aModel);
 }
 
 

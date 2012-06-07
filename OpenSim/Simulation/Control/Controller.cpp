@@ -213,9 +213,9 @@ void Controller::setDisabled(bool aTrueFalse)
 }
 
 // for any post XML deseraialization intialization
-void Controller:: setup(Model& model)
+void Controller:: connectToModel(Model& model)
 {
-	Super::setup(model);
+	Super::connectToModel(model);
 
 	if(_actuatorNameList.getSize() > 0){
 		if(IO::Uppercase(_actuatorNameList[0]) == "ALL"){
@@ -241,9 +241,9 @@ void Controller:: setup(Model& model)
 /**
  * Create a Controller in the SimTK::System
  */
-void Controller::createSystem(SimTK::MultibodySystem& system) const
+void Controller::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 }
 
 // makes a request for which actuators a controller will control

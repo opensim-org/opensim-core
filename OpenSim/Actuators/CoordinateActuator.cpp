@@ -178,7 +178,7 @@ CreateForceSetOfCoordinateActuatorsForModel(const SimTK::State& s, Model& aModel
 		actuator->setOptimalForce(aOptimalForce);
 		as.append(actuator);
 	}
-	as.setup(aModel);
+	as.invokeConnectToModel(aModel);
 	aModel.invalidateSystem();
 	return &as;
 }
@@ -225,9 +225,9 @@ getSpeed( const SimTK::State& s) const
  *
  * @param aModel OpenSim model containing this CoordinateActuator.
  */
-void CoordinateActuator::setup(Model& aModel)
+void CoordinateActuator::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	string errorMessage;
 
@@ -247,9 +247,9 @@ void CoordinateActuator::setup(Model& aModel)
 /**
  *  Create underlying SimTK::Force
  */
-void CoordinateActuator::createSystem(SimTK::MultibodySystem& system) const {
+void CoordinateActuator::addToSystem(SimTK::MultibodySystem& system) const {
 
-     Super::createSystem( system );
+     Super::addToSystem( system );
 }
 
 //_____________________________________________________________________________

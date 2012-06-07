@@ -199,15 +199,15 @@ void ContDerivMuscle_Deprecated::setupProperties()
  *
  * @param aModel model containing this ContDerivMuscle_Deprecated.
  */
-void ContDerivMuscle_Deprecated::setup(Model& aModel)
+void ContDerivMuscle_Deprecated::connectToModel(Model& aModel)
 {
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 }
 
    
-void ContDerivMuscle_Deprecated::createSystem(SimTK::MultibodySystem& system) const
+void ContDerivMuscle_Deprecated::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 
 	ContDerivMuscle_Deprecated* mutableThis = const_cast<ContDerivMuscle_Deprecated *>(this);
 

@@ -116,7 +116,7 @@ class ModelComponent;
  * Simbody, on the other hand, provides a more strict infrastructure to make it easy to
  * exploit the efficiencies of caching while reducing the risks of validity errors. 
  * To do this, Simbody employs the concept of computational stages. To "realize" a model's
- * system a particular stage is to perform all the computations necessary to evaluate the 
+ * system to a particular stage is to perform all the computations necessary to evaluate the 
  * cached quantities up to and including the stage specified. Simbody utilizes 
  * nine realization stages (<tt>SimTK::Stage::</tt>)
  *
@@ -133,7 +133,7 @@ class ModelComponent;
  * The ModelComponent interface is automatically invoked by the System and its realizations.
  * Component users and most developers need not concern themselves with
  * \c Topology, \c %Model or \c Instance stages. That interaction is managed by ModelComponent 
- * when component creators implement createSystem() and use the services provided ModelComponent.
+ * when component creators implement addToSystem() and use the services provided ModelComponent.
  * Component creators do need to determine and specify stage dependencies for Discrete  
  * and CacheVariables that they add to their components. For example, the throttle 
  * controller reads its value from user input and it is valid for all calculations as
@@ -160,7 +160,7 @@ class ModelComponent;
  *
  * The primary responsibility of a ModelComponent is to add its computational 
  * representation(s) to the underlying SimTK::System by implementing
- * createSystem().
+ * addToSystem().
  *
  * Additional methods provide support for adding modeling options, state and
  * cache variables.
@@ -484,67 +484,134 @@ template <class T> friend class ModelComponentSet;
     and going down. **/ 
     //@{
 
-    /**
-     * setup() is automatically called on all components prior to system creation. 
-     * Set the Model this component is part of and then perform any necessary initialization,
-     * such as looking up references to other objects in the Model (to verify that they exist,
-     * which is not guaranteed when a component is instantiated or constructed from XML).
-     * Override this method as necessary but always call the parent class setup to
-     * ensure all members (including those defined by the parent class) are initialized.
-     * @param model   the model this component is a part of
-     */
-    virtual void setup(Model& model);
+    /** Perform any necessary initializations required to connect the 
+    component into the Model, and check for error conditions. connectToModel() 
+    is invoked on all components to complete construction of a Model, prior to
+    creating a Simbody System to represent it computationally. It may also be
+    invoked at times just for its error-checking side effects.
+    
+    If you override this method, be sure to invoke the base class method first, 
+    using code like this:
+    @code
+    void MyComponent::connectToModel(Model& model) {
+        Super::connectToModel(model); // invoke parent class method
+        // ... your code goes here
+    }
+    @endcode
 
-    /**
-     * createSystem() is called when the SimTK::System is being created for the Model.  It must be 
-     * implemented in order to add appropriate SimTK elements to the System corresponding to this component. 
-     * Helper methods for adding modeling option, state variables and their derivatives, discrete variables,
-     * etc., are available and can be called within createSystem() only.
-     * @see addModelingOption()
-     * @see addStateVariable()
-     * @see addDiscreteVariables()
-     * @see addCacheVariable()
-     *
-     * @param system   the System being created
-     */
-    virtual void createSystem(SimTK::MultibodySystem& system) const;
+    Note that this method is expected to check for modeling errors and should
+    throw an OpenSim::Exception if there is something wrong. For example, if
+    your model component references another object by name, you should verify
+    that it exists in the supplied Model, which is not guaranteed since 
+    components may be independently instantiated or constructed from XML files.
 
-    /**
-     * This is called after a SimTK::System and State have been created for the Model.  It is
-     * implemented to set initial values of state variables from defaults (typical) or by  
-     * any calculation that is not dependent on the state (i.e. function of property values).
-     * @param state    the State to initialize
-     */
-    virtual void initState(SimTK::State& state) const {
+    @param[in,out]  model   The Model currently being constructed to which this
+                            %ModelComponent should be connected. **/
+    virtual void connectToModel(Model& model);
+
+    /** Add appropriate Simbody elements (if needed) to the System 
+    corresponding to this component and specify needed state resources. 
+    addToSystem() is called when the Simbody System is being created to 
+    represent a completed Model for computation. That is, connectToModel()
+    will already have been invoked on all components before any addToSystem()
+    call is made. Helper methods for adding modeling options, state variables 
+    and their derivatives, discrete variables, and cache entries are available 
+    and can be called within addToSystem() only.
+
+    Note that this method is const; you must not modify your model component
+    or the containing model during this call. Any modifications you need should
+    instead be performed in connectToModel(), which is non-const. One exception
+    is that you may need to record access information for resources you
+    create in the \a system, such as an index number. You should declare those
+    data members mutable so that you can set them here.
+   
+    If you override this method, be sure to invoke the base class method first, 
+    using code like this:
+    @code
+    void MyComponent::addToSystem(SimTK::MultibodySystem& system) const {
+        Super::addToSystem(system); // invoke parent class method
+        // ... your code goes here
+    }
+    @endcode
+
+    @param[in,out] system   The System being created.
+
+    @see addModelingOption(), addStateVariable(), addDiscreteVariables(), 
+         addCacheVariable() **/
+    virtual void addToSystem(SimTK::MultibodySystem& system) const;
+
+    /** Transfer property values or other state-independent initial values
+    into this component's state variables in the passed-in \a state argument.
+    This is called after a SimTK::System and State have been created for the 
+    Model (that is, after addToSystem() has been called on all components). 
+    You should override this method if your component has properties
+    (serializable values) that can affect initial values for your state
+    variables. You can also perform any other state-independent calculations
+    here that result in state initial conditions.
+   
+    If you override this method, be sure to invoke the base class method first, 
+    using code like this:
+    @code
+    void MyComponent::initStateFromProperties(SimTK::State& state) const {
+        Super::initStateFromProperties(state); // invoke parent class method
+        // ... your code goes here
+    }
+    @endcode
+
+    @param      state
+        The state that will receive the new initial conditions.
+
+    @see setPropertiesFromState() **/
+    virtual void initStateFromProperties(SimTK::State& state) const {
         for(unsigned int i=0; i < _subComponents.size(); i++)
-            _subComponents[i]->initState(state);
+            _subComponents[i]->initStateFromProperties(state);
     };
 
-    /**
-     * Assign new default values for this component to match those in a specified State.  It must be
-     * implemented/overriden to set default values to states defined by each subclass. @note Defaults 
-     * are usually properties of the component, and these properties can be updated to match an
-     * existing state. Thus, state variable values can persist as part of the model component and be
-     * serialized as a property.
-     *
-     * @param state    the State from which the default values are obtained (calculated) for this component
-     */
-    virtual void setDefaultsFromState(const SimTK::State& state) {
+    /** Update this component's property values to match the specified State,
+    if the component has created any state variable that is intended to
+    correspond to a property. Thus, state variable values can persist as part 
+    of the model component and be serialized as a property.
+   
+    If you override this method, be sure to invoke the base class method first, 
+    using code like this:
+    @code
+    void MyComponent::setPropertiesFromState(const SimTK::State& state) {
+        Super::setPropertiesFromState(state); // invoke parent class method
+        // ... your code goes here
+    }
+    @endcode
+
+    @param      state    
+        The State from which values may be extracted to set persistent
+        property values.
+
+    @see initStateFromProperties() **/
+    virtual void setPropertiesFromState(const SimTK::State& state) {
         for(unsigned int i=0; i < _subComponents.size(); i++)
-            _subComponents[i]->setDefaultsFromState(state);
+            _subComponents[i]->setPropertiesFromState(state);
     };
 
     /** If a model component has allocated any continuous state variables
-    using the addStateVariable() method, then computeStateVariableDerivatives()
+    using the addStateVariable() method, then %computeStateVariableDerivatives()
     must be implemented to provide time derivatives for those states.
     Override to return a Vector of the same size as the number of state 
     variables defined and in order of getStateVariableNames(). Default returns 
-    empty (no derivatives are defined). 
-    TODO: this API does not work in general; need a way to incorporate variables
-    from anywhere in the class hierarchy without coordinating the 
-    implementations.
+    empty (no derivatives are defined). Implement like this:
+    @code
+    SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const {
+        // Collect derivatives from parent class and above first.
+        SimTK::Vector derivs = Super::computeStateVariableDerivatives(s);
+        const int n = derivs.size();
+        derivs.resizeKeep(n + myNumStateVariables); // grow
+        for (int i=0; i < myNumStateVariables; ++i)
+            derivs[n+i] = ...; // i'th state variable derivative
+        return derivs;
+    }
+    @endcode
+    TODO: Subcomponents are not handled here.
     **/
-    virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State& s) const
+    virtual SimTK::Vector 
+    computeStateVariableDerivatives(const SimTK::State& s) const
     {   return SimTK::Vector(0); };
 
     /** Optional method for generating arbitrary display geometry that reflects
@@ -552,6 +619,21 @@ template <class T> friend class ModelComponentSet;
     obtain ground- and body-fixed geometry (with \a fixed=\c true), and then 
     once per frame (with \a fixed=\c false) to generate on-the-fly geometry such
     as rubber band lines, force arrows, labels, or debugging aids.
+  
+    If you override this method, be sure to invoke the base class method first, 
+    using code like this:
+    @code
+    void MyComponent::generateDecorations
+       (bool                                        fixed, 
+        const ModelDisplayHints&                    hints,
+        const SimTK::State&                         state,
+        SimTK::Array_<SimTK::DecorativeGeometry>&   appendToThis) const
+    {
+        // invoke parent class method
+        Super::generateDecorations(fixed,hints,state,appendToThis); 
+        // ... your code goes here
+    }
+    @endcode
 
     @param[in]      fixed   
         If \c true, generate only geometry that is independent of time, 
@@ -588,7 +670,7 @@ template <class T> friend class ModelComponentSet;
 
     /** @name ModelComponent System Creation and Access Methods
      * These methods support implementing concrete ModelComponents. Add methods
-     * can only be called inside of createSystem() and are useful for creating
+     * can only be called inside of addToSystem() and are useful for creating
      * the underlying SimTK::System level variables that are used for computing
      * values of interest.
      * @warning Accessors for System indices are intended for component internal use only.
@@ -598,7 +680,7 @@ template <class T> friend class ModelComponentSet;
 
     /**
      * Include another ModelComponent as a Subcomponent of this ModelComponent.
-     * ModelComponent methods (e.g. createSystem(), initState(), ...) are therefore
+     * ModelComponent methods (e.g. addToSystem(), initStateFromProperties(), ...) are therefore
      * invoked on Subcomponents when called on the parent. Realization is also
      * performed automatically on subcomponents. This ModelComponent does not
      * take ownership of the subcomponent.

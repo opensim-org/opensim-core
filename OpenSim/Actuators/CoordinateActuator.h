@@ -123,8 +123,8 @@ private:
 	//--------------------------------------------------------------------------
 	// Implement ModelComponent interface
 	//--------------------------------------------------------------------------
-	void setup(Model &aModel) OVERRIDE_11;
-	void createSystem( SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void connectToModel(Model& aModel) OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 	//--------------------------------------------------------------------------
 	// Implement Object interface.

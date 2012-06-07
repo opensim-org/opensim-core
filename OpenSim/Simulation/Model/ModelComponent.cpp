@@ -81,7 +81,7 @@ Model& ModelComponent::updModel()
     return *_model;
 }
 
-void ModelComponent::setup(Model& model)
+void ModelComponent::connectToModel(Model& model)
 {
     _model = &model;
     model._modelComponents.append(this);
@@ -90,14 +90,14 @@ void ModelComponent::setup(Model& model)
     clearStateAllocations();
 
     for(unsigned int i=0; i<_subComponents.size(); i++)
-        _subComponents[i]->setup(model);
+        _subComponents[i]->connectToModel(model);
 }
 
 // Every ModelComponent owns an underlying SimTK::Measure 
 // which is a ModelComponentMeasure<T> and is added to the System's default
 // subsystem. That measure is used only for the side effect of its realize()
 // methods being called; its value is not used.
-void ModelComponent::createSystem(SimTK::MultibodySystem& system) const
+void ModelComponent::addToSystem(SimTK::MultibodySystem& system) const
 {
     // Briefly get write access to the ModelComponent to record some
     // information associated with the System; that info is const after this.
@@ -111,7 +111,7 @@ void ModelComponent::createSystem(SimTK::MultibodySystem& system) const
     // Invoke same method on subcomponents. TODO: is this right? The 
     // subcomponents add themselves to the system before the parent component.
     for(unsigned int i=0; i<_subComponents.size(); i++)
-        _subComponents[i]->createSystem(system);
+        _subComponents[i]->addToSystem(system);
 }
 
 void ModelComponent::
@@ -384,7 +384,7 @@ setDiscreteVariable(SimTK::State& s, const std::string& name, double value) cons
 void ModelComponent::includeAsSubComponent(ModelComponent *aComponent)
 {
     if(_model && _model->isValidSystem())
-        throw Exception("ModelComponent: Cannot include subcomponent after createSystem().");
+        throw Exception("ModelComponent: Cannot include subcomponent after addToSystem().");
     
     // Only keep if unique
     SimTK::Array_<ModelComponent *>::iterator it = std::find(_subComponents.begin(), _subComponents.end(), aComponent);

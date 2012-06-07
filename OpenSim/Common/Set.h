@@ -163,11 +163,11 @@ public:
  * Setup groups (match group member names to set members).
  */
 void
-setup()
+setupGroups()
 {
 	int i;
 	for (i=0; i<_objectGroups.getSize(); i++) {
-		_objectGroups.get(i)->setup((ArrayPtrs<Object>&)_objects);
+		_objectGroups.get(i)->setupGroup((ArrayPtrs<Object>&)_objects);
 	}
 }
 

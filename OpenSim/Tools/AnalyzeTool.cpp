@@ -535,7 +535,7 @@ bool AnalyzeTool::run(bool plotting)
 	cout<<"Executing the analyses from "<<ti<<" to "<<tf<<"..."<<endl;
 	run(s, *_model, iInitial, iFinal, *_statesStore, _solveForEquilibriumForAuxiliaryStates);
 	_model->getMultibodySystem().realize(s, SimTK::Stage::Position );
-	} catch (Exception &x) {
+	} catch (const Exception& x) {
 		x.print(cout);
 		completed = false;
 		IO::chDir(saveWorkingDirectory);

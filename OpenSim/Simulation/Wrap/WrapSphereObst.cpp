@@ -98,10 +98,10 @@ void WrapSphereObst::setupProperties()
 *
 * @param aModel point to OpenSim Model.
 */
-void WrapSphereObst::setup(Model& aModel, OpenSim::Body& aBody)
+void WrapSphereObst::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	WrapObject::setup(aModel, aBody);
+	Super::connectToModelAndBody(aModel, aBody);
 
 	// maybe set a parent pointer, _body = aBody;
 	if (_radius < 0.0)

@@ -166,8 +166,8 @@ void PointConstraint::setupProperties()
  *
  * @param aModel OpenSim model containing this PointConstraint.
  */
-void PointConstraint::setup(Model& aModel) {
-	Super::setup(aModel);
+void PointConstraint::connectToModel(Model& aModel) {
+	Super::connectToModel(aModel);
     
     string errorMessage;
 
@@ -185,9 +185,9 @@ void PointConstraint::setup(Model& aModel) {
 	_body2 = &aModel.updBodySet().get(_body2Name);
 }
 
-void PointConstraint::createSystem(SimTK::MultibodySystem& system) const
+void PointConstraint::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	// Get underlying mobilized bodies
 	SimTK::MobilizedBody b1 = _model->updMatterSubsystem().getMobilizedBody((MobilizedBodyIndex)_body1->getIndex());

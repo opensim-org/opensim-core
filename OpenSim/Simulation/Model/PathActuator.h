@@ -140,7 +140,7 @@ public:
 
 protected:
 	// Setup method to initialize coordinate reference
-	virtual void setup(Model &aModel);
+	void connectToModel(Model& aModel) OVERRIDE_11;
 
 
 private:

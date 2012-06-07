@@ -96,14 +96,6 @@ void ContactGeometrySet::setNull()
 {
 }
 
-/**
- * Post construction initialization.
- */
-void ContactGeometrySet::setup(Model& aModel)
-{
-	// Base class
-	ModelComponentSet<ContactGeometry>::setup(aModel);
-}
 
 //=============================================================================
 // OPERATORS

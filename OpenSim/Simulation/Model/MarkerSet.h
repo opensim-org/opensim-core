@@ -66,7 +66,7 @@ public:
 	MarkerSet(const MarkerSet& aMarkerSet);
 	~MarkerSet(void);
 
-    void setup(Model& aModel);
+    void connectMarkersToModel(Model& aModel);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

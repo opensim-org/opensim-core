@@ -147,7 +147,7 @@ void PathPoint::setupProperties()
  *
  * @param aModel model containing this PathPoint.
  */
-void PathPoint::setup(const Model& aModel, GeometryPath& aPath)
+void PathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
 	_path = &aPath;
 	_model  = &aModel;
@@ -210,7 +210,8 @@ void PathPoint::setBody(Body& aBody)
 //_____________________________________________________________________________
 /**
  * Change the body that this point is attached to. It assumes that the body is
- * already set, so that setup() needs to be called to update dependent information.
+ * already set, so that connectToModelAndPath() needs to be called to update 
+ * dependent information.
  *
  * @param s State.
  * @param aBody Reference to the body.
@@ -225,7 +226,7 @@ void PathPoint::changeBodyPreserveLocation(const SimTK::State& s, OpenSim::Body&
     aBody.getModel().getSimbodyEngine().transformPosition(s, *_body, _location, aBody, _location);
 
 	_bodyName = aBody.getName();
-	setup(aBody.getModel(), *getPath());
+	connectToModelAndPath(aBody.getModel(), *getPath());
 }
 
 //_____________________________________________________________________________

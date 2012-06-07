@@ -164,7 +164,7 @@ int main(int argc,char **argv)
 		delete model;
 		delete subject;
 	}
-	catch(Exception &x) {
+	catch(const Exception& x) {
 		x.print(cout);
 	}
 

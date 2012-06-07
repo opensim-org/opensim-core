@@ -143,9 +143,9 @@ void PointToPointSpring::updateGeometry(const SimTK::State& s)
 //=============================================================================
 // Connect this force element to the rest of the model.
 //=============================================================================
-void PointToPointSpring::setup(Model& model)
+void PointToPointSpring::connectToModel(Model& model)
 {
-	Super::setup(model);	// Let base class connect first.
+	Super::connectToModel(model);	// Let base class connect first.
 
 	string errorMessage;
 
@@ -171,9 +171,9 @@ void PointToPointSpring::setup(Model& model)
 //=============================================================================
 // Create the underlying system component(s)
 //=============================================================================
-void PointToPointSpring::createSystem(SimTK::MultibodySystem& system) const
+void PointToPointSpring::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);    // Base class first.
+	Super::addToSystem(system);    // Base class first.
 
 	Body& body1 = _model->updBodySet().get(getBody1Name());
 	Body& body2 = _model->updBodySet().get(getBody2Name());

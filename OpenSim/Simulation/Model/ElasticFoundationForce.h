@@ -74,7 +74,7 @@ public:
 	/**
 	 * Create a SimTK::Force which implements this Force.
 	 */
-	void createSystem(SimTK::MultibodySystem& system) const;
+	void addToSystem(SimTK::MultibodySystem& system) const;
     ContactParametersSet& updContactParametersSet();
     const ContactParametersSet& getContactParametersSet();
 

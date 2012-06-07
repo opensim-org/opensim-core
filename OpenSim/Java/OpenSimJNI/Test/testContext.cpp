@@ -94,7 +94,7 @@ int main()
 	OpenSim::Force* dForce=&(model->updForceSet().get("TRIlong"));
 	Muscle* dTRIlong = dynamic_cast<Muscle*>(dForce);
 	assert(dTRIlong);
-    context->setDefaultsFromState();
+    context->setPropertiesFromState();
     OpenSim::Thelen2003Muscle* thelenMsl = dynamic_cast<Thelen2003Muscle*>(dTRIlong);
     AbstractProperty& dProp = thelenMsl->updPropertyByName("ignore_tendon_compliance");
     PropertyHelper::setValueBool(true, dProp);

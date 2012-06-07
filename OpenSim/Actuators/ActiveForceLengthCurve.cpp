@@ -108,19 +108,19 @@ void ActiveForceLengthCurve::ensureCurveUpToDate()
 //=============================================================================
 // MODEL COMPPONENT INTERFACE
 //=============================================================================
-void ActiveForceLengthCurve::setup(Model& aModel)
+void ActiveForceLengthCurve::connectToModel(Model& aModel)
 {
-    Super::setup(aModel);
+    Super::connectToModel(aModel);
 }
 
-void ActiveForceLengthCurve::initState(SimTK::State& s) const
+void ActiveForceLengthCurve::initStateFromProperties(SimTK::State& s) const
 {
-    Super::initState(s);
+    Super::initStateFromProperties(s);
 }
 
-void ActiveForceLengthCurve::createSystem(SimTK::MultibodySystem& system) const
+void ActiveForceLengthCurve::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     ActiveForceLengthCurve* mthis = const_cast<ActiveForceLengthCurve*>(this);    
     mthis->buildCurve();

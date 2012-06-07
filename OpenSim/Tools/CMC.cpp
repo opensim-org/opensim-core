@@ -897,7 +897,7 @@ computeControls(SimTK::State& s, ControlSet &controlSet)
 		try {
 			_optimizer->optimize(fVector);
 		}
-		catch (const SimTK::Exception::Base &ex) {
+		catch (const SimTK::Exception::Base& ex) {
 			cout << ex.getMessage() << endl;
 			cout << "OPTIMIZATION FAILED..." << endl;
 			cout<<endl;
@@ -1087,9 +1087,9 @@ void CMC::setActuators( Set<Actuator>& actSet )
 }
 
 // for any post XML deserialization intialization
-void CMC::setup(Model& model)   {
+void CMC::connectToModel(Model& model)   {
 
-	Super::setup(model);
+	Super::connectToModel(model);
 
 	// STORAGE
 	Array<string> labels;
@@ -1107,9 +1107,9 @@ void CMC::setup(Model& model)   {
 
 }
 // for adding any components to the model
-void CMC::createSystem( SimTK::MultibodySystem& system)  const
+void CMC::addToSystem( SimTK::MultibodySystem& system)  const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	// add event handler for updating controls for next window 
 	CMC* mutableThis = const_cast<CMC *>(this);
@@ -1172,8 +1172,3 @@ void CMC::createSystem( SimTK::MultibodySystem& system)  const
     mutableThis->_numControls = _controlSet.getSize();
 }
 
-// for any intialization requiring a state or the complete system 
-void CMC::initState( SimTK::State& s) 
-{
-    Super::initState(s);  
-}

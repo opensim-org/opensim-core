@@ -237,17 +237,19 @@ double PathActuator::computeMomentArm(SimTK::State& s, Coordinate& aCoord) const
  *
  * @param aModel OpenSim model containing this PathActuator.
  */
-void PathActuator::setup(Model& aModel)
+void PathActuator::connectToModel(Model& aModel)
 {
 	GeometryPath &path = updGeometryPath();
 
-	// Specify underlying ModelComponents prior to calling base::setup() to 
-    // automatically propagate setup to subcomponents. Subsequent createSystem()
-    // will also be automatically propagated.
+	// Specify underlying ModelComponents prior to calling 
+    // Super::connectToModel() to automatically propagate connectToModel()
+    // calls to subcomponents. Subsequent addToSystem() will also be 
+    // automatically propagated.
+    // TODO: this is awkward; subcomponent API needs to be revisited (sherm).
 	includeAsSubComponent(&path);
 
     //TODO: can't call this at start of override; this is an API bug.
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)

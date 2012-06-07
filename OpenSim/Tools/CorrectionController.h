@@ -135,13 +135,13 @@ public:
 
 protected:
 	// for any post XML deseraialization intialization
-	virtual void setup(Model& model);
+	void connectToModel(Model& model) OVERRIDE_11;
 
 	// controller creation once the setup is complete 
-	virtual void createSystem( SimTK::MultibodySystem& system) const;   
+	void addToSystem( SimTK::MultibodySystem& system) const OVERRIDE_11;   
 
 	// for any intialization requiring a state or the complete system 
-	virtual void initState( SimTK::State& s) const;
+	void initStateFromProperties( SimTK::State& s) const OVERRIDE_11;
 
 
 

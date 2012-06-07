@@ -130,7 +130,7 @@ public:
 	virtual void equilibrate(SimTK::State& state) const;
 	
 protected:
-	void createSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 private:
 	void setNull();

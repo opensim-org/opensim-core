@@ -121,14 +121,16 @@ void Constraint::setupProperties(void)
  *
  * @param aModel OpenSim model containing this Constraint.
  */
-void Constraint::setup(Model& aModel)
+void Constraint::connectToModel(Model& aModel)
 {
-	ModelComponent::setup(aModel);
+	Super::connectToModel(aModel);
 }
 
-void Constraint::initState(SimTK::State& s) const
+void Constraint::initStateFromProperties(SimTK::State& s) const
 {
-	SimTK::Constraint& simConstraint = _model->updMatterSubsystem().updConstraint(_index);
+    Super::initStateFromProperties(s);
+	SimTK::Constraint& simConstraint = 
+        _model->updMatterSubsystem().updConstraint(_index);
 
 	// Otherwise we have to change the status of the constraint
 	if(_isDisabledProp.getValueBool())
@@ -137,8 +139,9 @@ void Constraint::initState(SimTK::State& s) const
 		simConstraint.enable(s);
 }
 
-void Constraint::setDefaultsFromState(const SimTK::State& state)
+void Constraint::setPropertiesFromState(const SimTK::State& state)
 {
+    Super::setPropertiesFromState(state);
     _isDisabledProp.setValue(isDisabled(state));
 }
 

@@ -152,9 +152,9 @@ void ExternalForce::setDataSource(const Storage *dataSource)
 	set_data_source_name(dataSource->getName());
 }
 
-void ExternalForce::setup(Model& model)
+void ExternalForce::connectToModel(Model& model)
 {
-	Force::setup(model);
+	Super::connectToModel(model);
 
 	const string& appliedToBodyName = get_applied_to_body();
 	const string& forceExpressedInBodyName = get_force_expressed_in_body();

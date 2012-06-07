@@ -105,14 +105,14 @@ TransformAxis& SpatialTransform::updTransformAxis(int whichAxis)
 }
 
 // SETUP
-void SpatialTransform::setup(CustomJoint& owningJoint)
+void SpatialTransform::connectToJoint(CustomJoint& owningJoint)
 {
 	// define default function for TransformAxes that have none specified
 	for(int i=0; i < NumTransformAxes; ++i) {
         TransformAxis& transform = updTransformAxis(i);
 
-		// Call the transform axis setup function.
-		transform.setup(*((Joint*)(&owningJoint)));
+		// Ask the transform axis to connect itself to the joint too.
+		transform.connectToJoint(*((Joint*)(&owningJoint)));
 
 		// check if it has a function
 		if(!transform.hasFunction()){

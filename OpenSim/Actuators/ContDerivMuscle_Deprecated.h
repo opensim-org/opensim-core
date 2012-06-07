@@ -173,9 +173,10 @@ public:
 
 protected:
 	// Model Component Interface
-	virtual void setup(Model& aModel);
-	virtual void createSystem(SimTK::MultibodySystem& system) const;
-	virtual SimTK::Vector computeStateVariableDerivatives(const SimTK::State &s) const;
+	void connectToModel(Model& aModel)  OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const  OVERRIDE_11;
+	SimTK::Vector 
+        computeStateVariableDerivatives(const SimTK::State& s) const OVERRIDE_11;
 
 private:
 	void setNull();

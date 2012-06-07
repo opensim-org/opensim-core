@@ -1081,7 +1081,7 @@ simplify(const double& cutoffFrequency, const double& distance)
 		simplify(params);
 		return true;
 	}
-	catch(Exception x) {
+	catch(const Exception&) {
 		return(false);
 	}
 }

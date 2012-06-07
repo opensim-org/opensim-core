@@ -142,12 +142,12 @@ int main(int argc,char **argv)
 	//----------------------------
 	// Catch any thrown exceptions
 	//----------------------------
-	} catch(Exception x) {
-		x.print(cout);
-		return(-1);
+	} catch(const std::exception& x) {
+        cout << "Exception in analyze: " << x.what() << endl;
+		return -1;
 	}
 	//----------------------------
-	return(0);
+	return 0;
 }
 
 

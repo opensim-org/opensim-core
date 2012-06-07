@@ -110,7 +110,7 @@ public:
 
 	Joint(const Joint &aJoint);
 	virtual ~Joint();
-	virtual void setup(Model& aModel);
+
 #ifndef SWIG
 	Joint& operator=(const Joint &aJoint);
 #endif
@@ -209,7 +209,16 @@ public:
 
 	void updateName(const std::string &aName);
 
+    // ModelComponent interface.
+	void connectToModel(Model& aModel) OVERRIDE_11;
 protected:
+    // TODO: child overrides must invoke Joint::addToSystem()
+    // *after* they create the MobilizedBody. This is an API bug
+    // since we want to have children invoke parent first.
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+
 	/** Construct coordinates according to the mobilities of the Joint */
 	void constructCoordinates();
 
@@ -221,13 +230,6 @@ protected:
 	void setCoordinateMobilityIndex(Coordinate *aCoord, int index) const {aCoord->_mobilityIndex = index;}
 	void setCoordinateModel(Coordinate *aCoord, Model *aModel) const {aCoord->_model = aModel;}
 
-    // TODO: child overrides must invoke Joint::createSystem()
-    // *after* they create the MobilizedBody. This is an API bug
-    // since we want to have children invoke parent first.
-    void createSystem(SimTK::MultibodySystem& system) const;
-    void initState(SimTK::State& s) const;
-    void setDefaultsFromState(const SimTK::State& state);
-	virtual int getNumStateVariables() const { return 0; };
 
 	/* Calculate the equivalent spatial force, FB_G, acting on a mobilized body specified by index 
 	   acting at its mobilizer frame B, expressed in ground.  */

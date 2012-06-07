@@ -100,7 +100,7 @@ private:
     //--------------------------------------------------------------------------
     // ModelComponent Interface
     //--------------------------------------------------------------------------
-    void setup(Model& model) OVERRIDE_11;
+    void connectToModel(Model& model) OVERRIDE_11;
 
     void setNull();
     void constructProperties();

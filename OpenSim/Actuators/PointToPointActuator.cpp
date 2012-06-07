@@ -222,15 +222,16 @@ void PointToPointActuator::computeForce(const SimTK::State& s,
 }
 //_____________________________________________________________________________
 /**
- * setup sets the actual Body references _bodyA and _bodyB
+ * Sets the actual Body references _bodyA and _bodyB
  */
-void PointToPointActuator::setup(Model& model)
+void PointToPointActuator::connectToModel(Model& model)
 {
-	Super::setup(model);
+	Super::connectToModel(model);
 
     if (get_bodyA().empty() || get_bodyB().empty())
         throw OpenSim::Exception(
-            "PointToPointActuator::setup(): body name properties were not set.");
+            "PointToPointActuator::connectToModel(): body name properties "
+            "were not set.");
 
     // Look up the bodies by name in the Model, and record pointers to the
     // corresponding body objects.

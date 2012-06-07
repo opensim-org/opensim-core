@@ -175,7 +175,7 @@ public:
 
 	/** Connect the %TransformAxis to its owning Joint after the model has
     been deserialized or copied. **/
-    void setup(const Joint& owningJoint);
+    void connectToJoint(const Joint& owningJoint);
 
 private:
     // Override virtual method from Object to give us a chance to replace the

@@ -200,11 +200,11 @@ void PointActuator::computeForce(const SimTK::State& s,
 }
 //_____________________________________________________________________________
 /**
- * setup sets the actual Body reference _body
+ * Sets the actual Body reference _body
  */
-void PointActuator::setup(Model& model)
+void PointActuator::connectToModel(Model& model)
 {
-	Super::setup(model);
+	Super::connectToModel(model);
 
 	string errorMessage;
 

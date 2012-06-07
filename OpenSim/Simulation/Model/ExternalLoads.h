@@ -109,8 +109,9 @@ public:
 	/** Override of the default implementation to account for versioning. */
 	virtual void updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber=-1);
 
-	// setup all ExternalForces inside this ExternalLoads collection 
-	virtual void setup(Model& aModel);
+	// Connect all ExternalForces inside this ExternalLoads collection to
+    // their Model. Overrides ModelComponentSet method.
+	void invokeConnectToModel(Model& aModel) OVERRIDE_11;
 
 	const Model& getModel() const	// get around wrapping issue where exposing the method in ModelComponentSet is problematic
     {

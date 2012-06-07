@@ -116,10 +116,10 @@ void WrapSphere::setupProperties()
  *
  * @param aModel OpenSim model.
  */
-void WrapSphere::setup(Model& aModel, OpenSim::Body& aBody)
+void WrapSphere::connectToModelAndBody(Model& aModel, OpenSim::Body& aBody)
 {
 	// Base class
-	WrapObject::setup(aModel, aBody);
+	Super::connectToModelAndBody(aModel, aBody);
 
    // maybe set a parent pointer, _body = aBody;
 

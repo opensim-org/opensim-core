@@ -76,7 +76,7 @@ void CoordinateSet::setNull()
 }
 	
 /**
-  * Populate this flat list of Coordinates given a Model that has been setup
+  * Populate this flat list of Coordinates given a Model that has been set up
   */
 void CoordinateSet::populate(Model& model)
 {
@@ -92,14 +92,6 @@ void CoordinateSet::populate(Model& model)
 			append(&(nextJoint.getCoordinateSet()[j]));
 		}
 	}
-}
-
-/**
-  * Populate this flat list of Coordinates given a Model that has been setup
-  */
-void CoordinateSet::setup(Model& model)
-{
-	ModelComponentSet<Coordinate>::setup(model);
 }
 
 

@@ -48,7 +48,7 @@ int main()
 		Model osimModel;
 		osimModel.setName("OpenSimExample");
 	}
-    catch (std::exception ex)
+    catch (const std::exception& ex)
     {
         std::cout << ex.what() << std::endl;
         return 1;

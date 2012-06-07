@@ -248,10 +248,10 @@ bool ConditionalPathPoint::isActive(const SimTK::State& s) const
  *
  * @param aModel model containing this ConditionalPathPoint.
  */
-void ConditionalPathPoint::setup(const Model& aModel, GeometryPath& aPath)
+void ConditionalPathPoint::connectToModelAndPath(const Model& aModel, GeometryPath& aPath)
 {
 	// base class
-	PathPoint::setup(aModel, aPath);
+	Super::connectToModelAndPath(aModel, aPath);
 
 	// Setup() can be called before the model's coordinate set has been constructed, in which
 	// case you don't want to throw an exception if the coordinate is not found.

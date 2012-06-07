@@ -1,5 +1,5 @@
-#ifndef __PathWrap_h__
-#define __PathWrap_h__
+#ifndef OPENSIM_PATH_WRAP_H_
+#define OPENSIM_PATH_WRAP_H_
 
 // PathWrap.h
 // Author: Peter Loan
@@ -105,11 +105,11 @@ protected:
 public:
 	PathWrap();
 	PathWrap(const PathWrap& aPathWrap);
-	virtual ~PathWrap();
+	~PathWrap();
 
 #ifndef SWIG
 	PathWrap& operator=(const PathWrap& aPathWrap);
-	virtual void setup(const Model& aModel, GeometryPath& aPath);
+	void connectToModelAndPath(const Model& aModel, GeometryPath& aPath);
 	void setStartPoint( const SimTK::State& s, int aIndex);
 	void setEndPoint( const SimTK::State& s, int aIndex);
 #endif
@@ -141,6 +141,6 @@ private:
 
 } // end of namespace OpenSim
 
-#endif // __PathWrap_h__
+#endif // OPENSIM_PATH_WRAP_H_
 
 

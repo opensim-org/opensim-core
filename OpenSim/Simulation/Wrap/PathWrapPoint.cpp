@@ -103,18 +103,6 @@ void PathWrapPoint::setNull()
 	_wrapPathLength = 0.0;
 }
 
-//_____________________________________________________________________________
-/**
- * Perform some set up functions that happen after the
- * object has been deserialized or copied.
- *
- * @param aModel model containing this PathWrapPoint.
- */
-void PathWrapPoint::setup(const Model& aModel, GeometryPath& aPath)
-{
-	// base class
-	PathPoint::setup(aModel, aPath);
-}
 
 //=============================================================================
 // OPERATORS

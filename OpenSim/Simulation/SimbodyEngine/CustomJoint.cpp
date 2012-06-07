@@ -76,7 +76,7 @@ CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent,
 
 	_body->setJoint(*this);
 	constructCoordinates();
-	updSpatialTransform().setup(*this);
+	updSpatialTransform().connectToJoint(*this);
 }
 
 //_____________________________________________________________________________
@@ -95,7 +95,7 @@ CustomJoint::CustomJoint(const std::string &name, OpenSim::Body& parent,
 
 	_body->setJoint(*this);
 	constructCoordinates();
-	updSpatialTransform().setup(*this);
+	updSpatialTransform().connectToJoint(*this);
 }
 
 //_____________________________________________________________________________
@@ -114,20 +114,20 @@ void CustomJoint::constructProperties()
  *
  * @param aEngine dynamics engine containing this CustomJoint.
  */
-void CustomJoint::setup(Model& aModel)
+void CustomJoint::connectToModel(Model& aModel)
 {
-	// Base class
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	/* Set up spatial transform for this custom joint. */
-	updSpatialTransform().setup(*this);
+	updSpatialTransform().connectToJoint(*this);
 
 	// Reorder the coordinates so that they match their order in the SpatialTransform.
 	int nc = getCoordinateSet().getSize();
 
 	// Form an array of pointers to the coordinates in the order that they are
 	// referenced in the SpatialTransform. All of the coordinate names should be
-	// valid because setup() has already been called on the SpatialTransform.
+	// valid because connectToJoint() has already been called on the 
+    // SpatialTransform.
 	Array<Coordinate*> coords;
 	for (int i=0; i<6; i++) {
         const TransformAxis& transform = getSpatialTransform()[i];
@@ -222,7 +222,7 @@ void CustomJoint::constructCoordinates()
 // Simbody Model building.
 //=============================================================================
 //_____________________________________________________________________________
-void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
+void CustomJoint::addToSystem(SimTK::MultibodySystem& system) const
 {
     // CHILD TRANSFORM
 	Rotation rotation(BodyRotationSequence, _orientation[0],XAxis, _orientation[1],YAxis, _orientation[2],ZAxis);
@@ -259,7 +259,7 @@ void CustomJoint::createSystem(SimTK::MultibodySystem& system) const
 	setMobilizedBodyIndex(_body, simtkBody.getMobilizedBodyIndex());
 
     // TODO: Joints require super class to be called last.
-    Super::createSystem(system);
+    Super::addToSystem(system);
 }
 
 //=============================================================================
@@ -390,7 +390,7 @@ updateFromXMLNode(SimTK::Xml::Element& aNode, int versionNumber)
 			}
 		}
 	}
-	// Axes should be independent otherwise Simbody throws an exception in createSystem
+	// Axes should be independent otherwise Simbody throws an exception in addToSystem
 	double tol = 1e-5;
     // Verify that none of the rotation axes are colinear
 	const std::vector<SimTK::Vec3> axes=getSpatialTransform().getAxes();

@@ -150,7 +150,7 @@ updateWorkVariables()
         try {
             _q = &_model->updCoordinateSet().get(_coordinateName);
         }
-        catch (Exception ex) {
+        catch (const Exception&) {
             throw Exception("CMC_Joint.updateWorkVariables: ERROR- joint task '" + getName() 
 									+ "' references invalid coordinate '" + _coordinateName + "'",__FILE__,__LINE__);
         }

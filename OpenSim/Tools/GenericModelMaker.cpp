@@ -176,7 +176,7 @@ Model* GenericModelMaker::processModel(const string& aPathToSubject)
 			model->updateMarkerSet(*markerSet);
 		}
 	}
-	catch (Exception &x)
+	catch (const Exception& x)
 	{
 		x.print(cout);
 		return NULL;

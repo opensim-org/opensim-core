@@ -81,17 +81,18 @@ public:
 #endif
 
 	void copyData(const FreeJoint &aJoint);
-	virtual void setup(Model& aModel);
 
 	virtual int numCoordinates() const {return _numMobilities;};
 
 	// SCALE
 	virtual void scale(const ScaleSet& aScaleSet);
 
+    // ModelComponent interface.
+	void connectToModel(Model& aModel) OVERRIDE_11;
 protected:
-    void createSystem(SimTK::MultibodySystem& system) const;
-    void initState(SimTK::State& s) const;
-    void setDefaultsFromState(const SimTK::State& state);
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
 
 private:
 	SimTK::MobilizedBodyIndex _masslessBodyIndex;

@@ -79,13 +79,6 @@ void ConstraintSet::setNull()
 {
 }
 
-/**
- * Post construction initialization.
- */
-void ConstraintSet::setup(Model& aModel)
-{
-	Super::setup(aModel);
-}
 //=============================================================================
 // OPERATORS
 //=============================================================================

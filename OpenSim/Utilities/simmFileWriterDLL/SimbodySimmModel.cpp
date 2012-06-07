@@ -101,7 +101,7 @@ SimbodySimmModel::SimbodySimmModel()
 SimbodySimmModel::SimbodySimmModel(const Model* aModel)
 {
 	setNull();
-    setup(aModel);
+    connectSimbodySimmModel(aModel);
 }
 
 //_____________________________________________________________________________
@@ -157,7 +157,7 @@ void SimbodySimmModel::setNull()
  *
  * @param aEngine The engine to make this SimbodySimmModel from.
  */
-void SimbodySimmModel::setup(const Model* aModel)
+void SimbodySimmModel::connectSimbodySimmModel(const Model* aModel)
 {
    _model = aModel;
 

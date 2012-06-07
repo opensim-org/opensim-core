@@ -314,7 +314,7 @@ bool ForwardTool::run()
 
 		cout<<"\n\nIntegrating from "<<_ti<<" to "<<_tf<<endl;
         manager.integrate(s);
-	} catch(std::exception &x) {
+	} catch(const std::exception& x) {
         cout << "ForwardTool::run() caught exception \n";
         cout << x.what() << endl;
 		completed = false;

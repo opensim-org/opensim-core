@@ -61,12 +61,11 @@ public:
 	~CoordinateSet(void);
 
 	/**
-     * Populate this flat list of Coordinates given a Model that has been setup
+     * Populate this flat list of Coordinates given a Model that has already
+     * been setup.
      */
 	void populate(Model& model);
 
-	/** Perform any setup on all of the Coordinates contained in this set. */
-	virtual void setup(Model& model);
 	//--------------------------------------------------------------------------
 	// OPERATORS
 	//--------------------------------------------------------------------------

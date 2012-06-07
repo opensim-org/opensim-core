@@ -111,9 +111,9 @@ void BushingForce::constructProperties()
  *
  * @param aModel OpenSim model containing this BushingForce.
  */
-void BushingForce::setup(Model& aModel)
+void BushingForce::connectToModel(Model& aModel)
 {
-	Super::setup(aModel); // base class first
+	Super::connectToModel(aModel); // base class first
 
 	string errorMessage;
 	const string& body1Name = get_body_1(); // error if unspecified
@@ -134,9 +134,9 @@ void BushingForce::setup(Model& aModel)
 	}
 }
 
-void BushingForce::createSystem(SimTK::MultibodySystem& system) const
+void BushingForce::addToSystem(SimTK::MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
 	const string&      body1Name            = get_body_1();
 	const string&      body2Name            = get_body_2();

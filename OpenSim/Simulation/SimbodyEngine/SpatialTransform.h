@@ -83,7 +83,7 @@ public:
 
 	/** This tells the SpatialTransform the CustomJoint to which it belongs;
     this is not copied on copy construction or assignment. **/
-	void setup(CustomJoint& owningJoint);
+	void connectToJoint(CustomJoint& owningJoint);
 
 	/** Make sure axes are not parallel. **/
 	void constructIndependentAxes(int nAxes, int startIndex);

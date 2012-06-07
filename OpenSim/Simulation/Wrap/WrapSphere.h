@@ -86,7 +86,7 @@ public:
         double getRadius() const;
 
 	virtual void scale(const SimTK::Vec3& aScaleFactors);
-	virtual void setup(Model& aModel, OpenSim::Body& aBody);
+	virtual void connectToModelAndBody(Model& aModel, OpenSim::Body& aBody);
 #ifndef SWIG
 	virtual int wrapLine(const SimTK::State& s, SimTK::Vec3& aPoint1, SimTK::Vec3& aPoint2,
 		const PathWrap& aPathWrap, WrapResult& aWrapResult, bool& aFlag) const;

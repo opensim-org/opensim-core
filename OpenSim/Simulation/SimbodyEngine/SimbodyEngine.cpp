@@ -86,7 +86,7 @@ SimbodyEngine::SimbodyEngine(const string &aFileName) :
     Object(aFileName, false)
 {
 	setNull();
-	setup(*_model);
+	connectSimbodyEngineToModel(*_model);
 }
 
 
@@ -99,7 +99,7 @@ SimbodyEngine::SimbodyEngine(const SimbodyEngine& aEngine) :
 {
 	setNull();
 	copyData(aEngine);
-	setup(*_model);
+	connectSimbodyEngineToModel(*_model);
 }
 
 
@@ -136,7 +136,7 @@ void SimbodyEngine::setNull()
  *
  * @param aModel model containing this SimbodyEngine.
  */
-void SimbodyEngine::setup(Model& aModel)
+void SimbodyEngine::connectSimbodyEngineToModel(Model& aModel)
 {
     _model = &aModel;
 }
@@ -156,7 +156,7 @@ SimbodyEngine& SimbodyEngine::operator=(const SimbodyEngine &aEngine)
     // Base class
     Object::operator=(aEngine);
 	copyData(aEngine);
-	setup(*aEngine._model);
+	connectSimbodyEngineToModel(*aEngine._model);
 	return(*this);
 }
 
@@ -486,7 +486,7 @@ void SimbodyEngine::computeDerivatives(const SimTK::State& s, double *dqdt,doubl
 	// COMPUTE ACCELERATIONS
 	try {
 		_model->getMultibodySystem().realize(s,Stage::Acceleration);
-	} catch(std::exception &x) {
+	} catch(const std::exception& x) {
 		cout<<x.what()<<endl;
 		cout<<"SimbodyEngine.computeDerivatives: invalid derivatives."<<endl;
 		return;

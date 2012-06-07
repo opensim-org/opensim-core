@@ -138,10 +138,10 @@ public:
 	double getRestlength() const {return get_rest_length();}
 
 	//-----------------------------------------------------------------------------
-	// Model setup and system creation
+	// ModelComponent interface
 	//-----------------------------------------------------------------------------
-	void setup(Model& model);
-	void createSystem(SimTK::MultibodySystem& system) const;
+	void connectToModel(Model& model) OVERRIDE_11;
+	void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
 
 	//-----------------------------------------------------------------------------
 	// Reporting

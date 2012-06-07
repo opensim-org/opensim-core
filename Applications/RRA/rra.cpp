@@ -131,7 +131,7 @@ int main(int argc,char **argv)
 	//----------------------------
 	// Catch any thrown exceptions
 	//----------------------------
-	} catch(Exception x) {
+	} catch(const Exception& x) {
 		x.print(cout);
 		return(-1);
 	}

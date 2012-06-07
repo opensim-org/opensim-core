@@ -71,13 +71,6 @@ public:
     ModelComponentSet<Probe>(model, aFileName, aUpdateFromXMLNode) {};
     ProbeSet(const ProbeSet& aAbsProbeSet);
     ~ProbeSet(void);
-    void setup(Model& aModel);
-    //--------------------------------------------------------------------------
-    // OPERATORS
-    //--------------------------------------------------------------------------
-#ifndef SWIG
-    ProbeSet& operator=(const ProbeSet &aAbsProbeSet);
-#endif
 
 
 //=============================================================================

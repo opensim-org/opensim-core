@@ -113,18 +113,18 @@ void Probe::constructProperties(void)
 /**
  * Create an underlying OpenSim::Probe
  */
-void Probe::setup(Model& model)
+void Probe::connectToModel(Model& model)
 {
-    Super::setup(model);
+    Super::connectToModel(model);
 }
 
 //_____________________________________________________________________________
 /**
  * Create the underlying system component(s).
  */
-void Probe::createSystem(MultibodySystem& system) const
+void Probe::addToSystem(MultibodySystem& system) const
 {
-    Super::createSystem(system);
+    Super::addToSystem(system);
 
     // Make writable briefly so we can finalize the Probe to include 
     // references to the allocated System resources.

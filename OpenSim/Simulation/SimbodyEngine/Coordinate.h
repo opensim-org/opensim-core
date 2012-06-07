@@ -157,7 +157,6 @@ public:
 #endif
 	void copyData(const Coordinate &aCoordinate);
 
-	virtual void setup(Model& aModel);
 
 	virtual void setJoint(const Joint& aOwningJoint);
 	virtual const Joint& getJoint() const;
@@ -231,12 +230,15 @@ public:
 
 	virtual SimTK::SystemYIndex getStateVariableSystemIndex(const std::string &stateVariableName) const;
 
+    // ModelComponent interface.
+	void connectToModel(Model& aModel) OVERRIDE_11;
 protected:
-	/* Only model should be invoking these */
-    virtual void createSystem(SimTK::MultibodySystem& system) const;
-    virtual void initState(SimTK::State& s) const;
-    virtual void setDefaultsFromState(const SimTK::State& state);
-	virtual int getNumStateVariables() const { return 2; };	// For value and Speed
+	// Only model should be invoking these ModelComponent interface methods.
+    // Also see connectToModel() above.
+    void addToSystem(SimTK::MultibodySystem& system) const OVERRIDE_11;
+    void initStateFromProperties(SimTK::State& s) const OVERRIDE_11;
+    void setPropertiesFromState(const SimTK::State& state) OVERRIDE_11;
+	int getNumStateVariables() const  OVERRIDE_11 { return 2; }; // value and Speed
 	
 
 private:

@@ -88,18 +88,20 @@ void Ligament::constructProperties()
  *
  * @param aModel model containing this ligament.
  */
-void Ligament::setup(Model& aModel)
+void Ligament::connectToModel(Model& aModel)
 {
 	GeometryPath& path = upd_GeometryPath();
 	const double& restingLength = get_resting_length();
 
-	// Specify underlying ModelComponents prior to calling base::setup() to automatically 
-	// propogate setup to subcomponents. Subsequent createSystem() will also be automatically
-	// propogated to subcomponents.
+	// Specify underlying ModelComponents prior to calling 
+    // Super::connectToModel() to automatically propagate connectToModel()
+    // to subcomponents. Subsequent addToSystem() will also be automatically
+	// propagated to subcomponents.
+    // TODO: this is awkward; subcomponent API needs to be revisited (sherm)
 	includeAsSubComponent(&path);
 
     //TODO: can't call this at start of override; this is an API bug.
-	Super::setup(aModel);
+	Super::connectToModel(aModel);
 
 	// _model will be NULL when objects are being registered.
 	if (_model == NULL)
@@ -115,15 +117,15 @@ void Ligament::setup(Model& aModel)
 /**
  * allocate and initialize the SimTK state for this ligament.
  */
- void Ligament::createSystem(SimTK::MultibodySystem& system) const
+ void Ligament::addToSystem(SimTK::MultibodySystem& system) const
 {
-	Super::createSystem(system);
+	Super::addToSystem(system);
 }
 
 
-void Ligament::initState( SimTK::State& s) const
+void Ligament::initStateFromProperties( SimTK::State& s) const
 {
-	Super::initState(s);
+	Super::initStateFromProperties(s);
 }
 
 
