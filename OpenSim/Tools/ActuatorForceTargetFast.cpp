@@ -38,7 +38,7 @@
 #include <OpenSim/Common/Exception.h>
 
 #include <OpenSim/Simulation/Model/Actuator.h>
-#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle.h>
+#include <OpenSim/Simulation/Model/ActivationFiberLengthMuscle_Deprecated.h>
 
 #include "ActuatorForceTargetFast.h"
 #include "CMC_TaskSet.h"
@@ -156,6 +156,11 @@ prepareToOptimize(SimTK::State& s, double *x)
 	}
 #endif
 
+	// use tempory copy of state because computeIsokineticForceAssumingInfinitelyStiffTendon
+	// will change the muscle states. This is necessary ONLY in the case of deprecated muscles
+	SimTK::State tempState = s;
+	double activation = 1.0;
+	getController()->getModel().getMultibodySystem().realize( tempState, SimTK::Stage::Dynamics );
 
 	// COMPUTE MAX ISOMETRIC FORCE
 	const Set<Actuator>& fSet = _controller->getModel().getActuators();
@@ -168,11 +173,17 @@ prepareToOptimize(SimTK::State& s, double *x)
 	    Muscle* mus = dynamic_cast<Muscle*>(&act);
 		if(mus==NULL) {
 			fOpt = act.getOptimalForce();
-		} else {
-			double activation = 1.0;
-			fOpt = mus->getMaxIsometricForce()*
-				(mus->getActiveForceLengthMultiplier(s)*mus->getForceVelocityMultiplier(s) + 
-					mus->getPassiveForceMultiplier(s))*cos(mus->getPennationAngle(s));
+		} else {	
+			//This is necessary ONLY for backward compatibility with deprecated muscle models
+			ActivationFiberLengthMuscle_Deprecated* depmus = dynamic_cast<ActivationFiberLengthMuscle_Deprecated*>(mus);
+			if(depmus){
+					fOpt = depmus->computeIsokineticForceAssumingInfinitelyStiffTendon(tempState, activation);
+			}
+			else{
+				fOpt = mus->getMaxIsometricForce()*
+					(mus->getActiveForceLengthMultiplier(s)*mus->getForceVelocityMultiplier(s) + 
+						mus->getPassiveForceMultiplier(s))*cos(mus->getPennationAngle(s));
+			}
 			if( std::fabs(fOpt) < SimTK::TinyReal ) fOpt = SimTK::TinyReal;
 		}
 		_recipOptForceSquared[index++] = 1.0 / (fOpt*fOpt);
