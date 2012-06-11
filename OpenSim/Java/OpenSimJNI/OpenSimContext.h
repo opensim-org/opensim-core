@@ -195,9 +195,6 @@ public:
 	void setPropertiesFromState() {	
 		_model->setPropertiesFromState(*_configState);
 	}
-    // OBSOLETE NAME FOR BACKWARDS COMPATIBILITY; REMOVE ASAP.
-    void setDefaultsFromState() {setPropertiesFromState();}
-
     /**
      * Create a new System under the model then realize it to the same stage it had
      */
