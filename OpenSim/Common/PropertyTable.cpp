@@ -102,9 +102,13 @@ int PropertyTable::adoptProperty(AbstractProperty* prop)
 
 const AbstractProperty& PropertyTable::
 getAbstractPropertyByIndex(int index) const {
+    if (index == SimTK::InvalidIndex)
+        throw OpenSim::Exception
+           ("PropertyTable::getAbstractPropertyByIndex(): uninitialized " 
+            "property index -- did you forget a constructProperty() call?");
     if (!(0 <= index && index < getNumProperties()))
         throw OpenSim::Exception
-            ("PropertyTable::getAbstractPropertyByIndex(): index " 
+           ("PropertyTable::getAbstractPropertyByIndex(): index " 
             + String(index) + " out of range (" 
             + String(getNumProperties()) + " properties in table).");        
     return *properties[index]; 
@@ -112,9 +116,13 @@ getAbstractPropertyByIndex(int index) const {
 
 AbstractProperty& PropertyTable::
 updAbstractPropertyByIndex(int index) {
+    if (index == SimTK::InvalidIndex)
+        throw OpenSim::Exception
+           ("PropertyTable::updAbstractPropertyByIndex(): uninitialized " 
+            "property index -- did you forget a constructProperty() call?");
     if (!(0 <= index && index < getNumProperties()))
         throw OpenSim::Exception
-            ("PropertyTable::updAbstractPropertyByIndex(): index " 
+           ("PropertyTable::updAbstractPropertyByIndex(): index " 
             + String(index) + " out of range (" 
             + String(getNumProperties()) + " properties in table).");        
     return *properties[index]; 
