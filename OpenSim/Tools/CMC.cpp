@@ -677,8 +677,10 @@ obtainActuatorEquilibrium(SimTK::State& s, double tiReal,double dtReal,
 
 	_predictor->evaluate(s, &x[0], &f[0]);
 	// update the muscle states
-	_model->getForceSubsystem().updZ(s) = 
-	_model->getForceSubsystem().getZ(_predictor->getCMCActSubsys()->getCompleteState());
+	//_model->getForceSubsystem().updZ(s) = 
+	//_model->getForceSubsystem().getZ(_predictor->getCMCActSubsys()->getCompleteState());
+	_model->updMultibodySystem().updDefaultSubsystem().updZ(s) = 
+		_model->getMultibodySystem().getDefaultSubsystem().getZ(_predictor->getCMCActSubsys()->getCompleteState());
 
 	// RELEASE COORDINATES
 	 _predictor->getCMCActSubsys()->releaseCoordinates();
