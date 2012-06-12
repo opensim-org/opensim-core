@@ -75,7 +75,7 @@ int main() {
     try {testGait2354();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testGait2354"); }
-   
+ 
 	try {testEMGDrivenArm();}
     catch (const std::exception& e)
 		{  cout << e.what() <<endl; failures.push_back("testEMGDrivenArm"); }
@@ -187,7 +187,7 @@ void testGait2354() {
 	cout << "******************************************************************\n" << endl;
 
 	CMCTool cmc("subject01_Setup_CMC.xml");
-	//cmc.run();
+	cmc.run();
 
 	Storage results("subject01_ResultsCMC/subject01_walk1_Kinematics_q.sto");
 	Storage standard("subject01_walk1_RRA_Kinematics_initial_q.sto");
@@ -205,8 +205,8 @@ void testGait2354() {
 	Storage results2("subject01_ResultsCMC/subject01_walk1_states.sto");
 	Storage standard2("std_subject01_walk1_states.sto");
 
-	Array<string> col_labels = standard.getColumnLabels();
-	Array<double> rms_tols2(0.025, col_labels.getSize()-1);
+	Array<string> col_labels = standard2.getColumnLabels();
+	Array<double> rms_tols2(0.1, col_labels.getSize()-1);
 	for (int i = 23; i < 46; ++i){
 		rms_tols2[i] = 0.75; // velocities
 	}
