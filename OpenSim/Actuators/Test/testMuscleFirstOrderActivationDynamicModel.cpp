@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
             int pts = 100;
             double stepStart = 0.2;
             double stepEnd   = 0.5;
-            double amin = 0.05;
+            double amin = 0.01;
 
             double tauA   = 0.01;
             double tauD   = 0.04;

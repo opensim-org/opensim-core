@@ -88,9 +88,9 @@ void MuscleFirstOrderActivationDynamicModel::constructProperties()
 {
     constructProperty_activation_time_constant(0.010);
     constructProperty_deactivation_time_constant(0.040);
-    constructProperty_minimum_activation(0.05);
+    constructProperty_minimum_activation(0.01);
 
-    m_minAS = 0.05/(1-0.05);
+    m_minAS = get_minimum_activation()/(1-get_minimum_activation());
 }
 
 double MuscleFirstOrderActivationDynamicModel::

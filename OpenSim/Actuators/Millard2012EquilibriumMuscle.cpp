@@ -95,7 +95,51 @@ void Millard2012EquilibriumMuscle::buildMuscle()
     caller.append(".buildMuscle()");
 
     penMdl = MuscleFixedWidthPennationModel(optFibLen,optPenAng,caller);
+    
+
+    //Ensure all of the object names are uptodate
+    std::string aName = getName();
+
+    std::string tmp = aName;
+    tmp.append("_MuscleFirstOrderActivationDynamicModel");
+    MuscleFirstOrderActivationDynamicModel& actMdl = upd_activation_model();
+    actMdl.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_ActiveForceLengthCurve");
+    ActiveForceLengthCurve& falCurve = upd_active_force_length_curve();
+    falCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_ForceVelocityInverseCurve");
+    ForceVelocityInverseCurve& fvInvCurve = upd_force_velocity_inverse_curve();
+    fvInvCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_FiberForceLengthCurve");
+    FiberForceLengthCurve& fpeCurve = upd_fiber_force_length_curve();
+    fpeCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_TendonForceLengthCurve");
+    TendonForceLengthCurve& fseCurve = upd_tendon_force_length_curve();
+    fseCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_FiberCompressiveForceLengthCurve");
+    FiberCompressiveForceLengthCurve& fkCurve 
+        = upd_fiber_compressive_force_length_curve();
+    fkCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_FiberCompressiveForceCosPennationCurve");
+    FiberCompressiveForceCosPennationCurve& fcphi = 
+        upd_fiber_compressive_force_cospennation_curve();
+    fcphi.setName(tmp);
+
+
     setObjectIsUpToDateWithProperties();
+
 }
 
 void Millard2012EquilibriumMuscle::ensureMuscleUpToDate() const
@@ -133,7 +177,7 @@ Millard2012EquilibriumMuscle(const std::string &aName,  double aMaxIsometricForc
     setOptimalFiberLength(aOptimalFiberLength);
     setTendonSlackLength(aTendonSlackLength);
     setPennationAngleAtOptimalFiberLength(aPennationAngle);
-
+    
     ensureMuscleUpToDate();
 }
 
@@ -222,9 +266,8 @@ double Millard2012EquilibriumMuscle::getDefaultFiberLength() const
 double Millard2012EquilibriumMuscle::
     getActivationRate(const SimTK::State& s) const
 {
-    ensureMuscleUpToDate();
-    MuscleDynamicsInfo fdi = getMuscleDynamicsInfo(s);    
-    return fdi.activation;
+    ensureMuscleUpToDate();     
+    return calcActivationRate(s);
 }
 
 double Millard2012EquilibriumMuscle::
@@ -497,7 +540,7 @@ void Millard2012EquilibriumMuscle::
     //shares the muscle stretch between the muscle fiber and the tendon 
     //according to their relative stiffness.
     double activation = getActivation(s);
-    double tol = 1e-10;  //Should this be user settable?
+    double tol = 1e-8;  //Should this be user settable?
     int maxIter = 100;  //Should this be user settable?    
     SimTK::Vector soln = initMuscleState(s,activation, tol, maxIter);
 

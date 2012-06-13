@@ -129,10 +129,10 @@ void Millard2012AccelerationMuscle::constructProperties()
         FiberCompressiveForceCosPennationCurve());   
 
     //Nonlinear damping coefficients 
-    constructProperty_tendon_force_length_damping(0.1);
-    constructProperty_fiber_compressive_force_length_damping(0.1);
-    constructProperty_fiber_force_length_damping(0.1);
-    constructProperty_fiber_compressive_force_cos_pennation_damping(0.1);
+    constructProperty_tendon_force_length_damping(1e-3);
+    constructProperty_fiber_compressive_force_length_damping(1e-1);
+    constructProperty_fiber_force_length_damping(1e-1);
+    constructProperty_fiber_compressive_force_cos_pennation_damping(1e-1);
 
     //Mass property
     constructProperty_mass(0.1);
@@ -147,7 +147,50 @@ void Millard2012AccelerationMuscle::buildMuscle()
 
 
     m_penMdl = MuscleFixedWidthPennationModel(optFibLen,optPenAng,caller);
+    
+    std::string aName = getName();
+
+    std::string tmp = aName;
+    tmp.append("_MuscleFirstOrderActivationDynamicModel");
+    MuscleFirstOrderActivationDynamicModel& actMdl = upd_activation_model();
+    actMdl.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_ActiveForceLengthCurve");
+    ActiveForceLengthCurve& falCurve = upd_active_force_length_curve();
+    falCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_ForceVelocityCurve");
+    ForceVelocityCurve& fvCurve = upd_force_velocity_curve();
+    fvCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_FiberForceLengthCurve");
+    FiberForceLengthCurve& fpeCurve = upd_fiber_force_length_curve();
+    fpeCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_TendonForceLengthCurve");
+    TendonForceLengthCurve& fseCurve = upd_tendon_force_length_curve();
+    fseCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_FiberCompressiveForceLengthCurve");
+    FiberCompressiveForceLengthCurve& fkCurve 
+        = upd_fiber_compressive_force_length_curve();
+    fkCurve.setName(tmp);
+
+    tmp = aName;
+    tmp.append("_FiberCompressiveForceCosPennationCurve");
+    FiberCompressiveForceCosPennationCurve& fcphi = 
+        upd_fiber_compressive_force_cospennation_curve();
+    fcphi.setName(tmp);
+
+    
+    
     setObjectIsUpToDateWithProperties();
+
 }
 
 void Millard2012AccelerationMuscle::ensureMuscleUpToDate() const
@@ -254,10 +297,13 @@ void Millard2012AccelerationMuscle::
 SimTK::Vector Millard2012AccelerationMuscle::
     computeStateVariableDerivatives(const SimTK::State& s) const 
 {
-    SimTK::Vector derivs(getNumStateVariables());
-    derivs[0] = getActivationRate(s);
-    derivs[1] = getFiberVelocity(s);
-    derivs[2] = getFiberAcceleration(s);
+    SimTK::Vector derivs(getNumStateVariables(),0.);
+
+    if(!isDisabled(s)){
+        derivs[0] = getActivationRate(s);
+        derivs[1] = getFiberVelocity(s);
+        derivs[2] = getFiberAcceleration(s);
+    }
     return derivs;
 }
 
@@ -287,8 +333,7 @@ double Millard2012AccelerationMuscle::
     getActivationRate(const SimTK::State& s) const
 {
     ensureMuscleUpToDate();
-    MuscleDynamicsInfo fdi = getMuscleDynamicsInfo(s);    
-    return fdi.activation;
+    return calcActivationRate(s);
 }
 
 double Millard2012AccelerationMuscle::
@@ -324,7 +369,6 @@ Array<std::string> Millard2012AccelerationMuscle::getStateVariableNames() const
 SimTK::SystemYIndex Millard2012AccelerationMuscle::
     getStateVariableSystemIndex(const std::string &stateVariableName) const
 {
-    ensureMuscleUpToDate();
     unsigned int start = stateVariableName.find(".");
 	unsigned int end = stateVariableName.length();
 	
@@ -333,7 +377,7 @@ SimTK::SystemYIndex Millard2012AccelerationMuscle::
 	else{
 		string localName = stateVariableName.substr(++start, end-start);
 		return ModelComponent::getStateVariableSystemIndex(localName);
-	}
+	}    
 }
 
 
@@ -601,8 +645,8 @@ void Millard2012AccelerationMuscle::
     //shares the muscle stretch between the muscle fiber and the tendon 
     //according to their relative stiffness.
     double activation = getActivation(s);
-    double tol = 1e-10;  //Should this be user settable?
-    int maxIter = 200;  //Should this be user settable?  
+    double tol = 1e-8;  //Should this be user settable?
+    int maxIter = 500;  //Should this be user settable?  
     double newtonStepFraction = 0.75;
     SimTK::Vector soln = initMuscleState(   s,
                                             activation, 
@@ -723,7 +767,7 @@ void Millard2012AccelerationMuscle::
 
     mli.userDefinedLengthExtras[MLIfse]     = tendonForceLengthMultiplier;
     mli.userDefinedLengthExtras[MLIfk]      = fkCurve.calcValue(
-                                                   mli.normFiberLength);
+                                                mli.normFiberLength);
     mli.userDefinedLengthExtras[MLIfcphi]   = fcphiCurve.calcValue(
                                                    mli.cosPennationAngle);
     mli.userDefinedLengthExtras[MLIfkPE]    = compForceLengthPE;
@@ -1567,6 +1611,7 @@ void Millard2012AccelerationMuscle::
     const FiberCompressiveForceCosPennationCurve& fcphiCurve
         = get_fiber_compressive_force_cospennation_curve(); 
     
+    double m = get_mass();
 
     //Get a record of the kinematic independent variables
         ami.lce      = lce;
@@ -1653,20 +1698,6 @@ void Millard2012AccelerationMuscle::
         double lceNAT        = ami.lceAT * dlceNAT_dlceAT;
         double dlceNAT_dt    = ami.dlceAT_dt * dlceNAT_dlceAT;
 
-        
-
-
-    //Visco multiplier
-        ami.fseV   =    ami.fse * dtlN_dt   * bse;
-        ami.fpeV   =    ami.fpe * dlceN_dt  * bpe;
-        ami.fkV    = -  ami.fk  * dlceN_dt  * bk;
-        ami.fcphiV = - ami.fcphi* dlceNAT_dt* bcphi;
-
-    //Visco elastic multipliers
-        ami.fseVEM      = ami.fse   + ami.fseV; 
-        ami.fpeVEM      = ami.fpe   + ami.fpeV;
-        ami.fkVEM       = ami.fk    + ami.fkV; 
-        ami.fcphiVEM    = ami.fcphi + ami.fcphiV;
     
     //Multiplier partial derivatives 
         ami.dfse_dtl        = fseCurve.calcDerivative(tlN,1)  * dtlN_dtl;     
@@ -1678,7 +1709,23 @@ void Millard2012AccelerationMuscle::
         double dcosphi_dlce     = -ami.sinphi*ami.dphi_dlce;
         ami.dfcphi_dlce         = dfcphi_dcosphi* dcosphi_dlce;
 
+    
+    //Visco multiplier
+        ami.fseV   =    ami.fse * dtlN_dt   * bse;
+        ami.fpeV   =    ami.fpe * dlceN_dt  * bpe;
+        ami.fkV    = -  ami.fk  * dlceN_dt  * bk;
+        ami.fcphiV = - ami.fcphi* dlceNAT_dt* bcphi;
+
+    //Visco elastic multipliers
+        ami.fseVEM      = ami.fse   + ami.fseV; 
+        ami.fpeVEM      = ami.fpe   + ami.fpeV;
+        ami.fkVEM       = ami.fk    + ami.fkV; 
+        ami.fcphiVEM    = ami.fcphi + ami.fcphiV;
+
+
     //Visco multiplier partial derivatives
+        //ami.dfse_dtl  * dtlN_dt   * bse
+        //2* sqrt(ami.dfse_dtl/m) * m * dtlN_dt * bse;
         ami.dfseV_dtl    =     ami.dfse_dtl  * dtlN_dt   * bse;   
         ami.dfpeV_dlce   =     ami.dfpe_dlce * dlceN_dt  * bpe;
         ami.dfkV_dlce    =  -  ami.dfk_dlce  * dlceN_dt  * bk;
@@ -1698,9 +1745,9 @@ void Millard2012AccelerationMuscle::
 
         double DdlceNATdt_Dlce = DdlceATdt_Dlce*dlceNAT_dlceAT;
 
-        ami.dfcphiV_dlce =  - ami.dfcphi_dlce* dlceNAT_dt     * bcphi
+        ami.dfcphiV_dlce =  - ami.dfcphi_dlce* dlceNAT_dt     * bcphi;
                             - ami.fcphi      * DdlceNATdt_Dlce* bcphi;
-
+      
 
     //Visco elastic multiplier partial derivatives      
         ami.dfseVEM_dtl     = ami.dfse_dtl    + ami.dfseV_dtl;  
@@ -1720,7 +1767,7 @@ void Millard2012AccelerationMuscle::
         if(ami.fseVEM   < 0)    fseSAT   = true;
         if(ami.fpeVEM   < 0)    fpeSAT   = true;
         if(ami.fkVEM    < 0)    fkSAT    = true;
-        if(ami.fcphiVEM < 0)    fcphiSAT =true;
+        if(ami.fcphiVEM < 0)    fcphiSAT = true;
   
         /*
         ami.fseV   =    ami.fse * dtlN_dt   * bse;

@@ -301,8 +301,8 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
     //shares the muscle stretch between the muscle fiber and the tendon 
     //according to their relative stiffness.
     double activation = getActivation(s);
-    double tol = 1e-10;  //Should this be user settable?
-    int maxIter = 100;  //Should this be user settable?
+    double tol = 1e-8;  //Should this be user settable?
+    int maxIter = 200;  //Should this be user settable?
 
     SimTK::Vector soln = initMuscleState(s,activation, tol, maxIter);
 
