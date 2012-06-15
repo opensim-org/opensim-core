@@ -1755,7 +1755,7 @@ void Millard2012AccelerationMuscle::
 
         double DdlceNATdt_Dlce = DdlceATdt_Dlce*dlceNAT_dlceAT;
 
-        ami.dfcphiV_dlce =  - ami.dfcphi_dlce* dlceNAT_dt     * bcphi;
+        ami.dfcphiV_dlce =  - ami.dfcphi_dlce* dlceNAT_dt     * bcphi
                             - ami.fcphi      * DdlceNATdt_Dlce* bcphi;
         ami.dfibV_dlce   = 0; //Including for future upgrade ...
 

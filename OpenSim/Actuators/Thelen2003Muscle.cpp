@@ -317,12 +317,24 @@ void Thelen2003Muscle::computeInitialFiberEquilibrium(SimTK::State& s) const
                             "computeInitialFiberEquilibrium(SimTK::State& s)";
     std::string muscleName = getName();
 
-    SimTK_ERRCHK3_ALWAYS(flag_status == 0, fcnName.c_str(),
+    SimTK_ERRCHK7_ALWAYS(flag_status == 0, fcnName.c_str(),
         "%s: \n"
      "    The initialization routine found no stable equilibrium fiber length\n"
-     "    length. The initial activation (%f) or whole muscle length (%f)"
-     "    might be unsuitable.", 
-        muscleName.c_str(), getActivation(s), getLength(s));
+     "    length. Here is a report from the routine:\n \n"
+     "        Solution Error      : %f > tol (%f) \n"
+     "        Newton Iterations   : %i of max. iterations (%i) \n"
+     "    Check that the initial activation is valid, and that the whole \n"
+     "    length doesn't produce a pennation angle of 90 degrees, nor a fiber\n"
+     "    length less than 0:\n"
+     "        Activation          : %f \n" 
+     "        Whole muscle length : %f \n", 
+        muscleName.c_str(), 
+        abs(solnErr),
+        tol,
+        iterations,
+        maxIter,
+        getActivation(s), 
+        getLength(s));
 
     //1: flag (0 = converged, 
     //         1=diverged (not enough iterations), 
